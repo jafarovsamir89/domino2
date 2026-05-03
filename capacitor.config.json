@@ -2,5 +2,15 @@
   "appId": "com.domino.pyaterochka",
   "appName": "Domino",
   "webDir": "www",
-  "bundledWebRuntime": false
+  "bundledWebRuntime": false,
+  "server": {
+    "androidScheme": "http",
+    "allowNavigation": [
+      "34.28.23.216",
+      "34.28.23.216:2567"
+    ]
+  },
+  "android": {
+    "allowMixedContent": true
+  }
 }
