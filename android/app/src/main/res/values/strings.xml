@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Domino</string>
+    <string name="title_activity_main">Domino</string>
+    <string name="package_name">com.domino.pyaterochka</string>
+    <string name="custom_url_scheme">com.domino.pyaterochka</string>
+</resources>

@@ -1,0 +1,24 @@
+{
+  "name": "domino2",
+  "version": "1.0.0",
+  "description": "",
+  "main": "sw.js",
+  "type": "module",
+  "scripts": {
+    "sync:www": "powershell -ExecutionPolicy Bypass -File ./scripts/sync-www.ps1",
+    "cap:copy": "npx cap copy android",
+    "apk:debug": "powershell -ExecutionPolicy Bypass -File ./scripts/build-apk.ps1",
+    "check": "node --check www/js/app.js && node --check www/js/renderer.js && node --check www/js/board.js && node --check www/js/ai.js && node --check www/js/model.js && node --check www/js/sounds.js && node --check www/js/network.js",
+    "test": "npm run check"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@capacitor/android": "^8.3.1",
+    "@capacitor/cli": "^8.3.1",
+    "@capacitor/core": "^8.3.1",
+    "@colyseus/sdk": "^0.17.42",
+    "colyseus.js": "^0.16.22"
+  }
+}

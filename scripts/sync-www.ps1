@@ -1,0 +1,27 @@
+$ErrorActionPreference = "Stop"
+
+$root = Split-Path -Parent $PSScriptRoot
+$www = Join-Path $root "www"
+
+if (-not (Test-Path $www)) {
+    New-Item -ItemType Directory -Path $www | Out-Null
+}
+
+$items = @("js", "css", "assets")
+foreach ($item in $items) {
+    $source = Join-Path $root $item
+    $target = Join-Path $www $item
+
+    if (Test-Path $target) {
+        Remove-Item -Recurse -Force $target
+    }
+
+    Copy-Item -Recurse -Force $source $target
+}
+
+$files = @("index.html", "manifest.json", "sw.js")
+foreach ($file in $files) {
+    Copy-Item -Force (Join-Path $root $file) (Join-Path $www $file)
+}
+
+Write-Host "Web assets synced to $www"

@@ -1,0 +1,6 @@
+{
+  "appId": "com.domino.pyaterochka",
+  "appName": "Domino",
+  "webDir": "www",
+  "bundledWebRuntime": false
+}
