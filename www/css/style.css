@@ -177,6 +177,19 @@ html, body {
     letter-spacing: 3px;
 }
 
+.room-code-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.room-copy-btn {
+    width: auto;
+    margin: 0;
+    padding: 6px 10px;
+    font-size: 0.72rem;
+}
+
 .room-count {
     margin-bottom: 10px;
     font-size: 0.78rem;

@@ -114,7 +114,10 @@
                 <div id="multi-host-ui" class="multi-panel">
                     <div class="room-code-line">
                         <span data-i18n="online-room-code">Room code</span>
-                        <strong id="room-code-display" class="room-code-value">....</strong>
+                        <div class="room-code-actions">
+                            <strong id="room-code-display" class="room-code-value">....</strong>
+                            <button class="btn btn-menu room-copy-btn" id="copy-room-code-btn" data-i18n="online-room-copy">Copy</button>
+                        </div>
                     </div>
                     <div id="room-player-count-display" class="room-count">1 / 2 players</div>
                     <div id="room-player-list" class="room-player-list"></div>

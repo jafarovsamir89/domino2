@@ -60,6 +60,7 @@ class DominoRoom extends Room {
         this.state.playerOrder.push(client.sessionId);
 
         console.log(`[ROOM] Current player count: ${this.clients.length} / ${this.maxClients}`);
+        this.broadcast("msg", { text: `${player.name} joined the room`, time: 1500 });
         this.broadcastRoomState();
         if (this.clients.length === this.maxClients) {
             console.log(`[ROOM] Room full. Starting game...`);
@@ -79,12 +80,23 @@ class DominoRoom extends Room {
             await this.allowReconnection(client, 60);
             player.isConnected = true;
             console.log(`[ROOM] Client ${client.sessionId} reconnected!`);
+            this.broadcast("msg", { text: `${player.name} reconnected`, time: 1500 });
             this.broadcastRoomState();
         } catch (e) {
             console.log(`[ROOM] Client ${client.sessionId} removed permanently.`);
+            const leftPlayerName = player ? player.name : "Player";
             this.state.players.delete(client.sessionId);
             const idx = this.state.playerOrder.indexOf(client.sessionId);
             if (idx !== -1) this.state.playerOrder.splice(idx, 1);
+
+            if (this.state.gameActive) {
+                this.state.gameActive = false;
+                this.broadcast("room_closed", {
+                    reason: `${leftPlayerName} left the match. Room closed.`
+                });
+            } else {
+                this.broadcast("msg", { text: `${leftPlayerName} left the room`, time: 1500 });
+            }
             this.broadcastRoomState();
         }
     }
@@ -92,6 +104,7 @@ class DominoRoom extends Room {
     startGame() {
         this.state.matchRound = 1;
         this.state.deal = 1;
+        this.broadcastRoomState();
         this.startDeal();
     }
 
@@ -146,6 +159,8 @@ class DominoRoom extends Room {
             const goshaCombo = this.internalBoard.getGoshaCombo(this.hands[this.state.currentPlayerIndex]);
             cpClient.send("turn_info", { validMoves, goshaCombo });
         }
+
+        this.broadcastRoomState();
     }
 
     broadcastRoomState() {

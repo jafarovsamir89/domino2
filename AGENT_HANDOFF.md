@@ -145,7 +145,9 @@ pm2 logs domino-server
 - Multiplayer lobby flow was redesigned in [index.html](/c:/domino2/index.html), [css/style.css](/c:/domino2/css/style.css), and [js/app.js](/c:/domino2/js/app.js)
 - Online room size is now separate from solo player count via `onlinePlayerCount`
 - Multiplayer create/join now shows room code, live player count, and a waiting list
+- Room code can now be copied from the host panel
 - Server now broadcasts `room_state` messages from [server/DominoRoom.js](/c:/domino2/server/DominoRoom.js)
+- Server now broadcasts `room_closed` if a player is permanently lost during an active match
 - Host settings `instantWinEnabled` and `dlossThreshold` are now sent to the server for multiplayer rooms
 - Known structural issue remains: the repo keeps duplicated app assets in both root source folders and `www/`, so `npm run sync:www` is required after frontend edits
 

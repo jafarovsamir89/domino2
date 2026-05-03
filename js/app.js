@@ -113,6 +113,16 @@ class DominoGame {
                 document.getElementById('connect-btn').click();
             }
         });
+        document.getElementById('copy-room-code-btn').addEventListener('click', async () => {
+            const code = document.getElementById('room-code-display').textContent.trim();
+            if (!code || code === '....') return;
+            try {
+                await navigator.clipboard.writeText(code);
+                this.setHostStatus(`Copied code: ${code}`);
+            } catch (e) {
+                this.setHostStatus(`Copy failed. Code: ${code}`);
+            }
+        });
         document.getElementById('host-cancel-btn').addEventListener('click', () => this.resetMultiplayerPanels(true));
         document.getElementById('join-cancel-btn').addEventListener('click', () => this.resetMultiplayerPanels(true));
 
@@ -222,6 +232,21 @@ class DominoGame {
             this.setHostStatus(statusText);
             this.setJoinStatus(statusText);
         }
+    }
+
+    onRoomClosed(payload) {
+        const reason = payload?.reason || 'Room closed';
+        this.network.leaveRoom();
+        this.myHand = null;
+        this.gameActive = false;
+        this.resetMultiplayerPanels(false);
+        document.getElementById('menu-screen').classList.remove('active');
+        document.getElementById('round-end-screen').classList.remove('active');
+        document.getElementById('game-over-screen').classList.remove('active');
+        document.getElementById('game-screen').classList.remove('active');
+        document.getElementById('start-screen').classList.add('active');
+        this.setJoinStatus(reason);
+        this.setHostStatus(reason);
     }
 
     setupGameControls() {

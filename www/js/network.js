@@ -159,6 +159,10 @@ class NetworkManager {
             this.game.onNetworkRoundEnd(data);
         });
 
+        this.room.onMessage("room_closed", (payload) => {
+            this.game.onRoomClosed(payload);
+        });
+
         this.room.onLeave((code) => {
             console.log("Left room, code:", code);
             this.isMultiplayer = false;
