@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Telefon - Domino</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
     <link rel="icon" href="assets/icon.png">
@@ -12,136 +13,154 @@
     <meta name="theme-color" content="#0f1923">
 </head>
 <body>
-    <!-- Start Screen -->
     <div id="start-screen" class="screen active">
-        <!-- Language Switcher -->
         <div class="lang-switcher">
             <button class="btn btn-lang active" data-lang="az">AZ</button>
             <button class="btn btn-lang" data-lang="en">EN</button>
             <button class="btn btn-lang" data-lang="ru">RU</button>
         </div>
 
-        <div class="start-container" style="max-height: 95vh; overflow-y: auto;">
-            <div class="logo-area">
-                <div class="domino-logo">
-                    <div class="tile horizontal">
-                        <div class="tile-half">
-                            <div class="pip"></div><div class="pip hidden"></div><div class="pip hidden"></div>
-                            <div class="pip hidden"></div><div class="pip"></div><div class="pip hidden"></div>
-                            <div class="pip hidden"></div><div class="pip hidden"></div><div class="pip"></div>
-                        </div>
-                        <div class="tile-divider"></div>
-                        <div class="tile-half">
-                            <div class="pip"></div><div class="pip hidden"></div><div class="pip hidden"></div>
-                            <div class="pip hidden"></div><div class="pip hidden"></div><div class="pip hidden"></div>
-                            <div class="pip hidden"></div><div class="pip hidden"></div><div class="pip"></div>
-                        </div>
-                    </div>
-                </div>
-                <h1 class="game-title" data-i18n="game-title">TELEFON</h1>
-                <p class="game-subtitle" data-i18n="game-subtitle">AzР™в„ўrbaycan Dominosu</p>
-                <div style="font-size:0.6rem; color:var(--text-dim); margin-top:-8px; margin-bottom:10px; opacity:0.6; text-align:center;">v1.18</div>
-            </div>
-
-            <div class="settings-group">
-                <label data-i18n="label-players">OyunР“В§ular</label>
-                <div class="btn-group" id="player-count-group">
-                    <button class="btn btn-option active" data-value="2">2</button>
-                    <button class="btn btn-option" data-value="3">3</button>
-                    <button class="btn btn-option" data-value="4">4</button>
-                </div>
-            </div>
-
-            <div class="settings-group">
-                <label data-i18n="label-difficulty">Р“вЂЎР™в„ўtinlik</label>
-                <div class="btn-group" id="difficulty-group">
-                    <button class="btn btn-option" data-value="easy" data-i18n="diff-easy">Asan</button>
-                    <button class="btn btn-option active" data-value="medium" data-i18n="diff-medium">Orta</button>
-                    <button class="btn btn-option" data-value="hard" data-i18n="diff-hard">Р“вЂЎР™в„ўtin</button>
-                </div>
-            </div>
-
-            <div class="settings-group">
-                <label data-i18n="label-name">AdР”В±nР”В±z</label>
-                <input type="text" id="player-name" placeholder="AdР”В±nР”В±z" maxlength="12">
-            </div>
-
-            <div class="settings-group" style="flex-direction:row;align-items:center;gap:10px;">
-                <input type="checkbox" id="instant-win-setting" checked style="width:18px;height:18px;accent-color:var(--primary);">
-                <label for="instant-win-setting" style="margin:0;" data-i18n="label-instant-win">35 xal = +2 raund</label>
-            </div>
-
-            <div class="settings-group">
-                <label data-i18n="label-dloss">MР™в„ўР”СџlubiyyР™в„ўt hР™в„ўddi</label>
-                <input type="number" id="dloss-setting" value="255" min="0" max="365">
-            </div>
-
-            <div class="rules-summary">
-                <div class="rule-row">СЂСџР‹Р‡ <span>365 Р’В· 3 raund</span></div>
-                <div class="rule-row">СЂСџС“РЏ <span>[3|2]</span></div>
-            </div>
-
-            <button class="btn btn-primary btn-large" id="start-game-btn" data-i18n="btn-start">TР™в„ўk Oyun</button>
-
-            <section class="multiplayer-card">
-                <div class="multiplayer-heading">
-                    <div class="multiplayer-title" data-i18n="label-online">Online Room</div>
-                    <div class="multiplayer-subtitle" data-i18n="label-online-help">Create a room or join with a code</div>
-                </div>
-
-                <div class="settings-group">
-                    <label data-i18n="label-online-players">Room Size</label>
-                    <div class="btn-group" id="online-player-count-group">
-                        <button class="btn btn-option active" data-value="2">2</button>
-                        <button class="btn btn-option" data-value="3">3</button>
-                        <button class="btn btn-option" data-value="4">4</button>
-                    </div>
-                </div>
-
-                <div class="settings-group">
-                    <label data-i18n="label-mode">Oyun Rejimi</label>
-                    <div class="btn-group" id="multi-mode-group">
-                        <button class="btn btn-option active" data-value="ffa" data-i18n="mode-ffa">HР™в„ўr kР™в„ўs Р“В¶zР“С Р“СР“В§Р“Сn</button>
-                        <button class="btn btn-option" data-value="team" data-i18n="mode-team">2 vs 2</button>
-                    </div>
-                </div>
-
-                <div class="multiplayer-actions btn-group">
-                    <button class="btn btn-action" id="host-game-btn" data-i18n="btn-host">Yarat</button>
-                    <button class="btn btn-action" id="join-game-btn" data-i18n="btn-join">QoР•Сџul</button>
-                </div>
-
-                <div id="multi-host-ui" class="multi-panel">
-                    <div class="room-code-line">
-                        <span data-i18n="online-room-code">Room code</span>
-                        <div class="room-code-actions">
-                            <strong id="room-code-display" class="room-code-value">....</strong>
-                            <button class="btn btn-menu room-copy-btn" id="copy-room-code-btn" data-i18n="online-room-copy">Copy</button>
+        <div class="start-shell">
+            <section class="start-hero">
+                <div class="logo-area">
+                    <div class="domino-logo">
+                        <div class="tile horizontal">
+                            <div class="tile-half">
+                                <div class="pip"></div><div class="pip hidden"></div><div class="pip hidden"></div>
+                                <div class="pip hidden"></div><div class="pip"></div><div class="pip hidden"></div>
+                                <div class="pip hidden"></div><div class="pip hidden"></div><div class="pip"></div>
+                            </div>
+                            <div class="tile-divider"></div>
+                            <div class="tile-half">
+                                <div class="pip"></div><div class="pip hidden"></div><div class="pip hidden"></div>
+                                <div class="pip hidden"></div><div class="pip hidden"></div><div class="pip hidden"></div>
+                                <div class="pip hidden"></div><div class="pip hidden"></div><div class="pip"></div>
+                            </div>
                         </div>
                     </div>
-                    <div id="room-player-count-display" class="room-count">1 / 2 players</div>
-                    <div id="room-player-list" class="room-player-list"></div>
-                    <div id="host-status" class="multi-status" data-i18n="online-room-status-created">Creating room...</div>
-                    <button class="btn btn-menu" id="host-cancel-btn" data-i18n="online-room-cancel">Cancel</button>
+                    <p class="eyebrow">DOMINO CLUB</p>
+                    <h1 class="game-title" data-i18n="game-title">TELEFON</h1>
+                    <p class="game-subtitle" data-i18n="game-subtitle">Azərbaycan Dominosu</p>
                 </div>
 
-                <div id="multi-join-ui" class="multi-panel">
-                    <div id="join-status" class="multi-status" data-i18n="online-room-join-hint">Enter a room code and connect</div>
-                    <input type="text" id="join-code-input" data-i18n="online-room-code-placeholder" placeholder="ABCD" maxlength="8">
-                    <div class="btn-group">
-                        <button class="btn btn-primary" id="connect-btn" data-i18n="btn-join">QoР•Сџul</button>
-                        <button class="btn btn-menu" id="join-cancel-btn" data-i18n="online-room-back">Back</button>
+                <div class="hero-notes">
+                    <div class="hero-badge" data-i18n="rule-match">365 xal • 3 raund</div>
+                    <div class="hero-badge" data-i18n="rule-telephone">Telefon • [3|2]</div>
+                </div>
+            </section>
+
+            <section class="start-panel">
+                <div class="panel-section">
+                    <div class="section-head">
+                        <div>
+                            <p class="section-kicker">SOLO</p>
+                            <h2 data-i18n="btn-start">Tək oyun</h2>
+                        </div>
+                    </div>
+
+                    <div class="settings-grid">
+                        <div class="settings-group">
+                            <label data-i18n="label-players">Oyunçular</label>
+                            <div class="btn-group" id="player-count-group">
+                                <button class="btn btn-option active" data-value="2">2</button>
+                                <button class="btn btn-option" data-value="3">3</button>
+                                <button class="btn btn-option" data-value="4">4</button>
+                            </div>
+                        </div>
+
+                        <div class="settings-group">
+                            <label data-i18n="label-difficulty">Çətinlik</label>
+                            <div class="btn-group" id="difficulty-group">
+                                <button class="btn btn-option" data-value="easy" data-i18n="diff-easy">Asan</button>
+                                <button class="btn btn-option active" data-value="medium" data-i18n="diff-medium">Orta</button>
+                                <button class="btn btn-option" data-value="hard" data-i18n="diff-hard">Çətin</button>
+                            </div>
+                        </div>
+
+                        <div class="settings-group field-span-2">
+                            <label data-i18n="label-name">Adınız</label>
+                            <input type="text" id="player-name" data-i18n="placeholder-player-name" placeholder="Adınızı yazın" maxlength="12">
+                        </div>
+
+                        <div class="settings-group">
+                            <label data-i18n="label-dloss">Məğlubiyyət həddi</label>
+                            <input type="number" id="dloss-setting" value="255" min="0" max="365">
+                        </div>
+
+                        <label class="toggle-card field-span-2" for="instant-win-setting">
+                            <input type="checkbox" id="instant-win-setting" checked>
+                            <span class="toggle-copy">
+                                <strong data-i18n="label-instant-win">35 xal = +2 raund</strong>
+                            </span>
+                        </label>
+                    </div>
+
+                    <button class="btn btn-primary btn-large" id="start-game-btn" data-i18n="btn-start">Tək oyun</button>
+                </div>
+
+                <div class="panel-section">
+                    <div class="section-head">
+                        <div>
+                            <p class="section-kicker">ONLINE</p>
+                            <h2 data-i18n="label-online">Onlayn otaq</h2>
+                        </div>
+                        <p class="section-note" data-i18n="label-online-help">Otaq yaradın və ya kodla qoşulun</p>
+                    </div>
+
+                    <div class="settings-grid">
+                        <div class="settings-group">
+                            <label data-i18n="label-online-players">Otaq ölçüsü</label>
+                            <div class="btn-group" id="online-player-count-group">
+                                <button class="btn btn-option active" data-value="2">2</button>
+                                <button class="btn btn-option" data-value="3">3</button>
+                                <button class="btn btn-option" data-value="4">4</button>
+                            </div>
+                        </div>
+
+                        <div class="settings-group">
+                            <label data-i18n="label-mode">Oyun rejimi</label>
+                            <div class="btn-group" id="multi-mode-group">
+                                <button class="btn btn-option active" data-value="ffa" data-i18n="mode-ffa">Hər kəs özü üçün</button>
+                                <button class="btn btn-option" data-value="team" data-i18n="mode-team">2-yə 2</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="multiplayer-actions btn-group">
+                        <button class="btn btn-action" id="host-game-btn" data-i18n="btn-host">Yarat</button>
+                        <button class="btn btn-action" id="join-game-btn" data-i18n="btn-join">Qoşul</button>
+                    </div>
+
+                    <div id="multi-host-ui" class="multi-panel">
+                        <div class="room-code-line">
+                            <span data-i18n="online-room-code">Otaq kodu</span>
+                            <div class="room-code-actions">
+                                <strong id="room-code-display" class="room-code-value">....</strong>
+                                <button class="btn btn-menu room-copy-btn" id="copy-room-code-btn" data-i18n="online-room-copy">Kopyala</button>
+                            </div>
+                        </div>
+                        <div id="room-player-count-display" class="room-count">1 / 2</div>
+                        <div id="room-player-list" class="room-player-list"></div>
+                        <div id="host-status" class="multi-status" data-i18n="online-room-status-created">Otaq yaradılır...</div>
+                        <button class="btn btn-menu" id="host-cancel-btn" data-i18n="online-room-cancel">Ləğv et</button>
+                    </div>
+
+                    <div id="multi-join-ui" class="multi-panel">
+                        <div id="join-status" class="multi-status" data-i18n="online-room-join-hint">Otaq kodunu daxil edin</div>
+                        <input type="text" id="join-code-input" data-i18n="online-room-code-placeholder" placeholder="ABCD" maxlength="8">
+                        <div class="btn-group">
+                            <button class="btn btn-primary" id="connect-btn" data-i18n="btn-join">Qoşul</button>
+                            <button class="btn btn-menu" id="join-cancel-btn" data-i18n="online-room-back">Geri</button>
+                        </div>
                     </div>
                 </div>
             </section>
         </div>
     </div>
 
-    <!-- Game Screen -->
     <div id="game-screen" class="screen">
-        <!-- Top bar: menu + scores + info -->
         <div class="game-header">
-            <button class="menu-btn" id="menu-btn" title="Р СљР ВµР Р…РЎР‹">РІВВ°</button>
+            <button class="menu-btn" id="menu-btn" data-i18n="menu-open" title="Menyu">≡</button>
             <div class="scores-bar" id="scores-bar"></div>
             <div class="game-info">
                 <span id="round-info"></span>
@@ -149,59 +168,49 @@
             </div>
         </div>
 
-        <!-- Opponent hands (Top, Left, Right) -->
         <div id="opp-top" class="opp-container top"></div>
         <div id="opp-left" class="opp-container side left"></div>
         <div id="opp-right" class="opp-container side right"></div>
 
-        <!-- Board -->
         <div class="board-container" id="board-container">
             <div class="board" id="board"></div>
         </div>
 
-        <!-- Boneyard visual -->
         <div class="boneyard-visual" id="boneyard-visual"></div>
-
-        <!-- Message -->
         <div class="message-area" id="message-area"></div>
-        
-        <!-- Player hand -->
+
         <div class="hand-container">
             <div class="hand" id="player-hand"></div>
         </div>
 
-        <!-- Action bar -->
         <div class="action-bar">
-            <button class="btn btn-action" id="draw-btn" disabled data-i18n="btn-draw">Р вЂР С’Р вЂ”Р С’Р В </button>
-            <button class="btn btn-action" id="pass-btn" disabled data-i18n="btn-pass">Р СџР С’Р РЋ</button>
+            <button class="btn btn-action" id="draw-btn" disabled data-i18n="btn-draw">BAZAR</button>
+            <button class="btn btn-action" id="pass-btn" disabled data-i18n="btn-pass">PAS</button>
         </div>
     </div>
 
-    <!-- Menu Overlay -->
     <div id="menu-screen" class="screen overlay">
         <div class="overlay-content menu-panel">
-            <h2 data-i18n="label-difficulty">TР™в„ўnzimlР™в„ўmР™в„ўlР™в„ўr</h2>
+            <h2 data-i18n="menu-title">Menyu</h2>
             <button class="btn btn-menu" id="menu-resume" data-i18n="menu-resume">Davam et</button>
-            <button class="btn btn-menu" id="menu-newgame" data-i18n="menu-new">Yeni Oyun</button>
-            <button class="btn btn-menu" id="menu-quit" data-i18n="menu-quit">Р“вЂЎР”В±xР”В±Р•Сџ</button>
+            <button class="btn btn-menu" id="menu-newgame" data-i18n="menu-new">Yeni oyun</button>
+            <button class="btn btn-menu" id="menu-quit" data-i18n="menu-quit">Çıxış</button>
         </div>
     </div>
 
-    <!-- Round End Screen -->
     <div id="round-end-screen" class="screen overlay">
         <div class="overlay-content">
             <h2 id="round-end-title"></h2>
             <div id="round-end-details"></div>
-            <button class="btn btn-primary" id="next-round-btn" data-i18n="round-end-next">Davam</button>
+            <button class="btn btn-primary" id="next-round-btn" data-i18n="round-end-next">Davam et</button>
         </div>
     </div>
 
-    <!-- Game Over Screen -->
     <div id="game-over-screen" class="screen overlay">
         <div class="overlay-content">
             <h2 id="game-over-title"></h2>
             <div id="game-over-details"></div>
-            <button class="btn btn-primary" id="new-game-btn">Р СњР С•Р Р†Р В°РЎРЏ Р С‘Р С–РЎР‚Р В°</button>
+            <button class="btn btn-primary" id="new-game-btn" data-i18n="new-game-btn">Yeni oyun</button>
         </div>
     </div>
 
@@ -209,8 +218,8 @@
     <script src="js/network.js"></script>
     <script type="module" src="js/app.js"></script>
     <script>
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('sw.js').catch(() => {});
+        if ("serviceWorker" in navigator) {
+            navigator.serviceWorker.register("sw.js").catch(() => {});
         }
     </script>
 </body>

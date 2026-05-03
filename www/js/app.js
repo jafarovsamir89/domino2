@@ -1,4 +1,4 @@
-import { Tile, createFullSet, shuffle, getHandSize, determineFirstPlayer, handPoints, roundTo5 } from './model.js';
+﻿import { Tile, createFullSet, shuffle, getHandSize, determineFirstPlayer, handPoints, roundTo5 } from './model.js';
 import { Board, reconstructBoard } from './board.js';
 import { AIPlayer } from './ai.js';
 import { Renderer } from './renderer.js';
@@ -118,9 +118,9 @@ class DominoGame {
             if (!code || code === '....') return;
             try {
                 await navigator.clipboard.writeText(code);
-                this.setHostStatus(`Copied code: ${code}`);
+                this.setHostStatus(this.format('online-copy-success', { code }));
             } catch (e) {
-                this.setHostStatus(`Copy failed. Code: ${code}`);
+                this.setHostStatus(this.format('online-copy-fail', { code }));
             }
         });
         document.getElementById('host-cancel-btn').addEventListener('click', () => this.resetMultiplayerPanels(true));
@@ -205,13 +205,11 @@ class DominoGame {
             if (player.sessionId === mySessionId) {
                 chip.classList.add('you');
             }
-
             const name = document.createElement('span');
-            name.textContent = player.sessionId === mySessionId ? `${player.name} (you)` : player.name;
-
+            name.textContent = player.sessionId === mySessionId ? `${player.name} (${this.t('online-you')})` : player.name;
             const state = document.createElement('span');
             state.className = 'room-player-state';
-            state.textContent = player.isConnected ? 'ready' : 'offline';
+            state.textContent = player.isConnected ? this.t('online-ready') : this.t('online-offline');
 
             chip.appendChild(name);
             chip.appendChild(state);
@@ -221,7 +219,7 @@ class DominoGame {
         for (let i = (roomState.players || []).length; i < roomState.maxPlayers; i++) {
             const chip = document.createElement('div');
             chip.className = 'room-player-chip empty';
-            chip.textContent = `Waiting for player ${i + 1}`;
+            chip.textContent = this.format('online-waiting-slot', { index: i + 1 });
             list.appendChild(chip);
         }
 
@@ -235,7 +233,7 @@ class DominoGame {
     }
 
     onRoomClosed(payload) {
-        const reason = payload?.reason || 'Room closed';
+        const reason = payload?.reason || this.t('online-room-closed');
         this.network.leaveRoom();
         this.myHand = null;
         this.gameActive = false;
@@ -366,15 +364,14 @@ class DominoGame {
             const fp=this.lastDealWinner;
             this.currentPlayer=fp; this.renderState();
             console.log('[startDeal] Last deal winner starts:', fp);
-            this.broadcastMsg(`${this.playerNames[fp]} Р РЋРІР‚В¦Р В РЎвЂўР В РўвЂР В РЎвЂР РЋРІР‚С™ Р В РЎвЂ”Р В Р’ВµР РЋР вЂљР В Р вЂ Р РЋРІР‚в„–Р В РЎВ (Р В Р’В»Р РЋР вЂ№Р В Р’В±Р В Р’В°Р РЋР РЏ Р В РЎвЂќР В РЎвЂўР РЋР С“Р РЋРІР‚С™Р РЋР Р‰)`,2000);
+            this.broadcastMsg(this.format('msg-last-winner-starts', { player: this.playerNames[fp] }),2000);
             this.queueAITurnIfNeeded(1500);
         }else{
             const f=determineFirstPlayer(this.hands);
             const fp=f.player; const fi=f.tileIndex;
             this.currentPlayer=fp; this.renderState();
             console.log('[startDeal] First player determined:', fp);
-            const tile=this.hands[fp][fi];
-            this.broadcastMsg(`${this.playerNames[fp]} Р В Р вЂ¦Р В Р’В°Р РЋРІР‚РЋР В РЎвЂР В Р вЂ¦Р В Р’В°Р В Р’ВµР РЋРІР‚С™ Р В РЎвЂР В РЎвЂ“Р РЋР вЂљР РЋРЎвЂњ!`,2000);
+            this.broadcastMsg(this.format('msg-first-turn', { player: this.playerNames[fp] }),2000);
             this.turnInProgress=true;
             setTimeout(()=>{this.turnInProgress=false;this.playTile(fp,fi,-1);},1200);
         }
@@ -434,8 +431,11 @@ class DominoGame {
         document.querySelectorAll('[data-i18n]').forEach(el => {
             const key = el.dataset.i18n;
             if (t[key]) {
-                if (el.tagName === 'INPUT' && el.type === 'text') el.placeholder = t[key];
-                else el.textContent = t[key];
+                if (el.tagName === 'INPUT') el.placeholder = t[key];
+                else {
+                    el.textContent = t[key];
+                    if (el.id === 'menu-btn') el.title = t[key];
+                }
             }
         });
         document.querySelectorAll('.btn-lang').forEach(b => {
@@ -443,13 +443,17 @@ class DominoGame {
         });
         // Update default player name if not changed
         const nameInput = document.getElementById('player-name');
-        if (nameInput.value === 'Р В Р’ВР В РЎвЂ“Р РЋР вЂљР В РЎвЂўР В РЎвЂќ' || nameInput.value === 'Player' || nameInput.value === 'Р вЂќР’В°lkin') {
-            nameInput.value = lang === 'az' ? 'Р вЂќР’В°lkin' : (lang === 'ru' ? 'Р В Р’ВР В РЎвЂ“Р РЋР вЂљР В РЎвЂўР В РЎвЂќ' : 'Player');
+        const defaults = ['Ilkin', 'Player'];
+        if (!nameInput.value || defaults.includes(nameInput.value)) {
+            nameInput.value = this.getDefaultPlayerName();
         }
     }
 
     t(key) {
         return translations[this.currentLang][key] || key;
+    }
+    format(key, values = {}) {
+        return this.t(key).replace(/\{(\w+)\}/g, (_, token) => values[token] ?? `{${token}}`);
     }
 
     // --- Network Handlers (Thin Client Mode) ---
@@ -658,7 +662,7 @@ class DominoGame {
         this.renderState();
         
         if(score>0){this.addScore(pi,score);if(this.checkEnd(pi,score))return;}
-        this.broadcastMsg(`${this.playerNames[pi]} Р В РІР‚СљР В РЎвЂўР РЋРІвЂљВ¬Р В Р’В° Р вЂњРІР‚вЂќ${matches.length}! +${score}`,2000);
+        this.broadcastMsg(this.format('msg-gosha', { player: this.playerNames[pi], count: matches.length, score }),2000);
         if(hand.length===0){ setTimeout(()=>this.endDeal(pi,false), 400); return;}
         if(this.board.isBlocked(this.hands,this.boneyard)){ setTimeout(()=>this.endDeal(this.findFishWinner(),true), 400); return;}
         setTimeout(() => { this.turnInProgress=false; this.advanceTurn(); }, 300);
@@ -873,7 +877,7 @@ class DominoGame {
         this.renderer.renderRoundEnd(this.playerNames[wi],displayEntities,wins,this.matchRound,this.matchOver);this.matchRound++;
     }
     showMatchResult(){
-        if(this.isTeamMode){const w=this.teamRoundWins[0]>=this.teamRoundWins[1]?0:1;this.renderer.renderGameOver(w===0?`${this.playerNames[0]} & ${this.playerNames[2]}`:`${this.playerNames[1]} & ${this.playerNames[3]}`,[{name:'Р В РЎв„ўР В РЎвЂўР В РЎВР В Р’В°Р В Р вЂ¦Р В РўвЂР В Р’В° A',roundWins:this.teamRoundWins[0]},{name:'Р В РЎв„ўР В РЎвЂўР В РЎВР В Р’В°Р В Р вЂ¦Р В РўвЂР В Р’В° B',roundWins:this.teamRoundWins[1]}]);}
+        if(this.isTeamMode){const w=this.teamRoundWins[0]>=this.teamRoundWins[1]?0:1;this.renderer.renderGameOver(w===0?`${this.playerNames[0]} & ${this.playerNames[2]}`:`${this.playerNames[1]} & ${this.playerNames[3]}`,[{name:this.t('team-a'),roundWins:this.teamRoundWins[0]},{name:this.t('team-b'),roundWins:this.teamRoundWins[1]}]);}
         else{let w=0,mx=0;for(let i=0;i<this.playerCount;i++)if(this.roundWins[i]>mx){mx=this.roundWins[i];w=i;}this.renderer.renderGameOver(this.playerNames[w],this.playerNames.map((n,i)=>({name:n,roundWins:this.roundWins[i]})));}
     }
 }
