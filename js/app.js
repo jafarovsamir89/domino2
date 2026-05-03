@@ -11,7 +11,7 @@ const TARGET=365, MAX_R=3, DLOSS=255, IWIN=35;
 class DominoGame {
     constructor() {
         this.renderer = new Renderer(this); this.board = new Board();
-        this.playerCount=2; this.onlinePlayerCount=2; this.playerName='Ilkin'; this.difficulty='medium';
+        this.playerCount=2; this.onlinePlayerCount=2; this.onlineAiCount=0; this.playerName='Ilkin'; this.difficulty='medium';
         this.hands=[]; this.boneyard=[]; this.scores=[]; this.roundWins=[];
         this.playerNames=[]; this.currentPlayer=0; this.matchRound=1; this.deal=1;
         this.selectedTileIndex=-1; this.validMoves=[]; this.gameActive=false;
@@ -34,6 +34,40 @@ class DominoGame {
         }, 2000);
     }
     setupStartScreen() {
+        const openSoloBtn = document.getElementById('open-solo-modal-btn');
+        const openOnlineBtn = document.getElementById('open-online-modal-btn');
+        const soloModalClose = document.getElementById('solo-modal-close');
+        const onlineModalClose = document.getElementById('online-modal-close');
+        const soloModal = document.getElementById('solo-modal');
+        const onlineModal = document.getElementById('online-modal');
+
+        if (openSoloBtn) openSoloBtn.addEventListener('click', () => this.showStartModal('solo'));
+        if (openOnlineBtn) openOnlineBtn.addEventListener('click', () => {
+            this.resetMultiplayerPanels(false);
+            this.syncMultiplayerOptions();
+            this.showStartModal('online');
+        });
+        if (soloModalClose) soloModalClose.addEventListener('click', () => this.showStartModal(null));
+        if (onlineModalClose) onlineModalClose.addEventListener('click', () => this.showStartModal(null));
+        if (soloModal) soloModal.addEventListener('click', (event) => {
+            if (event.target === soloModal) this.showStartModal(null);
+        });
+        if (onlineModal) onlineModal.addEventListener('click', (event) => {
+            if (event.target === onlineModal) this.showStartModal(null);
+        });
+
+        const soloNameInput = document.getElementById('player-name');
+        const onlineNameInput = document.getElementById('player-name-online');
+        if (soloNameInput && onlineNameInput) {
+            const syncName = (source, target) => {
+                source.addEventListener('input', () => {
+                    target.value = source.value;
+                });
+            };
+            syncName(soloNameInput, onlineNameInput);
+            syncName(onlineNameInput, soloNameInput);
+        }
+
         document.querySelectorAll('#player-count-group .btn-option').forEach(b => {
             b.addEventListener('click', () => {
                 document.querySelectorAll('#player-count-group .btn-option').forEach(x => x.classList.remove('active'));
@@ -61,6 +95,16 @@ class DominoGame {
                 this.syncMultiplayerOptions();
             });
         });
+
+        const onlineAiInput = document.getElementById('online-ai-count');
+        if (onlineAiInput) {
+            onlineAiInput.addEventListener('input', () => {
+                const maxAi = this.isTeamMode ? 2 : Math.max(0, this.onlinePlayerCount - 1);
+                const nextValue = Math.max(0, Math.min(maxAi, parseInt(onlineAiInput.value, 10) || 0));
+                this.onlineAiCount = nextValue;
+                this.syncMultiplayerOptions();
+            });
+        }
 
         document.querySelectorAll('#multi-mode-group .btn-option').forEach(b => {
             b.addEventListener('click', () => {
@@ -123,8 +167,14 @@ class DominoGame {
                 this.setHostStatus(this.format('online-copy-fail', { code }));
             }
         });
-        document.getElementById('host-cancel-btn').addEventListener('click', () => this.resetMultiplayerPanels(true));
-        document.getElementById('join-cancel-btn').addEventListener('click', () => this.resetMultiplayerPanels(true));
+        document.getElementById('host-cancel-btn').addEventListener('click', () => {
+            this.showStartModal(null);
+            this.resetMultiplayerPanels(true);
+        });
+        document.getElementById('join-cancel-btn').addEventListener('click', () => {
+            this.showStartModal(null);
+            this.resetMultiplayerPanels(true);
+        });
 
         document.querySelectorAll('.btn-lang').forEach(btn => {
             btn.addEventListener('click', () => {
@@ -134,6 +184,7 @@ class DominoGame {
         });
         this.syncMultiplayerOptions();
         this.resetMultiplayerPanels(false);
+        this.showStartModal(null);
     }
 
     getDefaultPlayerName() {
@@ -143,8 +194,10 @@ class DominoGame {
     }
 
     readPlayerName() {
-        const input = document.getElementById('player-name');
-        return this.sanitizeName(input.value.trim() || this.getDefaultPlayerName());
+        const primary = document.getElementById('player-name');
+        const online = document.getElementById('player-name-online');
+        const value = (primary?.value || online?.value || '').trim();
+        return this.sanitizeName(value || this.getDefaultPlayerName());
     }
 
     syncMultiplayerOptions() {
@@ -160,11 +213,32 @@ class DominoGame {
             const isTeamButton = button.dataset.value === 'team';
             button.classList.toggle('active', this.isTeamMode === isTeamButton);
         });
+
+        const aiInput = document.getElementById('online-ai-count');
+        if (aiInput) {
+            const maxAi = this.isTeamMode ? 2 : Math.max(0, this.onlinePlayerCount - 1);
+            aiInput.max = String(maxAi);
+            aiInput.value = String(Math.min(this.onlineAiCount, maxAi));
+            this.onlineAiCount = parseInt(aiInput.value, 10) || 0;
+            const summary = document.getElementById('online-player-summary');
+            if (summary) {
+                const humans = Math.max(1, this.onlinePlayerCount - this.onlineAiCount);
+                summary.textContent = this.format('online-room-summary', { humans, bots: this.onlineAiCount, total: this.onlinePlayerCount });
+            }
+        }
     }
 
     showMultiplayerPanel(panelName) {
         document.getElementById('multi-host-ui').classList.toggle('active', panelName === 'host');
         document.getElementById('multi-join-ui').classList.toggle('active', panelName === 'join');
+    }
+
+    showStartModal(modalName) {
+        const solo = document.getElementById('solo-modal');
+        const online = document.getElementById('online-modal');
+        if (solo) solo.classList.toggle('active', modalName === 'solo');
+        if (online) online.classList.toggle('active', modalName === 'online');
+        if (!modalName) this.resetMultiplayerPanels(false);
     }
 
     resetMultiplayerPanels(leaveRoom = false) {
@@ -175,7 +249,8 @@ class DominoGame {
         document.getElementById('connect-btn').disabled = false;
         document.getElementById('join-code-input').value = '';
         document.getElementById('room-code-display').textContent = '....';
-        document.getElementById('room-player-count-display').textContent = `${this.onlinePlayerCount} / ${this.onlinePlayerCount}`;
+        const roomCountEl = document.getElementById('room-player-count-display');
+        if (roomCountEl) roomCountEl.textContent = `${this.onlinePlayerCount} / ${this.onlinePlayerCount}`;
         document.getElementById('room-player-list').innerHTML = '';
         this.setHostStatus(this.t('online-room-create-hint'));
         this.setJoinStatus(this.t('online-room-join-hint'));
@@ -193,7 +268,15 @@ class DominoGame {
         if (!roomState) return;
 
         document.getElementById('room-code-display').textContent = roomState.roomId || '....';
-        document.getElementById('room-player-count-display').textContent = `${roomState.currentPlayers} / ${roomState.maxPlayers}`;
+        const roomCountEl = document.getElementById('room-player-count-display');
+        const humanJoined = roomState.humanPlayers ?? roomState.currentPlayers ?? 0;
+        const humanSeats = roomState.humanSeats ?? roomState.maxPlayers ?? roomState.totalPlayers ?? 0;
+        const aiCount = roomState.aiCount ?? 0;
+        if (roomCountEl) {
+            roomCountEl.textContent = aiCount > 0
+                ? `${humanJoined} / ${humanSeats} + ${aiCount} AI`
+                : `${humanJoined} / ${humanSeats}`;
+        }
 
         const mySessionId = this.network?.room?.sessionId;
         const list = document.getElementById('room-player-list');
@@ -216,16 +299,26 @@ class DominoGame {
             list.appendChild(chip);
         }
 
-        for (let i = (roomState.players || []).length; i < roomState.maxPlayers; i++) {
+        const humanPlayerCount = (roomState.players || []).filter(player => !player.isBot).length;
+        for (let i = humanPlayerCount; i < humanSeats; i++) {
             const chip = document.createElement('div');
             chip.className = 'room-player-chip empty';
             chip.textContent = this.format('online-waiting-slot', { index: i + 1 });
             list.appendChild(chip);
         }
 
+        if (!roomState.gameActive && aiCount > 0) {
+            for (let i = 0; i < aiCount; i++) {
+                const chip = document.createElement('div');
+                chip.className = 'room-player-chip bot';
+                chip.textContent = this.format('online-bot-slot', { index: i + 1 });
+                list.appendChild(chip);
+            }
+        }
+
         if (!roomState.gameActive) {
-            const statusText = roomState.currentPlayers < roomState.maxPlayers
-                ? `${this.t('online-room-status-waiting')} (${roomState.currentPlayers}/${roomState.maxPlayers})`
+            const statusText = humanJoined < humanSeats
+                ? `${this.t('online-room-status-waiting')} (${humanJoined}/${humanSeats})`
                 : this.t('online-room-status-ready');
             this.setHostStatus(statusText);
             this.setJoinStatus(statusText);
@@ -237,6 +330,7 @@ class DominoGame {
         this.network.leaveRoom();
         this.myHand = null;
         this.gameActive = false;
+        this.showStartModal(null);
         this.resetMultiplayerPanels(false);
         document.getElementById('menu-screen').classList.remove('active');
         document.getElementById('round-end-screen').classList.remove('active');
@@ -264,6 +358,7 @@ class DominoGame {
             document.getElementById('game-over-screen').classList.remove('active');
             document.getElementById('game-screen').classList.remove('active');
             document.getElementById('start-screen').classList.add('active');
+            this.showStartModal(null);
             if (this.network.isMultiplayer && this.network.room) {
                 this.network.leaveRoom();
                 this.myHand = null;
@@ -302,6 +397,7 @@ class DominoGame {
             document.getElementById('menu-screen').classList.remove('active');
             document.getElementById('game-screen').classList.remove('active');
             document.getElementById('start-screen').classList.add('active');
+            this.showStartModal(null);
             if (this.network.isMultiplayer && this.network.room) {
                 this.network.leaveRoom();
                 this.myHand = null;
@@ -443,9 +539,12 @@ class DominoGame {
         });
         // Update default player name if not changed
         const nameInput = document.getElementById('player-name');
+        const onlineNameInput = document.getElementById('player-name-online');
         const defaults = ['Ilkin', 'Player'];
         if (!nameInput.value || defaults.includes(nameInput.value)) {
-            nameInput.value = this.getDefaultPlayerName();
+            const defaultName = this.getDefaultPlayerName();
+            nameInput.value = defaultName;
+            if (onlineNameInput) onlineNameInput.value = defaultName;
         }
     }
 
@@ -719,9 +818,12 @@ class DominoGame {
     }
 
     addScore(pi,score){
+        const currentScore = this.isTeamMode ? this.teamScores[this.getTeam(pi)] : this.scores[pi];
+        if (currentScore >= TARGET) return 0;
         this.scores[pi]+=score; if(this.isTeamMode)this.teamScores[this.getTeam(pi)]+=score;
         this.playSound('score'); this.renderer.showScorePopup(score);
         this.broadcastMsg(`${this.playerNames[pi]} +${score}!`,2000);
+        return score;
     }
     checkEnd(pi,score){
         if(this.instantWinEnabled && score>=IWIN){
@@ -843,7 +945,7 @@ class DominoGame {
             const wt=this.getTeam(wi);let os=0;
             for(let i=0;i<4;i++)if(this.getTeam(i)!==wt)os+=handPoints(this.hands[i]);
             if(fish)for(let i=0;i<4;i++)if(this.getTeam(i)===wt)os-=handPoints(this.hands[i]);
-            bonus=roundTo5(Math.max(0,os));this.teamScores[wt]+=bonus;this.scores[wi]+=bonus;
+            bonus=roundTo5(Math.max(0,os));bonus=this.addScore(wi,bonus);
             displayEntities = [
                 {name: `${this.playerNames[0]} & ${this.playerNames[2]}`, isWinner: wt===0, score: this.teamScores[0], handPoints: handPoints(this.hands[0])+handPoints(this.hands[2]), leftoverHands: [this.hands[0], this.hands[2]]},
                 {name: `${this.playerNames[1]} & ${this.playerNames[3]}`, isWinner: wt===1, score: this.teamScores[1], handPoints: handPoints(this.hands[1])+handPoints(this.hands[3]), leftoverHands: [this.hands[1], this.hands[3]]}
@@ -851,7 +953,7 @@ class DominoGame {
         }else{
             let os=0;for(let i=0;i<this.playerCount;i++)if(i!==wi)os+=handPoints(this.hands[i]);
             if(fish)os-=handPoints(this.hands[wi]);
-            bonus=roundTo5(Math.max(0,os));this.scores[wi]+=bonus;
+            bonus=roundTo5(Math.max(0,os));bonus=this.addScore(wi,bonus);
             displayEntities = this.playerNames.map((n,i)=>({name:n,isWinner:i===wi,handPoints:handPoints(this.hands[i]),score:this.scores[i], leftoverHands: [this.hands[i]]}));
         }
         sndWin();

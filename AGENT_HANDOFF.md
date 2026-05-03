@@ -143,17 +143,20 @@ pm2 logs domino-server
   - `localStorage.dominoServerUrl`
   - `window.DOMINO_SERVER_URL`
 - Multiplayer lobby flow was redesigned in [index.html](/c:/domino2/index.html), [css/style.css](/c:/domino2/css/style.css), and [js/app.js](/c:/domino2/js/app.js)
-- Online room size is now separate from solo player count via `onlinePlayerCount`
-- Multiplayer create/join now shows room code, live player count, and a waiting list
+- Main menu is now minimal: logo + two actions, with separate solo and online modals for configuration
+- Online room can now reserve AI slots via `onlineAiCount`
+- Multiplayer create/join now shows room code, human seats, AI slots, live player count, and a waiting list
 - Room code can now be copied from the host panel
 - Server now broadcasts `room_state` messages from [server/DominoRoom.js](/c:/domino2/server/DominoRoom.js)
 - Server now broadcasts `room_closed` if a player is permanently lost during an active match
 - Host settings `instantWinEnabled` and `dlossThreshold` are now sent to the server for multiplayer rooms
+- Server now supports AI bots in multiplayer rooms through [server/ai.js](/c:/domino2/server/ai.js)
+- First-deal opening order still prefers `[3|2]`, then the smallest doubles in order, then `[0|0]`
+- Score bonuses are now capped by the 300-point cutoff so leftover-hand bonuses and opening `[5|5]` bonus no longer apply after a player/team has already reached 300
 - Known structural issue remains: the repo keeps duplicated app assets in both root source folders and `www/`, so `npm run sync:www` is required after frontend edits
 
 ## Best next steps
 
-1. Inspect frontend networking code and confirm what backend URL it uses.
-2. Update the client configuration so the web app and Android app connect to `34.28.23.216:2567`.
-3. Build and test a fresh APK against the deployed server.
-4. Optionally automate deploy with a single script for `git pull`, `npm install`, and `pm2 restart`.
+1. Push the latest changes, then `git pull` + `pm2 restart domino-server` on the VM.
+2. Test the new modal-based menu and AI room settings on browser + Android.
+3. Decide whether to tune AI behavior or release-build the APK next.

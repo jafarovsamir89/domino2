@@ -1,6 +1,7 @@
 const { Room } = require("colyseus");
 const { GameState, Player } = require("./schema/GameState");
 const { Board } = require("./board");
+const { AIPlayer } = require("./ai");
 const { Tile, createFullSet, shuffle, getHandSize, determineFirstPlayer, handPoints, roundTo5 } = require("./model");
 
 const TARGET = 365, MAX_R = 3, DLOSS = 255, IWIN = 35;
@@ -27,14 +28,11 @@ class DominoRoom extends Room {
 
         this.setState(new GameState());
         this.state.isTeamMode = options.isTeamMode === true;
-        this.numPlayers = options.playerCount || 2;
-        if (this.state.isTeamMode) {
-            this.maxClients = 4;
-            this.numPlayers = 4;
-        } else {
-            this.maxClients = Math.min(Math.max(this.numPlayers, 2), 4);
-        }
-        this.state.playerCount = this.maxClients;
+        this.totalPlayers = this.state.isTeamMode ? 4 : Math.min(Math.max(options.playerCount || 2, 2), 4);
+        this.aiCount = Math.min(Math.max(options.aiCount || 0, 0), this.totalPlayers - 1);
+        this.humanSeats = this.totalPlayers - this.aiCount;
+        this.maxClients = this.humanSeats;
+        this.state.playerCount = this.totalPlayers;
         
         this.hands = [];
         this.boneyard = [];
@@ -42,6 +40,10 @@ class DominoRoom extends Room {
         this.lastDealWinner = null;
         this.dlossThreshold = options.dlossThreshold || DLOSS;
         this.instantWinEnabled = options.instantWinEnabled !== false;
+        this.aiDifficulty = options.difficulty || "medium";
+        this.botTimer = null;
+        this.botIds = [];
+        this.aiPlayers = new Map();
 
         this.onMessage("play", (client, message) => this.handlePlay(client, message));
         this.onMessage("draw", (client) => this.handleDraw(client));
@@ -49,7 +51,7 @@ class DominoRoom extends Room {
         this.onMessage("gosha", (client) => this.handleGosha(client));
         this.onMessage("next_deal", (client) => this.handleNextDeal(client));
 
-        console.log(`[ROOM] Created room ${this.roomId}, maxClients=${this.maxClients}, teamMode=${this.state.isTeamMode}`);
+        console.log(`[ROOM] Created room ${this.roomId}, humanSeats=${this.humanSeats}, totalPlayers=${this.totalPlayers}, aiCount=${this.aiCount}, teamMode=${this.state.isTeamMode}`);
     }
 
     onJoin(client, options) {
@@ -66,6 +68,24 @@ class DominoRoom extends Room {
             console.log(`[ROOM] Room full. Starting game...`);
             this.startGame();
         }
+    }
+
+    ensureBotPlayers() {
+        if (!this.aiCount) return;
+        for (let i = 0; i < this.aiCount; i++) {
+            const botId = `bot-${i}`;
+            if (this.state.players.has(botId)) continue;
+
+            const bot = new Player();
+            bot.name = `AI ${i + 1}`;
+            bot.isBot = true;
+            bot.isConnected = true;
+            this.state.players.set(botId, bot);
+            this.state.playerOrder.push(botId);
+            this.botIds.push(botId);
+            this.aiPlayers.set(botId, new AIPlayer(this.state.playerOrder.length - 1, this.aiDifficulty));
+        }
+        this.state.playerCount = this.totalPlayers;
     }
 
     async onLeave(client, consented) {
@@ -104,19 +124,24 @@ class DominoRoom extends Room {
     startGame() {
         this.state.matchRound = 1;
         this.state.deal = 1;
+        this.ensureBotPlayers();
         this.broadcastRoomState();
         this.startDeal();
     }
 
     startDeal() {
+        if (this.botTimer) {
+            clearTimeout(this.botTimer);
+            this.botTimer = null;
+        }
         this.internalBoard = new Board();
         this.state.gameActive = true;
         
         const all = shuffle(createFullSet());
-        const hs = getHandSize(this.maxClients);
+        const hs = getHandSize(this.totalPlayers);
         this.hands = [];
         let idx = 0;
-        for (let p = 0; p < this.maxClients; p++) {
+        for (let p = 0; p < this.totalPlayers; p++) {
             this.hands.push(all.slice(idx, idx + hs));
             idx += hs;
         }
@@ -130,6 +155,48 @@ class DominoRoom extends Room {
         }
         
         this.syncState();
+        this.scheduleBotTurn();
+    }
+
+    scheduleBotTurn(delay = 650) {
+        if (this.botTimer) clearTimeout(this.botTimer);
+        if (!this.state.gameActive) return;
+        const cpSession = this.state.playerOrder[this.state.currentPlayerIndex];
+        if (!cpSession || !cpSession.startsWith("bot-")) return;
+        this.botTimer = setTimeout(() => this.runBotTurn(), delay + Math.floor(Math.random() * 300));
+    }
+
+    runBotTurn() {
+        if (!this.state.gameActive) return;
+        const pi = this.state.currentPlayerIndex;
+        const sessionId = this.state.playerOrder[pi];
+        if (!sessionId || !sessionId.startsWith("bot-")) return;
+
+        const bot = this.aiPlayers.get(sessionId) || new AIPlayer(pi, this.aiDifficulty);
+        this.aiPlayers.set(sessionId, bot);
+        const hand = this.hands[pi];
+        if (!hand) return;
+
+        const combo = this.internalBoard.getGoshaCombo(hand);
+        if (combo) {
+            this.performGosha(pi, combo, true);
+            return;
+        }
+
+        const moves = this.internalBoard.getValidMoves(hand);
+        const move = bot.chooseMove(this.internalBoard, hand, moves, this.state.players, this.hands, this.boneyard);
+        if (move) {
+            this.performPlay(pi, move.tileIndex, move.openEndIndex, true);
+            return;
+        }
+
+        if (this.boneyard.length > 0) {
+            this.performDraw(pi, true);
+            this.scheduleBotTurn(350);
+            return;
+        }
+
+        this.performPass(pi, true);
     }
 
     getPlayerIndex(client) {
@@ -150,6 +217,14 @@ class DominoRoom extends Room {
                 client.send("hand", this.hands[pIdx]);
             }
         }
+
+        for (let i = 0; i < this.state.playerOrder.length; i++) {
+            const sessionId = this.state.playerOrder[i];
+            const player = this.state.players.get(sessionId);
+            if (player && this.hands[i]) {
+                player.handCount = this.hands[i].length;
+            }
+        }
         
         // Broadcast valid moves to the current player
         const cpSession = this.state.playerOrder[this.state.currentPlayerIndex];
@@ -161,6 +236,7 @@ class DominoRoom extends Room {
         }
 
         this.broadcastRoomState();
+        this.scheduleBotTurn();
     }
 
     broadcastRoomState() {
@@ -170,14 +246,18 @@ class DominoRoom extends Room {
                 sessionId,
                 index,
                 name: player ? player.name : "Player",
-                isConnected: player ? player.isConnected : false
+                isConnected: player ? player.isConnected : false,
+                isBot: player ? player.isBot : false
             };
         });
 
         this.broadcast("room_state", {
             roomId: this.roomId,
-            currentPlayers: players.length,
-            maxPlayers: this.maxClients,
+            currentPlayers: this.state.gameActive ? this.totalPlayers : this.clients.length,
+            humanPlayers: this.clients.length,
+            humanSeats: this.maxClients,
+            aiCount: this.aiCount,
+            totalPlayers: this.totalPlayers,
             isTeamMode: this.state.isTeamMode,
             gameActive: this.state.gameActive,
             players
@@ -188,41 +268,8 @@ class DominoRoom extends Room {
         if (!this.state.gameActive) return;
         const pi = this.getPlayerIndex(client);
         if (pi !== this.state.currentPlayerIndex) return;
-
         const { tileIndex, openEndIndex } = message;
-        const hand = this.hands[pi];
-        const tile = hand[tileIndex];
-        
-        if (!tile) return;
-        
-        // Validate
-        const moves = this.internalBoard.getValidMoves(hand);
-        const isValid = moves.some(m => m.tileIndex === tileIndex && m.openEndIndex === openEndIndex);
-        if (!isValid) return;
-
-        hand.splice(tileIndex, 1);
-        this.broadcast("sound", "place");
-        
-        let score = this.internalBoard.isEmpty ? this.internalBoard.placeFirst(tile) : this.internalBoard.placeTile(tile, openEndIndex);
-        
-        if (score > 0) this.addScore(pi, score);
-        
-        // Check instant win
-        if (this.instantWinEnabled && score >= IWIN) {
-            this.endRound(pi, true);
-            return;
-        }
-        
-        if (hand.length === 0) {
-            this.endDeal(pi, false);
-            return;
-        }
-        if (this.internalBoard.isBlocked(this.hands, this.boneyard)) {
-            this.endDeal(this.findFishWinner(), true);
-            return;
-        }
-        
-        this.advanceTurn();
+        this.performPlay(pi, tileIndex, openEndIndex, false);
     }
 
     handleDraw(client) {
@@ -235,7 +282,7 @@ class DominoRoom extends Room {
 
         this.hands[pi].push(this.boneyard.pop());
         this.broadcast("sound", "draw");
-        this.broadcast("msg", { text: `${this.state.players.get(client.sessionId).name} взял кость`, time: 1500 });
+        this.broadcast("msg", { text: `${this.state.players.get(client.sessionId).name} drew a tile`, time: 1500 });
         this.syncState();
     }
 
@@ -248,7 +295,7 @@ class DominoRoom extends Room {
         if (this.boneyard.length > 0) return;
 
         this.broadcast("sound", "pass");
-        this.broadcast("msg", { text: `${this.state.players.get(client.sessionId).name} пас`, time: 1500 });
+        this.broadcast("msg", { text: `${this.state.players.get(client.sessionId).name} passed`, time: 1500 });
         this.advanceTurn();
     }
 
@@ -275,9 +322,112 @@ class DominoRoom extends Room {
         }
 
         if (score > 0) this.addScore(pi, score);
-        this.broadcast("msg", { text: `${this.state.players.get(client.sessionId).name} Гоша ×${matches.length}! +${score}`, time: 2000 });
+        this.broadcast("msg", { text: `${this.state.players.get(client.sessionId).name} Gosha x${matches.length}! +${score}`, time: 2000 });
 
         // Check instant win
+        if (this.instantWinEnabled && score >= IWIN) {
+            this.endRound(pi, true);
+            return;
+        }
+
+        if (hand.length === 0) {
+            this.endDeal(pi, false);
+            return;
+        }
+        if (this.internalBoard.isBlocked(this.hands, this.boneyard)) {
+            this.endDeal(this.findFishWinner(), true);
+            return;
+        }
+
+        this.advanceTurn();
+    }
+
+    performPlay(pi, tileIndex, openEndIndex, isBot = false) {
+        const hand = this.hands[pi];
+        const tile = hand && hand[tileIndex];
+        if (!tile) return;
+
+        const moves = this.internalBoard.getValidMoves(hand);
+        const isValid = moves.some((m) => m.tileIndex === tileIndex && m.openEndIndex === openEndIndex);
+        if (!isValid) return;
+
+        hand.splice(tileIndex, 1);
+        this.broadcast("sound", "place");
+
+        const actor = this.state.players.get(this.state.playerOrder[pi]);
+        const actorName = actor ? actor.name : "Player";
+        let score = this.internalBoard.isEmpty ? this.internalBoard.placeFirst(tile) : this.internalBoard.placeTile(tile, openEndIndex);
+
+        if (score > 0) this.addScore(pi, score);
+
+        if (this.instantWinEnabled && score >= IWIN) {
+            this.endRound(pi, true);
+            return;
+        }
+
+        if (hand.length === 0) {
+            this.endDeal(pi, false);
+            return;
+        }
+        if (this.internalBoard.isBlocked(this.hands, this.boneyard)) {
+            this.endDeal(this.findFishWinner(), true);
+            return;
+        }
+
+        this.advanceTurn();
+    }
+
+    performDraw(pi, isBot = false) {
+        if (this.internalBoard.canPlayAny(this.hands[pi])) return false;
+        if (!this.boneyard.length) return false;
+
+        this.hands[pi].push(this.boneyard.pop());
+        this.broadcast("sound", "draw");
+        const actor = this.state.players.get(this.state.playerOrder[pi]);
+        const actorName = actor ? actor.name : "Player";
+        if (!isBot) {
+            this.broadcast("msg", { text: `${actorName} drew a tile`, time: 1500 });
+        }
+        this.syncState();
+        return true;
+    }
+
+    performPass(pi, isBot = false) {
+        if (this.internalBoard.canPlayAny(this.hands[pi])) return false;
+        if (this.boneyard.length > 0) return false;
+
+        this.broadcast("sound", "pass");
+        const actor = this.state.players.get(this.state.playerOrder[pi]);
+        const actorName = actor ? actor.name : "Player";
+        if (!isBot) {
+            this.broadcast("msg", { text: `${actorName} passed`, time: 1500 });
+        }
+        this.advanceTurn();
+        return true;
+    }
+
+    performGosha(pi, combo, isBot = false) {
+        this.broadcast("sound", "gosha");
+        const hand = this.hands[pi];
+        const matches = combo.matches;
+        const sorted = [...matches].sort((a, b) => b.tileIndex - a.tileIndex);
+        const tiles = sorted.map((m) => hand[m.tileIndex]);
+        for (const m of sorted) hand.splice(m.tileIndex, 1);
+
+        const bySorted = [...matches].sort((a, b) => b.openEndIndex - a.openEndIndex);
+        let score = 0;
+        for (const m of bySorted) {
+            const tile = tiles.find((t) => t.isDouble && t.a === this.internalBoard.openEnds[m.openEndIndex].value);
+            score = this.internalBoard.placeTile(tile, m.openEndIndex);
+        }
+
+        if (score > 0) this.addScore(pi, score);
+        const actor = this.state.players.get(this.state.playerOrder[pi]);
+        const actorName = actor ? actor.name : "Player";
+        if (!isBot) {
+            this.broadcast("msg", { text: `${actorName} Gosha x${matches.length}! +${score}`, time: 2000 });
+        }
+
         if (this.instantWinEnabled && score >= IWIN) {
             this.endRound(pi, true);
             return;
@@ -306,14 +456,19 @@ class DominoRoom extends Room {
             this.endDeal(this.findFishWinner(), true);
             return;
         }
-        this.state.currentPlayerIndex = (this.state.currentPlayerIndex + 1) % this.maxClients;
+        this.state.currentPlayerIndex = (this.state.currentPlayerIndex + 1) % this.totalPlayers;
         this.syncState();
     }
 
     addScore(pi, score) {
         const sessionId = this.state.playerOrder[pi];
         const player = this.state.players.get(sessionId);
-        if (player) player.score += score;
+        if (!player) return 0;
+
+        const currentScore = this.state.isTeamMode ? this.state.teamScores[pi % 2] : player.score;
+        if (currentScore >= TARGET) return 0;
+
+        player.score += score;
         
         if (this.state.isTeamMode) {
             const team = pi % 2;
@@ -322,6 +477,7 @@ class DominoRoom extends Room {
         this.broadcast("sound", "score");
         this.broadcast("score_popup", score);
         this.broadcast("msg", { text: `${player.name} +${score}!`, time: 2000 });
+        return score;
     }
 
     findFishWinner() {
@@ -338,7 +494,7 @@ class DominoRoom extends Room {
             return bestP;
         }
         let min = Infinity, w = 0;
-        for (let i = 0; i < this.maxClients; i++) {
+        for (let i = 0; i < this.totalPlayers; i++) {
             const p = handPoints(this.hands[i]);
             if (p < min) { min = p; w = i; }
         }
@@ -346,6 +502,10 @@ class DominoRoom extends Room {
     }
 
     endDeal(wi, fish) {
+        if (this.botTimer) {
+            clearTimeout(this.botTimer);
+            this.botTimer = null;
+        }
         this.state.gameActive = false;
         this.lastDealWinner = wi;
         let bonus = 0;
@@ -356,16 +516,13 @@ class DominoRoom extends Room {
             for (let i = 0; i < 4; i++) if (i % 2 !== wt) os += handPoints(this.hands[i]);
             if (fish) for (let i = 0; i < 4; i++) if (i % 2 === wt) os -= handPoints(this.hands[i]);
             bonus = roundTo5(Math.max(0, os));
-            this.state.teamScores[wt] += bonus;
-            const winnerSession = this.state.playerOrder[wi];
-            if (this.state.players.get(winnerSession)) this.state.players.get(winnerSession).score += bonus;
+            bonus = this.addScore(wi, bonus);
         } else {
             let os = 0;
-            for (let i = 0; i < this.maxClients; i++) if (i !== wi) os += handPoints(this.hands[i]);
+            for (let i = 0; i < this.totalPlayers; i++) if (i !== wi) os += handPoints(this.hands[i]);
             if (fish) os -= handPoints(this.hands[wi]);
             bonus = roundTo5(Math.max(0, os));
-            const winnerSession = this.state.playerOrder[wi];
-            if (this.state.players.get(winnerSession)) this.state.players.get(winnerSession).score += bonus;
+            bonus = this.addScore(wi, bonus);
         }
 
         this.broadcast("sound", "win");
@@ -386,6 +543,10 @@ class DominoRoom extends Room {
     }
 
     endRound(wi, isInstantWin) {
+        if (this.botTimer) {
+            clearTimeout(this.botTimer);
+            this.botTimer = null;
+        }
         this.state.gameActive = false;
         let wins = 1;
 
@@ -396,7 +557,7 @@ class DominoRoom extends Room {
             if (isInstantWin) wins = 2;
             this.state.teamRoundWins[wt] += wins;
         } else {
-            for (let i = 0; i < this.maxClients; i++) {
+            for (let i = 0; i < this.totalPlayers; i++) {
                 if (i !== wi) {
                     const sid = this.state.playerOrder[i];
                     const pScore = this.state.players.get(sid) ? this.state.players.get(sid).score : 0;

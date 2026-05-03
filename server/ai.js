@@ -1,0 +1,89 @@
+const { cloneBoard } = require("./board");
+
+// Keep bot decision-making intentionally simple and deterministic enough for multiplayer.
+const DIFF = {
+    easy:   { scoreW: 5,  doubleB: 1,  totalW: 0.2, futureW: 0,   goOut: 30,  handP: 0,    rand: 8,  blockW: 0   },
+    medium: { scoreW: 10, doubleB: 3,  totalW: 0.5, futureW: 0.3, goOut: 100, handP: 0.1,  rand: 2,  blockW: 0   },
+    hard:   { scoreW: 15, doubleB: 4,  totalW: 0.7, futureW: 0.6, goOut: 150, handP: 0.15, rand: 0.5, blockW: 0.4 },
+};
+
+class AIPlayer {
+    constructor(playerIndex, difficulty = "medium") {
+        this.playerIndex = playerIndex;
+        this.difficulty = difficulty;
+        this.params = DIFF[difficulty] || DIFF.medium;
+    }
+
+    chooseMove(board, hand, validMoves, scores, allHands, boneyard) {
+        if (validMoves.length === 0) return null;
+        if (validMoves.length === 1) return validMoves[0];
+
+        let bestMove = validMoves[0];
+        let bestScore = -Infinity;
+        for (const move of validMoves) {
+            const score = this.evaluateMove(board, hand, move, scores, allHands, boneyard);
+            if (score > bestScore) {
+                bestScore = score;
+                bestMove = move;
+            }
+        }
+        return bestMove;
+    }
+
+    evaluateMove(board, hand, move, scores, allHands, boneyard) {
+        const P = this.params;
+        const tile = hand[move.tileIndex];
+        let score = 0;
+
+        const sim = this.simulateMove(board, tile, move.openEndIndex);
+        const pointsScored = sim.score;
+        score += pointsScored * P.scoreW;
+
+        if (tile.isDouble) score += P.doubleB;
+        score += tile.total * P.totalW;
+
+        const openEndValues = sim.board.openEnds.map((oe) => oe.value);
+        const remainingHand = hand.filter((_, i) => i !== move.tileIndex);
+        let futureOptions = 0;
+        for (const t of remainingHand) {
+            for (const v of openEndValues) {
+                if (t.hasValue(v)) futureOptions++;
+            }
+        }
+        score += futureOptions * P.futureW;
+
+        if (remainingHand.length === 0) score += P.goOut;
+
+        const remainingPoints = remainingHand.reduce((s, t) => s + t.total, 0);
+        score -= remainingPoints * P.handP;
+
+        if (P.blockW > 0) {
+            let opponentOptions = 0;
+            for (let i = 0; i < allHands.length; i++) {
+                if (i === this.playerIndex) continue;
+                for (const t of allHands[i]) {
+                    for (const v of openEndValues) {
+                        if (t.hasValue(v)) opponentOptions++;
+                    }
+                }
+            }
+            score -= opponentOptions * P.blockW;
+        }
+
+        score += Math.random() * P.rand;
+        return score;
+    }
+
+    simulateMove(board, tile, openEndIndex) {
+        const simBoard = cloneBoard(board);
+        let score = 0;
+        if (simBoard.isEmpty) {
+            score = simBoard.placeFirst(tile);
+        } else {
+            score = simBoard.placeTile(tile, openEndIndex);
+        }
+        return { board: simBoard, score };
+    }
+}
+
+module.exports = { AIPlayer };

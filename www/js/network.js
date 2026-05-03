@@ -93,6 +93,7 @@ class NetworkManager {
                 name: this.game.playerName,
                 isTeamMode: this.game.isTeamMode,
                 playerCount: this.game.onlinePlayerCount,
+                aiCount: this.game.onlineAiCount,
                 instantWinEnabled: document.getElementById('instant-win-setting')?.checked,
                 dlossThreshold: parseInt(document.getElementById('dloss-setting')?.value || '255', 10)
             };

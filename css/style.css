@@ -77,26 +77,20 @@ input, button { font: inherit; }
 
 .start-shell {
     width: min(980px, 100%);
-}
-
-.start-frame {
-    border: 1px solid var(--glass-border);
-    border-radius: 28px;
-    background: linear-gradient(180deg, rgba(10, 18, 29, 0.96), rgba(13, 23, 36, 0.92));
-    box-shadow: 0 28px 60px rgba(0, 0, 0, 0.38);
-    overflow: hidden;
+    display: grid;
+    gap: 14px;
 }
 
 .start-hero {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 20px;
-    padding: 24px 26px 20px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    display: grid;
+    gap: 18px;
+    padding: 22px 24px;
+    border: 1px solid var(--glass-border);
+    border-radius: 28px;
     background:
-        radial-gradient(circle at top right, rgba(240, 192, 64, 0.12), transparent 32%),
-        linear-gradient(135deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.01));
+        radial-gradient(circle at top right, rgba(240, 192, 64, 0.14), transparent 28%),
+        linear-gradient(180deg, rgba(10, 18, 29, 0.96), rgba(13, 23, 36, 0.92));
+    box-shadow: 0 28px 60px rgba(0, 0, 0, 0.38);
 }
 
 .brand-lockup {
@@ -180,7 +174,87 @@ input, button { font: inherit; }
     display: grid;
     grid-template-columns: repeat(2, minmax(120px, 1fr));
     gap: 10px;
-    flex: 0 0 290px;
+}
+
+.start-lead {
+    max-width: 54ch;
+    color: var(--text-dim);
+    line-height: 1.5;
+    font-size: 0.98rem;
+}
+
+.start-actions {
+    display: grid;
+    gap: 12px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.start-actions .btn-large {
+    margin-top: 0;
+    min-height: 56px;
+    border-radius: 16px;
+}
+
+.modal-backdrop {
+    position: fixed;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 18px;
+    background: rgba(4, 8, 13, 0.72);
+    backdrop-filter: blur(10px);
+    z-index: 25;
+}
+
+.modal-backdrop.active {
+    display: flex;
+}
+
+.modal-card {
+    width: min(720px, 100%);
+    max-height: min(88vh, 920px);
+    overflow: auto;
+    padding: 20px;
+    border-radius: 24px;
+    border: 1px solid var(--glass-border);
+    background: linear-gradient(180deg, rgba(12, 20, 31, 0.98), rgba(13, 23, 36, 0.95));
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.45);
+}
+
+.modal-card-wide {
+    width: min(840px, 100%);
+}
+
+.modal-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.modal-desc {
+    margin-top: 6px;
+    color: var(--text-dim);
+    font-size: 0.88rem;
+    line-height: 1.45;
+}
+
+.modal-close-btn {
+    width: auto;
+    white-space: nowrap;
+}
+
+.room-summary {
+    color: var(--text-dim);
+    font-size: 0.84rem;
+    line-height: 1.45;
+}
+
+.room-player-chip.bot {
+    border-color: rgba(79, 207, 151, 0.28);
+    color: #bdf3d7;
 }
 
 .hero-badge {
@@ -901,39 +975,33 @@ input, button { font: inherit; }
     #start-screen { padding: 68px 16px 16px; }
 
     .start-hero {
-        flex-direction: column;
-        align-items: flex-start;
+        padding: 18px;
     }
 
     .hero-notes {
         width: 100%;
         grid-template-columns: repeat(2, 1fr);
-        flex: 1 1 auto;
     }
 
-    .menu-grid {
+    .start-actions {
         grid-template-columns: 1fr;
     }
 
-    .panel-primary {
-        border-right: 0;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    .modal-card,
+    .modal-card-wide {
+        width: min(100%, 760px);
+    }
+
+    .modal-header {
+        flex-direction: column;
     }
 }
 
 @media (max-width: 680px) {
     #start-screen { padding-top: 74px; }
 
-    .start-frame {
-        border-radius: 22px;
-    }
-
     .start-hero {
         padding: 18px 18px 16px;
-    }
-
-    .panel-section {
-        padding: 18px;
     }
 
     .brand-lockup {
@@ -941,7 +1009,8 @@ input, button { font: inherit; }
     }
 
     .hero-notes,
-    .settings-grid {
+    .settings-grid,
+    .start-actions {
         grid-template-columns: 1fr;
     }
 
@@ -962,6 +1031,10 @@ input, button { font: inherit; }
     .room-code-line {
         flex-direction: column;
         align-items: flex-start;
+    }
+
+    .modal-card {
+        padding: 16px;
     }
 }
 

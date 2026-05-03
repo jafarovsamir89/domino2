@@ -8,6 +8,7 @@ class Player extends Schema {
         this.roundWins = 0;
         this.handCount = 0;
         this.isConnected = true;
+        this.isBot = false;
     }
 }
 type("string")(Player.prototype, "name");
@@ -15,6 +16,7 @@ type("number")(Player.prototype, "score");
 type("number")(Player.prototype, "roundWins");
 type("number")(Player.prototype, "handCount");
 type("boolean")(Player.prototype, "isConnected");
+type("boolean")(Player.prototype, "isBot");
 
 class GameState extends Schema {
     constructor() {

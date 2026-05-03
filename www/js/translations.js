@@ -81,7 +81,21 @@ export const translations = {
         "online-waiting-slot": "{index}. oyunçu gözlənilir",
         "online-room-closed": "Otaq bağlandı",
         "arrow-place-to": "{value} üzərinə qoy",
-        "placeholder-player-name": "Adınızı yazın"
+        "placeholder-player-name": "Adınızı yazın",
+        "start-lead": "Təmiz başlanğıc, sürətli oyun və onlayn rejim bir yerdə.",
+        "btn-solo": "Tək oyun",
+        "btn-online": "Onlayn",
+        "btn-solo-start": "Başla",
+        "modal-close": "Bağla",
+        "solo-modal-kicker": "Tək oyun",
+        "solo-modal-title": "Tək oyun",
+        "solo-modal-desc": "Çətinlik, oyunçu sayı və qaydaları seçin.",
+        "online-modal-kicker": "Onlayn",
+        "online-modal-title": "Onlayn otaq",
+        "online-modal-desc": "Otaq yaradın, AI əlavə edin və ya kodla qoşulun.",
+        "label-ai-slots": "AI slotları",
+        "online-room-summary": "{humans} insan + {bots} AI, cəmi {total}",
+        "online-bot-slot": "AI {index}"
     },
     en: {
         "game-title": "TELEFON",
@@ -165,7 +179,21 @@ export const translations = {
         "online-waiting-slot": "Waiting for player {index}",
         "online-room-closed": "Room closed",
         "arrow-place-to": "Place on {value}",
-        "placeholder-player-name": "Enter your name"
+        "placeholder-player-name": "Enter your name",
+        "start-lead": "Clean setup, fast matches, and online play in one place.",
+        "btn-solo": "Solo play",
+        "btn-online": "Online",
+        "btn-solo-start": "Start solo game",
+        "modal-close": "Close",
+        "solo-modal-kicker": "Solo",
+        "solo-modal-title": "Solo play",
+        "solo-modal-desc": "Pick difficulty, players, and match rules.",
+        "online-modal-kicker": "Online",
+        "online-modal-title": "Online room",
+        "online-modal-desc": "Create a room, add bots, or join with a code.",
+        "label-ai-slots": "AI slots",
+        "online-room-summary": "{humans} humans + {bots} AI, {total} total",
+        "online-bot-slot": "AI {index}"
     },
     ru: {
         "game-title": "TELEFON",
@@ -249,6 +277,20 @@ export const translations = {
         "online-waiting-slot": "Ожидаем игрока {index}",
         "online-room-closed": "Комната закрыта",
         "arrow-place-to": "Поставить к {value}",
-        "placeholder-player-name": "Введите имя"
+        "placeholder-player-name": "Введите имя",
+        "start-lead": "Чистое меню, быстрый старт и онлайн-игра на одной панели.",
+        "btn-solo": "Одиночная игра",
+        "btn-online": "Онлайн",
+        "btn-solo-start": "Начать игру",
+        "modal-close": "Закрыть",
+        "solo-modal-kicker": "Одиночная",
+        "solo-modal-title": "Одиночная игра",
+        "solo-modal-desc": "Выберите сложность, число игроков и правила матча.",
+        "online-modal-kicker": "Онлайн",
+        "online-modal-title": "Онлайн-комната",
+        "online-modal-desc": "Создайте комнату, добавьте AI или подключитесь по коду.",
+        "label-ai-slots": "Слоты AI",
+        "online-room-summary": "{humans} человек + {bots} AI, всего {total}",
+        "online-bot-slot": "AI {index}"
     }
 };
