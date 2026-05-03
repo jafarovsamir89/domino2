@@ -12,6 +12,10 @@ function generateRoomCode() {
     return code;
 }
 
+function sanitizeName(name) {
+    return String(name || "Player").replace(/[<>&"']/g, "").trim().slice(0, 12) || "Player";
+}
+
 class DominoRoom extends Room {
     maxClients = 2;
 
@@ -51,11 +55,12 @@ class DominoRoom extends Room {
     onJoin(client, options) {
         console.log(`[ROOM] Client ${client.sessionId} joining with name: ${options.name}`);
         const player = new Player();
-        player.name = options.name || "Player";
+        player.name = sanitizeName(options.name);
         this.state.players.set(client.sessionId, player);
         this.state.playerOrder.push(client.sessionId);
 
         console.log(`[ROOM] Current player count: ${this.clients.length} / ${this.maxClients}`);
+        this.broadcastRoomState();
         if (this.clients.length === this.maxClients) {
             console.log(`[ROOM] Room full. Starting game...`);
             this.startGame();
@@ -70,14 +75,17 @@ class DominoRoom extends Room {
         try {
             if (consented) throw new Error("consented leave");
             console.log(`[ROOM] Waiting for reconnection for ${client.sessionId}...`);
+            this.broadcastRoomState();
             await this.allowReconnection(client, 60);
             player.isConnected = true;
             console.log(`[ROOM] Client ${client.sessionId} reconnected!`);
+            this.broadcastRoomState();
         } catch (e) {
             console.log(`[ROOM] Client ${client.sessionId} removed permanently.`);
             this.state.players.delete(client.sessionId);
             const idx = this.state.playerOrder.indexOf(client.sessionId);
             if (idx !== -1) this.state.playerOrder.splice(idx, 1);
+            this.broadcastRoomState();
         }
     }
 
@@ -138,6 +146,27 @@ class DominoRoom extends Room {
             const goshaCombo = this.internalBoard.getGoshaCombo(this.hands[this.state.currentPlayerIndex]);
             cpClient.send("turn_info", { validMoves, goshaCombo });
         }
+    }
+
+    broadcastRoomState() {
+        const players = this.state.playerOrder.map((sessionId, index) => {
+            const player = this.state.players.get(sessionId);
+            return {
+                sessionId,
+                index,
+                name: player ? player.name : "Player",
+                isConnected: player ? player.isConnected : false
+            };
+        });
+
+        this.broadcast("room_state", {
+            roomId: this.roomId,
+            currentPlayers: players.length,
+            maxPlayers: this.maxClients,
+            isTeamMode: this.state.isTeamMode,
+            gameActive: this.state.gameActive,
+            players
+        });
     }
 
     handlePlay(client, message) {

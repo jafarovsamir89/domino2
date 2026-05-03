@@ -72,8 +72,8 @@ class NetworkManager {
         return `ws://${value}`;
     }
 
-    hostGame(onReady) {
-        this.connect("create", onReady);
+    hostGame(onReady, onError) {
+        this.connect("create", onReady, onError);
     }
 
     joinGame(code, onReady, onError) {
@@ -90,7 +90,9 @@ class NetworkManager {
             const options = {
                 name: this.game.playerName,
                 isTeamMode: this.game.isTeamMode,
-                playerCount: this.game.playerCount
+                playerCount: this.game.onlinePlayerCount,
+                instantWinEnabled: document.getElementById('instant-win-setting')?.checked,
+                dlossThreshold: parseInt(document.getElementById('dloss-setting')?.value || '255', 10)
             };
 
             console.log(`Connecting to ${mode}...`);
@@ -118,6 +120,10 @@ class NetworkManager {
 
     setupListeners() {
         if (!this.room) return;
+
+        this.room.onMessage("room_state", (roomState) => {
+            this.game.onRoomStateUpdate(roomState);
+        });
 
         // Listen for state changes (the schema)
         this.room.onStateChange((state) => {
@@ -158,11 +164,22 @@ class NetworkManager {
             this.isMultiplayer = false;
             this.isHost = false;
             this.isGuest = false;
+            this.room = null;
         });
 
         this.room.onError((code, message) => {
             console.error("Room error:", code, message);
         });
+    }
+
+    leaveRoom() {
+        if (this.room) {
+            this.room.leave();
+        }
+        this.room = null;
+        this.isMultiplayer = false;
+        this.isHost = false;
+        this.isGuest = false;
     }
 
     sendPlay(tileIndex, openEndIndex) {

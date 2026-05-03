@@ -11,7 +11,7 @@ const TARGET=365, MAX_R=3, DLOSS=255, IWIN=35;
 class DominoGame {
     constructor() {
         this.renderer = new Renderer(this); this.board = new Board();
-        this.playerCount=2; this.playerName='İlkin'; this.difficulty='medium';
+        this.playerCount=2; this.onlinePlayerCount=2; this.playerName='Ilkin'; this.difficulty='medium';
         this.hands=[]; this.boneyard=[]; this.scores=[]; this.roundWins=[];
         this.playerNames=[]; this.currentPlayer=0; this.matchRound=1; this.deal=1;
         this.selectedTileIndex=-1; this.validMoves=[]; this.gameActive=false;
@@ -37,7 +37,7 @@ class DominoGame {
         document.querySelectorAll('#player-count-group .btn-option').forEach(b => {
             b.addEventListener('click', () => {
                 document.querySelectorAll('#player-count-group .btn-option').forEach(x => x.classList.remove('active'));
-                b.classList.add('active'); this.playerCount = parseInt(b.dataset.value);
+                b.classList.add('active'); this.playerCount = parseInt(b.dataset.value, 10);
             });
         });
         document.querySelectorAll('#difficulty-group .btn-option').forEach(b => {
@@ -47,62 +47,183 @@ class DominoGame {
             });
         });
         document.getElementById('start-game-btn').addEventListener('click', () => {
-            this.playerName = document.getElementById('player-name').value.trim()||(this.currentLang==='az'?'İlkin':'Player');
+            this.playerName = this.readPlayerName();
             this.isTeamMode = false;
+            this.syncMultiplayerOptions();
+            this.myHand = null;
             this.startNewGame();
+        });
+
+        document.querySelectorAll('#online-player-count-group .btn-option').forEach(b => {
+            b.addEventListener('click', () => {
+                if (b.disabled) return;
+                this.onlinePlayerCount = parseInt(b.dataset.value, 10);
+                this.syncMultiplayerOptions();
+            });
         });
 
         document.querySelectorAll('#multi-mode-group .btn-option').forEach(b => {
             b.addEventListener('click', () => {
                 document.querySelectorAll('#multi-mode-group .btn-option').forEach(x => x.classList.remove('active'));
-                b.classList.add('active'); this.isTeamMode = (b.dataset.value === 'team');
+                b.classList.add('active');
+                this.isTeamMode = (b.dataset.value === 'team');
+                if (this.isTeamMode) {
+                    this.onlinePlayerCount = 4;
+                }
+                this.syncMultiplayerOptions();
             });
         });
 
         document.getElementById('host-game-btn').addEventListener('click', () => {
-            this.playerName = document.getElementById('player-name').value.trim()||(this.currentLang==='az'?'İlkin':'Player');
-            document.getElementById('multi-host-ui').style.display = 'block';
-            document.getElementById('multi-join-ui').style.display = 'none';
+            this.playerName = this.readPlayerName();
+            this.showMultiplayerPanel('host');
+            this.setHostStatus(this.t('online-room-status-created'));
             this.network.hostGame((roomId) => {
                 document.getElementById('room-code-display').textContent = roomId;
-                document.getElementById('host-status').textContent = this.t('host-waiting');
-                document.getElementById('multi-start-btn').style.display = 'none'; // Auto-starts when full
+                this.setHostStatus(this.t('online-room-status-waiting'));
+            }, (err) => {
+                this.setHostStatus(`${this.t('online-room-status-error')}: ${err}`);
             });
         });
-        document.getElementById('multi-start-btn').addEventListener('click', () => {
-            // Disabled for online (server auto-starts), kept for future local overrides if needed
-        });
+
         document.getElementById('join-game-btn').addEventListener('click', () => {
-            document.getElementById('multi-host-ui').style.display = 'none';
-            document.getElementById('multi-join-ui').style.display = 'flex';
+            this.showMultiplayerPanel('join');
+            this.setJoinStatus(this.t('online-room-join-hint'));
         });
+
         document.getElementById('connect-btn').addEventListener('click', () => {
             const code = document.getElementById('join-code-input').value.trim().toUpperCase();
             if (!code) return;
-            this.playerName = document.getElementById('player-name').value.trim()||(this.currentLang==='az'?'İlkin':'Player');
-            this.playerName = this.sanitizeName(this.playerName);
-            
+            this.playerName = this.readPlayerName();
+
             const btn = document.getElementById('connect-btn');
-            btn.textContent = '...';
             btn.disabled = true;
+            this.setJoinStatus(this.t('online-room-status-connecting'));
 
             this.network.joinGame(code, () => {
-                btn.textContent = 'OK';
+                this.setJoinStatus(this.t('online-room-status-joined'));
             }, (err) => {
-                alert('Error: ' + err);
-                btn.textContent = '▶';
+                this.setJoinStatus(`${this.t('online-room-status-error')}: ${err}`);
                 btn.disabled = false;
             });
         });
 
-        // Language Switcher
+        document.getElementById('join-code-input').addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                document.getElementById('connect-btn').click();
+            }
+        });
+        document.getElementById('host-cancel-btn').addEventListener('click', () => this.resetMultiplayerPanels(true));
+        document.getElementById('join-cancel-btn').addEventListener('click', () => this.resetMultiplayerPanels(true));
+
         document.querySelectorAll('.btn-lang').forEach(btn => {
             btn.addEventListener('click', () => {
                 const lang = btn.dataset.lang;
                 this.setLanguage(lang);
             });
         });
+        this.syncMultiplayerOptions();
+        this.resetMultiplayerPanels(false);
     }
+
+    getDefaultPlayerName() {
+        if (this.currentLang === 'az') return 'Ilkin';
+        if (this.currentLang === 'ru') return 'Player';
+        return 'Player';
+    }
+
+    readPlayerName() {
+        const input = document.getElementById('player-name');
+        return this.sanitizeName(input.value.trim() || this.getDefaultPlayerName());
+    }
+
+    syncMultiplayerOptions() {
+        const onlineButtons = document.querySelectorAll('#online-player-count-group .btn-option');
+        onlineButtons.forEach((button) => {
+            const value = parseInt(button.dataset.value, 10);
+            const locked = this.isTeamMode && value !== 4;
+            button.disabled = locked;
+            button.classList.toggle('active', value === this.onlinePlayerCount);
+        });
+
+        document.querySelectorAll('#multi-mode-group .btn-option').forEach((button) => {
+            const isTeamButton = button.dataset.value === 'team';
+            button.classList.toggle('active', this.isTeamMode === isTeamButton);
+        });
+    }
+
+    showMultiplayerPanel(panelName) {
+        document.getElementById('multi-host-ui').classList.toggle('active', panelName === 'host');
+        document.getElementById('multi-join-ui').classList.toggle('active', panelName === 'join');
+    }
+
+    resetMultiplayerPanels(leaveRoom = false) {
+        if (leaveRoom && this.network) {
+            this.network.leaveRoom();
+        }
+        this.showMultiplayerPanel(null);
+        document.getElementById('connect-btn').disabled = false;
+        document.getElementById('join-code-input').value = '';
+        document.getElementById('room-code-display').textContent = '....';
+        document.getElementById('room-player-count-display').textContent = `${this.onlinePlayerCount} / ${this.onlinePlayerCount}`;
+        document.getElementById('room-player-list').innerHTML = '';
+        this.setHostStatus(this.t('online-room-create-hint'));
+        this.setJoinStatus(this.t('online-room-join-hint'));
+    }
+
+    setHostStatus(text) {
+        document.getElementById('host-status').textContent = text;
+    }
+
+    setJoinStatus(text) {
+        document.getElementById('join-status').textContent = text;
+    }
+
+    onRoomStateUpdate(roomState) {
+        if (!roomState) return;
+
+        document.getElementById('room-code-display').textContent = roomState.roomId || '....';
+        document.getElementById('room-player-count-display').textContent = `${roomState.currentPlayers} / ${roomState.maxPlayers}`;
+
+        const mySessionId = this.network?.room?.sessionId;
+        const list = document.getElementById('room-player-list');
+        list.innerHTML = '';
+
+        for (const player of roomState.players || []) {
+            const chip = document.createElement('div');
+            chip.className = 'room-player-chip';
+            if (player.sessionId === mySessionId) {
+                chip.classList.add('you');
+            }
+
+            const name = document.createElement('span');
+            name.textContent = player.sessionId === mySessionId ? `${player.name} (you)` : player.name;
+
+            const state = document.createElement('span');
+            state.className = 'room-player-state';
+            state.textContent = player.isConnected ? 'ready' : 'offline';
+
+            chip.appendChild(name);
+            chip.appendChild(state);
+            list.appendChild(chip);
+        }
+
+        for (let i = (roomState.players || []).length; i < roomState.maxPlayers; i++) {
+            const chip = document.createElement('div');
+            chip.className = 'room-player-chip empty';
+            chip.textContent = `Waiting for player ${i + 1}`;
+            list.appendChild(chip);
+        }
+
+        if (!roomState.gameActive) {
+            const statusText = roomState.currentPlayers < roomState.maxPlayers
+                ? `${this.t('online-room-status-waiting')} (${roomState.currentPlayers}/${roomState.maxPlayers})`
+                : this.t('online-room-status-ready');
+            this.setHostStatus(statusText);
+            this.setJoinStatus(statusText);
+        }
+    }
+
     setupGameControls() {
         this.bindTap(this.renderer.drawBtn, () => this.drawFromBoneyard());
         this.bindTap(this.renderer.passBtn, () => this.passTurn());
@@ -121,12 +242,10 @@ class DominoGame {
             document.getElementById('game-screen').classList.remove('active');
             document.getElementById('start-screen').classList.add('active');
             if (this.network.isMultiplayer && this.network.room) {
-                this.network.room.leave();
-                this.network.isMultiplayer = false;
-                this.network.isHost = false;
-                this.network.isGuest = false;
+                this.network.leaveRoom();
                 this.myHand = null;
             }
+            this.resetMultiplayerPanels(false);
         });
         this.bindTap(this.renderer.handEl, e => {
             const el = e.target.closest('.tile.playable');
@@ -161,12 +280,10 @@ class DominoGame {
             document.getElementById('game-screen').classList.remove('active');
             document.getElementById('start-screen').classList.add('active');
             if (this.network.isMultiplayer && this.network.room) {
-                this.network.room.leave();
-                this.network.isMultiplayer = false;
-                this.network.isHost = false;
-                this.network.isGuest = false;
+                this.network.leaveRoom();
                 this.myHand = null;
             }
+            this.resetMultiplayerPanels(false);
         });
     }
 
@@ -224,7 +341,7 @@ class DominoGame {
             const fp=this.lastDealWinner;
             this.currentPlayer=fp; this.renderState();
             console.log('[startDeal] Last deal winner starts:', fp);
-            this.broadcastMsg(`${this.playerNames[fp]} ходит первым (любая кость)`,2000);
+            this.broadcastMsg(`${this.playerNames[fp]} Р РЋРІР‚В¦Р В РЎвЂўР В РўвЂР В РЎвЂР РЋРІР‚С™ Р В РЎвЂ”Р В Р’ВµР РЋР вЂљР В Р вЂ Р РЋРІР‚в„–Р В РЎВ (Р В Р’В»Р РЋР вЂ№Р В Р’В±Р В Р’В°Р РЋР РЏ Р В РЎвЂќР В РЎвЂўР РЋР С“Р РЋРІР‚С™Р РЋР Р‰)`,2000);
             this.queueAITurnIfNeeded(1500);
         }else{
             const f=determineFirstPlayer(this.hands);
@@ -232,7 +349,7 @@ class DominoGame {
             this.currentPlayer=fp; this.renderState();
             console.log('[startDeal] First player determined:', fp);
             const tile=this.hands[fp][fi];
-            this.broadcastMsg(`${this.playerNames[fp]} начинает игру!`,2000);
+            this.broadcastMsg(`${this.playerNames[fp]} Р В Р вЂ¦Р В Р’В°Р РЋРІР‚РЋР В РЎвЂР В Р вЂ¦Р В Р’В°Р В Р’ВµР РЋРІР‚С™ Р В РЎвЂР В РЎвЂ“Р РЋР вЂљР РЋРЎвЂњ!`,2000);
             this.turnInProgress=true;
             setTimeout(()=>{this.turnInProgress=false;this.playTile(fp,fi,-1);},1200);
         }
@@ -301,8 +418,8 @@ class DominoGame {
         });
         // Update default player name if not changed
         const nameInput = document.getElementById('player-name');
-        if (nameInput.value === 'Игрок' || nameInput.value === 'Player' || nameInput.value === 'İlkin') {
-            nameInput.value = lang === 'az' ? 'İlkin' : (lang === 'ru' ? 'Игрок' : 'Player');
+        if (nameInput.value === 'Р В Р’ВР В РЎвЂ“Р РЋР вЂљР В РЎвЂўР В РЎвЂќ' || nameInput.value === 'Player' || nameInput.value === 'Р вЂќР’В°lkin') {
+            nameInput.value = lang === 'az' ? 'Р вЂќР’В°lkin' : (lang === 'ru' ? 'Р В Р’ВР В РЎвЂ“Р РЋР вЂљР В РЎвЂўР В РЎвЂќ' : 'Player');
         }
     }
 
@@ -370,7 +487,8 @@ class DominoGame {
         this.myHand = handData.map(t => new Tile(t.a, t.b));
         // We find our index
         const mySid = this.network.room.sessionId;
-        const myIdx = this.network.room.state.playerOrder.indexOf(mySid);
+        const playerOrder = this.network.room.state?.playerOrder || [];
+        const myIdx = playerOrder.indexOf(mySid);
         if (myIdx !== -1) {
             this.humanPlayerIndex = myIdx;
             this.hands[myIdx] = this.myHand;
@@ -515,7 +633,7 @@ class DominoGame {
         this.renderState();
         
         if(score>0){this.addScore(pi,score);if(this.checkEnd(pi,score))return;}
-        this.broadcastMsg(`${this.playerNames[pi]} Гоша ×${matches.length}! +${score}`,2000);
+        this.broadcastMsg(`${this.playerNames[pi]} Р В РІР‚СљР В РЎвЂўР РЋРІвЂљВ¬Р В Р’В° Р вЂњРІР‚вЂќ${matches.length}! +${score}`,2000);
         if(hand.length===0){ setTimeout(()=>this.endDeal(pi,false), 400); return;}
         if(this.board.isBlocked(this.hands,this.boneyard)){ setTimeout(()=>this.endDeal(this.findFishWinner(),true), 400); return;}
         setTimeout(() => { this.turnInProgress=false; this.advanceTurn(); }, 300);
@@ -730,7 +848,7 @@ class DominoGame {
         this.renderer.renderRoundEnd(this.playerNames[wi],displayEntities,wins,this.matchRound,this.matchOver);this.matchRound++;
     }
     showMatchResult(){
-        if(this.isTeamMode){const w=this.teamRoundWins[0]>=this.teamRoundWins[1]?0:1;this.renderer.renderGameOver(w===0?`${this.playerNames[0]} & ${this.playerNames[2]}`:`${this.playerNames[1]} & ${this.playerNames[3]}`,[{name:'Команда A',roundWins:this.teamRoundWins[0]},{name:'Команда B',roundWins:this.teamRoundWins[1]}]);}
+        if(this.isTeamMode){const w=this.teamRoundWins[0]>=this.teamRoundWins[1]?0:1;this.renderer.renderGameOver(w===0?`${this.playerNames[0]} & ${this.playerNames[2]}`:`${this.playerNames[1]} & ${this.playerNames[3]}`,[{name:'Р В РЎв„ўР В РЎвЂўР В РЎВР В Р’В°Р В Р вЂ¦Р В РўвЂР В Р’В° A',roundWins:this.teamRoundWins[0]},{name:'Р В РЎв„ўР В РЎвЂўР В РЎВР В Р’В°Р В Р вЂ¦Р В РўвЂР В Р’В° B',roundWins:this.teamRoundWins[1]}]);}
         else{let w=0,mx=0;for(let i=0;i<this.playerCount;i++)if(this.roundWins[i]>mx){mx=this.roundWins[i];w=i;}this.renderer.renderGameOver(this.playerNames[w],this.playerNames.map((n,i)=>({name:n,roundWins:this.roundWins[i]})));}
     }
 }
