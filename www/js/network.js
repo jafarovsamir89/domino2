@@ -18,12 +18,14 @@ class NetworkManager {
             console.error('Colyseus not available');
             return false;
         }
-        this.client = new ColyseusLib.Client(this.getServerUrl());
+        const endpoint = this.getServerUrl();
+        console.log('[Network] Using server endpoint:', endpoint);
+        this.client = new ColyseusLib.Client(endpoint);
         return true;
     }
 
     getServerUrl() {
-        const fallbackUrl = "ws://34.28.23.216:2567";
+        const fallbackUrl = "http://34.28.23.216:2567";
         if (typeof window === 'undefined') return fallbackUrl;
 
         const override = this.getServerOverride();
@@ -38,9 +40,9 @@ class NetworkManager {
         }
 
         if (isLocal && host !== "localhost:2567" && host !== "127.0.0.1:2567") {
-            return "ws://localhost:2567";
+            return "http://localhost:2567";
         }
-        return `${protocol === "https:" ? "wss:" : "ws:"}//${host}`;
+        return `${protocol}//${host}`;
     }
 
     getServerOverride() {
@@ -66,10 +68,10 @@ class NetworkManager {
 
     normalizeServerUrl(value) {
         if (!value) return null;
-        if (value.startsWith("ws://") || value.startsWith("wss://")) return value;
-        if (value.startsWith("http://")) return `ws://${value.slice("http://".length)}`;
-        if (value.startsWith("https://")) return `wss://${value.slice("https://".length)}`;
-        return `ws://${value}`;
+        if (value.startsWith("http://") || value.startsWith("https://")) return value;
+        if (value.startsWith("ws://")) return `http://${value.slice("ws://".length)}`;
+        if (value.startsWith("wss://")) return `https://${value.slice("wss://".length)}`;
+        return `http://${value}`;
     }
 
     hostGame(onReady, onError) {
