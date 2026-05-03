@@ -23,13 +23,53 @@ class NetworkManager {
     }
 
     getServerUrl() {
-        if (typeof window === 'undefined') return "ws://localhost:2567";
+        const fallbackUrl = "ws://34.28.23.216:2567";
+        if (typeof window === 'undefined') return fallbackUrl;
+
+        const override = this.getServerOverride();
+        if (override) return override;
+
         const { protocol, hostname, host } = window.location;
+        const isCapacitor = !!window.Capacitor;
         const isLocal = hostname === "localhost" || hostname === "127.0.0.1";
+
+        if (isCapacitor) {
+            return fallbackUrl;
+        }
+
         if (isLocal && host !== "localhost:2567" && host !== "127.0.0.1:2567") {
             return "ws://localhost:2567";
         }
         return `${protocol === "https:" ? "wss:" : "ws:"}//${host}`;
+    }
+
+    getServerOverride() {
+        if (typeof window === 'undefined') return null;
+
+        try {
+            const params = new URLSearchParams(window.location.search);
+            const queryValue = params.get("server");
+            if (queryValue) return this.normalizeServerUrl(queryValue);
+
+            const storedValue = window.localStorage?.getItem("dominoServerUrl");
+            if (storedValue) return this.normalizeServerUrl(storedValue);
+        } catch (e) {
+            console.warn("Failed to read server override", e);
+        }
+
+        if (window.DOMINO_SERVER_URL) {
+            return this.normalizeServerUrl(window.DOMINO_SERVER_URL);
+        }
+
+        return null;
+    }
+
+    normalizeServerUrl(value) {
+        if (!value) return null;
+        if (value.startsWith("ws://") || value.startsWith("wss://")) return value;
+        if (value.startsWith("http://")) return `ws://${value.slice("http://".length)}`;
+        if (value.startsWith("https://")) return `wss://${value.slice("https://".length)}`;
+        return `ws://${value}`;
     }
 
     hostGame(onReady) {
