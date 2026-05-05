@@ -1,6 +1,6 @@
 export const translations = {
     az: {
-        "game-title": "TELEFON",
+        "game-title": "Domino (Telefon)",
         "game-subtitle": "Azərbaycan Dominosu",
         "label-players": "Oyunçular",
         "label-difficulty": "Çətinlik",
@@ -98,7 +98,7 @@ export const translations = {
         "online-bot-slot": "AI {index}"
     },
     en: {
-        "game-title": "TELEFON",
+        "game-title": "Domino (Telefon)",
         "game-subtitle": "Azerbaijani Domino",
         "label-players": "Players",
         "label-difficulty": "Difficulty",
@@ -196,7 +196,7 @@ export const translations = {
         "online-bot-slot": "AI {index}"
     },
     ru: {
-        "game-title": "TELEFON",
+        "game-title": "Domino (Telefon)",
         "game-subtitle": "Азербайджанское домино",
         "label-players": "Игроки",
         "label-difficulty": "Сложность",
