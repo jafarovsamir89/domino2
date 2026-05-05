@@ -22,8 +22,18 @@ class DominoGame {
         this.aiTurnQueued=false;
         this.network = new NetworkManager(this);
         this.currentLang = 'az';
-        this.reactionSeed = 0;
-        this.reactionPalette = ['spark', 'happy', 'grin', 'wink', 'love', 'cool', 'wow', 'sad', 'angry'].map((id) => ({ id }));
+        this.reactionPalette = [
+            { code: '1F923', label: 'ROFL' },
+            { code: '1F609', label: 'Wink' },
+            { code: '1F618', label: 'Kiss' },
+            { code: '1F929', label: 'Star' },
+            { code: '1F914', label: 'Think' },
+            { code: '1F62E-200D-1F4A8', label: 'Exhale' },
+            { code: '1F634', label: 'Sleep' },
+            { code: '1F62D', label: 'Cry' },
+            { code: '1F92C', label: 'Swear' },
+            { code: '1F48B', label: 'Kiss Mark' }
+        ];
         this.lastReactionSentAt = 0;
         this.lastReactionSentType = '';
         this.setupStartScreen(); this.setupGameControls(); this.setupMenu();
@@ -437,7 +447,7 @@ class DominoGame {
         this.reactionStage = document.getElementById('reaction-stage');
         if (!this.reactionBtn || !this.reactionPicker || !this.reactionStage) return;
 
-        this.reactionBtn.innerHTML = this.buildReactionSvg('spark', 48);
+        this.reactionBtn.innerHTML = this.buildReactionMarkup(this.reactionPalette[0], 48);
         this.renderReactionPicker();
 
         this.reactionBtn.addEventListener('click', (event) => {
@@ -460,10 +470,10 @@ class DominoGame {
             const btn = document.createElement('button');
             btn.type = 'button';
             btn.className = 'reaction-choice';
-            btn.title = reaction.id;
-            btn.setAttribute('aria-label', reaction.id);
-            btn.dataset.reaction = reaction.id;
-            btn.innerHTML = this.buildReactionSvg(reaction.id, 48);
+            btn.title = reaction.label;
+            btn.setAttribute('aria-label', reaction.label);
+            btn.dataset.reaction = reaction.code;
+            btn.innerHTML = this.buildReactionMarkup(reaction, 48);
             btn.addEventListener('click', (event) => {
                 event.stopPropagation();
                 this.sendReaction(reaction.id);
@@ -482,16 +492,16 @@ class DominoGame {
         this.toggleReactionPicker(false);
     }
     sendReaction(reactionId) {
-        const reaction = this.reactionPalette.find((item) => item.id === reactionId) || this.reactionPalette[0];
+        const reaction = this.reactionPalette.find((item) => item.code === reactionId) || this.reactionPalette[0];
         this.closeReactionPicker();
         if (this.network.isMultiplayer) {
             this.lastReactionSentAt = Date.now();
-            this.lastReactionSentType = reaction.id;
-            if (this.playerName) this.showReactionBurst(reaction.id, this.playerName);
-            this.network.sendReaction(reaction.id);
+            this.lastReactionSentType = reaction.code;
+            if (this.playerName) this.showReactionBurst(reaction.code, this.playerName);
+            this.network.sendReaction(reaction.code);
             return;
         }
-        this.showReactionBurst(reaction.id, this.playerName || '');
+        this.showReactionBurst(reaction.code, this.playerName || '');
     }
     onNetworkReaction(payload) {
         if (!payload) return;
@@ -506,13 +516,13 @@ class DominoGame {
     }
     showReactionBurst(reactionId, senderName = '') {
         if (!this.reactionStage) return;
-        const reaction = this.reactionPalette.find((item) => item.id === reactionId) || this.reactionPalette[0];
+        const reaction = this.reactionPalette.find((item) => item.code === reactionId) || this.reactionPalette[0];
         const burst = document.createElement('div');
         burst.className = 'reaction-burst';
 
         const icon = document.createElement('div');
         icon.className = 'reaction-burst-icon';
-        icon.innerHTML = this.buildReactionSvg(reaction.id, 96);
+        icon.innerHTML = this.buildReactionMarkup(reaction, 96);
         burst.appendChild(icon);
 
         if (senderName) {
@@ -527,66 +537,11 @@ class DominoGame {
             burst.remove();
         }, 1250);
     }
-    buildReactionSvg(type, size = 48) {
-        const uid = `rx-${++this.reactionSeed}`;
-        const specs = {
-            spark: { a: '#ffe29a', b: '#f0b03f', eye: '#4f341d', mouth: '#6d4a27' },
-            happy: { a: '#ffd7a8', b: '#f29f49', eye: '#432f1b', mouth: '#6c4321' },
-            grin: { a: '#c9f1b5', b: '#63c05d', eye: '#214225', mouth: '#214225' },
-            wink: { a: '#bfe8ff', b: '#58b8ff', eye: '#183547', mouth: '#183547' },
-            love: { a: '#ffd1e8', b: '#ff6ea8', eye: '#7c173d', mouth: '#7c173d' },
-            cool: { a: '#d7e7ff', b: '#6e8fff', eye: '#17315e', mouth: '#17315e' },
-            wow: { a: '#ffe7b7', b: '#ff9b5a', eye: '#4f2d15', mouth: '#4f2d15' },
-            sad: { a: '#d6e2ff', b: '#6c89e6', eye: '#203463', mouth: '#203463' },
-            angry: { a: '#ffd7bf', b: '#ff7c57', eye: '#5e1f10', mouth: '#5e1f10' }
-        };
-        const spec = specs[type] || specs.spark;
-        const parts = {
-            eyes: {
-                spark: `<circle cx="18" cy="19" r="2.4" fill="${spec.eye}"/><circle cx="30" cy="19" r="2.4" fill="${spec.eye}"/>`,
-                happy: `<circle cx="18" cy="19" r="2.4" fill="${spec.eye}"/><circle cx="30" cy="19" r="2.4" fill="${spec.eye}"/>`,
-                grin: `<path d="M15 18.5C16.4 16.9 17.6 16.9 19 18.5" stroke="${spec.eye}" stroke-width="2.2" stroke-linecap="round"/><path d="M29 18.5C30.4 16.9 31.6 16.9 33 18.5" stroke="${spec.eye}" stroke-width="2.2" stroke-linecap="round"/>`,
-                wink: `<circle cx="18" cy="19" r="2.4" fill="${spec.eye}"/><path d="M27 19.2C28.6 17.8 30.4 17.8 32 19.2" stroke="${spec.eye}" stroke-width="2.2" stroke-linecap="round"/>`,
-                love: `<path d="M14.8 17.4C14.8 15.7 16.1 14.6 17.6 14.6C18.6 14.6 19.4 15.1 20 15.9C20.6 15.1 21.4 14.6 22.4 14.6C23.9 14.6 25.2 15.7 25.2 17.4C25.2 21 20 23.8 20 23.8S14.8 21 14.8 17.4Z" fill="${spec.eye}"/><path d="M26.8 17.4C26.8 15.7 28.1 14.6 29.6 14.6C30.6 14.6 31.4 15.1 32 15.9C32.6 15.1 33.4 14.6 34.4 14.6C35.9 14.6 37.2 15.7 37.2 17.4C37.2 21 32 23.8 32 23.8S26.8 21 26.8 17.4Z" fill="${spec.eye}" transform="translate(-8 0)"/>`,
-                cool: `<rect x="13" y="17" width="22" height="4.4" rx="2.2" fill="${spec.eye}"/><rect x="15" y="18.3" width="6.4" height="1.4" rx="0.7" fill="${spec.b}"/><rect x="27.6" y="18.3" width="6.4" height="1.4" rx="0.7" fill="${spec.b}"/>`,
-                wow: `<circle cx="18" cy="18.8" r="2.3" fill="${spec.eye}"/><circle cx="30" cy="18.8" r="2.3" fill="${spec.eye}"/>`,
-                sad: `<path d="M15 20.3C16.7 18.7 17.7 18.7 19.4 20.3" stroke="${spec.eye}" stroke-width="2.2" stroke-linecap="round"/><path d="M28.6 20.3C30.3 18.7 31.3 18.7 33 20.3" stroke="${spec.eye}" stroke-width="2.2" stroke-linecap="round"/>`,
-                angry: `<path d="M15 16.8L20 18.5" stroke="${spec.eye}" stroke-width="2.2" stroke-linecap="round"/><path d="M33 16.8L28 18.5" stroke="${spec.eye}" stroke-width="2.2" stroke-linecap="round"/><circle cx="18" cy="20" r="2.2" fill="${spec.eye}"/><circle cx="30" cy="20" r="2.2" fill="${spec.eye}"/>`
-            },
-            mouth: {
-                spark: `<path d="M17.5 28.2C20 32 28 32 30.5 28.2" stroke="${spec.mouth}" stroke-width="2.4" stroke-linecap="round" fill="none"/>`,
-                happy: `<path d="M16 27.8C18.8 34 29.2 34 32 27.8" stroke="${spec.mouth}" stroke-width="2.6" stroke-linecap="round" fill="none"/>`,
-                grin: `<path d="M16.5 27H31.5C31.5 31.8 28.1 35.4 24 35.4C19.9 35.4 16.5 31.8 16.5 27Z" fill="${spec.mouth}"/><path d="M19 28.5C21.4 30.1 26.6 30.1 29 28.5" stroke="#fff6dd" stroke-width="1.6" stroke-linecap="round"/>`,
-                wink: `<path d="M16.2 28C18.4 32.4 28.8 32.4 31 28" stroke="${spec.mouth}" stroke-width="2.5" stroke-linecap="round" fill="none"/>`,
-                love: `<path d="M24 34.3C19.2 31.2 16.8 27.5 16.8 24.9C16.8 22.6 18.7 21 20.8 21C22.2 21 23.4 21.6 24 22.8C24.6 21.6 25.8 21 27.2 21C29.3 21 31.2 22.6 31.2 24.9C31.2 27.5 28.8 31.2 24 34.3Z" fill="${spec.mouth}"/>`,
-                cool: `<path d="M17.2 29C19.2 33 28.8 33 30.8 29" stroke="${spec.mouth}" stroke-width="2.4" stroke-linecap="round" fill="none"/>`,
-                wow: `<ellipse cx="24" cy="30" rx="4.4" ry="5.4" fill="${spec.mouth}"/>`,
-                sad: `<path d="M16.2 32C18.4 27.8 29.6 27.8 31.8 32" stroke="${spec.mouth}" stroke-width="2.4" stroke-linecap="round" fill="none"/>`,
-                angry: `<path d="M16.8 31.6C19.4 28.2 28.6 28.2 31.2 31.6" stroke="${spec.mouth}" stroke-width="2.6" stroke-linecap="round" fill="none"/>`
-            }
-        };
-        const extra = type === 'love'
-            ? `<path d="M24 9.8l1.1 2.7 2.9.2-2.2 1.8.7 2.8-2.5-1.5-2.5 1.5.7-2.8-2.2-1.8 2.9-.2z" fill="#fff4a6" opacity="0.92"/>`
-            : type === 'cool'
-                ? `<path d="M13.5 24.2h21" stroke="rgba(255,255,255,0.6)" stroke-width="1.2" stroke-linecap="round"/>`
-                : type === 'wow'
-                    ? `<path d="M22.2 23.5h3.6" stroke="${spec.mouth}" stroke-width="2" stroke-linecap="round"/>`
-                    : '';
-
-        return `
-<svg viewBox="0 0 48 48" width="${size}" height="${size}" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-<defs>
-  <linearGradient id="${uid}" x1="8" y1="8" x2="40" y2="40" gradientUnits="userSpaceOnUse">
-    <stop offset="0" stop-color="${spec.a}"/>
-    <stop offset="1" stop-color="${spec.b}"/>
-  </linearGradient>
-</defs>
-<circle cx="24" cy="24" r="20.5" fill="url(#${uid})"/>
-<circle cx="18" cy="17" r="7" fill="#ffffff" fill-opacity="0.18"/>
-${parts.eyes[type] || parts.eyes.spark}
-${parts.mouth[type] || parts.mouth.spark}
-${extra}
-</svg>`;
+    buildReactionMarkup(reaction, size = 48) {
+        const code = typeof reaction === 'string' ? reaction : reaction.code;
+        const label = typeof reaction === 'string' ? reaction : (reaction.label || reaction.code);
+        const src = `assets/reactions/${code}.svg`;
+        return `<img src="${src}" alt="${label}" width="${size}" height="${size}" loading="eager" decoding="async">`;
     }
     setupMenu() {
         document.getElementById('menu-btn').addEventListener('click', () => {

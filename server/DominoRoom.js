@@ -461,8 +461,8 @@ class DominoRoom extends Room {
 
     handleReaction(client, message) {
         if (!this.state.gameActive) return;
-        const type = String(message?.type || '').trim();
-        const allowed = new Set(['spark', 'happy', 'grin', 'wink', 'love', 'cool', 'wow', 'sad', 'angry']);
+        const type = String(message?.type || '').trim().toUpperCase();
+        const allowed = new Set(['1F923', '1F609', '1F618', '1F929', '1F914', '1F62E-200D-1F4A8', '1F634', '1F62D', '1F92C', '1F48B']);
         if (!allowed.has(type)) return;
         const player = this.state.players.get(client.sessionId);
         this.broadcast("reaction", {
