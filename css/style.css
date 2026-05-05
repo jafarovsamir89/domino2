@@ -333,17 +333,17 @@ input, button { font: inherit; }
     align-items: center;
 }
 
-.rule-grid .settings-group {
+.loss-block {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 132px;
-    align-items: center;
-    column-gap: 12px;
+    gap: 8px;
+    justify-items: center;
     min-height: 56px;
 }
 
-.rule-grid .settings-group label {
+.loss-block label {
     margin-bottom: 0;
-    align-self: center;
+    text-align: center;
+    width: 100%;
 }
 
 .field-span-2 {
@@ -381,7 +381,7 @@ input, button { font: inherit; }
 .loss-input {
     width: 132px;
     max-width: 132px;
-    justify-self: end;
+    justify-self: center;
 }
 
 .settings-group input:focus,
@@ -1055,8 +1055,8 @@ input, button { font: inherit; }
         grid-template-columns: 1fr;
     }
 
-    .rule-grid .settings-group {
-        grid-template-columns: minmax(0, 1fr) 110px;
+    .loss-block {
+        min-height: auto;
     }
 
     .start-actions {
