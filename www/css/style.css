@@ -328,16 +328,22 @@ input, button { font: inherit; }
 
 .rule-grid {
     display: grid;
-    grid-template-columns: minmax(112px, 132px) minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     gap: 12px;
     align-items: center;
 }
 
 .rule-grid .settings-group {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 132px;
+    align-items: center;
+    column-gap: 12px;
     min-height: 56px;
+}
+
+.rule-grid .settings-group label {
+    margin-bottom: 0;
+    align-self: center;
 }
 
 .field-span-2 {
@@ -369,12 +375,13 @@ input, button { font: inherit; }
 
 .rule-grid .settings-group input[type="number"] {
     max-width: 132px;
+    justify-self: end;
 }
 
 .loss-input {
     width: 132px;
     max-width: 132px;
-    justify-self: start;
+    justify-self: end;
 }
 
 .settings-group input:focus,
@@ -1045,7 +1052,11 @@ input, button { font: inherit; }
     }
 
     .rule-grid {
-        grid-template-columns: minmax(112px, 132px) minmax(0, 1fr);
+        grid-template-columns: 1fr;
+    }
+
+    .rule-grid .settings-group {
+        grid-template-columns: minmax(0, 1fr) 110px;
     }
 
     .start-actions {
