@@ -50,6 +50,7 @@ class DominoRoom extends Room {
         this.onMessage("pass", (client) => this.handlePass(client));
         this.onMessage("gosha", (client) => this.handleGosha(client));
         this.onMessage("next_deal", (client) => this.handleNextDeal(client));
+        this.onMessage("reaction", (client, message) => this.handleReaction(client, message));
 
         console.log(`[ROOM] Created room ${this.roomId}, humanSeats=${this.humanSeats}, totalPlayers=${this.totalPlayers}, aiCount=${this.aiCount}, teamMode=${this.state.isTeamMode}`);
     }
@@ -449,6 +450,19 @@ class DominoRoom extends Room {
         // Only proceed if game is not active (waiting for next deal)
         if (this.state.gameActive) return;
         this.startDeal();
+    }
+
+    handleReaction(client, message) {
+        if (!this.state.gameActive) return;
+        const type = String(message?.type || '').trim();
+        const allowed = new Set(['spark', 'happy', 'grin', 'wink', 'love', 'cool', 'wow', 'sad', 'angry']);
+        if (!allowed.has(type)) return;
+        const player = this.state.players.get(client.sessionId);
+        this.broadcast("reaction", {
+            type,
+            name: player ? player.name : "Player",
+            sessionId: client.sessionId
+        });
     }
 
     advanceTurn() {

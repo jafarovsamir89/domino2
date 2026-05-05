@@ -197,6 +197,7 @@
 
         <div class="board-container" id="board-container">
             <div class="board" id="board"></div>
+            <div class="reaction-stage" id="reaction-stage" aria-hidden="true"></div>
         </div>
 
         <div class="boneyard-visual" id="boneyard-visual"></div>
@@ -209,6 +210,10 @@
         <div class="action-bar">
             <button class="btn btn-action" id="draw-btn" disabled data-i18n="btn-draw">BAZAR</button>
             <button class="btn btn-action" id="pass-btn" disabled data-i18n="btn-pass">PAS</button>
+        </div>
+        <div class="reaction-ui">
+            <button class="reaction-fab" id="reaction-btn" type="button" aria-haspopup="true" aria-expanded="false" title="Reactions"></button>
+            <div class="reaction-picker" id="reaction-picker" aria-hidden="true"></div>
         </div>
     </div>
 

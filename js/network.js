@@ -142,6 +142,10 @@ class NetworkManager {
             this.game.onNetworkTurnInfo(info);
         });
 
+        this.room.onMessage("reaction", (payload) => {
+            this.game.onNetworkReaction(payload);
+        });
+
         this.room.onMessage("msg", (msg) => {
             this.game.renderer.showMessage(msg.text, msg.time);
         });
@@ -207,6 +211,10 @@ class NetworkManager {
 
     sendNextDeal() {
         if (this.room) this.room.send("next_deal");
+    }
+
+    sendReaction(type) {
+        if (this.room) this.room.send("reaction", { type });
     }
 }
 
