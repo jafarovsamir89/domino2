@@ -330,7 +330,14 @@ input, button { font: inherit; }
     display: grid;
     grid-template-columns: minmax(112px, 132px) minmax(0, 1fr);
     gap: 12px;
-    align-items: stretch;
+    align-items: center;
+}
+
+.rule-grid .settings-group {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 56px;
 }
 
 .field-span-2 {
@@ -391,7 +398,8 @@ input, button { font: inherit; }
     background: transparent;
     border: 0;
     cursor: pointer;
-    align-self: center;
+    align-self: stretch;
+    min-height: 56px;
 }
 
 .toggle-card input {
