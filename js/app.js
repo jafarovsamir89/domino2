@@ -36,8 +36,9 @@ class DominoGame {
         ];
         this.lastReactionSentAt = 0;
         this.lastReactionSentType = '';
-        this.setupStartScreen(); this.setupGameControls(); this.setupMenu();
         this.setLanguage('az');
+        document.documentElement.lang = 'az';
+        this.setupStartScreen(); this.setupGameControls(); this.setupMenu();
 
         // Watchdog for turn freeze
         setInterval(() => {
