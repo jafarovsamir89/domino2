@@ -11,7 +11,7 @@ const TARGET=365, MAX_R=3, DLOSS=255, IWIN=35;
 class DominoGame {
     constructor() {
         this.renderer = new Renderer(this); this.board = new Board();
-        this.playerCount=2; this.onlinePlayerCount=2; this.onlineAiCount=0; this.playerName='Ilkin'; this.difficulty='medium';
+        this.playerCount=2; this.onlinePlayerCount=2; this.onlineAiCount=0; this.playerName=''; this.difficulty='medium';
         this.hands=[]; this.boneyard=[]; this.scores=[]; this.roundWins=[];
         this.playerNames=[]; this.currentPlayer=0; this.matchRound=1; this.deal=1;
         this.selectedTileIndex=-1; this.validMoves=[]; this.gameActive=false;
@@ -49,15 +49,10 @@ class DominoGame {
         });
         if (soloModalClose) soloModalClose.addEventListener('click', () => this.showStartModal(null));
         if (onlineModalClose) onlineModalClose.addEventListener('click', () => this.showStartModal(null));
-        if (soloModal) soloModal.addEventListener('click', (event) => {
-            if (event.target === soloModal) this.showStartModal(null);
-        });
-        if (onlineModal) onlineModal.addEventListener('click', (event) => {
-            if (event.target === onlineModal) this.showStartModal(null);
-        });
 
         const soloNameInput = document.getElementById('player-name');
         const onlineNameInput = document.getElementById('player-name-online');
+        const dlossInput = document.getElementById('dloss-setting');
         if (soloNameInput && onlineNameInput) {
             const syncName = (source, target) => {
                 source.addEventListener('input', () => {
@@ -66,6 +61,19 @@ class DominoGame {
             };
             syncName(soloNameInput, onlineNameInput);
             syncName(onlineNameInput, soloNameInput);
+        }
+        if (dlossInput) {
+            const clampLossValue = () => {
+                const digits = String(dlossInput.value || '').replace(/\D/g, '').slice(0, 3);
+                const next = digits === '' ? '' : String(Math.min(365, parseInt(digits, 10)));
+                dlossInput.value = next;
+            };
+            dlossInput.addEventListener('input', clampLossValue);
+            dlossInput.addEventListener('blur', () => {
+                if (!dlossInput.value) dlossInput.value = '255';
+                clampLossValue();
+            });
+            clampLossValue();
         }
 
         document.querySelectorAll('#player-count-group .btn-option').forEach(b => {
@@ -81,7 +89,9 @@ class DominoGame {
             });
         });
         document.getElementById('start-game-btn').addEventListener('click', () => {
-            this.playerName = this.readPlayerName();
+            const name = this.requirePlayerName();
+            if (!name) return;
+            this.playerName = name;
             this.isTeamMode = false;
             this.syncMultiplayerOptions();
             this.myHand = null;
@@ -119,7 +129,9 @@ class DominoGame {
         });
 
         document.getElementById('host-game-btn').addEventListener('click', () => {
-            this.playerName = this.readPlayerName();
+            const name = this.requirePlayerName();
+            if (!name) return;
+            this.playerName = name;
             this.showMultiplayerPanel('host');
             this.setHostStatus(this.t('online-room-status-created'));
             this.network.hostGame((roomId) => {
@@ -138,7 +150,9 @@ class DominoGame {
         document.getElementById('connect-btn').addEventListener('click', () => {
             const code = document.getElementById('join-code-input').value.trim().toUpperCase();
             if (!code) return;
-            this.playerName = this.readPlayerName();
+            const name = this.requirePlayerName();
+            if (!name) return;
+            this.playerName = name;
 
             const btn = document.getElementById('connect-btn');
             btn.disabled = true;
@@ -187,17 +201,28 @@ class DominoGame {
         this.showStartModal(null);
     }
 
-    getDefaultPlayerName() {
-        if (this.currentLang === 'az') return 'Ilkin';
-        if (this.currentLang === 'ru') return 'Player';
-        return 'Player';
-    }
-
     readPlayerName() {
         const primary = document.getElementById('player-name');
         const online = document.getElementById('player-name-online');
         const value = (primary?.value || online?.value || '').trim();
-        return this.sanitizeName(value || this.getDefaultPlayerName());
+        return this.sanitizeName(value, '');
+    }
+
+    requirePlayerName() {
+        const name = this.readPlayerName();
+        if (name) return name;
+        this.renderer.showMessage(
+            this.currentLang === 'az'
+                ? 'Ad daxil edin'
+                : this.currentLang === 'ru'
+                    ? 'Введите имя'
+                    : 'Enter your name',
+            1800
+        );
+        const primary = document.getElementById('player-name');
+        const online = document.getElementById('player-name-online');
+        (primary || online)?.focus?.();
+        return null;
     }
 
     syncMultiplayerOptions() {
@@ -386,8 +411,8 @@ class DominoGame {
             if (!moved) handler(e);
         });
     }
-    sanitizeName(name) {
-        return String(name || '').replace(/[<>&"']/g, '').trim().slice(0, 12) || 'Player';
+    sanitizeName(name, fallback = 'Player') {
+        return String(name || '').replace(/[<>&"']/g, '').trim().slice(0, 12) || fallback;
     }
     setupMenu() {
         document.getElementById('menu-btn').addEventListener('click', () => document.getElementById('menu-screen').classList.add('active'));
@@ -537,15 +562,6 @@ class DominoGame {
         document.querySelectorAll('.btn-lang').forEach(b => {
             b.classList.toggle('active', b.dataset.lang === lang);
         });
-        // Update default player name if not changed
-        const nameInput = document.getElementById('player-name');
-        const onlineNameInput = document.getElementById('player-name-online');
-        const defaults = ['Ilkin', 'Player'];
-        if (!nameInput.value || defaults.includes(nameInput.value)) {
-            const defaultName = this.getDefaultPlayerName();
-            nameInput.value = defaultName;
-            if (onlineNameInput) onlineNameInput.value = defaultName;
-        }
     }
 
     t(key) {

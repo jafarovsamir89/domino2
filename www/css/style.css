@@ -364,6 +364,12 @@ input, button { font: inherit; }
     max-width: 132px;
 }
 
+.loss-input {
+    width: 132px;
+    max-width: 132px;
+    justify-self: start;
+}
+
 .settings-group input:focus,
 #join-code-input:focus {
     outline: none;
@@ -1031,11 +1037,7 @@ input, button { font: inherit; }
     }
 
     .rule-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .rule-grid .settings-group input[type="number"] {
-        max-width: none;
+        grid-template-columns: minmax(112px, 132px) minmax(0, 1fr);
     }
 
     .start-actions {

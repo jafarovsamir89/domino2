@@ -81,7 +81,7 @@ export const translations = {
         "online-waiting-slot": "{index}. oyunçu gözlənilir",
         "online-room-closed": "Otaq bağlandı",
         "arrow-place-to": "{value} üzərinə qoy",
-        "placeholder-player-name": "Adınızı yazın",
+        "placeholder-player-name": "Adınızı daxil edin",
         "start-lead": "Təmiz başlanğıc, sürətli oyun və onlayn rejim bir yerdə.",
         "btn-solo": "Tək oyun",
         "btn-online": "Onlayn",
