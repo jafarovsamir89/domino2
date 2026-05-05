@@ -8,7 +8,7 @@
     "sync:www": "powershell -ExecutionPolicy Bypass -File ./scripts/sync-www.ps1",
     "cap:copy": "npx cap copy android",
     "apk:debug": "powershell -ExecutionPolicy Bypass -File ./scripts/build-apk.ps1",
-    "check": "node --check www/js/app.js && node --check www/js/renderer.js && node --check www/js/board.js && node --check www/js/ai.js && node --check www/js/model.js && node --check www/js/sounds.js && node --check www/js/network.js",
+    "check": "node --check js/account.js && node --check js/app.js && node --check js/network.js && node --check www/js/app.js && node --check www/js/renderer.js && node --check www/js/board.js && node --check www/js/ai.js && node --check www/js/model.js && node --check www/js/sounds.js && node --check www/js/network.js",
     "test": "npm run check"
   },
   "keywords": [],

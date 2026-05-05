@@ -4,6 +4,7 @@ class Player extends Schema {
     constructor() {
         super();
         this.name = "";
+        this.userId = "";
         this.score = 0;
         this.roundWins = 0;
         this.handCount = 0;
@@ -12,6 +13,7 @@ class Player extends Schema {
     }
 }
 type("string")(Player.prototype, "name");
+type("string")(Player.prototype, "userId");
 type("number")(Player.prototype, "score");
 type("number")(Player.prototype, "roundWins");
 type("number")(Player.prototype, "handCount");

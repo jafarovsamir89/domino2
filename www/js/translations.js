@@ -97,6 +97,22 @@ export const translations = {
         "label-ai-slots": "AI slotları",
         "online-room-summary": "{humans} insan + {bots} AI, cəmi {total}",
         "online-bot-slot": "AI {index}"
+        ,"account-btn": "Hesab"
+        ,"account-kicker": "Profil"
+        ,"account-title": "Hesab"
+        ,"account-desc": "Xalı, reytinqi və tarixçəni saxla."
+        ,"account-name": "Ad"
+        ,"account-password": "Şifrə"
+        ,"account-guest": "Qonaq rejimi"
+        ,"account-register": "Qeydiyyat"
+        ,"account-login": "Giriş"
+        ,"account-profile-empty": "Hələ profil yoxdur"
+        ,"account-profile-loading": "Profil yüklənir..."
+        ,"account-leaderboard": "Liderlər cədvəli"
+        ,"account-rating": "Reytinq"
+        ,"account-wins": "Qələbələr"
+        ,"account-losses": "Məğlubiyyətlər"
+        ,"account-draws": "Heç-heçə"
     },
     en: {
         "game-title": "Domino (Telefon)",
@@ -196,6 +212,22 @@ export const translations = {
         "label-ai-slots": "AI slots",
         "online-room-summary": "{humans} humans + {bots} AI, {total} total",
         "online-bot-slot": "AI {index}"
+        ,"account-btn": "Account"
+        ,"account-kicker": "Profile"
+        ,"account-title": "Account"
+        ,"account-desc": "Keep your score, rating, and match history."
+        ,"account-name": "Name"
+        ,"account-password": "Password"
+        ,"account-guest": "Guest mode"
+        ,"account-register": "Register"
+        ,"account-login": "Login"
+        ,"account-profile-empty": "No profile yet"
+        ,"account-profile-loading": "Loading profile..."
+        ,"account-leaderboard": "Leaderboard"
+        ,"account-rating": "Rating"
+        ,"account-wins": "Wins"
+        ,"account-losses": "Losses"
+        ,"account-draws": "Draws"
     },
     ru: {
         "game-title": "Domino (Telefon)",
@@ -295,5 +327,21 @@ export const translations = {
         "label-ai-slots": "Слоты AI",
         "online-room-summary": "{humans} человек + {bots} AI, всего {total}",
         "online-bot-slot": "AI {index}"
+        ,"account-btn": "Аккаунт"
+        ,"account-kicker": "Профиль"
+        ,"account-title": "Аккаунт"
+        ,"account-desc": "Сохраняйте очки, рейтинг и историю матчей."
+        ,"account-name": "Имя"
+        ,"account-password": "Пароль"
+        ,"account-guest": "Гостевой режим"
+        ,"account-register": "Регистрация"
+        ,"account-login": "Вход"
+        ,"account-profile-empty": "Профиль пока не создан"
+        ,"account-profile-loading": "Загрузка профиля..."
+        ,"account-leaderboard": "Таблица лидеров"
+        ,"account-rating": "Рейтинг"
+        ,"account-wins": "Победы"
+        ,"account-losses": "Поражения"
+        ,"account-draws": "Ничьи"
     }
 };

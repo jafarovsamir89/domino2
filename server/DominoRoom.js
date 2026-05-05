@@ -3,6 +3,7 @@ const { GameState, Player } = require("./schema/GameState");
 const { Board } = require("./board");
 const { AIPlayer } = require("./ai");
 const { Tile, createFullSet, shuffle, getHandSize, determineFirstPlayer, handPoints, roundTo5 } = require("./model");
+const accountStore = require("./accountStore");
 
 const TARGET = 365, MAX_R = 3, DLOSS = 255, IWIN = 35;
 
@@ -43,6 +44,7 @@ class DominoRoom extends Room {
         this.botTimer = null;
         this.botIds = [];
         this.aiPlayers = new Map();
+        this.matchRecorded = false;
 
         this.onMessage("play", (client, message) => this.handlePlay(client, message));
         this.onMessage("draw", (client) => this.handleDraw(client));
@@ -57,7 +59,10 @@ class DominoRoom extends Room {
     onJoin(client, options) {
         console.log(`[ROOM] Client ${client.sessionId} joining with name: ${options.name}`);
         const player = new Player();
-        player.name = sanitizeName(options.name);
+        const authToken = String(options.authToken || "").trim();
+        const profile = accountStore.getProfile(authToken);
+        player.name = sanitizeName(profile?.name || options.name);
+        player.userId = profile?.id || "";
         this.state.players.set(client.sessionId, player);
         this.state.playerOrder.push(client.sessionId);
 
@@ -131,6 +136,7 @@ class DominoRoom extends Room {
     startGame() {
         this.state.matchRound = 1;
         this.state.deal = 1;
+        this.matchRecorded = false;
         this.ensureBotPlayers();
         this.broadcastRoomState();
         this.startDeal();
@@ -141,6 +147,7 @@ class DominoRoom extends Room {
             clearTimeout(this.botTimer);
             this.botTimer = null;
         }
+        this.matchRecorded = false;
         this.internalBoard = new Board();
         this.state.gameActive = true;
         
@@ -253,6 +260,7 @@ class DominoRoom extends Room {
                 sessionId,
                 index,
                 name: player ? player.name : "Player",
+                userId: player ? player.userId : "",
                 isConnected: player ? player.isConnected : false,
                 isBot: player ? player.isBot : false
             };
@@ -270,6 +278,59 @@ class DominoRoom extends Room {
             gameActive: this.state.gameActive,
             players
         });
+    }
+
+    recordMatchResult(wi, isInstantWin, players, wins) {
+        if (this.matchRecorded) return;
+        const participantRows = [];
+        const winnerKey = this.state.isTeamMode ? `team:${wi}` : `player:${wi}`;
+        const teams = this.state.isTeamMode ? [
+            { memberIds: [], score: this.state.teamScores[0], roundWins: this.state.teamRoundWins[0] },
+            { memberIds: [], score: this.state.teamScores[1], roundWins: this.state.teamRoundWins[1] }
+        ] : [];
+
+        for (let i = 0; i < this.state.playerOrder.length; i++) {
+            const sid = this.state.playerOrder[i];
+            const player = this.state.players.get(sid);
+            if (!player || !player.userId) continue;
+            const teamIndex = this.state.isTeamMode ? (i % 2) : null;
+            if (this.state.isTeamMode && teams[teamIndex]) {
+                teams[teamIndex].memberIds.push(player.userId);
+            }
+
+            participantRows.push({
+                userId: player.userId,
+                name: player.name,
+                isSelf: false,
+                teamIndex,
+                winnerKey: this.state.isTeamMode ? `team:${teamIndex}` : `player:${i}`,
+                points: player.score,
+                roundWins: this.state.isTeamMode ? this.state.teamRoundWins[teamIndex] : player.roundWins,
+                result: this.state.isTeamMode
+                    ? (teamIndex === wi ? "win" : "loss")
+                    : (i === wi ? "win" : "loss")
+            });
+        }
+
+        if (!participantRows.length) {
+            this.matchRecorded = true;
+            return;
+        }
+
+        try {
+            accountStore.recordMatch({
+                mode: this.state.isTeamMode ? "team" : "ffa",
+                isTeamMode: this.state.isTeamMode,
+                roomId: this.roomId,
+                winnerKey,
+                result: "win",
+                teams,
+                participants: participantRows
+            });
+            this.matchRecorded = true;
+        } catch (err) {
+            console.error("[ROOM] Failed to record match:", err);
+        }
     }
 
     handlePlay(client, message) {
@@ -601,7 +662,7 @@ class DominoRoom extends Room {
                 name: p ? p.name : "Player",
                 score: p ? p.score : 0,
                 roundWins: p ? p.roundWins : 0,
-                isWinner: i === wi
+                isWinner: this.state.isTeamMode ? (i % 2 === wi) : i === wi
             });
         }
 
@@ -616,6 +677,10 @@ class DominoRoom extends Room {
             teamRoundWins: Array.from(this.state.teamRoundWins),
             players: playerData
         });
+
+        if (this.state.matchRound >= MAX_R) {
+            this.recordMatchResult(wi, !!isInstantWin, playerData, wins);
+        }
 
         this.state.matchRound++;
     }
