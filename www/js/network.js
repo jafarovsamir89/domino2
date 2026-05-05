@@ -144,11 +144,13 @@ class NetworkManager {
             console.log("Connected! Room ID:", connectedRoomId);
             this.isMultiplayer = true;
             this.setupListeners();
-            if (onReady) {
-                const inviteCode = mode === "create"
-                    ? (await this.resolveRoomCode(connectedRoomId)) || connectedRoomId
-                    : connectedRoomId;
-                onReady(inviteCode);
+            if (onReady) onReady(connectedRoomId);
+            if (mode === "create") {
+                this.resolveRoomCode(connectedRoomId).then((inviteCode) => {
+                    if (inviteCode) {
+                        this.game.onInviteCodeResolved?.(inviteCode);
+                    }
+                });
             }
 
         } catch (e) {

@@ -93,7 +93,7 @@ class DominoGame {
             });
         });
         document.getElementById('start-game-btn').addEventListener('click', () => {
-            const name = this.requirePlayerName();
+            const name = this.requirePlayerName('online');
             if (!name) return;
             this.playerName = name;
             this.isTeamMode = false;
@@ -133,7 +133,7 @@ class DominoGame {
         });
 
         document.getElementById('host-game-btn').addEventListener('click', () => {
-            const name = this.requirePlayerName();
+            const name = this.requirePlayerName('online');
             if (!name) return;
             this.playerName = name;
             this.showMultiplayerPanel('host');
@@ -205,15 +205,19 @@ class DominoGame {
         this.showStartModal(null);
     }
 
-    readPlayerName() {
+    readPlayerName(preferred = 'any') {
         const primary = document.getElementById('player-name');
         const online = document.getElementById('player-name-online');
-        const value = (primary?.value || online?.value || '').trim();
+        const value = preferred === 'online'
+            ? (online?.value || primary?.value || '').trim()
+            : preferred === 'solo'
+                ? (primary?.value || online?.value || '').trim()
+                : (primary?.value || online?.value || '').trim();
         return this.sanitizeName(value, '');
     }
 
-    requirePlayerName() {
-        const name = this.readPlayerName();
+    requirePlayerName(preferred = 'any') {
+        const name = this.readPlayerName(preferred);
         if (name) return name;
         this.renderer.showMessage(
             this.currentLang === 'az'
@@ -225,8 +229,15 @@ class DominoGame {
         );
         const primary = document.getElementById('player-name');
         const online = document.getElementById('player-name-online');
-        (primary || online)?.focus?.();
+        (preferred === 'online' ? online : preferred === 'solo' ? primary : (primary || online))?.focus?.();
         return null;
+    }
+
+    onInviteCodeResolved(code) {
+        const nextCode = String(code || '').trim();
+        if (!nextCode) return;
+        document.getElementById('room-code-display').textContent = nextCode;
+        this.setHostStatus(this.t('online-room-status-waiting'));
     }
 
     syncMultiplayerOptions() {
