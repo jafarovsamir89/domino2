@@ -328,7 +328,7 @@ input, button { font: inherit; }
 
 .rule-grid {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: minmax(112px, 132px) minmax(0, 1fr);
     gap: 12px;
     align-items: stretch;
 }
@@ -360,6 +360,10 @@ input, button { font: inherit; }
     transition: border-color 0.2s, background 0.2s;
 }
 
+.rule-grid .settings-group input[type="number"] {
+    max-width: 132px;
+}
+
 .settings-group input:focus,
 #join-code-input:focus {
     outline: none;
@@ -376,11 +380,12 @@ input, button { font: inherit; }
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 13px 14px;
-    border-radius: 14px;
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 0;
+    border-radius: 0;
+    background: transparent;
+    border: 0;
     cursor: pointer;
+    align-self: center;
 }
 
 .toggle-card input {
@@ -467,12 +472,24 @@ input, button { font: inherit; }
     flex: 7 1 0;
     width: auto;
     margin-top: 0;
+    min-height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
 }
 
 .modal-footer-split .modal-secondary-btn {
     flex: 3 1 0;
     width: auto;
     margin-top: 0;
+    min-height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding-left: 12px;
+    padding-right: 12px;
 }
 
 .btn-action,
@@ -1011,6 +1028,14 @@ input, button { font: inherit; }
     .hero-notes {
         width: 100%;
         grid-template-columns: repeat(2, 1fr);
+    }
+
+    .rule-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .rule-grid .settings-group input[type="number"] {
+        max-width: none;
     }
 
     .start-actions {
