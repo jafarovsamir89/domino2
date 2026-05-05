@@ -297,7 +297,7 @@ class DominoGame {
     onRoomStateUpdate(roomState) {
         if (!roomState) return;
 
-        document.getElementById('room-code-display').textContent = roomState.roomId || '....';
+        document.getElementById('room-code-display').textContent = roomState.roomCode || roomState.roomId || '....';
         const roomCountEl = document.getElementById('room-player-count-display');
         const humanJoined = roomState.humanPlayers ?? roomState.currentPlayers ?? 0;
         const humanSeats = roomState.humanSeats ?? roomState.maxPlayers ?? roomState.totalPlayers ?? 0;

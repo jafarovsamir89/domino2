@@ -21,10 +21,8 @@ class DominoRoom extends Room {
     maxClients = 2;
 
     onCreate(options) {
-        // Use short room code if not already set
-        if (!this.roomId || this.roomId.length > 6) {
-            this.roomId = generateRoomCode();
-        }
+        this.roomCode = generateRoomCode();
+        global.__DOMINO_ROOM_CODES?.set(this.roomCode, this.roomId);
 
         this.setState(new GameState());
         this.state.isTeamMode = options.isTeamMode === true;
@@ -52,7 +50,7 @@ class DominoRoom extends Room {
         this.onMessage("next_deal", (client) => this.handleNextDeal(client));
         this.onMessage("reaction", (client, message) => this.handleReaction(client, message));
 
-        console.log(`[ROOM] Created room ${this.roomId}, humanSeats=${this.humanSeats}, totalPlayers=${this.totalPlayers}, aiCount=${this.aiCount}, teamMode=${this.state.isTeamMode}`);
+        console.log(`[ROOM] Created room ${this.roomId} (code ${this.roomCode}), humanSeats=${this.humanSeats}, totalPlayers=${this.totalPlayers}, aiCount=${this.aiCount}, teamMode=${this.state.isTeamMode}`);
     }
 
     onJoin(client, options) {
@@ -68,6 +66,12 @@ class DominoRoom extends Room {
         if (this.clients.length === this.maxClients) {
             console.log(`[ROOM] Room full. Starting game...`);
             this.startGame();
+        }
+    }
+
+    onDispose() {
+        if (this.roomCode) {
+            global.__DOMINO_ROOM_CODES?.delete(this.roomCode);
         }
     }
 
@@ -254,6 +258,7 @@ class DominoRoom extends Room {
 
         this.broadcast("room_state", {
             roomId: this.roomId,
+            roomCode: this.roomCode,
             currentPlayers: this.state.gameActive ? this.totalPlayers : this.clients.length,
             humanPlayers: this.clients.length,
             humanSeats: this.maxClients,

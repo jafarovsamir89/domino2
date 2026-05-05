@@ -82,6 +82,21 @@ class NetworkManager {
         this.connect("join", onReady, onError, code);
     }
 
+    async resolveRoomId(code) {
+        const roomCode = String(code || '').trim().toUpperCase();
+        if (!roomCode) return null;
+        const endpoint = this.getServerUrl().replace(/\/$/, '');
+        try {
+            const response = await fetch(`${endpoint}/room-id/${encodeURIComponent(roomCode)}`);
+            if (!response.ok) return roomCode;
+            const data = await response.json();
+            return data?.roomId || roomCode;
+        } catch (e) {
+            console.warn('Failed to resolve room code:', e);
+            return roomCode;
+        }
+    }
+
     async connect(mode, onReady, onError, roomId = null) {
         const initialized = await this.initClient();
         if (!initialized) {
@@ -104,7 +119,8 @@ class NetworkManager {
                 this.isHost = true;
                 this.isGuest = false;
             } else {
-                this.room = await this.client.joinById(roomId, options);
+                const resolvedRoomId = await this.resolveRoomId(roomId);
+                this.room = await this.client.joinById(resolvedRoomId, options);
                 this.isHost = false;
                 this.isGuest = true;
             }
