@@ -455,6 +455,18 @@ input, button { font: inherit; }
     border-color: var(--accent);
 }
 
+.btn-account {
+    padding: 7px 12px;
+    background: rgba(240, 192, 64, 0.12);
+    color: var(--accent);
+    border: 1px solid rgba(240, 192, 64, 0.32);
+    font-size: 0.72rem;
+}
+
+.btn-account:hover {
+    background: rgba(240, 192, 64, 0.18);
+}
+
 .btn-option {
     flex: 1;
     min-height: 44px;
@@ -570,6 +582,97 @@ input, button { font: inherit; }
 }
 
 .multi-panel.active { display: block; }
+
+.account-cabinet {
+    display: grid;
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+    gap: 14px;
+    margin-top: 4px;
+}
+
+.account-panel {
+    padding: 16px;
+    border-radius: 18px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.account-profile-panel {
+    display: grid;
+    gap: 14px;
+}
+
+.account-profile-card {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.account-avatar {
+    width: 62px;
+    height: 62px;
+    border-radius: 18px;
+    display: grid;
+    place-items: center;
+    background: linear-gradient(135deg, rgba(240, 192, 64, 0.22), rgba(240, 192, 64, 0.08));
+    border: 1px solid rgba(240, 192, 64, 0.35);
+    color: var(--accent);
+    font-size: 1.35rem;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.account-profile-name {
+    font-size: 1.05rem;
+    font-weight: 800;
+}
+
+.account-profile-meta {
+    margin-top: 4px;
+    color: var(--text-dim);
+    font-size: 0.8rem;
+}
+
+.account-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.account-stat-card {
+    padding: 12px;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.account-stat-card span {
+    display: block;
+    color: var(--text-dim);
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.account-stat-card strong {
+    display: block;
+    margin-top: 6px;
+    color: var(--accent);
+    font-size: 1.08rem;
+}
+
+.account-toolbar {
+    display: flex;
+    gap: 8px;
+}
+
+.account-toolbar .btn {
+    flex: 1;
+}
+
+.account-history {
+    margin-top: 14px;
+}
 
 .room-code-line {
     display: flex;
@@ -1295,6 +1398,10 @@ input, button { font: inherit; }
 
     .modal-card {
         padding: 16px;
+    }
+
+    .account-cabinet {
+        grid-template-columns: 1fr;
     }
 }
 

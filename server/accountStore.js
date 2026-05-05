@@ -221,6 +221,54 @@ function getProfile(token) {
     return safePublicUser(session.user);
 }
 
+function listMatchesForUser(userId, limit = 10) {
+    const targetId = String(userId || "").trim();
+    if (!targetId) return [];
+    return loadState().matches
+        .filter((match) => Array.isArray(match.participants) && match.participants.some((participant) => participant.userId === targetId))
+        .slice()
+        .sort((a, b) => Date.parse(b.createdAt || 0) - Date.parse(a.createdAt || 0))
+        .slice(0, Math.max(1, Math.min(20, parseInt(limit, 10) || 10)))
+        .map((match) => {
+            const self = match.participants.find((participant) => participant.userId === targetId);
+            return {
+                id: match.id,
+                createdAt: match.createdAt,
+                mode: match.mode,
+                isTeamMode: !!match.isTeamMode,
+                roomId: match.roomId || null,
+                winnerKey: match.winnerKey,
+                totalPoints: match.totalPoints || 0,
+                result: self?.result || "unknown",
+                points: parseInt(self?.points, 10) || 0,
+                roundWins: parseInt(self?.roundWins, 10) || 0,
+                ratingDelta: parseInt(self?.ratingDelta, 10) || 0
+            };
+        });
+}
+
+function getProfileDetails(token) {
+    const session = getSession(token);
+    if (!session) return null;
+    return {
+        user: safePublicUser(session.user),
+        recentMatches: listMatchesForUser(session.user.id, 10)
+    };
+}
+
+function logout(token) {
+    const sessionToken = String(token || "").trim();
+    if (!sessionToken) return false;
+    const state = loadState();
+    const before = state.sessions.length;
+    state.sessions = state.sessions.filter((item) => item.token !== sessionToken);
+    if (state.sessions.length !== before) {
+        saveState();
+        return true;
+    }
+    return false;
+}
+
 function getLeaderboard(limit = 10) {
     const count = Math.max(1, Math.min(50, parseInt(limit, 10) || 10));
     return loadState()
@@ -359,7 +407,10 @@ module.exports = {
     register,
     login,
     getProfile,
+    getProfileDetails,
     getLeaderboard,
+    listMatchesForUser,
+    logout,
     recordMatch,
     findUserById,
     getSession,

@@ -56,13 +56,23 @@ app.post("/api/auth/login", (req, res) => {
     }
 });
 
+app.post("/api/auth/logout", (req, res) => {
+    const token = readAuthToken(req);
+    if (!token) {
+        res.json({ ok: true });
+        return;
+    }
+    accountStore.logout(token);
+    res.json({ ok: true });
+});
+
 app.get("/api/me", (req, res) => {
-    const profile = accountStore.getProfile(readAuthToken(req));
+    const profile = accountStore.getProfileDetails(readAuthToken(req));
     if (!profile) {
         res.status(401).json({ error: "Not authenticated" });
         return;
     }
-    res.json({ user: profile });
+    res.json(profile);
 });
 
 app.get("/api/leaderboard", (req, res) => {

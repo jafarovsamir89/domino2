@@ -4,6 +4,7 @@ const ACCOUNT_PROFILE_KEY = "dominoAuthProfile";
 export class AccountClient {
     constructor(getServerUrl) {
         this.getServerUrl = getServerUrl;
+        this.lastError = "";
     }
 
     get apiBase() {
@@ -42,20 +43,50 @@ export class AccountClient {
         } catch {}
     }
 
-    async request(path, options = {}) {
-        const response = await fetch(`${this.apiBase}${path}`, {
-            headers: {
-                "Content-Type": "application/json",
-                ...(options.headers || {})
-            },
-            ...options,
-            body: options.body ? JSON.stringify(options.body) : undefined
-        });
-        const data = await response.json().catch(() => ({}));
-        if (!response.ok) {
-            throw new Error(data.error || response.statusText || "Request failed");
+    clearSession() {
+        this.setStoredToken("");
+        this.setStoredProfile(null);
+    }
+
+    normalizeError(error) {
+        if (!error) return "Server unavailable";
+        const message = String(error.message || error || "").trim();
+        if (!message) return "Server unavailable";
+        if (message === "Failed to fetch" || message.includes("NetworkError") || message.includes("timed out")) {
+            return "Server unavailable";
         }
-        return data;
+        if (message === "signal is aborted without reason" || message === "The operation was aborted.") {
+            return "Server unavailable";
+        }
+        return message;
+    }
+
+    async request(path, options = {}) {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 6000);
+        try {
+            const response = await fetch(`${this.apiBase}${path}`, {
+                headers: {
+                    "Content-Type": "application/json",
+                    ...(options.headers || {})
+                },
+                ...options,
+                signal: controller.signal,
+                body: options.body ? JSON.stringify(options.body) : undefined
+            });
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok) {
+                throw new Error(data.error || response.statusText || "Request failed");
+            }
+            this.lastError = "";
+            return data;
+        } catch (error) {
+            const normalized = this.normalizeError(error);
+            this.lastError = normalized;
+            throw new Error(normalized);
+        } finally {
+            clearTimeout(timeoutId);
+        }
     }
 
     async bootstrap() {
@@ -66,10 +97,9 @@ export class AccountClient {
                 headers: { Authorization: `Bearer ${token}` }
             });
             this.setStoredProfile(data.user || null);
-            return data.user || null;
+            return data;
         } catch {
-            this.setStoredToken("");
-            this.setStoredProfile(null);
+            this.clearSession();
             return null;
         }
     }
@@ -104,9 +134,33 @@ export class AccountClient {
         return data;
     }
 
+    async logout() {
+        const token = this.storedToken;
+        try {
+            if (token) {
+                await this.request("/api/auth/logout", {
+                    method: "POST",
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+            }
+        } catch {}
+        this.clearSession();
+        return true;
+    }
+
     async getLeaderboard(limit = 10) {
         const data = await this.request(`/api/leaderboard?limit=${encodeURIComponent(limit)}`);
         return data.leaderboard || [];
+    }
+
+    async getProfileDetails() {
+        const token = this.storedToken;
+        if (!token) return null;
+        const data = await this.request("/api/me", {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        this.setStoredProfile(data.user || null);
+        return data;
     }
 
     async recordMatch(payload) {

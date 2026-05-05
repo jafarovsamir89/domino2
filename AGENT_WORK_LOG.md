@@ -43,3 +43,19 @@
 3. Record match results and update rating/history.
 4. Sync `www/`, run checks, and push.
 
+## Progress update
+- Fixed the account/language crash caused by `account-btn` being treated like a language switch.
+- Hardened account requests with timeout/offline handling so the UI degrades gracefully when the server is unavailable.
+- Added a profile cabinet with:
+  - avatar
+  - rating / points / wins / matches cards
+  - recent match history
+  - leaderboard
+  - refresh / logout actions
+- Added `/api/auth/logout` and richer `/api/me` payloads with recent matches.
+- Kept solo play independent from account availability, while online room actions now stop cleanly if auth/server setup is unavailable.
+
+## Remaining focus
+1. Sync the updated frontend to `www/`.
+2. Run syntax checks and tests.
+3. Push the fixes so the server can be updated.

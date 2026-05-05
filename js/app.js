@@ -24,6 +24,8 @@ class DominoGame {
         this.network = new NetworkManager(this);
         this.account = new AccountClient(() => this.network.getServerUrl());
         this.accountProfile = this.account.getStoredProfile();
+        this.accountDetails = null;
+        this.accountOnline = false;
         this.currentLang = 'az';
         this.reactionPalette = [
             { code: '1F923', label: 'ROFL' },
@@ -59,9 +61,6 @@ class DominoGame {
         const soloModalClose = document.getElementById('solo-modal-close');
         const onlineModalClose = document.getElementById('online-modal-close');
         const accountModalClose = document.getElementById('account-modal-close');
-        const soloModal = document.getElementById('solo-modal');
-        const onlineModal = document.getElementById('online-modal');
-        const accountModal = document.getElementById('account-modal');
 
         if (openSoloBtn) openSoloBtn.addEventListener('click', () => this.showStartModal('solo'));
         if (openOnlineBtn) openOnlineBtn.addEventListener('click', () => {
@@ -117,7 +116,7 @@ class DominoGame {
         document.getElementById('start-game-btn').addEventListener('click', async () => {
             const name = this.requirePlayerName('solo');
             if (!name) return;
-            await this.ensureGuestAccount(name);
+            await this.ensureGuestAccount(name, { allowOfflineFallback: true });
             this.playerName = name;
             this.isTeamMode = false;
             this.syncMultiplayerOptions();
@@ -158,7 +157,11 @@ class DominoGame {
         document.getElementById('host-game-btn').addEventListener('click', async () => {
             const name = this.requirePlayerName('online');
             if (!name) return;
-            await this.ensureGuestAccount(name);
+            const profile = await this.ensureGuestAccount(name);
+            if (!profile) {
+                this.setHostStatus(this.t('account-server-unavailable'));
+                return;
+            }
             this.playerName = name;
             this.showMultiplayerPanel('host');
             this.setHostStatus(this.t('online-room-status-created'));
@@ -180,7 +183,11 @@ class DominoGame {
             if (!code) return;
             const name = this.requirePlayerName('online');
             if (!name) return;
-            await this.ensureGuestAccount(name);
+            const profile = await this.ensureGuestAccount(name);
+            if (!profile) {
+                this.setJoinStatus(this.t('account-server-unavailable'));
+                return;
+            }
             this.playerName = name;
 
             const btn = document.getElementById('connect-btn');
@@ -222,9 +229,12 @@ class DominoGame {
         const guestAccountBtn = document.getElementById('guest-account-btn');
         const registerAccountBtn = document.getElementById('register-account-btn');
         const loginAccountBtn = document.getElementById('login-account-btn');
+        const refreshAccountBtn = document.getElementById('account-refresh-btn');
+        const logoutAccountBtn = document.getElementById('account-logout-btn');
         if (guestAccountBtn) guestAccountBtn.addEventListener('click', async () => {
             const name = this.readPlayerName('any') || this.accountProfile?.name || 'Player';
-            await this.ensureGuestAccount(name);
+            const profile = await this.ensureGuestAccount(name);
+            if (!profile) return;
             this.renderAccountModal();
             this.renderer.showMessage(this.t('account-guest'), 1500);
         });
@@ -237,13 +247,16 @@ class DominoGame {
                     return;
                 }
                 if (!password) {
-                    this.renderer.showMessage(this.currentLang === 'ru' ? 'Введите пароль' : this.currentLang === 'en' ? 'Enter a password' : 'Şifrə daxil edin', 1800);
+                    this.renderer.showMessage(this.t('account-password-required'), 1800);
                     return;
                 }
                 const result = await this.account.register(name, password);
                 this.accountProfile = result.user || null;
+                this.accountDetails = { user: this.accountProfile, recentMatches: [] };
+                this.accountOnline = true;
                 this.prefillAccountNames();
                 this.renderAccountModal();
+                await this.loadAccountProfile();
                 this.renderer.showMessage(this.t('account-register'), 1500);
             } catch (err) {
                 this.setAccountStatus(err.message || 'Registration failed');
@@ -254,23 +267,39 @@ class DominoGame {
                 const name = this.sanitizeName(document.getElementById('account-name-input')?.value || this.readPlayerName('any') || this.accountProfile?.name || '', '');
                 const password = String(document.getElementById('account-password-input')?.value || '').trim();
                 if (!name || !password) {
-                    this.setAccountStatus(this.currentLang === 'ru' ? 'Введите имя и пароль' : this.currentLang === 'en' ? 'Enter name and password' : 'Ad və şifrə daxil edin');
+                    this.setAccountStatus(this.t('account-name-password-required'));
                     return;
                 }
                 const result = await this.account.login(name, password);
                 this.accountProfile = result.user || null;
+                this.accountDetails = { user: this.accountProfile, recentMatches: [] };
+                this.accountOnline = true;
                 this.prefillAccountNames();
                 this.renderAccountModal();
+                await this.loadAccountProfile();
                 this.renderer.showMessage(this.t('account-login'), 1500);
             } catch (err) {
                 this.setAccountStatus(err.message || 'Login failed');
             }
         });
+        if (refreshAccountBtn) refreshAccountBtn.addEventListener('click', async () => {
+            await this.loadAccountProfile();
+        });
+        if (logoutAccountBtn) logoutAccountBtn.addEventListener('click', async () => {
+            await this.account.logout();
+            this.accountProfile = null;
+            this.accountDetails = null;
+            this.accountOnline = false;
+            this.setAccountStatus('');
+            const pwd = document.getElementById('account-password-input');
+            if (pwd) pwd.value = '';
+            this.renderAccountModal();
+        });
 
-        document.querySelectorAll('.btn-lang').forEach(btn => {
+        document.querySelectorAll('.btn-lang[data-lang]').forEach(btn => {
             btn.addEventListener('click', () => {
                 const lang = btn.dataset.lang;
-                this.setLanguage(lang);
+                if (lang) this.setLanguage(lang);
             });
         });
         this.syncMultiplayerOptions();
@@ -291,8 +320,10 @@ class DominoGame {
     }
 
     async bootstrapAccount() {
-        const profile = await this.account.bootstrap();
-        this.accountProfile = profile || this.account.getStoredProfile();
+        const details = await this.account.bootstrap();
+        this.accountDetails = details;
+        this.accountProfile = details?.user || this.account.getStoredProfile();
+        this.accountOnline = !!details;
         this.prefillAccountNames();
         this.renderAccountModal();
     }
@@ -306,11 +337,53 @@ class DominoGame {
         if (onlineNameInput && !onlineNameInput.value.trim()) onlineNameInput.value = name;
     }
 
-    async ensureGuestAccount(name) {
+    async ensureGuestAccount(name, options = {}) {
+        const allowOfflineFallback = options.allowOfflineFallback === true;
         if (this.account.storedToken && this.accountProfile?.name) return this.accountProfile;
-        const profile = await this.account.createGuest(name || 'Player');
-        this.accountProfile = profile.user || null;
-        return this.accountProfile;
+        try {
+            const profile = await this.account.createGuest(name || 'Player');
+            this.accountProfile = profile.user || null;
+            this.accountDetails = { user: this.accountProfile, recentMatches: [] };
+            this.accountOnline = true;
+            this.renderAccountModal();
+            return this.accountProfile;
+        } catch (err) {
+            this.accountOnline = false;
+            this.setAccountStatus(err.message || this.t('account-server-unavailable'));
+            this.renderAccountModal();
+            if (allowOfflineFallback) {
+                return {
+                    id: '',
+                    name: this.sanitizeName(name || 'Player', 'Player'),
+                    isGuest: true
+                };
+            }
+            return null;
+        }
+    }
+
+    async loadAccountProfile() {
+        if (!this.account.storedToken) {
+            this.accountOnline = false;
+            this.accountDetails = null;
+            this.renderAccountModal();
+            return null;
+        }
+        try {
+            const details = await this.account.getProfileDetails();
+            this.accountDetails = details;
+            this.accountProfile = details?.user || this.accountProfile;
+            this.accountOnline = true;
+            this.prefillAccountNames();
+            this.renderAccountModal();
+            this.setAccountStatus(this.t('account-online'));
+            return details;
+        } catch (err) {
+            this.accountOnline = false;
+            this.setAccountStatus(err.message || this.t('account-server-unavailable'));
+            this.renderAccountModal();
+            return null;
+        }
     }
 
     async openAccountModal() {
@@ -318,6 +391,7 @@ class DominoGame {
         const modal = document.getElementById('account-modal');
         if (modal) modal.classList.add('active');
         this.renderAccountModal();
+        await this.loadAccountProfile();
         await this.loadLeaderboard();
     }
 
@@ -342,6 +416,7 @@ class DominoGame {
         list.innerHTML = `<div class="room-summary">${this.t('account-profile-loading')}</div>`;
         try {
             const rows = await this.account.getLeaderboard(10);
+            this.accountOnline = true;
             if (!rows.length) {
                 list.innerHTML = `<div class="room-summary">${this.t('account-profile-empty')}</div>`;
                 return;
@@ -354,27 +429,73 @@ class DominoGame {
                 list.appendChild(item);
             });
         } catch (err) {
-            list.innerHTML = `<div class="room-summary">${err.message || 'Leaderboard unavailable'}</div>`;
+            this.accountOnline = false;
+            list.innerHTML = `<div class="room-summary">${err.message || this.t('account-server-unavailable')}</div>`;
         }
     }
 
     renderAccountModal() {
         const profile = this.accountProfile;
+        const details = this.accountDetails;
         const summary = document.getElementById('account-profile-summary');
         const nameInput = document.getElementById('account-name-input');
+        const avatar = document.getElementById('account-avatar');
+        const profileName = document.getElementById('account-profile-name');
+        const profileMeta = document.getElementById('account-profile-meta');
+        const ratingValue = document.getElementById('account-rating-value');
+        const pointsValue = document.getElementById('account-points-value');
+        const winsValue = document.getElementById('account-wins-value');
+        const matchesValue = document.getElementById('account-matches-value');
+        const historyList = document.getElementById('account-history-list');
+        const refreshButton = document.getElementById('account-refresh-btn');
+        const logoutButton = document.getElementById('account-logout-btn');
         if (nameInput && !nameInput.value.trim() && profile?.name) {
             nameInput.value = profile.name;
         }
         if (!summary) return;
+        if (refreshButton) refreshButton.disabled = !this.account.storedToken;
+        if (logoutButton) logoutButton.disabled = !this.account.storedToken;
+        if (avatar) avatar.textContent = (profile?.name || 'D').slice(0, 1).toUpperCase();
+        if (profileName) profileName.textContent = profile?.name || 'Domino Player';
+        if (profileMeta) {
+            profileMeta.textContent = profile
+                ? (profile.isGuest ? this.t('account-guest-meta') : `${this.t('account-rating')}: ${profile.rating}`)
+                : this.t('account-profile-empty');
+        }
+        if (ratingValue) ratingValue.textContent = String(profile?.rating ?? 1000);
+        if (pointsValue) pointsValue.textContent = String(profile?.points ?? 0);
+        if (winsValue) winsValue.textContent = String(profile?.wins ?? 0);
+        if (matchesValue) matchesValue.textContent = String(profile?.matchesPlayed ?? 0);
         if (!profile) {
-            summary.textContent = this.t('account-profile-empty');
+            summary.textContent = this.accountOnline ? this.t('account-profile-empty') : this.t('account-offline');
+            if (historyList) historyList.innerHTML = `<div class="room-summary">${this.t('account-history-empty')}</div>`;
             return;
         }
         summary.innerHTML = `
-            <div><strong>${profile.name}</strong></div>
-            <div>${this.t('account-rating')}: ${profile.rating}</div>
+            <div>${this.accountOnline ? this.t('account-online') : this.t('account-offline')}</div>
             <div>${this.t('account-wins')}: ${profile.wins} | ${this.t('account-losses')}: ${profile.losses} | ${this.t('account-draws')}: ${profile.draws}</div>
         `;
+        if (historyList) {
+            const recentMatches = Array.isArray(details?.recentMatches) ? details.recentMatches : [];
+            if (!recentMatches.length) {
+                historyList.innerHTML = `<div class="room-summary">${this.t('account-history-empty')}</div>`;
+            } else {
+                historyList.innerHTML = '';
+                recentMatches.forEach((match) => {
+                    const item = document.createElement('div');
+                    const delta = Number(match.ratingDelta || 0);
+                    const deltaLabel = delta > 0 ? `+${delta}` : `${delta}`;
+                    const resultKey = match.result === 'win'
+                        ? 'account-history-win'
+                        : match.result === 'loss'
+                            ? 'account-history-loss'
+                            : 'account-history-draw';
+                    item.className = 'room-player-chip';
+                    item.innerHTML = `<span>${this.t(resultKey)} · ${match.mode}</span><strong>${deltaLabel}</strong>`;
+                    historyList.appendChild(item);
+                });
+            }
+        }
     }
 
     requirePlayerName(preferred = 'any') {
@@ -830,8 +951,9 @@ class DominoGame {
     }
 
     setLanguage(lang) {
-        this.currentLang = lang;
-        const t = translations[lang];
+        const nextLang = translations[lang] ? lang : (translations[this.currentLang] ? this.currentLang : 'az');
+        this.currentLang = nextLang;
+        const t = translations[nextLang] || translations.az;
         document.querySelectorAll('[data-i18n]').forEach(el => {
             const key = el.dataset.i18n;
             if (t[key]) {
@@ -845,7 +967,7 @@ class DominoGame {
         const reactionBtn = document.getElementById('reaction-btn');
         if (reactionBtn) reactionBtn.title = t['btn-reactions'] || 'Reactions';
         document.querySelectorAll('.btn-lang').forEach(b => {
-            b.classList.toggle('active', b.dataset.lang === lang);
+            b.classList.toggle('active', b.dataset.lang === nextLang);
         });
     }
 

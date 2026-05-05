@@ -18,7 +18,7 @@
             <button class="btn btn-lang active" data-lang="az">AZ</button>
             <button class="btn btn-lang" data-lang="en">EN</button>
             <button class="btn btn-lang" data-lang="ru">RU</button>
-            <button class="btn btn-lang" id="account-btn" data-i18n="account-btn">Hesab</button>
+            <button class="btn btn-account" id="account-btn" data-i18n="account-btn">Hesab</button>
         </div>
 
         <div class="start-shell">
@@ -192,28 +192,69 @@
                     <button class="btn btn-menu modal-close-btn" id="account-modal-close" data-i18n="modal-close">Bağla</button>
                 </div>
 
-                <div class="settings-grid compact-grid">
-                    <div class="settings-group">
-                        <label data-i18n="account-name">Ad</label>
-                        <input type="text" id="account-name-input" placeholder="Adınızı daxil edin" maxlength="12">
-                    </div>
-                    <div class="settings-group">
-                        <label data-i18n="account-password">Şifrə</label>
-                        <input type="password" id="account-password-input" placeholder="Şifrənizi daxil edin" maxlength="64">
-                    </div>
-                    <div class="settings-group field-span-2">
-                        <div id="account-status" class="room-summary"></div>
-                    </div>
+                <div class="account-cabinet">
+                    <section class="account-panel account-profile-panel">
+                        <div class="account-profile-card">
+                            <div class="account-avatar" id="account-avatar">D</div>
+                            <div class="account-profile-copy">
+                                <div class="account-profile-name" id="account-profile-name">Domino Player</div>
+                                <div class="account-profile-meta" id="account-profile-meta">Qonaq profil</div>
+                            </div>
+                        </div>
+                        <div class="account-stats-grid" id="account-stats-grid">
+                            <div class="account-stat-card">
+                                <span data-i18n="account-rating">Reytinq</span>
+                                <strong id="account-rating-value">1000</strong>
+                            </div>
+                            <div class="account-stat-card">
+                                <span data-i18n="account-points">Xal</span>
+                                <strong id="account-points-value">0</strong>
+                            </div>
+                            <div class="account-stat-card">
+                                <span data-i18n="account-wins">Qələbələr</span>
+                                <strong id="account-wins-value">0</strong>
+                            </div>
+                            <div class="account-stat-card">
+                                <span data-i18n="account-matches">Oyunlar</span>
+                                <strong id="account-matches-value">0</strong>
+                            </div>
+                        </div>
+                        <div id="account-profile-summary" class="room-summary"></div>
+                        <div class="account-toolbar">
+                            <button class="btn btn-menu" id="account-refresh-btn" data-i18n="account-refresh">Yenilə</button>
+                            <button class="btn btn-menu" id="account-logout-btn" data-i18n="account-logout">Çıxış</button>
+                        </div>
+                    </section>
+
+                    <section class="account-panel">
+                        <div class="settings-grid compact-grid">
+                            <div class="settings-group">
+                                <label data-i18n="account-name">Ad</label>
+                                <input type="text" id="account-name-input" placeholder="Adınızı daxil edin" maxlength="12">
+                            </div>
+                            <div class="settings-group">
+                                <label data-i18n="account-password">Şifrə</label>
+                                <input type="password" id="account-password-input" placeholder="Şifrənizi daxil edin" maxlength="64">
+                            </div>
+                            <div class="settings-group field-span-2">
+                                <div id="account-status" class="room-summary"></div>
+                            </div>
+                        </div>
+
+                        <div class="multiplayer-actions btn-group">
+                            <button class="btn btn-menu" id="guest-account-btn" data-i18n="account-guest">Qonaq rejimi</button>
+                            <button class="btn btn-action btn-strong" id="register-account-btn" data-i18n="account-register">Qeydiyyat</button>
+                            <button class="btn btn-action" id="login-account-btn" data-i18n="account-login">Giriş</button>
+                        </div>
+                    </section>
                 </div>
 
-                <div class="multiplayer-actions btn-group">
-                    <button class="btn btn-menu" id="guest-account-btn" data-i18n="account-guest">Qonaq rejimi</button>
-                    <button class="btn btn-action btn-strong" id="register-account-btn" data-i18n="account-register">Qeydiyyat</button>
-                    <button class="btn btn-action" id="login-account-btn" data-i18n="account-login">Giriş</button>
+                <div class="account-history">
+                    <div class="section-kicker" data-i18n="account-history">Son oyunlar</div>
+                    <div id="account-history-list" class="room-player-list"></div>
                 </div>
 
-                <div class="multi-panel active">
-                    <div id="account-profile-summary" class="room-summary"></div>
+                <div class="account-history">
                     <div class="section-kicker" data-i18n="account-leaderboard">Liderlər cədvəli</div>
                     <div id="leaderboard-list" class="room-player-list"></div>
                 </div>
