@@ -8,6 +8,7 @@ const DominoRoom = require("./DominoRoom");
 const port = process.env.PORT || 2567;
 const app = express();
 global.__DOMINO_ROOM_CODES = global.__DOMINO_ROOM_CODES || new Map();
+global.__DOMINO_ROOM_IDS = global.__DOMINO_ROOM_IDS || new Map();
 
 app.use(cors());
 app.use(express.json());
@@ -29,6 +30,20 @@ app.get("/room-id/:code", (req, res) => {
         return;
     }
     res.json({ code, roomId });
+});
+
+app.get("/room-code/:roomId", (req, res) => {
+    const roomId = String(req.params.roomId || "").trim();
+    if (!roomId) {
+        res.status(400).json({ error: "Missing roomId" });
+        return;
+    }
+    const roomCode = global.__DOMINO_ROOM_IDS.get(roomId);
+    if (!roomCode) {
+        res.status(404).json({ error: "Room not found" });
+        return;
+    }
+    res.json({ roomId, roomCode });
 });
 
 const server = http.createServer(app);

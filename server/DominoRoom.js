@@ -23,6 +23,7 @@ class DominoRoom extends Room {
     onCreate(options) {
         this.roomCode = generateRoomCode();
         global.__DOMINO_ROOM_CODES?.set(this.roomCode, this.roomId);
+        global.__DOMINO_ROOM_IDS?.set(this.roomId, this.roomCode);
 
         this.setState(new GameState());
         this.state.isTeamMode = options.isTeamMode === true;
@@ -73,6 +74,7 @@ class DominoRoom extends Room {
         if (this.roomCode) {
             global.__DOMINO_ROOM_CODES?.delete(this.roomCode);
         }
+        global.__DOMINO_ROOM_IDS?.delete(this.roomId);
     }
 
     ensureBotPlayers() {

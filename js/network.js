@@ -97,6 +97,21 @@ class NetworkManager {
         }
     }
 
+    async resolveRoomCode(roomId) {
+        const id = String(roomId || '').trim();
+        if (!id) return null;
+        const endpoint = this.getServerUrl().replace(/\/$/, '');
+        try {
+            const response = await fetch(`${endpoint}/room-code/${encodeURIComponent(id)}`);
+            if (!response.ok) return null;
+            const data = await response.json();
+            return data?.roomCode || null;
+        } catch (e) {
+            console.warn('Failed to resolve room id:', e);
+            return null;
+        }
+    }
+
     async connect(mode, onReady, onError, roomId = null) {
         const initialized = await this.initClient();
         if (!initialized) {
@@ -129,7 +144,12 @@ class NetworkManager {
             console.log("Connected! Room ID:", connectedRoomId);
             this.isMultiplayer = true;
             this.setupListeners();
-            if (onReady) onReady(connectedRoomId);
+            if (onReady) {
+                const inviteCode = mode === "create"
+                    ? (await this.resolveRoomCode(connectedRoomId)) || connectedRoomId
+                    : connectedRoomId;
+                onReady(inviteCode);
+            }
 
         } catch (e) {
             console.error("Connection error:", e);
