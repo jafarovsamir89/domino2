@@ -56,11 +56,9 @@
             <section class="modal-card">
                 <div class="modal-header">
                     <div>
-                        <p class="section-kicker" data-i18n="solo-modal-kicker">Solo</p>
                         <h2 data-i18n="solo-modal-title">Solo play</h2>
                         <p class="modal-desc" data-i18n="solo-modal-desc">Pick difficulty, players, and match rules.</p>
                     </div>
-                    <button class="btn btn-menu modal-close-btn" id="solo-modal-close" data-i18n="modal-close">Close</button>
                 </div>
 
                 <div class="settings-grid">
@@ -84,23 +82,28 @@
 
                     <div class="settings-group field-span-2">
                         <label data-i18n="label-name">Your name</label>
-                        <input type="text" id="player-name" data-i18n="placeholder-player-name" placeholder="Enter your name" maxlength="12">
+                        <input type="text" id="player-name" data-i18n="placeholder-player-name" placeholder="Enter your name" maxlength="12" required>
                     </div>
 
-                    <div class="settings-group">
-                        <label data-i18n="label-dloss">Loss threshold</label>
-                        <input type="number" id="dloss-setting" value="255" min="0" max="365">
-                    </div>
+                    <div class="rule-grid field-span-2">
+                        <div class="settings-group">
+                            <label data-i18n="label-dloss">Loss threshold</label>
+                            <input type="number" id="dloss-setting" value="255" min="0" max="365">
+                        </div>
 
-                    <label class="toggle-card field-span-2" for="instant-win-setting">
-                        <input type="checkbox" id="instant-win-setting" checked>
-                        <span class="toggle-copy">
-                            <strong data-i18n="label-instant-win">35 pts = +2 rounds</strong>
-                        </span>
-                    </label>
+                        <label class="toggle-card" for="instant-win-setting">
+                            <input type="checkbox" id="instant-win-setting" checked>
+                            <span class="toggle-copy">
+                                <strong data-i18n="label-instant-win">35 pts = +2 rounds</strong>
+                            </span>
+                        </label>
+                    </div>
                 </div>
 
-                <button class="btn btn-primary btn-large" id="start-game-btn" data-i18n="btn-solo-start">Start solo game</button>
+                <div class="modal-footer modal-footer-split">
+                    <button class="btn btn-primary btn-large modal-primary-btn" id="start-game-btn" data-i18n="btn-solo-start">Start solo game</button>
+                    <button class="btn btn-menu modal-close-btn modal-secondary-btn" id="solo-modal-close" data-i18n="modal-close">Close</button>
+                </div>
             </section>
         </div>
 
@@ -118,7 +121,7 @@
                 <div class="settings-grid compact-grid">
                     <div class="settings-group">
                         <label data-i18n="label-name">Your name</label>
-                        <input type="text" id="player-name-online" data-i18n="placeholder-player-name" placeholder="Enter your name" maxlength="12">
+                        <input type="text" id="player-name-online" data-i18n="placeholder-player-name" placeholder="Enter your name" maxlength="12" required>
                     </div>
 
                     <div class="settings-group">
