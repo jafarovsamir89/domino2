@@ -103,7 +103,7 @@ class DominoGame {
             });
         });
         document.getElementById('start-game-btn').addEventListener('click', () => {
-            const name = this.requirePlayerName('online');
+            const name = this.requirePlayerName('solo');
             if (!name) return;
             this.playerName = name;
             this.isTeamMode = false;
@@ -164,7 +164,7 @@ class DominoGame {
         document.getElementById('connect-btn').addEventListener('click', () => {
             const code = document.getElementById('join-code-input').value.trim().toUpperCase();
             if (!code) return;
-            const name = this.requirePlayerName();
+            const name = this.requirePlayerName('online');
             if (!name) return;
             this.playerName = name;
 
