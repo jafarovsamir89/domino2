@@ -328,22 +328,27 @@ input, button { font: inherit; }
 
 .rule-grid {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-columns: 1fr;
+    gap: 8px;
+}
+
+.rule-title {
+    width: 100%;
+    text-align: center;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+.rule-bottom {
+    display: grid;
+    grid-template-columns: 30% 70%;
     gap: 12px;
     align-items: center;
-}
-
-.loss-block {
-    display: grid;
-    gap: 8px;
-    justify-items: center;
-    min-height: 56px;
-}
-
-.loss-block label {
-    margin-bottom: 0;
-    text-align: center;
     width: 100%;
+    min-height: 56px;
 }
 
 .field-span-2 {
@@ -379,9 +384,9 @@ input, button { font: inherit; }
 }
 
 .loss-input {
-    width: 132px;
-    max-width: 132px;
-    justify-self: center;
+    width: 100%;
+    max-width: none;
+    justify-self: stretch;
 }
 
 .settings-group input:focus,
@@ -1052,11 +1057,7 @@ input, button { font: inherit; }
     }
 
     .rule-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .loss-block {
-        min-height: auto;
+        gap: 8px;
     }
 
     .start-actions {
