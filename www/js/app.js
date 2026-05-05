@@ -476,7 +476,7 @@ class DominoGame {
             btn.innerHTML = this.buildReactionMarkup(reaction, 48);
             btn.addEventListener('click', (event) => {
                 event.stopPropagation();
-                this.sendReaction(reaction.id);
+                this.sendReaction(reaction.code);
             });
             this.reactionPicker.appendChild(btn);
         }
