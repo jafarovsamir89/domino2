@@ -497,10 +497,9 @@ class DominoGame {
         const callbackURL = `${window.location.origin}${window.location.pathname}${window.location.search}`;
         const authOrigin = String(this.account?.platformApiBase || `${window.location.protocol}//${window.location.hostname}/api`)
             .replace(/\/api\/?$/, "/");
-        const loginURL = new URL("/login", authOrigin);
-        loginURL.searchParams.set("callbackURL", callbackURL);
-        loginURL.searchParams.set("autogoogle", "1");
-        window.location.assign(loginURL.toString());
+        const googleAuthURL = new URL("/auth/google", authOrigin);
+        googleAuthURL.searchParams.set("callbackURL", callbackURL);
+        window.location.assign(googleAuthURL.toString());
     }
 
     async loadLeaderboard() {

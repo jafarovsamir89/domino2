@@ -375,3 +375,9 @@
   - added `.deploy/` to `.gitignore`
   - removed committed temporary SSH keys from `.deploy/gcloud-ssh`
 - Verified the repo-local SSH key can connect to the VM with plain `ssh` and the deploy flow can rebuild the platform stack.
+
+## 2026-05-07 Google OAuth direct flow
+- Replaced game Google redirect from /login?autogoogle=1 to /auth/google.
+- Added dedicated Next.js route apps/admin/app/auth/google/page.tsx to start Better Auth Google sign-in without showing the dashboard login form.
+- Fixed relative import path for authClient and re-ran admin build.
+
