@@ -1,4 +1,3 @@
-const ACCOUNT_TOKEN_KEY = "dominoAuthToken";
 const ACCOUNT_PROFILE_KEY = "dominoAuthProfile";
 const PLATFORM_GAME_TOKEN_KEY = "dominoPlatformGameToken";
 const PLATFORM_PROFILE_KEY = "dominoPlatformProfile";
@@ -109,21 +108,6 @@ export class AccountClient {
         }
     }
 
-    get storedToken() {
-        try {
-            return window.localStorage?.getItem(ACCOUNT_TOKEN_KEY) || "";
-        } catch {
-            return "";
-        }
-    }
-
-    setStoredToken(token) {
-        try {
-            if (token) window.localStorage?.setItem(ACCOUNT_TOKEN_KEY, token);
-            else window.localStorage?.removeItem(ACCOUNT_TOKEN_KEY);
-        } catch {}
-    }
-
     getStoredProfile() {
         try {
             const raw = window.localStorage?.getItem(ACCOUNT_PROFILE_KEY);
@@ -172,7 +156,6 @@ export class AccountClient {
     }
 
     clearSession() {
-        this.setStoredToken("");
         this.setStoredProfile(null);
         this.setPlatformGameToken("");
         this.setPlatformProfile(null);
@@ -285,10 +268,9 @@ export class AccountClient {
 
             const normalized = normalizeProfile(data, "better-auth");
             this.setPlatformGameToken(data.token);
-            this.setPlatformProfile(normalized.profile);
-            this.setStoredProfile(normalized.profile);
-            this.setStoredToken("");
-            return normalized;
+        this.setPlatformProfile(normalized.profile);
+        this.setStoredProfile(normalized.profile);
+        return normalized;
         } catch {
             return null;
         }
@@ -331,7 +313,6 @@ export class AccountClient {
             recentMatches: []
         }, "local-guest");
         this.setStoredProfile(normalized.profile);
-        this.setStoredToken("");
         return normalized;
     }
 

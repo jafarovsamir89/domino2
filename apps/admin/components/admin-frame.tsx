@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 
 type AdminFrameProps = {
-  active?: "dashboard" | "players" | "reports" | "bans" | "home" | "auth";
+  active?: "dashboard" | "players" | "reports" | "bans" | "audit" | "home" | "auth";
   actions?: ReactNode;
   children: ReactNode;
   description?: string;
@@ -15,7 +15,8 @@ const NAV_ITEMS = [
   { href: "/dashboard", label: "Dashboard", key: "dashboard" },
   { href: "/players", label: "Players", key: "players" },
   { href: "/reports", label: "Reports", key: "reports" },
-  { href: "/bans", label: "Bans", key: "bans" }
+  { href: "/bans", label: "Bans", key: "bans" },
+  { href: "/audit", label: "Audit", key: "audit" }
 ] as const;
 
 export function AdminFrame({

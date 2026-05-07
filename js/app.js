@@ -1617,7 +1617,8 @@ class DominoGame {
 
     async recordLocalMatchResult(winnerIndex) {
         if (this.network.isMultiplayer) return;
-        if (!this.account?.storedToken) return;
+        const platformToken = this.account?.getRoomAuthToken?.();
+        if (!platformToken) return;
         try {
             const participants = this.playerNames.map((name, index) => ({
                 isSelf: index === this.humanPlayerIndex,

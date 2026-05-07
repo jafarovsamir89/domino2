@@ -121,7 +121,7 @@ class NetworkManager {
         try {
             const options = {
                 name: this.game.playerName,
-                authToken: this.game.account?.getRoomAuthToken?.() || this.game.account?.storedToken || '',
+                authToken: this.game.account?.getRoomAuthToken?.() || '',
                 isTeamMode: this.game.isTeamMode,
                 playerCount: this.game.onlinePlayerCount,
                 aiCount: this.game.onlineAiCount,

@@ -263,6 +263,33 @@ export class AdminService {
     };
   }
 
+  async listAuditLogs(headers: AdminHeaders, limit: unknown, offset: unknown) {
+    await this.requireAdmin(headers);
+
+    const take = normalizePageSize(limit, 50);
+    const skip = normalizeOffset(offset);
+
+    const logs = await this.prisma.adminAuditLog.findMany({
+      take,
+      skip,
+      orderBy: {
+        createdAt: "desc"
+      },
+      include: {
+        adminUser: true
+      }
+    });
+
+    return {
+      items: logs,
+      pagination: {
+        limit: take,
+        offset: skip,
+        hasMore: logs.length === take
+      }
+    };
+  }
+
   async banPlayer(headers: AdminHeaders, playerId: string, body: { reason?: string; expiresAt?: string | null }) {
     const session = await this.requireAdmin(headers);
     const reason = String(body.reason || "").trim();

@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { ActionButton } from "../../components/action-button";
 import Link from "next/link";
 
 import { AdminFrame } from "../../components/admin-frame";
@@ -121,6 +122,19 @@ export default async function PlayersPage({
                     <Link href={`/players/${player.id}`} style={actionLinkStyle}>
                       Open
                     </Link>
+                    {!player.isGuest ? (
+                      <div style={actionStackStyle}>
+                        <ActionButton
+                          endpoint={`/admin/players/${player.id}/ban`}
+                          label="Ban 24h"
+                          variant="danger"
+                          body={{
+                            reason: "Manual moderation",
+                            expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+                          }}
+                        />
+                      </div>
+                    ) : null}
                   </Td>
                 </tr>
               ))
@@ -225,4 +239,10 @@ const actionLinkStyle = {
   color: "#38bdf8",
   textDecoration: "none",
   fontWeight: 700
+} as const;
+
+const actionStackStyle = {
+  marginTop: 10,
+  display: "grid",
+  gap: 8
 } as const;

@@ -38,6 +38,7 @@ export default function HomePage() {
         <NavCard href="/players" title="Players" meta="Identity, stats and auth-link inspection." />
         <NavCard href="/reports" title="Reports" meta="Open abuse reports and moderation workflow." />
         <NavCard href="/bans" title="Bans" meta="Active bans and revocation actions." />
+        <NavCard href="/audit" title="Audit log" meta="Track moderation actions and admin activity." />
         <NavCard href="/login" title="Login" meta="Better Auth entry point for admins and moderators." />
       </section>
     </AdminFrame>
