@@ -1475,13 +1475,17 @@ class DominoGame {
         const hand=this.hands[pi];
         const matches=this.goshaCombo.matches;
         const sorted=[...matches].sort((a,b)=>b.tileIndex-a.tileIndex);
-        const tiles=sorted.map(m=>hand[m.tileIndex]);
+        const tilesByIndex = new Map(matches.map((m) => [m.tileIndex, hand[m.tileIndex]]));
         for(const m of sorted) hand.splice(m.tileIndex,1);
-        const bySorted=[...matches].sort((a,b)=>b.openEndIndex-a.openEndIndex);
         let score=0;
-        for(const m of bySorted){
-            const tile=tiles.find(t=>t.isDouble&&t.a===this.board.openEnds[m.openEndIndex].value);
-            score=this.board.placeTile(tile,m.openEndIndex);
+        for(const m of matches){
+            const openEndIndex = this.board.findOpenEndIndex(m.nodeId, m.side);
+            const tile = tilesByIndex.get(m.tileIndex);
+            if(openEndIndex === -1 || !tile){
+                this.turnInProgress=false;
+                return;
+            }
+            score=this.board.placeTile(tile,openEndIndex);
         }
         this.renderState();
         
@@ -1543,8 +1547,6 @@ class DominoGame {
     }
 
     addScore(pi,score){
-        const currentScore = this.isTeamMode ? this.teamScores[this.getTeam(pi)] : this.scores[pi];
-        if (currentScore >= TARGET) return 0;
         this.scores[pi]+=score; if(this.isTeamMode)this.teamScores[this.getTeam(pi)]+=score;
         this.playSound('score'); this.renderer.showScorePopup(score);
         this.broadcastMsg(`${this.playerNames[pi]} +${score}!`,2000);
@@ -1552,9 +1554,9 @@ class DominoGame {
     }
     checkEnd(pi,score){
         if(this.instantWinEnabled && score>=IWIN){
-            this.gameActive=false; this.playSound('win');
+            this.gameActive=false; this.roundOver=true; this.matchOver=true; this.turnInProgress=false; this.playSound('win');
             if(this.isTeamMode)this.teamRoundWins[this.getTeam(pi)]+=2;else this.roundWins[pi]+=2;
-            this.matchOver=true; this.renderState(); 
+            this.renderState();
             setTimeout(() => this.renderer.showInstantWin(this.playerNames[pi],score), 800);
             return true;
         }

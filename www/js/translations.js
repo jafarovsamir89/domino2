@@ -8,7 +8,7 @@ export const translations = {
         "diff-medium": "Orta",
         "diff-hard": "Çətin",
         "label-name": "Adınız",
-        "label-instant-win": "35 xal = partiya + 2 raund",
+        "label-instant-win": "35 xal = oyun dərhal bitir",
         "label-dloss": "Məğlubiyyət həddi",
         "label-rules": "Qaydalar",
         "rule-match": "365 xal • 3 raund",
@@ -57,7 +57,7 @@ export const translations = {
         "next-round": "Növbəti raund",
         "summary-title": "Nəticə",
         "instant-win-title": "{player}: {score} xalla ani qələbə!",
-        "instant-win-body": "Bir gedişlə +2 raund qazandı",
+        "instant-win-body": "Bir gedişlə oyun bitir",
         "won-suffix": "qalib gəldi!",
         "team-a": "Komanda A",
         "team-b": "Komanda B",
@@ -104,8 +104,15 @@ export const translations = {
         ,"account-name": "Ad"
         ,"account-password": "Şifrə"
         ,"account-guest": "Qonaq rejimi"
+        ,"account-create-account": "Hesab yarat"
         ,"account-register": "Qeydiyyat"
         ,"account-login": "Giriş"
+        ,"account-login-tab": "Giriş"
+        ,"account-register-tab": "Qeydiyyat"
+        ,"account-google": "Google ilə giriş"
+        ,"account-auth-kicker": "Giriş"
+        ,"account-auth-title": "Hesaba daxil ol"
+        ,"account-auth-desc": "Reytinqin, oyun tarixçən və Google girişi üçün hesabına daxil ol."
         ,"account-profile": "Profil"
         ,"account-profile-empty": "Hələ profil yoxdur"
         ,"account-profile-loading": "Profil yüklənir..."
@@ -139,7 +146,7 @@ export const translations = {
         "diff-medium": "Medium",
         "diff-hard": "Hard",
         "label-name": "Your name",
-        "label-instant-win": "35 pts = match + 2 rounds",
+        "label-instant-win": "35 pts = match ends immediately",
         "label-dloss": "Loss threshold",
         "label-rules": "Rules",
         "rule-match": "365 points • 3 rounds",
@@ -188,7 +195,7 @@ export const translations = {
         "next-round": "Next round",
         "summary-title": "Summary",
         "instant-win-title": "{player}: instant win with {score} points!",
-        "instant-win-body": "+2 rounds from a single move",
+        "instant-win-body": "One move ends the match",
         "won-suffix": "won!",
         "team-a": "Team A",
         "team-b": "Team B",
@@ -235,8 +242,15 @@ export const translations = {
         ,"account-name": "Name"
         ,"account-password": "Password"
         ,"account-guest": "Guest mode"
+        ,"account-create-account": "Create account"
         ,"account-register": "Register"
         ,"account-login": "Login"
+        ,"account-login-tab": "Login"
+        ,"account-register-tab": "Register"
+        ,"account-google": "Continue with Google"
+        ,"account-auth-kicker": "Access"
+        ,"account-auth-title": "Sign in to your account"
+        ,"account-auth-desc": "Use your account to keep rating, match history, and Google login in one place."
         ,"account-profile": "Profile"
         ,"account-profile-empty": "No profile yet"
         ,"account-profile-loading": "Loading profile..."
@@ -366,8 +380,15 @@ export const translations = {
         ,"account-name": "Имя"
         ,"account-password": "Пароль"
         ,"account-guest": "Гостевой режим"
+        ,"account-create-account": "Создать аккаунт"
         ,"account-register": "Регистрация"
         ,"account-login": "Вход"
+        ,"account-login-tab": "Вход"
+        ,"account-register-tab": "Регистрация"
+        ,"account-google": "Войти через Google"
+        ,"account-auth-kicker": "Доступ"
+        ,"account-auth-title": "Войти в аккаунт"
+        ,"account-auth-desc": "Используйте аккаунт, чтобы хранить рейтинг, историю матчей и вход через Google."
         ,"account-profile": "Профиль"
         ,"account-profile-empty": "Профиль пока не создан"
         ,"account-profile-loading": "Загрузка профиля..."

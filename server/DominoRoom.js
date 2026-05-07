@@ -604,14 +604,17 @@ class DominoRoom extends Room {
         const hand = this.hands[pi];
         const matches = combo.matches;
         const sorted = [...matches].sort((a, b) => b.tileIndex - a.tileIndex);
-        const tiles = sorted.map((m) => hand[m.tileIndex]);
+        const tilesByIndex = new Map(matches.map((m) => [m.tileIndex, hand[m.tileIndex]]));
         for (const m of sorted) hand.splice(m.tileIndex, 1);
 
-        const bySorted = [...matches].sort((a, b) => b.openEndIndex - a.openEndIndex);
         let score = 0;
-        for (const m of bySorted) {
-            const tile = tiles.find((t) => t.isDouble && t.a === this.internalBoard.openEnds[m.openEndIndex].value);
-            score = this.internalBoard.placeTile(tile, m.openEndIndex);
+        for (const m of matches) {
+            const openEndIndex = this.internalBoard.findOpenEndIndex(m.nodeId, m.side);
+            const tile = tilesByIndex.get(m.tileIndex);
+            if (openEndIndex === -1 || !tile) {
+                return;
+            }
+            score = this.internalBoard.placeTile(tile, openEndIndex);
         }
 
         if (score > 0) this.addScore(pi, score);
@@ -670,9 +673,6 @@ class DominoRoom extends Room {
         const sessionId = this.state.playerOrder[pi];
         const player = this.state.players.get(sessionId);
         if (!player) return 0;
-
-        const currentScore = this.state.isTeamMode ? this.state.teamScores[pi % 2] : player.score;
-        if (currentScore >= TARGET) return 0;
 
         player.score += score;
         
@@ -775,7 +775,7 @@ class DominoRoom extends Room {
             if (this.state.players.get(winnerSid)) this.state.players.get(winnerSid).roundWins += wins;
         }
 
-        const isMatchOver = this.state.matchRound >= MAX_R;
+        const isMatchOver = !!isInstantWin || this.state.matchRound >= MAX_R;
 
         // Build player data for the round end screen
         const playerData = [];
@@ -802,7 +802,7 @@ class DominoRoom extends Room {
             players: playerData
         });
 
-        if (this.state.matchRound >= MAX_R) {
+        if (isMatchOver) {
             this.recordMatchResult(wi, !!isInstantWin, playerData, wins);
         }
 

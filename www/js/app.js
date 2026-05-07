@@ -26,6 +26,9 @@ class DominoGame {
         this.accountProfile = this.account.getStoredProfile();
         this.accountDetails = null;
         this.accountOnline = false;
+        this.accountMode = 'login';
+        this.localPresenceLastSentAt = 0;
+        this.localPresenceClearQueued = false;
         this.currentLang = 'az';
         this.reactionPalette = [
             { code: '1F923', label: 'ROFL' },
@@ -226,19 +229,45 @@ class DominoGame {
             this.resetMultiplayerPanels(true);
         });
 
+        const loginTabBtn = document.getElementById('login-tab-btn');
+        const registerTabBtn = document.getElementById('register-tab-btn');
+        const loginForm = document.getElementById('account-login-form');
+        const registerForm = document.getElementById('account-register-form');
         const guestAccountBtn = document.getElementById('guest-account-btn');
-        const registerAccountBtn = document.getElementById('register-account-btn');
-        const loginAccountBtn = document.getElementById('login-account-btn');
+        const createAccountBtn = document.getElementById('create-account-btn');
+        const googleLoginBtn = document.getElementById('google-login-btn');
         const refreshAccountBtn = document.getElementById('account-refresh-btn');
         const logoutAccountBtn = document.getElementById('account-logout-btn');
-        if (guestAccountBtn) guestAccountBtn.addEventListener('click', async () => {
-            const name = this.readPlayerName('any') || this.accountProfile?.name || 'Player';
-            const profile = await this.ensureGuestAccount(name);
-            if (!profile) return;
-            this.renderAccountModal();
-            this.renderer.showMessage(this.t('account-guest'), 1500);
+
+        if (loginTabBtn) loginTabBtn.addEventListener('click', () => this.setAccountMode('login'));
+        if (registerTabBtn) registerTabBtn.addEventListener('click', () => this.setAccountMode('register'));
+
+        if (loginForm) loginForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            try {
+                const email = String(document.getElementById('account-login-email-input')?.value || this.accountProfile?.email || '').trim();
+                const password = String(document.getElementById('account-login-password-input')?.value || '').trim();
+                if (!email || !password) {
+                    this.setAccountStatus(this.t('account-name-password-required'));
+                    return;
+                }
+                const result = await this.account.login({ email, password });
+                this.accountProfile = result.profile || result.user || null;
+                this.accountDetails = result;
+                this.accountOnline = true;
+                this.prefillAccountNames();
+                this.setAccountMode('profile');
+                this.renderAccountModal();
+                this.syncStartAuthButton();
+                await this.loadAccountProfile();
+                this.renderer.showMessage(this.t('account-login'), 1500);
+            } catch (err) {
+                this.setAccountStatus(err.message || 'Login failed');
+            }
         });
-        if (registerAccountBtn) registerAccountBtn.addEventListener('click', async () => {
+
+        if (registerForm) registerForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
             try {
                 const name = this.sanitizeName(document.getElementById('account-name-input')?.value || this.readPlayerName('any') || this.accountProfile?.name || '', '');
                 const email = String(document.getElementById('account-email-input')?.value || this.accountProfile?.email || '').trim();
@@ -248,7 +277,7 @@ class DominoGame {
                     return;
                 }
                 if (!password) {
-                    this.renderer.showMessage(this.t('account-password-required'), 1800);
+                    this.setAccountStatus(this.t('account-password-required'));
                     return;
                 }
                 const result = await this.account.register({ name, email, password });
@@ -256,6 +285,7 @@ class DominoGame {
                 this.accountDetails = result;
                 this.accountOnline = true;
                 this.prefillAccountNames();
+                this.setAccountMode('profile');
                 this.renderAccountModal();
                 this.syncStartAuthButton();
                 await this.loadAccountProfile();
@@ -264,43 +294,72 @@ class DominoGame {
                 this.setAccountStatus(err.message || 'Registration failed');
             }
         });
-        if (loginAccountBtn) loginAccountBtn.addEventListener('click', async () => {
-            try {
-                const name = this.sanitizeName(document.getElementById('account-name-input')?.value || this.readPlayerName('any') || this.accountProfile?.name || '', '');
-                const email = String(document.getElementById('account-email-input')?.value || this.accountProfile?.email || '').trim();
-                const password = String(document.getElementById('account-password-input')?.value || '').trim();
-                if (!name || !password) {
-                    this.setAccountStatus(this.t('account-name-password-required'));
-                    return;
-                }
-                const result = await this.account.login({ name, email, password });
-                this.accountProfile = result.profile || result.user || null;
-                this.accountDetails = result;
-                this.accountOnline = true;
-                this.prefillAccountNames();
-                this.renderAccountModal();
-                this.syncStartAuthButton();
-                await this.loadAccountProfile();
-                this.renderer.showMessage(this.t('account-login'), 1500);
-            } catch (err) {
-                this.setAccountStatus(err.message || 'Login failed');
+
+        if (googleLoginBtn) googleLoginBtn.addEventListener('click', () => {
+            this.startGoogleAccountSignIn();
+        });
+
+        if (guestAccountBtn) guestAccountBtn.addEventListener('click', async () => {
+            const name = this.readPlayerName('any') || this.accountProfile?.name || 'Player';
+            const profile = await this.ensureGuestAccount(name);
+            if (!profile) return;
+            this.setAccountMode('profile');
+            this.renderAccountModal();
+            this.renderer.showMessage(this.t('account-guest'), 1500);
+        });
+        if (createAccountBtn) createAccountBtn.addEventListener('click', () => {
+            const guestName = this.accountProfile?.provider === 'local-guest'
+                ? (this.accountProfile?.name || this.readPlayerName('any') || '')
+                : (this.readPlayerName('any') || this.accountProfile?.name || '');
+            if (guestName) {
+                const registerName = document.getElementById('account-name-input');
+                if (registerName && !registerName.value.trim()) registerName.value = guestName;
+                const soloName = document.getElementById('player-name');
+                const onlineName = document.getElementById('player-name-online');
+                if (soloName && !soloName.value.trim()) soloName.value = guestName;
+                if (onlineName && !onlineName.value.trim()) onlineName.value = guestName;
             }
+            this.setAccountMode('register');
+            const emailInput = document.getElementById('account-email-input');
+            emailInput?.focus?.();
         });
         if (refreshAccountBtn) refreshAccountBtn.addEventListener('click', async () => {
             await this.loadAccountProfile();
         });
         if (logoutAccountBtn) logoutAccountBtn.addEventListener('click', async () => {
+            const wasGuest = this.accountProfile?.provider === 'local-guest';
+            const guestName = this.accountProfile?.name || this.readPlayerName('any') || '';
+            if (wasGuest) {
+                await this.clearLocalPresence();
+                this.account?.clearLocalGameSessionId?.();
+            }
             await this.account.logout();
             this.accountProfile = null;
             this.accountDetails = null;
             this.accountOnline = false;
+            this.setAccountMode(wasGuest ? 'register' : 'login');
             this.setAccountStatus('');
+            if (wasGuest && guestName) {
+                const registerName = document.getElementById('account-name-input');
+                const soloName = document.getElementById('player-name');
+                const onlineName = document.getElementById('player-name-online');
+                if (registerName && !registerName.value.trim()) registerName.value = guestName;
+                if (soloName && !soloName.value.trim()) soloName.value = guestName;
+                if (onlineName && !onlineName.value.trim()) onlineName.value = guestName;
+            }
             const email = document.getElementById('account-email-input');
             if (email) email.value = '';
+            const loginEmail = document.getElementById('account-login-email-input');
+            if (loginEmail) loginEmail.value = '';
             const pwd = document.getElementById('account-password-input');
             if (pwd) pwd.value = '';
+            const loginPwd = document.getElementById('account-login-password-input');
+            if (loginPwd) loginPwd.value = '';
             this.renderAccountModal();
             this.syncStartAuthButton();
+            if (wasGuest) {
+                document.getElementById('account-email-input')?.focus?.();
+            }
         });
 
         document.querySelectorAll('.btn-lang[data-lang]').forEach(btn => {
@@ -332,6 +391,7 @@ class DominoGame {
         this.accountDetails = details;
         this.accountProfile = details?.profile || details?.user || this.account.getStoredProfile();
         this.accountOnline = !!details;
+        this.accountMode = this.accountProfile ? 'profile' : 'login';
         this.prefillAccountNames();
         this.renderAccountModal();
         this.syncStartAuthButton();
@@ -345,10 +405,12 @@ class DominoGame {
         const onlineNameInput = document.getElementById('player-name-online');
         const accountNameInput = document.getElementById('account-name-input');
         const accountEmailInput = document.getElementById('account-email-input');
+        const loginEmailInput = document.getElementById('account-login-email-input');
         if (soloNameInput && !soloNameInput.value.trim()) soloNameInput.value = name;
         if (onlineNameInput && !onlineNameInput.value.trim()) onlineNameInput.value = name;
         if (accountNameInput && !accountNameInput.value.trim()) accountNameInput.value = name;
         if (accountEmailInput && !accountEmailInput.value.trim() && email) accountEmailInput.value = email;
+        if (loginEmailInput && !loginEmailInput.value.trim() && email) loginEmailInput.value = email;
     }
 
     async ensureGuestAccount(name, options = {}) {
@@ -359,6 +421,7 @@ class DominoGame {
             this.accountProfile = profile.profile || profile.user || null;
             this.accountDetails = profile;
             this.accountOnline = true;
+            this.accountMode = 'profile';
             this.renderAccountModal();
             this.syncStartAuthButton();
             return this.accountProfile;
@@ -370,6 +433,7 @@ class DominoGame {
             if (allowOfflineFallback) {
                 return {
                     id: '',
+                    sessionId: this.account?.getLocalGameSessionId?.() || '',
                     name: this.sanitizeName(name || 'Player', 'Player'),
                     isGuest: true
                 };
@@ -380,8 +444,50 @@ class DominoGame {
 
     async loadAccountProfile() {
         if (!this.account.getRoomAuthToken()) {
+            const storedProfile = this.account.getStoredProfile?.();
+            if (storedProfile?.provider === 'local-guest') {
+                this.accountProfile = storedProfile;
+                this.accountDetails = {
+                    profile: storedProfile,
+                    user: {
+                        id: '',
+                        name: storedProfile.name || 'Player',
+                        email: '',
+                        role: 'player',
+                        image: null
+                    },
+                    player: {
+                        id: '',
+                        displayName: storedProfile.name || 'Player',
+                        avatarSeed: null,
+                        language: null,
+                        createdAt: new Date().toISOString(),
+                        updatedAt: new Date().toISOString()
+                    },
+                    stats: {
+                        rating: 1000,
+                        points: 0,
+                        wins: 0,
+                        losses: 0,
+                        draws: 0,
+                        matchesPlayed: 0,
+                        currentStreak: 0,
+                        bestStreak: 0
+                    },
+                    recentMatches: [],
+                    session: null,
+                    token: null
+                };
+                this.accountOnline = true;
+                this.accountMode = 'profile';
+                this.renderAccountModal();
+                this.syncStartAuthButton();
+                return this.accountDetails;
+            }
+
             this.accountOnline = false;
             this.accountDetails = null;
+            this.accountProfile = null;
             this.renderAccountModal();
             return null;
         }
@@ -390,6 +496,7 @@ class DominoGame {
             this.accountDetails = details;
             this.accountProfile = details?.profile || details?.user || this.accountProfile;
             this.accountOnline = true;
+            if (this.accountProfile) this.accountMode = 'profile';
             this.prefillAccountNames();
             this.renderAccountModal();
             this.syncStartAuthButton();
@@ -408,6 +515,7 @@ class DominoGame {
         this.closeStartModals();
         const modal = document.getElementById('account-modal');
         if (modal) modal.classList.add('active');
+        this.accountMode = this.accountProfile ? 'profile' : 'login';
         this.renderAccountModal();
         this.syncStartAuthButton();
         await this.loadAccountProfile();
@@ -427,6 +535,50 @@ class DominoGame {
     setAccountStatus(text) {
         const el = document.getElementById('account-status');
         if (el) el.textContent = text || '';
+        const registerStatus = document.getElementById('account-register-status');
+        if (registerStatus) registerStatus.textContent = text || '';
+    }
+
+    syncAccountUiChrome() {
+        const closeButton = document.getElementById('account-modal-close');
+        if (closeButton) {
+            closeButton.textContent = 'x';
+            closeButton.title = this.t('modal-close');
+            closeButton.setAttribute('aria-label', this.t('modal-close'));
+        }
+
+        const placeholders = [
+            ['account-login-email-input', 'Email address'],
+            ['account-email-input', 'Email address'],
+            ['account-login-password-input', 'Enter your password'],
+            ['account-password-input', 'Create a password'],
+            ['account-name-input', 'Player name']
+        ];
+
+        placeholders.forEach(([id, value]) => {
+            const input = document.getElementById(id);
+            if (input) input.setAttribute('placeholder', value);
+        });
+    }
+
+    setAccountMode(mode) {
+        if (mode === 'profile') {
+            this.accountMode = 'profile';
+        } else if (mode === 'register') {
+            this.accountMode = 'register';
+        } else {
+            this.accountMode = 'login';
+        }
+        this.renderAccountModal();
+    }
+
+    startGoogleAccountSignIn() {
+        const callbackURL = `${window.location.origin}${window.location.pathname}${window.location.search}`;
+        const authOrigin = String(this.account?.platformApiBase || `${window.location.protocol}//${window.location.hostname}/api`)
+            .replace(/\/api\/?$/, "/");
+        const googleAuthURL = new URL("/auth/google", authOrigin);
+        googleAuthURL.searchParams.set("callbackURL", callbackURL);
+        window.location.assign(googleAuthURL.toString());
     }
 
     async loadLeaderboard() {
@@ -456,9 +608,22 @@ class DominoGame {
     renderAccountModal() {
         const profile = this.accountProfile;
         const details = this.accountDetails;
+        const profilePanel = document.getElementById('account-profile-panel');
+        const authPanel = document.getElementById('account-auth-panel');
+        const loginForm = document.getElementById('account-login-form');
+        const registerForm = document.getElementById('account-register-form');
+        const loginTabBtn = document.getElementById('login-tab-btn');
+        const registerTabBtn = document.getElementById('register-tab-btn');
+        const createAccountBtn = document.getElementById('create-account-btn');
+        const title = document.getElementById('account-modal-title');
+        const historyPanel = document.getElementById('account-history-panel');
+        const leaderboardPanel = document.getElementById('account-leaderboard-panel');
         const summary = document.getElementById('account-profile-summary');
         const nameInput = document.getElementById('account-name-input');
         const emailInput = document.getElementById('account-email-input');
+        const loginEmailInput = document.getElementById('account-login-email-input');
+        const loginPasswordInput = document.getElementById('account-login-password-input');
+        const registerPasswordInput = document.getElementById('account-password-input');
         const avatar = document.getElementById('account-avatar');
         const profileName = document.getElementById('account-profile-name');
         const profileMeta = document.getElementById('account-profile-meta');
@@ -469,15 +634,35 @@ class DominoGame {
         const historyList = document.getElementById('account-history-list');
         const refreshButton = document.getElementById('account-refresh-btn');
         const logoutButton = document.getElementById('account-logout-btn');
+        this.syncAccountUiChrome();
         if (nameInput && !nameInput.value.trim() && profile?.name) {
             nameInput.value = profile.name;
         }
         if (emailInput && !emailInput.value.trim() && profile?.email) {
             emailInput.value = profile.email;
         }
+        if (loginEmailInput && !loginEmailInput.value.trim() && profile?.email) {
+            loginEmailInput.value = profile.email;
+        }
         if (!summary) return;
-        if (refreshButton) refreshButton.disabled = !this.account.getRoomAuthToken();
-        if (logoutButton) logoutButton.disabled = !this.account.getRoomAuthToken();
+        const isAuthenticated = Boolean(profile && this.accountOnline);
+        if (title) title.textContent = isAuthenticated ? this.t('account-profile') : this.t('account-auth-title');
+        if (profilePanel) profilePanel.classList.toggle('is-hidden', !isAuthenticated);
+        if (authPanel) authPanel.classList.toggle('is-hidden', isAuthenticated);
+        if (historyPanel) historyPanel.classList.add('is-hidden');
+        if (leaderboardPanel) leaderboardPanel.classList.add('is-hidden');
+        if (loginForm) loginForm.classList.toggle('active', !isAuthenticated && this.accountMode !== 'register');
+        if (registerForm) registerForm.classList.toggle('active', !isAuthenticated && this.accountMode === 'register');
+        if (loginTabBtn) loginTabBtn.classList.toggle('active', this.accountMode !== 'register');
+        if (registerTabBtn) registerTabBtn.classList.toggle('active', this.accountMode === 'register');
+        if (createAccountBtn) createAccountBtn.classList.toggle('is-hidden', !(profile?.provider === 'local-guest' && !isAuthenticated));
+        if (loginEmailInput && !isAuthenticated && !loginEmailInput.value.trim() && profile?.email) loginEmailInput.value = profile.email;
+        if (loginPasswordInput && isAuthenticated) loginPasswordInput.value = '';
+        if (registerPasswordInput && isAuthenticated) registerPasswordInput.value = '';
+        const canRefresh = Boolean(this.account.getRoomAuthToken()) || profile?.provider === 'local-guest';
+        const canLogout = Boolean(this.account.getRoomAuthToken()) || profile?.provider === 'local-guest';
+        if (refreshButton) refreshButton.disabled = !canRefresh;
+        if (logoutButton) logoutButton.disabled = !canLogout;
         if (avatar) avatar.textContent = (profile?.name || 'D').slice(0, 1).toUpperCase();
         if (profileName) profileName.textContent = profile?.name || 'Domino Player';
         if (profileMeta) {
@@ -492,6 +677,7 @@ class DominoGame {
         if (!profile) {
             summary.textContent = this.accountOnline ? this.t('account-profile-empty') : this.t('account-offline');
             if (historyList) historyList.innerHTML = `<div class="room-summary">${this.t('account-history-empty')}</div>`;
+            this.syncAccountModeButtons();
             return;
         }
         summary.innerHTML = `
@@ -520,12 +706,25 @@ class DominoGame {
             }
         }
         this.syncStartAuthButton();
+        this.syncAccountModeButtons();
+    }
+
+    syncAccountModeButtons() {
+        const loginTabBtn = document.getElementById('login-tab-btn');
+        const registerTabBtn = document.getElementById('register-tab-btn');
+        const loginForm = document.getElementById('account-login-form');
+        const registerForm = document.getElementById('account-register-form');
+        const isRegister = this.accountMode === 'register';
+        if (loginTabBtn) loginTabBtn.classList.toggle('active', !isRegister);
+        if (registerTabBtn) registerTabBtn.classList.toggle('active', isRegister);
+        if (loginForm) loginForm.classList.toggle('active', !isRegister);
+        if (registerForm) registerForm.classList.toggle('active', isRegister);
     }
 
     syncStartAuthButton() {
         const button = document.getElementById('account-btn');
         if (!button) return;
-        const hasSession = Boolean(this.account?.getRoomAuthToken?.());
+        const hasSession = Boolean(this.account?.getRoomAuthToken?.()) || Boolean(this.accountProfile?.provider === 'local-guest');
         const labelKey = hasSession ? 'account-profile' : 'account-login';
         const label = this.t(labelKey);
         button.dataset.i18n = labelKey;
@@ -533,6 +732,63 @@ class DominoGame {
         button.setAttribute('aria-label', label);
         button.title = label;
         button.classList.toggle('is-authenticated', hasSession);
+    }
+
+    hasGuestSession() {
+        return this.accountProfile?.provider === 'local-guest' || Boolean(this.account.getStoredProfile?.()?.provider === 'local-guest');
+    }
+
+    async syncLocalPresence(force = false) {
+        if (this.network.isMultiplayer) return;
+        const localSessionId = this.account?.getOrCreateLocalGameSessionId?.() || this.accountProfile?.sessionId || "";
+        if (!this.gameActive && !this.roundOver && !this.matchOver) {
+            if (!this.localPresenceClearQueued) {
+                this.localPresenceClearQueued = true;
+                await this.account.sendLocalGameHeartbeat({
+                    sessionId: localSessionId,
+                    displayName: this.accountProfile?.name || this.playerName || "Player",
+                    provider: this.accountProfile?.provider || "local-guest",
+                    gameMode: this.isTeamMode ? "team" : "solo",
+                    isPlaying: false,
+                    isConnected: false,
+                    roomId: null,
+                    roomCode: null
+                });
+            }
+            return;
+        }
+
+        const now = Date.now();
+        if (!force && now - this.localPresenceLastSentAt < 5000) return;
+        this.localPresenceLastSentAt = now;
+        this.localPresenceClearQueued = false;
+        await this.account.sendLocalGameHeartbeat({
+            sessionId: localSessionId,
+            displayName: this.accountProfile?.name || this.playerName || "Player",
+            provider: this.accountProfile?.provider || "local-guest",
+            gameMode: this.isTeamMode ? "team" : "solo",
+            isPlaying: true,
+            isConnected: true,
+            roomId: `local:${localSessionId || "guest"}`,
+            roomCode: null
+        });
+    }
+
+    async clearLocalPresence() {
+        this.localPresenceLastSentAt = 0;
+        this.localPresenceClearQueued = false;
+        if (this.network.isMultiplayer) return;
+        const localSessionId = this.account?.getOrCreateLocalGameSessionId?.() || this.accountProfile?.sessionId || "";
+        await this.account.sendLocalGameHeartbeat({
+            sessionId: localSessionId,
+            displayName: this.accountProfile?.name || this.playerName || "Player",
+            provider: this.accountProfile?.provider || "local-guest",
+            gameMode: this.isTeamMode ? "team" : "solo",
+            isPlaying: false,
+            isConnected: false,
+            roomId: null,
+            roomCode: null
+        });
     }
 
     requirePlayerName(preferred = 'any') {
@@ -723,6 +979,7 @@ class DominoGame {
                 this.network.leaveRoom();
                 this.myHand = null;
             }
+            this.clearLocalPresence();
             this.resetMultiplayerPanels(false);
         });
         this.bindTap(this.renderer.handEl, e => {
@@ -907,6 +1164,7 @@ class DominoGame {
         }
         console.log('[startNewGame] Starting round...');
         this.startRound();
+        void this.syncLocalPresence(true);
     }
     startRound() { 
         console.log('[startRound] playerCount:', this.playerCount);
@@ -972,6 +1230,7 @@ class DominoGame {
 
         this.goshaCombo = (this.gameActive && myTurn) ? this.board.getGoshaCombo(myHand) : null;
         this.renderer.showGoshaBtn(this.goshaCombo, () => this.playGoshaCombo());
+        void this.syncLocalPresence();
     }
 
     playSound(name) {
@@ -1006,6 +1265,7 @@ class DominoGame {
         document.querySelectorAll('.btn-lang').forEach(b => {
             b.classList.toggle('active', b.dataset.lang === nextLang);
         });
+        this.syncAccountUiChrome();
         this.syncStartAuthButton();
     }
 
@@ -1215,13 +1475,17 @@ class DominoGame {
         const hand=this.hands[pi];
         const matches=this.goshaCombo.matches;
         const sorted=[...matches].sort((a,b)=>b.tileIndex-a.tileIndex);
-        const tiles=sorted.map(m=>hand[m.tileIndex]);
+        const tilesByIndex = new Map(matches.map((m) => [m.tileIndex, hand[m.tileIndex]]));
         for(const m of sorted) hand.splice(m.tileIndex,1);
-        const bySorted=[...matches].sort((a,b)=>b.openEndIndex-a.openEndIndex);
         let score=0;
-        for(const m of bySorted){
-            const tile=tiles.find(t=>t.isDouble&&t.a===this.board.openEnds[m.openEndIndex].value);
-            score=this.board.placeTile(tile,m.openEndIndex);
+        for(const m of matches){
+            const openEndIndex = this.board.findOpenEndIndex(m.nodeId, m.side);
+            const tile = tilesByIndex.get(m.tileIndex);
+            if(openEndIndex === -1 || !tile){
+                this.turnInProgress=false;
+                return;
+            }
+            score=this.board.placeTile(tile,openEndIndex);
         }
         this.renderState();
         
@@ -1283,8 +1547,6 @@ class DominoGame {
     }
 
     addScore(pi,score){
-        const currentScore = this.isTeamMode ? this.teamScores[this.getTeam(pi)] : this.scores[pi];
-        if (currentScore >= TARGET) return 0;
         this.scores[pi]+=score; if(this.isTeamMode)this.teamScores[this.getTeam(pi)]+=score;
         this.playSound('score'); this.renderer.showScorePopup(score);
         this.broadcastMsg(`${this.playerNames[pi]} +${score}!`,2000);
@@ -1292,9 +1554,9 @@ class DominoGame {
     }
     checkEnd(pi,score){
         if(this.instantWinEnabled && score>=IWIN){
-            this.gameActive=false; this.playSound('win');
+            this.gameActive=false; this.roundOver=true; this.matchOver=true; this.turnInProgress=false; this.playSound('win');
             if(this.isTeamMode)this.teamRoundWins[this.getTeam(pi)]+=2;else this.roundWins[pi]+=2;
-            this.matchOver=true; this.renderState(); 
+            this.renderState();
             setTimeout(() => this.renderer.showInstantWin(this.playerNames[pi],score), 800);
             return true;
         }
@@ -1425,6 +1687,7 @@ class DominoGame {
         const cs=this.isTeamMode?Math.max(...this.teamScores):Math.max(...this.scores);
         if(cs>=TARGET){const rw=this.isTeamMode?this.teamScores.indexOf(Math.max(...this.teamScores)):this.scores.indexOf(Math.max(...this.scores));this.endRound(this.isTeamMode?(rw===0?0:1):rw);return;}
         this.renderer.renderDealEnd(this.playerNames[wi],displayEntities,fish,bonus);this.deal++;
+        void this.syncLocalPresence();
     }
     endRound(wi){
         this.roundOver=true;
@@ -1442,6 +1705,7 @@ class DominoGame {
         }
         if(this.matchRound>=MAX_R)this.matchOver=true;
         this.renderer.renderRoundEnd(this.playerNames[wi],displayEntities,wins,this.matchRound,this.matchOver);this.matchRound++;
+        void this.syncLocalPresence();
     }
     showMatchResult(){
         if(this.isTeamMode){
@@ -1454,11 +1718,13 @@ class DominoGame {
             this.renderer.renderGameOver(this.playerNames[w],this.playerNames.map((n,i)=>({name:n,roundWins:this.roundWins[i]})));
             void this.recordLocalMatchResult(w);
         }
+        void this.clearLocalPresence();
     }
 
     async recordLocalMatchResult(winnerIndex) {
         if (this.network.isMultiplayer) return;
-        if (!this.account?.storedToken) return;
+        const platformToken = this.account?.getRoomAuthToken?.();
+        if (!platformToken) return;
         try {
             const participants = this.playerNames.map((name, index) => ({
                 isSelf: index === this.humanPlayerIndex,

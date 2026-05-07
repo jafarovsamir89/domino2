@@ -1,7 +1,7 @@
-const ACCOUNT_TOKEN_KEY = "dominoAuthToken";
 const ACCOUNT_PROFILE_KEY = "dominoAuthProfile";
 const PLATFORM_GAME_TOKEN_KEY = "dominoPlatformGameToken";
 const PLATFORM_PROFILE_KEY = "dominoPlatformProfile";
+const LOCAL_GAME_SESSION_KEY = "dominoLocalGameSessionId";
 
 function safeJsonParse(value) {
     try {
@@ -20,6 +20,13 @@ function sanitizeEmail(value, fallbackName = "player") {
     if (raw.includes("@")) return raw.slice(0, 254);
     const alias = sanitizeName(fallbackName).toLowerCase().replace(/[^a-z0-9]+/g, ".").replace(/^\.+|\.+$/g, "") || "player";
     return `${alias}@domino.local`;
+}
+
+function createLocalSessionId() {
+    if (window.crypto?.randomUUID) {
+        return window.crypto.randomUUID();
+    }
+    return `local-${Math.random().toString(36).slice(2)}-${Date.now().toString(36)}`;
 }
 
 function normalizeProfile(payload = {}, source = "legacy") {
@@ -50,6 +57,7 @@ function normalizeProfile(payload = {}, source = "legacy") {
         id: String(player?.id || user?.id || payload.id || ""),
         userId: String(user?.id || payload.userId || payload.id || ""),
         playerId: String(player?.id || payload.playerId || payload.id || ""),
+        sessionId: String(payload.sessionId || payload.guestSessionId || player?.sessionId || user?.sessionId || ""),
         name: displayName,
         displayName,
         email: String(user?.email || payload.email || ""),
@@ -109,21 +117,6 @@ export class AccountClient {
         }
     }
 
-    get storedToken() {
-        try {
-            return window.localStorage?.getItem(ACCOUNT_TOKEN_KEY) || "";
-        } catch {
-            return "";
-        }
-    }
-
-    setStoredToken(token) {
-        try {
-            if (token) window.localStorage?.setItem(ACCOUNT_TOKEN_KEY, token);
-            else window.localStorage?.removeItem(ACCOUNT_TOKEN_KEY);
-        } catch {}
-    }
-
     getStoredProfile() {
         try {
             const raw = window.localStorage?.getItem(ACCOUNT_PROFILE_KEY);
@@ -155,6 +148,14 @@ export class AccountClient {
         } catch {}
     }
 
+    setStoredToken(token) {
+        this.setPlatformGameToken(token);
+    }
+
+    getStoredToken() {
+        return this.platformGameToken;
+    }
+
     getPlatformProfile() {
         try {
             const raw = window.localStorage?.getItem(PLATFORM_PROFILE_KEY);
@@ -171,8 +172,34 @@ export class AccountClient {
         } catch {}
     }
 
+    getLocalGameSessionId() {
+        try {
+            return window.localStorage?.getItem(LOCAL_GAME_SESSION_KEY) || "";
+        } catch {
+            return "";
+        }
+    }
+
+    setLocalGameSessionId(sessionId) {
+        try {
+            if (sessionId) window.localStorage?.setItem(LOCAL_GAME_SESSION_KEY, sessionId);
+            else window.localStorage?.removeItem(LOCAL_GAME_SESSION_KEY);
+        } catch {}
+    }
+
+    getOrCreateLocalGameSessionId() {
+        const current = this.getLocalGameSessionId();
+        if (current) return current;
+        const next = createLocalSessionId();
+        this.setLocalGameSessionId(next);
+        return next;
+    }
+
+    clearLocalGameSessionId() {
+        this.setLocalGameSessionId("");
+    }
+
     clearSession() {
-        this.setStoredToken("");
         this.setStoredProfile(null);
         this.setPlatformGameToken("");
         this.setPlatformProfile(null);
@@ -254,22 +281,14 @@ export class AccountClient {
             return platformData;
         }
 
-        let legacyData = null;
-        const token = this.storedToken;
-        if (token) {
-            try {
-                legacyData = await this.request("/api/me", {
-                    headers: { Authorization: `Bearer ${token}` }
-                });
-                const normalized = normalizeProfile(legacyData.user || legacyData, "legacy");
-                this.setStoredProfile(normalized.profile);
-            } catch {
-                this.setStoredToken("");
-                this.setStoredProfile(null);
-            }
+        const storedProfile = this.getStoredProfile();
+        if (storedProfile?.provider === "local-guest") {
+            return normalizeProfile({ profile: storedProfile }, "local-guest");
         }
 
-        return legacyData ? normalizeProfile(legacyData.user || legacyData, "legacy") : null;
+        this.setStoredToken("");
+        this.setStoredProfile(null);
+        return null;
     }
 
     async syncPlatformSession() {
@@ -293,24 +312,85 @@ export class AccountClient {
 
             const normalized = normalizeProfile(data, "better-auth");
             this.setPlatformGameToken(data.token);
-            this.setPlatformProfile(normalized.profile);
-            this.setStoredProfile(normalized.profile);
-            this.setStoredToken("");
-            return normalized;
+        this.setPlatformProfile(normalized.profile);
+        this.setStoredProfile(normalized.profile);
+        return normalized;
         } catch {
             return null;
         }
     }
 
     async createGuest(name) {
-        const data = await this.request("/api/auth/guest", {
-            method: "POST",
-            body: { name }
-        });
-        const normalized = normalizeProfile(data.user || data, "legacy");
-        this.setStoredToken(data.token || "");
+        const cleanName = sanitizeName(name || "Player");
+        const sessionId = this.getLocalGameSessionId() || createLocalSessionId();
+        this.setLocalGameSessionId(sessionId);
+        const normalized = normalizeProfile({
+            profile: {
+                sessionId,
+                name: cleanName,
+                provider: "local-guest",
+                isGuest: true,
+                recentMatches: []
+            },
+            user: {
+                id: "",
+                sessionId,
+                name: cleanName,
+                isGuest: true,
+                role: "player",
+                email: "",
+                image: null
+            },
+            player: {
+                id: "",
+                sessionId,
+                displayName: cleanName,
+                isGuest: true,
+                avatarSeed: null,
+                language: null
+            },
+            stats: {
+                rating: 1000,
+                points: 0,
+                wins: 0,
+                losses: 0,
+                draws: 0,
+                matchesPlayed: 0,
+                currentStreak: 0,
+                bestStreak: 0
+            },
+            recentMatches: []
+        }, "local-guest");
         this.setStoredProfile(normalized.profile);
         return normalized;
+    }
+
+    async sendLocalGameHeartbeat(payload) {
+        try {
+            const response = await fetch(`${this.platformApiBase}/realtime/heartbeat`, {
+                method: "POST",
+                credentials: "include",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    sessionId: this.getLocalGameSessionId() || payload?.sessionId || "",
+                    provider: payload?.provider || "local-guest",
+                    displayName: payload?.displayName || payload?.name || "Player",
+                    roomId: payload?.roomId || null,
+                    roomCode: payload?.roomCode || null,
+                    gameMode: payload?.gameMode || "solo",
+                    isPlaying: payload?.isPlaying !== false,
+                    isConnected: payload?.isConnected !== false,
+                    source: "client-local"
+                })
+            });
+
+            if (!response.ok) return null;
+            return await response.json().catch(() => null);
+        } catch {
+            return null;
+        }
     }
 
     async register(nameOrOptions, passwordMaybe) {
@@ -335,18 +415,7 @@ export class AccountClient {
             const normalized = await this.syncPlatformSession();
             return normalized || normalizeProfile(data.user || { name: displayName, email }, "better-auth");
         } catch (platformError) {
-            try {
-                const data = await this.request("/api/auth/register", {
-                    method: "POST",
-                    body: { name: displayName, password }
-                });
-                const normalized = normalizeProfile(data.user || data, "legacy");
-                this.setStoredToken(data.token || "");
-                this.setStoredProfile(normalized.profile);
-                return normalized;
-            } catch {
-                throw platformError;
-            }
+            throw platformError;
         }
     }
 
@@ -371,36 +440,15 @@ export class AccountClient {
             const normalized = await this.syncPlatformSession();
             return normalized || normalizeProfile(data.user || { name: displayName, email }, "better-auth");
         } catch (platformError) {
-            try {
-                const data = await this.request("/api/auth/login", {
-                    method: "POST",
-                    body: { name: displayName, password }
-                });
-                const normalized = normalizeProfile(data.user || data, "legacy");
-                this.setStoredToken(data.token || "");
-                this.setStoredProfile(normalized.profile);
-                return normalized;
-            } catch {
-                throw platformError;
-            }
+            throw platformError;
         }
     }
 
     async logout() {
-        const token = this.storedToken || this.platformGameToken;
         try {
             await this.platformRequest("/auth/sign-out", {
                 method: "POST"
             });
-        } catch {}
-
-        try {
-            if (token && this.storedToken) {
-                await this.request("/api/auth/logout", {
-                    method: "POST",
-                    headers: { Authorization: `Bearer ${token}` }
-                });
-            }
         } catch {}
 
         this.clearSession();
@@ -420,18 +468,8 @@ export class AccountClient {
                 wins: Number(row.wins ?? 0),
                 matchesPlayed: Number(row.matchesPlayed ?? 0)
             }));
-        } catch {
-            const data = await this.request(`/api/leaderboard?limit=${encodeURIComponent(limit)}`);
-            const rows = Array.isArray(data?.leaderboard) ? data.leaderboard : [];
-            return rows.map((row, index) => ({
-                rank: Number(row.rank ?? index + 1),
-                id: String(row.id || ""),
-                name: String(row.name || row.displayName || "Player"),
-                rating: Number(row.rating ?? 1000),
-                points: Number(row.points ?? 0),
-                wins: Number(row.wins ?? 0),
-                matchesPlayed: Number(row.matchesPlayed ?? 0)
-            }));
+        } catch (error) {
+            throw error;
         }
     }
 
@@ -440,15 +478,11 @@ export class AccountClient {
         if (platform) {
             return platform;
         }
-
-        const token = this.storedToken;
-        if (!token) return null;
-        const data = await this.request("/api/me", {
-            headers: { Authorization: `Bearer ${token}` }
-        });
-        const normalized = normalizeProfile(data.user || data, "legacy");
-        this.setStoredProfile(normalized.profile);
-        return normalized;
+        const storedProfile = this.getStoredProfile();
+        if (storedProfile?.provider === "local-guest") {
+            return normalizeProfile({ profile: storedProfile }, "local-guest");
+        }
+        return null;
     }
 
     async recordMatch(payload) {
@@ -463,20 +497,14 @@ export class AccountClient {
                     body: payload
                 });
                 return data.match || data || null;
-            } catch {}
+            } catch (error) {
+                throw error;
+            }
         }
-
-        const token = this.storedToken;
-        if (!token) return null;
-        const data = await this.request("/api/matches", {
-            method: "POST",
-            headers: { Authorization: `Bearer ${token}` },
-            body: payload
-        });
-        return data.match || null;
+        return null;
     }
 
     getRoomAuthToken() {
-        return this.platformGameToken || this.storedToken || "";
+        return this.platformGameToken || "";
     }
 }

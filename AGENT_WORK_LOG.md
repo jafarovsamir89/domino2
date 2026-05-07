@@ -412,3 +412,9 @@
 - Added report filters by status and text query, ban filters by active/revoked state, and audit filters by action/entity type.
 - Added revoke actions directly on active ban cards in the player detail page so moderation can happen from the profile view.
 
+## 2026-05-08 Game rules fix pass
+- Removed the 365 score cap from both the browser client and the game server so scores keep accumulating until the match truly ends.
+- Reworked Gosha / TELEFON combo simulation to track open ends by node + side instead of stale array indexes, which fixes turn and branching cases.
+- Changed the 35-point instant-win path so the server marks the match as finished immediately instead of allowing the game to continue into another deal.
+- Updated the instant-win copy so it reads as a real match-ending state rather than a two-round continuation.
+

@@ -133,6 +133,10 @@ export class Board {
         return sum;
     }
 
+    findOpenEndIndex(nodeId, side) {
+        return this.openEnds.findIndex((oe) => oe.nodeId === nodeId && oe.side === side);
+    }
+
     getGoshaCombo(hand) {
         if (this.isEmpty || this.openEnds.length < 2) return null;
         
@@ -141,8 +145,14 @@ export class Board {
         for (let j = 0; j < this.openEnds.length; j++) {
             const oe = this.openEnds[j];
             for (let i = 0; i < hand.length; i++) {
-                if (!usedTiles.has(i) && hand[i].isDouble && hand[i].a === oe.value) { 
-                    possibleMatches.push({ tileIndex: i, openEndIndex: j });
+                if (!usedTiles.has(i) && hand[i].isDouble && hand[i].a === oe.value) {
+                    possibleMatches.push({
+                        tileIndex: i,
+                        openEndIndex: j,
+                        nodeId: oe.nodeId,
+                        side: oe.side,
+                        value: oe.value
+                    });
                     usedTiles.add(i);
                     break;
                 }
@@ -164,24 +174,63 @@ export class Board {
             return result.filter(c => c.length >= 2);
         };
 
+        const getPermutations = (arr) => {
+            if (arr.length <= 1) return [arr];
+            const result = [];
+            const used = new Array(arr.length).fill(false);
+            const current = [];
+            const walk = () => {
+                if (current.length === arr.length) {
+                    result.push(current.map((item) => ({ ...item })));
+                    return;
+                }
+                for (let i = 0; i < arr.length; i++) {
+                    if (used[i]) continue;
+                    used[i] = true;
+                    current.push(arr[i]);
+                    walk();
+                    current.pop();
+                    used[i] = false;
+                }
+            };
+            walk();
+            return result;
+        };
+
         const combos = getCombinations(possibleMatches);
         let bestCombo = null;
         let bestScore = 0;
 
         for (const combo of combos) {
-            const sim = cloneBoard(this);
-            const sorted = [...combo].sort((a, b) => b.openEndIndex - a.openEndIndex);
-            for (const m of sorted) sim.placeTile(hand[m.tileIndex], m.openEndIndex);
-            const score = sim.calculateScore();
-            if (score > 0) {
-                if (!bestCombo || combo.length > bestCombo.length || (combo.length === bestCombo.length && score > bestScore)) {
-                    bestCombo = combo;
-                    bestScore = score;
+            for (const order of getPermutations(combo)) {
+                const sim = cloneBoard(this);
+                let valid = true;
+                for (const m of order) {
+                    const idx = sim.findOpenEndIndex(m.nodeId, m.side);
+                    if (idx === -1) {
+                        valid = false;
+                        break;
+                    }
+                    const tile = hand[m.tileIndex];
+                    const oe = sim.openEnds[idx];
+                    if (!tile || !tile.isDouble || tile.a !== oe.value) {
+                        valid = false;
+                        break;
+                    }
+                    sim.placeTile(tile, idx);
+                }
+                if (!valid) continue;
+                const score = sim.calculateScore();
+                if (score > 0) {
+                    if (!bestCombo || order.length > bestCombo.length || (order.length === bestCombo.length && score > bestScore)) {
+                        bestCombo = order;
+                        bestScore = score;
+                    }
                 }
             }
         }
 
-        return bestCombo ? { matches: bestCombo, score: bestScore } : null;
+        return bestCombo ? { matches: bestCombo.map((m) => ({ ...m })), score: bestScore } : null;
     }
 
     getValidMoves(hand) {

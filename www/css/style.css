@@ -253,6 +253,23 @@ input, button { font: inherit; }
     white-space: nowrap;
 }
 
+#account-modal-close,
+.account-close-btn {
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: var(--text);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    font-size: 1rem;
+    line-height: 1;
+}
+
 .room-summary {
     color: var(--text-dim);
     font-size: 0.84rem;
@@ -369,16 +386,19 @@ input, button { font: inherit; }
 }
 
 .settings-group input[type="text"],
+.settings-group input[type="email"],
+.settings-group input[type="password"],
 .settings-group input[type="number"],
 #join-code-input {
     width: 100%;
-    padding: 12px 13px;
-    border-radius: 12px;
-    border: 1px solid var(--glass-border);
-    background: rgba(255, 255, 255, 0.04);
+    padding: 13px 14px;
+    border-radius: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.03));
     color: var(--text);
     font-size: 0.94rem;
-    transition: border-color 0.2s, background 0.2s;
+    transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
 }
 
 .rule-grid .settings-group input[type="number"] {
@@ -397,6 +417,15 @@ input, button { font: inherit; }
     outline: none;
     border-color: var(--accent);
     background: rgba(255, 255, 255, 0.06);
+    box-shadow: 0 0 0 3px rgba(240, 192, 64, 0.12);
+}
+
+.settings-group input[type="text"]::placeholder,
+.settings-group input[type="email"]::placeholder,
+.settings-group input[type="password"]::placeholder,
+#join-code-input::placeholder {
+    color: #7f90a3;
+    opacity: 1;
 }
 
 .btn-group {
@@ -612,6 +641,86 @@ input, button { font: inherit; }
     border-radius: 18px;
     border: 1px solid rgba(255, 255, 255, 0.08);
     background: rgba(255, 255, 255, 0.04);
+}
+
+.is-hidden {
+    display: none !important;
+}
+
+.account-panel.is-hidden {
+    display: none;
+}
+
+.account-auth-panel {
+    display: grid;
+    gap: 14px;
+}
+
+.account-auth-hero {
+    display: grid;
+    gap: 0;
+    padding: 6px 2px 2px;
+}
+
+.account-auth-hero h3 {
+    font-size: 1.5rem;
+    line-height: 1.1;
+}
+
+.account-auth-copy {
+    display: none;
+}
+
+.account-auth-hero .section-kicker {
+    display: none;
+}
+
+.account-switcher {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    padding: 6px;
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.account-switch {
+    width: 100%;
+    margin: 0;
+    text-align: center;
+}
+
+.account-switch.active {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #1a1a1a;
+    border-color: transparent;
+}
+
+.account-form {
+    display: none;
+    gap: 14px;
+}
+
+.account-form.active {
+    display: grid;
+}
+
+.account-auth-actions {
+    display: grid;
+    gap: 10px;
+}
+
+.btn-social {
+    padding: 12px 14px;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.09), rgba(240, 192, 64, 0.12));
+    color: var(--text);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.18);
+}
+
+.btn-social:hover {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.14), rgba(240, 192, 64, 0.18));
 }
 
 .account-profile-panel {
