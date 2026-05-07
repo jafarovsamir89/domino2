@@ -1,36 +1,35 @@
 # `@domino2/db`
 
-Этот пакет хранит:
+This package contains:
 
-- Prisma schema;
-- миграции;
-- скрипты миграции legacy-данных;
-- базовые enum и foundation под catalog/payments.
+- Prisma schema
+- database migrations
+- platform bootstrap helpers
+- catalog and payments foundation
 
-## Первые команды
+## Common commands
 
-1. Поднять PostgreSQL:
+1. Start PostgreSQL:
 
 ```bash
 docker compose -f docker-compose.platform.yml up -d
 ```
 
-2. Скопировать env:
+2. Copy the DB env file:
 
 ```bash
 cp packages/db/.env.example packages/db/.env
 ```
 
-3. Выполнить миграции:
+3. Run migrations:
 
 ```bash
 cd packages/db
 npm run migrate:dev
 ```
 
-4. После этого можно запускать импорт legacy-данных:
+4. Generate the Prisma client:
 
 ```bash
-node scripts/import-legacy-accounts.mjs ../../server/data/accounts.json
+npm run generate
 ```
-
