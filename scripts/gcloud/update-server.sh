@@ -8,6 +8,7 @@ UPDATE_PLATFORM=1
 UPDATE_LEGACY=1
 RUN_CHECKS=1
 CLEAN_INSTALL=0
+FORCE_SYNC=0
 
 usage() {
   cat <<'EOF'
@@ -17,6 +18,7 @@ Options:
   --root DIR        Project directory on the VM. Default: $HOME/domino2
   --branch NAME     Git branch to deploy. Default: main
   --no-pull         Rebuild/restart current files without git pull
+  --force-sync      Hard reset the worktree to origin/<branch> before build
   --platform-only   Update only NestJS API, admin, Prisma
   --legacy-only     Update only legacy Colyseus game server
   --clean-install   Run npm ci instead of incremental npm install
@@ -41,6 +43,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     --no-pull)
       DO_PULL=0
+      shift
+      ;;
+    --force-sync)
+      FORCE_SYNC=1
       shift
       ;;
     --platform-only)
@@ -186,6 +192,40 @@ check_clean_worktree() {
   fi
 }
 
+sync_clean_worktree() {
+  local backup_dir
+  local env_backup
+  local data_backup
+
+  backup_dir="$(mktemp -d "${TMPDIR:-/tmp}/domino2-backup.XXXXXX")"
+  env_backup="$backup_dir/env.platform"
+  data_backup="$backup_dir/server-data"
+
+  log "backing up runtime files to $backup_dir"
+  if [[ -f "$ROOT_DIR/.env.platform" ]]; then
+    cp "$ROOT_DIR/.env.platform" "$env_backup"
+  fi
+  if [[ -d "$ROOT_DIR/server/data" ]]; then
+    mkdir -p "$data_backup"
+    cp -a "$ROOT_DIR/server/data/." "$data_backup/"
+  fi
+
+  log "forcing worktree to origin/$BRANCH"
+  git fetch origin "$BRANCH" --prune
+  git checkout "$BRANCH"
+  git reset --hard "origin/$BRANCH"
+  git clean -fd
+
+  if [[ -f "$env_backup" ]]; then
+    cp "$env_backup" "$ROOT_DIR/.env.platform"
+  fi
+
+  if [[ -d "$data_backup" ]]; then
+    mkdir -p "$ROOT_DIR/server/data"
+    cp -a "$data_backup/." "$ROOT_DIR/server/data/"
+  fi
+}
+
 require_command git
 require_command npm
 require_command pm2
@@ -198,12 +238,16 @@ load_platform_env
 
 if [[ "$DO_PULL" -eq 1 ]]; then
   log "checking git state"
-  check_clean_worktree
+  if [[ "$FORCE_SYNC" -eq 1 ]]; then
+    sync_clean_worktree
+  else
+    check_clean_worktree
 
-  log "pulling origin/$BRANCH"
-  git fetch origin "$BRANCH" --prune
-  git checkout "$BRANCH"
-  git pull --ff-only origin "$BRANCH"
+    log "pulling origin/$BRANCH"
+    git fetch origin "$BRANCH" --prune
+    git checkout "$BRANCH"
+    git pull --ff-only origin "$BRANCH"
+  fi
 else
   log "skipping git pull"
 fi

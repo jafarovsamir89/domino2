@@ -5,6 +5,7 @@ param(
     [string]$Root = "/home/user/domino2",
     [string]$Branch = "main",
     [switch]$NoPull,
+    [switch]$ForceSync,
     [switch]$PlatformOnly,
     [switch]$LegacyOnly,
     [switch]$SkipChecks
@@ -23,6 +24,10 @@ $argsList = @(
 
 if ($NoPull) {
     $argsList += "--no-pull"
+}
+
+if ($ForceSync) {
+    $argsList += "--force-sync"
 }
 
 if ($PlatformOnly) {
@@ -45,8 +50,10 @@ $remoteCommand = ($argsList | ForEach-Object {
     }
 }) -join " "
 
+$sshKeyFile = Join-Path $PSScriptRoot "..\..\.gcloud\domino2_gcloud_key"
+
 gcloud --quiet compute ssh $Instance `
     --zone=$Zone `
     --project=$Project `
-    --ssh-key-file=.gcloud/domino2_gcloud_key `
+    --ssh-key-file=$sshKeyFile `
     --command $remoteCommand
