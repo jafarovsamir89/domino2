@@ -470,6 +470,7 @@ export class EconomyService {
   }
 
   async getPublicConfig() {
+    await this.ensureBootstrap();
     const [config, stakes, quests, catalog] = await Promise.all([
       this.getConfig(),
       this.prisma.coinStakeTable.findMany({
