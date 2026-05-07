@@ -38,7 +38,11 @@ type ReportsResponse = {
   }>;
 };
 
-export default async function ReportsPage() {
+export default async function ReportsPage({
+  searchParams
+}: {
+  searchParams?: Promise<{ status?: string; query?: string }>;
+}) {
   const session = await getAdminSession();
   if (!session?.user || !isAdminRole(session.user.role)) {
     return (
@@ -49,14 +53,31 @@ export default async function ReportsPage() {
     );
   }
 
-  const data = await fetchAuthedApi<ReportsResponse>("/admin/reports");
+  const resolvedSearchParams = searchParams ? await searchParams : {};
+  const status = String(resolvedSearchParams.status || "open");
+  const query = String(resolvedSearchParams.query || "");
+  const data = await fetchAuthedApi<ReportsResponse>(
+    `/admin/reports?status=${encodeURIComponent(status)}&query=${encodeURIComponent(query)}`
+  );
 
   return (
     <AdminFrame
       active="reports"
       title="Reports"
       description="Open reports are the fastest way to spot abuse and room-level behavior. Resolve or reject without leaving the page."
-      actions={<Link href="/players" style={linkStyle}>Players</Link>}
+      actions={
+        <form style={searchFormStyle}>
+          <select name="status" defaultValue={status} style={selectStyle}>
+            <option value="open">Open only</option>
+            <option value="resolved">Resolved</option>
+            <option value="rejected">Rejected</option>
+            <option value="all">All reports</option>
+          </select>
+          <input name="query" defaultValue={query} placeholder="Search reason or player" style={searchInputStyle} />
+          <button style={searchButtonStyle} type="submit">Filter</button>
+          <Link href="/players" style={linkStyle}>Players</Link>
+        </form>
+      }
     >
       <section style={stackStyle}>
         {data?.items.length ? data.items.map((report) => (
@@ -101,6 +122,40 @@ function Detail({ label, value }: { label: string; value: string }) {
 const linkStyle = {
   color: "#38bdf8",
   textDecoration: "none",
+  fontWeight: 700
+} as const;
+
+const searchFormStyle = {
+  display: "flex",
+  gap: 10,
+  alignItems: "center",
+  flexWrap: "wrap"
+} as const;
+
+const selectStyle = {
+  minWidth: 150,
+  padding: "12px 14px",
+  borderRadius: 14,
+  border: "1px solid rgba(148,163,184,0.2)",
+  background: "rgba(15,23,42,0.95)",
+  color: "#e2e8f0"
+} as const;
+
+const searchInputStyle = {
+  minWidth: 220,
+  padding: "12px 14px",
+  borderRadius: 14,
+  border: "1px solid rgba(148,163,184,0.2)",
+  background: "rgba(15,23,42,0.95)",
+  color: "#e2e8f0"
+} as const;
+
+const searchButtonStyle = {
+  border: "none",
+  borderRadius: 14,
+  padding: "12px 16px",
+  background: "linear-gradient(135deg, #38bdf8, #0f766e)",
+  color: "#020617",
   fontWeight: 700
 } as const;
 

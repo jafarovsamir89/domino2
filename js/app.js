@@ -329,6 +329,10 @@ class DominoGame {
         if (logoutAccountBtn) logoutAccountBtn.addEventListener('click', async () => {
             const wasGuest = this.accountProfile?.provider === 'local-guest';
             const guestName = this.accountProfile?.name || this.readPlayerName('any') || '';
+            if (wasGuest) {
+                await this.clearLocalPresence();
+                this.account?.clearLocalGameSessionId?.();
+            }
             await this.account.logout();
             this.accountProfile = null;
             this.accountDetails = null;
@@ -353,6 +357,9 @@ class DominoGame {
             if (loginPwd) loginPwd.value = '';
             this.renderAccountModal();
             this.syncStartAuthButton();
+            if (wasGuest) {
+                document.getElementById('account-email-input')?.focus?.();
+            }
         });
 
         document.querySelectorAll('.btn-lang[data-lang]').forEach(btn => {

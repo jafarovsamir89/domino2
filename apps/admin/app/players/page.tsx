@@ -47,7 +47,7 @@ type PlayerListResponse = {
 export default async function PlayersPage({
   searchParams
 }: {
-  searchParams?: Promise<{ query?: string; offset?: string }>;
+  searchParams?: Promise<{ query?: string; offset?: string; scope?: string; sort?: string }>;
 }) {
   const session = await getAdminSession();
   if (!session?.user || !isAdminRole(session.user.role)) {
@@ -62,8 +62,10 @@ export default async function PlayersPage({
   const resolvedSearchParams = searchParams ? await searchParams : {};
   const query = String(resolvedSearchParams.query || "").trim();
   const offset = String(resolvedSearchParams.offset || "0");
+  const scope = String(resolvedSearchParams.scope || "all");
+  const sort = String(resolvedSearchParams.sort || "updated");
   const data = await fetchAuthedApi<PlayerListResponse>(
-    `/admin/players?query=${encodeURIComponent(query)}&offset=${encodeURIComponent(offset)}`
+    `/admin/players?query=${encodeURIComponent(query)}&offset=${encodeURIComponent(offset)}&scope=${encodeURIComponent(scope)}&sort=${encodeURIComponent(sort)}`
   );
 
   return (
@@ -73,15 +75,20 @@ export default async function PlayersPage({
       description="Search players, inspect stats and jump into moderation without leaving the panel."
       actions={
         <form style={searchFormStyle}>
-          <input
-            name="query"
-            defaultValue={query}
-            placeholder="Search by name or email"
-            style={searchInputStyle}
-          />
-          <button style={searchButtonStyle} type="submit">
-            Search
-          </button>
+          <input name="query" defaultValue={query} placeholder="Search by name or email" style={searchInputStyle} />
+          <select name="scope" defaultValue={scope} style={selectStyle}>
+            <option value="all">All players</option>
+            <option value="linked">Linked accounts</option>
+            <option value="guests">Guests</option>
+            <option value="flagged">Flagged</option>
+          </select>
+          <select name="sort" defaultValue={sort} style={selectStyle}>
+            <option value="updated">Recently updated</option>
+            <option value="rating">Highest rating</option>
+            <option value="matches">Most matches</option>
+            <option value="flags">Most flags</option>
+          </select>
+          <button style={searchButtonStyle} type="submit">Apply</button>
         </form>
       }
     >
@@ -108,6 +115,7 @@ export default async function PlayersPage({
                   <Td>
                     <div style={mutedStyle}>{player.user?.email ?? "No auth user"}</div>
                     <div style={mutedStyle}>{player.user?.role ?? "player"}</div>
+                    <div style={mutedStyle}>{player.isGuest ? "Guest profile" : "Linked to auth"}</div>
                   </Td>
                   <Td>{player.stats?.rating ?? 1000}</Td>
                   <Td>
@@ -171,6 +179,15 @@ const searchFormStyle = {
 
 const searchInputStyle = {
   minWidth: 260,
+  padding: "12px 14px",
+  borderRadius: 14,
+  border: "1px solid rgba(148,163,184,0.2)",
+  background: "rgba(15,23,42,0.95)",
+  color: "#e2e8f0"
+} as const;
+
+const selectStyle = {
+  minWidth: 160,
   padding: "12px 14px",
   borderRadius: 14,
   border: "1px solid rgba(148,163,184,0.2)",

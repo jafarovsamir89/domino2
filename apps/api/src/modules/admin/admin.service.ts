@@ -20,6 +20,10 @@ function normalizeOffset(value: unknown) {
   return Number.isFinite(parsed) ? Math.max(0, parsed) : 0;
 }
 
+function normalizeFilter(value: unknown) {
+  return String(value || "").trim().toLowerCase();
+}
+
 @Injectable()
 export class AdminService {
   constructor(
@@ -62,47 +66,42 @@ export class AdminService {
     };
   }
 
-  async listPlayers(headers: AdminHeaders, query: string | undefined, limit: unknown, offset: unknown) {
+  async listPlayers(
+    headers: AdminHeaders,
+    query: string | undefined,
+    limit: unknown,
+    offset: unknown,
+    scope?: string,
+    sort?: string
+  ) {
     await this.requireAdmin(headers);
 
     const take = normalizePageSize(limit);
     const skip = normalizeOffset(offset);
     const text = String(query || "").trim();
+    const nextScope = normalizeFilter(scope);
+    const nextSort = normalizeFilter(sort);
 
     const players = await this.prisma.player.findMany({
-      take,
-      skip,
       orderBy: {
         updatedAt: "desc"
       },
-      where: text
-        ? {
-            OR: [
-              { displayName: { contains: text, mode: "insensitive" } },
-              { user: { email: { contains: text, mode: "insensitive" } } }
-            ]
-          }
-        : undefined,
       include: {
         stats: true,
-        user: true
+        user: true,
+        bans: {
+          where: { revokedAt: null },
+          take: 1
+        },
+        reportsIn: {
+          where: { status: "open" },
+          take: 1
+        }
       }
     });
 
-    const items = await Promise.all(players.map(async (player) => {
-      const [activeBans, openReports, recentMatches] = await Promise.all([
-        this.prisma.playerBan.count({
-          where: { playerId: player.id, revokedAt: null }
-        }),
-        this.prisma.playerReport.count({
-          where: { targetPlayerId: player.id, status: "open" }
-        }),
-        this.prisma.matchParticipant.count({
-          where: { playerId: player.id }
-        })
-      ]);
-
-      return {
+    const items = players
+      .map((player) => ({
         id: player.id,
         userId: player.userId,
         displayName: player.displayName,
@@ -120,18 +119,42 @@ export class AdminService {
             }
           : null,
         stats: player.stats,
-        activeBans,
-        openReports,
-        matchCount: recentMatches
-      };
-    }));
+        activeBans: player.bans.length,
+        openReports: player.reportsIn.length
+      }))
+      .filter((item) => {
+        const searchable = `${item.displayName} ${item.user?.email ?? ""}`.toLowerCase();
+        const matchesText = !text || searchable.includes(text.toLowerCase());
+        const matchesScope =
+          !nextScope ||
+          nextScope === "all" ||
+          (nextScope === "guests" && item.isGuest) ||
+          (nextScope === "linked" && Boolean(item.userId)) ||
+          (nextScope === "flagged" && (item.activeBans > 0 || item.openReports > 0));
+        return matchesText && matchesScope;
+      })
+      .sort((a, b) => {
+        switch (nextSort) {
+          case "rating":
+            return (b.stats?.rating ?? 1000) - (a.stats?.rating ?? 1000);
+          case "matches":
+            return (b.stats?.matchesPlayed ?? 0) - (a.stats?.matchesPlayed ?? 0);
+          case "flags":
+            return (b.activeBans + b.openReports) - (a.activeBans + a.openReports);
+          case "updated":
+          default:
+            return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
+        }
+      });
+
+    const pagedItems = items.slice(skip, skip + take);
 
     return {
-      items,
+      items: pagedItems,
       pagination: {
         limit: take,
         offset: skip,
-        hasMore: players.length === take
+        hasMore: items.length > skip + take
       }
     };
   }
@@ -213,8 +236,10 @@ export class AdminService {
     };
   }
 
-  async listReports(headers: AdminHeaders) {
+  async listReports(headers: AdminHeaders, status?: string, query?: string) {
     await this.requireAdmin(headers);
+    const nextStatus = normalizeFilter(status);
+    const nextQuery = normalizeFilter(query);
 
     const reports = await this.prisma.playerReport.findMany({
       orderBy: {
@@ -236,12 +261,24 @@ export class AdminService {
     });
 
     return {
-      items: reports
+      items: reports.filter((report) => {
+        const matchesStatus = !nextStatus || nextStatus === "all" || report.status === nextStatus;
+        const searchable = [
+          report.reason,
+          report.reporter.displayName,
+          report.target.displayName,
+          report.reporter.user?.email || "",
+          report.target.user?.email || ""
+        ].join(" ").toLowerCase();
+        const matchesQuery = !nextQuery || searchable.includes(nextQuery);
+        return matchesStatus && matchesQuery;
+      })
     };
   }
 
-  async listBans(headers: AdminHeaders) {
+  async listBans(headers: AdminHeaders, status?: string) {
     await this.requireAdmin(headers);
+    const nextStatus = normalizeFilter(status);
 
     const bans = await this.prisma.playerBan.findMany({
       orderBy: {
@@ -259,15 +296,23 @@ export class AdminService {
     });
 
     return {
-      items: bans
+      items: bans.filter((ban) => {
+        const active = ban.revokedAt === null;
+        if (!nextStatus || nextStatus === "all") return true;
+        if (nextStatus === "active") return active;
+        if (nextStatus === "revoked") return !active;
+        return true;
+      })
     };
   }
 
-  async listAuditLogs(headers: AdminHeaders, limit: unknown, offset: unknown) {
+  async listAuditLogs(headers: AdminHeaders, limit: unknown, offset: unknown, action?: string, entityType?: string) {
     await this.requireAdmin(headers);
 
     const take = normalizePageSize(limit, 50);
     const skip = normalizeOffset(offset);
+    const nextAction = normalizeFilter(action);
+    const nextEntityType = normalizeFilter(entityType);
 
     const logs = await this.prisma.adminAuditLog.findMany({
       take,
@@ -281,7 +326,11 @@ export class AdminService {
     });
 
     return {
-      items: logs,
+      items: logs.filter((log) => {
+        const matchesAction = !nextAction || log.action.toLowerCase().includes(nextAction);
+        const matchesEntity = !nextEntityType || log.entityType.toLowerCase().includes(nextEntityType);
+        return matchesAction && matchesEntity;
+      }),
       pagination: {
         limit: take,
         offset: skip,

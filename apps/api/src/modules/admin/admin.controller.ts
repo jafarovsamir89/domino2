@@ -16,9 +16,11 @@ export class AdminController {
     @Headers() headers: Record<string, string | string[] | undefined>,
     @Query("query") query?: string,
     @Query("limit") limit?: string,
-    @Query("offset") offset?: string
+    @Query("offset") offset?: string,
+    @Query("scope") scope?: string,
+    @Query("sort") sort?: string
   ) {
-    return this.adminService.listPlayers(headers, query, limit, offset);
+    return this.adminService.listPlayers(headers, query, limit, offset, scope, sort);
   }
 
   @Get("players/:id")
@@ -30,22 +32,31 @@ export class AdminController {
   }
 
   @Get("reports")
-  async listReports(@Headers() headers: Record<string, string | string[] | undefined>) {
-    return this.adminService.listReports(headers);
+  async listReports(
+    @Headers() headers: Record<string, string | string[] | undefined>,
+    @Query("status") status?: string,
+    @Query("query") query?: string
+  ) {
+    return this.adminService.listReports(headers, status, query);
   }
 
   @Get("bans")
-  async listBans(@Headers() headers: Record<string, string | string[] | undefined>) {
-    return this.adminService.listBans(headers);
+  async listBans(
+    @Headers() headers: Record<string, string | string[] | undefined>,
+    @Query("status") status?: string
+  ) {
+    return this.adminService.listBans(headers, status);
   }
 
   @Get("audit-logs")
   async listAuditLogs(
     @Headers() headers: Record<string, string | string[] | undefined>,
     @Query("limit") limit?: string,
-    @Query("offset") offset?: string
+    @Query("offset") offset?: string,
+    @Query("action") action?: string,
+    @Query("entityType") entityType?: string
   ) {
-    return this.adminService.listAuditLogs(headers, limit, offset);
+    return this.adminService.listAuditLogs(headers, limit, offset, action, entityType);
   }
 
   @Post("players/:id/ban")

@@ -25,7 +25,11 @@ type BansResponse = {
   }>;
 };
 
-export default async function BansPage() {
+export default async function BansPage({
+  searchParams
+}: {
+  searchParams?: Promise<{ status?: string }>;
+}) {
   const session = await getAdminSession();
   if (!session?.user || !isAdminRole(session.user.role)) {
     return (
@@ -36,14 +40,26 @@ export default async function BansPage() {
     );
   }
 
-  const data = await fetchAuthedApi<BansResponse>("/admin/bans");
+  const resolvedSearchParams = searchParams ? await searchParams : {};
+  const status = String(resolvedSearchParams.status || "active");
+  const data = await fetchAuthedApi<BansResponse>(`/admin/bans?status=${encodeURIComponent(status)}`);
 
   return (
     <AdminFrame
       active="bans"
       title="Bans"
       description="Active bans and historical moderation actions live here. Revoke or review with a single click."
-      actions={<Link href="/reports" style={linkStyle}>Reports</Link>}
+      actions={
+        <form style={searchFormStyle}>
+          <select name="status" defaultValue={status} style={selectStyle}>
+            <option value="active">Active only</option>
+            <option value="revoked">Revoked</option>
+            <option value="all">All bans</option>
+          </select>
+          <button style={searchButtonStyle} type="submit">Filter</button>
+          <Link href="/reports" style={linkStyle}>Reports</Link>
+        </form>
+      }
     >
       <section style={stackStyle}>
         {data?.items.length ? data.items.map((ban) => {
@@ -91,6 +107,31 @@ function Detail({ label, value }: { label: string; value: string }) {
 const linkStyle = {
   color: "#38bdf8",
   textDecoration: "none",
+  fontWeight: 700
+} as const;
+
+const searchFormStyle = {
+  display: "flex",
+  gap: 10,
+  alignItems: "center",
+  flexWrap: "wrap"
+} as const;
+
+const selectStyle = {
+  minWidth: 150,
+  padding: "12px 14px",
+  borderRadius: 14,
+  border: "1px solid rgba(148,163,184,0.2)",
+  background: "rgba(15,23,42,0.95)",
+  color: "#e2e8f0"
+} as const;
+
+const searchButtonStyle = {
+  border: "none",
+  borderRadius: 14,
+  padding: "12px 16px",
+  background: "linear-gradient(135deg, #38bdf8, #0f766e)",
+  color: "#020617",
   fontWeight: 700
 } as const;
 

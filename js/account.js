@@ -195,6 +195,10 @@ export class AccountClient {
         return next;
     }
 
+    clearLocalGameSessionId() {
+        this.setLocalGameSessionId("");
+    }
+
     clearSession() {
         this.setStoredProfile(null);
         this.setPlatformGameToken("");

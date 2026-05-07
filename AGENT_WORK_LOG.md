@@ -407,3 +407,8 @@
 - Re-enabled the guest logout path by allowing the profile modal logout button to stay clickable for `local-guest` sessions even when no platform token exists.
 - Kept the platform token as the real session source for registered users while still letting guests cleanly exit to the register/login flow.
 
+## 2026-05-08 Admin filtering pass
+- Added server-side filters and sort options to the admin player list for guests, linked accounts, flagged players, rating and match count.
+- Added report filters by status and text query, ban filters by active/revoked state, and audit filters by action/entity type.
+- Added revoke actions directly on active ban cards in the player detail page so moderation can happen from the profile view.
+

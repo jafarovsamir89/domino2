@@ -143,7 +143,12 @@ export default async function PlayerDetailPage({
         <Panel title="Active bans">
           {player.bans.length ? player.bans.map((ban) => (
             <div key={ban.id} style={itemCardStyle}>
-              <strong>{ban.reason}</strong>
+              <div style={banHeaderStyle}>
+                <strong>{ban.reason}</strong>
+                {!ban.revokedAt ? (
+                  <ActionButton endpoint={`/admin/bans/${ban.id}/revoke`} method="PATCH" label="Revoke" variant="primary" />
+                ) : null}
+              </div>
               <div style={mutedStyle}>{ban.expiresAt ? `Expires ${ban.expiresAt.slice(0, 10)}` : "No expiry"}</div>
               <div style={mutedStyle}>{ban.revokedAt ? `Revoked ${ban.revokedAt.slice(0, 10)}` : "Active"}</div>
             </div>
@@ -260,6 +265,15 @@ const itemCardStyle = {
   background: "rgba(2,6,23,0.8)",
   border: "1px solid rgba(148,163,184,0.12)",
   marginBottom: 10
+} as const;
+
+const banHeaderStyle = {
+  display: "flex",
+  justifyContent: "space-between",
+  gap: 12,
+  alignItems: "center",
+  marginBottom: 8,
+  flexWrap: "wrap"
 } as const;
 
 const matchRowStyle = {
