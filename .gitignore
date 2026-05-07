@@ -18,6 +18,7 @@ android/capacitor-cordova-android-plugins/build/
 dist/
 coverage/
 .gcloud/
+.deploy/
 .tmp/
 Thumbs.db
 .DS_Store
