@@ -18,6 +18,8 @@
 - Added a dedicated economy admin page.
 - Added stake selection to the online room UI.
 - Added docs for the economy plan and this development log.
+- Recovered the first production migration attempt by marking the failed migration as rolled back, then replayed it after making the appended SQL idempotent.
+- Fixed a bootstrap race in `getPublicConfig()` so default quests and other seeded economy rows are guaranteed to appear on a fresh database.
 
 ## Notes
 - Coins are implemented as a soft currency only.
@@ -33,4 +35,3 @@
   - draw
   - abort / disconnect
 - Add more admin shortcuts if daily operations need them.
-
