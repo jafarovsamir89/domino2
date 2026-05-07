@@ -13,6 +13,7 @@ class DominoGame {
     constructor() {
         this.renderer = new Renderer(this); this.board = new Board();
         this.playerCount=2; this.onlinePlayerCount=2; this.onlineAiCount=0; this.playerName=''; this.difficulty='medium';
+        this.onlineStakeKey = 'free';
         this.hands=[]; this.boneyard=[]; this.scores=[]; this.roundWins=[];
         this.playerNames=[]; this.currentPlayer=0; this.matchRound=1; this.deal=1;
         this.selectedTileIndex=-1; this.validMoves=[]; this.gameActive=false;
@@ -153,6 +154,15 @@ class DominoGame {
                 if (this.isTeamMode) {
                     this.onlinePlayerCount = 4;
                 }
+                this.syncMultiplayerOptions();
+            });
+        });
+
+        document.querySelectorAll('#online-stake-group .btn-option').forEach(b => {
+            b.addEventListener('click', () => {
+                document.querySelectorAll('#online-stake-group .btn-option').forEach(x => x.classList.remove('active'));
+                b.classList.add('active');
+                this.onlineStakeKey = b.dataset.value || 'free';
                 this.syncMultiplayerOptions();
             });
         });
@@ -829,6 +839,10 @@ class DominoGame {
             button.classList.toggle('active', this.isTeamMode === isTeamButton);
         });
 
+        document.querySelectorAll('#online-stake-group .btn-option').forEach((button) => {
+            button.classList.toggle('active', button.dataset.value === this.onlineStakeKey);
+        });
+
         const aiInput = document.getElementById('online-ai-count');
         if (aiInput) {
             const maxAi = this.isTeamMode ? 2 : Math.max(0, this.onlinePlayerCount - 1);
@@ -838,7 +852,8 @@ class DominoGame {
             const summary = document.getElementById('online-player-summary');
             if (summary) {
                 const humans = Math.max(1, this.onlinePlayerCount - this.onlineAiCount);
-                summary.textContent = this.format('online-room-summary', { humans, bots: this.onlineAiCount, total: this.onlinePlayerCount });
+                const stakeLabel = (Array.from(document.querySelectorAll('#online-stake-group .btn-option')).find((button) => button.dataset.value === this.onlineStakeKey)?.textContent || 'Free').trim();
+                summary.textContent = `${this.format('online-room-summary', { humans, bots: this.onlineAiCount, total: this.onlinePlayerCount })} · ${stakeLabel}`;
             }
         }
     }

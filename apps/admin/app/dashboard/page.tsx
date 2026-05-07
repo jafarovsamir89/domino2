@@ -20,6 +20,28 @@ type OverviewResponse = {
   };
 };
 
+type EconomyOverviewResponse = {
+  phase: string;
+  metrics: {
+    wallets: number;
+    coinsInCirculation: number;
+    coinsReserved: number;
+    ledgerEntries: number;
+    activeStakeTables: number;
+    activeTournaments: number;
+    dailyClaimsToday: number;
+  };
+  config: {
+    dailyBaseAmount: number;
+    dailyStreakBonus: number;
+    dailyMaxStreak: number;
+    dailyClaimCooldown: number;
+    matchCommissionBps: number;
+    tournamentCommissionBps: number;
+    adRewardAmount: number;
+  };
+};
+
 type AuthStatusResponse = {
   provider: string;
   phase: string;
@@ -86,8 +108,9 @@ export default async function DashboardPage() {
     );
   }
 
-  const [overview, authStatus, realtime, platformRealtime] = await Promise.all([
+  const [overview, economy, authStatus, realtime, platformRealtime] = await Promise.all([
     fetchAuthedApi<OverviewResponse>("/admin/overview"),
+    fetchAuthedApi<EconomyOverviewResponse>("/admin/economy/overview"),
     fetchApi<AuthStatusResponse>("/platform/status"),
     fetchGameServerApi<RealtimeSummaryResponse>("/api/realtime/summary"),
     fetchApi<RealtimeSummaryResponse>("/realtime/summary")
@@ -117,6 +140,9 @@ export default async function DashboardPage() {
         <MetricCard label="Online Auth" value={mergedRealtime?.counts.authenticatedConnected ?? "Game offline"} />
         <MetricCard label="Online Guests" value={mergedRealtime?.counts.guestConnected ?? "Game offline"} />
         <MetricCard label="Playing Now" value={mergedRealtime?.counts.playing ?? "Game offline"} />
+        <MetricCard label="Coins live" value={economy?.metrics.coinsInCirculation ?? "API offline"} />
+        <MetricCard label="Coins reserved" value={economy?.metrics.coinsReserved ?? "API offline"} />
+        <MetricCard label="Stake tables" value={economy?.metrics.activeStakeTables ?? "API offline"} />
       </section>
 
       <section style={layoutStyle}>
@@ -136,6 +162,12 @@ export default async function DashboardPage() {
           <Panel title="Deployment Notes">
             <p style={copyStyle}>What is already live: PostgreSQL, Nginx, API on `3000`, admin on `3001`.</p>
             <p style={copyStyle}>What still stays separate for now: the legacy game server under PM2 on port `2567`.</p>
+          </Panel>
+          <Panel title="Economy snapshot">
+            <Row label="Wallets" value={economy?.metrics.wallets?.toString() ?? "API offline"} />
+            <Row label="Ledger rows" value={economy?.metrics.ledgerEntries?.toString() ?? "API offline"} />
+            <Row label="Daily claims today" value={economy?.metrics.dailyClaimsToday?.toString() ?? "API offline"} />
+            <Row label="Active tournaments" value={economy?.metrics.activeTournaments?.toString() ?? "API offline"} />
           </Panel>
         </div>
       </section>

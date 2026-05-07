@@ -42,6 +42,8 @@ class DominoRoom extends Room {
         this.dlossThreshold = options.dlossThreshold || DLOSS;
         this.instantWinEnabled = options.instantWinEnabled !== false;
         this.aiDifficulty = options.difficulty || "medium";
+        this.currentStakeKey = String(options.stakeKey || "free").trim() || "free";
+        this.economyReservationMade = false;
         this.botTimer = null;
         this.botIds = [];
         this.aiPlayers = new Map();
@@ -250,7 +252,99 @@ class DominoRoom extends Room {
         }
         
         this.syncState();
+        if (!this.economyReservationMade && this.currentStakeKey !== "free") {
+            void this.reserveEconomyStake();
+        }
         this.scheduleBotTurn();
+    }
+
+    async reserveEconomyStake() {
+        if (this.economyReservationMade || this.currentStakeKey === "free") {
+            return;
+        }
+
+        const platformIdentity = this.getPlatformMatchIdentity();
+        if (!platformIdentity) {
+            this.economyReservationMade = true;
+            return;
+        }
+
+        const sessionIdentities = this.state.playerOrder
+            .map((sessionId, index) => {
+                const identity = this.identityBySessionId.get(sessionId);
+                const player = this.state.players.get(sessionId);
+                if (!identity) {
+                    return null;
+                }
+                return { identity, player, index };
+            })
+            .filter(Boolean);
+
+        const hasUnlinkedHuman = sessionIdentities.some(({ identity }) => identity.provider !== "platform" && identity.provider !== "bot");
+        if (hasUnlinkedHuman) {
+            this.currentStakeKey = "free";
+            this.economyReservationMade = true;
+            this.broadcast("msg", { text: "Stake table requires linked accounts, switched to free table", time: 2400 });
+            return;
+        }
+
+        const participants = sessionIdentities
+            .filter(({ identity }) => identity.provider === "platform" && identity.userId)
+            .map(({ identity, player, index }) => ({
+                playerId: identity.playerId || "",
+                userId: identity.userId,
+                displayName: player ? player.name : identity.displayName,
+                teamIndex: this.state.isTeamMode ? index % 2 : null
+            }));
+
+        if (!participants.length) {
+            this.economyReservationMade = true;
+            return;
+        }
+
+        try {
+            const response = await fetch(`${process.env.PLATFORM_API_URL || "http://127.0.0.1:3000"}/api/economy/matches/reserve`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${platformIdentity.authToken}`
+                },
+                body: JSON.stringify({
+                    roomId: this.roomId,
+                    roomCode: this.roomCode,
+                    stakeKey: this.currentStakeKey,
+                    participants
+                })
+            });
+
+            if (!response.ok) {
+                const text = await response.text().catch(() => "");
+                console.warn("[ROOM] Economy reserve failed:", text || response.status);
+                this.currentStakeKey = "free";
+                this.economyReservationMade = true;
+                this.broadcast("msg", { text: "Stake table unavailable, switched to free table", time: 2000 });
+                return;
+            }
+
+            const data = await response.json().catch(() => null);
+            if (!data?.ok) {
+                console.warn("[ROOM] Economy reserve rejected:", data?.reason || "unknown");
+                this.currentStakeKey = "free";
+                this.economyReservationMade = true;
+                this.broadcast("msg", { text: "Stake table unavailable, switched to free table", time: 2000 });
+                return;
+            }
+
+            this.economyReservationMade = true;
+            this.broadcast("msg", {
+                text: `Stake ${this.currentStakeKey} reserved for ${participants.length} players`,
+                time: 2000
+            });
+        } catch (error) {
+            console.warn("[ROOM] Economy reserve error:", error);
+            this.currentStakeKey = "free";
+            this.economyReservationMade = true;
+        }
     }
 
     scheduleBotTurn(delay = 650) {
@@ -443,6 +537,7 @@ class DominoRoom extends Room {
                 roomId: this.roomId,
                 winnerKey,
                 result: "win",
+                stakeKey: this.currentStakeKey,
                 teams,
                 participants: participantRows
             };

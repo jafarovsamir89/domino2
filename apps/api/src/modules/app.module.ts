@@ -3,6 +3,7 @@ import { ConfigModule } from "@nestjs/config";
 
 import { AdminModule } from "./admin/admin.module.js";
 import { AuthModule } from "./auth/auth.module.js";
+import { EconomyModule } from "./economy/economy.module.js";
 import { HealthModule } from "./health/health.module.js";
 import { LeaderboardModule } from "./leaderboard/leaderboard.module.js";
 import { MatchesModule } from "./matches/matches.module.js";
@@ -16,6 +17,7 @@ import { PrismaModule } from "./prisma/prisma.module.js";
     PrismaModule,
     HealthModule,
     AuthModule,
+    EconomyModule,
     PlayersModule,
     LeaderboardModule,
     MatchesModule,

@@ -33,6 +33,12 @@ type PlayerListResponse = {
       currentStreak: number;
       bestStreak: number;
     } | null;
+    wallet: {
+      balance: number;
+      reserved: number;
+      lifetimeEarned: number;
+      lifetimeSpent: number;
+    } | null;
     activeBans: number;
     openReports: number;
     matchCount: number;
@@ -100,6 +106,7 @@ export default async function PlayersPage({
               <Th>Identity</Th>
               <Th>Rating</Th>
               <Th>Record</Th>
+              <Th>Wallet</Th>
               <Th>Flags</Th>
               <Th>Actions</Th>
             </tr>
@@ -121,6 +128,11 @@ export default async function PlayersPage({
                   <Td>
                     {player.stats?.wins ?? 0}W / {player.stats?.losses ?? 0}L / {player.stats?.draws ?? 0}D
                     <div style={mutedStyle}>{player.stats?.matchesPlayed ?? 0} matches</div>
+                  </Td>
+                  <Td>
+                    <strong>{player.wallet?.balance ?? 0}</strong>
+                    <div style={mutedStyle}>{player.wallet?.reserved ?? 0} reserved</div>
+                    <div style={mutedStyle}>{player.wallet?.lifetimeEarned ?? 0} earned / {player.wallet?.lifetimeSpent ?? 0} spent</div>
                   </Td>
                   <Td>
                     <Badge>{player.activeBans} bans</Badge>
@@ -148,9 +160,9 @@ export default async function PlayersPage({
               ))
             ) : (
               <tr>
-                <Td colSpan={6}>{data ? "No players found." : "API offline."}</Td>
-              </tr>
-            )}
+                  <Td colSpan={7}>{data ? "No players found." : "API offline."}</Td>
+                </tr>
+              )}
           </tbody>
         </table>
       </section>

@@ -22,6 +22,38 @@ enum PaymentStatus {
   canceled
 }
 
+enum CoinLedgerType {
+  grant
+  spend
+  reserve
+  release
+  payout
+  refund
+  daily_bonus
+  quest_reward
+  achievement_reward
+  tournament_entry
+  tournament_prize
+  admin_adjustment
+  shop_purchase
+  ad_reward
+}
+
+enum CoinStakeStatus {
+  reserved
+  settled
+  refunded
+  canceled
+}
+
+enum CoinTournamentEntryStatus {
+  registered
+  active
+  eliminated
+  refunded
+  paid
+}
+
 model User {
   id              String          @id
   name            String
@@ -38,6 +70,7 @@ model User {
   revokedBans     PlayerBan[]     @relation("BanRevokedBy")
   resolvedReports PlayerReport[]  @relation("ReportResolvedBy")
   auditLogs       AdminAuditLog[]
+  coinLedgerEntries CoinLedgerEntry[]
 
   @@map("user")
 }
@@ -106,6 +139,12 @@ model Player {
   reportsIn     PlayerReport[]     @relation("ReportTarget")
   reportsBy     PlayerReport[]     @relation("ReportAuthor")
   bans          PlayerBan[]
+  wallet        CoinWallet?
+  ledgerEntries CoinLedgerEntry[]
+  dailyClaims   CoinDailyBonusClaim[]
+  questProgress CoinQuestProgress[]
+  matchStakes   CoinMatchStake[]
+  tournamentEntries CoinTournamentEntry[]
   orders        Order[]
   entitlements  PlayerEntitlement[]
 }
@@ -122,6 +161,167 @@ model PlayerStats {
   currentStreak  Int    @default(0)
   bestStreak     Int    @default(0)
   player         Player @relation(fields: [playerId], references: [id], onDelete: Cascade)
+}
+
+model CoinEconomyConfig {
+  id                  String   @id @default(cuid())
+  key                 String   @unique
+  dailyBaseAmount     Int      @default(25)
+  dailyStreakBonus    Int      @default(5)
+  dailyMaxStreak      Int      @default(7)
+  dailyClaimCooldown  Int      @default(20)
+  matchCommissionBps  Int      @default(500)
+  tournamentCommissionBps Int   @default(1000)
+  adRewardAmount      Int      @default(10)
+  updatedAt           DateTime @updatedAt
+  createdAt           DateTime @default(now())
+}
+
+model CoinWallet {
+  id             String   @id @default(cuid())
+  playerId       String   @unique
+  balance        Int      @default(0)
+  reserved       Int      @default(0)
+  lifetimeEarned  Int      @default(0)
+  lifetimeSpent   Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  player         Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
+}
+
+model CoinLedgerEntry {
+  id              String          @id @default(cuid())
+  playerId        String
+  type            CoinLedgerType
+  amount          Int
+  balanceBefore   Int
+  balanceAfter    Int
+  reservedBefore  Int             @default(0)
+  reservedAfter   Int             @default(0)
+  referenceType   String
+  referenceId     String
+  idempotencyKey  String?         @unique
+  note            String?
+  payloadJson     Json?
+  createdByUserId String?
+  createdAt       DateTime        @default(now())
+  player          Player          @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  createdByUser   User?           @relation(fields: [createdByUserId], references: [id], onDelete: SetNull)
+
+  @@index([playerId, createdAt])
+  @@index([referenceType, referenceId])
+}
+
+model CoinDailyBonusClaim {
+  id          String   @id @default(cuid())
+  playerId    String
+  claimDate   String
+  streakDay   Int      @default(1)
+  amount      Int
+  createdAt   DateTime @default(now())
+  player      Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  @@unique([playerId, claimDate])
+}
+
+model CoinQuest {
+  id            String   @id @default(cuid())
+  key           String   @unique
+  title         String
+  description   String?
+  rewardAmount  Int      @default(0)
+  maxProgress   Int      @default(1)
+  period        String   @default("once")
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  progress      CoinQuestProgress[]
+}
+
+model CoinQuestProgress {
+  id           String   @id @default(cuid())
+  playerId     String
+  questId      String
+  progress     Int      @default(0)
+  state        String   @default("active")
+  claimedAt    DateTime?
+  completedAt  DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  player       Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  quest        CoinQuest @relation(fields: [questId], references: [id], onDelete: Cascade)
+
+  @@unique([playerId, questId])
+}
+
+model CoinStakeTable {
+  id            String   @id @default(cuid())
+  key           String   @unique
+  title         String
+  stakeAmount   Int      @default(0)
+  commissionBps Int      @default(500)
+  isFree        Boolean  @default(false)
+  isActive      Boolean  @default(true)
+  sortOrder     Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  stakes        CoinMatchStake[]
+}
+
+model CoinMatchStake {
+  id              String         @id @default(cuid())
+  roomId          String
+  matchId         String?
+  playerId        String
+  stakeTableId    String
+  stakeAmount     Int
+  commissionBps   Int
+  commissionAmount Int           @default(0)
+  status          CoinStakeStatus @default(reserved)
+  reservedAt      DateTime       @default(now())
+  settledAt       DateTime?
+  refundedAt      DateTime?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  player          Player         @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  stakeTable      CoinStakeTable @relation(fields: [stakeTableId], references: [id], onDelete: Cascade)
+
+  @@unique([roomId, playerId, stakeTableId])
+  @@index([roomId, status])
+  @@index([matchId])
+}
+
+model CoinTournament {
+  id                 String   @id @default(cuid())
+  key                String   @unique
+  title              String
+  description        String?
+  entryFee           Int      @default(0)
+  prizePool          Int      @default(0)
+  commissionBps      Int      @default(1000)
+  startsAt           DateTime?
+  endsAt             DateTime?
+  isActive           Boolean  @default(true)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+  entries            CoinTournamentEntry[]
+}
+
+model CoinTournamentEntry {
+  id            String                 @id @default(cuid())
+  tournamentId  String
+  playerId      String
+  status        CoinTournamentEntryStatus @default(registered)
+  entryFee      Int                    @default(0)
+  payoutAmount  Int                    @default(0)
+  joinedAt      DateTime               @default(now())
+  settledAt     DateTime?
+  createdAt     DateTime               @default(now())
+  updatedAt     DateTime               @updatedAt
+  player        Player                 @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  tournament    CoinTournament         @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+
+  @@unique([tournamentId, playerId])
 }
 
 model Match {
@@ -263,4 +463,6 @@ model PlayerEntitlement {
   quantity   Int      @default(1)
   grantedAt  DateTime @default(now())
   player     Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  @@unique([playerId, productKey])
 }

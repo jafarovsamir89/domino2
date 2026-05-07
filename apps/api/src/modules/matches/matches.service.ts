@@ -1,5 +1,6 @@
 import { Injectable } from "@nestjs/common";
 
+import { EconomyService } from "../economy/economy.service.js";
 import { PrismaService } from "../prisma/prisma.service.js";
 import { verifyGameToken } from "../auth/game-token.js";
 
@@ -20,6 +21,7 @@ type MatchPayload = {
   roomId?: string | null;
   winnerKey?: string | null;
   result?: string | null;
+  stakeKey?: string | null;
   participants?: MatchParticipantPayload[];
   teams?: Array<{ memberIds?: string[] }>;
   totalPoints?: number | null;
@@ -51,7 +53,10 @@ function toInt(value: unknown, fallback = 0) {
 
 @Injectable()
 export class MatchesService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly economyService: EconomyService
+  ) {}
 
   async recordPlatformMatch(token: string, payload: MatchPayload) {
     const claims = verifyGameToken(token);
@@ -168,6 +173,19 @@ export class MatchesService {
         }
       });
 
+      const winnerTeamIndex = isTeamMode && winnerKey.startsWith("team:")
+        ? Number.parseInt(winnerKey.slice(5), 10)
+        : -1;
+      const winnerParticipants = resolvedParticipants.filter(({ participant }) => {
+        if (winnerKey === "draw") {
+          return false;
+        }
+        if (isTeamMode) {
+          return Number.isFinite(winnerTeamIndex) && participant.teamIndex !== null && participant.teamIndex === winnerTeamIndex;
+        }
+        return participant.winnerKey === winnerKey || participant.result === "win";
+      });
+
       for (const { participant, player } of resolvedParticipants) {
         const isDraw = winnerKey === "draw" || payload.result === "draw";
         const isWinner = !isDraw && (isTeamMode
@@ -211,10 +229,20 @@ export class MatchesService {
         });
       }
 
+      const settlement = await this.economyService.settleMatchStake(token, {
+        roomId: String(payload.roomId || claims.sessionId || ""),
+        matchId: match.id,
+        stakeKey: String(payload.stakeKey || "free"),
+        result: winnerKey === "draw" || payload.result === "draw" ? "draw" : "win",
+        winnerPlayerIds: winnerParticipants.map(({ player }) => player.playerId),
+        winnerUserIds: winnerParticipants.map(({ player }) => player.userId)
+      });
+
       return {
         matchId: match.id,
         createdAt: match.createdAt,
-        participants: match.participants.length
+        participants: match.participants.length,
+        economy: settlement
       };
     });
   }

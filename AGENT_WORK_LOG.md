@@ -418,3 +418,11 @@
 - Changed the 35-point instant-win path so the server marks the match as finished immediately instead of allowing the game to continue into another deal.
 - Updated the instant-win copy so it reads as a real match-ending state rather than a two-round continuation.
 
+## 2026-05-08 Economy system foundation
+- Added PostgreSQL-backed coin economy tables for wallets, ledger entries, daily claims, quests, stake tables, match stakes and tournaments.
+- Added a NestJS economy module with public config/stakes/quests routes and admin routes for wallets, grants, spend, stakes, quests, catalog and tournaments.
+- Integrated stake reservation and settlement into the game server flow so online rooms can run free tables or linked-account coin tables.
+- Added a dedicated economy admin page with config editing, stake management, quest management, catalog management, wallet snapshots and tournament management.
+- Added stake selection to the online room modal in the browser client and passed the selected stake through to room creation / join options.
+- Added docs for the economy spec and a dedicated development log.
+

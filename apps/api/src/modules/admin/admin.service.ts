@@ -46,12 +46,16 @@ export class AdminService {
   async getOverview(headers: AdminHeaders) {
     await this.requireAdmin(headers);
 
-    const [players, users, matches, reportsOpen, bansActive] = await Promise.all([
+    const [players, users, matches, reportsOpen, bansActive, wallets, balanceAgg, reservedAgg, stakeTables] = await Promise.all([
       this.prisma.player.count(),
       this.prisma.user.count(),
       this.prisma.match.count(),
       this.prisma.playerReport.count({ where: { status: "open" } }),
-      this.prisma.playerBan.count({ where: { revokedAt: null } })
+      this.prisma.playerBan.count({ where: { revokedAt: null } }),
+      this.prisma.coinWallet.count(),
+      this.prisma.coinWallet.aggregate({ _sum: { balance: true } }),
+      this.prisma.coinWallet.aggregate({ _sum: { reserved: true } }),
+      this.prisma.coinStakeTable.count({ where: { isActive: true } })
     ]);
 
     return {
@@ -61,7 +65,11 @@ export class AdminService {
         users,
         matches,
         reportsOpen,
-        bansActive
+        bansActive,
+        wallets,
+        coinsInCirculation: balanceAgg._sum.balance || 0,
+        coinsReserved: reservedAgg._sum.reserved || 0,
+        stakeTables
       }
     };
   }
@@ -96,7 +104,8 @@ export class AdminService {
         reportsIn: {
           where: { status: "open" },
           take: 1
-        }
+        },
+        wallet: true
       }
     });
 
@@ -119,6 +128,7 @@ export class AdminService {
             }
           : null,
         stats: player.stats,
+        wallet: player.wallet,
         activeBans: player.bans.length,
         openReports: player.reportsIn.length
       }))
@@ -189,6 +199,28 @@ export class AdminService {
             target: true,
             match: true
           }
+        },
+        wallet: true,
+        dailyClaims: {
+          orderBy: {
+            createdAt: "desc"
+          },
+          take: 20
+        },
+        ledgerEntries: {
+          orderBy: {
+            createdAt: "desc"
+          },
+          take: 40
+        },
+        matchStakes: {
+          include: {
+            stakeTable: true
+          },
+          orderBy: {
+            reservedAt: "desc"
+          },
+          take: 20
         }
       }
     });
@@ -229,9 +261,13 @@ export class AdminService {
           }
         : null,
       stats: player.stats,
+      wallet: player.wallet,
       bans: player.bans,
       reportsIn: player.reportsIn,
       reportsBy: player.reportsBy,
+      dailyClaims: player.dailyClaims,
+      ledgerEntries: player.ledgerEntries,
+      matchStakes: player.matchStakes,
       recentMatches
     };
   }

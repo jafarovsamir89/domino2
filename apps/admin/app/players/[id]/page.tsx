@@ -4,6 +4,7 @@ import Link from "next/link";
 import { AdminFrame } from "../../../components/admin-frame";
 import { AccessRequired } from "../../../components/access-required";
 import { ActionButton } from "../../../components/action-button";
+import { EconomyEditForm } from "../../../components/economy-edit-form";
 import { getAdminSession, isAdminRole } from "../../../lib/admin-session";
 import { fetchAuthedApi } from "../../../lib/server-api";
 
@@ -34,6 +35,14 @@ type PlayerDetailResponse = {
     matchesPlayed: number;
     currentStreak: number;
     bestStreak: number;
+  } | null;
+  wallet: {
+    id: string;
+    balance: number;
+    reserved: number;
+    lifetimeEarned: number;
+    lifetimeSpent: number;
+    updatedAt: string;
   } | null;
   bans: Array<{
     id: string;
@@ -137,6 +146,14 @@ export default async function PlayerDetailPage({
           <StatRow label="Created" value={player.createdAt.slice(0, 10)} />
           <StatRow label="Updated" value={player.updatedAt.slice(0, 10)} />
         </Panel>
+
+        <Panel title="Wallet">
+          <StatRow label="Balance" value={player.wallet?.balance ?? 0} />
+          <StatRow label="Reserved" value={player.wallet?.reserved ?? 0} />
+          <StatRow label="Earned" value={player.wallet?.lifetimeEarned ?? 0} />
+          <StatRow label="Spent" value={player.wallet?.lifetimeSpent ?? 0} />
+          <StatRow label="Updated" value={player.wallet?.updatedAt?.slice(0, 10) ?? "n/a"} />
+        </Panel>
       </section>
 
       <section style={sectionStyle}>
@@ -162,6 +179,33 @@ export default async function PlayerDetailPage({
               <div style={mutedStyle}>{report.status} · {report.createdAt.slice(0, 10)}</div>
             </div>
           )) : <p style={mutedStyle}>No reports against this player.</p>}
+        </Panel>
+      </section>
+
+      <section style={sectionStyle}>
+        <Panel title="Coin adjustments">
+          <div style={adjustmentStackStyle}>
+            <EconomyEditForm
+              endpoint={`/admin/economy/wallets/${player.id}/grant`}
+              title="Grant coins"
+              submitLabel="Grant"
+              fields={[
+                { name: "amount", label: "Amount", type: "number", min: 1, step: 1, required: true },
+                { name: "reason", label: "Reason", type: "text", required: true },
+                { name: "note", label: "Note", type: "textarea", rows: 2 }
+              ]}
+            />
+            <EconomyEditForm
+              endpoint={`/admin/economy/wallets/${player.id}/spend`}
+              title="Spend coins"
+              submitLabel="Spend"
+              fields={[
+                { name: "amount", label: "Amount", type: "number", min: 1, step: 1, required: true },
+                { name: "reason", label: "Reason", type: "text", required: true },
+                { name: "note", label: "Note", type: "textarea", rows: 2 }
+              ]}
+            />
+          </div>
         </Panel>
       </section>
 
@@ -233,6 +277,11 @@ const sectionStyle = {
   gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
   gap: 16,
   marginBottom: 16
+} as const;
+
+const adjustmentStackStyle = {
+  display: "grid",
+  gap: 14
 } as const;
 
 const panelStyle = {
