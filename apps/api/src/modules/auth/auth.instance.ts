@@ -1,0 +1,82 @@
+import { PrismaClient } from "@prisma/client";
+import { prismaAdapter } from "better-auth/adapters/prisma";
+import { betterAuth } from "better-auth";
+
+import { getBetterAuthConfig } from "./better-auth.config.js";
+
+const prisma = new PrismaClient();
+const config = getBetterAuthConfig();
+
+export const auth = betterAuth({
+  database: prismaAdapter(prisma, {
+    provider: "postgresql"
+  }),
+  secret: config.secret,
+  baseURL: config.baseURL,
+  trustedOrigins: config.trustedOrigins,
+  databaseHooks: {
+    user: {
+      create: {
+        after: async (user) => {
+          await prisma.player.upsert({
+            where: { userId: user.id },
+            update: {
+              displayName: user.name
+            },
+            create: {
+              userId: user.id,
+              displayName: user.name,
+              isGuest: false
+            }
+          });
+
+          const player = await prisma.player.findUnique({
+            where: { userId: user.id },
+            select: { id: true }
+          });
+
+          if (!player) return;
+
+          await prisma.playerStats.upsert({
+            where: { playerId: player.id },
+            update: {},
+            create: {
+              playerId: player.id
+            }
+          });
+        }
+      },
+      update: {
+        after: async (user) => {
+          await prisma.player.updateMany({
+            where: { userId: user.id },
+            data: {
+              displayName: user.name
+            }
+          });
+        }
+      }
+    }
+  },
+  emailAndPassword: {
+    enabled: true
+  },
+  socialProviders: config.google
+    ? {
+        google: {
+          clientId: config.google.clientId,
+          clientSecret: config.google.clientSecret
+        }
+      }
+    : {},
+  user: {
+    additionalFields: {
+      role: {
+        type: ["player", "moderator", "admin", "superadmin"],
+        required: false,
+        defaultValue: "player",
+        input: false
+      }
+    }
+  }
+});

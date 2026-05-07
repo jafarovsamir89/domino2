@@ -1,5 +1,7 @@
 node_modules/
 server/node_modules/
+apps/*/node_modules/
+packages/*/node_modules/
 
 android/.gradle/
 android/build/
@@ -9,6 +11,14 @@ android/capacitor-cordova-android-plugins/build/
 .vscode/
 
 *.log
+.env
+.env.*
+!**/.env.example
+.next/
+dist/
+coverage/
+.gcloud/
+.tmp/
 Thumbs.db
 .DS_Store
 

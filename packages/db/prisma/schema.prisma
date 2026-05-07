@@ -1,0 +1,266 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum ReportStatus {
+  open
+  resolved
+  rejected
+}
+
+enum PaymentStatus {
+  pending
+  requires_action
+  paid
+  failed
+  refunded
+  canceled
+}
+
+model User {
+  id              String          @id
+  name            String
+  email           String          @unique
+  emailVerified   Boolean         @default(false)
+  image           String?
+  role            String?         @default("player")
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  sessions        Session[]
+  accounts        Account[]
+  player          Player?
+  createdBans     PlayerBan[]     @relation("BanCreatedBy")
+  revokedBans     PlayerBan[]     @relation("BanRevokedBy")
+  resolvedReports PlayerReport[]  @relation("ReportResolvedBy")
+  auditLogs       AdminAuditLog[]
+
+  @@map("user")
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+  @@map("verification")
+}
+
+model Player {
+  id            String             @id @default(cuid())
+  legacyUserId  String?            @unique
+  legacyNameKey String?
+  userId        String?            @unique
+  displayName   String
+  avatarSeed    String?
+  isGuest       Boolean            @default(false)
+  language      String?
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+  user          User?              @relation(fields: [userId], references: [id], onDelete: SetNull)
+  stats         PlayerStats?
+  matches       MatchParticipant[]
+  reportsIn     PlayerReport[]     @relation("ReportTarget")
+  reportsBy     PlayerReport[]     @relation("ReportAuthor")
+  bans          PlayerBan[]
+  orders        Order[]
+  entitlements  PlayerEntitlement[]
+}
+
+model PlayerStats {
+  id            String @id @default(cuid())
+  playerId       String @unique
+  rating         Int    @default(1000)
+  points         Int    @default(0)
+  wins           Int    @default(0)
+  losses         Int    @default(0)
+  draws          Int    @default(0)
+  matchesPlayed  Int    @default(0)
+  currentStreak  Int    @default(0)
+  bestStreak     Int    @default(0)
+  player         Player @relation(fields: [playerId], references: [id], onDelete: Cascade)
+}
+
+model Match {
+  id           String             @id @default(cuid())
+  mode         String
+  isTeamMode   Boolean            @default(false)
+  roomId       String?
+  winnerKey    String?
+  result       String?
+  totalPoints  Int                @default(0)
+  createdAt    DateTime           @default(now())
+  participants MatchParticipant[]
+  reports      PlayerReport[]
+}
+
+model MatchParticipant {
+  id                  String   @id @default(cuid())
+  matchId             String
+  playerId            String?
+  displayNameSnapshot String
+  teamIndex           Int?
+  winnerKey           String?
+  result              String?
+  points              Int      @default(0)
+  roundWins           Int      @default(0)
+  ratingBefore        Int?
+  ratingDelta         Int?
+  ratingAfter         Int?
+  isBot               Boolean  @default(false)
+  match               Match    @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  player              Player?  @relation(fields: [playerId], references: [id], onDelete: SetNull)
+}
+
+model PlayerBan {
+  id              String   @id @default(cuid())
+  playerId        String
+  reason          String
+  expiresAt       DateTime?
+  createdByUserId String?
+  revokedAt       DateTime?
+  revokedByUserId String?
+  createdAt       DateTime @default(now())
+  player          Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  createdByUser   User?    @relation("BanCreatedBy", fields: [createdByUserId], references: [id], onDelete: SetNull)
+  revokedByUser   User?    @relation("BanRevokedBy", fields: [revokedByUserId], references: [id], onDelete: SetNull)
+}
+
+model PlayerReport {
+  id               String       @id @default(cuid())
+  reporterPlayerId String
+  targetPlayerId   String
+  matchId          String?
+  reason           String
+  status           ReportStatus @default(open)
+  createdAt        DateTime     @default(now())
+  resolvedAt       DateTime?
+  resolvedByUserId String?
+  reporter         Player       @relation("ReportAuthor", fields: [reporterPlayerId], references: [id], onDelete: Cascade)
+  target           Player       @relation("ReportTarget", fields: [targetPlayerId], references: [id], onDelete: Cascade)
+  match            Match?       @relation(fields: [matchId], references: [id], onDelete: SetNull)
+  resolvedByUser   User?        @relation("ReportResolvedBy", fields: [resolvedByUserId], references: [id], onDelete: SetNull)
+}
+
+model AdminAuditLog {
+  id          String   @id @default(cuid())
+  adminUserId String
+  action      String
+  entityType  String
+  entityId    String
+  payloadJson Json?
+  createdAt   DateTime @default(now())
+  adminUser   User     @relation(fields: [adminUserId], references: [id], onDelete: Cascade)
+}
+
+model CatalogProduct {
+  id          String         @id @default(cuid())
+  key         String         @unique
+  name        String
+  description String?
+  isActive    Boolean        @default(true)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  prices      CatalogPrice[]
+  orders      Order[]
+}
+
+model CatalogPrice {
+  id          String   @id @default(cuid())
+  productId   String
+  currency    String
+  amountMinor Int
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  product     CatalogProduct @relation(fields: [productId], references: [id], onDelete: Cascade)
+  orders      Order[]
+}
+
+model Order {
+  id          String        @id @default(cuid())
+  playerId    String
+  productId   String
+  priceId     String
+  status      PaymentStatus @default(pending)
+  externalRef String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  player      Player        @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  product     CatalogProduct @relation(fields: [productId], references: [id], onDelete: Cascade)
+  price       CatalogPrice  @relation(fields: [priceId], references: [id], onDelete: Cascade)
+  payments    Payment[]
+}
+
+model Payment {
+  id                String        @id @default(cuid())
+  orderId           String
+  provider          String
+  providerPaymentId String?
+  status            PaymentStatus @default(pending)
+  amountMinor       Int
+  currency          String
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  order             Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
+}
+
+model PaymentEvent {
+  id              String   @id @default(cuid())
+  provider        String
+  providerEventId String   @unique
+  type            String
+  payloadJson     Json
+  createdAt       DateTime @default(now())
+}
+
+model PlayerEntitlement {
+  id         String   @id @default(cuid())
+  playerId   String
+  productKey String
+  quantity   Int      @default(1)
+  grantedAt  DateTime @default(now())
+  player     Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
+}

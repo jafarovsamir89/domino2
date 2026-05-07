@@ -1,5 +1,7 @@
 const ACCOUNT_TOKEN_KEY = "dominoAuthToken";
 const ACCOUNT_PROFILE_KEY = "dominoAuthProfile";
+const PLATFORM_GAME_TOKEN_KEY = "dominoPlatformGameToken";
+const PLATFORM_PROFILE_KEY = "dominoPlatformProfile";
 
 export class AccountClient {
     constructor(getServerUrl) {
@@ -43,9 +45,59 @@ export class AccountClient {
         } catch {}
     }
 
+    get platformApiBase() {
+        try {
+            if (window.DOMINO_PLATFORM_API_URL) {
+                return String(window.DOMINO_PLATFORM_API_URL).replace(/\/$/, "");
+            }
+
+            const { protocol, hostname } = window.location;
+            if (hostname === "localhost" || hostname === "127.0.0.1") {
+                return "http://localhost:3000/api";
+            }
+
+            return `${protocol}//${hostname}/api`;
+        } catch {
+            return "http://localhost:3000/api";
+        }
+    }
+
+    get platformGameToken() {
+        try {
+            return window.localStorage?.getItem(PLATFORM_GAME_TOKEN_KEY) || "";
+        } catch {
+            return "";
+        }
+    }
+
+    setPlatformGameToken(token) {
+        try {
+            if (token) window.localStorage?.setItem(PLATFORM_GAME_TOKEN_KEY, token);
+            else window.localStorage?.removeItem(PLATFORM_GAME_TOKEN_KEY);
+        } catch {}
+    }
+
+    getPlatformProfile() {
+        try {
+            const raw = window.localStorage?.getItem(PLATFORM_PROFILE_KEY);
+            return raw ? JSON.parse(raw) : null;
+        } catch {
+            return null;
+        }
+    }
+
+    setPlatformProfile(profile) {
+        try {
+            if (profile) window.localStorage?.setItem(PLATFORM_PROFILE_KEY, JSON.stringify(profile));
+            else window.localStorage?.removeItem(PLATFORM_PROFILE_KEY);
+        } catch {}
+    }
+
     clearSession() {
         this.setStoredToken("");
         this.setStoredProfile(null);
+        this.setPlatformGameToken("");
+        this.setPlatformProfile(null);
     }
 
     normalizeError(error) {
@@ -90,16 +142,54 @@ export class AccountClient {
     }
 
     async bootstrap() {
+        let legacyData = null;
         const token = this.storedToken;
-        if (!token) return null;
+        if (token) {
+            try {
+                legacyData = await this.request("/api/me", {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                this.setStoredProfile(legacyData.user || null);
+            } catch {
+                this.setStoredToken("");
+                this.setStoredProfile(null);
+            }
+        }
+
+        await this.syncPlatformSession();
+        return legacyData;
+    }
+
+    async syncPlatformSession() {
         try {
-            const data = await this.request("/api/me", {
-                headers: { Authorization: `Bearer ${token}` }
+            const response = await fetch(`${this.platformApiBase}/platform/game-token`, {
+                method: "GET",
+                credentials: "include",
+                headers: {
+                    "Content-Type": "application/json"
+                }
             });
-            this.setStoredProfile(data.user || null);
+
+            if (!response.ok) {
+                return null;
+            }
+
+            const data = await response.json();
+            if (!data?.token) {
+                return null;
+            }
+
+            this.setPlatformGameToken(data.token);
+            this.setPlatformProfile({
+                user: data.user || null,
+                player: data.player || null,
+                session: data.session || null
+            });
+            if (data.user || data.player) {
+                this.setStoredProfile(data.user || null);
+            }
             return data;
         } catch {
-            this.clearSession();
             return null;
         }
     }
@@ -172,5 +262,9 @@ export class AccountClient {
             body: payload
         });
         return data.match || null;
+    }
+
+    getRoomAuthToken() {
+        return this.platformGameToken || this.storedToken || "";
     }
 }

@@ -1,0 +1,39 @@
+const crypto = require("crypto");
+
+function getSecret() {
+    return process.env.BETTER_AUTH_SECRET || "change-me";
+}
+
+function base64UrlEncode(value) {
+    return Buffer.from(value, "utf8").toString("base64url");
+}
+
+function base64UrlDecode(value) {
+    return Buffer.from(value, "base64url").toString("utf8");
+}
+
+function signPayload(payload) {
+    return crypto.createHmac("sha256", getSecret()).update(payload).digest("base64url");
+}
+
+function verifyGameToken(token) {
+    const value = String(token || "").trim();
+    if (!value) return null;
+
+    const [payload, signature] = value.split(".");
+    if (!payload || !signature) return null;
+    if (signPayload(payload) !== signature) return null;
+
+    try {
+        const claims = JSON.parse(base64UrlDecode(payload));
+        if (!claims || !claims.userId || !claims.playerId || !claims.displayName) return null;
+        if (typeof claims.expiresAt !== "number" || claims.expiresAt <= Date.now()) return null;
+        return claims;
+    } catch {
+        return null;
+    }
+}
+
+module.exports = {
+    verifyGameToken
+};

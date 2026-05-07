@@ -4,6 +4,7 @@ const { Board } = require("./board");
 const { AIPlayer } = require("./ai");
 const { Tile, createFullSet, shuffle, getHandSize, determineFirstPlayer, handPoints, roundTo5 } = require("./model");
 const accountStore = require("./accountStore");
+const { verifyGameToken } = require("./platformAuth");
 
 const TARGET = 365, MAX_R = 3, DLOSS = 255, IWIN = 35;
 
@@ -45,6 +46,7 @@ class DominoRoom extends Room {
         this.botIds = [];
         this.aiPlayers = new Map();
         this.matchRecorded = false;
+        this.identityBySessionId = new Map();
 
         this.onMessage("play", (client, message) => this.handlePlay(client, message));
         this.onMessage("draw", (client) => this.handleDraw(client));
@@ -56,15 +58,61 @@ class DominoRoom extends Room {
         console.log(`[ROOM] Created room ${this.roomId} (code ${this.roomCode}), humanSeats=${this.humanSeats}, totalPlayers=${this.totalPlayers}, aiCount=${this.aiCount}, teamMode=${this.state.isTeamMode}`);
     }
 
-    onJoin(client, options) {
+    onAuth(client, options, context) {
+        const token = String(context?.token || options?.authToken || "").trim();
+        const platformIdentity = verifyGameToken(token);
+        if (platformIdentity) {
+            return {
+                provider: "platform",
+                authToken: token,
+                userId: platformIdentity.userId,
+                playerId: platformIdentity.playerId,
+                displayName: platformIdentity.displayName,
+                role: platformIdentity.role
+            };
+        }
+
+        const profile = accountStore.getProfile(token);
+        if (profile) {
+            return {
+                provider: "legacy",
+                authToken: token,
+                userId: profile.id,
+                playerId: profile.id,
+                displayName: profile.name,
+                role: "player"
+            };
+        }
+
+        return {
+            provider: "guest",
+            authToken: "",
+            userId: "",
+            playerId: "",
+            displayName: sanitizeName(options?.name),
+            role: "player"
+        };
+    }
+
+    onJoin(client, options, auth) {
+        const identity = auth || {};
         console.log(`[ROOM] Client ${client.sessionId} joining with name: ${options.name}`);
         const player = new Player();
-        const authToken = String(options.authToken || "").trim();
-        const profile = accountStore.getProfile(authToken);
-        player.name = sanitizeName(profile?.name || options.name);
-        player.userId = profile?.id || "";
+        const authToken = String(identity.authToken || options.authToken || "").trim();
+        const profile = identity.provider === "platform"
+            ? { name: identity.displayName, id: identity.userId }
+            : accountStore.getProfile(authToken);
+        player.name = sanitizeName(identity.displayName || profile?.name || options.name);
+        player.userId = String(identity.userId || profile?.id || "");
         this.state.players.set(client.sessionId, player);
         this.state.playerOrder.push(client.sessionId);
+        this.identityBySessionId.set(client.sessionId, {
+            provider: identity.provider || (profile ? "legacy" : "guest"),
+            authToken,
+            userId: player.userId,
+            displayName: player.name,
+            playerId: identity.playerId || player.userId
+        });
 
         console.log(`[ROOM] Current player count: ${this.clients.length} / ${this.maxClients}`);
         this.broadcast("msg", { text: `${player.name} joined the room`, time: 1500 });
@@ -80,6 +128,7 @@ class DominoRoom extends Room {
             global.__DOMINO_ROOM_CODES?.delete(this.roomCode);
         }
         global.__DOMINO_ROOM_IDS?.delete(this.roomId);
+        this.identityBySessionId.clear();
     }
 
     ensureBotPlayers() {
@@ -118,6 +167,7 @@ class DominoRoom extends Room {
             console.log(`[ROOM] Client ${client.sessionId} removed permanently.`);
             const leftPlayerName = player ? player.name : "Player";
             this.state.players.delete(client.sessionId);
+            this.identityBySessionId.delete(client.sessionId);
             const idx = this.state.playerOrder.indexOf(client.sessionId);
             if (idx !== -1) this.state.playerOrder.splice(idx, 1);
 
@@ -280,6 +330,43 @@ class DominoRoom extends Room {
         });
     }
 
+    getPlatformMatchIdentity() {
+        for (const identity of this.identityBySessionId.values()) {
+            if (identity?.provider === "platform" && identity.authToken) {
+                return identity;
+            }
+        }
+        return null;
+    }
+
+    async recordPlatformMatch(payload) {
+        const identity = this.getPlatformMatchIdentity();
+        if (!identity) {
+            return false;
+        }
+
+        try {
+            const response = await fetch(`${process.env.PLATFORM_API_URL || "http://127.0.0.1:3000"}/api/platform/matches`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${identity.authToken}`
+                },
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) {
+                const text = await response.text().catch(() => "");
+                throw new Error(text || `Platform match recording failed with ${response.status}`);
+            }
+
+            return true;
+        } catch (error) {
+            console.error("[ROOM] Failed to record platform match:", error);
+            return false;
+        }
+    }
+
     recordMatchResult(wi, isInstantWin, players, wins) {
         if (this.matchRecorded) return;
         const participantRows = [];
@@ -318,7 +405,7 @@ class DominoRoom extends Room {
         }
 
         try {
-            accountStore.recordMatch({
+            const payload = {
                 mode: this.state.isTeamMode ? "team" : "ffa",
                 isTeamMode: this.state.isTeamMode,
                 roomId: this.roomId,
@@ -326,7 +413,14 @@ class DominoRoom extends Room {
                 result: "win",
                 teams,
                 participants: participantRows
-            });
+            };
+
+            const platformIdentity = this.getPlatformMatchIdentity();
+            if (platformIdentity) {
+                void this.recordPlatformMatch(payload);
+            } else {
+                accountStore.recordMatch(payload);
+            }
             this.matchRecorded = true;
         } catch (err) {
             console.error("[ROOM] Failed to record match:", err);

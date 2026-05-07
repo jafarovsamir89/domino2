@@ -1,0 +1,17 @@
+services:
+  postgres:
+    image: postgres:17
+    container_name: domino2-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: domino2_platform
+      POSTGRES_USER: domino
+      POSTGRES_PASSWORD: domino
+    ports:
+      - "5432:5432"
+    volumes:
+      - domino2_postgres_data:/var/lib/postgresql/data
+
+volumes:
+  domino2_postgres_data:
+
