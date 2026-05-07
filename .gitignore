@@ -19,6 +19,7 @@ dist/
 coverage/
 .gcloud/
 .deploy/
+rsa/
 .tmp/
 Thumbs.db
 .DS_Store
