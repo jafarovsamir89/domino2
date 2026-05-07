@@ -495,7 +495,9 @@ class DominoGame {
 
     startGoogleAccountSignIn() {
         const callbackURL = `${window.location.origin}${window.location.pathname}${window.location.search}`;
-        const loginURL = new URL("/login", window.location.origin);
+        const authOrigin = String(this.account?.platformApiBase || `${window.location.protocol}//${window.location.hostname}/api`)
+            .replace(/\/api\/?$/, "/");
+        const loginURL = new URL("/login", authOrigin);
         loginURL.searchParams.set("callbackURL", callbackURL);
         window.location.assign(loginURL.toString());
     }
