@@ -407,8 +407,50 @@ class DominoGame {
 
     async loadAccountProfile() {
         if (!this.account.getRoomAuthToken()) {
+            const storedProfile = this.account.getStoredProfile?.();
+            if (storedProfile?.provider === 'local-guest') {
+                this.accountProfile = storedProfile;
+                this.accountDetails = {
+                    profile: storedProfile,
+                    user: {
+                        id: '',
+                        name: storedProfile.name || 'Player',
+                        email: '',
+                        role: 'player',
+                        image: null
+                    },
+                    player: {
+                        id: '',
+                        displayName: storedProfile.name || 'Player',
+                        avatarSeed: null,
+                        language: null,
+                        createdAt: new Date().toISOString(),
+                        updatedAt: new Date().toISOString()
+                    },
+                    stats: {
+                        rating: 1000,
+                        points: 0,
+                        wins: 0,
+                        losses: 0,
+                        draws: 0,
+                        matchesPlayed: 0,
+                        currentStreak: 0,
+                        bestStreak: 0
+                    },
+                    recentMatches: [],
+                    session: null,
+                    token: null
+                };
+                this.accountOnline = true;
+                this.accountMode = 'profile';
+                this.renderAccountModal();
+                this.syncStartAuthButton();
+                return this.accountDetails;
+            }
+
             this.accountOnline = false;
             this.accountDetails = null;
+            this.accountProfile = null;
             this.renderAccountModal();
             return null;
         }
@@ -641,7 +683,7 @@ class DominoGame {
     syncStartAuthButton() {
         const button = document.getElementById('account-btn');
         if (!button) return;
-        const hasSession = Boolean(this.account?.getRoomAuthToken?.());
+        const hasSession = Boolean(this.account?.getRoomAuthToken?.()) || Boolean(this.accountProfile?.provider === 'local-guest');
         const labelKey = hasSession ? 'account-profile' : 'account-login';
         const label = this.t(labelKey);
         button.dataset.i18n = labelKey;

@@ -1,8 +1,14 @@
+import { verifyPassword as verifyBuiltInPassword } from "better-auth/crypto";
+
+import { isLegacyPasswordHash, encodeLegacyPassword, verifyLegacyPassword } from "../../../../../packages/shared/src/legacy-auth.js";
+
 export interface BetterAuthConfig {
   secret: string;
   baseURL: string;
   trustedOrigins: string[];
   trustedOriginSet: Set<string>;
+  hashPassword: (password: string) => Promise<string>;
+  verifyPassword: (input: { hash: string; password: string }) => Promise<boolean>;
   google?: {
     clientId: string;
     clientSecret: string;
@@ -52,11 +58,22 @@ export function getBetterAuthConfig(): BetterAuthConfig {
     )
   );
 
+  const hashPassword = async (password: string) => encodeLegacyPassword(password);
+  const verifyPassword = async ({ hash, password }: { hash: string; password: string }) => {
+    if (isLegacyPasswordHash(hash)) {
+      return verifyLegacyPassword(hash, password);
+    }
+
+    return verifyBuiltInPassword({ hash, password });
+  };
+
   return {
     secret: process.env.BETTER_AUTH_SECRET || "change-me",
     baseURL: process.env.BETTER_AUTH_URL || "http://localhost:3000",
     trustedOrigins,
     trustedOriginSet: new Set(trustedOrigins),
+    hashPassword,
+    verifyPassword,
     google: googleEnabled
       ? {
           clientId: process.env.GOOGLE_CLIENT_ID || "",

@@ -5,3 +5,4 @@ export interface HealthPayload {
   service: string;
 }
 
+export * from "./legacy-auth.js";

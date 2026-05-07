@@ -59,7 +59,11 @@ export const auth = betterAuth({
     }
   },
   emailAndPassword: {
-    enabled: true
+    enabled: true,
+    password: {
+      hash: config.hashPassword,
+      verify: config.verifyPassword
+    }
   },
   socialProviders: config.google
     ? {
