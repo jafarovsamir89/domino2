@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { AdminFrame } from "../../components/admin-frame";
 import { AccessRequired } from "../../components/access-required";
 import { ActionButton } from "../../components/action-button";
 import { getAdminSession, isAdminRole } from "../../lib/admin-session";
@@ -51,18 +52,12 @@ export default async function ReportsPage() {
   const data = await fetchAuthedApi<ReportsResponse>("/admin/reports");
 
   return (
-    <main style={pageStyle}>
-      <header style={headerStyle}>
-        <div>
-          <p style={eyebrowStyle}>Moderation</p>
-          <h1 style={titleStyle}>Reports</h1>
-          <p style={bodyStyle}>Open reports are the fastest way to spot abuse and bad-room behavior.</p>
-        </div>
-        <Link href="/players" style={linkStyle}>
-          Back to players
-        </Link>
-      </header>
-
+    <AdminFrame
+      active="reports"
+      title="Reports"
+      description="Open reports are the fastest way to spot abuse and room-level behavior. Resolve or reject without leaving the page."
+      actions={<Link href="/players" style={linkStyle}>Players</Link>}
+    >
       <section style={stackStyle}>
         {data?.items.length ? data.items.map((report) => (
           <article key={report.id} style={cardStyle}>
@@ -90,7 +85,7 @@ export default async function ReportsPage() {
           </article>
         )}
       </section>
-    </main>
+    </AdminFrame>
   );
 }
 
@@ -102,39 +97,6 @@ function Detail({ label, value }: { label: string; value: string }) {
     </div>
   );
 }
-
-const pageStyle = {
-  maxWidth: 1180,
-  margin: "0 auto",
-  padding: "40px 24px 80px"
-} as const;
-
-const headerStyle = {
-  display: "flex",
-  justifyContent: "space-between",
-  gap: 20,
-  alignItems: "end",
-  marginBottom: 24,
-  flexWrap: "wrap"
-} as const;
-
-const eyebrowStyle = {
-  margin: 0,
-  color: "#38bdf8",
-  textTransform: "uppercase",
-  letterSpacing: 1.6,
-  fontSize: 12
-} as const;
-
-const titleStyle = {
-  margin: "8px 0 8px",
-  fontSize: 36
-} as const;
-
-const bodyStyle = {
-  margin: 0,
-  color: "#94a3b8"
-} as const;
 
 const linkStyle = {
   color: "#38bdf8",

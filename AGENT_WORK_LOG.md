@@ -381,3 +381,9 @@
 - Added dedicated Next.js route apps/admin/app/auth/google/page.tsx to start Better Auth Google sign-in without showing the dashboard login form.
 - Fixed relative import path for authClient and re-ran admin build.
 
+## 2026-05-08 Admin polish pass
+- Added a shared `AdminFrame` shell for the main admin pages so dashboard, players, reports, bans and player detail share one visual language.
+- Reworked the home, dashboard, players, reports, bans and player detail pages with cleaner headers, cards and actions.
+- Cleaned the admin login screen and fixed the password placeholder and Google helper copy.
+- Replaced the most visible mojibake / broken separator text on moderation pages with clean punctuation.
+

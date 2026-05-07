@@ -114,7 +114,7 @@ export function LoginForm() {
             type="password"
             value={password}
             onChange={(event) => setPassword(event.target.value)}
-            placeholder="••••••••"
+            placeholder="Enter your password"
             autoComplete="current-password"
             required
           />
@@ -128,6 +128,9 @@ export function LoginForm() {
         <button style={secondaryButtonStyle} type="button" onClick={handleGoogleSignIn} disabled={isSubmitting}>
           Continue with Google
         </button>
+        <p style={helperStyle}>
+          Google sign-in will create or link the admin identity automatically when allowed by the backend config.
+        </p>
         <div style={linkRowStyle}>
           <Link href="/forgot-password" style={linkStyle}>
             Forgot password?

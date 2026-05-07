@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 
+import { AdminFrame } from "../../../components/admin-frame";
 import { AccessRequired } from "../../../components/access-required";
 import { ActionButton } from "../../../components/action-button";
 import { getAdminSession, isAdminRole } from "../../../lib/admin-session";
@@ -84,24 +85,18 @@ export default async function PlayerDetailPage({
 
   if (!player) {
     return (
-      <main style={pageStyle}>
-        <p style={eyebrowStyle}>Players</p>
-        <h1 style={titleStyle}>Player not found</h1>
-        <Link href="/players" style={linkStyle}>
-          Back to players
-        </Link>
-      </main>
+      <AdminFrame active="players" title="Player not found" description="The requested player profile could not be loaded." actions={<Link href="/players" style={linkStyle}>Back to players</Link>}>
+        <div style={emptyStyle}>We could not find that player in the current dataset.</div>
+      </AdminFrame>
     );
   }
 
   return (
-    <main style={pageStyle}>
-      <header style={headerStyle}>
-        <div>
-          <p style={eyebrowStyle}>Players</p>
-          <h1 style={titleStyle}>{player.displayName}</h1>
-          <p style={bodyStyle}>{player.user?.email ?? "No auth user linked"} · {player.user?.role ?? "player"}</p>
-        </div>
+    <AdminFrame
+      active="players"
+      title={player.displayName}
+      description={`${player.user?.email ?? "No auth user linked"} · ${player.user?.role ?? "player"}`}
+      actions={
         <div style={actionRowStyle}>
           <ActionButton
             endpoint={`/admin/players/${player.id}/ban`}
@@ -119,8 +114,8 @@ export default async function PlayerDetailPage({
             body={{ reason: "Manual moderation" }}
           />
         </div>
-      </header>
-
+      }
+    >
       <section style={gridStyle}>
         <Panel title="Stats">
           <StatRow label="Rating" value={player.stats?.rating ?? 1000} />
@@ -179,7 +174,7 @@ export default async function PlayerDetailPage({
           </div>
         )) : <p style={mutedStyle}>No matches yet.</p>}
       </Panel>
-    </main>
+    </AdminFrame>
   );
 }
 
@@ -201,49 +196,24 @@ function StatRow({ label, value }: { label: string; value: number | string }) {
   );
 }
 
-const pageStyle = {
-  maxWidth: 1180,
-  margin: "0 auto",
-  padding: "40px 24px 80px"
+const linkStyle = {
+  color: "#38bdf8",
+  textDecoration: "none",
+  fontWeight: 700
 } as const;
 
-const headerStyle = {
-  display: "flex",
-  justifyContent: "space-between",
-  gap: 20,
-  alignItems: "end",
-  marginBottom: 24,
-  flexWrap: "wrap"
+const emptyStyle = {
+  padding: 24,
+  borderRadius: 20,
+  background: "rgba(15,23,42,0.9)",
+  border: "1px solid rgba(148,163,184,0.16)",
+  color: "#94a3b8"
 } as const;
 
 const actionRowStyle = {
   display: "flex",
   gap: 10,
   flexWrap: "wrap"
-} as const;
-
-const eyebrowStyle = {
-  margin: 0,
-  color: "#38bdf8",
-  textTransform: "uppercase",
-  letterSpacing: 1.6,
-  fontSize: 12
-} as const;
-
-const titleStyle = {
-  margin: "8px 0 8px",
-  fontSize: 36
-} as const;
-
-const bodyStyle = {
-  margin: 0,
-  color: "#94a3b8"
-} as const;
-
-const linkStyle = {
-  color: "#38bdf8",
-  textDecoration: "none",
-  fontWeight: 700
 } as const;
 
 const gridStyle = {

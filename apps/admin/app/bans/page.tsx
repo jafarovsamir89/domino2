@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { AdminFrame } from "../../components/admin-frame";
 import { AccessRequired } from "../../components/access-required";
 import { ActionButton } from "../../components/action-button";
 import { getAdminSession, isAdminRole } from "../../lib/admin-session";
@@ -38,18 +39,12 @@ export default async function BansPage() {
   const data = await fetchAuthedApi<BansResponse>("/admin/bans");
 
   return (
-    <main style={pageStyle}>
-      <header style={headerStyle}>
-        <div>
-          <p style={eyebrowStyle}>Moderation</p>
-          <h1 style={titleStyle}>Bans</h1>
-          <p style={bodyStyle}>Active bans and historical moderation actions live here.</p>
-        </div>
-        <Link href="/reports" style={linkStyle}>
-          Reports
-        </Link>
-      </header>
-
+    <AdminFrame
+      active="bans"
+      title="Bans"
+      description="Active bans and historical moderation actions live here. Revoke or review with a single click."
+      actions={<Link href="/reports" style={linkStyle}>Reports</Link>}
+    >
       <section style={stackStyle}>
         {data?.items.length ? data.items.map((ban) => {
           const isActive = !ban.revokedAt;
@@ -80,7 +75,7 @@ export default async function BansPage() {
           </article>
         )}
       </section>
-    </main>
+    </AdminFrame>
   );
 }
 
@@ -92,39 +87,6 @@ function Detail({ label, value }: { label: string; value: string }) {
     </div>
   );
 }
-
-const pageStyle = {
-  maxWidth: 1180,
-  margin: "0 auto",
-  padding: "40px 24px 80px"
-} as const;
-
-const headerStyle = {
-  display: "flex",
-  justifyContent: "space-between",
-  gap: 20,
-  alignItems: "end",
-  marginBottom: 24,
-  flexWrap: "wrap"
-} as const;
-
-const eyebrowStyle = {
-  margin: 0,
-  color: "#38bdf8",
-  textTransform: "uppercase",
-  letterSpacing: 1.6,
-  fontSize: 12
-} as const;
-
-const titleStyle = {
-  margin: "8px 0 8px",
-  fontSize: 36
-} as const;
-
-const bodyStyle = {
-  margin: 0,
-  color: "#94a3b8"
-} as const;
 
 const linkStyle = {
   color: "#38bdf8",

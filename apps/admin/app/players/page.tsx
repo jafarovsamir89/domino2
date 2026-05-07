@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 
+import { AdminFrame } from "../../components/admin-frame";
 import { AccessRequired } from "../../components/access-required";
 import { fetchAuthedApi } from "../../lib/server-api";
 import { getAdminSession, isAdminRole } from "../../lib/admin-session";
@@ -65,13 +66,11 @@ export default async function PlayersPage({
   );
 
   return (
-    <main style={pageStyle}>
-      <header style={headerStyle}>
-        <div>
-          <p style={eyebrowStyle}>Players</p>
-          <h1 style={titleStyle}>Player directory</h1>
-          <p style={bodyStyle}>Search players, inspect stats, and jump into moderation without leaving the panel.</p>
-        </div>
+    <AdminFrame
+      active="players"
+      title="Player directory"
+      description="Search players, inspect stats and jump into moderation without leaving the panel."
+      actions={
         <form style={searchFormStyle}>
           <input
             name="query"
@@ -83,8 +82,8 @@ export default async function PlayersPage({
             Search
           </button>
         </form>
-      </header>
-
+      }
+    >
       <section style={tableWrapStyle}>
         <table style={tableStyle}>
           <thead>
@@ -133,7 +132,7 @@ export default async function PlayersPage({
           </tbody>
         </table>
       </section>
-    </main>
+    </AdminFrame>
   );
 }
 
@@ -148,41 +147,6 @@ function Td({ children, colSpan }: { children: ReactNode; colSpan?: number }) {
 function Badge({ children }: { children: ReactNode }) {
   return <span style={badgeStyle}>{children}</span>;
 }
-
-const pageStyle = {
-  maxWidth: 1180,
-  margin: "0 auto",
-  padding: "40px 24px 80px"
-} as const;
-
-const headerStyle = {
-  display: "flex",
-  justifyContent: "space-between",
-  gap: 20,
-  alignItems: "end",
-  marginBottom: 24,
-  flexWrap: "wrap"
-} as const;
-
-const eyebrowStyle = {
-  margin: 0,
-  color: "#38bdf8",
-  textTransform: "uppercase",
-  letterSpacing: 1.6,
-  fontSize: 12
-} as const;
-
-const titleStyle = {
-  margin: "8px 0 8px",
-  fontSize: 36
-} as const;
-
-const bodyStyle = {
-  margin: 0,
-  maxWidth: 720,
-  color: "#94a3b8",
-  lineHeight: 1.6
-} as const;
 
 const searchFormStyle = {
   display: "flex",

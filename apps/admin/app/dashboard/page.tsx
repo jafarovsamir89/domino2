@@ -1,5 +1,7 @@
 import type { ReactNode } from "react";
+import Link from "next/link";
 
+import { AdminFrame } from "../../components/admin-frame";
 import { AccessRequired } from "../../components/access-required";
 import { DashboardSessionCard } from "../../components/dashboard-session-card";
 import { getAdminSession, isAdminRole } from "../../lib/admin-session";
@@ -42,26 +44,19 @@ export default async function DashboardPage() {
   ]);
 
   return (
-    <main style={{ maxWidth: 1120, margin: "0 auto", padding: "40px 24px 80px" }}>
-      <header style={{ marginBottom: 28 }}>
-        <p style={{ textTransform: "uppercase", letterSpacing: 1.6, color: "#38bdf8", fontSize: 12 }}>
-          Domino2 Control Room
-        </p>
-        <h1 style={{ margin: "8px 0 10px", fontSize: 36 }}>Platform dashboard</h1>
-        <p style={{ color: "#94a3b8", lineHeight: 1.6, maxWidth: 780 }}>
-          This page is already wired to the new NestJS API. Once PostgreSQL is provisioned on the target GCloud VM,
-          these metrics become the backbone for moderation, player support and commerce ops.
-        </p>
-      </header>
-
-      <section
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-          gap: 16,
-          marginBottom: 28
-        }}
-      >
+    <AdminFrame
+      active="dashboard"
+      title="Platform dashboard"
+      description="This page is now the operational center for the game. It surfaces live metrics, auth status and deployment notes in one readable flow."
+      actions={
+        <>
+          <Link href="/players" style={linkButtonStyle}>Players</Link>
+          <Link href="/reports" style={linkButtonStyle}>Reports</Link>
+        </>
+      }
+      footer={<span>Current target VM: `instance-20260418-225724` on GCloud.</span>}
+    >
+      <section style={metricGridStyle}>
         <MetricCard label="Players" value={overview?.metrics.players ?? "API offline"} />
         <MetricCard label="Auth Users" value={overview?.metrics.users ?? "API offline"} />
         <MetricCard label="Matches" value={overview?.metrics.matches ?? "API offline"} />
@@ -69,13 +64,7 @@ export default async function DashboardPage() {
         <MetricCard label="Active Bans" value={overview?.metrics.bansActive ?? "API offline"} />
       </section>
 
-      <section
-        style={{
-          display: "grid",
-          gridTemplateColumns: "minmax(0, 1.3fr) minmax(280px, 0.7fr)",
-          gap: 16
-        }}
-      >
+      <section style={layoutStyle}>
         <Panel title="API Status">
           <Row label="API URL" value={getApiBaseUrl()} />
           <Row label="Auth Provider" value={authStatus?.provider ?? "unreachable"} />
@@ -84,46 +73,32 @@ export default async function DashboardPage() {
           <Row label="Email Recovery" value={authStatus ? (authStatus.emailRecoveryEnabled ? "enabled" : "disabled") : "unknown"} />
           <Row label="Password Reset" value={authStatus ? (authStatus.passwordResetEnabled ? "enabled" : "disabled") : "unknown"} />
         </Panel>
+
         <div style={{ display: "grid", gap: 16 }}>
           <DashboardSessionCard />
           <Panel title="Deployment Notes">
-            <p style={copyStyle}>Current target VM: `instance-20260418-225724` on GCloud.</p>
             <p style={copyStyle}>What is already live: PostgreSQL, Nginx, API on `3000`, admin on `3001`.</p>
             <p style={copyStyle}>What still stays separate for now: the legacy game server under PM2 on port `2567`.</p>
           </Panel>
         </div>
       </section>
-    </main>
+    </AdminFrame>
   );
 }
 
 function MetricCard({ label, value }: { label: string; value: number | string }) {
   return (
-    <article
-      style={{
-        padding: 20,
-        borderRadius: 20,
-        background: "linear-gradient(135deg, rgba(30,41,59,0.96), rgba(15,23,42,0.92))",
-        border: "1px solid rgba(148,163,184,0.16)"
-      }}
-    >
-      <div style={{ color: "#94a3b8", fontSize: 13, marginBottom: 10 }}>{label}</div>
-      <div style={{ fontSize: 28, fontWeight: 700 }}>{value}</div>
+    <article style={metricCardStyle}>
+      <div style={metricLabelStyle}>{label}</div>
+      <div style={metricValueStyle}>{value}</div>
     </article>
   );
 }
 
 function Panel({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <section
-      style={{
-        padding: 20,
-        borderRadius: 20,
-        background: "rgba(15,23,42,0.9)",
-        border: "1px solid rgba(148,163,184,0.16)"
-      }}
-    >
-      <h2 style={{ marginTop: 0, marginBottom: 16 }}>{title}</h2>
+    <section style={panelStyle}>
+      <h2 style={panelTitleStyle}>{title}</h2>
       {children}
     </section>
   );
@@ -131,15 +106,92 @@ function Panel({ title, children }: { title: string; children: ReactNode }) {
 
 function Row({ label, value }: { label: string; value: string }) {
   return (
-    <div style={{ display: "flex", justifyContent: "space-between", gap: 16, padding: "10px 0", borderTop: "1px solid rgba(148,163,184,0.08)" }}>
-      <span style={{ color: "#94a3b8" }}>{label}</span>
-      <span>{value}</span>
+    <div style={rowStyle}>
+      <span style={rowLabelStyle}>{label}</span>
+      <span style={rowValueStyle}>{value}</span>
     </div>
   );
 }
+
+const linkButtonStyle = {
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
+  padding: "12px 16px",
+  borderRadius: 14,
+  background: "rgba(15,23,42,0.9)",
+  border: "1px solid rgba(148,163,184,0.16)",
+  color: "#e2e8f0",
+  textDecoration: "none",
+  fontWeight: 700
+} as const;
+
+const metricGridStyle = {
+  display: "grid",
+  gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+  gap: 16
+} as const;
+
+const layoutStyle = {
+  display: "grid",
+  gridTemplateColumns: "minmax(0, 1.3fr) minmax(280px, 0.7fr)",
+  gap: 16
+} as const;
+
+const metricCardStyle = {
+  padding: 20,
+  borderRadius: 22,
+  background: "linear-gradient(135deg, rgba(15,23,42,0.98), rgba(8,15,31,0.92))",
+  border: "1px solid rgba(148,163,184,0.16)",
+  boxShadow: "0 16px 36px rgba(2,6,23,0.18)"
+} as const;
+
+const metricLabelStyle = {
+  color: "#94a3b8",
+  fontSize: 13,
+  textTransform: "uppercase",
+  letterSpacing: 1.1,
+  marginBottom: 10
+} as const;
+
+const metricValueStyle = {
+  fontSize: 28,
+  fontWeight: 800,
+  lineHeight: 1.1
+} as const;
+
+const panelStyle = {
+  padding: 22,
+  borderRadius: 24,
+  background: "rgba(15,23,42,0.9)",
+  border: "1px solid rgba(148,163,184,0.16)"
+} as const;
+
+const panelTitleStyle = {
+  marginTop: 0,
+  marginBottom: 16,
+  fontSize: 20
+} as const;
+
+const rowStyle = {
+  display: "flex",
+  justifyContent: "space-between",
+  gap: 16,
+  padding: "10px 0",
+  borderTop: "1px solid rgba(148,163,184,0.08)"
+} as const;
+
+const rowLabelStyle = {
+  color: "#94a3b8"
+} as const;
+
+const rowValueStyle = {
+  color: "#e2e8f0",
+  textAlign: "right"
+} as const;
 
 const copyStyle = {
   margin: "0 0 10px",
   color: "#cbd5e1",
   lineHeight: 1.6
-};
+} as const;
