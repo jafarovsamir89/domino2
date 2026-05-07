@@ -614,6 +614,10 @@ input, button { font: inherit; }
     background: rgba(255, 255, 255, 0.04);
 }
 
+.is-hidden {
+    display: none !important;
+}
+
 .account-panel.is-hidden {
     display: none;
 }

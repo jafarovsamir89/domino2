@@ -26,6 +26,14 @@ export function LoginForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   function getCallbackURL() {
+    if (typeof window !== "undefined") {
+      const searchParams = new URLSearchParams(window.location.search);
+      const callbackURL = searchParams.get("callbackURL");
+      if (callbackURL) {
+        return callbackURL;
+      }
+    }
+
     return "/dashboard";
   }
 

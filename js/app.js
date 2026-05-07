@@ -473,9 +473,9 @@ class DominoGame {
 
     startGoogleAccountSignIn() {
         const callbackURL = `${window.location.origin}${window.location.pathname}${window.location.search}`;
-        const base = this.account?.platformApiBase || `${window.location.origin}/api`;
-        const url = `${base}/auth/sign-in/social?provider=google&callbackURL=${encodeURIComponent(callbackURL)}`;
-        window.location.assign(url);
+        const loginURL = new URL("/login", window.location.origin);
+        loginURL.searchParams.set("callbackURL", callbackURL);
+        window.location.assign(loginURL.toString());
     }
 
     async loadLeaderboard() {
@@ -511,6 +511,9 @@ class DominoGame {
         const registerForm = document.getElementById('account-register-form');
         const loginTabBtn = document.getElementById('login-tab-btn');
         const registerTabBtn = document.getElementById('register-tab-btn');
+        const title = document.getElementById('account-modal-title');
+        const historyPanel = document.getElementById('account-history-panel');
+        const leaderboardPanel = document.getElementById('account-leaderboard-panel');
         const summary = document.getElementById('account-profile-summary');
         const nameInput = document.getElementById('account-name-input');
         const emailInput = document.getElementById('account-email-input');
@@ -538,8 +541,11 @@ class DominoGame {
         }
         if (!summary) return;
         const isAuthenticated = Boolean(profile && this.accountOnline);
+        if (title) title.textContent = isAuthenticated ? this.t('account-profile') : this.t('account-auth-title');
         if (profilePanel) profilePanel.classList.toggle('is-hidden', !isAuthenticated);
         if (authPanel) authPanel.classList.toggle('is-hidden', isAuthenticated);
+        if (historyPanel) historyPanel.classList.add('is-hidden');
+        if (leaderboardPanel) leaderboardPanel.classList.add('is-hidden');
         if (loginForm) loginForm.classList.toggle('active', !isAuthenticated && this.accountMode !== 'register');
         if (registerForm) registerForm.classList.toggle('active', !isAuthenticated && this.accountMode === 'register');
         if (loginTabBtn) loginTabBtn.classList.toggle('active', this.accountMode !== 'register');
