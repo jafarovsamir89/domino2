@@ -460,6 +460,28 @@ class DominoGame {
         if (registerStatus) registerStatus.textContent = text || '';
     }
 
+    syncAccountUiChrome() {
+        const closeButton = document.getElementById('account-modal-close');
+        if (closeButton) {
+            closeButton.textContent = 'x';
+            closeButton.title = this.t('modal-close');
+            closeButton.setAttribute('aria-label', this.t('modal-close'));
+        }
+
+        const placeholders = [
+            ['account-login-email-input', 'Email address'],
+            ['account-email-input', 'Email address'],
+            ['account-login-password-input', 'Enter your password'],
+            ['account-password-input', 'Create a password'],
+            ['account-name-input', 'Player name']
+        ];
+
+        placeholders.forEach(([id, value]) => {
+            const input = document.getElementById(id);
+            if (input) input.setAttribute('placeholder', value);
+        });
+    }
+
     setAccountMode(mode) {
         if (mode === 'profile') {
             this.accountMode = 'profile';
@@ -530,6 +552,7 @@ class DominoGame {
         const historyList = document.getElementById('account-history-list');
         const refreshButton = document.getElementById('account-refresh-btn');
         const logoutButton = document.getElementById('account-logout-btn');
+        this.syncAccountUiChrome();
         if (nameInput && !nameInput.value.trim() && profile?.name) {
             nameInput.value = profile.name;
         }
@@ -1097,6 +1120,7 @@ class DominoGame {
         document.querySelectorAll('.btn-lang').forEach(b => {
             b.classList.toggle('active', b.dataset.lang === nextLang);
         });
+        this.syncAccountUiChrome();
         this.syncStartAuthButton();
     }
 

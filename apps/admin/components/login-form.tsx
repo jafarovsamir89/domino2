@@ -41,12 +41,13 @@ export function LoginForm() {
     event.preventDefault();
     setIsSubmitting(true);
     setStatus(null);
+    const callbackURL = getCallbackURL();
 
     const { error } = await authClient.signIn.email({
       email,
       password,
       rememberMe: true,
-      callbackURL: getCallbackURL()
+      callbackURL
     });
 
     if (error) {
@@ -55,7 +56,12 @@ export function LoginForm() {
       return;
     }
 
-    router.push("/dashboard");
+    if (callbackURL.startsWith("http://") || callbackURL.startsWith("https://")) {
+      window.location.assign(callbackURL);
+      return;
+    }
+
+    router.push(callbackURL);
     router.refresh();
   }
 
