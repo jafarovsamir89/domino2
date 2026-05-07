@@ -6,6 +6,7 @@ import { AccessRequired } from "../../components/access-required";
 import { DashboardSessionCard } from "../../components/dashboard-session-card";
 import { getAdminSession, isAdminRole } from "../../lib/admin-session";
 import { fetchApi, getApiBaseUrl } from "../../lib/api";
+import { fetchAuthedApi } from "../../lib/server-api";
 
 type OverviewResponse = {
   phase: string;
@@ -39,7 +40,7 @@ export default async function DashboardPage() {
   }
 
   const [overview, authStatus] = await Promise.all([
-    fetchApi<OverviewResponse>("/admin/overview"),
+    fetchAuthedApi<OverviewResponse>("/admin/overview"),
     fetchApi<AuthStatusResponse>("/platform/status")
   ]);
 
