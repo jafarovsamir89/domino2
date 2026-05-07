@@ -193,7 +193,7 @@ input, button { font: inherit; }
 .start-actions {
     display: grid;
     gap: 12px;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .start-actions .btn-large {
@@ -465,6 +465,23 @@ input, button { font: inherit; }
 
 .btn-account:hover {
     background: rgba(240, 192, 64, 0.18);
+}
+
+.start-auth-btn {
+    background: rgba(240, 192, 64, 0.12);
+    color: var(--accent);
+    border: 1px solid rgba(240, 192, 64, 0.34);
+}
+
+.start-auth-btn:hover {
+    background: rgba(240, 192, 64, 0.18);
+}
+
+.start-auth-btn.is-authenticated {
+    background: linear-gradient(135deg, rgba(79, 207, 151, 0.22), rgba(79, 207, 151, 0.12));
+    color: #dffcef;
+    border-color: rgba(79, 207, 151, 0.38);
+    box-shadow: 0 0 0 1px rgba(79, 207, 151, 0.12), 0 12px 28px rgba(79, 207, 151, 0.12);
 }
 
 .btn-option {

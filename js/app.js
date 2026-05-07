@@ -257,6 +257,7 @@ class DominoGame {
                 this.accountOnline = true;
                 this.prefillAccountNames();
                 this.renderAccountModal();
+                this.syncStartAuthButton();
                 await this.loadAccountProfile();
                 this.renderer.showMessage(this.t('account-register'), 1500);
             } catch (err) {
@@ -278,6 +279,7 @@ class DominoGame {
                 this.accountOnline = true;
                 this.prefillAccountNames();
                 this.renderAccountModal();
+                this.syncStartAuthButton();
                 await this.loadAccountProfile();
                 this.renderer.showMessage(this.t('account-login'), 1500);
             } catch (err) {
@@ -298,6 +300,7 @@ class DominoGame {
             const pwd = document.getElementById('account-password-input');
             if (pwd) pwd.value = '';
             this.renderAccountModal();
+            this.syncStartAuthButton();
         });
 
         document.querySelectorAll('.btn-lang[data-lang]').forEach(btn => {
@@ -310,6 +313,7 @@ class DominoGame {
         this.resetMultiplayerPanels(false);
         this.showStartModal(null);
         this.renderAccountModal();
+        this.syncStartAuthButton();
     }
 
     readPlayerName(preferred = 'any') {
@@ -330,6 +334,7 @@ class DominoGame {
         this.accountOnline = !!details;
         this.prefillAccountNames();
         this.renderAccountModal();
+        this.syncStartAuthButton();
     }
 
     prefillAccountNames() {
@@ -355,11 +360,13 @@ class DominoGame {
             this.accountDetails = profile;
             this.accountOnline = true;
             this.renderAccountModal();
+            this.syncStartAuthButton();
             return this.accountProfile;
         } catch (err) {
             this.accountOnline = false;
             this.setAccountStatus(err.message || this.t('account-server-unavailable'));
             this.renderAccountModal();
+            this.syncStartAuthButton();
             if (allowOfflineFallback) {
                 return {
                     id: '',
@@ -385,12 +392,14 @@ class DominoGame {
             this.accountOnline = true;
             this.prefillAccountNames();
             this.renderAccountModal();
+            this.syncStartAuthButton();
             this.setAccountStatus(this.t('account-online'));
             return details;
         } catch (err) {
             this.accountOnline = false;
             this.setAccountStatus(err.message || this.t('account-server-unavailable'));
             this.renderAccountModal();
+            this.syncStartAuthButton();
             return null;
         }
     }
@@ -400,6 +409,7 @@ class DominoGame {
         const modal = document.getElementById('account-modal');
         if (modal) modal.classList.add('active');
         this.renderAccountModal();
+        this.syncStartAuthButton();
         await this.loadAccountProfile();
         await this.loadLeaderboard();
     }
@@ -509,6 +519,20 @@ class DominoGame {
                 });
             }
         }
+        this.syncStartAuthButton();
+    }
+
+    syncStartAuthButton() {
+        const button = document.getElementById('account-btn');
+        if (!button) return;
+        const hasSession = Boolean(this.account?.getRoomAuthToken?.());
+        const labelKey = hasSession ? 'account-profile' : 'account-login';
+        const label = this.t(labelKey);
+        button.dataset.i18n = labelKey;
+        button.textContent = label;
+        button.setAttribute('aria-label', label);
+        button.title = label;
+        button.classList.toggle('is-authenticated', hasSession);
     }
 
     requirePlayerName(preferred = 'any') {
@@ -982,6 +1006,7 @@ class DominoGame {
         document.querySelectorAll('.btn-lang').forEach(b => {
             b.classList.toggle('active', b.dataset.lang === nextLang);
         });
+        this.syncStartAuthButton();
     }
 
     t(key) {
