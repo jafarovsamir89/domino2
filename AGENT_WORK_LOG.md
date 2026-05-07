@@ -387,3 +387,14 @@
 - Cleaned the admin login screen and fixed the password placeholder and Google helper copy.
 - Replaced the most visible mojibake / broken separator text on moderation pages with clean punctuation.
 
+## 2026-05-08 Guest realtime visibility and account handoff
+- Added a guest-friendly `Create account` action in the in-game account modal so a local guest can jump straight into registration.
+- Added a lightweight local-game heartbeat path from the browser client to the platform API so solo guest games can appear in the admin realtime dashboard.
+- Added a new platform realtime store and API endpoint to track local guest presence alongside the legacy game-server realtime feed.
+- Merged platform-local and game-server realtime summaries in the admin dashboard so guest solo games are visible together with live multiplayer rooms.
+- Verified the new guest flow and realtime code with:
+  - `node --check js/app.js`
+  - `node --check js/account.js`
+  - `npm run build -w @domino2/api`
+  - `npm run build -w @domino2/admin`
+

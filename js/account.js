@@ -1,6 +1,7 @@
 const ACCOUNT_PROFILE_KEY = "dominoAuthProfile";
 const PLATFORM_GAME_TOKEN_KEY = "dominoPlatformGameToken";
 const PLATFORM_PROFILE_KEY = "dominoPlatformProfile";
+const LOCAL_GAME_SESSION_KEY = "dominoLocalGameSessionId";
 
 function safeJsonParse(value) {
     try {
@@ -19,6 +20,13 @@ function sanitizeEmail(value, fallbackName = "player") {
     if (raw.includes("@")) return raw.slice(0, 254);
     const alias = sanitizeName(fallbackName).toLowerCase().replace(/[^a-z0-9]+/g, ".").replace(/^\.+|\.+$/g, "") || "player";
     return `${alias}@domino.local`;
+}
+
+function createLocalSessionId() {
+    if (window.crypto?.randomUUID) {
+        return window.crypto.randomUUID();
+    }
+    return `local-${Math.random().toString(36).slice(2)}-${Date.now().toString(36)}`;
 }
 
 function normalizeProfile(payload = {}, source = "legacy") {
@@ -49,6 +57,7 @@ function normalizeProfile(payload = {}, source = "legacy") {
         id: String(player?.id || user?.id || payload.id || ""),
         userId: String(user?.id || payload.userId || payload.id || ""),
         playerId: String(player?.id || payload.playerId || payload.id || ""),
+        sessionId: String(payload.sessionId || payload.guestSessionId || player?.sessionId || user?.sessionId || ""),
         name: displayName,
         displayName,
         email: String(user?.email || payload.email || ""),
@@ -153,6 +162,29 @@ export class AccountClient {
             if (profile) window.localStorage?.setItem(PLATFORM_PROFILE_KEY, JSON.stringify(profile));
             else window.localStorage?.removeItem(PLATFORM_PROFILE_KEY);
         } catch {}
+    }
+
+    getLocalGameSessionId() {
+        try {
+            return window.localStorage?.getItem(LOCAL_GAME_SESSION_KEY) || "";
+        } catch {
+            return "";
+        }
+    }
+
+    setLocalGameSessionId(sessionId) {
+        try {
+            if (sessionId) window.localStorage?.setItem(LOCAL_GAME_SESSION_KEY, sessionId);
+            else window.localStorage?.removeItem(LOCAL_GAME_SESSION_KEY);
+        } catch {}
+    }
+
+    getOrCreateLocalGameSessionId() {
+        const current = this.getLocalGameSessionId();
+        if (current) return current;
+        const next = createLocalSessionId();
+        this.setLocalGameSessionId(next);
+        return next;
     }
 
     clearSession() {
@@ -278,8 +310,11 @@ export class AccountClient {
 
     async createGuest(name) {
         const cleanName = sanitizeName(name || "Player");
+        const sessionId = this.getLocalGameSessionId() || createLocalSessionId();
+        this.setLocalGameSessionId(sessionId);
         const normalized = normalizeProfile({
             profile: {
+                sessionId,
                 name: cleanName,
                 provider: "local-guest",
                 isGuest: true,
@@ -287,6 +322,7 @@ export class AccountClient {
             },
             user: {
                 id: "",
+                sessionId,
                 name: cleanName,
                 isGuest: true,
                 role: "player",
@@ -295,6 +331,7 @@ export class AccountClient {
             },
             player: {
                 id: "",
+                sessionId,
                 displayName: cleanName,
                 isGuest: true,
                 avatarSeed: null,
@@ -314,6 +351,34 @@ export class AccountClient {
         }, "local-guest");
         this.setStoredProfile(normalized.profile);
         return normalized;
+    }
+
+    async sendLocalGameHeartbeat(payload) {
+        try {
+            const response = await fetch(`${this.platformApiBase}/realtime/heartbeat`, {
+                method: "POST",
+                credentials: "include",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    sessionId: this.getLocalGameSessionId() || payload?.sessionId || "",
+                    provider: payload?.provider || "local-guest",
+                    displayName: payload?.displayName || payload?.name || "Player",
+                    roomId: payload?.roomId || null,
+                    roomCode: payload?.roomCode || null,
+                    gameMode: payload?.gameMode || "solo",
+                    isPlaying: payload?.isPlaying !== false,
+                    isConnected: payload?.isConnected !== false,
+                    source: "client-local"
+                })
+            });
+
+            if (!response.ok) return null;
+            return await response.json().catch(() => null);
+        } catch {
+            return null;
+        }
     }
 
     async register(nameOrOptions, passwordMaybe) {

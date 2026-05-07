@@ -27,6 +27,8 @@ class DominoGame {
         this.accountDetails = null;
         this.accountOnline = false;
         this.accountMode = 'login';
+        this.localPresenceLastSentAt = 0;
+        this.localPresenceClearQueued = false;
         this.currentLang = 'az';
         this.reactionPalette = [
             { code: '1F923', label: 'ROFL' },
@@ -232,6 +234,7 @@ class DominoGame {
         const loginForm = document.getElementById('account-login-form');
         const registerForm = document.getElementById('account-register-form');
         const guestAccountBtn = document.getElementById('guest-account-btn');
+        const createAccountBtn = document.getElementById('create-account-btn');
         const googleLoginBtn = document.getElementById('google-login-btn');
         const refreshAccountBtn = document.getElementById('account-refresh-btn');
         const logoutAccountBtn = document.getElementById('account-logout-btn');
@@ -303,6 +306,22 @@ class DominoGame {
             this.setAccountMode('profile');
             this.renderAccountModal();
             this.renderer.showMessage(this.t('account-guest'), 1500);
+        });
+        if (createAccountBtn) createAccountBtn.addEventListener('click', () => {
+            const guestName = this.accountProfile?.provider === 'local-guest'
+                ? (this.accountProfile?.name || this.readPlayerName('any') || '')
+                : (this.readPlayerName('any') || this.accountProfile?.name || '');
+            if (guestName) {
+                const registerName = document.getElementById('account-name-input');
+                if (registerName && !registerName.value.trim()) registerName.value = guestName;
+                const soloName = document.getElementById('player-name');
+                const onlineName = document.getElementById('player-name-online');
+                if (soloName && !soloName.value.trim()) soloName.value = guestName;
+                if (onlineName && !onlineName.value.trim()) onlineName.value = guestName;
+            }
+            this.setAccountMode('register');
+            const emailInput = document.getElementById('account-email-input');
+            emailInput?.focus?.();
         });
         if (refreshAccountBtn) refreshAccountBtn.addEventListener('click', async () => {
             await this.loadAccountProfile();
@@ -407,6 +426,7 @@ class DominoGame {
             if (allowOfflineFallback) {
                 return {
                     id: '',
+                    sessionId: this.account?.getLocalGameSessionId?.() || '',
                     name: this.sanitizeName(name || 'Player', 'Player'),
                     isGuest: true
                 };
@@ -627,6 +647,7 @@ class DominoGame {
         if (registerForm) registerForm.classList.toggle('active', !isAuthenticated && this.accountMode === 'register');
         if (loginTabBtn) loginTabBtn.classList.toggle('active', this.accountMode !== 'register');
         if (registerTabBtn) registerTabBtn.classList.toggle('active', this.accountMode === 'register');
+        if (createAccountBtn) createAccountBtn.classList.toggle('is-hidden', !(profile?.provider === 'local-guest' && !isAuthenticated));
         if (loginEmailInput && !isAuthenticated && !loginEmailInput.value.trim() && profile?.email) loginEmailInput.value = profile.email;
         if (loginPasswordInput && isAuthenticated) loginPasswordInput.value = '';
         if (registerPasswordInput && isAuthenticated) registerPasswordInput.value = '';
@@ -701,6 +722,59 @@ class DominoGame {
         button.setAttribute('aria-label', label);
         button.title = label;
         button.classList.toggle('is-authenticated', hasSession);
+    }
+
+    async syncLocalPresence(force = false) {
+        if (this.network.isMultiplayer) return;
+        const localSessionId = this.account?.getOrCreateLocalGameSessionId?.() || this.accountProfile?.sessionId || "";
+        if (!this.gameActive && !this.roundOver && !this.matchOver) {
+            if (!this.localPresenceClearQueued) {
+                this.localPresenceClearQueued = true;
+                await this.account.sendLocalGameHeartbeat({
+                    sessionId: localSessionId,
+                    displayName: this.accountProfile?.name || this.playerName || "Player",
+                    provider: this.accountProfile?.provider || "local-guest",
+                    gameMode: this.isTeamMode ? "team" : "solo",
+                    isPlaying: false,
+                    isConnected: false,
+                    roomId: null,
+                    roomCode: null
+                });
+            }
+            return;
+        }
+
+        const now = Date.now();
+        if (!force && now - this.localPresenceLastSentAt < 5000) return;
+        this.localPresenceLastSentAt = now;
+        this.localPresenceClearQueued = false;
+        await this.account.sendLocalGameHeartbeat({
+            sessionId: localSessionId,
+            displayName: this.accountProfile?.name || this.playerName || "Player",
+            provider: this.accountProfile?.provider || "local-guest",
+            gameMode: this.isTeamMode ? "team" : "solo",
+            isPlaying: true,
+            isConnected: true,
+            roomId: `local:${localSessionId || "guest"}`,
+            roomCode: null
+        });
+    }
+
+    async clearLocalPresence() {
+        this.localPresenceLastSentAt = 0;
+        this.localPresenceClearQueued = false;
+        if (this.network.isMultiplayer) return;
+        const localSessionId = this.account?.getOrCreateLocalGameSessionId?.() || this.accountProfile?.sessionId || "";
+        await this.account.sendLocalGameHeartbeat({
+            sessionId: localSessionId,
+            displayName: this.accountProfile?.name || this.playerName || "Player",
+            provider: this.accountProfile?.provider || "local-guest",
+            gameMode: this.isTeamMode ? "team" : "solo",
+            isPlaying: false,
+            isConnected: false,
+            roomId: null,
+            roomCode: null
+        });
     }
 
     requirePlayerName(preferred = 'any') {
@@ -891,6 +965,7 @@ class DominoGame {
                 this.network.leaveRoom();
                 this.myHand = null;
             }
+            this.clearLocalPresence();
             this.resetMultiplayerPanels(false);
         });
         this.bindTap(this.renderer.handEl, e => {
@@ -1075,6 +1150,7 @@ class DominoGame {
         }
         console.log('[startNewGame] Starting round...');
         this.startRound();
+        void this.syncLocalPresence(true);
     }
     startRound() { 
         console.log('[startRound] playerCount:', this.playerCount);
@@ -1140,6 +1216,7 @@ class DominoGame {
 
         this.goshaCombo = (this.gameActive && myTurn) ? this.board.getGoshaCombo(myHand) : null;
         this.renderer.showGoshaBtn(this.goshaCombo, () => this.playGoshaCombo());
+        void this.syncLocalPresence();
     }
 
     playSound(name) {
@@ -1594,6 +1671,7 @@ class DominoGame {
         const cs=this.isTeamMode?Math.max(...this.teamScores):Math.max(...this.scores);
         if(cs>=TARGET){const rw=this.isTeamMode?this.teamScores.indexOf(Math.max(...this.teamScores)):this.scores.indexOf(Math.max(...this.scores));this.endRound(this.isTeamMode?(rw===0?0:1):rw);return;}
         this.renderer.renderDealEnd(this.playerNames[wi],displayEntities,fish,bonus);this.deal++;
+        void this.syncLocalPresence();
     }
     endRound(wi){
         this.roundOver=true;
@@ -1611,6 +1689,7 @@ class DominoGame {
         }
         if(this.matchRound>=MAX_R)this.matchOver=true;
         this.renderer.renderRoundEnd(this.playerNames[wi],displayEntities,wins,this.matchRound,this.matchOver);this.matchRound++;
+        void this.syncLocalPresence();
     }
     showMatchResult(){
         if(this.isTeamMode){
@@ -1623,6 +1702,7 @@ class DominoGame {
             this.renderer.renderGameOver(this.playerNames[w],this.playerNames.map((n,i)=>({name:n,roundWins:this.roundWins[i]})));
             void this.recordLocalMatchResult(w);
         }
+        void this.clearLocalPresence();
     }
 
     async recordLocalMatchResult(winnerIndex) {

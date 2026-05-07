@@ -36,6 +36,7 @@ type RealtimeSummaryResponse = {
     authenticatedConnected: number;
     guestConnected: number;
     authenticatedPlaying: number;
+    playing?: number;
     rooms: number;
   };
   players: Array<{
@@ -85,11 +86,13 @@ export default async function DashboardPage() {
     );
   }
 
-  const [overview, authStatus, realtime] = await Promise.all([
+  const [overview, authStatus, realtime, platformRealtime] = await Promise.all([
     fetchAuthedApi<OverviewResponse>("/admin/overview"),
     fetchApi<AuthStatusResponse>("/platform/status"),
-    fetchGameServerApi<RealtimeSummaryResponse>("/api/realtime/summary")
+    fetchGameServerApi<RealtimeSummaryResponse>("/api/realtime/summary"),
+    fetchApi<RealtimeSummaryResponse>("/realtime/summary")
   ]);
+  const mergedRealtime = mergeRealtimeSummaries(realtime, platformRealtime);
 
   return (
     <AdminFrame
@@ -110,16 +113,17 @@ export default async function DashboardPage() {
         <MetricCard label="Matches" value={overview?.metrics.matches ?? "API offline"} />
         <MetricCard label="Open Reports" value={overview?.metrics.reportsOpen ?? "API offline"} />
         <MetricCard label="Active Bans" value={overview?.metrics.bansActive ?? "API offline"} />
-        <MetricCard label="Connected Now" value={realtime?.counts.connected ?? "Game offline"} />
-        <MetricCard label="Online Auth" value={realtime?.counts.authenticatedConnected ?? "Game offline"} />
-        <MetricCard label="Online Guests" value={realtime?.counts.guestConnected ?? "Game offline"} />
-        <MetricCard label="Playing Now" value={realtime?.counts.authenticatedPlaying ?? "Game offline"} />
+        <MetricCard label="Connected Now" value={mergedRealtime?.counts.connected ?? "Game offline"} />
+        <MetricCard label="Online Auth" value={mergedRealtime?.counts.authenticatedConnected ?? "Game offline"} />
+        <MetricCard label="Online Guests" value={mergedRealtime?.counts.guestConnected ?? "Game offline"} />
+        <MetricCard label="Playing Now" value={mergedRealtime?.counts.playing ?? "Game offline"} />
       </section>
 
       <section style={layoutStyle}>
         <Panel title="API Status">
           <Row label="API URL" value={getApiBaseUrl()} />
           <Row label="Game Server" value={getGameServerBaseUrl()} />
+          <Row label="Realtime Feed" value="game server + local guest heartbeat" />
           <Row label="Auth Provider" value={authStatus?.provider ?? "unreachable"} />
           <Row label="Auth Phase" value={authStatus?.phase ?? "unreachable"} />
           <Row label="Google Login" value={authStatus ? (authStatus.googleEnabled ? "enabled" : "disabled") : "unknown"} />
@@ -138,9 +142,9 @@ export default async function DashboardPage() {
 
       <section style={liveSectionStyle}>
         <Panel title="Realtime players">
-          {realtime?.players.length ? (
+          {mergedRealtime?.players.length ? (
             <div style={liveListStyle}>
-              {realtime.players.map((player) => (
+              {mergedRealtime.players.map((player) => (
                 <article key={player.sessionId} style={liveCardStyle}>
                   <div style={liveCardHeaderStyle}>
                     <strong>{player.displayName}</strong>
@@ -155,14 +159,14 @@ export default async function DashboardPage() {
               ))}
             </div>
           ) : (
-            <p style={copyStyle}>{realtime ? "No authenticated players are online right now." : "Realtime game server offline."}</p>
+            <p style={copyStyle}>{mergedRealtime ? "No players are online right now." : "Realtime game server offline."}</p>
           )}
         </Panel>
 
         <Panel title="Realtime rooms">
-          {realtime?.rooms.length ? (
+          {mergedRealtime?.rooms.length ? (
             <div style={liveListStyle}>
-              {realtime.rooms.map((room) => (
+              {mergedRealtime.rooms.map((room) => (
                 <article key={room.roomId} style={liveCardStyle}>
                   <div style={liveCardHeaderStyle}>
                     <strong>{room.roomCode ?? room.roomId}</strong>
@@ -177,7 +181,7 @@ export default async function DashboardPage() {
               ))}
             </div>
           ) : (
-            <p style={copyStyle}>{realtime ? "No rooms are active right now." : "Realtime game server offline."}</p>
+            <p style={copyStyle}>{mergedRealtime ? "No rooms are active right now." : "Realtime game server offline."}</p>
           )}
         </Panel>
       </section>
@@ -210,6 +214,38 @@ function Row({ label, value }: { label: string; value: string }) {
       <span style={rowValueStyle}>{value}</span>
     </div>
   );
+}
+
+function mergeRealtimeSummaries(
+  gameSummary: RealtimeSummaryResponse | null,
+  platformSummary: RealtimeSummaryResponse | null
+) {
+  if (!gameSummary && !platformSummary) return null;
+
+  const counts = {
+    total: (gameSummary?.counts.total || 0) + (platformSummary?.counts.total || 0),
+    connected: (gameSummary?.counts.connected || 0) + (platformSummary?.counts.connected || 0),
+    authenticatedConnected: (gameSummary?.counts.authenticatedConnected || 0) + (platformSummary?.counts.authenticatedConnected || 0),
+    guestConnected: (gameSummary?.counts.guestConnected || 0) + (platformSummary?.counts.guestConnected || 0),
+    playing: (gameSummary?.counts.authenticatedPlaying || 0) + (platformSummary?.counts.authenticatedPlaying || 0),
+    rooms: (gameSummary?.counts.rooms || 0) + (platformSummary?.counts.rooms || 0)
+  };
+
+  const players = [
+    ...(gameSummary?.players || []),
+    ...(platformSummary?.players || [])
+  ];
+
+  const rooms = [
+    ...(gameSummary?.rooms || []),
+    ...(platformSummary?.rooms || [])
+  ];
+
+  return {
+    counts,
+    players,
+    rooms
+  };
 }
 
 const linkButtonStyle = {
