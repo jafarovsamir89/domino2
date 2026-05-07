@@ -2,7 +2,7 @@
 
 import type { FormEvent } from "react";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
@@ -24,6 +24,7 @@ export function LoginForm() {
   const [password, setPassword] = useState("");
   const [status, setStatus] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const autoGoogleStartedRef = useRef(false);
 
   function getCallbackURL() {
     if (typeof window !== "undefined") {
@@ -79,6 +80,17 @@ export function LoginForm() {
       setIsSubmitting(false);
     }
   }
+
+  useEffect(() => {
+    if (autoGoogleStartedRef.current) return;
+    if (typeof window === "undefined") return;
+
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("autogoogle") !== "1") return;
+
+    autoGoogleStartedRef.current = true;
+    void handleGoogleSignIn();
+  }, []);
 
   return (
     <div style={{ display: "grid", gap: 16 }}>

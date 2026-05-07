@@ -499,6 +499,7 @@ class DominoGame {
             .replace(/\/api\/?$/, "/");
         const loginURL = new URL("/login", authOrigin);
         loginURL.searchParams.set("callbackURL", callbackURL);
+        loginURL.searchParams.set("autogoogle", "1");
         window.location.assign(loginURL.toString());
     }
 
