@@ -652,8 +652,10 @@ class DominoGame {
         if (loginEmailInput && !isAuthenticated && !loginEmailInput.value.trim() && profile?.email) loginEmailInput.value = profile.email;
         if (loginPasswordInput && isAuthenticated) loginPasswordInput.value = '';
         if (registerPasswordInput && isAuthenticated) registerPasswordInput.value = '';
-        if (refreshButton) refreshButton.disabled = !this.account.getRoomAuthToken();
-        if (logoutButton) logoutButton.disabled = !this.account.getRoomAuthToken();
+        const canRefresh = Boolean(this.account.getRoomAuthToken()) || profile?.provider === 'local-guest';
+        const canLogout = Boolean(this.account.getRoomAuthToken()) || profile?.provider === 'local-guest';
+        if (refreshButton) refreshButton.disabled = !canRefresh;
+        if (logoutButton) logoutButton.disabled = !canLogout;
         if (avatar) avatar.textContent = (profile?.name || 'D').slice(0, 1).toUpperCase();
         if (profileName) profileName.textContent = profile?.name || 'Domino Player';
         if (profileMeta) {
@@ -723,6 +725,10 @@ class DominoGame {
         button.setAttribute('aria-label', label);
         button.title = label;
         button.classList.toggle('is-authenticated', hasSession);
+    }
+
+    hasGuestSession() {
+        return this.accountProfile?.provider === 'local-guest' || Boolean(this.account.getStoredProfile?.()?.provider === 'local-guest');
     }
 
     async syncLocalPresence(force = false) {

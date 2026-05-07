@@ -403,3 +403,7 @@
 - Restored `setStoredToken()` / `getStoredToken()` compatibility in `AccountClient` so guest bootstrap can keep running while the platform token storage remains the real session source.
 - Re-validated the client syntax with `node --check js/app.js` and `node --check js/account.js`.
 
+## 2026-05-08 Guest logout fix
+- Re-enabled the guest logout path by allowing the profile modal logout button to stay clickable for `local-guest` sessions even when no platform token exists.
+- Kept the platform token as the real session source for registered users while still letting guests cleanly exit to the register/login flow.
+
