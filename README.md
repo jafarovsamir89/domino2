@@ -30,7 +30,7 @@ Located in the `/server` directory.
 Located in the `/apps` and `/packages` directories. This is the modernized architecture built to handle robust authentication, database management, and administrative tools.
 - **`apps/api` (`@domino2/api`)**: A **NestJS** backend providing REST/GraphQL APIs, integrating **Better Auth** for robust authentication (including Google OAuth), and interacting with the database.
 - **`apps/admin` (`@domino2/admin`)**: A dedicated administration interface/dashboard for managing users, game statistics, and platform settings.
-- **`packages/db` (`@domino2/db`)**: Contains the **Prisma ORM** schema (`schema.prisma`), database migrations, and scripts to import legacy JSON accounts into the new PostgreSQL database.
+- **`packages/db` (`@domino2/db`)**: Contains the **Prisma ORM** schema (`schema.prisma`) and database migrations for the new PostgreSQL-backed platform.
 - **`packages/shared` (`@domino2/shared`)**: Shared code, types, and utilities used across the monorepo apps.
 
 ## 🎮 Game Rules
@@ -68,7 +68,6 @@ The platform uses npm workspaces. You can run the various components from the ro
 - **Run NestJS API:** `npm run platform:api:dev`
 - **Run Admin Dashboard:** `npm run platform:admin:dev`
 - **Generate Prisma Client:** `npm run platform:prisma:generate`
-- **Migrate Legacy Accounts:** `npm run platform:legacy:import`
 
 ### Real-time Game Server
 Navigate to the `/server` folder and run:
@@ -149,7 +148,6 @@ The project includes automated scripts for deploying to Google Cloud in the `/sc
 - **Запуск NestJS API:** `npm run platform:api:dev`
 - **Запуск панели администратора:** `npm run platform:admin:dev`
 - **Генерация Prisma Client:** `npm run platform:prisma:generate`
-- **Миграция старых аккаунтов:** `npm run platform:legacy:import`
 
 ### Игровой сервер реального времени
 Перейдите в папку `/server` и выполните:

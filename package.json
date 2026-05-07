@@ -17,7 +17,6 @@
     "platform:admin:dev": "npm run dev -w @domino2/admin",
     "platform:prisma:generate": "npm run generate -w @domino2/db",
     "platform:prisma:validate": "cd packages/db && npx prisma validate --schema prisma/schema.prisma",
-    "platform:legacy:import": "node packages/db/scripts/import-legacy-accounts.mjs",
     "platform:promote-admin": "node packages/db/scripts/promote-user-to-admin.mjs",
     "deploy:gcloud": "powershell -ExecutionPolicy Bypass -File ./scripts/gcloud/update-server.ps1",
     "deploy:gcloud:platform": "powershell -ExecutionPolicy Bypass -File ./scripts/gcloud/update-server.ps1 -PlatformOnly",

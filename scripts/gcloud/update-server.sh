@@ -199,15 +199,6 @@ load_platform_env() {
   fi
 }
 
-import_legacy_auth_if_present() {
-  if [[ -f "$ROOT_DIR/server/data/accounts.json" ]]; then
-    log "importing legacy accounts into platform auth"
-    npm run platform:legacy:import
-  else
-    log "no legacy accounts file found; skipping auth import"
-  fi
-}
-
 check_clean_worktree() {
   local status
   status="$(git status --porcelain)"
@@ -303,8 +294,6 @@ if [[ "$UPDATE_PLATFORM" -eq 1 && -d packages/db && -d apps/api && -d apps/admin
 
   log "building admin app"
   npm run build -w @domino2/admin
-
-  import_legacy_auth_if_present
 
   log "restarting platform services"
   restart_or_start_pm2 domino-platform-api "$ROOT_DIR/apps/api" npm -- start
