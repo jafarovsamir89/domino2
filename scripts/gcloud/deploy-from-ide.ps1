@@ -28,21 +28,32 @@ function Invoke-GitCommitIfNeeded {
 Invoke-GitCommitIfNeeded
 git push origin $Branch
 
-$deployArgs = @(
-    "-Branch", $Branch,
-    "-ForceSync"
-)
+$remoteCommand = 'cd ~/domino2; BACKUP_DIR="$(mktemp -d /tmp/domino2-backup.XXXXXX)"; if [ -f .env.platform ]; then cp .env.platform "$BACKUP_DIR/env.platform"; fi; if [ -d server/data ]; then mkdir -p "$BACKUP_DIR/server-data" && cp -a server/data/. "$BACKUP_DIR/server-data/"; fi; git fetch origin ' + $Branch + '; git reset --hard origin/' + $Branch + '; git clean -fd; if [ -f "$BACKUP_DIR/env.platform" ]; then cp "$BACKUP_DIR/env.platform" .env.platform; fi; if [ -d "$BACKUP_DIR/server-data" ]; then mkdir -p server/data && cp -a "$BACKUP_DIR/server-data/." server/data/; fi; bash scripts/gcloud/update-server.sh --no-pull'
+
+if ($SkipChecks) {
+    $remoteCommand += ' --skip-checks'
+}
 
 if ($PlatformOnly) {
-    $deployArgs += "-PlatformOnly"
+    $remoteCommand += ' --platform-only'
 }
 
 if ($LegacyOnly) {
-    $deployArgs += "-LegacyOnly"
+    $remoteCommand += ' --legacy-only'
 }
 
-if ($SkipChecks) {
-    $deployArgs += "-SkipChecks"
+$sshKey = Join-Path $repoRoot ".gcloud\domino2_gcloud_key"
+$sshArgs = @(
+    '-i', $sshKey,
+    '-o', 'StrictHostKeyChecking=no',
+    '-o', 'UserKnownHostsFile=NUL',
+    'user@34.28.23.216',
+    $remoteCommand
+)
+
+$sshExe = 'C:\Windows\System32\OpenSSH\ssh.exe'
+if (-not (Test-Path $sshExe)) {
+    $sshExe = (Get-Command ssh).Source
 }
 
-& (Join-Path $PSScriptRoot "update-server.ps1") @deployArgs
+Start-Process -FilePath $sshExe -NoNewWindow -Wait -ArgumentList $sshArgs
