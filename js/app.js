@@ -308,12 +308,22 @@ class DominoGame {
             await this.loadAccountProfile();
         });
         if (logoutAccountBtn) logoutAccountBtn.addEventListener('click', async () => {
+            const wasGuest = this.accountProfile?.provider === 'local-guest';
+            const guestName = this.accountProfile?.name || this.readPlayerName('any') || '';
             await this.account.logout();
             this.accountProfile = null;
             this.accountDetails = null;
             this.accountOnline = false;
-            this.setAccountMode('login');
+            this.setAccountMode(wasGuest ? 'register' : 'login');
             this.setAccountStatus('');
+            if (wasGuest && guestName) {
+                const registerName = document.getElementById('account-name-input');
+                const soloName = document.getElementById('player-name');
+                const onlineName = document.getElementById('player-name-online');
+                if (registerName && !registerName.value.trim()) registerName.value = guestName;
+                if (soloName && !soloName.value.trim()) soloName.value = guestName;
+                if (onlineName && !onlineName.value.trim()) onlineName.value = guestName;
+            }
             const email = document.getElementById('account-email-input');
             if (email) email.value = '';
             const loginEmail = document.getElementById('account-login-email-input');

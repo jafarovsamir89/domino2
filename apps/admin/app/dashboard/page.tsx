@@ -32,7 +32,9 @@ type AuthStatusResponse = {
 type RealtimeSummaryResponse = {
   counts: {
     total: number;
+    connected: number;
     authenticatedConnected: number;
+    guestConnected: number;
     authenticatedPlaying: number;
     rooms: number;
   };
@@ -108,7 +110,9 @@ export default async function DashboardPage() {
         <MetricCard label="Matches" value={overview?.metrics.matches ?? "API offline"} />
         <MetricCard label="Open Reports" value={overview?.metrics.reportsOpen ?? "API offline"} />
         <MetricCard label="Active Bans" value={overview?.metrics.bansActive ?? "API offline"} />
+        <MetricCard label="Connected Now" value={realtime?.counts.connected ?? "Game offline"} />
         <MetricCard label="Online Auth" value={realtime?.counts.authenticatedConnected ?? "Game offline"} />
+        <MetricCard label="Online Guests" value={realtime?.counts.guestConnected ?? "Game offline"} />
         <MetricCard label="Playing Now" value={realtime?.counts.authenticatedPlaying ?? "Game offline"} />
       </section>
 

@@ -59,8 +59,10 @@ function listLivePlayers() {
 
 function getLiveSummary() {
   const players = listLivePlayers();
-  const connectedAuthenticatedPlayers = players.filter((player) => player.provider === "platform" && player.isConnected !== false);
-  const playingPlayers = connectedAuthenticatedPlayers.filter((player) => player.isPlaying === true);
+  const connectedPlayers = players.filter((player) => player.isConnected !== false);
+  const connectedAuthenticatedPlayers = connectedPlayers.filter((player) => player.provider === "platform");
+  const connectedGuestPlayers = connectedPlayers.filter((player) => player.provider !== "platform");
+  const playingPlayers = connectedPlayers.filter((player) => player.isPlaying === true);
 
   const roomsMap = new Map();
   for (const player of players) {
@@ -101,11 +103,13 @@ function getLiveSummary() {
   return {
     counts: {
       total: players.length,
+      connected: connectedPlayers.length,
       authenticatedConnected: connectedAuthenticatedPlayers.length,
+      guestConnected: connectedGuestPlayers.length,
       authenticatedPlaying: playingPlayers.length,
       rooms: rooms.length
     },
-    players: connectedAuthenticatedPlayers
+    players: connectedPlayers
       .sort((a, b) => String(a.displayName || "").localeCompare(String(b.displayName || "")))
       .map((player) => ({
         sessionId: player.sessionId,
