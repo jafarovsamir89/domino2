@@ -364,3 +364,14 @@
   - `node --check server/DominoRoom.js`
   - `npm run build -w @domino2/api`
   - `npm run build -w @domino2/admin`
+
+## 2026-05-07 GCloud deploy hardening
+- Fixed the local GCloud SSH path by using repo-local key material instead of the broken `C:\\Users\\user\\.ssh` key store.
+- Added a one-command IDE deploy flow:
+  - `npm run deploy:gcloud:git`
+  - it commits/pushes if the repo is dirty, then syncs the VM to `origin/main`, restores runtime files, and rebuilds the platform layer
+- Updated the VM update script to support `--force-sync` so a dirty worktree can be reset safely from git.
+- Cleaned up accidental deploy-key artifacts:
+  - added `.deploy/` to `.gitignore`
+  - removed committed temporary SSH keys from `.deploy/gcloud-ssh`
+- Verified the repo-local SSH key can connect to the VM with plain `ssh` and the deploy flow can rebuild the platform stack.
