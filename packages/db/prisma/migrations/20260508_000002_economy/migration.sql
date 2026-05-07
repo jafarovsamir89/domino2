@@ -245,7 +245,7 @@ ALTER TABLE "CoinTournamentEntry" ADD CONSTRAINT "CoinTournamentEntry_tournament
 ALTER TABLE "CoinTournamentEntry" ADD CONSTRAINT "CoinTournamentEntry_playerId_fkey" FOREIGN KEY ("playerId") REFERENCES "Player"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- CreateTable
-CREATE TABLE "CatalogProduct" (
+CREATE TABLE IF NOT EXISTS "CatalogProduct" (
     "id" TEXT NOT NULL,
     "key" TEXT NOT NULL,
     "name" TEXT NOT NULL,
@@ -258,7 +258,7 @@ CREATE TABLE "CatalogProduct" (
 );
 
 -- CreateTable
-CREATE TABLE "CatalogPrice" (
+CREATE TABLE IF NOT EXISTS "CatalogPrice" (
     "id" TEXT NOT NULL,
     "productId" TEXT NOT NULL,
     "currency" TEXT NOT NULL,
@@ -270,7 +270,7 @@ CREATE TABLE "CatalogPrice" (
 );
 
 -- CreateTable
-CREATE TABLE "Order" (
+CREATE TABLE IF NOT EXISTS "Order" (
     "id" TEXT NOT NULL,
     "playerId" TEXT NOT NULL,
     "productId" TEXT NOT NULL,
@@ -284,7 +284,7 @@ CREATE TABLE "Order" (
 );
 
 -- CreateTable
-CREATE TABLE "Payment" (
+CREATE TABLE IF NOT EXISTS "Payment" (
     "id" TEXT NOT NULL,
     "orderId" TEXT NOT NULL,
     "provider" TEXT NOT NULL,
@@ -299,7 +299,7 @@ CREATE TABLE "Payment" (
 );
 
 -- CreateTable
-CREATE TABLE "PaymentEvent" (
+CREATE TABLE IF NOT EXISTS "PaymentEvent" (
     "id" TEXT NOT NULL,
     "provider" TEXT NOT NULL,
     "providerEventId" TEXT NOT NULL,
@@ -311,7 +311,7 @@ CREATE TABLE "PaymentEvent" (
 );
 
 -- CreateTable
-CREATE TABLE "PlayerEntitlement" (
+CREATE TABLE IF NOT EXISTS "PlayerEntitlement" (
     "id" TEXT NOT NULL,
     "playerId" TEXT NOT NULL,
     "productKey" TEXT NOT NULL,
@@ -322,46 +322,88 @@ CREATE TABLE "PlayerEntitlement" (
 );
 
 -- CreateIndex
-CREATE UNIQUE INDEX "CatalogProduct_key_key" ON "CatalogProduct"("key");
+CREATE UNIQUE INDEX IF NOT EXISTS "CatalogProduct_key_key" ON "CatalogProduct"("key");
 
 -- CreateIndex
-CREATE INDEX "CatalogPrice_productId_idx" ON "CatalogPrice"("productId");
+CREATE INDEX IF NOT EXISTS "CatalogPrice_productId_idx" ON "CatalogPrice"("productId");
 
 -- CreateIndex
-CREATE INDEX "CatalogPrice_currency_idx" ON "CatalogPrice"("currency");
+CREATE INDEX IF NOT EXISTS "CatalogPrice_currency_idx" ON "CatalogPrice"("currency");
 
 -- CreateIndex
-CREATE INDEX "Order_playerId_idx" ON "Order"("playerId");
+CREATE INDEX IF NOT EXISTS "Order_playerId_idx" ON "Order"("playerId");
 
 -- CreateIndex
-CREATE INDEX "Order_productId_idx" ON "Order"("productId");
+CREATE INDEX IF NOT EXISTS "Order_productId_idx" ON "Order"("productId");
 
 -- CreateIndex
-CREATE INDEX "Order_priceId_idx" ON "Order"("priceId");
+CREATE INDEX IF NOT EXISTS "Order_priceId_idx" ON "Order"("priceId");
 
 -- CreateIndex
-CREATE INDEX "Payment_orderId_idx" ON "Payment"("orderId");
+CREATE INDEX IF NOT EXISTS "Payment_orderId_idx" ON "Payment"("orderId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "PaymentEvent_providerEventId_key" ON "PaymentEvent"("providerEventId");
+CREATE UNIQUE INDEX IF NOT EXISTS "PaymentEvent_providerEventId_key" ON "PaymentEvent"("providerEventId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "PlayerEntitlement_playerId_productKey_key" ON "PlayerEntitlement"("playerId", "productKey");
+CREATE UNIQUE INDEX IF NOT EXISTS "PlayerEntitlement_playerId_productKey_key" ON "PlayerEntitlement"("playerId", "productKey");
 
 -- AddForeignKey
-ALTER TABLE "CatalogPrice" ADD CONSTRAINT "CatalogPrice_productId_fkey" FOREIGN KEY ("productId") REFERENCES "CatalogProduct"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_constraint WHERE conname = 'CatalogPrice_productId_fkey'
+    ) THEN
+        ALTER TABLE "CatalogPrice" ADD CONSTRAINT "CatalogPrice_productId_fkey" FOREIGN KEY ("productId") REFERENCES "CatalogProduct"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+    END IF;
+END $$;
 
 -- AddForeignKey
-ALTER TABLE "Order" ADD CONSTRAINT "Order_playerId_fkey" FOREIGN KEY ("playerId") REFERENCES "Player"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_constraint WHERE conname = 'Order_playerId_fkey'
+    ) THEN
+        ALTER TABLE "Order" ADD CONSTRAINT "Order_playerId_fkey" FOREIGN KEY ("playerId") REFERENCES "Player"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+    END IF;
+END $$;
 
 -- AddForeignKey
-ALTER TABLE "Order" ADD CONSTRAINT "Order_productId_fkey" FOREIGN KEY ("productId") REFERENCES "CatalogProduct"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_constraint WHERE conname = 'Order_productId_fkey'
+    ) THEN
+        ALTER TABLE "Order" ADD CONSTRAINT "Order_productId_fkey" FOREIGN KEY ("productId") REFERENCES "CatalogProduct"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+    END IF;
+END $$;
 
 -- AddForeignKey
-ALTER TABLE "Order" ADD CONSTRAINT "Order_priceId_fkey" FOREIGN KEY ("priceId") REFERENCES "CatalogPrice"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_constraint WHERE conname = 'Order_priceId_fkey'
+    ) THEN
+        ALTER TABLE "Order" ADD CONSTRAINT "Order_priceId_fkey" FOREIGN KEY ("priceId") REFERENCES "CatalogPrice"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+    END IF;
+END $$;
 
 -- AddForeignKey
-ALTER TABLE "Payment" ADD CONSTRAINT "Payment_orderId_fkey" FOREIGN KEY ("orderId") REFERENCES "Order"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_constraint WHERE conname = 'Payment_orderId_fkey'
+    ) THEN
+        ALTER TABLE "Payment" ADD CONSTRAINT "Payment_orderId_fkey" FOREIGN KEY ("orderId") REFERENCES "Order"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+    END IF;
+END $$;
 
 -- AddForeignKey
-ALTER TABLE "PlayerEntitlement" ADD CONSTRAINT "PlayerEntitlement_playerId_fkey" FOREIGN KEY ("playerId") REFERENCES "Player"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_constraint WHERE conname = 'PlayerEntitlement_playerId_fkey'
+    ) THEN
+        ALTER TABLE "PlayerEntitlement" ADD CONSTRAINT "PlayerEntitlement_playerId_fkey" FOREIGN KEY ("playerId") REFERENCES "Player"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+    END IF;
+END $$;
