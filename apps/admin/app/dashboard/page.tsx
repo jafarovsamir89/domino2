@@ -6,6 +6,7 @@ import { AccessRequired } from "../../components/access-required";
 import { DashboardSessionCard } from "../../components/dashboard-session-card";
 import { getAdminSession, isAdminRole } from "../../lib/admin-session";
 import { fetchApi, getApiBaseUrl } from "../../lib/api";
+import { fetchGameServerApi, getGameServerBaseUrl } from "../../lib/game-server";
 import { fetchAuthedApi } from "../../lib/server-api";
 
 type OverviewResponse = {
@@ -28,6 +29,49 @@ type AuthStatusResponse = {
   trustedOrigins: string[];
 };
 
+type RealtimeSummaryResponse = {
+  counts: {
+    total: number;
+    authenticatedConnected: number;
+    authenticatedPlaying: number;
+    rooms: number;
+  };
+  players: Array<{
+    sessionId: string;
+    userId: string;
+    playerId: string;
+    displayName: string;
+    provider: string;
+    isConnected: boolean;
+    isPlaying: boolean;
+    roomId: string | null;
+    roomCode: string | null;
+    role: string;
+    joinedAt: string | null;
+    updatedAt: string | null;
+  }>;
+  rooms: Array<{
+    roomId: string;
+    roomCode: string | null;
+    gameActive: boolean;
+    totalPlayers: number;
+    connectedPlayers: number;
+    authenticatedPlayers: number;
+    players: Array<{
+      sessionId: string;
+      userId: string;
+      playerId: string;
+      displayName: string;
+      provider: string;
+      isConnected: boolean;
+      isPlaying: boolean;
+      roomCode: string | null;
+      role: string;
+      joinedAt: string | null;
+    }>;
+  }>;
+};
+
 export default async function DashboardPage() {
   const session = await getAdminSession();
   if (!session?.user || !isAdminRole(session.user.role)) {
@@ -39,9 +83,10 @@ export default async function DashboardPage() {
     );
   }
 
-  const [overview, authStatus] = await Promise.all([
+  const [overview, authStatus, realtime] = await Promise.all([
     fetchAuthedApi<OverviewResponse>("/admin/overview"),
-    fetchApi<AuthStatusResponse>("/platform/status")
+    fetchApi<AuthStatusResponse>("/platform/status"),
+    fetchGameServerApi<RealtimeSummaryResponse>("/api/realtime/summary")
   ]);
 
   return (
@@ -63,11 +108,14 @@ export default async function DashboardPage() {
         <MetricCard label="Matches" value={overview?.metrics.matches ?? "API offline"} />
         <MetricCard label="Open Reports" value={overview?.metrics.reportsOpen ?? "API offline"} />
         <MetricCard label="Active Bans" value={overview?.metrics.bansActive ?? "API offline"} />
+        <MetricCard label="Online Auth" value={realtime?.counts.authenticatedConnected ?? "Game offline"} />
+        <MetricCard label="Playing Now" value={realtime?.counts.authenticatedPlaying ?? "Game offline"} />
       </section>
 
       <section style={layoutStyle}>
         <Panel title="API Status">
           <Row label="API URL" value={getApiBaseUrl()} />
+          <Row label="Game Server" value={getGameServerBaseUrl()} />
           <Row label="Auth Provider" value={authStatus?.provider ?? "unreachable"} />
           <Row label="Auth Phase" value={authStatus?.phase ?? "unreachable"} />
           <Row label="Google Login" value={authStatus ? (authStatus.googleEnabled ? "enabled" : "disabled") : "unknown"} />
@@ -82,6 +130,52 @@ export default async function DashboardPage() {
             <p style={copyStyle}>What still stays separate for now: the legacy game server under PM2 on port `2567`.</p>
           </Panel>
         </div>
+      </section>
+
+      <section style={liveSectionStyle}>
+        <Panel title="Realtime players">
+          {realtime?.players.length ? (
+            <div style={liveListStyle}>
+              {realtime.players.map((player) => (
+                <article key={player.sessionId} style={liveCardStyle}>
+                  <div style={liveCardHeaderStyle}>
+                    <strong>{player.displayName}</strong>
+                    <span style={liveBadgeStyle}>{player.isPlaying ? "Playing" : "Connected"}</span>
+                  </div>
+                  <div style={liveMetaStyle}>
+                    <span>{player.roomCode ?? player.roomId ?? "no room"}</span>
+                    <span>{player.provider}</span>
+                    <span>{player.role}</span>
+                  </div>
+                </article>
+              ))}
+            </div>
+          ) : (
+            <p style={copyStyle}>{realtime ? "No authenticated players are online right now." : "Realtime game server offline."}</p>
+          )}
+        </Panel>
+
+        <Panel title="Realtime rooms">
+          {realtime?.rooms.length ? (
+            <div style={liveListStyle}>
+              {realtime.rooms.map((room) => (
+                <article key={room.roomId} style={liveCardStyle}>
+                  <div style={liveCardHeaderStyle}>
+                    <strong>{room.roomCode ?? room.roomId}</strong>
+                    <span style={liveBadgeStyle}>{room.gameActive ? "Active match" : "Lobby"}</span>
+                  </div>
+                  <div style={liveMetaStyle}>
+                    <span>{room.connectedPlayers} connected</span>
+                    <span>{room.authenticatedPlayers} auth</span>
+                    <span>{room.totalPlayers} total</span>
+                  </div>
+                </article>
+              ))}
+            </div>
+          ) : (
+            <p style={copyStyle}>{realtime ? "No rooms are active right now." : "Realtime game server offline."}</p>
+          )}
+        </Panel>
       </section>
     </AdminFrame>
   );
@@ -136,6 +230,12 @@ const metricGridStyle = {
 const layoutStyle = {
   display: "grid",
   gridTemplateColumns: "minmax(0, 1.3fr) minmax(280px, 0.7fr)",
+  gap: 16
+} as const;
+
+const liveSectionStyle = {
+  display: "grid",
+  gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
   gap: 16
 } as const;
 
@@ -195,4 +295,43 @@ const copyStyle = {
   margin: "0 0 10px",
   color: "#cbd5e1",
   lineHeight: 1.6
+} as const;
+
+const liveListStyle = {
+  display: "grid",
+  gap: 10
+} as const;
+
+const liveCardStyle = {
+  padding: 14,
+  borderRadius: 16,
+  background: "rgba(2,6,23,0.82)",
+  border: "1px solid rgba(148,163,184,0.12)"
+} as const;
+
+const liveCardHeaderStyle = {
+  display: "flex",
+  justifyContent: "space-between",
+  gap: 12,
+  flexWrap: "wrap",
+  alignItems: "center",
+  marginBottom: 8
+} as const;
+
+const liveBadgeStyle = {
+  padding: "4px 8px",
+  borderRadius: 999,
+  background: "rgba(56,189,248,0.16)",
+  border: "1px solid rgba(56,189,248,0.24)",
+  color: "#7dd3fc",
+  fontSize: 12,
+  fontWeight: 700
+} as const;
+
+const liveMetaStyle = {
+  display: "flex",
+  gap: 10,
+  flexWrap: "wrap",
+  color: "#94a3b8",
+  fontSize: 13
 } as const;

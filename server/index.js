@@ -4,6 +4,7 @@ const http = require("http");
 const path = require("path");
 const { Server } = require("colyseus");
 const DominoRoom = require("./DominoRoom");
+const { getLiveSummary } = require("./livePresence");
 
 const port = process.env.PORT || 2567;
 const app = express();
@@ -78,6 +79,19 @@ app.get("/room-code/:roomId", (req, res) => {
         return;
     }
     res.json({ roomId, roomCode });
+});
+
+app.get("/api/realtime/summary", (req, res) => {
+    res.json(getLiveSummary());
+});
+
+app.get("/api/realtime/players", (req, res) => {
+    const summary = getLiveSummary();
+    res.json({
+        items: summary.players,
+        counts: summary.counts,
+        rooms: summary.rooms
+    });
 });
 
 const server = http.createServer(app);

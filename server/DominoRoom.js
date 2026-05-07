@@ -4,6 +4,7 @@ const { Board } = require("./board");
 const { AIPlayer } = require("./ai");
 const { Tile, createFullSet, shuffle, getHandSize, determineFirstPlayer, handPoints, roundTo5 } = require("./model");
 const { verifyGameToken } = require("./platformAuth");
+const { upsertLivePlayer, removeLivePlayer, setRoomGameActive, removeRoomPlayers } = require("./livePresence");
 
 const TARGET = 365, MAX_R = 3, DLOSS = 255, IWIN = 35;
 
@@ -95,7 +96,22 @@ class DominoRoom extends Room {
             authToken,
             userId: player.userId,
             displayName: player.name,
-            playerId: identity.playerId || player.userId
+            playerId: identity.playerId || player.userId,
+            role: identity.role || "player"
+        });
+
+        upsertLivePlayer(client.sessionId, {
+            sessionId: client.sessionId,
+            roomId: this.roomId,
+            roomCode: this.roomCode,
+            provider: identity.provider || "guest",
+            userId: player.userId,
+            playerId: identity.playerId || player.userId,
+            displayName: player.name,
+            role: identity.role || "player",
+            isConnected: true,
+            isPlaying: Boolean(this.state.gameActive),
+            joinedAt: new Date().toISOString()
         });
 
         console.log(`[ROOM] Current player count: ${this.clients.length} / ${this.maxClients}`);
@@ -112,6 +128,7 @@ class DominoRoom extends Room {
             global.__DOMINO_ROOM_CODES?.delete(this.roomCode);
         }
         global.__DOMINO_ROOM_IDS?.delete(this.roomId);
+        removeRoomPlayers(this.roomId);
         this.identityBySessionId.clear();
     }
 
@@ -137,6 +154,21 @@ class DominoRoom extends Room {
         console.log(`[ROOM] Client ${client.sessionId} left (consented: ${consented})`);
         const player = this.state.players.get(client.sessionId);
         if (player) player.isConnected = false;
+        const identity = this.identityBySessionId.get(client.sessionId);
+        if (identity) {
+            upsertLivePlayer(client.sessionId, {
+                sessionId: client.sessionId,
+                roomId: this.roomId,
+                roomCode: this.roomCode,
+                provider: identity.provider || "guest",
+                userId: identity.userId || "",
+                playerId: identity.playerId || identity.userId || "",
+                displayName: identity.displayName || player?.name || "Player",
+                role: identity.role || "player",
+                isConnected: false,
+                isPlaying: Boolean(this.state.gameActive)
+            });
+        }
 
         try {
             if (consented) throw new Error("consented leave");
@@ -144,6 +176,20 @@ class DominoRoom extends Room {
             this.broadcastRoomState();
             await this.allowReconnection(client, 60);
             player.isConnected = true;
+            if (identity) {
+                upsertLivePlayer(client.sessionId, {
+                    sessionId: client.sessionId,
+                    roomId: this.roomId,
+                    roomCode: this.roomCode,
+                    provider: identity.provider || "guest",
+                    userId: identity.userId || "",
+                    playerId: identity.playerId || identity.userId || "",
+                    displayName: identity.displayName || player?.name || "Player",
+                    role: identity.role || "player",
+                    isConnected: true,
+                    isPlaying: Boolean(this.state.gameActive)
+                });
+            }
             console.log(`[ROOM] Client ${client.sessionId} reconnected!`);
             this.broadcast("msg", { text: `${player.name} reconnected`, time: 1500 });
             this.broadcastRoomState();
@@ -152,6 +198,7 @@ class DominoRoom extends Room {
             const leftPlayerName = player ? player.name : "Player";
             this.state.players.delete(client.sessionId);
             this.identityBySessionId.delete(client.sessionId);
+            removeLivePlayer(client.sessionId);
             const idx = this.state.playerOrder.indexOf(client.sessionId);
             if (idx !== -1) this.state.playerOrder.splice(idx, 1);
 
@@ -288,6 +335,7 @@ class DominoRoom extends Room {
     }
 
     broadcastRoomState() {
+        setRoomGameActive(this.roomId, this.state.gameActive);
         const players = this.state.playerOrder.map((sessionId, index) => {
             const player = this.state.players.get(sessionId);
             return {
