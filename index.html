@@ -193,7 +193,7 @@
                 </div>
 
                 <div class="account-cabinet">
-                    <section class="account-panel account-profile-panel">
+                    <section class="account-panel account-profile-panel" id="account-profile-panel">
                         <div class="account-profile-card">
                             <div class="account-avatar" id="account-avatar">D</div>
                             <div class="account-profile-copy">
@@ -226,30 +226,63 @@
                         </div>
                     </section>
 
-                    <section class="account-panel">
-                        <div class="settings-grid compact-grid">
-                            <div class="settings-group">
-                                <label data-i18n="account-name">Ad</label>
-                                <input type="text" id="account-name-input" placeholder="Adınızı daxil edin" maxlength="12">
-                            </div>
-                            <div class="settings-group">
-                                <label data-i18n="account-email">Email</label>
-                                <input type="email" id="account-email-input" placeholder="email@domain.com" maxlength="254">
-                            </div>
-                            <div class="settings-group">
-                                <label data-i18n="account-password">Şifrə</label>
-                                <input type="password" id="account-password-input" placeholder="Şifrənizi daxil edin" maxlength="64">
-                            </div>
-                            <div class="settings-group field-span-2">
-                                <div id="account-status" class="room-summary"></div>
-                            </div>
+                    <section class="account-panel account-auth-panel" id="account-auth-panel">
+                        <div class="account-auth-hero">
+                            <p class="section-kicker" data-i18n="account-auth-kicker">Giriş</p>
+                            <h3 data-i18n="account-auth-title">Hesaba daxil ol</h3>
+                            <p class="account-auth-copy" data-i18n="account-auth-desc">Reytinqin, oyun tarixçən və Google girişi üçün hesabına daxil ol.</p>
                         </div>
 
-                        <div class="multiplayer-actions btn-group">
-                            <button class="btn btn-menu" id="guest-account-btn" data-i18n="account-guest">Qonaq rejimi</button>
-                            <button class="btn btn-action btn-strong" id="register-account-btn" data-i18n="account-register">Qeydiyyat</button>
-                            <button class="btn btn-action" id="login-account-btn" data-i18n="account-login">Giriş</button>
+                        <div class="account-switcher" role="tablist" aria-label="Account forms">
+                            <button class="btn btn-menu account-switch active" id="login-tab-btn" data-view="login" type="button" data-i18n="account-login-tab">Giriş</button>
+                            <button class="btn btn-menu account-switch" id="register-tab-btn" data-view="register" type="button" data-i18n="account-register-tab">Qeydiyyat</button>
                         </div>
+
+                        <form class="account-form account-form-login active" id="account-login-form">
+                            <div class="settings-grid compact-grid">
+                                <div class="settings-group field-span-2">
+                                    <label data-i18n="account-email">Email</label>
+                                    <input type="email" id="account-login-email-input" placeholder="email@domain.com" maxlength="254">
+                                </div>
+                                <div class="settings-group field-span-2">
+                                    <label data-i18n="account-password">Şifrə</label>
+                                    <input type="password" id="account-login-password-input" placeholder="Şifrənizi daxil edin" maxlength="64">
+                                </div>
+                                <div class="settings-group field-span-2">
+                                    <div id="account-status" class="room-summary"></div>
+                                </div>
+                            </div>
+
+                            <div class="account-auth-actions">
+                                <button class="btn btn-action btn-strong" id="login-account-btn" type="submit" data-i18n="account-login">Giriş</button>
+                                <button class="btn btn-social" id="google-login-btn" type="button" data-i18n="account-google">Google ilə giriş</button>
+                            </div>
+                        </form>
+
+                        <form class="account-form account-form-register" id="account-register-form">
+                            <div class="settings-grid compact-grid">
+                                <div class="settings-group">
+                                    <label data-i18n="account-name">Ad</label>
+                                    <input type="text" id="account-name-input" placeholder="Adınızı daxil edin" maxlength="12">
+                                </div>
+                                <div class="settings-group">
+                                    <label data-i18n="account-email">Email</label>
+                                    <input type="email" id="account-email-input" placeholder="email@domain.com" maxlength="254">
+                                </div>
+                                <div class="settings-group field-span-2">
+                                    <label data-i18n="account-password">Şifrə</label>
+                                    <input type="password" id="account-password-input" placeholder="Şifrənizi daxil edin" maxlength="64">
+                                </div>
+                                <div class="settings-group field-span-2">
+                                    <div id="account-register-status" class="room-summary"></div>
+                                </div>
+                            </div>
+
+                            <div class="account-auth-actions">
+                                <button class="btn btn-action btn-strong" id="register-account-btn" type="submit" data-i18n="account-register">Qeydiyyat</button>
+                                <button class="btn btn-menu" id="guest-account-btn" type="button" data-i18n="account-guest">Qonaq rejimi</button>
+                            </div>
+                        </form>
                     </section>
                 </div>
 

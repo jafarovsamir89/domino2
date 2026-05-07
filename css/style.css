@@ -614,6 +614,85 @@ input, button { font: inherit; }
     background: rgba(255, 255, 255, 0.04);
 }
 
+.account-panel.is-hidden {
+    display: none;
+}
+
+.account-auth-panel {
+    display: grid;
+    gap: 14px;
+}
+
+.account-auth-hero {
+    display: grid;
+    gap: 8px;
+    padding: 18px;
+    border-radius: 20px;
+    background:
+        radial-gradient(circle at top right, rgba(240, 192, 64, 0.12), transparent 34%),
+        rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.account-auth-hero h3 {
+    font-size: 1.45rem;
+    line-height: 1.1;
+}
+
+.account-auth-copy {
+    color: var(--text-dim);
+    line-height: 1.5;
+    font-size: 0.92rem;
+}
+
+.account-switcher {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    padding: 6px;
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.account-switch {
+    width: 100%;
+    margin: 0;
+    text-align: center;
+}
+
+.account-switch.active {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #1a1a1a;
+    border-color: transparent;
+}
+
+.account-form {
+    display: none;
+    gap: 14px;
+}
+
+.account-form.active {
+    display: grid;
+}
+
+.account-auth-actions {
+    display: grid;
+    gap: 10px;
+}
+
+.btn-social {
+    padding: 12px 14px;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.09), rgba(240, 192, 64, 0.12));
+    color: var(--text);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.18);
+}
+
+.btn-social:hover {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.14), rgba(240, 192, 64, 0.18));
+}
+
 .account-profile-panel {
     display: grid;
     gap: 14px;
