@@ -17,42 +17,9 @@ export class EconomyController {
     return this.economyService.listPublicStakes();
   }
 
-  @Get("economy/quests")
-  async listPublicQuests(@Req() req: Request) {
-    return this.economyService.listPublicQuests(req.headers);
-  }
-
   @Get("economy/me/wallet")
   async getWallet(@Req() req: Request) {
     return this.economyService.getWallet(req.headers);
-  }
-
-  @Post("economy/me/daily/claim")
-  async claimDailyBonus(@Req() req: Request) {
-    return this.economyService.claimDailyBonus(req.headers);
-  }
-
-  @Post("economy/me/quests/:key/advance")
-  async advanceQuest(
-    @Req() req: Request,
-    @Param("key") key: string,
-    @Body() body: { amount?: number }
-  ) {
-    return this.economyService.advanceQuest(req.headers, key, body.amount ?? 1);
-  }
-
-  @Post("economy/me/quests/:key/claim")
-  async claimQuestReward(@Req() req: Request, @Param("key") key: string) {
-    return this.economyService.claimQuestReward(req.headers, key);
-  }
-
-  @Post("economy/me/shop/purchase/:productKey")
-  async purchaseCosmetic(
-    @Req() req: Request,
-    @Param("productKey") productKey: string,
-    @Body() body: { quantity?: number }
-  ) {
-    return this.economyService.purchaseCosmetic(req.headers, productKey, body.quantity ?? 1);
   }
 
   @Post("economy/matches/reserve")
@@ -147,65 +114,8 @@ export class EconomyController {
     return this.economyService.upsertStakeTable(req.headers, { ...(body as Record<string, unknown>), id } as never);
   }
 
-  @Get("admin/economy/quests")
-  async listAdminQuests(@Req() req: Request) {
-    return this.economyService.listAdminQuests(req.headers);
-  }
-
-  @Post("admin/economy/quests")
-  async createQuest(@Req() req: Request, @Body() body: Record<string, unknown>) {
-    return this.economyService.upsertQuest(req.headers, body as never);
-  }
-
-  @Patch("admin/economy/quests/:id")
-  async updateQuest(
-    @Req() req: Request,
-    @Param("id") id: string,
-    @Body() body: Record<string, unknown>
-  ) {
-    return this.economyService.upsertQuest(req.headers, { ...(body as Record<string, unknown>), id } as never);
-  }
-
-  @Get("admin/economy/catalog")
-  async listCatalog(@Req() req: Request) {
-    return this.economyService.listCatalog(req.headers);
-  }
-
-  @Post("admin/economy/catalog")
-  async createCatalog(@Req() req: Request, @Body() body: Record<string, unknown>) {
-    return this.economyService.upsertCatalog(req.headers, body as never);
-  }
-
-  @Patch("admin/economy/catalog/:id")
-  async updateCatalog(
-    @Req() req: Request,
-    @Param("id") id: string,
-    @Body() body: Record<string, unknown>
-  ) {
-    return this.economyService.upsertCatalog(req.headers, { ...(body as Record<string, unknown>), id } as never);
-  }
-
   @Patch("admin/economy/config")
   async updateConfig(@Req() req: Request, @Body() body: Record<string, unknown>) {
     return this.economyService.updateEconomyConfig(req.headers, body as never);
-  }
-
-  @Post("admin/economy/tournaments")
-  async createTournament(@Req() req: Request, @Body() body: Record<string, unknown>) {
-    return this.economyService.upsertTournament(req.headers, body as never);
-  }
-
-  @Get("admin/economy/tournaments")
-  async listTournaments(@Req() req: Request) {
-    return this.economyService.listAdminTournaments(req.headers);
-  }
-
-  @Patch("admin/economy/tournaments/:id")
-  async updateTournament(
-    @Req() req: Request,
-    @Param("id") id: string,
-    @Body() body: Record<string, unknown>
-  ) {
-    return this.economyService.upsertTournament(req.headers, { ...(body as Record<string, unknown>), id } as never);
   }
 }

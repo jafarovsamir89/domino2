@@ -15,11 +15,14 @@
 - Added a NestJS `EconomyModule` with public and admin endpoints.
 - Wired match reservation and settlement into the current game server flow.
 - Added admin support for economy metrics and wallet data.
+- Trimmed the first release to the essentials: starter coins, free tables, stake tables, wallet history, and admin coin grants.
+- Removed the daily bonus / quest / cosmetic shop surfaces from the live UI for now.
+- Added a 1000-coin starter grant for new registered players.
 - Added a dedicated economy admin page.
 - Added stake selection to the online room UI.
 - Added docs for the economy plan and this development log.
 - Recovered the first production migration attempt by marking the failed migration as rolled back, then replayed it after making the appended SQL idempotent.
-- Fixed a bootstrap race in `getPublicConfig()` so default quests and other seeded economy rows are guaranteed to appear on a fresh database.
+- Fixed a bootstrap race in `getPublicConfig()` so default economy rows are guaranteed to appear on a fresh database.
 
 ## Notes
 - Coins are implemented as a soft currency only.

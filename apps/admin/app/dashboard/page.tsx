@@ -28,17 +28,9 @@ type EconomyOverviewResponse = {
     coinsReserved: number;
     ledgerEntries: number;
     activeStakeTables: number;
-    activeTournaments: number;
-    dailyClaimsToday: number;
   };
   config: {
-    dailyBaseAmount: number;
-    dailyStreakBonus: number;
-    dailyMaxStreak: number;
-    dailyClaimCooldown: number;
     matchCommissionBps: number;
-    tournamentCommissionBps: number;
-    adRewardAmount: number;
   };
 };
 
@@ -166,8 +158,7 @@ export default async function DashboardPage() {
           <Panel title="Economy snapshot">
             <Row label="Wallets" value={economy?.metrics.wallets?.toString() ?? "API offline"} />
             <Row label="Ledger rows" value={economy?.metrics.ledgerEntries?.toString() ?? "API offline"} />
-            <Row label="Daily claims today" value={economy?.metrics.dailyClaimsToday?.toString() ?? "API offline"} />
-            <Row label="Active tournaments" value={economy?.metrics.activeTournaments?.toString() ?? "API offline"} />
+            <Row label="Stake tables" value={economy?.metrics.activeStakeTables?.toString() ?? "API offline"} />
           </Panel>
         </div>
       </section>

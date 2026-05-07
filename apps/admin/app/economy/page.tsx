@@ -17,17 +17,9 @@ type EconomyOverviewResponse = {
     coinsReserved: number;
     ledgerEntries: number;
     activeStakeTables: number;
-    activeTournaments: number;
-    dailyClaimsToday: number;
   };
   config: {
-    dailyBaseAmount: number;
-    dailyStreakBonus: number;
-    dailyMaxStreak: number;
-    dailyClaimCooldown: number;
     matchCommissionBps: number;
-    tournamentCommissionBps: number;
-    adRewardAmount: number;
   };
 };
 
@@ -85,74 +77,28 @@ type EconomyStakesResponse = {
   }>;
 };
 
-type EconomyQuestsResponse = {
-  items: Array<{
-    id: string;
-    key: string;
-    title: string;
-    description: string | null;
-    rewardAmount: number;
-    maxProgress: number;
-    period: string;
-    isActive: boolean;
-    updatedAt: string;
-  }>;
-};
-
-type EconomyTournamentsResponse = {
-  items: Array<{
-    id: string;
-    key: string;
-    title: string;
-    description: string | null;
-    entryFee: number;
-    prizePool: number;
-    commissionBps: number;
-    startsAt: string | null;
-    endsAt: string | null;
-    isActive: boolean;
-  }>;
-};
-
-type EconomyCatalogResponse = Array<{
-  id: string;
-  key: string;
-  name: string;
-  description: string | null;
-  isActive: boolean;
-  prices: Array<{
-    id: string;
-    currency: string;
-    amountMinor: number;
-    isActive: boolean;
-  }>;
-}>;
-
 export default async function EconomyPage() {
   const session = await getAdminSession();
   if (!session?.user || !isAdminRole(session.user.role)) {
     return (
       <AccessRequired
         title="Admin access required"
-        body="Sign in with an admin account to manage coins, stakes, quests and catalog items."
+        body="Sign in with an admin account to manage coins, stakes and player balances."
       />
     );
   }
 
-  const [overview, wallets, stakes, quests, tournaments, catalog] = await Promise.all([
+  const [overview, wallets, stakes] = await Promise.all([
     fetchAuthedApi<EconomyOverviewResponse>("/admin/economy/overview"),
     fetchAuthedApi<EconomyWalletListResponse>("/admin/economy/wallets?limit=12&offset=0"),
-    fetchAuthedApi<EconomyStakesResponse>("/admin/economy/stakes"),
-    fetchAuthedApi<EconomyQuestsResponse>("/admin/economy/quests"),
-    fetchAuthedApi<EconomyTournamentsResponse>("/admin/economy/tournaments"),
-    fetchAuthedApi<EconomyCatalogResponse>("/admin/economy/catalog")
+    fetchAuthedApi<EconomyStakesResponse>("/admin/economy/stakes")
   ]);
 
   return (
     <AdminFrame
       active="economy"
       title="Economy control"
-      description="Coins, stakes, quests and cosmetics live here. The rule is simple: coins support progression, never gameplay strength."
+      description="Coins, stakes and player balances live here. The rule is simple: coins support progression, never gameplay strength."
       actions={
         <>
           <Link href="/players" style={linkButtonStyle}>Players</Link>
@@ -166,27 +112,19 @@ export default async function EconomyPage() {
         <Metric label="Coins reserved" value={overview?.metrics.coinsReserved ?? "API offline"} />
         <Metric label="Ledger rows" value={overview?.metrics.ledgerEntries ?? "API offline"} />
         <Metric label="Active stakes" value={overview?.metrics.activeStakeTables ?? "API offline"} />
-        <Metric label="Active tournaments" value={overview?.metrics.activeTournaments ?? "API offline"} />
-        <Metric label="Daily claims" value={overview?.metrics.dailyClaimsToday ?? "API offline"} />
       </section>
 
       <section style={sectionGridStyle}>
-        <Panel title="Economy config" subtitle="Global rewards and sink defaults">
+        <Panel title="Economy config" subtitle="Global coin sink defaults">
           {overview?.config ? (
             <EconomyEditForm
               endpoint="/admin/economy/config"
               method="PATCH"
               title="Update config"
               submitLabel="Save config"
-              note="Use this to tune rewards without touching code."
+              note="Use this to tune the match commission without touching code."
               fields={[
-                { name: "dailyBaseAmount", label: "Daily base amount", type: "number", min: 0, step: 1, help: "Coins for the first daily login." },
-                { name: "dailyStreakBonus", label: "Streak bonus", type: "number", min: 0, step: 1, help: "Extra coins per streak day." },
-                { name: "dailyMaxStreak", label: "Max streak", type: "number", min: 1, step: 1, help: "Cap for the streak bonus." },
-                { name: "dailyClaimCooldown", label: "Claim cooldown", type: "number", min: 1, step: 1, help: "Reserved for future cooldown logic." },
-                { name: "matchCommissionBps", label: "Match commission bps", type: "number", min: 0, step: 1, help: "Used for stake defaults and future balancing." },
-                { name: "tournamentCommissionBps", label: "Tournament commission bps", type: "number", min: 0, step: 1, help: "Entry fee sink for tournament payouts." },
-                { name: "adRewardAmount", label: "Ad reward amount", type: "number", min: 0, step: 1, help: "Placeholder for rewarded ads." }
+                { name: "matchCommissionBps", label: "Match commission bps", type: "number", min: 0, step: 1, help: "Applied to stake matches." }
               ]}
               initialValues={overview.config}
             />
@@ -258,156 +196,6 @@ export default async function EconomyPage() {
                 initialValues={stake}
               />
             )) : <div style={emptyStyle}>No stake tables found.</div>}
-          </div>
-        </Panel>
-
-        <Panel title="Quests" subtitle="Daily and repeatable rewards">
-          <div style={stackStyle}>
-            <EconomyEditForm
-              endpoint="/admin/economy/quests"
-              title="Create or update quest"
-              submitLabel="Save quest"
-              method="POST"
-              fields={[
-                { name: "key", label: "Key", type: "text", required: true },
-                { name: "title", label: "Title", type: "text", required: true },
-                { name: "description", label: "Description", type: "textarea", rows: 3 },
-                { name: "rewardAmount", label: "Reward amount", type: "number", min: 0, step: 1 },
-                { name: "maxProgress", label: "Max progress", type: "number", min: 1, step: 1 },
-                {
-                  name: "period",
-                  label: "Period",
-                  type: "select",
-                  options: [
-                    { value: "once", label: "Once" },
-                    { value: "daily", label: "Daily" },
-                    { value: "repeatable", label: "Repeatable" }
-                  ]
-                },
-                { name: "isActive", label: "Active", type: "checkbox" }
-              ]}
-            />
-
-            {quests?.items.length ? quests.items.map((quest) => (
-              <EconomyEditForm
-                key={quest.id}
-                endpoint={`/admin/economy/quests/${quest.id}`}
-                method="PATCH"
-                title={quest.title}
-                submitLabel="Save quest"
-                compact
-                fields={[
-                  { name: "key", label: "Key", type: "text", required: true },
-                  { name: "title", label: "Title", type: "text", required: true },
-                  { name: "description", label: "Description", type: "textarea", rows: 3 },
-                  { name: "rewardAmount", label: "Reward amount", type: "number", min: 0, step: 1 },
-                  { name: "maxProgress", label: "Max progress", type: "number", min: 1, step: 1 },
-                  {
-                    name: "period",
-                    label: "Period",
-                    type: "select",
-                    options: [
-                      { value: "once", label: "Once" },
-                      { value: "daily", label: "Daily" },
-                      { value: "repeatable", label: "Repeatable" }
-                    ]
-                  },
-                  { name: "isActive", label: "Active", type: "checkbox" }
-                ]}
-                initialValues={quest}
-              />
-            )) : <div style={emptyStyle}>No quests found.</div>}
-          </div>
-        </Panel>
-      </section>
-
-      <section style={sectionGridStyle}>
-        <Panel title="Catalog" subtitle="Cosmetics and future shop items">
-          <div style={stackStyle}>
-            <EconomyEditForm
-              endpoint="/admin/economy/catalog"
-              title="Create or update product"
-              submitLabel="Save product"
-              method="POST"
-              fields={[
-                { name: "key", label: "Key", type: "text", required: true },
-                { name: "name", label: "Name", type: "text", required: true },
-                { name: "description", label: "Description", type: "textarea", rows: 3 },
-                { name: "coinCost", label: "Coin price", type: "number", min: 0, step: 1 },
-                { name: "isActive", label: "Active", type: "checkbox" }
-              ]}
-            />
-
-            {catalog?.length ? catalog.map((product) => {
-              const coinPrice = product.prices.find((price) => String(price.currency || "").toUpperCase() === "COIN");
-              return (
-                <EconomyEditForm
-                  key={product.id}
-                  endpoint={`/admin/economy/catalog/${product.id}`}
-                  method="PATCH"
-                  title={product.name}
-                  submitLabel="Save product"
-                  compact
-                  fields={[
-                    { name: "key", label: "Key", type: "text", required: true },
-                    { name: "name", label: "Name", type: "text", required: true },
-                    { name: "description", label: "Description", type: "textarea", rows: 3 },
-                    { name: "coinCost", label: "Coin price", type: "number", min: 0, step: 1 },
-                    { name: "isActive", label: "Active", type: "checkbox" }
-                  ]}
-                  initialValues={{
-                    ...product,
-                    coinCost: coinPrice?.amountMinor ?? 0
-                  }}
-                  note={coinPrice ? `${coinPrice.amountMinor} coins` : "No coin price yet"}
-                />
-              );
-            }) : <div style={emptyStyle}>No catalog items yet.</div>}
-          </div>
-        </Panel>
-
-        <Panel title="Tournaments" subtitle="Entry fee sinks and prize pools">
-          <div style={stackStyle}>
-            <EconomyEditForm
-              endpoint="/admin/economy/tournaments"
-              title="Create or update tournament"
-              submitLabel="Save tournament"
-              method="POST"
-              fields={[
-                { name: "key", label: "Key", type: "text", required: true },
-                { name: "title", label: "Title", type: "text", required: true },
-                { name: "description", label: "Description", type: "textarea", rows: 3 },
-                { name: "entryFee", label: "Entry fee", type: "number", min: 0, step: 1 },
-                { name: "prizePool", label: "Prize pool", type: "number", min: 0, step: 1 },
-                { name: "commissionBps", label: "Commission bps", type: "number", min: 0, step: 1 },
-                { name: "startsAt", label: "Starts at", type: "datetime-local" },
-                { name: "endsAt", label: "Ends at", type: "datetime-local" },
-                { name: "isActive", label: "Active", type: "checkbox" }
-              ]}
-            />
-
-            {tournaments?.items.length ? tournaments.items.map((tournament) => (
-              <EconomyEditForm
-                key={tournament.id}
-                endpoint={`/admin/economy/tournaments/${tournament.id}`}
-                method="PATCH"
-                title={tournament.title}
-                submitLabel="Save tournament"
-                compact
-                fields={[
-                  { name: "key", label: "Key", type: "text", required: true },
-                  { name: "title", label: "Title", type: "text", required: true },
-                  { name: "description", label: "Description", type: "textarea", rows: 3 },
-                  { name: "entryFee", label: "Entry fee", type: "number", min: 0, step: 1 },
-                  { name: "prizePool", label: "Prize pool", type: "number", min: 0, step: 1 },
-                  { name: "commissionBps", label: "Commission bps", type: "number", min: 0, step: 1 },
-                  { name: "startsAt", label: "Starts at", type: "datetime-local" },
-                  { name: "endsAt", label: "Ends at", type: "datetime-local" },
-                  { name: "isActive", label: "Active", type: "checkbox" }
-                ]}
-                initialValues={tournament}
-              />
-            )) : <div style={emptyStyle}>No tournaments created yet.</div>}
           </div>
         </Panel>
       </section>

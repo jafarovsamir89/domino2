@@ -47,6 +47,16 @@ type EconomyStakeTablePayload = {
   sortOrder?: number;
 };
 
+type EconomyConfigPayload = {
+  matchCommissionBps?: number;
+  dailyBaseAmount?: number;
+  dailyStreakBonus?: number;
+  dailyMaxStreak?: number;
+  dailyClaimCooldown?: number;
+  tournamentCommissionBps?: number;
+  adRewardAmount?: number;
+};
+
 type EconomyQuestPayload = {
   id?: string;
   key: string;
@@ -71,16 +81,6 @@ type EconomyTournamentPayload = {
   isActive?: boolean;
 };
 
-type EconomyConfigPayload = {
-  dailyBaseAmount?: number;
-  dailyStreakBonus?: number;
-  dailyMaxStreak?: number;
-  dailyClaimCooldown?: number;
-  matchCommissionBps?: number;
-  tournamentCommissionBps?: number;
-  adRewardAmount?: number;
-};
-
 const DEFAULT_CONFIG_KEY = "default";
 
 const DEFAULT_STAKES: EconomyStakeTablePayload[] = [
@@ -90,36 +90,6 @@ const DEFAULT_STAKES: EconomyStakeTablePayload[] = [
   { key: "stake_500", title: "500 coins", stakeAmount: 500, commissionBps: 500, isFree: false, isActive: true, sortOrder: 3 },
   { key: "stake_1000", title: "1,000 coins", stakeAmount: 1000, commissionBps: 500, isFree: false, isActive: true, sortOrder: 4 },
   { key: "stake_5000", title: "5,000 coins", stakeAmount: 5000, commissionBps: 500, isFree: false, isActive: true, sortOrder: 5 }
-];
-
-const DEFAULT_QUESTS: EconomyQuestPayload[] = [
-  {
-    key: "daily_login",
-    title: "Daily login",
-    description: "Claim your daily reward once per day.",
-    rewardAmount: 25,
-    maxProgress: 1,
-    period: "daily",
-    isActive: true
-  },
-  {
-    key: "play_3_matches",
-    title: "Play 3 matches",
-    description: "Advance by one for every finished match.",
-    rewardAmount: 30,
-    maxProgress: 3,
-    period: "repeatable",
-    isActive: true
-  },
-  {
-    key: "win_1_match",
-    title: "Win a match",
-    description: "Reward for taking first place in a match.",
-    rewardAmount: 40,
-    maxProgress: 1,
-    period: "repeatable",
-    isActive: true
-  }
 ];
 
 function toInt(value: unknown, fallback = 0) {
@@ -207,21 +177,6 @@ export class EconomyService {
           sortOrder: stake.sortOrder
         },
         create: stake
-      });
-    }
-
-    for (const quest of DEFAULT_QUESTS) {
-      await db.coinQuest.upsert({
-        where: { key: quest.key },
-        update: {
-          title: quest.title,
-          description: quest.description,
-          rewardAmount: quest.rewardAmount,
-          maxProgress: quest.maxProgress,
-          period: quest.period,
-          isActive: quest.isActive
-        },
-        create: quest
       });
     }
   }
@@ -471,36 +426,17 @@ export class EconomyService {
 
   async getPublicConfig() {
     await this.ensureBootstrap();
-    const [config, stakes, quests, catalog] = await Promise.all([
+    const [config, stakes] = await Promise.all([
       this.getConfig(),
       this.prisma.coinStakeTable.findMany({
         where: { isActive: true },
         orderBy: [{ sortOrder: "asc" }, { stakeAmount: "asc" }]
-      }),
-      this.prisma.coinQuest.findMany({
-        where: { isActive: true },
-        orderBy: [{ rewardAmount: "desc" }, { title: "asc" }]
-      }),
-      this.prisma.catalogProduct.findMany({
-        where: { isActive: true },
-        orderBy: { updatedAt: "desc" },
-        include: {
-          prices: {
-            where: { isActive: true },
-            orderBy: { amountMinor: "asc" }
-          }
-        }
       })
     ]);
 
     return {
       config,
-      stakes: stakes.map(formatStakeSummary),
-      quests,
-      catalog: catalog.map((product) => ({
-        ...product,
-        prices: product.prices.filter((price) => price.isActive)
-      }))
+      stakes: stakes.map(formatStakeSummary)
     };
   }
 
@@ -510,33 +446,17 @@ export class EconomyService {
       return null;
     }
 
-    const [wallet, ledger, claims, quests, stakes, tournaments] = await Promise.all([
+    const [wallet, ledger, stakes] = await Promise.all([
       this.ensureWallet(this.prisma, profile.player.id),
       this.prisma.coinLedgerEntry.findMany({
         where: { playerId: profile.player.id },
         orderBy: { createdAt: "desc" },
         take: 25
       }),
-      this.prisma.coinDailyBonusClaim.findMany({
-        where: { playerId: profile.player.id },
-        orderBy: { createdAt: "desc" },
-        take: 20
-      }),
-      this.prisma.coinQuestProgress.findMany({
-        where: { playerId: profile.player.id },
-        include: { quest: true },
-        orderBy: { updatedAt: "desc" }
-      }),
       this.prisma.coinMatchStake.findMany({
         where: { playerId: profile.player.id },
         include: { stakeTable: true },
         orderBy: { reservedAt: "desc" },
-        take: 20
-      }),
-      this.prisma.coinTournamentEntry.findMany({
-        where: { playerId: profile.player.id },
-        include: { tournament: true },
-        orderBy: { joinedAt: "desc" },
         take: 10
       })
     ]);
@@ -549,11 +469,7 @@ export class EconomyService {
         reservedBalance: wallet.reserved
       },
       ledger,
-      claims,
-      quests,
-      stakes,
-      tournaments,
-      dailyConfig: await this.getConfig()
+      stakes
     };
   }
 
@@ -561,18 +477,12 @@ export class EconomyService {
     await this.requireAdmin(headers);
     await this.ensureBootstrap();
 
-    const [walletCount, balanceAgg, reservedAgg, ledgerCount, stakeCount, activeTournaments, dailyClaimsToday] = await Promise.all([
+    const [walletCount, balanceAgg, reservedAgg, ledgerCount, stakeCount] = await Promise.all([
       this.prisma.coinWallet.count(),
       this.prisma.coinWallet.aggregate({ _sum: { balance: true } }),
       this.prisma.coinWallet.aggregate({ _sum: { reserved: true } }),
       this.prisma.coinLedgerEntry.count(),
-      this.prisma.coinStakeTable.count({ where: { isActive: true } }),
-      this.prisma.coinTournament.count({ where: { isActive: true } }),
-      this.prisma.coinDailyBonusClaim.count({
-        where: {
-          claimDate: toUtcDateKey()
-        }
-      })
+      this.prisma.coinStakeTable.count({ where: { isActive: true } })
     ]);
 
     return {
@@ -582,9 +492,7 @@ export class EconomyService {
         coinsInCirculation: balanceAgg._sum.balance || 0,
         coinsReserved: reservedAgg._sum.reserved || 0,
         ledgerEntries: ledgerCount,
-        activeStakeTables: stakeCount,
-        activeTournaments,
-        dailyClaimsToday
+        activeStakeTables: stakeCount
       },
       config: await this.getConfig()
     };

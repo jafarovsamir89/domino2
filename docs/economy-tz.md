@@ -3,6 +3,16 @@
 ## Goal
 Add a server-authoritative coin economy on top of Domino2 so coins support progression, matchmaking stakes, cosmetics, quests and tournaments without affecting match fairness.
 
+## Current v1 Scope
+For the first live rollout we are only shipping:
+- starter coins for new registrations
+- free tables
+- stake tables
+- admin coin grants/spends
+- wallet and ledger tracking
+
+Daily bonuses, quests, cosmetics shop, and tournaments are deferred for now.
+
 Coins must never:
 - change tile outcomes
 - change turn order
@@ -15,17 +25,16 @@ The economy lives in PostgreSQL and is exposed through the NestJS platform API a
 ### Included
 - wallet balances
 - immutable ledger entries
-- daily login rewards
-- quest progress and quest rewards
 - match stakes and settlements
-- tournament entry and payout records
-- cosmetic shop items and entitlements
 - admin dashboards and config editing
-- future hooks for ads and Stripe coin packs
+- future hooks for ads, tournaments, cosmetics, and Stripe coin packs
 
 ### Excluded for v1
 - paid checkout flow
 - ad network integration
+- daily bonus flow
+- quest engine
+- cosmetic shop flow
 - tournament bracket engine
 - anything that changes core domino logic
 
@@ -132,4 +141,3 @@ Prepare but do not enable:
 - guest fallback must stay on free tables
 - admin edits must be audited
 - coin economy must stay independent from rating logic
-

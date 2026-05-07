@@ -1,6 +1,7 @@
 import { Injectable } from "@nestjs/common";
 
 import { EconomyService } from "../economy/economy.service.js";
+import { grantStarterCoins } from "../economy/economy-starter.js";
 import { PrismaService } from "../prisma/prisma.service.js";
 import { verifyGameToken } from "../auth/game-token.js";
 
@@ -111,6 +112,14 @@ export class MatchesService {
                 playerId: player.id
               }
             });
+
+        await grantStarterCoins(
+          tx,
+          player.id,
+          userId,
+          displayName,
+          "match_backfill"
+        );
 
         resolvedParticipants.push({
           participant,

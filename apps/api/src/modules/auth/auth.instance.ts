@@ -3,6 +3,7 @@ import { prismaAdapter } from "better-auth/adapters/prisma";
 import { betterAuth } from "better-auth";
 
 import { getBetterAuthConfig } from "./better-auth.config.js";
+import { grantStarterCoins } from "../economy/economy-starter.js";
 
 const prisma = new PrismaClient();
 const config = getBetterAuthConfig();
@@ -32,7 +33,7 @@ export const auth = betterAuth({
 
           const player = await prisma.player.findUnique({
             where: { userId: user.id },
-            select: { id: true }
+            select: { id: true, displayName: true }
           });
 
           if (!player) return;
@@ -44,6 +45,14 @@ export const auth = betterAuth({
               playerId: player.id
             }
           });
+
+          await grantStarterCoins(
+            prisma,
+            player.id,
+            user.id,
+            player.displayName || user.name || "Player",
+            "auth_user_create"
+          );
         }
       },
       update: {

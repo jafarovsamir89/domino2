@@ -426,3 +426,9 @@
 - Added stake selection to the online room modal in the browser client and passed the selected stake through to room creation / join options.
 - Added docs for the economy spec and a dedicated development log.
 
+## 2026-05-08 Economy v1 trim
+- Added a 1000-coin starter grant for every new registered player.
+- Trimmed the live economy UI to free tables, stake tables, wallet balances, and admin coin grants.
+- Deferred daily bonuses, quests, cosmetic shop, and tournament UX from the live flow for now.
+- Kept the economy server-authoritative and preserved the free-play fallback path.
+
