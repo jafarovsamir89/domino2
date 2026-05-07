@@ -141,6 +141,23 @@ install_node_deps() {
   )
 }
 
+sync_www_assets() {
+  if [[ ! -d "$ROOT_DIR/www" ]]; then
+    mkdir -p "$ROOT_DIR/www"
+  fi
+
+  log "syncing web assets into www/"
+  rm -rf "$ROOT_DIR/www/js" "$ROOT_DIR/www/css" "$ROOT_DIR/www/assets"
+  cp -a "$ROOT_DIR/js" "$ROOT_DIR/www/js"
+  cp -a "$ROOT_DIR/css" "$ROOT_DIR/www/css"
+  if [[ -d "$ROOT_DIR/assets" ]]; then
+    cp -a "$ROOT_DIR/assets" "$ROOT_DIR/www/assets"
+  fi
+  cp -f "$ROOT_DIR/index.html" "$ROOT_DIR/www/index.html"
+  cp -f "$ROOT_DIR/manifest.json" "$ROOT_DIR/www/manifest.json"
+  cp -f "$ROOT_DIR/sw.js" "$ROOT_DIR/www/sw.js"
+}
+
 restart_or_start_pm2() {
   local name="$1"
   local cwd="$2"
@@ -254,6 +271,8 @@ fi
 
 log "installing root workspace dependencies"
 install_node_deps "$ROOT_DIR"
+
+sync_www_assets
 
 if [[ "$RUN_CHECKS" -eq 1 ]]; then
   log "running project checks"
