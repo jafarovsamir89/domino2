@@ -10,6 +10,7 @@ type SessionUser = {
   name: string;
   email: string;
   role?: string | null;
+  emailVerified?: boolean | null;
 };
 
 type SessionResponse = {
@@ -71,9 +72,18 @@ export function DashboardSessionCard() {
             <div style={mutedStyle}>Role</div>
             <div style={strongStyle}>{session.user.role ?? "player"}</div>
           </div>
+          <div>
+            <div style={mutedStyle}>Email</div>
+            <div style={strongStyle}>{session.user.emailVerified ? "verified" : "needs verification"}</div>
+          </div>
           {session.user.role === "admin" || session.user.role === "superadmin" ? null : (
             <div style={warningStyle}>
               This account is signed in, but it still needs an admin role before it can operate the private dashboard.
+            </div>
+          )}
+          {session.user.emailVerified ? null : (
+            <div style={warningStyle}>
+              This account still needs email verification. You can open the verification page and resend the link.
             </div>
           )}
           <button style={secondaryButtonStyle} type="button" onClick={handleSignOut}>

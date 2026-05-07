@@ -339,3 +339,28 @@
   - `http://34.28.23.216/login`
   - `http://34.28.23.216:2567/health`
 - Verified `bash scripts/gcloud/update-server.sh --no-pull --skip-checks --platform-only` completes successfully on the VM.
+
+## 2026-05-07 Platform/auth follow-up
+- Moved the browser account client toward the new platform source of truth:
+  - platform session bootstrap is checked first
+  - platform game tokens are now preferred for room auth and match recording
+  - leaderboard/profile reads now prefer the platform API with legacy fallbacks only as backup
+- Updated the legacy room runtime to stop falling back to `accountStore` for multiplayer identity and match persistence.
+- Added admin recovery flows for the new Better Auth stack:
+  - `/forgot-password`
+  - `/reset-password`
+  - `/verify-email`
+- Added helper client calls for:
+  - request password reset
+  - send verification email
+  - verify email
+  - reset password
+- Added an email field to the in-game account modal so the platform auth path can be used from the game UI.
+- Expanded the admin dashboard session card to show email verification status.
+- Marked auth status as including email recovery/password reset capability in the platform dashboard.
+- Verification:
+  - `node --check js/account.js`
+  - `node --check js/app.js`
+  - `node --check server/DominoRoom.js`
+  - `npm run build -w @domino2/api`
+  - `npm run build -w @domino2/admin`

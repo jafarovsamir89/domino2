@@ -19,6 +19,8 @@ export class AuthService {
       provider: "better-auth",
       phase: "active",
       googleEnabled: Boolean(this.config.google),
+      emailRecoveryEnabled: true,
+      passwordResetEnabled: true,
       trustedOrigins: this.config.trustedOrigins
     };
   }

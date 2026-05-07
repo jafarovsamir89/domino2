@@ -3,7 +3,6 @@ const { GameState, Player } = require("./schema/GameState");
 const { Board } = require("./board");
 const { AIPlayer } = require("./ai");
 const { Tile, createFullSet, shuffle, getHandSize, determineFirstPlayer, handPoints, roundTo5 } = require("./model");
-const accountStore = require("./accountStore");
 const { verifyGameToken } = require("./platformAuth");
 
 const TARGET = 365, MAX_R = 3, DLOSS = 255, IWIN = 35;
@@ -72,18 +71,6 @@ class DominoRoom extends Room {
             };
         }
 
-        const profile = accountStore.getProfile(token);
-        if (profile) {
-            return {
-                provider: "legacy",
-                authToken: token,
-                userId: profile.id,
-                playerId: profile.id,
-                displayName: profile.name,
-                role: "player"
-            };
-        }
-
         return {
             provider: "guest",
             authToken: "",
@@ -99,15 +86,12 @@ class DominoRoom extends Room {
         console.log(`[ROOM] Client ${client.sessionId} joining with name: ${options.name}`);
         const player = new Player();
         const authToken = String(identity.authToken || options.authToken || "").trim();
-        const profile = identity.provider === "platform"
-            ? { name: identity.displayName, id: identity.userId }
-            : accountStore.getProfile(authToken);
-        player.name = sanitizeName(identity.displayName || profile?.name || options.name);
-        player.userId = String(identity.userId || profile?.id || "");
+        player.name = sanitizeName(identity.displayName || options.name);
+        player.userId = String(identity.userId || "");
         this.state.players.set(client.sessionId, player);
         this.state.playerOrder.push(client.sessionId);
         this.identityBySessionId.set(client.sessionId, {
-            provider: identity.provider || (profile ? "legacy" : "guest"),
+            provider: identity.provider || "guest",
             authToken,
             userId: player.userId,
             displayName: player.name,
@@ -418,8 +402,6 @@ class DominoRoom extends Room {
             const platformIdentity = this.getPlatformMatchIdentity();
             if (platformIdentity) {
                 void this.recordPlatformMatch(payload);
-            } else {
-                accountStore.recordMatch(payload);
             }
             this.matchRecorded = true;
         } catch (err) {

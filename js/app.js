@@ -241,6 +241,7 @@ class DominoGame {
         if (registerAccountBtn) registerAccountBtn.addEventListener('click', async () => {
             try {
                 const name = this.sanitizeName(document.getElementById('account-name-input')?.value || this.readPlayerName('any') || this.accountProfile?.name || '', '');
+                const email = String(document.getElementById('account-email-input')?.value || this.accountProfile?.email || '').trim();
                 const password = String(document.getElementById('account-password-input')?.value || '').trim();
                 if (!name) {
                     this.renderer.showMessage(this.currentLang === 'ru' ? 'Введите имя' : this.currentLang === 'en' ? 'Enter your name' : 'Ad daxil edin', 1800);
@@ -250,9 +251,9 @@ class DominoGame {
                     this.renderer.showMessage(this.t('account-password-required'), 1800);
                     return;
                 }
-                const result = await this.account.register(name, password);
-                this.accountProfile = result.user || null;
-                this.accountDetails = { user: this.accountProfile, recentMatches: [] };
+                const result = await this.account.register({ name, email, password });
+                this.accountProfile = result.profile || result.user || null;
+                this.accountDetails = result;
                 this.accountOnline = true;
                 this.prefillAccountNames();
                 this.renderAccountModal();
@@ -265,14 +266,15 @@ class DominoGame {
         if (loginAccountBtn) loginAccountBtn.addEventListener('click', async () => {
             try {
                 const name = this.sanitizeName(document.getElementById('account-name-input')?.value || this.readPlayerName('any') || this.accountProfile?.name || '', '');
+                const email = String(document.getElementById('account-email-input')?.value || this.accountProfile?.email || '').trim();
                 const password = String(document.getElementById('account-password-input')?.value || '').trim();
                 if (!name || !password) {
                     this.setAccountStatus(this.t('account-name-password-required'));
                     return;
                 }
-                const result = await this.account.login(name, password);
-                this.accountProfile = result.user || null;
-                this.accountDetails = { user: this.accountProfile, recentMatches: [] };
+                const result = await this.account.login({ name, email, password });
+                this.accountProfile = result.profile || result.user || null;
+                this.accountDetails = result;
                 this.accountOnline = true;
                 this.prefillAccountNames();
                 this.renderAccountModal();
@@ -291,6 +293,8 @@ class DominoGame {
             this.accountDetails = null;
             this.accountOnline = false;
             this.setAccountStatus('');
+            const email = document.getElementById('account-email-input');
+            if (email) email.value = '';
             const pwd = document.getElementById('account-password-input');
             if (pwd) pwd.value = '';
             this.renderAccountModal();
@@ -322,7 +326,7 @@ class DominoGame {
     async bootstrapAccount() {
         const details = await this.account.bootstrap();
         this.accountDetails = details;
-        this.accountProfile = details?.user || this.account.getStoredProfile();
+        this.accountProfile = details?.profile || details?.user || this.account.getStoredProfile();
         this.accountOnline = !!details;
         this.prefillAccountNames();
         this.renderAccountModal();
@@ -330,20 +334,25 @@ class DominoGame {
 
     prefillAccountNames() {
         const name = this.accountProfile?.name || '';
+        const email = this.accountProfile?.email || '';
         if (!name) return;
         const soloNameInput = document.getElementById('player-name');
         const onlineNameInput = document.getElementById('player-name-online');
+        const accountNameInput = document.getElementById('account-name-input');
+        const accountEmailInput = document.getElementById('account-email-input');
         if (soloNameInput && !soloNameInput.value.trim()) soloNameInput.value = name;
         if (onlineNameInput && !onlineNameInput.value.trim()) onlineNameInput.value = name;
+        if (accountNameInput && !accountNameInput.value.trim()) accountNameInput.value = name;
+        if (accountEmailInput && !accountEmailInput.value.trim() && email) accountEmailInput.value = email;
     }
 
     async ensureGuestAccount(name, options = {}) {
         const allowOfflineFallback = options.allowOfflineFallback === true;
-        if (this.account.storedToken && this.accountProfile?.name) return this.accountProfile;
+        if (this.account.getRoomAuthToken() && this.accountProfile?.name) return this.accountProfile;
         try {
             const profile = await this.account.createGuest(name || 'Player');
-            this.accountProfile = profile.user || null;
-            this.accountDetails = { user: this.accountProfile, recentMatches: [] };
+            this.accountProfile = profile.profile || profile.user || null;
+            this.accountDetails = profile;
             this.accountOnline = true;
             this.renderAccountModal();
             return this.accountProfile;
@@ -363,7 +372,7 @@ class DominoGame {
     }
 
     async loadAccountProfile() {
-        if (!this.account.storedToken) {
+        if (!this.account.getRoomAuthToken()) {
             this.accountOnline = false;
             this.accountDetails = null;
             this.renderAccountModal();
@@ -372,7 +381,7 @@ class DominoGame {
         try {
             const details = await this.account.getProfileDetails();
             this.accountDetails = details;
-            this.accountProfile = details?.user || this.accountProfile;
+            this.accountProfile = details?.profile || details?.user || this.accountProfile;
             this.accountOnline = true;
             this.prefillAccountNames();
             this.renderAccountModal();
@@ -439,6 +448,7 @@ class DominoGame {
         const details = this.accountDetails;
         const summary = document.getElementById('account-profile-summary');
         const nameInput = document.getElementById('account-name-input');
+        const emailInput = document.getElementById('account-email-input');
         const avatar = document.getElementById('account-avatar');
         const profileName = document.getElementById('account-profile-name');
         const profileMeta = document.getElementById('account-profile-meta');
@@ -452,9 +462,12 @@ class DominoGame {
         if (nameInput && !nameInput.value.trim() && profile?.name) {
             nameInput.value = profile.name;
         }
+        if (emailInput && !emailInput.value.trim() && profile?.email) {
+            emailInput.value = profile.email;
+        }
         if (!summary) return;
-        if (refreshButton) refreshButton.disabled = !this.account.storedToken;
-        if (logoutButton) logoutButton.disabled = !this.account.storedToken;
+        if (refreshButton) refreshButton.disabled = !this.account.getRoomAuthToken();
+        if (logoutButton) logoutButton.disabled = !this.account.getRoomAuthToken();
         if (avatar) avatar.textContent = (profile?.name || 'D').slice(0, 1).toUpperCase();
         if (profileName) profileName.textContent = profile?.name || 'Domino Player';
         if (profileMeta) {
@@ -481,9 +494,9 @@ class DominoGame {
                 historyList.innerHTML = `<div class="room-summary">${this.t('account-history-empty')}</div>`;
             } else {
                 historyList.innerHTML = '';
-                recentMatches.forEach((match) => {
-                    const item = document.createElement('div');
-                    const delta = Number(match.ratingDelta || 0);
+            recentMatches.forEach((match) => {
+                const item = document.createElement('div');
+                const delta = Number(match.ratingDelta || 0);
                     const deltaLabel = delta > 0 ? `+${delta}` : `${delta}`;
                     const resultKey = match.result === 'win'
                         ? 'account-history-win'

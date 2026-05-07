@@ -4,6 +4,7 @@ import type { FormEvent } from "react";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 import { authClient } from "../lib/auth-client";
 
@@ -101,6 +102,14 @@ export function LoginForm() {
         <button style={secondaryButtonStyle} type="button" onClick={handleGoogleSignIn} disabled={isSubmitting}>
           Continue with Google
         </button>
+        <div style={linkRowStyle}>
+          <Link href="/forgot-password" style={linkStyle}>
+            Forgot password?
+          </Link>
+          <Link href="/verify-email" style={linkStyle}>
+            Verify email
+          </Link>
+        </div>
         <p style={helperStyle}>
           Admin sign-up is intentionally not public. Accounts will be seeded or created by the backend team, then
           optionally linked to Google.
@@ -155,4 +164,17 @@ const errorBoxStyle = {
   background: "rgba(127,29,29,0.18)",
   border: "1px solid rgba(248,113,113,0.28)",
   color: "#fecaca"
+} as const;
+
+const linkRowStyle = {
+  display: "flex",
+  gap: 16,
+  flexWrap: "wrap"
+} as const;
+
+const linkStyle = {
+  color: "#7dd3fc",
+  textDecoration: "none",
+  fontWeight: 600,
+  fontSize: 14
 } as const;

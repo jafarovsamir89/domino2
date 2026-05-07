@@ -20,6 +20,8 @@ type AuthStatusResponse = {
   provider: string;
   phase: string;
   googleEnabled: boolean;
+  emailRecoveryEnabled?: boolean;
+  passwordResetEnabled?: boolean;
   trustedOrigins: string[];
 };
 
@@ -79,6 +81,8 @@ export default async function DashboardPage() {
           <Row label="Auth Provider" value={authStatus?.provider ?? "unreachable"} />
           <Row label="Auth Phase" value={authStatus?.phase ?? "unreachable"} />
           <Row label="Google Login" value={authStatus ? (authStatus.googleEnabled ? "enabled" : "disabled") : "unknown"} />
+          <Row label="Email Recovery" value={authStatus ? (authStatus.emailRecoveryEnabled ? "enabled" : "disabled") : "unknown"} />
+          <Row label="Password Reset" value={authStatus ? (authStatus.passwordResetEnabled ? "enabled" : "disabled") : "unknown"} />
         </Panel>
         <div style={{ display: "grid", gap: 16 }}>
           <DashboardSessionCard />
