@@ -398,3 +398,8 @@
   - `npm run build -w @domino2/api`
   - `npm run build -w @domino2/admin`
 
+## 2026-05-08 Guest flow regression fix
+- Fixed a runtime regression in `renderAccountModal()` where `createAccountBtn` was referenced before declaration, which was breaking registration and forcing guest flow back into the login state.
+- Restored `setStoredToken()` / `getStoredToken()` compatibility in `AccountClient` so guest bootstrap can keep running while the platform token storage remains the real session source.
+- Re-validated the client syntax with `node --check js/app.js` and `node --check js/account.js`.
+

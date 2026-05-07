@@ -607,6 +607,7 @@ class DominoGame {
         const registerForm = document.getElementById('account-register-form');
         const loginTabBtn = document.getElementById('login-tab-btn');
         const registerTabBtn = document.getElementById('register-tab-btn');
+        const createAccountBtn = document.getElementById('create-account-btn');
         const title = document.getElementById('account-modal-title');
         const historyPanel = document.getElementById('account-history-panel');
         const leaderboardPanel = document.getElementById('account-leaderboard-panel');
