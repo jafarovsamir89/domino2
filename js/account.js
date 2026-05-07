@@ -148,6 +148,14 @@ export class AccountClient {
         } catch {}
     }
 
+    setStoredToken(token) {
+        this.setPlatformGameToken(token);
+    }
+
+    getStoredToken() {
+        return this.platformGameToken;
+    }
+
     getPlatformProfile() {
         try {
             const raw = window.localStorage?.getItem(PLATFORM_PROFILE_KEY);
