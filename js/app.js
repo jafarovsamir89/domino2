@@ -15,6 +15,8 @@ class DominoGame {
         this.playerCount=2; this.onlinePlayerCount=2; this.onlineAiCount=0; this.playerName=''; this.difficulty='medium';
         this.onlineStakeKey = 'free';
         this.onlineEconomyMode = 'free';
+        this.soloEconomyMode = 'free';
+        this.soloStakeKey = 'free';
         this.hands=[]; this.boneyard=[]; this.scores=[]; this.roundWins=[];
         this.playerNames=[]; this.currentPlayer=0; this.matchRound=1; this.deal=1;
         this.selectedTileIndex=-1; this.validMoves=[]; this.gameActive=false;
@@ -32,6 +34,8 @@ class DominoGame {
         this.localPresenceLastSentAt = 0;
         this.localPresenceClearQueued = false;
         this.currentLang = 'az';
+        this.currentMatchStartedAt = null;
+        this.currentMatchSessionId = null;
         this.reactionPalette = [
             { code: '1F923', label: 'ROFL' },
             { code: '1F609', label: 'Wink' },
@@ -60,14 +64,23 @@ class DominoGame {
         }, 2000);
     }
     setupStartScreen() {
+        this.ensureStartScreenEnhancements();
+        this.ensureGameHudEnhancements();
+        this.ensureMenuEnhancements();
+        this.setLanguage(this.currentLang);
+
         const openSoloBtn = document.getElementById('open-solo-modal-btn');
         const openOnlineBtn = document.getElementById('open-online-modal-btn');
         const accountBtn = document.getElementById('account-btn');
+        const resumeSessionBtn = document.getElementById('resume-session-btn');
         const soloModalClose = document.getElementById('solo-modal-close');
         const onlineModalClose = document.getElementById('online-modal-close');
         const accountModalClose = document.getElementById('account-modal-close');
 
-        if (openSoloBtn) openSoloBtn.addEventListener('click', () => this.showStartModal('solo'));
+        if (openSoloBtn) openSoloBtn.addEventListener('click', () => {
+            this.syncSoloOptions();
+            this.showStartModal('solo');
+        });
         if (openOnlineBtn) openOnlineBtn.addEventListener('click', () => {
             this.resetMultiplayerPanels(false);
             this.syncMultiplayerOptions();
@@ -75,6 +88,9 @@ class DominoGame {
         });
         if (accountBtn) accountBtn.addEventListener('click', async () => {
             await this.openAccountModal();
+        });
+        if (resumeSessionBtn) resumeSessionBtn.addEventListener('click', async () => {
+            await this.resumeSavedSession();
         });
         if (soloModalClose) soloModalClose.addEventListener('click', () => this.showStartModal(null));
         if (onlineModalClose) onlineModalClose.addEventListener('click', () => this.showStartModal(null));
@@ -116,6 +132,7 @@ class DominoGame {
             b.addEventListener('click', () => {
                 document.querySelectorAll('#difficulty-group .btn-option').forEach(x => x.classList.remove('active'));
                 b.classList.add('active'); this.difficulty = b.dataset.value;
+                this.syncSoloOptions();
             });
         });
         document.getElementById('start-game-btn').addEventListener('click', async () => {
@@ -124,9 +141,10 @@ class DominoGame {
             await this.ensureGuestAccount(name, { allowOfflineFallback: true });
             this.playerName = name;
             this.isTeamMode = false;
+            this.syncSoloOptions();
             this.syncMultiplayerOptions();
             this.myHand = null;
-            this.startNewGame();
+            await this.startNewGame();
         });
 
         document.querySelectorAll('#online-player-count-group .btn-option').forEach(b => {
@@ -168,6 +186,29 @@ class DominoGame {
                     this.onlineStakeKey = 'stake_50';
                 }
                 this.syncMultiplayerOptions();
+            });
+        });
+
+        document.querySelectorAll('#solo-economy-group .btn-option').forEach((button) => {
+            button.addEventListener('click', () => {
+                if (button.disabled) return;
+                document.querySelectorAll('#solo-economy-group .btn-option').forEach((item) => item.classList.remove('active'));
+                button.classList.add('active');
+                this.soloEconomyMode = button.dataset.value === 'coins' ? 'coins' : 'free';
+                if (this.soloEconomyMode === 'coins' && this.soloStakeKey === 'free') {
+                    this.soloStakeKey = 'stake_50';
+                }
+                this.syncSoloOptions();
+            });
+        });
+
+        document.querySelectorAll('#solo-stake-group .btn-option').forEach((button) => {
+            button.addEventListener('click', () => {
+                if (button.disabled) return;
+                document.querySelectorAll('#solo-stake-group .btn-option').forEach((item) => item.classList.remove('active'));
+                button.classList.add('active');
+                this.soloStakeKey = button.dataset.value || 'free';
+                this.syncSoloOptions();
             });
         });
 
@@ -418,6 +459,7 @@ class DominoGame {
         this.prefillAccountNames();
         this.renderAccountModal();
         this.syncStartAuthButton();
+        this.refreshResumeBanner();
     }
 
     prefillAccountNames() {
@@ -821,6 +863,332 @@ class DominoGame {
         });
     }
 
+    createResumeId(prefix = 'match') {
+        if (window.crypto?.randomUUID) {
+            return `${prefix}-${window.crypto.randomUUID()}`;
+        }
+        return `${prefix}-${Math.random().toString(36).slice(2)}-${Date.now().toString(36)}`;
+    }
+
+    ensureStartScreenEnhancements() {
+        const startShell = document.querySelector('.start-shell');
+        const startActions = document.querySelector('.start-actions');
+        if (startShell && startActions && !document.getElementById('resume-session-banner')) {
+            const banner = document.createElement('div');
+            banner.id = 'resume-session-banner';
+            banner.className = 'resume-session-banner is-hidden';
+            banner.innerHTML = `
+                <div class="resume-session-copy">
+                    <div class="section-kicker" data-i18n="resume-session-kicker">Unfinished session</div>
+                    <div class="resume-session-title" id="resume-session-title">You can continue where you left off.</div>
+                    <div class="resume-session-desc" id="resume-session-desc">Your online or offline game is still available to resume.</div>
+                </div>
+                <button class="btn btn-primary" id="resume-session-btn" type="button" data-i18n="resume-session">Resume</button>
+            `;
+            startActions.insertAdjacentElement('afterend', banner);
+        }
+
+        const soloGrid = document.querySelector('#solo-modal .settings-grid');
+        if (soloGrid && !document.getElementById('solo-economy-group')) {
+            const economyGroup = document.createElement('div');
+            economyGroup.className = 'settings-group';
+            economyGroup.innerHTML = `
+                <label data-i18n="label-economy-mode">Game mode</label>
+                <div class="btn-group" id="solo-economy-group">
+                    <button class="btn btn-option active" data-value="free" data-i18n="economy-free">Free play</button>
+                    <button class="btn btn-option" data-value="coins" data-i18n="economy-coins">Play on coins</button>
+                </div>
+            `;
+            const nameGroup = document.querySelector('#solo-modal #player-name')?.closest('.settings-group');
+            if (nameGroup) {
+                nameGroup.insertAdjacentElement('beforebegin', economyGroup);
+            } else {
+                soloGrid.appendChild(economyGroup);
+            }
+        }
+
+        const stakeGroup = document.getElementById('solo-stake-wrapper');
+        if (!stakeGroup) {
+            const soloGridRoot = document.querySelector('#solo-modal .settings-grid');
+            const nameGroup = document.querySelector('#solo-modal #player-name')?.closest('.settings-group');
+            const stakeWrapper = document.createElement('div');
+            stakeWrapper.className = 'settings-group field-span-2';
+            stakeWrapper.id = 'solo-stake-wrapper';
+            stakeWrapper.innerHTML = `
+                <label data-i18n="label-stake-table">Stake table</label>
+                <div class="btn-group" id="solo-stake-group">
+                    <button class="btn btn-option active" data-value="free">Free</button>
+                    <button class="btn btn-option" data-value="stake_50">50</button>
+                    <button class="btn btn-option" data-value="stake_100">100</button>
+                    <button class="btn btn-option" data-value="stake_200">200</button>
+                </div>
+            `;
+            if (nameGroup) {
+                nameGroup.insertAdjacentElement('beforebegin', stakeWrapper);
+            } else if (soloGridRoot) {
+                soloGridRoot.appendChild(stakeWrapper);
+            }
+        }
+    }
+
+    ensureGameHudEnhancements() {
+        const gameInfo = document.querySelector('.game-info');
+        if (gameInfo && !document.getElementById('stake-info')) {
+            const stakeInfo = document.createElement('span');
+            stakeInfo.id = 'stake-info';
+            gameInfo.insertBefore(stakeInfo, document.getElementById('boneyard-info'));
+        }
+    }
+
+    ensureMenuEnhancements() {
+        const menuPanel = document.querySelector('#menu-screen .menu-panel');
+        if (menuPanel && !document.getElementById('menu-profile')) {
+            const profileBtn = document.createElement('button');
+            profileBtn.className = 'btn btn-menu';
+            profileBtn.id = 'menu-profile';
+            profileBtn.type = 'button';
+            profileBtn.dataset.i18n = 'account-profile';
+            profileBtn.textContent = this.t('account-profile');
+            menuPanel.insertBefore(profileBtn, document.getElementById('menu-quit'));
+        }
+    }
+
+    syncSoloOptions() {
+        const soloButtons = document.querySelectorAll('#solo-economy-group .btn-option');
+        const stakeWrapper = document.getElementById('solo-stake-wrapper');
+        const stakeButtons = document.querySelectorAll('#solo-stake-group .btn-option');
+        const easyMode = this.difficulty === 'easy';
+
+        if (easyMode) {
+            this.soloEconomyMode = 'free';
+        }
+
+        soloButtons.forEach((button) => {
+            const isCoins = button.dataset.value === 'coins';
+            button.disabled = easyMode && isCoins;
+            button.classList.toggle('active', (isCoins ? 'coins' : 'free') === this.soloEconomyMode);
+        });
+
+        if (stakeWrapper) {
+            stakeWrapper.classList.toggle('is-hidden', this.soloEconomyMode !== 'coins' || easyMode);
+        }
+
+        stakeButtons.forEach((button) => {
+            const shouldBeActive = this.soloEconomyMode === 'coins' && button.dataset.value === this.soloStakeKey;
+            button.classList.toggle('active', shouldBeActive);
+            button.disabled = easyMode || this.soloEconomyMode !== 'coins';
+        });
+
+        if (this.soloEconomyMode !== 'coins' || easyMode) {
+            this.soloStakeKey = 'free';
+        } else if (this.soloStakeKey === 'free') {
+            this.soloStakeKey = 'stake_50';
+        }
+    }
+
+    getCurrentStakeLabel() {
+        if (this.network.isMultiplayer) {
+            if (this.onlineEconomyMode !== 'coins') return this.t('economy-free');
+            const button = Array.from(document.querySelectorAll('#online-stake-group .btn-option')).find((item) => item.dataset.value === this.onlineStakeKey);
+            return (button?.textContent || this.t('economy-coins')).trim();
+        }
+
+        if (this.soloEconomyMode !== 'coins') return this.t('economy-free');
+        const button = Array.from(document.querySelectorAll('#solo-stake-group .btn-option')).find((item) => item.dataset.value === this.soloStakeKey);
+        return (button?.textContent || this.t('economy-coins')).trim();
+    }
+
+    buildGameResumeSnapshot() {
+        const isOnline = this.network.isMultiplayer;
+        const boardState = this.board ? JSON.parse(JSON.stringify(this.board)) : null;
+        const hands = Array.isArray(this.hands)
+            ? this.hands.map((hand) => Array.isArray(hand) ? hand.map((tile) => tile ? { a: tile.a, b: tile.b } : null).filter(Boolean) : [])
+            : [];
+        const boneyard = Array.isArray(this.boneyard)
+            ? this.boneyard.map((tile) => tile ? { a: tile.a, b: tile.b } : null).filter(Boolean)
+            : [];
+
+        return {
+            kind: isOnline ? 'online' : 'solo',
+            sessionId: isOnline ? (this.network.room?.sessionId || '') : (this.currentMatchSessionId || ''),
+            roomId: isOnline ? (this.network.room?.roomId || this.network.room?.id || '') : null,
+            roomCode: isOnline ? (document.getElementById('room-code-display')?.textContent?.trim() || null) : null,
+            reconnectionToken: isOnline ? (this.network.room?.reconnectionToken || this.network.getStoredReconnectionToken?.() || '') : '',
+            playerName: this.playerName || '',
+            playerCount: this.playerCount,
+            onlinePlayerCount: this.onlinePlayerCount,
+            onlineAiCount: this.onlineAiCount,
+            onlineEconomyMode: this.onlineEconomyMode,
+            onlineStakeKey: this.onlineStakeKey,
+            soloEconomyMode: this.soloEconomyMode,
+            soloStakeKey: this.soloStakeKey,
+            difficulty: this.difficulty,
+            isTeamMode: this.isTeamMode,
+            humanPlayerIndex: this.humanPlayerIndex,
+            playerNames: this.playerNames,
+            scores: this.scores,
+            roundWins: this.roundWins,
+            teamScores: this.teamScores,
+            teamRoundWins: this.teamRoundWins,
+            currentPlayer: this.currentPlayer,
+            matchRound: this.matchRound,
+            deal: this.deal,
+            selectedTileIndex: this.selectedTileIndex,
+            gameActive: this.gameActive,
+            roundOver: this.roundOver,
+            matchOver: this.matchOver,
+            lastDealWinner: this.lastDealWinner,
+            dlossThreshold: this.dlossThreshold,
+            instantWinEnabled: this.instantWinEnabled,
+            board: boardState,
+            hands,
+            boneyard,
+            createdAt: this.currentMatchStartedAt || new Date().toISOString()
+        };
+    }
+
+    persistGameResumeSnapshot() {
+        try {
+            const snapshot = this.buildGameResumeSnapshot();
+            this.account?.setStoredGameResumeState?.(snapshot);
+            this.refreshResumeBanner(snapshot);
+            return snapshot;
+        } catch (error) {
+            console.warn('[Resume] Failed to persist snapshot', error);
+            return null;
+        }
+    }
+
+    clearGameResumeSnapshot() {
+        this.account?.clearStoredGameResumeState?.();
+        this.network?.setStoredReconnectionToken?.('');
+        this.refreshResumeBanner(null);
+    }
+
+    refreshResumeBanner(snapshot = null) {
+        const state = snapshot || this.account?.getStoredGameResumeState?.();
+        const banner = document.getElementById('resume-session-banner');
+        const title = document.getElementById('resume-session-title');
+        const desc = document.getElementById('resume-session-desc');
+        const button = document.getElementById('resume-session-btn');
+        if (!banner) return;
+
+        const hasState = Boolean(state);
+        banner.classList.toggle('is-hidden', !hasState);
+        if (!hasState) return;
+
+        const isOnline = state.kind === 'online';
+        if (title) {
+            title.textContent = isOnline
+                ? (this.currentLang === 'az' ? 'Onlayn sessiyanız yarımçıq qalıb' : 'Your online session is unfinished')
+                : (this.currentLang === 'az' ? 'Oyun yarımçıq qalıb' : 'Your offline game is unfinished');
+        }
+        if (desc) {
+            desc.textContent = isOnline
+                ? (this.currentLang === 'az' ? 'Siz otağa geri qayıdıb oyunu davam etdirə bilərsiniz.' : 'You can reconnect and continue the same match.')
+                : (this.currentLang === 'az' ? 'Yarımçıq oyunu eyni yerdən davam etdirin.' : 'Resume the game from the same point.');
+        }
+        if (button) {
+            button.textContent = this.currentLang === 'az' ? 'Davam et' : 'Resume';
+        }
+    }
+
+    async resumeSavedSession() {
+        const snapshot = this.account?.getStoredGameResumeState?.();
+        if (!snapshot) return false;
+
+        if (snapshot.kind === 'online') {
+            const token = String(snapshot.reconnectionToken || this.network?.getStoredReconnectionToken?.() || '').trim();
+            if (!token) {
+                this.clearGameResumeSnapshot();
+                this.renderer.showMessage(this.currentLang === 'az' ? 'Sessiya tapılmadı' : 'Session not found', 1800);
+                return false;
+            }
+            try {
+                this.playerName = snapshot.playerName || this.playerName;
+                this.onlineEconomyMode = snapshot.onlineEconomyMode || this.onlineEconomyMode;
+                this.onlineStakeKey = snapshot.onlineStakeKey || this.onlineStakeKey;
+                this.isTeamMode = !!snapshot.isTeamMode;
+                this.onlinePlayerCount = snapshot.onlinePlayerCount || this.onlinePlayerCount;
+                this.onlineAiCount = snapshot.onlineAiCount || this.onlineAiCount;
+                this.currentMatchStartedAt = snapshot.createdAt || this.currentMatchStartedAt;
+                await this.network.resumeRoom(token);
+                this.currentMatchSessionId = snapshot.sessionId || this.currentMatchSessionId;
+                this.showStartModal(null);
+                document.getElementById('start-screen')?.classList.remove('active');
+                document.getElementById('game-screen')?.classList.add('active');
+                this.syncMultiplayerOptions();
+                this.refreshResumeBanner(snapshot);
+                return true;
+            } catch (error) {
+                console.warn('[Resume] Online session restore failed', error);
+                this.clearGameResumeSnapshot();
+                this.renderer.showMessage(this.currentLang === 'az' ? 'Onlayn sessiya bitib' : 'The online session expired', 2000);
+                return false;
+            }
+        }
+
+        return this.restoreSoloSnapshot(snapshot);
+    }
+
+    restoreSoloSnapshot(snapshot) {
+        try {
+            this.network.leaveRoom?.();
+            this.currentMatchSessionId = snapshot.sessionId || this.createResumeId('solo');
+            this.currentMatchStartedAt = snapshot.createdAt || new Date().toISOString();
+            this.playerName = snapshot.playerName || this.playerName;
+            this.playerCount = snapshot.playerCount || this.playerCount;
+            this.onlinePlayerCount = snapshot.onlinePlayerCount || this.onlinePlayerCount;
+            this.onlineAiCount = snapshot.onlineAiCount || this.onlineAiCount;
+            this.onlineEconomyMode = snapshot.onlineEconomyMode || this.onlineEconomyMode;
+            this.onlineStakeKey = snapshot.onlineStakeKey || this.onlineStakeKey;
+            this.soloEconomyMode = snapshot.soloEconomyMode || 'free';
+            this.soloStakeKey = snapshot.soloStakeKey || 'free';
+            this.difficulty = snapshot.difficulty || this.difficulty;
+            this.isTeamMode = !!snapshot.isTeamMode;
+            this.humanPlayerIndex = Math.max(0, snapshot.humanPlayerIndex || 0);
+            this.playerNames = Array.isArray(snapshot.playerNames) ? snapshot.playerNames.slice() : this.playerNames;
+            this.scores = Array.isArray(snapshot.scores) ? snapshot.scores.slice() : [];
+            this.roundWins = Array.isArray(snapshot.roundWins) ? snapshot.roundWins.slice() : [];
+            this.teamScores = Array.isArray(snapshot.teamScores) ? snapshot.teamScores.slice() : [0, 0];
+            this.teamRoundWins = Array.isArray(snapshot.teamRoundWins) ? snapshot.teamRoundWins.slice() : [0, 0];
+            this.currentPlayer = Number(snapshot.currentPlayer ?? 0);
+            this.matchRound = Number(snapshot.matchRound ?? 1);
+            this.deal = Number(snapshot.deal ?? 1);
+            this.selectedTileIndex = Number(snapshot.selectedTileIndex ?? -1);
+            this.gameActive = !!snapshot.gameActive;
+            this.roundOver = !!snapshot.roundOver;
+            this.matchOver = !!snapshot.matchOver;
+            this.lastDealWinner = snapshot.lastDealWinner ?? null;
+            this.dlossThreshold = Number(snapshot.dlossThreshold ?? this.dlossThreshold);
+            this.instantWinEnabled = snapshot.instantWinEnabled !== false;
+            this.board = snapshot.board ? reconstructBoard(snapshot.board) : new Board();
+            this.hands = Array.isArray(snapshot.hands)
+                ? snapshot.hands.map((hand) => (Array.isArray(hand) ? hand.map((tile) => new Tile(tile.a, tile.b)) : []))
+                : [];
+            this.boneyard = Array.isArray(snapshot.boneyard)
+                ? snapshot.boneyard.map((tile) => new Tile(tile.a, tile.b))
+                : [];
+            this.ais = [];
+            for (let i = 1; i < this.playerCount; i++) {
+                this.ais.push(new AIPlayer(i, this.difficulty));
+            }
+            this.myHand = this.hands[this.humanPlayerIndex] || null;
+            document.getElementById('start-screen')?.classList.remove('active');
+            document.getElementById('game-screen')?.classList.add('active');
+            this.syncSoloOptions();
+            this.renderState();
+            if (this.gameActive && this.currentPlayer !== this.humanPlayerIndex) {
+                this.queueAITurnIfNeeded(800);
+            }
+            this.refreshResumeBanner(snapshot);
+            return true;
+        } catch (error) {
+            console.warn('[Resume] Solo session restore failed', error);
+            return false;
+        }
+    }
+
     requirePlayerName(preferred = 'any') {
         const name = this.readPlayerName(preferred);
         if (name) return name;
@@ -901,6 +1269,8 @@ class DominoGame {
         const online = document.getElementById('online-modal');
         if (solo) solo.classList.toggle('active', modalName === 'solo');
         if (online) online.classList.toggle('active', modalName === 'online');
+        if (modalName === 'solo') this.syncSoloOptions();
+        if (modalName === 'online') this.syncMultiplayerOptions();
         if (!modalName) this.resetMultiplayerPanels(false);
     }
 
@@ -1002,6 +1372,7 @@ class DominoGame {
         document.getElementById('start-screen').classList.add('active');
         this.setJoinStatus(reason);
         this.setHostStatus(reason);
+        this.refreshResumeBanner();
     }
 
     setupGameControls() {
@@ -1162,7 +1533,14 @@ class DominoGame {
             document.getElementById('menu-screen').classList.add('active');
         });
         document.getElementById('menu-resume').addEventListener('click', () => document.getElementById('menu-screen').classList.remove('active'));
-        document.getElementById('menu-newgame').addEventListener('click', () => { document.getElementById('menu-screen').classList.remove('active'); this.startNewGame(); });
+        document.getElementById('menu-newgame').addEventListener('click', () => { document.getElementById('menu-screen').classList.remove('active'); void this.startNewGame(); });
+        const menuProfileBtn = document.getElementById('menu-profile');
+        if (menuProfileBtn) {
+            menuProfileBtn.addEventListener('click', async () => {
+                document.getElementById('menu-screen').classList.remove('active');
+                await this.openAccountModal();
+            });
+        }
         document.getElementById('menu-quit').addEventListener('click', () => {
             document.getElementById('menu-screen').classList.remove('active');
             document.getElementById('game-screen').classList.remove('active');
@@ -1176,7 +1554,7 @@ class DominoGame {
         });
     }
 
-    startNewGame() {
+    async startNewGame() {
         console.log('[startNewGame] Starting...', 'isMultiplayer:', this.network.isMultiplayer);
         document.getElementById('start-screen').classList.remove('active');
         document.getElementById('game-screen').classList.add('active');
@@ -1192,6 +1570,8 @@ class DominoGame {
 
         // Single-player local game
         if (this.isTeamMode) this.playerCount = 4;
+        this.currentMatchStartedAt = new Date().toISOString();
+        this.currentMatchSessionId = this.createResumeId('solo');
         this.playerNames = [this.playerName];
         for (let i=1;i<this.playerCount;i++) {
             this.playerNames.push(`${this.currentLang==='az'?'Komp':'AI'} ${i}`);
@@ -1205,6 +1585,8 @@ class DominoGame {
         const dlossInput = parseInt(document.getElementById('dloss-setting').value, 10);
         this.dlossThreshold = isNaN(dlossInput) ? 255 : dlossInput;
 
+        await this.prepareSoloEconomyStake();
+
         this.ais=[]; 
         for(let i=1;i<this.playerCount;i++) {
             this.ais.push(new AIPlayer(i,this.difficulty));
@@ -1212,6 +1594,60 @@ class DominoGame {
         console.log('[startNewGame] Starting round...');
         this.startRound();
         void this.syncLocalPresence(true);
+    }
+
+    async prepareSoloEconomyStake() {
+        if (this.difficulty === 'easy') {
+            this.soloEconomyMode = 'free';
+            this.soloStakeKey = 'free';
+            this.syncSoloOptions();
+            return;
+        }
+
+        if (this.soloEconomyMode !== 'coins') {
+            this.soloStakeKey = 'free';
+            this.syncSoloOptions();
+            return;
+        }
+
+        const token = this.account?.getRoomAuthToken?.();
+        if (!token) {
+            this.soloEconomyMode = 'free';
+            this.soloStakeKey = 'free';
+            this.syncSoloOptions();
+            this.renderer.showMessage(
+                this.currentLang === 'az'
+                    ? 'Monetli oyun üçün hesaba daxil olun'
+                    : 'Log in to play on coins',
+                2000
+            );
+            return;
+        }
+
+        const stakeKey = this.soloStakeKey && this.soloStakeKey !== 'free' ? this.soloStakeKey : 'stake_50';
+        try {
+            const result = await this.account.reserveSoloMatchStake({
+                matchId: this.currentMatchSessionId,
+                stakeKey,
+                difficulty: this.difficulty
+            });
+            if (!result?.ok) {
+                throw new Error(result?.reason || 'reserve_failed');
+            }
+            this.soloStakeKey = stakeKey;
+            this.syncSoloOptions();
+        } catch (error) {
+            console.warn('[Economy] Solo reservation failed, switching to free play', error);
+            this.soloEconomyMode = 'free';
+            this.soloStakeKey = 'free';
+            this.syncSoloOptions();
+            this.renderer.showMessage(
+                this.currentLang === 'az'
+                    ? 'Monetli stol hazır deyil, pulsuz oyun açıldı'
+                    : 'Coin play is unavailable, free play was opened',
+                2200
+            );
+        }
     }
     startRound() { 
         console.log('[startRound] playerCount:', this.playerCount);
@@ -1261,7 +1697,7 @@ class DominoGame {
             }));
         }
         this.renderer.renderScores(displayEntities, this.currentPlayer);
-        this.renderer.renderInfo(this.matchRound, this.deal, this.boneyard.length, this.board.getOpenEndsScore());
+        this.renderer.renderInfo(this.matchRound, this.deal, this.boneyard.length, this.board.getOpenEndsScore(), this.getCurrentStakeLabel());
         
         this.renderer.renderBoard(this.board);
         this.renderer.renderOpponentHands(this.hands, this.humanPlayerIndex, this.playerNames, this.currentPlayer);
@@ -1278,6 +1714,7 @@ class DominoGame {
         this.goshaCombo = (this.gameActive && myTurn) ? this.board.getGoshaCombo(myHand) : null;
         this.renderer.showGoshaBtn(this.goshaCombo, () => this.playGoshaCombo());
         void this.syncLocalPresence();
+        this.persistGameResumeSnapshot();
     }
 
     playSound(name) {
@@ -1293,13 +1730,135 @@ class DominoGame {
         this.renderer.showMessage(text, time);
     }
 
+    getUiTextOverride(key) {
+        const overrides = {
+            "game-title": { az: "Domino", en: "Domino" },
+            "game-subtitle": { az: "Azerbaijani Domino", en: "Azerbaijani Domino" },
+            "label-players": { az: "Players", en: "Players" },
+            "label-difficulty": { az: "Difficulty", en: "Difficulty" },
+            "label-name": { az: "Name", en: "Name" },
+            "label-instant-win": { az: "35 points = match ends", en: "35 points = match ends" },
+            "label-dloss": { az: "Loss threshold", en: "Loss threshold" },
+            "label-rules": { az: "Rules", en: "Rules" },
+            "rule-match": { az: "365 points · 3 rounds", en: "365 points · 3 rounds" },
+            "rule-telephone": { az: "Telephone · [3|2]", en: "Telephone · [3|2]" },
+            "btn-start": { az: "Solo play", en: "Solo play" },
+            "btn-solo-start": { az: "Start", en: "Start" },
+            "label-online": { az: "Online room", en: "Online room" },
+            "label-online-help": { az: "Create a room or join with a code", en: "Create a room or join with a code" },
+            "label-online-players": { az: "Room size", en: "Room size" },
+            "label-ai-slots": { az: "AI slots", en: "AI slots" },
+            "label-mode": { az: "Mode", en: "Mode" },
+            "mode-ffa": { az: "Free for all", en: "Free for all" },
+            "mode-team": { az: "2 vs 2", en: "2 vs 2" },
+            "label-round-short": { az: "R", en: "R" },
+            "label-deal-short": { az: "D", en: "D" },
+            "label-boneyard-short": { az: "Bazaar", en: "Bazaar" },
+            "label-economy-mode": { az: "Game mode", en: "Game mode" },
+            "label-stake-table": { az: "Stake table", en: "Stake table" },
+            "label-stake-short": { az: "Stake", en: "Stake" },
+            "economy-free": { az: "Free play", en: "Free play" },
+            "economy-coins": { az: "Play on coins", en: "Play on coins" },
+            "btn-host": { az: "Create", en: "Create" },
+            "btn-join": { az: "Join", en: "Join" },
+            "btn-draw": { az: "Draw", en: "Draw" },
+            "btn-pass": { az: "Pass", en: "Pass" },
+            "btn-reactions": { az: "Reactions", en: "Reactions" },
+            "menu-title": { az: "Menu", en: "Menu" },
+            "menu-resume": { az: "Resume", en: "Resume" },
+            "menu-new": { az: "New game", en: "New game" },
+            "menu-quit": { az: "Quit", en: "Quit" },
+            "modal-close": { az: "Close", en: "Close" },
+            "solo-modal-title": { az: "Solo play", en: "Solo play" },
+            "solo-modal-desc": { az: "Pick difficulty, player count and game mode.", en: "Pick difficulty, player count and game mode." },
+            "online-modal-title": { az: "Online room", en: "Online room" },
+            "online-modal-desc": { az: "Create a room, add bots or join with a code.", en: "Create a room, add bots or join with a code." },
+            "account-btn": { az: "Account", en: "Account" },
+            "account-kicker": { az: "Profile", en: "Profile" },
+            "account-title": { az: "Account", en: "Account" },
+            "account-desc": { az: "Keep your score, rating and match history.", en: "Keep your score, rating and match history." },
+            "account-name": { az: "Name", en: "Name" },
+            "account-password": { az: "Password", en: "Password" },
+            "account-guest": { az: "Guest mode", en: "Guest mode" },
+            "account-create-account": { az: "Create account", en: "Create account" },
+            "account-register": { az: "Register", en: "Register" },
+            "account-login": { az: "Sign in", en: "Sign in" },
+            "account-login-tab": { az: "Sign in", en: "Sign in" },
+            "account-register-tab": { az: "Register", en: "Register" },
+            "account-google": { az: "Continue with Google", en: "Continue with Google" },
+            "account-auth-kicker": { az: "Sign in", en: "Sign in" },
+            "account-auth-title": { az: "Sign in to your account", en: "Sign in to your account" },
+            "account-auth-desc": { az: "Use your account to keep rating, match history and Google login.", en: "Use your account to keep rating, match history and Google login." },
+            "account-profile": { az: "Profile", en: "Profile" },
+            "account-history": { az: "Recent games", en: "Recent games" },
+            "account-profile-loading": { az: "Loading profile...", en: "Loading profile..." },
+            "account-profile-empty": { az: "No profile yet", en: "No profile yet" },
+            "account-leaderboard": { az: "Leaderboard", en: "Leaderboard" },
+            "account-rating": { az: "Rating", en: "Rating" },
+            "account-rank": { az: "Rank", en: "Rank" },
+            "account-points": { az: "Points", en: "Points" },
+            "account-coins": { az: "Coins", en: "Coins" },
+            "account-wins": { az: "Wins", en: "Wins" },
+            "account-losses": { az: "Losses", en: "Losses" },
+            "account-draws": { az: "Draws", en: "Draws" },
+            "account-matches": { az: "Matches", en: "Matches" },
+            "account-refresh": { az: "Refresh", en: "Refresh" },
+            "account-logout": { az: "Logout", en: "Logout" },
+            "account-guest-meta": { az: "Guest profile", en: "Guest profile" },
+            "account-online": { az: "Server connected", en: "Server connected" },
+            "account-offline": { az: "Server unavailable", en: "Server unavailable" },
+            "account-history-empty": { az: "No match history yet", en: "No match history yet" },
+            "account-history-win": { az: "Win", en: "Win" },
+            "account-history-loss": { az: "Loss", en: "Loss" },
+            "account-history-draw": { az: "Draw", en: "Draw" },
+            "account-server-unavailable": { az: "Server unavailable", en: "Server unavailable" },
+            "title-rookie": { az: "Rookie", en: "Rookie" },
+            "title-bronze": { az: "Bronze", en: "Bronze" },
+            "title-silver": { az: "Silver", en: "Silver" },
+            "title-gold": { az: "Gold", en: "Gold" },
+            "title-platinum": { az: "Platinum", en: "Platinum" },
+            "title-diamond": { az: "Diamond", en: "Diamond" },
+            "title-master": { az: "Master", en: "Master" },
+            "title-legend": { az: "Legend", en: "Legend" },
+            "placeholder-player-name": { az: "Enter your name", en: "Enter your name" },
+            "online-room-status-created": { az: "Creating room...", en: "Creating room..." },
+            "online-room-status-waiting": { az: "Waiting for players", en: "Waiting for players" },
+            "online-room-status-ready": { az: "Room is ready", en: "Room is ready" },
+            "online-room-status-connecting": { az: "Connecting...", en: "Connecting..." },
+            "online-room-status-joined": { az: "Connected. Waiting for the room to fill", en: "Connected. Waiting for the room to fill" },
+            "online-room-status-error": { az: "Error", en: "Error" },
+            "online-room-cancel": { az: "Cancel", en: "Cancel" },
+            "online-room-back": { az: "Back", en: "Back" },
+            "online-room-code-placeholder": { az: "ABCD", en: "ABCD" },
+            "online-room-create-hint": { az: "Share the room code with a friend", en: "Share the room code with a friend" },
+            "online-room-join-hint": { az: "Enter a room code to connect", en: "Enter a room code to connect" },
+            "online-room-code": { az: "Room code", en: "Room code" },
+            "online-room-copy": { az: "Copy", en: "Copy" },
+            "online-copy-success": { az: "Code copied: {code}", en: "Code copied: {code}" },
+            "online-copy-fail": { az: "Copy failed. Code: {code}", en: "Copy failed. Code: {code}" },
+            "online-you": { az: "you", en: "you" },
+            "online-ready": { az: "ready", en: "ready" },
+            "online-offline": { az: "offline", en: "offline" },
+            "online-waiting-slot": { az: "Waiting for player {index}", en: "Waiting for player {index}" },
+            "online-room-closed": { az: "Room closed", en: "Room closed" },
+            "online-room-summary": { az: "{humans} humans + {bots} AI, {total} total", en: "{humans} humans + {bots} AI, {total} total" },
+            "online-bot-slot": { az: "AI {index}", en: "AI {index}" },
+            "resume-session-kicker": { az: "Unfinished session", en: "Unfinished session" },
+            "resume-session": { az: "Resume", en: "Resume" },
+            "round-end-next": { az: "Continue", en: "Continue" },
+            "new-game-btn": { az: "New game", en: "New game" },
+            "summary-title": { az: "Summary", en: "Summary" }
+        };
+        return overrides[key]?.[this.currentLang] || overrides[key]?.en || null;
+    }
+
     setLanguage(lang) {
         const nextLang = translations[lang] ? lang : (translations[this.currentLang] ? this.currentLang : 'az');
         this.currentLang = nextLang;
         const t = translations[nextLang] || translations.az;
         document.querySelectorAll('[data-i18n]').forEach(el => {
             const key = el.dataset.i18n;
-            const value = t[key] || translations.en?.[key] || translations.az?.[key] || key;
+            const value = this.getUiTextOverride(key) || t[key] || translations.en?.[key] || translations.az?.[key] || key;
             if (value) {
                 if (el.tagName === 'INPUT') el.placeholder = value;
                 else {
@@ -1315,10 +1874,11 @@ class DominoGame {
         });
         this.syncAccountUiChrome();
         this.syncStartAuthButton();
+        this.refreshResumeBanner();
     }
 
     t(key) {
-        return translations[this.currentLang][key] || translations.en?.[key] || translations.az?.[key] || key;
+        return this.getUiTextOverride(key) || translations[this.currentLang][key] || translations.en?.[key] || translations.az?.[key] || key;
     }
     format(key, values = {}) {
         return this.t(key).replace(/\{(\w+)\}/g, (_, token) => values[token] ?? `{${token}}`);
@@ -1421,6 +1981,7 @@ class DominoGame {
         }
         
         this.renderer.renderDealEnd(this.playerNames[data.winnerIndex], displayEntities, data.fish, data.bonus);
+        this.persistGameResumeSnapshot();
     }
 
     onNetworkRoundEnd(data) {
@@ -1444,6 +2005,8 @@ class DominoGame {
         if (data.isInstantWin) {
             this.matchOver = data.isMatchOver;
             this.renderer.showInstantWin(this.playerNames[wi], data.wins);
+            if (data.isMatchOver) this.clearGameResumeSnapshot();
+            else this.persistGameResumeSnapshot();
             return;
         }
 
@@ -1461,6 +2024,8 @@ class DominoGame {
 
         this.renderer.renderRoundEnd(this.playerNames[wi], displayEntities, data.wins, data.matchRound, data.isMatchOver);
         this.matchRound = data.matchRound + 1;
+        if (data.isMatchOver) this.clearGameResumeSnapshot();
+        else this.persistGameResumeSnapshot();
     }
 
     // Override actions to send to network
@@ -1767,6 +2332,7 @@ class DominoGame {
             void this.recordLocalMatchResult(w);
         }
         void this.clearLocalPresence();
+        this.clearGameResumeSnapshot();
     }
 
     async recordLocalMatchResult(winnerIndex) {
@@ -1774,19 +2340,40 @@ class DominoGame {
         const platformToken = this.account?.getRoomAuthToken?.();
         if (!platformToken) return;
         try {
+            if (this.soloEconomyMode === 'coins' && this.soloStakeKey !== 'free') {
+                const result = this.isTeamMode
+                    ? ((winnerIndex % 2) === (this.humanPlayerIndex % 2) ? 'win' : 'loss')
+                    : (winnerIndex === this.humanPlayerIndex ? 'win' : 'loss');
+                try {
+                    await this.account.settleSoloMatchStake({
+                        matchId: this.currentMatchSessionId,
+                        stakeKey: this.soloStakeKey,
+                        result,
+                        difficulty: this.difficulty
+                    });
+                } catch (settleError) {
+                    console.warn('[Economy] Solo settlement failed:', settleError);
+                }
+            }
+
             const participants = this.playerNames.map((name, index) => ({
                 isSelf: index === this.humanPlayerIndex,
                 name,
                 teamIndex: this.isTeamMode ? (index % 2) : null,
                 winnerKey: this.isTeamMode ? `team:${winnerIndex}` : `player:${winnerIndex}`,
                 points: this.isTeamMode ? (this.teamScores[index % 2] || 0) : (this.scores[index] || 0),
-                roundWins: this.isTeamMode ? (this.teamRoundWins[index % 2] || 0) : (this.roundWins[index] || 0)
+                roundWins: this.isTeamMode ? (this.teamRoundWins[index % 2] || 0) : (this.roundWins[index] || 0),
+                economyMode: this.soloEconomyMode,
+                stakeKey: this.soloStakeKey
             }));
             await this.account.recordMatch({
                 mode: this.isTeamMode ? 'team' : 'solo',
                 isTeamMode: this.isTeamMode,
                 winnerKey: this.isTeamMode ? `team:${winnerIndex}` : `player:${winnerIndex}`,
-                participants
+                participants,
+                economyMode: this.soloEconomyMode,
+                stakeKey: this.soloStakeKey,
+                matchSessionId: this.currentMatchSessionId
             });
         } catch (err) {
             console.warn('[Account] Failed to record local match:', err);

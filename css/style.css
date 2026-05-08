@@ -1580,3 +1580,60 @@ input, button { font: inherit; }
         height: 88px;
     }
 }
+
+/* Late overrides for dynamically injected HUD elements and legacy fallback strings. */
+.menu-btn::before {
+    content: "☰";
+}
+
+.game-info {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    align-items: center;
+    color: var(--text-dim);
+    font-size: 0.78rem;
+    line-height: 1.25;
+}
+
+#stake-info {
+    padding: 4px 8px;
+    border-radius: 999px;
+    background: rgba(240, 192, 64, 0.12);
+    border: 1px solid rgba(240, 192, 64, 0.22);
+    color: var(--accent);
+    font-weight: 700;
+}
+
+.resume-session-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 14px 16px;
+    border-radius: 18px;
+    border: 1px solid rgba(240, 192, 64, 0.18);
+    background: linear-gradient(135deg, rgba(240, 192, 64, 0.08), rgba(79, 207, 151, 0.08));
+}
+
+.resume-session-banner .btn {
+    flex: 0 0 auto;
+    min-width: 110px;
+}
+
+.resume-session-copy {
+    display: grid;
+    gap: 4px;
+}
+
+.resume-session-title {
+    font-size: 1rem;
+    font-weight: 800;
+    color: var(--text);
+}
+
+.resume-session-desc {
+    color: var(--text-dim);
+    font-size: 0.86rem;
+    line-height: 1.45;
+}

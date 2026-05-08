@@ -57,6 +57,35 @@ export class EconomyController {
     return this.economyService.settleMatchStake(token, body);
   }
 
+  @Post("economy/solo/reserve")
+  async reserveSoloMatchStake(
+    @Headers("authorization") authorization: string | undefined,
+    @Body()
+    body: {
+      matchId?: string | null;
+      stakeKey?: string | null;
+      difficulty?: string | null;
+    }
+  ) {
+    const token = String(authorization || "").replace(/^Bearer\s+/i, "").trim();
+    return this.economyService.reserveSoloMatchStake(token, body);
+  }
+
+  @Post("economy/solo/settle")
+  async settleSoloMatchStake(
+    @Headers("authorization") authorization: string | undefined,
+    @Body()
+    body: {
+      matchId?: string | null;
+      stakeKey?: string | null;
+      result?: "win" | "draw" | "refund" | "loss" | string | null;
+      difficulty?: string | null;
+    }
+  ) {
+    const token = String(authorization || "").replace(/^Bearer\s+/i, "").trim();
+    return this.economyService.settleSoloMatchStake(token, body);
+  }
+
   @Get("admin/economy/overview")
   async getAdminOverview(@Req() req: Request) {
     return this.economyService.getAdminOverview(req.headers);

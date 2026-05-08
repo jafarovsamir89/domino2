@@ -9,6 +9,7 @@ class NetworkManager {
         this.isMultiplayer = false;
         this.isHost = false;
         this.isGuest = false;
+        this.reconnectionTokenKey = "dominoRoomReconnectionToken";
     }
 
     async initClient() {
@@ -72,6 +73,21 @@ class NetworkManager {
         if (value.startsWith("ws://")) return `http://${value.slice("ws://".length)}`;
         if (value.startsWith("wss://")) return `https://${value.slice("wss://".length)}`;
         return `http://${value}`;
+    }
+
+    getStoredReconnectionToken() {
+        try {
+            return window.localStorage?.getItem(this.reconnectionTokenKey) || "";
+        } catch {
+            return "";
+        }
+    }
+
+    setStoredReconnectionToken(token) {
+        try {
+            if (token) window.localStorage?.setItem(this.reconnectionTokenKey, token);
+            else window.localStorage?.removeItem(this.reconnectionTokenKey);
+        } catch {}
     }
 
     hostGame(onReady, onError) {
@@ -146,6 +162,9 @@ class NetworkManager {
 
             const connectedRoomId = this.room.roomId || this.room.id;
             console.log("Connected! Room ID:", connectedRoomId);
+            if (this.room?.reconnectionToken) {
+                this.setStoredReconnectionToken(this.room.reconnectionToken);
+            }
             this.isMultiplayer = true;
             this.setupListeners();
             if (onReady) onReady(connectedRoomId);
@@ -233,6 +252,27 @@ class NetworkManager {
         this.isMultiplayer = false;
         this.isHost = false;
         this.isGuest = false;
+    }
+
+    async resumeRoom(reconnectionToken) {
+        const token = String(reconnectionToken || "").trim();
+        if (!token) {
+            throw new Error("Missing reconnection token");
+        }
+        const initialized = await this.initClient();
+        if (!initialized) {
+            throw new Error("Colyseus not loaded");
+        }
+
+        this.room = await this.client.reconnect(token);
+        this.isMultiplayer = true;
+        this.isHost = false;
+        this.isGuest = true;
+        if (this.room?.reconnectionToken) {
+            this.setStoredReconnectionToken(this.room.reconnectionToken);
+        }
+        this.setupListeners();
+        return this.room;
     }
 
     sendPlay(tileIndex, openEndIndex) {

@@ -439,3 +439,10 @@
 - Added an online economy mode toggle for free play vs coin play, and kept the stake table hidden unless coin mode is selected.
 - Wired leaderboard and player detail responses to return the computed title code and wallet-aware balances.
 
+## 2026-05-08 Game polish and session resume
+- Added solo coin table selection with a `free` / `coins` toggle and stake buttons up to 200 coins.
+- Blocked coin play for the easiest bot difficulty so the easy solo path stays free-play only.
+- Surfaced the selected stake in the in-game HUD and made the in-game menu expose the profile button.
+- Added resume-state persistence for unfinished solo and online matches, including Colyseus reconnection tokens.
+- Fixed the visible HUD and fallback text layer so the game shows a proper menu icon, a visible game info strip, and cleaner stake/banner UI.
+

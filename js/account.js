@@ -2,6 +2,7 @@ const ACCOUNT_PROFILE_KEY = "dominoAuthProfile";
 const PLATFORM_GAME_TOKEN_KEY = "dominoPlatformGameToken";
 const PLATFORM_PROFILE_KEY = "dominoPlatformProfile";
 const LOCAL_GAME_SESSION_KEY = "dominoLocalGameSessionId";
+const GAME_RESUME_STATE_KEY = "dominoGameResumeState";
 
 function safeJsonParse(value) {
     try {
@@ -210,6 +211,26 @@ export class AccountClient {
 
     clearLocalGameSessionId() {
         this.setLocalGameSessionId("");
+    }
+
+    getStoredGameResumeState() {
+        try {
+            const raw = window.localStorage?.getItem(GAME_RESUME_STATE_KEY);
+            return safeJsonParse(raw);
+        } catch {
+            return null;
+        }
+    }
+
+    setStoredGameResumeState(state) {
+        try {
+            if (state) window.localStorage?.setItem(GAME_RESUME_STATE_KEY, JSON.stringify(state));
+            else window.localStorage?.removeItem(GAME_RESUME_STATE_KEY);
+        } catch {}
+    }
+
+    clearStoredGameResumeState() {
+        this.setStoredGameResumeState(null);
     }
 
     clearSession() {
@@ -528,6 +549,20 @@ export class AccountClient {
             }
         }
         return null;
+    }
+
+    async reserveSoloMatchStake(payload) {
+        return this.platformRequest("/economy/solo/reserve", {
+            method: "POST",
+            body: payload
+        });
+    }
+
+    async settleSoloMatchStake(payload) {
+        return this.platformRequest("/economy/solo/settle", {
+            method: "POST",
+            body: payload
+        });
     }
 
     getRoomAuthToken() {

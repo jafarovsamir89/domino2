@@ -6,6 +6,7 @@ export class Renderer {
         this.scoresEl = document.getElementById('scores-bar');
         this.messageEl = document.getElementById('message-area');
         this.roundInfoEl = document.getElementById('round-info');
+        this.stakeInfoEl = document.getElementById('stake-info');
         this.boneyardInfoEl = document.getElementById('boneyard-info');
         this.boneyardVisual = document.getElementById('boneyard-visual');
         this.drawBtn = document.getElementById('draw-btn');
@@ -282,10 +283,15 @@ export class Renderer {
         }
     }
 
-    renderInfo(mr, deal, by, sum) {
+    renderInfo(mr, deal, by, sum, stakeLabel = '') {
         const rText = this.app.t('label-round-short');
         const sText = this.app.t('label-deal-short');
         this.roundInfoEl.textContent = `${rText}${mr}/3 · ${sText}${deal}`;
+        if (!this.stakeInfoEl) this.stakeInfoEl = document.getElementById('stake-info');
+        if (this.stakeInfoEl) {
+            this.stakeInfoEl.textContent = stakeLabel ? `${this.app.t('label-stake-short')}: ${stakeLabel}` : '';
+            this.stakeInfoEl.classList.toggle('is-hidden', !stakeLabel);
+        }
         this.boneyardInfoEl.textContent = `${this.app.t('label-boneyard-short')}: ${sum}`;
         this.renderBoneyard(by);
     }

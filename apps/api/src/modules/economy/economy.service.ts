@@ -88,10 +88,13 @@ const DEFAULT_STAKES: EconomyStakeTablePayload[] = [
   { key: "free", title: "Free table", stakeAmount: 0, commissionBps: 0, isFree: true, isActive: true, sortOrder: 0 },
   { key: "stake_50", title: "50 coins", stakeAmount: 50, commissionBps: 500, isFree: false, isActive: true, sortOrder: 1 },
   { key: "stake_100", title: "100 coins", stakeAmount: 100, commissionBps: 500, isFree: false, isActive: true, sortOrder: 2 },
-  { key: "stake_500", title: "500 coins", stakeAmount: 500, commissionBps: 500, isFree: false, isActive: true, sortOrder: 3 },
-  { key: "stake_1000", title: "1,000 coins", stakeAmount: 1000, commissionBps: 500, isFree: false, isActive: true, sortOrder: 4 },
-  { key: "stake_5000", title: "5,000 coins", stakeAmount: 5000, commissionBps: 500, isFree: false, isActive: true, sortOrder: 5 }
+  { key: "stake_200", title: "200 coins", stakeAmount: 200, commissionBps: 500, isFree: false, isActive: true, sortOrder: 3 },
+  { key: "stake_500", title: "500 coins", stakeAmount: 500, commissionBps: 500, isFree: false, isActive: true, sortOrder: 4 },
+  { key: "stake_1000", title: "1,000 coins", stakeAmount: 1000, commissionBps: 500, isFree: false, isActive: true, sortOrder: 5 },
+  { key: "stake_5000", title: "5,000 coins", stakeAmount: 5000, commissionBps: 500, isFree: false, isActive: true, sortOrder: 6 }
 ];
+
+const SOLO_MAX_STAKE = 200;
 
 function toInt(value: unknown, fallback = 0) {
   const parsed = Number.parseInt(String(value ?? ""), 10);
@@ -411,6 +414,56 @@ export class EconomyService {
         idempotencyKey: extras.idempotencyKey ?? undefined,
         note: extras.note ?? undefined,
         payloadJson: extras.payloadJson ?? undefined,
+        createdByUserId: extras.createdByUserId ?? undefined
+      }
+    });
+
+    return updated;
+  }
+
+  private async consumeReservedWallet(
+    db: EconomyTx,
+    playerId: string,
+    amount: number,
+    referenceType: string,
+    referenceId: string,
+    extras: { idempotencyKey?: string | null; note?: string | null; payloadJson?: Prisma.InputJsonValue; createdByUserId?: string | null } = {}
+  ) {
+    const nextAmount = Math.max(0, Math.trunc(amount));
+    if (!nextAmount) {
+      return this.ensureWallet(db, playerId);
+    }
+
+    const wallet = await this.ensureWallet(db, playerId);
+    if (wallet.reserved < nextAmount) {
+      throw new BadRequestException("Reserved balance is too small");
+    }
+
+    const updated = await db.coinWallet.update({
+      where: { playerId },
+      data: {
+        reserved: wallet.reserved - nextAmount,
+        lifetimeSpent: wallet.lifetimeSpent + nextAmount
+      }
+    });
+
+    await db.coinLedgerEntry.create({
+      data: {
+        playerId,
+        type: "consume",
+        amount: 0,
+        balanceBefore: wallet.balance,
+        balanceAfter: updated.balance,
+        reservedBefore: wallet.reserved,
+        reservedAfter: updated.reserved,
+        referenceType,
+        referenceId,
+        idempotencyKey: extras.idempotencyKey ?? undefined,
+        note: extras.note ?? undefined,
+        payloadJson: {
+          ...(extras.payloadJson as Record<string, unknown> | undefined),
+          consumedAmount: nextAmount
+        } as Prisma.InputJsonValue,
         createdByUserId: extras.createdByUserId ?? undefined
       }
     });
@@ -1224,6 +1277,332 @@ export class EconomyService {
         winners: payoutIds.size,
         result,
         reservations: settled
+      };
+    });
+
+    return resultSummary;
+  }
+
+  async reserveSoloMatchStake(token: string, payload: { matchId?: string | null; stakeKey?: string | null; difficulty?: string | null }) {
+    const claims = verifyGameToken(token);
+    if (!claims) {
+      return {
+        ok: false,
+        reason: "invalid_token"
+      };
+    }
+
+    await this.ensureBootstrap();
+    const matchId = toCleanString(payload.matchId, claims.sessionId || claims.userId || claims.playerId || "");
+    const stakeKey = toCleanString(payload.stakeKey, "free") || "free";
+    const difficulty = toCleanString(payload.difficulty, "medium") || "medium";
+    const roomId = `solo:${matchId || claims.sessionId || claims.playerId || Date.now().toString(36)}`;
+
+    if (!matchId) {
+      return {
+        ok: false,
+        reason: "missing_match"
+      };
+    }
+    if (difficulty === "easy" && stakeKey !== "free") {
+      return {
+        ok: false,
+        reason: "easy_mode_free_only"
+      };
+    }
+
+    const stakeTable = await this.prisma.coinStakeTable.findUnique({
+      where: { key: stakeKey }
+    });
+
+    if (!stakeTable || !stakeTable.isActive || stakeTable.stakeAmount <= 0) {
+      return {
+        ok: true,
+        reserved: 0,
+        stakeKey,
+        commissionBps: 0
+      };
+    }
+
+    if (stakeTable.stakeAmount > SOLO_MAX_STAKE) {
+      return {
+        ok: false,
+        reason: "solo_stake_limit"
+      };
+    }
+
+    try {
+      const result = await this.prisma.$transaction(async (tx) => {
+        const player = await this.findOrCreatePlayerByIdentity(tx, {
+          playerId: claims.playerId || undefined,
+          userId: claims.userId || undefined,
+          displayName: claims.displayName || "Player"
+        }, claims.displayName || "Player");
+
+        const existing = await tx.coinMatchStake.findUnique({
+          where: {
+            roomId_playerId_stakeTableId: {
+              roomId,
+              playerId: player.id,
+              stakeTableId: stakeTable.id
+            }
+          }
+        });
+        if (existing && existing.status === "reserved") {
+          return {
+            ok: true,
+            reserved: stakeTable.stakeAmount,
+            stakeKey,
+            roomId,
+            commissionBps: stakeTable.commissionBps,
+            reused: true
+          };
+        }
+
+        await this.reserveWallet(
+          tx,
+          player.id,
+          stakeTable.stakeAmount,
+          "solo_match_reserve",
+          roomId,
+          {
+            idempotencyKey: `${roomId}:${player.id}:${stakeTable.id}:reserve`,
+            note: `Solo ${stakeTable.title}`,
+            payloadJson: {
+              stakeKey,
+              roomId,
+              matchId,
+              difficulty,
+              playerId: player.id
+            }
+          }
+        );
+
+        await tx.coinMatchStake.upsert({
+          where: {
+            roomId_playerId_stakeTableId: {
+              roomId,
+              playerId: player.id,
+              stakeTableId: stakeTable.id
+            }
+          },
+          update: {
+            status: "reserved",
+            matchId,
+            stakeAmount: stakeTable.stakeAmount,
+            commissionBps: stakeTable.commissionBps,
+            reservedAt: new Date()
+          },
+          create: {
+            roomId,
+            matchId,
+            playerId: player.id,
+            stakeTableId: stakeTable.id,
+            stakeAmount: stakeTable.stakeAmount,
+            commissionBps: stakeTable.commissionBps,
+            status: "reserved"
+          }
+        });
+
+        return {
+          ok: true,
+          stakeKey,
+          roomId,
+          reserved: stakeTable.stakeAmount,
+          commissionBps: stakeTable.commissionBps
+        };
+      });
+
+      return result;
+    } catch (error) {
+      return {
+        ok: false,
+        reason: error instanceof Error ? error.message : "reserve_failed"
+      };
+    }
+  }
+
+  async settleSoloMatchStake(token: string, payload: { matchId?: string | null; stakeKey?: string | null; result?: "win" | "draw" | "refund" | "loss" | string | null; difficulty?: string | null }) {
+    const claims = verifyGameToken(token);
+    if (!claims) {
+      return {
+        ok: false,
+        reason: "invalid_token"
+      };
+    }
+
+    await this.ensureBootstrap();
+    const matchId = toCleanString(payload.matchId, claims.sessionId || claims.userId || claims.playerId || "");
+    const stakeKey = toCleanString(payload.stakeKey, "free") || "free";
+    const result = toCleanString(payload.result, "win");
+    const roomId = `solo:${matchId || claims.sessionId || claims.playerId || Date.now().toString(36)}`;
+
+    if (!matchId) {
+      return {
+        ok: false,
+        reason: "missing_match"
+      };
+    }
+
+    const stakeTable = await this.prisma.coinStakeTable.findUnique({
+      where: { key: stakeKey }
+    });
+    if (!stakeTable || !stakeTable.isActive || stakeTable.stakeAmount <= 0) {
+      return {
+        ok: true,
+        settled: 0,
+        stakeKey,
+        commission: 0,
+        payout: 0
+      };
+    }
+
+    if (stakeTable.stakeAmount > SOLO_MAX_STAKE) {
+      return {
+        ok: false,
+        reason: "solo_stake_limit"
+      };
+    }
+
+    const resultSummary = await this.prisma.$transaction(async (tx) => {
+      const player = await this.findOrCreatePlayerByIdentity(tx, {
+        playerId: claims.playerId || undefined,
+        userId: claims.userId || undefined,
+        displayName: claims.displayName || "Player"
+      }, claims.displayName || "Player");
+
+      const reservation = await tx.coinMatchStake.findFirst({
+        where: {
+          roomId,
+          playerId: player.id,
+          stakeTableId: stakeTable.id
+        },
+        include: {
+          player: true,
+          stakeTable: true
+        },
+        orderBy: { reservedAt: "desc" }
+      });
+
+      if (!reservation) {
+        return {
+          ok: true,
+          settled: 0,
+          stakeKey,
+          commission: 0,
+          payout: 0,
+          skipped: true
+        };
+      }
+
+      const drawOrRefund = result === "draw" || result === "refund";
+      const commission = drawOrRefund ? 0 : calcCommission(reservation.stakeAmount * 2, stakeTable.commissionBps);
+      const payout = drawOrRefund ? reservation.stakeAmount : Math.max(0, reservation.stakeAmount - commission);
+
+      let wallet;
+      if (drawOrRefund) {
+        wallet = await this.releaseWallet(
+          tx,
+          reservation.playerId,
+          reservation.stakeAmount,
+          "refund",
+          "solo_match_settle",
+          matchId,
+          {
+            idempotencyKey: `${roomId}:${reservation.playerId}:${stakeTable.id}:refund`,
+            note: stakeTable.title,
+            payloadJson: {
+              roomId,
+              matchId,
+              stakeKey,
+              result
+            }
+          }
+        );
+      } else if (result === "win") {
+        const released = await this.releaseWallet(
+          tx,
+          reservation.playerId,
+          reservation.stakeAmount,
+          "release",
+          "solo_match_settle",
+          matchId,
+          {
+            idempotencyKey: `${roomId}:${reservation.playerId}:${stakeTable.id}:release`,
+            note: stakeTable.title,
+            payloadJson: {
+              roomId,
+              matchId,
+              stakeKey,
+              result
+            }
+          }
+        );
+        wallet = await this.creditWallet(
+          tx,
+          reservation.playerId,
+          payout,
+          "payout",
+          "solo_match_settle",
+          matchId,
+          {
+            idempotencyKey: `${roomId}:${reservation.playerId}:${stakeTable.id}:payout`,
+            note: stakeTable.title,
+            payloadJson: {
+              roomId,
+              matchId,
+              stakeKey,
+              result,
+              payout
+            }
+          }
+        );
+        void released;
+      } else {
+        wallet = await this.consumeReservedWallet(
+          tx,
+          reservation.playerId,
+          reservation.stakeAmount,
+          "solo_match_settle",
+          matchId,
+          {
+            idempotencyKey: `${roomId}:${reservation.playerId}:${stakeTable.id}:consume`,
+            note: stakeTable.title,
+            payloadJson: {
+              roomId,
+              matchId,
+              stakeKey,
+              result
+            }
+          }
+        );
+      }
+
+      await tx.coinMatchStake.update({
+        where: { id: reservation.id },
+        data: {
+          status: drawOrRefund ? "refunded" : "settled",
+          matchId,
+          commissionAmount: commission,
+          settledAt: new Date()
+        }
+      });
+
+      return {
+        ok: true,
+        settled: 1,
+        stakeKey,
+        roomId,
+        commission,
+        payout: drawOrRefund ? reservation.stakeAmount : payout,
+        result,
+        reservations: [
+          {
+            playerId: reservation.playerId,
+            wallet,
+            payout: drawOrRefund ? reservation.stakeAmount : payout
+          }
+        ]
       };
     });
 

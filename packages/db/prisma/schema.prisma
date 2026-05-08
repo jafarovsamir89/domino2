@@ -27,6 +27,7 @@ enum CoinLedgerType {
   spend
   reserve
   release
+  consume
   payout
   refund
   daily_bonus
