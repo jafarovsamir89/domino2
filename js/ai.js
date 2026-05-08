@@ -70,18 +70,17 @@ export class AIPlayer {
         const remainingPoints = remainingHand.reduce((s, t) => s + t.total, 0);
         score -= remainingPoints * P.handP;
 
-        // Hard: try to block opponents
+        // Hard: estimate blocking potential without reading opponent tiles (fair play)
         if (P.blockW > 0) {
-            let opponentOptions = 0;
+            let totalOpponentTiles = 0;
             for (let i = 0; i < allHands.length; i++) {
                 if (i === this.playerIndex) continue;
-                for (const t of allHands[i]) {
-                    for (const v of openEndValues) {
-                        if (t.hasValue(v)) opponentOptions++;
-                    }
-                }
+                totalOpponentTiles += allHands[i].length;
             }
-            score -= opponentOptions * P.blockW;
+            // Statistical estimate: each tile has ~2/7 chance of matching any given open end value
+            const uniqueEndValues = new Set(openEndValues).size;
+            const estimatedOptions = totalOpponentTiles * uniqueEndValues * (2 / 7);
+            score -= estimatedOptions * P.blockW;
         }
 
         // Randomness (higher = more random = easier)

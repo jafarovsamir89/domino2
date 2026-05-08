@@ -118,9 +118,7 @@ class Board {
         for (const oe of this.openEnds) {
             if (oe.nodeId === this.crossNodeId) {
                 if (this.crossSidesClosed >= 2) {
-                    // Gosha is now Telephone (bridge) — not counted at all!
-                    // Its empty top/bottom branches do not contribute points.
-                    // Only tiles PLAYED on those branches will count.
+                    // Telephone established — empty branches do not score
                 } else {
                     hasCrossEnd = true;
                 }
@@ -145,7 +143,7 @@ class Board {
         for (let j = 0; j < this.openEnds.length; j++) {
             const oe = this.openEnds[j];
             for (let i = 0; i < hand.length; i++) {
-                if (!usedTiles.has(i) && hand[i].isDouble && hand[i].a === oe.value) {
+                if (!usedTiles.has(i) && hand[i].hasValue(oe.value)) {
                     possibleMatches.push({
                         tileIndex: i,
                         openEndIndex: j,
@@ -213,7 +211,7 @@ class Board {
                     }
                     const tile = hand[m.tileIndex];
                     const oe = sim.openEnds[idx];
-                    if (!tile || !tile.isDouble || tile.a !== oe.value) {
+                    if (!tile || !tile.hasValue(oe.value)) {
                         valid = false;
                         break;
                     }

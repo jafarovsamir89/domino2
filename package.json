@@ -2,7 +2,7 @@
   "name": "domino2",
   "version": "1.0.0",
   "description": "",
-  "main": "sw.js",
+  "main": "index.html",
   "type": "module",
   "workspaces": [
     "apps/*",

@@ -331,7 +331,7 @@ export class Renderer {
         const p = document.createElement('div');
         p.className = 'score-pop';
         p.textContent = `+${pts}`;
-        p.style.cssText = 'left:50%;top:35%;';
+        p.style.cssText = 'position:absolute;left:50%;top:35%;transform:translateX(-50%);font-size:1.8rem;font-weight:800;color:var(--accent);text-shadow:0 2px 12px rgba(240,192,64,0.5);pointer-events:none;z-index:50;animation:scorePopUp 1.4s ease-out forwards;';
         document.getElementById('game-screen').appendChild(p);
         setTimeout(() => p.remove(), 1500);
     }

@@ -1,4 +1,4 @@
-﻿import { Tile, createFullSet, shuffle, getHandSize, determineFirstPlayer, handPoints, roundTo5 } from './model.js';
+import { Tile, createFullSet, shuffle, getHandSize, determineFirstPlayer, handPoints, roundTo5 } from './model.js';
 import { Board, reconstructBoard } from './board.js';
 import { AIPlayer } from './ai.js';
 import { Renderer } from './renderer.js';
@@ -66,7 +66,7 @@ class DominoGame {
         this.bootstrapAccount();
 
         // Watchdog for turn freeze
-        setInterval(() => {
+        this._watchdogId = setInterval(() => {
             if (this.turnInProgress && Date.now() - this.lastTurnStartTime > 6000) {
                 this.log("Watchdog: Resetting stuck turn");
                 this.turnInProgress = false;
@@ -751,7 +751,7 @@ class DominoGame {
         if (registerForm) registerForm.classList.toggle('active', !isAuthenticated && this.accountMode === 'register');
         if (loginTabBtn) loginTabBtn.classList.toggle('active', this.accountMode !== 'register');
         if (registerTabBtn) registerTabBtn.classList.toggle('active', this.accountMode === 'register');
-        if (createAccountBtn) createAccountBtn.classList.toggle('is-hidden', !(profile?.provider === 'local-guest' && !isAuthenticated));
+        if (createAccountBtn) createAccountBtn.classList.toggle('is-hidden', !(profile?.provider === 'local-guest'));
         if (loginEmailInput && !isAuthenticated && !loginEmailInput.value.trim() && profile?.email) loginEmailInput.value = profile.email;
         if (loginPasswordInput && isAuthenticated) loginPasswordInput.value = '';
         if (registerPasswordInput && isAuthenticated) registerPasswordInput.value = '';
@@ -1711,10 +1711,6 @@ class DominoGame {
             return;
         }
 
-        // Single-player local game
-        if (this.network.isMultiplayer || this.network.room) {
-            this.network.leaveRoom();
-        }
         if (this.isTeamMode) this.playerCount = 4;
         this.currentMatchStartedAt = new Date().toISOString();
         this.currentMatchSessionId = this.createResumeId('solo');
@@ -2137,6 +2133,7 @@ class DominoGame {
         this.syncAccountUiChrome();
         this.syncStartAuthButton();
         this.refreshResumeBanner();
+        document.documentElement.lang = nextLang;
     }
 
     t(key) {
@@ -2222,10 +2219,7 @@ class DominoGame {
         this.goshaCombo = info.goshaCombo || null;
         this.renderState();
     }
-    onNetworkReaction(payload) {
-        if (!payload) return;
-        this.showReactionBurst(payload.type || payload.reaction || 'spark', payload.name || '');
-    }
+
 
     onNetworkDealEnd(data) {
         this.gameActive = false;
@@ -2461,6 +2455,7 @@ class DominoGame {
     playTile(pi,ti,oei) {
         if(this.turnInProgress) return;
         this.turnInProgress=true;
+        try {
         const hand=this.hands[pi],tile=hand && hand[ti];
         if(!tile){this.turnInProgress=false;return;}
         if(!this.board.isEmpty && !this.board.openEnds[oei]){this.turnInProgress=false;return;}
@@ -2480,6 +2475,10 @@ class DominoGame {
             this.turnInProgress=false;
             this.advanceTurn();
         }, 300);
+        } catch (e) {
+            console.error('[playTile] Error:', e);
+            this.turnInProgress = false;
+        }
     }
 
     advanceTurn() {
@@ -2656,7 +2655,10 @@ class DominoGame {
 }
 const game=new DominoGame();
 
-// Re-render board on resize for correct scaling (no network sync needed)
+// Re-render board on resize for correct scaling (debounced)
+let _resizeTimer = null;
 window.addEventListener('resize', () => {
-    if (game.gameActive) game.renderState(false);
+    if (!game.gameActive) return;
+    clearTimeout(_resizeTimer);
+    _resizeTimer = setTimeout(() => game.renderState(), 150);
 });

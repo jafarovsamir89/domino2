@@ -789,39 +789,7 @@ class DominoRoom extends Room {
         const combo = this.internalBoard.getGoshaCombo(this.hands[pi]);
         if (!combo) return;
 
-        this.broadcast("sound", "gosha");
-        const hand = this.hands[pi];
-        const matches = combo.matches;
-        const sorted = [...matches].sort((a, b) => b.tileIndex - a.tileIndex);
-        const tiles = sorted.map(m => hand[m.tileIndex]);
-        for (const m of sorted) hand.splice(m.tileIndex, 1);
-        
-        const bySorted = [...matches].sort((a, b) => b.openEndIndex - a.openEndIndex);
-        let score = 0;
-        for (const m of bySorted) {
-            const tile = tiles.find(t => t.isDouble && t.a === this.internalBoard.openEnds[m.openEndIndex].value);
-            score = this.internalBoard.placeTile(tile, m.openEndIndex);
-        }
-
-        if (score > 0) this.addScore(pi, score);
-        this.broadcast("msg", { text: `${this.state.players.get(client.sessionId).name} Gosha x${matches.length}! +${score}`, time: 2000 });
-
-        // Check instant win
-        if (this.instantWinEnabled && score >= IWIN) {
-            this.endRound(pi, true);
-            return;
-        }
-
-        if (hand.length === 0) {
-            this.endDeal(pi, false);
-            return;
-        }
-        if (this.internalBoard.isBlocked(this.hands, this.boneyard)) {
-            this.endDeal(this.findFishWinner(), true);
-            return;
-        }
-
-        this.advanceTurn();
+        this.performGosha(pi, combo, false);
     }
 
     performPlay(pi, tileIndex, openEndIndex, isBot = false) {
@@ -933,6 +901,9 @@ class DominoRoom extends Room {
     handleNextDeal(client) {
         // Only proceed if game is not active (waiting for next deal)
         if (this.state.gameActive) return;
+        // Debounce to prevent one player from skipping results for others
+        if (this._lastNextDealAt && Date.now() - this._lastNextDealAt < 1500) return;
+        this._lastNextDealAt = Date.now();
         void this.startDeal();
     }
 
