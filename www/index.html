@@ -65,7 +65,7 @@
 
                 <div class="settings-grid">
                     <div class="settings-group">
-                        <label data-i18n="label-players">OyunГ§ular</label>
+                        <label data-i18n="label-players">Oyunçular</label>
                         <div class="btn-group" id="player-count-group">
                             <button class="btn btn-option active" data-value="2">2</button>
                             <button class="btn btn-option" data-value="3">3</button>
@@ -78,7 +78,7 @@
                         <div class="btn-group" id="difficulty-group">
                             <button class="btn btn-option" data-value="easy" data-i18n="diff-easy">Asan</button>
                             <button class="btn btn-option active" data-value="medium" data-i18n="diff-medium">Orta</button>
-                            <button class="btn btn-option" data-value="hard" data-i18n="diff-hard">Г‡Й™tin</button>
+                            <button class="btn btn-option" data-value="hard" data-i18n="diff-hard">Çətin</button>
                         </div>
                     </div>
 
@@ -88,7 +88,7 @@
                     </div>
 
                     <div class="rule-grid field-span-2">
-                        <div class="rule-title" data-i18n="label-dloss">MЙ™ДџlubiyyЙ™t hЙ™ddi</div>
+                        <div class="rule-title" data-i18n="label-dloss">Məğlubiyyət həddi</div>
                         <div class="rule-bottom">
                             <input type="text" id="dloss-setting" class="loss-input" value="255" inputmode="numeric" pattern="[0-9]*" maxlength="3">
                             <label class="toggle-card" for="instant-win-setting">
@@ -114,7 +114,7 @@
                     <div>
                         <p class="section-kicker" data-i18n="online-modal-kicker">Onlayn</p>
                         <h2 data-i18n="online-modal-title">Onlayn otaq</h2>
-                        <p class="modal-desc" data-i18n="online-modal-desc">Otaq yaradД±n, bot Й™lavЙ™ edin vЙ™ ya kodla qoЕџulun.</p>
+                        <p class="modal-desc" data-i18n="online-modal-desc">Otaq yaradın, bot əlavə edin və ya kodla qoşulun.</p>
                     </div>
                     <button class="btn btn-action modal-close-btn" id="online-modal-close" data-i18n="online-room-back">Geri</button>
                 </div>
@@ -127,12 +127,12 @@
                 <div id="online-flow-ui" class="is-hidden">
                 <div class="settings-grid compact-grid">
                     <div class="settings-group">
-                        <label data-i18n="label-name">AdД±nД±z</label>
-                        <input type="text" id="player-name-online" data-i18n="placeholder-player-name" placeholder="AdД±nД±zД± daxil edin" maxlength="12" required>
+                        <label data-i18n="label-name">Adınız</label>
+                        <input type="text" id="player-name-online" data-i18n="placeholder-player-name" placeholder="Adınızı daxil edin" maxlength="12" required>
                     </div>
 
                     <div class="settings-group">
-                        <label data-i18n="label-online-players">Otaq Г¶lГ§ГјsГј</label>
+                        <label data-i18n="label-online-players">Otaq ölçüsü</label>
                         <div class="btn-group" id="online-player-count-group">
                             <button class="btn btn-option active" data-value="2">2</button>
                             <button class="btn btn-option" data-value="3">3</button>
@@ -141,14 +141,14 @@
                     </div>
 
                     <div class="settings-group">
-                        <label data-i18n="label-ai-slots">AI yerlЙ™ri</label>
+                        <label data-i18n="label-ai-slots">AI yerləri</label>
                         <input type="number" id="online-ai-count" value="0" min="0" max="2">
                     </div>
 
                     <div class="settings-group">
                         <label data-i18n="label-mode">Oyun rejimi</label>
                         <div class="btn-group" id="multi-mode-group">
-                            <button class="btn btn-option active" data-value="ffa" data-i18n="mode-ffa">HamД± hЙ™r kЙ™sЙ™ qarЕџД±</button>
+                            <button class="btn btn-option active" data-value="ffa" data-i18n="mode-ffa">Hamı hər kəsə qarşı</button>
                             <button class="btn btn-option" data-value="team" data-i18n="mode-team">2 vs 2</button>
                         </div>
                     </div>
@@ -171,7 +171,7 @@
 
                 <div class="multiplayer-actions btn-group">
                     <button class="btn btn-action btn-strong" id="host-game-btn" data-i18n="btn-host">Otaq yarat</button>
-                    <button class="btn btn-action" id="join-game-btn" data-i18n="btn-join">QoЕџul</button>
+                    <button class="btn btn-action" id="join-game-btn" data-i18n="btn-join">Qoşul</button>
                 </div>
 
                 <div id="multi-host-ui" class="multi-panel">
@@ -184,7 +184,7 @@
                     </div>
                     <div id="room-player-count-display" class="room-count">1 / 2</div>
                     <div id="room-player-list" class="room-player-list"></div>
-                    <div id="host-status" class="multi-status" data-i18n="online-room-status-created">Otaq yaradД±lД±r...</div>
+                    <div id="host-status" class="multi-status" data-i18n="online-room-status-created">Otaq yaradılır...</div>
                     <button class="btn btn-menu" id="host-cancel-btn" data-i18n="online-room-back">Geri</button>
                 </div>
 
@@ -192,7 +192,7 @@
                     <div id="join-status" class="multi-status" data-i18n="online-room-join-hint">Otaq kodunu daxil edin</div>
                     <input type="text" id="join-code-input" data-i18n="online-room-code-placeholder" placeholder="ABCD" maxlength="8">
                     <div class="btn-group">
-                        <button class="btn btn-primary" id="connect-btn" data-i18n="btn-join">QoЕџul</button>
+                        <button class="btn btn-primary" id="connect-btn" data-i18n="btn-join">Qoşul</button>
                         <button class="btn btn-action" id="join-cancel-btn" data-i18n="online-room-back">Geri</button>
                     </div>
                 </div>
@@ -232,7 +232,7 @@
                                 <strong id="account-points-value">0</strong>
                             </div>
                             <div class="account-stat-card">
-                                <span data-i18n="account-wins">QЙ™lЙ™bЙ™lЙ™r</span>
+                                <span data-i18n="account-wins">Qələbələr</span>
                                 <strong id="account-wins-value">0</strong>
                             </div>
                             <div class="account-stat-card">
@@ -246,21 +246,21 @@
                         </div>
                         <div id="account-profile-summary" class="room-summary"></div>
                         <div class="account-toolbar">
-                            <button class="btn btn-menu" id="account-refresh-btn" data-i18n="account-refresh">YenilЙ™</button>
+                            <button class="btn btn-menu" id="account-refresh-btn" data-i18n="account-refresh">Yenilə</button>
                             <button class="btn btn-action btn-strong" id="create-account-btn" data-i18n="account-create-account">Create account</button>
-                            <button class="btn btn-menu" id="account-logout-btn" data-i18n="account-logout">Г‡Д±xД±Еџ</button>
+                            <button class="btn btn-menu" id="account-logout-btn" data-i18n="account-logout">Çıxış</button>
                         </div>
                     </section>
 
                     <section class="account-panel account-auth-panel" id="account-auth-panel">
                         <div class="account-auth-hero">
-                            <p class="section-kicker" data-i18n="account-auth-kicker">GiriЕџ</p>
+                            <p class="section-kicker" data-i18n="account-auth-kicker">Giriş</p>
                             <h3 data-i18n="account-auth-title">Hesaba daxil ol</h3>
-                            <p class="account-auth-copy" data-i18n="account-auth-desc">Reytinqin, oyun tarixГ§Й™n vЙ™ Google giriЕџi ГјГ§Гјn hesabД±na daxil ol.</p>
+                            <p class="account-auth-copy" data-i18n="account-auth-desc">Reytinqin, oyun tarixçən və Google girişi üçün hesabına daxil ol.</p>
                         </div>
 
                         <div class="account-switcher" role="tablist" aria-label="Account forms">
-                            <button class="btn btn-menu account-switch active" id="login-tab-btn" data-view="login" type="button" data-i18n="account-login-tab">GiriЕџ</button>
+                            <button class="btn btn-menu account-switch active" id="login-tab-btn" data-view="login" type="button" data-i18n="account-login-tab">Giriş</button>
                             <button class="btn btn-menu account-switch" id="register-tab-btn" data-view="register" type="button" data-i18n="account-register-tab">Qeydiyyat</button>
                         </div>
 
@@ -271,8 +271,8 @@
                                     <input type="email" id="account-login-email-input" placeholder="email@domain.com" maxlength="254">
                                 </div>
                                 <div class="settings-group field-span-2">
-                                    <label data-i18n="account-password">ЕћifrЙ™</label>
-                                    <input type="password" id="account-login-password-input" placeholder="ЕћifrЙ™nizi daxil edin" maxlength="64">
+                                    <label data-i18n="account-password">Şifrə</label>
+                                    <input type="password" id="account-login-password-input" placeholder="Şifrənizi daxil edin" maxlength="64">
                                 </div>
                                 <div class="settings-group field-span-2">
                                     <div id="account-status" class="room-summary"></div>
@@ -280,8 +280,8 @@
                             </div>
 
                             <div class="account-auth-actions">
-                                <button class="btn btn-action btn-strong" id="login-account-btn" type="submit" data-i18n="account-login">GiriЕџ</button>
-                                <button class="btn btn-social" id="google-login-btn" type="button" data-i18n="account-google">Google ilЙ™ giriЕџ</button>
+                                <button class="btn btn-action btn-strong" id="login-account-btn" type="submit" data-i18n="account-login">Giriş</button>
+                                <button class="btn btn-social" id="google-login-btn" type="button" data-i18n="account-google">Google ilə giriş</button>
                             </div>
                         </form>
 
@@ -289,15 +289,15 @@
                             <div class="settings-grid compact-grid">
                                 <div class="settings-group">
                                     <label data-i18n="account-name">Ad</label>
-                                    <input type="text" id="account-name-input" placeholder="AdД±nД±zД± daxil edin" maxlength="12">
+                                    <input type="text" id="account-name-input" placeholder="Adınızı daxil edin" maxlength="12">
                                 </div>
                                 <div class="settings-group">
                                     <label data-i18n="account-email">Email</label>
                                     <input type="email" id="account-email-input" placeholder="email@domain.com" maxlength="254">
                                 </div>
                                 <div class="settings-group field-span-2">
-                                    <label data-i18n="account-password">ЕћifrЙ™</label>
-                                    <input type="password" id="account-password-input" placeholder="ЕћifrЙ™nizi daxil edin" maxlength="64">
+                                    <label data-i18n="account-password">Şifrə</label>
+                                    <input type="password" id="account-password-input" placeholder="Şifrənizi daxil edin" maxlength="64">
                                 </div>
                                 <div class="settings-group field-span-2">
                                     <div id="account-register-status" class="room-summary"></div>
@@ -326,7 +326,7 @@
 
     <div id="game-screen" class="screen">
         <div class="game-header">
-            <button class="menu-btn" id="menu-btn" data-i18n="menu-open" title="Menu">☰</button>
+            <button class="menu-btn" id="menu-btn" data-i18n="menu-open" title="Menu">в°</button>
             <div class="scores-bar" id="scores-bar"></div>
             <div class="game-info">
                 <span id="round-info"></span>
@@ -366,7 +366,7 @@
             <h2 data-i18n="menu-title">Menyu</h2>
             <button class="btn btn-menu" id="menu-resume" data-i18n="menu-resume">Davam et</button>
             <button class="btn btn-menu" id="menu-newgame" data-i18n="menu-new">Yeni oyun</button>
-            <button class="btn btn-menu" id="menu-quit" data-i18n="menu-quit">Г‡Д±xД±Еџ</button>
+            <button class="btn btn-menu" id="menu-quit" data-i18n="menu-quit">Çıxış</button>
         </div>
     </div>
 
