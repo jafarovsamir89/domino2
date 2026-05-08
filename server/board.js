@@ -97,7 +97,8 @@ class Board {
             const crossNode = this.nodes[this.crossNodeId];
             if (Object.keys(crossNode.connections).length >= 2) {
                 const cv = crossNode.tile.a;
-                for (const s of ['top', 'bottom']) {
+                const branchSides = ['top', 'bottom', 'left', 'right'];
+                for (const s of branchSides) {
                     if (!crossNode.connections[s] && !this.openEnds.some(e => e.nodeId === this.crossNodeId && e.side === s)) {
                         this.openEnds.push(new OpenEnd(this.crossNodeId, s, cv, s));
                     }
