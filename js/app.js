@@ -2337,6 +2337,7 @@ class DominoGame {
             if (this.board.isEmpty) { this.network.sendPlay(ti, -1); return; }
             const ends = [];
             for (let j=0; j<this.board.openEnds.length; j++) if (tile.hasValue(this.board.openEnds[j].value)) ends.push(j);
+            if (ends.length > 1 && this.board.nodes.length === 1 && this.board.nodes[0].tile.isDouble) ends.length = 1;
             if (ends.length === 1) this.network.sendPlay(ti, ends[0]);
             else if (ends.length > 1) {
                 this.selectedTileIndex = ti;
@@ -2359,7 +2360,8 @@ class DominoGame {
         
         if (this.board.isEmpty) { this.playTile(pi, ti, -1); return; }
         const ends = [];
-        for (let j=0; j<this.board.openEnds.length; j++) if (tile.hasValue(this.board.openEnds[j].value)) ends.push(j);
+            for (let j=0; j<this.board.openEnds.length; j++) if (tile.hasValue(this.board.openEnds[j].value)) ends.push(j);
+            if (ends.length > 1 && this.board.nodes.length === 1 && this.board.nodes[0].tile.isDouble) ends.length = 1;
         if (ends.length === 1) this.playTile(pi, ti, ends[0]);
         else if (ends.length > 1) {
             this.selectedTileIndex = ti;
