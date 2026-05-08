@@ -2474,7 +2474,7 @@ class DominoGame {
         return false;
     }
 
-    playTile(pi,ti,oei) {
+    async playTile(pi,ti,oei) {
         if(this.turnInProgress) return;
         this.turnInProgress=true;
         try {
@@ -2483,28 +2483,33 @@ class DominoGame {
         if(!this.board.isEmpty && !this.board.openEnds[oei]){this.turnInProgress=false;return;}
         const sourceEl = pi === this.humanPlayerIndex ? this.renderer.handEl?.children?.[ti] || null : null;
         const sourceRect = sourceEl?.getBoundingClientRect?.() || null;
-        this.renderer._pendingBoardTileTravel = sourceRect ? { tileId: tile.id, sourceRect } : null;
+        const sourceNode = sourceEl?.cloneNode?.(true) || null;
+        this.renderer._pendingBoardTileTravel = sourceRect && sourceNode ? { tileId: tile.id, sourceRect, sourceNode } : null;
         hand.splice(ti,1);
         this.playSound('place');
         let score=this.board.isEmpty?this.board.placeFirst(tile):this.board.placeTile(tile,oei);
         this.selectedTileIndex=-1;
         this.log(`Play pi=${pi} ti=${ti}`);
-        this.renderState(); // Update UI immediately so animation plays
-        if (sourceRect) {
-            requestAnimationFrame(() => {
-                requestAnimationFrame(() => this.renderer.animateTileTravel(tile.id, sourceRect));
-            });
-        }
+        this.renderState();
+        const travelPromise = sourceRect
+            ? new Promise((resolve) => {
+                requestAnimationFrame(() => {
+                    requestAnimationFrame(() => {
+                        this.renderer.animateTileTravel(tile.id).finally(resolve);
+                    });
+                });
+            })
+            : Promise.resolve();
+        await travelPromise;
         
         if(score>0){this.addScore(pi,score);if(this.checkEnd(pi,score))return;}
         if(hand.length===0){ setTimeout(()=>this.endDeal(pi,false), 400); return;}
         if(this.board.isBlocked(this.hands,this.boneyard)){ setTimeout(()=>this.endDeal(this.findFishWinner(),true), 400); return;}
         
-        // Short delay for animation to finish before next turn
         setTimeout(() => {
             this.turnInProgress=false;
             this.advanceTurn();
-        }, 300);
+        }, sourceRect ? 120 : 300);
         } catch (e) {
             console.error('[playTile] Error:', e);
             this.turnInProgress = false;

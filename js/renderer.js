@@ -14,6 +14,7 @@ export class Renderer {
         this.drawBtn = document.getElementById('draw-btn');
         this.passBtn = document.getElementById('pass-btn');
         this._pendingBoardTileTravel = null;
+        this._activeTileTravel = null;
     }
 
     pipLayout(v, orient = 'horizontal') {
@@ -126,6 +127,7 @@ export class Renderer {
         this.boardEl.innerHTML = '';
         const bc = document.getElementById('board-container');
         if (!board.nodes.length) {
+            this.cancelActiveTileTravel();
             this._lastAnimatedBoardTileId = null;
             this._pendingBoardTileTravel = null;
             const ph = document.createElement('div');
@@ -180,7 +182,7 @@ export class Renderer {
             const el = this.createTileEl(n.displayA, n.displayB, n.orientation, false, n.tile.id);
             el.classList.add('board-tile');
             if (pendingTravel?.tileId === n.tile.id) {
-                el.style.opacity = '0';
+                el.style.visibility = 'hidden';
             } else if (i === last && board.nodes.length > 1) {
                 if (useGsap && this._lastAnimatedBoardTileId !== n.tile.id) {
                     this.animateBoardTileEntry(wrapper);
@@ -230,88 +232,119 @@ export class Renderer {
         );
     }
 
-    animateTileTravel(tileId, sourceRect) {
+    animateTileTravel(tileId) {
         const pending = this._pendingBoardTileTravel;
-        if (!pending || pending.tileId !== tileId) return;
+        if (!pending || pending.tileId !== tileId) return Promise.resolve();
 
         this._pendingBoardTileTravel = null;
+        const { sourceRect, sourceNode } = pending;
 
         const targetEl = this.boardEl.querySelector(`[data-tile-id="${tileId}"]`);
         if (!targetEl || !sourceRect) {
-            if (targetEl) targetEl.style.opacity = '1';
-            return;
+            this.revealBoardTile(tileId);
+            return Promise.resolve();
         }
 
         const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
         if (reduceMotion || !gsap) {
-            targetEl.style.opacity = '1';
-            return;
+            this.revealBoardTile(tileId);
+            return Promise.resolve();
         }
 
-        const travelLayer = document.getElementById('game-screen');
+        this.cancelActiveTileTravel();
+
+        const travelLayer = document.getElementById('game-screen') || document.body;
         const targetRect = targetEl.getBoundingClientRect();
-        const clone = this.createTileElFromNode(targetEl);
-        const sourceCenterX = sourceRect.left + sourceRect.width / 2;
-        const sourceCenterY = sourceRect.top + sourceRect.height / 2;
-        const targetCenterX = targetRect.left + targetRect.width / 2;
-        const targetCenterY = targetRect.top + targetRect.height / 2;
-        const deltaX = sourceCenterX - targetCenterX;
-        const deltaY = sourceCenterY - targetCenterY;
-        const scaleX = sourceRect.width / targetRect.width;
-        const scaleY = sourceRect.height / targetRect.height;
+        const clone = this.createTravelClone(sourceNode || targetEl);
+        const deltaX = targetRect.left - sourceRect.left;
+        const deltaY = targetRect.top - sourceRect.top;
+        const lift = Math.min(44, Math.max(18, Math.abs(deltaY) * 0.12));
+        const targetRotation = targetEl.classList.contains('horizontal') ? 90 : 0;
 
         clone.style.cssText = [
             'position:fixed',
-            `left:${targetRect.left}px`,
-            `top:${targetRect.top}px`,
+            `left:${sourceRect.left}px`,
+            `top:${sourceRect.top}px`,
             'margin:0',
-            `width:${targetRect.width}px`,
-            `height:${targetRect.height}px`,
+            `width:${sourceRect.width}px`,
+            `height:${sourceRect.height}px`,
             'z-index:220',
             'pointer-events:none',
             'transform-origin:center center',
-            'will-change:transform,opacity',
+            'will-change:left,top,width,height,transform',
             'opacity:1'
         ].join(';');
-        clone.style.transform = 'translate3d(0,0,0)';
+        clone.style.transform = 'translateZ(0)';
         travelLayer.appendChild(clone);
 
-        targetEl.style.opacity = '0';
-        gsap.fromTo(clone, {
-            x: deltaX,
-            y: deltaY,
-            scaleX,
-            scaleY,
-            rotate: -8,
-        }, {
-            x: 0,
-            y: 0,
-            scaleX: 1,
-            scaleY: 1,
-            rotate: 0,
-            duration: 0.72,
-            ease: 'power4.out',
-            onComplete: () => {
-                clone.remove();
-                gsap.fromTo(
-                    targetEl,
-                    { opacity: 0, scale: 0.92 },
-                    {
-                        opacity: 1,
-                        scale: 1,
-                        duration: 0.18,
-                        ease: 'power2.out',
-                        clearProps: 'transform,opacity'
-                    }
-                );
-            }
+        targetEl.style.visibility = 'hidden';
+
+        return new Promise((resolve) => {
+            const timeline = gsap.timeline({
+                onComplete: () => {
+                    this.revealBoardTile(tileId);
+                    clone.remove();
+                    this._activeTileTravel = null;
+                    resolve();
+                },
+                onInterrupt: () => {
+                    this.revealBoardTile(tileId);
+                    clone.remove();
+                    this._activeTileTravel = null;
+                    resolve();
+                }
+            });
+
+            this._activeTileTravel = { timeline, clone, tileId };
+
+            timeline
+                .to(clone, {
+                    left: sourceRect.left + deltaX * 0.38,
+                    top: sourceRect.top + deltaY * 0.38 - lift,
+                    width: sourceRect.width + (targetRect.width - sourceRect.width) * 0.38,
+                    height: sourceRect.height + (targetRect.height - sourceRect.height) * 0.38,
+                    rotation: targetRotation * 0.35,
+                    duration: 0.16,
+                    ease: 'power2.out'
+                })
+                .to(clone, {
+                    left: targetRect.left,
+                    top: targetRect.top,
+                    width: targetRect.width,
+                    height: targetRect.height,
+                    rotation: targetRotation,
+                    duration: 0.24,
+                    ease: 'power3.inOut'
+                });
         });
     }
 
-    createTileElFromNode(nodeEl) {
+    cancelActiveTileTravel() {
+        if (!this._activeTileTravel) return;
+        const { timeline, clone, tileId } = this._activeTileTravel;
+        this._activeTileTravel = null;
+        if (timeline) {
+            timeline.kill();
+        }
+        if (clone?.remove) {
+            clone.remove();
+        }
+        if (tileId) {
+            this.revealBoardTile(tileId);
+        }
+    }
+
+    revealBoardTile(tileId) {
+        const tileEl = this.boardEl.querySelector(`[data-tile-id="${tileId}"]`);
+        if (!tileEl) return;
+        tileEl.style.removeProperty('visibility');
+        tileEl.style.removeProperty('opacity');
+    }
+
+    createTravelClone(nodeEl) {
         if (!nodeEl) {
             const fallback = document.createElement('div');
-            fallback.className = 'tile horizontal';
+            fallback.className = 'tile vertical';
             return fallback;
         }
         const clone = nodeEl.cloneNode(true);
