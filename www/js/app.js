@@ -12,6 +12,7 @@ const TARGET=365, MAX_R=3, DLOSS=255, IWIN=35;
 class DominoGame {
     constructor() {
         this.renderer = new Renderer(this); this.board = new Board();
+        this.playerMissingSuits = [];
         this.playerCount=2; this.onlinePlayerCount=2; this.onlineAiCount=0; this.playerName=''; this.difficulty='medium';
         this.onlineStakeKey = 'free';
         this.onlineEconomyMode = 'free';
@@ -1709,6 +1710,7 @@ class DominoGame {
         if (this.isTeamMode) this.playerCount = 4;
         this.currentMatchStartedAt = new Date().toISOString();
         this.currentMatchSessionId = this.createResumeId('solo');
+        this.playerMissingSuits = Array.from({ length: this.playerCount }, () => new Set());
         this.playerNames = [this.playerName];
         for (let i=1;i<this.playerCount;i++) {
             this.playerNames.push(`${this.currentLang==='az'?'Komp':'AI'} ${i}`);
@@ -2425,6 +2427,12 @@ class DominoGame {
             return;
         }
         if(!this.boneyard.length) return;
+
+        const openValues = this.board.openEnds.map(e => e.value);
+        for (const v of openValues) {
+            if (this.playerMissingSuits[pi]) this.playerMissingSuits[pi].add(v);
+        }
+
         this.hands[pi].push(this.boneyard.pop());
         this.playSound('draw'); this.broadcastMsg(this.t('msg-took-bazaar'), 1500); this.renderState();
     }
@@ -2446,6 +2454,11 @@ class DominoGame {
         if(this.boneyard.length>0){
             if (isHuman) this.renderer.showMessage(this.t('msg-wait-bazaar'), 1500);
             return;
+        }
+
+        const openValues = this.board.openEnds.map(e => e.value);
+        for (const v of openValues) {
+            if (this.playerMissingSuits[pi]) this.playerMissingSuits[pi].add(v);
         }
         this.turnInProgress=true;
         this.playSound('pass'); this.broadcastMsg(this.t('btn-pass'), 300); 
@@ -2564,7 +2577,7 @@ class DominoGame {
 
             // Regular move
             const moves = this.board.getValidMoves(hand);
-            const move = ai.chooseMove(this.board, hand, moves, this.scores, this.hands, this.boneyard);
+            const move = ai.chooseMove(this.board, hand, moves, this.scores, this.hands, this.boneyard, this.playerMissingSuits);
             
             if (move) {
                 this.turnInProgress = false;

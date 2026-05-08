@@ -17,7 +17,7 @@ export class AIPlayer {
         this.params = DIFF[difficulty] || DIFF.medium;
     }
 
-    chooseMove(board, hand, validMoves, scores, allHands, boneyard) {
+    chooseMove(board, hand, validMoves, scores, allHands, boneyard, missingSuits = null) {
         if (validMoves.length === 0) return null;
         if (validMoves.length === 1) return validMoves[0];
 
@@ -25,7 +25,7 @@ export class AIPlayer {
         let bestScore = -Infinity;
 
         for (const move of validMoves) {
-            const score = this.evaluateMove(board, hand, move, scores, allHands, boneyard);
+            const score = this.evaluateMove(board, hand, move, scores, allHands, boneyard, missingSuits);
             if (score > bestScore) {
                 bestScore = score;
                 bestMove = move;
@@ -35,7 +35,7 @@ export class AIPlayer {
         return bestMove;
     }
 
-    evaluateMove(board, hand, move, scores, allHands, boneyard) {
+    evaluateMove(board, hand, move, scores, allHands, boneyard, missingSuits) {
         const P = this.params;
         const tile = hand[move.tileIndex];
         let score = 0;
@@ -70,17 +70,42 @@ export class AIPlayer {
         const remainingPoints = remainingHand.reduce((s, t) => s + t.total, 0);
         score -= remainingPoints * P.handP;
 
-        // Hard: estimate blocking potential without reading opponent tiles (fair play)
+        // Hard: estimate blocking potential using tracked missing suits.
         if (P.blockW > 0) {
-            let totalOpponentTiles = 0;
-            for (let i = 0; i < allHands.length; i++) {
-                if (i === this.playerIndex) continue;
-                totalOpponentTiles += allHands[i].length;
+            if (this.difficulty === 'hard' && Array.isArray(missingSuits) && missingSuits.length === allHands.length) {
+                const opponentIndexes = allHands.map((_, i) => i).filter((i) => i !== this.playerIndex);
+                const nextPlayer = (this.playerIndex + 1) % allHands.length;
+                let fullyBlockedOpponents = 0;
+
+                for (const idx of opponentIndexes) {
+                    const missing = missingSuits[idx];
+                    if (!missing) continue;
+                    const missingCount = openEndValues.filter((v) => missing.has(v)).length;
+                    if (missingCount === openEndValues.length) {
+                        fullyBlockedOpponents++;
+                    } else if (missingCount > 0) {
+                        score += 15 * missingCount;
+                    }
+                }
+
+                if (fullyBlockedOpponents > 0) {
+                    const nextMissing = missingSuits[nextPlayer];
+                    const nextFullyBlocked = nextMissing && openEndValues.every((v) => nextMissing.has(v));
+                    if (nextFullyBlocked || fullyBlockedOpponents === opponentIndexes.length) {
+                        score += 50;
+                    }
+                }
+            } else {
+                let totalOpponentTiles = 0;
+                for (let i = 0; i < allHands.length; i++) {
+                    if (i === this.playerIndex) continue;
+                    totalOpponentTiles += allHands[i].length;
+                }
+                // Statistical estimate: each tile has ~2/7 chance of matching any given open end value
+                const uniqueEndValues = new Set(openEndValues).size;
+                const estimatedOptions = totalOpponentTiles * uniqueEndValues * (2 / 7);
+                score -= estimatedOptions * P.blockW;
             }
-            // Statistical estimate: each tile has ~2/7 chance of matching any given open end value
-            const uniqueEndValues = new Set(openEndValues).size;
-            const estimatedOptions = totalOpponentTiles * uniqueEndValues * (2 / 7);
-            score -= estimatedOptions * P.blockW;
         }
 
         // Randomness (higher = more random = easier)

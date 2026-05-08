@@ -1,4 +1,6 @@
 const { Room } = require("colyseus");
+const Redis = require("ioredis");
+const redis = new Redis(process.env.REDIS_URI || "redis://127.0.0.1:6379");
 const { GameState, Player } = require("./schema/GameState");
 const { Board } = require("./board");
 const { AIPlayer } = require("./ai");
@@ -7,6 +9,7 @@ const { verifyGameToken } = require("./platformAuth");
 const { upsertLivePlayer, removeLivePlayer, setRoomGameActive, removeRoomPlayers } = require("./livePresence");
 
 const TARGET = 365, MAX_R = 3, DLOSS = 255, IWIN = 35;
+const CUSTOM_STATE_TTL = 86400;
 
 function generateRoomCode() {
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -38,6 +41,7 @@ class DominoRoom extends Room {
         this.hands = [];
         this.boneyard = [];
         this.internalBoard = new Board();
+        this.playerMissingSuits = Array.from({ length: this.totalPlayers }, () => new Set());
         this.lastDealWinner = null;
         this.dlossThreshold = options.dlossThreshold || DLOSS;
         this.instantWinEnabled = options.instantWinEnabled !== false;
@@ -146,6 +150,10 @@ class DominoRoom extends Room {
         if (!this.aiCount) return;
         for (let i = 0; i < this.aiCount; i++) {
             const botId = `bot-${i}`;
+            const botIndex = this.state.playerOrder.indexOf(botId);
+            if (!this.aiPlayers.has(botId) && botIndex !== -1) {
+                this.aiPlayers.set(botId, new AIPlayer(botIndex, this.aiDifficulty));
+            }
             if (this.state.players.has(botId)) continue;
 
             const bot = new Player();
@@ -418,7 +426,7 @@ class DominoRoom extends Room {
         }
 
         const moves = this.internalBoard.getValidMoves(hand);
-        const move = bot.chooseMove(this.internalBoard, hand, moves, this.state.players, this.hands, this.boneyard);
+        const move = bot.chooseMove(this.internalBoard, hand, moves, this.state.players, this.hands, this.boneyard, this.playerMissingSuits);
         if (move) {
             this.performPlay(pi, move.tileIndex, move.openEndIndex, true);
             return;
@@ -502,6 +510,7 @@ class DominoRoom extends Room {
             gameActive: this.state.gameActive,
             players
         });
+        void this.saveCustomStateToRedis();
     }
 
     getPlatformMatchIdentity() {
@@ -831,6 +840,11 @@ class DominoRoom extends Room {
         if (this.internalBoard.canPlayAny(this.hands[pi])) return false;
         if (!this.boneyard.length) return false;
 
+        const openValues = this.internalBoard.openEnds.map(e => e.value);
+        for (const v of openValues) {
+            this.playerMissingSuits[pi].add(v);
+        }
+
         this.hands[pi].push(this.boneyard.pop());
         this.broadcast("sound", "draw");
         const actor = this.state.players.get(this.state.playerOrder[pi]);
@@ -845,6 +859,11 @@ class DominoRoom extends Room {
     performPass(pi, isBot = false) {
         if (this.internalBoard.canPlayAny(this.hands[pi])) return false;
         if (this.boneyard.length > 0) return false;
+
+        const openValues = this.internalBoard.openEnds.map(e => e.value);
+        for (const v of openValues) {
+            this.playerMissingSuits[pi].add(v);
+        }
 
         this.broadcast("sound", "pass");
         const actor = this.state.players.get(this.state.playerOrder[pi]);
@@ -1071,6 +1090,108 @@ class DominoRoom extends Room {
         }
 
         this.state.matchRound++;
+    }
+
+    buildCustomStateSnapshot() {
+        return {
+            roomCode: this.roomCode,
+            humanSeats: this.humanSeats,
+            totalPlayers: this.totalPlayers,
+            aiCount: this.aiCount,
+            dlossThreshold: this.dlossThreshold,
+            instantWinEnabled: this.instantWinEnabled,
+            aiDifficulty: this.aiDifficulty,
+            currentStakeKey: this.currentStakeKey,
+            currentDealMatchId: this.currentDealMatchId,
+            currentDealStakeKey: this.currentDealStakeKey,
+            currentDealStakeAmount: this.currentDealStakeAmount,
+            currentDealBankAmount: this.currentDealBankAmount,
+            lastReservedMatchRound: this.lastReservedMatchRound,
+            matchRecorded: this.matchRecorded,
+            forfeitSettlementMade: this.forfeitSettlementMade,
+            lastRoundEconomySummary: this.lastRoundEconomySummary,
+            hands: this.hands,
+            boneyard: this.boneyard,
+            internalBoard: this.internalBoard,
+            lastDealWinner: this.lastDealWinner,
+            botIds: this.botIds,
+            playerMissingSuits: this.playerMissingSuits ? this.playerMissingSuits.map((s) => Array.from(s)) : [],
+            identityBySessionId: Array.from(this.identityBySessionId.entries())
+        };
+    }
+
+    applyCustomStateSnapshot(data = {}) {
+        this.roomCode = data.roomCode || this.roomCode;
+        if (this.roomCode) {
+            global.__DOMINO_ROOM_CODES?.set(this.roomCode, this.roomId);
+            global.__DOMINO_ROOM_IDS?.set(this.roomId, this.roomCode);
+        }
+
+        this.humanSeats = data.humanSeats ?? this.humanSeats;
+        this.totalPlayers = data.totalPlayers ?? this.totalPlayers;
+        this.aiCount = data.aiCount ?? this.aiCount;
+        this.dlossThreshold = data.dlossThreshold ?? this.dlossThreshold;
+        this.instantWinEnabled = data.instantWinEnabled ?? this.instantWinEnabled;
+        this.aiDifficulty = data.aiDifficulty ?? this.aiDifficulty;
+        this.currentStakeKey = data.currentStakeKey ?? this.currentStakeKey;
+        this.currentDealMatchId = data.currentDealMatchId ?? this.currentDealMatchId;
+        this.currentDealStakeKey = data.currentDealStakeKey ?? this.currentDealStakeKey;
+        this.currentDealStakeAmount = data.currentDealStakeAmount ?? this.currentDealStakeAmount;
+        this.currentDealBankAmount = data.currentDealBankAmount ?? this.currentDealBankAmount;
+        this.lastReservedMatchRound = data.lastReservedMatchRound ?? this.lastReservedMatchRound;
+        this.matchRecorded = data.matchRecorded ?? this.matchRecorded;
+        this.forfeitSettlementMade = data.forfeitSettlementMade ?? this.forfeitSettlementMade;
+        this.lastRoundEconomySummary = data.lastRoundEconomySummary ?? this.lastRoundEconomySummary;
+        this.lastDealWinner = data.lastDealWinner ?? this.lastDealWinner;
+        this.botIds = data.botIds || this.botIds || [];
+        this.playerMissingSuits = (data.playerMissingSuits || []).map((arr) => new Set(arr));
+        this.identityBySessionId = new Map(data.identityBySessionId || this.identityBySessionId || []);
+
+        if (data.hands) {
+            this.hands = data.hands.map((hand) => hand.map((t) => new Tile(t.a, t.b)));
+        }
+        if (data.boneyard) {
+            this.boneyard = data.boneyard.map((t) => new Tile(t.a, t.b));
+        }
+        if (data.internalBoard) {
+            const board = new Board();
+            Object.assign(board, data.internalBoard);
+            if (board.nodes) {
+                board.nodes = board.nodes.map((n) => {
+                    n.tile = new Tile(n.tile.a, n.tile.b);
+                    return n;
+                });
+            }
+            this.internalBoard = board;
+        }
+
+        this.ensureBotPlayers();
+    }
+
+    async saveCustomStateToRedis() {
+        if (!this.roomId) return;
+        try {
+            await redis.setex(`domino:custom:${this.roomId}`, CUSTOM_STATE_TTL, JSON.stringify(this.buildCustomStateSnapshot()));
+        } catch (e) {
+            console.error("Redis error", e);
+        }
+    }
+
+    onCacheRoom() {
+        return this.buildCustomStateSnapshot();
+    }
+
+    onRestoreRoom(cachedData) {
+        console.log(`[ROOM] Restoring room ${this.roomId}`);
+        this.applyCustomStateSnapshot(cachedData || {});
+        if (this.state.gameActive && this.state.playerOrder[this.state.currentPlayerIndex]?.startsWith('bot-')) {
+            this.scheduleBotTurn(1500);
+        }
+    }
+
+    async onBeforeShutdown() {
+        await this.saveCustomStateToRedis();
+        return this.disconnect();
     }
 }
 

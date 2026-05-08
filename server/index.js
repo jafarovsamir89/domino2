@@ -3,10 +3,13 @@ const cors = require("cors");
 const http = require("http");
 const path = require("path");
 const { Server } = require("colyseus");
+const { RedisPresence } = require("@colyseus/redis-presence");
+const { RedisDriver } = require("@colyseus/redis-driver");
 const DominoRoom = require("./DominoRoom");
 const { getLiveSummary } = require("./livePresence");
 
 const port = process.env.PORT || 2567;
+const redisUrl = process.env.REDIS_URI || "redis://127.0.0.1:6379";
 const app = express();
 global.__DOMINO_ROOM_CODES = global.__DOMINO_ROOM_CODES || new Map();
 global.__DOMINO_ROOM_IDS = global.__DOMINO_ROOM_IDS || new Map();
@@ -97,9 +100,19 @@ app.get("/api/realtime/players", (req, res) => {
 const server = http.createServer(app);
 const gameServer = new Server({
     server,
+    presence: new RedisPresence(redisUrl),
+    driver: new RedisDriver(redisUrl),
+    gracefullyShutdown: false,
 });
 
 gameServer.define('domino', DominoRoom);
+
+const shutdown = () => {
+    void gameServer.gracefullyShutdown();
+};
+
+process.once("SIGINT", shutdown);
+process.once("SIGTERM", shutdown);
 
 gameServer.listen(port);
 console.log(`[GameServer] Listening on http://localhost:${port}`);
