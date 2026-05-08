@@ -6,6 +6,7 @@ import { Prisma, type CoinLedgerType } from "@prisma/client";
 import { AuthService } from "../auth/auth.service.js";
 import { verifyGameToken } from "../auth/game-token.js";
 import { PrismaService } from "../prisma/prisma.service.js";
+import { calculatePlayerRating } from "../ranking/player-ranking.js";
 
 type EconomyTx = PrismaService | Prisma.TransactionClient;
 
@@ -539,7 +540,7 @@ export class EconomyService {
         reserved: wallet.reserved,
         lifetimeEarned: wallet.lifetimeEarned,
         lifetimeSpent: wallet.lifetimeSpent,
-        rating: wallet.player.stats?.rating ?? 1000,
+        rating: wallet.player.stats ? calculatePlayerRating(wallet.player.stats) : 1000,
         updatedAt: wallet.updatedAt
       }));
 

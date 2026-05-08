@@ -33,6 +33,7 @@ function normalizeProfile(payload = {}, source = "legacy") {
     const user = payload.user || payload;
     const player = payload.player || null;
     const stats = payload.stats || payload.player?.stats || null;
+    const wallet = payload.wallet || payload.player?.wallet || null;
     const displayName = sanitizeName(
         payload.profile?.name ||
         player?.displayName ||
@@ -50,8 +51,11 @@ function normalizeProfile(payload = {}, source = "legacy") {
         draws: Number(stats.draws ?? payload.draws ?? 0),
         matchesPlayed: Number(stats.matchesPlayed ?? payload.matchesPlayed ?? 0),
         currentStreak: Number(stats.currentStreak ?? payload.currentStreak ?? 0),
-        bestStreak: Number(stats.bestStreak ?? payload.bestStreak ?? 0)
+        bestStreak: Number(stats.bestStreak ?? payload.bestStreak ?? 0),
+        titleCode: String(stats.titleCode ?? payload.titleCode ?? payload.title ?? "rookie").trim() || "rookie"
     } : null;
+    const walletBalance = Number(wallet?.balance ?? payload.coins ?? payload.balance ?? 0);
+    const titleCode = String(payload.titleCode || normalizedStats?.titleCode || payload.title || "rookie").trim() || "rookie";
 
     const profile = {
         id: String(player?.id || user?.id || payload.id || ""),
@@ -74,6 +78,15 @@ function normalizeProfile(payload = {}, source = "legacy") {
         matchesPlayed: normalizedStats?.matchesPlayed ?? Number(payload.matchesPlayed ?? 0),
         currentStreak: normalizedStats?.currentStreak ?? Number(payload.currentStreak ?? 0),
         bestStreak: normalizedStats?.bestStreak ?? Number(payload.bestStreak ?? 0),
+        titleCode,
+        coins: walletBalance,
+        wallet: wallet ? {
+            ...wallet,
+            balance: walletBalance,
+            availableBalance: Number(wallet.availableBalance ?? walletBalance),
+            spendableBalance: Number(wallet.spendableBalance ?? walletBalance),
+            reservedBalance: Number(wallet.reservedBalance ?? wallet.reserved ?? 0)
+        } : null,
         recentMatches: Array.isArray(payload.recentMatches) ? payload.recentMatches : [],
         provider: source
     };
@@ -357,8 +370,18 @@ export class AccountClient {
                 draws: 0,
                 matchesPlayed: 0,
                 currentStreak: 0,
-                bestStreak: 0
+                bestStreak: 0,
+                titleCode: "rookie"
             },
+            wallet: {
+                balance: 0,
+                reserved: 0,
+                availableBalance: 0,
+                spendableBalance: 0,
+                reservedBalance: 0
+            },
+            coins: 0,
+            titleCode: "rookie",
             recentMatches: []
         }, "local-guest");
         this.setStoredProfile(normalized.profile);
@@ -464,8 +487,11 @@ export class AccountClient {
                 id: String(row.id || ""),
                 name: String(row.displayName || row.name || "Player"),
                 rating: Number(row.rating ?? 1000),
+                titleCode: String(row.titleCode || row.title || "rookie").trim() || "rookie",
                 points: Number(row.points ?? 0),
                 wins: Number(row.wins ?? 0),
+                losses: Number(row.losses ?? 0),
+                draws: Number(row.draws ?? 0),
                 matchesPlayed: Number(row.matchesPlayed ?? 0)
             }));
         } catch (error) {

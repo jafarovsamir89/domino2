@@ -23,6 +23,9 @@
 - Added docs for the economy plan and this development log.
 - Recovered the first production migration attempt by marking the failed migration as rolled back, then replayed it after making the appended SQL idempotent.
 - Fixed a bootstrap race in `getPublicConfig()` so default economy rows are guaranteed to appear on a fresh database.
+- Replaced the old ELO-style rating update with a game-stat formula based on wins, losses, draws, match count, and streak confidence.
+- Added rating titles to the profile and leaderboard.
+- Exposed coin balance in the profile and added a free-play vs coin-play toggle to the online room settings.
 
 ## Notes
 - Coins are implemented as a soft currency only.

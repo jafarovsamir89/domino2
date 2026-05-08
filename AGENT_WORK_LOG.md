@@ -432,3 +432,10 @@
 - Deferred daily bonuses, quests, cosmetic shop, and tournament UX from the live flow for now.
 - Kept the economy server-authoritative and preserved the free-play fallback path.
 
+## 2026-05-08 Rating and economy UX update
+- Replaced the old ELO-style match rating update with a game-stat based rating formula derived from wins, losses, draws, match count, streaks, and confidence.
+- Added rating titles for the leaderboard and profile, and surfaced the current title in the account modal.
+- Exposed the wallet coin balance in the player profile so the active balance is visible alongside rating and match stats.
+- Added an online economy mode toggle for free play vs coin play, and kept the stake table hidden unless coin mode is selected.
+- Wired leaderboard and player detail responses to return the computed title code and wallet-aware balances.
+

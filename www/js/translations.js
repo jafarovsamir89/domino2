@@ -20,6 +20,10 @@ export const translations = {
         "label-mode": "Oyun rejimi",
         "mode-ffa": "Hər kəs özü üçün",
         "mode-team": "2-yə 2",
+        "label-economy-mode": "Rejim",
+        "label-stake-table": "Stake masasД±",
+        "economy-free": "Pulsuz oyun",
+        "economy-coins": "MonetlЙ™ oyun",
         "btn-host": "Yarat",
         "btn-join": "Qoşul",
         "btn-draw": "BAZAR",
@@ -118,7 +122,17 @@ export const translations = {
         ,"account-profile-loading": "Profil yüklənir..."
         ,"account-leaderboard": "Liderlər cədvəli"
         ,"account-rating": "Reytinq"
+        ,"account-rank": "Rütbə"
         ,"account-points": "Xal"
+        ,"account-coins": "Monet"
+        ,"title-rookie": "Yeni oyunçu"
+        ,"title-bronze": "Bürünc"
+        ,"title-silver": "Gümüş"
+        ,"title-gold": "Qızıl"
+        ,"title-platinum": "Platin"
+        ,"title-diamond": "Almaz"
+        ,"title-master": "Usta"
+        ,"title-legend": "Əfsanə"
         ,"account-wins": "Qələbələr"
         ,"account-losses": "Məğlubiyyətlər"
         ,"account-draws": "Heç-heçə"
@@ -158,6 +172,10 @@ export const translations = {
         "label-mode": "Game mode",
         "mode-ffa": "Free for all",
         "mode-team": "2 vs 2",
+        "label-economy-mode": "Mode",
+        "label-stake-table": "Stake table",
+        "economy-free": "Free play",
+        "economy-coins": "Play on coins",
         "btn-host": "Create",
         "btn-join": "Join",
         "btn-draw": "DRAW",
@@ -256,7 +274,17 @@ export const translations = {
         ,"account-profile-loading": "Loading profile..."
         ,"account-leaderboard": "Leaderboard"
         ,"account-rating": "Rating"
+        ,"account-rank": "Rank"
         ,"account-points": "Points"
+        ,"account-coins": "Coins"
+        ,"title-rookie": "Rookie"
+        ,"title-bronze": "Bronze"
+        ,"title-silver": "Silver"
+        ,"title-gold": "Gold"
+        ,"title-platinum": "Platinum"
+        ,"title-diamond": "Diamond"
+        ,"title-master": "Master"
+        ,"title-legend": "Legend"
         ,"account-wins": "Wins"
         ,"account-losses": "Losses"
         ,"account-draws": "Draws"

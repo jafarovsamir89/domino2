@@ -2,6 +2,7 @@ import { ForbiddenException, Injectable, UnauthorizedException } from "@nestjs/c
 
 import { AuthService } from "../auth/auth.service.js";
 import { PrismaService } from "../prisma/prisma.service.js";
+import { calculatePlayerRating, getPlayerRatingTitleCode } from "../ranking/player-ranking.js";
 
 type AdminHeaders = Record<string, string | string[] | undefined>;
 
@@ -110,28 +111,37 @@ export class AdminService {
     });
 
     const items = players
-      .map((player) => ({
-        id: player.id,
-        userId: player.userId,
-        displayName: player.displayName,
-        avatarSeed: player.avatarSeed,
-        isGuest: player.isGuest,
-        language: player.language,
-        createdAt: player.createdAt,
-        updatedAt: player.updatedAt,
-        user: player.user
-          ? {
-              id: player.user.id,
-              email: player.user.email,
-              role: player.user.role || "player",
-              emailVerified: player.user.emailVerified
-            }
-          : null,
-        stats: player.stats,
-        wallet: player.wallet,
-        activeBans: player.bans.length,
-        openReports: player.reportsIn.length
-      }))
+      .map((player) => {
+        const rating = player.stats ? calculatePlayerRating(player.stats) : 1000;
+        return {
+          id: player.id,
+          userId: player.userId,
+          displayName: player.displayName,
+          avatarSeed: player.avatarSeed,
+          isGuest: player.isGuest,
+          language: player.language,
+          createdAt: player.createdAt,
+          updatedAt: player.updatedAt,
+          user: player.user
+            ? {
+                id: player.user.id,
+                email: player.user.email,
+                role: player.user.role || "player",
+                emailVerified: player.user.emailVerified
+              }
+            : null,
+          stats: player.stats
+            ? {
+                ...player.stats,
+                rating,
+                titleCode: getPlayerRatingTitleCode(rating)
+              }
+            : null,
+          wallet: player.wallet,
+          activeBans: player.bans.length,
+          openReports: player.reportsIn.length
+        };
+      })
       .filter((item) => {
         const searchable = `${item.displayName} ${item.user?.email ?? ""}`.toLowerCase();
         const matchesText = !text || searchable.includes(text.toLowerCase());
@@ -260,8 +270,21 @@ export class AdminService {
             image: player.user.image
           }
         : null,
-      stats: player.stats,
-      wallet: player.wallet,
+      stats: player.stats
+        ? {
+            ...player.stats,
+            rating: calculatePlayerRating(player.stats),
+            titleCode: getPlayerRatingTitleCode(calculatePlayerRating(player.stats))
+          }
+        : null,
+      wallet: player.wallet
+        ? {
+            ...player.wallet,
+            availableBalance: Math.max(0, player.wallet.balance),
+            spendableBalance: Math.max(0, player.wallet.balance),
+            reservedBalance: player.wallet.reserved
+          }
+        : null,
       bans: player.bans,
       reportsIn: player.reportsIn,
       reportsBy: player.reportsBy,

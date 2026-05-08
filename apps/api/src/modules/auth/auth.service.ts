@@ -7,6 +7,7 @@ import { PrismaService } from "../prisma/prisma.service.js";
 import { createGameToken } from "./game-token.js";
 import { getBetterAuthConfig } from "./better-auth.config.js";
 import { auth } from "./auth.instance.js";
+import { calculatePlayerRating, getPlayerRatingTitleCode } from "../ranking/player-ranking.js";
 
 @Injectable()
 export class AuthService {
@@ -60,6 +61,25 @@ export class AuthService {
           }
         });
 
+    const nextRating = calculatePlayerRating(stats);
+    if (stats.rating !== nextRating) {
+      await this.prisma.playerStats.update({
+        where: { playerId: player.id },
+        data: {
+          rating: nextRating
+        }
+      });
+    }
+
+    const wallet = await this.prisma.coinWallet.upsert({
+      where: { playerId: player.id },
+      update: {},
+      create: {
+        playerId: player.id
+      }
+    });
+    const titleCode = getPlayerRatingTitleCode(nextRating);
+
     return {
       session: {
         id: session.session.id,
@@ -80,7 +100,19 @@ export class AuthService {
         createdAt: player.createdAt,
         updatedAt: player.updatedAt
       },
-      stats
+      stats: {
+        ...stats,
+        rating: nextRating,
+        titleCode
+      },
+      wallet: {
+        ...wallet,
+        availableBalance: Math.max(0, wallet.balance),
+        spendableBalance: Math.max(0, wallet.balance),
+        reservedBalance: wallet.reserved
+      },
+      coins: wallet.balance,
+      titleCode
     };
   }
 

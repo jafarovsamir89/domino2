@@ -125,7 +125,9 @@ class NetworkManager {
                 isTeamMode: this.game.isTeamMode,
                 playerCount: this.game.onlinePlayerCount,
                 aiCount: this.game.onlineAiCount,
-                stakeKey: this.game.onlineStakeKey || "free",
+                stakeKey: this.game.onlineEconomyMode === "coins"
+                    ? (this.game.onlineStakeKey && this.game.onlineStakeKey !== "free" ? this.game.onlineStakeKey : "stake_50")
+                    : "free",
                 instantWinEnabled: document.getElementById('instant-win-setting')?.checked,
                 dlossThreshold: parseInt(document.getElementById('dloss-setting')?.value || '255', 10)
             };

@@ -14,6 +14,7 @@ class DominoGame {
         this.renderer = new Renderer(this); this.board = new Board();
         this.playerCount=2; this.onlinePlayerCount=2; this.onlineAiCount=0; this.playerName=''; this.difficulty='medium';
         this.onlineStakeKey = 'free';
+        this.onlineEconomyMode = 'free';
         this.hands=[]; this.boneyard=[]; this.scores=[]; this.roundWins=[];
         this.playerNames=[]; this.currentPlayer=0; this.matchRound=1; this.deal=1;
         this.selectedTileIndex=-1; this.validMoves=[]; this.gameActive=false;
@@ -153,6 +154,18 @@ class DominoGame {
                 this.isTeamMode = (b.dataset.value === 'team');
                 if (this.isTeamMode) {
                     this.onlinePlayerCount = 4;
+                }
+                this.syncMultiplayerOptions();
+            });
+        });
+
+        document.querySelectorAll('#online-economy-group .btn-option').forEach((button) => {
+            button.addEventListener('click', () => {
+                document.querySelectorAll('#online-economy-group .btn-option').forEach((item) => item.classList.remove('active'));
+                button.classList.add('active');
+                this.onlineEconomyMode = button.dataset.value === 'coins' ? 'coins' : 'free';
+                if (this.onlineEconomyMode === 'coins' && this.onlineStakeKey === 'free') {
+                    this.onlineStakeKey = 'stake_50';
                 }
                 this.syncMultiplayerOptions();
             });
@@ -606,7 +619,9 @@ class DominoGame {
             rows.forEach((row) => {
                 const item = document.createElement('div');
                 item.className = 'room-player-chip';
-                item.innerHTML = `<span>#${row.rank} ${row.name}</span><strong>${row.rating}</strong>`;
+                const titleKey = `title-${String(row.titleCode || 'rookie')}`;
+                const title = this.t(titleKey);
+                item.innerHTML = `<span>#${row.rank} ${row.name} · ${title}</span><strong>${row.rating}</strong>`;
                 list.appendChild(item);
             });
         } catch (err) {
@@ -638,12 +653,15 @@ class DominoGame {
         const profileName = document.getElementById('account-profile-name');
         const profileMeta = document.getElementById('account-profile-meta');
         const ratingValue = document.getElementById('account-rating-value');
+        const titleValue = document.getElementById('account-title-value');
         const pointsValue = document.getElementById('account-points-value');
         const winsValue = document.getElementById('account-wins-value');
         const matchesValue = document.getElementById('account-matches-value');
+        const coinsValue = document.getElementById('account-coins-value');
         const historyList = document.getElementById('account-history-list');
         const refreshButton = document.getElementById('account-refresh-btn');
         const logoutButton = document.getElementById('account-logout-btn');
+        const titleLabel = this.t(`title-${profile?.titleCode || 'rookie'}`);
         this.syncAccountUiChrome();
         if (nameInput && !nameInput.value.trim() && profile?.name) {
             nameInput.value = profile.name;
@@ -677,13 +695,15 @@ class DominoGame {
         if (profileName) profileName.textContent = profile?.name || 'Domino Player';
         if (profileMeta) {
             profileMeta.textContent = profile
-                ? (profile.isGuest ? this.t('account-guest-meta') : `${this.t('account-rating')}: ${profile.rating}`)
+                ? (profile.isGuest ? this.t('account-guest-meta') : `${titleLabel} · ${this.t('account-rating')}: ${profile.rating}`)
                 : this.t('account-profile-empty');
         }
         if (ratingValue) ratingValue.textContent = String(profile?.rating ?? 1000);
+        if (titleValue) titleValue.textContent = titleLabel;
         if (pointsValue) pointsValue.textContent = String(profile?.points ?? 0);
         if (winsValue) winsValue.textContent = String(profile?.wins ?? 0);
         if (matchesValue) matchesValue.textContent = String(profile?.matchesPlayed ?? 0);
+        if (coinsValue) coinsValue.textContent = String(profile?.coins ?? profile?.wallet?.balance ?? 0);
         if (!profile) {
             summary.textContent = this.accountOnline ? this.t('account-profile-empty') : this.t('account-offline');
             if (historyList) historyList.innerHTML = `<div class="room-summary">${this.t('account-history-empty')}</div>`;
@@ -839,8 +859,18 @@ class DominoGame {
             button.classList.toggle('active', this.isTeamMode === isTeamButton);
         });
 
+        document.querySelectorAll('#online-economy-group .btn-option').forEach((button) => {
+            button.classList.toggle('active', (button.dataset.value === 'coins' ? 'coins' : 'free') === this.onlineEconomyMode);
+        });
+
+        const stakeWrapper = document.getElementById('online-stake-wrapper');
+        if (stakeWrapper) {
+            stakeWrapper.classList.toggle('is-hidden', this.onlineEconomyMode !== 'coins');
+        }
+
         document.querySelectorAll('#online-stake-group .btn-option').forEach((button) => {
-            button.classList.toggle('active', button.dataset.value === this.onlineStakeKey);
+            const shouldBeActive = this.onlineEconomyMode === 'coins' && button.dataset.value === this.onlineStakeKey;
+            button.classList.toggle('active', shouldBeActive);
         });
 
         const aiInput = document.getElementById('online-ai-count');
@@ -852,7 +882,9 @@ class DominoGame {
             const summary = document.getElementById('online-player-summary');
             if (summary) {
                 const humans = Math.max(1, this.onlinePlayerCount - this.onlineAiCount);
-                const stakeLabel = (Array.from(document.querySelectorAll('#online-stake-group .btn-option')).find((button) => button.dataset.value === this.onlineStakeKey)?.textContent || 'Free').trim();
+                const stakeLabel = this.onlineEconomyMode === 'coins'
+                    ? (Array.from(document.querySelectorAll('#online-stake-group .btn-option')).find((button) => button.dataset.value === this.onlineStakeKey)?.textContent || this.t('economy-coins')).trim()
+                    : this.t('economy-free');
                 summary.textContent = `${this.format('online-room-summary', { humans, bots: this.onlineAiCount, total: this.onlinePlayerCount })} · ${stakeLabel}`;
             }
         }
@@ -1267,11 +1299,12 @@ class DominoGame {
         const t = translations[nextLang] || translations.az;
         document.querySelectorAll('[data-i18n]').forEach(el => {
             const key = el.dataset.i18n;
-            if (t[key]) {
-                if (el.tagName === 'INPUT') el.placeholder = t[key];
+            const value = t[key] || translations.en?.[key] || translations.az?.[key] || key;
+            if (value) {
+                if (el.tagName === 'INPUT') el.placeholder = value;
                 else {
-                    el.textContent = t[key];
-                    if (el.id === 'menu-btn') el.title = t[key];
+                    el.textContent = value;
+                    if (el.id === 'menu-btn') el.title = value;
                 }
             }
         });
@@ -1285,7 +1318,7 @@ class DominoGame {
     }
 
     t(key) {
-        return translations[this.currentLang][key] || key;
+        return translations[this.currentLang][key] || translations.en?.[key] || translations.az?.[key] || key;
     }
     format(key, values = {}) {
         return this.t(key).replace(/\{(\w+)\}/g, (_, token) => values[token] ?? `{${token}}`);

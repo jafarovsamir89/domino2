@@ -4,6 +4,7 @@ import { EconomyService } from "../economy/economy.service.js";
 import { grantStarterCoins } from "../economy/economy-starter.js";
 import { PrismaService } from "../prisma/prisma.service.js";
 import { verifyGameToken } from "../auth/game-token.js";
+import { calculatePlayerRating } from "../ranking/player-ranking.js";
 
 type MatchParticipantPayload = {
   userId?: string;
@@ -41,11 +42,6 @@ type PlayerSnapshot = {
   currentStreak: number;
   bestStreak: number;
 };
-
-function eloDelta(userRating: number, oppRating: number, result: number, k = 32) {
-  const expected = 1 / (1 + Math.pow(10, (oppRating - userRating) / 400));
-  return Math.round(k * (result - expected));
-}
 
 function toInt(value: unknown, fallback = 0) {
   const parsed = Number.parseInt(String(value ?? ""), 10);
@@ -143,18 +139,6 @@ export class MatchesService {
         return null;
       }
 
-      const teamRatings = isTeamMode && Array.isArray(payload.teams) && payload.teams.length >= 2
-        ? payload.teams.slice(0, 2).map((team, teamIndex) => {
-            const members = (team.memberIds || [])
-              .map((memberId) => resolvedParticipants.find((entry) => entry.participant.userId === memberId)?.player.rating)
-              .filter((rating): rating is number => typeof rating === "number");
-            if (!members.length) {
-              return 1000;
-            }
-            return members.reduce((sum, value) => sum + value, 0) / members.length;
-          })
-        : null;
-
       const match = await tx.match.create({
         data: {
           mode: payload.mode || "online",
@@ -202,38 +186,23 @@ export class MatchesService {
           : participant.winnerKey === winnerKey);
         const didWin = isDraw ? false : isWinner;
         const didLose = !didWin && !isDraw;
-
-        let ratingDelta = 0;
-        if (isTeamMode && teamRatings && participant.teamIndex !== null && participant.teamIndex !== undefined) {
-          const ownTeam = teamRatings[participant.teamIndex] || 1000;
-          const oppTeam = teamRatings[participant.teamIndex === 0 ? 1 : 0] || 1000;
-          const result = isDraw ? 0.5 : (didWin ? 1 : 0);
-          ratingDelta = eloDelta(ownTeam, oppTeam, result, 28);
-        } else {
-          const opponentRatings = resolvedParticipants
-            .filter((entry) => entry.player.userId !== player.userId)
-            .map((entry) => entry.player.rating);
-          const opponentAverage = opponentRatings.length
-            ? opponentRatings.reduce((sum, value) => sum + value, 0) / opponentRatings.length
-            : 1000;
-          const result = isDraw ? 0.5 : (didWin ? 1 : 0);
-          ratingDelta = eloDelta(player.rating, opponentAverage, result, 32);
-        }
-
-        const nextRating = Math.max(100, player.rating + ratingDelta);
         const nextCurrentStreak = didWin ? player.currentStreak + 1 : 0;
+        const nextStats = {
+          wins: player.wins + (didWin ? 1 : 0),
+          losses: player.losses + (didLose ? 1 : 0),
+          draws: player.draws + (isDraw ? 1 : 0),
+          matchesPlayed: player.matchesPlayed + 1,
+          currentStreak: nextCurrentStreak,
+          bestStreak: Math.max(player.bestStreak, nextCurrentStreak)
+        };
+        const nextRating = calculatePlayerRating(nextStats);
 
         await tx.playerStats.update({
           where: { playerId: player.playerId },
           data: {
             rating: nextRating,
             points: player.points + toInt(participant.points),
-            wins: player.wins + (didWin ? 1 : 0),
-            losses: player.losses + (didLose ? 1 : 0),
-            draws: player.draws + (isDraw ? 1 : 0),
-            matchesPlayed: player.matchesPlayed + 1,
-            currentStreak: nextCurrentStreak,
-            bestStreak: Math.max(player.bestStreak, nextCurrentStreak)
+            ...nextStats
           }
         });
       }
