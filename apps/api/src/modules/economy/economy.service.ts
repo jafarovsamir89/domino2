@@ -1202,6 +1202,7 @@ export class EconomyService {
           );
           settled.push({
             playerId: reservation.playerId,
+            userId: reservation.player.userId || null,
             wallet: updated,
             payout: reservation.stakeAmount
           });
@@ -1246,6 +1247,7 @@ export class EconomyService {
           );
           settled.push({
             playerId: reservation.playerId,
+            userId: reservation.player.userId || null,
             wallet: updated,
             payout: payoutShare
           });
@@ -1253,6 +1255,7 @@ export class EconomyService {
         } else {
           settled.push({
             playerId: reservation.playerId,
+            userId: reservation.player.userId || null,
             wallet,
             payout: 0
           });
@@ -1601,6 +1604,7 @@ export class EconomyService {
         reservations: [
           {
             playerId: reservation.playerId,
+            userId: reservation.player.userId || null,
             wallet,
             payout: drawOrRefund ? reservation.stakeAmount : payout
           }

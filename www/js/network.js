@@ -166,6 +166,7 @@ class NetworkManager {
                 this.setStoredReconnectionToken(this.room.reconnectionToken);
             }
             this.isMultiplayer = true;
+            this.game.resetOnlineCoinSummary?.();
             this.setupListeners();
             if (onReady) onReady(connectedRoomId);
             if (mode === "create") {

@@ -48,6 +48,7 @@ class DominoRoom extends Room {
         this.currentDealStakeKey = this.currentStakeKey;
         this.currentDealStakeAmount = 0;
         this.currentDealBankAmount = 0;
+        this.lastReservedMatchRound = 0;
         this.pendingEconomySettlement = Promise.resolve();
         this.botTimer = null;
         this.botIds = [];
@@ -55,6 +56,7 @@ class DominoRoom extends Room {
         this.matchRecorded = false;
         this.forfeitSettlementMade = false;
         this.identityBySessionId = new Map();
+        this.lastRoundEconomySummary = null;
 
         this.onMessage("play", (client, message) => this.handlePlay(client, message));
         this.onMessage("draw", (client) => this.handleDraw(client));
@@ -235,6 +237,7 @@ class DominoRoom extends Room {
         this.currentDealStakeKey = this.currentStakeKey;
         this.currentDealStakeAmount = 0;
         this.currentDealBankAmount = 0;
+        this.lastReservedMatchRound = 0;
         this.ensureBotPlayers();
         this.broadcastRoomState();
         await this.startDeal();
@@ -249,7 +252,7 @@ class DominoRoom extends Room {
         this.matchRecorded = false;
         this.internalBoard = new Board();
         this.state.gameActive = false;
-        this.currentDealMatchId = `${this.roomId}:round:${this.state.matchRound}:deal:${this.state.deal}`;
+        this.currentDealMatchId = `${this.roomId}:round:${this.state.matchRound}`;
         this.currentDealStakeKey = this.currentStakeKey;
         this.currentDealStakeAmount = 0;
         this.currentDealBankAmount = 0;
@@ -271,7 +274,7 @@ class DominoRoom extends Room {
             this.state.currentPlayerIndex = f.player;
         }
         
-        if (this.currentStakeKey !== "free") {
+        if (this.currentStakeKey !== "free" && this.lastReservedMatchRound !== this.state.matchRound) {
             const reserveResult = await this.reserveEconomyStake();
             if (!reserveResult?.ok) {
                 const reason = reserveResult?.reason || "stake_unavailable";
@@ -284,6 +287,7 @@ class DominoRoom extends Room {
                 this.broadcastRoomState();
                 return;
             }
+            this.lastReservedMatchRound = this.state.matchRound;
         }
         this.state.gameActive = true;
         this.syncState();
@@ -599,12 +603,13 @@ class DominoRoom extends Room {
     async settleEconomyRound(wi, isInstantWin, players, wins) {
         if (this.currentStakeKey === "free") {
             this.pendingEconomySettlement = Promise.resolve();
-            return false;
+            this.lastRoundEconomySummary = null;
+            return null;
         }
 
         const platformIdentity = this.getPlatformMatchIdentity();
         if (!platformIdentity) {
-            return false;
+            return null;
         }
 
         const winnerUserIds = this.state.playerOrder
@@ -639,14 +644,46 @@ class DominoRoom extends Room {
                 throw new Error(text || `Round settle failed with ${response.status}`);
             }
 
+            const settlement = await response.json().catch(() => null);
+            const summary = settlement?.ok ? {
+                stakeKey: this.currentDealStakeKey,
+                stakeAmount: this.currentDealStakeAmount,
+                bankAmount: Math.max(0, settlement.bank || this.currentDealBankAmount || 0),
+                commission: Math.max(0, settlement.commission || 0),
+                payout: Math.max(0, settlement.payout || 0),
+                winners: Math.max(0, settlement.winners || 0),
+                result: settlement.result || "win",
+                reservations: Array.isArray(settlement.reservations) ? settlement.reservations : []
+            } : {
+                stakeKey: this.currentDealStakeKey,
+                stakeAmount: this.currentDealStakeAmount,
+                bankAmount: Math.max(0, this.currentDealBankAmount || 0),
+                commission: 0,
+                payout: 0,
+                winners: 0,
+                result: "refund",
+                reservations: []
+            };
+
             this.currentDealBankAmount = 0;
             this.currentDealStakeAmount = 0;
             this.currentDealStakeKey = this.currentStakeKey;
             this.pendingEconomySettlement = Promise.resolve();
-            return true;
+            this.lastRoundEconomySummary = summary;
+            return summary;
         } catch (error) {
             console.warn("[ROOM] Failed to settle round stake:", error);
-            return false;
+            this.lastRoundEconomySummary = {
+                stakeKey: this.currentDealStakeKey,
+                stakeAmount: this.currentDealStakeAmount,
+                bankAmount: Math.max(0, this.currentDealBankAmount || 0),
+                commission: 0,
+                payout: 0,
+                winners: 0,
+                result: "refund",
+                reservations: []
+            };
+            return this.lastRoundEconomySummary;
         }
     }
 
@@ -984,11 +1021,6 @@ class DominoRoom extends Room {
         }
 
         this.broadcast("sound", "win");
-        if (this.currentStakeKey !== "free") {
-            this.pendingEconomySettlement = this.settleEconomyRound(wi, false, null, null);
-        } else {
-            this.pendingEconomySettlement = Promise.resolve();
-        }
         
         // Check for round win (target score reached)
         const cs = this.state.isTeamMode ? Math.max(...this.state.teamScores) : Math.max(...Array.from(this.state.players.values()).map(p => p.score));
@@ -1005,12 +1037,15 @@ class DominoRoom extends Room {
         this.syncState();
     }
 
-    endRound(wi, isInstantWin) {
+    async endRound(wi, isInstantWin) {
         if (this.botTimer) {
             clearTimeout(this.botTimer);
             this.botTimer = null;
         }
         this.state.gameActive = false;
+        const economySummary = this.currentStakeKey !== "free"
+            ? await this.settleEconomyRound(wi, !!isInstantWin, null, null)
+            : null;
         let wins = 1;
 
         if (this.state.isTeamMode) {
@@ -1056,7 +1091,8 @@ class DominoRoom extends Room {
             isTeamMode: this.state.isTeamMode,
             teamScores: Array.from(this.state.teamScores),
             teamRoundWins: Array.from(this.state.teamRoundWins),
-            players: playerData
+            players: playerData,
+            economy: economySummary
         });
 
         if (isMatchOver) {

@@ -44,6 +44,7 @@ class DominoGame {
         this.currentRoundStakeAmount = 0;
         this.currentRoundBankAmount = 0;
         this.coinMatchSummary = { spent: 0, won: 0 };
+        this.onlineCoinSummary = { spent: 0, won: 0 };
         this.pendingSoloSettlement = Promise.resolve();
         this.reactionPalette = [
             { code: '1F923', label: 'ROFL' },
@@ -1076,6 +1077,10 @@ class DominoGame {
         return bankAmount > 0 ? `${bankAmount} coins` : '';
     }
 
+    resetOnlineCoinSummary() {
+        this.onlineCoinSummary = { spent: 0, won: 0 };
+    }
+
     buildGameResumeSnapshot() {
         const isOnline = this.network.isMultiplayer;
         const boardState = this.board ? JSON.parse(JSON.stringify(this.board)) : null;
@@ -1444,6 +1449,7 @@ class DominoGame {
         this.myHand = null;
         this.gameActive = false;
         this.onlineRoundBankAmount = 0;
+        this.resetOnlineCoinSummary();
         this.showStartModal(null);
         this.resetMultiplayerPanels(false);
         document.getElementById('menu-screen').classList.remove('active');
@@ -1721,6 +1727,9 @@ class DominoGame {
         this.matchRound=1; this.matchOver=false; this.roundOver=false; this.lastDealWinner=null;
         this.coinMatchSummary = { spent: 0, won: 0 };
         this.pendingSoloSettlement = Promise.resolve();
+        if (this.network.isMultiplayer) {
+            this.resetOnlineCoinSummary();
+        }
         
         // Settings
         this.instantWinEnabled = document.getElementById('instant-win-setting').checked;
@@ -2267,6 +2276,24 @@ class DominoGame {
 
         this.matchOver = data.isMatchOver;
 
+        if (this.network.isMultiplayer && this.onlineEconomyMode === 'coins' && data.economy) {
+            const economy = data.economy || {};
+            const stakeAmount = Math.max(0, Number(economy.stakeAmount || 0));
+            const reservations = Array.isArray(economy.reservations) ? economy.reservations : [];
+            const myUserId = String(
+                this.accountProfile?.profile?.userId ||
+                this.accountDetails?.user?.id ||
+                this.account?.getStoredProfile?.()?.userId ||
+                ''
+            ).trim();
+            const myReservation = reservations.find((entry) => String(entry?.userId || '').trim() === myUserId);
+            const myPayout = Math.max(0, Number(myReservation?.payout ?? 0));
+            if (stakeAmount > 0) {
+                this.onlineCoinSummary.spent += stakeAmount;
+                this.onlineCoinSummary.won += myPayout;
+            }
+        }
+
         let displayEntities;
         if (data.isTeamMode) {
             displayEntities = [
@@ -2581,9 +2608,9 @@ class DominoGame {
         void this.syncLocalPresence();
     }
     showMatchResult(){
-        const economySummary = this.soloEconomyMode === 'coins'
-            ? { ...this.coinMatchSummary }
-            : null;
+        const economySummary = this.network.isMultiplayer
+            ? (this.onlineEconomyMode === 'coins' ? { ...this.onlineCoinSummary } : null)
+            : (this.soloEconomyMode === 'coins' ? { ...this.coinMatchSummary } : null);
         if(this.isTeamMode){
             const w=this.teamRoundWins[0]>=this.teamRoundWins[1]?0:1;
             this.renderer.renderGameOver(w===0?`${this.playerNames[0]} & ${this.playerNames[2]}`:`${this.playerNames[1]} & ${this.playerNames[3]}`,[{name:this.t('team-a'),roundWins:this.teamRoundWins[0]},{name:this.t('team-b'),roundWins:this.teamRoundWins[1]}], economySummary);
