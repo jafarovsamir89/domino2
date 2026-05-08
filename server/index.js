@@ -16,7 +16,22 @@ global.__DOMINO_ROOM_IDS = global.__DOMINO_ROOM_IDS || new Map();
 
 app.use(cors());
 app.use(express.json());
-app.use(express.static(path.join(__dirname, "..", "www")));
+
+const wwwRoot = path.join(__dirname, "..", "www");
+app.use(express.static(wwwRoot, {
+    setHeaders(res, filePath) {
+        const ext = path.extname(filePath).toLowerCase();
+        if (ext === ".html") {
+            res.setHeader("Content-Type", "text/html; charset=UTF-8");
+        } else if (ext === ".js") {
+            res.setHeader("Content-Type", "application/javascript; charset=UTF-8");
+        } else if (ext === ".css") {
+            res.setHeader("Content-Type", "text/css; charset=UTF-8");
+        } else if (ext === ".json" || ext === ".webmanifest") {
+            res.setHeader("Content-Type", "application/json; charset=UTF-8");
+        }
+    }
+}));
 
 function legacyAuthGone(res) {
     res.status(410).json({
