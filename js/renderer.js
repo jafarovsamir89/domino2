@@ -13,6 +13,7 @@ export class Renderer {
         this.boneyardVisual = document.getElementById('boneyard-visual');
         this.drawBtn = document.getElementById('draw-btn');
         this.passBtn = document.getElementById('pass-btn');
+        this._pendingBoardTileTravel = null;
     }
 
     pipLayout(v, orient = 'horizontal') {
@@ -126,6 +127,7 @@ export class Renderer {
         const bc = document.getElementById('board-container');
         if (!board.nodes.length) {
             this._lastAnimatedBoardTileId = null;
+            this._pendingBoardTileTravel = null;
             const ph = document.createElement('div');
             ph.style.cssText = 'color:var(--text-dim);font-size:0.85rem;text-align:center;padding:40px;width:100%;height:100%;display:flex;align-items:center;justify-content:center;';
             ph.textContent = this.app.t('board-empty');
@@ -167,6 +169,7 @@ export class Renderer {
         this._lastOy = oy;
         const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
         const useGsap = !!gsap && !reduceMotion;
+        const pendingTravel = this._pendingBoardTileTravel;
 
         const last = board.nodes.length - 1;
         for (let i = 0; i < board.nodes.length; i++) {
@@ -176,7 +179,9 @@ export class Renderer {
 
             const el = this.createTileEl(n.displayA, n.displayB, n.orientation, false, n.tile.id);
             el.classList.add('board-tile');
-            if (i === last && board.nodes.length > 1) {
+            if (pendingTravel?.tileId === n.tile.id) {
+                el.style.opacity = '0';
+            } else if (i === last && board.nodes.length > 1) {
                 if (useGsap && this._lastAnimatedBoardTileId !== n.tile.id) {
                     this.animateBoardTileEntry(wrapper);
                     this._lastAnimatedBoardTileId = n.tile.id;
@@ -223,6 +228,95 @@ export class Renderer {
                 clearProps: 'transform,opacity'
             }
         );
+    }
+
+    animateTileTravel(tileId, sourceRect) {
+        const pending = this._pendingBoardTileTravel;
+        if (!pending || pending.tileId !== tileId) return;
+
+        this._pendingBoardTileTravel = null;
+
+        const targetEl = this.boardEl.querySelector(`[data-tile-id="${tileId}"]`);
+        if (!targetEl || !sourceRect) {
+            if (targetEl) targetEl.style.opacity = '1';
+            return;
+        }
+
+        const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
+        if (reduceMotion || !gsap) {
+            targetEl.style.opacity = '1';
+            return;
+        }
+
+        const travelLayer = document.getElementById('game-screen');
+        const targetRect = targetEl.getBoundingClientRect();
+        const clone = this.createTileElFromNode(targetEl);
+        const sourceCenterX = sourceRect.left + sourceRect.width / 2;
+        const sourceCenterY = sourceRect.top + sourceRect.height / 2;
+        const targetCenterX = targetRect.left + targetRect.width / 2;
+        const targetCenterY = targetRect.top + targetRect.height / 2;
+        const deltaX = sourceCenterX - targetCenterX;
+        const deltaY = sourceCenterY - targetCenterY;
+        const scaleX = sourceRect.width / targetRect.width;
+        const scaleY = sourceRect.height / targetRect.height;
+
+        clone.style.cssText = [
+            'position:fixed',
+            `left:${targetRect.left}px`,
+            `top:${targetRect.top}px`,
+            'margin:0',
+            `width:${targetRect.width}px`,
+            `height:${targetRect.height}px`,
+            'z-index:220',
+            'pointer-events:none',
+            'transform-origin:center center',
+            'will-change:transform,opacity',
+            'opacity:1'
+        ].join(';');
+        clone.style.transform = 'translate3d(0,0,0)';
+        travelLayer.appendChild(clone);
+
+        targetEl.style.opacity = '0';
+        gsap.fromTo(clone, {
+            x: deltaX,
+            y: deltaY,
+            scaleX,
+            scaleY,
+            rotate: -8,
+        }, {
+            x: 0,
+            y: 0,
+            scaleX: 1,
+            scaleY: 1,
+            rotate: 0,
+            duration: 0.72,
+            ease: 'power4.out',
+            onComplete: () => {
+                clone.remove();
+                gsap.fromTo(
+                    targetEl,
+                    { opacity: 0, scale: 0.92 },
+                    {
+                        opacity: 1,
+                        scale: 1,
+                        duration: 0.18,
+                        ease: 'power2.out',
+                        clearProps: 'transform,opacity'
+                    }
+                );
+            }
+        });
+    }
+
+    createTileElFromNode(nodeEl) {
+        if (!nodeEl) {
+            const fallback = document.createElement('div');
+            fallback.className = 'tile horizontal';
+            return fallback;
+        }
+        const clone = nodeEl.cloneNode(true);
+        clone.classList.remove('board-tile', 'just-played', 'telephone-highlight');
+        return clone;
     }
 
     showArrowChoices(board, matchingEnds, onChoose, onCancel) {

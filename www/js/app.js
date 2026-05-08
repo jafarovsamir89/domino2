@@ -2481,12 +2481,20 @@ class DominoGame {
         const hand=this.hands[pi],tile=hand && hand[ti];
         if(!tile){this.turnInProgress=false;return;}
         if(!this.board.isEmpty && !this.board.openEnds[oei]){this.turnInProgress=false;return;}
+        const sourceEl = pi === this.humanPlayerIndex ? this.renderer.handEl?.children?.[ti] || null : null;
+        const sourceRect = sourceEl?.getBoundingClientRect?.() || null;
+        this.renderer._pendingBoardTileTravel = sourceRect ? { tileId: tile.id, sourceRect } : null;
         hand.splice(ti,1);
         this.playSound('place');
         let score=this.board.isEmpty?this.board.placeFirst(tile):this.board.placeTile(tile,oei);
         this.selectedTileIndex=-1;
         this.log(`Play pi=${pi} ti=${ti}`);
         this.renderState(); // Update UI immediately so animation plays
+        if (sourceRect) {
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => this.renderer.animateTileTravel(tile.id, sourceRect));
+            });
+        }
         
         if(score>0){this.addScore(pi,score);if(this.checkEnd(pi,score))return;}
         if(hand.length===0){ setTimeout(()=>this.endDeal(pi,false), 400); return;}
