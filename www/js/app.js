@@ -745,7 +745,7 @@ class DominoGame {
         if (pointsValue) pointsValue.textContent = String(profile?.points ?? 0);
         if (winsValue) winsValue.textContent = String(profile?.wins ?? 0);
         if (matchesValue) matchesValue.textContent = String(profile?.matchesPlayed ?? 0);
-        if (coinsValue) coinsValue.textContent = String(profile?.coins ?? profile?.wallet?.balance ?? 0);
+        if (coinsValue) coinsValue.textContent = String(details?.wallet?.balance ?? profile?.coins ?? profile?.wallet?.balance ?? 0);
         if (!profile) {
             summary.textContent = this.accountOnline ? this.t('account-profile-empty') : this.t('account-offline');
             if (historyList) historyList.innerHTML = `<div class="room-summary">${this.t('account-history-empty')}</div>`;
@@ -1532,6 +1532,17 @@ class DominoGame {
             this.closeReactionPicker();
             document.getElementById('menu-screen').classList.add('active');
         });
+        const menuScreen = document.getElementById('menu-screen');
+        if (menuScreen) {
+            menuScreen.addEventListener('click', async (event) => {
+                const target = event.target?.closest?.('#menu-profile');
+                if (!target) return;
+                event.preventDefault();
+                event.stopPropagation();
+                document.getElementById('menu-screen').classList.remove('active');
+                await this.openAccountModal();
+            });
+        }
         document.getElementById('menu-resume').addEventListener('click', () => document.getElementById('menu-screen').classList.remove('active'));
         document.getElementById('menu-newgame').addEventListener('click', () => { document.getElementById('menu-screen').classList.remove('active'); void this.startNewGame(); });
         const menuProfileBtn = document.getElementById('menu-profile');
@@ -1569,6 +1580,9 @@ class DominoGame {
         }
 
         // Single-player local game
+        if (this.network.isMultiplayer || this.network.room) {
+            this.network.leaveRoom();
+        }
         if (this.isTeamMode) this.playerCount = 4;
         this.currentMatchStartedAt = new Date().toISOString();
         this.currentMatchSessionId = this.createResumeId('solo');

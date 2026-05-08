@@ -123,6 +123,7 @@ export class AuthService {
     }
 
     return {
+      profile,
       token: createGameToken({
         userId: profile.user.id,
         playerId: profile.player.id,
@@ -135,7 +136,11 @@ export class AuthService {
       }),
       user: profile.user,
       player: profile.player,
-      session: profile.session
+      session: profile.session,
+      stats: profile.stats,
+      wallet: profile.wallet,
+      coins: profile.coins,
+      titleCode: profile.titleCode
     };
   }
 }
