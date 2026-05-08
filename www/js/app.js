@@ -958,7 +958,7 @@ class DominoGame {
             stakeWrapper.className = 'settings-group field-span-2';
             stakeWrapper.id = 'solo-stake-wrapper';
             stakeWrapper.innerHTML = `
-                <label data-i18n="label-stake-table">Stake table</label>
+                <label data-i18n="label-stake-table">Mərc masası</label>
                 <div class="btn-group" id="solo-stake-group">
                     <button class="btn btn-option active" data-value="free">Free</button>
                     <button class="btn btn-option" data-value="stake_50">50</button>
@@ -2064,7 +2064,7 @@ class DominoGame {
             "label-deal-short": { az: "D", en: "D" },
             "label-boneyard-short": { az: "Bazaar", en: "Bazaar" },
             "label-economy-mode": { az: "Game mode", en: "Game mode" },
-            "label-stake-table": { az: "Stake table", en: "Stake table" },
+            "label-stake-table": { az: "Mərc masası", en: "Stake amount", ru: "Ставка" },
             "label-stake-short": { az: "Bank", en: "Bank" },
             "economy-free": { az: "Free play", en: "Free play" },
             "economy-coins": { az: "Play on coins", en: "Play on coins" },
