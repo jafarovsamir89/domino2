@@ -1,6 +1,5 @@
 const { Room } = require("colyseus");
 const Redis = require("ioredis");
-const redis = new Redis(process.env.REDIS_URI || "redis://127.0.0.1:6379");
 const { GameState, Player } = require("./schema/GameState");
 const { Board } = require("./board");
 const { AIPlayer } = require("./ai");
@@ -10,6 +9,23 @@ const { upsertLivePlayer, removeLivePlayer, setRoomGameActive, removeRoomPlayers
 
 const TARGET = 365, MAX_R = 3, DLOSS = 255, IWIN = 35;
 const CUSTOM_STATE_TTL = 86400;
+const redisUrl = process.env.REDIS_URI || "";
+const redis = redisUrl
+    ? new Redis(redisUrl, {
+        enableReadyCheck: false,
+        lazyConnect: true,
+        maxRetriesPerRequest: 1,
+        retryStrategy(times) {
+            return Math.min(times * 200, 1000);
+        }
+    })
+    : null;
+
+if (redis) {
+    redis.on("error", (err) => {
+        console.warn("[Redis] Room snapshot persistence unavailable:", err.message);
+    });
+}
 
 function generateRoomCode() {
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -1169,8 +1185,11 @@ class DominoRoom extends Room {
     }
 
     async saveCustomStateToRedis() {
-        if (!this.roomId) return;
+        if (!this.roomId || !redis) return;
         try {
+            if (redis.status !== "ready") {
+                await redis.connect();
+            }
             await redis.setex(`domino:custom:${this.roomId}`, CUSTOM_STATE_TTL, JSON.stringify(this.buildCustomStateSnapshot()));
         } catch (e) {
             console.error("Redis error", e);
