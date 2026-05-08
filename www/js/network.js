@@ -141,6 +141,7 @@ class NetworkManager {
                 isTeamMode: this.game.isTeamMode,
                 playerCount: this.game.onlinePlayerCount,
                 aiCount: this.game.onlineAiCount,
+                roomVisibility: this.game.onlineRoomVisibility === "open" ? "open" : "closed",
                 stakeKey: this.game.onlineEconomyMode === "coins"
                     ? (this.game.onlineStakeKey && this.game.onlineStakeKey !== "free" ? this.game.onlineStakeKey : "stake_50")
                     : "free",

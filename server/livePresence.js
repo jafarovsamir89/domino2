@@ -73,6 +73,7 @@ function getRoomSnapshot(roomId, players) {
     roomId,
     roomCode: first.roomCode || null,
     roomMode: first.roomMode || (first.isTeamMode ? "team" : "ffa"),
+    roomVisibility: first.roomVisibility || "closed",
     stakeKey: first.stakeKey || null,
     stakeAmount: Number(first.stakeAmount || 0),
     humanSeats,
@@ -117,6 +118,7 @@ function getLiveSummary() {
       roomId: player.roomId,
       roomCode: player.roomCode || null,
       roomMode: player.roomMode || (player.isTeamMode ? "team" : "ffa"),
+      roomVisibility: player.roomVisibility || "closed",
       stakeKey: player.stakeKey || null,
       stakeAmount: Number(player.stakeAmount || 0),
       humanSeats: Number.isFinite(Number(player.humanSeats)) ? Number(player.humanSeats) : 0,
@@ -139,6 +141,7 @@ function getLiveSummary() {
     current.gameActive = current.gameActive || Boolean(player.isPlaying);
     current.roomCode = current.roomCode || player.roomCode || null;
     current.roomMode = current.roomMode || player.roomMode || (player.isTeamMode ? "team" : "ffa");
+    current.roomVisibility = current.roomVisibility || player.roomVisibility || "closed";
     current.stakeKey = current.stakeKey || player.stakeKey || null;
     current.stakeAmount = current.stakeAmount || Number(player.stakeAmount || 0);
     current.humanSeats = current.humanSeats || Number(player.humanSeats || 0);
@@ -166,6 +169,7 @@ function getLiveSummary() {
       ...room,
       openSeats: Math.max(0, Number(room.humanSeats || room.totalPlayers || 0) - room.connectedPlayers),
       joinable: !room.gameActive && Math.max(0, Number(room.humanSeats || room.totalPlayers || 0) - room.connectedPlayers) > 0,
+      roomVisibility: room.roomVisibility || "closed",
       hostName: room.hostName || room.players[0]?.displayName || "Player"
     }))
     .sort((a, b) => b.connectedPlayers - a.connectedPlayers);
@@ -213,6 +217,7 @@ function getOpenRooms(filters = {}) {
 
   const items = summary.rooms.filter((room) => {
     if (joinableOnly && !room.joinable) return false;
+    if (String(room.roomVisibility || "closed").toLowerCase() !== "open") return false;
     if (stakeKey && stakeKey !== "all" && String(room.stakeKey || "") !== stakeKey) return false;
     if (roomMode && roomMode !== "all" && String(room.roomMode || "").toLowerCase() !== roomMode) return false;
     if (minPlayers && room.connectedPlayers < minPlayers) return false;

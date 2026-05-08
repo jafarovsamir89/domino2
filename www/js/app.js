@@ -15,6 +15,7 @@ class DominoGame {
         this.playerMissingSuits = [];
         this.playerCount=2; this.onlinePlayerCount=2; this.onlineAiCount=0; this.playerName=''; this.difficulty='medium';
         this.onlineStakeKey = 'stake_200';
+        this.onlineRoomVisibility = 'closed';
         this.onlineEconomyMode = 'coins';
         this.onlineRoundBankAmount = 0;
         this.soloEconomyMode = 'coins';
@@ -110,18 +111,18 @@ class DominoGame {
             this.showStartModal('online');
             this.showOnlineLanding();
         });
+        const openRoomsBtn = document.getElementById('open-rooms-btn');
+        if (openRoomsBtn) openRoomsBtn.addEventListener('click', () => this.showOpenRoomsModal());
         if (onlineCreateChoiceBtn) onlineCreateChoiceBtn.addEventListener('click', () => {
             this.showOnlineCreateFlow();
         });
         if (onlineConnectChoiceBtn) onlineConnectChoiceBtn.addEventListener('click', () => {
             this.showOnlineJoinFlow();
         });
-        const onlineRoomsTabBtn = document.getElementById('online-social-rooms-btn');
-        const onlineFriendsTabBtn = document.getElementById('online-social-friends-btn');
         const onlineSocialRefreshBtn = document.getElementById('online-social-refresh-btn');
-        if (onlineRoomsTabBtn) onlineRoomsTabBtn.addEventListener('click', () => this.showOnlineSocialPanel('rooms'));
-        if (onlineFriendsTabBtn) onlineFriendsTabBtn.addEventListener('click', () => this.showOnlineSocialPanel('friends'));
-        if (onlineSocialRefreshBtn) onlineSocialRefreshBtn.addEventListener('click', () => this.refreshOnlineSocialPanels());
+        const openRoomsModalClose = document.getElementById('open-rooms-modal-close');
+        if (onlineSocialRefreshBtn) onlineSocialRefreshBtn.addEventListener('click', () => void this.loadFriendsHub());
+        if (openRoomsModalClose) openRoomsModalClose.addEventListener('click', () => this.hideOpenRoomsModal());
         if (accountBtn) accountBtn.addEventListener('click', async () => {
             await this.openAccountModal();
         });
@@ -232,6 +233,14 @@ class DominoGame {
                 b.classList.add('active');
                 this.onlineStakeKey = b.dataset.value || 'stake_50';
                 this.syncMultiplayerOptions();
+            });
+        });
+
+        document.querySelectorAll('#online-visibility-group .btn-option').forEach((button) => {
+            button.addEventListener('click', () => {
+                document.querySelectorAll('#online-visibility-group .btn-option').forEach((item) => item.classList.remove('active'));
+                button.classList.add('active');
+                this.onlineRoomVisibility = button.dataset.value || 'closed';
             });
         });
 
@@ -948,7 +957,6 @@ class DominoGame {
             }
         }
 
-        this.ensureOnlineSocialUi();
     }
 
     ensureOnlineSocialUi() {
@@ -960,44 +968,24 @@ class DominoGame {
         const social = document.createElement('div');
         social.id = 'online-social-ui';
         social.className = 'online-social-ui';
-        social.innerHTML = `
-            <div class="online-social-strip btn-group">
-                <button class="btn btn-action btn-strong active" id="online-social-rooms-btn" type="button">Açıq otaqlar</button>
-                <button class="btn btn-action" id="online-social-friends-btn" type="button">Dostlar</button>
-                <button class="btn btn-menu online-social-refresh" id="online-social-refresh-btn" type="button">Yenilə</button>
-            </div>
-            <div id="online-open-rooms-panel" class="online-social-panel">
-                <div class="online-social-filters">
-                    <input type="search" id="open-room-search-input" placeholder="Otaq və ya adla axtar">
-                    <div class="filter-row">
-                        <select id="open-room-mode-filter">
-                            <option value="all">Hamısı</option>
-                            <option value="ffa">Hamı hər kəsə</option>
-                            <option value="team">2 vs 2</option>
-                        </select>
-                        <select id="open-room-stake-filter">
-                            <option value="all">Bütün mərc masaları</option>
-                            <option value="stake_200">200</option>
-                            <option value="stake_250">250</option>
-                            <option value="stake_500">500</option>
-                            <option value="stake_1000">1,000</option>
-                            <option value="stake_5000">5,000</option>
-                        </select>
+        social.innerHTML = `            <div class="online-social-panel">
+                <div class="online-social-head">
+                    <div>
+                        <div class="section-kicker">Dostlar</div>
+                        <div class="section-note">Sor?ular v? d?v?tnam?l?r burada g?r?n?r.</div>
                     </div>
+                    <button class="btn btn-menu online-social-refresh" id="online-social-refresh-btn" type="button">Yenil?</button>
                 </div>
-                <div id="open-rooms-list" class="room-player-list"></div>
-            </div>
-            <div id="online-friends-panel" class="online-social-panel is-hidden">
                 <div class="online-social-filters">
                     <input type="search" id="friend-search-input" placeholder="Adla axtar">
                     <button class="btn btn-action btn-strong" id="friend-search-btn" type="button">Axtar</button>
                 </div>
                 <div class="social-section">
-                    <div class="section-kicker">Axtarış nəticələri</div>
+                    <div class="section-kicker">Axtar?? n?tic?l?ri</div>
                     <div id="friend-search-results" class="room-player-list"></div>
                 </div>
                 <div class="social-section">
-                    <div class="section-kicker">Dost sorğuları</div>
+                    <div class="section-kicker">Dost sor?ular?</div>
                     <div id="friend-requests-list" class="room-player-list"></div>
                 </div>
                 <div class="social-section">
@@ -1005,11 +993,10 @@ class DominoGame {
                     <div id="friend-list" class="room-player-list"></div>
                 </div>
                 <div class="social-section">
-                    <div class="section-kicker">Otaq dəvətləri</div>
+                    <div class="section-kicker">Otaq d?v?tnam?l?ri</div>
                     <div id="room-invites-list" class="room-player-list"></div>
                 </div>
-            </div>
-        `;
+            </div>        `;
         onlineFlow.insertAdjacentElement('beforebegin', social);
     }
 
@@ -1348,6 +1335,9 @@ class DominoGame {
         if (!this.onlineStakeKey || this.onlineStakeKey === 'free') {
             this.onlineStakeKey = 'stake_200';
         }
+        if (!this.onlineRoomVisibility) {
+            this.onlineRoomVisibility = 'closed';
+        }
 
         const stakeWrapper = document.getElementById('online-stake-wrapper');
         if (stakeWrapper) {
@@ -1356,6 +1346,11 @@ class DominoGame {
 
         document.querySelectorAll('#online-stake-group .btn-option').forEach((button) => {
             const shouldBeActive = button.dataset.value === this.onlineStakeKey;
+            button.classList.toggle('active', shouldBeActive);
+        });
+
+        document.querySelectorAll('#online-visibility-group .btn-option').forEach((button) => {
+            const shouldBeActive = button.dataset.value === this.onlineRoomVisibility;
             button.classList.toggle('active', shouldBeActive);
         });
 
@@ -1412,7 +1407,28 @@ class DominoGame {
         this.showMultiplayerPanel(null);
         this.setHostStatus(this.t('online-room-create-hint'));
         this.setJoinStatus(this.t('online-room-join-hint'));
-        this.showOnlineSocialPanel(this.onlineSocialPanel || 'rooms');
+        void this.loadFriendsHub();
+    }
+
+    showOpenRoomsModal() {
+        const modal = document.getElementById('open-rooms-modal');
+        if (!modal) return;
+        this.resetOpenRoomsModalState();
+        modal.classList.add('active');
+        void this.loadOpenRooms();
+    }
+
+    hideOpenRoomsModal() {
+        document.getElementById('open-rooms-modal')?.classList.remove('active');
+    }
+
+    resetOpenRoomsModalState() {
+        const search = document.getElementById('open-room-search-input');
+        const mode = document.getElementById('open-room-mode-filter');
+        const stake = document.getElementById('open-room-stake-filter');
+        if (search) search.value = this.onlineRoomFilters.search || '';
+        if (mode) mode.value = this.onlineRoomFilters.roomMode || 'all';
+        if (stake) stake.value = this.onlineRoomFilters.stakeKey || 'all';
     }
 
     showOnlineCreateFlow() {
@@ -1480,6 +1496,7 @@ class DominoGame {
         return {
             roomId,
             roomCode: roomCode || null,
+            roomVisibility: String(roomState.roomVisibility || room?.roomVisibility || 'closed').trim(),
             roomMode: String(roomState.roomMode || (roomState.isTeamMode ? 'team' : 'ffa') || (this.isTeamMode ? 'team' : 'ffa')).trim(),
             stakeKey: String(roomState.stakeKey || this.onlineStakeKey || 'stake_200').trim(),
             stakeAmount: Number(roomState.stakeAmount || this.onlineRoundBankAmount || 0),
@@ -1500,6 +1517,7 @@ class DominoGame {
                 search: this.onlineRoomFilters.search,
                 roomMode: this.onlineRoomFilters.roomMode,
                 stakeKey: this.onlineRoomFilters.stakeKey,
+                roomVisibility: 'open',
                 joinableOnly: true,
                 limit: 24
             });
@@ -1516,29 +1534,61 @@ class DominoGame {
                 const title = document.createElement('div');
                 title.className = 'open-room-title';
                 title.textContent = `${room.hostName || room.roomCode || room.roomId || 'Room'}${room.roomCode ? ' · ' + room.roomCode : ''}`;
-                const meta = document.createElement('div');
-                meta.className = 'open-room-meta';
+                const badges = document.createElement('div');
+                badges.className = 'open-room-badges';
+                const seatCount = `${room.connectedPlayers || 0}/${room.humanSeats || room.totalPlayers || 0}`;
+                const modeLabel = room.roomMode === 'team'
+                    ? '2 vs 2'
+                    : (this.currentLang === 'az' ? 'Hamı hər kəsə' : 'Free for all');
                 const stakeLabel = room.stakeKey && room.stakeKey !== 'free'
                     ? `${room.stakeKey.replace(/^stake_/i, '')}`
-                    : 'free';
-                meta.textContent = `${room.roomMode || 'ffa'} · ${room.connectedPlayers || 0}/${room.humanSeats || room.totalPlayers || 0} · ${stakeLabel}`;
+                    : (this.currentLang === 'az' ? 'Pulsuz' : 'Free');
+                badges.appendChild(this.createRoomBadge('mode', modeLabel));
+                badges.appendChild(this.createRoomBadge('players', seatCount));
+                badges.appendChild(this.createRoomBadge('stake', stakeLabel));
+                badges.appendChild(this.createRoomBadge('open', this.currentLang === 'az' ? 'Açıq' : 'Open'));
                 const footer = document.createElement('div');
                 footer.className = 'open-room-footer';
                 const joinBtn = document.createElement('button');
                 joinBtn.className = 'btn btn-action btn-strong';
                 joinBtn.textContent = this.currentLang === 'az' ? 'Qoşul' : 'Join';
                 joinBtn.addEventListener('click', async () => {
+                    this.hideOpenRoomsModal();
                     await this.joinOnlineRoom(room.roomCode || room.roomId);
                 });
                 footer.appendChild(joinBtn);
                 card.appendChild(title);
-                card.appendChild(meta);
+                card.appendChild(badges);
                 card.appendChild(footer);
                 list.appendChild(card);
             });
         } catch (err) {
             list.innerHTML = `<div class="room-summary">${err.message || this.t('account-server-unavailable')}</div>`;
         }
+    }
+
+    createRoomConditionIcon(kind) {
+        const icons = {
+            mode: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14M5 12h14M5 17h9"/></svg>',
+            players: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 11a3 3 0 1 0-.01 0Z"/><path d="M17 12a2 2 0 1 0-.01 0Z"/><path d="M4 19c0-2.8 2.3-5 5-5s5 2.2 5 5"/><path d="M13 19c.3-2 1.8-3.6 4-4"/></svg>',
+            stake: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M9 10c0-1.5 1.3-2.5 3-2.5S15 8.2 15 9.5c0 1.2-1 1.9-3 2.5s-3 1.3-3 2.5c0 1.5 1.3 2.5 3 2.5S15 16.8 15 15.5"/><path d="M12 6.5v11"/></svg>',
+            open: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11l8-6 8 6"/><path d="M6 10v8h12v-8"/><path d="M10 18v-4h4v4"/></svg>'
+        };
+        return icons[kind] || icons.open;
+    }
+
+    createRoomBadge(kind, text) {
+        const badge = document.createElement('span');
+        badge.className = `room-badge room-badge-${kind}`;
+        const icon = document.createElement('span');
+        icon.className = 'room-badge-icon';
+        icon.innerHTML = this.createRoomConditionIcon(kind);
+        const label = document.createElement('span');
+        label.className = 'room-badge-text';
+        label.textContent = text;
+        badge.appendChild(icon);
+        badge.appendChild(label);
+        return badge;
     }
 
     async searchFriends() {

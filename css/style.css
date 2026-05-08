@@ -534,6 +534,44 @@ input, button { font: inherit; }
     font-weight: 800;
 }
 
+.open-room-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.room-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 32px;
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: var(--text-dim);
+    font-size: 0.74rem;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.room-badge-icon {
+    display: inline-flex;
+    width: 16px;
+    height: 16px;
+    color: var(--accent);
+}
+
+.room-badge-icon svg {
+    width: 100%;
+    height: 100%;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
 .open-room-meta,
 .friend-card-copy span {
     color: var(--text-dim);
@@ -560,6 +598,20 @@ input, button { font: inherit; }
 .social-section {
     display: grid;
     gap: 8px;
+}
+
+.online-social-head {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    justify-content: space-between;
+}
+
+.section-note {
+    color: var(--text-dim);
+    font-size: 0.82rem;
+    line-height: 1.4;
+    margin-top: 2px;
 }
 
 @media (min-width: 768px) {

@@ -62,6 +62,7 @@ class DominoRoom extends Room {
         this.dlossThreshold = options.dlossThreshold || DLOSS;
         this.instantWinEnabled = options.instantWinEnabled !== false;
         this.aiDifficulty = options.difficulty || "medium";
+        this.roomVisibility = String(options.roomVisibility || "closed").trim() === "open" ? "open" : "closed";
         this.currentStakeKey = String(options.stakeKey || "free").trim() || "free";
         this.economyReservationMade = false;
         this.currentDealMatchId = "";
@@ -135,6 +136,7 @@ class DominoRoom extends Room {
             sessionId: client.sessionId,
             roomId: this.roomId,
             roomCode: this.roomCode,
+            roomVisibility: this.roomVisibility,
             roomMode: this.state.isTeamMode ? "team" : "ffa",
             stakeKey: this.currentStakeKey,
             stakeAmount: this.currentDealStakeAmount || 0,
@@ -203,6 +205,7 @@ class DominoRoom extends Room {
                 sessionId: client.sessionId,
                 roomId: this.roomId,
                 roomCode: this.roomCode,
+                roomVisibility: this.roomVisibility,
                 roomMode: this.state.isTeamMode ? "team" : "ffa",
                 stakeKey: this.currentStakeKey,
                 stakeAmount: this.currentDealStakeAmount || 0,
@@ -232,6 +235,7 @@ class DominoRoom extends Room {
                     sessionId: client.sessionId,
                     roomId: this.roomId,
                     roomCode: this.roomCode,
+                    roomVisibility: this.roomVisibility,
                     roomMode: this.state.isTeamMode ? "team" : "ffa",
                     stakeKey: this.currentStakeKey,
                     stakeAmount: this.currentDealStakeAmount || 0,
@@ -1136,6 +1140,7 @@ class DominoRoom extends Room {
     buildCustomStateSnapshot() {
         return {
             roomCode: this.roomCode,
+            roomVisibility: this.roomVisibility,
             humanSeats: this.humanSeats,
             totalPlayers: this.totalPlayers,
             aiCount: this.aiCount,
@@ -1163,6 +1168,7 @@ class DominoRoom extends Room {
 
     applyCustomStateSnapshot(data = {}) {
         this.roomCode = data.roomCode || this.roomCode;
+        this.roomVisibility = String(data.roomVisibility || this.roomVisibility || "closed").trim() === "open" ? "open" : "closed";
         if (this.roomCode) {
             global.__DOMINO_ROOM_CODES?.set(this.roomCode, this.roomId);
             global.__DOMINO_ROOM_IDS?.set(this.roomId, this.roomCode);
