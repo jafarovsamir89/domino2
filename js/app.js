@@ -36,6 +36,8 @@ class DominoGame {
         this.currentLang = 'az';
         this.currentMatchStartedAt = null;
         this.currentMatchSessionId = null;
+        this.activeMatchEconomyMode = 'free';
+        this.activeMatchStakeKey = 'free';
         this.reactionPalette = [
             { code: '1F923', label: 'ROFL' },
             { code: '1F609', label: 'Wink' },
@@ -993,8 +995,10 @@ class DominoGame {
             return (button?.textContent || this.t('economy-coins')).trim();
         }
 
-        if (this.soloEconomyMode !== 'coins') return this.t('economy-free');
-        const button = Array.from(document.querySelectorAll('#solo-stake-group .btn-option')).find((item) => item.dataset.value === this.soloStakeKey);
+        const mode = this.gameActive ? this.activeMatchEconomyMode : this.soloEconomyMode;
+        const stakeKey = this.gameActive ? this.activeMatchStakeKey : this.soloStakeKey;
+        if (mode !== 'coins') return this.t('economy-free');
+        const button = Array.from(document.querySelectorAll('#solo-stake-group .btn-option')).find((item) => item.dataset.value === stakeKey);
         return (button?.textContent || this.t('economy-coins')).trim();
     }
 
@@ -1136,6 +1140,8 @@ class DominoGame {
             this.network.leaveRoom?.();
             this.currentMatchSessionId = snapshot.sessionId || this.createResumeId('solo');
             this.currentMatchStartedAt = snapshot.createdAt || new Date().toISOString();
+            this.activeMatchEconomyMode = snapshot.soloEconomyMode || this.activeMatchEconomyMode;
+            this.activeMatchStakeKey = snapshot.soloStakeKey || this.activeMatchStakeKey;
             this.playerName = snapshot.playerName || this.playerName;
             this.playerCount = snapshot.playerCount || this.playerCount;
             this.onlinePlayerCount = snapshot.onlinePlayerCount || this.onlinePlayerCount;
@@ -1599,7 +1605,10 @@ class DominoGame {
         const dlossInput = parseInt(document.getElementById('dloss-setting').value, 10);
         this.dlossThreshold = isNaN(dlossInput) ? 255 : dlossInput;
 
+        await this.loadAccountProfile();
         await this.prepareSoloEconomyStake();
+        this.activeMatchEconomyMode = this.soloEconomyMode;
+        this.activeMatchStakeKey = this.soloStakeKey;
 
         this.ais=[]; 
         for(let i=1;i<this.playerCount;i++) {
@@ -1614,12 +1623,16 @@ class DominoGame {
         if (this.difficulty === 'easy') {
             this.soloEconomyMode = 'free';
             this.soloStakeKey = 'free';
+            this.activeMatchEconomyMode = 'free';
+            this.activeMatchStakeKey = 'free';
             this.syncSoloOptions();
             return;
         }
 
         if (this.soloEconomyMode !== 'coins') {
             this.soloStakeKey = 'free';
+            this.activeMatchEconomyMode = 'free';
+            this.activeMatchStakeKey = 'free';
             this.syncSoloOptions();
             return;
         }
@@ -1628,6 +1641,8 @@ class DominoGame {
         if (!token) {
             this.soloEconomyMode = 'free';
             this.soloStakeKey = 'free';
+            this.activeMatchEconomyMode = 'free';
+            this.activeMatchStakeKey = 'free';
             this.syncSoloOptions();
             this.renderer.showMessage(
                 this.currentLang === 'az'
@@ -1649,11 +1664,15 @@ class DominoGame {
                 throw new Error(result?.reason || 'reserve_failed');
             }
             this.soloStakeKey = stakeKey;
+            this.activeMatchEconomyMode = 'coins';
+            this.activeMatchStakeKey = stakeKey;
             this.syncSoloOptions();
         } catch (error) {
             console.warn('[Economy] Solo reservation failed, switching to free play', error);
             this.soloEconomyMode = 'free';
             this.soloStakeKey = 'free';
+            this.activeMatchEconomyMode = 'free';
+            this.activeMatchStakeKey = 'free';
             this.syncSoloOptions();
             this.renderer.showMessage(
                 this.currentLang === 'az'
