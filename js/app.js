@@ -46,6 +46,17 @@ class DominoGame {
         this.currentRoundBankAmount = 0;
         this.coinMatchSummary = { spent: 0, won: 0 };
         this.onlineCoinSummary = { spent: 0, won: 0 };
+        this.currentRoomState = null;
+        this.openRooms = [];
+        this.onlineSocialPanel = 'rooms';
+        this.onlineRoomFilters = {
+            search: '',
+            roomMode: 'all',
+            stakeKey: 'all'
+        };
+        this.friendSearchResults = [];
+        this.friendHub = { accepted: [], incoming: [], outgoing: [] };
+        this.roomInvitations = { incoming: [], sent: [] };
         this.pendingSoloSettlement = Promise.resolve();
         this.reactionPalette = [
             { code: '1F923', label: 'ROFL' },
@@ -105,6 +116,12 @@ class DominoGame {
         if (onlineConnectChoiceBtn) onlineConnectChoiceBtn.addEventListener('click', () => {
             this.showOnlineJoinFlow();
         });
+        const onlineRoomsTabBtn = document.getElementById('online-social-rooms-btn');
+        const onlineFriendsTabBtn = document.getElementById('online-social-friends-btn');
+        const onlineSocialRefreshBtn = document.getElementById('online-social-refresh-btn');
+        if (onlineRoomsTabBtn) onlineRoomsTabBtn.addEventListener('click', () => this.showOnlineSocialPanel('rooms'));
+        if (onlineFriendsTabBtn) onlineFriendsTabBtn.addEventListener('click', () => this.showOnlineSocialPanel('friends'));
+        if (onlineSocialRefreshBtn) onlineSocialRefreshBtn.addEventListener('click', () => this.refreshOnlineSocialPanels());
         if (accountBtn) accountBtn.addEventListener('click', async () => {
             await this.openAccountModal();
         });
@@ -245,31 +262,34 @@ class DominoGame {
         document.getElementById('connect-btn').addEventListener('click', async () => {
             const code = document.getElementById('join-code-input').value.trim().toUpperCase();
             if (!code) return;
-            const name = this.requirePlayerName('online');
-            if (!name) return;
-            const profile = await this.ensureGuestAccount(name);
-            if (!profile) {
-                this.setJoinStatus(this.t('account-server-unavailable'));
-                return;
-            }
-            this.playerName = name;
-
-            const btn = document.getElementById('connect-btn');
-            btn.disabled = true;
-            this.setJoinStatus(this.t('online-room-status-connecting'));
-
-            this.network.joinGame(code, () => {
-                this.setJoinStatus(this.t('online-room-status-joined'));
-            }, (err) => {
-                this.setJoinStatus(`${this.t('online-room-status-error')}: ${err}`);
-                btn.disabled = false;
-            });
+            await this.joinOnlineRoom(code);
         });
 
         document.getElementById('join-code-input').addEventListener('keydown', (event) => {
             if (event.key === 'Enter') {
                 document.getElementById('connect-btn').click();
             }
+        });
+        document.getElementById('open-room-search-input')?.addEventListener('input', () => {
+            this.onlineRoomFilters.search = document.getElementById('open-room-search-input').value || '';
+            void this.loadOpenRooms();
+        });
+        document.getElementById('open-room-mode-filter')?.addEventListener('change', () => {
+            this.onlineRoomFilters.roomMode = document.getElementById('open-room-mode-filter').value || 'all';
+            void this.loadOpenRooms();
+        });
+        document.getElementById('open-room-stake-filter')?.addEventListener('change', () => {
+            this.onlineRoomFilters.stakeKey = document.getElementById('open-room-stake-filter').value || 'all';
+            void this.loadOpenRooms();
+        });
+        document.getElementById('friend-search-input')?.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                document.getElementById('friend-search-btn')?.click();
+            }
+        });
+        document.getElementById('friend-search-btn')?.addEventListener('click', () => {
+            void this.searchFriends();
         });
         document.getElementById('copy-room-code-btn').addEventListener('click', async () => {
             const code = document.getElementById('room-code-display').textContent.trim();
@@ -927,6 +947,70 @@ class DominoGame {
                 soloGridRoot.appendChild(stakeWrapper);
             }
         }
+
+        this.ensureOnlineSocialUi();
+    }
+
+    ensureOnlineSocialUi() {
+        const onlineModal = document.getElementById('online-modal');
+        const onlineFlow = document.getElementById('online-flow-ui');
+        if (!onlineModal || !onlineFlow) return;
+        if (document.getElementById('online-social-ui')) return;
+
+        const social = document.createElement('div');
+        social.id = 'online-social-ui';
+        social.className = 'online-social-ui';
+        social.innerHTML = `
+            <div class="online-social-strip btn-group">
+                <button class="btn btn-action btn-strong active" id="online-social-rooms-btn" type="button">Açıq otaqlar</button>
+                <button class="btn btn-action" id="online-social-friends-btn" type="button">Dostlar</button>
+                <button class="btn btn-menu online-social-refresh" id="online-social-refresh-btn" type="button">Yenilə</button>
+            </div>
+            <div id="online-open-rooms-panel" class="online-social-panel">
+                <div class="online-social-filters">
+                    <input type="search" id="open-room-search-input" placeholder="Otaq və ya adla axtar">
+                    <div class="filter-row">
+                        <select id="open-room-mode-filter">
+                            <option value="all">Hamısı</option>
+                            <option value="ffa">Hamı hər kəsə</option>
+                            <option value="team">2 vs 2</option>
+                        </select>
+                        <select id="open-room-stake-filter">
+                            <option value="all">Bütün mərc masaları</option>
+                            <option value="stake_200">200</option>
+                            <option value="stake_250">250</option>
+                            <option value="stake_500">500</option>
+                            <option value="stake_1000">1,000</option>
+                            <option value="stake_5000">5,000</option>
+                        </select>
+                    </div>
+                </div>
+                <div id="open-rooms-list" class="room-player-list"></div>
+            </div>
+            <div id="online-friends-panel" class="online-social-panel is-hidden">
+                <div class="online-social-filters">
+                    <input type="search" id="friend-search-input" placeholder="Adla axtar">
+                    <button class="btn btn-action btn-strong" id="friend-search-btn" type="button">Axtar</button>
+                </div>
+                <div class="social-section">
+                    <div class="section-kicker">Axtarış nəticələri</div>
+                    <div id="friend-search-results" class="room-player-list"></div>
+                </div>
+                <div class="social-section">
+                    <div class="section-kicker">Dost sorğuları</div>
+                    <div id="friend-requests-list" class="room-player-list"></div>
+                </div>
+                <div class="social-section">
+                    <div class="section-kicker">Dostlar</div>
+                    <div id="friend-list" class="room-player-list"></div>
+                </div>
+                <div class="social-section">
+                    <div class="section-kicker">Otaq dəvətləri</div>
+                    <div id="room-invites-list" class="room-player-list"></div>
+                </div>
+            </div>
+        `;
+        onlineFlow.insertAdjacentElement('beforebegin', social);
     }
 
     ensureGameHudEnhancements() {
@@ -1328,6 +1412,7 @@ class DominoGame {
         this.showMultiplayerPanel(null);
         this.setHostStatus(this.t('online-room-create-hint'));
         this.setJoinStatus(this.t('online-room-join-hint'));
+        this.showOnlineSocialPanel(this.onlineSocialPanel || 'rooms');
     }
 
     showOnlineCreateFlow() {
@@ -1364,6 +1449,387 @@ class DominoGame {
         this.setJoinStatus(this.t('online-room-join-hint'));
     }
 
+    showOnlineSocialPanel(panelName = 'rooms') {
+        this.onlineSocialPanel = panelName === 'friends' ? 'friends' : 'rooms';
+        document.getElementById('online-social-rooms-btn')?.classList.toggle('active', this.onlineSocialPanel === 'rooms');
+        document.getElementById('online-social-friends-btn')?.classList.toggle('active', this.onlineSocialPanel === 'friends');
+        document.getElementById('online-open-rooms-panel')?.classList.toggle('is-hidden', this.onlineSocialPanel !== 'rooms');
+        document.getElementById('online-friends-panel')?.classList.toggle('is-hidden', this.onlineSocialPanel !== 'friends');
+        if (this.onlineSocialPanel === 'rooms') {
+            void this.loadOpenRooms();
+        } else {
+            void this.loadFriendsHub();
+        }
+    }
+
+    async refreshOnlineSocialPanels() {
+        if (this.onlineSocialPanel === 'friends') {
+            await this.loadFriendsHub();
+            return;
+        }
+        await this.loadOpenRooms();
+    }
+
+    getCurrentRoomSnapshot() {
+        const roomState = this.currentRoomState || {};
+        const room = this.network?.room;
+        const roomCode = String(roomState.roomCode || document.getElementById('room-code-display')?.textContent?.trim() || room?.roomCode || room?.id || '').trim();
+        const roomId = String(roomState.roomId || room?.roomId || room?.id || '').trim();
+        if (!roomCode && !roomId) return null;
+
+        return {
+            roomId,
+            roomCode: roomCode || null,
+            roomMode: String(roomState.roomMode || (roomState.isTeamMode ? 'team' : 'ffa') || (this.isTeamMode ? 'team' : 'ffa')).trim(),
+            stakeKey: String(roomState.stakeKey || this.onlineStakeKey || 'stake_200').trim(),
+            stakeAmount: Number(roomState.stakeAmount || this.onlineRoundBankAmount || 0),
+            humanSeats: Number(roomState.humanSeats || this.onlinePlayerCount || 0),
+            totalPlayers: Number(roomState.totalPlayers || this.onlinePlayerCount || 0),
+            isTeamMode: Boolean(roomState.isTeamMode ?? this.isTeamMode),
+            gameActive: Boolean(roomState.gameActive),
+            hostName: String(roomState.hostName || '').trim()
+        };
+    }
+
+    async loadOpenRooms() {
+        const list = document.getElementById('open-rooms-list');
+        if (!list) return;
+        list.innerHTML = `<div class="room-summary">${this.t('account-profile-loading')}</div>`;
+        try {
+            const rooms = await this.account.getOpenRooms({
+                search: this.onlineRoomFilters.search,
+                roomMode: this.onlineRoomFilters.roomMode,
+                stakeKey: this.onlineRoomFilters.stakeKey,
+                joinableOnly: true,
+                limit: 24
+            });
+            this.openRooms = Array.isArray(rooms) ? rooms : [];
+            if (!this.openRooms.length) {
+                list.innerHTML = `<div class="room-summary">${this.currentLang === 'az' ? 'Açıq otaq yoxdur' : 'No open rooms yet'}</div>`;
+                return;
+            }
+
+            list.innerHTML = '';
+            this.openRooms.forEach((room) => {
+                const card = document.createElement('div');
+                card.className = 'open-room-card';
+                const title = document.createElement('div');
+                title.className = 'open-room-title';
+                title.textContent = `${room.hostName || room.roomCode || room.roomId || 'Room'}${room.roomCode ? ` · ${room.roomCode}` : ''}`;
+                const meta = document.createElement('div');
+                meta.className = 'open-room-meta';
+                const stakeLabel = room.stakeKey && room.stakeKey !== 'free'
+                    ? `${room.stakeKey.replace(/^stake_/i, '')}`
+                    : 'free';
+                meta.textContent = `${room.roomMode || 'ffa'} · ${room.connectedPlayers || 0}/${room.humanSeats || room.totalPlayers || 0} · ${stakeLabel}`;
+                const footer = document.createElement('div');
+                footer.className = 'open-room-footer';
+                const joinBtn = document.createElement('button');
+                joinBtn.className = 'btn btn-action btn-strong';
+                joinBtn.textContent = this.currentLang === 'az' ? 'Qoşul' : 'Join';
+                joinBtn.addEventListener('click', async () => {
+                    await this.joinOnlineRoom(room.roomCode || room.roomId);
+                });
+                footer.appendChild(joinBtn);
+                card.appendChild(title);
+                card.appendChild(meta);
+                card.appendChild(footer);
+                list.appendChild(card);
+            });
+        } catch (err) {
+            list.innerHTML = `<div class="room-summary">${err.message || this.t('account-server-unavailable')}</div>`;
+        }
+    }
+
+    async searchFriends() {
+        const searchInput = document.getElementById('friend-search-input');
+        const query = String(searchInput?.value || '').trim();
+        const resultsList = document.getElementById('friend-search-results');
+        if (!resultsList) return;
+        if (!query) {
+            resultsList.innerHTML = `<div class="room-summary">${this.currentLang === 'az' ? 'Ad yazın və axtarın' : 'Type a name to search'}</div>`;
+            return;
+        }
+        resultsList.innerHTML = `<div class="room-summary">${this.t('account-profile-loading')}</div>`;
+        try {
+            const items = await this.account.searchPlayers(query);
+            this.friendSearchResults = Array.isArray(items) ? items : [];
+            if (!this.friendSearchResults.length) {
+                resultsList.innerHTML = `<div class="room-summary">${this.currentLang === 'az' ? 'Nəticə tapılmadı' : 'No players found'}</div>`;
+                return;
+            }
+            resultsList.innerHTML = '';
+            this.friendSearchResults.forEach((player) => {
+                const card = document.createElement('div');
+                card.className = 'friend-card';
+                const copy = document.createElement('div');
+                copy.className = 'friend-card-copy';
+                copy.innerHTML = `<strong>${player.displayName}</strong><span>${player.id}</span>`;
+                const action = document.createElement('div');
+                action.className = 'friend-card-actions';
+                const addBtn = document.createElement('button');
+                addBtn.className = 'btn btn-action';
+                addBtn.textContent = this.currentLang === 'az' ? 'Dost et' : 'Add';
+                addBtn.addEventListener('click', async () => {
+                    addBtn.disabled = true;
+                    try {
+                        await this.account.sendFriendRequest(player.id);
+                        await this.loadFriendsHub();
+                    } catch (err) {
+                        this.renderer.showMessage(err.message || this.t('account-server-unavailable'), 1800);
+                    } finally {
+                        addBtn.disabled = false;
+                    }
+                });
+                action.appendChild(addBtn);
+                card.appendChild(copy);
+                card.appendChild(action);
+                resultsList.appendChild(card);
+            });
+        } catch (err) {
+            resultsList.innerHTML = `<div class="room-summary">${err.message || this.t('account-server-unavailable')}</div>`;
+        }
+    }
+
+    async loadFriendsHub() {
+        const friendsList = document.getElementById('friend-list');
+        const requestsList = document.getElementById('friend-requests-list');
+        const invitesList = document.getElementById('room-invites-list');
+        const searchResults = document.getElementById('friend-search-results');
+        const loggedIn = Boolean(this.account?.getRoomAuthToken?.());
+        const emptyText = this.currentLang === 'az' ? 'Dostlar üçün hesaba daxil olun' : 'Sign in to use friends';
+
+        if (!friendsList || !requestsList || !invitesList || !searchResults) return;
+        if (!loggedIn) {
+            const message = `<div class="room-summary">${emptyText}</div>`;
+            friendsList.innerHTML = message;
+            requestsList.innerHTML = message;
+            invitesList.innerHTML = message;
+            searchResults.innerHTML = message;
+            return;
+        }
+
+        friendsList.innerHTML = `<div class="room-summary">${this.t('account-profile-loading')}</div>`;
+        requestsList.innerHTML = `<div class="room-summary">${this.t('account-profile-loading')}</div>`;
+        invitesList.innerHTML = `<div class="room-summary">${this.t('account-profile-loading')}</div>`;
+        try {
+            const [friends, invitations] = await Promise.all([
+                this.account.getFriends(),
+                this.account.getRoomInvitations()
+            ]);
+            this.friendHub = friends || { accepted: [], incoming: [], outgoing: [] };
+            this.roomInvitations = invitations || { incoming: [], sent: [] };
+
+            friendsList.innerHTML = '';
+            if (!this.friendHub.accepted.length) {
+                friendsList.innerHTML = `<div class="room-summary">${this.currentLang === 'az' ? 'Hələ dost yoxdur' : 'No friends yet'}</div>`;
+            } else {
+                this.friendHub.accepted.forEach((item) => {
+                    const card = document.createElement('div');
+                    card.className = 'friend-card';
+                    const copy = document.createElement('div');
+                    copy.className = 'friend-card-copy';
+                    copy.innerHTML = `<strong>${item.friend.displayName}</strong><span>${item.friend.id}</span>`;
+                    const action = document.createElement('div');
+                    action.className = 'friend-card-actions';
+                    const inviteBtn = document.createElement('button');
+                    inviteBtn.className = 'btn btn-action btn-strong';
+                    inviteBtn.textContent = this.currentLang === 'az' ? 'Dəvət et' : 'Invite';
+                    const roomSnapshot = this.getCurrentRoomSnapshot();
+                    const canInvite = Boolean(
+                        roomSnapshot &&
+                        roomSnapshot.roomId &&
+                        roomSnapshot.roomCode &&
+                        roomSnapshot.humanSeats > 0 &&
+                        this.network?.isHost &&
+                        !roomSnapshot.gameActive
+                    );
+                    inviteBtn.disabled = !canInvite;
+                    inviteBtn.addEventListener('click', async () => {
+                        if (!roomSnapshot) return;
+                        inviteBtn.disabled = true;
+                        try {
+                            await this.account.inviteFriendToRoom(roomSnapshot.roomId, {
+                                inviteePlayerId: item.friend.id,
+                                roomCode: roomSnapshot.roomCode,
+                                roomMode: roomSnapshot.roomMode,
+                                stakeKey: roomSnapshot.stakeKey,
+                                stakeAmount: roomSnapshot.stakeAmount,
+                                humanSeats: roomSnapshot.humanSeats,
+                                totalPlayers: roomSnapshot.totalPlayers,
+                                isTeamMode: roomSnapshot.isTeamMode
+                            });
+                            await this.loadFriendsHub();
+                            this.renderer.showMessage(this.currentLang === 'az' ? 'Dəvət göndərildi' : 'Invite sent', 1400);
+                        } catch (err) {
+                            this.renderer.showMessage(err.message || this.t('account-server-unavailable'), 1800);
+                        } finally {
+                            inviteBtn.disabled = !canInvite;
+                        }
+                    });
+                    const removeBtn = document.createElement('button');
+                    removeBtn.className = 'btn btn-menu';
+                    removeBtn.textContent = this.currentLang === 'az' ? 'Sil' : 'Remove';
+                    removeBtn.addEventListener('click', async () => {
+                        removeBtn.disabled = true;
+                        try {
+                            await this.account.removeFriend(item.id);
+                            await this.loadFriendsHub();
+                        } catch (err) {
+                            this.renderer.showMessage(err.message || this.t('account-server-unavailable'), 1800);
+                        } finally {
+                            removeBtn.disabled = false;
+                        }
+                    });
+                    action.appendChild(inviteBtn);
+                    action.appendChild(removeBtn);
+                    card.appendChild(copy);
+                    card.appendChild(action);
+                    friendsList.appendChild(card);
+                });
+            }
+
+            requestsList.innerHTML = '';
+            if (!this.friendHub.incoming.length && !this.friendHub.outgoing.length) {
+                requestsList.innerHTML = `<div class="room-summary">${this.currentLang === 'az' ? 'Dostluq sorğusu yoxdur' : 'No friend requests'}</div>`;
+            } else {
+                const renderRequest = (item, label, acceptable) => {
+                    const card = document.createElement('div');
+                    card.className = 'friend-card';
+                    const copy = document.createElement('div');
+                    copy.className = 'friend-card-copy';
+                    copy.innerHTML = `<strong>${item.friend.displayName}</strong><span>${label}</span>`;
+                    const action = document.createElement('div');
+                    action.className = 'friend-card-actions';
+                    if (acceptable) {
+                        const acceptBtn = document.createElement('button');
+                        acceptBtn.className = 'btn btn-action btn-strong';
+                        acceptBtn.textContent = this.currentLang === 'az' ? 'Qəbul et' : 'Accept';
+                        acceptBtn.addEventListener('click', async () => {
+                            acceptBtn.disabled = true;
+                            try {
+                                await this.account.acceptFriendRequest(item.id);
+                                await this.loadFriendsHub();
+                            } catch (err) {
+                                this.renderer.showMessage(err.message || this.t('account-server-unavailable'), 1800);
+                            } finally {
+                                acceptBtn.disabled = false;
+                            }
+                        });
+                        action.appendChild(acceptBtn);
+                    }
+                    const declineBtn = document.createElement('button');
+                    declineBtn.className = 'btn btn-menu';
+                    declineBtn.textContent = this.currentLang === 'az' ? 'İmtina' : 'Decline';
+                    declineBtn.addEventListener('click', async () => {
+                        declineBtn.disabled = true;
+                        try {
+                            await this.account.declineFriendRequest(item.id);
+                            await this.loadFriendsHub();
+                        } catch (err) {
+                            this.renderer.showMessage(err.message || this.t('account-server-unavailable'), 1800);
+                        } finally {
+                            declineBtn.disabled = false;
+                        }
+                    });
+                    action.appendChild(declineBtn);
+                    card.appendChild(copy);
+                    card.appendChild(action);
+                    requestsList.appendChild(card);
+                };
+                this.friendHub.incoming.forEach((item) => renderRequest(item, this.currentLang === 'az' ? 'Gələn sorğu' : 'Incoming', true));
+                this.friendHub.outgoing.forEach((item) => renderRequest(item, this.currentLang === 'az' ? 'Göndərildi' : 'Outgoing', false));
+            }
+
+            invitesList.innerHTML = '';
+            if (!this.roomInvitations.incoming.length) {
+                invitesList.innerHTML = `<div class="room-summary">${this.currentLang === 'az' ? 'Room invite yoxdur' : 'No room invites'}</div>`;
+            } else {
+                this.roomInvitations.incoming.forEach((invite) => {
+                    const card = document.createElement('div');
+                    card.className = 'friend-card';
+                    const copy = document.createElement('div');
+                    copy.className = 'friend-card-copy';
+                    copy.innerHTML = `<strong>${invite.inviter.displayName}</strong><span>${invite.roomCode || invite.roomId} · ${invite.roomMode || 'ffa'}</span>`;
+                    const action = document.createElement('div');
+                    action.className = 'friend-card-actions';
+                    const acceptBtn = document.createElement('button');
+                    acceptBtn.className = 'btn btn-action btn-strong';
+                    acceptBtn.textContent = this.currentLang === 'az' ? 'Qoşul' : 'Join';
+                    acceptBtn.addEventListener('click', async () => {
+                        acceptBtn.disabled = true;
+                        try {
+                            const accepted = await this.account.acceptRoomInvitation(invite.id);
+                            const row = accepted?.item || invite;
+                            await this.joinOnlineRoom(row.roomCode || row.roomId);
+                        } catch (err) {
+                            this.renderer.showMessage(err.message || this.t('account-server-unavailable'), 1800);
+                        } finally {
+                            acceptBtn.disabled = false;
+                        }
+                    });
+                    const declineBtn = document.createElement('button');
+                    declineBtn.className = 'btn btn-menu';
+                    declineBtn.textContent = this.currentLang === 'az' ? 'İmtina' : 'Decline';
+                    declineBtn.addEventListener('click', async () => {
+                        declineBtn.disabled = true;
+                        try {
+                            await this.account.declineRoomInvitation(invite.id);
+                            await this.loadFriendsHub();
+                        } catch (err) {
+                            this.renderer.showMessage(err.message || this.t('account-server-unavailable'), 1800);
+                        } finally {
+                            declineBtn.disabled = false;
+                        }
+                    });
+                    action.appendChild(acceptBtn);
+                    action.appendChild(declineBtn);
+                    card.appendChild(copy);
+                    card.appendChild(action);
+                    invitesList.appendChild(card);
+                });
+            }
+        } catch (err) {
+            friendsList.innerHTML = `<div class="room-summary">${err.message || this.t('account-server-unavailable')}</div>`;
+            requestsList.innerHTML = `<div class="room-summary">${err.message || this.t('account-server-unavailable')}</div>`;
+            invitesList.innerHTML = `<div class="room-summary">${err.message || this.t('account-server-unavailable')}</div>`;
+        }
+    }
+
+    async joinOnlineRoom(code) {
+        const nextCode = String(code || '').trim().toUpperCase();
+        if (!nextCode) return false;
+        const name = this.requirePlayerName('online');
+        if (!name) return false;
+        const profile = await this.ensureGuestAccount(name);
+        if (!profile) {
+            this.setJoinStatus(this.t('account-server-unavailable'));
+            return false;
+        }
+        this.playerName = name;
+        this.showOnlineJoinFlow();
+        document.getElementById('join-code-input').value = nextCode;
+
+        const btn = document.getElementById('connect-btn');
+        if (btn) btn.disabled = true;
+        this.setJoinStatus(this.t('online-room-status-connecting'));
+        try {
+            await new Promise((resolve, reject) => {
+                this.network.joinGame(nextCode, () => {
+                    this.setJoinStatus(this.t('online-room-status-joined'));
+                    resolve(true);
+                }, (err) => {
+                    reject(new Error(err));
+                });
+            });
+            return true;
+        } catch (err) {
+            this.setJoinStatus(`${this.t('online-room-status-error')}: ${err.message || err}`);
+            if (btn) btn.disabled = false;
+            return false;
+        }
+    }
+
     showStartModal(modalName) {
         this.closeReactionPicker();
         const solo = document.getElementById('solo-modal');
@@ -1378,6 +1844,7 @@ class DominoGame {
     resetMultiplayerPanels(leaveRoom = false) {
         if (leaveRoom && this.network) {
             this.network.leaveRoom();
+            this.currentRoomState = null;
         }
         this.showMultiplayerPanel(null);
         document.getElementById('online-entry-ui')?.classList.add('is-hidden');
@@ -1407,6 +1874,7 @@ class DominoGame {
 
     onRoomStateUpdate(roomState) {
         if (!roomState) return;
+        this.currentRoomState = roomState;
 
         document.getElementById('room-code-display').textContent = roomState.roomCode || roomState.roomId || '....';
         const roomCountEl = document.getElementById('room-player-count-display');
@@ -1469,6 +1937,7 @@ class DominoGame {
     onRoomClosed(payload) {
         const reason = payload?.reason || this.t('online-room-closed');
         this.network.leaveRoom();
+        this.currentRoomState = null;
         this.myHand = null;
         this.gameActive = false;
         this.onlineRoundBankAmount = 0;

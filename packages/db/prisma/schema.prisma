@@ -55,6 +55,21 @@ enum CoinTournamentEntryStatus {
   paid
 }
 
+enum FriendConnectionStatus {
+  pending
+  accepted
+  rejected
+  blocked
+}
+
+enum RoomInvitationStatus {
+  pending
+  accepted
+  declined
+  expired
+  revoked
+}
+
 model User {
   id              String          @id
   name            String
@@ -148,6 +163,10 @@ model Player {
   tournamentEntries CoinTournamentEntry[]
   orders        Order[]
   entitlements  PlayerEntitlement[]
+  friendRequestsSent FriendConnection[] @relation("FriendRequestSender")
+  friendRequestsReceived FriendConnection[] @relation("FriendRequestRecipient")
+  roomInvitesSent RoomInvitation[] @relation("RoomInviteSender")
+  roomInvitesReceived RoomInvitation[] @relation("RoomInviteRecipient")
 }
 
 model PlayerStats {
@@ -354,6 +373,51 @@ model MatchParticipant {
   isBot               Boolean  @default(false)
   match               Match    @relation(fields: [matchId], references: [id], onDelete: Cascade)
   player              Player?  @relation(fields: [playerId], references: [id], onDelete: SetNull)
+}
+
+model FriendConnection {
+  id                   String                @id @default(cuid())
+  requesterPlayerId     String
+  addresseePlayerId     String
+  status               FriendConnectionStatus @default(pending)
+  note                 String?
+  respondedAt          DateTime?
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+  requester            Player                @relation("FriendRequestSender", fields: [requesterPlayerId], references: [id], onDelete: Cascade)
+  addressee            Player                @relation("FriendRequestRecipient", fields: [addresseePlayerId], references: [id], onDelete: Cascade)
+
+  @@unique([requesterPlayerId, addresseePlayerId])
+  @@index([requesterPlayerId, status])
+  @@index([addresseePlayerId, status])
+}
+
+model RoomInvitation {
+  id                 String              @id @default(cuid())
+  roomId             String
+  roomCode           String?
+  roomMode           String
+  isTeamMode         Boolean             @default(false)
+  stakeKey           String?
+  stakeAmount        Int                 @default(0)
+  humanSeats         Int                 @default(0)
+  totalPlayers       Int                 @default(0)
+  inviterPlayerId    String
+  inviteePlayerId    String
+  status             RoomInvitationStatus @default(pending)
+  note               String?
+  payloadJson        Json?
+  expiresAt          DateTime?
+  respondedAt        DateTime?
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  inviter            Player              @relation("RoomInviteSender", fields: [inviterPlayerId], references: [id], onDelete: Cascade)
+  invitee            Player              @relation("RoomInviteRecipient", fields: [inviteePlayerId], references: [id], onDelete: Cascade)
+
+  @@index([inviteePlayerId, status, createdAt])
+  @@index([inviterPlayerId, status, createdAt])
+  @@index([roomId, status])
+  @@index([roomCode, status])
 }
 
 model PlayerBan {

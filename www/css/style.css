@@ -461,6 +461,107 @@ input, button { font: inherit; }
     margin-top: 4px;
 }
 
+.online-social-ui {
+    display: grid;
+    gap: 12px;
+    margin-top: 12px;
+}
+
+.online-social-strip .btn {
+    min-height: 40px;
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+.online-social-strip .btn.active {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #1a1a1a;
+    border-color: var(--accent);
+}
+
+.online-social-panel {
+    display: grid;
+    gap: 10px;
+    padding: 14px;
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.online-social-filters {
+    display: grid;
+    gap: 10px;
+}
+
+.online-social-filters input,
+.online-social-filters select {
+    width: 100%;
+    min-height: 44px;
+    padding: 12px 14px;
+    border-radius: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.03));
+    color: var(--text);
+}
+
+.online-social-filters input:focus,
+.online-social-filters select:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(240, 192, 64, 0.12);
+}
+
+.filter-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+}
+
+.open-room-card,
+.friend-card {
+    display: grid;
+    gap: 10px;
+    padding: 12px;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.open-room-title,
+.friend-card-copy strong {
+    color: var(--text);
+    font-size: 0.98rem;
+    font-weight: 800;
+}
+
+.open-room-meta,
+.friend-card-copy span {
+    color: var(--text-dim);
+    font-size: 0.8rem;
+    line-height: 1.4;
+}
+
+.open-room-footer,
+.friend-card-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.friend-card-actions .btn {
+    flex: 1 1 0;
+    min-height: 40px;
+}
+
+.friend-card-copy {
+    display: grid;
+    gap: 4px;
+}
+
+.social-section {
+    display: grid;
+    gap: 8px;
+}
+
 @media (min-width: 768px) {
     #online-entry-ui .btn,
     #online-flow-ui .multiplayer-actions .btn,
@@ -478,6 +579,22 @@ input, button { font: inherit; }
 
     #online-entry-ui {
         margin-top: 8px;
+    }
+
+    .online-social-strip .btn {
+        min-height: 44px;
+    }
+
+    .online-social-panel {
+        padding: 16px;
+    }
+
+    .filter-row {
+        grid-template-columns: minmax(0, 1.2fr) minmax(180px, 0.8fr);
+    }
+
+    .friend-card-actions .btn {
+        min-height: 42px;
     }
 }
 

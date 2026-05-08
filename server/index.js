@@ -6,7 +6,7 @@ const { Server } = require("colyseus");
 const { RedisPresence } = require("@colyseus/redis-presence");
 const { RedisDriver } = require("@colyseus/redis-driver");
 const DominoRoom = require("./DominoRoom");
-const { getLiveSummary } = require("./livePresence");
+const { getLiveSummary, getOpenRooms } = require("./livePresence");
 
 const port = process.env.PORT || 2567;
 const redisUrl = process.env.REDIS_URI || "";
@@ -95,6 +95,10 @@ app.get("/api/realtime/players", (req, res) => {
         counts: summary.counts,
         rooms: summary.rooms
     });
+});
+
+app.get("/api/realtime/rooms", (req, res) => {
+    res.json(getOpenRooms(req.query));
 });
 
 const server = http.createServer(app);

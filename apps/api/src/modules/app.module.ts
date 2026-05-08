@@ -10,6 +10,7 @@ import { MatchesModule } from "./matches/matches.module.js";
 import { RealtimeModule } from "./realtime/realtime.module.js";
 import { PlayersModule } from "./players/players.module.js";
 import { PrismaModule } from "./prisma/prisma.module.js";
+import { SocialModule } from "./social/social.module.js";
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { PrismaModule } from "./prisma/prisma.module.js";
     LeaderboardModule,
     MatchesModule,
     RealtimeModule,
+    SocialModule,
     AdminModule
   ]
 })

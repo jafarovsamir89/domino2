@@ -115,6 +115,7 @@ class DominoRoom extends Room {
     onJoin(client, options, auth) {
         const identity = auth || {};
         console.log(`[ROOM] Client ${client.sessionId} joining with name: ${options.name}`);
+        const isFirstPlayer = this.state.playerOrder.length === 0;
         const player = new Player();
         const authToken = String(identity.authToken || options.authToken || "").trim();
         player.name = sanitizeName(identity.displayName || options.name);
@@ -134,11 +135,19 @@ class DominoRoom extends Room {
             sessionId: client.sessionId,
             roomId: this.roomId,
             roomCode: this.roomCode,
+            roomMode: this.state.isTeamMode ? "team" : "ffa",
+            stakeKey: this.currentStakeKey,
+            stakeAmount: this.currentDealStakeAmount || 0,
+            humanSeats: this.humanSeats,
+            totalPlayers: this.totalPlayers,
+            aiCount: this.aiCount,
+            isTeamMode: this.state.isTeamMode,
             provider: identity.provider || "guest",
             userId: player.userId,
             playerId: identity.playerId || player.userId,
             displayName: player.name,
-            role: identity.role || "player",
+            hostName: isFirstPlayer ? player.name : (this.state.players.get(this.state.playerOrder[0])?.name || player.name),
+            role: identity.role || (isFirstPlayer ? "host" : "player"),
             isConnected: true,
             isPlaying: Boolean(this.state.gameActive),
             joinedAt: new Date().toISOString()
@@ -194,11 +203,19 @@ class DominoRoom extends Room {
                 sessionId: client.sessionId,
                 roomId: this.roomId,
                 roomCode: this.roomCode,
+                roomMode: this.state.isTeamMode ? "team" : "ffa",
+                stakeKey: this.currentStakeKey,
+                stakeAmount: this.currentDealStakeAmount || 0,
+                humanSeats: this.humanSeats,
+                totalPlayers: this.totalPlayers,
+                aiCount: this.aiCount,
+                isTeamMode: this.state.isTeamMode,
                 provider: identity.provider || "guest",
                 userId: identity.userId || "",
                 playerId: identity.playerId || identity.userId || "",
                 displayName: identity.displayName || player?.name || "Player",
-                role: identity.role || "player",
+                hostName: this.state.players.get(this.state.playerOrder[0])?.name || player?.name || "Player",
+                role: identity.role || (this.state.playerOrder[0] === client.sessionId ? "host" : "player"),
                 isConnected: false,
                 isPlaying: Boolean(this.state.gameActive)
             });
@@ -215,11 +232,19 @@ class DominoRoom extends Room {
                     sessionId: client.sessionId,
                     roomId: this.roomId,
                     roomCode: this.roomCode,
+                    roomMode: this.state.isTeamMode ? "team" : "ffa",
+                    stakeKey: this.currentStakeKey,
+                    stakeAmount: this.currentDealStakeAmount || 0,
+                    humanSeats: this.humanSeats,
+                    totalPlayers: this.totalPlayers,
+                    aiCount: this.aiCount,
+                    isTeamMode: this.state.isTeamMode,
                     provider: identity.provider || "guest",
                     userId: identity.userId || "",
                     playerId: identity.playerId || identity.userId || "",
                     displayName: identity.displayName || player?.name || "Player",
-                    role: identity.role || "player",
+                    hostName: this.state.players.get(this.state.playerOrder[0])?.name || player?.name || "Player",
+                    role: identity.role || (this.state.playerOrder[0] === client.sessionId ? "host" : "player"),
                     isConnected: true,
                     isPlaying: Boolean(this.state.gameActive)
                 });

@@ -424,6 +424,13 @@ export class AccountClient {
                     roomId: payload?.roomId || null,
                     roomCode: payload?.roomCode || null,
                     gameMode: payload?.gameMode || "solo",
+                    roomMode: payload?.roomMode || payload?.gameMode || "solo",
+                    stakeKey: payload?.stakeKey || null,
+                    stakeAmount: Number(payload?.stakeAmount || 0),
+                    humanSeats: Number(payload?.humanSeats || 0),
+                    totalPlayers: Number(payload?.totalPlayers || 0),
+                    aiCount: Number(payload?.aiCount || 0),
+                    isTeamMode: Boolean(payload?.isTeamMode),
                     isPlaying: payload?.isPlaying !== false,
                     isConnected: payload?.isConnected !== false,
                     source: "client-local"
@@ -435,6 +442,94 @@ export class AccountClient {
         } catch {
             return null;
         }
+    }
+
+    async getOpenRooms(filters = {}) {
+        const params = new URLSearchParams();
+        const entries = Object.entries(filters || {});
+        for (const [key, value] of entries) {
+            if (value === undefined || value === null || value === "") continue;
+            params.set(key, String(value));
+        }
+        const query = params.toString();
+        const data = await this.request(`/api/realtime/rooms${query ? `?${query}` : ""}`);
+        return Array.isArray(data?.items) ? data.items : [];
+    }
+
+    async getFriends() {
+        const data = await this.platformRequest("/social/friends");
+        return {
+            accepted: Array.isArray(data?.accepted) ? data.accepted : [],
+            incoming: Array.isArray(data?.incoming) ? data.incoming : [],
+            outgoing: Array.isArray(data?.outgoing) ? data.outgoing : [],
+            items: Array.isArray(data?.items) ? data.items : []
+        };
+    }
+
+    async searchPlayers(query) {
+        const q = String(query || "").trim();
+        if (!q) {
+            return [];
+        }
+        const data = await this.platformRequest(`/social/players/search?query=${encodeURIComponent(q)}`);
+        return Array.isArray(data?.items) ? data.items : [];
+    }
+
+    async sendFriendRequest(playerId, note = "") {
+        return this.platformRequest("/social/friends/request", {
+            method: "POST",
+            body: {
+                playerId,
+                note
+            }
+        });
+    }
+
+    async acceptFriendRequest(id) {
+        return this.platformRequest(`/social/friends/${encodeURIComponent(id)}/accept`, {
+            method: "POST"
+        });
+    }
+
+    async declineFriendRequest(id) {
+        return this.platformRequest(`/social/friends/${encodeURIComponent(id)}/decline`, {
+            method: "POST"
+        });
+    }
+
+    async removeFriend(id) {
+        return this.platformRequest(`/social/friends/${encodeURIComponent(id)}/remove`, {
+            method: "POST"
+        });
+    }
+
+    async getRoomInvitations() {
+        const data = await this.platformRequest("/social/invitations");
+        return {
+            incoming: Array.isArray(data?.incoming) ? data.incoming : [],
+            sent: Array.isArray(data?.sent) ? data.sent : [],
+            items: Array.isArray(data?.items) ? data.items : []
+        };
+    }
+
+    async inviteFriendToRoom(roomId, payload = {}) {
+        const body = payload && typeof payload === "object" ? payload : {};
+        return this.platformRequest(`/social/rooms/${encodeURIComponent(roomId)}/invite`, {
+            method: "POST",
+            body
+        });
+    }
+
+    async acceptRoomInvitation(id) {
+        return this.platformRequest(`/social/invitations/${encodeURIComponent(id)}/accept`, {
+            method: "POST"
+        });
+    }
+
+    async declineRoomInvitation(id) {
+        return this.platformRequest(`/social/invitations/${encodeURIComponent(id)}/decline`, {
+            method: "POST"
+        });
     }
 
     async register(nameOrOptions, passwordMaybe) {
