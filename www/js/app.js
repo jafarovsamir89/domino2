@@ -763,7 +763,6 @@ class DominoGame {
         }
         if (!summary) return;
         const isAuthenticated = Boolean(profile && this.accountOnline);
-                title.textContent = `${room.hostName || room.roomCode || room.roomId || 'Room'}${room.roomCode ? ' · ' + room.roomCode : ''}`;
         if (profilePanel) profilePanel.classList.toggle('is-hidden', !isAuthenticated);
         if (authPanel) authPanel.classList.toggle('is-hidden', isAuthenticated);
         if (historyPanel) historyPanel.classList.add('is-hidden');
@@ -1311,6 +1310,21 @@ class DominoGame {
         return null;
     }
 
+    prefillOnlineNameIfPossible() {
+        const fallbackName = this.readPlayerName('any')
+            || this.accountProfile?.name
+            || this.account.getStoredProfile?.()?.name
+            || '';
+        if (!fallbackName) return '';
+
+        const nextName = this.sanitizeName(fallbackName, '');
+        const primary = document.getElementById('player-name');
+        const online = document.getElementById('player-name-online');
+        if (online && !String(online.value || '').trim()) online.value = nextName;
+        if (primary && !String(primary.value || '').trim()) primary.value = nextName;
+        return nextName;
+    }
+
     onInviteCodeResolved(code) {
         const nextCode = String(code || '').trim();
         if (!nextCode) return;
@@ -1413,6 +1427,7 @@ class DominoGame {
     showOpenRoomsModal() {
         const modal = document.getElementById('open-rooms-modal');
         if (!modal) return;
+        this.prefillOnlineNameIfPossible();
         this.resetOpenRoomsModalState();
         modal.classList.add('active');
         void this.loadOpenRooms();
@@ -1553,8 +1568,8 @@ class DominoGame {
                 joinBtn.className = 'btn btn-action btn-strong';
                 joinBtn.textContent = this.currentLang === 'az' ? 'Qoşul' : 'Join';
                 joinBtn.addEventListener('click', async () => {
-                    this.hideOpenRoomsModal();
-                    await this.joinOnlineRoom(room.roomCode || room.roomId);
+                    const joined = await this.joinOnlineRoom(room.roomCode || room.roomId);
+                    if (joined) this.hideOpenRoomsModal();
                 });
                 footer.appendChild(joinBtn);
                 card.appendChild(title);
@@ -1849,6 +1864,10 @@ class DominoGame {
     async joinOnlineRoom(code) {
         const nextCode = String(code || '').trim().toUpperCase();
         if (!nextCode) return false;
+        this.showStartModal('online');
+        this.showOnlineJoinFlow();
+        this.prefillOnlineNameIfPossible();
+        document.getElementById('join-code-input').value = nextCode;
         const name = this.requirePlayerName('online');
         if (!name) return false;
         const profile = await this.ensureGuestAccount(name);
@@ -1857,8 +1876,6 @@ class DominoGame {
             return false;
         }
         this.playerName = name;
-        this.showOnlineJoinFlow();
-        document.getElementById('join-code-input').value = nextCode;
 
         const btn = document.getElementById('connect-btn');
         if (btn) btn.disabled = true;
@@ -1982,6 +1999,46 @@ class DominoGame {
             this.setHostStatus(statusText);
             this.setJoinStatus(statusText);
         }
+
+        if (this.network?.isMultiplayer && roomState.roomVisibility === 'open' && !roomState.gameActive) {
+            this.enterOpenRoomWaitingScreen(roomState);
+        }
+    }
+
+    enterOpenRoomWaitingScreen(roomState) {
+        const startScreen = document.getElementById('start-screen');
+        const gameScreen = document.getElementById('game-screen');
+        startScreen?.classList.remove('active');
+        gameScreen?.classList.add('active');
+        this.showStartModal(null);
+        this.hideOpenRoomsModal();
+
+        const roomPlayers = Array.isArray(roomState.players) ? roomState.players : [];
+        const totalPlayers = Math.max(2, Number(roomState.totalPlayers || roomState.humanSeats || roomPlayers.length || 2));
+        const mySessionId = this.network?.room?.sessionId || '';
+        const myIndex = roomPlayers.findIndex((player) => player.sessionId === mySessionId);
+
+        this.playerCount = totalPlayers;
+        this.playerNames = Array.from({ length: totalPlayers }, (_, index) => {
+            const player = roomPlayers[index];
+            if (player?.name) return player.name;
+            if (player?.isBot) return `AI ${index + 1}`;
+            return this.currentLang === 'az' ? `Gözlənilir ${index + 1}` : `Waiting ${index + 1}`;
+        });
+        this.scores = Array.from({ length: totalPlayers }, (_, index) => this.scores[index] || 0);
+        this.roundWins = Array.from({ length: totalPlayers }, (_, index) => this.roundWins[index] || 0);
+        this.hands = Array.from({ length: totalPlayers }, () => []);
+        this.myHand = [];
+        this.humanPlayerIndex = myIndex >= 0 ? myIndex : 0;
+        this.currentPlayer = this.humanPlayerIndex;
+        this.board = new Board();
+        this.boneyard = [];
+        this.validMoves = [];
+        this.selectedTileIndex = -1;
+        this.roundOver = false;
+        this.matchOver = false;
+        this.gameActive = false;
+        this.renderState();
     }
 
     onRoomClosed(payload) {
@@ -2465,28 +2522,47 @@ class DominoGame {
         }
         this.renderer.renderScores(displayEntities, this.currentPlayer);
         this.renderer.renderInfo(this.matchRound, this.deal, this.boneyard.length, this.board.getOpenEndsScore(), this.getCurrentStakeLabel());
+        const waitingOpenRoom = this.network.isMultiplayer
+            && !this.gameActive
+            && this.currentRoomState?.roomVisibility === 'open';
         const roundInfo = document.getElementById('round-info');
         const boneyardInfo = document.getElementById('boneyard-info');
         if (roundInfo) {
-            roundInfo.textContent = '';
-            roundInfo.classList.add('is-hidden');
+            if (waitingOpenRoom) {
+                const seats = Number(this.currentRoomState?.humanSeats || this.currentRoomState?.totalPlayers || this.playerCount || 0);
+                const joined = Number(this.currentRoomState?.humanPlayers || 0);
+                roundInfo.textContent = this.currentLang === 'az'
+                    ? `Açıq otaq gözləyir: ${joined}/${seats}`
+                    : `Open room waiting: ${joined}/${seats}`;
+                roundInfo.classList.remove('is-hidden');
+            } else {
+                roundInfo.textContent = '';
+                roundInfo.classList.add('is-hidden');
+            }
         }
         if (boneyardInfo) {
-            boneyardInfo.textContent = '';
-            boneyardInfo.classList.add('is-hidden');
+            if (waitingOpenRoom) {
+                boneyardInfo.textContent = this.currentLang === 'az'
+                    ? 'Yeni oyunçu qoşulana qədər gözlənilir'
+                    : 'Waiting for more players to join';
+                boneyardInfo.classList.remove('is-hidden');
+            } else {
+                boneyardInfo.textContent = '';
+                boneyardInfo.classList.add('is-hidden');
+            }
         }
         
         this.renderer.renderBoard(this.board);
         this.renderer.renderOpponentHands(this.hands, this.humanPlayerIndex, this.playerNames, this.currentPlayer);
-        const myHand = this.myHand || this.hands[this.humanPlayerIndex];
+        const myHand = this.myHand || this.hands[this.humanPlayerIndex] || [];
         this.validMoves = this.board.getValidMoves(myHand);
         const myTurn = this.currentPlayer === this.humanPlayerIndex;
         this.renderer.renderHand(myHand, this.validMoves, this.selectedTileIndex, myTurn);
 
         const canPlay = this.board.canPlayAny(myHand);
         const emptyBoneyard = this.boneyard.length === 0;
-        this.renderer.drawBtn.disabled = !myTurn || canPlay || emptyBoneyard;
-        this.renderer.passBtn.disabled = !myTurn || canPlay || !emptyBoneyard;
+        this.renderer.drawBtn.disabled = waitingOpenRoom || !myTurn || canPlay || emptyBoneyard;
+        this.renderer.passBtn.disabled = waitingOpenRoom || !myTurn || canPlay || !emptyBoneyard;
 
         this.goshaCombo = (this.gameActive && myTurn) ? this.board.getGoshaCombo(myHand) : null;
         this.renderer.showGoshaBtn(this.goshaCombo, () => this.playGoshaCombo());

@@ -543,6 +543,7 @@ class DominoRoom extends Room {
         this.broadcast("room_state", {
             roomId: this.roomId,
             roomCode: this.roomCode,
+            roomVisibility: this.roomVisibility,
             stakeKey: this.currentDealStakeKey || this.currentStakeKey,
             stakeAmount: this.currentDealStakeAmount,
             bankAmount: this.currentDealBankAmount,
@@ -553,6 +554,7 @@ class DominoRoom extends Room {
             totalPlayers: this.totalPlayers,
             isTeamMode: this.state.isTeamMode,
             gameActive: this.state.gameActive,
+            hostName: this.state.players.get(this.state.playerOrder[0])?.name || "Player",
             players
         });
         void this.saveCustomStateToRedis();
