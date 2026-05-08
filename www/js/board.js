@@ -143,7 +143,7 @@ export class Board {
         for (let j = 0; j < this.openEnds.length; j++) {
             const oe = this.openEnds[j];
             for (let i = 0; i < hand.length; i++) {
-                if (!usedTiles.has(i) && hand[i].hasValue(oe.value)) {
+                if (!usedTiles.has(i) && hand[i].isDouble && hand[i].a === oe.value) {
                     possibleMatches.push({
                         tileIndex: i,
                         openEndIndex: j,
@@ -211,7 +211,7 @@ export class Board {
                     }
                     const tile = hand[m.tileIndex];
                     const oe = sim.openEnds[idx];
-                    if (!tile || !tile.hasValue(oe.value)) {
+                    if (!tile || !tile.isDouble || tile.a !== oe.value) {
                         valid = false;
                         break;
                     }
