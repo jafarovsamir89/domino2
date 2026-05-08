@@ -411,10 +411,19 @@ export class Renderer {
         document.getElementById('round-end-screen').classList.add('active');
     }
 
-    renderGameOver(wn, players) {
+    renderGameOver(wn, players, economySummary = null) {
         document.getElementById('game-over-title').textContent = `${wn} ${this.app.t('won-suffix')}`;
         const d = document.getElementById('game-over-details');
         d.innerHTML = '';
+        if (economySummary) {
+            const summary = document.createElement('div');
+            summary.className = 'detail-row';
+            const spent = Math.max(0, Number(economySummary.spent || 0));
+            const won = Math.max(0, Number(economySummary.won || 0));
+            const net = won - spent;
+            summary.innerHTML = `<span>Coins</span><span class="detail-value">Won: ${won} · Lost: ${spent} · Net: ${net >= 0 ? '+' : ''}${net}</span>`;
+            d.appendChild(summary);
+        }
         for (const p of [...players].sort((a, b) => b.roundWins - a.roundWins)) {
             const r = document.createElement('div');
             r.className = 'detail-row';

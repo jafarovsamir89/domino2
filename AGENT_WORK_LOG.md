@@ -464,3 +464,9 @@
 - Added defensive defaults in the economy controller and service so reserve/settle endpoints always receive an object even if an old or malformed client sends no JSON body.
 - Normalized the solo reserve/settle client calls to always send an object body, removing one more edge case from the browser side.
 
+## 2026-05-08 Bank HUD and round-based stakes
+- Switched the HUD copy from `Stake: X` to `Bank: X` so the live board shows the current round bank instead of the raw stake label.
+- Converted solo coin play from a single match-wide charge to a round-based flow: each round now reserves its own stake before the round starts and settles it when the round ends.
+- Added a coin match summary that accumulates `won`, `lost`, and `net` values across rounds, then shows them in the final modal.
+- Added a round-start guard so a player without enough coins cannot begin the next round and is returned to the solo flow instead of silently continuing.
+

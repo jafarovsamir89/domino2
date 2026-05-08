@@ -38,6 +38,12 @@ class DominoGame {
         this.currentMatchSessionId = null;
         this.activeMatchEconomyMode = 'free';
         this.activeMatchStakeKey = 'free';
+        this.currentRoundStakeSessionId = null;
+        this.currentRoundStakeKey = 'free';
+        this.currentRoundStakeAmount = 0;
+        this.currentRoundBankAmount = 0;
+        this.coinMatchSummary = { spent: 0, won: 0 };
+        this.pendingSoloSettlement = Promise.resolve();
         this.reactionPalette = [
             { code: '1F923', label: 'ROFL' },
             { code: '1F609', label: 'Wink' },
@@ -1039,14 +1045,32 @@ class DominoGame {
         return labels[stakeKey] || this.t('economy-coins');
     }
 
-    getCurrentStakeLabel() {
-        if (this.network.isMultiplayer) {
-            return this.getStakeLabelByKey(this.onlineStakeKey, this.onlineEconomyMode);
-        }
+    getStakeAmountByKey(stakeKey) {
+        const amounts = {
+            stake_50: 50,
+            stake_100: 100,
+            stake_200: 200,
+            stake_500: 500,
+            stake_1000: 1000,
+            stake_5000: 5000
+        };
 
-        const mode = this.gameActive ? this.activeMatchEconomyMode : this.soloEconomyMode;
-        const stakeKey = this.gameActive ? this.activeMatchStakeKey : this.soloStakeKey;
-        return this.getStakeLabelByKey(stakeKey, mode);
+        return amounts[stakeKey] || 0;
+    }
+
+    getCurrentStakeLabel() {
+        const mode = this.network.isMultiplayer ? this.onlineEconomyMode : this.soloEconomyMode;
+        const stakeKey = this.network.isMultiplayer ? this.onlineStakeKey : (this.gameActive ? this.currentRoundStakeKey : this.soloStakeKey);
+        if (mode !== 'coins' || !stakeKey || stakeKey === 'free') return '';
+
+        const stakeAmount = this.getStakeAmountByKey(stakeKey);
+        const participants = this.network.isMultiplayer
+            ? Math.max(2, this.onlinePlayerCount || 2)
+            : 2;
+        const bankAmount = this.gameActive && !this.network.isMultiplayer && this.currentRoundBankAmount > 0
+            ? this.currentRoundBankAmount
+            : stakeAmount * participants;
+        return bankAmount > 0 ? `${bankAmount} coins` : '';
     }
 
     buildGameResumeSnapshot() {
@@ -1437,7 +1461,7 @@ class DominoGame {
             if (this.network.isMultiplayer) {
                 this.network.sendNextDeal();
             } else {
-                if (this.roundOver) this.startRound();
+                if (this.roundOver) void this.startRound();
                 else this.startDeal();
             }
         });
@@ -1634,11 +1658,12 @@ class DominoGame {
     }
 
     async quitCurrentMatch() {
-        if (!this.network.isMultiplayer && this.activeMatchEconomyMode === 'coins' && this.activeMatchStakeKey !== 'free' && this.currentMatchSessionId) {
+        if (!this.network.isMultiplayer && this.currentRoundStakeSessionId && this.currentRoundStakeKey !== 'free') {
             try {
+                this.coinMatchSummary.spent += this.currentRoundStakeAmount || this.getStakeAmountByKey(this.currentRoundStakeKey);
                 await this.account?.settleSoloMatchStake?.({
-                    matchId: this.currentMatchSessionId,
-                    stakeKey: this.activeMatchStakeKey,
+                    matchId: this.currentRoundStakeSessionId,
+                    stakeKey: this.currentRoundStakeKey,
                     result: 'loss',
                     difficulty: this.difficulty
                 });
@@ -1690,6 +1715,8 @@ class DominoGame {
         this.roundWins = new Array(this.playerCount).fill(0);
         this.teamScores=[0,0]; this.teamRoundWins=[0,0];
         this.matchRound=1; this.matchOver=false; this.roundOver=false; this.lastDealWinner=null;
+        this.coinMatchSummary = { spent: 0, won: 0 };
+        this.pendingSoloSettlement = Promise.resolve();
         
         // Settings
         this.instantWinEnabled = document.getElementById('instant-win-setting').checked;
@@ -1712,7 +1739,13 @@ class DominoGame {
             this.ais.push(new AIPlayer(i,this.difficulty));
         }
         console.log('[startNewGame] Starting round...');
-        this.startRound();
+        const started = await this.startRound();
+        if (!started) {
+            document.getElementById('game-screen').classList.remove('active');
+            document.getElementById('start-screen').classList.add('active');
+            this.showStartModal(null);
+            return;
+        }
         void this.syncLocalPresence(true);
     }
 
@@ -1751,36 +1784,114 @@ class DominoGame {
         }
 
         const stakeKey = this.soloStakeKey && this.soloStakeKey !== 'free' ? this.soloStakeKey : 'stake_50';
+        this.soloStakeKey = stakeKey;
+        this.soloEconomyMode = 'coins';
+        this.activeMatchEconomyMode = 'coins';
+        this.activeMatchStakeKey = stakeKey;
+        this.syncSoloOptions();
+        return { ok: true, mode: 'coins', stakeKey };
+    }
+    async reserveSoloRoundStake() {
+        const isCoinRound = this.soloEconomyMode === 'coins' && this.currentRoundStakeKey !== 'free';
+        if (!isCoinRound) {
+            this.currentRoundStakeAmount = 0;
+            this.currentRoundBankAmount = 0;
+            return { ok: true, mode: 'free' };
+        }
+
+        const token = this.account?.getRoomAuthToken?.();
+        if (!token) {
+            return { ok: false, reason: 'auth_required' };
+        }
+
+        const roundStakeKey = this.currentRoundStakeKey && this.currentRoundStakeKey !== 'free'
+            ? this.currentRoundStakeKey
+            : (this.soloStakeKey && this.soloStakeKey !== 'free' ? this.soloStakeKey : 'stake_50');
+        const roundStakeAmount = this.getStakeAmountByKey(roundStakeKey);
+
         try {
             const result = await this.account.reserveSoloMatchStake({
-                matchId: this.currentMatchSessionId,
-                stakeKey,
+                matchId: this.currentRoundStakeSessionId,
+                stakeKey: roundStakeKey,
                 difficulty: this.difficulty
             });
             if (!result?.ok) {
                 throw new Error(result?.reason || 'reserve_failed');
             }
-            this.soloStakeKey = stakeKey;
-            this.soloEconomyMode = 'coins';
+            this.currentRoundStakeKey = roundStakeKey;
+            this.currentRoundStakeAmount = roundStakeAmount;
+            this.currentRoundBankAmount = roundStakeAmount > 0 ? roundStakeAmount * 2 : 0;
             this.activeMatchEconomyMode = 'coins';
-            this.activeMatchStakeKey = stakeKey;
-            this.syncSoloOptions();
-            return { ok: true, mode: 'coins', stakeKey };
+            this.activeMatchStakeKey = roundStakeKey;
+            return { ok: true, mode: 'coins', stakeKey: roundStakeKey, stakeAmount: roundStakeAmount };
         } catch (error) {
-            console.warn('[Economy] Solo reservation failed', error);
-            this.renderer.showMessage(
-                this.currentLang === 'az'
-                    ? 'Monetli oyun başlatmaq olmadı'
-                    : 'Failed to start coin match',
-                2400
-            );
             return { ok: false, reason: error?.message || 'reserve_failed' };
         }
     }
-    startRound() { 
+
+    async settleSoloRoundStake(winnerIndex) {
+        if (this.soloEconomyMode !== 'coins' || this.currentRoundStakeKey === 'free' || !this.currentRoundStakeSessionId) {
+            return null;
+        }
+
+        const stakeAmount = this.currentRoundStakeAmount || this.getStakeAmountByKey(this.currentRoundStakeKey);
+        const result = this.isTeamMode
+            ? ((winnerIndex % 2) === (this.humanPlayerIndex % 2) ? 'win' : 'loss')
+            : (winnerIndex === this.humanPlayerIndex ? 'win' : 'loss');
+
+        const payout = result === 'win'
+            ? Math.max(0, (stakeAmount * 2) - Math.max(0, Math.floor((stakeAmount * 2) * 0.05)))
+            : 0;
+
+        this.coinMatchSummary.spent += stakeAmount;
+        this.coinMatchSummary.won += payout;
+
+        try {
+            await this.account.settleSoloMatchStake({
+                matchId: this.currentRoundStakeSessionId,
+                stakeKey: this.currentRoundStakeKey,
+                result,
+                difficulty: this.difficulty
+            });
+        } catch (settleError) {
+            console.warn('[Economy] Solo round settlement failed:', settleError);
+        }
+
+        this.currentRoundStakeSessionId = null;
+        this.currentRoundStakeKey = 'free';
+        this.currentRoundStakeAmount = 0;
+        this.currentRoundBankAmount = 0;
+        return { result, stakeAmount, payout };
+    }
+
+    async startRound() { 
         console.log('[startRound] playerCount:', this.playerCount);
         this.roundOver=false; this.scores=new Array(this.playerCount).fill(0); if(this.isTeamMode) this.teamScores=[0,0]; this.deal=1; 
+        await this.pendingSoloSettlement.catch(() => {});
+        this.currentRoundStakeKey = this.soloEconomyMode === 'coins'
+            ? (this.soloStakeKey && this.soloStakeKey !== 'free' ? this.soloStakeKey : 'stake_50')
+            : 'free';
+        this.currentRoundStakeSessionId = this.createResumeId(`solo-round-${this.matchRound}`);
+        const stakeReady = await this.reserveSoloRoundStake();
+        if (!stakeReady?.ok) {
+            this.matchOver = true;
+            this.renderer.showMessage(
+                this.currentLang === 'az'
+                    ? 'Növbəti raund üçün monet çatmır'
+                    : 'Not enough coins for the next round',
+                2400
+            );
+            if (this.matchRound <= 1) {
+                document.getElementById('game-screen').classList.remove('active');
+                document.getElementById('start-screen').classList.add('active');
+                this.showStartModal(null);
+                return false;
+            }
+            this.showMatchResult();
+            return false;
+        }
         this.startDeal(); 
+        return true;
     }
 
     startDeal() {
@@ -1894,7 +2005,7 @@ class DominoGame {
             "label-boneyard-short": { az: "Bazaar", en: "Bazaar" },
             "label-economy-mode": { az: "Game mode", en: "Game mode" },
             "label-stake-table": { az: "Stake table", en: "Stake table" },
-            "label-stake-short": { az: "Stake", en: "Stake" },
+            "label-stake-short": { az: "Bank", en: "Bank" },
             "economy-free": { az: "Free play", en: "Free play" },
             "economy-coins": { az: "Play on coins", en: "Play on coins" },
             "btn-host": { az: "Create", en: "Create" },
@@ -2455,18 +2566,26 @@ class DominoGame {
             displayEntities = this.playerNames.map((n,i)=>({name:n,isWinner:i===wi,score:this.scores[i],roundWins:this.roundWins[i]}));
         }
         if(this.matchRound>=MAX_R)this.matchOver=true;
+        if (!this.isTeamMode && this.soloEconomyMode === 'coins' && this.currentRoundStakeKey !== 'free') {
+            this.pendingSoloSettlement = this.settleSoloRoundStake(wi);
+        } else if (this.isTeamMode && this.soloEconomyMode === 'coins' && this.currentRoundStakeKey !== 'free') {
+            this.pendingSoloSettlement = this.settleSoloRoundStake(wi);
+        }
         this.renderer.renderRoundEnd(this.playerNames[wi],displayEntities,wins,this.matchRound,this.matchOver);this.matchRound++;
         void this.syncLocalPresence();
     }
     showMatchResult(){
+        const economySummary = this.soloEconomyMode === 'coins'
+            ? { ...this.coinMatchSummary }
+            : null;
         if(this.isTeamMode){
             const w=this.teamRoundWins[0]>=this.teamRoundWins[1]?0:1;
-            this.renderer.renderGameOver(w===0?`${this.playerNames[0]} & ${this.playerNames[2]}`:`${this.playerNames[1]} & ${this.playerNames[3]}`,[{name:this.t('team-a'),roundWins:this.teamRoundWins[0]},{name:this.t('team-b'),roundWins:this.teamRoundWins[1]}]);
+            this.renderer.renderGameOver(w===0?`${this.playerNames[0]} & ${this.playerNames[2]}`:`${this.playerNames[1]} & ${this.playerNames[3]}`,[{name:this.t('team-a'),roundWins:this.teamRoundWins[0]},{name:this.t('team-b'),roundWins:this.teamRoundWins[1]}], economySummary);
             void this.recordLocalMatchResult(w);
         }
         else{
             let w=0,mx=0;for(let i=0;i<this.playerCount;i++)if(this.roundWins[i]>mx){mx=this.roundWins[i];w=i;}
-            this.renderer.renderGameOver(this.playerNames[w],this.playerNames.map((n,i)=>({name:n,roundWins:this.roundWins[i]})));
+            this.renderer.renderGameOver(this.playerNames[w],this.playerNames.map((n,i)=>({name:n,roundWins:this.roundWins[i]})), economySummary);
             void this.recordLocalMatchResult(w);
         }
         void this.clearLocalPresence();
@@ -2478,22 +2597,6 @@ class DominoGame {
         const platformToken = this.account?.getRoomAuthToken?.();
         if (!platformToken) return;
         try {
-            if (this.soloEconomyMode === 'coins' && this.soloStakeKey !== 'free') {
-                const result = this.isTeamMode
-                    ? ((winnerIndex % 2) === (this.humanPlayerIndex % 2) ? 'win' : 'loss')
-                    : (winnerIndex === this.humanPlayerIndex ? 'win' : 'loss');
-                try {
-                    await this.account.settleSoloMatchStake({
-                        matchId: this.currentMatchSessionId,
-                        stakeKey: this.soloStakeKey,
-                        result,
-                        difficulty: this.difficulty
-                    });
-                } catch (settleError) {
-                    console.warn('[Economy] Solo settlement failed:', settleError);
-                }
-            }
-
             const participants = this.playerNames.map((name, index) => ({
                 isSelf: index === this.humanPlayerIndex,
                 name,
