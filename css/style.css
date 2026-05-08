@@ -433,6 +433,25 @@ input, button { font: inherit; }
     gap: 8px;
 }
 
+#online-entry-ui .btn,
+#online-flow-ui .multiplayer-actions .btn,
+#multi-join-ui .btn-group .btn {
+    flex: 1 1 0;
+    min-height: 46px;
+}
+
+#online-flow-ui.online-create-flow .multiplayer-actions .online-create-btn {
+    flex: 7 1 0;
+}
+
+#online-flow-ui.online-create-flow .multiplayer-actions .online-back-btn {
+    flex: 3 1 0;
+}
+
+#online-entry-ui {
+    margin-top: 8px;
+}
+
 .toggle-card {
     display: flex;
     align-items: center;
