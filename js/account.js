@@ -554,6 +554,11 @@ export class AccountClient {
     async reserveSoloMatchStake(payload) {
         return this.platformRequest("/economy/solo/reserve", {
             method: "POST",
+            headers: this.platformGameToken
+                ? {
+                    Authorization: `Bearer ${this.platformGameToken}`
+                }
+                : {},
             body: payload
         });
     }
@@ -561,6 +566,11 @@ export class AccountClient {
     async settleSoloMatchStake(payload) {
         return this.platformRequest("/economy/solo/settle", {
             method: "POST",
+            headers: this.platformGameToken
+                ? {
+                    Authorization: `Bearer ${this.platformGameToken}`
+                }
+                : {},
             body: payload
         });
     }

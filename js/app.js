@@ -580,6 +580,7 @@ class DominoGame {
 
     async openAccountModal() {
         this.closeStartModals();
+        this.ensureAccountModalPortal();
         const modal = document.getElementById('account-modal');
         if (modal) modal.classList.add('active');
         this.accountMode = this.accountProfile ? 'profile' : 'login';
@@ -953,6 +954,13 @@ class DominoGame {
             profileBtn.textContent = this.t('account-profile');
             menuPanel.insertBefore(profileBtn, document.getElementById('menu-quit'));
         }
+    }
+
+    ensureAccountModalPortal() {
+        const accountModal = document.getElementById('account-modal');
+        if (!accountModal) return;
+        if (accountModal.parentElement === document.body) return;
+        document.body.appendChild(accountModal);
     }
 
     syncSoloOptions() {
@@ -1731,6 +1739,16 @@ class DominoGame {
         }
         this.renderer.renderScores(displayEntities, this.currentPlayer);
         this.renderer.renderInfo(this.matchRound, this.deal, this.boneyard.length, this.board.getOpenEndsScore(), this.getCurrentStakeLabel());
+        const roundInfo = document.getElementById('round-info');
+        const boneyardInfo = document.getElementById('boneyard-info');
+        if (roundInfo) {
+            roundInfo.textContent = '';
+            roundInfo.classList.add('is-hidden');
+        }
+        if (boneyardInfo) {
+            boneyardInfo.textContent = '';
+            boneyardInfo.classList.add('is-hidden');
+        }
         
         this.renderer.renderBoard(this.board);
         this.renderer.renderOpponentHands(this.hands, this.humanPlayerIndex, this.playerNames, this.currentPlayer);
