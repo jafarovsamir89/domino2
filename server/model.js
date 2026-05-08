@@ -42,7 +42,13 @@ function determineFirstPlayer(hands) {
     return { player: bp, tileIndex: bi };
 }
 
-function handPoints(hand) { return hand.reduce((s, t) => s + t.total, 0); }
+function handPoints(hand) {
+    if (hand.length === 1) {
+        const tile = hand[0];
+        if (tile && tile.isDouble && tile.a === 0) return 10;
+    }
+    return hand.reduce((s, t) => s + t.total, 0);
+}
 // Round UP to nearest 5
 function roundTo5(n) { return Math.ceil(n / 5) * 5; }
 
