@@ -237,7 +237,7 @@ export class Renderer {
         if (!pending || pending.tileId !== tileId) return Promise.resolve();
 
         this._pendingBoardTileTravel = null;
-        const { sourceRect, sourceNode } = pending;
+        const { sourceRect } = pending;
 
         const targetEl = this.boardEl.querySelector(`[data-tile-id="${tileId}"]`);
         if (!targetEl || !sourceRect) {
@@ -255,26 +255,32 @@ export class Renderer {
 
         const travelLayer = document.getElementById('game-screen') || document.body;
         const targetRect = targetEl.getBoundingClientRect();
-        const clone = this.createTravelClone(sourceNode || targetEl);
-        const deltaX = targetRect.left - sourceRect.left;
-        const deltaY = targetRect.top - sourceRect.top;
-        const lift = Math.min(44, Math.max(18, Math.abs(deltaY) * 0.12));
-        const targetRotation = targetEl.classList.contains('horizontal') ? 90 : 0;
+        const clone = this.createTravelClone(targetEl);
+        const sourceCenterX = sourceRect.left + sourceRect.width / 2;
+        const sourceCenterY = sourceRect.top + sourceRect.height / 2;
+        const targetCenterX = targetRect.left + targetRect.width / 2;
+        const targetCenterY = targetRect.top + targetRect.height / 2;
+        const startX = sourceCenterX - targetCenterX;
+        const startY = sourceCenterY - targetCenterY;
+        const distance = Math.hypot(startX, startY);
+        const lift = Math.min(36, Math.max(12, distance * 0.08));
+        const tilt = Math.max(-4, Math.min(4, -startX / 90));
+        const duration = Math.min(0.34, Math.max(0.24, distance / 1200));
 
         clone.style.cssText = [
             'position:fixed',
-            `left:${sourceRect.left}px`,
-            `top:${sourceRect.top}px`,
+            `left:${targetRect.left}px`,
+            `top:${targetRect.top}px`,
             'margin:0',
-            `width:${sourceRect.width}px`,
-            `height:${sourceRect.height}px`,
+            `width:${targetRect.width}px`,
+            `height:${targetRect.height}px`,
             'z-index:220',
             'pointer-events:none',
             'transform-origin:center center',
-            'will-change:left,top,width,height,transform',
+            'will-change:transform',
             'opacity:1'
         ].join(';');
-        clone.style.transform = 'translateZ(0)';
+        clone.style.transform = 'translate3d(0,0,0)';
         travelLayer.appendChild(clone);
 
         targetEl.style.visibility = 'hidden';
@@ -298,23 +304,28 @@ export class Renderer {
             this._activeTileTravel = { timeline, clone, tileId };
 
             timeline
-                .to(clone, {
-                    left: sourceRect.left + deltaX * 0.38,
-                    top: sourceRect.top + deltaY * 0.38 - lift,
-                    width: sourceRect.width + (targetRect.width - sourceRect.width) * 0.38,
-                    height: sourceRect.height + (targetRect.height - sourceRect.height) * 0.38,
-                    rotation: targetRotation * 0.35,
-                    duration: 0.16,
-                    ease: 'power2.out'
+                .set(clone, {
+                    x: startX,
+                    y: startY,
+                    scale: 0.98,
+                    rotation: tilt,
+                    force3D: true
                 })
                 .to(clone, {
-                    left: targetRect.left,
-                    top: targetRect.top,
-                    width: targetRect.width,
-                    height: targetRect.height,
-                    rotation: targetRotation,
-                    duration: 0.24,
-                    ease: 'power3.inOut'
+                    x: startX * 0.45,
+                    y: startY * 0.45 - lift,
+                    scale: 1.012,
+                    rotation: tilt * 0.45,
+                    duration: duration * 0.45,
+                    ease: 'sine.out'
+                })
+                .to(clone, {
+                    x: 0,
+                    y: 0,
+                    scale: 1,
+                    rotation: 0,
+                    duration: duration * 0.55,
+                    ease: 'sine.inOut'
                 });
         });
     }

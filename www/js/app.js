@@ -2483,8 +2483,7 @@ class DominoGame {
         if(!this.board.isEmpty && !this.board.openEnds[oei]){this.turnInProgress=false;return;}
         const sourceEl = pi === this.humanPlayerIndex ? this.renderer.handEl?.children?.[ti] || null : null;
         const sourceRect = sourceEl?.getBoundingClientRect?.() || null;
-        const sourceNode = sourceEl?.cloneNode?.(true) || null;
-        this.renderer._pendingBoardTileTravel = sourceRect && sourceNode ? { tileId: tile.id, sourceRect, sourceNode } : null;
+        this.renderer._pendingBoardTileTravel = sourceRect ? { tileId: tile.id, sourceRect } : null;
         hand.splice(ti,1);
         this.playSound('place');
         let score=this.board.isEmpty?this.board.placeFirst(tile):this.board.placeTile(tile,oei);
@@ -2509,7 +2508,7 @@ class DominoGame {
         setTimeout(() => {
             this.turnInProgress=false;
             this.advanceTurn();
-        }, sourceRect ? 120 : 300);
+        }, sourceRect ? 70 : 300);
         } catch (e) {
             console.error('[playTile] Error:', e);
             this.turnInProgress = false;
