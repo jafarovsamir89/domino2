@@ -35,7 +35,7 @@ export class EconomyController {
     }
   ) {
     const token = String(authorization || "").replace(/^Bearer\s+/i, "").trim();
-    return this.economyService.reserveMatchStake(token, body);
+    return this.economyService.reserveMatchStake(token, body || {});
   }
 
   @Post("economy/matches/settle")
@@ -54,7 +54,7 @@ export class EconomyController {
     }
   ) {
     const token = String(authorization || "").replace(/^Bearer\s+/i, "").trim();
-    return this.economyService.settleMatchStake(token, body);
+    return this.economyService.settleMatchStake(token, body || {});
   }
 
   @Post("economy/solo/reserve")
@@ -68,7 +68,7 @@ export class EconomyController {
     }
   ) {
     const token = String(authorization || "").replace(/^Bearer\s+/i, "").trim();
-    return this.economyService.reserveSoloMatchStake(token, body);
+    return this.economyService.reserveSoloMatchStake(token, body || {});
   }
 
   @Post("economy/solo/settle")
@@ -83,7 +83,7 @@ export class EconomyController {
     }
   ) {
     const token = String(authorization || "").replace(/^Bearer\s+/i, "").trim();
-    return this.economyService.settleSoloMatchStake(token, body);
+    return this.economyService.settleSoloMatchStake(token, body || {});
   }
 
   @Get("admin/economy/overview")

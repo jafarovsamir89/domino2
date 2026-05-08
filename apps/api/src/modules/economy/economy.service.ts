@@ -965,7 +965,7 @@ export class EconomyService {
     });
   }
 
-  async reserveMatchStake(token: string, payload: ReservePayload) {
+  async reserveMatchStake(token: string, payload: ReservePayload = {}) {
     const claims = verifyGameToken(token);
     if (!claims) {
       return {
@@ -1094,7 +1094,7 @@ export class EconomyService {
     }
   }
 
-  async settleMatchStake(token: string, payload: SettlePayload) {
+  async settleMatchStake(token: string, payload: SettlePayload = {}) {
     const claims = verifyGameToken(token);
     if (!claims) {
       return {
@@ -1283,7 +1283,7 @@ export class EconomyService {
     return resultSummary;
   }
 
-  async reserveSoloMatchStake(token: string, payload: { matchId?: string | null; stakeKey?: string | null; difficulty?: string | null }) {
+  async reserveSoloMatchStake(token: string, payload: { matchId?: string | null; stakeKey?: string | null; difficulty?: string | null } = {}) {
     const claims = verifyGameToken(token);
     if (!claims) {
       return {
@@ -1422,7 +1422,7 @@ export class EconomyService {
     }
   }
 
-  async settleSoloMatchStake(token: string, payload: { matchId?: string | null; stakeKey?: string | null; result?: "win" | "draw" | "refund" | "loss" | string | null; difficulty?: string | null }) {
+  async settleSoloMatchStake(token: string, payload: { matchId?: string | null; stakeKey?: string | null; result?: "win" | "draw" | "refund" | "loss" | string | null; difficulty?: string | null } = {}) {
     const claims = verifyGameToken(token);
     if (!claims) {
       return {

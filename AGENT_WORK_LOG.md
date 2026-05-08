@@ -459,3 +459,8 @@
 - Stopped silently converting failed solo coin reservations into free matches; the client now aborts the start flow and returns to the solo modal instead.
 - Bumped the service worker cache version so the updated solo stake logic reaches secondary devices instead of serving stale cached JS.
 
+## 2026-05-08 Solo reserve 500 guard
+- Traced a live production `500` on `/api/economy/solo/reserve` to `payload === undefined`, which caused `reserveSoloMatchStake` to crash while reading `matchId`.
+- Added defensive defaults in the economy controller and service so reserve/settle endpoints always receive an object even if an old or malformed client sends no JSON body.
+- Normalized the solo reserve/settle client calls to always send an object body, removing one more edge case from the browser side.
+

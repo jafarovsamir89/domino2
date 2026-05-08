@@ -552,6 +552,7 @@ export class AccountClient {
     }
 
     async reserveSoloMatchStake(payload) {
+        const body = payload && typeof payload === "object" ? payload : {};
         return this.platformRequest("/economy/solo/reserve", {
             method: "POST",
             headers: this.platformGameToken
@@ -559,11 +560,12 @@ export class AccountClient {
                     Authorization: `Bearer ${this.platformGameToken}`
                 }
                 : {},
-            body: payload
+            body
         });
     }
 
     async settleSoloMatchStake(payload) {
+        const body = payload && typeof payload === "object" ? payload : {};
         return this.platformRequest("/economy/solo/settle", {
             method: "POST",
             headers: this.platformGameToken
@@ -571,7 +573,7 @@ export class AccountClient {
                     Authorization: `Bearer ${this.platformGameToken}`
                 }
                 : {},
-            body: payload
+            body
         });
     }
 
