@@ -1,3 +1,5 @@
+const gsap = window.gsap;
+
 export class Renderer {
     constructor(app) {
         this.app = app;
@@ -123,6 +125,7 @@ export class Renderer {
         this.boardEl.innerHTML = '';
         const bc = document.getElementById('board-container');
         if (!board.nodes.length) {
+            this._lastAnimatedBoardTileId = null;
             const ph = document.createElement('div');
             ph.style.cssText = 'color:var(--text-dim);font-size:0.85rem;text-align:center;padding:40px;width:100%;height:100%;display:flex;align-items:center;justify-content:center;';
             ph.textContent = this.app.t('board-empty');
@@ -162,6 +165,8 @@ export class Renderer {
         const oy = (mxY + mnY) / 2;
         this._lastOx = ox;
         this._lastOy = oy;
+        const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
+        const useGsap = !!gsap && !reduceMotion;
 
         const last = board.nodes.length - 1;
         for (let i = 0; i < board.nodes.length; i++) {
@@ -171,7 +176,14 @@ export class Renderer {
 
             const el = this.createTileEl(n.displayA, n.displayB, n.orientation, false, n.tile.id);
             el.classList.add('board-tile');
-            if (i === last && board.nodes.length > 1) el.classList.add('just-played');
+            if (i === last && board.nodes.length > 1) {
+                if (useGsap && this._lastAnimatedBoardTileId !== n.tile.id) {
+                    this.animateBoardTileEntry(wrapper);
+                    this._lastAnimatedBoardTileId = n.tile.id;
+                } else {
+                    el.classList.add('just-played');
+                }
+            }
             if (i === board.crossNodeId && board.crossSidesClosed >= 2) {
                 el.classList.add('telephone-highlight');
             }
@@ -194,6 +206,23 @@ export class Renderer {
             this.boardEl.style.position = 'relative';
             this.boardEl.appendChild(info);
         }
+    }
+
+    animateBoardTileEntry(wrapper) {
+        if (!wrapper) return;
+
+        gsap.fromTo(
+            wrapper,
+            { opacity: 0, scale: 0.45, y: -10 },
+            {
+                opacity: 1,
+                scale: 1,
+                y: 0,
+                duration: 0.42,
+                ease: 'back.out(1.9)',
+                clearProps: 'transform,opacity'
+            }
+        );
     }
 
     showArrowChoices(board, matchingEnds, onChoose, onCancel) {

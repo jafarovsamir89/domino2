@@ -34,6 +34,7 @@
     "@capacitor/cli": "^8.3.1",
     "@capacitor/core": "^8.3.1",
     "@colyseus/sdk": "^0.17.42",
-    "colyseus.js": "^0.16.22"
+    "colyseus.js": "^0.16.22",
+    "gsap": "^3.15.0"
   }
 }
