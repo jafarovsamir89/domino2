@@ -81,6 +81,8 @@ class DominoGame {
 
         const openSoloBtn = document.getElementById('open-solo-modal-btn');
         const openOnlineBtn = document.getElementById('open-online-modal-btn');
+        const onlineCreateChoiceBtn = document.getElementById('online-create-choice-btn');
+        const onlineConnectChoiceBtn = document.getElementById('online-connect-choice-btn');
         const accountBtn = document.getElementById('account-btn');
         const resumeSessionBtn = document.getElementById('resume-session-btn');
         const soloModalClose = document.getElementById('solo-modal-close');
@@ -95,6 +97,13 @@ class DominoGame {
             this.resetMultiplayerPanels(false);
             this.syncMultiplayerOptions();
             this.showStartModal('online');
+            this.showOnlineLanding();
+        });
+        if (onlineCreateChoiceBtn) onlineCreateChoiceBtn.addEventListener('click', () => {
+            this.showOnlineCreateFlow();
+        });
+        if (onlineConnectChoiceBtn) onlineConnectChoiceBtn.addEventListener('click', () => {
+            this.showOnlineJoinFlow();
         });
         if (accountBtn) accountBtn.addEventListener('click', async () => {
             await this.openAccountModal();
@@ -298,12 +307,20 @@ class DominoGame {
             }
         });
         document.getElementById('host-cancel-btn').addEventListener('click', () => {
-            this.showStartModal(null);
-            this.resetMultiplayerPanels(true);
+            if (this.network?.room) {
+                this.showStartModal(null);
+                this.resetMultiplayerPanels(true);
+                return;
+            }
+            this.showOnlineLanding();
         });
         document.getElementById('join-cancel-btn').addEventListener('click', () => {
-            this.showStartModal(null);
-            this.resetMultiplayerPanels(true);
+            if (this.network?.room) {
+                this.showStartModal(null);
+                this.resetMultiplayerPanels(true);
+                return;
+            }
+            this.showOnlineLanding();
         });
 
         const loginTabBtn = document.getElementById('login-tab-btn');
@@ -1344,6 +1361,39 @@ class DominoGame {
         document.getElementById('multi-join-ui').classList.toggle('active', panelName === 'join');
     }
 
+    showOnlineLanding() {
+        document.getElementById('online-entry-ui')?.classList.remove('is-hidden');
+        document.getElementById('online-flow-ui')?.classList.add('is-hidden');
+        document.getElementById('host-game-btn')?.classList.remove('is-hidden');
+        document.getElementById('join-game-btn')?.classList.remove('is-hidden');
+        this.showMultiplayerPanel(null);
+        this.setHostStatus(this.t('online-room-create-hint'));
+        this.setJoinStatus(this.t('online-room-join-hint'));
+    }
+
+    showOnlineCreateFlow() {
+        document.getElementById('online-entry-ui')?.classList.add('is-hidden');
+        document.getElementById('online-flow-ui')?.classList.remove('is-hidden');
+        document.querySelector('#online-flow-ui .settings-grid')?.classList.remove('is-hidden');
+        document.querySelector('#online-flow-ui .multiplayer-actions')?.classList.remove('is-hidden');
+        document.getElementById('host-game-btn')?.classList.remove('is-hidden');
+        document.getElementById('join-game-btn')?.classList.add('is-hidden');
+        this.showMultiplayerPanel(null);
+        this.setHostStatus(this.t('online-room-create-hint'));
+        this.setJoinStatus(this.t('online-room-join-hint'));
+    }
+
+    showOnlineJoinFlow() {
+        document.getElementById('online-entry-ui')?.classList.add('is-hidden');
+        document.getElementById('online-flow-ui')?.classList.remove('is-hidden');
+        document.querySelector('#online-flow-ui .settings-grid')?.classList.add('is-hidden');
+        document.querySelector('#online-flow-ui .multiplayer-actions')?.classList.add('is-hidden');
+        document.getElementById('host-game-btn')?.classList.add('is-hidden');
+        document.getElementById('join-game-btn')?.classList.add('is-hidden');
+        this.showMultiplayerPanel('join');
+        this.setJoinStatus(this.t('online-room-join-hint'));
+    }
+
     showStartModal(modalName) {
         this.closeReactionPicker();
         const solo = document.getElementById('solo-modal');
@@ -1360,6 +1410,10 @@ class DominoGame {
             this.network.leaveRoom();
         }
         this.showMultiplayerPanel(null);
+        document.getElementById('online-entry-ui')?.classList.add('is-hidden');
+        document.getElementById('online-flow-ui')?.classList.add('is-hidden');
+        document.getElementById('host-game-btn')?.classList.remove('is-hidden');
+        document.getElementById('join-game-btn')?.classList.remove('is-hidden');
         document.getElementById('connect-btn').disabled = false;
         document.getElementById('join-code-input').value = '';
         document.getElementById('room-code-display').textContent = '....';
@@ -2028,6 +2082,8 @@ class DominoGame {
             "solo-modal-desc": { az: "Pick difficulty, player count and game mode.", en: "Pick difficulty, player count and game mode." },
             "online-modal-title": { az: "Online room", en: "Online room" },
             "online-modal-desc": { az: "Create a room, add bots or join with a code.", en: "Create a room, add bots or join with a code." },
+            "online-choice-create": { az: "Otaq yarat", en: "Create", ru: "Создать" },
+            "online-choice-connect": { az: "Qoşul", en: "Connect", ru: "Подключиться" },
             "account-btn": { az: "Account", en: "Account" },
             "account-kicker": { az: "Profile", en: "Profile" },
             "account-title": { az: "Account", en: "Account" },
