@@ -1118,7 +1118,7 @@ class DominoGame {
             kind: isOnline ? 'online' : 'solo',
             sessionId: isOnline ? (this.network.room?.sessionId || '') : (this.currentMatchSessionId || ''),
             roomId: isOnline ? (this.network.room?.roomId || this.network.room?.id || '') : null,
-            roomCode: isOnline ? (document.getElementById('room-code-display')?.textContent?.trim() || null) : null,
+            roomCode: isOnline ? (this.currentRoomState?.roomCode || document.getElementById('room-code-display')?.textContent?.trim() || null) : null,
             reconnectionToken: isOnline ? (this.network.room?.reconnectionToken || this.network.getStoredReconnectionToken?.() || '') : '',
             playerName: this.playerName || '',
             playerCount: this.playerCount,
@@ -1214,7 +1214,7 @@ class DominoGame {
                 this.onlinePlayerCount = snapshot.onlinePlayerCount || this.onlinePlayerCount;
                 this.onlineAiCount = snapshot.onlineAiCount || this.onlineAiCount;
                 this.currentMatchStartedAt = snapshot.createdAt || this.currentMatchStartedAt;
-                await this.network.resumeRoom(token);
+                await this.network.resumeRoom(token, snapshot);
                 this.currentMatchSessionId = snapshot.sessionId || this.currentMatchSessionId;
                 this.showStartModal(null);
                 document.getElementById('start-screen')?.classList.remove('active');
@@ -1224,8 +1224,8 @@ class DominoGame {
                 return true;
             } catch (error) {
                 console.warn('[Resume] Online session restore failed', error);
-                this.clearGameResumeSnapshot();
-                this.renderer.showMessage(this.currentLang === 'az' ? 'Onlayn sessiya bitib' : 'The online session expired', 2000);
+                this.refreshResumeBanner(snapshot);
+                this.renderer.showMessage(this.currentLang === 'az' ? 'Sessiyani berpa etmek olmadi' : 'Could not restore the session', 2200);
                 return false;
             }
         }
@@ -1246,8 +1246,8 @@ class DominoGame {
             this.onlineAiCount = snapshot.onlineAiCount || this.onlineAiCount;
             this.onlineEconomyMode = snapshot.onlineEconomyMode || this.onlineEconomyMode;
             this.onlineStakeKey = snapshot.onlineStakeKey || this.onlineStakeKey;
-            this.soloEconomyMode = snapshot.soloEconomyMode || 'free';
-            this.soloStakeKey = snapshot.soloStakeKey || 'free';
+            this.soloEconomyMode = snapshot.soloEconomyMode || 'coins';
+            this.soloStakeKey = snapshot.soloStakeKey && snapshot.soloStakeKey !== 'free' ? snapshot.soloStakeKey : 'stake_50';
             this.difficulty = snapshot.difficulty || this.difficulty;
             this.isTeamMode = !!snapshot.isTeamMode;
             this.humanPlayerIndex = Math.max(0, snapshot.humanPlayerIndex || 0);
@@ -1330,6 +1330,7 @@ class DominoGame {
         if (!nextCode) return;
         document.getElementById('room-code-display').textContent = nextCode;
         this.setHostStatus(this.t('online-room-status-waiting'));
+        this.persistGameResumeSnapshot();
     }
 
     syncMultiplayerOptions() {
@@ -2003,6 +2004,10 @@ class DominoGame {
         if (this.network?.isMultiplayer && roomState.roomVisibility === 'open' && !roomState.gameActive) {
             this.enterOpenRoomWaitingScreen(roomState);
         }
+
+        if (this.network?.isMultiplayer) {
+            this.persistGameResumeSnapshot();
+        }
     }
 
     enterOpenRoomWaitingScreen(roomState) {
@@ -2059,6 +2064,31 @@ class DominoGame {
         this.setJoinStatus(reason);
         this.setHostStatus(reason);
         this.refreshResumeBanner();
+    }
+
+    onNetworkDisconnected(payload = {}) {
+        const snapshot = this.persistGameResumeSnapshot();
+        this.refreshResumeBanner(snapshot);
+        if (payload.reconnecting) {
+            this.renderer.showMessage(this.currentLang === 'az' ? 'Baglanti qirildi. Yeniden qosuluruq...' : 'Connection lost. Reconnecting...', 2200);
+        }
+    }
+
+    onNetworkReconnected() {
+        this.showStartModal(null);
+        document.getElementById('start-screen')?.classList.remove('active');
+        document.getElementById('menu-screen')?.classList.remove('active');
+        document.getElementById('round-end-screen')?.classList.remove('active');
+        document.getElementById('game-over-screen')?.classList.remove('active');
+        document.getElementById('game-screen')?.classList.add('active');
+        this.renderer.showMessage(this.currentLang === 'az' ? 'Baglanti berpa olundu' : 'Connection restored', 1600);
+        this.persistGameResumeSnapshot();
+    }
+
+    onNetworkReconnectFailed(error) {
+        console.warn('[Network] Reconnect failed permanently', error);
+        this.refreshResumeBanner();
+        this.renderer.showMessage(this.currentLang === 'az' ? 'Sessiyani berpa etmek olmadi' : 'Could not restore the session', 2200);
     }
 
     setupGameControls() {
@@ -2828,6 +2858,7 @@ class DominoGame {
     onNetworkHandUpdate(handData) {
         this.myHand = handData.map(t => new Tile(t.a, t.b));
         // We find our index
+        if (!this.network?.room) return;
         const mySid = this.network.room.sessionId;
         const playerOrder = this.network.room.state?.playerOrder || [];
         const myIdx = playerOrder.indexOf(mySid);

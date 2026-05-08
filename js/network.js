@@ -10,6 +10,20 @@ class NetworkManager {
         this.isHost = false;
         this.isGuest = false;
         this.reconnectionTokenKey = "dominoRoomReconnectionToken";
+        this.manualLeaveRequested = false;
+        this.reconnectTimer = null;
+        this.reconnectAttempt = 0;
+        this.maxReconnectAttempts = 12;
+        this.reconnectInProgress = false;
+
+        if (typeof window !== 'undefined') {
+            window.addEventListener('online', () => {
+                if (!this.room && !this.manualLeaveRequested) {
+                    const token = this.getStoredReconnectionToken();
+                    if (token) this.scheduleReconnect(token, this.game.account?.getStoredGameResumeState?.(), 0);
+                }
+            });
+        }
     }
 
     async initClient() {
@@ -98,6 +112,49 @@ class NetworkManager {
         this.connect("join", onReady, onError, code);
     }
 
+    buildJoinOptions(extra = {}) {
+        return {
+            name: extra.name || this.game.playerName,
+            authToken: this.game.account?.getRoomAuthToken?.() || '',
+            isTeamMode: this.game.isTeamMode,
+            playerCount: this.game.onlinePlayerCount,
+            aiCount: this.game.onlineAiCount,
+            roomVisibility: this.game.onlineRoomVisibility === "open" ? "open" : "closed",
+            stakeKey: this.game.onlineEconomyMode === "coins"
+                ? (this.game.onlineStakeKey && this.game.onlineStakeKey !== "free" ? this.game.onlineStakeKey : "stake_200")
+                : "free",
+            instantWinEnabled: document.getElementById('instant-win-setting')?.checked,
+            dlossThreshold: parseInt(document.getElementById('dloss-setting')?.value || '255', 10),
+            ...extra
+        };
+    }
+
+    clearReconnectTimer() {
+        if (this.reconnectTimer) {
+            clearTimeout(this.reconnectTimer);
+            this.reconnectTimer = null;
+        }
+    }
+
+    activateRoom(room, { isHost = false, isGuest = true, notifyReconnect = false } = {}) {
+        this.clearReconnectTimer();
+        this.room = room;
+        this.isMultiplayer = true;
+        this.isHost = isHost;
+        this.isGuest = isGuest;
+        this.manualLeaveRequested = false;
+        this.reconnectAttempt = 0;
+        this.reconnectInProgress = false;
+        if (this.room?.reconnectionToken) {
+            this.setStoredReconnectionToken(this.room.reconnectionToken);
+        }
+        this.setupListeners();
+        if (notifyReconnect) {
+            this.game.onNetworkReconnected?.();
+        }
+        return this.room.roomId || this.room.id;
+    }
+
     async resolveRoomId(code) {
         const roomCode = String(code || '').trim().toUpperCase();
         if (!roomCode) return null;
@@ -135,40 +192,25 @@ class NetworkManager {
             return;
         }
         try {
-            const options = {
-                name: this.game.playerName,
-                authToken: this.game.account?.getRoomAuthToken?.() || '',
-                isTeamMode: this.game.isTeamMode,
-                playerCount: this.game.onlinePlayerCount,
-                aiCount: this.game.onlineAiCount,
-                roomVisibility: this.game.onlineRoomVisibility === "open" ? "open" : "closed",
-                stakeKey: this.game.onlineEconomyMode === "coins"
-                    ? (this.game.onlineStakeKey && this.game.onlineStakeKey !== "free" ? this.game.onlineStakeKey : "stake_50")
-                    : "free",
-                instantWinEnabled: document.getElementById('instant-win-setting')?.checked,
-                dlossThreshold: parseInt(document.getElementById('dloss-setting')?.value || '255', 10)
-            };
+            this.manualLeaveRequested = false;
+            this.clearReconnectTimer();
+            const options = this.buildJoinOptions();
 
             console.log(`Connecting to ${mode}...`);
+            let room;
             if (mode === "create") {
-                this.room = await this.client.create("domino", options);
-                this.isHost = true;
-                this.isGuest = false;
+                room = await this.client.create("domino", options);
             } else {
                 const resolvedRoomId = await this.resolveRoomId(roomId);
-                this.room = await this.client.joinById(resolvedRoomId, options);
-                this.isHost = false;
-                this.isGuest = true;
+                room = await this.client.joinById(resolvedRoomId, options);
             }
 
-            const connectedRoomId = this.room.roomId || this.room.id;
+            const connectedRoomId = this.activateRoom(room, {
+                isHost: mode === "create",
+                isGuest: mode !== "create"
+            });
             console.log("Connected! Room ID:", connectedRoomId);
-            if (this.room?.reconnectionToken) {
-                this.setStoredReconnectionToken(this.room.reconnectionToken);
-            }
-            this.isMultiplayer = true;
             this.game.resetOnlineCoinSummary?.();
-            this.setupListeners();
             if (onReady) onReady(connectedRoomId);
             if (mode === "create") {
                 this.resolveRoomCode(connectedRoomId).then((inviteCode) => {
@@ -235,10 +277,22 @@ class NetworkManager {
 
         this.room.onLeave((code) => {
             console.log("Left room, code:", code);
+            const token = this.room?.reconnectionToken || this.getStoredReconnectionToken();
+            const snapshot = this.game.account?.getStoredGameResumeState?.();
+            const shouldReconnect = !this.manualLeaveRequested && Boolean(token);
+
+            if (shouldReconnect) {
+                this.game.onNetworkDisconnected?.({ code, reconnecting: true });
+                this.room = null;
+                this.scheduleReconnect(token, snapshot);
+                return;
+            }
+
             this.isMultiplayer = false;
             this.isHost = false;
             this.isGuest = false;
             this.room = null;
+            this.manualLeaveRequested = false;
         });
 
         this.room.onError((code, message) => {
@@ -247,6 +301,8 @@ class NetworkManager {
     }
 
     leaveRoom() {
+        this.manualLeaveRequested = true;
+        this.clearReconnectTimer();
         if (this.room) {
             this.room.leave();
         }
@@ -256,7 +312,7 @@ class NetworkManager {
         this.isGuest = false;
     }
 
-    async resumeRoom(reconnectionToken) {
+    async resumeRoom(reconnectionToken, snapshot = null) {
         const token = String(reconnectionToken || "").trim();
         if (!token) {
             throw new Error("Missing reconnection token");
@@ -266,15 +322,82 @@ class NetworkManager {
             throw new Error("Colyseus not loaded");
         }
 
-        this.room = await this.client.reconnect(token);
-        this.isMultiplayer = true;
-        this.isHost = false;
-        this.isGuest = true;
-        if (this.room?.reconnectionToken) {
-            this.setStoredReconnectionToken(this.room.reconnectionToken);
+        this.manualLeaveRequested = false;
+        this.clearReconnectTimer();
+
+        try {
+            const room = await this.client.reconnect(token);
+            this.activateRoom(room, { isHost: false, isGuest: true, notifyReconnect: true });
+            return this.room;
+        } catch (reconnectError) {
+            const restoredRoom = await this.restoreRoomFromSnapshot(snapshot, token).catch(() => null);
+            if (restoredRoom) return restoredRoom;
+            throw reconnectError;
         }
-        this.setupListeners();
+    }
+
+    async restoreRoomFromSnapshot(snapshot, reconnectionToken) {
+        const roomCode = String(snapshot?.roomCode || '').trim().toUpperCase();
+        const restoreSessionId = String(snapshot?.sessionId || '').trim();
+        if (!roomCode || !restoreSessionId) return null;
+
+        const options = this.buildJoinOptions({
+            name: snapshot.playerName || this.game.playerName,
+            restoreRoomCode: roomCode,
+            restoreRoomId: String(snapshot.roomId || '').trim(),
+            restoreSessionId,
+            restoreReconnectionToken: reconnectionToken
+        });
+
+        let room = null;
+        const resolvedRoomId = await this.resolveRoomId(roomCode).catch(() => null);
+        if (resolvedRoomId) {
+            room = await this.client.joinById(resolvedRoomId, options).catch(() => null);
+        }
+        if (!room) {
+            room = await this.client.create("domino", options);
+        }
+
+        this.activateRoom(room, { isHost: false, isGuest: true, notifyReconnect: true });
         return this.room;
+    }
+
+    scheduleReconnect(token, snapshot = null, delayOverride = null) {
+        const nextToken = String(token || '').trim();
+        if (!nextToken || this.manualLeaveRequested) return;
+        if (this.reconnectTimer || this.reconnectInProgress) return;
+
+        const delay = delayOverride ?? Math.min(1000 + this.reconnectAttempt * 750, 5000);
+        this.reconnectTimer = setTimeout(() => {
+            this.reconnectTimer = null;
+            void this.tryReconnect(nextToken, snapshot || this.game.account?.getStoredGameResumeState?.());
+        }, delay);
+    }
+
+    async tryReconnect(token, snapshot = null) {
+        if (this.manualLeaveRequested) return;
+        if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+            this.scheduleReconnect(token, snapshot, 1500);
+            return;
+        }
+
+        this.reconnectInProgress = true;
+        this.reconnectAttempt += 1;
+        try {
+            await this.resumeRoom(token, snapshot || this.game.account?.getStoredGameResumeState?.());
+        } catch (error) {
+            console.warn("Reconnect failed:", error);
+            this.reconnectInProgress = false;
+            if (this.reconnectAttempt < this.maxReconnectAttempts) {
+                this.scheduleReconnect(token, snapshot);
+            } else {
+                this.isMultiplayer = false;
+                this.isHost = false;
+                this.isGuest = false;
+                this.room = null;
+                this.game.onNetworkReconnectFailed?.(error);
+            }
+        }
     }
 
     sendPlay(tileIndex, openEndIndex) {

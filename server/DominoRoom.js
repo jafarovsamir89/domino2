@@ -41,8 +41,17 @@ function sanitizeName(name) {
 class DominoRoom extends Room {
     maxClients = 2;
 
-    onCreate(options) {
-        this.roomCode = generateRoomCode();
+    async onCreate(options = {}) {
+        const restoreSnapshot = await this.loadCustomStateForRestore(options);
+        if ((options.restoreRoomCode || options.restoreRoomId || options.restoreSessionId) && !restoreSnapshot) {
+            throw new Error("restore_snapshot_not_found");
+        }
+
+        if (restoreSnapshot?.roomId && restoreSnapshot.roomId !== this.roomId) {
+            this.roomId = restoreSnapshot.roomId;
+        }
+
+        this.roomCode = restoreSnapshot?.roomCode || generateRoomCode();
         global.__DOMINO_ROOM_CODES?.set(this.roomCode, this.roomId);
         global.__DOMINO_ROOM_IDS?.set(this.roomId, this.roomCode);
 
@@ -78,6 +87,12 @@ class DominoRoom extends Room {
         this.forfeitSettlementMade = false;
         this.identityBySessionId = new Map();
         this.lastRoundEconomySummary = null;
+        this.restoredFromSnapshot = false;
+
+        if (restoreSnapshot) {
+            this.applyCustomStateSnapshot(restoreSnapshot);
+            this.restoredFromSnapshot = true;
+        }
 
         this.onMessage("play", (client, message) => this.handlePlay(client, message));
         this.onMessage("draw", (client) => this.handleDraw(client));
@@ -113,27 +128,37 @@ class DominoRoom extends Room {
         };
     }
 
-    onJoin(client, options, auth) {
-        const identity = auth || {};
-        console.log(`[ROOM] Client ${client.sessionId} joining with name: ${options.name}`);
-        const isFirstPlayer = this.state.playerOrder.length === 0;
-        const player = new Player();
-        const authToken = String(identity.authToken || options.authToken || "").trim();
-        player.name = sanitizeName(identity.displayName || options.name);
-        player.userId = String(identity.userId || "");
-        this.state.players.set(client.sessionId, player);
-        this.state.playerOrder.push(client.sessionId);
-        this.identityBySessionId.set(client.sessionId, {
-            provider: identity.provider || "guest",
-            authToken,
-            userId: player.userId,
-            displayName: player.name,
-            playerId: identity.playerId || player.userId,
-            role: identity.role || "player"
-        });
+    findReusableSessionId(options = {}, identity = {}) {
+        const requestedSessionId = String(options.restoreSessionId || "").trim();
+        if (requestedSessionId && this.state.players.has(requestedSessionId)) {
+            return requestedSessionId;
+        }
 
-        upsertLivePlayer(client.sessionId, {
-            sessionId: client.sessionId,
+        const userId = String(identity.userId || "").trim();
+        if (!userId) return "";
+
+        for (const sessionId of this.state.playerOrder) {
+            const player = this.state.players.get(sessionId);
+            if (player && !player.isBot && String(player.userId || "").trim() === userId) {
+                return sessionId;
+            }
+        }
+        return "";
+    }
+
+    hasRestoredMatchInProgress() {
+        if (!this.restoredFromSnapshot) return false;
+        if (this.state.gameActive) return true;
+        if (this.state.matchRound > 1 || this.state.deal > 1) return true;
+        if (Array.isArray(this.hands) && this.hands.some((hand) => Array.isArray(hand) && hand.length > 0)) return true;
+        return Boolean(this.internalBoard?.nodes?.length);
+    }
+
+    registerLivePlayer(sessionId, identity, player, joinedAt = null) {
+        const isHost = this.state.playerOrder[0] === sessionId;
+        const hostPlayer = this.state.players.get(this.state.playerOrder[0]);
+        upsertLivePlayer(sessionId, {
+            sessionId,
             roomId: this.roomId,
             roomCode: this.roomCode,
             roomVisibility: this.roomVisibility,
@@ -145,20 +170,89 @@ class DominoRoom extends Room {
             aiCount: this.aiCount,
             isTeamMode: this.state.isTeamMode,
             provider: identity.provider || "guest",
-            userId: player.userId,
-            playerId: identity.playerId || player.userId,
+            userId: player.userId || "",
+            playerId: identity.playerId || player.userId || "",
             displayName: player.name,
-            hostName: isFirstPlayer ? player.name : (this.state.players.get(this.state.playerOrder[0])?.name || player.name),
-            role: identity.role || (isFirstPlayer ? "host" : "player"),
+            hostName: hostPlayer?.name || player.name,
+            role: identity.role || (isHost ? "host" : "player"),
             isConnected: true,
             isPlaying: Boolean(this.state.gameActive),
-            joinedAt: new Date().toISOString()
+            joinedAt: joinedAt || new Date().toISOString()
         });
+    }
+
+    onJoin(client, options, auth) {
+        const identity = auth || {};
+        console.log(`[ROOM] Client ${client.sessionId} joining with name: ${options.name}`);
+        const authToken = String(identity.authToken || options.authToken || "").trim();
+        const reusableSessionId = this.findReusableSessionId(options, identity);
+        const humanPlayers = this.state.playerOrder.filter((sessionId) => !this.state.players.get(sessionId)?.isBot).length;
+        let player;
+        let restoredJoin = false;
+
+        if (reusableSessionId) {
+            restoredJoin = reusableSessionId !== client.sessionId || this.restoredFromSnapshot;
+            player = this.state.players.get(reusableSessionId);
+            if (reusableSessionId !== client.sessionId) {
+                this.state.players.delete(reusableSessionId);
+                this.state.players.set(client.sessionId, player);
+                const orderIndex = this.state.playerOrder.indexOf(reusableSessionId);
+                if (orderIndex !== -1) this.state.playerOrder.splice(orderIndex, 1, client.sessionId);
+                const existingIdentity = this.identityBySessionId.get(reusableSessionId) || {};
+                this.identityBySessionId.delete(reusableSessionId);
+                removeLivePlayer(reusableSessionId);
+                this.identityBySessionId.set(client.sessionId, {
+                    ...existingIdentity,
+                    provider: identity.provider || existingIdentity.provider || "guest",
+                    authToken: authToken || existingIdentity.authToken || "",
+                    userId: String(identity.userId || existingIdentity.userId || player.userId || ""),
+                    displayName: sanitizeName(identity.displayName || existingIdentity.displayName || player.name || options.name),
+                    playerId: identity.playerId || existingIdentity.playerId || identity.userId || player.userId || "",
+                    role: identity.role || existingIdentity.role || (this.state.playerOrder[0] === client.sessionId ? "host" : "player")
+                });
+            }
+        } else {
+            if (this.hasRestoredMatchInProgress() || humanPlayers >= this.humanSeats) {
+                client.send("room_closed", { reason: "Session expired. Please start a new room." });
+                void client.leave();
+                return;
+            }
+
+            player = new Player();
+            player.name = sanitizeName(identity.displayName || options.name);
+            player.userId = String(identity.userId || "");
+            this.state.players.set(client.sessionId, player);
+            this.state.playerOrder.push(client.sessionId);
+        }
+
+        if (!player) return;
+
+        player.name = sanitizeName(identity.displayName || player.name || options.name);
+        player.userId = String(identity.userId || player.userId || "");
+        player.isConnected = true;
+
+        const existingIdentity = this.identityBySessionId.get(client.sessionId) || {};
+        const nextIdentity = {
+            ...existingIdentity,
+            provider: identity.provider || "guest",
+            authToken: authToken || existingIdentity.authToken || "",
+            userId: player.userId,
+            displayName: player.name,
+            playerId: identity.playerId || existingIdentity.playerId || player.userId,
+            role: identity.role || existingIdentity.role || (this.state.playerOrder[0] === client.sessionId ? "host" : "player")
+        };
+        this.identityBySessionId.set(client.sessionId, nextIdentity);
+
+        this.registerLivePlayer(client.sessionId, nextIdentity, player);
 
         console.log(`[ROOM] Current player count: ${this.clients.length} / ${this.maxClients}`);
-        this.broadcast("msg", { text: `${player.name} joined the room`, time: 1500 });
-        this.broadcastRoomState();
-        if (this.clients.length === this.maxClients) {
+        this.broadcast("msg", { text: `${player.name} ${restoredJoin ? "rejoined" : "joined"} the room`, time: 1500 });
+        if (this.state.gameActive || this.hasRestoredMatchInProgress()) {
+            this.syncState();
+        } else {
+            this.broadcastRoomState();
+        }
+        if (!this.state.gameActive && this.clients.length === this.maxClients && !this.hasRestoredMatchInProgress()) {
             console.log(`[ROOM] Room full. Starting game...`);
             void this.startGame();
         }
@@ -255,7 +349,7 @@ class DominoRoom extends Room {
             }
             console.log(`[ROOM] Client ${client.sessionId} reconnected!`);
             this.broadcast("msg", { text: `${player.name} reconnected`, time: 1500 });
-            this.broadcastRoomState();
+            this.syncState();
         } catch (e) {
             console.log(`[ROOM] Client ${client.sessionId} removed permanently.`);
             const leftPlayerName = player ? player.name : "Player";
@@ -814,27 +908,14 @@ class DominoRoom extends Room {
         if (!this.state.gameActive) return;
         const pi = this.getPlayerIndex(client);
         if (pi !== this.state.currentPlayerIndex) return;
-
-        if (this.internalBoard.canPlayAny(this.hands[pi])) return;
-        if (!this.boneyard.length) return;
-
-        this.hands[pi].push(this.boneyard.pop());
-        this.broadcast("sound", "draw");
-        this.broadcast("msg", { text: `${this.state.players.get(client.sessionId).name} drew a tile`, time: 1500 });
-        this.syncState();
+        this.performDraw(pi, false);
     }
 
     handlePass(client) {
         if (!this.state.gameActive) return;
         const pi = this.getPlayerIndex(client);
         if (pi !== this.state.currentPlayerIndex) return;
-
-        if (this.internalBoard.canPlayAny(this.hands[pi])) return;
-        if (this.boneyard.length > 0) return;
-
-        this.broadcast("sound", "pass");
-        this.broadcast("msg", { text: `${this.state.players.get(client.sessionId).name} passed`, time: 1500 });
-        this.advanceTurn();
+        this.performPass(pi, false);
     }
 
     handleGosha(client) {
@@ -1139,9 +1220,122 @@ class DominoRoom extends Room {
         this.state.matchRound++;
     }
 
+    async loadCustomStateForRestore(options = {}) {
+        if (!redis) return null;
+        const restoreRoomId = String(options.restoreRoomId || "").trim();
+        const restoreRoomCode = String(options.restoreRoomCode || "").trim().toUpperCase();
+        const keys = [];
+        if (restoreRoomId) keys.push(`domino:custom:${restoreRoomId}`);
+        if (restoreRoomCode) keys.push(`domino:custom:code:${restoreRoomCode}`);
+        if (!keys.length) return null;
+
+        try {
+            if (redis.status !== "ready") {
+                await redis.connect();
+            }
+            for (const key of keys) {
+                const raw = await redis.get(key);
+                if (!raw) continue;
+                const parsed = JSON.parse(raw);
+                if (!restoreRoomCode || String(parsed.roomCode || "").toUpperCase() === restoreRoomCode) {
+                    return parsed;
+                }
+            }
+        } catch (e) {
+            console.error("[ROOM] Redis restore error", e);
+        }
+        return null;
+    }
+
+    buildSchemaStateSnapshot() {
+        const playerOrder = Array.from(this.state.playerOrder || []);
+        return {
+            playerOrder,
+            currentPlayerIndex: this.state.currentPlayerIndex,
+            boneyardCount: this.state.boneyardCount,
+            gameActive: this.state.gameActive,
+            matchRound: this.state.matchRound,
+            deal: this.state.deal,
+            boardJson: this.state.boardJson,
+            isTeamMode: this.state.isTeamMode,
+            playerCount: this.state.playerCount,
+            teamScores: Array.from(this.state.teamScores || [0, 0]),
+            teamRoundWins: Array.from(this.state.teamRoundWins || [0, 0]),
+            players: playerOrder.map((sessionId) => {
+                const player = this.state.players.get(sessionId);
+                return {
+                    sessionId,
+                    name: player?.name || "Player",
+                    userId: player?.userId || "",
+                    score: player?.score || 0,
+                    roundWins: player?.roundWins || 0,
+                    handCount: player?.handCount || 0,
+                    isConnected: player?.isConnected || false,
+                    isBot: player?.isBot || false
+                };
+            })
+        };
+    }
+
+    replaceSchemaArray(target, values = []) {
+        target.splice(0, target.length);
+        for (const value of values) {
+            target.push(value);
+        }
+    }
+
+    restoreSchemaState(snapshot = {}) {
+        if (!snapshot || typeof snapshot !== "object") return;
+
+        for (const key of Array.from(this.state.players.keys())) {
+            this.state.players.delete(key);
+        }
+
+        const playerRows = Array.isArray(snapshot.players) ? snapshot.players : [];
+        const playerOrder = Array.isArray(snapshot.playerOrder) && snapshot.playerOrder.length
+            ? snapshot.playerOrder
+            : playerRows.map((entry) => String(entry.sessionId || "")).filter(Boolean);
+
+        for (const entry of playerRows) {
+            const sessionId = String(entry.sessionId || "").trim();
+            if (!sessionId) continue;
+            const player = new Player();
+            player.name = sanitizeName(entry.name || "Player");
+            player.userId = String(entry.userId || "");
+            player.score = Number(entry.score || 0);
+            player.roundWins = Number(entry.roundWins || 0);
+            player.handCount = Number(entry.handCount || 0);
+            player.isBot = Boolean(entry.isBot);
+            player.isConnected = Boolean(entry.isBot);
+            this.state.players.set(sessionId, player);
+        }
+
+        this.replaceSchemaArray(this.state.playerOrder, playerOrder);
+        this.state.currentPlayerIndex = Number(snapshot.currentPlayerIndex || 0);
+        this.state.boneyardCount = Number(snapshot.boneyardCount || 0);
+        this.state.gameActive = Boolean(snapshot.gameActive);
+        this.state.matchRound = Number(snapshot.matchRound || 1);
+        this.state.deal = Number(snapshot.deal || 1);
+        this.state.boardJson = snapshot.boardJson || "{}";
+        this.state.isTeamMode = Boolean(snapshot.isTeamMode);
+        this.state.playerCount = Number(snapshot.playerCount || this.totalPlayers || 2);
+
+        const teamScores = Array.isArray(snapshot.teamScores) ? snapshot.teamScores : [0, 0];
+        const teamRoundWins = Array.isArray(snapshot.teamRoundWins) ? snapshot.teamRoundWins : [0, 0];
+        this.replaceSchemaArray(this.state.teamScores, teamScores.map((value) => Number(value || 0)));
+        this.replaceSchemaArray(this.state.teamRoundWins, teamRoundWins.map((value) => Number(value || 0)));
+    }
+
+    restoreTile(tile) {
+        if (tile instanceof Tile) return tile;
+        return new Tile(Number(tile?.a || 0), Number(tile?.b || 0));
+    }
+
     buildCustomStateSnapshot() {
         return {
+            roomId: this.roomId,
             roomCode: this.roomCode,
+            state: this.buildSchemaStateSnapshot(),
             roomVisibility: this.roomVisibility,
             humanSeats: this.humanSeats,
             totalPlayers: this.totalPlayers,
@@ -1179,6 +1373,7 @@ class DominoRoom extends Room {
         this.humanSeats = data.humanSeats ?? this.humanSeats;
         this.totalPlayers = data.totalPlayers ?? this.totalPlayers;
         this.aiCount = data.aiCount ?? this.aiCount;
+        this.maxClients = this.humanSeats;
         this.dlossThreshold = data.dlossThreshold ?? this.dlossThreshold;
         this.instantWinEnabled = data.instantWinEnabled ?? this.instantWinEnabled;
         this.aiDifficulty = data.aiDifficulty ?? this.aiDifficulty;
@@ -1196,24 +1391,35 @@ class DominoRoom extends Room {
         this.playerMissingSuits = (data.playerMissingSuits || []).map((arr) => new Set(arr));
         this.identityBySessionId = new Map(data.identityBySessionId || this.identityBySessionId || []);
 
+        if (data.state) {
+            this.restoreSchemaState(data.state);
+        }
+
         if (data.hands) {
-            this.hands = data.hands.map((hand) => hand.map((t) => new Tile(t.a, t.b)));
+            this.hands = data.hands.map((hand) => hand.map((t) => this.restoreTile(t)));
         }
         if (data.boneyard) {
-            this.boneyard = data.boneyard.map((t) => new Tile(t.a, t.b));
+            this.boneyard = data.boneyard.map((t) => this.restoreTile(t));
         }
         if (data.internalBoard) {
             const board = new Board();
             Object.assign(board, data.internalBoard);
             if (board.nodes) {
                 board.nodes = board.nodes.map((n) => {
-                    n.tile = new Tile(n.tile.a, n.tile.b);
+                    n.tile = this.restoreTile(n.tile);
                     return n;
                 });
             }
             this.internalBoard = board;
         }
 
+        this.state.playerCount = this.totalPlayers;
+        this.state.isTeamMode = data.state ? Boolean(data.state.isTeamMode) : Boolean(this.state.isTeamMode);
+        this.state.boneyardCount = this.boneyard.length;
+        this.state.boardJson = JSON.stringify(this.internalBoard);
+        while (this.playerMissingSuits.length < this.totalPlayers) {
+            this.playerMissingSuits.push(new Set());
+        }
         this.ensureBotPlayers();
     }
 
@@ -1223,7 +1429,11 @@ class DominoRoom extends Room {
             if (redis.status !== "ready") {
                 await redis.connect();
             }
-            await redis.setex(`domino:custom:${this.roomId}`, CUSTOM_STATE_TTL, JSON.stringify(this.buildCustomStateSnapshot()));
+            const snapshot = JSON.stringify(this.buildCustomStateSnapshot());
+            await redis.setex(`domino:custom:${this.roomId}`, CUSTOM_STATE_TTL, snapshot);
+            if (this.roomCode) {
+                await redis.setex(`domino:custom:code:${this.roomCode}`, CUSTOM_STATE_TTL, snapshot);
+            }
         } catch (e) {
             console.error("Redis error", e);
         }
