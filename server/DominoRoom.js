@@ -48,6 +48,7 @@ class DominoRoom extends Room {
         this.botIds = [];
         this.aiPlayers = new Map();
         this.matchRecorded = false;
+        this.forfeitSettlementMade = false;
         this.identityBySessionId = new Map();
 
         this.onMessage("play", (client, message) => this.handlePlay(client, message));
@@ -198,6 +199,9 @@ class DominoRoom extends Room {
         } catch (e) {
             console.log(`[ROOM] Client ${client.sessionId} removed permanently.`);
             const leftPlayerName = player ? player.name : "Player";
+            if (this.state.gameActive && this.currentStakeKey !== "free") {
+                await this.settleForfeitStake(client.sessionId);
+            }
             this.state.players.delete(client.sessionId);
             this.identityBySessionId.delete(client.sessionId);
             removeLivePlayer(client.sessionId);
@@ -220,6 +224,7 @@ class DominoRoom extends Room {
         this.state.matchRound = 1;
         this.state.deal = 1;
         this.matchRecorded = false;
+        this.forfeitSettlementMade = false;
         this.ensureBotPlayers();
         this.broadcastRoomState();
         this.startDeal();
@@ -489,6 +494,64 @@ class DominoRoom extends Room {
             return true;
         } catch (error) {
             console.error("[ROOM] Failed to record platform match:", error);
+            return false;
+        }
+    }
+
+    async settleForfeitStake(leavingSessionId) {
+        if (this.forfeitSettlementMade || this.currentStakeKey === "free") {
+            return false;
+        }
+
+        const platformIdentity = this.getPlatformMatchIdentity();
+        if (!platformIdentity) {
+            return false;
+        }
+
+        const leavingIndex = this.state.playerOrder.indexOf(leavingSessionId);
+        const leavingIdentity = this.identityBySessionId.get(leavingSessionId);
+        if (leavingIndex === -1 || !leavingIdentity?.userId) {
+            return false;
+        }
+
+        const leavingTeamIndex = this.state.isTeamMode ? leavingIndex % 2 : null;
+        const winnerUserIds = this.state.playerOrder
+            .filter((sessionId, index) => {
+                if (sessionId === leavingSessionId) return false;
+                if (this.state.isTeamMode && leavingTeamIndex !== null) {
+                    return (index % 2) !== leavingTeamIndex;
+                }
+                return true;
+            })
+            .map((sessionId) => this.identityBySessionId.get(sessionId))
+            .filter((identity) => identity?.provider === "platform" && identity.userId)
+            .map((identity) => identity.userId);
+
+        try {
+            const response = await fetch(`${process.env.PLATFORM_API_URL || "http://127.0.0.1:3000"}/api/economy/matches/settle`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${platformIdentity.authToken}`
+                },
+                body: JSON.stringify({
+                    roomId: this.roomId,
+                    stakeKey: this.currentStakeKey,
+                    result: winnerUserIds.length ? "loss" : "refund",
+                    winnerUserIds
+                })
+            });
+
+            if (!response.ok) {
+                const text = await response.text().catch(() => "");
+                throw new Error(text || `Stake forfeit settle failed with ${response.status}`);
+            }
+
+            this.forfeitSettlementMade = true;
+            this.matchRecorded = true;
+            return true;
+        } catch (error) {
+            console.warn("[ROOM] Failed to settle forfeit stake:", error);
             return false;
         }
     }

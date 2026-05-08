@@ -23,7 +23,7 @@ export const translations = {
         "label-economy-mode": "Rejim",
         "label-stake-table": "Stake masasД±",
         "economy-free": "Pulsuz oyun",
-        "economy-coins": "MonetlЙ™ oyun",
+        "economy-coins": "Coin oyunu",
         "btn-host": "Yarat",
         "btn-join": "Qoşul",
         "btn-draw": "BAZAR",
@@ -124,7 +124,7 @@ export const translations = {
         ,"account-rating": "Reytinq"
         ,"account-rank": "Rütbə"
         ,"account-points": "Xal"
-        ,"account-coins": "Monet"
+        ,"account-coins": "Coins"
         ,"title-rookie": "Yeni oyunçu"
         ,"title-bronze": "Bürünc"
         ,"title-silver": "Gümüş"

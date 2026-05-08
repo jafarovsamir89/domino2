@@ -446,3 +446,10 @@
 - Added resume-state persistence for unfinished solo and online matches, including Colyseus reconnection tokens.
 - Fixed the visible HUD and fallback text layer so the game shows a proper menu icon, a visible game info strip, and cleaner stake/banner UI.
 
+## 2026-05-08 Stake HUD, quit warning, and startup text cleanup
+- Forced solo matches to capture the current `free` vs `coins` selection directly from the UI before a game starts, so the in-game HUD uses the actual reserved stake instead of drifting back to `Free play`.
+- Switched the HUD stake label to render from `stakeKey` values rather than button text, making it stable for both solo and online matches.
+- Added a confirmed quit flow that clears the stored resume snapshot and warns the player that progress will be lost; coin games now settle a forfeit loss when the player quits.
+- Added server-side online stake forfeits on permanent room leave so a player quitting a coin room gives the remaining linked player(s) the win payout.
+- Cleaned the most visible startup HTML fallback strings and coin wording to remove the brief mojibake flash before runtime translations finish applying.
+

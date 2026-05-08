@@ -143,6 +143,9 @@ class DominoGame {
             await this.ensureGuestAccount(name, { allowOfflineFallback: true });
             this.playerName = name;
             this.isTeamMode = false;
+            const soloSelection = this.readSoloEconomySelectionFromUi();
+            this.soloEconomyMode = soloSelection.mode;
+            this.soloStakeKey = soloSelection.stakeKey;
             this.syncSoloOptions();
             this.syncMultiplayerOptions();
             this.myHand = null;
@@ -996,18 +999,42 @@ class DominoGame {
         }
     }
 
+    readSoloEconomySelectionFromUi() {
+        const selectedEconomyButton = document.querySelector('#solo-economy-group .btn-option.active');
+        const selectedStakeButton = document.querySelector('#solo-stake-group .btn-option.active');
+        const easyMode = this.difficulty === 'easy';
+        const mode = !easyMode && selectedEconomyButton?.dataset.value === 'coins' ? 'coins' : 'free';
+        const stakeKey = mode === 'coins'
+            ? (selectedStakeButton?.dataset.value || this.soloStakeKey || 'stake_50')
+            : 'free';
+        return { mode, stakeKey };
+    }
+
+    getStakeLabelByKey(stakeKey, mode = 'free') {
+        if (mode !== 'coins' || !stakeKey || stakeKey === 'free') {
+            return this.t('economy-free');
+        }
+
+        const labels = {
+            stake_50: '50 coins',
+            stake_100: '100 coins',
+            stake_200: '200 coins',
+            stake_500: '500 coins',
+            stake_1000: '1,000 coins',
+            stake_5000: '5,000 coins'
+        };
+
+        return labels[stakeKey] || this.t('economy-coins');
+    }
+
     getCurrentStakeLabel() {
         if (this.network.isMultiplayer) {
-            if (this.onlineEconomyMode !== 'coins') return this.t('economy-free');
-            const button = Array.from(document.querySelectorAll('#online-stake-group .btn-option')).find((item) => item.dataset.value === this.onlineStakeKey);
-            return (button?.textContent || this.t('economy-coins')).trim();
+            return this.getStakeLabelByKey(this.onlineStakeKey, this.onlineEconomyMode);
         }
 
         const mode = this.gameActive ? this.activeMatchEconomyMode : this.soloEconomyMode;
         const stakeKey = this.gameActive ? this.activeMatchStakeKey : this.soloStakeKey;
-        if (mode !== 'coins') return this.t('economy-free');
-        const button = Array.from(document.querySelectorAll('#solo-stake-group .btn-option')).find((item) => item.dataset.value === stakeKey);
-        return (button?.textContent || this.t('economy-coins')).trim();
+        return this.getStakeLabelByKey(stakeKey, mode);
     }
 
     buildGameResumeSnapshot() {
@@ -1566,17 +1593,61 @@ class DominoGame {
                 await this.openAccountModal();
             });
         }
-        document.getElementById('menu-quit').addEventListener('click', () => {
+        document.getElementById('menu-quit').addEventListener('click', async () => {
             document.getElementById('menu-screen').classList.remove('active');
-            document.getElementById('game-screen').classList.remove('active');
-            document.getElementById('start-screen').classList.add('active');
-            this.showStartModal(null);
-            if (this.network.isMultiplayer && this.network.room) {
-                this.network.leaveRoom();
-                this.myHand = null;
-            }
-            this.resetMultiplayerPanels(false);
+            const shouldQuit = await this.confirmQuitCurrentMatch();
+            if (!shouldQuit) return;
+            await this.quitCurrentMatch();
         });
+    }
+
+    async confirmQuitCurrentMatch() {
+        if (!this.gameActive) {
+            return true;
+        }
+
+        const isStakeGame = this.network.isMultiplayer
+            ? this.onlineEconomyMode === 'coins' && this.onlineStakeKey !== 'free'
+            : this.activeMatchEconomyMode === 'coins' && this.activeMatchStakeKey !== 'free';
+
+        const message = isStakeGame
+            ? (this.currentLang === 'az'
+                ? 'Bu oyundan çıxsanız, cari gedişat silinəcək və bu partiya məğlubiyyət kimi sayılacaq. Davam edirsiniz?'
+                : 'If you quit now, the current game will be lost and this coin match will count as a defeat. Continue?')
+            : (this.currentLang === 'az'
+                ? 'Bu oyundan çıxsanız, cari gedişat silinəcək. Davam edirsiniz?'
+                : 'If you quit now, the current game progress will be lost. Continue?');
+
+        return window.confirm(message);
+    }
+
+    async quitCurrentMatch() {
+        if (!this.network.isMultiplayer && this.activeMatchEconomyMode === 'coins' && this.activeMatchStakeKey !== 'free' && this.currentMatchSessionId) {
+            try {
+                await this.account?.settleSoloMatchStake?.({
+                    matchId: this.currentMatchSessionId,
+                    stakeKey: this.activeMatchStakeKey,
+                    result: 'loss',
+                    difficulty: this.difficulty
+                });
+            } catch (error) {
+                console.warn('[Economy] Solo forfeit settlement failed', error);
+            }
+        }
+
+        this.clearGameResumeSnapshot();
+        void this.clearLocalPresence();
+        if (this.network.isMultiplayer && this.network.room) {
+            this.network.leaveRoom();
+            this.myHand = null;
+        }
+        this.gameActive = false;
+        this.matchOver = false;
+        this.roundOver = false;
+        document.getElementById('game-screen').classList.remove('active');
+        document.getElementById('start-screen').classList.add('active');
+        this.showStartModal(null);
+        this.resetMultiplayerPanels(false);
     }
 
     async startNewGame() {
@@ -1628,6 +1699,10 @@ class DominoGame {
     }
 
     async prepareSoloEconomyStake() {
+        const selection = this.readSoloEconomySelectionFromUi();
+        this.soloEconomyMode = selection.mode;
+        this.soloStakeKey = selection.stakeKey;
+
         if (this.difficulty === 'easy') {
             this.soloEconomyMode = 'free';
             this.soloStakeKey = 'free';
