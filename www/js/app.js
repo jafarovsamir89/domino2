@@ -34,7 +34,7 @@ class DominoGame {
         this.accountMode = 'login';
         this.localPresenceLastSentAt = 0;
         this.localPresenceClearQueued = false;
-        this.currentLang = 'az';
+        this.currentLang = this.loadSavedLanguage();
         this.currentMatchStartedAt = null;
         this.currentMatchSessionId = null;
         this.activeMatchEconomyMode = 'free';
@@ -60,8 +60,7 @@ class DominoGame {
         ];
         this.lastReactionSentAt = 0;
         this.lastReactionSentType = '';
-        this.setLanguage('az');
-        document.documentElement.lang = 'az';
+        this.setLanguage(this.currentLang);
         this.setupStartScreen(); this.setupGameControls(); this.setupMenu();
         this.bootstrapAccount();
 
@@ -906,8 +905,8 @@ class DominoGame {
             banner.innerHTML = `
                 <div class="resume-session-copy">
                     <div class="section-kicker" data-i18n="resume-session-kicker">Unfinished session</div>
-                    <div class="resume-session-title" id="resume-session-title">You can continue where you left off.</div>
-                    <div class="resume-session-desc" id="resume-session-desc">Your online or offline game is still available to resume.</div>
+                    <div class="resume-session-title" id="resume-session-title">${this.t('resume-session-title')}</div>
+                    <div class="resume-session-desc" id="resume-session-desc">${this.t('resume-session-desc')}</div>
                 </div>
                 <button class="btn btn-primary" id="resume-session-btn" type="button" data-i18n="resume-session">Resume</button>
             `;
@@ -1162,17 +1161,13 @@ class DominoGame {
 
         const isOnline = state.kind === 'online';
         if (title) {
-            title.textContent = isOnline
-                ? (this.currentLang === 'az' ? 'Onlayn sessiyanız yarımçıq qalıb' : 'Your online session is unfinished')
-                : (this.currentLang === 'az' ? 'Oyun yarımçıq qalıb' : 'Your offline game is unfinished');
+            title.textContent = isOnline ? this.t('resume-session-online-title') : this.t('resume-session-offline-title');
         }
         if (desc) {
-            desc.textContent = isOnline
-                ? (this.currentLang === 'az' ? 'Siz otağa geri qayıdıb oyunu davam etdirə bilərsiniz.' : 'You can reconnect and continue the same match.')
-                : (this.currentLang === 'az' ? 'Yarımçıq oyunu eyni yerdən davam etdirin.' : 'Resume the game from the same point.');
+            desc.textContent = isOnline ? this.t('resume-session-online-desc') : this.t('resume-session-offline-desc');
         }
         if (button) {
-            button.textContent = this.currentLang === 'az' ? 'Davam et' : 'Resume';
+            button.textContent = this.t('resume-session');
         }
     }
 
@@ -2101,22 +2096,35 @@ class DominoGame {
             "online-room-closed": { az: "Room closed", en: "Room closed" },
             "online-room-summary": { az: "{humans} humans + {bots} AI, {total} total", en: "{humans} humans + {bots} AI, {total} total" },
             "online-bot-slot": { az: "AI {index}", en: "AI {index}" },
-            "resume-session-kicker": { az: "Unfinished session", en: "Unfinished session" },
-            "resume-session": { az: "Resume", en: "Resume" },
+            "resume-session-kicker": { az: "Yarımçıq sessiya", en: "Unfinished session", ru: "Незавершённая сессия" },
+            "resume-session": { az: "Davam et", en: "Resume", ru: "Продолжить" },
+            "resume-session-title": { az: "Yarımçıq sessiyanı davam etdir", en: "Continue your unfinished session", ru: "Продолжить незавершённую сессию" },
+            "resume-session-desc": { az: "Yarıda qalan oyunu eyni yerdən davam etdirə bilərsiniz.", en: "You can pick up the game from where you left off.", ru: "Можно продолжить игру с того же места." },
+            "resume-session-online-title": { az: "Onlayn sessiyanız yarımçıq qalıb", en: "Your online session is unfinished", ru: "Ваша онлайн-сессия не завершена" },
+            "resume-session-offline-title": { az: "Oyun yarımçıq qalıb", en: "Your offline game is unfinished", ru: "Игра не завершена" },
+            "resume-session-online-desc": { az: "Otağa geri qayıdıb həmin matçı davam etdirin.", en: "Reconnect and continue the same match.", ru: "Вернитесь в комнату и продолжите тот же матч." },
+            "resume-session-offline-desc": { az: "Yarımçıq oyunu eyni yerdən davam etdirin.", en: "Resume the game from the same point.", ru: "Продолжите игру с того же места." },
             "round-end-next": { az: "Continue", en: "Continue" },
             "new-game-btn": { az: "New game", en: "New game" },
             "summary-title": { az: "Summary", en: "Summary" }
         };
-        return overrides[key]?.[this.currentLang] || overrides[key]?.en || null;
+        const lang = translations[this.currentLang] ? this.currentLang : 'az';
+        if (translations[lang]?.[key] ?? translations.en?.[key] ?? translations.az?.[key]) {
+            return null;
+        }
+        return overrides[key]?.[lang] || overrides[key]?.en || null;
     }
 
     setLanguage(lang) {
         const nextLang = translations[lang] ? lang : (translations[this.currentLang] ? this.currentLang : 'az');
         this.currentLang = nextLang;
         const t = translations[nextLang] || translations.az;
+        try {
+            localStorage.setItem('domino-lang', nextLang);
+        } catch {}
         document.querySelectorAll('[data-i18n]').forEach(el => {
             const key = el.dataset.i18n;
-            const value = this.getUiTextOverride(key) || t[key] || translations.en?.[key] || translations.az?.[key] || key;
+            const value = t[key] || translations.en?.[key] || translations.az?.[key] || this.getUiTextOverride(key) || key;
             if (value) {
                 if (el.tagName === 'INPUT') el.placeholder = value;
                 else {
@@ -2137,7 +2145,21 @@ class DominoGame {
     }
 
     t(key) {
-        return this.getUiTextOverride(key) || translations[this.currentLang][key] || translations.en?.[key] || translations.az?.[key] || key;
+        return translations[this.currentLang]?.[key]
+            || translations.en?.[key]
+            || translations.az?.[key]
+            || this.getUiTextOverride(key)
+            || key;
+    }
+
+    loadSavedLanguage() {
+        try {
+            const saved = localStorage.getItem('domino-lang');
+            if (translations[saved]) return saved;
+        } catch {}
+        const browserLang = (navigator.language || '').slice(0, 2).toLowerCase();
+        if (translations[browserLang]) return browserLang;
+        return 'az';
     }
     format(key, values = {}) {
         return this.t(key).replace(/\{(\w+)\}/g, (_, token) => values[token] ?? `{${token}}`);
