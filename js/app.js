@@ -1,4 +1,4 @@
-import { Tile, createFullSet, shuffle, getHandSize, determineFirstPlayer, handPoints, roundTo5 } from './model.js';
+﻿import { Tile, createFullSet, shuffle, getHandSize, determineFirstPlayer, handPoints, roundTo5 } from './model.js';
 import { Board, reconstructBoard } from './board.js';
 import { AIPlayer } from './ai.js';
 import { Renderer } from './renderer.js';
@@ -14,11 +14,11 @@ class DominoGame {
         this.renderer = new Renderer(this); this.board = new Board();
         this.playerMissingSuits = [];
         this.playerCount=2; this.onlinePlayerCount=2; this.onlineAiCount=0; this.playerName=''; this.difficulty='medium';
-        this.onlineStakeKey = 'free';
-        this.onlineEconomyMode = 'free';
+        this.onlineStakeKey = 'stake_50';
+        this.onlineEconomyMode = 'coins';
         this.onlineRoundBankAmount = 0;
-        this.soloEconomyMode = 'free';
-        this.soloStakeKey = 'free';
+        this.soloEconomyMode = 'coins';
+        this.soloStakeKey = 'stake_50';
         this.hands=[]; this.boneyard=[]; this.scores=[]; this.roundWins=[];
         this.playerNames=[]; this.currentPlayer=0; this.matchRound=1; this.deal=1;
         this.selectedTileIndex=-1; this.validMoves=[]; this.gameActive=false;
@@ -38,10 +38,10 @@ class DominoGame {
         this.currentLang = this.loadSavedLanguage();
         this.currentMatchStartedAt = null;
         this.currentMatchSessionId = null;
-        this.activeMatchEconomyMode = 'free';
-        this.activeMatchStakeKey = 'free';
+        this.activeMatchEconomyMode = 'coins';
+        this.activeMatchStakeKey = 'stake_50';
         this.currentRoundStakeSessionId = null;
-        this.currentRoundStakeKey = 'free';
+        this.currentRoundStakeKey = 'stake_50';
         this.currentRoundStakeAmount = 0;
         this.currentRoundBankAmount = 0;
         this.coinMatchSummary = { spent: 0, won: 0 };
@@ -199,37 +199,12 @@ class DominoGame {
             });
         });
 
-        document.querySelectorAll('#online-economy-group .btn-option').forEach((button) => {
-            button.addEventListener('click', () => {
-                document.querySelectorAll('#online-economy-group .btn-option').forEach((item) => item.classList.remove('active'));
-                button.classList.add('active');
-                this.onlineEconomyMode = button.dataset.value === 'coins' ? 'coins' : 'free';
-                if (this.onlineEconomyMode === 'coins' && this.onlineStakeKey === 'free') {
-                    this.onlineStakeKey = 'stake_50';
-                }
-                this.syncMultiplayerOptions();
-            });
-        });
-
-        document.querySelectorAll('#solo-economy-group .btn-option').forEach((button) => {
-            button.addEventListener('click', () => {
-                if (button.disabled) return;
-                document.querySelectorAll('#solo-economy-group .btn-option').forEach((item) => item.classList.remove('active'));
-                button.classList.add('active');
-                this.soloEconomyMode = button.dataset.value === 'coins' ? 'coins' : 'free';
-                if (this.soloEconomyMode === 'coins' && this.soloStakeKey === 'free') {
-                    this.soloStakeKey = 'stake_50';
-                }
-                this.syncSoloOptions();
-            });
-        });
-
         document.querySelectorAll('#solo-stake-group .btn-option').forEach((button) => {
             button.addEventListener('click', () => {
                 if (button.disabled) return;
                 document.querySelectorAll('#solo-stake-group .btn-option').forEach((item) => item.classList.remove('active'));
                 button.classList.add('active');
-                this.soloStakeKey = button.dataset.value || 'free';
+                this.soloStakeKey = button.dataset.value || 'stake_50';
                 this.syncSoloOptions();
             });
         });
@@ -238,7 +213,7 @@ class DominoGame {
             b.addEventListener('click', () => {
                 document.querySelectorAll('#online-stake-group .btn-option').forEach(x => x.classList.remove('active'));
                 b.classList.add('active');
-                this.onlineStakeKey = b.dataset.value || 'free';
+                this.onlineStakeKey = b.dataset.value || 'stake_50';
                 this.syncMultiplayerOptions();
             });
         });
@@ -367,7 +342,7 @@ class DominoGame {
                 const email = String(document.getElementById('account-email-input')?.value || this.accountProfile?.email || '').trim();
                 const password = String(document.getElementById('account-password-input')?.value || '').trim();
                 if (!name) {
-                    this.renderer.showMessage(this.currentLang === 'ru' ? 'Введите имя' : this.currentLang === 'en' ? 'Enter your name' : 'Ad daxil edin', 1800);
+                    this.renderer.showMessage(this.currentLang === 'ru' ? 'Р’РІРµРґРёС‚Рµ РёРјСЏ' : this.currentLang === 'en' ? 'Enter your name' : 'Ad daxil edin', 1800);
                     return;
                 }
                 if (!password) {
@@ -706,7 +681,7 @@ class DominoGame {
                 item.className = 'room-player-chip';
                 const titleKey = `title-${String(row.titleCode || 'rookie')}`;
                 const title = this.t(titleKey);
-                item.innerHTML = `<span>#${row.rank} ${row.name} · ${title}</span><strong>${row.rating}</strong>`;
+                item.innerHTML = `<span>#${row.rank} ${row.name} В· ${title}</span><strong>${row.rating}</strong>`;
                 list.appendChild(item);
             });
         } catch (err) {
@@ -780,7 +755,7 @@ class DominoGame {
         if (profileName) profileName.textContent = profile?.name || 'Domino Player';
         if (profileMeta) {
             profileMeta.textContent = profile
-                ? (profile.isGuest ? this.t('account-guest-meta') : `${titleLabel} · ${this.t('account-rating')}: ${profile.rating}`)
+                ? (profile.isGuest ? this.t('account-guest-meta') : `${titleLabel} В· ${this.t('account-rating')}: ${profile.rating}`)
                 : this.t('account-profile-empty');
         }
         if (ratingValue) ratingValue.textContent = String(profile?.rating ?? 1000);
@@ -815,7 +790,7 @@ class DominoGame {
                             ? 'account-history-loss'
                             : 'account-history-draw';
                     item.className = 'room-player-chip';
-                    item.innerHTML = `<span>${this.t(resultKey)} · ${match.mode}</span><strong>${deltaLabel}</strong>`;
+                    item.innerHTML = `<span>${this.t(resultKey)} В· ${match.mode}</span><strong>${deltaLabel}</strong>`;
                     historyList.appendChild(item);
                 });
             }
@@ -931,25 +906,6 @@ class DominoGame {
             startActions.insertAdjacentElement('afterend', banner);
         }
 
-        const soloGrid = document.querySelector('#solo-modal .settings-grid');
-        if (soloGrid && !document.getElementById('solo-economy-group')) {
-            const economyGroup = document.createElement('div');
-            economyGroup.className = 'settings-group';
-            economyGroup.innerHTML = `
-                <label data-i18n="label-economy-mode">Game mode</label>
-                <div class="btn-group" id="solo-economy-group">
-                    <button class="btn btn-option active" data-value="free" data-i18n="economy-free">Free play</button>
-                    <button class="btn btn-option" data-value="coins" data-i18n="economy-coins">Play on coins</button>
-                </div>
-            `;
-            const nameGroup = document.querySelector('#solo-modal #player-name')?.closest('.settings-group');
-            if (nameGroup) {
-                nameGroup.insertAdjacentElement('beforebegin', economyGroup);
-            } else {
-                soloGrid.appendChild(economyGroup);
-            }
-        }
-
         const stakeGroup = document.getElementById('solo-stake-wrapper');
         if (!stakeGroup) {
             const soloGridRoot = document.querySelector('#solo-modal .settings-grid');
@@ -960,7 +916,6 @@ class DominoGame {
             stakeWrapper.innerHTML = `
                 <label data-i18n="label-stake-table">Mərc masası</label>
                 <div class="btn-group" id="solo-stake-group">
-                    <button class="btn btn-option active" data-value="free">Free</button>
                     <button class="btn btn-option" data-value="stake_50">50</button>
                     <button class="btn btn-option" data-value="stake_100">100</button>
                     <button class="btn btn-option" data-value="stake_200">200</button>
@@ -1004,64 +959,43 @@ class DominoGame {
     }
 
     syncSoloOptions() {
-        const soloButtons = document.querySelectorAll('#solo-economy-group .btn-option');
         const stakeWrapper = document.getElementById('solo-stake-wrapper');
         const stakeButtons = document.querySelectorAll('#solo-stake-group .btn-option');
-        const easyMode = this.difficulty === 'easy';
-
-        if (easyMode) {
-            this.soloEconomyMode = 'free';
-        }
-
-        soloButtons.forEach((button) => {
-            const isCoins = button.dataset.value === 'coins';
-            button.disabled = easyMode && isCoins;
-            button.classList.toggle('active', (isCoins ? 'coins' : 'free') === this.soloEconomyMode);
-        });
+        this.soloEconomyMode = 'coins';
 
         if (stakeWrapper) {
-            stakeWrapper.classList.toggle('is-hidden', this.soloEconomyMode !== 'coins' || easyMode);
+            stakeWrapper.classList.remove('is-hidden');
         }
 
         stakeButtons.forEach((button) => {
-            const shouldBeActive = this.soloEconomyMode === 'coins' && button.dataset.value === this.soloStakeKey;
+            const shouldBeActive = button.dataset.value === this.soloStakeKey;
             button.classList.toggle('active', shouldBeActive);
-            button.disabled = easyMode || this.soloEconomyMode !== 'coins';
+            button.disabled = false;
         });
 
-        if (this.soloEconomyMode !== 'coins' || easyMode) {
-            this.soloStakeKey = 'free';
-        } else if (this.soloStakeKey === 'free') {
+        if (!this.soloStakeKey || this.soloStakeKey === 'free') {
             this.soloStakeKey = 'stake_50';
         }
     }
 
     readSoloEconomySelectionFromUi() {
-        const selectedEconomyButton = document.querySelector('#solo-economy-group .btn-option.active');
         const selectedStakeButton = document.querySelector('#solo-stake-group .btn-option.active');
-        const easyMode = this.difficulty === 'easy';
-        const mode = !easyMode && selectedEconomyButton?.dataset.value === 'coins' ? 'coins' : 'free';
-        const stakeKey = mode === 'coins'
-            ? (selectedStakeButton?.dataset.value || this.soloStakeKey || 'stake_50')
-            : 'free';
-        return { mode, stakeKey };
+        const stakeKey = selectedStakeButton?.dataset.value || this.soloStakeKey || 'stake_50';
+        return { mode: 'coins', stakeKey };
     }
 
-    getStakeLabelByKey(stakeKey, mode = 'free') {
-        if (mode !== 'coins' || !stakeKey || stakeKey === 'free') {
-            return this.t('economy-free');
-        }
-
+    getStakeLabelByKey(stakeKey) {
         const labels = {
             stake_50: '50 coins',
             stake_100: '100 coins',
             stake_200: '200 coins',
+            stake_250: '250 coins',
             stake_500: '500 coins',
             stake_1000: '1,000 coins',
             stake_5000: '5,000 coins'
         };
 
-        return labels[stakeKey] || this.t('economy-coins');
+        return labels[stakeKey] || '50 coins';
     }
 
     getStakeAmountByKey(stakeKey) {
@@ -1069,6 +1003,7 @@ class DominoGame {
             stake_50: 50,
             stake_100: 100,
             stake_200: 200,
+            stake_250: 250,
             stake_500: 500,
             stake_1000: 1000,
             stake_5000: 5000
@@ -1078,11 +1013,10 @@ class DominoGame {
     }
 
     getCurrentStakeLabel() {
-        const mode = this.network.isMultiplayer ? this.onlineEconomyMode : this.soloEconomyMode;
         const stakeKey = this.network.isMultiplayer ? this.onlineStakeKey : (this.gameActive ? this.currentRoundStakeKey : this.soloStakeKey);
-        if (mode !== 'coins' || !stakeKey || stakeKey === 'free') return '';
+        const resolvedStakeKey = !stakeKey || stakeKey === 'free' ? 'stake_50' : stakeKey;
 
-        const stakeAmount = this.getStakeAmountByKey(stakeKey);
+        const stakeAmount = this.getStakeAmountByKey(resolvedStakeKey);
         const participants = this.network.isMultiplayer
             ? Math.max(2, this.onlinePlayerCount || 2)
             : 2;
@@ -1197,7 +1131,7 @@ class DominoGame {
             const token = String(snapshot.reconnectionToken || this.network?.getStoredReconnectionToken?.() || '').trim();
             if (!token) {
                 this.clearGameResumeSnapshot();
-                this.renderer.showMessage(this.currentLang === 'az' ? 'Sessiya tapılmadı' : 'Session not found', 1800);
+                this.renderer.showMessage(this.currentLang === 'az' ? 'Sessiya tapД±lmadД±' : 'Session not found', 1800);
                 return false;
             }
             try {
@@ -1294,7 +1228,7 @@ class DominoGame {
             this.currentLang === 'az'
                 ? 'Ad daxil edin'
                 : this.currentLang === 'ru'
-                    ? 'Введите имя'
+                    ? 'Р’РІРµРґРёС‚Рµ РёРјСЏ'
                     : 'Enter your name',
             1800
         );
@@ -1325,17 +1259,17 @@ class DominoGame {
             button.classList.toggle('active', this.isTeamMode === isTeamButton);
         });
 
-        document.querySelectorAll('#online-economy-group .btn-option').forEach((button) => {
-            button.classList.toggle('active', (button.dataset.value === 'coins' ? 'coins' : 'free') === this.onlineEconomyMode);
-        });
+        if (!this.onlineStakeKey || this.onlineStakeKey === 'free') {
+            this.onlineStakeKey = 'stake_50';
+        }
 
         const stakeWrapper = document.getElementById('online-stake-wrapper');
         if (stakeWrapper) {
-            stakeWrapper.classList.toggle('is-hidden', this.onlineEconomyMode !== 'coins');
+            stakeWrapper.classList.remove('is-hidden');
         }
 
         document.querySelectorAll('#online-stake-group .btn-option').forEach((button) => {
-            const shouldBeActive = this.onlineEconomyMode === 'coins' && button.dataset.value === this.onlineStakeKey;
+            const shouldBeActive = button.dataset.value === this.onlineStakeKey;
             button.classList.toggle('active', shouldBeActive);
         });
 
@@ -1348,10 +1282,8 @@ class DominoGame {
             const summary = document.getElementById('online-player-summary');
             if (summary) {
                 const humans = Math.max(1, this.onlinePlayerCount - this.onlineAiCount);
-                const stakeLabel = this.onlineEconomyMode === 'coins'
-                    ? (Array.from(document.querySelectorAll('#online-stake-group .btn-option')).find((button) => button.dataset.value === this.onlineStakeKey)?.textContent || this.t('economy-coins')).trim()
-                    : this.t('economy-free');
-                summary.textContent = `${this.format('online-room-summary', { humans, bots: this.onlineAiCount, total: this.onlinePlayerCount })} · ${stakeLabel}`;
+                const stakeLabel = (Array.from(document.querySelectorAll('#online-stake-group .btn-option')).find((button) => button.dataset.value === this.onlineStakeKey)?.textContent || '50').trim();
+                summary.textContent = `${this.format('online-room-summary', { humans, bots: this.onlineAiCount, total: this.onlinePlayerCount })} В· ${stakeLabel}`;
             }
         }
     }
@@ -1747,10 +1679,10 @@ class DominoGame {
 
         const message = isStakeGame
             ? (this.currentLang === 'az'
-                ? 'Bu oyundan çıxsanız, cari gedişat silinəcək və bu partiya məğlubiyyət kimi sayılacaq. Davam edirsiniz?'
+                ? 'Bu oyundan Г§Д±xsanД±z, cari gediЕџat silinЙ™cЙ™k vЙ™ bu partiya mЙ™ДџlubiyyЙ™t kimi sayД±lacaq. Davam edirsiniz?'
                 : 'If you quit now, the current game will be lost and this coin match will count as a defeat. Continue?')
             : (this.currentLang === 'az'
-                ? 'Bu oyundan çıxsanız, cari gedişat silinəcək. Davam edirsiniz?'
+                ? 'Bu oyundan Г§Д±xsanД±z, cari gediЕџat silinЙ™cЙ™k. Davam edirsiniz?'
                 : 'If you quit now, the current game progress will be lost. Continue?');
 
         return window.confirm(message);
@@ -1853,29 +1785,12 @@ class DominoGame {
         this.soloEconomyMode = selection.mode;
         this.soloStakeKey = selection.stakeKey;
 
-        if (this.difficulty === 'easy') {
-            this.soloEconomyMode = 'free';
-            this.soloStakeKey = 'free';
-            this.activeMatchEconomyMode = 'free';
-            this.activeMatchStakeKey = 'free';
-            this.syncSoloOptions();
-            return { ok: true, mode: 'free' };
-        }
-
-        if (this.soloEconomyMode !== 'coins') {
-            this.soloStakeKey = 'free';
-            this.activeMatchEconomyMode = 'free';
-            this.activeMatchStakeKey = 'free';
-            this.syncSoloOptions();
-            return { ok: true, mode: 'free' };
-        }
-
         await this.loadAccountProfile();
         const token = this.account?.getRoomAuthToken?.();
         if (!token) {
             this.renderer.showMessage(
                 this.currentLang === 'az'
-                    ? 'Monetli oyun üçün hesaba daxil olun'
+                    ? 'Monetli oyun ГјГ§Гјn hesaba daxil olun'
                     : 'Log in to play on coins',
                 2000
             );
@@ -1891,13 +1806,6 @@ class DominoGame {
         return { ok: true, mode: 'coins', stakeKey };
     }
     async reserveSoloRoundStake() {
-        const isCoinRound = this.soloEconomyMode === 'coins' && this.currentRoundStakeKey !== 'free';
-        if (!isCoinRound) {
-            this.currentRoundStakeAmount = 0;
-            this.currentRoundBankAmount = 0;
-            return { ok: true, mode: 'free' };
-        }
-
         const token = this.account?.getRoomAuthToken?.();
         if (!token) {
             return { ok: false, reason: 'auth_required' };
@@ -1929,7 +1837,7 @@ class DominoGame {
     }
 
     async settleSoloRoundStake(winnerIndex) {
-        if (this.soloEconomyMode !== 'coins' || this.currentRoundStakeKey === 'free' || !this.currentRoundStakeSessionId) {
+        if (this.currentRoundStakeKey === 'free' || !this.currentRoundStakeSessionId) {
             return null;
         }
 
@@ -1957,7 +1865,7 @@ class DominoGame {
         }
 
         this.currentRoundStakeSessionId = null;
-        this.currentRoundStakeKey = 'free';
+        this.currentRoundStakeKey = 'stake_50';
         this.currentRoundStakeAmount = 0;
         this.currentRoundBankAmount = 0;
         return { result, stakeAmount, payout };
@@ -1967,16 +1875,16 @@ class DominoGame {
         console.log('[startRound] playerCount:', this.playerCount);
         this.roundOver=false; this.scores=new Array(this.playerCount).fill(0); if(this.isTeamMode) this.teamScores=[0,0]; this.deal=1; 
         await this.pendingSoloSettlement.catch(() => {});
-        this.currentRoundStakeKey = this.soloEconomyMode === 'coins'
-            ? (this.soloStakeKey && this.soloStakeKey !== 'free' ? this.soloStakeKey : 'stake_50')
-            : 'free';
+        this.currentRoundStakeKey = this.soloStakeKey && this.soloStakeKey !== 'free'
+            ? this.soloStakeKey
+            : 'stake_50';
         this.currentRoundStakeSessionId = this.createResumeId(`solo-round-${this.matchRound}`);
         const stakeReady = await this.reserveSoloRoundStake();
         if (!stakeReady?.ok) {
             this.matchOver = true;
             this.renderer.showMessage(
                 this.currentLang === 'az'
-                    ? 'Növbəti raund üçün monet çatmır'
+                    ? 'NГ¶vbЙ™ti raund ГјГ§Гјn monet Г§atmД±r'
                     : 'Not enough coins for the next round',
                 2400
             );
@@ -2088,8 +1996,8 @@ class DominoGame {
             "label-instant-win": { az: "35 points = match ends", en: "35 points = match ends" },
             "label-dloss": { az: "Loss threshold", en: "Loss threshold" },
             "label-rules": { az: "Rules", en: "Rules" },
-            "rule-match": { az: "365 points · 3 rounds", en: "365 points · 3 rounds" },
-            "rule-telephone": { az: "Telephone · [3|2]", en: "Telephone · [3|2]" },
+            "rule-match": { az: "365 points В· 3 rounds", en: "365 points В· 3 rounds" },
+            "rule-telephone": { az: "Telephone В· [3|2]", en: "Telephone В· [3|2]" },
             "btn-start": { az: "Solo play", en: "Solo play" },
             "btn-solo-start": { az: "Start", en: "Start" },
             "label-online": { az: "Online room", en: "Online room" },
@@ -2103,7 +2011,7 @@ class DominoGame {
             "label-deal-short": { az: "D", en: "D" },
             "label-boneyard-short": { az: "Bazaar", en: "Bazaar" },
             "label-economy-mode": { az: "Game mode", en: "Game mode" },
-            "label-stake-table": { az: "Mərc masası", en: "Stake amount", ru: "Ставка" },
+            "label-stake-table": { az: "MЙ™rc masasД±", en: "Stake amount", ru: "РЎС‚Р°РІРєР°" },
             "label-stake-short": { az: "Bank", en: "Bank" },
             "economy-free": { az: "Free play", en: "Free play" },
             "economy-coins": { az: "Play on coins", en: "Play on coins" },
@@ -2121,8 +2029,8 @@ class DominoGame {
             "solo-modal-desc": { az: "Pick difficulty, player count and game mode.", en: "Pick difficulty, player count and game mode." },
             "online-modal-title": { az: "Online room", en: "Online room" },
             "online-modal-desc": { az: "Create a room, add bots or join with a code.", en: "Create a room, add bots or join with a code." },
-            "online-choice-create": { az: "Otaq yarat", en: "Create", ru: "Создать" },
-            "online-choice-connect": { az: "Qoşul", en: "Connect", ru: "Подключиться" },
+            "online-choice-create": { az: "Otaq yarat", en: "Create", ru: "РЎРѕР·РґР°С‚СЊ" },
+            "online-choice-connect": { az: "QoЕџul", en: "Connect", ru: "РџРѕРґРєР»СЋС‡РёС‚СЊСЃСЏ" },
             "account-btn": { az: "Account", en: "Account" },
             "account-kicker": { az: "Profile", en: "Profile" },
             "account-title": { az: "Account", en: "Account" },
@@ -2193,14 +2101,14 @@ class DominoGame {
             "online-room-closed": { az: "Room closed", en: "Room closed" },
             "online-room-summary": { az: "{humans} humans + {bots} AI, {total} total", en: "{humans} humans + {bots} AI, {total} total" },
             "online-bot-slot": { az: "AI {index}", en: "AI {index}" },
-            "resume-session-kicker": { az: "Yarımçıq sessiya", en: "Unfinished session", ru: "Незавершённая сессия" },
-            "resume-session": { az: "Davam et", en: "Resume", ru: "Продолжить" },
-            "resume-session-title": { az: "Yarımçıq sessiyanı davam etdir", en: "Continue your unfinished session", ru: "Продолжить незавершённую сессию" },
-            "resume-session-desc": { az: "Yarıda qalan oyunu eyni yerdən davam etdirə bilərsiniz.", en: "You can pick up the game from where you left off.", ru: "Можно продолжить игру с того же места." },
-            "resume-session-online-title": { az: "Onlayn sessiyanız yarımçıq qalıb", en: "Your online session is unfinished", ru: "Ваша онлайн-сессия не завершена" },
-            "resume-session-offline-title": { az: "Oyun yarımçıq qalıb", en: "Your offline game is unfinished", ru: "Игра не завершена" },
-            "resume-session-online-desc": { az: "Otağa geri qayıdıb həmin matçı davam etdirin.", en: "Reconnect and continue the same match.", ru: "Вернитесь в комнату и продолжите тот же матч." },
-            "resume-session-offline-desc": { az: "Yarımçıq oyunu eyni yerdən davam etdirin.", en: "Resume the game from the same point.", ru: "Продолжите игру с того же места." },
+            "resume-session-kicker": { az: "YarД±mГ§Д±q sessiya", en: "Unfinished session", ru: "РќРµР·Р°РІРµСЂС€С‘РЅРЅР°СЏ СЃРµСЃСЃРёСЏ" },
+            "resume-session": { az: "Davam et", en: "Resume", ru: "РџСЂРѕРґРѕР»Р¶РёС‚СЊ" },
+            "resume-session-title": { az: "YarД±mГ§Д±q sessiyanД± davam etdir", en: "Continue your unfinished session", ru: "РџСЂРѕРґРѕР»Р¶РёС‚СЊ РЅРµР·Р°РІРµСЂС€С‘РЅРЅСѓСЋ СЃРµСЃСЃРёСЋ" },
+            "resume-session-desc": { az: "YarД±da qalan oyunu eyni yerdЙ™n davam etdirЙ™ bilЙ™rsiniz.", en: "You can pick up the game from where you left off.", ru: "РњРѕР¶РЅРѕ РїСЂРѕРґРѕР»Р¶РёС‚СЊ РёРіСЂСѓ СЃ С‚РѕРіРѕ Р¶Рµ РјРµСЃС‚Р°." },
+            "resume-session-online-title": { az: "Onlayn sessiyanД±z yarД±mГ§Д±q qalД±b", en: "Your online session is unfinished", ru: "Р’Р°С€Р° РѕРЅР»Р°Р№РЅ-СЃРµСЃСЃРёСЏ РЅРµ Р·Р°РІРµСЂС€РµРЅР°" },
+            "resume-session-offline-title": { az: "Oyun yarД±mГ§Д±q qalД±b", en: "Your offline game is unfinished", ru: "РРіСЂР° РЅРµ Р·Р°РІРµСЂС€РµРЅР°" },
+            "resume-session-online-desc": { az: "OtaДџa geri qayД±dД±b hЙ™min matГ§Д± davam etdirin.", en: "Reconnect and continue the same match.", ru: "Р’РµСЂРЅРёС‚РµСЃСЊ РІ РєРѕРјРЅР°С‚Сѓ Рё РїСЂРѕРґРѕР»Р¶РёС‚Рµ С‚РѕС‚ Р¶Рµ РјР°С‚С‡." },
+            "resume-session-offline-desc": { az: "YarД±mГ§Д±q oyunu eyni yerdЙ™n davam etdirin.", en: "Resume the game from the same point.", ru: "РџСЂРѕРґРѕР»Р¶РёС‚Рµ РёРіСЂСѓ СЃ С‚РѕРіРѕ Р¶Рµ РјРµСЃС‚Р°." },
             "round-end-next": { az: "Continue", en: "Continue" },
             "new-game-btn": { az: "New game", en: "New game" },
             "summary-title": { az: "Summary", en: "Summary" }
@@ -2807,3 +2715,4 @@ window.addEventListener('resize', () => {
     clearTimeout(_resizeTimer);
     _resizeTimer = setTimeout(() => game.renderState(), 150);
 });
+
