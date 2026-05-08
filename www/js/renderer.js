@@ -237,7 +237,7 @@ export class Renderer {
         if (!pending || pending.tileId !== tileId) return Promise.resolve();
 
         this._pendingBoardTileTravel = null;
-        const { sourceRect } = pending;
+        const { sourceRect, sourceNode } = pending;
 
         const targetEl = this.boardEl.querySelector(`[data-tile-id="${tileId}"]`);
         if (!targetEl || !sourceRect) {
@@ -255,32 +255,33 @@ export class Renderer {
 
         const travelLayer = document.getElementById('game-screen') || document.body;
         const targetRect = targetEl.getBoundingClientRect();
-        const clone = this.createTravelClone(targetEl);
+        const clone = this.createTravelClone(sourceNode || targetEl);
         const sourceCenterX = sourceRect.left + sourceRect.width / 2;
         const sourceCenterY = sourceRect.top + sourceRect.height / 2;
         const targetCenterX = targetRect.left + targetRect.width / 2;
         const targetCenterY = targetRect.top + targetRect.height / 2;
-        const startX = sourceCenterX - targetCenterX;
-        const startY = sourceCenterY - targetCenterY;
-        const distance = Math.hypot(startX, startY);
+        const endX = targetCenterX - sourceCenterX;
+        const endY = targetCenterY - sourceCenterY;
+        const distance = Math.hypot(endX, endY);
         const lift = Math.min(36, Math.max(12, distance * 0.08));
-        const tilt = Math.max(-4, Math.min(4, -startX / 90));
-        const duration = Math.min(0.34, Math.max(0.24, distance / 1200));
+        const travelTilt = Math.max(-3, Math.min(3, -endX / 140));
+        const targetRotation = targetEl.classList.contains('horizontal') && clone.classList.contains('vertical') ? 90 : 0;
+        const duration = Math.min(0.42, Math.max(0.3, distance / 1050));
 
         clone.style.cssText = [
             'position:fixed',
-            `left:${targetRect.left}px`,
-            `top:${targetRect.top}px`,
+            `left:${sourceRect.left}px`,
+            `top:${sourceRect.top}px`,
             'margin:0',
-            `width:${targetRect.width}px`,
-            `height:${targetRect.height}px`,
+            `width:${sourceRect.width}px`,
+            `height:${sourceRect.height}px`,
             'z-index:220',
             'pointer-events:none',
             'transform-origin:center center',
             'will-change:transform',
             'opacity:1'
         ].join(';');
-        clone.style.transform = 'translate3d(0,0,0)';
+        gsap.set(clone, { x: 0, y: 0, scale: 1, rotation: 0, force3D: true });
         travelLayer.appendChild(clone);
 
         targetEl.style.visibility = 'hidden';
@@ -304,27 +305,20 @@ export class Renderer {
             this._activeTileTravel = { timeline, clone, tileId };
 
             timeline
-                .set(clone, {
-                    x: startX,
-                    y: startY,
-                    scale: 0.98,
-                    rotation: tilt,
-                    force3D: true
-                })
                 .to(clone, {
-                    x: startX * 0.45,
-                    y: startY * 0.45 - lift,
-                    scale: 1.012,
-                    rotation: tilt * 0.45,
-                    duration: duration * 0.45,
+                    x: endX * 0.42,
+                    y: endY * 0.42 - lift,
+                    scale: 1.01,
+                    rotation: travelTilt + targetRotation * 0.22,
+                    duration: duration * 0.48,
                     ease: 'sine.out'
                 })
                 .to(clone, {
-                    x: 0,
-                    y: 0,
+                    x: endX,
+                    y: endY,
                     scale: 1,
-                    rotation: 0,
-                    duration: duration * 0.55,
+                    rotation: targetRotation,
+                    duration: duration * 0.52,
                     ease: 'sine.inOut'
                 });
         });
@@ -359,7 +353,7 @@ export class Renderer {
             return fallback;
         }
         const clone = nodeEl.cloneNode(true);
-        clone.classList.remove('board-tile', 'just-played', 'telephone-highlight');
+        clone.classList.remove('board-tile', 'just-played', 'telephone-highlight', 'playable', 'selected');
         return clone;
     }
 
