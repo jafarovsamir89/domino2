@@ -263,7 +263,7 @@ export class Renderer {
         const endX = targetCenterX - sourceCenterX;
         const endY = targetCenterY - sourceCenterY;
         const distance = Math.hypot(endX, endY);
-        const lift = Math.min(36, Math.max(12, distance * 0.08));
+        const lift = Math.min(18, Math.max(6, distance * 0.035));
         const travelTilt = Math.max(-3, Math.min(3, -endX / 140));
         const targetRotation = targetEl.classList.contains('horizontal') && clone.classList.contains('vertical') ? 90 : 0;
         const duration = Math.min(0.42, Math.max(0.3, distance / 1050));
@@ -306,11 +306,11 @@ export class Renderer {
 
             timeline
                 .to(clone, {
-                    x: endX * 0.42,
-                    y: endY * 0.42 - lift,
-                    scale: 1.01,
-                    rotation: travelTilt + targetRotation * 0.22,
-                    duration: duration * 0.48,
+                    x: endX * 0.62,
+                    y: endY * 0.62 - lift,
+                    scale: 1.006,
+                    rotation: travelTilt + targetRotation * 0.45,
+                    duration: duration * 0.58,
                     ease: 'sine.out'
                 })
                 .to(clone, {
@@ -318,8 +318,8 @@ export class Renderer {
                     y: endY,
                     scale: 1,
                     rotation: targetRotation,
-                    duration: duration * 0.52,
-                    ease: 'sine.inOut'
+                    duration: duration * 0.42,
+                    ease: 'power1.out'
                 });
         });
     }
