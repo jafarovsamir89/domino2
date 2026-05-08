@@ -1,4 +1,4 @@
-const CACHE_NAME = 'domino-v17';
+const CACHE_NAME = 'domino-v18';
 const ASSETS = [
     '/',
     '/index.html',

@@ -485,6 +485,20 @@ class DominoGame {
 
     async ensureGuestAccount(name, options = {}) {
         const allowOfflineFallback = options.allowOfflineFallback === true;
+        if (!this.account.getRoomAuthToken()) {
+            try {
+                const details = await this.account.getProfileDetails();
+                if (details?.profile && details.profile.provider !== 'local-guest') {
+                    this.accountDetails = details;
+                    this.accountProfile = details.profile;
+                    this.accountOnline = true;
+                    this.accountMode = 'profile';
+                    this.renderAccountModal();
+                    this.syncStartAuthButton();
+                    return this.accountProfile;
+                }
+            } catch {}
+        }
         if (this.account.getRoomAuthToken() && this.accountProfile?.name) return this.accountProfile;
         try {
             const profile = await this.account.createGuest(name || 'Player');
@@ -513,72 +527,70 @@ class DominoGame {
     }
 
     async loadAccountProfile() {
-        if (!this.account.getRoomAuthToken()) {
-            const storedProfile = this.account.getStoredProfile?.();
-            if (storedProfile?.provider === 'local-guest') {
-                this.accountProfile = storedProfile;
-                this.accountDetails = {
-                    profile: storedProfile,
-                    user: {
-                        id: '',
-                        name: storedProfile.name || 'Player',
-                        email: '',
-                        role: 'player',
-                        image: null
-                    },
-                    player: {
-                        id: '',
-                        displayName: storedProfile.name || 'Player',
-                        avatarSeed: null,
-                        language: null,
-                        createdAt: new Date().toISOString(),
-                        updatedAt: new Date().toISOString()
-                    },
-                    stats: {
-                        rating: 1000,
-                        points: 0,
-                        wins: 0,
-                        losses: 0,
-                        draws: 0,
-                        matchesPlayed: 0,
-                        currentStreak: 0,
-                        bestStreak: 0
-                    },
-                    recentMatches: [],
-                    session: null,
-                    token: null
-                };
-                this.accountOnline = true;
-                this.accountMode = 'profile';
-                this.renderAccountModal();
-                this.syncStartAuthButton();
-                return this.accountDetails;
-            }
-
-            this.accountOnline = false;
-            this.accountDetails = null;
-            this.accountProfile = null;
-            this.renderAccountModal();
-            return null;
-        }
         try {
             const details = await this.account.getProfileDetails();
-            this.accountDetails = details;
-            this.accountProfile = details?.profile || details?.user || this.accountProfile;
-            this.accountOnline = true;
-            if (this.accountProfile) this.accountMode = 'profile';
-            this.prefillAccountNames();
-            this.renderAccountModal();
-            this.syncStartAuthButton();
-            this.setAccountStatus(this.t('account-online'));
-            return details;
+            if (details) {
+                this.accountDetails = details;
+                this.accountProfile = details?.profile || details?.user || this.accountProfile;
+                this.accountOnline = true;
+                if (this.accountProfile) this.accountMode = 'profile';
+                this.prefillAccountNames();
+                this.renderAccountModal();
+                this.syncStartAuthButton();
+                this.setAccountStatus(this.t('account-online'));
+                return details;
+            }
         } catch (err) {
-            this.accountOnline = false;
             this.setAccountStatus(err.message || this.t('account-server-unavailable'));
+        }
+
+        const storedProfile = this.account.getStoredProfile?.();
+        if (storedProfile?.provider === 'local-guest') {
+            this.accountProfile = storedProfile;
+            this.accountDetails = {
+                profile: storedProfile,
+                user: {
+                    id: '',
+                    name: storedProfile.name || 'Player',
+                    email: '',
+                    role: 'player',
+                    image: null
+                },
+                player: {
+                    id: '',
+                    displayName: storedProfile.name || 'Player',
+                    avatarSeed: null,
+                    language: null,
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString()
+                },
+                stats: {
+                    rating: 1000,
+                    points: 0,
+                    wins: 0,
+                    losses: 0,
+                    draws: 0,
+                    matchesPlayed: 0,
+                    currentStreak: 0,
+                    bestStreak: 0
+                },
+                recentMatches: [],
+                session: null,
+                token: null
+            };
+            this.accountOnline = true;
+            this.accountMode = 'profile';
             this.renderAccountModal();
             this.syncStartAuthButton();
-            return null;
+            return this.accountDetails;
         }
+
+        this.accountOnline = false;
+        this.accountDetails = null;
+        this.accountProfile = null;
+        this.renderAccountModal();
+        this.syncStartAuthButton();
+        return null;
     }
 
     async openAccountModal() {
@@ -1685,7 +1697,13 @@ class DominoGame {
         this.dlossThreshold = isNaN(dlossInput) ? 255 : dlossInput;
 
         await this.loadAccountProfile();
-        await this.prepareSoloEconomyStake();
+        const stakePreparation = await this.prepareSoloEconomyStake();
+        if (!stakePreparation?.ok) {
+            document.getElementById('game-screen').classList.remove('active');
+            document.getElementById('start-screen').classList.add('active');
+            document.getElementById('solo-modal')?.classList.add('active');
+            return;
+        }
         this.activeMatchEconomyMode = this.soloEconomyMode;
         this.activeMatchStakeKey = this.soloStakeKey;
 
@@ -1709,7 +1727,7 @@ class DominoGame {
             this.activeMatchEconomyMode = 'free';
             this.activeMatchStakeKey = 'free';
             this.syncSoloOptions();
-            return;
+            return { ok: true, mode: 'free' };
         }
 
         if (this.soloEconomyMode !== 'coins') {
@@ -1717,23 +1735,19 @@ class DominoGame {
             this.activeMatchEconomyMode = 'free';
             this.activeMatchStakeKey = 'free';
             this.syncSoloOptions();
-            return;
+            return { ok: true, mode: 'free' };
         }
 
+        await this.loadAccountProfile();
         const token = this.account?.getRoomAuthToken?.();
         if (!token) {
-            this.soloEconomyMode = 'free';
-            this.soloStakeKey = 'free';
-            this.activeMatchEconomyMode = 'free';
-            this.activeMatchStakeKey = 'free';
-            this.syncSoloOptions();
             this.renderer.showMessage(
                 this.currentLang === 'az'
                     ? 'Monetli oyun üçün hesaba daxil olun'
                     : 'Log in to play on coins',
                 2000
             );
-            return;
+            return { ok: false, reason: 'auth_required' };
         }
 
         const stakeKey = this.soloStakeKey && this.soloStakeKey !== 'free' ? this.soloStakeKey : 'stake_50';
@@ -1747,22 +1761,20 @@ class DominoGame {
                 throw new Error(result?.reason || 'reserve_failed');
             }
             this.soloStakeKey = stakeKey;
+            this.soloEconomyMode = 'coins';
             this.activeMatchEconomyMode = 'coins';
             this.activeMatchStakeKey = stakeKey;
             this.syncSoloOptions();
+            return { ok: true, mode: 'coins', stakeKey };
         } catch (error) {
-            console.warn('[Economy] Solo reservation failed, switching to free play', error);
-            this.soloEconomyMode = 'free';
-            this.soloStakeKey = 'free';
-            this.activeMatchEconomyMode = 'free';
-            this.activeMatchStakeKey = 'free';
-            this.syncSoloOptions();
+            console.warn('[Economy] Solo reservation failed', error);
             this.renderer.showMessage(
                 this.currentLang === 'az'
-                    ? 'Monetli stol hazır deyil, pulsuz oyun açıldı'
-                    : 'Coin play is unavailable, free play was opened',
-                2200
+                    ? 'Monetli oyun başlatmaq olmadı'
+                    : 'Failed to start coin match',
+                2400
             );
+            return { ok: false, reason: error?.message || 'reserve_failed' };
         }
     }
     startRound() { 

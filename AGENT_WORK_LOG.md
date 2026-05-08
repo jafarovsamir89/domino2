@@ -453,3 +453,9 @@
 - Added server-side online stake forfeits on permanent room leave so a player quitting a coin room gives the remaining linked player(s) the win payout.
 - Cleaned the most visible startup HTML fallback strings and coin wording to remove the brief mojibake flash before runtime translations finish applying.
 
+## 2026-05-08 Solo coin auth handoff hardening
+- Changed solo game start to prefer restoring the real platform session before creating a local guest profile, so a signed-in player is not silently downgraded to guest/free mode.
+- Updated account profile loading to try the platform session first and only fall back to a stored local guest when no Better Auth session exists.
+- Stopped silently converting failed solo coin reservations into free matches; the client now aborts the start flow and returns to the solo modal instead.
+- Bumped the service worker cache version so the updated solo stake logic reaches secondary devices instead of serving stale cached JS.
+
