@@ -14,7 +14,7 @@ class DominoGame {
         this.renderer = new Renderer(this); this.board = new Board();
         this.playerMissingSuits = [];
         this.playerCount=2; this.onlinePlayerCount=2; this.onlineAiCount=0; this.playerName=''; this.difficulty='medium';
-        this.onlineStakeKey = 'stake_50';
+        this.onlineStakeKey = 'stake_200';
         this.onlineEconomyMode = 'coins';
         this.onlineRoundBankAmount = 0;
         this.soloEconomyMode = 'coins';
@@ -1014,7 +1014,9 @@ class DominoGame {
 
     getCurrentStakeLabel() {
         const stakeKey = this.network.isMultiplayer ? this.onlineStakeKey : (this.gameActive ? this.currentRoundStakeKey : this.soloStakeKey);
-        const resolvedStakeKey = !stakeKey || stakeKey === 'free' ? 'stake_50' : stakeKey;
+        const resolvedStakeKey = !stakeKey || stakeKey === 'free'
+            ? (this.network.isMultiplayer ? 'stake_200' : 'stake_50')
+            : stakeKey;
 
         const stakeAmount = this.getStakeAmountByKey(resolvedStakeKey);
         const participants = this.network.isMultiplayer
@@ -1260,7 +1262,7 @@ class DominoGame {
         });
 
         if (!this.onlineStakeKey || this.onlineStakeKey === 'free') {
-            this.onlineStakeKey = 'stake_50';
+            this.onlineStakeKey = 'stake_200';
         }
 
         const stakeWrapper = document.getElementById('online-stake-wrapper');
@@ -1282,7 +1284,7 @@ class DominoGame {
             const summary = document.getElementById('online-player-summary');
             if (summary) {
                 const humans = Math.max(1, this.onlinePlayerCount - this.onlineAiCount);
-                const stakeLabel = (Array.from(document.querySelectorAll('#online-stake-group .btn-option')).find((button) => button.dataset.value === this.onlineStakeKey)?.textContent || '50').trim();
+                const stakeLabel = (Array.from(document.querySelectorAll('#online-stake-group .btn-option')).find((button) => button.dataset.value === this.onlineStakeKey)?.textContent || '200').trim();
                 summary.textContent = `${this.format('online-room-summary', { humans, bots: this.onlineAiCount, total: this.onlinePlayerCount })} В· ${stakeLabel}`;
             }
         }

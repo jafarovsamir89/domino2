@@ -437,7 +437,7 @@ input, button { font: inherit; }
 #online-flow-ui .multiplayer-actions .btn,
 #multi-join-ui .btn-group .btn {
     flex: 1 1 0;
-    min-height: 46px;
+    min-height: 44px;
 }
 
 #online-flow-ui.online-create-flow .multiplayer-actions .online-create-btn {
@@ -448,8 +448,37 @@ input, button { font: inherit; }
     flex: 3 1 0;
 }
 
+#online-stake-group {
+    flex-wrap: wrap;
+}
+
+#online-stake-group .btn-option {
+    flex: 1 1 calc(33.333% - 6px);
+    min-width: 0;
+}
+
 #online-entry-ui {
-    margin-top: 8px;
+    margin-top: 4px;
+}
+
+@media (min-width: 768px) {
+    #online-entry-ui .btn,
+    #online-flow-ui .multiplayer-actions .btn,
+    #multi-join-ui .btn-group .btn {
+        min-height: 46px;
+    }
+
+    #online-stake-group {
+        flex-wrap: nowrap;
+    }
+
+    #online-stake-group .btn-option {
+        flex: 1 1 0;
+    }
+
+    #online-entry-ui {
+        margin-top: 8px;
+    }
 }
 
 .toggle-card {
