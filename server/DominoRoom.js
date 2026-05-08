@@ -44,6 +44,11 @@ class DominoRoom extends Room {
         this.aiDifficulty = options.difficulty || "medium";
         this.currentStakeKey = String(options.stakeKey || "free").trim() || "free";
         this.economyReservationMade = false;
+        this.currentDealMatchId = "";
+        this.currentDealStakeKey = this.currentStakeKey;
+        this.currentDealStakeAmount = 0;
+        this.currentDealBankAmount = 0;
+        this.pendingEconomySettlement = Promise.resolve();
         this.botTimer = null;
         this.botIds = [];
         this.aiPlayers = new Map();
@@ -122,7 +127,7 @@ class DominoRoom extends Room {
         this.broadcastRoomState();
         if (this.clients.length === this.maxClients) {
             console.log(`[ROOM] Room full. Starting game...`);
-            this.startGame();
+            void this.startGame();
         }
     }
 
@@ -220,25 +225,35 @@ class DominoRoom extends Room {
         }
     }
 
-    startGame() {
+    async startGame() {
         this.state.matchRound = 1;
         this.state.deal = 1;
         this.matchRecorded = false;
         this.forfeitSettlementMade = false;
+        this.pendingEconomySettlement = Promise.resolve();
+        this.currentDealMatchId = "";
+        this.currentDealStakeKey = this.currentStakeKey;
+        this.currentDealStakeAmount = 0;
+        this.currentDealBankAmount = 0;
         this.ensureBotPlayers();
         this.broadcastRoomState();
-        this.startDeal();
+        await this.startDeal();
     }
 
-    startDeal() {
+    async startDeal() {
         if (this.botTimer) {
             clearTimeout(this.botTimer);
             this.botTimer = null;
         }
+        await this.pendingEconomySettlement.catch(() => {});
         this.matchRecorded = false;
         this.internalBoard = new Board();
-        this.state.gameActive = true;
-        
+        this.state.gameActive = false;
+        this.currentDealMatchId = `${this.roomId}:round:${this.state.matchRound}:deal:${this.state.deal}`;
+        this.currentDealStakeKey = this.currentStakeKey;
+        this.currentDealStakeAmount = 0;
+        this.currentDealBankAmount = 0;
+
         const all = shuffle(createFullSet());
         const hs = getHandSize(this.totalPlayers);
         this.hands = [];
@@ -256,22 +271,36 @@ class DominoRoom extends Room {
             this.state.currentPlayerIndex = f.player;
         }
         
-        this.syncState();
-        if (!this.economyReservationMade && this.currentStakeKey !== "free") {
-            void this.reserveEconomyStake();
+        if (this.currentStakeKey !== "free") {
+            const reserveResult = await this.reserveEconomyStake();
+            if (!reserveResult?.ok) {
+                const reason = reserveResult?.reason || "stake_unavailable";
+                const message = reason === "insufficient_coins"
+                    ? "Not enough coins for the next round"
+                    : "Stake table unavailable, room closed";
+                this.state.gameActive = false;
+                this.broadcast("msg", { text: message, time: 2500 });
+                this.broadcast("room_closed", { reason: message });
+                this.broadcastRoomState();
+                return;
+            }
         }
+        this.state.gameActive = true;
+        this.syncState();
         this.scheduleBotTurn();
     }
 
     async reserveEconomyStake() {
-        if (this.economyReservationMade || this.currentStakeKey === "free") {
-            return;
+        if (this.currentStakeKey === "free") {
+            this.currentDealStakeAmount = 0;
+            this.currentDealBankAmount = 0;
+            this.economyReservationMade = true;
+            return { ok: true, reserved: 0, stakeKey: "free", bankAmount: 0 };
         }
 
         const platformIdentity = this.getPlatformMatchIdentity();
         if (!platformIdentity) {
-            this.economyReservationMade = true;
-            return;
+            return { ok: false, reason: "missing_platform_identity" };
         }
 
         const sessionIdentities = this.state.playerOrder
@@ -290,7 +319,10 @@ class DominoRoom extends Room {
             this.currentStakeKey = "free";
             this.economyReservationMade = true;
             this.broadcast("msg", { text: "Stake table requires linked accounts, switched to free table", time: 2400 });
-            return;
+            this.currentDealStakeKey = "free";
+            this.currentDealStakeAmount = 0;
+            this.currentDealBankAmount = 0;
+            return { ok: true, reserved: 0, stakeKey: "free", bankAmount: 0, switchedToFree: true };
         }
 
         const participants = sessionIdentities
@@ -304,7 +336,7 @@ class DominoRoom extends Room {
 
         if (!participants.length) {
             this.economyReservationMade = true;
-            return;
+            return { ok: true, reserved: 0, stakeKey: this.currentStakeKey, bankAmount: 0 };
         }
 
         try {
@@ -317,6 +349,7 @@ class DominoRoom extends Room {
                 body: JSON.stringify({
                     roomId: this.roomId,
                     roomCode: this.roomCode,
+                    matchId: this.currentDealMatchId,
                     stakeKey: this.currentStakeKey,
                     participants
                 })
@@ -325,30 +358,33 @@ class DominoRoom extends Room {
             if (!response.ok) {
                 const text = await response.text().catch(() => "");
                 console.warn("[ROOM] Economy reserve failed:", text || response.status);
-                this.currentStakeKey = "free";
-                this.economyReservationMade = true;
-                this.broadcast("msg", { text: "Stake table unavailable, switched to free table", time: 2000 });
-                return;
+                return { ok: false, reason: text || "reserve_failed" };
             }
 
             const data = await response.json().catch(() => null);
             if (!data?.ok) {
                 console.warn("[ROOM] Economy reserve rejected:", data?.reason || "unknown");
-                this.currentStakeKey = "free";
-                this.economyReservationMade = true;
-                this.broadcast("msg", { text: "Stake table unavailable, switched to free table", time: 2000 });
-                return;
+                return { ok: false, reason: data?.reason || "reserve_failed" };
             }
 
             this.economyReservationMade = true;
+            this.currentDealStakeKey = this.currentStakeKey;
+            this.currentDealStakeAmount = Math.max(0, data?.reserved ? Math.floor(data.reserved / Math.max(1, participants.length)) : 0);
+            this.currentDealBankAmount = Math.max(0, data?.reserved || this.currentDealStakeAmount * participants.length);
             this.broadcast("msg", {
-                text: `Stake ${this.currentStakeKey} reserved for ${participants.length} players`,
+                text: `Bank ${this.currentDealBankAmount} coins reserved for ${participants.length} players`,
                 time: 2000
             });
+            return {
+                ok: true,
+                reserved: data?.reserved || 0,
+                stakeKey: this.currentStakeKey,
+                bankAmount: this.currentDealBankAmount,
+                participants: participants.length
+            };
         } catch (error) {
             console.warn("[ROOM] Economy reserve error:", error);
-            this.currentStakeKey = "free";
-            this.economyReservationMade = true;
+            return { ok: false, reason: "reserve_error" };
         }
     }
 
@@ -450,6 +486,9 @@ class DominoRoom extends Room {
         this.broadcast("room_state", {
             roomId: this.roomId,
             roomCode: this.roomCode,
+            stakeKey: this.currentDealStakeKey || this.currentStakeKey,
+            stakeAmount: this.currentDealStakeAmount,
+            bankAmount: this.currentDealBankAmount,
             currentPlayers: this.state.gameActive ? this.totalPlayers : this.clients.length,
             humanPlayers: this.clients.length,
             humanSeats: this.maxClients,
@@ -499,7 +538,7 @@ class DominoRoom extends Room {
     }
 
     async settleForfeitStake(leavingSessionId) {
-        if (this.forfeitSettlementMade || this.currentStakeKey === "free") {
+        if (this.forfeitSettlementMade || this.currentDealStakeKey === "free") {
             return false;
         }
 
@@ -536,7 +575,8 @@ class DominoRoom extends Room {
                 },
                 body: JSON.stringify({
                     roomId: this.roomId,
-                    stakeKey: this.currentStakeKey,
+                    matchId: this.currentDealMatchId,
+                    stakeKey: this.currentDealStakeKey,
                     result: winnerUserIds.length ? "loss" : "refund",
                     winnerUserIds
                 })
@@ -552,6 +592,60 @@ class DominoRoom extends Room {
             return true;
         } catch (error) {
             console.warn("[ROOM] Failed to settle forfeit stake:", error);
+            return false;
+        }
+    }
+
+    async settleEconomyRound(wi, isInstantWin, players, wins) {
+        if (this.currentStakeKey === "free") {
+            this.pendingEconomySettlement = Promise.resolve();
+            return false;
+        }
+
+        const platformIdentity = this.getPlatformMatchIdentity();
+        if (!platformIdentity) {
+            return false;
+        }
+
+        const winnerUserIds = this.state.playerOrder
+            .filter((sessionId, index) => {
+                if (this.state.isTeamMode) {
+                    return (index % 2) === (wi % 2);
+                }
+                return index === wi;
+            })
+            .map((sessionId) => this.identityBySessionId.get(sessionId))
+            .filter((identity) => identity?.provider === "platform" && identity.userId)
+            .map((identity) => identity.userId);
+
+        try {
+            const response = await fetch(`${process.env.PLATFORM_API_URL || "http://127.0.0.1:3000"}/api/economy/matches/settle`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${platformIdentity.authToken}`
+                },
+                body: JSON.stringify({
+                    roomId: this.roomId,
+                    matchId: this.currentDealMatchId,
+                    stakeKey: this.currentDealStakeKey,
+                    result: winnerUserIds.length ? "win" : "refund",
+                    winnerUserIds
+                })
+            });
+
+            if (!response.ok) {
+                const text = await response.text().catch(() => "");
+                throw new Error(text || `Round settle failed with ${response.status}`);
+            }
+
+            this.currentDealBankAmount = 0;
+            this.currentDealStakeAmount = 0;
+            this.currentDealStakeKey = this.currentStakeKey;
+            this.pendingEconomySettlement = Promise.resolve();
+            return true;
+        } catch (error) {
+            console.warn("[ROOM] Failed to settle round stake:", error);
             return false;
         }
     }
@@ -802,7 +896,7 @@ class DominoRoom extends Room {
     handleNextDeal(client) {
         // Only proceed if game is not active (waiting for next deal)
         if (this.state.gameActive) return;
-        this.startDeal();
+        void this.startDeal();
     }
 
     handleReaction(client, message) {
@@ -890,6 +984,11 @@ class DominoRoom extends Room {
         }
 
         this.broadcast("sound", "win");
+        if (this.currentStakeKey !== "free") {
+            this.pendingEconomySettlement = this.settleEconomyRound(wi, false, null, null);
+        } else {
+            this.pendingEconomySettlement = Promise.resolve();
+        }
         
         // Check for round win (target score reached)
         const cs = this.state.isTeamMode ? Math.max(...this.state.teamScores) : Math.max(...Array.from(this.state.players.values()).map(p => p.score));

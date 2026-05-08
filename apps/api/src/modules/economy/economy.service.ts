@@ -976,6 +976,7 @@ export class EconomyService {
 
     await this.ensureBootstrap();
     const roomId = toCleanString(payload.roomId);
+    const matchId = toCleanString(payload.matchId);
     const stakeKey = toCleanString(payload.stakeKey, "free") || "free";
     const participants = Array.isArray(payload.participants) ? payload.participants : [];
     if (!roomId) {
@@ -1037,13 +1038,14 @@ export class EconomyService {
             "match_reserve",
             roomId,
             {
-              idempotencyKey: `${roomId}:${player.id}:${stakeTable.id}:reserve`,
+              idempotencyKey: `${roomId}:${matchId || "match"}:${player.id}:${stakeTable.id}:reserve`,
               note: stakeTable.title,
               payloadJson: {
                 stakeKey,
                 roomId,
                 roomCode: payload.roomCode ?? null,
-                playerId: player.id
+                playerId: player.id,
+                matchId: matchId || null
               }
             }
           );
@@ -1188,7 +1190,7 @@ export class EconomyService {
             "match_settle",
             matchId || roomId,
             {
-              idempotencyKey: `${roomId}:${reservation.playerId}:${stakeTable.id}:refund`,
+              idempotencyKey: `${roomId}:${matchId || "match"}:${reservation.playerId}:${stakeTable.id}:refund`,
               note: stakeTable.title,
               payloadJson: {
                 roomId,
@@ -1213,7 +1215,7 @@ export class EconomyService {
             "match_settle",
             matchId || roomId,
             {
-              idempotencyKey: `${roomId}:${reservation.playerId}:${stakeTable.id}:release`,
+              idempotencyKey: `${roomId}:${matchId || "match"}:${reservation.playerId}:${stakeTable.id}:release`,
               note: stakeTable.title,
               payloadJson: {
                 roomId,
@@ -1231,7 +1233,7 @@ export class EconomyService {
             "match_settle",
             matchId || roomId,
             {
-              idempotencyKey: `${roomId}:${reservation.playerId}:${stakeTable.id}:payout`,
+              idempotencyKey: `${roomId}:${matchId || "match"}:${reservation.playerId}:${stakeTable.id}:payout`,
               note: stakeTable.title,
               payloadJson: {
                 roomId,
@@ -1509,7 +1511,7 @@ export class EconomyService {
           "solo_match_settle",
           matchId,
           {
-            idempotencyKey: `${roomId}:${reservation.playerId}:${stakeTable.id}:refund`,
+          idempotencyKey: `${roomId}:${matchId}:${reservation.playerId}:${stakeTable.id}:refund`,
             note: stakeTable.title,
             payloadJson: {
               roomId,
@@ -1528,7 +1530,7 @@ export class EconomyService {
           "solo_match_settle",
           matchId,
           {
-            idempotencyKey: `${roomId}:${reservation.playerId}:${stakeTable.id}:release`,
+            idempotencyKey: `${roomId}:${matchId}:${reservation.playerId}:${stakeTable.id}:release`,
             note: stakeTable.title,
             payloadJson: {
               roomId,
@@ -1546,7 +1548,7 @@ export class EconomyService {
           "solo_match_settle",
           matchId,
           {
-            idempotencyKey: `${roomId}:${reservation.playerId}:${stakeTable.id}:payout`,
+            idempotencyKey: `${roomId}:${matchId}:${reservation.playerId}:${stakeTable.id}:payout`,
             note: stakeTable.title,
             payloadJson: {
               roomId,
@@ -1566,7 +1568,7 @@ export class EconomyService {
           "solo_match_settle",
           matchId,
           {
-            idempotencyKey: `${roomId}:${reservation.playerId}:${stakeTable.id}:consume`,
+            idempotencyKey: `${roomId}:${matchId}:${reservation.playerId}:${stakeTable.id}:consume`,
             note: stakeTable.title,
             payloadJson: {
               roomId,

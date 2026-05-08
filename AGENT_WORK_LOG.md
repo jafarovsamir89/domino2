@@ -470,3 +470,9 @@
 - Added a coin match summary that accumulates `won`, `lost`, and `net` values across rounds, then shows them in the final modal.
 - Added a round-start guard so a player without enough coins cannot begin the next round and is returned to the solo flow instead of silently continuing.
 
+## 2026-05-08 Online bank parity
+- Translated the online room economy to the same round-based bank rules as solo, so each online deal reserves a fresh bank and settles it before the next deal starts.
+- Added per-deal `matchId` scoping to the economy reservation and settlement idempotency keys so repeated online rounds do not collide inside the wallet ledger.
+- Exposed the current online bank amount through room state so the in-game HUD can show `Bank: X` instead of falling back to the old stake text.
+- Closed coin rooms cleanly when the next online round cannot be reserved, matching the solo rule that play cannot continue without funds.
+

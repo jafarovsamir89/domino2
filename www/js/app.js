@@ -15,6 +15,7 @@ class DominoGame {
         this.playerCount=2; this.onlinePlayerCount=2; this.onlineAiCount=0; this.playerName=''; this.difficulty='medium';
         this.onlineStakeKey = 'free';
         this.onlineEconomyMode = 'free';
+        this.onlineRoundBankAmount = 0;
         this.soloEconomyMode = 'free';
         this.soloStakeKey = 'free';
         this.hands=[]; this.boneyard=[]; this.scores=[]; this.roundWins=[];
@@ -1067,9 +1068,11 @@ class DominoGame {
         const participants = this.network.isMultiplayer
             ? Math.max(2, this.onlinePlayerCount || 2)
             : 2;
-        const bankAmount = this.gameActive && !this.network.isMultiplayer && this.currentRoundBankAmount > 0
-            ? this.currentRoundBankAmount
-            : stakeAmount * participants;
+        const bankAmount = this.network.isMultiplayer
+            ? (this.gameActive
+                ? (this.onlineRoundBankAmount > 0 ? this.onlineRoundBankAmount : stakeAmount * participants)
+                : 0)
+            : (this.gameActive && this.currentRoundBankAmount > 0 ? this.currentRoundBankAmount : stakeAmount * participants);
         return bankAmount > 0 ? `${bankAmount} coins` : '';
     }
 
@@ -1440,6 +1443,7 @@ class DominoGame {
         this.network.leaveRoom();
         this.myHand = null;
         this.gameActive = false;
+        this.onlineRoundBankAmount = 0;
         this.showStartModal(null);
         this.resetMultiplayerPanels(false);
         document.getElementById('menu-screen').classList.remove('active');
@@ -2159,6 +2163,8 @@ class DominoGame {
         this.matchRound = state?.matchRound || 1;
         this.deal = state?.deal || 1;
         this.gameActive = !!state?.gameActive;
+        this.onlineStakeKey = state?.stakeKey || this.onlineStakeKey;
+        this.onlineRoundBankAmount = Math.max(0, Number(state?.bankAmount || 0));
 
         // Hide start screen if we just started
         if (this.gameActive && document.getElementById('start-screen').classList.contains('active')) {
