@@ -1,4 +1,4 @@
-import { Controller, Get, Req } from "@nestjs/common";
+import { Body, Controller, Get, Patch, Req } from "@nestjs/common";
 import type { Request } from "express";
 
 import { AuthService } from "./auth.service.js";
@@ -25,5 +25,13 @@ export class AuthController {
   @Get("me")
   async getCurrentProfile(@Req() req: Request) {
     return this.authService.getCurrentProfile(req.headers);
+  }
+
+  @Patch("me")
+  async updateCurrentProfileName(
+    @Req() req: Request,
+    @Body() body: { name?: string }
+  ) {
+    return this.authService.updateCurrentProfileName(req.headers, body?.name);
   }
 }

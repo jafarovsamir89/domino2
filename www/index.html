@@ -288,9 +288,15 @@
                             </div>
                         </div>
                         <div id="account-profile-summary" class="room-summary"></div>
+                        <div class="settings-grid compact-grid">
+                            <div class="settings-group field-span-2">
+                                <label data-i18n="account-name">Ad</label>
+                                <input type="text" id="account-display-name-input" maxlength="24" placeholder="Player">
+                            </div>
+                        </div>
                         <div class="account-toolbar">
                             <button class="btn btn-menu" id="account-refresh-btn" data-i18n="account-refresh">Yenilə</button>
-                            <button class="btn btn-action btn-strong" id="create-account-btn" data-i18n="account-create-account">Create account</button>
+                            <button class="btn btn-action btn-strong" id="account-save-name-btn" data-i18n="account-save-name">Save name</button>
                             <button class="btn btn-menu" id="account-logout-btn" data-i18n="account-logout">Çıxış</button>
                         </div>
                     </section>
@@ -302,20 +308,11 @@
                             <p class="account-auth-copy" data-i18n="account-auth-desc">Reytinqin, oyun tarixçən və Google girişi üçün hesabına daxil ol.</p>
                         </div>
 
-                        <div class="account-switcher" role="tablist" aria-label="Account forms">
-                            <button class="btn btn-menu account-switch active" id="login-tab-btn" data-view="login" type="button" data-i18n="account-login-tab">Giriş</button>
-                            <button class="btn btn-menu account-switch" id="register-tab-btn" data-view="register" type="button" data-i18n="account-register-tab">Qeydiyyat</button>
-                        </div>
-
                         <form class="account-form account-form-login active" id="account-login-form">
                             <div class="settings-grid compact-grid">
                                 <div class="settings-group field-span-2">
                                     <label data-i18n="account-email">Email</label>
-                                    <input type="email" id="account-login-email-input" placeholder="email@domain.com" maxlength="254">
-                                </div>
-                                <div class="settings-group field-span-2">
-                                    <label data-i18n="account-password">Şifrə</label>
-                                    <input type="password" id="account-login-password-input" placeholder="Şifrənizi daxil edin" maxlength="64">
+                                    <input type="email" id="account-login-email-input" placeholder="email@domain.com" maxlength="254" required>
                                 </div>
                                 <div class="settings-group field-span-2">
                                     <div id="account-status" class="room-summary"></div>
@@ -323,34 +320,16 @@
                             </div>
 
                             <div class="account-auth-actions">
-                                <button class="btn btn-action btn-strong" id="login-account-btn" type="submit" data-i18n="account-login">Giriş</button>
+                                <button class="btn btn-action btn-strong" id="email-continue-btn" type="submit" data-i18n="account-email-continue">Email ilə davam et</button>
                                 <button class="btn btn-social" id="google-login-btn" type="button" data-i18n="account-google">Google ilə giriş</button>
+                                <button class="btn btn-social" id="apple-login-btn" type="button" data-i18n="account-apple">Apple ID ilə giriş</button>
                             </div>
                         </form>
-
-                        <form class="account-form account-form-register" id="account-register-form">
-                            <div class="settings-grid compact-grid">
-                                <div class="settings-group">
-                                    <label data-i18n="account-name">Ad</label>
-                                    <input type="text" id="account-name-input" placeholder="Adınızı daxil edin" maxlength="12">
-                                </div>
-                                <div class="settings-group">
-                                    <label data-i18n="account-email">Email</label>
-                                    <input type="email" id="account-email-input" placeholder="email@domain.com" maxlength="254">
-                                </div>
-                                <div class="settings-group field-span-2">
-                                    <label data-i18n="account-password">Şifrə</label>
-                                    <input type="password" id="account-password-input" placeholder="Şifrənizi daxil edin" maxlength="64">
-                                </div>
-                                <div class="settings-group field-span-2">
-                                    <div id="account-register-status" class="room-summary"></div>
-                                </div>
-                            </div>
-
-                            <div class="account-auth-actions">
-                                <button class="btn btn-action btn-strong" id="register-account-btn" type="submit" data-i18n="account-register">Qeydiyyat</button>
-                            </div>
-                        </form>
+                        <p class="account-legal-copy">
+                            <span data-i18n="account-legal-prefix">Davam etməklə siz</span>
+                            <a href="terms.html" target="_blank" rel="noopener noreferrer" data-i18n="account-legal-link">İstifadəçi razılaşmasını</a>
+                            <span data-i18n="account-legal-suffix">qəbul edirsiniz.</span>
+                        </p>
                     </section>
                 </div>
 

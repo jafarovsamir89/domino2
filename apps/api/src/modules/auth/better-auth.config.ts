@@ -13,6 +13,10 @@ export interface BetterAuthConfig {
     clientId: string;
     clientSecret: string;
   };
+  apple?: {
+    clientId: string;
+    clientSecret: string;
+  };
 }
 
 export function getBetterAuthConfig(): BetterAuthConfig {
@@ -23,6 +27,9 @@ export function getBetterAuthConfig(): BetterAuthConfig {
   const googleEnabled =
     Boolean(process.env.GOOGLE_CLIENT_ID) &&
     Boolean(process.env.GOOGLE_CLIENT_SECRET);
+  const appleEnabled =
+    Boolean(process.env.APPLE_CLIENT_ID) &&
+    Boolean(process.env.APPLE_CLIENT_SECRET);
   const publicAppOrigin = process.env.PUBLIC_APP_ORIGIN || defaultGameWebUrl;
 
   const normalizeOrigin = (value?: string | null) => {
@@ -100,6 +107,12 @@ export function getBetterAuthConfig(): BetterAuthConfig {
       ? {
           clientId: process.env.GOOGLE_CLIENT_ID || "",
           clientSecret: process.env.GOOGLE_CLIENT_SECRET || ""
+        }
+      : undefined,
+    apple: appleEnabled
+      ? {
+          clientId: process.env.APPLE_CLIENT_ID || "",
+          clientSecret: process.env.APPLE_CLIENT_SECRET || ""
         }
       : undefined
   };

@@ -39,6 +39,16 @@ function createLocalSessionId() {
     return `local-${Date.now().toString(36)}-${Math.floor(performance.now() * 1000).toString(36)}`;
 }
 
+function createAutoPlayerName(email = "") {
+    const normalized = String(email || "").toLowerCase().trim();
+    let seed = 0;
+    for (let i = 0; i < normalized.length; i++) {
+        seed = ((seed * 31) + normalized.charCodeAt(i)) >>> 0;
+    }
+    const suffix = String((seed % 900000) + 100000);
+    return `Player_${suffix}`;
+}
+
 function normalizeProfile(payload = {}, source = "legacy") {
     const user = payload.user || payload;
     const player = payload.player || null;
@@ -566,6 +576,34 @@ export class AccountClient {
         }
     }
 
+    async deriveEmailAuthPassword(email) {
+        const normalized = String(email || "").trim().toLowerCase();
+        const raw = `domino2-email-only-v1|${normalized}|simplesoft`;
+        try {
+            const encoded = new TextEncoder().encode(raw);
+            const digest = await window.crypto.subtle.digest("SHA-256", encoded);
+            const bytes = Array.from(new Uint8Array(digest));
+            return bytes.map((b) => b.toString(16).padStart(2, "0")).join("");
+        } catch {
+            return btoa(raw).replace(/=+$/g, "");
+        }
+    }
+
+    async continueWithEmail(emailInput) {
+        const email = sanitizeEmail(emailInput);
+        if (!email || !email.includes("@")) {
+            throw new Error("Enter a valid email");
+        }
+        const password = await this.deriveEmailAuthPassword(email);
+        try {
+            return await this.login({ email, password });
+        } catch {
+            const name = createAutoPlayerName(email);
+            await this.register({ name, email, password });
+            return this.login({ email, password });
+        }
+    }
+
     async startGoogleSignIn(callbackURL) {
         const targetURL = String(callbackURL || "").trim() || "/";
         return this.platformRequest("/auth/sign-in/social", {
@@ -575,6 +613,29 @@ export class AccountClient {
                 callbackURL: targetURL
             }
         });
+    }
+
+    async startAppleSignIn(callbackURL) {
+        const targetURL = String(callbackURL || "").trim() || "/";
+        return this.platformRequest("/auth/sign-in/social", {
+            method: "POST",
+            body: {
+                provider: "apple",
+                callbackURL: targetURL
+            }
+        });
+    }
+
+    async updateDisplayName(name) {
+        const displayName = sanitizeName(name || "Player");
+        const data = await this.platformRequest("/me", {
+            method: "PATCH",
+            body: { name: displayName }
+        });
+        const normalized = normalizeProfile(data, "better-auth");
+        this.setPlatformProfile(normalized.profile);
+        this.setStoredProfile(normalized.profile);
+        return normalized;
     }
 
     async logout() {

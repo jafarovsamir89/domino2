@@ -81,14 +81,24 @@ export const auth = betterAuth({
       verify: config.verifyPassword
     }
   },
-  socialProviders: config.google
-    ? {
-        google: {
-          clientId: config.google.clientId,
-          clientSecret: config.google.clientSecret
+  socialProviders: {
+    ...(config.google
+      ? {
+          google: {
+            clientId: config.google.clientId,
+            clientSecret: config.google.clientSecret
+          }
         }
-      }
-    : {},
+      : {}),
+    ...(config.apple
+      ? {
+          apple: {
+            clientId: config.apple.clientId,
+            clientSecret: config.apple.clientSecret
+          }
+        }
+      : {})
+  },
   user: {
     additionalFields: {
       role: {

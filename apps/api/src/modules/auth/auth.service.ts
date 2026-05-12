@@ -1,6 +1,6 @@
 import type { IncomingHttpHeaders } from "node:http";
 
-import { Injectable } from "@nestjs/common";
+import { BadRequestException, Injectable, UnauthorizedException } from "@nestjs/common";
 import { fromNodeHeaders } from "better-auth/node";
 
 import { PrismaService } from "../prisma/prisma.service.js";
@@ -20,6 +20,7 @@ export class AuthService {
       provider: "better-auth",
       phase: "active",
       googleEnabled: Boolean(this.config.google),
+      appleEnabled: Boolean(this.config.apple),
       emailRecoveryEnabled: true,
       passwordResetEnabled: true,
       trustedOrigins: this.config.trustedOrigins
@@ -114,6 +115,33 @@ export class AuthService {
       coins: wallet.balance,
       titleCode
     };
+  }
+
+  async updateCurrentProfileName(headers: IncomingHttpHeaders, nameInput?: string) {
+    const session = await this.getSession(headers);
+    if (!session?.user?.id) {
+      throw new UnauthorizedException("Not authenticated");
+    }
+
+    const name = String(nameInput || "")
+      .replace(/[^\p{L}\p{N} _.-]/gu, "")
+      .trim()
+      .slice(0, 24);
+    if (!name) {
+      throw new BadRequestException("Name is required");
+    }
+
+    await this.prisma.user.update({
+      where: { id: session.user.id },
+      data: { name }
+    });
+
+    await this.prisma.player.updateMany({
+      where: { userId: session.user.id },
+      data: { displayName: name }
+    });
+
+    return this.getCurrentProfile(headers);
   }
 
   async mintGameToken(headers: IncomingHttpHeaders) {

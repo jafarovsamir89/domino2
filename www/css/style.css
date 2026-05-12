@@ -921,6 +921,17 @@ input, button { font: inherit; }
     gap: 10px;
 }
 
+.account-legal-copy {
+    margin: 4px 2px 0;
+    font-size: 0.78rem;
+    color: var(--text-dim);
+}
+
+.account-legal-copy a {
+    color: var(--accent);
+    text-decoration: underline;
+}
+
 .btn-social {
     padding: 12px 14px;
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.09), rgba(240, 192, 64, 0.12));
