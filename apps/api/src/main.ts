@@ -16,6 +16,14 @@ async function bootstrap() {
   const expressApp = app.getHttpAdapter().getInstance();
 
   expressApp.set("trust proxy", 1);
+  expressApp.get("/", (_req: Request, res: Response) => {
+    res.status(200).json({
+      service: "domino2-api",
+      status: "ok",
+      health: "/api/health",
+      realtime: "/api/realtime/summary"
+    });
+  });
   expressApp.use((req: Request, res: Response, next: NextFunction) => {
     const origin = req.headers.origin;
     if (!origin || authConfig.trustedOriginSet.has(origin)) {

@@ -28,6 +28,11 @@ class DominoGame {
         this.turnInProgress=false; // Guard against double-turn bug
         this.lastTurnStartTime=0;
         this.aiTurnQueued=false;
+        this._turnCycleId = 0;
+        this._firstTurnTimeout = null;
+        this._aiTurnTimeout = null;
+        this._turnAdvanceTimeout = null;
+        this._dealEndTimeout = null;
         this.network = new NetworkManager(this);
         this.account = new AccountClient(() => this.network.getServerUrl());
         this.accountProfile = this.account.getStoredProfile();
@@ -914,6 +919,17 @@ class DominoGame {
             return `${prefix}-${window.crypto.randomUUID()}`;
         }
         return `${prefix}-${Math.random().toString(36).slice(2)}-${Date.now().toString(36)}`;
+    }
+
+    clearTurnTimers() {
+        clearTimeout(this._firstTurnTimeout);
+        clearTimeout(this._aiTurnTimeout);
+        clearTimeout(this._turnAdvanceTimeout);
+        clearTimeout(this._dealEndTimeout);
+        this._firstTurnTimeout = null;
+        this._aiTurnTimeout = null;
+        this._turnAdvanceTimeout = null;
+        this._dealEndTimeout = null;
     }
 
     ensureStartScreenEnhancements() {
@@ -2511,6 +2527,9 @@ class DominoGame {
 
     startDeal() {
         console.log('[startDeal] Initializing deal...');
+        this._turnCycleId += 1;
+        const turnCycleId = this._turnCycleId;
+        this.clearTurnTimers();
         this.board=new Board(); this.selectedTileIndex=-1; this.roundOver=false; this.gameActive=true; this.turnInProgress=false;
         const all=shuffle(createFullSet()); const hs=getHandSize(this.playerCount);
         this.hands=[]; let idx=0;
@@ -2522,7 +2541,7 @@ class DominoGame {
             this.currentPlayer=fp; this.renderState();
             console.log('[startDeal] Last deal winner starts:', fp);
             this.broadcastMsg(this.format('msg-last-winner-starts', { player: this.playerNames[fp] }),2000);
-            this.queueAITurnIfNeeded(1500);
+            this.queueAITurnIfNeeded(1500, turnCycleId);
         }else{
             const f=determineFirstPlayer(this.hands);
             const fp=f.player; const fi=f.tileIndex;
@@ -2530,7 +2549,11 @@ class DominoGame {
             console.log('[startDeal] First player determined:', fp);
             this.broadcastMsg(this.format('msg-first-turn', { player: this.playerNames[fp] }),2000);
             this.turnInProgress=true;
-            setTimeout(()=>{this.turnInProgress=false;this.playTile(fp,fi,-1);},1200);
+            this._firstTurnTimeout = setTimeout(() => {
+                if (turnCycleId !== this._turnCycleId) return;
+                this.turnInProgress=false;
+                this.playTile(fp,fi,-1);
+            },1200);
         }
     }
 
@@ -3037,9 +3060,9 @@ class DominoGame {
         
         if(score>0){this.addScore(pi,score);if(this.checkEnd(pi,score))return;}
         this.broadcastMsg(this.format('msg-gosha', { player: this.playerNames[pi], count: matches.length, score }),2000);
-        if(hand.length===0){ setTimeout(()=>this.endDeal(pi,false), 400); return;}
-        if(this.board.isBlocked(this.hands,this.boneyard)){ setTimeout(()=>this.endDeal(this.findFishWinner(),true), 400); return;}
-        setTimeout(() => { this.turnInProgress=false; this.advanceTurn(); }, 300);
+        if(hand.length===0){ this._dealEndTimeout = setTimeout(()=>this.endDeal(pi,false), 400); return;}
+        if(this.board.isBlocked(this.hands,this.boneyard)){ this._dealEndTimeout = setTimeout(()=>this.endDeal(this.findFishWinner(),true), 400); return;}
+        this._turnAdvanceTimeout = setTimeout(() => { this.turnInProgress=false; this.advanceTurn(); }, 300);
     }
 
     drawFromBoneyard(fromRemote=false) {
@@ -3093,7 +3116,7 @@ class DominoGame {
         }
         this.turnInProgress=true;
         this.playSound('pass'); this.broadcastMsg(this.t('btn-pass'), 300); 
-        setTimeout(()=>{this.turnInProgress=false;this.advanceTurn();}, 300);
+        this._turnAdvanceTimeout = setTimeout(()=>{this.turnInProgress=false;this.advanceTurn();}, 300);
     }
 
     log(m) {
@@ -3123,6 +3146,7 @@ class DominoGame {
     async playTile(pi,ti,oei) {
         if(this.turnInProgress) return;
         this.turnInProgress=true;
+        const turnCycleId = this._turnCycleId;
         try {
         const hand=this.hands[pi],tile=hand && hand[ti];
         if(!tile){this.turnInProgress=false;return;}
@@ -3149,10 +3173,11 @@ class DominoGame {
         await travelPromise;
         
         if(score>0){this.addScore(pi,score);if(this.checkEnd(pi,score))return;}
-        if(hand.length===0){ setTimeout(()=>this.endDeal(pi,false), 400); return;}
-        if(this.board.isBlocked(this.hands,this.boneyard)){ setTimeout(()=>this.endDeal(this.findFishWinner(),true), 400); return;}
+        if(hand.length===0){ this._dealEndTimeout = setTimeout(()=>{ if (turnCycleId !== this._turnCycleId) return; this.endDeal(pi,false); }, 400); return;}
+        if(this.board.isBlocked(this.hands,this.boneyard)){ this._dealEndTimeout = setTimeout(()=>{ if (turnCycleId !== this._turnCycleId) return; this.endDeal(this.findFishWinner(),true); }, 400); return;}
         
-        setTimeout(() => {
+        this._turnAdvanceTimeout = setTimeout(() => {
+            if (turnCycleId !== this._turnCycleId) return;
             this.turnInProgress=false;
             this.advanceTurn();
         }, sourceRect ? 70 : 300);
@@ -3182,7 +3207,12 @@ class DominoGame {
     queueAITurnIfNeeded(delay) {
         const isAI = this.ais.some(a => a.index === this.currentPlayer);
         if (isAI) {
-            setTimeout(() => this.aiTurn(), delay);
+            const turnCycleId = this._turnCycleId;
+            clearTimeout(this._aiTurnTimeout);
+            this._aiTurnTimeout = setTimeout(() => {
+                if (turnCycleId !== this._turnCycleId) return;
+                this.aiTurn();
+            }, delay);
         }
     }
 
@@ -3194,9 +3224,12 @@ class DominoGame {
 
         const hand = this.hands[pi];
         this.turnInProgress = true;
+        const turnCycleId = this._turnCycleId;
         
         // Thinking delay
-        setTimeout(() => {
+        clearTimeout(this._aiTurnTimeout);
+        this._aiTurnTimeout = setTimeout(() => {
+            if (turnCycleId !== this._turnCycleId) return;
             // Check Gosha combo for AI
             const combo = this.board.getGoshaCombo(hand);
             if (combo) {
