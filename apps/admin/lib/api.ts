@@ -1,4 +1,4 @@
-const fallbackApiUrl = "http://localhost:3000/api";
+const fallbackApiUrl = "https://apid.simplesoft.az/api";
 
 export function getApiBaseUrl() {
   return process.env.NEXT_PUBLIC_API_URL || fallbackApiUrl;

@@ -14,7 +14,34 @@ const app = express();
 global.__DOMINO_ROOM_CODES = global.__DOMINO_ROOM_CODES || new Map();
 global.__DOMINO_ROOM_IDS = global.__DOMINO_ROOM_IDS || new Map();
 
-app.use(cors());
+const allowedOrigins = new Set(
+    [
+        "http://localhost:3000",
+        "http://localhost:3001",
+        "http://localhost:2567",
+        "https://gamed.simplesoft.az",
+        "https://apid.simplesoft.az",
+        "https://admind.simplesoft.az",
+        ...(process.env.ALLOWED_ORIGINS || "")
+            .split(",")
+            .map((value) => value.trim())
+            .filter(Boolean)
+    ]
+);
+
+app.set("trust proxy", 1);
+app.use(cors({
+    origin(origin, callback) {
+        if (!origin || allowedOrigins.has(origin)) {
+            callback(null, true);
+            return;
+        }
+        callback(new Error(`Origin ${origin} is not allowed by CORS`));
+    },
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "Accept", "Origin"]
+}));
 app.use(express.json());
 
 const wwwRoot = path.join(__dirname, "..", "www");

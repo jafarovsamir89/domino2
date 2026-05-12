@@ -8,10 +8,10 @@ if [[ ! -f "$ENV_FILE" ]]; then
   SECRET="$(openssl rand -base64 32)"
   cat > "$ENV_FILE" <<EOF
 BETTER_AUTH_SECRET="$SECRET"
-BETTER_AUTH_URL="http://34.28.23.216"
-PUBLIC_APP_ORIGIN="http://34.28.23.216"
-ADMIN_APP_URL="http://34.28.23.216"
-GAME_WEB_URL="http://34.28.23.216"
+BETTER_AUTH_URL="https://apid.simplesoft.az"
+PUBLIC_APP_ORIGIN="https://gamed.simplesoft.az"
+ADMIN_APP_URL="https://admind.simplesoft.az"
+GAME_WEB_URL="https://gamed.simplesoft.az"
 EOF
 fi
 

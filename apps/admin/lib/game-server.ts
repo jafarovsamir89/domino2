@@ -1,4 +1,4 @@
-const fallbackGameServerUrl = "http://127.0.0.1:2567";
+const fallbackGameServerUrl = "https://gamed.simplesoft.az";
 
 export function getGameServerBaseUrl() {
   return process.env.GAME_SERVER_URL || process.env.NEXT_PUBLIC_GAME_SERVER_URL || fallbackGameServerUrl;

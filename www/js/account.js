@@ -120,12 +120,12 @@ export class AccountClient {
                 return String(window.DOMINO_PLATFORM_API_URL).replace(/\/$/, "");
             }
 
-            const { protocol, hostname } = window.location;
+            const { hostname } = window.location;
             if (hostname === "localhost" || hostname === "127.0.0.1") {
                 return "http://localhost:3000/api";
             }
 
-            return `${protocol}//${hostname}/api`;
+            return "https://apid.simplesoft.az/api";
         } catch {
             return "http://localhost:3000/api";
         }

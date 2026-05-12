@@ -12,7 +12,15 @@ export type GameTokenClaims = {
 };
 
 function getSecret() {
-  return process.env.BETTER_AUTH_SECRET || "change-me";
+  const secret = process.env.BETTER_AUTH_SECRET;
+  if (!secret || ["change-me", "replace-me", "secret", "test"].includes(secret.trim())) {
+    throw new Error(
+      "BETTER_AUTH_SECRET environment variable is required. " +
+        "Generate a random 32+ character secret and set it in .env"
+    );
+  }
+
+  return secret;
 }
 
 function base64UrlEncode(value: string) {

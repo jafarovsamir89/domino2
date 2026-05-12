@@ -686,7 +686,7 @@ class DominoGame {
 
     startGoogleAccountSignIn() {
         const callbackURL = `${window.location.origin}${window.location.pathname}${window.location.search}`;
-        const authOrigin = String(this.account?.platformApiBase || `${window.location.protocol}//${window.location.hostname}/api`)
+        const authOrigin = String(this.account?.platformApiBase || "https://apid.simplesoft.az/api")
             .replace(/\/api\/?$/, "/");
         const googleAuthURL = new URL("/auth/google", authOrigin);
         googleAuthURL.searchParams.set("callbackURL", callbackURL);

@@ -1,4 +1,4 @@
-const fallbackAuthUrl = "http://localhost:3000";
+const fallbackAuthUrl = "https://apid.simplesoft.az";
 
 export function getAuthBaseUrl() {
   return (

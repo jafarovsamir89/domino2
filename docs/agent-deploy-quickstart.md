@@ -72,9 +72,9 @@ npm run deploy:gcloud:git -- -Message "Что было изменено"
 
 3. Проверить в браузере:
 
-- `http://34.28.23.216:2567/` — игра
-- `http://34.28.23.216/api/health` — API
-- `http://34.28.23.216/` — admin
+- `https://gamed.simplesoft.az/` — игра
+- `https://apid.simplesoft.az/api/health` — API
+- `https://admind.simplesoft.az/` — admin
 
 ## Важные замечания
 
@@ -92,10 +92,11 @@ npm run deploy:gcloud:git -- -Message "Что было изменено"
 
 ## Полезные URL
 
-- игра: `http://34.28.23.216:2567/`
-- admin: `http://34.28.23.216/`
-- login: `http://34.28.23.216/login`
-- direct Google auth: `http://34.28.23.216/auth/google`
-- API health: `http://34.28.23.216/api/health`
-- platform status: `http://34.28.23.216/api/platform/status`
+- игра: `https://gamed.simplesoft.az/`
+- admin: `https://admind.simplesoft.az/`
+- login: `https://admind.simplesoft.az/login`
+- direct Google auth: `https://admind.simplesoft.az/auth/google`
+- API health: `https://apid.simplesoft.az/api/health`
+- platform status: `https://admind.simplesoft.az/api/platform/status`
+
 

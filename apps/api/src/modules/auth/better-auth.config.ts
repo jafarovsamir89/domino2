@@ -16,10 +16,14 @@ export interface BetterAuthConfig {
 }
 
 export function getBetterAuthConfig(): BetterAuthConfig {
+  const isProduction = process.env.NODE_ENV === "production";
+  const defaultGameWebUrl = isProduction ? "https://gamed.simplesoft.az" : "http://localhost:2567";
+  const defaultApiUrl = isProduction ? "https://apid.simplesoft.az" : "http://localhost:3000";
+  const defaultAdminUrl = isProduction ? "https://admind.simplesoft.az" : "http://localhost:3001";
   const googleEnabled =
     Boolean(process.env.GOOGLE_CLIENT_ID) &&
     Boolean(process.env.GOOGLE_CLIENT_SECRET);
-  const publicAppOrigin = process.env.PUBLIC_APP_ORIGIN || "http://34.28.23.216";
+  const publicAppOrigin = process.env.PUBLIC_APP_ORIGIN || defaultGameWebUrl;
 
   const normalizeOrigin = (value?: string | null) => {
     if (!value) return null;
@@ -30,24 +34,13 @@ export function getBetterAuthConfig(): BetterAuthConfig {
     }
   };
 
-  const deriveGameOrigin = (value?: string | null) => {
-    if (!value) return null;
-    try {
-      const url = new URL(value);
-      return `${url.protocol}//${url.hostname}:2567`;
-    } catch {
-      return null;
-    }
-  };
-
   const trustedOrigins = Array.from(
     new Set(
       [
         publicAppOrigin,
-        deriveGameOrigin(publicAppOrigin),
-        process.env.ADMIN_APP_URL || "http://localhost:3001",
-        process.env.GAME_WEB_URL || "http://localhost:2567",
-        process.env.BETTER_AUTH_URL || "http://localhost:3000",
+        process.env.ADMIN_APP_URL || defaultAdminUrl,
+        process.env.GAME_WEB_URL || defaultGameWebUrl,
+        process.env.BETTER_AUTH_URL || defaultApiUrl,
         ...(process.env.BETTER_AUTH_TRUSTED_ORIGINS || "")
           .split(",")
           .map((value) => value.trim())
@@ -68,8 +61,18 @@ export function getBetterAuthConfig(): BetterAuthConfig {
   };
 
   return {
-    secret: process.env.BETTER_AUTH_SECRET || "change-me",
-    baseURL: process.env.BETTER_AUTH_URL || "http://localhost:3000",
+    secret:
+      (() => {
+        const secret = process.env.BETTER_AUTH_SECRET;
+        if (!secret || ["change-me", "replace-me", "secret", "test"].includes(secret.trim())) {
+          throw new Error(
+            "BETTER_AUTH_SECRET environment variable is required. " +
+              "Generate a random 32+ character secret and set it in .env"
+          );
+        }
+        return secret;
+      })(),
+    baseURL: process.env.BETTER_AUTH_URL || defaultApiUrl,
     trustedOrigins,
     trustedOriginSet: new Set(trustedOrigins),
     hashPassword,

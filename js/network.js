@@ -40,7 +40,7 @@ class NetworkManager {
     }
 
     getServerUrl() {
-        const fallbackUrl = "http://34.28.23.216:2567";
+        const fallbackUrl = "https://gamed.simplesoft.az";
         if (typeof window === 'undefined') return fallbackUrl;
 
         const override = this.getServerOverride();
@@ -86,7 +86,7 @@ class NetworkManager {
         if (value.startsWith("http://") || value.startsWith("https://")) return value;
         if (value.startsWith("ws://")) return `http://${value.slice("ws://".length)}`;
         if (value.startsWith("wss://")) return `https://${value.slice("wss://".length)}`;
-        return `http://${value}`;
+        return `https://${value}`;
     }
 
     getStoredReconnectionToken() {

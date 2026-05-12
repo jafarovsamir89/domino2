@@ -4,13 +4,18 @@
   "webDir": "www",
   "bundledWebRuntime": false,
   "server": {
-    "androidScheme": "http",
+    "androidScheme": "https",
     "allowNavigation": [
-      "34.28.23.216",
-      "34.28.23.216:2567"
+      "gamed.simplesoft.az",
+      "apid.simplesoft.az",
+      "admind.simplesoft.az",
+      "localhost",
+      "localhost:3000",
+      "localhost:3001",
+      "localhost:2567"
     ]
   },
   "android": {
-    "allowMixedContent": true
+    "allowMixedContent": false
   }
 }
