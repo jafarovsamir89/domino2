@@ -47,6 +47,38 @@
 
             </section>
 
+            <section class="auth-landing-card" id="auth-landing-card">
+                <div class="auth-landing-head">
+                    <p class="section-kicker" data-i18n="account-auth-kicker">Giriş</p>
+                    <h2 data-i18n="account-auth-title">Hesaba daxil ol</h2>
+                    <p class="modal-desc" data-i18n="account-auth-desc">Reytinqin, oyun tarixçən və Google girişi üçün hesabına daxil ol.</p>
+                </div>
+                <div class="auth-landing-actions">
+                    <button class="btn btn-social btn-large auth-provider-btn" id="landing-google-login-btn" type="button">
+                        <span class="auth-icon" aria-hidden="true">G</span>
+                        <span data-i18n="account-google">Google ilə giriş</span>
+                    </button>
+                    <button class="btn btn-social btn-large auth-provider-btn" id="landing-apple-login-btn" type="button">
+                        <span class="auth-icon" aria-hidden="true"></span>
+                        <span data-i18n="account-apple">Apple ID ilə giriş</span>
+                    </button>
+                    <button class="btn btn-action btn-large auth-provider-btn" id="landing-email-toggle-btn" type="button">
+                        <span class="auth-icon" aria-hidden="true">@</span>
+                        <span data-i18n="account-email-continue">Email ilə davam et</span>
+                    </button>
+                </div>
+                <form id="landing-email-form" class="landing-email-form is-hidden">
+                    <input type="email" id="landing-email-input" placeholder="email@domain.com" maxlength="254" required>
+                    <button class="btn btn-primary" id="landing-email-submit-btn" type="submit" data-i18n="account-email-continue">Email ilə davam et</button>
+                </form>
+                <div id="landing-auth-status" class="room-summary"></div>
+                <p class="account-legal-copy">
+                    <span data-i18n="account-legal-prefix">Davam etməklə siz</span>
+                    <a href="terms.html" target="_blank" rel="noopener noreferrer" data-i18n="account-legal-link">İstifadəçi razılaşmasını</a>
+                    <span data-i18n="account-legal-suffix">qəbul edirsiniz.</span>
+                </p>
+            </section>
+
             <div class="start-actions">
                 <button class="btn btn-primary btn-large" id="open-solo-modal-btn" data-i18n="btn-solo">Solo play</button>
                 <button class="btn btn-action btn-large" id="open-online-modal-btn" data-i18n="btn-online">Online</button>

@@ -196,6 +196,79 @@ input, button { font: inherit; }
     grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
+#start-screen.auth-required .start-actions {
+    opacity: 0.25;
+    pointer-events: none;
+    filter: blur(1.5px);
+}
+
+.auth-landing-card {
+    border: 1px solid var(--glass-border);
+    border-radius: 24px;
+    padding: 18px;
+    background:
+        radial-gradient(circle at top left, rgba(240, 192, 64, 0.12), transparent 35%),
+        linear-gradient(180deg, rgba(14, 24, 36, 0.96), rgba(12, 19, 30, 0.92));
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.32);
+    animation: authCardIn .35s ease-out;
+}
+
+@keyframes authCardIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.auth-landing-head h2 {
+    font-size: 1.45rem;
+    line-height: 1.15;
+    margin-bottom: 6px;
+}
+
+.auth-landing-actions {
+    margin-top: 12px;
+    display: grid;
+    gap: 10px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.auth-provider-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.auth-icon {
+    width: 22px;
+    height: 22px;
+    display: inline-grid;
+    place-items: center;
+    border-radius: 8px;
+    font-weight: 800;
+    color: #0f1923;
+    background: linear-gradient(135deg, #ffe39c, #f0c040);
+}
+
+.landing-email-form {
+    margin-top: 12px;
+    display: grid;
+    gap: 10px;
+    grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.landing-email-form input {
+    height: 48px;
+    border-radius: 12px;
+    border: 1px solid var(--glass-border);
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--text);
+    padding: 0 12px;
+}
+
+#landing-auth-status {
+    margin-top: 10px;
+}
+
 .start-actions .btn-large {
     margin-top: 0;
     min-height: 56px;
@@ -1697,6 +1770,14 @@ input, button { font: inherit; }
         grid-template-columns: 1fr;
     }
 
+    .auth-landing-actions {
+        grid-template-columns: 1fr;
+    }
+
+    .landing-email-form {
+        grid-template-columns: 1fr;
+    }
+
     .modal-card,
     .modal-card-wide {
         width: min(100%, 760px);
@@ -1722,6 +1803,11 @@ input, button { font: inherit; }
     .settings-grid,
     .start-actions {
         grid-template-columns: 1fr;
+    }
+
+    .auth-landing-card {
+        padding: 14px;
+        border-radius: 20px;
     }
 
     .field-span-2 {

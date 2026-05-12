@@ -108,6 +108,10 @@ class DominoGame {
         const onlineCreateChoiceBtn = document.getElementById('online-create-choice-btn');
         const onlineConnectChoiceBtn = document.getElementById('online-connect-choice-btn');
         const accountBtn = document.getElementById('account-btn');
+        const landingGoogleBtn = document.getElementById('landing-google-login-btn');
+        const landingAppleBtn = document.getElementById('landing-apple-login-btn');
+        const landingEmailToggleBtn = document.getElementById('landing-email-toggle-btn');
+        const landingEmailForm = document.getElementById('landing-email-form');
         const resumeSessionBtn = document.getElementById('resume-session-btn');
         const soloModalClose = document.getElementById('solo-modal-close');
         const onlineModalClose = document.getElementById('online-modal-close');
@@ -137,6 +141,37 @@ class DominoGame {
         if (openRoomsModalClose) openRoomsModalClose.addEventListener('click', () => this.hideOpenRoomsModal());
         if (accountBtn) accountBtn.addEventListener('click', async () => {
             await this.openAccountModal();
+        });
+        if (landingGoogleBtn) landingGoogleBtn.addEventListener('click', () => this.startGoogleAccountSignIn());
+        if (landingAppleBtn) landingAppleBtn.addEventListener('click', () => this.startAppleAccountSignIn());
+        if (landingEmailToggleBtn) landingEmailToggleBtn.addEventListener('click', () => {
+            landingEmailForm?.classList.toggle('is-hidden');
+            if (!landingEmailForm?.classList.contains('is-hidden')) {
+                document.getElementById('landing-email-input')?.focus?.();
+            }
+        });
+        if (landingEmailForm) landingEmailForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            try {
+                const email = String(document.getElementById('landing-email-input')?.value || '').trim();
+                if (!email) {
+                    this.setAccountStatus(this.t('account-email-required'));
+                    return;
+                }
+                const result = await this.account.continueWithEmail(email);
+                this.accountProfile = result.profile || result.user || null;
+                this.accountDetails = result;
+                this.accountOnline = true;
+                this.prefillAccountNames();
+                this.setAccountMode('profile');
+                this.renderAccountModal();
+                this.syncStartAuthButton();
+                this.syncStartAuthGate();
+                await this.loadAccountProfile();
+                this.renderer.showMessage(this.t('account-login'), 1500);
+            } catch (err) {
+                this.setAccountStatus(err?.message || this.t('login-failed'));
+            }
         });
         if (resumeSessionBtn) resumeSessionBtn.addEventListener('click', async () => {
             await this.resumeSavedSession();
@@ -394,7 +429,8 @@ class DominoGame {
             if (loginEmail) loginEmail.value = '';
             this.renderAccountModal();
             this.syncStartAuthButton();
-            document.getElementById('account-login-email-input')?.focus?.();
+            this.syncStartAuthGate();
+            document.getElementById('landing-email-input')?.focus?.();
         });
 
         document.querySelectorAll('.btn-lang[data-lang]').forEach(btn => {
@@ -408,6 +444,7 @@ class DominoGame {
         this.showStartModal(null);
         this.renderAccountModal();
         this.syncStartAuthButton();
+        this.syncStartAuthGate();
     }
 
     readPlayerName(preferred = 'any') {
@@ -432,12 +469,8 @@ class DominoGame {
         this.syncStartAuthButton();
         this.refreshResumeBanner(null);
         await this.validateStoredResumeSnapshot();
-        if (!this.hasAuthenticatedAccount()) {
-            this.closeStartModals();
-            this.ensureAccountModalPortal();
-            document.getElementById('account-modal')?.classList.add('active');
-            this.setAccountStatus(this.t('account-login-required'));
-        }
+        if (!this.hasAuthenticatedAccount()) this.setAccountStatus(this.t('account-login-required'));
+        this.syncStartAuthGate();
     }
 
     hasAuthenticatedAccount(profile = this.accountProfile) {
@@ -454,11 +487,11 @@ class DominoGame {
         }
         this.accountMode = 'login';
         this.closeStartModals();
-        this.ensureAccountModalPortal();
-        document.getElementById('account-modal')?.classList.add('active');
+        this.syncStartAuthGate();
         this.renderAccountModal();
         this.syncStartAuthButton();
         this.setAccountStatus(this.t(messageKey));
+        document.getElementById('landing-email-input')?.focus?.();
         this.renderer.showMessage(this.t(messageKey), 2200);
         return null;
     }
@@ -506,10 +539,16 @@ class DominoGame {
         this.accountProfile = null;
         this.renderAccountModal();
         this.syncStartAuthButton();
+        this.syncStartAuthGate();
         return null;
     }
 
     async openAccountModal() {
+        if (!this.hasAuthenticatedAccount()) {
+            this.syncStartAuthGate();
+            document.getElementById('landing-email-input')?.focus?.();
+            return;
+        }
         this.closeStartModals();
         this.ensureAccountModalPortal();
         const modal = document.getElementById('account-modal');
@@ -534,6 +573,15 @@ class DominoGame {
     setAccountStatus(text) {
         const el = document.getElementById('account-status');
         if (el) el.textContent = text || '';
+        const landingStatus = document.getElementById('landing-auth-status');
+        if (landingStatus) landingStatus.textContent = text || '';
+    }
+
+    syncStartAuthGate() {
+        const startScreen = document.getElementById('start-screen');
+        if (!startScreen) return;
+        const isAuthed = this.hasAuthenticatedAccount();
+        startScreen.classList.toggle('auth-required', !isAuthed);
     }
 
     syncAccountUiChrome() {
