@@ -500,7 +500,7 @@ export class EconomyService {
     await db.coinLedgerEntry.create({
       data: {
         playerId,
-        type: "consume",
+        type: "spend",
         amount: 0,
         balanceBefore: wallet.balance,
         balanceAfter: updated.balance,

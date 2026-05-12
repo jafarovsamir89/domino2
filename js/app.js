@@ -952,7 +952,7 @@ class DominoGame {
             stakeWrapper.id = 'solo-stake-wrapper';
             const label = document.createElement('label');
             label.dataset.i18n = 'label-stake-table';
-            label.textContent = 'MЙ™rc masasД±';
+            label.textContent = 'M\u0259rc masas\u0131';
             const group = document.createElement('div');
             group.className = 'btn-group';
             group.id = 'solo-stake-group';
@@ -994,14 +994,14 @@ class DominoGame {
         headTitle.textContent = 'Dostlar';
         const headNote = document.createElement('div');
         headNote.className = 'section-note';
-        headNote.textContent = 'SorДџular vЙ™ dЙ™vЙ™tlЙ™r burada gГ¶rГјnГјr.';
+        headNote.textContent = 'Sor\u011fular v\u0259 d\u0259v\u0259tl\u0259r burada g\u00f6r\u00fcn\u00fcr.';
         headCopy.appendChild(headTitle);
         headCopy.appendChild(headNote);
         const refreshBtn = document.createElement('button');
         refreshBtn.className = 'btn btn-menu online-social-refresh';
         refreshBtn.id = 'online-social-refresh-btn';
         refreshBtn.type = 'button';
-        refreshBtn.textContent = 'YenilЙ™';
+        refreshBtn.textContent = 'Yenil\u0259';
         head.appendChild(headCopy);
         head.appendChild(refreshBtn);
         const filters = document.createElement('div');
@@ -1018,10 +1018,10 @@ class DominoGame {
         filters.appendChild(searchInput);
         filters.appendChild(searchBtn);
         const sections = [
-            ['AxtarД±Еџ nЙ™ticЙ™lЙ™ri', 'friend-search-results'],
-            ['Dost sorДџularД±', 'friend-requests-list'],
+            ['Axtar\u0131\u015f n\u0259tic\u0259l\u0259ri', 'friend-search-results'],
+            ['Dost sor\u011fular\u0131', 'friend-requests-list'],
             ['Dostlar', 'friend-list'],
-            ['Otaq dЙ™vЙ™tlЙ™ri', 'room-invites-list']
+            ['Otaq d\u0259v\u0259tl\u0259ri', 'room-invites-list']
         ];
         panel.appendChild(head);
         panel.appendChild(filters);
@@ -2713,7 +2713,7 @@ class DominoGame {
             "summary-lost": { az: "İtirilən", en: "Lost" },
             "summary-net": { az: "Fərq", en: "Net" },
             "label-economy-mode": { az: "Game mode", en: "Game mode" },
-            "label-stake-table": { az: "MЙ™rc masasД±", en: "Stake amount", ru: "РЎС‚Р°РІРєР°" },
+            "label-stake-table": { az: "M\u0259rc masas\u0131", en: "Stake amount", ru: "РЎС‚Р°РІРєР°" },
             "label-stake-short": { az: "Bank", en: "Bank" },
             "economy-free": { az: "Free play", en: "Free play" },
             "economy-coins": { az: "Play on coins", en: "Play on coins" },
@@ -2805,14 +2805,14 @@ class DominoGame {
             "online-room-closed": { az: "Room closed", en: "Room closed" },
             "online-room-summary": { az: "{humans} humans + {bots} AI, {total} total", en: "{humans} humans + {bots} AI, {total} total" },
             "online-bot-slot": { az: "AI {index}", en: "AI {index}" },
-            "resume-session-kicker": { az: "YarД±mГ§Д±q sessiya", en: "Unfinished session", ru: "РќРµР·Р°РІРµСЂС€С‘РЅРЅР°СЏ СЃРµСЃСЃРёСЏ" },
+            "resume-session-kicker": { az: "Yar\u0131m\u00e7\u0131q sessiya", en: "Unfinished session", ru: "РќРµР·Р°РІРµСЂС€С‘РЅРЅР°СЏ СЃРµСЃСЃРёСЏ" },
             "resume-session": { az: "Davam et", en: "Resume", ru: "РџСЂРѕРґРѕР»Р¶РёС‚СЊ" },
-            "resume-session-title": { az: "YarД±mГ§Д±q sessiyanД± davam etdir", en: "Continue your unfinished session", ru: "РџСЂРѕРґРѕР»Р¶РёС‚СЊ РЅРµР·Р°РІРµСЂС€С‘РЅРЅСѓСЋ СЃРµСЃСЃРёСЋ" },
-            "resume-session-desc": { az: "YarД±mda qalan oyunu eyni yerdЙ™n davam etdirЙ™ bilЙ™rsiniz.", en: "You can pick up the game from where you left off.", ru: "РњРѕР¶РЅРѕ РїСЂРѕРґРѕР»Р¶РёС‚СЊ РёРіСЂСѓ СЃ С‚РѕРіРѕ Р¶Рµ РјРµСЃС‚Р°." },
-            "resume-session-online-title": { az: "Onlayn sessiyanД±z yarД±mГ§Д±q qalД±b", en: "Your online session is unfinished", ru: "Р’Р°С€Р° РѕРЅР»Р°Р№РЅ-СЃРµСЃСЃРёСЏ РЅРµ Р·Р°РІРµСЂС€РµРЅР°" },
-            "resume-session-offline-title": { az: "Oyun yarД±mГ§Д±q qalД±b", en: "Your offline game is unfinished", ru: "РРіСЂР° РЅРµ Р·Р°РІРµСЂС€РµРЅР°" },
-            "resume-session-online-desc": { az: "OtaДџa geri qayД±dД±b hЙ™min matГ§Д± davam etdirin.", en: "Reconnect and continue the same match.", ru: "Р’РµСЂРЅРёС‚РµСЃСЊ РІ РєРѕРјРЅР°С‚Сѓ Рё РїСЂРѕРґРѕР»Р¶РёС‚Рµ С‚РѕС‚ Р¶Рµ РјР°С‚С‡." },
-            "resume-session-offline-desc": { az: "YarД±mГ§Д±q oyunu eyni yerdЙ™n davam etdirin.", en: "Resume the game from the same point.", ru: "РџСЂРѕРґРѕР»Р¶РёС‚Рµ РёРіСЂСѓ СЃ С‚РѕРіРѕ Р¶Рµ РјРµСЃС‚Р°." },
+            "resume-session-title": { az: "Yar\u0131m\u00e7\u0131q sessiyan\u0131 davam etdir", en: "Continue your unfinished session", ru: "РџСЂРѕРґРѕР»Р¶РёС‚СЊ РЅРµР·Р°РІРµСЂС€С‘РЅРЅСѓСЋ СЃРµСЃСЃРёСЋ" },
+            "resume-session-desc": { az: "Yar\u0131mda qalan oyunu eyni yerd\u0259n davam etdir\u0259 bil\u0259rsiniz.", en: "You can pick up the game from where you left off.", ru: "РњРѕР¶РЅРѕ РїСЂРѕРґРѕР»Р¶РёС‚СЊ РёРіСЂСѓ СЃ С‚РѕРіРѕ Р¶Рµ РјРµСЃС‚Р°." },
+            "resume-session-online-title": { az: "Onlayn sessiyan\u0131z yar\u0131m\u00e7\u0131q qalıb", en: "Your online session is unfinished", ru: "Р’Р°С€Р° РѕРЅР»Р°Р№РЅ-СЃРµСЃСЃРёСЏ РЅРµ Р·Р°РІРµСЂС€РµРЅР°" },
+            "resume-session-offline-title": { az: "Oyun yar\u0131m\u00e7\u0131q qalıb", en: "Your offline game is unfinished", ru: "РРіСЂР° РЅРµ Р·Р°РІРµСЂС€РµРЅР°" },
+            "resume-session-online-desc": { az: "Ota\u011fa geri qayıdıb həmin matçı davam etdirin.", en: "Reconnect and continue the same match.", ru: "Р’РµСЂРЅРёС‚РµСЃСЊ РІ РєРѕРјРЅР°С‚Сѓ Рё РїСЂРѕРґРѕР»Р¶РёС‚Рµ С‚РѕС‚ Р¶Рµ РјР°С‚С‡." },
+            "resume-session-offline-desc": { az: "Yar\u0131m\u00e7\u0131q oyunu eyni yerd\u0259n davam etdirin.", en: "Resume the game from the same point.", ru: "РџСЂРѕРґРѕР»Р¶РёС‚Рµ РёРіСЂСѓ СЃ С‚РѕРіРѕ Р¶Рµ РјРµСЃС‚Р°." },
             "round-end-next": { az: "Continue", en: "Continue" },
             "new-game-btn": { az: "New game", en: "New game" },
             "summary-title": { az: "Summary", en: "Summary" }

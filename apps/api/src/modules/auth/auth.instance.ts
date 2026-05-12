@@ -15,6 +15,13 @@ export const auth = betterAuth({
   secret: config.secret,
   baseURL: config.baseURL,
   trustedOrigins: config.trustedOrigins,
+  advanced: {
+    crossSubDomainCookies: {
+      enabled: true,
+      domain: "simplesoft.az",
+      additionalCookies: ["session_token", "session_data", "dont_remember", "account_data"]
+    }
+  },
   databaseHooks: {
     user: {
       create: {
