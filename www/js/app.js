@@ -474,8 +474,8 @@ class DominoGame {
     }
 
     hasAuthenticatedAccount(profile = this.accountProfile) {
-        return Boolean(this.account?.getRoomAuthToken?.())
-            && Boolean(profile)
+        return Boolean(profile)
+            && Boolean(profile.userId || profile.id)
             && profile.provider !== 'local-guest'
             && !profile.isGuest;
     }
