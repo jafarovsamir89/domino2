@@ -163,10 +163,7 @@ class DominoGame {
                 this.accountDetails = result;
                 this.accountOnline = true;
                 this.prefillAccountNames();
-                this.setAccountMode('profile');
-                this.renderAccountModal();
-                this.syncStartAuthButton();
-                this.syncStartAuthGate();
+                this.enterAuthenticatedHome(result);
                 void this.loadAccountProfile();
                 this.renderer.showMessage(this.t('account-login'), 1500);
             } catch (err) {
@@ -395,10 +392,7 @@ class DominoGame {
                 this.accountDetails = result;
                 this.accountOnline = true;
                 this.prefillAccountNames();
-                this.setAccountMode('profile');
-                this.renderAccountModal();
-                this.syncStartAuthButton();
-                this.syncStartAuthGate();
+                this.enterAuthenticatedHome(result);
                 void this.loadAccountProfile();
                 this.renderer.showMessage(this.t('account-login'), 1500);
             } catch (err) {
@@ -586,6 +580,24 @@ class DominoGame {
         if (!isAuthed) {
             this.showStartModal(null);
             this.closeAccountModal();
+        }
+    }
+
+    enterAuthenticatedHome(details = null) {
+        if (details) {
+            this.accountDetails = details;
+            this.accountProfile = details.profile || details.user || this.accountProfile || { name: 'Player', provider: 'better-auth' };
+        }
+        this.accountOnline = true;
+        this.accountMode = 'profile';
+        this.closeAccountModal();
+        this.showStartModal(null);
+        this.renderAccountModal();
+        this.syncStartAuthButton();
+        const startScreen = document.getElementById('start-screen');
+        if (startScreen) {
+            startScreen.classList.add('active');
+            startScreen.classList.remove('auth-required');
         }
     }
 
