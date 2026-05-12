@@ -167,7 +167,7 @@ class DominoGame {
                 this.renderAccountModal();
                 this.syncStartAuthButton();
                 this.syncStartAuthGate();
-                await this.loadAccountProfile();
+                void this.loadAccountProfile();
                 this.renderer.showMessage(this.t('account-login'), 1500);
             } catch (err) {
                 this.setAccountStatus(err?.message || this.t('login-failed'));
@@ -398,7 +398,8 @@ class DominoGame {
                 this.setAccountMode('profile');
                 this.renderAccountModal();
                 this.syncStartAuthButton();
-                await this.loadAccountProfile();
+                this.syncStartAuthGate();
+                void this.loadAccountProfile();
                 this.renderer.showMessage(this.t('account-login'), 1500);
             } catch (err) {
                 this.setAccountStatus(err.message || this.t('login-failed'));
@@ -533,12 +534,13 @@ class DominoGame {
             this.setAccountStatus(err.message || this.t('account-server-unavailable'));
         }
 
+        const hadProfile = Boolean(this.accountProfile);
         this.accountOnline = false;
         this.accountDetails = null;
-        this.accountProfile = null;
+        if (!hadProfile) this.accountProfile = null;
         this.renderAccountModal();
         this.syncStartAuthButton();
-        this.syncStartAuthGate();
+        if (!hadProfile) this.syncStartAuthGate();
         return null;
     }
 
