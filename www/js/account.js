@@ -405,6 +405,28 @@ export class AccountClient {
         }
     }
 
+    async getRealtimeSession(sessionId) {
+        const key = String(sessionId || "").trim();
+        if (!key) return null;
+        try {
+            const data = await this.platformRequest(`/realtime/sessions/${encodeURIComponent(key)}`);
+            return data?.item || null;
+        } catch {
+            return null;
+        }
+    }
+
+    async getGameSession(sessionId) {
+        const key = String(sessionId || "").trim();
+        if (!key) return null;
+        try {
+            const data = await this.request(`/api/realtime/sessions/${encodeURIComponent(key)}`);
+            return data?.item || null;
+        } catch {
+            return null;
+        }
+    }
+
     async getOpenRooms(filters = {}) {
         const params = new URLSearchParams();
         const entries = Object.entries(filters || {});

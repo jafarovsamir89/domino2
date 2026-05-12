@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post } from "@nestjs/common";
+import { Body, Controller, Get, Param, Post } from "@nestjs/common";
 
 import { RealtimeService } from "./realtime.service.js";
 
@@ -9,6 +9,11 @@ export class RealtimeController {
   @Get("summary")
   async getSummary() {
     return this.realtimeService.summary();
+  }
+
+  @Get("sessions/:sessionId")
+  async getSession(@Param("sessionId") sessionId: string) {
+    return { item: await this.realtimeService.getSession(sessionId) };
   }
 
   @Post("heartbeat")

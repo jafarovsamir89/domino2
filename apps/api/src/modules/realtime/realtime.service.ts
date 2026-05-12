@@ -156,6 +156,22 @@ async function readRedisPlayers() {
   return players;
 }
 
+async function readRedisSession(sessionId: string) {
+  const client = await getRedisClient();
+  if (!client) return null;
+
+  const key = getSessionKey(sessionId);
+  const raw = await client.get(key).catch(() => null);
+  if (!raw) return null;
+
+  try {
+    return JSON.parse(raw) as RealtimePresenceEntry;
+  } catch (err) {
+    console.warn("[Redis] Skipping malformed platform presence session:", (err as Error).message);
+    return null;
+  }
+}
+
 function isStale(entry: RealtimePresenceEntry) {
   const updatedAt = Date.parse(entry.updatedAt);
   if (!Number.isFinite(updatedAt)) return true;
@@ -164,6 +180,31 @@ function isStale(entry: RealtimePresenceEntry) {
 
 @Injectable()
 export class RealtimeService {
+  async getSession(sessionId: string) {
+    const key = String(sessionId || "").trim();
+    if (!key) return null;
+
+    const store = getStore();
+    const current = store.get(key) || null;
+    if (current && !isStale(current)) {
+      return current;
+    }
+
+    const redisEntry = await readRedisSession(key);
+    if (!redisEntry) {
+      store.delete(key);
+      return null;
+    }
+
+    if (isStale(redisEntry)) {
+      store.delete(key);
+      return null;
+    }
+
+    store.set(key, redisEntry);
+    return redisEntry;
+  }
+
   async heartbeat(payload: Partial<RealtimePresenceEntry>) {
     const sessionId = String(payload.sessionId || "").trim().slice(0, 128);
     if (!sessionId || !/^[a-zA-Z0-9:_-]{4,128}$/.test(sessionId)) {

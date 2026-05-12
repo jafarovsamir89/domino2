@@ -19,6 +19,12 @@ if (redis) {
   });
 }
 
+function isStale(entry) {
+  const updatedAt = Date.parse(entry?.updatedAt || "");
+  if (!Number.isFinite(updatedAt)) return true;
+  return Date.now() - updatedAt > 90_000;
+}
+
 function getStore() {
   const globalRef = globalThis;
   if (!globalRef.__DOMINO_LIVE_PRESENCE) {
@@ -173,6 +179,31 @@ function removeLivePlayer(sessionId) {
   if (!sessionId) return;
   getStore().delete(sessionId);
   void removeEntry(sessionId);
+}
+
+async function getLiveSession(sessionId) {
+  const key = String(sessionId || "").trim();
+  if (!key) return null;
+
+  const store = getStore();
+  const current = store.get(key) || null;
+  if (current && !isStale(current)) {
+    return current;
+  }
+
+  const client = await getRedisClient();
+  if (!client) return null;
+
+  const raw = await client.get(getSessionKey(key)).catch(() => null);
+  if (!raw) return null;
+
+  try {
+    const parsed = JSON.parse(raw);
+    return isStale(parsed) ? null : parsed;
+  } catch (err) {
+    console.warn("[Redis] Skipping malformed live presence session:", err.message);
+    return null;
+  }
 }
 
 function setRoomGameActive(roomId, isPlaying) {
@@ -412,6 +443,7 @@ async function getOpenRooms(filters = {}) {
 module.exports = {
   upsertLivePlayer,
   removeLivePlayer,
+  getLiveSession,
   setRoomGameActive,
   removeRoomPlayers,
   listLivePlayers,

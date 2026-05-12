@@ -6,7 +6,7 @@ const { Server } = require("colyseus");
 const { RedisPresence } = require("@colyseus/redis-presence");
 const { RedisDriver } = require("@colyseus/redis-driver");
 const DominoRoom = require("./DominoRoom");
-const { getLiveSummary, getOpenRooms } = require("./livePresence");
+const { getLiveSummary, getOpenRooms, getLiveSession } = require("./livePresence");
 
 const port = process.env.PORT || 2567;
 const redisUrl = process.env.REDIS_URI || "";
@@ -159,6 +159,17 @@ app.get("/api/realtime/players", async (req, res) => {
         counts: summary.counts,
         rooms: summary.rooms
     });
+});
+
+app.get("/api/realtime/sessions/:sessionId", async (req, res) => {
+    const sessionId = String(req.params.sessionId || "").trim();
+    if (!sessionId) {
+        res.status(400).json({ error: "Missing sessionId" });
+        return;
+    }
+
+    const item = await getLiveSession(sessionId);
+    res.json({ item });
 });
 
 app.get("/api/realtime/rooms", async (req, res) => {

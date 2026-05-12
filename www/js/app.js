@@ -488,7 +488,8 @@ class DominoGame {
         this.prefillAccountNames();
         this.renderAccountModal();
         this.syncStartAuthButton();
-        this.refreshResumeBanner();
+        this.refreshResumeBanner(null);
+        await this.validateStoredResumeSnapshot();
     }
 
     hasAuthenticatedAccount(profile = this.accountProfile) {
@@ -1195,9 +1196,25 @@ class DominoGame {
         };
     }
 
+    isResumeSnapshotEligible(snapshot) {
+        if (!snapshot || typeof snapshot !== 'object') return false;
+        const sessionId = String(snapshot.sessionId || '').trim();
+        if (!sessionId) return false;
+        if (snapshot.kind === 'online') {
+            const roomId = String(snapshot.roomId || '').trim();
+            const token = String(snapshot.reconnectionToken || '').trim();
+            return Boolean(roomId || token);
+        }
+        return true;
+    }
+
     persistGameResumeSnapshot() {
         try {
             const snapshot = this.buildGameResumeSnapshot();
+            if (!this.isResumeSnapshotEligible(snapshot)) {
+                this.clearGameResumeSnapshot();
+                return null;
+            }
             this.account?.setStoredGameResumeState?.(snapshot);
             this.refreshResumeBanner(snapshot);
             return snapshot;
@@ -1213,8 +1230,10 @@ class DominoGame {
         this.refreshResumeBanner(null);
     }
 
-    refreshResumeBanner(snapshot = null) {
-        const state = snapshot || this.account?.getStoredGameResumeState?.();
+    refreshResumeBanner(snapshot = undefined) {
+        const state = snapshot === undefined
+            ? this.account?.getStoredGameResumeState?.()
+            : snapshot;
         const banner = document.getElementById('resume-session-banner');
         const title = document.getElementById('resume-session-title');
         const desc = document.getElementById('resume-session-desc');
@@ -1237,11 +1256,78 @@ class DominoGame {
         }
     }
 
+    async validateStoredResumeSnapshot() {
+        const snapshot = this.account?.getStoredGameResumeState?.();
+        if (!snapshot) {
+            this.refreshResumeBanner(null);
+            return null;
+        }
+
+        const sessionId = String(snapshot.sessionId || '').trim();
+        if (!sessionId) {
+            this.clearGameResumeSnapshot();
+            return null;
+        }
+        const isOnlineSnapshot = snapshot.kind === 'online'
+            || Boolean(String(snapshot.reconnectionToken || '').trim() || String(snapshot.roomId || '').trim());
+
+        try {
+            const session = isOnlineSnapshot
+                ? await this.account?.getGameSession?.(sessionId)
+                : await this.account?.getRealtimeSession?.(sessionId);
+            if (!session) {
+                this.clearGameResumeSnapshot();
+                return null;
+            }
+
+            const sessionRoomId = String(session.roomId || '').trim();
+            const sessionRoomCode = String(session.roomCode || '').trim().toUpperCase();
+            const snapshotRoomId = String(snapshot.roomId || '').trim();
+            const snapshotRoomCode = String(snapshot.roomCode || '').trim().toUpperCase();
+            const expectedLocalRoomId = `local:${sessionId}`;
+
+            if (!isOnlineSnapshot) {
+                if (sessionRoomId !== expectedLocalRoomId) {
+                    this.clearGameResumeSnapshot();
+                    return null;
+                }
+            } else {
+                if (!sessionRoomId) {
+                    this.clearGameResumeSnapshot();
+                    return null;
+                }
+                if (snapshotRoomId && sessionRoomId !== snapshotRoomId) {
+                    this.clearGameResumeSnapshot();
+                    return null;
+                }
+                if (snapshotRoomCode && sessionRoomCode && snapshotRoomCode !== sessionRoomCode) {
+                    this.clearGameResumeSnapshot();
+                    return null;
+                }
+            }
+
+            this.refreshResumeBanner(snapshot);
+            return snapshot;
+        } catch (error) {
+            console.warn('[Resume] Snapshot validation failed, keeping local state', error);
+            this.refreshResumeBanner(snapshot);
+            return snapshot;
+        }
+    }
+
     async resumeSavedSession() {
         const snapshot = this.account?.getStoredGameResumeState?.();
         if (!snapshot) return false;
 
-        if (snapshot.kind === 'online') {
+        const isValid = await this.validateStoredResumeSnapshot();
+        if (!isValid) {
+            this.renderer.showMessage(this.t('session-not-found'), 1800);
+            return false;
+        }
+        const isOnlineSnapshot = snapshot.kind === 'online'
+            || Boolean(String(snapshot.reconnectionToken || '').trim() || String(snapshot.roomId || '').trim());
+
+        if (isOnlineSnapshot) {
             const token = String(snapshot.reconnectionToken || this.network?.getStoredReconnectionToken?.() || '').trim();
             if (!token) {
                 this.clearGameResumeSnapshot();
@@ -1266,7 +1352,7 @@ class DominoGame {
                 return true;
             } catch (error) {
                 console.warn('[Resume] Online session restore failed', error);
-                this.refreshResumeBanner(snapshot);
+                await this.validateStoredResumeSnapshot();
                 this.renderer.showMessage(this.t('session-restore-failed'), 2200);
                 return false;
             }
@@ -2117,7 +2203,7 @@ class DominoGame {
         document.getElementById('start-screen').classList.add('active');
         this.setJoinStatus(reason);
         this.setHostStatus(reason);
-        this.refreshResumeBanner();
+        this.clearGameResumeSnapshot();
     }
 
     onNetworkDisconnected(payload = {}) {
@@ -2141,7 +2227,7 @@ class DominoGame {
 
     onNetworkReconnectFailed(error) {
         console.warn('[Network] Reconnect failed permanently', error);
-        this.refreshResumeBanner();
+        void this.validateStoredResumeSnapshot();
         this.renderer.showMessage(this.t('session-restore-failed'), 2200);
     }
 
