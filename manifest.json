@@ -1,18 +1,18 @@
 {
-    "name": "Домино-Пятерочка",
-    "short_name": "Домино",
-    "description": "Классическое домино Пятерочка с командным режимом и правилами Гоша.",
-    "start_url": "./index.html",
-    "display": "standalone",
-    "orientation": "portrait",
-    "background_color": "#0d1b0e",
-    "theme_color": "#1a472a",
-    "icons": [
-        {
-            "src": "assets/icon.png",
-            "sizes": "512x512",
-            "type": "image/png",
-            "purpose": "any maskable"
-        }
-    ]
+  "name": "Domino Telefon",
+  "short_name": "Domino",
+  "description": "Classic domino game with team mode and Gosha rules.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0d1b0e",
+  "theme_color": "#1a472a",
+  "icons": [
+    {
+      "src": "assets/icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
 }

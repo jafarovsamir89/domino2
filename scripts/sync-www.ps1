@@ -3,6 +3,13 @@ $ErrorActionPreference = "Stop"
 $root = Split-Path -Parent $PSScriptRoot
 $www = Join-Path $root "www"
 
+Push-Location $root
+try {
+    node scripts/check-mojibake.mjs
+} finally {
+    Pop-Location
+}
+
 if (-not (Test-Path $www)) {
     New-Item -ItemType Directory -Path $www | Out-Null
 }
