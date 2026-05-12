@@ -825,9 +825,19 @@ class DominoGame {
         return false;
     }
 
+    getActivePresenceSessionId() {
+        if (this.network.isMultiplayer) {
+            return String(this.network?.room?.sessionId || "").trim();
+        }
+        return String(this.currentMatchSessionId || "").trim();
+    }
+
     async syncLocalPresence(force = false) {
         if (this.network.isMultiplayer) return;
-        const localSessionId = this.account?.getOrCreateLocalGameSessionId?.() || this.accountProfile?.sessionId || "";
+        const localSessionId = this.getActivePresenceSessionId()
+            || this.account?.getOrCreateLocalGameSessionId?.()
+            || this.accountProfile?.sessionId
+            || "";
         if (!this.gameActive && !this.roundOver && !this.matchOver) {
             if (!this.localPresenceClearQueued) {
                 this.localPresenceClearQueued = true;
@@ -865,7 +875,10 @@ class DominoGame {
         this.localPresenceLastSentAt = 0;
         this.localPresenceClearQueued = false;
         if (this.network.isMultiplayer) return;
-        const localSessionId = this.account?.getOrCreateLocalGameSessionId?.() || this.accountProfile?.sessionId || "";
+        const localSessionId = this.getActivePresenceSessionId()
+            || this.account?.getOrCreateLocalGameSessionId?.()
+            || this.accountProfile?.sessionId
+            || "";
         await this.account.sendLocalGameHeartbeat({
             sessionId: localSessionId,
             displayName: this.accountProfile?.name || this.playerName || "Player",
