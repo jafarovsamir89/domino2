@@ -106,11 +106,11 @@ class NetworkManager {
         const isLocalHost = (hostname) => hostname === 'localhost' || hostname === '127.0.0.1';
         const normalizeFromUrl = (input) => {
             const parsed = new URL(input);
-            if ((parsed.protocol === 'http:' || parsed.protocol === 'ws:') && !isLocalHost(parsed.hostname)) {
-                parsed.protocol = 'https:';
-            }
             if (parsed.protocol === 'ws:') parsed.protocol = 'http:';
             if (parsed.protocol === 'wss:') parsed.protocol = 'https:';
+            if (parsed.protocol === 'http:' && !isLocalHost(parsed.hostname)) {
+                parsed.protocol = 'https:';
+            }
             return parsed.toString();
         };
 
@@ -201,12 +201,12 @@ class NetworkManager {
         const endpoint = this.getServerUrl().replace(/\/$/, '');
         try {
             const response = await fetch(`${endpoint}/room-id/${encodeURIComponent(roomCode)}`);
-            if (!response.ok) return roomCode;
+            if (!response.ok) return null;
             const data = await response.json();
-            return data?.roomId || roomCode;
+            return data?.roomId || null;
         } catch (e) {
             console.warn('Failed to resolve room code:', e);
-            return roomCode;
+            return null;
         }
     }
 
@@ -242,6 +242,9 @@ class NetworkManager {
                 room = await this.client.create("domino", options);
             } else {
                 const resolvedRoomId = await this.resolveRoomId(roomId);
+                if (!resolvedRoomId) {
+                    throw new Error('Room not found or server unavailable');
+                }
                 room = await this.client.joinById(resolvedRoomId, options);
             }
 

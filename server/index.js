@@ -14,6 +14,27 @@ const app = express();
 global.__DOMINO_ROOM_CODES = global.__DOMINO_ROOM_CODES || new Map();
 global.__DOMINO_ROOM_IDS = global.__DOMINO_ROOM_IDS || new Map();
 
+function createRateLimiter(limit, windowMs) {
+    const buckets = new Map();
+    return (req, res, next) => {
+        const now = Date.now();
+        const key = `${req.ip}:${req.path}`;
+        const current = buckets.get(key);
+        if (!current || current.resetAt <= now) {
+            buckets.set(key, { count: 1, resetAt: now + windowMs });
+            next();
+            return;
+        }
+        if (current.count >= limit) {
+            res.setHeader("Retry-After", Math.ceil((current.resetAt - now) / 1000));
+            res.status(429).json({ error: "Too many requests" });
+            return;
+        }
+        current.count += 1;
+        next();
+    };
+}
+
 const allowedOrigins = new Set(
     [
         "http://localhost:3000",
@@ -42,7 +63,8 @@ app.use(cors({
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization", "Accept", "Origin"]
 }));
-app.use(express.json());
+app.use(createRateLimiter(300, 60 * 1000));
+app.use(express.json({ limit: "100kb" }));
 
 const wwwRoot = path.join(__dirname, "..", "www");
 app.use(express.static(wwwRoot, {
@@ -100,7 +122,7 @@ app.post("/api/matches", (req, res) => {
 
 app.get("/room-id/:code", (req, res) => {
     const code = String(req.params.code || "").trim().toUpperCase();
-    if (!code) {
+    if (!code || !/^[A-Z2-9]{4,12}$/.test(code)) {
         res.status(400).json({ error: "Missing code" });
         return;
     }
@@ -114,7 +136,7 @@ app.get("/room-id/:code", (req, res) => {
 
 app.get("/room-code/:roomId", (req, res) => {
     const roomId = String(req.params.roomId || "").trim();
-    if (!roomId) {
+    if (!roomId || roomId.length > 128) {
         res.status(400).json({ error: "Missing roomId" });
         return;
     }

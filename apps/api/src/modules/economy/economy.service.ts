@@ -195,6 +195,36 @@ export class EconomyService {
     });
   }
 
+  private async getLockedWallet(db: EconomyTx, playerId: string) {
+    await this.ensureWallet(db, playerId);
+    const rows = await db.$queryRaw<Array<{
+      id: string;
+      playerId: string;
+      balance: number;
+      reserved: number;
+      lifetimeEarned: number;
+      lifetimeSpent: number;
+    }>>(Prisma.sql`
+      SELECT
+        "id",
+        "playerId",
+        "balance",
+        "reserved",
+        "lifetimeEarned",
+        "lifetimeSpent"
+      FROM "CoinWallet"
+      WHERE "playerId" = ${playerId}
+      FOR UPDATE
+    `);
+
+    const wallet = rows[0];
+    if (!wallet) {
+      throw new BadRequestException("Wallet not found");
+    }
+
+    return wallet;
+  }
+
   private async findOrCreatePlayerByIdentity(
     db: EconomyTx,
     participant: StakeParticipant,
@@ -248,12 +278,16 @@ export class EconomyService {
       return this.ensureWallet(db, playerId);
     }
 
-    const wallet = await this.ensureWallet(db, playerId);
+    const wallet = await this.getLockedWallet(db, playerId);
     const updated = await db.coinWallet.update({
       where: { playerId },
       data: {
-        balance: wallet.balance + nextAmount,
-        lifetimeEarned: wallet.lifetimeEarned + nextAmount
+        balance: {
+          increment: nextAmount
+        },
+        lifetimeEarned: {
+          increment: nextAmount
+        }
       }
     });
 
@@ -292,7 +326,7 @@ export class EconomyService {
       return this.ensureWallet(db, playerId);
     }
 
-    const wallet = await this.ensureWallet(db, playerId);
+    const wallet = await this.getLockedWallet(db, playerId);
     if (wallet.balance < nextAmount) {
       throw new BadRequestException("Insufficient balance");
     }
@@ -300,8 +334,12 @@ export class EconomyService {
     const updated = await db.coinWallet.update({
       where: { playerId },
       data: {
-        balance: wallet.balance - nextAmount,
-        lifetimeSpent: wallet.lifetimeSpent + nextAmount
+        balance: {
+          decrement: nextAmount
+        },
+        lifetimeSpent: {
+          increment: nextAmount
+        }
       }
     });
 
@@ -339,7 +377,7 @@ export class EconomyService {
       return this.ensureWallet(db, playerId);
     }
 
-    const wallet = await this.ensureWallet(db, playerId);
+    const wallet = await this.getLockedWallet(db, playerId);
     if (wallet.balance < nextAmount) {
       throw new BadRequestException("Insufficient balance");
     }
@@ -347,8 +385,12 @@ export class EconomyService {
     const updated = await db.coinWallet.update({
       where: { playerId },
       data: {
-        balance: wallet.balance - nextAmount,
-        reserved: wallet.reserved + nextAmount
+        balance: {
+          decrement: nextAmount
+        },
+        reserved: {
+          increment: nextAmount
+        }
       }
     });
 
@@ -387,7 +429,7 @@ export class EconomyService {
       return this.ensureWallet(db, playerId);
     }
 
-    const wallet = await this.ensureWallet(db, playerId);
+    const wallet = await this.getLockedWallet(db, playerId);
     if (wallet.reserved < nextAmount) {
       throw new BadRequestException("Reserved balance is too small");
     }
@@ -395,8 +437,12 @@ export class EconomyService {
     const updated = await db.coinWallet.update({
       where: { playerId },
       data: {
-        balance: wallet.balance + nextAmount,
-        reserved: wallet.reserved - nextAmount
+        balance: {
+          increment: nextAmount
+        },
+        reserved: {
+          decrement: nextAmount
+        }
       }
     });
 
@@ -434,7 +480,7 @@ export class EconomyService {
       return this.ensureWallet(db, playerId);
     }
 
-    const wallet = await this.ensureWallet(db, playerId);
+    const wallet = await this.getLockedWallet(db, playerId);
     if (wallet.reserved < nextAmount) {
       throw new BadRequestException("Reserved balance is too small");
     }
@@ -442,8 +488,12 @@ export class EconomyService {
     const updated = await db.coinWallet.update({
       where: { playerId },
       data: {
-        reserved: wallet.reserved - nextAmount,
-        lifetimeSpent: wallet.lifetimeSpent + nextAmount
+        reserved: {
+          decrement: nextAmount
+        },
+        lifetimeSpent: {
+          increment: nextAmount
+        }
       }
     });
 

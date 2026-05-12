@@ -73,16 +73,22 @@ function normalizeEntry(
   current: Partial<RealtimePresenceEntry>,
   payload: Partial<RealtimePresenceEntry>
 ): RealtimePresenceEntry {
+  const provider = String(payload.provider || current.provider || "guest").trim().toLowerCase();
+  const gameMode = String(payload.gameMode || current.gameMode || "solo").trim().toLowerCase();
+  const source = String(payload.source || current.source || "client-local").trim().slice(0, 32) || "client-local";
+  const roomCode = payload.roomCode === undefined ? current.roomCode || null : String(payload.roomCode || "").trim().toUpperCase().slice(0, 16) || null;
+  const roomId = payload.roomId === undefined ? current.roomId || null : String(payload.roomId || "").trim().slice(0, 128) || null;
+
   return {
     sessionId,
-    provider: String(payload.provider || current.provider || "guest"),
+    provider: provider === "platform" ? "platform" : "guest",
     displayName: String(payload.displayName || current.displayName || "Player").slice(0, 32),
-    roomId: payload.roomId === undefined ? current.roomId || null : payload.roomId || null,
-    roomCode: payload.roomCode === undefined ? current.roomCode || null : payload.roomCode || null,
-    gameMode: String(payload.gameMode || current.gameMode || "solo"),
+    roomId,
+    roomCode,
+    gameMode: gameMode === "team" ? "team" : "solo",
     isPlaying: payload.isPlaying === undefined ? current.isPlaying ?? false : Boolean(payload.isPlaying),
     isConnected: payload.isConnected === undefined ? current.isConnected ?? false : Boolean(payload.isConnected),
-    source: String(payload.source || current.source || "client-local"),
+    source,
     updatedAt: new Date().toISOString()
   };
 }
@@ -159,8 +165,8 @@ function isStale(entry: RealtimePresenceEntry) {
 @Injectable()
 export class RealtimeService {
   async heartbeat(payload: Partial<RealtimePresenceEntry>) {
-    const sessionId = String(payload.sessionId || "").trim();
-    if (!sessionId) {
+    const sessionId = String(payload.sessionId || "").trim().slice(0, 128);
+    if (!sessionId || !/^[a-zA-Z0-9:_-]{4,128}$/.test(sessionId)) {
       return null;
     }
 

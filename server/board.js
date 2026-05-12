@@ -169,7 +169,8 @@ class Board {
                 sum += n.tile.isDouble ? (n.tile.a + n.tile.b) : oe.value;
             }
         }
-        if (hasCrossEnd) sum += 2 * this.nodes[this.crossNodeId].tile.a;
+        const crossNode = this.crossNodeId === null ? null : this.nodes[this.crossNodeId];
+        if (hasCrossEnd && crossNode?.tile) sum += 2 * crossNode.tile.a;
         return sum;
     }
 

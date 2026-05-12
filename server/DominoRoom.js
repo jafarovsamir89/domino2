@@ -37,7 +37,10 @@ function generateRoomCode() {
 }
 
 function sanitizeName(name) {
-    return String(name || "Player").replace(/[<>&"']/g, "").trim().slice(0, 12) || "Player";
+    return String(name || "Player")
+        .replace(/[^\p{L}\p{N} _.-]/gu, "")
+        .trim()
+        .slice(0, 24) || "Player";
 }
 
 class DominoRoom extends Room {
@@ -90,6 +93,7 @@ class DominoRoom extends Room {
         this.identityBySessionId = new Map();
         this.lastRoundEconomySummary = null;
         this.restoredFromSnapshot = false;
+        this.matchFinished = false;
 
         if (restoreSnapshot) {
             this.applyCustomStateSnapshot(restoreSnapshot);
@@ -385,6 +389,7 @@ class DominoRoom extends Room {
         this.state.matchRound = 1;
         this.state.deal = 1;
         this.matchRecorded = false;
+        this.matchFinished = false;
         this.forfeitSettlementMade = false;
         this.pendingEconomySettlement = Promise.resolve();
         this.currentDealMatchId = "";
@@ -970,8 +975,6 @@ class DominoRoom extends Room {
         hand.splice(tileIndex, 1);
         this.broadcast("sound", "place");
 
-        const actor = this.state.players.get(this.state.playerOrder[pi]);
-        const actorName = actor ? actor.name : "Player";
         let score = this.internalBoard.isEmpty ? this.internalBoard.placeFirst(tile) : this.internalBoard.placeTile(tile, openEndIndex);
 
         if (score > 0) this.addScore(pi, score);
@@ -1077,6 +1080,7 @@ class DominoRoom extends Room {
     handleNextDeal(client) {
         // Only proceed if game is not active (waiting for next deal)
         if (this.state.gameActive) return;
+        if (this.matchFinished) return;
         // Debounce to prevent one player from skipping results for others
         if (this._lastNextDealAt && Date.now() - this._lastNextDealAt < 1500) return;
         this._lastNextDealAt = Date.now();
@@ -1137,7 +1141,7 @@ class DominoRoom extends Room {
         }
         let min = Infinity, w = 0;
         for (let i = 0; i < this.totalPlayers; i++) {
-            const p = handPoints(this.hands[i]);
+            const p = handPoints(this.hands[i] || []);
             if (p < min) { min = p; w = i; }
         }
         return w;
@@ -1250,6 +1254,7 @@ class DominoRoom extends Room {
         });
 
         if (isMatchOver) {
+            this.matchFinished = true;
             this.recordMatchResult(wi, !!isInstantWin, playerData, wins);
         }
 

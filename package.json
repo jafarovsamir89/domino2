@@ -10,7 +10,7 @@
   ],
   "scripts": {
     "sync:www": "powershell -ExecutionPolicy Bypass -File ./scripts/sync-www.ps1",
-    "cap:copy": "npx cap copy android",
+    "cap:copy": "npm run sync:www && npx cap copy android",
     "apk:debug": "powershell -ExecutionPolicy Bypass -File ./scripts/build-apk.ps1",
     "platform:db": "docker compose -f docker-compose.platform.yml up -d",
     "platform:api:dev": "npm run dev -w @domino2/api",
@@ -23,7 +23,7 @@
     "deploy:gcloud:legacy": "powershell -ExecutionPolicy Bypass -File ./scripts/gcloud/update-server.ps1 -LegacyOnly",
     "deploy:gcloud:git": "powershell -ExecutionPolicy Bypass -File ./scripts/gcloud/deploy-from-ide.ps1",
     "deploy:gcloud:google": "powershell -ExecutionPolicy Bypass -File ./scripts/gcloud/import-google-oauth.ps1",
-    "check": "node --check js/account.js && node --check js/app.js && node --check js/network.js && node --check www/js/app.js && node --check www/js/renderer.js && node --check www/js/board.js && node --check www/js/ai.js && node --check www/js/model.js && node --check www/js/sounds.js && node --check www/js/network.js",
+    "check": "npm run sync:www && node --check js/account.js && node --check js/app.js && node --check js/network.js && node --check www/js/app.js && node --check www/js/renderer.js && node --check www/js/board.js && node --check www/js/ai.js && node --check www/js/model.js && node --check www/js/sounds.js && node --check www/js/network.js",
     "test": "npm run check"
   },
   "keywords": [],

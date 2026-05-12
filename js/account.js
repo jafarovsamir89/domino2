@@ -13,7 +13,10 @@ function safeJsonParse(value) {
 }
 
 function sanitizeName(value) {
-    return String(value || "Player").replace(/[<>&"']/g, "").trim().slice(0, 24) || "Player";
+    return String(value || "Player")
+        .replace(/[^\p{L}\p{N} _.-]/gu, "")
+        .trim()
+        .slice(0, 24) || "Player";
 }
 
 function sanitizeEmail(value, fallbackName = "player") {
@@ -262,6 +265,7 @@ export class AccountClient {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 6000);
         try {
+            const method = String(options.method || "GET").toUpperCase();
             const response = await fetch(`${this.apiBase}${path}`, {
                 headers: {
                     "Content-Type": "application/json",
@@ -269,7 +273,9 @@ export class AccountClient {
                 },
                 ...options,
                 signal: controller.signal,
-                body: options.body ? JSON.stringify(options.body) : undefined
+                body: options.body && method !== "GET" && method !== "HEAD"
+                    ? JSON.stringify(options.body)
+                    : undefined
             });
             const data = await response.json().catch(() => ({}));
             if (!response.ok) {
@@ -290,6 +296,7 @@ export class AccountClient {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 6000);
         try {
+            const method = String(options.method || "GET").toUpperCase();
             const response = await fetch(`${this.platformApiBase}${path}`, {
                 headers: {
                     "Content-Type": "application/json",
@@ -298,7 +305,9 @@ export class AccountClient {
                 credentials: "include",
                 ...options,
                 signal: controller.signal,
-                body: options.body ? JSON.stringify(options.body) : undefined
+                body: options.body && method !== "GET" && method !== "HEAD"
+                    ? JSON.stringify(options.body)
+                    : undefined
             });
             const data = await response.json().catch(() => ({}));
             if (!response.ok) {

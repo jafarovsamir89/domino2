@@ -34,6 +34,22 @@ export function getBetterAuthConfig(): BetterAuthConfig {
     }
   };
 
+  const ensureSecureUrl = (label: string, value: string) => {
+    let parsed: URL;
+    try {
+      parsed = new URL(value);
+    } catch {
+      throw new Error(`${label} must be a valid absolute URL`);
+    }
+
+    const isLocal = parsed.hostname === "localhost" || parsed.hostname === "127.0.0.1";
+    if (isProduction && !isLocal && parsed.protocol !== "https:") {
+      throw new Error(`${label} must use HTTPS in production`);
+    }
+
+    return parsed.toString().replace(/\/$/, "");
+  };
+
   const trustedOrigins = Array.from(
     new Set(
       [
@@ -60,6 +76,9 @@ export function getBetterAuthConfig(): BetterAuthConfig {
     return verifyBuiltInPassword({ hash, password });
   };
 
+  const baseURL = ensureSecureUrl("BETTER_AUTH_URL", process.env.BETTER_AUTH_URL || defaultApiUrl);
+  const normalizedTrustedOrigins = trustedOrigins.map((origin) => ensureSecureUrl("trusted origin", origin));
+
   return {
     secret:
       (() => {
@@ -72,9 +91,9 @@ export function getBetterAuthConfig(): BetterAuthConfig {
         }
         return secret;
       })(),
-    baseURL: process.env.BETTER_AUTH_URL || defaultApiUrl,
-    trustedOrigins,
-    trustedOriginSet: new Set(trustedOrigins),
+    baseURL,
+    trustedOrigins: normalizedTrustedOrigins,
+    trustedOriginSet: new Set(normalizedTrustedOrigins),
     hashPassword,
     verifyPassword,
     google: googleEnabled
