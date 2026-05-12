@@ -1283,11 +1283,21 @@ class DominoGame {
         }
         const isOnlineSnapshot = snapshot.kind === 'online'
             || Boolean(String(snapshot.reconnectionToken || '').trim() || String(snapshot.roomId || '').trim());
+        const createdAtTs = Date.parse(String(snapshot.createdAt || ""));
+        const snapshotAgeMs = Number.isFinite(createdAtTs) ? Date.now() - createdAtTs : Infinity;
+        const maxSoloSnapshotAgeMs = 12 * 60 * 60 * 1000;
+
+        if (!isOnlineSnapshot) {
+            if (!Number.isFinite(createdAtTs) || snapshotAgeMs > maxSoloSnapshotAgeMs) {
+                this.clearGameResumeSnapshot();
+                return null;
+            }
+            this.refreshResumeBanner(snapshot);
+            return snapshot;
+        }
 
         try {
-            const session = isOnlineSnapshot
-                ? await this.account?.getGameSession?.(sessionId)
-                : await this.account?.getRealtimeSession?.(sessionId);
+            const session = await this.account?.getGameSession?.(sessionId);
             if (!session) {
                 this.clearGameResumeSnapshot();
                 return null;
@@ -1297,26 +1307,17 @@ class DominoGame {
             const sessionRoomCode = String(session.roomCode || '').trim().toUpperCase();
             const snapshotRoomId = String(snapshot.roomId || '').trim();
             const snapshotRoomCode = String(snapshot.roomCode || '').trim().toUpperCase();
-            const expectedLocalRoomId = `local:${sessionId}`;
-
-            if (!isOnlineSnapshot) {
-                if (sessionRoomId !== expectedLocalRoomId) {
-                    this.clearGameResumeSnapshot();
-                    return null;
-                }
-            } else {
-                if (!sessionRoomId) {
-                    this.clearGameResumeSnapshot();
-                    return null;
-                }
-                if (snapshotRoomId && sessionRoomId !== snapshotRoomId) {
-                    this.clearGameResumeSnapshot();
-                    return null;
-                }
-                if (snapshotRoomCode && sessionRoomCode && snapshotRoomCode !== sessionRoomCode) {
-                    this.clearGameResumeSnapshot();
-                    return null;
-                }
+            if (!sessionRoomId) {
+                this.clearGameResumeSnapshot();
+                return null;
+            }
+            if (snapshotRoomId && sessionRoomId !== snapshotRoomId) {
+                this.clearGameResumeSnapshot();
+                return null;
+            }
+            if (snapshotRoomCode && sessionRoomCode && snapshotRoomCode !== sessionRoomCode) {
+                this.clearGameResumeSnapshot();
+                return null;
             }
 
             this.refreshResumeBanner(snapshot);
@@ -1430,6 +1431,7 @@ class DominoGame {
             return true;
         } catch (error) {
             console.warn('[Resume] Solo session restore failed', error);
+            this.clearGameResumeSnapshot();
             return false;
         }
     }
