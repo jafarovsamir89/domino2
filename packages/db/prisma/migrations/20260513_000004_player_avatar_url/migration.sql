@@ -1,0 +1,2 @@
+ALTER TABLE "player"
+ADD COLUMN IF NOT EXISTS "avatarUrl" TEXT;

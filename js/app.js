@@ -12,8 +12,9 @@ const TARGET=365, MAX_R=3, DLOSS=255, IWIN=35;
 const AUTH_ICON_SVGS = {
     google: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" aria-hidden="true"><path fill="#FFC107" d="M43.611 20.083H42V20H24v8h10.27A10.99 10.99 0 0 1 24 38c-7.732 0-14-6.268-14-14s6.268-14 14-14c3.468 0 6.642 1.272 9.074 3.368l5.657-5.657C35.886 3.765 30.279 1.5 24 1.5 11.574 1.5 1.5 11.574 1.5 24S11.574 46.5 24 46.5 46.5 36.426 46.5 24c0-1.44-.135-2.847-.389-3.917z"/><path fill="#EA4335" d="M6.306 14.691l6.571 4.819C14.655 15.108 18.961 12 24 12c3.468 0 6.642 1.272 9.074 3.368l5.657-5.657C35.886 3.765 30.279 1.5 24 1.5c-7.79 0-14.63 4.29-17.694 11.191z"/><path fill="#34A853" d="M24 46.5c6.109 0 11.64-2.339 15.82-6.156l-6.255-5.286C31.249 37.014 27.835 38 24 38c-5.984 0-11.033-3.87-12.85-9.238l-6.52 5.025C8.254 41.98 15.64 46.5 24 46.5z"/><path fill="#4285F4" d="M43.611 20.083H42V20H24v8h10.27a11.04 11.04 0 0 1-4.34 4.353l.003-.002 6.255 5.286C35.607 39.57 41 35 41 24c0-1.44-.135-2.847-.389-3.917z"/></svg>`,
     apple: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 814 1000" aria-hidden="true"><path fill="#fff" d="M788.1 340.9c-5.8 4.5-108.2 62.2-108.2 190.5 0 148.4 130.3 200.9 134.2 202.2-.6 3.2-20.7 71.9-68.7 141.9-42.8 61.6-87.5 123.1-155.5 123.1s-85.5-39.5-164-39.5c-76.5 0-103.7 40.8-165.9 40.8s-105.6-57-155.5-127C46.7 790.7 0 663 0 541.8c0-194.4 126.4-297.5 250.8-297.5 66.1 0 121.2 43.4 162.7 43.4 39.5 0 101.1-46 176.3-46 28.5 0 130.9 2.6 198.3 99.2zm-234-181.5c31.1-36.9 53.1-88.1 53.1-139.3 0-7.1-.6-14.3-1.9-20.1-50.6 1.9-110.8 33.7-147.1 75.8-28.5 32.4-55.1 83.6-55.1 135.5 0 7.8 1.3 15.6 1.9 18.1 3.2.6 8.4 1.3 13.6 1.3 45.4 0 102.5-30.4 135.5-71.3z"/></svg>`,
-    email: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 6.75A2.75 2.75 0 0 1 6.75 4h10.5A2.75 2.75 0 0 1 20 6.75v10.5A2.75 2.75 0 0 1 17.25 20H6.75A2.75 2.75 0 0 1 4 17.25V6.75Z" stroke="#0f1923" stroke-width="1.8"/><path d="m5.5 7.5 6.5 5 6.5-5" stroke="#0f1923" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
-    pencil: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m14.5 5.5 4 4L8 20H4v-4L14.5 5.5Z" stroke="#0f1923" stroke-width="1.8" stroke-linejoin="round"/><path d="m13 7 4 4" stroke="#0f1923" stroke-width="1.8" stroke-linecap="round"/></svg>`
+    email: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 6.75A2.75 2.75 0 0 1 6.75 4h10.5A2.75 2.75 0 0 1 20 6.75v10.5A2.75 2.75 0 0 1 17.25 20H6.75A2.75 2.75 0 0 1 4 17.25V6.75Z" stroke="currentColor" stroke-width="1.8"/><path d="m5.5 7.5 6.5 5 6.5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+    pencil: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m14.5 5.5 4 4L8 20H4v-4L14.5 5.5Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="m13 7 4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>`,
+    camera: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M8.5 6.75 9.86 5h4.28l1.36 1.75H18A2.25 2.25 0 0 1 20.25 9v7A2.25 2.25 0 0 1 18 18.25H6A2.25 2.25 0 0 1 3.75 16V9A2.25 2.25 0 0 1 6 6.75h2.5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M12 15a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z" stroke="currentColor" stroke-width="1.6"/></svg>`
 };
 
 class DominoGame {
@@ -50,6 +51,9 @@ class DominoGame {
         this.accountDetails = null;
         this.accountOnline = false;
         this.accountMode = 'login';
+        this.pendingAvatarMode = 'keep';
+        this.pendingAvatarDataUrl = null;
+        this.pendingAvatarProfile = null;
         this.localPresenceLastSentAt = 0;
         this.localPresenceClearQueued = false;
         this.currentLang = this.loadSavedLanguage();
@@ -389,10 +393,13 @@ class DominoGame {
         const googleLoginBtn = document.getElementById('google-login-btn');
         const appleLoginBtn = document.getElementById('apple-login-btn');
         const editNameBtn = document.getElementById('account-edit-name-btn');
+        const editAvatarBtn = document.getElementById('account-edit-avatar-btn');
         const refreshAccountBtn = document.getElementById('account-refresh-btn');
         const logoutAccountBtn = document.getElementById('account-logout-btn');
         const nameModalCloseBtn = document.getElementById('account-name-modal-close');
         const nameModalCancelBtn = document.getElementById('account-name-modal-cancel');
+        const avatarModalCloseBtn = document.getElementById('account-avatar-modal-close');
+        const avatarModalCancelBtn = document.getElementById('account-avatar-modal-cancel');
 
         if (loginForm) loginForm.addEventListener('submit', async (event) => {
             event.preventDefault();
@@ -426,6 +433,7 @@ class DominoGame {
             await this.loadAccountProfile();
         });
         if (editNameBtn) editNameBtn.addEventListener('click', () => this.openNameEditModal());
+        if (editAvatarBtn) editAvatarBtn.addEventListener('click', () => this.openAvatarEditModal());
         if (logoutAccountBtn) logoutAccountBtn.addEventListener('click', async () => {
             await this.account.logout();
             this.accountProfile = null;
@@ -442,9 +450,15 @@ class DominoGame {
         });
         if (nameModalCloseBtn) nameModalCloseBtn.addEventListener('click', () => this.closeNameEditModal());
         if (nameModalCancelBtn) nameModalCancelBtn.addEventListener('click', () => this.closeNameEditModal());
+        if (avatarModalCloseBtn) avatarModalCloseBtn.addEventListener('click', () => this.closeAvatarEditModal());
+        if (avatarModalCancelBtn) avatarModalCancelBtn.addEventListener('click', () => this.closeAvatarEditModal());
         document.getElementById('account-name-form')?.addEventListener('submit', async (event) => {
             event.preventDefault();
             await this.saveAccountDisplayName();
+        });
+        document.getElementById('account-avatar-form')?.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            await this.saveAccountAvatar();
         });
 
         document.querySelectorAll('.btn-lang[data-lang]').forEach(btn => {
@@ -716,7 +730,8 @@ class DominoGame {
             ['landing-google-login-btn', 'google'],
             ['landing-apple-login-btn', 'apple'],
             ['landing-email-toggle-btn', 'email'],
-            ['account-edit-name-btn', 'pencil']
+            ['account-edit-name-btn', 'pencil'],
+            ['account-edit-avatar-btn', 'camera']
         ];
         iconTargets.forEach(([id, key]) => {
             const target = document.getElementById(id);
@@ -805,6 +820,197 @@ class DominoGame {
         document.getElementById('account-name-modal')?.classList.remove('active');
     }
 
+    ensureAvatarEditModal() {
+        if (document.getElementById('account-avatar-modal')) return;
+        const modal = document.createElement('div');
+        modal.id = 'account-avatar-modal';
+        modal.className = 'modal-backdrop';
+        modal.innerHTML = `
+            <section class="modal-card modal-card-small">
+                <div class="modal-header">
+                    <div>
+                        <p class="section-kicker" data-i18n="account-edit-avatar">Avatar</p>
+                        <h2 data-i18n="account-change-avatar-title">Avatarı yenilə</h2>
+                        <p class="modal-desc" data-i18n="account-change-avatar-desc">Google şəkli varsa o göstərilir. Öz şəklinizi yükləsəniz, profilinizdə o üstünlük qazanır.</p>
+                    </div>
+                    <button class="btn btn-action modal-close-btn" id="account-avatar-modal-close" data-i18n="modal-close">Bağla</button>
+                </div>
+                <form id="account-avatar-form" class="settings-grid compact-grid">
+                    <div class="settings-group field-span-2">
+                        <div class="account-avatar-picker">
+                            <div class="account-avatar account-avatar-preview" id="account-avatar-modal-preview">D</div>
+                            <div class="account-avatar-picker-copy">
+                                <strong data-i18n="account-change-avatar-current">Cari şəkil</strong>
+                                <span id="account-avatar-modal-status" class="modal-desc">-</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="settings-group field-span-2">
+                        <input type="file" id="account-avatar-modal-input" accept="image/*" class="is-hidden">
+                        <button class="btn btn-menu" id="account-avatar-modal-pick" type="button" data-i18n="account-avatar-pick">Şəkil seç</button>
+                        <button class="btn btn-menu" id="account-avatar-modal-reset" type="button" data-i18n="account-avatar-reset">Google şəkli / sıfırla</button>
+                    </div>
+                    <div class="modal-footer modal-footer-split field-span-2">
+                        <button class="btn btn-primary btn-large modal-primary-btn" id="account-avatar-modal-save" type="submit" data-i18n="account-avatar-save">Yadda saxla</button>
+                        <button class="btn btn-menu modal-close-btn modal-secondary-btn" id="account-avatar-modal-cancel" type="button" data-i18n="account-name-cancel">Ləğv et</button>
+                    </div>
+                </form>
+            </section>`;
+        document.body.appendChild(modal);
+        document.getElementById('account-avatar-modal-pick')?.addEventListener('click', () => {
+            document.getElementById('account-avatar-modal-input')?.click();
+        });
+        document.getElementById('account-avatar-modal-reset')?.addEventListener('click', () => {
+            this.pendingAvatarMode = 'clear';
+            this.pendingAvatarDataUrl = null;
+            this.syncAvatarModalPreview();
+        });
+        document.getElementById('account-avatar-modal-input')?.addEventListener('change', async (event) => {
+            const input = event.currentTarget;
+            const file = input?.files?.[0];
+            if (!file) return;
+            try {
+                const dataUrl = await this.createAvatarDataUrl(file);
+                this.pendingAvatarMode = 'custom';
+                this.pendingAvatarDataUrl = dataUrl;
+                this.syncAvatarModalPreview();
+                this.setAccountStatus('');
+            } catch (err) {
+                this.pendingAvatarMode = 'keep';
+                this.pendingAvatarDataUrl = null;
+                this.setAccountStatus(err?.message || this.t('account-server-unavailable'));
+            } finally {
+                if (input) input.value = '';
+            }
+        });
+    }
+
+    syncAvatarModalPreview() {
+        const preview = document.getElementById('account-avatar-modal-preview');
+        const status = document.getElementById('account-avatar-modal-status');
+        const profile = this.accountProfile || {};
+        const avatarUrl = this.pendingAvatarMode === 'custom'
+            ? this.pendingAvatarDataUrl
+            : this.pendingAvatarMode === 'clear'
+                ? profile?.providerImage || null
+                : profile?.image || profile?.providerImage || null;
+        if (preview) {
+            preview.classList.toggle('has-image', Boolean(avatarUrl));
+            preview.innerHTML = '';
+            if (avatarUrl) {
+                const img = document.createElement('img');
+                img.className = 'account-avatar-image';
+                img.alt = profile?.name || 'Player avatar';
+                img.src = avatarUrl;
+                img.referrerPolicy = 'no-referrer';
+                preview.appendChild(img);
+            } else {
+                const initial = document.createElement('span');
+                initial.className = 'account-avatar-initial';
+                initial.textContent = (profile?.name || 'D').slice(0, 1).toUpperCase();
+                preview.appendChild(initial);
+            }
+        }
+        if (status) {
+            const sourceKey = this.pendingAvatarMode === 'custom'
+                ? 'account-avatar-source-custom'
+                : this.pendingAvatarMode === 'clear'
+                    ? profile?.providerImage
+                        ? 'account-avatar-source-google'
+                        : 'account-avatar-source-empty'
+                    : profile?.avatarUrl
+                        ? 'account-avatar-source-custom'
+                        : profile?.providerImage
+                            ? 'account-avatar-source-google'
+                            : 'account-avatar-source-empty';
+            status.textContent = this.t(sourceKey);
+        }
+    }
+
+    async createAvatarDataUrl(file) {
+        if (!file) throw new Error(this.t('account-avatar-invalid'));
+        if (!String(file.type || '').startsWith('image/')) {
+            throw new Error(this.t('account-avatar-invalid'));
+        }
+
+        const maxBytes = 5 * 1024 * 1024;
+        if (file.size > maxBytes) {
+            throw new Error(this.t('account-avatar-too-large'));
+        }
+
+        const sourceUrl = await new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(String(reader.result || ''));
+            reader.onerror = () => reject(new Error(this.t('account-avatar-invalid')));
+            reader.readAsDataURL(file);
+        });
+
+        const image = await new Promise((resolve, reject) => {
+            const img = new Image();
+            img.onload = () => resolve(img);
+            img.onerror = () => reject(new Error(this.t('account-avatar-invalid')));
+            img.src = sourceUrl;
+        });
+
+        const size = 256;
+        const canvas = document.createElement('canvas');
+        canvas.width = size;
+        canvas.height = size;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) throw new Error(this.t('account-avatar-invalid'));
+
+        ctx.fillStyle = '#111827';
+        ctx.fillRect(0, 0, size, size);
+
+        const scale = Math.max(size / image.width, size / image.height);
+        const drawWidth = image.width * scale;
+        const drawHeight = image.height * scale;
+        const offsetX = (size - drawWidth) / 2;
+        const offsetY = (size - drawHeight) / 2;
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(size / 2, size / 2, size / 2, 0, Math.PI * 2);
+        ctx.clip();
+        ctx.drawImage(image, offsetX, offsetY, drawWidth, drawHeight);
+        ctx.restore();
+
+        return canvas.toDataURL('image/jpeg', 0.88);
+    }
+
+    async saveAccountAvatar() {
+        try {
+            if (this.pendingAvatarMode === 'keep') {
+                this.closeAvatarEditModal();
+                return;
+            }
+            const avatarUrl = this.pendingAvatarMode === 'custom' ? this.pendingAvatarDataUrl : null;
+            await this.account.updateAvatar(avatarUrl);
+            await this.loadAccountProfile();
+            this.setAccountStatus(this.t('account-avatar-saved'));
+            this.closeAvatarEditModal();
+        } catch (err) {
+            const modalStatus = document.getElementById('account-avatar-modal-status');
+            if (modalStatus) modalStatus.textContent = err?.message || this.t('account-server-unavailable');
+            this.setAccountStatus(err?.message || this.t('account-server-unavailable'));
+        }
+    }
+
+    openAvatarEditModal() {
+        this.ensureAvatarEditModal();
+        const modal = document.getElementById('account-avatar-modal');
+        if (!modal) return;
+        this.pendingAvatarMode = this.accountProfile?.avatarUrl ? 'custom' : 'keep';
+        this.pendingAvatarDataUrl = this.accountProfile?.avatarUrl || null;
+        this.pendingAvatarProfile = this.accountProfile || null;
+        this.syncAvatarModalPreview();
+        modal.classList.add('active');
+        document.getElementById('account-avatar-modal-pick')?.focus?.();
+    }
+
+    closeAvatarEditModal() {
+        document.getElementById('account-avatar-modal')?.classList.remove('active');
+    }
+
     async loadLeaderboard() {
         const list = document.getElementById('leaderboard-list');
         if (!list) return;
@@ -848,6 +1054,7 @@ class DominoGame {
         const summary = document.getElementById('account-profile-summary');
         const loginEmailInput = document.getElementById('account-login-email-input');
         const avatar = document.getElementById('account-avatar');
+        const avatarEditButton = document.getElementById('account-edit-avatar-btn');
         let profileId = document.getElementById('account-profile-id');
         const profileName = document.getElementById('account-profile-name');
         const profileMeta = document.getElementById('account-profile-meta');
@@ -881,6 +1088,17 @@ class DominoGame {
             nameRow.appendChild(editBtn);
             editBtn.addEventListener('click', () => this.openNameEditModal());
         }
+        const editNameButton = document.getElementById('account-edit-name-btn');
+        if (editNameButton) {
+            const label = this.t('account-edit-name');
+            editNameButton.setAttribute('aria-label', label);
+            editNameButton.title = label;
+        }
+        if (avatarEditButton) {
+            const label = this.t('account-edit-avatar');
+            avatarEditButton.setAttribute('aria-label', label);
+            avatarEditButton.title = label;
+        }
         if (profileCopy && !profileId) {
             profileId = document.createElement('div');
             profileId.className = 'account-profile-id';
@@ -903,7 +1121,24 @@ class DominoGame {
         if (refreshButton) refreshButton.disabled = !canRefresh;
         if (logoutButton) logoutButton.disabled = !canLogout;
         if (closeButton) closeButton.disabled = !isAuthenticated;
-        if (avatar) avatar.textContent = (profile?.name || 'D').slice(0, 1).toUpperCase();
+        if (avatar) {
+            const avatarUrl = profile?.image || profile?.avatarUrl || profile?.providerImage || '';
+            avatar.classList.toggle('has-image', Boolean(avatarUrl));
+            avatar.innerHTML = '';
+            if (avatarUrl) {
+                const img = document.createElement('img');
+                img.className = 'account-avatar-image';
+                img.alt = profile?.name || 'Player avatar';
+                img.src = avatarUrl;
+                img.referrerPolicy = 'no-referrer';
+                avatar.appendChild(img);
+            } else {
+                const initial = document.createElement('span');
+                initial.className = 'account-avatar-initial';
+                initial.textContent = (profile?.name || 'D').slice(0, 1).toUpperCase();
+                avatar.appendChild(initial);
+            }
+        }
         if (profileName) profileName.textContent = profile?.name || 'Domino Player';
         if (profileId) profileId.textContent = profile?.playerId
             ? `${this.t('account-player-id')}: ${profile.playerId}`

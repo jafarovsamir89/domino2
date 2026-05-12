@@ -85,7 +85,9 @@ function normalizeProfile(payload = {}, source = "legacy") {
         name: displayName,
         displayName,
         email: String(user?.email || payload.email || ""),
-        image: user?.image || payload.image || null,
+        image: player?.avatarUrl || payload.avatarUrl || user?.image || payload.image || null,
+        providerImage: user?.image || payload.providerImage || null,
+        avatarUrl: player?.avatarUrl || payload.avatarUrl || null,
         role: String(user?.role || payload.role || "player"),
         isGuest: Boolean(payload.isGuest || player?.isGuest || user?.isGuest),
         avatarSeed: player?.avatarSeed || payload.avatarSeed || null,
@@ -631,6 +633,18 @@ export class AccountClient {
         const data = await this.platformRequest("/me", {
             method: "PATCH",
             body: { name: displayName }
+        });
+        const normalized = normalizeProfile(data, "better-auth");
+        this.setPlatformProfile(normalized.profile);
+        this.setStoredProfile(normalized.profile);
+        return normalized;
+    }
+
+    async updateAvatar(avatarUrl) {
+        const raw = avatarUrl === null || avatarUrl === undefined ? null : String(avatarUrl).trim();
+        const data = await this.platformRequest("/me/avatar", {
+            method: "PATCH",
+            body: { avatarUrl: raw || null }
         });
         const normalized = normalizeProfile(data, "better-auth");
         this.setPlatformProfile(normalized.profile);

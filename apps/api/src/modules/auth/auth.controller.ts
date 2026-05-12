@@ -34,4 +34,12 @@ export class AuthController {
   ) {
     return this.authService.updateCurrentProfileName(req.headers, body?.name);
   }
+
+  @Patch("me/avatar")
+  async updateCurrentProfileAvatar(
+    @Req() req: Request,
+    @Body() body: { avatarUrl?: string | null }
+  ) {
+    return this.authService.updateCurrentProfileAvatar(req.headers, body?.avatarUrl ?? null);
+  }
 }

@@ -145,6 +145,7 @@ model Player {
   userId        String?            @unique
   displayName   String
   avatarSeed    String?
+  avatarUrl     String?
   isGuest       Boolean            @default(false)
   language      String?
   createdAt     DateTime           @default(now())

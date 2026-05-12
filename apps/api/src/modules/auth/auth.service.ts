@@ -97,6 +97,7 @@ export class AuthService {
         id: player.id,
         displayName: player.displayName,
         avatarSeed: player.avatarSeed,
+        avatarUrl: player.avatarUrl,
         language: player.language,
         createdAt: player.createdAt,
         updatedAt: player.updatedAt
@@ -139,6 +140,39 @@ export class AuthService {
     await this.prisma.player.updateMany({
       where: { userId: session.user.id },
       data: { displayName: name }
+    });
+
+    return this.getCurrentProfile(headers);
+  }
+
+  async updateCurrentProfileAvatar(headers: IncomingHttpHeaders, avatarUrlInput?: string | null) {
+    const session = await this.getSession(headers);
+    if (!session?.user?.id) {
+      throw new UnauthorizedException("Not authenticated");
+    }
+
+    const raw = avatarUrlInput === null || avatarUrlInput === undefined ? null : String(avatarUrlInput).trim();
+    const avatarUrl = raw
+      ? raw.slice(0, 120_000)
+      : null;
+
+    if (avatarUrl) {
+      const isDataUrl = /^data:image\/(png|jpe?g|webp);base64,/i.test(avatarUrl);
+      const isHttpsUrl = /^https:\/\/[^\s"']+$/i.test(avatarUrl);
+      if (!isDataUrl && !isHttpsUrl) {
+        throw new BadRequestException("Unsupported avatar image format");
+      }
+    }
+
+    await this.prisma.player.upsert({
+      where: { userId: session.user.id },
+      update: { avatarUrl },
+      create: {
+        userId: session.user.id,
+        displayName: session.user.name,
+        isGuest: false,
+        avatarUrl
+      }
     });
 
     return this.getCurrentProfile(headers);
