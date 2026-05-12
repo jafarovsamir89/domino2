@@ -1,5 +1,16 @@
 node_modules
 server/node_modules
+apps
+packages
+docs
+scripts
+android
+.git
+.gitignore
+.env
+.env.*
+dist
+coverage
 android
 .vscode
 npm-debug.log

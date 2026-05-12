@@ -18,7 +18,8 @@ function sanitizeName(value) {
 
 function sanitizeEmail(value, fallbackName = "player") {
     const raw = String(value || "").trim();
-    if (raw.includes("@")) return raw.slice(0, 254);
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+    if (emailPattern.test(raw)) return raw.slice(0, 254);
     const alias = sanitizeName(fallbackName).toLowerCase().replace(/[^a-z0-9]+/g, ".").replace(/^\.+|\.+$/g, "") || "player";
     return `${alias}@domino.local`;
 }
@@ -27,7 +28,12 @@ function createLocalSessionId() {
     if (window.crypto?.randomUUID) {
         return window.crypto.randomUUID();
     }
-    return `local-${Math.random().toString(36).slice(2)}-${Date.now().toString(36)}`;
+    const bytes = window.crypto?.getRandomValues ? window.crypto.getRandomValues(new Uint8Array(16)) : null;
+    if (bytes) {
+        const hex = Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join("");
+        return `local-${hex}`;
+    }
+    return `local-${Date.now().toString(36)}-${Math.floor(performance.now() * 1000).toString(36)}`;
 }
 
 function normalizeProfile(payload = {}, source = "legacy") {

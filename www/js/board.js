@@ -17,11 +17,54 @@ export class BoardNode {
         this.displayB = displayB !== undefined ? displayB : tile.b;
         this.connections = {};
     }
+
+    toJSON() {
+        return {
+            tile: { a: this.tile.a, b: this.tile.b },
+            x: this.x,
+            y: this.y,
+            orientation: this.orientation,
+            displayA: this.displayA,
+            displayB: this.displayB,
+            connections: { ...this.connections }
+        };
+    }
 }
 
 export class Board {
     constructor() { this.nodes = []; this.openEnds = []; this.crossNodeId = null; this.crossSidesClosed = 0; }
     get isEmpty() { return this.nodes.length === 0; }
+
+    toJSON() {
+        return {
+            nodes: this.nodes.map((node) => node.toJSON()),
+            openEnds: this.openEnds.map((oe) => ({
+                nodeId: oe.nodeId,
+                side: oe.side,
+                value: oe.value,
+                growthDir: oe.growthDir
+            })),
+            crossNodeId: this.crossNodeId,
+            crossSidesClosed: this.crossSidesClosed
+        };
+    }
+
+    static fromJSON(data) {
+        const board = new Board();
+        if (!data || !Array.isArray(data.nodes) || !Array.isArray(data.openEnds)) {
+            return board;
+        }
+        board.nodes = data.nodes.map((n) => {
+            const tile = new Tile(n.tile?.a ?? 0, n.tile?.b ?? 0);
+            const node = new BoardNode(tile, n.x, n.y, n.orientation, n.displayA, n.displayB);
+            node.connections = { ...(n.connections || {}) };
+            return node;
+        });
+        board.openEnds = data.openEnds.map((oe) => new OpenEnd(oe.nodeId, oe.side, oe.value, oe.growthDir));
+        board.crossNodeId = data.crossNodeId ?? null;
+        board.crossSidesClosed = data.crossSidesClosed ?? 0;
+        return board;
+    }
 
     placeFirst(tile) {
         const orientation = tile.isDouble ? 'vertical' : 'horizontal';
@@ -327,19 +370,9 @@ export class Board {
 function oppSide(s) { return { left:'right', right:'left', top:'bottom', bottom:'top' }[s] || s; }
 
 export function cloneBoard(b) {
-    const c = new Board();
-    if (!b || !Array.isArray(b.nodes) || !Array.isArray(b.openEnds)) return c;
-    c.nodes = b.nodes.map(n => { 
-        const tile = new Tile(n.tile.a, n.tile.b);
-        const nn = new BoardNode(tile, n.x, n.y, n.orientation, n.displayA, n.displayB); 
-        nn.connections = { ...n.connections }; 
-        return nn; 
-    });
-    c.openEnds = b.openEnds.map(oe => new OpenEnd(oe.nodeId, oe.side, oe.value, oe.growthDir));
-    c.crossNodeId = b.crossNodeId; c.crossSidesClosed = b.crossSidesClosed;
-    return c;
+    return Board.fromJSON(b?.toJSON ? b.toJSON() : b);
 }
 
 export function reconstructBoard(data) {
-    return cloneBoard(data);
+    return Board.fromJSON(data);
 }

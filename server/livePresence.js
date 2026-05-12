@@ -1,9 +1,161 @@
+const Redis = require("ioredis");
+
+const PRESENCE_TTL_SECONDS = 180;
+const redisUrl = process.env.REDIS_URI || "";
+const redis = redisUrl
+  ? new Redis(redisUrl, {
+      enableReadyCheck: false,
+      lazyConnect: true,
+      maxRetriesPerRequest: 1,
+      retryStrategy(times) {
+        return Math.min(times * 200, 1000);
+      }
+    })
+  : null;
+
+if (redis) {
+  redis.on("error", (err) => {
+    console.warn("[Redis] Live presence unavailable:", err.message);
+  });
+}
+
 function getStore() {
-  if (!global.__DOMINO_LIVE_PRESENCE) {
-    global.__DOMINO_LIVE_PRESENCE = new Map();
+  const globalRef = globalThis;
+  if (!globalRef.__DOMINO_LIVE_PRESENCE) {
+    globalRef.__DOMINO_LIVE_PRESENCE = new Map();
+  }
+  return globalRef.__DOMINO_LIVE_PRESENCE;
+}
+
+function getSessionKey(sessionId) {
+  return `domino:presence:session:${sessionId}`;
+}
+
+function getRoomIndexKey(roomId) {
+  return `domino:presence:room:${roomId}`;
+}
+
+async function getRedisClient() {
+  if (!redis) return null;
+  try {
+    if (redis.status !== "ready") {
+      await redis.connect();
+    }
+    return redis;
+  } catch (err) {
+    console.warn("[Redis] Live presence connect failed:", err.message);
+    return null;
+  }
+}
+
+function normalizeEntry(sessionId, current, payload) {
+  return {
+    sessionId,
+    updatedAt: new Date().toISOString(),
+    ...current,
+    ...payload
+  };
+}
+
+async function persistEntry(entry) {
+  const client = await getRedisClient();
+  if (!client) return;
+
+  const previousRaw = await client.get(getSessionKey(entry.sessionId)).catch(() => null);
+  const previous = previousRaw ? JSON.parse(previousRaw) : null;
+  const nextRoomId = String(entry.roomId || "").trim();
+  const previousRoomId = String(previous?.roomId || "").trim();
+  const pipeline = client.pipeline();
+
+  pipeline.setex(getSessionKey(entry.sessionId), PRESENCE_TTL_SECONDS, JSON.stringify(entry));
+  if (nextRoomId) {
+    pipeline.sadd(getRoomIndexKey(nextRoomId), entry.sessionId);
+    pipeline.expire(getRoomIndexKey(nextRoomId), PRESENCE_TTL_SECONDS);
+  }
+  if (previousRoomId && previousRoomId !== nextRoomId) {
+    pipeline.srem(getRoomIndexKey(previousRoomId), entry.sessionId);
   }
 
-  return global.__DOMINO_LIVE_PRESENCE;
+  await pipeline.exec().catch((err) => {
+    console.warn("[Redis] Live presence write failed:", err.message);
+  });
+}
+
+async function removeEntry(sessionId) {
+  const client = await getRedisClient();
+  if (!client) return;
+
+  const raw = await client.get(getSessionKey(sessionId)).catch(() => null);
+  const entry = raw ? JSON.parse(raw) : null;
+  const pipeline = client.pipeline();
+  pipeline.del(getSessionKey(sessionId));
+  if (entry?.roomId) {
+    pipeline.srem(getRoomIndexKey(entry.roomId), sessionId);
+  }
+  await pipeline.exec().catch((err) => {
+    console.warn("[Redis] Live presence delete failed:", err.message);
+  });
+}
+
+async function updateRoomEntries(roomId, updater) {
+  const client = await getRedisClient();
+  if (!client) return;
+
+  const indexKey = getRoomIndexKey(roomId);
+  const sessionIds = await client.smembers(indexKey).catch(() => []);
+  if (!sessionIds.length) return;
+
+  const pipeline = client.pipeline();
+  let touched = 0;
+  for (const sessionId of sessionIds) {
+    const raw = await client.get(getSessionKey(sessionId)).catch(() => null);
+    if (!raw) {
+      pipeline.srem(indexKey, sessionId);
+      continue;
+    }
+    const current = JSON.parse(raw);
+    const next = updater(current);
+    if (!next) continue;
+    touched += 1;
+    pipeline.setex(getSessionKey(sessionId), PRESENCE_TTL_SECONDS, JSON.stringify(next));
+  }
+
+  if (touched > 0) {
+    pipeline.expire(indexKey, PRESENCE_TTL_SECONDS);
+  }
+
+  await pipeline.exec().catch((err) => {
+    console.warn("[Redis] Live presence room update failed:", err.message);
+  });
+}
+
+async function readRedisPlayers() {
+  const client = await getRedisClient();
+  if (!client) return [];
+
+  const players = [];
+  let cursor = "0";
+  do {
+    const [nextCursor, keys] = await client.scan(
+      cursor,
+      "MATCH",
+      "domino:presence:session:*",
+      "COUNT",
+      "200"
+    );
+    cursor = nextCursor;
+    for (const key of keys) {
+      const raw = await client.get(key).catch(() => null);
+      if (!raw) continue;
+      try {
+        players.push(JSON.parse(raw));
+      } catch (err) {
+        console.warn("[Redis] Skipping malformed live presence entry:", err.message);
+      }
+    }
+  } while (cursor !== "0");
+
+  return players;
 }
 
 function upsertLivePlayer(sessionId, payload) {
@@ -11,20 +163,16 @@ function upsertLivePlayer(sessionId, payload) {
 
   const store = getStore();
   const current = store.get(sessionId) || {};
-  const next = {
-    sessionId,
-    updatedAt: new Date().toISOString(),
-    ...current,
-    ...payload
-  };
-
+  const next = normalizeEntry(sessionId, current, payload);
   store.set(sessionId, next);
+  void persistEntry(next);
   return next;
 }
 
 function removeLivePlayer(sessionId) {
   if (!sessionId) return;
   getStore().delete(sessionId);
+  void removeEntry(sessionId);
 }
 
 function setRoomGameActive(roomId, isPlaying) {
@@ -32,14 +180,20 @@ function setRoomGameActive(roomId, isPlaying) {
 
   const store = getStore();
   for (const [sessionId, entry] of store.entries()) {
-    if (entry.roomId === roomId) {
-      store.set(sessionId, {
-        ...entry,
-        isPlaying: Boolean(isPlaying),
-        updatedAt: new Date().toISOString()
-      });
-    }
+    if (String(entry.roomId || "") !== String(roomId)) continue;
+    const next = {
+      ...entry,
+      isPlaying: Boolean(isPlaying),
+      updatedAt: new Date().toISOString()
+    };
+    store.set(sessionId, next);
+    void persistEntry(next);
   }
+  void updateRoomEntries(roomId, (entry) => ({
+    ...entry,
+    isPlaying: Boolean(isPlaying),
+    updatedAt: new Date().toISOString()
+  }));
 }
 
 function removeRoomPlayers(roomId) {
@@ -47,14 +201,25 @@ function removeRoomPlayers(roomId) {
 
   const store = getStore();
   for (const [sessionId, entry] of store.entries()) {
-    if (entry.roomId === roomId) {
-      store.delete(sessionId);
-    }
+    if (String(entry.roomId || "") !== String(roomId)) continue;
+    store.delete(sessionId);
+    void removeEntry(sessionId);
   }
 }
 
-function listLivePlayers() {
-  return Array.from(getStore().values());
+async function listLivePlayers() {
+  const merged = new Map();
+  for (const [sessionId, entry] of getStore().entries()) {
+    merged.set(sessionId, entry);
+  }
+
+  const redisPlayers = await readRedisPlayers();
+  for (const entry of redisPlayers) {
+    if (!entry?.sessionId) continue;
+    merged.set(entry.sessionId, entry);
+  }
+
+  return Array.from(merged.values());
 }
 
 function getRoomSnapshot(roomId, players) {
@@ -104,8 +269,8 @@ function getRoomSnapshot(roomId, players) {
   };
 }
 
-function getLiveSummary() {
-  const players = listLivePlayers();
+async function getLiveSummary() {
+  const players = await listLivePlayers();
   const connectedPlayers = players.filter((player) => player.isConnected !== false);
   const connectedAuthenticatedPlayers = connectedPlayers.filter((player) => player.provider === "platform");
   const connectedGuestPlayers = connectedPlayers.filter((player) => player.provider !== "platform");
@@ -124,7 +289,6 @@ function getLiveSummary() {
       humanSeats: Number.isFinite(Number(player.humanSeats)) ? Number(player.humanSeats) : 0,
       totalPlayers: Number.isFinite(Number(player.totalPlayers)) ? Number(player.totalPlayers) : 0,
       gameActive: Boolean(player.isPlaying),
-      totalPlayers: 0,
       connectedPlayers: 0,
       authenticatedPlayers: 0,
       openSeats: 0,
@@ -203,8 +367,8 @@ function getLiveSummary() {
   };
 }
 
-function getOpenRooms(filters = {}) {
-  const summary = getLiveSummary();
+async function getOpenRooms(filters = {}) {
+  const summary = await getLiveSummary();
   const search = String(filters.search || filters.q || "").trim().toLowerCase();
   const stakeKey = String(filters.stakeKey || "").trim();
   const roomMode = String(filters.roomMode || filters.mode || "").trim().toLowerCase();

@@ -438,8 +438,26 @@ export class Renderer {
             const it = document.createElement('div');
             it.className = 'score-item';
             if (p.index === cur) it.classList.add('current-player');
-            const teamTag = p.team ? `<span style="font-size:0.6rem;color:var(--text-dim)">[${p.team}]</span> ` : '';
-            it.innerHTML = `${teamTag}<span class="score-name">${p.name}:</span> <span class="score-value">${p.score}</span><span class="score-wins"> ${p.roundWins}</span>`;
+            if (p.team) {
+                const teamTag = document.createElement('span');
+                teamTag.style.fontSize = '0.6rem';
+                teamTag.style.color = 'var(--text-dim)';
+                teamTag.textContent = `[${p.team}] `;
+                it.appendChild(teamTag);
+            }
+            const name = document.createElement('span');
+            name.className = 'score-name';
+            name.textContent = `${p.name}:`;
+            const value = document.createElement('span');
+            value.className = 'score-value';
+            value.textContent = String(p.score);
+            const wins = document.createElement('span');
+            wins.className = 'score-wins';
+            wins.textContent = ` ${p.roundWins}`;
+            it.appendChild(name);
+            it.appendChild(document.createTextNode(' '));
+            it.appendChild(value);
+            it.appendChild(wins);
             this.scoresEl.appendChild(it);
         }
     }
@@ -524,7 +542,13 @@ export class Renderer {
             let v = `${this.app.t('label-hand-points')}: ${p.handPoints}`;
             if (p.isWinner) v += ` · ${this.app.t('label-bonus')}: +${bonus}`;
             v += ` · ${this.app.t('label-total')}: ${p.score}`;
-            top.innerHTML = `<span>${p.name}</span><span class="detail-value">${v}</span>`;
+            const name = document.createElement('span');
+            name.textContent = p.name;
+            const value = document.createElement('span');
+            value.className = 'detail-value';
+            value.textContent = v;
+            top.appendChild(name);
+            top.appendChild(value);
             r.appendChild(top);
 
             if (p.leftoverHands) {
@@ -557,7 +581,13 @@ export class Renderer {
             r.className = 'detail-row';
             let v = `${this.app.t('label-score')}: ${p.score} · ${this.app.t('label-rounds')}: ${p.roundWins}`;
             if (p.isWinner) v += ` (+${wins})`;
-            r.innerHTML = `<span>${p.name}</span><span class="detail-value">${v}</span>`;
+            const name = document.createElement('span');
+            name.textContent = p.name;
+            const value = document.createElement('span');
+            value.className = 'detail-value';
+            value.textContent = v;
+            r.appendChild(name);
+            r.appendChild(value);
             d.appendChild(r);
         }
 
@@ -567,7 +597,14 @@ export class Renderer {
 
     showInstantWin(pn, s) {
         document.getElementById('round-end-title').textContent = this.app.format('instant-win-title', { player: pn, score: s });
-        document.getElementById('round-end-details').innerHTML = `<div class="detail-row"><span>${this.app.t('instant-win-body')}</span></div>`;
+        const details = document.getElementById('round-end-details');
+        details.innerHTML = '';
+        const row = document.createElement('div');
+        row.className = 'detail-row';
+        const body = document.createElement('span');
+        body.textContent = this.app.t('instant-win-body');
+        row.appendChild(body);
+        details.appendChild(row);
         document.getElementById('next-round-btn').textContent = this.app.t('summary-title');
         document.getElementById('round-end-screen').classList.add('active');
     }
@@ -582,13 +619,25 @@ export class Renderer {
             const spent = Math.max(0, Number(economySummary.spent || 0));
             const won = Math.max(0, Number(economySummary.won || 0));
             const net = won - spent;
-            summary.innerHTML = `<span>Coins</span><span class="detail-value">Won: ${won} · Lost: ${spent} · Net: ${net >= 0 ? '+' : ''}${net}</span>`;
+            const label = document.createElement('span');
+            label.textContent = this.app.t('summary-coins');
+            const value = document.createElement('span');
+            value.className = 'detail-value';
+            value.textContent = `${this.app.t('summary-won')}: ${won} · ${this.app.t('summary-lost')}: ${spent} · ${this.app.t('summary-net')}: ${net >= 0 ? '+' : ''}${net}`;
+            summary.appendChild(label);
+            summary.appendChild(value);
             d.appendChild(summary);
         }
         for (const p of [...players].sort((a, b) => b.roundWins - a.roundWins)) {
             const r = document.createElement('div');
             r.className = 'detail-row';
-            r.innerHTML = `<span>${p.name}</span><span class="detail-value">${p.roundWins} ${this.app.t('label-rounds').toLowerCase()}</span>`;
+            const name = document.createElement('span');
+            name.textContent = p.name;
+            const value = document.createElement('span');
+            value.className = 'detail-value';
+            value.textContent = `${p.roundWins} ${this.app.t('label-rounds').toLowerCase()}`;
+            r.appendChild(name);
+            r.appendChild(value);
             d.appendChild(r);
         }
         document.getElementById('game-over-screen').classList.add('active');

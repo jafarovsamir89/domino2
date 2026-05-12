@@ -1,6 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 const crypto = require("crypto");
+const fsp = fs.promises;
 
 const DATA_DIR = path.join(__dirname, "data");
 const DATA_FILE = path.join(DATA_DIR, "accounts.json");
@@ -12,44 +13,54 @@ const INITIAL_STATE = {
     matches: []
 };
 
-let stateCache = null;
+let stateCache = { ...INITIAL_STATE };
+let stateLoadPromise = null;
 let writeQueue = Promise.resolve();
 
-function ensureDataFile() {
-    if (!fs.existsSync(DATA_DIR)) {
-        fs.mkdirSync(DATA_DIR, { recursive: true });
-    }
-    if (!fs.existsSync(DATA_FILE)) {
-        fs.writeFileSync(DATA_FILE, JSON.stringify(INITIAL_STATE, null, 2), "utf8");
+async function ensureDataFile() {
+    await fsp.mkdir(DATA_DIR, { recursive: true });
+    try {
+        await fsp.access(DATA_FILE, fs.constants.F_OK);
+    } catch {
+        await fsp.writeFile(DATA_FILE, JSON.stringify(INITIAL_STATE, null, 2), "utf8");
     }
 }
 
+async function hydrateState() {
+    if (stateLoadPromise) return stateLoadPromise;
+    stateLoadPromise = (async () => {
+        try {
+            await ensureDataFile();
+            const raw = await fsp.readFile(DATA_FILE, "utf8");
+            const parsed = JSON.parse(raw);
+            stateCache = {
+                ...INITIAL_STATE,
+                ...parsed,
+                users: Array.isArray(parsed.users) ? parsed.users : [],
+                sessions: Array.isArray(parsed.sessions) ? parsed.sessions : [],
+                matches: Array.isArray(parsed.matches) ? parsed.matches : []
+            };
+        } catch (err) {
+            stateCache = { ...INITIAL_STATE };
+        }
+        return stateCache;
+    })();
+    return stateLoadPromise;
+}
+
 function loadState() {
-    if (stateCache) return stateCache;
-    ensureDataFile();
-    try {
-        const raw = fs.readFileSync(DATA_FILE, "utf8");
-        const parsed = JSON.parse(raw);
-        stateCache = {
-            ...INITIAL_STATE,
-            ...parsed,
-            users: Array.isArray(parsed.users) ? parsed.users : [],
-            sessions: Array.isArray(parsed.sessions) ? parsed.sessions : [],
-            matches: Array.isArray(parsed.matches) ? parsed.matches : []
-        };
-    } catch (err) {
-        stateCache = { ...INITIAL_STATE };
-    }
-    return stateCache;
+    return stateCache || { ...INITIAL_STATE };
 }
 
 function saveState() {
     const payload = JSON.stringify(stateCache || INITIAL_STATE, null, 2);
-    writeQueue = writeQueue.then(() => fs.promises.writeFile(DATA_FILE, payload, "utf8"));
+    writeQueue = writeQueue.then(() => fsp.writeFile(DATA_FILE, payload, "utf8"));
     return writeQueue.catch((err) => {
         console.error("[AccountStore] Failed to save state:", err);
     });
 }
+
+void hydrateState();
 
 function normalizeName(name) {
     return String(name || "").trim().replace(/\s+/g, " ").slice(0, 24);
@@ -189,7 +200,7 @@ function createUserRecord({ name, password = null, isGuest = false }) {
 }
 
 function createGuest(name) {
-    const cleanName = normalizeName(name) || `Guest-${Math.floor(Math.random() * 9000 + 1000)}`;
+    const cleanName = normalizeName(name) || `Guest-${crypto.randomInt(1000, 10000)}`;
     const user = createUserRecord({ name: cleanName, isGuest: true });
     const token = createSession(user.id);
     return { token, user: safePublicUser(user) };
@@ -357,13 +368,14 @@ function recordMatch(payload) {
         matchRecord.teamRatings = teamRatings;
     }
 
-    for (const participant of resolvedParticipants) {
-        if (!participant.userId) continue;
+    const isDraw = winnerKey === "draw" || payload?.result === "draw";
+    const ratingSnapshot = new Map(state.users.map((user) => [user.id, user.rating]));
+    const deltas = resolvedParticipants.map((participant) => {
+        if (!participant.userId) return null;
         const user = findUserById(participant.userId);
-        if (!user) continue;
+        if (!user) return null;
 
         const isWinner = winnerKey && participant.winnerKey === winnerKey;
-        const isDraw = winnerKey === "draw" || payload?.result === "draw";
         const didWin = isDraw ? false : !!isWinner;
         const didLose = !didWin && !isDraw;
 
@@ -376,25 +388,33 @@ function recordMatch(payload) {
         } else {
             const oppRatings = resolvedParticipants
                 .filter((other) => other.userId && other.userId !== participant.userId)
-                .map((other) => {
-                    const otherUser = findUserById(other.userId);
-                    return otherUser ? otherUser.rating : 1000;
-                });
+                .map((other) => ratingSnapshot.get(other.userId) || 1000);
             const oppAvg = oppRatings.length ? oppRatings.reduce((a, b) => a + b, 0) / oppRatings.length : 1000;
             const result = isDraw ? 0.5 : (didWin ? 1 : 0);
-            ratingDelta = eloDelta(user.rating, oppAvg, result, 32);
+            ratingDelta = eloDelta(ratingSnapshot.get(participant.userId) || 1000, oppAvg, result, 32);
         }
 
-        applyResult(user, {
+        return {
+            participant,
+            user,
             points: parseInt(participant.points, 10) || 0,
             ratingDelta,
             won: didWin,
             lost: didLose,
             draw: isDraw
-        });
+        };
+    }).filter(Boolean);
 
-        participant.ratingAfter = user.rating;
-        participant.ratingDelta = ratingDelta;
+    for (const entry of deltas) {
+        applyResult(entry.user, {
+            points: entry.points,
+            ratingDelta: entry.ratingDelta,
+            won: entry.won,
+            lost: entry.lost,
+            draw: entry.draw
+        });
+        entry.participant.ratingAfter = entry.user.rating;
+        entry.participant.ratingDelta = entry.ratingDelta;
     }
 
     state.matches.push(matchRecord);

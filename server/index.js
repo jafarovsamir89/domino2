@@ -126,12 +126,12 @@ app.get("/room-code/:roomId", (req, res) => {
     res.json({ roomId, roomCode });
 });
 
-app.get("/api/realtime/summary", (req, res) => {
-    res.json(getLiveSummary());
+app.get("/api/realtime/summary", async (req, res) => {
+    res.json(await getLiveSummary());
 });
 
-app.get("/api/realtime/players", (req, res) => {
-    const summary = getLiveSummary();
+app.get("/api/realtime/players", async (req, res) => {
+    const summary = await getLiveSummary();
     res.json({
         items: summary.players,
         counts: summary.counts,
@@ -139,8 +139,8 @@ app.get("/api/realtime/players", (req, res) => {
     });
 });
 
-app.get("/api/realtime/rooms", (req, res) => {
-    res.json(getOpenRooms(req.query));
+app.get("/api/realtime/rooms", async (req, res) => {
+    res.json(await getOpenRooms(req.query));
 });
 
 const server = http.createServer(app);
@@ -160,8 +160,13 @@ const gameServer = new Server(gameServerOptions);
 
 gameServer.define('domino', DominoRoom);
 
-const shutdown = () => {
-    void gameServer.gracefullyShutdown();
+const shutdown = async () => {
+    try {
+        await gameServer.gracefullyShutdown();
+    } catch (err) {
+        console.error("[GameServer] Shutdown error:", err);
+    }
+    process.exit(0);
 };
 
 process.once("SIGINT", shutdown);

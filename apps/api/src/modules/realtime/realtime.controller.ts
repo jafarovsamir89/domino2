@@ -7,12 +7,12 @@ export class RealtimeController {
   constructor(private readonly realtimeService: RealtimeService) {}
 
   @Get("summary")
-  getSummary() {
+  async getSummary() {
     return this.realtimeService.summary();
   }
 
   @Post("heartbeat")
-  heartbeat(@Body() body: {
+  async heartbeat(@Body() body: {
     sessionId?: string;
     provider?: string;
     displayName?: string;
@@ -23,6 +23,6 @@ export class RealtimeController {
     isConnected?: boolean;
     source?: string;
   }) {
-    return { item: this.realtimeService.heartbeat(body) };
+    return { item: await this.realtimeService.heartbeat(body) };
   }
 }

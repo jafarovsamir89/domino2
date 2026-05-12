@@ -1,4 +1,7 @@
 import { Injectable } from "@nestjs/common";
+import RedisImport from "ioredis";
+
+const Redis = RedisImport as any;
 
 type RealtimePresenceEntry = {
   sessionId: string;
@@ -25,6 +28,128 @@ function getStore() {
   return globalRef.__DOMINO_PLATFORM_REALTIME;
 }
 
+const PRESENCE_TTL_SECONDS = 180;
+const redisUrl = process.env.REDIS_URI || "";
+const redis = redisUrl
+  ? new Redis(redisUrl, {
+      enableReadyCheck: false,
+      lazyConnect: true,
+      maxRetriesPerRequest: 1,
+      retryStrategy(times: number) {
+        return Math.min(times * 200, 1000);
+      }
+    })
+  : null;
+
+if (redis) {
+  redis.on("error", (err: Error) => {
+    console.warn("[Redis] Platform realtime presence unavailable:", err.message);
+  });
+}
+
+function getSessionKey(sessionId: string) {
+  return `domino:presence:session:${sessionId}`;
+}
+
+function getRoomIndexKey(roomId: string) {
+  return `domino:presence:room:${roomId}`;
+}
+
+async function getRedisClient() {
+  if (!redis) return null;
+  try {
+    if (redis.status !== "ready") {
+      await redis.connect();
+    }
+    return redis;
+  } catch (err) {
+    console.warn("[Redis] Platform realtime connect failed:", (err as Error).message);
+    return null;
+  }
+}
+
+function normalizeEntry(
+  sessionId: string,
+  current: Partial<RealtimePresenceEntry>,
+  payload: Partial<RealtimePresenceEntry>
+): RealtimePresenceEntry {
+  return {
+    sessionId,
+    provider: String(payload.provider || current.provider || "guest"),
+    displayName: String(payload.displayName || current.displayName || "Player").slice(0, 32),
+    roomId: payload.roomId === undefined ? current.roomId || null : payload.roomId || null,
+    roomCode: payload.roomCode === undefined ? current.roomCode || null : payload.roomCode || null,
+    gameMode: String(payload.gameMode || current.gameMode || "solo"),
+    isPlaying: payload.isPlaying === undefined ? current.isPlaying ?? false : Boolean(payload.isPlaying),
+    isConnected: payload.isConnected === undefined ? current.isConnected ?? false : Boolean(payload.isConnected),
+    source: String(payload.source || current.source || "client-local"),
+    updatedAt: new Date().toISOString()
+  };
+}
+
+async function persistEntry(entry: RealtimePresenceEntry) {
+  const client = await getRedisClient();
+  if (!client) return;
+
+  const previousRaw = await client.get(getSessionKey(entry.sessionId)).catch(() => null);
+  const previous = previousRaw ? JSON.parse(previousRaw) as Partial<RealtimePresenceEntry> : null;
+  const nextRoomId = String(entry.roomId || "").trim();
+  const previousRoomId = String(previous?.roomId || "").trim();
+  const pipeline = client.pipeline();
+
+  pipeline.setex(getSessionKey(entry.sessionId), PRESENCE_TTL_SECONDS, JSON.stringify(entry));
+  if (nextRoomId) {
+    pipeline.sadd(getRoomIndexKey(nextRoomId), entry.sessionId);
+    pipeline.expire(getRoomIndexKey(nextRoomId), PRESENCE_TTL_SECONDS);
+  }
+  if (previousRoomId && previousRoomId !== nextRoomId) {
+    pipeline.srem(getRoomIndexKey(previousRoomId), entry.sessionId);
+  }
+
+  await pipeline.exec().catch((err: unknown) => {
+    console.warn("[Redis] Platform realtime write failed:", (err as Error).message);
+  });
+}
+
+async function removeEntry(sessionId: string) {
+  const client = await getRedisClient();
+  if (!client) return;
+
+  const raw = await client.get(getSessionKey(sessionId)).catch(() => null);
+  const entry = raw ? JSON.parse(raw) as Partial<RealtimePresenceEntry> : null;
+  const pipeline = client.pipeline();
+  pipeline.del(getSessionKey(sessionId));
+  if (entry?.roomId) {
+    pipeline.srem(getRoomIndexKey(String(entry.roomId)), sessionId);
+  }
+  await pipeline.exec().catch((err: unknown) => {
+    console.warn("[Redis] Platform realtime delete failed:", (err as Error).message);
+  });
+}
+
+async function readRedisPlayers() {
+  const client = await getRedisClient();
+  if (!client) return [];
+
+  const players: RealtimePresenceEntry[] = [];
+  let cursor = "0";
+  do {
+    const [nextCursor, keys] = await client.scan(cursor, "MATCH", "domino:presence:session:*", "COUNT", "200");
+    cursor = nextCursor;
+    for (const key of keys) {
+      const raw = await client.get(key).catch(() => null);
+      if (!raw) continue;
+      try {
+        players.push(JSON.parse(raw) as RealtimePresenceEntry);
+      } catch (err) {
+        console.warn("[Redis] Skipping malformed platform presence entry:", (err as Error).message);
+      }
+    }
+  } while (cursor !== "0");
+
+  return players;
+}
+
 function isStale(entry: RealtimePresenceEntry) {
   const updatedAt = Date.parse(entry.updatedAt);
   if (!Number.isFinite(updatedAt)) return true;
@@ -33,7 +158,7 @@ function isStale(entry: RealtimePresenceEntry) {
 
 @Injectable()
 export class RealtimeService {
-  heartbeat(payload: Partial<RealtimePresenceEntry>) {
+  async heartbeat(payload: Partial<RealtimePresenceEntry>) {
     const sessionId = String(payload.sessionId || "").trim();
     if (!sessionId) {
       return null;
@@ -41,20 +166,10 @@ export class RealtimeService {
 
     const store = getStore();
     const current = store.get(sessionId) || ({} as RealtimePresenceEntry);
-    const next: RealtimePresenceEntry = {
-      sessionId,
-      provider: String(payload.provider || current.provider || "guest"),
-      displayName: String(payload.displayName || current.displayName || "Player").slice(0, 32),
-      roomId: payload.roomId === undefined ? current.roomId || null : payload.roomId,
-      roomCode: payload.roomCode === undefined ? current.roomCode || null : payload.roomCode,
-      gameMode: String(payload.gameMode || current.gameMode || "solo"),
-      isPlaying: payload.isPlaying === undefined ? current.isPlaying ?? false : Boolean(payload.isPlaying),
-      isConnected: payload.isConnected === undefined ? current.isConnected ?? false : Boolean(payload.isConnected),
-      source: String(payload.source || current.source || "client-local"),
-      updatedAt: new Date().toISOString()
-    };
+    const next = normalizeEntry(sessionId, current, payload);
 
     store.set(sessionId, next);
+    void persistEntry(next);
     return next;
   }
 
@@ -62,20 +177,26 @@ export class RealtimeService {
     const key = String(sessionId || "").trim();
     if (!key) return;
     getStore().delete(key);
+    void removeEntry(key);
   }
 
-  list() {
+  async list() {
     const store = getStore();
     for (const [sessionId, entry] of store.entries()) {
       if (isStale(entry)) {
         store.delete(sessionId);
       }
     }
-    return Array.from(store.values());
+    const merged = new Map<string, RealtimePresenceEntry>(store);
+    const redisPlayers = await readRedisPlayers();
+    for (const entry of redisPlayers) {
+      merged.set(entry.sessionId, entry);
+    }
+    return Array.from(merged.values());
   }
 
-  summary() {
-    const players = this.list();
+  async summary() {
+    const players = await this.list();
     const connectedPlayers = players.filter((player) => player.isConnected !== false);
     const authenticatedConnectedPlayers = connectedPlayers.filter((player) => player.provider === "platform");
     const guestConnectedPlayers = connectedPlayers.filter((player) => player.provider !== "platform");

@@ -1,4 +1,5 @@
 const { cloneBoard } = require("./board");
+const crypto = require("crypto");
 
 // Keep bot decision-making intentionally simple and deterministic enough for multiplayer.
 const DIFF = {
@@ -6,6 +7,10 @@ const DIFF = {
     medium: { scoreW: 10, doubleB: 3,  totalW: 0.5, futureW: 0.3, goOut: 100, handP: 0.1,  rand: 2,  blockW: 0   },
     hard:   { scoreW: 15, doubleB: 4,  totalW: 0.7, futureW: 0.6, goOut: 150, handP: 0.15, rand: 0.5, blockW: 0.4 },
 };
+
+function randomFloat() {
+    return crypto.randomInt(0, 1_000_000) / 1_000_000;
+}
 
 class AIPlayer {
     constructor(playerIndex, difficulty = "medium") {
@@ -94,7 +99,7 @@ class AIPlayer {
             }
         }
 
-        score += Math.random() * P.rand;
+        score += randomFloat() * P.rand;
         return score;
     }
 

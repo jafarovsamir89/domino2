@@ -607,13 +607,6 @@ input, button { font: inherit; }
     justify-content: space-between;
 }
 
-.section-note {
-    color: var(--text-dim);
-    font-size: 0.82rem;
-    line-height: 1.4;
-    margin-top: 2px;
-}
-
 @media (min-width: 768px) {
     #online-entry-ui .btn,
     #online-flow-ui .multiplayer-actions .btn,

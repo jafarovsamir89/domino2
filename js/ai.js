@@ -9,6 +9,22 @@ const DIFF = {
     hard:   { scoreW: 15, doubleB: 4,  totalW: 0.7, futureW: 0.6, goOut: 150, handP: 0.15, rand: 0.5, blockW: 0.4 },
 };
 
+let fallbackSeed = (Date.now() ^ Math.floor((window.performance?.now?.() || 0) * 1000)) >>> 0;
+
+function fallbackRandomFloat() {
+    fallbackSeed = (1664525 * fallbackSeed + 1013904223) >>> 0;
+    return fallbackSeed / 0x100000000;
+}
+
+function randomFloat() {
+    if (window.crypto?.getRandomValues) {
+        const buf = new Uint32Array(1);
+        window.crypto.getRandomValues(buf);
+        return buf[0] / 0x100000000;
+    }
+    return fallbackRandomFloat();
+}
+
 export class AIPlayer {
     constructor(playerIndex, difficulty = 'medium') {
         this.playerIndex = playerIndex;
@@ -109,7 +125,7 @@ export class AIPlayer {
         }
 
         // Randomness (higher = more random = easier)
-        score += Math.random() * P.rand;
+        score += randomFloat() * P.rand;
 
         return score;
     }

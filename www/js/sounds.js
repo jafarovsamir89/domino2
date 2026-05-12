@@ -1,6 +1,12 @@
 // Advanced procedural sound effects using Web Audio API
 let ctx = null;
 let noiseBuffer = null;
+let fallbackNoiseSeed = (Date.now() ^ Math.floor((window.performance?.now?.() || 0) * 1000)) >>> 0;
+
+function nextFallbackNoiseValue() {
+    fallbackNoiseSeed = (1664525 * fallbackNoiseSeed + 1013904223) >>> 0;
+    return (fallbackNoiseSeed / 0x80000000) - 1;
+}
 
 function getCtx() {
     try {
@@ -19,7 +25,12 @@ function getNoiseBuffer() {
     if (!noiseBuffer) {
         noiseBuffer = c.createBuffer(1, c.sampleRate * 2, c.sampleRate);
         const data = noiseBuffer.getChannelData(0);
-        for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
+        const randomValues = window.crypto?.getRandomValues
+            ? window.crypto.getRandomValues(new Uint32Array(data.length))
+            : null;
+        for (let i = 0; i < data.length; i++) {
+            data[i] = randomValues ? (randomValues[i] / 0x80000000) - 1 : nextFallbackNoiseValue();
+        }
     }
     return noiseBuffer;
 }

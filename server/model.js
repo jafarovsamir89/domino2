@@ -1,3 +1,5 @@
+const crypto = require("crypto");
+
 class Tile {
     constructor(a, b) { this.a = a; this.b = b; this.id = `${a}-${b}`; }
     get isDouble() { return this.a === this.b; }
@@ -13,7 +15,10 @@ function createFullSet() {
 }
 function shuffle(arr) {
     const a = [...arr];
-    for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
+    for (let i = a.length - 1; i > 0; i--) {
+        const j = crypto.randomInt(0, i + 1);
+        [a[i], a[j]] = [a[j], a[i]];
+    }
     return a;
 }
 function getHandSize(pc) { return 7; }

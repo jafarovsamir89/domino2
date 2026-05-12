@@ -6,12 +6,11 @@ services:
     environment:
       POSTGRES_DB: domino2_platform
       POSTGRES_USER: domino
-      POSTGRES_PASSWORD: domino
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-CHANGE_ME_IN_PRODUCTION}
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432"
     volumes:
       - domino2_postgres_data:/var/lib/postgresql/data
 
 volumes:
   domino2_postgres_data:
-

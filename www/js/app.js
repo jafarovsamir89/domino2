@@ -1,4 +1,4 @@
-import { Tile, createFullSet, shuffle, getHandSize, determineFirstPlayer, handPoints, roundTo5 } from './model.js';
+﻿import { Tile, createFullSet, shuffle, getHandSize, determineFirstPlayer, handPoints, roundTo5 } from './model.js';
 import { Board, reconstructBoard } from './board.js';
 import { AIPlayer } from './ai.js';
 import { Renderer } from './renderer.js';
@@ -89,6 +89,13 @@ class DominoGame {
                 this.turnInProgress = false;
             }
         }, 2000);
+        window.addEventListener('beforeunload', () => this.destroy(), { once: true });
+    }
+
+    destroy() {
+        clearInterval(this._watchdogId);
+        this._watchdogId = null;
+        this.clearTurnTimers();
     }
     setupStartScreen() {
         this.ensureStartScreenEnhancements();
@@ -177,7 +184,7 @@ class DominoGame {
                 this.syncSoloOptions();
             });
         });
-        document.getElementById('start-game-btn').addEventListener('click', async () => {
+        document.getElementById('start-game-btn')?.addEventListener('click', async () => {
             const name = this.requirePlayerName('solo');
             if (!name) return;
             await this.ensureGuestAccount(name, { allowOfflineFallback: true });
@@ -249,7 +256,7 @@ class DominoGame {
             });
         });
 
-        document.getElementById('host-game-btn').addEventListener('click', async () => {
+        document.getElementById('host-game-btn')?.addEventListener('click', async () => {
             const name = this.requirePlayerName('online');
             if (!name) return;
             const profile = await this.ensureGuestAccount(name);
@@ -268,20 +275,20 @@ class DominoGame {
             });
         });
 
-        document.getElementById('join-game-btn').addEventListener('click', () => {
+        document.getElementById('join-game-btn')?.addEventListener('click', () => {
             this.showMultiplayerPanel('join');
             this.setJoinStatus(this.t('online-room-join-hint'));
         });
 
-        document.getElementById('connect-btn').addEventListener('click', async () => {
-            const code = document.getElementById('join-code-input').value.trim().toUpperCase();
+        document.getElementById('connect-btn')?.addEventListener('click', async () => {
+            const code = String(document.getElementById('join-code-input')?.value || '').trim().toUpperCase();
             if (!code) return;
             await this.joinOnlineRoom(code);
         });
 
-        document.getElementById('join-code-input').addEventListener('keydown', (event) => {
+        document.getElementById('join-code-input')?.addEventListener('keydown', (event) => {
             if (event.key === 'Enter') {
-                document.getElementById('connect-btn').click();
+                document.getElementById('connect-btn')?.click();
             }
         });
         document.getElementById('open-room-search-input')?.addEventListener('input', () => {
@@ -305,8 +312,8 @@ class DominoGame {
         document.getElementById('friend-search-btn')?.addEventListener('click', () => {
             void this.searchFriends();
         });
-        document.getElementById('copy-room-code-btn').addEventListener('click', async () => {
-            const code = document.getElementById('room-code-display').textContent.trim();
+        document.getElementById('copy-room-code-btn')?.addEventListener('click', async () => {
+            const code = String(document.getElementById('room-code-display')?.textContent || '').trim();
             if (!code || code === '....') return;
             try {
                 await navigator.clipboard.writeText(code);
@@ -315,7 +322,7 @@ class DominoGame {
                 this.setHostStatus(this.format('online-copy-fail', { code }));
             }
         });
-        document.getElementById('host-cancel-btn').addEventListener('click', () => {
+        document.getElementById('host-cancel-btn')?.addEventListener('click', () => {
             if (this.network?.room) {
                 this.showStartModal(null);
                 this.resetMultiplayerPanels(true);
@@ -323,7 +330,7 @@ class DominoGame {
             }
             this.showOnlineLanding();
         });
-        document.getElementById('join-cancel-btn').addEventListener('click', () => {
+        document.getElementById('join-cancel-btn')?.addEventListener('click', () => {
             if (this.network?.room) {
                 this.showStartModal(null);
                 this.resetMultiplayerPanels(true);
@@ -365,7 +372,7 @@ class DominoGame {
                 await this.loadAccountProfile();
                 this.renderer.showMessage(this.t('account-login'), 1500);
             } catch (err) {
-                this.setAccountStatus(err.message || 'Login failed');
+                this.setAccountStatus(err.message || this.t('login-failed'));
             }
         });
 
@@ -376,7 +383,7 @@ class DominoGame {
                 const email = String(document.getElementById('account-email-input')?.value || this.accountProfile?.email || '').trim();
                 const password = String(document.getElementById('account-password-input')?.value || '').trim();
                 if (!name) {
-                    this.renderer.showMessage(this.currentLang === 'ru' ? 'Введите имя' : this.currentLang === 'en' ? 'Enter your name' : 'Ad daxil edin', 1800);
+                    this.renderer.showMessage(this.t('placeholder-player-name'), 1800);
                     return;
                 }
                 if (!password) {
@@ -394,7 +401,7 @@ class DominoGame {
                 await this.loadAccountProfile();
                 this.renderer.showMessage(this.t('account-register'), 1500);
             } catch (err) {
-                this.setAccountStatus(err.message || 'Registration failed');
+                this.setAccountStatus(err.message || this.t('registration-failed'));
             }
         });
 
@@ -701,12 +708,12 @@ class DominoGame {
     async loadLeaderboard() {
         const list = document.getElementById('leaderboard-list');
         if (!list) return;
-        list.innerHTML = `<div class="room-summary">${this.t('account-profile-loading')}</div>`;
+        this.setSummaryMessage(list, this.t('account-profile-loading'));
         try {
             const rows = await this.account.getLeaderboard(10);
             this.accountOnline = true;
             if (!rows.length) {
-                list.innerHTML = `<div class="room-summary">${this.t('account-profile-empty')}</div>`;
+                this.setSummaryMessage(list, this.t('account-profile-empty'));
                 return;
             }
             list.innerHTML = '';
@@ -715,12 +722,17 @@ class DominoGame {
                 item.className = 'room-player-chip';
                 const titleKey = `title-${String(row.titleCode || 'rookie')}`;
                 const title = this.t(titleKey);
-                item.innerHTML = `<span>#${row.rank} ${row.name} · ${title}</span><strong>${row.rating}</strong>`;
+                const label = document.createElement('span');
+                label.textContent = `#${row.rank} ${row.name} В· ${title}`;
+                const rating = document.createElement('strong');
+                rating.textContent = String(row.rating);
+                item.appendChild(label);
+                item.appendChild(rating);
                 list.appendChild(item);
             });
         } catch (err) {
             this.accountOnline = false;
-            list.innerHTML = `<div class="room-summary">${err.message || this.t('account-server-unavailable')}</div>`;
+            this.setSummaryMessage(list, err.message || this.t('account-server-unavailable'));
         }
     }
 
@@ -788,7 +800,7 @@ class DominoGame {
         if (profileName) profileName.textContent = profile?.name || 'Domino Player';
         if (profileMeta) {
             profileMeta.textContent = profile
-                ? (profile.isGuest ? this.t('account-guest-meta') : `${titleLabel} · ${this.t('account-rating')}: ${profile.rating}`)
+                ? (profile.isGuest ? this.t('account-guest-meta') : `${titleLabel} В· ${this.t('account-rating')}: ${profile.rating}`)
                 : this.t('account-profile-empty');
         }
         if (ratingValue) ratingValue.textContent = String(profile?.rating ?? 1000);
@@ -799,18 +811,21 @@ class DominoGame {
         if (coinsValue) coinsValue.textContent = String(details?.wallet?.balance ?? profile?.coins ?? profile?.wallet?.balance ?? 0);
         if (!profile) {
             summary.textContent = this.accountOnline ? this.t('account-profile-empty') : this.t('account-offline');
-            if (historyList) historyList.innerHTML = `<div class="room-summary">${this.t('account-history-empty')}</div>`;
+            if (historyList) this.setSummaryMessage(historyList, this.t('account-history-empty'));
             this.syncAccountModeButtons();
             return;
         }
-        summary.innerHTML = `
-            <div>${this.accountOnline ? this.t('account-online') : this.t('account-offline')}</div>
-            <div>${this.t('account-wins')}: ${profile.wins} | ${this.t('account-losses')}: ${profile.losses} | ${this.t('account-draws')}: ${profile.draws}</div>
-        `;
+        summary.innerHTML = '';
+        const line1 = document.createElement('div');
+        line1.textContent = this.accountOnline ? this.t('account-online') : this.t('account-offline');
+        const line2 = document.createElement('div');
+        line2.textContent = `${this.t('account-wins')}: ${profile.wins} | ${this.t('account-losses')}: ${profile.losses} | ${this.t('account-draws')}: ${profile.draws}`;
+        summary.appendChild(line1);
+        summary.appendChild(line2);
         if (historyList) {
             const recentMatches = Array.isArray(details?.recentMatches) ? details.recentMatches : [];
             if (!recentMatches.length) {
-                historyList.innerHTML = `<div class="room-summary">${this.t('account-history-empty')}</div>`;
+                this.setSummaryMessage(historyList, this.t('account-history-empty'));
             } else {
                 historyList.innerHTML = '';
             recentMatches.forEach((match) => {
@@ -823,7 +838,12 @@ class DominoGame {
                             ? 'account-history-loss'
                             : 'account-history-draw';
                     item.className = 'room-player-chip';
-                    item.innerHTML = `<span>${this.t(resultKey)} · ${match.mode}</span><strong>${deltaLabel}</strong>`;
+                    const label = document.createElement('span');
+                    label.textContent = `${this.t(resultKey)} В· ${match.mode}`;
+                    const value = document.createElement('strong');
+                    value.textContent = deltaLabel;
+                    item.appendChild(label);
+                    item.appendChild(value);
                     historyList.appendChild(item);
                 });
             }
@@ -918,7 +938,12 @@ class DominoGame {
         if (window.crypto?.randomUUID) {
             return `${prefix}-${window.crypto.randomUUID()}`;
         }
-        return `${prefix}-${Math.random().toString(36).slice(2)}-${Date.now().toString(36)}`;
+        const bytes = window.crypto?.getRandomValues ? window.crypto.getRandomValues(new Uint8Array(16)) : null;
+        if (bytes) {
+            const hex = Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join("");
+            return `${prefix}-${hex}`;
+        }
+        return `${prefix}-${Date.now().toString(36)}-${Math.floor(performance.now() * 1000).toString(36)}`;
     }
 
     clearTurnTimers() {
@@ -932,6 +957,14 @@ class DominoGame {
         this._dealEndTimeout = null;
     }
 
+    setSummaryMessage(container, message) {
+        if (!container) return;
+        const node = document.createElement('div');
+        node.className = 'room-summary';
+        node.textContent = String(message ?? '');
+        container.replaceChildren(node);
+    }
+
     ensureStartScreenEnhancements() {
         const startShell = document.querySelector('.start-shell');
         const startActions = document.querySelector('.start-actions');
@@ -939,14 +972,31 @@ class DominoGame {
             const banner = document.createElement('div');
             banner.id = 'resume-session-banner';
             banner.className = 'resume-session-banner is-hidden';
-            banner.innerHTML = `
-                <div class="resume-session-copy">
-                    <div class="section-kicker" data-i18n="resume-session-kicker">Unfinished session</div>
-                    <div class="resume-session-title" id="resume-session-title">${this.t('resume-session-title')}</div>
-                    <div class="resume-session-desc" id="resume-session-desc">${this.t('resume-session-desc')}</div>
-                </div>
-                <button class="btn btn-primary" id="resume-session-btn" type="button" data-i18n="resume-session">Resume</button>
-            `;
+            const copy = document.createElement('div');
+            copy.className = 'resume-session-copy';
+            const kicker = document.createElement('div');
+            kicker.className = 'section-kicker';
+            kicker.dataset.i18n = 'resume-session-kicker';
+            kicker.textContent = 'Unfinished session';
+            const title = document.createElement('div');
+            title.className = 'resume-session-title';
+            title.id = 'resume-session-title';
+            title.textContent = this.t('resume-session-title');
+            const desc = document.createElement('div');
+            desc.className = 'resume-session-desc';
+            desc.id = 'resume-session-desc';
+            desc.textContent = this.t('resume-session-desc');
+            const resumeBtn = document.createElement('button');
+            resumeBtn.className = 'btn btn-primary';
+            resumeBtn.id = 'resume-session-btn';
+            resumeBtn.type = 'button';
+            resumeBtn.dataset.i18n = 'resume-session';
+            resumeBtn.textContent = 'Resume';
+            copy.appendChild(kicker);
+            copy.appendChild(title);
+            copy.appendChild(desc);
+            banner.appendChild(copy);
+            banner.appendChild(resumeBtn);
             startActions.insertAdjacentElement('afterend', banner);
         }
 
@@ -957,14 +1007,22 @@ class DominoGame {
             const stakeWrapper = document.createElement('div');
             stakeWrapper.className = 'settings-group field-span-2';
             stakeWrapper.id = 'solo-stake-wrapper';
-            stakeWrapper.innerHTML = `
-                <label data-i18n="label-stake-table">Mərc masası</label>
-                <div class="btn-group" id="solo-stake-group">
-                    <button class="btn btn-option" data-value="stake_50">50</button>
-                    <button class="btn btn-option" data-value="stake_100">100</button>
-                    <button class="btn btn-option" data-value="stake_200">200</button>
-                </div>
-            `;
+            const label = document.createElement('label');
+            label.dataset.i18n = 'label-stake-table';
+            label.textContent = 'MЙ™rc masasД±';
+            const group = document.createElement('div');
+            group.className = 'btn-group';
+            group.id = 'solo-stake-group';
+            for (const stakeKey of ['stake_50', 'stake_100', 'stake_200']) {
+                const button = document.createElement('button');
+                button.className = 'btn btn-option';
+                button.type = 'button';
+                button.dataset.value = stakeKey;
+                button.textContent = stakeKey.replace(/^stake_/i, '');
+                group.appendChild(button);
+            }
+            stakeWrapper.appendChild(label);
+            stakeWrapper.appendChild(group);
             if (nameGroup) {
                 nameGroup.insertAdjacentElement('beforebegin', stakeWrapper);
             } else if (soloGridRoot) {
@@ -993,35 +1051,61 @@ class DominoGame {
         const social = document.createElement('div');
         social.id = 'online-social-ui';
         social.className = 'online-social-ui';
-        social.innerHTML = `            <div class="online-social-panel">
-                <div class="online-social-head">
-                    <div>
-                        <div class="section-kicker">Dostlar</div>
-                        <div class="section-note">Sor?ular v? d?v?tnam?l?r burada g?r?n?r.</div>
-                    </div>
-                    <button class="btn btn-menu online-social-refresh" id="online-social-refresh-btn" type="button">Yenil?</button>
-                </div>
-                <div class="online-social-filters">
-                    <input type="search" id="friend-search-input" placeholder="Adla axtar">
-                    <button class="btn btn-action btn-strong" id="friend-search-btn" type="button">Axtar</button>
-                </div>
-                <div class="social-section">
-                    <div class="section-kicker">Axtar?? n?tic?l?ri</div>
-                    <div id="friend-search-results" class="room-player-list"></div>
-                </div>
-                <div class="social-section">
-                    <div class="section-kicker">Dost sor?ular?</div>
-                    <div id="friend-requests-list" class="room-player-list"></div>
-                </div>
-                <div class="social-section">
-                    <div class="section-kicker">Dostlar</div>
-                    <div id="friend-list" class="room-player-list"></div>
-                </div>
-                <div class="social-section">
-                    <div class="section-kicker">Otaq d?v?tnam?l?ri</div>
-                    <div id="room-invites-list" class="room-player-list"></div>
-                </div>
-            </div>        `;
+        const panel = document.createElement('div');
+        panel.className = 'online-social-panel';
+        const head = document.createElement('div');
+        head.className = 'online-social-head';
+        const headCopy = document.createElement('div');
+        const headTitle = document.createElement('div');
+        headTitle.className = 'section-kicker';
+        headTitle.textContent = 'Dostlar';
+        const headNote = document.createElement('div');
+        headNote.className = 'section-note';
+        headNote.textContent = 'SorДџular vЙ™ dЙ™vЙ™tlЙ™r burada gГ¶rГјnГјr.';
+        headCopy.appendChild(headTitle);
+        headCopy.appendChild(headNote);
+        const refreshBtn = document.createElement('button');
+        refreshBtn.className = 'btn btn-menu online-social-refresh';
+        refreshBtn.id = 'online-social-refresh-btn';
+        refreshBtn.type = 'button';
+        refreshBtn.textContent = 'YenilЙ™';
+        head.appendChild(headCopy);
+        head.appendChild(refreshBtn);
+        const filters = document.createElement('div');
+        filters.className = 'online-social-filters';
+        const searchInput = document.createElement('input');
+        searchInput.type = 'search';
+        searchInput.id = 'friend-search-input';
+        searchInput.placeholder = 'Adla axtar';
+        const searchBtn = document.createElement('button');
+        searchBtn.className = 'btn btn-action btn-strong';
+        searchBtn.id = 'friend-search-btn';
+        searchBtn.type = 'button';
+        searchBtn.textContent = 'Axtar';
+        filters.appendChild(searchInput);
+        filters.appendChild(searchBtn);
+        const sections = [
+            ['AxtarД±Еџ nЙ™ticЙ™lЙ™ri', 'friend-search-results'],
+            ['Dost sorДџularД±', 'friend-requests-list'],
+            ['Dostlar', 'friend-list'],
+            ['Otaq dЙ™vЙ™tlЙ™ri', 'room-invites-list']
+        ];
+        panel.appendChild(head);
+        panel.appendChild(filters);
+        for (const [titleText, id] of sections) {
+            const section = document.createElement('div');
+            section.className = 'social-section';
+            const kicker = document.createElement('div');
+            kicker.className = 'section-kicker';
+            kicker.textContent = titleText;
+            const list = document.createElement('div');
+            list.id = id;
+            list.className = 'room-player-list';
+            section.appendChild(kicker);
+            section.appendChild(list);
+            panel.appendChild(section);
+        }
+        social.appendChild(panel);
         onlineFlow.insertAdjacentElement('beforebegin', social);
     }
 
@@ -1136,7 +1220,7 @@ class DominoGame {
 
     buildGameResumeSnapshot() {
         const isOnline = this.network.isMultiplayer;
-        const boardState = this.board ? JSON.parse(JSON.stringify(this.board)) : null;
+        const boardState = this.board ? this.board.toJSON() : null;
         const hands = Array.isArray(this.hands)
             ? this.hands.map((hand) => Array.isArray(hand) ? hand.map((tile) => tile ? { a: tile.a, b: tile.b } : null).filter(Boolean) : [])
             : [];
@@ -1233,7 +1317,7 @@ class DominoGame {
             const token = String(snapshot.reconnectionToken || this.network?.getStoredReconnectionToken?.() || '').trim();
             if (!token) {
                 this.clearGameResumeSnapshot();
-                this.renderer.showMessage(this.currentLang === 'az' ? 'Sessiya tapılmadı' : 'Session not found', 1800);
+                this.renderer.showMessage(this.t('session-not-found'), 1800);
                 return false;
             }
             try {
@@ -1255,7 +1339,7 @@ class DominoGame {
             } catch (error) {
                 console.warn('[Resume] Online session restore failed', error);
                 this.refreshResumeBanner(snapshot);
-                this.renderer.showMessage(this.currentLang === 'az' ? 'Sessiyani berpa etmek olmadi' : 'Could not restore the session', 2200);
+                this.renderer.showMessage(this.t('session-restore-failed'), 2200);
                 return false;
             }
         }
@@ -1326,14 +1410,7 @@ class DominoGame {
     requirePlayerName(preferred = 'any') {
         const name = this.readPlayerName(preferred);
         if (name) return name;
-        this.renderer.showMessage(
-            this.currentLang === 'az'
-                ? 'Ad daxil edin'
-                : this.currentLang === 'ru'
-                    ? 'Введите имя'
-                    : 'Enter your name',
-            1800
-        );
+        this.renderer.showMessage(this.t('placeholder-player-name'), 1800);
         const primary = document.getElementById('player-name');
         const online = document.getElementById('player-name-online');
         (preferred === 'online' ? online : preferred === 'solo' ? primary : (primary || online))?.focus?.();
@@ -1409,7 +1486,7 @@ class DominoGame {
             if (summary) {
                 const humans = Math.max(1, this.onlinePlayerCount - this.onlineAiCount);
                 const stakeLabel = (Array.from(document.querySelectorAll('#online-stake-group .btn-option')).find((button) => button.dataset.value === this.onlineStakeKey)?.textContent || '200').trim();
-                summary.textContent = `${this.format('online-room-summary', { humans, bots: this.onlineAiCount, total: this.onlinePlayerCount })} · ${stakeLabel}`;
+                summary.textContent = `${this.format('online-room-summary', { humans, bots: this.onlineAiCount, total: this.onlinePlayerCount })} В· ${stakeLabel}`;
             }
         }
     }
@@ -1557,7 +1634,7 @@ class DominoGame {
     async loadOpenRooms() {
         const list = document.getElementById('open-rooms-list');
         if (!list) return;
-        list.innerHTML = `<div class="room-summary">${this.t('account-profile-loading')}</div>`;
+        this.setSummaryMessage(list, this.t('account-profile-loading'));
         try {
             const rooms = await this.account.getOpenRooms({
                 search: this.onlineRoomFilters.search,
@@ -1569,7 +1646,7 @@ class DominoGame {
             });
             this.openRooms = Array.isArray(rooms) ? rooms : [];
             if (!this.openRooms.length) {
-                list.innerHTML = `<div class="room-summary">${this.currentLang === 'az' ? 'Açıq otaq yoxdur' : 'No open rooms yet'}</div>`;
+                this.setSummaryMessage(list, this.t('no-open-rooms'));
                 return;
             }
 
@@ -1579,25 +1656,25 @@ class DominoGame {
                 card.className = 'open-room-card';
                 const title = document.createElement('div');
                 title.className = 'open-room-title';
-                title.textContent = `${room.hostName || room.roomCode || room.roomId || 'Room'}${room.roomCode ? ' · ' + room.roomCode : ''}`;
+                title.textContent = `${room.hostName || room.roomCode || room.roomId || 'Room'}${room.roomCode ? ' В· ' + room.roomCode : ''}`;
                 const badges = document.createElement('div');
                 badges.className = 'open-room-badges';
                 const seatCount = `${room.connectedPlayers || 0}/${room.humanSeats || room.totalPlayers || 0}`;
                 const modeLabel = room.roomMode === 'team'
                     ? '2 vs 2'
-                    : (this.currentLang === 'az' ? 'Hamı hər kəsə' : 'Free for all');
+                    : this.t('room-free-for-all');
                 const stakeLabel = room.stakeKey && room.stakeKey !== 'free'
                     ? `${room.stakeKey.replace(/^stake_/i, '')}`
-                    : (this.currentLang === 'az' ? 'Pulsuz' : 'Free');
+                    : this.t('room-free');
                 badges.appendChild(this.createRoomBadge('mode', modeLabel));
                 badges.appendChild(this.createRoomBadge('players', seatCount));
                 badges.appendChild(this.createRoomBadge('stake', stakeLabel));
-                badges.appendChild(this.createRoomBadge('open', this.currentLang === 'az' ? 'Açıq' : 'Open'));
+                badges.appendChild(this.createRoomBadge('open', this.t('room-open')));
                 const footer = document.createElement('div');
                 footer.className = 'open-room-footer';
                 const joinBtn = document.createElement('button');
                 joinBtn.className = 'btn btn-action btn-strong';
-                joinBtn.textContent = this.currentLang === 'az' ? 'Qoşul' : 'Join';
+                joinBtn.textContent = this.t('room-join');
                 joinBtn.addEventListener('click', async () => {
                     const joined = await this.joinOnlineRoom(room.roomCode || room.roomId);
                     if (joined) this.hideOpenRoomsModal();
@@ -1609,7 +1686,7 @@ class DominoGame {
                 list.appendChild(card);
             });
         } catch (err) {
-            list.innerHTML = `<div class="room-summary">${err.message || this.t('account-server-unavailable')}</div>`;
+            this.setSummaryMessage(list, err.message || this.t('account-server-unavailable'));
         }
     }
 
@@ -1643,15 +1720,15 @@ class DominoGame {
         const resultsList = document.getElementById('friend-search-results');
         if (!resultsList) return;
         if (!query) {
-            resultsList.innerHTML = `<div class="room-summary">${this.currentLang === 'az' ? 'Ad yazın və axtarın' : 'Type a name to search'}</div>`;
+            this.setSummaryMessage(resultsList, this.t('search-name-hint'));
             return;
         }
-        resultsList.innerHTML = `<div class="room-summary">${this.t('account-profile-loading')}</div>`;
+        this.setSummaryMessage(resultsList, this.t('account-profile-loading'));
         try {
             const items = await this.account.searchPlayers(query);
             this.friendSearchResults = Array.isArray(items) ? items : [];
             if (!this.friendSearchResults.length) {
-                resultsList.innerHTML = `<div class="room-summary">${this.currentLang === 'az' ? 'Nəticə tapılmadı' : 'No players found'}</div>`;
+                this.setSummaryMessage(resultsList, this.t('search-no-results'));
                 return;
             }
             resultsList.innerHTML = '';
@@ -1660,12 +1737,17 @@ class DominoGame {
                 card.className = 'friend-card';
                 const copy = document.createElement('div');
                 copy.className = 'friend-card-copy';
-                copy.innerHTML = `<strong>${player.displayName}</strong><span>${player.id}</span>`;
+                const name = document.createElement('strong');
+                name.textContent = player.displayName;
+                const id = document.createElement('span');
+                id.textContent = player.id;
+                copy.appendChild(name);
+                copy.appendChild(id);
                 const action = document.createElement('div');
                 action.className = 'friend-card-actions';
                 const addBtn = document.createElement('button');
                 addBtn.className = 'btn btn-action';
-                addBtn.textContent = this.currentLang === 'az' ? 'Dost et' : 'Add';
+                addBtn.textContent = this.t('friend-add');
                 addBtn.addEventListener('click', async () => {
                     addBtn.disabled = true;
                     try {
@@ -1683,7 +1765,7 @@ class DominoGame {
                 resultsList.appendChild(card);
             });
         } catch (err) {
-            resultsList.innerHTML = `<div class="room-summary">${err.message || this.t('account-server-unavailable')}</div>`;
+            this.setSummaryMessage(resultsList, err.message || this.t('account-server-unavailable'));
         }
     }
 
@@ -1693,21 +1775,20 @@ class DominoGame {
         const invitesList = document.getElementById('room-invites-list');
         const searchResults = document.getElementById('friend-search-results');
         const loggedIn = Boolean(this.account?.getRoomAuthToken?.());
-        const emptyText = this.currentLang === 'az' ? 'Dostlar üçün hesaba daxil olun' : 'Sign in to use friends';
+        const emptyText = this.t('friends-sign-in');
 
         if (!friendsList || !requestsList || !invitesList || !searchResults) return;
         if (!loggedIn) {
-            const message = `<div class="room-summary">${emptyText}</div>`;
-            friendsList.innerHTML = message;
-            requestsList.innerHTML = message;
-            invitesList.innerHTML = message;
-            searchResults.innerHTML = message;
+            this.setSummaryMessage(friendsList, emptyText);
+            this.setSummaryMessage(requestsList, emptyText);
+            this.setSummaryMessage(invitesList, emptyText);
+            this.setSummaryMessage(searchResults, emptyText);
             return;
         }
 
-        friendsList.innerHTML = `<div class="room-summary">${this.t('account-profile-loading')}</div>`;
-        requestsList.innerHTML = `<div class="room-summary">${this.t('account-profile-loading')}</div>`;
-        invitesList.innerHTML = `<div class="room-summary">${this.t('account-profile-loading')}</div>`;
+        this.setSummaryMessage(friendsList, this.t('account-profile-loading'));
+        this.setSummaryMessage(requestsList, this.t('account-profile-loading'));
+        this.setSummaryMessage(invitesList, this.t('account-profile-loading'));
         try {
             const [friends, invitations] = await Promise.all([
                 this.account.getFriends(),
@@ -1718,19 +1799,24 @@ class DominoGame {
 
             friendsList.innerHTML = '';
             if (!this.friendHub.accepted.length) {
-                friendsList.innerHTML = `<div class="room-summary">${this.currentLang === 'az' ? 'Hələ dost yoxdur' : 'No friends yet'}</div>`;
+                this.setSummaryMessage(friendsList, this.t('no-friends-yet'));
             } else {
                 this.friendHub.accepted.forEach((item) => {
                     const card = document.createElement('div');
                     card.className = 'friend-card';
                     const copy = document.createElement('div');
                     copy.className = 'friend-card-copy';
-                    copy.innerHTML = `<strong>${item.friend.displayName}</strong><span>${item.friend.id}</span>`;
+                    const name = document.createElement('strong');
+                    name.textContent = item.friend.displayName;
+                    const id = document.createElement('span');
+                    id.textContent = item.friend.id;
+                    copy.appendChild(name);
+                    copy.appendChild(id);
                     const action = document.createElement('div');
                     action.className = 'friend-card-actions';
                     const inviteBtn = document.createElement('button');
                     inviteBtn.className = 'btn btn-action btn-strong';
-                    inviteBtn.textContent = this.currentLang === 'az' ? 'Dəvət et' : 'Invite';
+                    inviteBtn.textContent = this.t('friend-invite');
                     const roomSnapshot = this.getCurrentRoomSnapshot();
                     const canInvite = Boolean(
                         roomSnapshot &&
@@ -1756,7 +1842,7 @@ class DominoGame {
                                 isTeamMode: roomSnapshot.isTeamMode
                             });
                             await this.loadFriendsHub();
-                            this.renderer.showMessage(this.currentLang === 'az' ? 'Dəvət göndərildi' : 'Invite sent', 1400);
+                            this.renderer.showMessage(this.t('invite-sent'), 1400);
                         } catch (err) {
                             this.renderer.showMessage(err.message || this.t('account-server-unavailable'), 1800);
                         } finally {
@@ -1765,7 +1851,7 @@ class DominoGame {
                     });
                     const removeBtn = document.createElement('button');
                     removeBtn.className = 'btn btn-menu';
-                    removeBtn.textContent = this.currentLang === 'az' ? 'Sil' : 'Remove';
+                    removeBtn.textContent = this.t('friend-remove');
                     removeBtn.addEventListener('click', async () => {
                         removeBtn.disabled = true;
                         try {
@@ -1787,20 +1873,25 @@ class DominoGame {
 
             requestsList.innerHTML = '';
             if (!this.friendHub.incoming.length && !this.friendHub.outgoing.length) {
-                requestsList.innerHTML = `<div class="room-summary">${this.currentLang === 'az' ? 'Dostluq sorğusu yoxdur' : 'No friend requests'}</div>`;
+                this.setSummaryMessage(requestsList, this.t('no-friend-requests'));
             } else {
                 const renderRequest = (item, label, acceptable) => {
                     const card = document.createElement('div');
                     card.className = 'friend-card';
                     const copy = document.createElement('div');
                     copy.className = 'friend-card-copy';
-                    copy.innerHTML = `<strong>${item.friend.displayName}</strong><span>${label}</span>`;
+                    const name = document.createElement('strong');
+                    name.textContent = item.friend.displayName;
+                    const labelEl = document.createElement('span');
+                    labelEl.textContent = label;
+                    copy.appendChild(name);
+                    copy.appendChild(labelEl);
                     const action = document.createElement('div');
                     action.className = 'friend-card-actions';
                     if (acceptable) {
                         const acceptBtn = document.createElement('button');
                         acceptBtn.className = 'btn btn-action btn-strong';
-                        acceptBtn.textContent = this.currentLang === 'az' ? 'Qəbul et' : 'Accept';
+                        acceptBtn.textContent = this.t('friend-accept');
                         acceptBtn.addEventListener('click', async () => {
                             acceptBtn.disabled = true;
                             try {
@@ -1816,7 +1907,7 @@ class DominoGame {
                     }
                     const declineBtn = document.createElement('button');
                     declineBtn.className = 'btn btn-menu';
-                    declineBtn.textContent = this.currentLang === 'az' ? 'İmtina' : 'Decline';
+                    declineBtn.textContent = this.t('friend-decline');
                     declineBtn.addEventListener('click', async () => {
                         declineBtn.disabled = true;
                         try {
@@ -1833,25 +1924,30 @@ class DominoGame {
                     card.appendChild(action);
                     requestsList.appendChild(card);
                 };
-                this.friendHub.incoming.forEach((item) => renderRequest(item, this.currentLang === 'az' ? 'Gələn sorğu' : 'Incoming', true));
-                this.friendHub.outgoing.forEach((item) => renderRequest(item, this.currentLang === 'az' ? 'Göndərildi' : 'Outgoing', false));
+                this.friendHub.incoming.forEach((item) => renderRequest(item, this.t('friend-incoming'), true));
+                this.friendHub.outgoing.forEach((item) => renderRequest(item, this.t('friend-outgoing'), false));
             }
 
             invitesList.innerHTML = '';
             if (!this.roomInvitations.incoming.length) {
-                invitesList.innerHTML = `<div class="room-summary">${this.currentLang === 'az' ? 'Room invite yoxdur' : 'No room invites'}</div>`;
+                this.setSummaryMessage(invitesList, this.t('no-room-invites'));
             } else {
                 this.roomInvitations.incoming.forEach((invite) => {
                     const card = document.createElement('div');
                     card.className = 'friend-card';
                     const copy = document.createElement('div');
                     copy.className = 'friend-card-copy';
-                    copy.innerHTML = `<strong>${invite.inviter.displayName}</strong><span>${invite.roomCode || invite.roomId} · ${invite.roomMode || 'ffa'}</span>`;
+                    const name = document.createElement('strong');
+                    name.textContent = invite.inviter.displayName;
+                    const meta = document.createElement('span');
+                    meta.textContent = `${invite.roomCode || invite.roomId} В· ${invite.roomMode || 'ffa'}`;
+                    copy.appendChild(name);
+                    copy.appendChild(meta);
                     const action = document.createElement('div');
                     action.className = 'friend-card-actions';
                     const acceptBtn = document.createElement('button');
                     acceptBtn.className = 'btn btn-action btn-strong';
-                    acceptBtn.textContent = this.currentLang === 'az' ? 'Qoşul' : 'Join';
+                    acceptBtn.textContent = this.t('room-join');
                     acceptBtn.addEventListener('click', async () => {
                         acceptBtn.disabled = true;
                         try {
@@ -1866,7 +1962,7 @@ class DominoGame {
                     });
                     const declineBtn = document.createElement('button');
                     declineBtn.className = 'btn btn-menu';
-                    declineBtn.textContent = this.currentLang === 'az' ? 'İmtina' : 'Decline';
+                    declineBtn.textContent = this.t('friend-decline');
                     declineBtn.addEventListener('click', async () => {
                         declineBtn.disabled = true;
                         try {
@@ -1886,9 +1982,9 @@ class DominoGame {
                 });
             }
         } catch (err) {
-            friendsList.innerHTML = `<div class="room-summary">${err.message || this.t('account-server-unavailable')}</div>`;
-            requestsList.innerHTML = `<div class="room-summary">${err.message || this.t('account-server-unavailable')}</div>`;
-            invitesList.innerHTML = `<div class="room-summary">${err.message || this.t('account-server-unavailable')}</div>`;
+            this.setSummaryMessage(friendsList, err.message || this.t('account-server-unavailable'));
+            this.setSummaryMessage(requestsList, err.message || this.t('account-server-unavailable'));
+            this.setSummaryMessage(invitesList, err.message || this.t('account-server-unavailable'));
         }
     }
 
@@ -2058,7 +2154,7 @@ class DominoGame {
             const player = roomPlayers[index];
             if (player?.name) return player.name;
             if (player?.isBot) return `AI ${index + 1}`;
-            return this.currentLang === 'az' ? `Gözlənilir ${index + 1}` : `Waiting ${index + 1}`;
+            return this.format('room-waiting-player', { index: index + 1 });
         });
         this.scores = Array.from({ length: totalPlayers }, (_, index) => this.scores[index] || 0);
         this.roundWins = Array.from({ length: totalPlayers }, (_, index) => this.roundWins[index] || 0);
@@ -2100,7 +2196,7 @@ class DominoGame {
         const snapshot = this.persistGameResumeSnapshot();
         this.refreshResumeBanner(snapshot);
         if (payload.reconnecting) {
-            this.renderer.showMessage(this.currentLang === 'az' ? 'Baglanti qirildi. Yeniden qosuluruq...' : 'Connection lost. Reconnecting...', 2200);
+            this.renderer.showMessage(this.t('connection-lost'), 2200);
         }
     }
 
@@ -2111,20 +2207,20 @@ class DominoGame {
         document.getElementById('round-end-screen')?.classList.remove('active');
         document.getElementById('game-over-screen')?.classList.remove('active');
         document.getElementById('game-screen')?.classList.add('active');
-        this.renderer.showMessage(this.currentLang === 'az' ? 'Baglanti berpa olundu' : 'Connection restored', 1600);
+        this.renderer.showMessage(this.t('connection-restored'), 1600);
         this.persistGameResumeSnapshot();
     }
 
     onNetworkReconnectFailed(error) {
         console.warn('[Network] Reconnect failed permanently', error);
         this.refreshResumeBanner();
-        this.renderer.showMessage(this.currentLang === 'az' ? 'Sessiyani berpa etmek olmadi' : 'Could not restore the session', 2200);
+        this.renderer.showMessage(this.t('session-restore-failed'), 2200);
     }
 
     setupGameControls() {
         this.bindTap(this.renderer.drawBtn, () => this.drawFromBoneyard());
         this.bindTap(this.renderer.passBtn, () => this.passTurn());
-        document.getElementById('next-round-btn').addEventListener('click', () => {
+        document.getElementById('next-round-btn')?.addEventListener('click', () => {
             document.getElementById('round-end-screen').classList.remove('active');
             if (this.matchOver) { this.showMatchResult(); return; }
             if (this.network.isMultiplayer) {
@@ -2134,7 +2230,7 @@ class DominoGame {
                 else this.startDeal();
             }
         });
-        document.getElementById('new-game-btn').addEventListener('click', () => {
+        document.getElementById('new-game-btn')?.addEventListener('click', () => {
             document.getElementById('game-over-screen').classList.remove('active');
             document.getElementById('game-screen').classList.remove('active');
             document.getElementById('start-screen').classList.add('active');
@@ -2274,7 +2370,7 @@ class DominoGame {
         return `<img src="${src}" alt="${label}" width="${size}" height="${size}" loading="eager" decoding="async">`;
     }
     setupMenu() {
-        document.getElementById('menu-btn').addEventListener('click', () => {
+        document.getElementById('menu-btn')?.addEventListener('click', () => {
             this.closeReactionPicker();
             document.getElementById('menu-screen').classList.add('active');
         });
@@ -2289,8 +2385,8 @@ class DominoGame {
                 await this.openAccountModal();
             });
         }
-        document.getElementById('menu-resume').addEventListener('click', () => document.getElementById('menu-screen').classList.remove('active'));
-        document.getElementById('menu-newgame').addEventListener('click', () => { document.getElementById('menu-screen').classList.remove('active'); void this.startNewGame(); });
+        document.getElementById('menu-resume')?.addEventListener('click', () => document.getElementById('menu-screen').classList.remove('active'));
+        document.getElementById('menu-newgame')?.addEventListener('click', () => { document.getElementById('menu-screen').classList.remove('active'); void this.startNewGame(); });
         const menuProfileBtn = document.getElementById('menu-profile');
         if (menuProfileBtn) {
             menuProfileBtn.addEventListener('click', async () => {
@@ -2298,7 +2394,7 @@ class DominoGame {
                 await this.openAccountModal();
             });
         }
-        document.getElementById('menu-quit').addEventListener('click', async () => {
+        document.getElementById('menu-quit')?.addEventListener('click', async () => {
             document.getElementById('menu-screen').classList.remove('active');
             const shouldQuit = await this.confirmQuitCurrentMatch();
             if (!shouldQuit) return;
@@ -2316,12 +2412,8 @@ class DominoGame {
             : this.activeMatchEconomyMode === 'coins' && this.activeMatchStakeKey !== 'free';
 
         const message = isStakeGame
-            ? (this.currentLang === 'az'
-                ? 'Bu oyundan çıxsanız, cari gedişat silinəcək və bu partiya məğlubiyyət kimi sayılacaq. Davam edirsiniz?'
-                : 'If you quit now, the current game will be lost and this coin match will count as a defeat. Continue?')
-            : (this.currentLang === 'az'
-                ? 'Bu oyundan çıxsanız, cari gedişat silinəcək. Davam edirsiniz?'
-                : 'If you quit now, the current game progress will be lost. Continue?');
+            ? this.t('quit-confirm-stake')
+            : this.t('quit-confirm-free');
 
         return window.confirm(message);
     }
@@ -2445,9 +2537,7 @@ class DominoGame {
             this.currentRoundBankAmount = 0;
             this.syncSoloOptions();
             this.renderer.showMessage(
-                this.currentLang === 'az'
-                    ? 'Hesab tap?lmad?, pulsuz oyun rejimin? kecildi'
-                    : 'No account found, switched to free play',
+                this.t('no-account-free-play'),
                 2200
             );
             return { ok: true, mode: 'free', stakeKey: 'free', fallback: true };
@@ -2546,9 +2636,7 @@ class DominoGame {
         if (!stakeReady?.ok) {
             this.matchOver = true;
             this.renderer.showMessage(
-                this.currentLang === 'az'
-                    ? 'N?vb?ti raund ??n monet ?atm?r'
-                    : 'Not enough coins for the next round',
+                this.t('not-enough-coins-round'),
                 2400
             );
             if (this.matchRound <= 1) {
@@ -2600,12 +2688,37 @@ class DominoGame {
     set turnInProgress(v) { this._turnInProgress = v; if (v) this.lastTurnStartTime = Date.now(); }
 
     getTeam(i){return i%2;}
+    getTeamMembers(teamIndex) {
+        const limit = Math.min(this.playerCount || 0, this.playerNames.length, this.hands.length);
+        const members = [];
+        for (let i = 0; i < limit; i++) {
+            if (this.getTeam(i) === teamIndex) members.push(i);
+        }
+        return members;
+    }
+    getTeamDisplayName(teamIndex) {
+        const members = this.getTeamMembers(teamIndex);
+        const names = members.map((i) => this.playerNames[i] || `P${i + 1}`);
+        if (names.length) return names.join(' & ');
+        return teamIndex === 0 ? this.t('team-a') : this.t('team-b');
+    }
+    getTeamHandPoints(teamIndex) {
+        return this.getTeamMembers(teamIndex).reduce((total, i) => total + handPoints(this.hands[i] || []), 0);
+    }
+    getTeamLeftoverHands(teamIndex) {
+        return this.getTeamMembers(teamIndex).map((i) => this.hands[i] || []);
+    }
+    isPlayerInTeam(teamIndex, playerIndex) {
+        return this.getTeamMembers(teamIndex).includes(playerIndex);
+    }
     renderState() {
         let displayEntities;
         if (this.isTeamMode) {
+            const teamA = this.getTeamMembers(0);
+            const teamB = this.getTeamMembers(1);
             displayEntities = [
-                { name: `${this.playerNames[0]} & ${this.playerNames[2]}`, score: this.teamScores[0], roundWins: this.teamRoundWins[0], isCurrent: this.currentPlayer===0||this.currentPlayer===2, index: (this.currentPlayer===0||this.currentPlayer===2)?this.currentPlayer:-1 },
-                { name: `${this.playerNames[1]} & ${this.playerNames[3]}`, score: this.teamScores[1], roundWins: this.teamRoundWins[1], isCurrent: this.currentPlayer===1||this.currentPlayer===3, index: (this.currentPlayer===1||this.currentPlayer===3)?this.currentPlayer:-1 }
+                { name: this.getTeamDisplayName(0), score: this.teamScores[0], roundWins: this.teamRoundWins[0], isCurrent: this.isPlayerInTeam(0, this.currentPlayer), index: teamA.includes(this.currentPlayer) ? this.currentPlayer : -1 },
+                { name: this.getTeamDisplayName(1), score: this.teamScores[1], roundWins: this.teamRoundWins[1], isCurrent: this.isPlayerInTeam(1, this.currentPlayer), index: teamB.includes(this.currentPlayer) ? this.currentPlayer : -1 }
             ];
         } else {
             displayEntities = this.playerNames.map((n,i) => ({
@@ -2623,9 +2736,7 @@ class DominoGame {
             if (waitingOpenRoom) {
                 const seats = Number(this.currentRoomState?.humanSeats || this.currentRoomState?.totalPlayers || this.playerCount || 0);
                 const joined = Number(this.currentRoomState?.humanPlayers || 0);
-                roundInfo.textContent = this.currentLang === 'az'
-                    ? `Açıq otaq gözləyir: ${joined}/${seats}`
-                    : `Open room waiting: ${joined}/${seats}`;
+                roundInfo.textContent = this.format('room-waiting-open', { joined, seats });
                 roundInfo.classList.remove('is-hidden');
             } else {
                 roundInfo.textContent = '';
@@ -2634,9 +2745,7 @@ class DominoGame {
         }
         if (boneyardInfo) {
             if (waitingOpenRoom) {
-                boneyardInfo.textContent = this.currentLang === 'az'
-                    ? 'Yeni oyunçu qoşulana qədər gözlənilir'
-                    : 'Waiting for more players to join';
+                boneyardInfo.textContent = this.t('room-waiting-more-players');
                 boneyardInfo.classList.remove('is-hidden');
             } else {
                 boneyardInfo.textContent = '';
@@ -2685,8 +2794,8 @@ class DominoGame {
             "label-instant-win": { az: "35 points = match ends", en: "35 points = match ends" },
             "label-dloss": { az: "Loss threshold", en: "Loss threshold" },
             "label-rules": { az: "Rules", en: "Rules" },
-            "rule-match": { az: "365 points · 3 rounds", en: "365 points · 3 rounds" },
-            "rule-telephone": { az: "Telephone · [3|2]", en: "Telephone · [3|2]" },
+            "rule-match": { az: "365 points В· 3 rounds", en: "365 points В· 3 rounds" },
+            "rule-telephone": { az: "Telephone В· [3|2]", en: "Telephone В· [3|2]" },
             "btn-start": { az: "Solo play", en: "Solo play" },
             "btn-solo-start": { az: "Start", en: "Start" },
             "label-online": { az: "Online room", en: "Online room" },
@@ -2699,8 +2808,12 @@ class DominoGame {
             "label-round-short": { az: "R", en: "R" },
             "label-deal-short": { az: "D", en: "D" },
             "label-boneyard-short": { az: "Bazaar", en: "Bazaar" },
+            "summary-coins": { az: "Coinlər", en: "Coins" },
+            "summary-won": { az: "Qazanılan", en: "Won" },
+            "summary-lost": { az: "İtirilən", en: "Lost" },
+            "summary-net": { az: "Fərq", en: "Net" },
             "label-economy-mode": { az: "Game mode", en: "Game mode" },
-            "label-stake-table": { az: "Mərc masası", en: "Stake amount", ru: "Ставка" },
+            "label-stake-table": { az: "MЙ™rc masasД±", en: "Stake amount", ru: "РЎС‚Р°РІРєР°" },
             "label-stake-short": { az: "Bank", en: "Bank" },
             "economy-free": { az: "Free play", en: "Free play" },
             "economy-coins": { az: "Play on coins", en: "Play on coins" },
@@ -2718,8 +2831,8 @@ class DominoGame {
             "solo-modal-desc": { az: "Pick difficulty, player count and game mode.", en: "Pick difficulty, player count and game mode." },
             "online-modal-title": { az: "Online room", en: "Online room" },
             "online-modal-desc": { az: "Create a room, add bots or join with a code.", en: "Create a room, add bots or join with a code." },
-            "online-choice-create": { az: "Otaq yarat", en: "Create", ru: "Создать" },
-            "online-choice-connect": { az: "Qoşul", en: "Connect", ru: "Подключиться" },
+            "online-choice-create": { az: "Otaq yarat", en: "Create", ru: "РЎРѕР·РґР°С‚СЊ" },
+            "online-choice-connect": { az: "QoЕџul", en: "Connect", ru: "РџРѕРґРєР»СЋС‡РёС‚СЊСЃСЏ" },
             "account-btn": { az: "Account", en: "Account" },
             "account-kicker": { az: "Profile", en: "Profile" },
             "account-title": { az: "Account", en: "Account" },
@@ -2790,14 +2903,14 @@ class DominoGame {
             "online-room-closed": { az: "Room closed", en: "Room closed" },
             "online-room-summary": { az: "{humans} humans + {bots} AI, {total} total", en: "{humans} humans + {bots} AI, {total} total" },
             "online-bot-slot": { az: "AI {index}", en: "AI {index}" },
-            "resume-session-kicker": { az: "Yarımçıq sessiya", en: "Unfinished session", ru: "Незавершённая сессия" },
-            "resume-session": { az: "Davam et", en: "Resume", ru: "Продолжить" },
-            "resume-session-title": { az: "Yarımçıq sessiyanı davam etdir", en: "Continue your unfinished session", ru: "Продолжить незавершённую сессию" },
-            "resume-session-desc": { az: "Yarımda qalan oyunu eyni yerdən davam etdirə bilərsiniz.", en: "You can pick up the game from where you left off.", ru: "Можно продолжить игру с того же места." },
-            "resume-session-online-title": { az: "Onlayn sessiyanız yarımçıq qalıb", en: "Your online session is unfinished", ru: "Ваша онлайн-сессия не завершена" },
-            "resume-session-offline-title": { az: "Oyun yarımçıq qalıb", en: "Your offline game is unfinished", ru: "Игра не завершена" },
-            "resume-session-online-desc": { az: "Otağa geri qayıdıb həmin matçı davam etdirin.", en: "Reconnect and continue the same match.", ru: "Вернитесь в комнату и продолжите тот же матч." },
-            "resume-session-offline-desc": { az: "Yarımçıq oyunu eyni yerdən davam etdirin.", en: "Resume the game from the same point.", ru: "Продолжите игру с того же места." },
+            "resume-session-kicker": { az: "YarД±mГ§Д±q sessiya", en: "Unfinished session", ru: "РќРµР·Р°РІРµСЂС€С‘РЅРЅР°СЏ СЃРµСЃСЃРёСЏ" },
+            "resume-session": { az: "Davam et", en: "Resume", ru: "РџСЂРѕРґРѕР»Р¶РёС‚СЊ" },
+            "resume-session-title": { az: "YarД±mГ§Д±q sessiyanД± davam etdir", en: "Continue your unfinished session", ru: "РџСЂРѕРґРѕР»Р¶РёС‚СЊ РЅРµР·Р°РІРµСЂС€С‘РЅРЅСѓСЋ СЃРµСЃСЃРёСЋ" },
+            "resume-session-desc": { az: "YarД±mda qalan oyunu eyni yerdЙ™n davam etdirЙ™ bilЙ™rsiniz.", en: "You can pick up the game from where you left off.", ru: "РњРѕР¶РЅРѕ РїСЂРѕРґРѕР»Р¶РёС‚СЊ РёРіСЂСѓ СЃ С‚РѕРіРѕ Р¶Рµ РјРµСЃС‚Р°." },
+            "resume-session-online-title": { az: "Onlayn sessiyanД±z yarД±mГ§Д±q qalД±b", en: "Your online session is unfinished", ru: "Р’Р°С€Р° РѕРЅР»Р°Р№РЅ-СЃРµСЃСЃРёСЏ РЅРµ Р·Р°РІРµСЂС€РµРЅР°" },
+            "resume-session-offline-title": { az: "Oyun yarД±mГ§Д±q qalД±b", en: "Your offline game is unfinished", ru: "РРіСЂР° РЅРµ Р·Р°РІРµСЂС€РµРЅР°" },
+            "resume-session-online-desc": { az: "OtaДџa geri qayД±dД±b hЙ™min matГ§Д± davam etdirin.", en: "Reconnect and continue the same match.", ru: "Р’РµСЂРЅРёС‚РµСЃСЊ РІ РєРѕРјРЅР°С‚Сѓ Рё РїСЂРѕРґРѕР»Р¶РёС‚Рµ С‚РѕС‚ Р¶Рµ РјР°С‚С‡." },
+            "resume-session-offline-desc": { az: "YarД±mГ§Д±q oyunu eyni yerdЙ™n davam etdirin.", en: "Resume the game from the same point.", ru: "РџСЂРѕРґРѕР»Р¶РёС‚Рµ РёРіСЂСѓ СЃ С‚РѕРіРѕ Р¶Рµ РјРµСЃС‚Р°." },
             "round-end-next": { az: "Continue", en: "Continue" },
             "new-game-btn": { az: "New game", en: "New game" },
             "summary-title": { az: "Summary", en: "Summary" }
@@ -2878,7 +2991,7 @@ class DominoGame {
         }
         
         this.currentPlayer = state?.currentPlayerIndex ?? 0;
-        this.boneyard = new Array(state?.boneyardCount || 0).fill(null);
+        this.boneyard = Array.from({ length: state?.boneyardCount || 0 });
         this.isTeamMode = !!state?.isTeamMode;
         this.teamScores = Array.from(state?.teamScores || [0, 0]);
         this.teamRoundWins = Array.from(state?.teamRoundWins || [0, 0]);
@@ -2948,8 +3061,8 @@ class DominoGame {
         if(this.isTeamMode){
             const wt = data.winnerIndex % 2;
             displayEntities = [
-                {name: `${this.playerNames[0]} & ${this.playerNames[2]}`, isWinner: wt===0, score: this.teamScores[0], handPoints: handPoints(this.hands[0])+handPoints(this.hands[2]), leftoverHands: [this.hands[0], this.hands[2]]},
-                {name: `${this.playerNames[1]} & ${this.playerNames[3]}`, isWinner: wt===1, score: this.teamScores[1], handPoints: handPoints(this.hands[1])+handPoints(this.hands[3]), leftoverHands: [this.hands[1], this.hands[3]]}
+                {name: this.getTeamDisplayName(0), isWinner: wt===0, score: this.teamScores[0], handPoints: this.getTeamHandPoints(0), leftoverHands: this.getTeamLeftoverHands(0)},
+                {name: this.getTeamDisplayName(1), isWinner: wt===1, score: this.teamScores[1], handPoints: this.getTeamHandPoints(1), leftoverHands: this.getTeamLeftoverHands(1)}
             ];
         }else{
             displayEntities = this.playerNames.map((n,i)=>({name:n,isWinner:i===data.winnerIndex,handPoints:handPoints(this.hands[i]),score:this.scores[i], leftoverHands: [this.hands[i]]}));
@@ -3008,8 +3121,8 @@ class DominoGame {
         let displayEntities;
         if (data.isTeamMode) {
             displayEntities = [
-                {name: `${this.playerNames[0]} & ${this.playerNames[2]}`, isWinner: data.teamRoundWins[0] > data.teamRoundWins[1], score: data.teamScores[0], roundWins: data.teamRoundWins[0]},
-                {name: `${this.playerNames[1]} & ${this.playerNames[3]}`, isWinner: data.teamRoundWins[1] > data.teamRoundWins[0], score: data.teamScores[1], roundWins: data.teamRoundWins[1]}
+                {name: this.getTeamDisplayName(0), isWinner: data.teamRoundWins[0] > data.teamRoundWins[1], score: data.teamScores[0], roundWins: data.teamRoundWins[0]},
+                {name: this.getTeamDisplayName(1), isWinner: data.teamRoundWins[1] > data.teamRoundWins[0], score: data.teamScores[1], roundWins: data.teamRoundWins[1]}
             ];
         } else {
             displayEntities = data.players.map(p => ({name: p.name, isWinner: p.isWinner, score: p.score, roundWins: p.roundWins}));
@@ -3293,18 +3406,18 @@ class DominoGame {
                 this.turnInProgress = false;
                 this.passTurn();
             }
-        }, 600 + Math.random() * 400);
+        }, 600 + (window.crypto?.getRandomValues ? window.crypto.getRandomValues(new Uint32Array(1))[0] % 400 : 200));
     }
 
     findFishWinner(){
         if(this.isTeamMode){
-            const t0=handPoints(this.hands[0])+handPoints(this.hands[2]);
-            const t1=handPoints(this.hands[1])+handPoints(this.hands[3]);
+            const t0 = this.getTeamHandPoints(0);
+            const t1 = this.getTeamHandPoints(1);
             const winningTeam = t0<=t1?0:1;
-            const players = winningTeam === 0 ? [0, 2] : [1, 3];
+            const players = this.getTeamMembers(winningTeam);
             let minP = Infinity, bestP = players[0];
             for(const pIdx of players) {
-                const p = handPoints(this.hands[pIdx]);
+                const p = handPoints(this.hands[pIdx] || []);
                 if(p < minP) { minP = p; bestP = pIdx; }
             }
             return bestP;
@@ -3317,12 +3430,14 @@ class DominoGame {
         let displayEntities;
         if(this.isTeamMode){
             const wt=this.getTeam(wi);let os=0;
-            for(let i=0;i<4;i++)if(this.getTeam(i)!==wt)os+=handPoints(this.hands[i]);
-            if(fish)for(let i=0;i<4;i++)if(this.getTeam(i)===wt)os-=handPoints(this.hands[i]);
+            const teamMembers = this.getTeamMembers(wt);
+            const otherMembers = this.getTeamMembers(1 - wt);
+            for (const i of otherMembers) os += handPoints(this.hands[i] || []);
+            if (fish) for (const i of teamMembers) os -= handPoints(this.hands[i] || []);
             bonus=roundTo5(Math.max(0,os));bonus=this.addScore(wi,bonus);
             displayEntities = [
-                {name: `${this.playerNames[0]} & ${this.playerNames[2]}`, isWinner: wt===0, score: this.teamScores[0], handPoints: handPoints(this.hands[0])+handPoints(this.hands[2]), leftoverHands: [this.hands[0], this.hands[2]]},
-                {name: `${this.playerNames[1]} & ${this.playerNames[3]}`, isWinner: wt===1, score: this.teamScores[1], handPoints: handPoints(this.hands[1])+handPoints(this.hands[3]), leftoverHands: [this.hands[1], this.hands[3]]}
+                {name: this.getTeamDisplayName(0), isWinner: wt===0, score: this.teamScores[0], handPoints: this.getTeamHandPoints(0), leftoverHands: this.getTeamLeftoverHands(0)},
+                {name: this.getTeamDisplayName(1), isWinner: wt===1, score: this.teamScores[1], handPoints: this.getTeamHandPoints(1), leftoverHands: this.getTeamLeftoverHands(1)}
             ];
         }else{
             let os=0;for(let i=0;i<this.playerCount;i++)if(i!==wi)os+=handPoints(this.hands[i]);
@@ -3331,8 +3446,14 @@ class DominoGame {
             displayEntities = this.playerNames.map((n,i)=>({name:n,isWinner:i===wi,handPoints:handPoints(this.hands[i]),score:this.scores[i], leftoverHands: [this.hands[i]]}));
         }
         sndWin();
-        const cs=this.isTeamMode?Math.max(...this.teamScores):Math.max(...this.scores);
-        if(cs>=TARGET){const rw=this.isTeamMode?this.teamScores.indexOf(Math.max(...this.teamScores)):this.scores.indexOf(Math.max(...this.scores));this.endRound(this.isTeamMode?(rw===0?0:1):rw);return;}
+        const scorePool = this.isTeamMode ? this.teamScores : this.scores;
+        const cs = scorePool.length > 0 ? Math.max(...scorePool) : 0;
+        if (cs >= TARGET) {
+            const rw = scorePool.indexOf(cs);
+            if (rw === -1) return;
+            this.endRound(this.isTeamMode ? (rw === 0 ? 0 : 1) : rw);
+            return;
+        }
         this.renderer.renderDealEnd(this.playerNames[wi],displayEntities,fish,bonus);this.deal++;
         void this.syncLocalPresence();
     }
@@ -3343,8 +3464,8 @@ class DominoGame {
         if(this.isTeamMode){
             if(this.teamScores[1-this.getTeam(wi)]<this.dlossThreshold)wins=2;this.teamRoundWins[this.getTeam(wi)]+=wins;
             displayEntities = [
-                {name: `${this.playerNames[0]} & ${this.playerNames[2]}`, isWinner: this.getTeam(wi)===0, score: this.teamScores[0], roundWins: this.teamRoundWins[0]},
-                {name: `${this.playerNames[1]} & ${this.playerNames[3]}`, isWinner: this.getTeam(wi)===1, score: this.teamScores[1], roundWins: this.teamRoundWins[1]}
+                {name: this.getTeamDisplayName(0), isWinner: this.getTeam(wi)===0, score: this.teamScores[0], roundWins: this.teamRoundWins[0]},
+                {name: this.getTeamDisplayName(1), isWinner: this.getTeam(wi)===1, score: this.teamScores[1], roundWins: this.teamRoundWins[1]}
             ];
         }else{
             for(let i=0;i<this.playerCount;i++)if(i!==wi&&this.scores[i]<this.dlossThreshold){wins=2;break;}this.roundWins[wi]+=wins;
@@ -3365,7 +3486,7 @@ class DominoGame {
             : (this.soloEconomyMode === 'coins' ? { ...this.coinMatchSummary } : null);
         if(this.isTeamMode){
             const w=this.teamRoundWins[0]>=this.teamRoundWins[1]?0:1;
-            this.renderer.renderGameOver(w===0?`${this.playerNames[0]} & ${this.playerNames[2]}`:`${this.playerNames[1]} & ${this.playerNames[3]}`,[{name:this.t('team-a'),roundWins:this.teamRoundWins[0]},{name:this.t('team-b'),roundWins:this.teamRoundWins[1]}], economySummary);
+            this.renderer.renderGameOver(w===0?this.getTeamDisplayName(0):this.getTeamDisplayName(1),[{name:this.t('team-a'),roundWins:this.teamRoundWins[0]},{name:this.t('team-b'),roundWins:this.teamRoundWins[1]}], economySummary);
             void this.recordLocalMatchResult(w);
         }
         else{

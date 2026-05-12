@@ -6,6 +6,13 @@ export class Tile {
     otherSide(v) { return this.a === v ? this.b : (this.b === v ? this.a : -1); }
     toString() { return `[${this.a}|${this.b}]`; }
 }
+let fallbackSeed = (Date.now() ^ Math.floor((window.performance?.now?.() || 0) * 1000)) >>> 0;
+
+function fallbackRandomInt(max) {
+    fallbackSeed = (1664525 * fallbackSeed + 1013904223) >>> 0;
+    return max > 0 ? fallbackSeed % max : 0;
+}
+
 export function createFullSet() {
     const t = [];
     for (let a = 0; a <= 6; a++) for (let b = a; b <= 6; b++) t.push(new Tile(a, b));
@@ -13,7 +20,12 @@ export function createFullSet() {
 }
 export function shuffle(arr) {
     const a = [...arr];
-    for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
+    for (let i = a.length - 1; i > 0; i--) {
+        const j = window.crypto?.getRandomValues
+            ? window.crypto.getRandomValues(new Uint32Array(1))[0] % (i + 1)
+            : fallbackRandomInt(i + 1);
+        [a[i], a[j]] = [a[j], a[i]];
+    }
     return a;
 }
 export function getHandSize(pc) { return 7; }

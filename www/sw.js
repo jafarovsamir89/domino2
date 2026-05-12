@@ -1,4 +1,4 @@
-const CACHE_NAME = 'domino-v20';
+const CACHE_NAME = 'domino-v21';
 const ASSETS = [
     '/',
     '/index.html',
@@ -29,7 +29,21 @@ const ASSETS = [
 self.addEventListener('install', e => {
     self.skipWaiting();
     e.waitUntil(
-        caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS))
+        (async () => {
+            const cache = await caches.open(CACHE_NAME);
+            const results = await Promise.allSettled(ASSETS.map(async (asset) => {
+                const request = new Request(asset, { cache: 'reload' });
+                const response = await fetch(request);
+                if (!response.ok) {
+                    throw new Error(`Failed to precache ${asset}: ${response.status}`);
+                }
+                await cache.put(request, response.clone());
+            }));
+            const failed = results.filter((result) => result.status === 'rejected');
+            if (failed.length) {
+                console.warn('[SW] Some assets could not be precached:', failed.length);
+            }
+        })()
     );
 });
 
