@@ -33,6 +33,7 @@ class GameState extends Schema {
         this.boardJson = "{}"; // Send complex board state as JSON for now
         this.isTeamMode = false;
         this.playerCount = 2;
+        this.turnDeadlineAt = 0;
         this.teamScores = new ArraySchema(0, 0);
         this.teamRoundWins = new ArraySchema(0, 0);
     }
@@ -47,6 +48,7 @@ type("number")(GameState.prototype, "deal");
 type("string")(GameState.prototype, "boardJson");
 type("boolean")(GameState.prototype, "isTeamMode");
 type("number")(GameState.prototype, "playerCount");
+type("number")(GameState.prototype, "turnDeadlineAt");
 type(["number"])(GameState.prototype, "teamScores");
 type(["number"])(GameState.prototype, "teamRoundWins");
 

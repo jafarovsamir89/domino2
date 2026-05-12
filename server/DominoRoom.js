@@ -86,6 +86,9 @@ class DominoRoom extends Room {
         this.lastReservedMatchRound = 0;
         this.pendingEconomySettlement = Promise.resolve();
         this.botTimer = null;
+        this.turnTimer = null;
+        this.turnTimeoutMs = 60000;
+        this.turnDeadlineAt = 0;
         this.botIds = [];
         this.aiPlayers = new Map();
         this.matchRecorded = false;
@@ -263,6 +266,7 @@ class DominoRoom extends Room {
         global.__DOMINO_ROOM_IDS?.delete(this.roomId);
         removeRoomPlayers(this.roomId);
         this.botTimer && clearTimeout(this.botTimer);
+        this.clearTurnTimer();
         this.botTimer = null;
         this.aiPlayers?.clear?.();
         this.identityBySessionId?.clear?.();
@@ -399,6 +403,7 @@ class DominoRoom extends Room {
             clearTimeout(this.botTimer);
             this.botTimer = null;
         }
+        this.clearTurnTimer();
         await this.pendingEconomySettlement.catch(() => {});
         this.matchRecorded = false;
         this.internalBoard = new Board();
@@ -443,8 +448,71 @@ class DominoRoom extends Room {
             this.lastReservedMatchRound = this.state.matchRound;
         }
         this.state.gameActive = true;
+        this.scheduleTurnTimer();
+    }
+
+    clearTurnTimer() {
+        if (this.turnTimer) {
+            clearTimeout(this.turnTimer);
+            this.turnTimer = null;
+        }
+        this.turnDeadlineAt = 0;
+        if (this.state) this.state.turnDeadlineAt = 0;
+    }
+
+    scheduleTurnTimer() {
+        if (!this.state.gameActive) {
+            this.clearTurnTimer();
+            return;
+        }
+        if (this.turnTimer) clearTimeout(this.turnTimer);
+        this.turnDeadlineAt = Date.now() + this.turnTimeoutMs;
+        this.state.turnDeadlineAt = this.turnDeadlineAt;
         this.syncState();
-        this.scheduleBotTurn();
+        this.turnTimer = setTimeout(() => {
+            this.turnTimer = null;
+            this.handleTurnTimeout();
+        }, this.turnTimeoutMs);
+    }
+
+    findTimeoutWinner(timeoutIndex) {
+        if (this.state.isTeamMode) {
+            const losingTeam = timeoutIndex % 2;
+            const winningTeam = losingTeam === 0 ? 1 : 0;
+            const members = this.getTeamMembers(winningTeam);
+            let minPoints = Infinity;
+            let bestIndex = members[0] ?? 0;
+            for (const pIdx of members) {
+                const points = handPoints(this.hands[pIdx] || []);
+                if (points < minPoints) {
+                    minPoints = points;
+                    bestIndex = pIdx;
+                }
+            }
+            return bestIndex;
+        }
+
+        let minPoints = Infinity;
+        let bestIndex = -1;
+        for (let i = 0; i < this.totalPlayers; i++) {
+            if (i === timeoutIndex) continue;
+            const points = handPoints(this.hands[i] || []);
+            if (points < minPoints) {
+                minPoints = points;
+                bestIndex = i;
+            }
+        }
+        return bestIndex === -1 ? 0 : bestIndex;
+    }
+
+    handleTurnTimeout() {
+        if (!this.state.gameActive || this.matchFinished) return;
+        const currentIndex = Number(this.state.currentPlayerIndex || 0);
+        const winnerIndex = this.findTimeoutWinner(currentIndex);
+        const actor = this.state.players.get(this.state.playerOrder[currentIndex]);
+        const actorName = actor ? actor.name : "Player";
+        this.broadcast("msg", { text: `${actorName} ran out of time`, time: 2000 });
+        void this.endRound(winnerIndex, false);
     }
 
     async reserveEconomyStake() {
@@ -964,6 +1032,7 @@ class DominoRoom extends Room {
         if (!isValid) return;
 
         hand.splice(tileIndex, 1);
+        this.clearTurnTimer();
         this.broadcast("sound", "place");
 
         let score = this.internalBoard.isEmpty ? this.internalBoard.placeFirst(tile) : this.internalBoard.placeTile(tile, openEndIndex);
@@ -1022,6 +1091,7 @@ class DominoRoom extends Room {
         if (!isBot) {
             this.broadcast("msg", { text: `${actorName} passed`, time: 1500 });
         }
+        this.clearTurnTimer();
         this.advanceTurn();
         return true;
     }
@@ -1045,6 +1115,7 @@ class DominoRoom extends Room {
         }
 
         if (score > 0) this.addScore(pi, score);
+        this.clearTurnTimer();
         const actor = this.state.players.get(this.state.playerOrder[pi]);
         const actorName = actor ? actor.name : "Player";
         if (!isBot) {
@@ -1097,7 +1168,7 @@ class DominoRoom extends Room {
             return;
         }
         this.state.currentPlayerIndex = (this.state.currentPlayerIndex + 1) % this.totalPlayers;
-        this.syncState();
+        this.scheduleTurnTimer();
     }
 
     addScore(pi, score) {
@@ -1143,6 +1214,7 @@ class DominoRoom extends Room {
             clearTimeout(this.botTimer);
             this.botTimer = null;
         }
+        this.clearTurnTimer();
         this.state.gameActive = false;
         this.lastDealWinner = wi;
         let bonus = 0;
@@ -1191,7 +1263,9 @@ class DominoRoom extends Room {
             clearTimeout(this.botTimer);
             this.botTimer = null;
         }
+        this.clearTurnTimer();
         this.state.gameActive = false;
+        this.syncState();
         const economySummary = this.currentStakeKey !== "free"
             ? await this.settleEconomyRound(wi, !!isInstantWin, null, null)
             : null;
@@ -1291,6 +1365,7 @@ class DominoRoom extends Room {
             boardJson: this.state.boardJson,
             isTeamMode: this.state.isTeamMode,
             playerCount: this.state.playerCount,
+            turnDeadlineAt: this.state.turnDeadlineAt || 0,
             teamScores: Array.from(this.state.teamScores || [0, 0]),
             teamRoundWins: Array.from(this.state.teamRoundWins || [0, 0]),
             players: playerOrder.map((sessionId) => {
@@ -1351,6 +1426,7 @@ class DominoRoom extends Room {
         this.state.boardJson = snapshot.boardJson || "{}";
         this.state.isTeamMode = Boolean(snapshot.isTeamMode);
         this.state.playerCount = Number(snapshot.playerCount || this.totalPlayers || 2);
+        this.state.turnDeadlineAt = Number(snapshot.turnDeadlineAt || 0);
 
         const teamScores = Array.isArray(snapshot.teamScores) ? snapshot.teamScores : [0, 0];
         const teamRoundWins = Array.isArray(snapshot.teamRoundWins) ? snapshot.teamRoundWins : [0, 0];
@@ -1417,6 +1493,7 @@ class DominoRoom extends Room {
         this.lastReservedMatchRound = data.lastReservedMatchRound ?? this.lastReservedMatchRound;
         this.matchRecorded = data.matchRecorded ?? this.matchRecorded;
         this.forfeitSettlementMade = data.forfeitSettlementMade ?? this.forfeitSettlementMade;
+        this.state.turnDeadlineAt = Number(data?.state?.turnDeadlineAt || this.state.turnDeadlineAt || 0);
         this.lastRoundEconomySummary = data.lastRoundEconomySummary ?? this.lastRoundEconomySummary;
         this.lastDealWinner = data.lastDealWinner ?? this.lastDealWinner;
         this.botIds = data.botIds || this.botIds || [];
@@ -1445,6 +1522,16 @@ class DominoRoom extends Room {
             this.playerMissingSuits.push(new Set());
         }
         this.ensureBotPlayers();
+        if (this.state.gameActive && this.state.turnDeadlineAt) {
+            if (this.turnTimer) clearTimeout(this.turnTimer);
+            const remaining = Math.max(0, Number(this.state.turnDeadlineAt) - Date.now());
+            this.turnTimer = setTimeout(() => {
+                this.turnTimer = null;
+                this.handleTurnTimeout();
+            }, remaining);
+        } else {
+            this.clearTurnTimer();
+        }
     }
 
     async saveCustomStateToRedis() {

@@ -1485,6 +1485,50 @@ input, button { font: inherit; }
     overflow: visible;
 }
 
+.turn-timer-slot {
+    width: 54px;
+    flex: 0 0 auto;
+    display: grid;
+    place-items: center;
+}
+
+.turn-timer-slot.is-hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.turn-timer-ring {
+    width: 54px;
+    height: 54px;
+    border-radius: 50%;
+    padding: 3px;
+    background:
+        conic-gradient(from -90deg, var(--accent) 0deg var(--turn-angle), rgba(255, 255, 255, 0.10) var(--turn-angle) 360deg);
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.24);
+    display: grid;
+    place-items: center;
+    transition: filter 0.2s ease, transform 0.2s ease;
+}
+
+.turn-timer-ring.is-urgent {
+    filter: drop-shadow(0 0 10px rgba(240, 192, 64, 0.32));
+}
+
+.turn-timer-avatar {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    background: linear-gradient(180deg, rgba(13, 22, 34, 0.98), rgba(20, 33, 48, 0.98));
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    color: var(--text);
+    font-size: 0.92rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
 .reaction-slot {
     position: relative;
     display: flex;

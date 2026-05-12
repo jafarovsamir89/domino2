@@ -40,6 +40,10 @@ class DominoGame {
         this._aiTurnTimeout = null;
         this._turnAdvanceTimeout = null;
         this._dealEndTimeout = null;
+        this._turnTimeoutId = null;
+        this._turnTimerTickId = null;
+        this.turnDeadlineAt = 0;
+        this.turnTimeoutMs = 60000;
         this.network = new NetworkManager(this);
         this.account = new AccountClient(() => this.network.getServerUrl());
         this.accountProfile = this.account.getStoredProfile();
@@ -1056,10 +1060,16 @@ class DominoGame {
         clearTimeout(this._aiTurnTimeout);
         clearTimeout(this._turnAdvanceTimeout);
         clearTimeout(this._dealEndTimeout);
+        clearTimeout(this._turnTimeoutId);
+        clearInterval(this._turnTimerTickId);
         this._firstTurnTimeout = null;
         this._aiTurnTimeout = null;
         this._turnAdvanceTimeout = null;
         this._dealEndTimeout = null;
+        this._turnTimeoutId = null;
+        this._turnTimerTickId = null;
+        this.turnDeadlineAt = 0;
+        this.updateTurnTimerHud();
     }
 
     setSummaryMessage(container, message) {
@@ -1211,6 +1221,113 @@ class DominoGame {
             stakeInfo.id = 'stake-info';
             gameInfo.insertBefore(stakeInfo, document.getElementById('boneyard-info'));
         }
+
+        const actionBar = document.querySelector('.action-bar');
+        if (actionBar && !document.getElementById('turn-timer-slot')) {
+            const slot = document.createElement('div');
+            slot.id = 'turn-timer-slot';
+            slot.className = 'turn-timer-slot';
+            slot.innerHTML = `
+                <div class="turn-timer-ring" id="turn-timer-ring" style="--turn-angle: 0deg;">
+                    <div class="turn-timer-avatar" id="turn-timer-avatar">P</div>
+                </div>
+            `;
+            const drawBtn = document.getElementById('draw-btn');
+            if (drawBtn) actionBar.insertBefore(slot, drawBtn);
+            else actionBar.appendChild(slot);
+        }
+    }
+
+    getTurnAvatarText(name) {
+        const clean = String(name || '').trim();
+        if (!clean) return 'P';
+        const parts = clean.split(/\s+/).filter(Boolean);
+        if (parts.length === 1) return parts[0].slice(0, 1).toUpperCase();
+        return `${parts[0].slice(0, 1)}${parts[1].slice(0, 1)}`.toUpperCase();
+    }
+
+    startTurnTimer(deadlineAt = null) {
+        const endAt = Number(deadlineAt || (Date.now() + this.turnTimeoutMs));
+        this.turnDeadlineAt = endAt;
+        clearTimeout(this._turnTimeoutId);
+        clearInterval(this._turnTimerTickId);
+        this._turnTimerTickId = setInterval(() => this.updateTurnTimerHud(), 200);
+        const delay = Math.max(0, endAt - Date.now());
+        this._turnTimeoutId = setTimeout(() => {
+            this._turnTimeoutId = null;
+            if (this.network.isMultiplayer) {
+                clearInterval(this._turnTimerTickId);
+                this._turnTimerTickId = null;
+                this.updateTurnTimerHud();
+                return;
+            }
+            this.handleTurnTimeout();
+        }, delay);
+        this.updateTurnTimerHud();
+        this.persistGameResumeSnapshot();
+    }
+
+    handleTurnTimeout() {
+        if (!this.gameActive || this.roundOver || this.matchOver) return;
+        if (this.network.isMultiplayer) return;
+        const timeoutIndex = this.currentPlayer;
+        const winnerIndex = this.findTimeoutWinner(timeoutIndex);
+        const actorName = this.playerNames[timeoutIndex] || this.t('online-you');
+        this.renderer.showMessage(this.format('turn-timeout', { player: actorName }), 2200);
+        this.endRound(winnerIndex, false);
+    }
+
+    findTimeoutWinner(timeoutIndex) {
+        if (this.isTeamMode) {
+            const timeoutTeam = timeoutIndex % 2;
+            const winningTeam = timeoutTeam === 0 ? 1 : 0;
+            const members = this.getTeamMembers(winningTeam);
+            let best = members[0] ?? 0;
+            let minPoints = Infinity;
+            for (const idx of members) {
+                const points = handPoints(this.hands[idx] || []);
+                if (points < minPoints) {
+                    minPoints = points;
+                    best = idx;
+                }
+            }
+            return best;
+        }
+
+        let best = timeoutIndex === 0 ? 1 : 0;
+        let minPoints = Infinity;
+        for (let i = 0; i < this.playerCount; i++) {
+            if (i === timeoutIndex) continue;
+            const points = handPoints(this.hands[i] || []);
+            if (points < minPoints) {
+                minPoints = points;
+                best = i;
+            }
+        }
+        return best;
+    }
+
+    updateTurnTimerHud() {
+        const slot = document.getElementById('turn-timer-slot');
+        const ring = document.getElementById('turn-timer-ring');
+        const avatar = document.getElementById('turn-timer-avatar');
+        if (!slot || !ring || !avatar) return;
+
+        const shouldShow = this.gameActive && !this.roundOver && !this.matchOver && this.turnDeadlineAt > 0;
+        slot.classList.toggle('is-hidden', !shouldShow);
+        if (!shouldShow) {
+            ring.style.setProperty('--turn-angle', '0deg');
+            avatar.textContent = 'P';
+            return;
+        }
+
+        const currentName = this.playerNames[this.currentPlayer] || this.playerName || 'Player';
+        avatar.textContent = this.getTurnAvatarText(currentName);
+        const remaining = Math.max(0, this.turnDeadlineAt - Date.now());
+        const progress = Math.min(1, Math.max(0, 1 - (remaining / this.turnTimeoutMs)));
+        const angle = Math.max(0, Math.min(360, progress * 360));
+        ring.style.setProperty('--turn-angle', `${angle}deg`);
+        ring.classList.toggle('is-urgent', remaining <= 10000);
     }
 
     ensureMenuEnhancements() {
@@ -1348,6 +1465,7 @@ class DominoGame {
             roundOver: this.roundOver,
             matchOver: this.matchOver,
             lastDealWinner: this.lastDealWinner,
+            turnDeadlineAt: this.turnDeadlineAt || 0,
             dlossThreshold: this.dlossThreshold,
             instantWinEnabled: this.instantWinEnabled,
             board: boardState,
@@ -1554,6 +1672,7 @@ class DominoGame {
             this.roundOver = !!snapshot.roundOver;
             this.matchOver = !!snapshot.matchOver;
             this.lastDealWinner = snapshot.lastDealWinner ?? null;
+            this.turnDeadlineAt = Number(snapshot.turnDeadlineAt || 0);
             this.dlossThreshold = Number(snapshot.dlossThreshold ?? this.dlossThreshold);
             this.instantWinEnabled = snapshot.instantWinEnabled !== false;
             this.board = snapshot.board ? reconstructBoard(snapshot.board) : new Board();
@@ -1572,6 +1691,11 @@ class DominoGame {
             document.getElementById('game-screen')?.classList.add('active');
             this.syncSoloOptions();
             this.renderState();
+            if (this.gameActive && this.turnDeadlineAt > 0) {
+                this.startTurnTimer(this.turnDeadlineAt);
+            } else {
+                this.clearTurnTimers();
+            }
             if (this.gameActive && this.currentPlayer !== this.humanPlayerIndex) {
                 this.queueAITurnIfNeeded(800);
             }
@@ -2815,6 +2939,7 @@ class DominoGame {
         if(this.lastDealWinner!==null){
             const fp=this.lastDealWinner;
             this.currentPlayer=fp; this.renderState();
+            this.startTurnTimer();
             console.log('[startDeal] Last deal winner starts:', fp);
             this.broadcastMsg(this.format('msg-last-winner-starts', { player: this.playerNames[fp] }),2000);
             this.queueAITurnIfNeeded(1500, turnCycleId);
@@ -2822,6 +2947,7 @@ class DominoGame {
             const f=determineFirstPlayer(this.hands);
             const fp=f.player; const fi=f.tileIndex;
             this.currentPlayer=fp; this.renderState();
+            this.startTurnTimer();
             console.log('[startDeal] First player determined:', fp);
             this.broadcastMsg(this.format('msg-first-turn', { player: this.playerNames[fp] }),2000);
             this.turnInProgress=true;
@@ -2916,6 +3042,7 @@ class DominoGame {
 
         this.goshaCombo = (this.gameActive && myTurn) ? this.board.getGoshaCombo(myHand) : null;
         this.renderer.showGoshaBtn(this.goshaCombo, () => this.playGoshaCombo());
+        this.updateTurnTimerHud();
         void this.syncLocalPresence();
         this.persistGameResumeSnapshot();
     }
@@ -3151,6 +3278,11 @@ class DominoGame {
         this.gameActive = !!state?.gameActive;
         this.onlineStakeKey = state?.stakeKey || this.onlineStakeKey;
         this.onlineRoundBankAmount = Math.max(0, Number(state?.bankAmount || 0));
+        if (this.gameActive && Number(state?.turnDeadlineAt || 0) > 0) {
+            this.startTurnTimer(Number(state.turnDeadlineAt));
+        } else {
+            this.clearTurnTimers();
+        }
 
         // Hide start screen if we just started
         if (this.gameActive && document.getElementById('start-screen').classList.contains('active')) {
@@ -3204,6 +3336,7 @@ class DominoGame {
 
     onNetworkDealEnd(data) {
         this.gameActive = false;
+        this.clearTurnTimers();
         // Reconstruct all hands to show them at the end
         const finalHands = data.hands.map(h => h.map(t => new Tile(t.a, t.b)));
         this.hands = finalHands;
@@ -3225,6 +3358,7 @@ class DominoGame {
 
     onNetworkRoundEnd(data) {
         this.gameActive = false;
+        this.clearTurnTimers();
         const wi = data.winnerIndex;
         this.roundOver = true;
 
@@ -3342,6 +3476,7 @@ class DominoGame {
         const isAI = this.ais.some(a => a.index === this.currentPlayer);
         if (!isHuman && !isAI) return;
 
+        this.clearTurnTimers();
         this.turnInProgress=true; this.playSound('gosha');
         const pi = this.currentPlayer;
         const hand=this.hands[pi];
@@ -3417,6 +3552,7 @@ class DominoGame {
         for (const v of openValues) {
             if (this.playerMissingSuits[pi]) this.playerMissingSuits[pi].add(v);
         }
+        this.clearTurnTimers();
         this.turnInProgress=true;
         this.playSound('pass'); this.broadcastMsg(this.t('btn-pass'), 300); 
         this._turnAdvanceTimeout = setTimeout(()=>{this.turnInProgress=false;this.advanceTurn();}, 300);
@@ -3448,6 +3584,7 @@ class DominoGame {
 
     async playTile(pi,ti,oei) {
         if(this.turnInProgress) return;
+        this.clearTurnTimers();
         this.turnInProgress=true;
         const turnCycleId = this._turnCycleId;
         try {
@@ -3494,6 +3631,7 @@ class DominoGame {
         if(this.board.isBlocked(this.hands,this.boneyard)){this.endDeal(this.findFishWinner(),true);return;}
         this.currentPlayer=(this.currentPlayer+1)%this.playerCount;
         this.renderState();
+        this.startTurnTimer();
         if(this.currentPlayer===this.humanPlayerIndex){
             const h=this.hands[this.currentPlayer];
             if(!this.board.canPlayAny(h)&&!this.boneyard.length){
@@ -3577,7 +3715,7 @@ class DominoGame {
     }
     endDeal(wi,fish){
         this.roundOver=false;
-        this.gameActive=false;this.lastDealWinner=wi;this.turnInProgress=false;let bonus=0;
+        this.gameActive=false;this.lastDealWinner=wi;this.turnInProgress=false;this.clearTurnTimers();let bonus=0;
         let displayEntities;
         if(this.isTeamMode){
             const wt=this.getTeam(wi);let os=0;
@@ -3606,10 +3744,12 @@ class DominoGame {
             return;
         }
         this.renderer.renderDealEnd(this.playerNames[wi],displayEntities,fish,bonus);this.deal++;
+        this.persistGameResumeSnapshot();
         void this.syncLocalPresence();
     }
     endRound(wi){
         this.roundOver=true;
+        this.clearTurnTimers();
         let wins=1;
         let displayEntities;
         if(this.isTeamMode){
@@ -3629,6 +3769,7 @@ class DominoGame {
             this.pendingSoloSettlement = this.settleSoloRoundStake(wi);
         }
         this.renderer.renderRoundEnd(this.playerNames[wi],displayEntities,wins,this.matchRound,this.matchOver);this.matchRound++;
+        this.persistGameResumeSnapshot();
         void this.syncLocalPresence();
     }
     showMatchResult(){
