@@ -247,8 +247,38 @@ input, button { font: inherit; }
     place-items: center;
     border-radius: 8px;
     font-weight: 800;
-    color: #0f1923;
+    color: transparent;
+    font-size: 0;
+    line-height: 0;
     background: linear-gradient(135deg, #ffe39c, #f0c040);
+    flex: 0 0 auto;
+    overflow: hidden;
+}
+
+.auth-icon svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+.auth-icon-google {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.auth-icon-apple {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.auth-icon-email,
+.auth-icon-pencil {
+    color: var(--bg);
+}
+
+.auth-icon-pencil {
+    width: 18px;
+    height: 18px;
 }
 
 .landing-email-form {
@@ -1030,6 +1060,18 @@ input, button { font: inherit; }
     gap: 14px;
 }
 
+.account-profile-copy {
+    min-width: 0;
+    display: grid;
+    gap: 4px;
+}
+
+.account-profile-name-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
 .account-avatar {
     width: 62px;
     height: 62px;
@@ -1047,6 +1089,15 @@ input, button { font: inherit; }
 .account-profile-name {
     font-size: 1.05rem;
     font-weight: 800;
+    line-height: 1.2;
+    word-break: break-word;
+}
+
+.account-profile-id {
+    color: var(--accent);
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
 }
 
 .account-profile-meta {
@@ -1090,6 +1141,27 @@ input, button { font: inherit; }
 
 .account-toolbar .btn {
     flex: 1;
+}
+
+.icon-btn {
+    width: 30px;
+    height: 30px;
+    min-width: 30px;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--text);
+    display: inline-grid;
+    place-items: center;
+    padding: 0;
+}
+
+.icon-btn:hover {
+    background: rgba(255, 255, 255, 0.11);
+}
+
+.modal-card-small {
+    width: min(520px, 100%);
 }
 
 .account-history {
