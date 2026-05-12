@@ -160,9 +160,7 @@ class NetworkManager {
             playerCount: this.game.onlinePlayerCount,
             aiCount: this.game.onlineAiCount,
             roomVisibility: this.game.onlineRoomVisibility === "open" ? "open" : "closed",
-            stakeKey: this.game.onlineEconomyMode === "coins"
-                ? (this.game.onlineStakeKey && this.game.onlineStakeKey !== "free" ? this.game.onlineStakeKey : "stake_200")
-                : "free",
+            stakeKey: this.game.onlineStakeKey || "stake_200",
             instantWinEnabled: document.getElementById('instant-win-setting')?.checked,
             dlossThreshold: parseInt(document.getElementById('dloss-setting')?.value || '255', 10),
             ...extra
@@ -176,7 +174,7 @@ class NetworkManager {
         }
     }
 
-    activateRoom(room, { isHost = false, isGuest = true, notifyReconnect = false } = {}) {
+    activateRoom(room, { isHost = false, isGuest = false, notifyReconnect = false } = {}) {
         this.clearReconnectTimer();
         this.room = room;
         this.isMultiplayer = true;

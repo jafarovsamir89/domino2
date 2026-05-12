@@ -77,7 +77,7 @@ class DominoRoom extends Room {
         this.instantWinEnabled = options.instantWinEnabled !== false;
         this.aiDifficulty = options.difficulty || "medium";
         this.roomVisibility = String(options.roomVisibility || "closed").trim() === "open" ? "open" : "closed";
-        this.currentStakeKey = String(options.stakeKey || "free").trim() || "free";
+        this.currentStakeKey = String(options.stakeKey || "stake_200").trim() || "stake_200";
         this.economyReservationMade = false;
         this.currentDealMatchId = "";
         this.currentDealStakeKey = this.currentStakeKey;
@@ -123,15 +123,7 @@ class DominoRoom extends Room {
                 role: platformIdentity.role
             };
         }
-
-        return {
-            provider: "guest",
-            authToken: "",
-            userId: "",
-            playerId: "",
-            displayName: sanitizeName(options?.name),
-            role: "player"
-        };
+        throw new Error("auth_required");
     }
 
     findReusableSessionId(options = {}, identity = {}) {
@@ -175,7 +167,7 @@ class DominoRoom extends Room {
             totalPlayers: this.totalPlayers,
             aiCount: this.aiCount,
             isTeamMode: this.state.isTeamMode,
-            provider: identity.provider || "guest",
+            provider: identity.provider || "platform",
             userId: player.userId || "",
             playerId: identity.playerId || player.userId || "",
             displayName: player.name,
@@ -209,7 +201,7 @@ class DominoRoom extends Room {
                 removeLivePlayer(reusableSessionId);
                 this.identityBySessionId.set(client.sessionId, {
                     ...existingIdentity,
-                    provider: identity.provider || existingIdentity.provider || "guest",
+                    provider: identity.provider || existingIdentity.provider || "platform",
                     authToken: authToken || existingIdentity.authToken || "",
                     userId: String(identity.userId || existingIdentity.userId || player.userId || ""),
                     displayName: sanitizeName(identity.displayName || existingIdentity.displayName || player.name || options.name),
@@ -240,7 +232,7 @@ class DominoRoom extends Room {
         const existingIdentity = this.identityBySessionId.get(client.sessionId) || {};
         const nextIdentity = {
             ...existingIdentity,
-            provider: identity.provider || "guest",
+            provider: identity.provider || "platform",
             authToken: authToken || existingIdentity.authToken || "",
             userId: player.userId,
             displayName: player.name,
@@ -316,7 +308,7 @@ class DominoRoom extends Room {
                 totalPlayers: this.totalPlayers,
                 aiCount: this.aiCount,
                 isTeamMode: this.state.isTeamMode,
-                provider: identity.provider || "guest",
+                provider: identity.provider || "platform",
                 userId: identity.userId || "",
                 playerId: identity.playerId || identity.userId || "",
                 displayName: identity.displayName || player?.name || "Player",
@@ -346,7 +338,7 @@ class DominoRoom extends Room {
                     totalPlayers: this.totalPlayers,
                     aiCount: this.aiCount,
                     isTeamMode: this.state.isTeamMode,
-                    provider: identity.provider || "guest",
+                    provider: identity.provider || "platform",
                     userId: identity.userId || "",
                     playerId: identity.playerId || identity.userId || "",
                     displayName: identity.displayName || player?.name || "Player",
@@ -439,7 +431,9 @@ class DominoRoom extends Room {
                 const reason = reserveResult?.reason || "stake_unavailable";
                 const message = reason === "insufficient_coins"
                     ? "Not enough coins for the next round"
-                    : "Stake table unavailable, room closed";
+                    : reason === "auth_required"
+                        ? "Registered accounts are required for coin tables"
+                        : "Stake table unavailable, room closed";
                 this.state.gameActive = false;
                 this.broadcast("msg", { text: message, time: 2500 });
                 this.broadcast("room_closed", { reason: message });
@@ -479,13 +473,10 @@ class DominoRoom extends Room {
 
         const hasUnlinkedHuman = sessionIdentities.some(({ identity }) => identity.provider !== "platform" && identity.provider !== "bot");
         if (hasUnlinkedHuman) {
-            this.currentStakeKey = "free";
-            this.economyReservationMade = true;
-            this.broadcast("msg", { text: "Stake table requires linked accounts, switched to free table", time: 2400 });
-            this.currentDealStakeKey = "free";
+            this.broadcast("msg", { text: "Registered accounts are required for coin tables", time: 2400 });
             this.currentDealStakeAmount = 0;
             this.currentDealBankAmount = 0;
-            return { ok: true, reserved: 0, stakeKey: "free", bankAmount: 0, switchedToFree: true };
+            return { ok: false, reason: "auth_required" };
         }
 
         const participants = sessionIdentities

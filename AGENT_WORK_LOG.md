@@ -476,3 +476,10 @@
 - Exposed the current online bank amount through room state so the in-game HUD can show `Bank: X` instead of falling back to the old stake text.
 - Closed coin rooms cleanly when the next online round cannot be reserved, matching the solo rule that play cannot continue without funds.
 
+## 2026-05-12 Coins-only access policy
+- Removed the guest account action from the account modal and blocked both solo and online start flows until a real account session exists.
+- Deleted the client-side free-play fallback for solo matches; solo now requires an authenticated coin wallet before reserving a round stake.
+- Forced online room creation and joining to use authenticated room tokens only, and hard-failed server room auth when a client tries to connect without a valid platform game token.
+- Stopped the room server from silently downgrading unlinked players to a free table, so coin rooms now close with an explicit auth-required reason instead of mutating economy mode under the player.
+- Synced the static `www/` copy after the change so production web assets match the source tree.
+

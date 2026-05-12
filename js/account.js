@@ -330,13 +330,9 @@ export class AccountClient {
             return platformData;
         }
 
-        const storedProfile = this.getStoredProfile();
-        if (storedProfile?.provider === "local-guest") {
-            return normalizeProfile({ profile: storedProfile }, "local-guest");
-        }
-
         this.setStoredToken("");
         this.setStoredProfile(null);
+        this.setPlatformProfile(null);
         return null;
     }
 
@@ -370,58 +366,8 @@ export class AccountClient {
     }
 
     async createGuest(name) {
-        const cleanName = sanitizeName(name || "Player");
-        const sessionId = this.getLocalGameSessionId() || createLocalSessionId();
-        this.setLocalGameSessionId(sessionId);
-        const normalized = normalizeProfile({
-            profile: {
-                sessionId,
-                name: cleanName,
-                provider: "local-guest",
-                isGuest: true,
-                recentMatches: []
-            },
-            user: {
-                id: "",
-                sessionId,
-                name: cleanName,
-                isGuest: true,
-                role: "player",
-                email: "",
-                image: null
-            },
-            player: {
-                id: "",
-                sessionId,
-                displayName: cleanName,
-                isGuest: true,
-                avatarSeed: null,
-                language: null
-            },
-            stats: {
-                rating: 1000,
-                points: 0,
-                wins: 0,
-                losses: 0,
-                draws: 0,
-                matchesPlayed: 0,
-                currentStreak: 0,
-                bestStreak: 0,
-                titleCode: "rookie"
-            },
-            wallet: {
-                balance: 0,
-                reserved: 0,
-                availableBalance: 0,
-                spendableBalance: 0,
-                reservedBalance: 0
-            },
-            coins: 0,
-            titleCode: "rookie",
-            recentMatches: []
-        }, "local-guest");
-        this.setStoredProfile(normalized.profile);
-        return normalized;
+        void name;
+        throw new Error("Guest mode is disabled");
     }
 
     async sendLocalGameHeartbeat(payload) {
@@ -434,7 +380,7 @@ export class AccountClient {
                 },
                 body: JSON.stringify({
                     sessionId: this.getLocalGameSessionId() || payload?.sessionId || "",
-                    provider: payload?.provider || "local-guest",
+                    provider: payload?.provider || "platform",
                     displayName: payload?.displayName || payload?.name || "Player",
                     roomId: payload?.roomId || null,
                     roomCode: payload?.roomCode || null,
@@ -634,10 +580,6 @@ export class AccountClient {
         const platform = await this.syncPlatformSession();
         if (platform) {
             return platform;
-        }
-        const storedProfile = this.getStoredProfile();
-        if (storedProfile?.provider === "local-guest") {
-            return normalizeProfile({ profile: storedProfile }, "local-guest");
         }
         return null;
     }

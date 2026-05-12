@@ -187,6 +187,8 @@
         ,"account-server-unavailable": "Server əlçatan deyil"
         ,"account-password-required": "Şifrə daxil edin"
         ,"account-name-password-required": "Ad və şifrə daxil edin"
+        ,"account-registration-required": "Coin oyunu üçün hesaba daxil olun və ya qeydiyyatdan keçin"
+        ,"account-registration-required-online": "Onlayn coin otaqları üçün hesab mütləqdir"
     },
     en: {
         "game-title": "Domino (Telefon)",
@@ -376,6 +378,8 @@
         ,"account-server-unavailable": "Server unavailable"
         ,"account-password-required": "Enter a password"
         ,"account-name-password-required": "Enter name and password"
+        ,"account-registration-required": "Sign in or register to play coin matches"
+        ,"account-registration-required-online": "An account is required for online coin rooms"
     },
     ru: {
         "game-title": "Domino (Telefon)",
@@ -550,5 +554,7 @@
         ,"account-server-unavailable": "Сервер недоступен"
         ,"account-password-required": "Введите пароль"
         ,"account-name-password-required": "Введите имя и пароль"
+        ,"account-registration-required": "Войдите или зарегистрируйтесь, чтобы играть на монеты"
+        ,"account-registration-required-online": "Для онлайн-комнат на монеты аккаунт обязателен"
     }
 };
