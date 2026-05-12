@@ -197,9 +197,11 @@ input, button { font: inherit; }
 }
 
 #start-screen.auth-required .start-actions {
-    opacity: 0.25;
-    pointer-events: none;
-    filter: blur(1.5px);
+    display: none;
+}
+
+#start-screen:not(.auth-required) #auth-landing-card {
+    display: none;
 }
 
 .auth-landing-card {

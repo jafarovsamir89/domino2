@@ -582,6 +582,10 @@ class DominoGame {
         if (!startScreen) return;
         const isAuthed = this.hasAuthenticatedAccount();
         startScreen.classList.toggle('auth-required', !isAuthed);
+        if (!isAuthed) {
+            this.showStartModal(null);
+            this.closeAccountModal();
+        }
     }
 
     syncAccountUiChrome() {
