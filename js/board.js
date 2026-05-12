@@ -35,6 +35,24 @@ export class Board {
     constructor() { this.nodes = []; this.openEnds = []; this.crossNodeId = null; this.crossSidesClosed = 0; }
     get isEmpty() { return this.nodes.length === 0; }
 
+    isOpenEndAvailable(oe) {
+        if (!oe) return false;
+        const node = this.nodes[oe.nodeId];
+        if (!node) return false;
+        return !Object.prototype.hasOwnProperty.call(node.connections || {}, oe.side);
+    }
+
+    normalizeOpenEnds() {
+        const seen = new Set();
+        this.openEnds = this.openEnds.filter((oe) => {
+            if (!this.isOpenEndAvailable(oe)) return false;
+            const key = `${oe.nodeId}:${oe.side}`;
+            if (seen.has(key)) return false;
+            seen.add(key);
+            return true;
+        });
+    }
+
     toJSON() {
         return {
             nodes: this.nodes.map((node) => node.toJSON()),
@@ -82,7 +100,9 @@ export class Board {
     }
 
     placeTile(tile, openEndIndex) {
+        this.normalizeOpenEnds();
         const oe = this.openEnds[openEndIndex];
+        if (!this.isOpenEndAvailable(oe)) return 0;
         const parent = this.nodes[oe.nodeId];
         const val = oe.value;
         const pos = this.calcPosition(parent, oe.side, tile, val, oe.growthDir);
@@ -149,10 +169,13 @@ export class Board {
             }
         }
 
+        this.normalizeOpenEnds();
+
         return score;
     }
 
     calculateScore() {
+        this.normalizeOpenEnds();
         const sum = this.getOpenEndsScore();
         return (sum > 0 && sum % 5 === 0) ? sum : 0;
     }
@@ -176,10 +199,12 @@ export class Board {
     }
 
     findOpenEndIndex(nodeId, side) {
+        this.normalizeOpenEnds();
         return this.openEnds.findIndex((oe) => oe.nodeId === nodeId && oe.side === side);
     }
 
     getGoshaCombo(hand) {
+        this.normalizeOpenEnds();
         if (this.isEmpty || this.openEnds.length < 2) return null;
         
         const possibleMatches = []; 
@@ -276,6 +301,7 @@ export class Board {
     }
 
     getValidMoves(hand) {
+        this.normalizeOpenEnds();
         const moves = [];
         if (this.isEmpty) { for (let i = 0; i < hand.length; i++) moves.push({ tileIndex: i, openEndIndex: -1 }); return moves; }
         for (let i = 0; i < hand.length; i++) {
@@ -285,7 +311,10 @@ export class Board {
         }
         return moves;
     }
-    canPlayTile(t) { return this.isEmpty || this.openEnds.some(oe => t.hasValue(oe.value)); }
+    canPlayTile(t) {
+        this.normalizeOpenEnds();
+        return this.isEmpty || this.openEnds.some(oe => t.hasValue(oe.value));
+    }
     canPlayAny(h) { return this.isEmpty ? h.length > 0 : h.some(t => this.canPlayTile(t)); }
     calcPosition(p, side, tile, openValue, growthDir=side) {
         const sideAxis = (side === 'left' || side === 'right') ? 'horizontal' : 'vertical';
