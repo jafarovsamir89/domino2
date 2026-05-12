@@ -626,11 +626,26 @@ class DominoGame {
 
     startGoogleAccountSignIn() {
         const callbackURL = `${window.location.origin}${window.location.pathname}${window.location.search}`;
-        const authOrigin = String(this.account?.platformApiBase || "https://apid.simplesoft.az/api")
-            .replace(/\/api\/?$/, "/");
-        const googleAuthURL = new URL("/auth/google", authOrigin);
-        googleAuthURL.searchParams.set("callbackURL", callbackURL);
-        window.location.assign(googleAuthURL.toString());
+        void (async () => {
+            try {
+                this.setAccountStatus('');
+                const result = await this.account.startGoogleSignIn(callbackURL);
+                if (result?.url) {
+                    window.location.assign(result.url);
+                    return;
+                }
+                if (result?.redirect === false && result?.token) {
+                    await this.loadAccountProfile();
+                    this.renderAccountModal();
+                    this.syncStartAuthButton();
+                    this.renderer.showMessage(this.t('account-login'), 1500);
+                    return;
+                }
+                throw new Error('Google sign-in did not return a redirect URL');
+            } catch (err) {
+                this.setAccountStatus(err?.message || this.t('login-failed'));
+            }
+        })();
     }
 
     async loadLeaderboard() {

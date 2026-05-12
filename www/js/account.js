@@ -544,6 +544,17 @@ export class AccountClient {
         }
     }
 
+    async startGoogleSignIn(callbackURL) {
+        const targetURL = String(callbackURL || "").trim() || "/";
+        return this.platformRequest("/auth/sign-in/social", {
+            method: "POST",
+            body: {
+                provider: "google",
+                callbackURL: targetURL
+            }
+        });
+    }
+
     async logout() {
         try {
             await this.platformRequest("/auth/sign-out", {
