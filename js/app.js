@@ -972,6 +972,16 @@ class DominoGame {
             }
         }
 
+        const soloStakeGroup = document.getElementById('solo-stake-group');
+        if (soloStakeGroup && !soloStakeGroup.querySelector('[data-value="free"]')) {
+            const freeBtn = document.createElement('button');
+            freeBtn.className = 'btn btn-option';
+            freeBtn.type = 'button';
+            freeBtn.dataset.value = 'free';
+            freeBtn.textContent = 'Free play';
+            soloStakeGroup.insertBefore(freeBtn, soloStakeGroup.firstChild);
+        }
+
     }
 
     ensureOnlineSocialUi() {
@@ -1047,19 +1057,21 @@ class DominoGame {
     syncSoloOptions() {
         const stakeWrapper = document.getElementById('solo-stake-wrapper');
         const stakeButtons = document.querySelectorAll('#solo-stake-group .btn-option');
-        this.soloEconomyMode = 'coins';
+        this.soloEconomyMode = this.soloStakeKey === 'free' ? 'free' : 'coins';
 
         if (stakeWrapper) {
             stakeWrapper.classList.remove('is-hidden');
         }
 
         stakeButtons.forEach((button) => {
-            const shouldBeActive = button.dataset.value === this.soloStakeKey;
+            const shouldBeActive = this.soloEconomyMode === 'free'
+                ? button.dataset.value === 'free'
+                : button.dataset.value === this.soloStakeKey;
             button.classList.toggle('active', shouldBeActive);
             button.disabled = false;
         });
 
-        if (!this.soloStakeKey || this.soloStakeKey === 'free') {
+        if (!this.soloStakeKey) {
             this.soloStakeKey = 'stake_50';
         }
     }
@@ -1067,11 +1079,12 @@ class DominoGame {
     readSoloEconomySelectionFromUi() {
         const selectedStakeButton = document.querySelector('#solo-stake-group .btn-option.active');
         const stakeKey = selectedStakeButton?.dataset.value || this.soloStakeKey || 'stake_50';
-        return { mode: 'coins', stakeKey };
+        return { mode: stakeKey === 'free' ? 'free' : 'coins', stakeKey };
     }
 
     getStakeLabelByKey(stakeKey) {
         const labels = {
+            free: 'Free play',
             stake_50: '50 coins',
             stake_100: '100 coins',
             stake_200: '200 coins',
@@ -1086,6 +1099,7 @@ class DominoGame {
 
     getStakeAmountByKey(stakeKey) {
         const amounts = {
+            free: 0,
             stake_50: 50,
             stake_100: 100,
             stake_200: 200,
@@ -2409,16 +2423,34 @@ class DominoGame {
         this.soloEconomyMode = selection.mode;
         this.soloStakeKey = selection.stakeKey;
 
+        if (selection.mode === 'free') {
+            this.activeMatchEconomyMode = 'free';
+            this.activeMatchStakeKey = 'free';
+            this.currentRoundStakeKey = 'free';
+            this.currentRoundStakeAmount = 0;
+            this.currentRoundBankAmount = 0;
+            this.syncSoloOptions();
+            return { ok: true, mode: 'free', stakeKey: 'free' };
+        }
+
         await this.loadAccountProfile();
         const token = this.account?.getRoomAuthToken?.();
         if (!token) {
+            this.soloEconomyMode = 'free';
+            this.soloStakeKey = 'free';
+            this.activeMatchEconomyMode = 'free';
+            this.activeMatchStakeKey = 'free';
+            this.currentRoundStakeKey = 'free';
+            this.currentRoundStakeAmount = 0;
+            this.currentRoundBankAmount = 0;
+            this.syncSoloOptions();
             this.renderer.showMessage(
                 this.currentLang === 'az'
-                    ? 'Monetli oyun üçün hesaba daxil olun'
-                    : 'Log in to play on coins',
-                2000
+                    ? 'Hesab tap?lmad?, pulsuz oyun rejimin? kecildi'
+                    : 'No account found, switched to free play',
+                2200
             );
-            return { ok: false, reason: 'auth_required' };
+            return { ok: true, mode: 'free', stakeKey: 'free', fallback: true };
         }
 
         const stakeKey = this.soloStakeKey && this.soloStakeKey !== 'free' ? this.soloStakeKey : 'stake_50';
@@ -2430,6 +2462,13 @@ class DominoGame {
         return { ok: true, mode: 'coins', stakeKey };
     }
     async reserveSoloRoundStake() {
+        if (this.soloEconomyMode === 'free' || this.currentRoundStakeKey === 'free') {
+            this.currentRoundStakeKey = 'free';
+            this.currentRoundStakeAmount = 0;
+            this.currentRoundBankAmount = 0;
+            return { ok: true, mode: 'free', stakeKey: 'free', stakeAmount: 0 };
+        }
+
         const token = this.account?.getRoomAuthToken?.();
         if (!token) {
             return { ok: false, reason: 'auth_required' };
@@ -2499,16 +2538,16 @@ class DominoGame {
         console.log('[startRound] playerCount:', this.playerCount);
         this.roundOver=false; this.scores=new Array(this.playerCount).fill(0); if(this.isTeamMode) this.teamScores=[0,0]; this.deal=1; 
         await this.pendingSoloSettlement.catch(() => {});
-        this.currentRoundStakeKey = this.soloStakeKey && this.soloStakeKey !== 'free'
-            ? this.soloStakeKey
-            : 'stake_50';
+        this.currentRoundStakeKey = this.soloEconomyMode === 'free' || this.soloStakeKey === 'free'
+            ? 'free'
+            : (this.soloStakeKey && this.soloStakeKey !== 'free' ? this.soloStakeKey : 'stake_50');
         this.currentRoundStakeSessionId = this.createResumeId(`solo-round-${this.matchRound}`);
         const stakeReady = await this.reserveSoloRoundStake();
         if (!stakeReady?.ok) {
             this.matchOver = true;
             this.renderer.showMessage(
                 this.currentLang === 'az'
-                    ? 'Növbəti raund üçün monet çatmır'
+                    ? 'N?vb?ti raund ??n monet ?atm?r'
                     : 'Not enough coins for the next round',
                 2400
             );

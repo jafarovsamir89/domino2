@@ -1,4 +1,4 @@
-// js/network.js
+﻿// js/network.js
 // Networking using Colyseus 0.17
 
 class NetworkManager {
@@ -46,7 +46,7 @@ class NetworkManager {
         const override = this.getServerOverride();
         if (override) return override;
 
-        const { protocol, hostname, host } = window.location;
+        const { hostname, host } = window.location;
         const isCapacitor = !!window.Capacitor;
         const isLocal = hostname === "localhost" || hostname === "127.0.0.1";
 
@@ -57,25 +57,42 @@ class NetworkManager {
         if (isLocal && host !== "localhost:2567" && host !== "127.0.0.1:2567") {
             return "http://localhost:2567";
         }
-        return `${protocol}//${host}`;
+        return fallbackUrl;
     }
 
     getServerOverride() {
         if (typeof window === 'undefined') return null;
 
+        const isLocalHost = (hostname) => hostname === 'localhost' || hostname === '127.0.0.1';
+        const isTrustedHost = (hostname) => {
+            const host = String(hostname || '').toLowerCase();
+            return isLocalHost(host)
+                || host === 'gamed.simplesoft.az'
+                || host === 'apid.simplesoft.az'
+                || host === 'admind.simplesoft.az';
+        };
+
         try {
             const params = new URLSearchParams(window.location.search);
             const queryValue = params.get("server");
-            if (queryValue) return this.normalizeServerUrl(queryValue);
+            if (queryValue) {
+                const normalized = this.normalizeServerUrl(queryValue);
+                if (normalized && isTrustedHost(new URL(normalized).hostname)) return normalized;
+            }
 
             const storedValue = window.localStorage?.getItem("dominoServerUrl");
-            if (storedValue) return this.normalizeServerUrl(storedValue);
+            if (storedValue) {
+                const normalized = this.normalizeServerUrl(storedValue);
+                if (normalized && isTrustedHost(new URL(normalized).hostname)) return normalized;
+                window.localStorage?.removeItem("dominoServerUrl");
+            }
         } catch (e) {
             console.warn("Failed to read server override", e);
         }
 
         if (window.DOMINO_SERVER_URL) {
-            return this.normalizeServerUrl(window.DOMINO_SERVER_URL);
+            const normalized = this.normalizeServerUrl(window.DOMINO_SERVER_URL);
+            if (normalized && isTrustedHost(new URL(normalized).hostname)) return normalized;
         }
 
         return null;
@@ -83,10 +100,33 @@ class NetworkManager {
 
     normalizeServerUrl(value) {
         if (!value) return null;
-        if (value.startsWith("http://") || value.startsWith("https://")) return value;
-        if (value.startsWith("ws://")) return `http://${value.slice("ws://".length)}`;
-        if (value.startsWith("wss://")) return `https://${value.slice("wss://".length)}`;
-        return `https://${value}`;
+        const raw = String(value).trim();
+        if (!raw) return null;
+
+        const isLocalHost = (hostname) => hostname === 'localhost' || hostname === '127.0.0.1';
+        const normalizeFromUrl = (input) => {
+            const parsed = new URL(input);
+            if ((parsed.protocol === 'http:' || parsed.protocol === 'ws:') && !isLocalHost(parsed.hostname)) {
+                parsed.protocol = 'https:';
+            }
+            if (parsed.protocol === 'ws:') parsed.protocol = 'http:';
+            if (parsed.protocol === 'wss:') parsed.protocol = 'https:';
+            return parsed.toString();
+        };
+
+        if (/^[a-z]+:\/\//i.test(raw)) {
+            try {
+                return normalizeFromUrl(raw);
+            } catch {
+                return null;
+            }
+        }
+
+        try {
+            return normalizeFromUrl(`https://${raw}`);
+        } catch {
+            return null;
+        }
     }
 
     getStoredReconnectionToken() {
