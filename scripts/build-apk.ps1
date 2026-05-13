@@ -5,6 +5,7 @@ $androidDir = Join-Path $root "android"
 $apkPath = Join-Path $androidDir "app\build\outputs\apk\debug\app-debug.apk"
 $browserGradlePath = Join-Path $root "node_modules\@capacitor\browser\android\build.gradle"
 $generatedCapGradlePath = Join-Path $androidDir "app\capacitor.build.gradle"
+$generatedPluginsPath = Join-Path $androidDir "app\src\main\assets\capacitor.plugins.json"
 
 if (Test-Path $browserGradlePath) {
     $browserGradle = Get-Content $browserGradlePath -Raw
@@ -30,6 +31,23 @@ if (Test-Path $generatedCapGradlePath) {
         Set-Content -Path $generatedCapGradlePath -Value $generatedCapGradle -NoNewline
         Write-Host "Patched generated Capacitor Android config for Java 17 compatibility."
     }
+}
+
+if (Test-Path $generatedPluginsPath) {
+    $plugins = Get-Content $generatedPluginsPath -Raw | ConvertFrom-Json
+    $customPlugins = @(
+        @{ pkg = "com.domino.pyaterochka"; classpath = "com.domino.pyaterochka.DominoBrowserPlugin" },
+        @{ pkg = "com.domino.pyaterochka"; classpath = "com.domino.pyaterochka.DominoGoogleAuthPlugin" }
+    )
+    $existingClasspaths = @($plugins | ForEach-Object { $_.classpath })
+    $updatedPlugins = @($plugins)
+    foreach ($customPlugin in $customPlugins) {
+        if ($existingClasspaths -notcontains $customPlugin.classpath) {
+            $updatedPlugins += [pscustomobject]$customPlugin
+            Write-Host "Injected custom Capacitor plugin: $($customPlugin.classpath)"
+        }
+    }
+    $updatedPlugins | ConvertTo-Json -Depth 5 | Set-Content -Path $generatedPluginsPath
 }
 
 Push-Location $androidDir

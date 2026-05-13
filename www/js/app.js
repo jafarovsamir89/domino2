@@ -730,7 +730,6 @@ class DominoGame {
     }
 
     startGoogleAccountSignIn() {
-        const callbackURL = this.getAuthCallbackUrl();
         void (async () => {
             try {
                 this.setAccountStatus('');
@@ -740,12 +739,14 @@ class DominoGame {
                         if (nativeDone) {
                             return;
                         }
+                        throw new Error('Google native sign-in plugin is unavailable in this build');
                     } catch (nativeError) {
                         debugLog('Native Google sign-in failed:', nativeError);
                         this.setAccountStatus(nativeError?.message || this.t('login-failed'));
                         return;
                     }
                 }
+                const callbackURL = this.getAuthCallbackUrl();
                 const result = await this.account.startGoogleSignIn(callbackURL);
                 if (result?.url) {
                     await this.openExternalAuthUrl(result.url);
