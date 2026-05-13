@@ -169,6 +169,10 @@ class NetworkManager {
         return {
             name: extra.name || this.game.playerName,
             authToken: this.game.account?.getRoomAuthToken?.() || '',
+            avatarUrl: this.game.accountProfile?.avatarUrl
+                || this.game.accountProfile?.image
+                || this.game.accountProfile?.providerImage
+                || '',
             isTeamMode: this.game.isTeamMode,
             playerCount: this.game.onlinePlayerCount,
             aiCount: this.game.onlineAiCount,

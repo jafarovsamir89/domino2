@@ -746,7 +746,9 @@ export class SocialService {
       orderBy: [{ updatedAt: "desc" }, { createdAt: "desc" }]
     });
 
-    const items = rows.map((row) => this.summarizeGiftInventory(row as unknown as GiftInventoryRow));
+    const items = rows
+      .map((row) => this.summarizeGiftInventory(row as unknown as GiftInventoryRow))
+      .filter((item) => Number(item.quantity || 0) > 0);
     const quantity = items.reduce((sum, item) => sum + Math.max(0, Number(item.quantity || 0)), 0);
     const totalValue = items.reduce((sum, item) => sum + Math.max(0, Number(item.quantity || 0)) * Math.max(0, Number(item.catalog.exchangeValue || 0)), 0);
 
@@ -985,6 +987,17 @@ export class SocialService {
           catalog: true
         }
       });
+
+      if (updatedInventory.quantity <= 0) {
+        await tx.playerGiftInventory.delete({
+          where: {
+            playerId_giftCatalogId: {
+              playerId: currentPlayer.id,
+              giftCatalogId: catalog.id
+            }
+          }
+        });
+      }
 
       const wallet = await this.creditWallet(
         tx,

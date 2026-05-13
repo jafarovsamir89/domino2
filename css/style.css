@@ -1392,6 +1392,29 @@ input, button { font: inherit; }
     font-size: 0.8rem;
 }
 
+.room-player-avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: inline-grid;
+    place-items: center;
+    flex: 0 0 auto;
+    overflow: hidden;
+    background: linear-gradient(180deg, rgba(13, 22, 34, 0.98), rgba(20, 33, 48, 0.98));
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: var(--text);
+    font-size: 0.68rem;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.room-player-avatar.has-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
 .room-player-chip.empty {
     color: var(--text-dim);
     font-style: italic;
@@ -1698,6 +1721,14 @@ input, button { font: inherit; }
     font-weight: 800;
     letter-spacing: 0.04em;
     text-transform: uppercase;
+    overflow: hidden;
+}
+
+.turn-timer-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
 }
 
 .turn-timer-caption {
@@ -2065,7 +2096,7 @@ input, button { font: inherit; }
     box-shadow: 0 18px 46px rgba(0, 0, 0, 0.4);
     opacity: 0;
     pointer-events: none;
-    animation: giftBurst 1.4s ease forwards;
+    animation: giftBurst 2.05s ease forwards;
 }
 
 .gift-burst::before {
@@ -2074,7 +2105,7 @@ input, button { font: inherit; }
     inset: -26px;
     border-radius: 28px;
     background: radial-gradient(circle, rgba(255, 255, 255, 0.18) 0%, rgba(240, 192, 64, 0.16) 28%, rgba(240, 192, 64, 0) 70%);
-    animation: giftGlow 1.4s ease forwards;
+    animation: giftGlow 2.05s ease forwards;
 }
 
 .gift-burst-icon {
@@ -2095,12 +2126,14 @@ input, button { font: inherit; }
 
 .gift-burst-label {
     position: relative;
-    font-size: 0.72rem;
+    font-size: 0.78rem;
     font-weight: 700;
-    letter-spacing: 0.14em;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
     color: rgba(255, 255, 255, 0.9);
     text-shadow: 0 1px 10px rgba(0, 0, 0, 0.45);
+    text-align: center;
+    line-height: 1.2;
 }
 
 .gift-burst-chip {
@@ -2115,9 +2148,10 @@ input, button { font: inherit; }
 
 @keyframes giftBurst {
     0% { opacity: 0; transform: translate(-50%, 14%) scale(0.2) rotate(-8deg); }
-    18% { opacity: 1; transform: translate(-50%, -12%) scale(1.04) rotate(0deg); }
-    60% { opacity: 1; transform: translate(-50%, -46%) scale(1) rotate(0deg); }
-    100% { opacity: 0; transform: translate(-50%, -110%) scale(0.94) rotate(0deg); }
+    16% { opacity: 1; transform: translate(-50%, -10%) scale(1.04) rotate(0deg); }
+    50% { opacity: 1; transform: translate(-50%, -34%) scale(1) rotate(0deg); }
+    78% { opacity: 1; transform: translate(-50%, -58%) scale(1) rotate(0deg); }
+    100% { opacity: 0; transform: translate(-50%, -108%) scale(0.94) rotate(0deg); }
 }
 
 @keyframes giftGlow {

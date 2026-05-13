@@ -1300,6 +1300,14 @@ class DominoGame {
         }, delay);
     }
 
+    shouldOpenGoshaChainWindow(pi) {
+        if (this.ais.some((ai) => ai.index === pi)) return false;
+        const hand = this.hands[pi];
+        if (!Array.isArray(hand) || hand.length === 0) return false;
+        const nextCombo = this.board.getGoshaCombo(hand);
+        return Boolean(nextCombo);
+    }
+
     setSummaryMessage(container, message) {
         if (!container) return;
         const node = document.createElement('div');
@@ -1553,7 +1561,28 @@ class DominoGame {
         }
 
         const currentName = this.playerNames[this.currentPlayer] || this.playerName || 'Player';
-        avatar.textContent = this.getTurnAvatarText(currentName);
+        const currentRoomPlayer = Array.isArray(this.currentRoomState?.players)
+            ? (this.currentRoomState.players[this.currentPlayer]
+                || this.currentRoomState.players.find((player) => Number(player?.index) === Number(this.currentPlayer)))
+            : null;
+        const avatarUrl = currentRoomPlayer?.avatarUrl
+            || (this.currentPlayer === this.humanPlayerIndex
+                ? (this.accountProfile?.avatarUrl || this.accountProfile?.image || this.accountProfile?.providerImage || '')
+                : '');
+        if (avatarUrl) {
+            if (avatar.dataset.avatarSrc !== avatarUrl) {
+                avatar.dataset.avatarSrc = avatarUrl;
+                avatar.replaceChildren();
+                const img = document.createElement('img');
+                img.alt = currentName || 'Player avatar';
+                img.src = avatarUrl;
+                img.referrerPolicy = 'no-referrer';
+                avatar.appendChild(img);
+            }
+        } else {
+            avatar.removeAttribute('data-avatar-src');
+            avatar.textContent = this.getTurnAvatarText(currentName);
+        }
         const remaining = Math.max(0, this.turnDeadlineAt - Date.now());
         const progress = Math.min(1, Math.max(0, 1 - (remaining / this.turnTimeoutMs)));
         const angle = Math.max(0, Math.min(360, progress * 360));
@@ -2643,12 +2672,26 @@ class DominoGame {
             if (player.sessionId === mySessionId) {
                 chip.classList.add('you');
             }
+            const avatar = document.createElement('span');
+            avatar.className = 'room-player-avatar';
+            const avatarUrl = player.avatarUrl || '';
+            if (avatarUrl) {
+                avatar.classList.add('has-image');
+                const img = document.createElement('img');
+                img.alt = player.name || 'Player avatar';
+                img.src = avatarUrl;
+                img.referrerPolicy = 'no-referrer';
+                avatar.appendChild(img);
+            } else {
+                avatar.textContent = this.getTurnAvatarText(player.name || 'Player');
+            }
             const name = document.createElement('span');
             name.textContent = player.sessionId === mySessionId ? `${player.name} (${this.t('online-you')})` : player.name;
             const state = document.createElement('span');
             state.className = 'room-player-state';
             state.textContent = player.isConnected ? this.t('online-ready') : this.t('online-offline');
 
+            chip.appendChild(avatar);
             chip.appendChild(name);
             chip.appendChild(state);
             list.appendChild(chip);
@@ -3116,7 +3159,10 @@ class DominoGame {
         const list = document.getElementById('account-gifts-list');
         if (!panel || !list) return;
         list.innerHTML = '';
-        if (!this.hasAuthenticatedAccount() || !Array.isArray(this.giftInventory) || !this.giftInventory.length) {
+        const items = Array.isArray(this.giftInventory)
+            ? this.giftInventory.filter((item) => Number(item?.quantity || 0) > 0)
+            : [];
+        if (!this.hasAuthenticatedAccount() || !items.length) {
             if (this.hasAuthenticatedAccount()) {
                 panel.classList.remove('is-hidden');
                 const empty = document.createElement('div');
@@ -3125,12 +3171,12 @@ class DominoGame {
                 empty.textContent = 'No gifts yet';
                 list.appendChild(empty);
             } else {
-                panel.classList.add('is-hidden');
+            panel.classList.add('is-hidden');
             }
             return;
         }
         panel.classList.remove('is-hidden');
-        for (const item of this.giftInventory) {
+        for (const item of items) {
             const card = document.createElement('div');
             card.className = 'gift-inventory-card';
             const top = document.createElement('div');
@@ -3277,18 +3323,18 @@ class DominoGame {
         burst.appendChild(icon);
         const label = document.createElement('div');
         label.className = 'gift-burst-label';
-        label.textContent = senderName ? `${senderName} sent a gift` : 'Gift sent';
+        label.textContent = `${senderName || 'Player'} → ${recipientName || 'Player'}`;
         burst.appendChild(label);
-        if (recipientName) {
+        if (gift?.name) {
             const chip = document.createElement('div');
             chip.className = 'gift-burst-chip';
-            chip.textContent = `to ${recipientName}`;
+            chip.textContent = gift.name;
             burst.appendChild(chip);
         }
         this.reactionStage.appendChild(burst);
         window.setTimeout(() => {
             burst.remove();
-        }, 1380);
+        }, 2100);
     }
     setupMenu() {
         document.getElementById('menu-btn')?.addEventListener('click', () => {
@@ -4120,7 +4166,7 @@ class DominoGame {
         if(hand.length===0){ this._dealEndTimeout = setTimeout(()=>this.endDeal(pi,false), 400); return;}
         if(this.board.isBlocked(this.hands,this.boneyard)){ this._dealEndTimeout = setTimeout(()=>this.endDeal(this.findFishWinner(),true), 400); return;}
         this.turnInProgress=false;
-        const advanceDelay = this.ais.some(a => a.index === pi) ? 0 : this.postMoveAdvanceMs;
+        const advanceDelay = this.shouldOpenGoshaChainWindow(pi) ? this.postMoveAdvanceMs : 0;
         this.scheduleTurnAdvance(advanceDelay, this._turnCycleId);
     }
 
@@ -4239,8 +4285,7 @@ class DominoGame {
         if(this.board.isBlocked(this.hands,this.boneyard)){ this._dealEndTimeout = setTimeout(()=>{ if (turnCycleId !== this._turnCycleId) return; this.endDeal(this.findFishWinner(),true); }, 400); return;}
 
         this.turnInProgress=false;
-        const advanceDelay = this.ais.some(a => a.index === pi) ? 0 : this.postMoveAdvanceMs;
-        this.scheduleTurnAdvance(advanceDelay, turnCycleId);
+        this.scheduleTurnAdvance(0, turnCycleId);
         } catch (e) {
             console.error('[playTile] Error:', e);
             this.turnInProgress = false;

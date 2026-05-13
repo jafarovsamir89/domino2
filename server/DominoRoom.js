@@ -183,6 +183,7 @@ class DominoRoom extends Room {
             provider: identity.provider || "platform",
             userId: player.userId || "",
             playerId: identity.playerId || player.userId || "",
+            avatarUrl: identity.avatarUrl || "",
             displayName: player.name,
             hostName: hostPlayer?.name || player.name,
             role: identity.role || (isHost ? "host" : "player"),
@@ -219,6 +220,7 @@ class DominoRoom extends Room {
                     userId: String(identity.userId || existingIdentity.userId || player.userId || ""),
                     displayName: sanitizeName(identity.displayName || existingIdentity.displayName || player.name || options.name),
                     playerId: identity.playerId || existingIdentity.playerId || identity.userId || player.userId || "",
+                    avatarUrl: String(identity.avatarUrl || existingIdentity.avatarUrl || options.avatarUrl || "").trim(),
                     role: identity.role || existingIdentity.role || (this.state.playerOrder[0] === client.sessionId ? "host" : "player")
                 });
             }
@@ -250,6 +252,7 @@ class DominoRoom extends Room {
             userId: player.userId,
             displayName: player.name,
             playerId: identity.playerId || existingIdentity.playerId || player.userId,
+            avatarUrl: String(identity.avatarUrl || existingIdentity.avatarUrl || options.avatarUrl || "").trim(),
             role: identity.role || existingIdentity.role || (this.state.playerOrder[0] === client.sessionId ? "host" : "player")
         };
         this.identityBySessionId.set(client.sessionId, nextIdentity);
@@ -324,6 +327,7 @@ class DominoRoom extends Room {
                 provider: identity.provider || "platform",
                 userId: identity.userId || "",
                 playerId: identity.playerId || identity.userId || "",
+                avatarUrl: identity.avatarUrl || "",
                 displayName: identity.displayName || player?.name || "Player",
                 hostName: this.state.players.get(this.state.playerOrder[0])?.name || player?.name || "Player",
                 role: identity.role || (this.state.playerOrder[0] === client.sessionId ? "host" : "player"),
@@ -491,6 +495,14 @@ class DominoRoom extends Room {
             this.turnAdvancePending = false;
             this.advanceTurn();
         }, delay);
+    }
+
+    shouldOpenGoshaChainWindow(pi) {
+        if (pi < 0 || pi >= this.hands.length) return false;
+        const hand = this.hands[pi];
+        if (!Array.isArray(hand) || hand.length === 0) return false;
+        const nextCombo = this.internalBoard.getGoshaCombo(hand);
+        return Boolean(nextCombo);
     }
 
     scheduleTurnTimer() {
@@ -757,6 +769,7 @@ class DominoRoom extends Room {
                 name: player ? player.name : "Player",
                 userId: player ? player.userId : "",
                 playerId: identity.playerId || player?.userId || "",
+                avatarUrl: identity.avatarUrl || "",
                 isConnected: player ? player.isConnected : false,
                 isBot: player ? player.isBot : false
             };
@@ -1091,7 +1104,7 @@ class DominoRoom extends Room {
             return;
         }
 
-        this.scheduleTurnAdvance(isBot ? 0 : this.turnAdvanceMs);
+        this.scheduleTurnAdvance(0);
     }
 
     performDraw(pi, isBot = false) {
@@ -1175,7 +1188,8 @@ class DominoRoom extends Room {
             return;
         }
 
-        this.scheduleTurnAdvance(isBot ? 0 : this.turnAdvanceMs);
+        const advanceDelay = isBot ? 0 : (this.shouldOpenGoshaChainWindow(pi) ? this.turnAdvanceMs : 0);
+        this.scheduleTurnAdvance(advanceDelay);
     }
 
     handleNextDeal(client) {
