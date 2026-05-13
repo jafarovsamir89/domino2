@@ -825,7 +825,12 @@ class DominoGame {
                     <div class="settings-group field-span-2">
                         <input type="file" id="account-avatar-modal-input" accept="image/*" class="is-hidden">
                         <button class="btn btn-menu" id="account-avatar-modal-pick" type="button" data-i18n="account-avatar-pick">Şəkil seç</button>
-                        <button class="btn btn-menu" id="account-avatar-modal-reset" type="button" data-i18n="account-avatar-reset">Google şəkli / sıfırla</button>
+                        <button class="btn btn-icon btn-menu" id="account-avatar-modal-reset" type="button" aria-label="Google şəkli / sıfırla" title="Google şəkli / sıfırla">
+                            <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none">
+                                <path d="M12 5a7 7 0 1 1-6.06 10.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                                <path d="M8 5H5v3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </button>
                     </div>
                     <div class="modal-footer modal-footer-split field-span-2">
                         <button class="btn btn-primary btn-large modal-primary-btn" id="account-avatar-modal-save" type="submit" data-i18n="account-avatar-save">Yadda saxla</button>
@@ -910,11 +915,6 @@ class DominoGame {
             throw new Error(this.t('account-avatar-invalid'));
         }
 
-        const maxBytes = 5 * 1024 * 1024;
-        if (file.size > maxBytes) {
-            throw new Error(this.t('account-avatar-too-large'));
-        }
-
         const sourceUrl = await new Promise((resolve, reject) => {
             const reader = new FileReader();
             reader.onload = () => resolve(String(reader.result || ''));
@@ -929,29 +929,45 @@ class DominoGame {
             img.src = sourceUrl;
         });
 
-        const size = 256;
         const canvas = document.createElement('canvas');
-        canvas.width = size;
-        canvas.height = size;
         const ctx = canvas.getContext('2d');
         if (!ctx) throw new Error(this.t('account-avatar-invalid'));
 
-        ctx.fillStyle = '#111827';
-        ctx.fillRect(0, 0, size, size);
+        const renderAvatar = (size, quality) => {
+            canvas.width = size;
+            canvas.height = size;
+            ctx.clearRect(0, 0, size, size);
+            ctx.fillStyle = '#111827';
+            ctx.fillRect(0, 0, size, size);
 
-        const scale = Math.max(size / image.width, size / image.height);
-        const drawWidth = image.width * scale;
-        const drawHeight = image.height * scale;
-        const offsetX = (size - drawWidth) / 2;
-        const offsetY = (size - drawHeight) / 2;
-        ctx.save();
-        ctx.beginPath();
-        ctx.arc(size / 2, size / 2, size / 2, 0, Math.PI * 2);
-        ctx.clip();
-        ctx.drawImage(image, offsetX, offsetY, drawWidth, drawHeight);
-        ctx.restore();
+            const scale = Math.max(size / image.width, size / image.height);
+            const drawWidth = image.width * scale;
+            const drawHeight = image.height * scale;
+            const offsetX = (size - drawWidth) / 2;
+            const offsetY = (size - drawHeight) / 2;
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(size / 2, size / 2, size / 2, 0, Math.PI * 2);
+            ctx.clip();
+            ctx.drawImage(image, offsetX, offsetY, drawWidth, drawHeight);
+            ctx.restore();
+            return canvas.toDataURL('image/jpeg', quality);
+        };
 
-        return canvas.toDataURL('image/jpeg', 0.88);
+        const sizeSteps = [1024, 768, 512, 384, 256];
+        const qualitySteps = [0.92, 0.84, 0.76, 0.68];
+        let lastCandidate = '';
+        for (const size of sizeSteps) {
+            for (const quality of qualitySteps) {
+                const candidate = renderAvatar(size, quality);
+                lastCandidate = candidate;
+                if (candidate.length <= 100000) {
+                    return candidate;
+                }
+            }
+        }
+
+        return lastCandidate;
     }
 
     async saveAccountAvatar() {
