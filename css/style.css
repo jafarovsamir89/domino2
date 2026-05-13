@@ -2317,6 +2317,18 @@ input, button { font: inherit; }
 
 .overlay-content .btn { margin-top: 18px; }
 
+.game-over-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+}
+
+.game-over-actions .btn {
+    margin-top: 18px;
+    min-width: 150px;
+}
+
 .menu-panel { text-align: left; }
 .menu-panel h2 { text-align: center; }
 

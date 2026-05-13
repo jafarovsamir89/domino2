@@ -1,4 +1,4 @@
-const gsap = window.gsap;
+﻿const gsap = window.gsap;
 
 export class Renderer {
     constructor(app) {
@@ -15,6 +15,7 @@ export class Renderer {
         this.passBtn = document.getElementById('pass-btn');
         this._pendingBoardTileTravel = null;
         this._activeTileTravel = null;
+        this._animatedBoardTileIds = new Set();
     }
 
     pipLayout(v, orient = 'horizontal') {
@@ -70,7 +71,7 @@ export class Renderer {
             g.style.cssText = 'display:flex;align-items:center;gap:4px;';
             const l = document.createElement('span');
             l.className = 'opp-label';
-            l.textContent = `${names[i]}:`;
+            l.textContent = `${names[i] || `Player ${i + 1}`}:`;
             g.appendChild(l);
             for (let j = 0; j < hands[i].length; j++) {
                 const t = document.createElement('div');
@@ -130,6 +131,7 @@ export class Renderer {
             this.cancelActiveTileTravel();
             this._lastAnimatedBoardTileId = null;
             this._pendingBoardTileTravel = null;
+            this._animatedBoardTileIds.clear();
             const ph = document.createElement('div');
             ph.style.cssText = 'color:var(--text-dim);font-size:0.85rem;text-align:center;padding:40px;width:100%;height:100%;display:flex;align-items:center;justify-content:center;';
             ph.textContent = this.app.t('board-empty');
@@ -181,15 +183,17 @@ export class Renderer {
 
             const el = this.createTileEl(n.displayA, n.displayB, n.orientation, false, n.tile.id);
             el.classList.add('board-tile');
+            const alreadyAnimated = this._animatedBoardTileIds.has(n.tile.id);
             if (pendingTravel?.tileId === n.tile.id) {
                 el.style.visibility = 'hidden';
-            } else if (i === last && board.nodes.length > 1) {
+            } else if (i === last && board.nodes.length > 1 && !alreadyAnimated) {
                 if (useGsap && this._lastAnimatedBoardTileId !== n.tile.id) {
                     this.animateBoardTileEntry(wrapper);
                     this._lastAnimatedBoardTileId = n.tile.id;
                 } else {
                     el.classList.add('just-played');
                 }
+                this._animatedBoardTileIds.add(n.tile.id);
             }
             if (i === board.crossNodeId && board.crossSidesClosed >= 2) {
                 el.classList.add('telephone-highlight');
@@ -360,7 +364,7 @@ export class Renderer {
     showArrowChoices(board, matchingEnds, onChoose, onCancel) {
         this.removeArrows();
         const gs = document.getElementById('game-screen');
-        const arrowSymbols = { left: '←', right: '→', top: '↑', bottom: '↓' };
+        const arrowSymbols = { left: 'в†ђ', right: 'в†’', top: 'в†‘', bottom: 'в†“' };
         const tapEvent = window.PointerEvent ? 'pointerup' : 'click';
         const overlay = document.createElement('div');
         overlay.id = 'arrow-overlay';
@@ -465,7 +469,7 @@ export class Renderer {
     renderInfo(mr, deal, by, sum, stakeLabel = '') {
         const rText = this.app.t('label-round-short');
         const sText = this.app.t('label-deal-short');
-        this.roundInfoEl.textContent = `${rText}${mr}/3 · ${sText}${deal}`;
+        this.roundInfoEl.textContent = `${rText}${mr}/3 В· ${sText}${deal}`;
         if (!this.stakeInfoEl) this.stakeInfoEl = document.getElementById('stake-info');
         if (this.stakeInfoEl) {
             this.stakeInfoEl.textContent = stakeLabel ? `${this.app.t('label-stake-short')}: ${stakeLabel}` : '';
@@ -524,89 +528,24 @@ export class Renderer {
     }
 
     renderDealEnd(wn, players, fish, bonus) {
-        document.getElementById('round-end-title').textContent = fish ? this.app.t('msg-fish') : `${wn} ${this.app.t('out-suffix')}`;
-        const d = document.getElementById('round-end-details');
-        d.innerHTML = '';
-
-        for (const p of players) {
-            const r = document.createElement('div');
-            r.className = 'detail-row';
-            r.style.flexDirection = 'column';
-            r.style.alignItems = 'flex-start';
-            r.style.gap = '6px';
-
-            const top = document.createElement('div');
-            top.style.display = 'flex';
-            top.style.justifyContent = 'space-between';
-            top.style.width = '100%';
-            let v = `${this.app.t('label-hand-points')}: ${p.handPoints}`;
-            if (p.isWinner) v += ` · ${this.app.t('label-bonus')}: +${bonus}`;
-            v += ` · ${this.app.t('label-total')}: ${p.score}`;
-            const name = document.createElement('span');
-            name.textContent = p.name;
-            const value = document.createElement('span');
-            value.className = 'detail-value';
-            value.textContent = v;
-            top.appendChild(name);
-            top.appendChild(value);
-            r.appendChild(top);
-
-            if (p.leftoverHands) {
-                const handsDiv = document.createElement('div');
-                handsDiv.style.display = 'flex';
-                handsDiv.style.flexWrap = 'wrap';
-                handsDiv.style.gap = '4px';
-                for (const h of p.leftoverHands) {
-                    for (const t of h) {
-                        const tel = this.createTileEl(t.a, t.b, 'vertical', true);
-                        handsDiv.appendChild(tel);
-                    }
-                }
-                if (handsDiv.children.length > 0) r.appendChild(handsDiv);
-            }
-            d.appendChild(r);
-        }
-
-        document.getElementById('next-round-btn').textContent = this.app.t('next-deal');
-        document.getElementById('round-end-screen').classList.add('active');
+        void players;
+        void bonus;
+        this.showMessage(fish ? this.app.t('msg-fish') : `${wn} ${this.app.t('out-suffix')}`, 1400);
+        document.getElementById('round-end-screen')?.classList.remove('active');
     }
 
     renderRoundEnd(wn, players, wins, mr, over) {
-        document.getElementById('round-end-title').textContent = wins >= 2 ? `${wn} ×2!` : `${wn} ${this.app.t('label-rounds').toLowerCase()}!`;
-        const d = document.getElementById('round-end-details');
-        d.innerHTML = '';
-
-        for (const p of players) {
-            const r = document.createElement('div');
-            r.className = 'detail-row';
-            let v = `${this.app.t('label-score')}: ${p.score} · ${this.app.t('label-rounds')}: ${p.roundWins}`;
-            if (p.isWinner) v += ` (+${wins})`;
-            const name = document.createElement('span');
-            name.textContent = p.name;
-            const value = document.createElement('span');
-            value.className = 'detail-value';
-            value.textContent = v;
-            r.appendChild(name);
-            r.appendChild(value);
-            d.appendChild(r);
+        void players;
+        void mr;
+        if (!over) {
+            this.showMessage(wins >= 2 ? `${wn} x2!` : `${wn} ${this.app.t('won-suffix')}`, 1400);
+            document.getElementById('round-end-screen')?.classList.remove('active');
         }
-
-        document.getElementById('next-round-btn').textContent = over ? this.app.t('summary-title') : this.app.t('next-round');
-        document.getElementById('round-end-screen').classList.add('active');
     }
 
     showInstantWin(pn, s) {
-        document.getElementById('round-end-title').textContent = this.app.format('instant-win-title', { player: pn, score: s });
-        const details = document.getElementById('round-end-details');
-        details.innerHTML = '';
-        const row = document.createElement('div');
-        row.className = 'detail-row';
-        const body = document.createElement('span');
-        body.textContent = this.app.t('instant-win-body');
-        row.appendChild(body);
-        details.appendChild(row);
-        document.getElementById('next-round-btn').textContent = this.app.t('summary-title');
-        document.getElementById('round-end-screen').classList.add('active');
+        this.showMessage(this.app.format('instant-win-title', { player: pn, score: s }), 1400);
+        document.getElementById('round-end-screen')?.classList.remove('active');
     }
 
     renderGameOver(wn, players, economySummary = null) {
@@ -623,19 +562,27 @@ export class Renderer {
             label.textContent = this.app.t('summary-coins');
             const value = document.createElement('span');
             value.className = 'detail-value';
-            value.textContent = `${this.app.t('summary-won')}: ${won} · ${this.app.t('summary-lost')}: ${spent} · ${this.app.t('summary-net')}: ${net >= 0 ? '+' : ''}${net}`;
+            value.textContent = `${this.app.t('summary-won')}: ${won} В· ${this.app.t('summary-lost')}: ${spent} В· ${this.app.t('summary-net')}: ${net >= 0 ? '+' : ''}${net}`;
             summary.appendChild(label);
             summary.appendChild(value);
             d.appendChild(summary);
         }
-        for (const p of [...players].sort((a, b) => b.roundWins - a.roundWins)) {
+        for (const p of [...players].sort((a, b) => {
+            const aScore = Number(a?.score ?? Number.NEGATIVE_INFINITY);
+            const bScore = Number(b?.score ?? Number.NEGATIVE_INFINITY);
+            if (aScore !== bScore) return bScore - aScore;
+            return (b.roundWins || 0) - (a.roundWins || 0);
+        })) {
             const r = document.createElement('div');
             r.className = 'detail-row';
             const name = document.createElement('span');
             name.textContent = p.name;
             const value = document.createElement('span');
             value.className = 'detail-value';
-            value.textContent = `${p.roundWins} ${this.app.t('label-rounds').toLowerCase()}`;
+            const parts = [];
+            if (Number.isFinite(Number(p.score))) parts.push(`${this.app.t('label-score')}: ${p.score}`);
+            parts.push(`${p.roundWins} ${this.app.t('label-rounds').toLowerCase()}`);
+            value.textContent = parts.join(' · ');
             r.appendChild(name);
             r.appendChild(value);
             d.appendChild(r);
@@ -643,3 +590,4 @@ export class Renderer {
         document.getElementById('game-over-screen').classList.add('active');
     }
 }
+

@@ -98,6 +98,7 @@ class DominoRoom extends Room {
         this.turnDeadlineAt = 0;
         this.turnAdvancePending = false;
         this.turnAdvanceTimer = null;
+        this.nextDealTimer = null;
         this.botIds = [];
         this.aiPlayers = new Map();
         this.matchRecorded = false;
@@ -278,6 +279,7 @@ class DominoRoom extends Room {
         }
         removeRoomPlayers(this.roomId);
         this.botTimer && clearTimeout(this.botTimer);
+        this.clearNextDealTimer();
         this.clearTurnTimer();
         this.botTimer = null;
         this.aiPlayers?.clear?.();
@@ -416,6 +418,7 @@ class DominoRoom extends Room {
             clearTimeout(this.botTimer);
             this.botTimer = null;
         }
+        this.clearNextDealTimer();
         this.clearTurnTimer();
         await this.pendingEconomySettlement.catch(() => {});
         this.matchRecorded = false;
@@ -480,6 +483,26 @@ class DominoRoom extends Room {
             this.turnAdvanceTimer = null;
         }
         this.turnAdvancePending = false;
+    }
+
+    clearNextDealTimer() {
+        if (this.nextDealTimer) {
+            clearTimeout(this.nextDealTimer);
+            this.nextDealTimer = null;
+        }
+    }
+
+    scheduleNextDeal(delay = 900) {
+        this.clearNextDealTimer();
+        if (delay <= 0) {
+            this.startDeal();
+            return;
+        }
+        this.nextDealTimer = setTimeout(() => {
+            this.nextDealTimer = null;
+            if (this.matchFinished || this.state.gameActive) return;
+            void this.startDeal();
+        }, delay);
     }
 
     scheduleTurnAdvance(delay = this.turnAdvanceMs) {
@@ -713,7 +736,7 @@ class DominoRoom extends Room {
         const members = this.getTeamMembers(teamIndex);
         const names = members.map((idx) => {
             const sessionId = this.state.playerOrder[idx];
-            return this.state.players.get(sessionId)?.name || `P${idx + 1}`;
+            return this.state.players.get(sessionId)?.name || `Player ${idx + 1}`;
         });
         return names.length ? names.join(" & ") : (teamIndex === 0 ? "Team A" : "Team B");
     }
@@ -1199,6 +1222,7 @@ class DominoRoom extends Room {
         // Debounce to prevent one player from skipping results for others
         if (this._lastNextDealAt && Date.now() - this._lastNextDealAt < 1500) return;
         this._lastNextDealAt = Date.now();
+        this.clearNextDealTimer();
         void this.startDeal();
     }
 
@@ -1329,6 +1353,7 @@ class DominoRoom extends Room {
         this.broadcast("deal_end", { winnerIndex: wi, fish, bonus, hands: this.hands });
         this.state.deal++;
         this.syncState();
+        this.scheduleNextDeal(900);
     }
 
     async endRound(wi, isInstantWin) {
@@ -1363,7 +1388,10 @@ class DominoRoom extends Room {
             if (this.state.players.get(winnerSid)) this.state.players.get(winnerSid).roundWins += wins;
         }
 
-        const isMatchOver = !!isInstantWin || this.state.matchRound >= MAX_R;
+        const finalScoreReached = this.state.isTeamMode
+            ? (this.state.teamScores[0] >= TARGET || this.state.teamScores[1] >= TARGET)
+            : (this.state.players.get(this.state.playerOrder[wi])?.score || 0) >= TARGET;
+        const isMatchOver = finalScoreReached;
 
         // Build player data for the round end screen
         const playerData = [];
@@ -1394,6 +1422,8 @@ class DominoRoom extends Room {
         if (isMatchOver) {
             this.matchFinished = true;
             this.recordMatchResult(wi, !!isInstantWin, playerData, wins);
+        } else {
+            this.scheduleNextDeal(900);
         }
 
         this.state.matchRound++;
