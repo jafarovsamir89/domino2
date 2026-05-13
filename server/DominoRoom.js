@@ -38,6 +38,7 @@ function generateRoomCode() {
 
 function sanitizeName(name) {
     return String(name || "Player")
+        .replace(/<[^>]*>/g, " ")
         .replace(/[^\p{L}\p{N} _.-]/gu, "")
         .trim()
         .slice(0, 24) || "Player";
@@ -1569,3 +1570,5 @@ class DominoRoom extends Room {
 }
 
 module.exports = DominoRoom;
+module.exports.generateRoomCode = generateRoomCode;
+module.exports.sanitizeName = sanitizeName;

@@ -40,6 +40,12 @@ function createRateLimiter(limit: number, windowMs: number) {
 }
 
 async function bootstrap() {
+  const isProduction = process.env.NODE_ENV === "production";
+  const redisUrl = String(process.env.REDIS_URI || "").trim();
+  if (isProduction && !redisUrl && process.env.ALLOW_IN_MEMORY_PRESENCE !== "true") {
+    throw new Error("REDIS_URI is required in production. Set ALLOW_IN_MEMORY_PRESENCE=true only for local/dev testing.");
+  }
+
   const app = await NestFactory.create(AppModule, {
     bodyParser: false
   });
@@ -98,8 +104,8 @@ async function bootstrap() {
   expressApp.use("/api/auth", createRateLimiter(30, 60_000));
   expressApp.use("/api", createRateLimiter(240, 60_000));
   expressApp.all("/api/auth/*splat", toNodeHandler(auth));
-  expressApp.use(json({ limit: "100kb" }));
-  expressApp.use(urlencoded({ extended: true, limit: "100kb" }));
+  expressApp.use(json({ limit: "2mb" }));
+  expressApp.use(urlencoded({ extended: true, limit: "2mb" }));
   app.setGlobalPrefix("api");
   await app.listen(process.env.API_PORT || 3000);
 }

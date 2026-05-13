@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "nest start --watch",
     "build": "nest build",
-    "start": "node dist/main.js"
+    "start": "node dist/main.js",
+    "test": "npm run build"
   },
   "dependencies": {
     "@better-auth/prisma-adapter": "^1.6.9",

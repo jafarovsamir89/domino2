@@ -10,6 +10,10 @@ const { getLiveSummary, getOpenRooms, getLiveSession } = require("./livePresence
 
 const port = process.env.PORT || 2567;
 const redisUrl = process.env.REDIS_URI || "";
+const isProduction = process.env.NODE_ENV === "production";
+if (isProduction && !redisUrl && process.env.ALLOW_IN_MEMORY_PRESENCE !== "true") {
+    throw new Error("REDIS_URI is required in production. Set ALLOW_IN_MEMORY_PRESENCE=true only for local/dev testing.");
+}
 const app = express();
 global.__DOMINO_ROOM_CODES = global.__DOMINO_ROOM_CODES || new Map();
 global.__DOMINO_ROOM_IDS = global.__DOMINO_ROOM_IDS || new Map();
@@ -64,7 +68,7 @@ app.use(cors({
     allowedHeaders: ["Content-Type", "Authorization", "Accept", "Origin"]
 }));
 app.use(createRateLimiter(300, 60 * 1000));
-app.use(express.json({ limit: "100kb" }));
+app.use(express.json({ limit: "2mb" }));
 
 const wwwRoot = path.join(__dirname, "..", "www");
 app.use(express.static(wwwRoot, {

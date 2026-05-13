@@ -125,6 +125,7 @@ export class AuthService {
     }
 
     const name = String(nameInput || "")
+      .replace(/<[^>]*>/g, " ")
       .replace(/[^\p{L}\p{N} _.-]/gu, "")
       .trim()
       .slice(0, 24);
