@@ -58,7 +58,7 @@ class DominoGame {
         this._turnTimerTickId = null;
         this.turnDeadlineAt = 0;
         this.turnTimeoutMs = 20000;
-        this.postMoveAdvanceMs = 3000;
+        this.postMoveAdvanceMs = 2000;
         this.postMoveWindowActive = false;
         this.network = new NetworkManager(this);
         this.account = new AccountClient(() => this.network.getServerUrl());
@@ -1259,6 +1259,12 @@ class DominoGame {
 
     scheduleTurnAdvance(delay = this.postMoveAdvanceMs, turnCycleId = this._turnCycleId) {
         clearTimeout(this._turnAdvanceTimeout);
+        if (delay <= 0) {
+            this.postMoveWindowActive = false;
+            this.turnInProgress = false;
+            this.advanceTurn();
+            return;
+        }
         this.postMoveWindowActive = true;
         this._turnAdvanceTimeout = setTimeout(() => {
             if (turnCycleId !== this._turnCycleId) return;
@@ -3233,8 +3239,8 @@ class DominoGame {
 
         const canPlay = this.board.canPlayAny(myHand);
         const emptyBoneyard = this.boneyard.length === 0;
-        this.renderer.drawBtn.disabled = waitingOpenRoom || !myTurn || canPlay || emptyBoneyard;
-        this.renderer.passBtn.disabled = waitingOpenRoom || !myTurn || canPlay || !emptyBoneyard;
+        this.renderer.drawBtn.disabled = waitingOpenRoom || !myTurn || canPlay || emptyBoneyard || this.postMoveWindowActive || this.turnInProgress;
+        this.renderer.passBtn.disabled = waitingOpenRoom || !myTurn || canPlay || !emptyBoneyard || this.postMoveWindowActive || this.turnInProgress;
 
         this.goshaCombo = (this.gameActive && myTurn) ? this.board.getGoshaCombo(myHand) : null;
         this.renderer.showGoshaBtn(this.goshaCombo, () => this.playGoshaCombo());
@@ -3695,7 +3701,8 @@ class DominoGame {
         if(hand.length===0){ this._dealEndTimeout = setTimeout(()=>this.endDeal(pi,false), 400); return;}
         if(this.board.isBlocked(this.hands,this.boneyard)){ this._dealEndTimeout = setTimeout(()=>this.endDeal(this.findFishWinner(),true), 400); return;}
         this.turnInProgress=false;
-        this.scheduleTurnAdvance(3000, this._turnCycleId);
+        const advanceDelay = this.ais.some(a => a.index === pi) ? 0 : this.postMoveAdvanceMs;
+        this.scheduleTurnAdvance(advanceDelay, this._turnCycleId);
     }
 
     drawFromBoneyard(fromRemote=false) {
@@ -3813,7 +3820,8 @@ class DominoGame {
         if(this.board.isBlocked(this.hands,this.boneyard)){ this._dealEndTimeout = setTimeout(()=>{ if (turnCycleId !== this._turnCycleId) return; this.endDeal(this.findFishWinner(),true); }, 400); return;}
 
         this.turnInProgress=false;
-        this.scheduleTurnAdvance(3000, turnCycleId);
+        const advanceDelay = this.ais.some(a => a.index === pi) ? 0 : this.postMoveAdvanceMs;
+        this.scheduleTurnAdvance(advanceDelay, turnCycleId);
         } catch (e) {
             console.error('[playTile] Error:', e);
             this.turnInProgress = false;

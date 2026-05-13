@@ -94,7 +94,7 @@ class DominoRoom extends Room {
         this.botTimer = null;
         this.turnTimer = null;
         this.turnTimeoutMs = 20000;
-        this.turnAdvanceMs = 3000;
+        this.turnAdvanceMs = 2000;
         this.turnDeadlineAt = 0;
         this.turnAdvancePending = false;
         this.turnAdvanceTimer = null;
@@ -479,6 +479,11 @@ class DominoRoom extends Room {
 
     scheduleTurnAdvance(delay = this.turnAdvanceMs) {
         this.clearTurnAdvanceTimer();
+        if (delay <= 0) {
+            this.turnAdvancePending = false;
+            this.advanceTurn();
+            return;
+        }
         this.turnAdvancePending = true;
         this.turnAdvanceTimer = setTimeout(() => {
             this.turnAdvanceTimer = null;
@@ -1083,7 +1088,7 @@ class DominoRoom extends Room {
             return;
         }
 
-        this.scheduleTurnAdvance();
+        this.scheduleTurnAdvance(isBot ? 0 : this.turnAdvanceMs);
     }
 
     performDraw(pi, isBot = false) {
@@ -1167,7 +1172,7 @@ class DominoRoom extends Room {
             return;
         }
 
-        this.scheduleTurnAdvance();
+        this.scheduleTurnAdvance(isBot ? 0 : this.turnAdvanceMs);
     }
 
     handleNextDeal(client) {
