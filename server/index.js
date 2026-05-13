@@ -272,4 +272,4 @@ process.once("SIGINT", shutdown);
 process.once("SIGTERM", shutdown);
 
 gameServer.listen(port);
-console.log(`[GameServer] Listening on http://localhost:${port}`);
+console.info(`[GameServer] Listening on http://localhost:${port}`);

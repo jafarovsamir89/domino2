@@ -85,7 +85,7 @@ export default async function PlayersPage({
           <select name="scope" defaultValue={scope} style={selectStyle}>
             <option value="all">All players</option>
             <option value="linked">Linked accounts</option>
-            <option value="guests">Guests</option>
+            <option value="guests">Unlinked profiles</option>
             <option value="flagged">Flagged</option>
           </select>
           <select name="sort" defaultValue={sort} style={selectStyle}>
@@ -122,7 +122,7 @@ export default async function PlayersPage({
                   <Td>
                     <div style={mutedStyle}>{player.user?.email ?? "No auth user"}</div>
                     <div style={mutedStyle}>{player.user?.role ?? "player"}</div>
-                    <div style={mutedStyle}>{player.isGuest ? "Guest profile" : "Linked to auth"}</div>
+                    <div style={mutedStyle}>{player.isGuest ? "Unlinked profile" : "Linked to auth"}</div>
                   </Td>
                   <Td>{player.stats?.rating ?? 1000}</Td>
                   <Td>

@@ -1,6 +1,19 @@
 ﻿// js/network.js
 // Networking using Colyseus 0.17
 
+function isDebugLoggingEnabled() {
+    if (typeof window === 'undefined') return false;
+    try {
+        return window.__DOMINO_DEBUG_LOGS === true || window.localStorage?.getItem("dominoDebugLogs") === "true";
+    } catch {
+        return false;
+    }
+}
+
+function debugLog(...args) {
+    if (isDebugLoggingEnabled()) console.log(...args);
+}
+
 class NetworkManager {
     constructor(game) {
         this.game = game;
@@ -34,7 +47,7 @@ class NetworkManager {
             return false;
         }
         const endpoint = this.getServerUrl();
-        console.log('[Network] Using server endpoint:', endpoint);
+        debugLog('[Network] Using server endpoint:', endpoint);
         this.client = new ColyseusLib.Client(endpoint);
         return true;
     }
@@ -234,7 +247,7 @@ class NetworkManager {
             this.clearReconnectTimer();
             const options = this.buildJoinOptions();
 
-            console.log(`Connecting to ${mode}...`);
+            debugLog(`Connecting to ${mode}...`);
             let room;
             if (mode === "create") {
                 room = await this.client.create("domino", options);
@@ -250,7 +263,7 @@ class NetworkManager {
                 isHost: mode === "create",
                 isGuest: mode !== "create"
             });
-            console.log("Connected! Room ID:", connectedRoomId);
+            debugLog("Connected! Room ID:", connectedRoomId);
             this.game.resetOnlineCoinSummary?.();
             if (onReady) onReady(connectedRoomId);
             if (mode === "create") {
@@ -317,7 +330,7 @@ class NetworkManager {
         });
 
         this.room.onLeave((code) => {
-            console.log("Left room, code:", code);
+            debugLog("Left room, code:", code);
             const token = this.room?.reconnectionToken || this.getStoredReconnectionToken();
             const snapshot = this.game.account?.getStoredGameResumeState?.();
             const shouldReconnect = !this.manualLeaveRequested && Boolean(token);

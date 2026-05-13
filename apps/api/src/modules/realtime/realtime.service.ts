@@ -1,20 +1,12 @@
 import { Injectable } from "@nestjs/common";
 import RedisImport from "ioredis";
+import {
+  isStalePresenceEntry,
+  normalizePresenceEntry,
+  type RealtimePresenceEntry
+} from "./realtime.helpers.js";
 
 const Redis = RedisImport as any;
-
-type RealtimePresenceEntry = {
-  sessionId: string;
-  provider: string;
-  displayName: string;
-  roomId: string | null;
-  roomCode: string | null;
-  gameMode: string;
-  isPlaying: boolean;
-  isConnected: boolean;
-  source: string;
-  updatedAt: string;
-};
 
 function getStore() {
   const globalRef = globalThis as typeof globalThis & {
@@ -66,31 +58,6 @@ async function getRedisClient() {
     console.warn("[Redis] Platform realtime connect failed:", (err as Error).message);
     return null;
   }
-}
-
-function normalizeEntry(
-  sessionId: string,
-  current: Partial<RealtimePresenceEntry>,
-  payload: Partial<RealtimePresenceEntry>
-): RealtimePresenceEntry {
-  const provider = String(payload.provider || current.provider || "guest").trim().toLowerCase();
-  const gameMode = String(payload.gameMode || current.gameMode || "solo").trim().toLowerCase();
-  const source = String(payload.source || current.source || "client-local").trim().slice(0, 32) || "client-local";
-  const roomCode = payload.roomCode === undefined ? current.roomCode || null : String(payload.roomCode || "").trim().toUpperCase().slice(0, 16) || null;
-  const roomId = payload.roomId === undefined ? current.roomId || null : String(payload.roomId || "").trim().slice(0, 128) || null;
-
-  return {
-    sessionId,
-    provider: provider === "platform" ? "platform" : "guest",
-    displayName: String(payload.displayName || current.displayName || "Player").slice(0, 32),
-    roomId,
-    roomCode,
-    gameMode: gameMode === "team" ? "team" : "solo",
-    isPlaying: payload.isPlaying === undefined ? current.isPlaying ?? false : Boolean(payload.isPlaying),
-    isConnected: payload.isConnected === undefined ? current.isConnected ?? false : Boolean(payload.isConnected),
-    source,
-    updatedAt: new Date().toISOString()
-  };
 }
 
 async function persistEntry(entry: RealtimePresenceEntry) {
@@ -147,7 +114,7 @@ async function readRedisPlayers() {
       if (!raw) continue;
       try {
         const parsed = JSON.parse(raw) as RealtimePresenceEntry;
-        if (isStale(parsed)) {
+        if (isStalePresenceEntry(parsed)) {
           void removeEntry(parsed.sessionId);
           continue;
         }
@@ -171,7 +138,7 @@ async function readRedisSession(sessionId: string) {
 
   try {
     const parsed = JSON.parse(raw) as RealtimePresenceEntry;
-    if (isStale(parsed)) {
+    if (isStalePresenceEntry(parsed)) {
       void removeEntry(sessionId);
       return null;
     }
@@ -182,16 +149,10 @@ async function readRedisSession(sessionId: string) {
   }
 }
 
-function isStale(entry: RealtimePresenceEntry) {
-  const updatedAt = Date.parse(entry.updatedAt);
-  if (!Number.isFinite(updatedAt)) return true;
-  return Date.now() - updatedAt > 90_000;
-}
-
 function pruneStore() {
   const store = getStore();
   for (const [sessionId, entry] of store.entries()) {
-    if (!isStale(entry)) continue;
+    if (!isStalePresenceEntry(entry)) continue;
     store.delete(sessionId);
     void removeEntry(sessionId);
   }
@@ -205,10 +166,10 @@ export class RealtimeService {
 
     const store = getStore();
     const current = store.get(key) || null;
-    if (current && !isStale(current)) {
+    if (current && !isStalePresenceEntry(current)) {
       return current;
     }
-    if (current && isStale(current)) {
+    if (current && isStalePresenceEntry(current)) {
       store.delete(key);
       void removeEntry(key);
     }
@@ -219,7 +180,7 @@ export class RealtimeService {
       return null;
     }
 
-    if (isStale(redisEntry)) {
+    if (isStalePresenceEntry(redisEntry)) {
       store.delete(key);
       return null;
     }
@@ -236,7 +197,7 @@ export class RealtimeService {
 
     const store = getStore();
     const current = store.get(sessionId) || ({} as RealtimePresenceEntry);
-    const next = normalizeEntry(sessionId, current, payload);
+    const next = normalizePresenceEntry(sessionId, current, payload);
 
     store.set(sessionId, next);
     void persistEntry(next);
@@ -254,7 +215,7 @@ export class RealtimeService {
     pruneStore();
     const store = getStore();
     for (const [sessionId, entry] of store.entries()) {
-      if (isStale(entry)) {
+      if (isStalePresenceEntry(entry)) {
         store.delete(sessionId);
       }
     }

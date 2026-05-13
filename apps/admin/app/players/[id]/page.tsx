@@ -140,7 +140,7 @@ export default async function PlayerDetailPage({
         <Panel title="Identity">
           <StatRow label="Player ID" value={player.id} />
           <StatRow label="User ID" value={player.userId ?? "not linked"} />
-          <StatRow label="Guest" value={player.isGuest ? "yes" : "no"} />
+          <StatRow label="Linked account" value={player.isGuest ? "no" : "yes"} />
           <StatRow label="Language" value={player.language ?? "n/a"} />
           <StatRow label="Avatar seed" value={player.avatarSeed ?? "n/a"} />
           <StatRow label="Created" value={player.createdAt.slice(0, 10)} />

@@ -7,7 +7,7 @@
     "dev": "nest start --watch",
     "build": "nest build",
     "start": "node dist/main.js",
-    "test": "npm run build"
+    "test": "npm run build && node --test dist/test/realtime.helpers.test.js"
   },
   "dependencies": {
     "@better-auth/prisma-adapter": "^1.6.9",

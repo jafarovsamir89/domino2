@@ -29,6 +29,11 @@ if (redis) {
     });
 }
 
+const DEBUG_LOGS = process.env.NODE_ENV !== "production" && process.env.DOMINO_DEBUG_LOGS !== "false";
+function debugLog(...args) {
+    if (DEBUG_LOGS) console.log(...args);
+}
+
 function generateRoomCode() {
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
     let code = '';
@@ -111,7 +116,7 @@ class DominoRoom extends Room {
         this.onMessage("next_deal", (client) => this.handleNextDeal(client));
         this.onMessage("reaction", (client, message) => this.handleReaction(client, message));
 
-        console.log(`[ROOM] Created room ${this.roomId} (code ${this.roomCode}), humanSeats=${this.humanSeats}, totalPlayers=${this.totalPlayers}, aiCount=${this.aiCount}, teamMode=${this.state.isTeamMode}`);
+        debugLog(`[ROOM] Created room ${this.roomId} (code ${this.roomCode}), humanSeats=${this.humanSeats}, totalPlayers=${this.totalPlayers}, aiCount=${this.aiCount}, teamMode=${this.state.isTeamMode}`);
     }
 
     onAuth(client, options, context) {
@@ -185,7 +190,7 @@ class DominoRoom extends Room {
 
     onJoin(client, options, auth) {
         const identity = auth || {};
-        console.log(`[ROOM] Client ${client.sessionId} joining with name: ${options.name}`);
+        debugLog(`[ROOM] Client ${client.sessionId} joining with name: ${options.name}`);
         const authToken = String(identity.authToken || options.authToken || "").trim();
         const reusableSessionId = this.findReusableSessionId(options, identity);
         const humanPlayers = this.state.playerOrder.filter((sessionId) => !this.state.players.get(sessionId)?.isBot).length;
@@ -247,7 +252,7 @@ class DominoRoom extends Room {
 
         this.registerLivePlayer(client.sessionId, nextIdentity, player);
 
-        console.log(`[ROOM] Current player count: ${this.clients.length} / ${this.maxClients}`);
+        debugLog(`[ROOM] Current player count: ${this.clients.length} / ${this.maxClients}`);
         this.broadcast("msg", { text: `${player.name} ${restoredJoin ? "rejoined" : "joined"} the room`, time: 1500 });
         if (this.state.gameActive || this.hasRestoredMatchInProgress()) {
             this.syncState();
@@ -255,7 +260,7 @@ class DominoRoom extends Room {
             this.broadcastRoomState();
         }
         if (!this.state.gameActive && this.clients.length === this.maxClients && !this.hasRestoredMatchInProgress()) {
-            console.log(`[ROOM] Room full. Starting game...`);
+            debugLog(`[ROOM] Room full. Starting game...`);
             void this.startGame();
         }
     }
@@ -295,7 +300,7 @@ class DominoRoom extends Room {
     }
 
     async onLeave(client, consented) {
-        console.log(`[ROOM] Client ${client.sessionId} left (consented: ${consented})`);
+        debugLog(`[ROOM] Client ${client.sessionId} left (consented: ${consented})`);
         const player = this.state.players.get(client.sessionId);
         if (player) player.isConnected = false;
         const identity = this.identityBySessionId.get(client.sessionId);
@@ -325,7 +330,7 @@ class DominoRoom extends Room {
 
         try {
             if (consented) throw new Error("consented leave");
-            console.log(`[ROOM] Waiting for reconnection for ${client.sessionId}...`);
+            debugLog(`[ROOM] Waiting for reconnection for ${client.sessionId}...`);
             this.broadcastRoomState();
             await this.allowReconnection(client, 60);
             player.isConnected = true;
@@ -352,11 +357,11 @@ class DominoRoom extends Room {
                     isPlaying: Boolean(this.state.gameActive)
                 });
             }
-            console.log(`[ROOM] Client ${client.sessionId} reconnected!`);
+            debugLog(`[ROOM] Client ${client.sessionId} reconnected!`);
             this.broadcast("msg", { text: `${player.name} reconnected`, time: 1500 });
             this.syncState();
         } catch (e) {
-            console.log(`[ROOM] Client ${client.sessionId} removed permanently.`);
+            debugLog(`[ROOM] Client ${client.sessionId} removed permanently.`);
             const leftPlayerName = player ? player.name : "Player";
             if (this.state.gameActive && this.currentStakeKey !== "free") {
                 void this.settleForfeitStake(client.sessionId).catch((err) => {
@@ -1555,7 +1560,7 @@ class DominoRoom extends Room {
     }
 
     onRestoreRoom(cachedData) {
-        console.log(`[ROOM] Restoring room ${this.roomId}`);
+        debugLog(`[ROOM] Restoring room ${this.roomId}`);
         this.applyCustomStateSnapshot(cachedData || {});
         if (this.state.gameActive && this.state.playerOrder[this.state.currentPlayerIndex]?.startsWith('bot-')) {
             this.scheduleBotTurn(1500);

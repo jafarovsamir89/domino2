@@ -130,7 +130,7 @@ export default async function DashboardPage() {
         <MetricCard label="Active Bans" value={overview?.metrics.bansActive ?? "API offline"} />
         <MetricCard label="Connected Now" value={mergedRealtime?.counts.connected ?? "Game offline"} />
         <MetricCard label="Online Auth" value={mergedRealtime?.counts.authenticatedConnected ?? "Game offline"} />
-        <MetricCard label="Online Guests" value={mergedRealtime?.counts.guestConnected ?? "Game offline"} />
+        <MetricCard label="External Sessions" value={mergedRealtime?.counts.guestConnected ?? "Game offline"} />
         <MetricCard label="Playing Now" value={mergedRealtime?.counts.playing ?? "Game offline"} />
         <MetricCard label="Coins live" value={economy?.metrics.coinsInCirculation ?? "API offline"} />
         <MetricCard label="Coins reserved" value={economy?.metrics.coinsReserved ?? "API offline"} />
@@ -141,7 +141,7 @@ export default async function DashboardPage() {
         <Panel title="API Status">
           <Row label="API URL" value={getApiBaseUrl()} />
           <Row label="Game Server" value={getGameServerBaseUrl()} />
-          <Row label="Realtime Feed" value="game server + local guest heartbeat" />
+          <Row label="Realtime Feed" value="game server + local session heartbeat" />
           <Row label="Auth Provider" value={authStatus?.provider ?? "unreachable"} />
           <Row label="Auth Phase" value={authStatus?.phase ?? "unreachable"} />
           <Row label="Google Login" value={authStatus ? (authStatus.googleEnabled ? "enabled" : "disabled") : "unknown"} />

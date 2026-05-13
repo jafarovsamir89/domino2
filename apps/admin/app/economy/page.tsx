@@ -145,7 +145,7 @@ export default async function EconomyPage() {
                   <div style={metaStyle}>
                     <span>{wallet.email ?? "No auth user"}</span>
                     <span>{wallet.reserved} reserved</span>
-                    <span>{wallet.isGuest ? "guest" : "linked"}</span>
+                    <span>{wallet.isGuest ? "unlinked" : "linked"}</span>
                   </div>
                 </article>
               ))}

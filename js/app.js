@@ -9,6 +9,19 @@ import { sndPlace, sndScore, sndDraw, sndPass, sndWin, sndGosha } from './sounds
 
 const TARGET=365, MAX_R=3, DLOSS=255, IWIN=35;
 
+function isDebugLoggingEnabled() {
+    if (typeof window === 'undefined') return false;
+    try {
+        return window.__DOMINO_DEBUG_LOGS === true || window.localStorage?.getItem("dominoDebugLogs") === "true";
+    } catch {
+        return false;
+    }
+}
+
+function debugLog(...args) {
+    if (isDebugLoggingEnabled()) console.log(...args);
+}
+
 const AUTH_ICON_SVGS = {
     google: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" aria-hidden="true"><path fill="#FFC107" d="M43.611 20.083H42V20H24v8h10.27A10.99 10.99 0 0 1 24 38c-7.732 0-14-6.268-14-14s6.268-14 14-14c3.468 0 6.642 1.272 9.074 3.368l5.657-5.657C35.886 3.765 30.279 1.5 24 1.5 11.574 1.5 1.5 11.574 1.5 24S11.574 46.5 24 46.5 46.5 36.426 46.5 24c0-1.44-.135-2.847-.389-3.917z"/><path fill="#EA4335" d="M6.306 14.691l6.571 4.819C14.655 15.108 18.961 12 24 12c3.468 0 6.642 1.272 9.074 3.368l5.657-5.657C35.886 3.765 30.279 1.5 24 1.5c-7.79 0-14.63 4.29-17.694 11.191z"/><path fill="#34A853" d="M24 46.5c6.109 0 11.64-2.339 15.82-6.156l-6.255-5.286C31.249 37.014 27.835 38 24 38c-5.984 0-11.033-3.87-12.85-9.238l-6.52 5.025C8.254 41.98 15.64 46.5 24 46.5z"/><path fill="#4285F4" d="M43.611 20.083H42V20H24v8h10.27a11.04 11.04 0 0 1-4.34 4.353l.003-.002 6.255 5.286C35.607 39.57 41 35 41 24c0-1.44-.135-2.847-.389-3.917z"/></svg>`,
     apple: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 814 1000" aria-hidden="true"><path fill="#fff" d="M788.1 340.9c-5.8 4.5-108.2 62.2-108.2 190.5 0 148.4 130.3 200.9 134.2 202.2-.6 3.2-20.7 71.9-68.7 141.9-42.8 61.6-87.5 123.1-155.5 123.1s-85.5-39.5-164-39.5c-76.5 0-103.7 40.8-165.9 40.8s-105.6-57-155.5-127C46.7 790.7 0 663 0 541.8c0-194.4 126.4-297.5 250.8-297.5 66.1 0 121.2 43.4 162.7 43.4 39.5 0 101.1-46 176.3-46 28.5 0 130.9 2.6 198.3 99.2zm-234-181.5c31.1-36.9 53.1-88.1 53.1-139.3 0-7.1-.6-14.3-1.9-20.1-50.6 1.9-110.8 33.7-147.1 75.8-28.5 32.4-55.1 83.6-55.1 135.5 0 7.8 1.3 15.6 1.9 18.1 3.2.6 8.4 1.3 13.6 1.3 45.4 0 102.5-30.4 135.5-71.3z"/></svg>`,
@@ -2919,14 +2932,14 @@ class DominoGame {
     }
 
     async startNewGame() {
-        console.log('[startNewGame] Starting...', 'isMultiplayer:', this.network.isMultiplayer);
+        debugLog('[startNewGame] Starting...', 'isMultiplayer:', this.network.isMultiplayer);
         document.getElementById('start-screen').classList.remove('active');
         document.getElementById('game-screen').classList.add('active');
         this.playerName = this.sanitizeName(this.playerName);
 
         // In multiplayer, server controls the game - just wait for state updates
         if (this.network.isMultiplayer) {
-            console.log('[startNewGame] Multiplayer mode - waiting for server');
+            debugLog('[startNewGame] Multiplayer mode - waiting for server');
             this.humanPlayerIndex = 0;
             if (this.isTeamMode) this.playerCount = 4;
             return;
@@ -2969,7 +2982,7 @@ class DominoGame {
         for(let i=1;i<this.playerCount;i++) {
             this.ais.push(new AIPlayer(i,this.difficulty));
         }
-        console.log('[startNewGame] Starting round...');
+        debugLog('[startNewGame] Starting round...');
         const started = await this.startRound();
         if (!started) {
             document.getElementById('game-screen').classList.remove('active');
@@ -3067,7 +3080,7 @@ class DominoGame {
     }
 
     async startRound() { 
-        console.log('[startRound] playerCount:', this.playerCount);
+        debugLog('[startRound] playerCount:', this.playerCount);
         this.roundOver=false; this.scores=new Array(this.playerCount).fill(0); if(this.isTeamMode) this.teamScores=[0,0]; this.deal=1; 
         await this.pendingSoloSettlement.catch(() => {});
         this.currentRoundStakeKey = this.soloStakeKey || 'stake_50';
@@ -3095,7 +3108,7 @@ class DominoGame {
     }
 
     startDeal() {
-        console.log('[startDeal] Initializing deal...');
+        debugLog('[startDeal] Initializing deal...');
         this._turnCycleId += 1;
         const turnCycleId = this._turnCycleId;
         this.clearTurnTimers();
@@ -3104,12 +3117,12 @@ class DominoGame {
         this.hands=[]; let idx=0;
         for(let p=0;p<this.playerCount;p++){this.hands.push(all.slice(idx,idx+hs));idx+=hs;}
         this.boneyard=all.slice(idx);
-        console.log('[startDeal] Hands dealt, boneyard:', this.boneyard.length);
+        debugLog('[startDeal] Hands dealt, boneyard:', this.boneyard.length);
         if(this.lastDealWinner!==null){
             const fp=this.lastDealWinner;
             this.currentPlayer=fp; this.renderState();
             this.startTurnTimer();
-            console.log('[startDeal] Last deal winner starts:', fp);
+            debugLog('[startDeal] Last deal winner starts:', fp);
             this.broadcastMsg(this.format('msg-last-winner-starts', { player: this.playerNames[fp] }),2000);
             this.queueAITurnIfNeeded(1500, turnCycleId);
         }else{
@@ -3117,7 +3130,7 @@ class DominoGame {
             const fp=f.player; const fi=f.tileIndex;
             this.currentPlayer=fp; this.renderState();
             this.startTurnTimer();
-            console.log('[startDeal] First player determined:', fp);
+            debugLog('[startDeal] First player determined:', fp);
             this.broadcastMsg(this.format('msg-first-turn', { player: this.playerNames[fp] }),2000);
             this.turnInProgress=true;
             this._firstTurnTimeout = setTimeout(() => {
