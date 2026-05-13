@@ -364,7 +364,7 @@ export class Renderer {
     showArrowChoices(board, matchingEnds, onChoose, onCancel) {
         this.removeArrows();
         const gs = document.getElementById('game-screen');
-        const arrowSymbols = { left: 'в†ђ', right: 'в†’', top: 'в†‘', bottom: 'в†“' };
+        const arrowSymbols = { left: '\u2190', right: '\u2192', top: '\u2191', bottom: '\u2193' };
         const tapEvent = window.PointerEvent ? 'pointerup' : 'click';
         const overlay = document.createElement('div');
         overlay.id = 'arrow-overlay';
@@ -528,18 +528,66 @@ export class Renderer {
     }
 
     renderDealEnd(wn, players, fish, bonus) {
-        void players;
-        void bonus;
-        this.showMessage(fish ? this.app.t('msg-fish') : `${wn} ${this.app.t('out-suffix')}`, 1400);
-        document.getElementById('round-end-screen')?.classList.remove('active');
+        const title = document.getElementById('round-end-title');
+        const details = document.getElementById('round-end-details');
+        const action = document.getElementById('next-round-btn');
+        if (title) title.textContent = fish ? this.app.t('msg-fish') : `${wn} ${this.app.t('out-suffix')}`;
+        if (details) {
+            details.innerHTML = '';
+            for (const p of players || []) {
+                const row = document.createElement('div');
+                row.className = 'detail-row';
+                row.style.flexDirection = 'column';
+                row.style.alignItems = 'flex-start';
+                row.style.gap = '6px';
+
+                const top = document.createElement('div');
+                top.style.display = 'flex';
+                top.style.justifyContent = 'space-between';
+                top.style.width = '100%';
+
+                const name = document.createElement('span');
+                name.textContent = p.name;
+
+                const value = document.createElement('span');
+                value.className = 'detail-value';
+                const parts = [`${this.app.t('label-hand-points')}: ${p.handPoints || 0}`];
+                if (p.isWinner) parts.push(`${this.app.t('label-bonus')}: +${bonus || 0}`);
+                parts.push(`${this.app.t('label-total')}: ${p.score || 0}`);
+                value.textContent = parts.join(' · ');
+
+                top.appendChild(name);
+                top.appendChild(value);
+                row.appendChild(top);
+
+                if (Array.isArray(p.leftoverHands) && p.leftoverHands.length) {
+                    const handsDiv = document.createElement('div');
+                    handsDiv.style.display = 'flex';
+                    handsDiv.style.flexWrap = 'wrap';
+                    handsDiv.style.gap = '4px';
+                    for (const h of p.leftoverHands) {
+                        for (const t of h || []) {
+                            const tel = this.createTileEl(t.a, t.b, 'vertical', true);
+                            handsDiv.appendChild(tel);
+                        }
+                    }
+                    if (handsDiv.children.length > 0) row.appendChild(handsDiv);
+                }
+                details.appendChild(row);
+            }
+        }
+        if (action) action.style.display = 'none';
+        const screen = document.getElementById('round-end-screen');
+        if (screen) screen.classList.add('active');
     }
 
     renderRoundEnd(wn, players, wins, mr, over) {
         void players;
         void mr;
+        const action = document.getElementById('next-round-btn');
+        if (action) action.style.display = over ? '' : 'none';
         if (!over) {
-            this.showMessage(wins >= 2 ? `${wn} x2!` : `${wn} ${this.app.t('won-suffix')}`, 1400);
-            document.getElementById('round-end-screen')?.classList.remove('active');
+            this.renderDealEnd(wn, players, false, wins);
         }
     }
 

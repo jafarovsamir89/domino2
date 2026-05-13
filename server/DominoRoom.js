@@ -235,6 +235,7 @@ class DominoRoom extends Room {
             player = new Player();
             player.name = sanitizeName(identity.displayName || options.name);
             player.userId = String(identity.userId || "");
+            player.avatarUrl = String(identity.avatarUrl || options.avatarUrl || "").trim();
             this.state.players.set(client.sessionId, player);
             this.state.playerOrder.push(client.sessionId);
         }
@@ -243,6 +244,7 @@ class DominoRoom extends Room {
 
         player.name = sanitizeName(identity.displayName || player.name || options.name);
         player.userId = String(identity.userId || player.userId || "");
+        player.avatarUrl = String(identity.avatarUrl || player.avatarUrl || options.avatarUrl || "").trim();
         player.isConnected = true;
 
         const existingIdentity = this.identityBySessionId.get(client.sessionId) || {};
@@ -792,7 +794,7 @@ class DominoRoom extends Room {
                 name: player ? player.name : "Player",
                 userId: player ? player.userId : "",
                 playerId: identity.playerId || player?.userId || "",
-                avatarUrl: identity.avatarUrl || "",
+                avatarUrl: player?.avatarUrl || identity.avatarUrl || "",
                 isConnected: player ? player.isConnected : false,
                 isBot: player ? player.isBot : false
             };
@@ -1353,7 +1355,7 @@ class DominoRoom extends Room {
         this.broadcast("deal_end", { winnerIndex: wi, fish, bonus, hands: this.hands });
         this.state.deal++;
         this.syncState();
-        this.scheduleNextDeal(900);
+        this.scheduleNextDeal(2000);
     }
 
     async endRound(wi, isInstantWin) {
@@ -1423,7 +1425,7 @@ class DominoRoom extends Room {
             this.matchFinished = true;
             this.recordMatchResult(wi, !!isInstantWin, playerData, wins);
         } else {
-            this.scheduleNextDeal(900);
+            this.scheduleNextDeal(2000);
         }
 
         this.state.matchRound++;
@@ -1477,6 +1479,7 @@ class DominoRoom extends Room {
                     sessionId,
                     name: player?.name || "Player",
                     userId: player?.userId || "",
+                    avatarUrl: player?.avatarUrl || "",
                     score: player?.score || 0,
                     roundWins: player?.roundWins || 0,
                     handCount: player?.handCount || 0,
@@ -1515,6 +1518,7 @@ class DominoRoom extends Room {
             player.score = Number(entry.score || 0);
             player.roundWins = Number(entry.roundWins || 0);
             player.handCount = Number(entry.handCount || 0);
+            player.avatarUrl = String(entry.avatarUrl || "").trim();
             player.isBot = Boolean(entry.isBot);
             player.isConnected = Boolean(entry.isBot);
             this.state.players.set(sessionId, player);

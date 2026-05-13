@@ -62,6 +62,7 @@ class DominoGame {
         this.postMoveAdvanceMs = 2000;
         this.postMoveWindowActive = false;
         this.postMoveWindowEndsAt = 0;
+        this.roomAvatarBySessionId = new Map();
         this.mobileAuthPending = false;
         this.network = new NetworkManager(this);
         this.account = new AccountClient(() => this.network.getServerUrl());
@@ -1658,6 +1659,36 @@ class DominoGame {
         return `${parts[0].slice(0, 1)}${parts[1].slice(0, 1)}`.toUpperCase();
     }
 
+    getResolvedAvatarUrl(playerIndex = -1) {
+        const idx = Number(playerIndex);
+        const playerOrder = Array.isArray(this.network?.room?.state?.playerOrder)
+            ? this.network.room.state.playerOrder
+            : Array.isArray(this.currentRoomState?.players)
+                ? this.currentRoomState.players.map((player) => player.sessionId)
+                : [];
+        const sessionId = playerOrder[idx];
+        const cachedAvatarUrl = sessionId && this.roomAvatarBySessionId instanceof Map
+            ? this.roomAvatarBySessionId.get(sessionId)
+            : '';
+        const schemaPlayer = sessionId && this.network?.room?.state?.players
+            ? this.network.room.state.players.get(sessionId)
+            : null;
+        const roomPlayer = Array.isArray(this.currentRoomState?.players)
+            ? (this.currentRoomState.players[idx]
+                || this.currentRoomState.players.find((player) => player?.sessionId === sessionId)
+                || this.currentRoomState.players.find((player) => Number(player?.index) === idx))
+            : null;
+        const selfProfile = this.accountProfile || {};
+
+        return String(
+            cachedAvatarUrl
+            || schemaPlayer?.avatarUrl
+            || roomPlayer?.avatarUrl
+            || (idx === this.humanPlayerIndex ? (selfProfile.avatarUrl || selfProfile.image || selfProfile.providerImage || '') : '')
+            || ''
+        ).trim();
+    }
+
     startTurnTimer(deadlineAt = null) {
         const endAt = Number(deadlineAt || (Date.now() + this.turnTimeoutMs));
         this.turnDeadlineAt = endAt;
@@ -1737,14 +1768,7 @@ class DominoGame {
         }
 
         const currentName = this.playerNames[this.currentPlayer] || this.playerName || '';
-        const currentRoomPlayer = Array.isArray(this.currentRoomState?.players)
-            ? (this.currentRoomState.players[this.currentPlayer]
-                || this.currentRoomState.players.find((player) => Number(player?.index) === Number(this.currentPlayer)))
-            : null;
-        const avatarUrl = currentRoomPlayer?.avatarUrl
-            || (this.currentPlayer === this.humanPlayerIndex
-                ? (this.accountProfile?.avatarUrl || this.accountProfile?.image || this.accountProfile?.providerImage || '')
-                : '');
+        const avatarUrl = this.getResolvedAvatarUrl(this.currentPlayer);
         if (avatarUrl) {
             if (avatar.dataset.avatarSrc !== avatarUrl) {
                 avatar.dataset.avatarSrc = avatarUrl;
@@ -2912,7 +2936,7 @@ class DominoGame {
         const list = document.getElementById('room-player-list');
         list.innerHTML = '';
 
-        for (const player of roomState.players || []) {
+        for (const [index, player] of (roomState.players || []).entries()) {
             const chip = document.createElement('div');
             chip.className = 'room-player-chip';
             if (player.sessionId === mySessionId) {
@@ -2920,7 +2944,10 @@ class DominoGame {
             }
             const avatar = document.createElement('span');
             avatar.className = 'room-player-avatar';
-            const avatarUrl = player.avatarUrl || '';
+            const avatarUrl = player.avatarUrl || this.network?.room?.state?.players?.get?.(player.sessionId)?.avatarUrl || '';
+            if (player.sessionId) {
+                this.roomAvatarBySessionId.set(player.sessionId, avatarUrl || this.roomAvatarBySessionId.get(player.sessionId) || '');
+            }
             if (avatarUrl) {
                 avatar.classList.add('has-image');
                 const img = document.createElement('img');
@@ -3021,6 +3048,7 @@ class DominoGame {
         this.clearTurnTimers();
         this.network.leaveRoom();
         this.currentRoomState = null;
+        this.roomAvatarBySessionId.clear();
         this.myHand = null;
         this.gameActive = false;
         this.onlineRoundBankAmount = 0;
@@ -3053,6 +3081,7 @@ class DominoGame {
         document.getElementById('game-over-screen')?.classList.remove('active');
         document.getElementById('game-screen')?.classList.add('active');
         this.clearNextDealAdvanceTimeout();
+        this.renderState();
         this.renderer.showMessage(this.t('connection-restored'), 1600);
         this.persistGameResumeSnapshot();
     }
@@ -3925,6 +3954,9 @@ class DominoGame {
         return this.getTeamMembers(teamIndex).includes(playerIndex);
     }
     renderState() {
+        if (this.gameActive) {
+            document.getElementById('round-end-screen')?.classList.remove('active');
+        }
         let displayEntities;
         if (this.isTeamMode) {
             const teamA = this.getTeamMembers(0);
@@ -4193,8 +4225,13 @@ class DominoGame {
         const playerOrder = Array.from(state?.playerOrder || []);
         const players = state?.players;
         const getPlayer = (sid) => (players && sid !== undefined && sid !== null) ? players.get(sid) : null;
+        for (const sid of playerOrder) {
+            if (!sid) continue;
+            const avatarUrl = getPlayer(sid)?.avatarUrl || '';
+            this.roomAvatarBySessionId.set(sid, avatarUrl || this.roomAvatarBySessionId.get(sid) || '');
+        }
 
-        this.playerNames = playerOrder.map(sid => getPlayer(sid)?.name || "Player");
+        this.playerNames = playerOrder.map((sid, index) => getPlayer(sid)?.name || `Player ${index + 1}`);
         this.scores = playerOrder.map(sid => getPlayer(sid)?.score || 0);
         this.roundWins = playerOrder.map(sid => getPlayer(sid)?.roundWins || 0);
         this.playerCount = state?.playerCount || playerOrder.length;
@@ -4696,7 +4733,7 @@ class DominoGame {
         this.deal++;
         this.persistGameResumeSnapshot();
         void this.syncLocalPresence();
-        this.scheduleNextDealAdvance(900);
+        this.scheduleNextDealAdvance(2000);
     }
     endRound(wi){
         this.roundOver=true;
@@ -4729,7 +4766,7 @@ class DominoGame {
         this.persistGameResumeSnapshot();
         void this.syncLocalPresence();
         this.renderer.renderRoundEnd(this.playerNames[wi],displayEntities,wins,this.matchRound - 1,false);
-        this.scheduleNextDealAdvance(900);
+        this.scheduleNextDealAdvance(2000);
     }
     showMatchResult(){
         this.clearNextDealAdvanceTimeout();
