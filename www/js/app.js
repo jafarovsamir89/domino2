@@ -449,9 +449,7 @@ class DominoGame {
     }
 
     hasAuthenticatedAccount(profile = this.accountProfile) {
-        return Boolean(profile)
-            && profile.provider !== 'local-guest'
-            && !profile.isGuest;
+        return Boolean(profile) && !profile.isGuest;
     }
 
     async requireRegisteredAccount(messageKey = 'account-registration-required') {
@@ -3286,7 +3284,6 @@ class DominoGame {
             "account-desc": { az: "Keep your score, rating and match history.", en: "Keep your score, rating and match history." },
             "account-name": { az: "Name", en: "Name" },
             "account-password": { az: "Password", en: "Password" },
-            "account-guest": { az: "Guest mode", en: "Guest mode" },
             "account-create-account": { az: "Create account", en: "Create account" },
             "account-register": { az: "Register", en: "Register" },
             "account-login": { az: "Sign in", en: "Sign in" },
@@ -3311,7 +3308,6 @@ class DominoGame {
             "account-matches": { az: "Matches", en: "Matches" },
             "account-refresh": { az: "Refresh", en: "Refresh" },
             "account-logout": { az: "Logout", en: "Logout" },
-            "account-guest-meta": { az: "Guest profile", en: "Guest profile" },
             "account-online": { az: "Server connected", en: "Server connected" },
             "account-offline": { az: "Server unavailable", en: "Server unavailable" },
             "account-history-empty": { az: "No match history yet", en: "No match history yet" },

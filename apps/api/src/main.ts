@@ -3,10 +3,13 @@ import "reflect-metadata";
 import { NestFactory } from "@nestjs/core";
 import { toNodeHandler } from "better-auth/node";
 import { json, urlencoded, type NextFunction, type Request, type Response } from "express";
+import RedisImport from "ioredis";
 
 import { AppModule } from "./modules/app.module.js";
 import { getBetterAuthConfig } from "./modules/auth/better-auth.config.js";
 import { auth } from "./modules/auth/auth.instance.js";
+
+const Redis = RedisImport as any;
 
 type RateBucket = {
   count: number;
@@ -15,27 +18,83 @@ type RateBucket = {
 
 function createRateLimiter(limit: number, windowMs: number) {
   const buckets = new Map<string, RateBucket>();
+  const redisUrl = String(process.env.REDIS_URI || "").trim();
+  const redis = redisUrl
+    ? new Redis(redisUrl, {
+        enableReadyCheck: false,
+        lazyConnect: true,
+        maxRetriesPerRequest: 1,
+        retryStrategy(times: number) {
+          return Math.min(times * 200, 1000);
+        }
+      })
+    : null;
+
+  if (redis) {
+    redis.on("error", (err: Error) => {
+      console.warn("[Redis] API rate limiter unavailable:", err.message);
+    });
+  }
+
+  const getRedisClient = async () => {
+    if (!redis) return null;
+    try {
+      if (redis.status !== "ready") {
+        await redis.connect();
+      }
+      return redis;
+    } catch (err) {
+      console.warn("[Redis] API rate limiter connect failed:", (err as Error).message);
+      return null;
+    }
+  };
+
   return (req: Request, res: Response, next: NextFunction) => {
-    const now = Date.now();
-    const key = `${req.ip}:${req.path}`;
-    const current = buckets.get(key);
-    if (!current || current.resetAt <= now) {
-      buckets.set(key, {
-        count: 1,
-        resetAt: now + windowMs
-      });
+    void (async () => {
+      const now = Date.now();
+      const key = `${req.ip}:${req.path}`;
+      const client = await getRedisClient();
+
+      if (!client) {
+        const current = buckets.get(key);
+        if (!current || current.resetAt <= now) {
+          buckets.set(key, {
+            count: 1,
+            resetAt: now + windowMs
+          });
+          next();
+          return;
+        }
+
+        if (current.count >= limit) {
+          res.setHeader("Retry-After", Math.ceil((current.resetAt - now) / 1000));
+          res.status(429).json({ error: "Too many requests" });
+          return;
+        }
+
+        current.count += 1;
+        next();
+        return;
+      }
+
+      const redisKey = `domino:ratelimit:api:${key}`;
+      const current = await client.incr(redisKey);
+      if (current === 1) {
+        await client.pexpire(redisKey, windowMs);
+      }
+
+      if (current > limit) {
+        const ttl = await client.pttl(redisKey).catch(() => windowMs);
+        res.setHeader("Retry-After", Math.max(1, Math.ceil(Math.max(ttl, 0) / 1000)));
+        res.status(429).json({ error: "Too many requests" });
+        return;
+      }
+
       next();
-      return;
-    }
-
-    if (current.count >= limit) {
-      res.setHeader("Retry-After", Math.ceil((current.resetAt - now) / 1000));
-      res.status(429).json({ error: "Too many requests" });
-      return;
-    }
-
-    current.count += 1;
-    next();
+    })().catch((err: Error) => {
+      console.warn("[RateLimit] API limiter fallback:", err.message);
+      next();
+    });
   };
 }
 

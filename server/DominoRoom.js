@@ -7,6 +7,7 @@ const { AIPlayer } = require("./ai");
 const { Tile, createFullSet, shuffle, getHandSize, determineFirstPlayer, handPoints, roundTo5 } = require("./model");
 const { verifyGameToken } = require("./platformAuth");
 const { upsertLivePlayer, removeLivePlayer, setRoomGameActive, removeRoomPlayers } = require("./livePresence");
+const { rememberRoom, forgetRoom } = require("./roomRegistry");
 
 const TARGET = 365, MAX_R = 3, DLOSS = 255, IWIN = 35;
 const CUSTOM_STATE_TTL = 86400;
@@ -58,8 +59,7 @@ class DominoRoom extends Room {
         }
 
         this.roomCode = restoreSnapshot?.roomCode || generateRoomCode();
-        global.__DOMINO_ROOM_CODES?.set(this.roomCode, this.roomId);
-        global.__DOMINO_ROOM_IDS?.set(this.roomId, this.roomCode);
+        void rememberRoom(this.roomCode, this.roomId);
 
         this.setState(new GameState());
         this.state.isTeamMode = options.isTeamMode === true;
@@ -262,9 +262,8 @@ class DominoRoom extends Room {
 
     onDispose() {
         if (this.roomCode) {
-            global.__DOMINO_ROOM_CODES?.delete(this.roomCode);
+            void forgetRoom(this.roomCode, this.roomId);
         }
-        global.__DOMINO_ROOM_IDS?.delete(this.roomId);
         removeRoomPlayers(this.roomId);
         this.botTimer && clearTimeout(this.botTimer);
         this.clearTurnTimer();
@@ -1475,8 +1474,7 @@ class DominoRoom extends Room {
         this.roomCode = data.roomCode || this.roomCode;
         this.roomVisibility = String(data.roomVisibility || this.roomVisibility || "closed").trim() === "open" ? "open" : "closed";
         if (this.roomCode) {
-            global.__DOMINO_ROOM_CODES?.set(this.roomCode, this.roomId);
-            global.__DOMINO_ROOM_IDS?.set(this.roomId, this.roomCode);
+            void rememberRoom(this.roomCode, this.roomId);
         }
 
         this.humanSeats = data.humanSeats ?? this.humanSeats;
@@ -1545,6 +1543,7 @@ class DominoRoom extends Room {
             await redis.setex(`domino:custom:${this.roomId}`, CUSTOM_STATE_TTL, snapshot);
             if (this.roomCode) {
                 await redis.setex(`domino:custom:code:${this.roomCode}`, CUSTOM_STATE_TTL, snapshot);
+                await rememberRoom(this.roomCode, this.roomId);
             }
         } catch (e) {
             console.error("Redis error", e);

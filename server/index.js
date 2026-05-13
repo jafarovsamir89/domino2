@@ -2,11 +2,13 @@ const express = require("express");
 const cors = require("cors");
 const http = require("http");
 const path = require("path");
+const Redis = require("ioredis");
 const { Server } = require("colyseus");
 const { RedisPresence } = require("@colyseus/redis-presence");
 const { RedisDriver } = require("@colyseus/redis-driver");
 const DominoRoom = require("./DominoRoom");
 const { getLiveSummary, getOpenRooms, getLiveSession } = require("./livePresence");
+const { resolveRoomIdByCode, resolveRoomCodeById } = require("./roomRegistry");
 
 const port = process.env.PORT || 2567;
 const redisUrl = process.env.REDIS_URI || "";
@@ -15,27 +17,77 @@ if (isProduction && !redisUrl && process.env.ALLOW_IN_MEMORY_PRESENCE !== "true"
     throw new Error("REDIS_URI is required in production. Set ALLOW_IN_MEMORY_PRESENCE=true only for local/dev testing.");
 }
 const app = express();
-global.__DOMINO_ROOM_CODES = global.__DOMINO_ROOM_CODES || new Map();
-global.__DOMINO_ROOM_IDS = global.__DOMINO_ROOM_IDS || new Map();
+const redis = redisUrl
+    ? new Redis(redisUrl, {
+        enableReadyCheck: false,
+        lazyConnect: true,
+        maxRetriesPerRequest: 1,
+        retryStrategy(times) {
+            return Math.min(times * 200, 1000);
+        }
+    })
+    : null;
 
-function createRateLimiter(limit, windowMs) {
+if (redis) {
+    redis.on("error", (err) => {
+        console.warn("[Redis] Game server redis unavailable:", err.message);
+    });
+}
+
+async function getRedisClient() {
+    if (!redis) return null;
+    try {
+        if (redis.status !== "ready") {
+            await redis.connect();
+        }
+        return redis;
+    } catch (err) {
+        console.warn("[Redis] Game server connect failed:", err.message);
+        return null;
+    }
+}
+
+function createRateLimiter(limit, windowMs, namespace) {
     const buckets = new Map();
     return (req, res, next) => {
-        const now = Date.now();
-        const key = `${req.ip}:${req.path}`;
-        const current = buckets.get(key);
-        if (!current || current.resetAt <= now) {
-            buckets.set(key, { count: 1, resetAt: now + windowMs });
+        void (async () => {
+            const now = Date.now();
+            const key = `${req.ip}:${req.path}`;
+            const client = await getRedisClient();
+
+            if (!client) {
+                const current = buckets.get(key);
+                if (!current || current.resetAt <= now) {
+                    buckets.set(key, { count: 1, resetAt: now + windowMs });
+                    next();
+                    return;
+                }
+                if (current.count >= limit) {
+                    res.setHeader("Retry-After", Math.ceil((current.resetAt - now) / 1000));
+                    res.status(429).json({ error: "Too many requests" });
+                    return;
+                }
+                current.count += 1;
+                next();
+                return;
+            }
+
+            const redisKey = `domino:ratelimit:${namespace}:${key}`;
+            const current = await client.incr(redisKey);
+            if (current === 1) {
+                await client.pexpire(redisKey, windowMs);
+            }
+            if (current > limit) {
+                const ttl = await client.pttl(redisKey).catch(() => windowMs);
+                res.setHeader("Retry-After", Math.max(1, Math.ceil(Math.max(ttl, 0) / 1000)));
+                res.status(429).json({ error: "Too many requests" });
+                return;
+            }
             next();
-            return;
-        }
-        if (current.count >= limit) {
-            res.setHeader("Retry-After", Math.ceil((current.resetAt - now) / 1000));
-            res.status(429).json({ error: "Too many requests" });
-            return;
-        }
-        current.count += 1;
-        next();
+        })().catch((err) => {
+            console.warn("[RateLimit] Game limiter fallback:", err.message);
+            next();
+        });
     };
 }
 
@@ -67,7 +119,7 @@ app.use(cors({
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization", "Accept", "Origin"]
 }));
-app.use(createRateLimiter(300, 60 * 1000));
+app.use(createRateLimiter(300, 60 * 1000, "game"));
 app.use(express.json({ limit: "2mb" }));
 
 const wwwRoot = path.join(__dirname, "..", "www");
@@ -125,31 +177,41 @@ app.post("/api/matches", (req, res) => {
 });
 
 app.get("/room-id/:code", (req, res) => {
-    const code = String(req.params.code || "").trim().toUpperCase();
-    if (!code || !/^[A-Z2-9]{4,12}$/.test(code)) {
-        res.status(400).json({ error: "Missing code" });
-        return;
-    }
-    const roomId = global.__DOMINO_ROOM_CODES.get(code);
-    if (!roomId) {
-        res.status(404).json({ error: "Room not found" });
-        return;
-    }
-    res.json({ code, roomId });
+    void (async () => {
+        const code = String(req.params.code || "").trim().toUpperCase();
+        if (!code || !/^[A-Z2-9]{4,12}$/.test(code)) {
+            res.status(400).json({ error: "Missing code" });
+            return;
+        }
+        const roomId = await resolveRoomIdByCode(code);
+        if (!roomId) {
+            res.status(404).json({ error: "Room not found" });
+            return;
+        }
+        res.json({ code, roomId });
+    })().catch((err) => {
+        console.error("[GameServer] room-id lookup failed:", err);
+        res.status(500).json({ error: "Room lookup failed" });
+    });
 });
 
 app.get("/room-code/:roomId", (req, res) => {
-    const roomId = String(req.params.roomId || "").trim();
-    if (!roomId || roomId.length > 128) {
-        res.status(400).json({ error: "Missing roomId" });
-        return;
-    }
-    const roomCode = global.__DOMINO_ROOM_IDS.get(roomId);
-    if (!roomCode) {
-        res.status(404).json({ error: "Room not found" });
-        return;
-    }
-    res.json({ roomId, roomCode });
+    void (async () => {
+        const roomId = String(req.params.roomId || "").trim();
+        if (!roomId || roomId.length > 128) {
+            res.status(400).json({ error: "Missing roomId" });
+            return;
+        }
+        const roomCode = await resolveRoomCodeById(roomId);
+        if (!roomCode) {
+            res.status(404).json({ error: "Room not found" });
+            return;
+        }
+        res.json({ roomId, roomCode });
+    })().catch((err) => {
+        console.error("[GameServer] room-code lookup failed:", err);
+        res.status(500).json({ error: "Room lookup failed" });
+    });
 });
 
 app.get("/api/realtime/summary", async (req, res) => {

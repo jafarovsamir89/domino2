@@ -25,6 +25,15 @@ function isStale(entry) {
   return Date.now() - updatedAt > 90_000;
 }
 
+function pruneStore() {
+  const store = getStore();
+  for (const [sessionId, entry] of store.entries()) {
+    if (!isStale(entry)) continue;
+    store.delete(sessionId);
+    void removeEntry(sessionId);
+  }
+}
+
 function getStore() {
   const globalRef = globalThis;
   if (!globalRef.__DOMINO_LIVE_PRESENCE) {
@@ -154,7 +163,12 @@ async function readRedisPlayers() {
       const raw = await client.get(key).catch(() => null);
       if (!raw) continue;
       try {
-        players.push(JSON.parse(raw));
+        const parsed = JSON.parse(raw);
+        if (isStale(parsed)) {
+          void removeEntry(parsed?.sessionId || key);
+          continue;
+        }
+        players.push(parsed);
       } catch (err) {
         console.warn("[Redis] Skipping malformed live presence entry:", err.message);
       }
@@ -190,6 +204,10 @@ async function getLiveSession(sessionId) {
   if (current && !isStale(current)) {
     return current;
   }
+  if (current && isStale(current)) {
+    store.delete(key);
+    void removeEntry(key);
+  }
 
   const client = await getRedisClient();
   if (!client) return null;
@@ -199,7 +217,11 @@ async function getLiveSession(sessionId) {
 
   try {
     const parsed = JSON.parse(raw);
-    return isStale(parsed) ? null : parsed;
+    if (isStale(parsed)) {
+      void removeEntry(key);
+      return null;
+    }
+    return parsed;
   } catch (err) {
     console.warn("[Redis] Skipping malformed live presence session:", err.message);
     return null;
@@ -239,14 +261,15 @@ function removeRoomPlayers(roomId) {
 }
 
 async function listLivePlayers() {
+  pruneStore();
   const merged = new Map();
   for (const [sessionId, entry] of getStore().entries()) {
-    merged.set(sessionId, entry);
+    if (!isStale(entry)) merged.set(sessionId, entry);
   }
 
   const redisPlayers = await readRedisPlayers();
   for (const entry of redisPlayers) {
-    if (!entry?.sessionId) continue;
+    if (!entry?.sessionId || isStale(entry)) continue;
     merged.set(entry.sessionId, entry);
   }
 
@@ -254,7 +277,7 @@ async function listLivePlayers() {
 }
 
 function getRoomSnapshot(roomId, players) {
-  const roomPlayers = players.filter((player) => player.roomId === roomId);
+  const roomPlayers = players.filter((player) => player.roomId === roomId && !isStale(player));
   if (!roomPlayers.length) return null;
 
   const first = roomPlayers[0];
@@ -301,6 +324,7 @@ function getRoomSnapshot(roomId, players) {
 }
 
 async function getLiveSummary() {
+  pruneStore();
   const players = await listLivePlayers();
   const connectedPlayers = players.filter((player) => player.isConnected !== false);
   const connectedAuthenticatedPlayers = connectedPlayers.filter((player) => player.provider === "platform");

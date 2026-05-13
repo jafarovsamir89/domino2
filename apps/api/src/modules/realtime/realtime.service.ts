@@ -146,7 +146,12 @@ async function readRedisPlayers() {
       const raw = await client.get(key).catch(() => null);
       if (!raw) continue;
       try {
-        players.push(JSON.parse(raw) as RealtimePresenceEntry);
+        const parsed = JSON.parse(raw) as RealtimePresenceEntry;
+        if (isStale(parsed)) {
+          void removeEntry(parsed.sessionId);
+          continue;
+        }
+        players.push(parsed);
       } catch (err) {
         console.warn("[Redis] Skipping malformed platform presence entry:", (err as Error).message);
       }
@@ -165,7 +170,12 @@ async function readRedisSession(sessionId: string) {
   if (!raw) return null;
 
   try {
-    return JSON.parse(raw) as RealtimePresenceEntry;
+    const parsed = JSON.parse(raw) as RealtimePresenceEntry;
+    if (isStale(parsed)) {
+      void removeEntry(sessionId);
+      return null;
+    }
+    return parsed;
   } catch (err) {
     console.warn("[Redis] Skipping malformed platform presence session:", (err as Error).message);
     return null;
@@ -178,6 +188,15 @@ function isStale(entry: RealtimePresenceEntry) {
   return Date.now() - updatedAt > 90_000;
 }
 
+function pruneStore() {
+  const store = getStore();
+  for (const [sessionId, entry] of store.entries()) {
+    if (!isStale(entry)) continue;
+    store.delete(sessionId);
+    void removeEntry(sessionId);
+  }
+}
+
 @Injectable()
 export class RealtimeService {
   async getSession(sessionId: string) {
@@ -188,6 +207,10 @@ export class RealtimeService {
     const current = store.get(key) || null;
     if (current && !isStale(current)) {
       return current;
+    }
+    if (current && isStale(current)) {
+      store.delete(key);
+      void removeEntry(key);
     }
 
     const redisEntry = await readRedisSession(key);
@@ -228,6 +251,7 @@ export class RealtimeService {
   }
 
   async list() {
+    pruneStore();
     const store = getStore();
     for (const [sessionId, entry] of store.entries()) {
       if (isStale(entry)) {
@@ -243,6 +267,7 @@ export class RealtimeService {
   }
 
   async summary() {
+    pruneStore();
     const players = await this.list();
     const connectedPlayers = players.filter((player) => player.isConnected !== false);
     const authenticatedConnectedPlayers = connectedPlayers.filter((player) => player.provider === "platform");
