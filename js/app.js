@@ -91,6 +91,7 @@ class DominoGame {
             roomMode: 'all',
             stakeKey: 'all'
         };
+        this.pendingSharedRoomCode = '';
         this.friendSearchResults = [];
         this.friendHub = { accepted: [], incoming: [], outgoing: [] };
         this.roomInvitations = { incoming: [], sent: [] };
@@ -118,6 +119,7 @@ class DominoGame {
         this.lastReactionSentType = '';
         this.setLanguage(this.currentLang);
         this.setupStartScreen(); this.setupGameControls(); this.setupMenu();
+        this.applySharedRoomCodeFromUrl();
         this.bootstrapAccount();
 
         // Watchdog for turn freeze
@@ -366,14 +368,7 @@ class DominoGame {
             void this.searchFriends();
         });
         document.getElementById('copy-room-code-btn')?.addEventListener('click', async () => {
-            const code = String(document.getElementById('room-code-display')?.textContent || '').trim();
-            if (!code || code === '....') return;
-            try {
-                await navigator.clipboard.writeText(code);
-                this.setHostStatus(this.format('online-copy-success', { code }));
-            } catch (e) {
-                this.setHostStatus(this.format('online-copy-fail', { code }));
-            }
+            await this.shareCurrentRoomCode();
         });
         document.getElementById('host-cancel-btn')?.addEventListener('click', () => {
             if (this.network?.room) {
@@ -2184,6 +2179,10 @@ class DominoGame {
         document.getElementById('join-game-btn')?.classList.add('is-hidden');
         this.placeOnlineBackButton(document.getElementById('online-flow-ui'), true);
         this.showMultiplayerPanel('join');
+        const joinInput = document.getElementById('join-code-input');
+        if (joinInput && this.pendingSharedRoomCode && !String(joinInput.value || '').trim()) {
+            joinInput.value = this.pendingSharedRoomCode;
+        }
         this.setJoinStatus(this.t('online-room-join-hint'));
     }
 
@@ -2673,6 +2672,74 @@ class DominoGame {
 
     setJoinStatus(text) {
         document.getElementById('join-status').textContent = text;
+    }
+
+    getCurrentRoomCode() {
+        const code = String(this.currentRoomState?.roomCode || document.getElementById('room-code-display')?.textContent || '').trim().toUpperCase();
+        return code && code !== '....' ? code : '';
+    }
+
+    getRoomShareUrl(roomCode) {
+        const code = String(roomCode || '').trim().toUpperCase();
+        if (!code) return window.location.href;
+        try {
+            const url = new URL(window.location.href);
+            url.searchParams.set('room', code);
+            url.hash = '';
+            return url.toString();
+        } catch {
+            return window.location.href;
+        }
+    }
+
+    buildRoomShareMessage(roomCode) {
+        const code = String(roomCode || '').trim().toUpperCase();
+        const roomUrl = this.getRoomShareUrl(code);
+        return this.format('online-room-share-message', {
+            code,
+            url: roomUrl
+        });
+    }
+
+    async shareCurrentRoomCode() {
+        const code = this.getCurrentRoomCode();
+        if (!code) return;
+        const roomUrl = this.getRoomShareUrl(code);
+        const message = this.buildRoomShareMessage(code);
+        try {
+            if (navigator.share) {
+                await navigator.share({
+                    title: this.t('online-room-share-title'),
+                    text: message,
+                    url: roomUrl
+                });
+                this.setHostStatus(this.t('online-room-share-opened'));
+                return;
+            }
+            if (navigator.clipboard?.writeText) {
+                await navigator.clipboard.writeText(`${message}\n${roomUrl}`);
+                this.setHostStatus(this.t('online-room-share-copied'));
+                return;
+            }
+        } catch (error) {
+            debugLog('Room share failed:', error);
+        }
+        this.setHostStatus(this.t('online-room-share-fail'));
+    }
+
+    applySharedRoomCodeFromUrl() {
+        if (typeof window === 'undefined') return;
+        try {
+            const params = new URLSearchParams(window.location.search);
+            const roomCode = String(params.get('room') || params.get('code') || '').trim().toUpperCase();
+            if (roomCode) {
+                this.pendingSharedRoomCode = roomCode;
+                const input = document.getElementById('join-code-input');
+                if (input && !String(input.value || '').trim()) {
+                    input.value = roomCode;
+                }
+            }
+        } catch {}
     }
 
     onRoomStateUpdate(roomState) {
@@ -3864,9 +3931,12 @@ class DominoGame {
             "online-room-create-hint": { az: "Share the room code with a friend", en: "Share the room code with a friend" },
             "online-room-join-hint": { az: "Enter a room code to connect", en: "Enter a room code to connect" },
             "online-room-code": { az: "Room code", en: "Room code" },
-            "online-room-copy": { az: "Copy", en: "Copy" },
-            "online-copy-success": { az: "Code copied: {code}", en: "Code copied: {code}" },
-            "online-copy-fail": { az: "Copy failed. Code: {code}", en: "Copy failed. Code: {code}" },
+            "online-room-share": { az: "Share", en: "Share" },
+            "online-room-share-title": { az: "Domino room invite", en: "Domino room invite" },
+            "online-room-share-message": { az: "Join my Domino room. Code: {code}. Link: {url}", en: "Join my Domino room. Code: {code}. Link: {url}" },
+            "online-room-share-opened": { az: "Share sheet opened", en: "Share sheet opened" },
+            "online-room-share-copied": { az: "Invite link copied", en: "Invite link copied" },
+            "online-room-share-fail": { az: "Share failed", en: "Share failed" },
             "online-you": { az: "you", en: "you" },
             "online-ready": { az: "ready", en: "ready" },
             "online-offline": { az: "offline", en: "offline" },
