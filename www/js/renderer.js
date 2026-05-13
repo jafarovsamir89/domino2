@@ -487,7 +487,7 @@ export class Renderer {
             btn.className = 'btn btn-gosha';
             document.querySelector('.action-bar').appendChild(btn);
         }
-        btn.textContent = this.app.format('gosha-button', { count: combo.matches.length, score: combo.score });
+        btn.textContent = this.app.t('gosha-button');
         btn.onclick = () => {
             if (onGoshaClick) onGoshaClick();
         };

@@ -93,7 +93,7 @@ class DominoRoom extends Room {
         this.pendingEconomySettlement = Promise.resolve();
         this.botTimer = null;
         this.turnTimer = null;
-        this.turnTimeoutMs = 20000;
+        this.turnTimeoutMs = 3000;
         this.turnDeadlineAt = 0;
         this.botIds = [];
         this.aiPlayers = new Map();
@@ -1109,22 +1109,22 @@ class DominoRoom extends Room {
         const tilesByIndex = new Map(matches.map((m) => [m.tileIndex, hand[m.tileIndex]]));
         for (const m of sorted) hand.splice(m.tileIndex, 1);
 
-        let score = 0;
         for (const m of matches) {
             const openEndIndex = this.internalBoard.findOpenEndIndex(m.nodeId, m.side);
             const tile = tilesByIndex.get(m.tileIndex);
             if (openEndIndex === -1 || !tile) {
                 return;
             }
-            score = this.internalBoard.placeTile(tile, openEndIndex);
+            this.internalBoard.placeTile(tile, openEndIndex);
         }
 
+        const score = combo.score || this.internalBoard.calculateScore();
         if (score > 0) this.addScore(pi, score);
         this.clearTurnTimer();
         const actor = this.state.players.get(this.state.playerOrder[pi]);
         const actorName = actor ? actor.name : "Player";
         if (!isBot) {
-            this.broadcast("msg", { text: `${actorName} Gosha x${matches.length}! +${score}`, time: 2000 });
+            this.broadcast("msg", { text: `${actorName} played Gosha`, time: 2000 });
         }
 
         if (this.instantWinEnabled && score >= IWIN) {

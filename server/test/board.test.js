@@ -31,3 +31,22 @@ test("cloneBoard and reconstructBoard preserve the board snapshot", () => {
     assert.equal(cloned.openEnds.length, 2);
     assert.equal(reconstructed.openEnds.length, 2);
 });
+
+test("getGoshaCombo keeps the full score for a double gosha sequence", () => {
+    const board = new Board();
+    board.placeFirst(new Tile(5, 5));
+
+    const hand = [new Tile(5, 5), new Tile(5, 5), new Tile(2, 2)];
+    const combo = board.getGoshaCombo(hand);
+
+    assert.ok(combo);
+    assert.equal(combo.matches.length, 2);
+    assert.equal(combo.score, 20);
+
+    for (const move of combo.matches) {
+        const idx = board.findOpenEndIndex(move.nodeId, move.side);
+        board.placeTile(hand[move.tileIndex], idx);
+    }
+
+    assert.equal(board.calculateScore(), 20);
+});

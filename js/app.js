@@ -57,7 +57,7 @@ class DominoGame {
         this._turnTimeoutId = null;
         this._turnTimerTickId = null;
         this.turnDeadlineAt = 0;
-        this.turnTimeoutMs = 20000;
+        this.turnTimeoutMs = 3000;
         this.network = new NetworkManager(this);
         this.account = new AccountClient(() => this.network.getServerUrl());
         this.accountProfile = this.account.getStoredProfile();
@@ -3664,7 +3664,6 @@ class DominoGame {
         const sorted=[...matches].sort((a,b)=>b.tileIndex-a.tileIndex);
         const tilesByIndex = new Map(matches.map((m) => [m.tileIndex, hand[m.tileIndex]]));
         for(const m of sorted) hand.splice(m.tileIndex,1);
-        let score=0;
         for(const m of matches){
             const openEndIndex = this.board.findOpenEndIndex(m.nodeId, m.side);
             const tile = tilesByIndex.get(m.tileIndex);
@@ -3672,12 +3671,13 @@ class DominoGame {
                 this.turnInProgress=false;
                 return;
             }
-            score=this.board.placeTile(tile,openEndIndex);
+            this.board.placeTile(tile,openEndIndex);
         }
         this.renderState();
-        
+
+        const score = this.goshaCombo?.score || this.board.calculateScore();
         if(score>0){this.addScore(pi,score);if(this.checkEnd(pi,score))return;}
-        this.broadcastMsg(this.format('msg-gosha', { player: this.playerNames[pi], count: matches.length, score }),2000);
+        this.broadcastMsg(this.format('msg-gosha', { player: this.playerNames[pi] }),2000);
         if(hand.length===0){ this._dealEndTimeout = setTimeout(()=>this.endDeal(pi,false), 400); return;}
         if(this.board.isBlocked(this.hands,this.boneyard)){ this._dealEndTimeout = setTimeout(()=>this.endDeal(this.findFishWinner(),true), 400); return;}
         this._turnAdvanceTimeout = setTimeout(() => { this.turnInProgress=false; this.advanceTurn(); }, 300);
