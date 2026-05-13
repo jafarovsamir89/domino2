@@ -93,8 +93,11 @@ class DominoRoom extends Room {
         this.pendingEconomySettlement = Promise.resolve();
         this.botTimer = null;
         this.turnTimer = null;
-        this.turnTimeoutMs = 3000;
+        this.turnTimeoutMs = 20000;
+        this.turnAdvanceMs = 3000;
         this.turnDeadlineAt = 0;
+        this.turnAdvancePending = false;
+        this.turnAdvanceTimer = null;
         this.botIds = [];
         this.aiPlayers = new Map();
         this.matchRecorded = false;
@@ -461,8 +464,27 @@ class DominoRoom extends Room {
             clearTimeout(this.turnTimer);
             this.turnTimer = null;
         }
+        this.clearTurnAdvanceTimer();
         this.turnDeadlineAt = 0;
         if (this.state) this.state.turnDeadlineAt = 0;
+    }
+
+    clearTurnAdvanceTimer() {
+        if (this.turnAdvanceTimer) {
+            clearTimeout(this.turnAdvanceTimer);
+            this.turnAdvanceTimer = null;
+        }
+        this.turnAdvancePending = false;
+    }
+
+    scheduleTurnAdvance(delay = this.turnAdvanceMs) {
+        this.clearTurnAdvanceTimer();
+        this.turnAdvancePending = true;
+        this.turnAdvanceTimer = setTimeout(() => {
+            this.turnAdvanceTimer = null;
+            this.turnAdvancePending = false;
+            this.advanceTurn();
+        }, delay);
     }
 
     scheduleTurnTimer() {
@@ -998,6 +1020,7 @@ class DominoRoom extends Room {
         if (!this.state.gameActive) return;
         const pi = this.getPlayerIndex(client);
         if (pi !== this.state.currentPlayerIndex) return;
+        if (this.turnAdvancePending) return;
         const { tileIndex, openEndIndex } = message;
         this.performPlay(pi, tileIndex, openEndIndex, false);
     }
@@ -1006,6 +1029,7 @@ class DominoRoom extends Room {
         if (!this.state.gameActive) return;
         const pi = this.getPlayerIndex(client);
         if (pi !== this.state.currentPlayerIndex) return;
+        if (this.turnAdvancePending) return;
         this.performDraw(pi, false);
     }
 
@@ -1013,6 +1037,7 @@ class DominoRoom extends Room {
         if (!this.state.gameActive) return;
         const pi = this.getPlayerIndex(client);
         if (pi !== this.state.currentPlayerIndex) return;
+        if (this.turnAdvancePending) return;
         this.performPass(pi, false);
     }
 
@@ -1058,7 +1083,7 @@ class DominoRoom extends Room {
             return;
         }
 
-        this.advanceTurn();
+        this.scheduleTurnAdvance();
     }
 
     performDraw(pi, isBot = false) {
@@ -1097,6 +1122,7 @@ class DominoRoom extends Room {
             this.broadcast("msg", { text: `${actorName} passed`, time: 1500 });
         }
         this.clearTurnTimer();
+        this.clearTurnAdvanceTimer();
         this.advanceTurn();
         return true;
     }
@@ -1141,7 +1167,7 @@ class DominoRoom extends Room {
             return;
         }
 
-        this.advanceTurn();
+        this.scheduleTurnAdvance();
     }
 
     handleNextDeal(client) {
@@ -1168,6 +1194,7 @@ class DominoRoom extends Room {
     }
 
     advanceTurn() {
+        this.clearTurnAdvanceTimer();
         if (this.internalBoard.isBlocked(this.hands, this.boneyard)) {
             this.endDeal(this.findFishWinner(), true);
             return;

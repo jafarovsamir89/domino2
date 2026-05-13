@@ -57,7 +57,9 @@ class DominoGame {
         this._turnTimeoutId = null;
         this._turnTimerTickId = null;
         this.turnDeadlineAt = 0;
-        this.turnTimeoutMs = 3000;
+        this.turnTimeoutMs = 20000;
+        this.postMoveAdvanceMs = 3000;
+        this.postMoveWindowActive = false;
         this.network = new NetworkManager(this);
         this.account = new AccountClient(() => this.network.getServerUrl());
         this.accountProfile = this.account.getStoredProfile();
@@ -1250,8 +1252,20 @@ class DominoGame {
         this._dealEndTimeout = null;
         this._turnTimeoutId = null;
         this._turnTimerTickId = null;
+        this.postMoveWindowActive = false;
         this.turnDeadlineAt = 0;
         this.updateTurnTimerHud();
+    }
+
+    scheduleTurnAdvance(delay = this.postMoveAdvanceMs, turnCycleId = this._turnCycleId) {
+        clearTimeout(this._turnAdvanceTimeout);
+        this.postMoveWindowActive = true;
+        this._turnAdvanceTimeout = setTimeout(() => {
+            if (turnCycleId !== this._turnCycleId) return;
+            this.postMoveWindowActive = false;
+            this.turnInProgress = false;
+            this.advanceTurn();
+        }, delay);
     }
 
     setSummaryMessage(container, message) {
@@ -3674,13 +3688,14 @@ class DominoGame {
             this.board.placeTile(tile,openEndIndex);
         }
         this.renderState();
-
+        
         const score = this.goshaCombo?.score || this.board.calculateScore();
         if(score>0){this.addScore(pi,score);if(this.checkEnd(pi,score))return;}
         this.broadcastMsg(this.format('msg-gosha', { player: this.playerNames[pi] }),2000);
         if(hand.length===0){ this._dealEndTimeout = setTimeout(()=>this.endDeal(pi,false), 400); return;}
         if(this.board.isBlocked(this.hands,this.boneyard)){ this._dealEndTimeout = setTimeout(()=>this.endDeal(this.findFishWinner(),true), 400); return;}
-        this._turnAdvanceTimeout = setTimeout(() => { this.turnInProgress=false; this.advanceTurn(); }, 300);
+        this.turnInProgress=false;
+        this.scheduleTurnAdvance(3000, this._turnCycleId);
     }
 
     drawFromBoneyard(fromRemote=false) {
@@ -3688,7 +3703,7 @@ class DominoGame {
             this.network.sendDraw();
             return;
         }
-        if(!this.gameActive) return;
+        if(!this.gameActive||this.postMoveWindowActive) return;
         const isHuman = this.currentPlayer === this.humanPlayerIndex;
         const isAI = this.ais.some(a => a.index === this.currentPlayer);
         if (!isHuman && !isAI) return;
@@ -3713,7 +3728,7 @@ class DominoGame {
             this.network.sendPass();
             return;
         }
-        if(!this.gameActive||this.turnInProgress) return;
+        if(!this.gameActive||this.turnInProgress||this.postMoveWindowActive) return;
         const isHuman = this.currentPlayer === this.humanPlayerIndex;
         const isAI = this.ais.some(a => a.index === this.currentPlayer);
         if (!isHuman && !isAI) return;
@@ -3764,6 +3779,7 @@ class DominoGame {
 
     async playTile(pi,ti,oei) {
         if(this.turnInProgress) return;
+        if (this.postMoveWindowActive) return;
         this.clearTurnTimers();
         this.turnInProgress=true;
         const turnCycleId = this._turnCycleId;
@@ -3795,12 +3811,9 @@ class DominoGame {
         if(score>0){this.addScore(pi,score);if(this.checkEnd(pi,score))return;}
         if(hand.length===0){ this._dealEndTimeout = setTimeout(()=>{ if (turnCycleId !== this._turnCycleId) return; this.endDeal(pi,false); }, 400); return;}
         if(this.board.isBlocked(this.hands,this.boneyard)){ this._dealEndTimeout = setTimeout(()=>{ if (turnCycleId !== this._turnCycleId) return; this.endDeal(this.findFishWinner(),true); }, 400); return;}
-        
-        this._turnAdvanceTimeout = setTimeout(() => {
-            if (turnCycleId !== this._turnCycleId) return;
-            this.turnInProgress=false;
-            this.advanceTurn();
-        }, sourceRect ? 70 : 300);
+
+        this.turnInProgress=false;
+        this.scheduleTurnAdvance(3000, turnCycleId);
         } catch (e) {
             console.error('[playTile] Error:', e);
             this.turnInProgress = false;
@@ -3808,6 +3821,9 @@ class DominoGame {
     }
 
     advanceTurn() {
+        this.postMoveWindowActive = false;
+        clearTimeout(this._turnAdvanceTimeout);
+        this._turnAdvanceTimeout = null;
         if(this.board.isBlocked(this.hands,this.boneyard)){this.endDeal(this.findFishWinner(),true);return;}
         this.currentPlayer=(this.currentPlayer+1)%this.playerCount;
         this.renderState();
