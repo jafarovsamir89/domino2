@@ -55,22 +55,14 @@
                 </div>
                 <div class="auth-landing-actions">
                     <button class="btn btn-social btn-large auth-provider-btn" id="landing-google-login-btn" type="button">
-                        <span class="auth-icon" aria-hidden="true">G</span>
+                        <span class="auth-icon auth-icon-google" aria-hidden="true"></span>
                         <span data-i18n="account-google">Google ilə giriş</span>
                     </button>
                     <button class="btn btn-social btn-large auth-provider-btn" id="landing-apple-login-btn" type="button">
-                        <span class="auth-icon" aria-hidden="true"></span>
+                        <span class="auth-icon auth-icon-apple" aria-hidden="true"></span>
                         <span data-i18n="account-apple">Apple ID ilə giriş</span>
                     </button>
-                    <button class="btn btn-action btn-large auth-provider-btn" id="landing-email-toggle-btn" type="button">
-                        <span class="auth-icon" aria-hidden="true">@</span>
-                        <span data-i18n="account-email-continue">Email ilə davam et</span>
-                    </button>
                 </div>
-                <form id="landing-email-form" class="landing-email-form is-hidden">
-                    <input type="email" id="landing-email-input" placeholder="email@domain.com" maxlength="254" required>
-                    <button class="btn btn-primary" id="landing-email-submit-btn" type="submit" data-i18n="account-email-continue">Email ilə davam et</button>
-                </form>
                 <div id="landing-auth-status" class="room-summary"></div>
                 <p class="account-legal-copy">
                     <span data-i18n="account-legal-prefix">Davam etməklə siz</span>
@@ -345,23 +337,11 @@
                             <p class="account-auth-copy" data-i18n="account-auth-desc">Reytinqin, oyun tarixçən və Google girişi üçün hesabına daxil ol.</p>
                         </div>
 
-                        <form class="account-form account-form-login active" id="account-login-form">
-                            <div class="settings-grid compact-grid">
-                                <div class="settings-group field-span-2">
-                                    <label data-i18n="account-email">Email</label>
-                                    <input type="email" id="account-login-email-input" placeholder="email@domain.com" maxlength="254" required>
-                                </div>
-                                <div class="settings-group field-span-2">
-                                    <div id="account-status" class="room-summary"></div>
-                                </div>
-                            </div>
-
-                            <div class="account-auth-actions">
-                                <button class="btn btn-action btn-strong" id="email-continue-btn" type="submit" data-i18n="account-email-continue">Email ilə davam et</button>
-                                <button class="btn btn-social" id="google-login-btn" type="button" data-i18n="account-google">Google ilə giriş</button>
-                                <button class="btn btn-social" id="apple-login-btn" type="button" data-i18n="account-apple">Apple ID ilə giriş</button>
-                            </div>
-                        </form>
+                        <div class="account-auth-actions">
+                            <button class="btn btn-social" id="google-login-btn" type="button" data-i18n="account-google">Google ilə giriş</button>
+                            <button class="btn btn-social" id="apple-login-btn" type="button" data-i18n="account-apple">Apple ID ilə giriş</button>
+                            <div id="account-status" class="room-summary"></div>
+                        </div>
                         <p class="account-legal-copy">
                             <span data-i18n="account-legal-prefix">Davam etməklə siz</span>
                             <a href="terms.html" target="_blank" rel="noopener noreferrer" data-i18n="account-legal-link">İstifadəçi razılaşmasını</a>

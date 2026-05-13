@@ -87,7 +87,7 @@ class DominoRoom extends Room {
         this.pendingEconomySettlement = Promise.resolve();
         this.botTimer = null;
         this.turnTimer = null;
-        this.turnTimeoutMs = 60000;
+        this.turnTimeoutMs = 20000;
         this.turnDeadlineAt = 0;
         this.botIds = [];
         this.aiPlayers = new Map();
