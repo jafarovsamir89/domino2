@@ -1570,11 +1570,18 @@ input, button { font: inherit; }
     flex: 0 0 auto;
     display: grid;
     place-items: center;
+    gap: 4px;
+    justify-items: center;
 }
 
 .turn-timer-slot.is-hidden {
     opacity: 0;
     pointer-events: none;
+}
+
+.turn-timer-slot.is-postmove .turn-timer-ring {
+    box-shadow: 0 0 0 1px rgba(240, 192, 64, 0.18), 0 10px 24px rgba(0, 0, 0, 0.26);
+    animation: postMovePulse 1s ease-in-out infinite;
 }
 
 .turn-timer-ring {
@@ -1607,6 +1614,24 @@ input, button { font: inherit; }
     font-weight: 800;
     letter-spacing: 0.04em;
     text-transform: uppercase;
+}
+
+.turn-timer-caption {
+    min-height: 1.1em;
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgba(240, 192, 64, 0.92);
+    text-align: center;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+    line-height: 1.1;
+    max-width: 72px;
+}
+
+@keyframes postMovePulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.04); }
 }
 
 .reaction-slot {

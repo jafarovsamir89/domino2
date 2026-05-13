@@ -60,6 +60,7 @@ class DominoGame {
         this.turnTimeoutMs = 20000;
         this.postMoveAdvanceMs = 2000;
         this.postMoveWindowActive = false;
+        this.postMoveWindowEndsAt = 0;
         this.network = new NetworkManager(this);
         this.account = new AccountClient(() => this.network.getServerUrl());
         this.accountProfile = this.account.getStoredProfile();
@@ -1253,6 +1254,7 @@ class DominoGame {
         this._turnTimeoutId = null;
         this._turnTimerTickId = null;
         this.postMoveWindowActive = false;
+        this.postMoveWindowEndsAt = 0;
         this.turnDeadlineAt = 0;
         this.updateTurnTimerHud();
     }
@@ -1261,14 +1263,17 @@ class DominoGame {
         clearTimeout(this._turnAdvanceTimeout);
         if (delay <= 0) {
             this.postMoveWindowActive = false;
+            this.postMoveWindowEndsAt = 0;
             this.turnInProgress = false;
             this.advanceTurn();
             return;
         }
         this.postMoveWindowActive = true;
+        this.postMoveWindowEndsAt = Date.now() + delay;
         this._turnAdvanceTimeout = setTimeout(() => {
             if (turnCycleId !== this._turnCycleId) return;
             this.postMoveWindowActive = false;
+            this.postMoveWindowEndsAt = 0;
             this.turnInProgress = false;
             this.advanceTurn();
         }, delay);
@@ -1433,6 +1438,7 @@ class DominoGame {
                 <div class="turn-timer-ring" id="turn-timer-ring" style="--turn-angle: 0deg;">
                     <div class="turn-timer-avatar" id="turn-timer-avatar">P</div>
                 </div>
+                <div class="turn-timer-caption" id="turn-timer-caption"></div>
             `;
             const drawBtn = document.getElementById('draw-btn');
             if (drawBtn) actionBar.insertBefore(slot, drawBtn);
@@ -1513,6 +1519,7 @@ class DominoGame {
         const slot = document.getElementById('turn-timer-slot');
         const ring = document.getElementById('turn-timer-ring');
         const avatar = document.getElementById('turn-timer-avatar');
+        const caption = document.getElementById('turn-timer-caption');
         if (!slot || !ring || !avatar) return;
 
         const shouldShow = this.gameActive && !this.roundOver && !this.matchOver && this.turnDeadlineAt > 0;
@@ -1520,6 +1527,7 @@ class DominoGame {
         if (!shouldShow) {
             ring.style.setProperty('--turn-angle', '0deg');
             avatar.textContent = 'P';
+            if (caption) caption.textContent = '';
             return;
         }
 
@@ -1530,6 +1538,16 @@ class DominoGame {
         const angle = Math.max(0, Math.min(360, progress * 360));
         ring.style.setProperty('--turn-angle', `${angle}deg`);
         ring.classList.toggle('is-urgent', remaining <= 10000);
+        const postMoveActive = this.postMoveWindowActive && this.postMoveWindowEndsAt > Date.now();
+        slot.classList.toggle('is-postmove', postMoveActive);
+        if (caption) {
+            if (postMoveActive) {
+                const seconds = Math.max(1, Math.ceil((this.postMoveWindowEndsAt - Date.now()) / 1000));
+                caption.textContent = this.format('turn-postmove-capture', { seconds });
+            } else {
+                caption.textContent = '';
+            }
+        }
     }
 
     ensureMenuEnhancements() {
