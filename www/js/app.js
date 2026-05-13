@@ -2386,7 +2386,9 @@ class DominoGame {
                 const card = document.createElement('div');
                 card.className = 'open-room-card';
                 const title = document.createElement('div');
-                title.textContent = `${room.hostName || room.roomCode || room.roomId || this.t('room-open')}${room.roomCode ? ' · ' + room.roomCode : ''}`;
+                title.className = 'open-room-title';
+                const badges = document.createElement('div');
+                title.textContent = `${room.hostName || room.roomCode || room.roomId || this.t('room-open')}${room.roomCode ? ' \u00b7 ' + room.roomCode : ''}`;
                 badges.className = 'open-room-badges';
                 const seatCount = `${room.connectedPlayers || 0}/${room.humanSeats || room.totalPlayers || 0}`;
                 const modeLabel = room.roomMode === 'team'
