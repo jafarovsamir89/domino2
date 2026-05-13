@@ -263,12 +263,12 @@ input, button { font: inherit; }
 
 .auth-icon-google {
     color: #fff;
-    background: rgba(255, 255, 255, 0.1);
+    background: transparent;
 }
 
 .auth-icon-apple {
     color: #fff;
-    background: rgba(255, 255, 255, 0.08);
+    background: transparent;
 }
 
 .auth-icon-email,
