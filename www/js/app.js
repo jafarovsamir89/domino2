@@ -320,6 +320,7 @@ class DominoGame {
             if (!profile) {
                 this.setHostStatus(this.t('account-registration-required-online'));
                 return;
+            summary.textContent = `${this.format('online-room-summary', { humans, bots: this.onlineAiCount, total: this.onlinePlayerCount })} · ${stakeLabel}`;
             }
             this.playerName = name;
             this.showMultiplayerPanel('host');
@@ -617,7 +618,7 @@ class DominoGame {
         }
 
         const placeholders = [
-            ['account-name-modal-input', 'Player name']
+            ['account-name-modal-input', this.t('placeholder-player-name')]
         ];
 
         placeholders.forEach(([id, value]) => {
@@ -876,27 +877,30 @@ class DominoGame {
             <section class="modal-card modal-card-small">
                 <div class="modal-header">
                     <div>
-                        <p class="section-kicker" data-i18n="account-edit-name">Adı dəyiş</p>
-                        <h2 data-i18n="account-change-name-title">Adı yenilə</h2>
-                        <p class="modal-desc" data-i18n="account-change-name-desc">Bu ad yalnız sizin göstərilən adınızdır. Player ID dəyişmir.</p>
+                        <p class="section-kicker" data-i18n="account-edit-name"></p>
+                        <h2 data-i18n="account-change-name-title"></h2>
+                        <p class="modal-desc" data-i18n="account-change-name-desc"></p>
                     </div>
-                    <button class="btn btn-action modal-close-btn" id="account-name-modal-close" data-i18n="modal-close">Bağla</button>
+                    <button class="btn btn-action modal-close-btn" id="account-name-modal-close" data-i18n="modal-close"></button>
                 </div>
                 <form id="account-name-form" class="settings-grid compact-grid">
                     <div class="settings-group field-span-2">
-                        <label data-i18n="account-name">Ad</label>
-                        <input type="text" id="account-name-modal-input" maxlength="24" placeholder="Player">
+                        <label data-i18n="account-name"></label>
+                        <input type="text" id="account-name-modal-input" maxlength="24" placeholder="">
                     </div>
                     <div class="settings-group field-span-2">
                         <div id="account-name-modal-status" class="room-summary"></div>
                     </div>
                     <div class="modal-footer modal-footer-split field-span-2">
-                        <button class="btn btn-primary btn-large modal-primary-btn" id="account-name-modal-save" type="submit" data-i18n="account-name-save">Yadda saxla</button>
-                        <button class="btn btn-menu modal-close-btn modal-secondary-btn" id="account-name-modal-cancel" type="button" data-i18n="account-name-cancel">Ləğv et</button>
+                        <button class="btn btn-primary btn-large modal-primary-btn" id="account-name-modal-save" type="submit" data-i18n="account-save-name"></button>
+                        <button class="btn btn-menu modal-close-btn modal-secondary-btn" id="account-name-modal-cancel" type="button" data-i18n="account-name-cancel"></button>
                     </div>
                 </form>
             </section>`;
         document.body.appendChild(modal);
+        this.setLanguage(this.currentLang);
+        const nameInput = document.getElementById('account-name-modal-input');
+        if (nameInput) nameInput.placeholder = this.t('placeholder-player-name');
     }
 
     openNameEditModal() {
@@ -926,26 +930,26 @@ class DominoGame {
             <section class="modal-card modal-card-small">
                 <div class="modal-header">
                     <div>
-                        <p class="section-kicker" data-i18n="account-edit-avatar">Avatar</p>
-                        <h2 data-i18n="account-change-avatar-title">Avatarı yenilə</h2>
-                        <p class="modal-desc" data-i18n="account-change-avatar-desc">Google şəkli varsa o göstərilir. Öz şəklinizi yükləsəniz, profilinizdə o üstünlük qazanır.</p>
+                        <p class="section-kicker" data-i18n="account-edit-avatar"></p>
+                        <h2 data-i18n="account-change-avatar-title"></h2>
+                        <p class="modal-desc" data-i18n="account-change-avatar-desc"></p>
                     </div>
-                    <button class="btn btn-action modal-close-btn" id="account-avatar-modal-close" data-i18n="modal-close">Bağla</button>
+                    <button class="btn btn-action modal-close-btn" id="account-avatar-modal-close" data-i18n="modal-close"></button>
                 </div>
                 <form id="account-avatar-form" class="settings-grid compact-grid">
                     <div class="settings-group field-span-2">
                         <div class="account-avatar-picker">
-                            <div class="account-avatar account-avatar-preview" id="account-avatar-modal-preview">D</div>
+                            <div class="account-avatar account-avatar-preview" id="account-avatar-modal-preview"></div>
                             <div class="account-avatar-picker-copy">
-                                <strong data-i18n="account-change-avatar-current">Cari şəkil</strong>
-                                <span id="account-avatar-modal-status" class="modal-desc">-</span>
+                                <strong data-i18n="account-change-avatar-current"></strong>
+                                <span id="account-avatar-modal-status" class="modal-desc"></span>
                             </div>
                         </div>
                     </div>
                     <div class="settings-group field-span-2">
                         <input type="file" id="account-avatar-modal-input" accept="image/*" class="is-hidden">
-                        <button class="btn btn-menu" id="account-avatar-modal-pick" type="button" data-i18n="account-avatar-pick">Şəkil seç</button>
-                        <button class="btn btn-icon btn-menu" id="account-avatar-modal-reset" type="button" aria-label="Google şəkli / sıfırla" title="Google şəkli / sıfırla">
+                        <button class="btn btn-menu" id="account-avatar-modal-pick" type="button" data-i18n="account-avatar-pick"></button>
+                        <button class="btn btn-icon btn-menu" id="account-avatar-modal-reset" type="button">
                             <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none">
                                 <path d="M12 5a7 7 0 1 1-6.06 10.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
                                 <path d="M8 5H5v3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
@@ -953,12 +957,19 @@ class DominoGame {
                         </button>
                     </div>
                     <div class="modal-footer modal-footer-split field-span-2">
-                        <button class="btn btn-primary btn-large modal-primary-btn" id="account-avatar-modal-save" type="button" data-i18n="account-avatar-save">Yadda saxla</button>
-                        <button class="btn btn-menu modal-close-btn modal-secondary-btn" id="account-avatar-modal-cancel" type="button" data-i18n="account-name-cancel">Ləğv et</button>
+                        <button class="btn btn-primary btn-large modal-primary-btn" id="account-avatar-modal-save" type="button" data-i18n="account-avatar-save"></button>
+                        <button class="btn btn-menu modal-close-btn modal-secondary-btn" id="account-avatar-modal-cancel" type="button" data-i18n="account-name-cancel"></button>
                     </div>
                 </form>
             </section>`;
         document.body.appendChild(modal);
+        this.setLanguage(this.currentLang);
+        const resetBtn = document.getElementById('account-avatar-modal-reset');
+        if (resetBtn) {
+            const resetLabel = this.t('account-avatar-reset');
+            resetBtn.setAttribute('aria-label', resetLabel);
+            resetBtn.setAttribute('title', resetLabel);
+        }
         document.getElementById('account-avatar-modal-pick')?.addEventListener('click', () => {
             document.getElementById('account-avatar-modal-input')?.click();
         });
@@ -1153,9 +1164,7 @@ class DominoGame {
                 item.className = 'room-player-chip';
                 const titleKey = `title-${String(row.titleCode || 'rookie')}`;
                 const title = this.t(titleKey);
-                const label = document.createElement('span');
-                label.textContent = `#${row.rank} ${row.name} В· ${title}`;
-                const rating = document.createElement('strong');
+                label.textContent = `#${row.rank} ${row.name} · ${title}`;
                 rating.textContent = String(row.rating);
                 item.appendChild(label);
                 item.appendChild(rating);
@@ -1300,9 +1309,7 @@ class DominoGame {
                             ? 'account-history-loss'
                             : 'account-history-draw';
                     item.className = 'room-player-chip';
-                    const label = document.createElement('span');
-                    label.textContent = `${this.t(resultKey)} В· ${match.mode}`;
-                    const value = document.createElement('strong');
+                    label.textContent = `${this.t(resultKey)} · ${match.mode}`;
                     value.textContent = deltaLabel;
                     item.appendChild(label);
                     item.appendChild(value);
@@ -1476,7 +1483,7 @@ class DominoGame {
             const kicker = document.createElement('div');
             kicker.className = 'section-kicker';
             kicker.dataset.i18n = 'resume-session-kicker';
-            kicker.textContent = 'Unfinished session';
+            kicker.textContent = this.t('resume-session-kicker');
             const title = document.createElement('div');
             title.className = 'resume-session-title';
             title.id = 'resume-session-title';
@@ -1490,7 +1497,7 @@ class DominoGame {
             resumeBtn.id = 'resume-session-btn';
             resumeBtn.type = 'button';
             resumeBtn.dataset.i18n = 'resume-session';
-            resumeBtn.textContent = 'Resume';
+            resumeBtn.textContent = this.t('resume-session');
             copy.appendChild(kicker);
             copy.appendChild(title);
             copy.appendChild(desc);
@@ -1508,7 +1515,7 @@ class DominoGame {
             stakeWrapper.id = 'solo-stake-wrapper';
             const label = document.createElement('label');
             label.dataset.i18n = 'label-stake-table';
-            label.textContent = 'M\u0259rc masas\u0131';
+            label.textContent = this.t('label-stake-table');
             const group = document.createElement('div');
             group.className = 'btn-group';
             group.id = 'solo-stake-group';
@@ -1547,17 +1554,19 @@ class DominoGame {
         const headCopy = document.createElement('div');
         const headTitle = document.createElement('div');
         headTitle.className = 'section-kicker';
-        headTitle.textContent = 'Dostlar';
+        headTitle.dataset.i18n = 'friends-title';
+        headTitle.textContent = this.t('friends-title');
         const headNote = document.createElement('div');
         headNote.className = 'section-note';
-        headNote.textContent = 'Sor\u011fular v\u0259 d\u0259v\u0259tl\u0259r burada g\u00f6r\u00fcn\u00fcr.';
+        headNote.dataset.i18n = 'friends-note';
+        headNote.textContent = this.t('friends-note');
         headCopy.appendChild(headTitle);
         headCopy.appendChild(headNote);
         const refreshBtn = document.createElement('button');
         refreshBtn.className = 'btn btn-menu online-social-refresh';
         refreshBtn.id = 'online-social-refresh-btn';
         refreshBtn.type = 'button';
-        refreshBtn.textContent = 'Yenil\u0259';
+        refreshBtn.textContent = this.t('account-refresh');
         head.appendChild(headCopy);
         head.appendChild(refreshBtn);
         const filters = document.createElement('div');
@@ -1565,19 +1574,19 @@ class DominoGame {
         const searchInput = document.createElement('input');
         searchInput.type = 'search';
         searchInput.id = 'friend-search-input';
-        searchInput.placeholder = 'Adla axtar';
+        searchInput.placeholder = this.t('search-name-hint');
         const searchBtn = document.createElement('button');
         searchBtn.className = 'btn btn-action btn-strong';
         searchBtn.id = 'friend-search-btn';
         searchBtn.type = 'button';
-        searchBtn.textContent = 'Axtar';
+        searchBtn.textContent = this.t('friend-search-button');
         filters.appendChild(searchInput);
         filters.appendChild(searchBtn);
         const sections = [
-            ['Axtar\u0131\u015f n\u0259tic\u0259l\u0259ri', 'friend-search-results'],
-            ['Dost sor\u011fular\u0131', 'friend-requests-list'],
-            ['Dostlar', 'friend-list'],
-            ['Otaq d\u0259v\u0259tl\u0259ri', 'room-invites-list']
+            [this.t('friend-search-results-title'), 'friend-search-results'],
+            [this.t('friend-requests-title'), 'friend-requests-list'],
+            [this.t('friends-list-title'), 'friend-list'],
+            [this.t('room-invites-title'), 'room-invites-list']
         ];
         panel.appendChild(head);
         panel.appendChild(filters);
@@ -2204,8 +2213,7 @@ class DominoGame {
             const summary = document.getElementById('online-player-summary');
             if (summary) {
                 const humans = Math.max(1, this.onlinePlayerCount - this.onlineAiCount);
-                const stakeLabel = (Array.from(document.querySelectorAll('#online-stake-group .btn-option')).find((button) => button.dataset.value === this.onlineStakeKey)?.textContent || '200').trim();
-                summary.textContent = `${this.format('online-room-summary', { humans, bots: this.onlineAiCount, total: this.onlinePlayerCount })} В· ${stakeLabel}`;
+                const stakeLabel = (Array.from(document.querySelectorAll('#online-stake-group .btn-option')).find((button) => button.dataset.value === this.onlineStakeKey)?.textContent || '200').trim();            summary.textContent = `${this.format('online-room-summary', { humans, bots: this.onlineAiCount, total: this.onlinePlayerCount })} ? ${stakeLabel}`;
             }
         }
     }
@@ -2218,7 +2226,7 @@ class DominoGame {
     getOnlineBackButton() {
         const button = document.getElementById('online-modal-close');
         if (button) {
-            button.textContent = 'Geri';
+            button.textContent = this.t('online-room-back');
             button.classList.add('btn-action');
             button.classList.remove('btn-menu');
             button.classList.add('online-back-btn');
@@ -2378,13 +2386,11 @@ class DominoGame {
                 const card = document.createElement('div');
                 card.className = 'open-room-card';
                 const title = document.createElement('div');
-                title.className = 'open-room-title';
-                title.textContent = `${room.hostName || room.roomCode || room.roomId || 'Room'}${room.roomCode ? ' В· ' + room.roomCode : ''}`;
-                const badges = document.createElement('div');
+                title.textContent = `${room.hostName || room.roomCode || room.roomId || this.t('room-open')}${room.roomCode ? ' · ' + room.roomCode : ''}`;
                 badges.className = 'open-room-badges';
                 const seatCount = `${room.connectedPlayers || 0}/${room.humanSeats || room.totalPlayers || 0}`;
                 const modeLabel = room.roomMode === 'team'
-                    ? '2 vs 2'
+                    ? this.t('mode-team')
                     : this.t('room-free-for-all');
                 const stakeLabel = room.stakeKey
                     ? `${room.stakeKey.replace(/^stake_/i, '')}`
@@ -2577,7 +2583,7 @@ class DominoGame {
                     removeBtn.textContent = this.t('friend-remove');
                     const giftBtn = document.createElement('button');
                     giftBtn.className = 'btn btn-action';
-                    giftBtn.textContent = 'Gift';
+                    giftBtn.textContent = this.t('gift-button');
                     giftBtn.addEventListener('click', () => {
                         this.selectedGiftRecipientId = item.friend.id;
                         this.renderGiftPicker();
@@ -2671,8 +2677,7 @@ class DominoGame {
                     copy.className = 'friend-card-copy';
                     const name = document.createElement('strong');
                     name.textContent = invite.inviter.displayName;
-                    const meta = document.createElement('span');
-                    meta.textContent = `${invite.roomCode || invite.roomId} В· ${invite.roomMode || 'ffa'}`;
+                    meta.textContent = `${invite.roomCode || invite.roomId} · ${invite.roomMode || 'ffa'}`;
                     copy.appendChild(name);
                     copy.appendChild(meta);
                     const action = document.createElement('div');
@@ -3230,7 +3235,7 @@ class DominoGame {
         header.className = 'gift-picker-header';
         const title = document.createElement('div');
         title.className = 'gift-picker-title';
-        title.textContent = 'Gift player';
+        title.textContent = this.t('gift-picker-title');
         header.appendChild(title);
 
         const recipientRow = document.createElement('div');
@@ -3239,7 +3244,7 @@ class DominoGame {
         if (!recipients.length) {
             const empty = document.createElement('div');
             empty.className = 'modal-desc';
-            empty.textContent = 'No recipient available';
+            empty.textContent = this.t('gift-no-recipient');
             recipientRow.appendChild(empty);
         } else {
             if (!this.selectedGiftRecipientId || !recipients.some((item) => item.id === this.selectedGiftRecipientId)) {
@@ -3283,7 +3288,7 @@ class DominoGame {
             const empty = document.createElement('div');
             empty.className = 'modal-desc';
             empty.style.gridColumn = '1 / -1';
-            empty.textContent = 'Loading gifts...';
+            empty.textContent = this.t('gift-loading');
             grid.appendChild(empty);
         } else {
             for (const gift of gifts) {
@@ -3303,6 +3308,11 @@ class DominoGame {
                 const cost = document.createElement('div');
                 cost.className = 'gift-choice-cost';
                 cost.textContent = `${gift.coinCost || 100} coins`;
+                meta.textContent = this.format('gift-choice-meta', {
+                    rarity: gift.rarity || 'common',
+                    exchangeValue: gift.exchangeValue || 0
+                });
+                cost.textContent = this.format('gift-coins', { value: gift.coinCost || 100 });
                 card.appendChild(visual);
                 card.appendChild(name);
                 card.appendChild(meta);
@@ -3388,7 +3398,7 @@ class DominoGame {
                 const empty = document.createElement('div');
                 empty.className = 'modal-desc';
                 empty.style.gridColumn = '1 / -1';
-                empty.textContent = 'No gifts yet';
+                empty.textContent = this.t('gift-no-items');
                 list.appendChild(empty);
             } else {
             panel.classList.add('is-hidden');
@@ -3408,7 +3418,7 @@ class DominoGame {
             copy.className = 'gift-inventory-copy';
             const name = document.createElement('div');
             name.className = 'gift-inventory-name';
-            name.textContent = item.catalog?.name || item.catalog?.key || 'Gift';
+            name.textContent = item.catalog?.name || item.catalog?.key || this.t('gift-button');
             const meta = document.createElement('div');
             meta.className = 'gift-inventory-meta';
             meta.textContent = `${item.quantity || 0} pcs • back ${item.catalog?.exchangeValue || 0}`;
@@ -3421,19 +3431,24 @@ class DominoGame {
             const cost = document.createElement('span');
             cost.className = 'gift-cost-chip';
             cost.textContent = `${Math.max(0, item.catalog?.exchangeValue || 0)} coins`;
+            meta.textContent = this.format('gift-inventory-meta', {
+                quantity: item.quantity || 0,
+                exchangeValue: item.catalog?.exchangeValue || 0
+            });
+            cost.textContent = this.format('gift-coins', { value: Math.max(0, item.catalog?.exchangeValue || 0) });
             const exchangeBtn = document.createElement('button');
             exchangeBtn.type = 'button';
             exchangeBtn.className = 'btn btn-menu';
-            exchangeBtn.textContent = 'Exchange';
+            exchangeBtn.textContent = this.t('gift-exchange');
             exchangeBtn.disabled = (item.quantity || 0) <= 0;
             exchangeBtn.addEventListener('click', async () => {
                 exchangeBtn.disabled = true;
                 try {
                     await this.exchangeGift(item.catalog?.key || '');
                     await this.loadGiftHub();
-                    this.renderer.showMessage('Gift exchanged', 1500);
+                    this.renderer.showMessage(this.t('gift-exchanged'), 1500);
                 } catch (err) {
-                    this.renderer.showMessage(err.message || 'Gift exchange failed', 1800);
+                    this.renderer.showMessage(err.message || this.t('gift-exchange-failed'), 1800);
                 } finally {
                     exchangeBtn.disabled = (item.quantity || 0) <= 0;
                 }
@@ -3449,17 +3464,17 @@ class DominoGame {
         const recipientId = String(recipientPlayerId || '').trim();
         const key = String(giftKey || '').trim();
         if (!recipientId || !key) {
-            this.renderer.showMessage('Select a recipient', 1400);
+            this.renderer.showMessage(this.t('gift-select-recipient'), 1400);
             return null;
         }
         const myPlayerId = String(this.accountProfile?.playerId || this.accountProfile?.id || this.accountProfile?.player?.id || '').trim();
         if (!this.accountProfile || recipientId === myPlayerId) {
-            this.renderer.showMessage('You cannot send a gift to yourself', 1600);
+            this.renderer.showMessage(this.t('gift-self-send'), 1600);
             return null;
         }
         const gift = this.giftCatalog.find((item) => item.key === key);
         if (!gift) {
-            this.renderer.showMessage('Gift not found', 1600);
+            this.renderer.showMessage(this.t('gift-not-found'), 1600);
             return null;
         }
         try {
@@ -3474,7 +3489,7 @@ class DominoGame {
             this.closeGiftPicker();
             this.lastGiftSentAt = Date.now();
             this.lastGiftSentKey = key;
-            this.showGiftBurst(gift, this.accountProfile?.name || 'Player', name);
+            this.showGiftBurst(gift, this.accountProfile?.name || this.t('gift-button'), name);
             if (this.network?.isMultiplayer) {
                 this.network.sendGift({
                     giftKey: gift.key,
@@ -3489,10 +3504,10 @@ class DominoGame {
             await this.loadAccountProfile();
             await this.loadGiftHub();
             this.renderAccountModal();
-            this.renderer.showMessage('Gift sent', 1500);
+            this.renderer.showMessage(this.t('gift-sent'), 1500);
             return result;
         } catch (err) {
-            this.renderer.showMessage(err.message || 'Gift send failed', 1800);
+            this.renderer.showMessage(err.message || this.t('gift-send-failed'), 1800);
             return null;
         }
     }
@@ -3957,8 +3972,8 @@ class DominoGame {
             "label-instant-win": { az: "35 points = match ends", en: "35 points = match ends" },
             "label-dloss": { az: "Loss threshold", en: "Loss threshold" },
             "label-rules": { az: "Rules", en: "Rules" },
-            "rule-match": { az: "365 points В· 3 rounds", en: "365 points В· 3 rounds" },
-            "rule-telephone": { az: "Telephone В· [3|2]", en: "Telephone В· [3|2]" },
+            "rule-match": { az: "365 points · 3 rounds", en: "365 points · 3 rounds" },
+            "rule-telephone": { az: "Telephone · [3|2]", en: "Telephone · [3|2]" },
             "btn-start": { az: "Solo play", en: "Solo play" },
             "btn-solo-start": { az: "Start", en: "Start" },
             "label-online": { az: "Online room", en: "Online room" },
@@ -4097,7 +4112,7 @@ class DominoGame {
         } catch {}
         document.querySelectorAll('[data-i18n]').forEach(el => {
             const key = el.dataset.i18n;
-            const value = t[key] || translations.en?.[key] || translations.az?.[key] || this.getUiTextOverride(key) || key;
+            const value = t[key] || translations.en?.[key] || translations.az?.[key] || key;
             if (value) {
                 if (el.tagName === 'INPUT') el.placeholder = value;
                 else {
@@ -4121,7 +4136,6 @@ class DominoGame {
         return translations[this.currentLang]?.[key]
             || translations.en?.[key]
             || translations.az?.[key]
-            || this.getUiTextOverride(key)
             || key;
     }
 

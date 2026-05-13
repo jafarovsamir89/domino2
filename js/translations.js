@@ -11,8 +11,8 @@
         "label-instant-win": "35 xal = oyun dərhal bitir",
         "label-dloss": "Məğlubiyyət həddi",
         "label-rules": "Qaydalar",
-        "rule-match": "365 xal • 3 raund",
-        "rule-telephone": "Telefon • [3|2]",
+        "rule-match": "365 xal · 3 raund",
+        "rule-telephone": "Telefon · [3|2]",
         "btn-start": "Tək oyun",
         "label-online": "Onlayn otaq",
         "label-online-help": "Otaq yaradın və ya kodla qoşulun",
@@ -86,11 +86,26 @@
         "online-room-join-hint": "Otaq kodunu daxil edin",
         "online-copy-success": "Kod kopyalandı: {code}",
         "online-copy-fail": "Kod kopyalanmadı. Kod: {code}",
+        "online-choice-create": "Otaq yarat",
+        "online-choice-connect": "Qoşul",
+        "online-room-share": "Paylaş",
+        "online-room-share-title": "Domino otaq dəvəti",
+        "online-room-share-message": "Domino otağıma qoşul. Kod: {code}. Link: {url}",
+        "online-room-share-opened": "Paylaşma pəncərəsi açıldı",
+        "online-room-share-copied": "Dəvət linki kopyalandı",
+        "online-room-share-fail": "Paylaşma alınmadı",
         "online-you": "siz",
         "online-ready": "hazırdır",
         "online-offline": "şəbəkədən çıxdı",
         "online-waiting-slot": "{index}. oyunçu gözlənilir",
         "online-room-closed": "Otaq bağlandı",
+        "friends-title": "Dostlar",
+        "friends-note": "Sorğular və dəvətlər burada görünür.",
+        "friend-search-button": "Axtar",
+        "friend-search-results-title": "Axtarış nəticələri",
+        "friend-requests-title": "Dost sorğuları",
+        "friends-list-title": "Dostlar",
+        "room-invites-title": "Otaq dəvətləri",
         "arrow-place-to": "{value} üzərinə qoy",
         "placeholder-player-name": "Adınızı daxil edin",
         "login-failed": "Giriş alınmadı",
@@ -163,7 +178,7 @@
         ,"account-change-avatar-desc": "Google şəkli varsa o göstərilir. Öz şəklinizi yükləsəniz, profilinizdə o üstünlük qazanır."
         ,"account-change-avatar-current": "Cari şəkil"
         ,"account-avatar-pick": "Şəkil seç"
-        ,"account-avatar-reset": "Google şəkli / sıfırla"
+        ,"account-avatar-reset": "Sıfırla"
         ,"account-avatar-save": "Yadda saxla"
         ,"account-avatar-saved": "Avatar yeniləndi"
         ,"account-avatar-invalid": "Şəkil oxunmadı"
@@ -215,6 +230,22 @@
         ,"account-name-password-required": "Ad və şifrə daxil edin"
         ,"account-registration-required": "Coin oyunu üçün hesaba daxil olun və ya qeydiyyatdan keçin"
         ,"account-registration-required-online": "Onlayn coin otaqları üçün hesab mütləqdir"
+        ,"gift-button": "Hədiyyə"
+        ,"gift-picker-title": "Oyunçuya hədiyyə göndər"
+        ,"gift-no-recipient": "Mövcud alıcı yoxdur"
+        ,"gift-loading": "Hədiyyələr yüklənir..."
+        ,"gift-no-items": "Hələ hədiyyə yoxdur"
+        ,"gift-exchange": "Dəyiş"
+        ,"gift-exchanged": "Hədiyyə dəyişdirildi"
+        ,"gift-exchange-failed": "Hədiyyəni dəyişmək alınmadı"
+        ,"gift-select-recipient": "Alıcı seçin"
+        ,"gift-self-send": "Özünüzə hədiyyə göndərə bilməzsiniz"
+        ,"gift-not-found": "Hədiyyə tapılmadı"
+        ,"gift-sent": "Hədiyyə göndərildi"
+        ,"gift-send-failed": "Hədiyyə göndərmək alınmadı"
+        ,"gift-choice-meta": "{rarity} • geri {exchangeValue}"
+        ,"gift-inventory-meta": "{quantity} ədəd • geri {exchangeValue}"
+        ,"gift-coins": "{value} coin"
     },
     en: {
         "game-title": "Domino (Telefon)",
@@ -228,8 +259,8 @@
         "label-instant-win": "35 pts = match ends immediately",
         "label-dloss": "Loss threshold",
         "label-rules": "Rules",
-        "rule-match": "365 points • 3 rounds",
-        "rule-telephone": "Telephone • [3|2]",
+        "rule-match": "365 points · 3 rounds",
+        "rule-telephone": "Telephone · [3|2]",
         "btn-start": "Solo play",
         "label-online": "Online room",
         "label-online-help": "Create a room or join with a code",
@@ -303,11 +334,26 @@
         "online-room-join-hint": "Enter a room code to connect",
         "online-copy-success": "Code copied: {code}",
         "online-copy-fail": "Copy failed. Code: {code}",
+        "online-choice-create": "Create room",
+        "online-choice-connect": "Join room",
+        "online-room-share": "Share",
+        "online-room-share-title": "Domino room invite",
+        "online-room-share-message": "Join my Domino room. Code: {code}. Link: {url}",
+        "online-room-share-opened": "Share sheet opened",
+        "online-room-share-copied": "Invite link copied",
+        "online-room-share-fail": "Share failed",
         "online-you": "you",
         "online-ready": "ready",
         "online-offline": "offline",
         "online-waiting-slot": "Waiting for player {index}",
         "online-room-closed": "Room closed",
+        "friends-title": "Friends",
+        "friends-note": "Requests and invites appear here.",
+        "friend-search-button": "Search",
+        "friend-search-results-title": "Search results",
+        "friend-requests-title": "Friend requests",
+        "friends-list-title": "Friends",
+        "room-invites-title": "Room invites",
         "arrow-place-to": "Place on {value}",
         "placeholder-player-name": "Enter your name",
         "login-failed": "Login failed",
@@ -380,7 +426,7 @@
         ,"account-change-avatar-desc": "If a Google photo exists, it will be shown automatically. Your own upload takes priority in the profile."
         ,"account-change-avatar-current": "Current picture"
         ,"account-avatar-pick": "Choose photo"
-        ,"account-avatar-reset": "Google photo / reset"
+        ,"account-avatar-reset": "Reset"
         ,"account-avatar-save": "Save"
         ,"account-avatar-saved": "Avatar updated"
         ,"account-avatar-invalid": "Could not read the image"
@@ -432,6 +478,22 @@
         ,"account-name-password-required": "Enter name and password"
         ,"account-registration-required": "Sign in or register to play coin matches"
         ,"account-registration-required-online": "An account is required for online coin rooms"
+        ,"gift-button": "Gift"
+        ,"gift-picker-title": "Send a gift"
+        ,"gift-no-recipient": "No recipient available"
+        ,"gift-loading": "Loading gifts..."
+        ,"gift-no-items": "No gifts yet"
+        ,"gift-exchange": "Exchange"
+        ,"gift-exchanged": "Gift exchanged"
+        ,"gift-exchange-failed": "Gift exchange failed"
+        ,"gift-select-recipient": "Select a recipient"
+        ,"gift-self-send": "You cannot send a gift to yourself"
+        ,"gift-not-found": "Gift not found"
+        ,"gift-sent": "Gift sent"
+        ,"gift-send-failed": "Gift send failed"
+        ,"gift-choice-meta": "{rarity} • back {exchangeValue}"
+        ,"gift-inventory-meta": "{quantity} pcs • back {exchangeValue}"
+        ,"gift-coins": "{value} coins"
     },
     ru: {
         "game-title": "Domino (Telefon)",
@@ -445,8 +507,8 @@
         "label-instant-win": "35 очков = партия + 2 раунда",
         "label-dloss": "Порог поражения",
         "label-rules": "Правила",
-        "rule-match": "365 очков • 3 раунда",
-        "rule-telephone": "Телефон • [3|2]",
+        "rule-match": "365 очков · 3 раунда",
+        "rule-telephone": "Телефон · [3|2]",
         "btn-start": "Одиночная игра",
         "label-online": "Онлайн-комната",
         "label-online-help": "Создайте комнату или войдите по коду",
@@ -515,11 +577,26 @@
         "online-room-join-hint": "Введите код комнаты",
         "online-copy-success": "Код скопирован: {code}",
         "online-copy-fail": "Не удалось скопировать код. Код: {code}",
+        "online-choice-create": "Создать",
+        "online-choice-connect": "Подключиться",
+        "online-room-share": "Поделиться",
+        "online-room-share-title": "Приглашение в комнату Domino",
+        "online-room-share-message": "Присоединяйтесь к моей комнате Domino. Код: {code}. Ссылка: {url}",
+        "online-room-share-opened": "Открыто окно поделиться",
+        "online-room-share-copied": "Ссылка-приглашение скопирована",
+        "online-room-share-fail": "Не удалось поделиться",
         "online-you": "вы",
         "online-ready": "готов",
         "online-offline": "не в сети",
         "online-waiting-slot": "Ожидаем игрока {index}",
         "online-room-closed": "Комната закрыта",
+        "friends-title": "Друзья",
+        "friends-note": "Запросы и приглашения отображаются здесь.",
+        "friend-search-button": "Поиск",
+        "friend-search-results-title": "Результаты поиска",
+        "friend-requests-title": "Запросы в друзья",
+        "friends-list-title": "Друзья",
+        "room-invites-title": "Приглашения в комнаты",
         "arrow-place-to": "Поставить к {value}",
         "placeholder-player-name": "Введите имя",
         "login-failed": "Не удалось войти",
@@ -592,7 +669,7 @@
         ,"account-change-avatar-desc": "Если у Google есть фото, оно будет показано автоматически. Ваше загруженное фото имеет приоритет в профиле."
         ,"account-change-avatar-current": "Текущее фото"
         ,"account-avatar-pick": "Выбрать фото"
-        ,"account-avatar-reset": "Фото Google / сброс"
+        ,"account-avatar-reset": "Сбросить"
         ,"account-avatar-save": "Сохранить"
         ,"account-avatar-saved": "Аватар обновлён"
         ,"account-avatar-invalid": "Не удалось прочитать изображение"
@@ -634,5 +711,21 @@
         ,"account-name-password-required": "Введите имя и пароль"
         ,"account-registration-required": "Войдите или зарегистрируйтесь, чтобы играть на монеты"
         ,"account-registration-required-online": "Для онлайн-комнат на монеты аккаунт обязателен"
+        ,"gift-button": "Подарок"
+        ,"gift-picker-title": "Отправить подарок"
+        ,"gift-no-recipient": "Нет доступного получателя"
+        ,"gift-loading": "Загрузка подарков..."
+        ,"gift-no-items": "Подарков пока нет"
+        ,"gift-exchange": "Обменять"
+        ,"gift-exchanged": "Подарок обменян"
+        ,"gift-exchange-failed": "Не удалось обменять подарок"
+        ,"gift-select-recipient": "Выберите получателя"
+        ,"gift-self-send": "Нельзя отправить подарок самому себе"
+        ,"gift-not-found": "Подарок не найден"
+        ,"gift-sent": "Подарок отправлен"
+        ,"gift-send-failed": "Не удалось отправить подарок"
+        ,"gift-choice-meta": "{rarity} • возврат {exchangeValue}"
+        ,"gift-inventory-meta": "{quantity} шт • возврат {exchangeValue}"
+        ,"gift-coins": "{value} монет"
     }
 };
