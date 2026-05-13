@@ -1,6 +1,6 @@
 import type { IncomingHttpHeaders } from "node:http";
 
-import { ForbiddenException, Injectable, NotFoundException, UnauthorizedException } from "@nestjs/common";
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException, UnauthorizedException } from "@nestjs/common";
 import { Prisma } from "@prisma/client";
 
 import { AuthService } from "../auth/auth.service.js";
@@ -10,6 +10,7 @@ type PlayerSummary = {
   id: string;
   displayName: string;
   avatarSeed: string | null;
+  avatarUrl: string | null;
   isGuest: boolean;
   createdAt?: Date | string | null;
 };
@@ -45,6 +46,71 @@ type RoomInviteRow = {
   invitee: PlayerSummary;
 };
 
+type GiftCatalogRow = {
+  id: string;
+  key: string;
+  name: string;
+  description: string | null;
+  assetKey: string;
+  coinCost: number;
+  exchangeRateBps: number;
+  rarity: string;
+  sortOrder: number;
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+type GiftInventoryRow = {
+  id: string;
+  playerId: string;
+  giftCatalogId: string;
+  quantity: number;
+  receivedCount: number;
+  sentCount: number;
+  exchangedCount: number;
+  lastReceivedAt: Date | null;
+  lastSentAt: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
+  catalog: GiftCatalogRow;
+};
+
+type GiftTransactionRow = {
+  id: string;
+  senderPlayerId: string;
+  recipientPlayerId: string;
+  giftCatalogId: string;
+  giftKeySnapshot: string;
+  giftNameSnapshot: string;
+  assetKeySnapshot: string;
+  coinCost: number;
+  exchangeValue: number;
+  contextType: string;
+  contextId: string | null;
+  note: string | null;
+  status: string;
+  createdAt: Date;
+  updatedAt: Date;
+  sender: PlayerSummary;
+  recipient: PlayerSummary;
+};
+
+const DEFAULT_GIFT_CATALOG = [
+  { key: "gift_001", name: "Gift 001", assetKey: "gift_001", rarity: "common", sortOrder: 1 },
+  { key: "gift_002", name: "Gift 002", assetKey: "gift_002", rarity: "common", sortOrder: 2 },
+  { key: "gift_003", name: "Gift 003", assetKey: "gift_003", rarity: "common", sortOrder: 3 },
+  { key: "gift_004", name: "Gift 004", assetKey: "gift_004", rarity: "common", sortOrder: 4 },
+  { key: "gift_005", name: "Gift 005", assetKey: "gift_005", rarity: "common", sortOrder: 5 },
+  { key: "gift_006", name: "Gift 006", assetKey: "gift_006", rarity: "common", sortOrder: 6 },
+  { key: "gift_007", name: "Gift 007", assetKey: "gift_007", rarity: "rare", sortOrder: 7 },
+  { key: "gift_008", name: "Gift 008", assetKey: "gift_008", rarity: "rare", sortOrder: 8 },
+  { key: "gift_009", name: "Gift 009", assetKey: "gift_009", rarity: "rare", sortOrder: 9 },
+  { key: "gift_010", name: "Gift 010", assetKey: "gift_010", rarity: "rare", sortOrder: 10 },
+  { key: "gift_011", name: "Gift 011", assetKey: "gift_011", rarity: "epic", sortOrder: 11 },
+  { key: "gift_012", name: "Gift 012", assetKey: "gift_012", rarity: "epic", sortOrder: 12 }
+] as const;
+
 @Injectable()
 export class SocialService {
   constructor(
@@ -66,18 +132,253 @@ export class SocialService {
       id: true,
       displayName: true,
       avatarSeed: true,
+      avatarUrl: true,
       isGuest: true,
       createdAt: true
     } as const;
   }
 
-  private summarizePlayer(player: { id: string; displayName: string; avatarSeed?: string | null; isGuest?: boolean; createdAt?: Date | string | null }): PlayerSummary {
+  private summarizePlayer(player: { id: string; displayName: string; avatarSeed?: string | null; avatarUrl?: string | null; isGuest?: boolean; createdAt?: Date | string | null }): PlayerSummary {
     return {
       id: player.id,
       displayName: player.displayName,
       avatarSeed: player.avatarSeed ?? null,
+      avatarUrl: player.avatarUrl ?? null,
       isGuest: Boolean(player.isGuest),
       createdAt: player.createdAt ?? null
+    };
+  }
+
+  private giftCostBps(exchangeRateBps: number) {
+    const rate = Math.max(0, Math.min(10_000, Math.trunc(exchangeRateBps || 0)));
+    return rate || 7_000;
+  }
+
+  private giftExchangeValue(coinCost: number, exchangeRateBps: number) {
+    return Math.max(0, Math.floor((Math.max(0, Math.trunc(coinCost)) * this.giftCostBps(exchangeRateBps)) / 10_000));
+  }
+
+  private giftSeedRows() {
+    return DEFAULT_GIFT_CATALOG.map((gift) => ({
+      key: gift.key,
+      name: gift.name,
+      description: `Gift asset ${gift.assetKey}`,
+      assetKey: gift.assetKey,
+      coinCost: 100,
+      exchangeRateBps: 7000,
+      rarity: gift.rarity,
+      sortOrder: gift.sortOrder,
+      isActive: true
+    }));
+  }
+
+  private async ensureWallet(db: Prisma.TransactionClient | PrismaService, playerId: string) {
+    return db.coinWallet.upsert({
+      where: { playerId },
+      update: {},
+      create: { playerId }
+    });
+  }
+
+  private async getLockedWallet(db: Prisma.TransactionClient | PrismaService, playerId: string) {
+    await this.ensureWallet(db, playerId);
+    const rows = await db.$queryRaw<Array<{
+      id: string;
+      playerId: string;
+      balance: number;
+      reserved: number;
+      lifetimeEarned: number;
+      lifetimeSpent: number;
+    }>>(Prisma.sql`
+      SELECT
+        "id",
+        "playerId",
+        "balance",
+        "reserved",
+        "lifetimeEarned",
+        "lifetimeSpent"
+      FROM "CoinWallet"
+      WHERE "playerId" = ${playerId}
+      FOR UPDATE
+    `);
+
+    const wallet = rows[0];
+    if (!wallet) {
+      throw new BadRequestException("Wallet not found");
+    }
+
+    return wallet;
+  }
+
+  private async debitWallet(
+    db: Prisma.TransactionClient | PrismaService,
+    playerId: string,
+    amount: number,
+    referenceType: string,
+    referenceId: string,
+    extras: { idempotencyKey?: string | null; note?: string | null; payloadJson?: Prisma.InputJsonValue; createdByUserId?: string | null } = {}
+  ) {
+    const nextAmount = Math.max(0, Math.trunc(amount));
+    if (!nextAmount) {
+      return this.ensureWallet(db, playerId);
+    }
+
+    const wallet = await this.getLockedWallet(db, playerId);
+    if (wallet.balance < nextAmount) {
+      throw new BadRequestException("Insufficient balance");
+    }
+
+    const updated = await db.coinWallet.update({
+      where: { playerId },
+      data: {
+        balance: { decrement: nextAmount },
+        lifetimeSpent: { increment: nextAmount }
+      }
+    });
+
+    await db.coinLedgerEntry.create({
+      data: {
+        playerId,
+        type: "shop_purchase",
+        amount: -nextAmount,
+        balanceBefore: wallet.balance,
+        balanceAfter: updated.balance,
+        reservedBefore: wallet.reserved,
+        reservedAfter: updated.reserved,
+        referenceType,
+        referenceId,
+        idempotencyKey: extras.idempotencyKey ?? undefined,
+        note: extras.note ?? undefined,
+        payloadJson: extras.payloadJson ?? undefined,
+        createdByUserId: extras.createdByUserId ?? undefined
+      }
+    });
+
+    return updated;
+  }
+
+  private async creditWallet(
+    db: Prisma.TransactionClient | PrismaService,
+    playerId: string,
+    amount: number,
+    referenceType: string,
+    referenceId: string,
+    extras: { idempotencyKey?: string | null; note?: string | null; payloadJson?: Prisma.InputJsonValue; createdByUserId?: string | null } = {}
+  ) {
+    const nextAmount = Math.max(0, Math.trunc(amount));
+    if (!nextAmount) {
+      return this.ensureWallet(db, playerId);
+    }
+
+    const wallet = await this.getLockedWallet(db, playerId);
+    const updated = await db.coinWallet.update({
+      where: { playerId },
+      data: {
+        balance: { increment: nextAmount },
+        lifetimeEarned: { increment: nextAmount }
+      }
+    });
+
+    await db.coinLedgerEntry.create({
+      data: {
+        playerId,
+        type: "refund",
+        amount: nextAmount,
+        balanceBefore: wallet.balance,
+        balanceAfter: updated.balance,
+        reservedBefore: wallet.reserved,
+        reservedAfter: updated.reserved,
+        referenceType,
+        referenceId,
+        idempotencyKey: extras.idempotencyKey ?? undefined,
+        note: extras.note ?? undefined,
+        payloadJson: extras.payloadJson ?? undefined,
+        createdByUserId: extras.createdByUserId ?? undefined
+      }
+    });
+
+    return updated;
+  }
+
+  private async ensureGiftCatalog(db: Prisma.TransactionClient | PrismaService = this.prisma) {
+    for (const gift of this.giftSeedRows()) {
+      await db.giftCatalog.upsert({
+        where: { key: gift.key },
+        update: {
+          name: gift.name,
+          description: gift.description,
+          assetKey: gift.assetKey,
+          coinCost: gift.coinCost,
+          exchangeRateBps: gift.exchangeRateBps,
+          rarity: gift.rarity,
+          sortOrder: gift.sortOrder,
+          isActive: true
+        },
+        create: gift
+      });
+    }
+  }
+
+  private async getGiftCatalogByKey(db: Prisma.TransactionClient | PrismaService, key: string) {
+    return db.giftCatalog.findUnique({
+      where: { key }
+    });
+  }
+
+  private summarizeGiftCatalog(row: GiftCatalogRow) {
+    return {
+      id: row.id,
+      key: row.key,
+      name: row.name,
+      description: row.description,
+      assetKey: row.assetKey,
+      coinCost: row.coinCost,
+      exchangeRateBps: row.exchangeRateBps,
+      exchangeValue: this.giftExchangeValue(row.coinCost, row.exchangeRateBps),
+      rarity: row.rarity,
+      sortOrder: row.sortOrder,
+      isActive: row.isActive,
+      createdAt: row.createdAt.toISOString(),
+      updatedAt: row.updatedAt.toISOString()
+    };
+  }
+
+  private summarizeGiftInventory(row: GiftInventoryRow) {
+    return {
+      id: row.id,
+      playerId: row.playerId,
+      giftCatalogId: row.giftCatalogId,
+      quantity: row.quantity,
+      receivedCount: row.receivedCount,
+      sentCount: row.sentCount,
+      exchangedCount: row.exchangedCount,
+      lastReceivedAt: row.lastReceivedAt ? row.lastReceivedAt.toISOString() : null,
+      lastSentAt: row.lastSentAt ? row.lastSentAt.toISOString() : null,
+      createdAt: row.createdAt.toISOString(),
+      updatedAt: row.updatedAt.toISOString(),
+      catalog: this.summarizeGiftCatalog(row.catalog)
+    };
+  }
+
+  private summarizeGiftTransaction(row: GiftTransactionRow) {
+    return {
+      id: row.id,
+      senderPlayerId: row.senderPlayerId,
+      recipientPlayerId: row.recipientPlayerId,
+      giftCatalogId: row.giftCatalogId,
+      giftKey: row.giftKeySnapshot,
+      giftName: row.giftNameSnapshot,
+      assetKey: row.assetKeySnapshot,
+      coinCost: row.coinCost,
+      exchangeValue: row.exchangeValue,
+      contextType: row.contextType,
+      contextId: row.contextId,
+      note: row.note,
+      status: row.status,
+      createdAt: row.createdAt.toISOString(),
+      updatedAt: row.updatedAt.toISOString(),
+      sender: row.sender,
+      recipient: row.recipient
     };
   }
 
@@ -419,6 +720,320 @@ export class SocialService {
       .map((row) => this.summarizeInvite(row));
 
     return { incoming, sent, items: rows.map((row) => this.summarizeInvite(row)) };
+  }
+
+  async getGiftCatalog(headers: IncomingHttpHeaders) {
+    await this.getCurrentPlayer(headers);
+    await this.ensureGiftCatalog();
+    const rows = await this.prisma.giftCatalog.findMany({
+      where: { isActive: true },
+      orderBy: [{ sortOrder: "asc" }, { coinCost: "asc" }, { name: "asc" }]
+    });
+
+    return {
+      items: rows.map((row) => this.summarizeGiftCatalog(row as GiftCatalogRow))
+    };
+  }
+
+  async getGiftInventory(headers: IncomingHttpHeaders) {
+    const currentPlayer = await this.getCurrentPlayer(headers);
+    await this.ensureGiftCatalog();
+    const rows = await this.prisma.playerGiftInventory.findMany({
+      where: { playerId: currentPlayer.id },
+      include: {
+        catalog: true
+      },
+      orderBy: [{ updatedAt: "desc" }, { createdAt: "desc" }]
+    });
+
+    const items = rows.map((row) => this.summarizeGiftInventory(row as unknown as GiftInventoryRow));
+    const quantity = items.reduce((sum, item) => sum + Math.max(0, Number(item.quantity || 0)), 0);
+    const totalValue = items.reduce((sum, item) => sum + Math.max(0, Number(item.quantity || 0)) * Math.max(0, Number(item.catalog.exchangeValue || 0)), 0);
+
+    return {
+      items,
+      summary: {
+        unique: items.length,
+        quantity,
+        exchangeValue: totalValue
+      }
+    };
+  }
+
+  async getGiftHistory(headers: IncomingHttpHeaders) {
+    const currentPlayer = await this.getCurrentPlayer(headers);
+    await this.ensureGiftCatalog();
+    const [sent, received] = await Promise.all([
+      this.prisma.giftTransaction.findMany({
+        where: { senderPlayerId: currentPlayer.id },
+        include: {
+          sender: { select: this.playerSelect() },
+          recipient: { select: this.playerSelect() }
+        },
+        orderBy: { createdAt: "desc" },
+        take: 30
+      }),
+      this.prisma.giftTransaction.findMany({
+        where: { recipientPlayerId: currentPlayer.id },
+        include: {
+          sender: { select: this.playerSelect() },
+          recipient: { select: this.playerSelect() }
+        },
+        orderBy: { createdAt: "desc" },
+        take: 30
+      })
+    ]);
+
+    return {
+      sent: sent.map((row) => this.summarizeGiftTransaction(row as unknown as GiftTransactionRow)),
+      received: received.map((row) => this.summarizeGiftTransaction(row as unknown as GiftTransactionRow)),
+      items: [...sent, ...received]
+        .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+        .slice(0, 30)
+        .map((row) => this.summarizeGiftTransaction(row as unknown as GiftTransactionRow))
+    };
+  }
+
+  async sendGift(
+    headers: IncomingHttpHeaders,
+    body: {
+      recipientPlayerId?: string;
+      giftKey?: string;
+      contextType?: string;
+      contextId?: string;
+      note?: string;
+    }
+  ) {
+    const currentPlayer = await this.getCurrentPlayer(headers);
+    const recipientPlayerId = String(body?.recipientPlayerId || "").trim();
+    const giftKey = String(body?.giftKey || "").trim();
+    const contextType = String(body?.contextType || "match").trim() || "match";
+    const contextId = String(body?.contextId || "").trim() || null;
+    const note = String(body?.note || "").trim() || null;
+
+    if (!recipientPlayerId) {
+      throw new BadRequestException("Recipient is required");
+    }
+    if (!giftKey) {
+      throw new BadRequestException("Gift is required");
+    }
+    if (recipientPlayerId === currentPlayer.id) {
+      throw new ForbiddenException("You cannot send a gift to yourself");
+    }
+
+    const [recipient, catalog] = await Promise.all([
+      this.prisma.player.findUnique({
+        where: { id: recipientPlayerId },
+        select: this.playerSelect()
+      }),
+      this.prisma.giftCatalog.findUnique({
+        where: { key: giftKey }
+      })
+    ]);
+
+    if (!recipient) {
+      throw new NotFoundException("Recipient not found");
+    }
+    if (recipient.isGuest) {
+      throw new ForbiddenException("Guest players cannot receive gifts");
+    }
+    if (!catalog || !catalog.isActive) {
+      throw new NotFoundException("Gift not found");
+    }
+
+    const exchangeValue = this.giftExchangeValue(catalog.coinCost, catalog.exchangeRateBps);
+
+    const transaction = await this.prisma.$transaction(async (tx) => {
+      await this.ensureGiftCatalog(tx);
+      const nextCatalog = await tx.giftCatalog.findUnique({ where: { key: giftKey } });
+      if (!nextCatalog || !nextCatalog.isActive) {
+        throw new NotFoundException("Gift not found");
+      }
+
+      const wallet = await this.debitWallet(
+        tx,
+        currentPlayer.id,
+        nextCatalog.coinCost,
+        "gift_send",
+        nextCatalog.id,
+        {
+          note: note || `Gift ${nextCatalog.name}`,
+          payloadJson: {
+            recipientPlayerId,
+            giftKey: nextCatalog.key,
+            contextType,
+            contextId
+          }
+        }
+      );
+
+      const inventory = await tx.playerGiftInventory.upsert({
+        where: {
+          playerId_giftCatalogId: {
+            playerId: recipientPlayerId,
+            giftCatalogId: nextCatalog.id
+          }
+        },
+        update: {
+          quantity: { increment: 1 },
+          receivedCount: { increment: 1 },
+          lastReceivedAt: new Date()
+        },
+        create: {
+          playerId: recipientPlayerId,
+          giftCatalogId: nextCatalog.id,
+          quantity: 1,
+          receivedCount: 1,
+          lastReceivedAt: new Date()
+        },
+        include: {
+          catalog: true
+        }
+      });
+
+      const gift = await tx.giftTransaction.create({
+        data: {
+          senderPlayerId: currentPlayer.id,
+          recipientPlayerId,
+          giftCatalogId: nextCatalog.id,
+          giftKeySnapshot: nextCatalog.key,
+          giftNameSnapshot: nextCatalog.name,
+          assetKeySnapshot: nextCatalog.assetKey,
+          coinCost: nextCatalog.coinCost,
+          exchangeValue,
+          contextType,
+          contextId,
+          note,
+          status: "sent"
+        },
+        include: {
+          sender: { select: this.playerSelect() },
+          recipient: { select: this.playerSelect() }
+        }
+      });
+
+      return {
+        wallet,
+        gift: this.summarizeGiftTransaction(gift as unknown as GiftTransactionRow),
+        inventory: this.summarizeGiftInventory(inventory as unknown as GiftInventoryRow)
+      };
+    });
+
+    return {
+      ok: true,
+      ...transaction
+    };
+  }
+
+  async exchangeGift(
+    headers: IncomingHttpHeaders,
+    body: {
+      giftKey?: string;
+      quantity?: number;
+      note?: string;
+    }
+  ) {
+    const currentPlayer = await this.getCurrentPlayer(headers);
+    const giftKey = String(body?.giftKey || "").trim();
+    const quantity = Math.max(1, Math.trunc(Number(body?.quantity || 1)));
+    const note = String(body?.note || "").trim() || null;
+
+    if (!giftKey) {
+      throw new BadRequestException("Gift is required");
+    }
+
+    const result = await this.prisma.$transaction(async (tx) => {
+      await this.ensureGiftCatalog(tx);
+      const catalog = await tx.giftCatalog.findUnique({ where: { key: giftKey } });
+      if (!catalog || !catalog.isActive) {
+        throw new NotFoundException("Gift not found");
+      }
+
+      const inventory = await tx.playerGiftInventory.findUnique({
+        where: {
+          playerId_giftCatalogId: {
+            playerId: currentPlayer.id,
+            giftCatalogId: catalog.id
+          }
+        },
+        include: {
+          catalog: true
+        }
+      });
+
+      if (!inventory || inventory.quantity < quantity) {
+        throw new BadRequestException("Not enough gifts");
+      }
+
+      const exchangeValue = this.giftExchangeValue(catalog.coinCost, catalog.exchangeRateBps) * quantity;
+      const updatedInventory = await tx.playerGiftInventory.update({
+        where: {
+          playerId_giftCatalogId: {
+            playerId: currentPlayer.id,
+            giftCatalogId: catalog.id
+          }
+        },
+        data: {
+          quantity: {
+            decrement: quantity
+          },
+          exchangedCount: {
+            increment: quantity
+          }
+        },
+        include: {
+          catalog: true
+        }
+      });
+
+      const wallet = await this.creditWallet(
+        tx,
+        currentPlayer.id,
+        exchangeValue,
+        "gift_exchange",
+        catalog.id,
+        {
+          note: note || `Exchange ${catalog.name}`,
+          payloadJson: {
+            giftKey: catalog.key,
+            quantity,
+            exchangeValue
+          }
+        }
+      );
+
+      const gift = await tx.giftTransaction.create({
+        data: {
+          senderPlayerId: currentPlayer.id,
+          recipientPlayerId: currentPlayer.id,
+          giftCatalogId: catalog.id,
+          giftKeySnapshot: catalog.key,
+          giftNameSnapshot: catalog.name,
+          assetKeySnapshot: catalog.assetKey,
+          coinCost: catalog.coinCost * quantity,
+          exchangeValue,
+          contextType: "exchange",
+          contextId: updatedInventory.id,
+          note,
+          status: "exchanged"
+        },
+        include: {
+          sender: { select: this.playerSelect() },
+          recipient: { select: this.playerSelect() }
+        }
+      });
+
+      return {
+        wallet,
+        gift: this.summarizeGiftTransaction(gift as unknown as GiftTransactionRow),
+        inventory: this.summarizeGiftInventory(updatedInventory as unknown as GiftInventoryRow)
+      };
+    });
+
+    return {
+      ok: true,
+      ...result
+    };
   }
 
   async inviteFriendToRoom(

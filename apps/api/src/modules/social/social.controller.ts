@@ -42,6 +42,37 @@ export class SocialController {
     return this.socialService.getRoomInvitations(req.headers);
   }
 
+  @Get("gifts/catalog")
+  async getGiftCatalog(@Req() req: Request) {
+    return this.socialService.getGiftCatalog(req.headers);
+  }
+
+  @Get("gifts/inventory")
+  async getGiftInventory(@Req() req: Request) {
+    return this.socialService.getGiftInventory(req.headers);
+  }
+
+  @Get("gifts/history")
+  async getGiftHistory(@Req() req: Request) {
+    return this.socialService.getGiftHistory(req.headers);
+  }
+
+  @Post("gifts/send")
+  async sendGift(
+    @Req() req: Request,
+    @Body() body: { recipientPlayerId?: string; giftKey?: string; contextType?: string; contextId?: string; note?: string }
+  ) {
+    return this.socialService.sendGift(req.headers, body);
+  }
+
+  @Post("gifts/exchange")
+  async exchangeGift(
+    @Req() req: Request,
+    @Body() body: { giftKey?: string; quantity?: number; note?: string }
+  ) {
+    return this.socialService.exchangeGift(req.headers, body);
+  }
+
   @Post("rooms/:roomId/invite")
   async inviteToRoom(
     @Req() req: Request,

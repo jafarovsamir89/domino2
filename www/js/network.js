@@ -305,6 +305,10 @@ class NetworkManager {
             this.game.onNetworkReaction(payload);
         });
 
+        this.room.onMessage("gift", (payload) => {
+            this.game.onNetworkGift?.(payload);
+        });
+
         this.room.onMessage("msg", (msg) => {
             this.game.renderer.showMessage(msg.text, msg.time);
         });
@@ -477,7 +481,11 @@ class NetworkManager {
     sendReaction(type) {
         if (this.room) this.room.send("reaction", { type });
     }
-}
+
+    sendGift(payload) {
+        if (this.room) this.room.send("gift", payload || {});
+    }
+  }
 
 // Make available globally for ES modules
 if (typeof window !== 'undefined') {

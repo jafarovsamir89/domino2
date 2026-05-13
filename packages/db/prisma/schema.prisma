@@ -168,6 +168,9 @@ model Player {
   friendRequestsReceived FriendConnection[] @relation("FriendRequestRecipient")
   roomInvitesSent RoomInvitation[] @relation("RoomInviteSender")
   roomInvitesReceived RoomInvitation[] @relation("RoomInviteRecipient")
+  giftsSent GiftTransaction[] @relation("GiftSender")
+  giftsReceived GiftTransaction[] @relation("GiftRecipient")
+  giftInventory PlayerGiftInventory[]
 }
 
 model PlayerStats {
@@ -419,6 +422,67 @@ model RoomInvitation {
   @@index([inviterPlayerId, status, createdAt])
   @@index([roomId, status])
   @@index([roomCode, status])
+}
+
+model GiftCatalog {
+  id             String                @id @default(cuid())
+  key            String                @unique
+  name           String
+  description    String?
+  assetKey       String                @unique
+  coinCost       Int                   @default(100)
+  exchangeRateBps Int                   @default(7000)
+  rarity         String                @default("common")
+  sortOrder      Int                   @default(0)
+  isActive       Boolean               @default(true)
+  createdAt      DateTime              @default(now())
+  updatedAt      DateTime              @updatedAt
+  inventories    PlayerGiftInventory[]
+  transactions   GiftTransaction[]
+}
+
+model PlayerGiftInventory {
+  id              String      @id @default(cuid())
+  playerId        String
+  giftCatalogId   String
+  quantity        Int         @default(0)
+  receivedCount   Int         @default(0)
+  sentCount       Int         @default(0)
+  exchangedCount  Int         @default(0)
+  lastReceivedAt  DateTime?
+  lastSentAt      DateTime?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  player          Player      @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  catalog         GiftCatalog @relation(fields: [giftCatalogId], references: [id], onDelete: Cascade)
+
+  @@unique([playerId, giftCatalogId])
+  @@index([playerId, updatedAt])
+}
+
+model GiftTransaction {
+  id                String      @id @default(cuid())
+  senderPlayerId    String
+  recipientPlayerId  String
+  giftCatalogId     String
+  giftKeySnapshot   String
+  giftNameSnapshot  String
+  assetKeySnapshot  String
+  coinCost          Int
+  exchangeValue     Int
+  contextType       String      @default("match")
+  contextId         String?
+  note              String?
+  status            String      @default("sent")
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+  sender            Player      @relation("GiftSender", fields: [senderPlayerId], references: [id], onDelete: Cascade)
+  recipient         Player      @relation("GiftRecipient", fields: [recipientPlayerId], references: [id], onDelete: Cascade)
+  catalog           GiftCatalog @relation(fields: [giftCatalogId], references: [id], onDelete: Restrict)
+
+  @@index([recipientPlayerId, createdAt])
+  @@index([senderPlayerId, createdAt])
+  @@index([giftCatalogId, createdAt])
 }
 
 model PlayerBan {

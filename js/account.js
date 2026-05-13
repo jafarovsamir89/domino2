@@ -498,6 +498,44 @@ export class AccountClient {
         };
     }
 
+    async getGiftCatalog() {
+        const data = await this.platformRequest("/social/gifts/catalog");
+        return Array.isArray(data?.items) ? data.items : [];
+    }
+
+    async getGiftInventory() {
+        const data = await this.platformRequest("/social/gifts/inventory");
+        return {
+            items: Array.isArray(data?.items) ? data.items : [],
+            summary: data?.summary || { unique: 0, quantity: 0, exchangeValue: 0 }
+        };
+    }
+
+    async getGiftHistory() {
+        const data = await this.platformRequest("/social/gifts/history");
+        return {
+            sent: Array.isArray(data?.sent) ? data.sent : [],
+            received: Array.isArray(data?.received) ? data.received : [],
+            items: Array.isArray(data?.items) ? data.items : []
+        };
+    }
+
+    async sendGift(payload = {}) {
+        const body = payload && typeof payload === "object" ? payload : {};
+        return this.platformRequest("/social/gifts/send", {
+            method: "POST",
+            body
+        });
+    }
+
+    async exchangeGift(payload = {}) {
+        const body = payload && typeof payload === "object" ? payload : {};
+        return this.platformRequest("/social/gifts/exchange", {
+            method: "POST",
+            body
+        });
+    }
+
     async inviteFriendToRoom(roomId, payload = {}) {
         const body = payload && typeof payload === "object" ? payload : {};
         return this.platformRequest(`/social/rooms/${encodeURIComponent(roomId)}/invite`, {

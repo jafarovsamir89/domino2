@@ -118,6 +118,7 @@ class DominoRoom extends Room {
         this.onMessage("gosha", (client) => this.handleGosha(client));
         this.onMessage("next_deal", (client) => this.handleNextDeal(client));
         this.onMessage("reaction", (client, message) => this.handleReaction(client, message));
+        this.onMessage("gift", (client, message) => this.handleGift(client, message));
 
         debugLog(`[ROOM] Created room ${this.roomId} (code ${this.roomCode}), humanSeats=${this.humanSeats}, totalPlayers=${this.totalPlayers}, aiCount=${this.aiCount}, teamMode=${this.state.isTeamMode}`);
     }
@@ -749,11 +750,13 @@ class DominoRoom extends Room {
         setRoomGameActive(this.roomId, this.state.gameActive);
         const players = this.state.playerOrder.map((sessionId, index) => {
             const player = this.state.players.get(sessionId);
+            const identity = this.identityBySessionId.get(sessionId) || {};
             return {
                 sessionId,
                 index,
                 name: player ? player.name : "Player",
                 userId: player ? player.userId : "",
+                playerId: identity.playerId || player?.userId || "",
                 isConnected: player ? player.isConnected : false,
                 isBot: player ? player.isBot : false
             };
@@ -1196,6 +1199,25 @@ class DominoRoom extends Room {
             name: player ? player.name : "Player",
             sessionId: client.sessionId
         });
+    }
+
+    handleGift(client, message) {
+        const sender = this.state.players.get(client.sessionId);
+        if (!sender) return;
+        const payload = {
+            giftKey: String(message?.giftKey || "").trim(),
+            giftName: String(message?.giftName || "").trim(),
+            assetKey: String(message?.assetKey || "").trim(),
+            recipientPlayerId: String(message?.recipientPlayerId || "").trim(),
+            recipientName: String(message?.recipientName || "").trim(),
+            senderName: sender.name,
+            sessionId: client.sessionId,
+            roomId: this.roomId,
+            contextType: String(message?.contextType || "match").trim() || "match",
+            contextId: String(message?.contextId || "").trim() || null
+        };
+        if (!payload.giftKey || !payload.recipientPlayerId) return;
+        this.broadcast("gift", payload);
     }
 
     advanceTurn() {

@@ -107,6 +107,13 @@ class DominoGame {
             { code: '1F92C', label: 'Swear' },
             { code: '1F48B', label: 'Kiss Mark' }
         ];
+        this.giftCatalog = [];
+        this.giftInventory = [];
+        this.giftHistory = { sent: [], received: [], items: [] };
+        this.giftRecipients = [];
+        this.selectedGiftRecipientId = '';
+        this.lastGiftSentAt = 0;
+        this.lastGiftSentKey = '';
         this.lastReactionSentAt = 0;
         this.lastReactionSentType = '';
         this.setLanguage(this.currentLang);
@@ -126,6 +133,14 @@ class DominoGame {
     destroy() {
         clearInterval(this._watchdogId);
         this._watchdogId = null;
+        if (this._reactionOutsideHandler) {
+            document.removeEventListener('pointerdown', this._reactionOutsideHandler, true);
+            this._reactionOutsideHandler = null;
+        }
+        if (this._giftOutsideHandler) {
+            document.removeEventListener('pointerdown', this._giftOutsideHandler, true);
+            this._giftOutsideHandler = null;
+        }
         this.clearTurnTimers();
     }
     setupStartScreen() {
@@ -458,6 +473,7 @@ class DominoGame {
         this.prefillAccountNames();
         this.renderAccountModal();
         this.syncStartAuthButton();
+        if (this.accountOnline) void this.loadGiftHub();
         this.refreshResumeBanner(null);
         await this.validateStoredResumeSnapshot();
         if (!this.hasAuthenticatedAccount()) this.setAccountStatus(this.t('account-login-required'));
@@ -512,6 +528,7 @@ class DominoGame {
                 this.prefillAccountNames();
                 this.renderAccountModal();
                 this.syncStartAuthButton();
+                void this.loadGiftHub();
                 this.setAccountStatus(this.t('account-online'));
                 return details;
             }
@@ -542,17 +559,20 @@ class DominoGame {
         this.renderAccountModal();
         this.syncStartAuthButton();
         await this.loadAccountProfile();
+        await this.loadGiftHub();
         await this.loadLeaderboard();
     }
 
     closeAccountModal() {
         const modal = document.getElementById('account-modal');
         if (modal) modal.classList.remove('active');
+        this.closeGiftPicker();
     }
 
     closeStartModals() {
         document.getElementById('solo-modal')?.classList.remove('active');
         document.getElementById('online-modal')?.classList.remove('active');
+        this.closeGiftPicker();
     }
 
     setAccountStatus(text) {
@@ -1142,6 +1162,7 @@ class DominoGame {
                 });
             }
         }
+        this.renderGiftInventory();
         this.syncStartAuthButton();
     }
 
@@ -2373,6 +2394,14 @@ class DominoGame {
                     const removeBtn = document.createElement('button');
                     removeBtn.className = 'btn btn-menu';
                     removeBtn.textContent = this.t('friend-remove');
+                    const giftBtn = document.createElement('button');
+                    giftBtn.className = 'btn btn-action';
+                    giftBtn.textContent = 'Gift';
+                    giftBtn.addEventListener('click', () => {
+                        this.selectedGiftRecipientId = item.friend.id;
+                        this.renderGiftPicker();
+                        this.toggleGiftPicker(true);
+                    });
                     removeBtn.addEventListener('click', async () => {
                         removeBtn.disabled = true;
                         try {
@@ -2385,6 +2414,7 @@ class DominoGame {
                         }
                     });
                     action.appendChild(inviteBtn);
+                    action.appendChild(giftBtn);
                     action.appendChild(removeBtn);
                     card.appendChild(copy);
                     card.appendChild(action);
@@ -2507,6 +2537,7 @@ class DominoGame {
             this.setSummaryMessage(requestsList, err.message || this.t('account-server-unavailable'));
             this.setSummaryMessage(invitesList, err.message || this.t('account-server-unavailable'));
         }
+        this.renderGiftPicker();
     }
 
     async joinOnlineRoom(code) {
@@ -2652,6 +2683,8 @@ class DominoGame {
             this.enterOpenRoomWaitingScreen(roomState);
         }
 
+        this.renderGiftPicker();
+
         if (this.network?.isMultiplayer) {
             this.persistGameResumeSnapshot();
         }
@@ -2768,6 +2801,7 @@ class DominoGame {
             if (el) this.onHandTileClick(parseInt(el.dataset.handIndex));
         });
         this.setupReactionUI();
+        this.setupGiftUI();
     }
     bindTap(el, handler) {
         if (!window.PointerEvent) {
@@ -2861,6 +2895,21 @@ class DominoGame {
         }
         this.showReactionBurst(reactionId, payload.name || '');
     }
+    onNetworkGift(payload) {
+        if (!payload) return;
+        const gift = this.giftCatalog.find((item) => item.key === payload.giftKey || item.assetKey === payload.assetKey) || {
+            key: payload.giftKey || payload.assetKey || 'gift_001',
+            name: payload.giftName || 'Gift',
+            assetKey: payload.assetKey || payload.giftKey || 'gift_001'
+        };
+        const senderSession = payload.sessionId || '';
+        if (this.network?.room?.sessionId && senderSession === this.network.room.sessionId) {
+            if (gift.key === this.lastGiftSentKey && Date.now() - this.lastGiftSentAt < 1800) {
+                return;
+            }
+        }
+        this.showGiftBurst(gift, payload.senderName || '', payload.recipientName || '');
+    }
     showReactionBurst(reactionId, senderName = '') {
         if (!this.reactionStage) return;
         const reaction = this.reactionPalette.find((item) => item.code === reactionId) || this.reactionPalette[0];
@@ -2890,9 +2939,361 @@ class DominoGame {
         const src = `assets/reactions/${code}.svg`;
         return `<img src="${src}" alt="${label}" width="${size}" height="${size}" loading="eager" decoding="async">`;
     }
+    setupGiftUI() {
+        this.giftBtn = document.getElementById('gift-btn');
+        this.giftPicker = document.getElementById('gift-picker');
+        if (!this.giftBtn || !this.giftPicker) return;
+
+        this.giftBtn.innerHTML = this.buildGiftButtonMarkup(48);
+        this.renderGiftPicker();
+
+        this.giftBtn.addEventListener('click', (event) => {
+            event.stopPropagation();
+            this.toggleGiftPicker();
+        });
+
+        this._giftOutsideHandler = (event) => {
+            if (!this.giftPicker.classList.contains('open')) return;
+            const target = event.target;
+            if (this.giftPicker.contains(target) || this.giftBtn.contains(target)) return;
+            this.closeGiftPicker();
+        };
+        document.addEventListener('pointerdown', this._giftOutsideHandler, true);
+    }
+    renderGiftPicker() {
+        if (!this.giftPicker) return;
+        this.giftPicker.innerHTML = '';
+        const header = document.createElement('div');
+        header.className = 'gift-picker-header';
+        const title = document.createElement('div');
+        title.className = 'gift-picker-title';
+        title.textContent = 'Gift player';
+        header.appendChild(title);
+
+        const recipientRow = document.createElement('div');
+        recipientRow.className = 'gift-recipient-row';
+        const recipients = this.getGiftRecipients();
+        if (!recipients.length) {
+            const empty = document.createElement('div');
+            empty.className = 'modal-desc';
+            empty.textContent = 'No recipient available';
+            recipientRow.appendChild(empty);
+        } else {
+            if (!this.selectedGiftRecipientId || !recipients.some((item) => item.id === this.selectedGiftRecipientId)) {
+                this.selectedGiftRecipientId = recipients[0].id;
+            }
+            recipients.forEach((recipient) => {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'gift-recipient-chip';
+                if (recipient.id === this.selectedGiftRecipientId) btn.classList.add('active');
+                btn.dataset.recipient = recipient.id;
+                const avatar = document.createElement('div');
+                avatar.className = 'gift-recipient-avatar';
+                const avatarUrl = recipient.avatarUrl || '';
+                if (avatarUrl) {
+                    const img = document.createElement('img');
+                    img.alt = recipient.displayName;
+                    img.loading = 'lazy';
+                    img.src = avatarUrl;
+                    avatar.appendChild(img);
+                } else {
+                    avatar.textContent = (recipient.displayName || 'P').slice(0, 1).toUpperCase();
+                }
+                const name = document.createElement('span');
+                name.textContent = recipient.displayName;
+                btn.appendChild(avatar);
+                btn.appendChild(name);
+                btn.addEventListener('click', (event) => {
+                    event.stopPropagation();
+                    this.selectedGiftRecipientId = recipient.id;
+                    this.renderGiftPicker();
+                });
+                recipientRow.appendChild(btn);
+            });
+        }
+
+        const grid = document.createElement('div');
+        grid.className = 'gift-picker-grid';
+        const gifts = Array.isArray(this.giftCatalog) ? this.giftCatalog : [];
+        if (!gifts.length) {
+            const empty = document.createElement('div');
+            empty.className = 'modal-desc';
+            empty.style.gridColumn = '1 / -1';
+            empty.textContent = 'Loading gifts...';
+            grid.appendChild(empty);
+        } else {
+            for (const gift of gifts) {
+                const card = document.createElement('button');
+                card.type = 'button';
+                card.className = 'gift-choice';
+                card.dataset.giftKey = gift.key;
+                const visual = document.createElement('div');
+                visual.className = 'gift-choice-visual';
+                visual.innerHTML = this.buildGiftMarkup(gift, 64);
+                const name = document.createElement('div');
+                name.className = 'gift-choice-name';
+                name.textContent = gift.name;
+                const meta = document.createElement('div');
+                meta.className = 'gift-choice-meta';
+                meta.textContent = `${gift.rarity || 'common'} • ${gift.exchangeValue || 0} back`;
+                const cost = document.createElement('div');
+                cost.className = 'gift-choice-cost';
+                cost.textContent = `${gift.coinCost || 100} coins`;
+                card.appendChild(visual);
+                card.appendChild(name);
+                card.appendChild(meta);
+                card.appendChild(cost);
+                card.addEventListener('click', async (event) => {
+                    event.stopPropagation();
+                    await this.sendGift(gift.key, this.selectedGiftRecipientId || recipients[0]?.id || '');
+                });
+                grid.appendChild(card);
+            }
+        }
+
+        this.giftPicker.appendChild(header);
+        this.giftPicker.appendChild(recipientRow);
+        this.giftPicker.appendChild(grid);
+    }
+    toggleGiftPicker(force = null) {
+        if (!this.giftPicker || !this.giftBtn) return;
+        const open = force === null ? !this.giftPicker.classList.contains('open') : !!force;
+        this.giftPicker.classList.toggle('open', open);
+        this.giftPicker.setAttribute('aria-hidden', String(!open));
+        this.giftBtn.setAttribute('aria-expanded', String(open));
+        if (open) this.renderGiftPicker();
+    }
+    closeGiftPicker() {
+        this.toggleGiftPicker(false);
+    }
+    getGiftRecipients() {
+        const recipients = [];
+        const seen = new Set();
+        const myPlayerId = String(this.accountProfile?.playerId || this.accountProfile?.id || this.accountProfile?.player?.id || '').trim();
+        const roomPlayers = Array.isArray(this.currentRoomState?.players) ? this.currentRoomState.players : [];
+        for (const player of roomPlayers) {
+            const id = String(player?.playerId || player?.userId || player?.sessionId || '').trim();
+            if (!id || id === myPlayerId || seen.has(id)) continue;
+            seen.add(id);
+            recipients.push({
+                id,
+                displayName: String(player?.name || 'Player').trim() || 'Player',
+                avatarUrl: null
+            });
+        }
+        for (const friend of Array.isArray(this.friendHub?.accepted) ? this.friendHub.accepted : []) {
+            const id = String(friend?.friend?.id || '').trim();
+            if (!id || id === myPlayerId || seen.has(id)) continue;
+            seen.add(id);
+            recipients.push({
+                id,
+                displayName: String(friend?.friend?.displayName || 'Player').trim() || 'Player',
+                avatarUrl: friend?.friend?.avatarUrl || null
+            });
+        }
+        return recipients;
+    }
+    async loadGiftHub() {
+        if (!this.account?.getGiftCatalog) return;
+        try {
+            const [catalog, inventory, history] = await Promise.all([
+                this.account.getGiftCatalog(),
+                this.account.getGiftInventory(),
+                this.account.getGiftHistory()
+            ]);
+            this.giftCatalog = Array.isArray(catalog) ? catalog : [];
+            this.giftInventory = Array.isArray(inventory?.items) ? inventory.items : [];
+            this.giftHistory = history || { sent: [], received: [], items: [] };
+            this.renderGiftPicker();
+            this.renderGiftInventory();
+        } catch (err) {
+            debugLog("Gift hub load failed:", err);
+        }
+    }
+    renderGiftInventory() {
+        const panel = document.getElementById('account-gifts-panel');
+        const list = document.getElementById('account-gifts-list');
+        if (!panel || !list) return;
+        list.innerHTML = '';
+        if (!this.hasAuthenticatedAccount() || !Array.isArray(this.giftInventory) || !this.giftInventory.length) {
+            if (this.hasAuthenticatedAccount()) {
+                panel.classList.remove('is-hidden');
+                const empty = document.createElement('div');
+                empty.className = 'modal-desc';
+                empty.style.gridColumn = '1 / -1';
+                empty.textContent = 'No gifts yet';
+                list.appendChild(empty);
+            } else {
+                panel.classList.add('is-hidden');
+            }
+            return;
+        }
+        panel.classList.remove('is-hidden');
+        for (const item of this.giftInventory) {
+            const card = document.createElement('div');
+            card.className = 'gift-inventory-card';
+            const top = document.createElement('div');
+            top.className = 'gift-inventory-top';
+            const thumb = document.createElement('div');
+            thumb.className = 'gift-inventory-thumb';
+            thumb.innerHTML = this.buildGiftMarkup(item.catalog, 44);
+            const copy = document.createElement('div');
+            copy.className = 'gift-inventory-copy';
+            const name = document.createElement('div');
+            name.className = 'gift-inventory-name';
+            name.textContent = item.catalog?.name || item.catalog?.key || 'Gift';
+            const meta = document.createElement('div');
+            meta.className = 'gift-inventory-meta';
+            meta.textContent = `${item.quantity || 0} pcs • back ${item.catalog?.exchangeValue || 0}`;
+            copy.appendChild(name);
+            copy.appendChild(meta);
+            top.appendChild(thumb);
+            top.appendChild(copy);
+            const actions = document.createElement('div');
+            actions.className = 'gift-inventory-actions';
+            const cost = document.createElement('span');
+            cost.className = 'gift-cost-chip';
+            cost.textContent = `${Math.max(0, item.catalog?.exchangeValue || 0)} coins`;
+            const exchangeBtn = document.createElement('button');
+            exchangeBtn.type = 'button';
+            exchangeBtn.className = 'btn btn-menu';
+            exchangeBtn.textContent = 'Exchange';
+            exchangeBtn.disabled = (item.quantity || 0) <= 0;
+            exchangeBtn.addEventListener('click', async () => {
+                exchangeBtn.disabled = true;
+                try {
+                    await this.exchangeGift(item.catalog?.key || '');
+                    await this.loadGiftHub();
+                    this.renderer.showMessage('Gift exchanged', 1500);
+                } catch (err) {
+                    this.renderer.showMessage(err.message || 'Gift exchange failed', 1800);
+                } finally {
+                    exchangeBtn.disabled = (item.quantity || 0) <= 0;
+                }
+            });
+            actions.appendChild(cost);
+            actions.appendChild(exchangeBtn);
+            card.appendChild(top);
+            card.appendChild(actions);
+            list.appendChild(card);
+        }
+    }
+    async sendGift(giftKey, recipientPlayerId) {
+        const recipientId = String(recipientPlayerId || '').trim();
+        const key = String(giftKey || '').trim();
+        if (!recipientId || !key) {
+            this.renderer.showMessage('Select a recipient', 1400);
+            return null;
+        }
+        const myPlayerId = String(this.accountProfile?.playerId || this.accountProfile?.id || this.accountProfile?.player?.id || '').trim();
+        if (!this.accountProfile || recipientId === myPlayerId) {
+            this.renderer.showMessage('You cannot send a gift to yourself', 1600);
+            return null;
+        }
+        const gift = this.giftCatalog.find((item) => item.key === key);
+        if (!gift) {
+            this.renderer.showMessage('Gift not found', 1600);
+            return null;
+        }
+        try {
+            const result = await this.account.sendGift({
+                recipientPlayerId: recipientId,
+                giftKey: key,
+                contextType: this.network?.isMultiplayer ? 'match' : 'profile',
+                contextId: this.currentRoomState?.roomId || this.currentMatchSessionId || '',
+                note: `${gift.name}`
+            });
+            const name = this.getRecipientNameById(recipientId);
+            this.closeGiftPicker();
+            this.lastGiftSentAt = Date.now();
+            this.lastGiftSentKey = key;
+            this.showGiftBurst(gift, this.accountProfile?.name || 'Player', name);
+            if (this.network?.isMultiplayer) {
+                this.network.sendGift({
+                    giftKey: gift.key,
+                    giftName: gift.name,
+                    assetKey: gift.assetKey,
+                    recipientPlayerId: recipientId,
+                    recipientName: name,
+                    contextType: this.network?.isMultiplayer ? 'match' : 'profile',
+                    contextId: this.currentRoomState?.roomId || this.currentMatchSessionId || ''
+                });
+            }
+            await this.loadAccountProfile();
+            await this.loadGiftHub();
+            this.renderAccountModal();
+            this.renderer.showMessage('Gift sent', 1500);
+            return result;
+        } catch (err) {
+            this.renderer.showMessage(err.message || 'Gift send failed', 1800);
+            return null;
+        }
+    }
+    async exchangeGift(giftKey) {
+        const key = String(giftKey || '').trim();
+        if (!key) return null;
+        try {
+            const result = await this.account.exchangeGift({
+                giftKey: key,
+                quantity: 1,
+                note: 'Profile exchange'
+            });
+            await this.loadAccountProfile();
+            await this.loadGiftHub();
+            this.renderAccountModal();
+            return result;
+        } catch (err) {
+            this.renderer.showMessage(err.message || 'Gift exchange failed', 1800);
+            return null;
+        }
+    }
+    getRecipientNameById(playerId) {
+        const id = String(playerId || '').trim();
+        if (!id) return 'Player';
+        const roomPlayers = Array.isArray(this.currentRoomState?.players) ? this.currentRoomState.players : [];
+        const roomPlayer = roomPlayers.find((player) => String(player?.playerId || player?.userId || player?.sessionId || '').trim() === id);
+        if (roomPlayer?.name) return roomPlayer.name;
+        const friend = Array.isArray(this.friendHub?.accepted)
+            ? this.friendHub.accepted.find((item) => String(item?.friend?.id || '').trim() === id)
+            : null;
+        return friend?.friend?.displayName || 'Player';
+    }
+    buildGiftMarkup(gift, size = 48) {
+        const assetKey = String(gift?.assetKey || gift?.key || 'gift_001').trim() || 'gift_001';
+        const label = String(gift?.name || gift?.key || 'Gift').trim() || 'Gift';
+        return `<img src="assets/gift/${assetKey}.png" alt="${label}" width="${size}" height="${size}" loading="eager" decoding="async">`;
+    }
+    buildGiftButtonMarkup(size = 48) {
+        return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="${size}" height="${size}" fill="none" aria-hidden="true"><path d="M5 9.5h14v9.5H5z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M4 8h16v3H4z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M12 8v11" stroke="currentColor" stroke-width="1.6"/><path d="M12 8c-1.3 0-3-1.1-3-2.6S10.3 3 12 5.1c1.7-2.1 3.9-2.7 4.7-1.2.8 1.5-.8 4.1-4.7 4.1Zm0 0c-1.4 0-3.1-1.2-4.3-2.4C6.6 4.3 6.2 2.9 7.2 2.3c1-.6 2.8.2 4.8 2.8Z" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+    }
+    showGiftBurst(gift, senderName = '', recipientName = '') {
+        if (!this.reactionStage) return;
+        const burst = document.createElement('div');
+        burst.className = 'gift-burst';
+        const icon = document.createElement('div');
+        icon.className = 'gift-burst-icon';
+        icon.innerHTML = this.buildGiftMarkup(gift, 96);
+        burst.appendChild(icon);
+        const label = document.createElement('div');
+        label.className = 'gift-burst-label';
+        label.textContent = senderName ? `${senderName} sent a gift` : 'Gift sent';
+        burst.appendChild(label);
+        if (recipientName) {
+            const chip = document.createElement('div');
+            chip.className = 'gift-burst-chip';
+            chip.textContent = `to ${recipientName}`;
+            burst.appendChild(chip);
+        }
+        this.reactionStage.appendChild(burst);
+        window.setTimeout(() => {
+            burst.remove();
+        }, 1380);
+    }
     setupMenu() {
         document.getElementById('menu-btn')?.addEventListener('click', () => {
             this.closeReactionPicker();
+            this.closeGiftPicker();
             document.getElementById('menu-screen').classList.add('active');
         });
         const menuScreen = document.getElementById('menu-screen');

@@ -317,6 +317,10 @@
                             </div>
                         </div>
                         <div id="account-profile-summary" class="room-summary"></div>
+                        <div class="account-gifts is-hidden" id="account-gifts-panel">
+                            <div class="section-kicker">Gift vault</div>
+                            <div id="account-gifts-list" class="gift-inventory-grid"></div>
+                        </div>
                         <div class="settings-grid compact-grid">
                             <div class="settings-group field-span-2">
                                 <label data-i18n="account-name">Ad</label>
@@ -391,11 +395,15 @@
         <div class="action-bar">
             <button class="btn btn-action" id="draw-btn" disabled data-i18n="btn-draw">BAZAR</button>
             <button class="btn btn-action" id="pass-btn" disabled data-i18n="btn-pass">PAS</button>
-            <div class="reaction-slot">
-                <button class="reaction-fab" id="reaction-btn" type="button" aria-haspopup="true" aria-expanded="false" title="Reactions"></button>
-                <div class="reaction-picker" id="reaction-picker" aria-hidden="true"></div>
-            </div>
-        </div>
+              <div class="reaction-slot">
+                  <button class="reaction-fab" id="reaction-btn" type="button" aria-haspopup="true" aria-expanded="false" title="Reactions"></button>
+                  <div class="reaction-picker" id="reaction-picker" aria-hidden="true"></div>
+              </div>
+              <div class="reaction-slot gift-slot">
+                  <button class="reaction-fab gift-fab" id="gift-btn" type="button" aria-haspopup="true" aria-expanded="false" title="Gifts"></button>
+                  <div class="gift-picker" id="gift-picker" aria-hidden="true"></div>
+              </div>
+          </div>
         <div id="debug-log" style="display:none;position:absolute;bottom:0;left:0;right:0;font-size:0.65rem;color:#9badbf;opacity:0.6;padding:2px 6px;max-height:60px;overflow:hidden;pointer-events:none;z-index:90;"></div>
     </div>
 
