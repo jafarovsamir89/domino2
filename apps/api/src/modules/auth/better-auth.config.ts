@@ -1,6 +1,6 @@
 import { verifyPassword as verifyBuiltInPassword } from "better-auth/crypto";
 
-import { isLegacyPasswordHash, encodeLegacyPassword, verifyLegacyPassword } from "../../../../../packages/shared/src/legacy-auth.js";
+import { isLegacyPasswordHash, encodeLegacyPassword, verifyLegacyPassword } from "@domino2/shared";
 
 export interface BetterAuthConfig {
   secret: string;
