@@ -833,7 +833,7 @@ class DominoGame {
                         </button>
                     </div>
                     <div class="modal-footer modal-footer-split field-span-2">
-                        <button class="btn btn-primary btn-large modal-primary-btn" id="account-avatar-modal-save" type="submit" data-i18n="account-avatar-save">Yadda saxla</button>
+                        <button class="btn btn-primary btn-large modal-primary-btn" id="account-avatar-modal-save" type="button" data-i18n="account-avatar-save">Yadda saxla</button>
                         <button class="btn btn-menu modal-close-btn modal-secondary-btn" id="account-avatar-modal-cancel" type="button" data-i18n="account-name-cancel">Ləğv et</button>
                     </div>
                 </form>
@@ -846,6 +846,9 @@ class DominoGame {
             this.pendingAvatarMode = 'clear';
             this.pendingAvatarDataUrl = null;
             this.syncAvatarModalPreview();
+        });
+        document.getElementById('account-avatar-modal-save')?.addEventListener('click', () => {
+            void this.saveAccountAvatar();
         });
         document.getElementById('account-avatar-modal-input')?.addEventListener('change', async (event) => {
             const input = event.currentTarget;
@@ -977,8 +980,17 @@ class DominoGame {
                 return;
             }
             const avatarUrl = this.pendingAvatarMode === 'custom' ? this.pendingAvatarDataUrl : null;
-            await this.account.updateAvatar(avatarUrl);
-            await this.loadAccountProfile();
+            const result = await this.account.updateAvatar(avatarUrl);
+            const normalized = result?.profile ? result : this.account.getStoredProfile() || null;
+            if (normalized) {
+                this.accountProfile = normalized.profile || this.accountProfile;
+                this.accountDetails = normalized;
+                this.accountOnline = this.hasAuthenticatedAccount(this.accountProfile);
+                this.renderAccountModal();
+                this.syncStartAuthButton();
+            } else {
+                await this.loadAccountProfile();
+            }
             this.setAccountStatus(this.t('account-avatar-saved'));
             this.closeAvatarEditModal();
         } catch (err) {
