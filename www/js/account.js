@@ -132,6 +132,10 @@ export class AccountClient {
                 return String(window.DOMINO_PLATFORM_API_URL).replace(/\/$/, "");
             }
 
+            if (window.Capacitor) {
+                return "https://apid.simplesoft.az/api";
+            }
+
             const { hostname } = window.location;
             if (hostname === "localhost" || hostname === "127.0.0.1") {
                 return "http://localhost:3000/api";
@@ -325,6 +329,10 @@ export class AccountClient {
         } finally {
             clearTimeout(timeoutId);
         }
+    }
+
+    async getPlatformStatus() {
+        return this.platformRequest("/platform/status");
     }
 
     async bootstrap() {

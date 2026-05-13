@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Returning To Domino</title>
+    <meta name="theme-color" content="#0f1923">
+    <style>
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: grid;
+            place-items: center;
+            background: radial-gradient(circle at top, #22384b 0%, #0f1923 55%, #091018 100%);
+            color: #f4efe3;
+            font: 600 16px/1.5 Inter, Arial, sans-serif;
+        }
+
+        main {
+            width: min(92vw, 420px);
+            padding: 28px 24px;
+            border-radius: 24px;
+            background: rgba(12, 22, 32, 0.86);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 24px 56px rgba(0, 0, 0, 0.35);
+            text-align: center;
+        }
+
+        h1 {
+            margin: 0 0 10px;
+            font-size: 1.15rem;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+
+        p {
+            margin: 0 0 18px;
+            color: rgba(244, 239, 227, 0.82);
+        }
+
+        a {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 180px;
+            padding: 12px 18px;
+            border-radius: 999px;
+            background: linear-gradient(135deg, #f0c040, #d9892f);
+            color: #17120b;
+            text-decoration: none;
+            font-weight: 800;
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <h1>Return To Domino</h1>
+        <p>Sign-in is complete. If the app does not open automatically, tap the button below.</p>
+        <a id="return-link" href="domino://auth-complete">Open Domino</a>
+    </main>
+    <script>
+        const target = "domino://auth-complete";
+        window.setTimeout(() => {
+            window.location.replace(target);
+        }, 120);
+    </script>
+</body>
+</html>

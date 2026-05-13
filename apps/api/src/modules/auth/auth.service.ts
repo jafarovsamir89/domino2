@@ -20,6 +20,7 @@ export class AuthService {
       provider: "better-auth",
       phase: "active",
       googleEnabled: Boolean(this.config.google),
+      googleClientId: this.config.google?.clientIds?.[0] || null,
       appleEnabled: Boolean(this.config.apple),
       emailRecoveryEnabled: true,
       passwordResetEnabled: true,

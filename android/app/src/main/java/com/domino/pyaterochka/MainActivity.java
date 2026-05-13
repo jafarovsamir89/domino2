@@ -7,6 +7,8 @@ public class MainActivity extends BridgeActivity {
     @Override
     protected void load() {
         super.load();
+        registerPlugin(DominoGoogleAuthPlugin.class);
+        registerPlugin(DominoBrowserPlugin.class);
         if (getBridge() != null && getBridge().getWebView() != null) {
             getBridge().getWebView().getSettings().setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
         }

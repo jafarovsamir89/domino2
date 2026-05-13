@@ -10,7 +10,7 @@ export interface BetterAuthConfig {
   hashPassword: (password: string) => Promise<string>;
   verifyPassword: (input: { hash: string; password: string }) => Promise<boolean>;
   google?: {
-    clientId: string;
+    clientIds: string[];
     clientSecret: string;
   };
   apple?: {
@@ -24,8 +24,16 @@ export function getBetterAuthConfig(): BetterAuthConfig {
   const defaultGameWebUrl = isProduction ? "https://gamed.simplesoft.az" : "http://localhost:2567";
   const defaultApiUrl = isProduction ? "https://apid.simplesoft.az" : "http://localhost:3000";
   const defaultAdminUrl = isProduction ? "https://admind.simplesoft.az" : "http://localhost:3001";
+  const googleClientIds = [
+    process.env.GOOGLE_WEB_CLIENT_ID,
+    process.env.GOOGLE_ANDROID_CLIENT_ID,
+    process.env.GOOGLE_IOS_CLIENT_ID,
+    process.env.GOOGLE_CLIENT_ID
+  ]
+    .map((value) => String(value || "").trim())
+    .filter(Boolean);
   const googleEnabled =
-    Boolean(process.env.GOOGLE_CLIENT_ID) &&
+    googleClientIds.length > 0 &&
     Boolean(process.env.GOOGLE_CLIENT_SECRET);
   const appleEnabled =
     Boolean(process.env.APPLE_CLIENT_ID) &&
@@ -105,7 +113,7 @@ export function getBetterAuthConfig(): BetterAuthConfig {
     verifyPassword,
     google: googleEnabled
       ? {
-          clientId: process.env.GOOGLE_CLIENT_ID || "",
+          clientIds: googleClientIds,
           clientSecret: process.env.GOOGLE_CLIENT_SECRET || ""
         }
       : undefined,

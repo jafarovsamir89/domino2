@@ -61,6 +61,7 @@ class DominoGame {
         this.postMoveAdvanceMs = 2000;
         this.postMoveWindowActive = false;
         this.postMoveWindowEndsAt = 0;
+        this.mobileAuthPending = false;
         this.network = new NetworkManager(this);
         this.account = new AccountClient(() => this.network.getServerUrl());
         this.accountProfile = this.account.getStoredProfile();
@@ -120,6 +121,7 @@ class DominoGame {
         this.setLanguage(this.currentLang);
         this.setupStartScreen(); this.setupGameControls(); this.setupMenu();
         this.applySharedRoomCodeFromUrl();
+        this.setupMobileAuthResume();
         this.bootstrapAccount();
 
         // Watchdog for turn freeze
@@ -629,14 +631,124 @@ class DominoGame {
         this.renderAccountModal();
     }
 
+    setupMobileAuthResume() {
+        if (!window.Capacitor) return;
+        const resume = () => {
+            void this.resumePendingMobileAuth();
+        };
+        window.addEventListener('focus', resume);
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible') {
+                resume();
+            }
+        });
+    }
+
+    async resumePendingMobileAuth() {
+        if (!this.mobileAuthPending) return;
+        try {
+            const details = await this.account.bootstrap();
+            if (details?.profile) {
+                this.mobileAuthPending = false;
+                this.enterAuthenticatedHome(details);
+                this.renderer.showMessage(this.t('account-login'), 1500);
+            }
+        } catch (error) {
+            debugLog('Mobile auth resume check failed:', error);
+        }
+    }
+
+    async openExternalAuthUrl(url) {
+        const target = String(url || '').trim();
+        if (!target) return;
+        if (!window.Capacitor) {
+            window.location.assign(target);
+            return;
+        }
+
+        this.mobileAuthPending = true;
+        this.setAccountStatus(this.t('account-login-required'));
+        try {
+            const dominoBrowser = window.Capacitor?.Plugins?.DominoBrowser;
+            if (dominoBrowser?.open) {
+                await dominoBrowser.open({ url: target });
+                return;
+            }
+
+            const browser = window.Capacitor?.Plugins?.Browser;
+            if (browser?.open) {
+                await browser.open({ url: target });
+                return;
+            }
+        } catch (error) {
+            debugLog('Capacitor Browser open failed:', error);
+        }
+
+        window.location.href = target;
+    }
+
+    async startGoogleNativeSignIn() {
+        if (!window.Capacitor) {
+            return false;
+        }
+        const plugin = window.Capacitor?.Plugins?.DominoGoogleAuth;
+        if (!plugin?.signIn) {
+            return false;
+        }
+
+        const status = await this.account.getPlatformStatus().catch(() => null);
+        const serverClientId = String(status?.googleClientId || '').trim();
+        if (!serverClientId) {
+            throw new Error('Google sign-in is not configured on the server');
+        }
+
+        const result = await plugin.signIn({ serverClientId });
+        const idToken = String(result?.idToken || '').trim();
+        if (!idToken) {
+            throw new Error('Google sign-in did not return an ID token');
+        }
+
+        await this.account.platformRequest('/auth/sign-in/social', {
+            method: 'POST',
+            body: {
+                provider: 'google',
+                idToken: {
+                    token: idToken,
+                    accessToken: String(result?.accessToken || '').trim() || undefined
+                }
+            }
+        });
+
+        const details = await this.account.bootstrap();
+        if (details?.profile) {
+            this.enterAuthenticatedHome(details);
+            this.renderer.showMessage(this.t('account-login'), 1500);
+            return true;
+        }
+
+        throw new Error('Unable to complete Google sign-in');
+    }
+
     startGoogleAccountSignIn() {
-        const callbackURL = `${window.location.origin}${window.location.pathname}${window.location.search}`;
+        const callbackURL = this.getAuthCallbackUrl();
         void (async () => {
             try {
                 this.setAccountStatus('');
+                if (window.Capacitor) {
+                    try {
+                        const nativeDone = await this.startGoogleNativeSignIn();
+                        if (nativeDone) {
+                            return;
+                        }
+                    } catch (nativeError) {
+                        debugLog('Native Google sign-in failed:', nativeError);
+                        this.setAccountStatus(nativeError?.message || this.t('login-failed'));
+                        return;
+                    }
+                }
                 const result = await this.account.startGoogleSignIn(callbackURL);
                 if (result?.url) {
-                    window.location.assign(result.url);
+                    await this.openExternalAuthUrl(result.url);
                     return;
                 }
                 if (result?.redirect === false && result?.token) {
@@ -653,13 +765,13 @@ class DominoGame {
     }
 
     startAppleAccountSignIn() {
-        const callbackURL = `${window.location.origin}${window.location.pathname}${window.location.search}`;
+        const callbackURL = this.getAuthCallbackUrl();
         void (async () => {
             try {
                 this.setAccountStatus('');
                 const result = await this.account.startAppleSignIn(callbackURL);
                 if (result?.url) {
-                    window.location.assign(result.url);
+                    await this.openExternalAuthUrl(result.url);
                     return;
                 }
                 if (result?.redirect === false && result?.token) {
@@ -673,6 +785,18 @@ class DominoGame {
                 this.setAccountStatus(err?.message || this.t('login-failed'));
             }
         })();
+    }
+
+    getAuthCallbackUrl() {
+        const isLocalHost = typeof window !== 'undefined'
+            && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+        if (window.Capacitor) {
+            return 'https://gamed.simplesoft.az/mobile-auth-complete.html';
+        }
+        if (isLocalHost) {
+            return `${window.location.origin}${window.location.pathname}${window.location.search}`;
+        }
+        return `${window.location.origin}/`;
     }
 
     async saveAccountDisplayName() {

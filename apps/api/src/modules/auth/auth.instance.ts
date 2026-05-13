@@ -85,7 +85,7 @@ export const auth = betterAuth({
     ...(config.google
       ? {
           google: {
-            clientId: config.google.clientId,
+            clientId: config.google.clientIds,
             clientSecret: config.google.clientSecret
           }
         }
