@@ -1694,11 +1694,13 @@ input, button { font: inherit; }
 
 .turn-timer-slot {
     width: 54px;
+    min-width: 54px;
     flex: 0 0 auto;
     display: grid;
     place-items: center;
     gap: 4px;
     justify-items: center;
+    align-self: center;
 }
 
 .turn-timer-slot.is-hidden {

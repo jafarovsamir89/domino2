@@ -1757,7 +1757,7 @@ class DominoGame {
         const caption = document.getElementById('turn-timer-caption');
         if (!slot || !ring || !avatar) return;
 
-        const shouldShow = this.gameActive && !this.roundOver && !this.matchOver && this.turnDeadlineAt > 0;
+        const shouldShow = this.gameActive && !this.roundOver && !this.matchOver && (this.turnDeadlineAt > 0 || this.network.isMultiplayer);
         slot.classList.toggle('is-hidden', !shouldShow);
         if (!shouldShow) {
             ring.style.setProperty('--turn-angle', '0deg');
@@ -4094,6 +4094,8 @@ class DominoGame {
             "btn-draw": { az: "Draw", en: "Draw" },
             "btn-pass": { az: "Pass", en: "Pass" },
             "btn-reactions": { az: "Reactions", en: "Reactions" },
+            "room-visibility-closed": { az: "Bağlı otaq", en: "Closed room", ru: "Закрытая комната" },
+            "room-visibility-open": { az: "Açıq otaq", en: "Open room", ru: "Открытая комната" },
             "menu-title": { az: "Menu", en: "Menu" },
             "menu-resume": { az: "Resume", en: "Resume" },
             "menu-new": { az: "New game", en: "New game" },
@@ -4214,6 +4216,14 @@ class DominoGame {
                     if (el.id === 'menu-btn') el.title = value;
                 }
             }
+        });
+        const closedRoomLabel = t['room-visibility-closed'] || translations.en?.['room-visibility-closed'] || translations.az?.['room-visibility-closed'] || 'Closed room';
+        const openRoomLabel = t['room-visibility-open'] || translations.en?.['room-visibility-open'] || translations.az?.['room-visibility-open'] || 'Open room';
+        document.querySelectorAll('#online-visibility-group [data-value="closed"]').forEach((el) => {
+            el.textContent = closedRoomLabel;
+        });
+        document.querySelectorAll('#online-visibility-group [data-value="open"]').forEach((el) => {
+            el.textContent = openRoomLabel;
         });
         const reactionBtn = document.getElementById('reaction-btn');
         if (reactionBtn) {
