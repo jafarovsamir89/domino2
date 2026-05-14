@@ -1444,8 +1444,10 @@ input, button { font: inherit; }
 
 #game-screen {
     flex-direction: column;
-    height: 100%;
+    height: 100dvh;
+    min-height: 100dvh;
     position: relative;
+    overflow: hidden;
     background: radial-gradient(ellipse at 50% 45%, var(--felt-light) 0%, var(--felt) 50%, var(--felt-dark) 100%);
 }
 
@@ -1566,7 +1568,20 @@ input, button { font: inherit; }
     font-size: 0.68rem;
     color: var(--text-dim);
     white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: min(16ch, 26vw);
     text-shadow: 1px 1px 2px #000;
+}
+
+.opp-hand-group {
+    min-width: 0;
+}
+
+.opp-tile-pile {
+    display: flex;
+    gap: 2px;
+    min-width: 0;
 }
 
 .opp-tile {
@@ -1646,12 +1661,14 @@ input, button { font: inherit; }
 }
 
 .hand-container {
-    padding: 8px 12px;
+    padding: 8px 12px calc(8px + env(safe-area-inset-bottom, 0px));
     background: rgba(0, 0, 0, 0.5);
     backdrop-filter: blur(6px);
     flex-shrink: 0;
     overflow-x: auto;
     border-top: 1px solid rgba(255, 255, 255, 0.05);
+    position: relative;
+    z-index: 12;
 }
 
 .hand {
@@ -1665,11 +1682,14 @@ input, button { font: inherit; }
     display: flex;
     gap: 8px;
     justify-content: center;
-    padding: 6px 12px;
+    padding: 6px 12px calc(6px + env(safe-area-inset-bottom, 0px));
     background: rgba(0, 0, 0, 0.45);
     flex-shrink: 0;
     align-items: center;
     overflow: visible;
+    position: relative;
+    z-index: 15;
+    flex-wrap: wrap;
 }
 
 .turn-timer-slot {

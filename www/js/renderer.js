@@ -68,28 +68,34 @@ export class Renderer {
         for (let i = 0; i < hands.length; i++) {
             if (i === hi) continue;
             const g = document.createElement('div');
+            g.className = 'opp-hand-group';
             g.style.cssText = 'display:flex;align-items:center;gap:4px;';
             const l = document.createElement('span');
             l.className = 'opp-label';
-            l.textContent = `${names[i] || `Player ${i + 1}`}:`;
+            l.textContent = names[i] || `Player ${i + 1}`;
+            l.title = l.textContent;
             g.appendChild(l);
-            for (let j = 0; j < hands[i].length; j++) {
+            const pile = document.createElement('div');
+            pile.className = 'opp-tile-pile';
+            for (let j = 0; j < (hands[i] || []).length; j++) {
                 const t = document.createElement('div');
                 t.className = 'opp-tile';
-                g.appendChild(t);
+                pile.appendChild(t);
             }
+            g.appendChild(pile);
 
             if (hands.length === 4) {
-                if (i === 1) {
+                const relativeSeat = (i - hi + hands.length) % hands.length;
+                if (relativeSeat === 1) {
                     g.style.flexDirection = 'column';
                     const cont = document.getElementById('opp-left');
                     cont.appendChild(g);
                     if (i === cur) cont.classList.add('active-turn');
-                } else if (i === 2) {
+                } else if (relativeSeat === 2) {
                     const cont = document.getElementById('opp-top');
                     cont.appendChild(g);
                     if (i === cur) cont.classList.add('active-turn');
-                } else if (i === 3) {
+                } else if (relativeSeat === 3) {
                     g.style.flexDirection = 'column';
                     const cont = document.getElementById('opp-right');
                     cont.appendChild(g);

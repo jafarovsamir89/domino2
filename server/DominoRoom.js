@@ -107,6 +107,7 @@ class DominoRoom extends Room {
         this.lastRoundEconomySummary = null;
         this.restoredFromSnapshot = false;
         this.matchFinished = false;
+        this.pendingAdvanceKind = null;
 
         if (restoreSnapshot) {
             this.applyCustomStateSnapshot(restoreSnapshot);
@@ -227,7 +228,7 @@ class DominoRoom extends Room {
             }
         } else {
             if (this.hasRestoredMatchInProgress() || humanPlayers >= this.humanSeats) {
-                client.send("room_closed", { reason: "Session expired. Please start a new room." });
+                client.send("room_closed", { reasonKey: "room-closed-session-expired" });
                 void client.leave();
                 return;
             }
@@ -263,7 +264,11 @@ class DominoRoom extends Room {
         this.registerLivePlayer(client.sessionId, nextIdentity, player);
 
         debugLog(`[ROOM] Current player count: ${this.clients.length} / ${this.maxClients}`);
-        this.broadcast("msg", { text: `${player.name} ${restoredJoin ? "rejoined" : "joined"} the room`, time: 1500 });
+        this.broadcast("msg", {
+            key: restoredJoin ? "msg-player-rejoined-room" : "msg-player-joined-room",
+            values: { player: player.name },
+            time: 1500
+        });
         if (this.state.gameActive || this.hasRestoredMatchInProgress()) {
             this.syncState();
         } else {
@@ -370,7 +375,7 @@ class DominoRoom extends Room {
                 });
             }
             debugLog(`[ROOM] Client ${client.sessionId} reconnected!`);
-            this.broadcast("msg", { text: `${player.name} reconnected`, time: 1500 });
+            this.broadcast("msg", { key: "msg-player-reconnected", values: { player: player.name }, time: 1500 });
             this.syncState();
         } catch (e) {
             debugLog(`[ROOM] Client ${client.sessionId} removed permanently.`);
@@ -389,10 +394,11 @@ class DominoRoom extends Room {
             if (this.state.gameActive) {
                 this.state.gameActive = false;
                 this.broadcast("room_closed", {
-                    reason: `${leftPlayerName} left the match. Room closed.`
+                    reasonKey: "room-closed-player-left",
+                    values: { player: leftPlayerName }
                 });
             } else {
-                this.broadcast("msg", { text: `${leftPlayerName} left the room`, time: 1500 });
+                this.broadcast("msg", { key: "msg-player-left-room", values: { player: leftPlayerName }, time: 1500 });
             }
             this.broadcastRoomState();
         }
@@ -403,6 +409,7 @@ class DominoRoom extends Room {
         this.state.deal = 1;
         this.matchRecorded = false;
         this.matchFinished = false;
+        this.pendingAdvanceKind = null;
         this.forfeitSettlementMade = false;
         this.pendingEconomySettlement = Promise.resolve();
         this.currentDealMatchId = "";
@@ -424,6 +431,7 @@ class DominoRoom extends Room {
         this.clearTurnTimer();
         await this.pendingEconomySettlement.catch(() => {});
         this.matchRecorded = false;
+        this.pendingAdvanceKind = null;
         this.internalBoard = new Board();
         this.state.gameActive = false;
         this.currentDealMatchId = `${this.roomId}:round:${this.state.matchRound}`;
@@ -457,13 +465,13 @@ class DominoRoom extends Room {
             if (!reserveResult?.ok) {
                 const reason = reserveResult?.reason || "stake_unavailable";
                 const message = reason === "insufficient_coins"
-                    ? "Not enough coins for the next round"
+                    ? "room-closed-insufficient-coins"
                     : reason === "auth_required"
-                        ? "Registered accounts are required for coin tables"
-                        : "Stake table unavailable, room closed";
+                        ? "room-closed-auth-required"
+                        : "room-closed-stake-unavailable";
                 this.state.gameActive = false;
-                this.broadcast("msg", { text: message, time: 2500 });
-                this.broadcast("room_closed", { reason: message });
+                this.broadcast("msg", { key: message, time: 2500 });
+                this.broadcast("room_closed", { reasonKey: message });
                 this.broadcastRoomState();
                 return;
             }
@@ -471,6 +479,27 @@ class DominoRoom extends Room {
         }
         this.state.gameActive = true;
         this.scheduleTurnTimer();
+    }
+
+    async startRound() {
+        if (this.botTimer) {
+            clearTimeout(this.botTimer);
+            this.botTimer = null;
+        }
+        this.clearNextDealTimer();
+        this.clearTurnTimer();
+        this.pendingAdvanceKind = null;
+        this.state.gameActive = false;
+
+        for (const sessionId of this.state.playerOrder) {
+            const player = this.state.players.get(sessionId);
+            if (!player) continue;
+            player.score = 0;
+        }
+        this.replaceSchemaArray(this.state.teamScores, [0, 0]);
+        this.state.deal = 1;
+
+        await this.startDeal();
     }
 
     clearTurnTimer() {
@@ -500,14 +529,29 @@ class DominoRoom extends Room {
 
     scheduleNextDeal(delay = 900) {
         this.clearNextDealTimer();
+        this.pendingAdvanceKind = "deal";
         if (delay <= 0) {
-            this.startDeal();
+            void this.startDeal();
             return;
         }
         this.nextDealTimer = setTimeout(() => {
             this.nextDealTimer = null;
             if (this.matchFinished || this.state.gameActive) return;
             void this.startDeal();
+        }, delay);
+    }
+
+    scheduleNextRound(delay = 900) {
+        this.clearNextDealTimer();
+        this.pendingAdvanceKind = "round";
+        if (delay <= 0) {
+            void this.startRound();
+            return;
+        }
+        this.nextDealTimer = setTimeout(() => {
+            this.nextDealTimer = null;
+            if (this.matchFinished || this.state.gameActive) return;
+            void this.startRound();
         }, delay);
     }
 
@@ -585,7 +629,7 @@ class DominoRoom extends Room {
         const winnerIndex = this.findTimeoutWinner(currentIndex);
         const actor = this.state.players.get(this.state.playerOrder[currentIndex]);
         const actorName = actor ? actor.name : "Player";
-        this.broadcast("msg", { text: `${actorName} ran out of time`, time: 2000 });
+        this.broadcast("msg", { key: "turn-timeout", values: { player: actorName }, time: 2000 });
         void this.endRound(winnerIndex, false);
     }
 
@@ -615,7 +659,7 @@ class DominoRoom extends Room {
 
         const hasUnlinkedHuman = sessionIdentities.some(({ identity }) => identity.provider !== "platform" && identity.provider !== "bot");
         if (hasUnlinkedHuman) {
-            this.broadcast("msg", { text: "Registered accounts are required for coin tables", time: 2400 });
+            this.broadcast("msg", { key: "room-closed-auth-required", time: 2400 });
             this.currentDealStakeAmount = 0;
             this.currentDealBankAmount = 0;
             return { ok: false, reason: "auth_required" };
@@ -668,7 +712,8 @@ class DominoRoom extends Room {
             this.currentDealStakeAmount = Math.max(0, data?.reserved ? Math.floor(data.reserved / Math.max(1, participants.length)) : 0);
             this.currentDealBankAmount = Math.max(0, data?.reserved || this.currentDealStakeAmount * participants.length);
             this.broadcast("msg", {
-                text: `Bank ${this.currentDealBankAmount} coins reserved for ${participants.length} players`,
+                key: "msg-bank-reserved",
+                values: { amount: this.currentDealBankAmount, players: participants.length },
                 time: 2000
             });
             return {
@@ -1020,7 +1065,8 @@ class DominoRoom extends Room {
     recordMatchResult(wi, isInstantWin, players, wins) {
         if (this.matchRecorded) return;
         const participantRows = [];
-        const winnerKey = this.state.isTeamMode ? `team:${wi}` : `player:${wi}`;
+        const winnerTeamIndex = this.state.isTeamMode ? (wi % 2) : null;
+        const winnerKey = this.state.isTeamMode ? `team:${winnerTeamIndex}` : `player:${wi}`;
         const teams = this.state.isTeamMode ? [
             { memberIds: [], score: this.state.teamScores[0], roundWins: this.state.teamRoundWins[0] },
             { memberIds: [], score: this.state.teamScores[1], roundWins: this.state.teamRoundWins[1] }
@@ -1041,10 +1087,10 @@ class DominoRoom extends Room {
                 isSelf: false,
                 teamIndex,
                 winnerKey: this.state.isTeamMode ? `team:${teamIndex}` : `player:${i}`,
-                points: player.score,
+                points: this.state.isTeamMode ? this.state.teamScores[teamIndex] : player.score,
                 roundWins: this.state.isTeamMode ? this.state.teamRoundWins[teamIndex] : player.roundWins,
                 result: this.state.isTeamMode
-                    ? (teamIndex === wi ? "win" : "loss")
+                    ? (teamIndex === winnerTeamIndex ? "win" : "loss")
                     : (i === wi ? "win" : "loss")
             });
         }
@@ -1186,7 +1232,7 @@ class DominoRoom extends Room {
         const actor = this.state.players.get(this.state.playerOrder[pi]);
         const actorName = actor ? actor.name : "Player";
         if (!isBot) {
-            this.broadcast("msg", { text: `${actorName} passed`, time: 1500 });
+            this.broadcast("msg", { key: "msg-player-passed", values: { player: actorName }, time: 1500 });
         }
         this.clearTurnTimer();
         this.clearTurnAdvanceTimer();
@@ -1217,7 +1263,7 @@ class DominoRoom extends Room {
         const actor = this.state.players.get(this.state.playerOrder[pi]);
         const actorName = actor ? actor.name : "Player";
         if (!isBot) {
-            this.broadcast("msg", { text: `${actorName} played Gosha`, time: 2000 });
+            this.broadcast("msg", { key: "msg-player-gosha", values: { player: actorName }, time: 2000 });
         }
 
         if (this.instantWinEnabled && score >= IWIN) {
@@ -1246,6 +1292,10 @@ class DominoRoom extends Room {
         if (this._lastNextDealAt && Date.now() - this._lastNextDealAt < 1500) return;
         this._lastNextDealAt = Date.now();
         this.clearNextDealTimer();
+        if (this.pendingAdvanceKind === "round") {
+            void this.startRound();
+            return;
+        }
         void this.startDeal();
     }
 
@@ -1391,9 +1441,10 @@ class DominoRoom extends Room {
             ? await this.settleEconomyRound(wi, !!isInstantWin, null, null)
             : null;
         let wins = 1;
+        const winnerTeamIndex = this.state.isTeamMode ? (wi % 2) : null;
 
         if (this.state.isTeamMode) {
-            const wt = wi % 2;
+            const wt = winnerTeamIndex;
             const loserTeamScore = this.state.teamScores[1 - wt];
             if (loserTeamScore < this.dlossThreshold) wins = 2;
             if (isInstantWin) wins = 2;
@@ -1425,7 +1476,7 @@ class DominoRoom extends Room {
                 name: p ? p.name : "Player",
                 score: p ? p.score : 0,
                 roundWins: p ? p.roundWins : 0,
-                isWinner: this.state.isTeamMode ? (i % 2 === wi) : i === wi
+                isWinner: this.state.isTeamMode ? (i % 2 === winnerTeamIndex) : i === wi
             });
         }
 
@@ -1446,7 +1497,7 @@ class DominoRoom extends Room {
             this.matchFinished = true;
             this.recordMatchResult(wi, !!isInstantWin, playerData, wins);
         } else {
-            this.scheduleNextDeal(2000);
+            this.scheduleNextRound(2000);
         }
 
         this.state.matchRound++;

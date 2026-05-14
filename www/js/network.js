@@ -314,7 +314,7 @@ class NetworkManager {
         });
 
         this.room.onMessage("msg", (msg) => {
-            this.game.renderer.showMessage(msg.text, msg.time);
+            this.game.renderer.showMessage(this.game.resolveUiMessage?.(msg) || msg.text || "", msg.time);
         });
 
         this.room.onMessage("sound", (name) => {

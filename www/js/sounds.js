@@ -19,17 +19,31 @@ function getCtx() {
     return ctx;
 }
 
+function fillNoiseRandomValues(target) {
+    if (!target) return false;
+    if (!window.crypto?.getRandomValues) return false;
+    try {
+        const maxChunkLength = 16384;
+        for (let offset = 0; offset < target.length; offset += maxChunkLength) {
+            const slice = target.subarray(offset, Math.min(target.length, offset + maxChunkLength));
+            window.crypto.getRandomValues(slice);
+        }
+    } catch (error) {
+        return false;
+    }
+    return true;
+}
+
 function getNoiseBuffer() {
     const c = getCtx();
     if (!c) return null;
     if (!noiseBuffer) {
         noiseBuffer = c.createBuffer(1, c.sampleRate * 2, c.sampleRate);
         const data = noiseBuffer.getChannelData(0);
-        const randomValues = window.crypto?.getRandomValues
-            ? window.crypto.getRandomValues(new Uint32Array(data.length))
-            : null;
+        const randomValues = new Uint32Array(data.length);
+        const hasCryptoNoise = fillNoiseRandomValues(randomValues);
         for (let i = 0; i < data.length; i++) {
-            data[i] = randomValues ? (randomValues[i] / 0x80000000) - 1 : nextFallbackNoiseValue();
+            data[i] = hasCryptoNoise ? (randomValues[i] / 0x80000000) - 1 : nextFallbackNoiseValue();
         }
     }
     return noiseBuffer;

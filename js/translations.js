@@ -17,6 +17,7 @@
         "label-online": "Onlayn otaq",
         "label-online-help": "Otaq yaradın və ya kodla qoşulun",
         "label-online-players": "Otaq ölçüsü",
+        "label-room-visibility": "Otaq növü",
         "label-mode": "Oyun rejimi",
         "mode-ffa": "Hər kəs özü üçün",
         "mode-team": "2-yə 2",
@@ -118,6 +119,7 @@
         "room-free-for-all": "Hamı hər kəsə",
         "room-free": "Pulsuz",
         "room-open": "Açıq",
+        "room-visibility-closed": "Bağlı otaq",
         "room-join": "Qoşul",
         "friends-sign-in": "Dostlar üçün hesaba daxil olun",
         "friend-add": "Dost et",
@@ -149,7 +151,7 @@
         "no-friends-yet": "Hələ dost yoxdur",
         "invite-sent": "Dəvət göndərildi",
         "no-friend-requests": "Dostluq sorğusu yoxdur",
-        "no-room-invites": "Room invite yoxdur",
+        "no-room-invites": "Otaq dəvəti yoxdur",
         "start-lead": "Təmiz başlanğıc, sürətli oyun və onlayn rejim bir yerdə.",
         "btn-solo": "Tək oyun",
         "btn-online": "Onlayn",
@@ -209,11 +211,13 @@
         ,"account-profile": "Profil"
         ,"account-profile-empty": "Hələ profil yoxdur"
         ,"account-profile-loading": "Profil yüklənir..."
+        ,"account-guest-profile": "Qonaq profil"
+        ,"account-gift-vault": "Hədiyyə anbarı"
         ,"account-leaderboard": "Liderlər cədvəli"
         ,"account-rating": "Reytinq"
         ,"account-rank": "Rütbə"
         ,"account-points": "Xal"
-        ,"account-coins": "Coins"
+        ,"account-coins": "Coinlər"
         ,"title-rookie": "Yeni oyunçu"
         ,"title-bronze": "Bürünc"
         ,"title-silver": "Gümüş"
@@ -256,6 +260,18 @@
         ,"gift-choice-meta": "{rarity} • geri {exchangeValue}"
         ,"gift-inventory-meta": "{quantity} ədəd • geri {exchangeValue}"
         ,"gift-coins": "{value} coin"
+        ,"msg-player-reconnected": "{player} yenidən qoşuldu"
+        ,"msg-player-joined-room": "{player} otağa qoşuldu"
+        ,"msg-player-rejoined-room": "{player} otağa yenidən qoşuldu"
+        ,"msg-player-left-room": "{player} otaqdan çıxdı"
+        ,"room-closed-player-left": "{player} oyundan çıxdı. Otaq bağlandı."
+        ,"room-closed-session-expired": "Sessiyanın vaxtı bitdi. Yeni otaq başladın."
+        ,"room-closed-stake-unavailable": "Mərc masası əlçatan deyil. Otaq bağlandı."
+        ,"room-closed-auth-required": "Coin otaqları üçün qeydiyyatdan keçmiş hesab tələb olunur."
+        ,"room-closed-insufficient-coins": "Növbəti raund üçün monet çatmır."
+        ,"msg-player-passed": "{player} pas verdi"
+        ,"msg-player-gosha": "{player} Goşa oynadı"
+        ,"msg-bank-reserved": "{players} oyunçu üçün {amount} coin bankda saxlanıldı"
     },
     en: {
         "game-title": "Domino (Telefon)",
@@ -275,6 +291,7 @@
         "label-online": "Online room",
         "label-online-help": "Create a room or join with a code",
         "label-online-players": "Room size",
+        "label-room-visibility": "Room type",
         "label-mode": "Game mode",
         "mode-ffa": "Free for all",
         "mode-team": "2 vs 2",
@@ -376,6 +393,7 @@
         "room-free-for-all": "Free for all",
         "room-free": "Free",
         "room-open": "Open",
+        "room-visibility-closed": "Closed room",
         "room-join": "Join",
         "friends-sign-in": "Sign in to use friends",
         "friend-add": "Add",
@@ -467,6 +485,8 @@
         ,"account-profile": "Profile"
         ,"account-profile-empty": "No profile yet"
         ,"account-profile-loading": "Loading profile..."
+        ,"account-guest-profile": "Guest profile"
+        ,"account-gift-vault": "Gift vault"
         ,"account-leaderboard": "Leaderboard"
         ,"account-rating": "Rating"
         ,"account-rank": "Rank"
@@ -514,6 +534,18 @@
         ,"gift-choice-meta": "{rarity} • back {exchangeValue}"
         ,"gift-inventory-meta": "{quantity} pcs • back {exchangeValue}"
         ,"gift-coins": "{value} coins"
+        ,"msg-player-reconnected": "{player} reconnected"
+        ,"msg-player-joined-room": "{player} joined the room"
+        ,"msg-player-rejoined-room": "{player} rejoined the room"
+        ,"msg-player-left-room": "{player} left the room"
+        ,"room-closed-player-left": "{player} left the match. Room closed."
+        ,"room-closed-session-expired": "Session expired. Please start a new room."
+        ,"room-closed-stake-unavailable": "Stake table unavailable. Room closed."
+        ,"room-closed-auth-required": "Registered accounts are required for coin tables."
+        ,"room-closed-insufficient-coins": "Not enough coins for the next round."
+        ,"msg-player-passed": "{player} passed"
+        ,"msg-player-gosha": "{player} played Gosha"
+        ,"msg-bank-reserved": "Bank {amount} coins reserved for {players} players"
     },
     ru: {
         "game-title": "Domino (Telefon)",
@@ -533,6 +565,7 @@
         "label-online": "Онлайн-комната",
         "label-online-help": "Создайте комнату или войдите по коду",
         "label-online-players": "Размер комнаты",
+        "label-room-visibility": "Тип комнаты",
         "label-mode": "Режим игры",
         "mode-ffa": "Каждый сам за себя",
         "mode-team": "2 на 2",
@@ -629,6 +662,7 @@
         "room-free-for-all": "Все против всех",
         "room-free": "Бесплатно",
         "room-open": "Открытая",
+        "room-visibility-closed": "Закрытая комната",
         "room-join": "Подключиться",
         "friends-sign-in": "Войдите в аккаунт для друзей",
         "friend-add": "Добавить",
@@ -720,8 +754,12 @@
         ,"account-profile": "Профиль"
         ,"account-profile-empty": "Профиль пока не создан"
         ,"account-profile-loading": "Загрузка профиля..."
+        ,"account-guest-profile": "Гостевой профиль"
+        ,"account-gift-vault": "Хранилище подарков"
         ,"account-leaderboard": "Таблица лидеров"
         ,"account-rating": "Рейтинг"
+        ,"account-rank": "Ранг"
+        ,"account-coins": "Монеты"
         ,"account-points": "Очки"
         ,"account-wins": "Победы"
         ,"account-losses": "Поражения"
@@ -757,5 +795,17 @@
         ,"gift-choice-meta": "{rarity} • возврат {exchangeValue}"
         ,"gift-inventory-meta": "{quantity} шт • возврат {exchangeValue}"
         ,"gift-coins": "{value} монет"
+        ,"msg-player-reconnected": "{player} снова подключился"
+        ,"msg-player-joined-room": "{player} вошёл в комнату"
+        ,"msg-player-rejoined-room": "{player} вернулся в комнату"
+        ,"msg-player-left-room": "{player} вышел из комнаты"
+        ,"room-closed-player-left": "{player} вышел из матча. Комната закрыта."
+        ,"room-closed-session-expired": "Сессия истекла. Создайте новую комнату."
+        ,"room-closed-stake-unavailable": "Стол ставок недоступен. Комната закрыта."
+        ,"room-closed-auth-required": "Для комнат с монетами нужен зарегистрированный аккаунт."
+        ,"room-closed-insufficient-coins": "Недостаточно монет для следующего раунда."
+        ,"msg-player-passed": "{player} пасовал"
+        ,"msg-player-gosha": "{player} сыграл Гошу"
+        ,"msg-bank-reserved": "Банк {amount} монет зарезервирован для {players} игроков"
     }
 };

@@ -1275,7 +1275,7 @@ class DominoGame {
         if (profileMeta) {
             profileMeta.textContent = profile
                 ? `${titleLabel} · ${this.t('account-rating')}: ${profile.rating}`
-                : this.t('account-profile-empty');
+                : this.t('account-guest-profile');
         }
         if (ratingValue) ratingValue.textContent = String(profile?.rating ?? 1000);
         if (titleValue) titleValue.textContent = titleLabel;
@@ -1847,16 +1847,16 @@ class DominoGame {
 
     getStakeLabelByKey(stakeKey) {
         const labels = {
-            stake_50: '50 coins',
-            stake_100: '100 coins',
-            stake_200: '200 coins',
-            stake_250: '250 coins',
-            stake_500: '500 coins',
-            stake_1000: '1,000 coins',
-            stake_5000: '5,000 coins'
+            stake_50: 50,
+            stake_100: 100,
+            stake_200: 200,
+            stake_250: 250,
+            stake_500: 500,
+            stake_1000: 1000,
+            stake_5000: 5000
         };
 
-        return labels[stakeKey] || '50 coins';
+        return this.format('gift-coins', { value: Number(labels[stakeKey] ?? 50).toLocaleString('en-US') });
     }
 
     getStakeAmountByKey(stakeKey) {
@@ -1888,7 +1888,7 @@ class DominoGame {
                 ? (this.onlineRoundBankAmount > 0 ? this.onlineRoundBankAmount : stakeAmount * participants)
                 : 0)
             : (this.gameActive && this.currentRoundBankAmount > 0 ? this.currentRoundBankAmount : stakeAmount * participants);
-        return bankAmount > 0 ? `${bankAmount} coins` : '';
+        return bankAmount > 0 ? this.format('gift-coins', { value: Number(bankAmount).toLocaleString('en-US') }) : '';
     }
 
     resetOnlineCoinSummary() {
@@ -3043,7 +3043,7 @@ class DominoGame {
     }
 
     onRoomClosed(payload) {
-        const reason = payload?.reason || this.t('online-room-closed');
+        const reason = this.resolveUiReason(payload) || this.t('online-room-closed');
         this.clearNextDealAdvanceTimeout();
         this.clearTurnTimers();
         this.network.leaveRoom();
@@ -4216,7 +4216,17 @@ class DominoGame {
             }
         });
         const reactionBtn = document.getElementById('reaction-btn');
-        if (reactionBtn) reactionBtn.title = t['btn-reactions'] || 'Reactions';
+        if (reactionBtn) {
+            const reactionLabel = t['btn-reactions'] || 'Reactions';
+            reactionBtn.title = reactionLabel;
+            reactionBtn.setAttribute('aria-label', reactionLabel);
+        }
+        const giftBtn = document.getElementById('gift-btn');
+        if (giftBtn) {
+            const giftLabel = t['gift-button'] || 'Gifts';
+            giftBtn.title = giftLabel;
+            giftBtn.setAttribute('aria-label', giftLabel);
+        }
         document.querySelectorAll('.btn-lang').forEach(b => {
             b.classList.toggle('active', b.dataset.lang === nextLang);
         });
@@ -4246,6 +4256,26 @@ class DominoGame {
     }
     format(key, values = {}) {
         return this.t(key).replace(/\{(\w+)\}/g, (_, token) => values[token] ?? `{${token}}`);
+    }
+
+    resolveUiMessage(payload) {
+        if (!payload || typeof payload !== 'object') {
+            return String(payload || '');
+        }
+        if (payload.key) {
+            return this.format(String(payload.key), payload.values || {});
+        }
+        return String(payload.text || '');
+    }
+
+    resolveUiReason(payload) {
+        if (!payload || typeof payload !== 'object') {
+            return String(payload || '');
+        }
+        if (payload.reasonKey) {
+            return this.format(String(payload.reasonKey), payload.values || {});
+        }
+        return String(payload.reason || '');
     }
 
     // --- Network Handlers (Thin Client Mode) ---
@@ -4363,6 +4393,7 @@ class DominoGame {
         this.gameActive = false;
         this.clearTurnTimers();
         const wi = data.winnerIndex;
+        const winnerTeamIndex = data.isTeamMode ? (wi % 2) : null;
         this.roundOver = true;
 
         if (data.isTeamMode) {
@@ -4401,8 +4432,8 @@ class DominoGame {
         let displayEntities;
         if (data.isTeamMode) {
             displayEntities = [
-                {name: this.getTeamDisplayName(0), isWinner: data.teamRoundWins[0] > data.teamRoundWins[1], score: data.teamScores[0], roundWins: data.teamRoundWins[0]},
-                {name: this.getTeamDisplayName(1), isWinner: data.teamRoundWins[1] > data.teamRoundWins[0], score: data.teamScores[1], roundWins: data.teamRoundWins[1]}
+                {name: this.getTeamDisplayName(0), isWinner: winnerTeamIndex === 0, score: data.teamScores[0], roundWins: data.teamRoundWins[0]},
+                {name: this.getTeamDisplayName(1), isWinner: winnerTeamIndex === 1, score: data.teamScores[1], roundWins: data.teamRoundWins[1]}
             ];
         } else {
             displayEntities = data.players.map(p => ({name: p.name, isWinner: p.isWinner, score: p.score, roundWins: p.roundWins}));
@@ -4411,7 +4442,8 @@ class DominoGame {
         if (data.isMatchOver) {
             this.showMatchResult();
         } else {
-            this.renderer.renderRoundEnd(this.playerNames[wi], displayEntities, data.wins, data.matchRound, false);
+            const winnerLabel = data.isTeamMode ? this.getTeamDisplayName(winnerTeamIndex) : this.playerNames[wi];
+            this.renderer.renderRoundEnd(winnerLabel, displayEntities, data.wins, data.matchRound, false);
         }
         this.matchRound = data.matchRound + 1;
         if (data.isMatchOver) this.clearGameResumeSnapshot();
@@ -4800,7 +4832,8 @@ class DominoGame {
         this.matchRound++;
         this.persistGameResumeSnapshot();
         void this.syncLocalPresence();
-        this.renderer.renderRoundEnd(this.playerNames[wi],displayEntities,wins,this.matchRound - 1,false);
+        const winnerLabel = this.isTeamMode ? this.getTeamDisplayName(this.getTeam(wi)) : this.playerNames[wi];
+        this.renderer.renderRoundEnd(winnerLabel,displayEntities,wins,this.matchRound - 1,false);
         this.scheduleNextDealAdvance(2000);
     }
     showMatchResult(){
