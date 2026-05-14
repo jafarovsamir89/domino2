@@ -1,4 +1,4 @@
-const CACHE_NAME = 'domino-v26';
+const CACHE_NAME = 'domino-v27';
 const ASSETS = [
     '/',
     '/index.html',
@@ -11,6 +11,7 @@ const ASSETS = [
     '/js/renderer.js',
     '/js/sounds.js',
     '/js/translations.js',
+    '/js/voice.js',
     '/js/vendor/colyseus.js',
     '/manifest.json',
     '/assets/icon.png',

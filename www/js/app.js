@@ -4,6 +4,7 @@ import { AIPlayer } from './ai.js';
 import { Renderer } from './renderer.js';
 import { translations } from './translations.js';
 import { AccountClient } from './account.js';
+import { VoiceChatManager } from './voice.js';
 import { sndPlace, sndScore, sndDraw, sndPass, sndWin, sndGosha } from './sounds.js';
 // NetworkManager is loaded as global script
 
@@ -65,6 +66,7 @@ class DominoGame {
         this.roomAvatarBySessionId = new Map();
         this.mobileAuthPending = false;
         this.network = new NetworkManager(this);
+        this.voice = new VoiceChatManager(this);
         this.account = new AccountClient(() => this.network.getServerUrl());
         this.accountProfile = this.account.getStoredProfile();
         this.accountDetails = null;
@@ -147,6 +149,7 @@ class DominoGame {
             document.removeEventListener('pointerdown', this._giftOutsideHandler, true);
             this._giftOutsideHandler = null;
         }
+        this.voice?.destroy?.();
         this.clearTurnTimers();
     }
     setupStartScreen() {
@@ -1647,6 +1650,29 @@ class DominoGame {
             if (drawBtn) actionBar.insertBefore(slot, drawBtn);
             else actionBar.appendChild(slot);
         }
+
+        if (actionBar && !document.getElementById('voice-slot')) {
+            const slot = document.createElement('div');
+            slot.id = 'voice-slot';
+            slot.className = 'voice-slot is-hidden';
+            slot.innerHTML = `
+                <button class="reaction-fab voice-fab" id="voice-btn" type="button" aria-label="Voice" title="Voice">
+                    ${this.buildVoiceButtonMarkup(22)}
+                </button>
+                <div class="voice-status" id="voice-status"></div>
+            `;
+            const reactionSlot = document.querySelector('.reaction-slot');
+            if (reactionSlot) actionBar.insertBefore(slot, reactionSlot);
+            else actionBar.appendChild(slot);
+        }
+    }
+
+    buildVoiceButtonMarkup(size = 22) {
+        return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M12 15.5a3.5 3.5 0 0 0 3.5-3.5V6.5a3.5 3.5 0 1 0-7 0V12a3.5 3.5 0 0 0 3.5 3.5Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+            <path d="M7.5 11.5v.5a4.5 4.5 0 0 0 9 0v-.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+            <path d="M12 16.5V20" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>`;
     }
 
     getTurnAvatarText(name) {
@@ -2963,6 +2989,7 @@ class DominoGame {
             const state = document.createElement('span');
             state.className = 'room-player-state';
             state.textContent = player.isConnected ? this.t('online-ready') : this.t('online-offline');
+            chip.dataset.sessionId = player.sessionId || '';
 
             chip.appendChild(avatar);
             chip.appendChild(name);
@@ -3004,6 +3031,8 @@ class DominoGame {
         if (this.network?.isMultiplayer) {
             this.persistGameResumeSnapshot();
         }
+
+        this.voice?.syncRoomState?.(roomState);
     }
 
     enterOpenRoomWaitingScreen(roomState) {
@@ -3047,6 +3076,7 @@ class DominoGame {
         this.clearNextDealAdvanceTimeout();
         this.clearTurnTimers();
         this.network.leaveRoom();
+        this.voice?.destroy?.();
         this.currentRoomState = null;
         this.roomAvatarBySessionId.clear();
         this.myHand = null;
@@ -3069,6 +3099,7 @@ class DominoGame {
         const snapshot = this.persistGameResumeSnapshot();
         this.refreshResumeBanner(snapshot);
         if (payload.reconnecting) {
+            this.voice?.stopSpeaking?.();
             this.renderer.showMessage(this.t('connection-lost'), 2200);
         }
     }
@@ -3123,6 +3154,7 @@ class DominoGame {
         });
         this.setupReactionUI();
         this.setupGiftUI();
+        this.setupVoiceUI();
     }
     bindTap(el, handler) {
         if (!window.PointerEvent) {
@@ -3231,6 +3263,9 @@ class DominoGame {
         }
         this.showGiftBurst(gift, payload.senderName || '', payload.recipientName || '');
     }
+    onNetworkVoiceSignal(payload) {
+        this.voice?.handleSignal?.(payload);
+    }
     showReactionBurst(reactionId, senderName = '') {
         if (!this.reactionStage) return;
         const reaction = this.reactionPalette.find((item) => item.code === reactionId) || this.reactionPalette[0];
@@ -3280,6 +3315,58 @@ class DominoGame {
             this.closeGiftPicker();
         };
         document.addEventListener('pointerdown', this._giftOutsideHandler, true);
+    }
+    setupVoiceUI() {
+        this.voiceBtn = document.getElementById('voice-btn');
+        this.voiceStatusEl = document.getElementById('voice-status');
+        if (!this.voiceBtn || !this.voiceStatusEl) return;
+        this._voicePointerActive = false;
+
+        const pressStart = async (event) => {
+            if (!this.network?.isMultiplayer) return;
+            if (event) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            this._voicePointerActive = true;
+            this.voiceBtn.setPointerCapture?.(event?.pointerId);
+            const started = await this.voice.startSpeaking();
+            if (!started || !this._voicePointerActive) {
+                this.voice.stopSpeaking();
+                return;
+            }
+            this.syncVoiceUi();
+        };
+
+        const pressEnd = (event) => {
+            if (event) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            this._voicePointerActive = false;
+            this.voice.stopSpeaking();
+            this.syncVoiceUi();
+        };
+
+        this.voiceBtn.addEventListener('pointerdown', (event) => {
+            void pressStart(event);
+        });
+        this.voiceBtn.addEventListener('pointerup', pressEnd);
+        this.voiceBtn.addEventListener('pointercancel', pressEnd);
+        this.voiceBtn.addEventListener('pointerleave', (event) => {
+            if (event.buttons === 0) pressEnd(event);
+        });
+        this.voiceBtn.addEventListener('lostpointercapture', pressEnd);
+        this.voiceBtn.addEventListener('contextmenu', (event) => {
+            event.preventDefault();
+        });
+        this.syncVoiceUi();
+    }
+    syncVoiceUi() {
+        if (this.voice?.syncVisibility) {
+            this.voice.syncVisibility();
+            this.voice.updateSpeakerUi?.();
+        }
     }
     renderGiftPicker() {
         if (!this.giftPicker) return;
@@ -3703,6 +3790,7 @@ class DominoGame {
             this.network.leaveRoom();
             this.myHand = null;
         }
+        this.voice?.destroy?.();
         this.gameActive = false;
         this.matchOver = false;
         this.roundOver = false;
@@ -4242,6 +4330,7 @@ class DominoGame {
         });
         this.syncAccountUiChrome();
         this.syncStartAuthButton();
+        this.syncVoiceUi();
         this.renderGiftPicker();
         this.renderGiftInventory();
         this.refreshResumeBanner();

@@ -121,6 +121,7 @@ class DominoRoom extends Room {
         this.onMessage("next_deal", (client) => this.handleNextDeal(client));
         this.onMessage("reaction", (client, message) => this.handleReaction(client, message));
         this.onMessage("gift", (client, message) => this.handleGift(client, message));
+        this.onMessage("voice_signal", (client, message) => this.handleVoiceSignal(client, message));
 
         debugLog(`[ROOM] Created room ${this.roomId} (code ${this.roomCode}), humanSeats=${this.humanSeats}, totalPlayers=${this.totalPlayers}, aiCount=${this.aiCount}, teamMode=${this.state.isTeamMode}`);
     }
@@ -1329,6 +1330,22 @@ class DominoRoom extends Room {
         };
         if (!payload.giftKey || !payload.recipientPlayerId) return;
         this.broadcast("gift", payload);
+    }
+
+    handleVoiceSignal(client, message = {}) {
+        if (!client || !this.state?.players?.has(client.sessionId)) return;
+        const kind = String(message.kind || "").trim();
+        if (!["offer", "answer", "candidate", "state"].includes(kind)) return;
+        const targetSessionId = String(message.targetSessionId || "").trim();
+        this.broadcast("voice_signal", {
+            kind,
+            fromSessionId: client.sessionId,
+            targetSessionId,
+            speaking: Boolean(message.speaking),
+            description: message.description || message.sdp || null,
+            candidate: message.candidate || null,
+            ts: Date.now()
+        });
     }
 
     advanceTurn() {

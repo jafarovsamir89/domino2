@@ -313,6 +313,10 @@ class NetworkManager {
             this.game.onNetworkGift?.(payload);
         });
 
+        this.room.onMessage("voice_signal", (payload) => {
+            this.game.onNetworkVoiceSignal?.(payload);
+        });
+
         this.room.onMessage("msg", (msg) => {
             this.game.renderer.showMessage(this.game.resolveUiMessage?.(msg) || msg.text || "", msg.time);
         });
@@ -488,6 +492,10 @@ class NetworkManager {
 
     sendGift(payload) {
         if (this.room) this.room.send("gift", payload || {});
+    }
+
+    sendVoiceSignal(payload) {
+        if (this.room) this.room.send("voice_signal", payload || {});
     }
   }
 

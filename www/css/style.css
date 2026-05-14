@@ -1425,6 +1425,12 @@ input, button { font: inherit; }
     box-shadow: 0 0 0 1px rgba(240, 192, 64, 0.15) inset;
 }
 
+.room-player-chip.speaking {
+    border-color: rgba(79, 207, 151, 0.55);
+    box-shadow: 0 0 0 1px rgba(79, 207, 151, 0.12) inset;
+    background: rgba(79, 207, 151, 0.08);
+}
+
 .room-player-state,
 .multi-status {
     color: var(--text-dim);
@@ -1701,6 +1707,58 @@ input, button { font: inherit; }
     gap: 4px;
     justify-items: center;
     align-self: center;
+}
+
+.voice-slot {
+    width: 66px;
+    min-width: 66px;
+    flex: 0 0 auto;
+    display: grid;
+    place-items: center;
+    gap: 4px;
+    justify-items: center;
+    align-self: center;
+}
+
+.voice-slot.is-hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.voice-fab {
+    position: relative;
+    touch-action: none;
+}
+
+.voice-fab svg {
+    display: block;
+}
+
+.voice-fab.is-ready {
+    border-color: rgba(79, 207, 151, 0.22);
+}
+
+.voice-fab.is-speaking {
+    border-color: rgba(79, 207, 151, 0.72);
+    background: linear-gradient(180deg, rgba(79, 207, 151, 0.24), rgba(79, 207, 151, 0.10));
+    box-shadow: 0 0 0 1px rgba(79, 207, 151, 0.22) inset, 0 10px 20px rgba(0, 0, 0, 0.22);
+}
+
+.voice-fab.has-remote-voice {
+    border-color: rgba(240, 192, 64, 0.55);
+}
+
+.voice-status {
+    min-height: 1.1em;
+    max-width: 90px;
+    font-size: 0.58rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: rgba(240, 192, 64, 0.92);
+    text-align: center;
+    line-height: 1.1;
+    text-wrap: balance;
 }
 
 .turn-timer-slot.is-hidden {
@@ -2523,6 +2581,16 @@ input, button { font: inherit; }
     .reaction-choice svg {
         width: 28px;
         height: 28px;
+    }
+
+    .voice-slot {
+        width: 58px;
+        min-width: 58px;
+    }
+
+    .voice-status {
+        max-width: 64px;
+        font-size: 0.52rem;
     }
 
     .reaction-burst svg {
