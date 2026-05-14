@@ -4085,7 +4085,7 @@ class DominoGame {
             "summary-lost": { az: "İtirilən", en: "Lost" },
             "summary-net": { az: "Fərq", en: "Net" },
             "label-economy-mode": { az: "Game mode", en: "Game mode" },
-            "label-stake-table": { az: "M\u0259rc masas\u0131", en: "Stake amount", ru: "РЎС‚Р°РІРєР°" },
+            "label-stake-table": { az: "M\u0259rc masas\u0131", en: "Stake table", ru: "Стол ставок" },
             "label-stake-short": { az: "Bank", en: "Bank" },
             "economy-free": { az: "Free play", en: "Free play" },
             "economy-coins": { az: "Play on coins", en: "Play on coins" },
