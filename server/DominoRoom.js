@@ -4,7 +4,7 @@ const Redis = require("ioredis");
 const { GameState, Player } = require("./schema/GameState");
 const { Board, cloneBoard } = require("./board");
 const { AIPlayer } = require("./ai");
-const { Tile, createFullSet, shuffle, getHandSize, determineFirstPlayer, handPoints, roundTo5 } = require("./model");
+const { Tile, createFullSet, shuffle, getHandSize, determineFirstPlayer, handPoints, getOpeningPlayScore, hasInvalidOpeningHand, roundTo5 } = require("./model");
 const { verifyGameToken } = require("./platformAuth");
 const { upsertLivePlayer, removeLivePlayer, setRoomGameActive, removeRoomPlayers } = require("./livePresence");
 const { rememberRoom, forgetRoom } = require("./roomRegistry");
@@ -93,7 +93,7 @@ class DominoRoom extends Room {
         this.pendingEconomySettlement = Promise.resolve();
         this.botTimer = null;
         this.turnTimer = null;
-        this.turnTimeoutMs = 20000;
+        this.turnTimeoutMs = 50000;
         this.turnAdvanceMs = 2000;
         this.turnDeadlineAt = 0;
         this.turnAdvancePending = false;
@@ -431,15 +431,19 @@ class DominoRoom extends Room {
         this.currentDealStakeAmount = 0;
         this.currentDealBankAmount = 0;
 
-        const all = shuffle(createFullSet());
         const hs = getHandSize(this.totalPlayers);
-        this.hands = [];
-        let idx = 0;
-        for (let p = 0; p < this.totalPlayers; p++) {
-            this.hands.push(all.slice(idx, idx + hs));
-            idx += hs;
-        }
-        this.boneyard = all.slice(idx);
+        let attempts = 0;
+        do {
+            const all = shuffle(createFullSet());
+            this.hands = [];
+            let idx = 0;
+            for (let p = 0; p < this.totalPlayers; p++) {
+                this.hands.push(all.slice(idx, idx + hs));
+                idx += hs;
+            }
+            this.boneyard = all.slice(idx);
+            attempts += 1;
+        } while (this.shouldRedealOpeningHands(this.hands) && attempts < 128);
         
         if (this.lastDealWinner !== null) {
             this.state.currentPlayerIndex = this.lastDealWinner;
@@ -745,6 +749,16 @@ class DominoRoom extends Room {
 
     getTeamHandPoints(teamIndex) {
         return this.getTeamMembers(teamIndex).reduce((sum, idx) => sum + handPoints(this.hands[idx] || []), 0);
+    }
+    getOpeningScoreContext(pi) {
+        if (this.state.isTeamMode) {
+            return Number(this.state.teamScores[pi % 2] || 0);
+        }
+        const sessionId = this.state.playerOrder[pi];
+        return Number(this.state.players.get(sessionId)?.score || 0);
+    }
+    shouldRedealOpeningHands(hands = []) {
+        return (Array.isArray(hands) ? hands : []).some((hand) => hasInvalidOpeningHand(hand));
     }
 
     syncState() {
@@ -1111,7 +1125,14 @@ class DominoRoom extends Room {
         this.clearTurnTimer();
         this.broadcast("sound", "place");
 
-        let score = this.internalBoard.isEmpty ? this.internalBoard.placeFirst(tile) : this.internalBoard.placeTile(tile, openEndIndex);
+        const wasEmpty = this.internalBoard.isEmpty;
+        let score = 0;
+        if (wasEmpty) {
+            this.internalBoard.placeFirst(tile);
+            score = getOpeningPlayScore(tile, this.getOpeningScoreContext(pi));
+        } else {
+            score = this.internalBoard.placeTile(tile, openEndIndex);
+        }
 
         if (score > 0) this.addScore(pi, score);
 

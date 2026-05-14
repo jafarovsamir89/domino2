@@ -1,4 +1,4 @@
-import { Tile, createFullSet, shuffle, getHandSize, determineFirstPlayer, handPoints, roundTo5 } from './model.js';
+import { Tile, createFullSet, shuffle, getHandSize, determineFirstPlayer, handPoints, getOpeningPlayScore, hasInvalidOpeningHand, roundTo5 } from './model.js';
 import { Board, reconstructBoard } from './board.js';
 import { AIPlayer } from './ai.js';
 import { Renderer } from './renderer.js';
@@ -58,7 +58,7 @@ class DominoGame {
         this._turnTimerTickId = null;
         this._nextDealAdvanceTimeout = null;
         this.turnDeadlineAt = 0;
-        this.turnTimeoutMs = 20000;
+        this.turnTimeoutMs = 50000;
         this.postMoveAdvanceMs = 2000;
         this.postMoveWindowActive = false;
         this.postMoveWindowEndsAt = 0;
@@ -3898,10 +3898,9 @@ class DominoGame {
         this.clearNextDealAdvanceTimeout();
         this.clearTurnTimers();
         this.board=new Board(); this.selectedTileIndex=-1; this.roundOver=false; this.gameActive=true; this.turnInProgress=false;
-        const all=shuffle(createFullSet()); const hs=getHandSize(this.playerCount);
-        this.hands=[]; let idx=0;
-        for(let p=0;p<this.playerCount;p++){this.hands.push(all.slice(idx,idx+hs));idx+=hs;}
-        this.boneyard=all.slice(idx);
+        const deal = this.dealHandsWithValidation();
+        this.hands = deal.hands;
+        this.boneyard = deal.boneyard;
         debugLog('[startDeal] Hands dealt, boneyard:', this.boneyard.length);
         if(this.lastDealWinner!==null){
             const fp=this.lastDealWinner;
@@ -3946,6 +3945,33 @@ class DominoGame {
     }
     getTeamHandPoints(teamIndex) {
         return this.getTeamMembers(teamIndex).reduce((total, i) => total + handPoints(this.hands[i] || []), 0);
+    }
+    getOpeningScoreContext(pi) {
+        if (this.isTeamMode) {
+            return Number(this.teamScores[this.getTeam(pi)] || 0);
+        }
+        return Number(this.scores[pi] || 0);
+    }
+    shouldRedealOpeningHands(hands = []) {
+        return (Array.isArray(hands) ? hands : []).some((hand) => hasInvalidOpeningHand(hand));
+    }
+    dealHandsWithValidation() {
+        const hs = getHandSize(this.playerCount);
+        let hands = [];
+        let boneyard = [];
+        let attempts = 0;
+        do {
+            const all = shuffle(createFullSet());
+            hands = [];
+            let idx = 0;
+            for (let p = 0; p < this.playerCount; p++) {
+                hands.push(all.slice(idx, idx + hs));
+                idx += hs;
+            }
+            boneyard = all.slice(idx);
+            attempts += 1;
+        } while (this.shouldRedealOpeningHands(hands) && attempts < 128);
+        return { hands, boneyard };
     }
     getTeamLeftoverHands(teamIndex) {
         return this.getTeamMembers(teamIndex).map((i) => this.hands[i] || []);
@@ -4196,6 +4222,8 @@ class DominoGame {
         });
         this.syncAccountUiChrome();
         this.syncStartAuthButton();
+        this.renderGiftPicker();
+        this.renderGiftInventory();
         this.refreshResumeBanner();
         document.documentElement.lang = nextLang;
     }
@@ -4570,7 +4598,14 @@ class DominoGame {
         this.renderer._pendingBoardTileTravel = sourceRect && sourceNode ? { tileId: tile.id, sourceRect, sourceNode } : null;
         hand.splice(ti,1);
         this.playSound('place');
-        let score=this.board.isEmpty?this.board.placeFirst(tile):this.board.placeTile(tile,oei);
+        const wasEmpty = this.board.isEmpty;
+        let score = 0;
+        if (wasEmpty) {
+            this.board.placeFirst(tile);
+            score = getOpeningPlayScore(tile, this.getOpeningScoreContext(pi));
+        } else {
+            score = this.board.placeTile(tile,oei);
+        }
         this.selectedTileIndex=-1;
         this.log(`Play pi=${pi} ti=${ti}`);
         this.renderState();
@@ -4684,7 +4719,7 @@ class DominoGame {
             }
             return bestP;
         }
-        let min=Infinity,w=0;for(let i=0;i<this.playerCount;i++){const p=handPoints(this.hands[i]);if(p<min){min=p;w=i;}}return w;
+        let min=Infinity,w=0;for(let i=0;i<this.playerCount;i++){const p=handPoints(this.hands[i] || []);if(p<min){min=p;w=i;}}return w;
     }
 
     isMatchTargetReached() {

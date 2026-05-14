@@ -165,6 +165,7 @@ export class Renderer {
         this._lastScale = scale;
 
         const container = document.createElement('div');
+        container.className = 'board-layout';
         container.style.cssText = `position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) scale(${scale});transform-origin:center center;`;
 
         const ox = (mxX + mnX) / 2;
@@ -179,6 +180,7 @@ export class Renderer {
         for (let i = 0; i < board.nodes.length; i++) {
             const n = board.nodes[i];
             const wrapper = document.createElement('div');
+            wrapper.dataset.nodeId = String(i);
             wrapper.style.cssText = `position:absolute;left:${n.x - ox}px;top:${n.y - oy}px;`;
 
             const el = this.createTileEl(n.displayA, n.displayB, n.orientation, false, n.tile.id);
@@ -379,30 +381,23 @@ export class Renderer {
 
         for (const ei of matchingEnds) {
             const oe = board.openEnds[ei];
-            const node = board.nodes[oe.nodeId];
             const btn = document.createElement('button');
             btn.className = 'arrow-btn';
             btn.textContent = arrowSymbols[oe.side] || '?';
             btn.title = this.app.format('arrow-place-to', { value: oe.value });
-
-            const boardEl = this.boardEl.querySelector('div');
-            if (boardEl) {
-                const rect = boardEl.getBoundingClientRect();
-                const gsRect = gs.getBoundingClientRect();
-                const cx = rect.left + rect.width / 2 - gsRect.left;
-                const cy = rect.top + rect.height / 2 - gsRect.top;
-                const scale = this._lastScale || 1;
-                const px = cx + (node.x - this._lastOx) * scale;
-                const py = cy + (node.y - this._lastOy) * scale;
-                const offset = 45 * scale;
-                let ax = px;
-                let ay = py;
-                if (oe.side === 'right') ax += offset;
-                else if (oe.side === 'left') ax -= offset;
-                else if (oe.side === 'top') ay -= offset;
-                else ay += offset;
-                btn.style.cssText += `position:absolute;left:${ax}px;top:${ay}px;transform:translate(-50%,-50%);`;
-            }
+            const wrapper = this.boardEl.querySelector(`.board-layout [data-node-id="${oe.nodeId}"]`);
+            if (!wrapper) continue;
+            const rect = wrapper.getBoundingClientRect();
+            const gsRect = gs.getBoundingClientRect();
+            const offset = 45 * (this._lastScale || 1);
+            let ax = rect.left + rect.width / 2 - gsRect.left;
+            let ay = rect.top + rect.height / 2 - gsRect.top;
+            if (oe.side === 'right') ax += offset;
+            else if (oe.side === 'left') ax -= offset;
+            else if (oe.side === 'top') ay -= offset;
+            else ay += offset;
+            if (!Number.isFinite(ax) || !Number.isFinite(ay)) continue;
+            btn.style.cssText += `position:absolute;left:${ax}px;top:${ay}px;transform:translate(-50%,-50%);`;
 
             btn.addEventListener(tapEvent, (e) => {
                 e.stopPropagation();
@@ -410,6 +405,10 @@ export class Renderer {
                 onChoose(ei);
             });
             overlay.appendChild(btn);
+        }
+        if (!overlay.children.length) {
+            onCancel();
+            return;
         }
         gs.appendChild(overlay);
     }

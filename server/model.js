@@ -54,7 +54,21 @@ function handPoints(hand) {
     }
     return hand.reduce((s, t) => s + t.total, 0);
 }
+function getOpeningPlayScore(tile, currentScore = 0) {
+    if (!tile?.isDouble || tile.a !== 5) return 0;
+    return Number(currentScore || 0) >= 300 ? 0 : 10;
+}
+function countDistinctGosha(hand = []) {
+    return new Set(
+        (Array.isArray(hand) ? hand : [])
+            .filter((tile) => tile?.isDouble)
+            .map((tile) => tile.a)
+    ).size;
+}
+function hasInvalidOpeningHand(hand = []) {
+    return countDistinctGosha(hand) >= 5;
+}
 // Round UP to nearest 5
 function roundTo5(n) { return Math.ceil(n / 5) * 5; }
 
-module.exports = { Tile, createFullSet, shuffle, getHandSize, determineFirstPlayer, handPoints, roundTo5 };
+module.exports = { Tile, createFullSet, shuffle, getHandSize, determineFirstPlayer, handPoints, getOpeningPlayScore, countDistinctGosha, hasInvalidOpeningHand, roundTo5 };

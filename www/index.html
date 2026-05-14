@@ -74,7 +74,7 @@
             <div class="start-actions">
                 <button class="btn btn-primary btn-large" id="open-solo-modal-btn" data-i18n="btn-solo">Solo play</button>
                 <button class="btn btn-action btn-large" id="open-online-modal-btn" data-i18n="btn-online">Online</button>
-                <button class="btn btn-action btn-large" id="open-rooms-btn">Açıq otaqlar</button>
+                <button class="btn btn-action btn-large" id="open-rooms-btn" data-i18n="open-rooms-button">Açıq otaqlar</button>
                 <button class="btn btn-action btn-large start-auth-btn" id="account-btn" data-i18n="account-login">Sign in</button>
             </div>
         </div>
@@ -193,7 +193,7 @@
                         <label>Otaq növü</label>
                         <div class="btn-group" id="online-visibility-group">
                             <button class="btn btn-option active" data-value="closed">Bağlı otaq</button>
-                            <button class="btn btn-option" data-value="open">Açıq otaq</button>
+                            <button class="btn btn-option" data-value="open" data-i18n="room-visibility-open">Açıq otaq</button>
                         </div>
                     </div>
 
@@ -237,23 +237,23 @@
             <section class="modal-card modal-card-wide">
                 <div class="modal-header">
                     <div>
-                        <p class="section-kicker">Onlayn</p>
-                        <h2>Açıq otaqlar</h2>
-                        <p class="modal-desc">Açıq otaqlara baxın və birbaşa qoşulun.</p>
+                        <p class="section-kicker" data-i18n="open-rooms-kicker">Onlayn</p>
+                        <h2 data-i18n="open-rooms-title">Açıq otaqlar</h2>
+                        <p class="modal-desc" data-i18n="open-rooms-desc">Açıq otaqlara baxın və birbaşa qoşulun.</p>
                     </div>
-                    <button class="btn btn-action modal-close-btn" id="open-rooms-modal-close">Geri</button>
+                    <button class="btn btn-action modal-close-btn" id="open-rooms-modal-close" data-i18n="open-rooms-back">Geri</button>
                 </div>
 
                 <div class="online-social-filters">
-                    <input type="search" id="open-room-search-input" placeholder="Otaq və ya adla axtar">
+                    <input type="search" id="open-room-search-input" data-i18n="open-rooms-search-placeholder" placeholder="Otaq və ya adla axtar">
                     <div class="filter-row">
                         <select id="open-room-mode-filter">
-                            <option value="all">Hamısı</option>
-                            <option value="ffa">Hamı hər kəsə</option>
-                            <option value="team">2 vs 2</option>
+                            <option value="all" data-i18n="filter-all">Hamısı</option>
+                            <option value="ffa" data-i18n="mode-ffa">Hamı hər kəsə</option>
+                            <option value="team" data-i18n="mode-team">2 vs 2</option>
                         </select>
                         <select id="open-room-stake-filter">
-                            <option value="all">Bütün mərc masaları</option>
+                            <option value="all" data-i18n="stake-table-all">Bütün mərc masaları</option>
                             <option value="stake_200">200</option>
                             <option value="stake_250">250</option>
                             <option value="stake_500">500</option>

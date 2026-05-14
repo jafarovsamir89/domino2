@@ -1828,6 +1828,7 @@ input, button { font: inherit; }
     bottom: 86px;
     transform: translateY(12px) scale(0.96);
     width: min(420px, calc(100vw - 24px));
+    max-height: min(72vh, 560px);
     padding: 12px;
     border-radius: 24px;
     border: 1px solid rgba(255, 255, 255, 0.12);
@@ -1839,6 +1840,9 @@ input, button { font: inherit; }
     z-index: 2500;
     opacity: 0;
     pointer-events: none;
+    overflow: hidden;
+    overscroll-behavior: contain;
+    touch-action: pan-y;
     transition: opacity 0.18s ease, transform 0.18s ease;
 }
 
@@ -1871,6 +1875,9 @@ input, button { font: inherit; }
     gap: 8px;
     overflow-x: auto;
     padding-bottom: 2px;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
+    touch-action: pan-x;
 }
 
 .gift-recipient-chip {
@@ -1921,6 +1928,12 @@ input, button { font: inherit; }
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 8px;
+    overflow-y: auto;
+    max-height: min(44vh, 340px);
+    padding-right: 4px;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    touch-action: pan-y;
 }
 
 .gift-choice {

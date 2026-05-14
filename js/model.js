@@ -61,5 +61,19 @@ export function handPoints(hand) {
     }
     return hand.reduce((s, t) => s + t.total, 0);
 }
+export function getOpeningPlayScore(tile, currentScore = 0) {
+    if (!tile?.isDouble || tile.a !== 5) return 0;
+    return Number(currentScore || 0) >= 300 ? 0 : 10;
+}
+export function countDistinctGosha(hand = []) {
+    return new Set(
+        (Array.isArray(hand) ? hand : [])
+            .filter((tile) => tile?.isDouble)
+            .map((tile) => tile.a)
+    ).size;
+}
+export function hasInvalidOpeningHand(hand = []) {
+    return countDistinctGosha(hand) >= 5;
+}
 // Round UP to nearest 5
 export function roundTo5(n) { return Math.ceil(n / 5) * 5; }
