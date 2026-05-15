@@ -697,6 +697,12 @@ export class AccountClient {
         });
     }
 
+    async equipDefaultTableSkin() {
+        return this.platformRequest("/economy/cosmetics/table-skins/equip-default", {
+            method: "POST"
+        });
+    }
+
     async logout() {
         try {
             await this.platformRequest("/auth/sign-out", {

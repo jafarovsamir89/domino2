@@ -135,6 +135,7 @@ const DEFAULT_TABLE_SKINS = [
     sortOrder: 6
   }
 ] as const;
+const DEFAULT_TABLE_SKIN_KEY = "table_skin_default";
 
 const SOLO_MAX_STAKE = 200;
 
@@ -2268,7 +2269,18 @@ export class EconomyService {
         .map((entry) => entry.productKey)
     );
 
-    const tableSkins = DEFAULT_TABLE_SKINS.map((skin) => {
+    const tableSkins = [
+      {
+        key: DEFAULT_TABLE_SKIN_KEY,
+        name: "Standard Felt",
+        description: "Classic table surface.",
+        assetUrl: null,
+        price: 0,
+        owned: true,
+        equipped: !player?.tableSkinKey,
+        isActive: true
+      },
+      ...DEFAULT_TABLE_SKINS.map((skin) => {
       const product = productMap.get(skin.key);
       const price = product?.prices?.find((entry) => String(entry.currency || "").toUpperCase() === "COIN");
       return {
@@ -2279,9 +2291,10 @@ export class EconomyService {
         price: Number(price?.amountMinor ?? 200),
         owned: ownedKeys.has(skin.key),
         equipped: player?.tableSkinKey === skin.key,
-        isActive: Boolean(product?.isActive)
+        isActive: product ? Boolean(product.isActive) : true
       };
-    });
+      })
+    ];
 
     return {
       wallet: {
@@ -2380,6 +2393,25 @@ export class EconomyService {
     return {
       ...result,
       equippedKey: profile?.player?.tableSkinKey || null
+    };
+  }
+
+  async equipDefaultTableSkin(headers: IncomingHttpHeaders) {
+    const profile = await this.authService.getCurrentProfile(headers);
+    if (!profile?.player) {
+      throw new UnauthorizedException("Login required");
+    }
+
+    const player = await this.prisma.player.update({
+      where: { id: profile.player.id },
+      data: {
+        tableSkinKey: null
+      }
+    });
+
+    return {
+      equippedKey: player.tableSkinKey,
+      owned: true
     };
   }
 

@@ -12,6 +12,14 @@ const TARGET=365, MAX_R=3, DLOSS=255, IWIN=35;
 const TURN_TIMEOUT_MS = 30000;
 const BOT_THINK_DELAY_MS = 1000;
 const DEAL_END_MODAL_MS = 2000;
+const DEFAULT_TABLE_SKIN_KEY = 'table_skin_default';
+const DEFAULT_TABLE_SKIN = {
+    key: DEFAULT_TABLE_SKIN_KEY,
+    name: 'Standard Felt',
+    description: 'Classic Domino table surface.',
+    assetUrl: null
+};
+
 const DEFAULT_TABLE_SKINS = [
     {
         key: 'table_skin_01',
@@ -172,6 +180,7 @@ class DominoGame {
         this.coinShopClaiming = false;
         this.tableSkinLoading = false;
         this.tableSkinBusy = false;
+        this.accountProfileTab = 'skins';
         this._coinShopTickId = null;
         this.lastReactionSentAt = 0;
         this.lastReactionSentType = '';
@@ -756,14 +765,47 @@ class DominoGame {
         }));
     }
 
+    getProfileTableSkinEntries() {
+        const owned = this.getTableSkinCatalogEntries().filter((skin) => Boolean(skin?.owned));
+        const equippedKey = this.accountProfile?.tableSkinKey || this.tableSkinShop?.equippedKey || null;
+        const standard = {
+            ...DEFAULT_TABLE_SKIN,
+            owned: true,
+            equipped: !equippedKey,
+            isActive: true,
+            price: 0
+        };
+        const entries = [standard, ...owned.filter((skin) => skin.key !== DEFAULT_TABLE_SKIN_KEY)];
+        const seen = new Set();
+        return entries.filter((skin) => {
+            const key = String(skin?.key || '').trim();
+            if (!key || seen.has(key)) return false;
+            seen.add(key);
+            return true;
+        }).map((skin) => ({
+            ...skin,
+            equipped: skin.key === DEFAULT_TABLE_SKIN_KEY ? !equippedKey : equippedKey === skin.key,
+            isActive: true
+        }));
+    }
+
     getTableSkinEntry(key) {
         const normalizedKey = String(key || '').trim();
+        if (normalizedKey === DEFAULT_TABLE_SKIN_KEY) {
+            return {
+                ...DEFAULT_TABLE_SKIN,
+                owned: true,
+                equipped: !(this.accountProfile?.tableSkinKey || this.tableSkinShop?.equippedKey || null),
+                price: 0,
+                isActive: true
+            };
+        }
         return this.getTableSkinCatalogEntries().find((skin) => skin.key === normalizedKey) || null;
     }
 
     applyActiveTableSkin() {
         const selectedKey = this.tableSkinShop?.equippedKey || this.accountProfile?.tableSkinKey || null;
-        const skin = selectedKey ? this.getTableSkinEntry(selectedKey) : null;
+        const skin = selectedKey === DEFAULT_TABLE_SKIN_KEY ? null : (selectedKey ? this.getTableSkinEntry(selectedKey) : null);
         this.renderer.setTableSkin(skin?.assetUrl || null);
     }
 
@@ -953,15 +995,26 @@ class DominoGame {
             list.innerHTML = '';
             return;
         }
+        if (this.accountProfileTab !== 'skins') {
+            panel.classList.add('is-hidden');
+            list.innerHTML = '';
+            return;
+        }
         panel.classList.remove('is-hidden');
-        this.renderTableSkinCards(list, 'profile');
+        this.renderTableSkinCards(list, 'profile', this.getProfileTableSkinEntries());
     }
 
-    renderTableSkinCards(container, context = 'shop') {
+    renderTableSkinCards(container, context = 'shop', skins = null) {
         if (!container) return;
         container.innerHTML = '';
-        const skins = this.getTableSkinCatalogEntries();
-        for (const skin of skins) {
+        const list = Array.isArray(skins) ? skins : (context === 'profile' ? this.getProfileTableSkinEntries() : this.getTableSkinCatalogEntries());
+        const filteredList = context === 'profile'
+            ? list.filter((skin) => {
+                const key = String(skin?.key || '').trim();
+                return key === DEFAULT_TABLE_SKIN_KEY || Boolean(skin?.owned);
+            })
+            : list;
+        for (const skin of filteredList) {
             const card = this.buildTableSkinCard(skin, context);
             if (card) container.appendChild(card);
         }
@@ -969,6 +1022,11 @@ class DominoGame {
 
     buildTableSkinCard(skin, context = 'shop') {
         if (!skin) return null;
+        const isProfile = context === 'profile';
+        const isDefaultSkin = skin.key === DEFAULT_TABLE_SKIN_KEY;
+        if (isProfile && !skin.owned && !isDefaultSkin) {
+            return null;
+        }
         const card = document.createElement('article');
         card.className = `table-skin-card${skin.equipped ? ' is-selected' : ''}${skin.owned ? ' is-owned' : ''}`;
         const preview = document.createElement('div');
@@ -991,7 +1049,7 @@ class DominoGame {
             ? this.t('coin-shop-skin-equipped')
             : skin.owned
                 ? this.t('coin-shop-skin-owned')
-                : (context === 'profile' ? this.t('account-skins-locked') : this.t('coin-shop-skin-price'));
+                : this.t('coin-shop-skin-price');
         topRow.appendChild(title);
         topRow.appendChild(badge);
 
@@ -1016,19 +1074,20 @@ class DominoGame {
             ? this.t('coin-shop-skin-equipped')
             : skin.owned
                 ? this.t('coin-shop-skin-use')
-                : (context === 'profile' ? this.t('account-skins-open-shop') : this.t('coin-shop-skin-buy'));
+                : this.t('coin-shop-skin-buy');
         action.addEventListener('click', async () => {
             if (this.tableSkinBusy || this.tableSkinLoading) return;
             this.tableSkinBusy = true;
             try {
                 if (skin.equipped) return;
-                if (skin.owned) {
+                if (isProfile && isDefaultSkin) {
+                    await this.equipDefaultTableSkin();
+                } else if (skin.owned) {
                     await this.equipTableSkin(skin.key);
                     await this.loadTableSkinShop();
                     this.applyActiveTableSkin();
-                } else if (context === 'profile') {
-                    await this.openCosmeticsShopModal();
                 } else {
+                    if (isProfile) return;
                     await this.buyTableSkin(skin.key);
                 }
             } finally {
@@ -1181,6 +1240,43 @@ class DominoGame {
         }
     }
 
+    async equipDefaultTableSkin() {
+        if (this.tableSkinBusy) return;
+        this.tableSkinBusy = true;
+        try {
+            const result = await this.account.equipDefaultTableSkin();
+            this.accountProfile = {
+                ...(this.accountProfile || {}),
+                tableSkinKey: result?.equippedKey || null
+            };
+            this.account.setStoredProfile?.(this.accountProfile);
+            this.account.setPlatformProfile?.(this.accountProfile);
+            this.accountDetails = {
+                ...(this.accountDetails || {}),
+                profile: {
+                    ...(this.accountDetails?.profile || {}),
+                    tableSkinKey: null
+                },
+                player: {
+                    ...(this.accountDetails?.player || {}),
+                    tableSkinKey: null
+                }
+            };
+            await this.loadTableSkinShop();
+            this.applyActiveTableSkin();
+            this.renderAccountModal();
+            this.syncStartAuthButton();
+            if (document.getElementById('cosmetics-shop-modal')?.classList.contains('active')) {
+                this.renderCosmeticsShopModal();
+            }
+            this.renderer.showMessage(this.t('coin-shop-skin-applied'), 1800);
+        } catch (err) {
+            this.renderer.showMessage(err.message || this.t('coin-shop-skin-equip-failed'), 2000);
+        } finally {
+            this.tableSkinBusy = false;
+        }
+    }
+
     syncStartAuthGate() {
         const startScreen = document.getElementById('start-screen');
         if (!startScreen) return;
@@ -1249,6 +1345,27 @@ class DominoGame {
     setAccountMode(mode) {
         this.accountMode = mode === 'profile' ? 'profile' : 'login';
         this.renderAccountModal();
+    }
+
+    setAccountProfileTab(tab) {
+        this.accountProfileTab = tab === 'gifts' ? 'gifts' : 'skins';
+        this.renderAccountModal();
+    }
+
+    syncAccountProfileTabs() {
+        const tabs = document.getElementById('account-profile-tabs');
+        if (!tabs) return;
+        const buttons = Array.from(tabs.querySelectorAll('[data-profile-tab]'));
+        const activeTab = this.hasAuthenticatedAccount() ? (this.accountProfileTab || 'skins') : 'skins';
+        buttons.forEach((button) => {
+            const isActive = button.dataset.profileTab === activeTab;
+            button.classList.toggle('is-active', isActive);
+            button.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+        });
+        const giftsPanel = document.getElementById('account-gifts-panel');
+        const skinsPanel = document.getElementById('account-skins-panel');
+        if (giftsPanel) giftsPanel.classList.toggle('is-hidden', activeTab !== 'gifts');
+        if (skinsPanel) skinsPanel.classList.toggle('is-hidden', activeTab !== 'skins');
     }
 
     setupMobileAuthResume() {
@@ -1824,6 +1941,21 @@ class DominoGame {
         this.syncAccountUiChrome();
         this.ensureAuthIconMarkup();
         this.removeLegacyNameControls();
+        const profileTabs = document.getElementById('account-profile-tabs');
+        if (profileCopy && !profileTabs) {
+            const tabs = document.createElement('div');
+            tabs.className = 'account-profile-tabs';
+            tabs.id = 'account-profile-tabs';
+            tabs.innerHTML = `
+                <button type="button" class="account-profile-tab" data-profile-tab="skins" data-i18n="account-skins-vault"></button>
+                <button type="button" class="account-profile-tab" data-profile-tab="gifts" data-i18n="account-gift-vault"></button>
+            `;
+            const targetPanel = document.getElementById('account-gifts-panel') || document.getElementById('account-history-panel');
+            profileCopy.parentElement?.insertBefore(tabs, targetPanel || profileCopy.nextSibling);
+            tabs.querySelectorAll('[data-profile-tab]').forEach((button) => {
+                button.addEventListener('click', () => this.setAccountProfileTab(button.dataset.profileTab || 'skins'));
+            });
+        }
         if (profileCopy && profileName && !document.getElementById('account-edit-name-btn')) {
             const nameRow = document.createElement('div');
             nameRow.className = 'account-profile-name-row';
@@ -1938,6 +2070,7 @@ class DominoGame {
         }
         this.renderGiftInventory();
         this.renderTableSkinInventory();
+        this.syncAccountProfileTabs();
         this.syncStartAuthButton();
     }
 
@@ -4280,6 +4413,10 @@ class DominoGame {
         const panel = document.getElementById('account-gifts-panel');
         const list = document.getElementById('account-gifts-list');
         if (!panel || !list) return;
+        if (this.accountProfileTab !== 'gifts') {
+            panel.classList.add('is-hidden');
+            return;
+        }
         list.innerHTML = '';
         const items = Array.isArray(this.giftInventory)
             ? this.giftInventory.filter((item) => Number(item?.quantity || 0) > 0)

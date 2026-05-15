@@ -32,6 +32,11 @@ export class EconomyController {
     return this.economyService.equipTableSkin(req.headers, body?.key || "");
   }
 
+  @Post("economy/cosmetics/table-skins/equip-default")
+  async equipDefaultTableSkin(@Req() req: Request) {
+    return this.economyService.equipDefaultTableSkin(req.headers);
+  }
+
   @Get("economy/coin-shop/status")
   async getCoinShopStatus(@Req() req: Request) {
     return this.economyService.getCoinShopStatus(req.headers);
