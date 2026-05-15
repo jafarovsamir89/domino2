@@ -3222,7 +3222,8 @@ class DominoGame {
             const target = event.target;
             if (!(target instanceof Element)) return;
             if (!target.closest('.reaction-choice')) return;
-            if (event.button !== 0 && event.pointerType !== 'touch') return;
+            if (event.pointerType === 'touch') return;
+            if (event.button !== 0) return;
             startY = event.clientY;
             startScrollTop = picker.scrollTop;
             dragging = false;
