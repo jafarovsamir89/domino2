@@ -183,6 +183,8 @@ class DominoGame {
         this.tableSkinBusy = false;
         this.accountProfileTab = 'skins';
         this._coinShopTickId = null;
+        this._authWarmupTimerId = null;
+        this._authWarmupAttempts = 0;
         this.lastReactionSentAt = 0;
         this.lastReactionSentType = '';
         this._reactionDragState = null;
@@ -207,6 +209,7 @@ class DominoGame {
     destroy() {
         clearInterval(this._watchdogId);
         this._watchdogId = null;
+        this.stopAuthWarmup();
         if (this._reactionOutsideHandler) {
             document.removeEventListener('pointerdown', this._reactionOutsideHandler, true);
             this._reactionOutsideHandler = null;
@@ -556,6 +559,7 @@ class DominoGame {
         this.accountOnline = this.hasAuthenticatedAccount(this.accountProfile);
         if (this.accountOnline) {
             this.clearPendingAuthReturn();
+            this.stopAuthWarmup();
         }
         this.accountMode = this.accountOnline ? 'profile' : 'login';
         this.prefillAccountNames();
@@ -570,6 +574,9 @@ class DominoGame {
         this.syncStartAuthGate();
         if (!this.hasAuthenticatedAccount() && this.hasPendingAuthReturn()) {
             void this.resumePendingAuthFlow();
+        }
+        if (!this.hasAuthenticatedAccount()) {
+            this.startAuthWarmup();
         }
     }
 
@@ -618,6 +625,7 @@ class DominoGame {
                 this.accountProfile = details?.profile || details?.user || this.accountProfile;
                 this.accountOnline = true;
                 this.clearPendingAuthReturn();
+                this.stopAuthWarmup();
                 if (this.accountProfile) this.accountMode = 'profile';
                 this.prefillAccountNames();
                 this.applyActiveTableSkin();
@@ -642,6 +650,9 @@ class DominoGame {
         if (!hadProfile) this.syncStartAuthGate();
         if (!this.hasAuthenticatedAccount() && this.hasPendingAuthReturn()) {
             void this.resumePendingAuthFlow();
+        }
+        if (!this.hasAuthenticatedAccount()) {
+            this.startAuthWarmup();
         }
         return null;
     }
@@ -1309,6 +1320,7 @@ class DominoGame {
             this.accountProfile = details.profile || details.user || this.accountProfile || { name: 'Player', provider: 'better-auth' };
         }
         this.accountOnline = true;
+        this.stopAuthWarmup();
         this.accountMode = 'profile';
         this.applyActiveTableSkin();
         this.closeAccountModal();
@@ -1427,6 +1439,9 @@ class DominoGame {
             if (window.sessionStorage?.getItem(AUTH_RETURN_PENDING_KEY)) return true;
         } catch {}
         try {
+            if (window.localStorage?.getItem(AUTH_RETURN_PENDING_KEY)) return true;
+        } catch {}
+        try {
             const params = new URLSearchParams(window.location.search);
             return params.get('auth_return') === '1';
         } catch {
@@ -1438,11 +1453,17 @@ class DominoGame {
         try {
             window.sessionStorage?.setItem(AUTH_RETURN_PENDING_KEY, String(provider || 'social'));
         } catch {}
+        try {
+            window.localStorage?.setItem(AUTH_RETURN_PENDING_KEY, String(provider || 'social'));
+        } catch {}
     }
 
     clearPendingAuthReturn() {
         try {
             window.sessionStorage?.removeItem(AUTH_RETURN_PENDING_KEY);
+        } catch {}
+        try {
+            window.localStorage?.removeItem(AUTH_RETURN_PENDING_KEY);
         } catch {}
         try {
             const url = new URL(window.location.href);
@@ -1476,6 +1497,42 @@ class DominoGame {
         } finally {
             this.authReturnResuming = false;
         }
+    }
+
+    startAuthWarmup() {
+        if (this._authWarmupTimerId || this.hasAuthenticatedAccount()) {
+            return;
+        }
+        this._authWarmupAttempts = 0;
+        this._authWarmupTimerId = window.setInterval(async () => {
+            if (this.hasAuthenticatedAccount()) {
+                this.stopAuthWarmup();
+                return;
+            }
+            this._authWarmupAttempts += 1;
+            try {
+                const details = await this.account.getProfileDetails();
+                if (details?.profile) {
+                    this.clearPendingAuthReturn();
+                    this.enterAuthenticatedHome(details);
+                    this.stopAuthWarmup();
+                    return;
+                }
+            } catch (error) {
+                debugLog('Auth warmup check failed:', error);
+            }
+            if (this._authWarmupAttempts >= 8) {
+                this.stopAuthWarmup();
+            }
+        }, 1200);
+    }
+
+    stopAuthWarmup() {
+        if (this._authWarmupTimerId) {
+            clearInterval(this._authWarmupTimerId);
+            this._authWarmupTimerId = null;
+        }
+        this._authWarmupAttempts = 0;
     }
 
     async openExternalAuthUrl(url) {
