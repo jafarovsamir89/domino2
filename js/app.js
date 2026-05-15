@@ -13,30 +13,12 @@ const TURN_TIMEOUT_MS = 30000;
 const BOT_THINK_DELAY_MS = 1000;
 const DEAL_END_MODAL_MS = 2000;
 const DEFAULT_TABLE_SKIN_KEY = 'table_skin_default';
-const AUTH_RETURN_PENDING_KEY = 'dominoAuthReturnPending';
 const DEFAULT_TABLE_SKIN = {
     key: DEFAULT_TABLE_SKIN_KEY,
     name: 'Standard Felt',
     description: 'Classic Domino table surface.',
     assetUrl: null
 };
-
-function redirectLegacyAuthReturnToCallbackPage() {
-    if (typeof window === 'undefined' || window.Capacitor) return false;
-    try {
-        const url = new URL(window.location.href);
-        const isLegacyAuthReturn = url.searchParams.get('auth_return') === '1';
-        const isRootPath = url.pathname === '/' || url.pathname === '/index.html' || url.pathname === '';
-        if (!isLegacyAuthReturn || !isRootPath) {
-            return false;
-        }
-        const provider = url.searchParams.get('auth_provider') || 'google';
-        window.location.replace(`https://gamed.simplesoft.az/auth-complete.html?auth_provider=${encodeURIComponent(provider)}&auth_return=1`);
-        return true;
-    } catch {
-        return false;
-    }
-}
 
 const DEFAULT_TABLE_SKINS = [
     {
@@ -200,16 +182,12 @@ class DominoGame {
         this.tableSkinBusy = false;
         this.accountProfileTab = 'skins';
         this._coinShopTickId = null;
-        this._authWarmupTimerId = null;
-        this._authWarmupAttempts = 0;
         this.lastReactionSentAt = 0;
         this.lastReactionSentType = '';
         this._reactionDragState = null;
-        this.authReturnResuming = false;
         this.setLanguage(this.currentLang);
         this.setupStartScreen(); this.setupGameControls(); this.setupMenu();
         this.applySharedRoomCodeFromUrl();
-        this.setupAuthReturnResume();
         this.setupMobileAuthResume();
         this.bootstrapAccount();
 
@@ -226,7 +204,6 @@ class DominoGame {
     destroy() {
         clearInterval(this._watchdogId);
         this._watchdogId = null;
-        this.stopAuthWarmup();
         if (this._reactionOutsideHandler) {
             document.removeEventListener('pointerdown', this._reactionOutsideHandler, true);
             this._reactionOutsideHandler = null;
@@ -574,10 +551,6 @@ class DominoGame {
         this.accountDetails = details;
         this.accountProfile = details?.profile || details?.user || this.account.getStoredProfile();
         this.accountOnline = this.hasAuthenticatedAccount(this.accountProfile);
-        if (this.accountOnline) {
-            this.clearPendingAuthReturn();
-            this.stopAuthWarmup();
-        }
         this.accountMode = this.accountOnline ? 'profile' : 'login';
         this.prefillAccountNames();
         this.applyActiveTableSkin();
@@ -589,12 +562,6 @@ class DominoGame {
         await this.validateStoredResumeSnapshot();
         if (!this.hasAuthenticatedAccount()) this.setAccountStatus(this.t('account-login-required'));
         this.syncStartAuthGate();
-        if (!this.hasAuthenticatedAccount() && this.hasPendingAuthReturn()) {
-            void this.resumePendingAuthFlow();
-        }
-        if (!this.hasAuthenticatedAccount()) {
-            this.startAuthWarmup();
-        }
     }
 
     hasAuthenticatedAccount(profile = this.accountProfile) {
@@ -641,8 +608,6 @@ class DominoGame {
                 this.accountDetails = details;
                 this.accountProfile = details?.profile || details?.user || this.accountProfile;
                 this.accountOnline = true;
-                this.clearPendingAuthReturn();
-                this.stopAuthWarmup();
                 if (this.accountProfile) this.accountMode = 'profile';
                 this.prefillAccountNames();
                 this.applyActiveTableSkin();
@@ -665,12 +630,6 @@ class DominoGame {
         this.renderAccountModal();
         this.syncStartAuthButton();
         if (!hadProfile) this.syncStartAuthGate();
-        if (!this.hasAuthenticatedAccount() && this.hasPendingAuthReturn()) {
-            void this.resumePendingAuthFlow();
-        }
-        if (!this.hasAuthenticatedAccount()) {
-            this.startAuthWarmup();
-        }
         return null;
     }
 
@@ -1337,7 +1296,6 @@ class DominoGame {
             this.accountProfile = details.profile || details.user || this.accountProfile || { name: 'Player', provider: 'better-auth' };
         }
         this.accountOnline = true;
-        this.stopAuthWarmup();
         this.accountMode = 'profile';
         this.applyActiveTableSkin();
         this.closeAccountModal();
@@ -1429,127 +1387,12 @@ class DominoGame {
             const details = await this.account.bootstrap();
             if (details?.profile) {
                 this.mobileAuthPending = false;
-                this.clearPendingAuthReturn();
                 this.enterAuthenticatedHome(details);
                 this.renderer.showMessage(this.t('account-login'), 1500);
             }
         } catch (error) {
             debugLog('Mobile auth resume check failed:', error);
         }
-    }
-
-    setupAuthReturnResume() {
-        const resume = () => {
-            void this.resumePendingAuthFlow();
-        };
-        window.addEventListener('focus', resume);
-        document.addEventListener('visibilitychange', () => {
-            if (document.visibilityState === 'visible') {
-                resume();
-            }
-        });
-        void this.resumePendingAuthFlow();
-    }
-
-    hasPendingAuthReturn() {
-        try {
-            if (window.sessionStorage?.getItem(AUTH_RETURN_PENDING_KEY)) return true;
-        } catch {}
-        try {
-            if (window.localStorage?.getItem(AUTH_RETURN_PENDING_KEY)) return true;
-        } catch {}
-        try {
-            const params = new URLSearchParams(window.location.search);
-            return params.get('auth_return') === '1';
-        } catch {
-            return false;
-        }
-    }
-
-    markPendingAuthReturn(provider = 'google') {
-        try {
-            window.sessionStorage?.setItem(AUTH_RETURN_PENDING_KEY, String(provider || 'social'));
-        } catch {}
-        try {
-            window.localStorage?.setItem(AUTH_RETURN_PENDING_KEY, String(provider || 'social'));
-        } catch {}
-    }
-
-    clearPendingAuthReturn() {
-        try {
-            window.sessionStorage?.removeItem(AUTH_RETURN_PENDING_KEY);
-        } catch {}
-        try {
-            window.localStorage?.removeItem(AUTH_RETURN_PENDING_KEY);
-        } catch {}
-        try {
-            const url = new URL(window.location.href);
-            if (url.searchParams.has('auth_return') || url.searchParams.has('auth_provider')) {
-                url.searchParams.delete('auth_return');
-                url.searchParams.delete('auth_provider');
-                window.history.replaceState({}, document.title, `${url.pathname}${url.search}${url.hash}`);
-            }
-        } catch {}
-    }
-
-    async resumePendingAuthFlow() {
-        if (this.authReturnResuming || !this.hasPendingAuthReturn()) {
-            return;
-        }
-        this.authReturnResuming = true;
-        try {
-            const deadline = Date.now() + 10000;
-            while (Date.now() < deadline) {
-                const details = await this.account.bootstrap();
-                if (details?.profile) {
-                    this.mobileAuthPending = false;
-                    this.clearPendingAuthReturn();
-                    this.enterAuthenticatedHome(details);
-                    return;
-                }
-                await new Promise((resolve) => setTimeout(resolve, 500));
-            }
-        } catch (error) {
-            debugLog('Auth resume flow failed:', error);
-        } finally {
-            this.authReturnResuming = false;
-        }
-    }
-
-    startAuthWarmup() {
-        if (this._authWarmupTimerId || this.hasAuthenticatedAccount()) {
-            return;
-        }
-        this._authWarmupAttempts = 0;
-        this._authWarmupTimerId = window.setInterval(async () => {
-            if (this.hasAuthenticatedAccount()) {
-                this.stopAuthWarmup();
-                return;
-            }
-            this._authWarmupAttempts += 1;
-            try {
-                const details = await this.account.getProfileDetails();
-                if (details?.profile) {
-                    this.clearPendingAuthReturn();
-                    this.enterAuthenticatedHome(details);
-                    this.stopAuthWarmup();
-                    return;
-                }
-            } catch (error) {
-                debugLog('Auth warmup check failed:', error);
-            }
-            if (this._authWarmupAttempts >= 8) {
-                this.stopAuthWarmup();
-            }
-        }, 1200);
-    }
-
-    stopAuthWarmup() {
-        if (this._authWarmupTimerId) {
-            clearInterval(this._authWarmupTimerId);
-            this._authWarmupTimerId = null;
-        }
-        this._authWarmupAttempts = 0;
     }
 
     async openExternalAuthUrl(url) {
@@ -1613,10 +1456,8 @@ class DominoGame {
             }
         });
 
-        this.markPendingAuthReturn('google');
         const details = await this.account.bootstrap();
         if (details?.profile) {
-            this.clearPendingAuthReturn();
             this.enterAuthenticatedHome(details);
             this.renderer.showMessage(this.t('account-login'), 1500);
             return true;
@@ -1642,15 +1483,13 @@ class DominoGame {
                         return;
                     }
                 }
-                this.markPendingAuthReturn('google');
-                const callbackURL = this.getAuthCallbackUrl('google');
-                const result = await this.account.startGoogleSignIn(callbackURL);
-                if (result?.url) {
-                    await this.openExternalAuthUrl(result.url);
-                    return;
-                }
+        const callbackURL = this.getAuthCallbackUrl();
+        const result = await this.account.startGoogleSignIn(callbackURL);
+        if (result?.url) {
+            await this.openExternalAuthUrl(result.url);
+            return;
+        }
                 if (result?.redirect === false && result?.token) {
-                    this.clearPendingAuthReturn();
                     this.enterAuthenticatedHome(result);
                     void this.loadAccountProfile();
                     this.renderer.showMessage(this.t('account-login'), 1500);
@@ -1664,8 +1503,7 @@ class DominoGame {
     }
 
     startAppleAccountSignIn() {
-        this.markPendingAuthReturn('apple');
-        const callbackURL = this.getAuthCallbackUrl('apple');
+        const callbackURL = this.getAuthCallbackUrl();
         void (async () => {
             try {
                 this.setAccountStatus('');
@@ -1675,7 +1513,6 @@ class DominoGame {
                     return;
                 }
                 if (result?.redirect === false && result?.token) {
-                    this.clearPendingAuthReturn();
                     this.enterAuthenticatedHome(result);
                     void this.loadAccountProfile();
                     this.renderer.showMessage(this.t('account-login'), 1500);
@@ -1688,16 +1525,16 @@ class DominoGame {
         })();
     }
 
-    getAuthCallbackUrl(provider = 'google') {
+    getAuthCallbackUrl() {
         const isLocalHost = typeof window !== 'undefined'
             && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
         if (window.Capacitor) {
-            return `https://gamed.simplesoft.az/mobile-auth-complete.html?auth_provider=${encodeURIComponent(provider)}&auth_return=1`;
+            return 'https://gamed.simplesoft.az/mobile-auth-complete.html';
         }
         if (isLocalHost) {
-            return `${window.location.origin}/auth-complete.html?auth_provider=${encodeURIComponent(provider)}`;
+            return `${window.location.origin}${window.location.pathname}${window.location.search}`;
         }
-        return `https://gamed.simplesoft.az/auth-complete.html?auth_provider=${encodeURIComponent(provider)}`;
+        return `${window.location.origin}/`;
     }
 
     async saveAccountDisplayName() {
@@ -6052,15 +5889,13 @@ class DominoGame {
     }
 }
 let game = null;
-if (!redirectLegacyAuthReturnToCallbackPage()) {
-    game = new DominoGame();
+game = new DominoGame();
 
-    // Re-render board on resize for correct scaling (debounced)
-    let _resizeTimer = null;
-    window.addEventListener('resize', () => {
-        if (!game?.gameActive) return;
-        clearTimeout(_resizeTimer);
-        _resizeTimer = setTimeout(() => game.renderState(), 150);
-    });
-}
+// Re-render board on resize for correct scaling (debounced)
+let _resizeTimer = null;
+window.addEventListener('resize', () => {
+    if (!game?.gameActive) return;
+    clearTimeout(_resizeTimer);
+    _resizeTimer = setTimeout(() => game.renderState(), 150);
+});
 
