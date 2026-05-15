@@ -1071,7 +1071,8 @@ class DominoGame {
         const action = document.createElement('button');
         action.type = 'button';
         action.className = `btn btn-menu table-skin-action${skin.equipped ? ' is-selected' : ''}`;
-        action.disabled = this.tableSkinLoading || this.tableSkinBusy;
+        action.disabled = this.tableSkinBusy;
+        action.style.touchAction = 'manipulation';
         action.textContent = skin.equipped
             ? this.t('coin-shop-skin-equipped')
             : skin.owned
@@ -1086,8 +1087,6 @@ class DominoGame {
                     await this.equipDefaultTableSkin();
                 } else if (skin.owned) {
                     await this.equipTableSkin(skin.key);
-                    await this.loadTableSkinShop();
-                    this.applyActiveTableSkin();
                 } else {
                     if (isProfile) return;
                     await this.buyTableSkin(skin.key);
@@ -1160,30 +1159,21 @@ class DominoGame {
         this.tableSkinBusy = true;
         try {
             const result = await this.account.purchaseTableSkin(skinKey);
-            try {
-                await this.account.equipTableSkin(skinKey);
-            } catch (equipErr) {
-                debugLog('Auto-equip after table skin purchase failed:', equipErr);
-            }
             if (result?.wallet) {
-                const equippedKey = result?.equippedKey || this.accountProfile?.tableSkinKey || null;
                 this.accountDetails = {
                     ...(this.accountDetails || {}),
                     wallet: result.wallet,
                     profile: {
-                        ...(this.accountDetails?.profile || {}),
-                        tableSkinKey: equippedKey
+                        ...(this.accountDetails?.profile || {})
                     },
                     player: {
-                        ...(this.accountDetails?.player || {}),
-                        tableSkinKey: equippedKey
+                        ...(this.accountDetails?.player || {})
                     }
                 };
                 this.accountProfile = {
                     ...(this.accountProfile || {}),
                     coins: result.wallet.balance,
-                    wallet: result.wallet,
-                    tableSkinKey: equippedKey
+                    wallet: result.wallet
                 };
                 this.account.setStoredProfile?.(this.accountProfile);
                 this.account.setPlatformProfile?.(this.accountProfile);
@@ -1191,6 +1181,7 @@ class DominoGame {
             await this.loadTableSkinShop();
             this.applyActiveTableSkin();
             this.setAccountProfileTab('skins');
+            await this.loadAccountProfile();
             this.renderAccountModal();
             this.syncStartAuthButton();
             if (document.getElementById('cosmetics-shop-modal')?.classList.contains('active')) {
