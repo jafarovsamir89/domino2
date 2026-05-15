@@ -3207,12 +3207,14 @@ class DominoGame {
         let startScrollTop = 0;
         let dragging = false;
         let pointerId = null;
+        let touchId = null;
 
         const endDrag = () => {
             if (pointerId !== null) {
                 picker.releasePointerCapture?.(pointerId);
             }
             pointerId = null;
+            touchId = null;
             dragging = false;
             this._reactionDragState = null;
         };
@@ -3251,6 +3253,34 @@ class DominoGame {
         picker.addEventListener('lostpointercapture', () => {
             endDrag();
         });
+        picker.addEventListener('touchstart', (event) => {
+            if (!this.reactionPicker?.classList.contains('open')) return;
+            const target = event.target;
+            if (!(target instanceof Element)) return;
+            if (!target.closest('.reaction-choice')) return;
+            const touch = event.changedTouches?.[0];
+            if (!touch) return;
+            touchId = touch.identifier;
+            startY = touch.clientY;
+            startScrollTop = picker.scrollTop;
+            dragging = false;
+            this._reactionDragState = { startY, startScrollTop };
+        }, { passive: true });
+        picker.addEventListener('touchmove', (event) => {
+            if (touchId === null) return;
+            const state = this._reactionDragState;
+            if (!state) return;
+            const touch = Array.from(event.changedTouches || []).find((item) => item.identifier === touchId);
+            if (!touch) return;
+            const deltaY = touch.clientY - state.startY;
+            if (!dragging && Math.abs(deltaY) < 4) return;
+            dragging = true;
+            event.preventDefault();
+            const maxScroll = Math.max(0, picker.scrollHeight - picker.clientHeight);
+            picker.scrollTop = Math.min(maxScroll, Math.max(0, state.startScrollTop - deltaY));
+        }, { passive: false });
+        picker.addEventListener('touchend', endDrag);
+        picker.addEventListener('touchcancel', endDrag);
         picker.addEventListener('click', (event) => {
             if (dragging) {
                 event.preventDefault();
