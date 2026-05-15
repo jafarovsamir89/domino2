@@ -858,7 +858,7 @@ export class SocialService {
         tx,
         currentPlayer.id,
         nextCatalog.coinCost,
-        "gift_send",
+        "gift_send" as CoinLedgerType,
         "gift_send",
         nextCatalog.id,
         {
@@ -1006,7 +1006,7 @@ export class SocialService {
         tx,
         currentPlayer.id,
         exchangeValue,
-        "gift_exchange",
+        "gift_exchange" as CoinLedgerType,
         "gift_exchange",
         catalog.id,
         {
