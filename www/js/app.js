@@ -1088,7 +1088,6 @@ class DominoGame {
                 : this.t('coin-shop-skin-buy');
         action.addEventListener('click', async () => {
             if (this.tableSkinBusy || this.tableSkinLoading) return;
-            this.tableSkinBusy = true;
             try {
                 if (skin.equipped) return;
                 if (isProfile && isDefaultSkin) {
@@ -1105,6 +1104,7 @@ class DominoGame {
                 if (document.getElementById('cosmetics-shop-modal')?.classList.contains('active')) {
                     this.renderCosmeticsShopModal();
                 }
+                this.applyActiveTableSkin();
             }
         });
 
