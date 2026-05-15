@@ -34,6 +34,74 @@ if (redis) {
     });
 }
 
+function parseJsonIceServers(raw) {
+    if (!raw) return [];
+    try {
+        const parsed = JSON.parse(raw);
+        if (!Array.isArray(parsed)) return [];
+        return parsed
+            .filter((entry) => entry && Array.isArray(entry.urls) && entry.urls.length > 0)
+            .map((entry) => ({
+                urls: entry.urls.map((url) => String(url || "").trim()).filter(Boolean),
+                username: entry.username ? String(entry.username).trim() : undefined,
+                credential: entry.credential ? String(entry.credential).trim() : undefined
+            }))
+            .filter((entry) => entry.urls.length > 0);
+    } catch (err) {
+        console.warn("[Voice] Invalid VOICE_ICE_SERVERS_JSON:", err.message);
+        return [];
+    }
+}
+
+function buildVoiceConfig() {
+    const defaultIceServers = [
+        { urls: ["stun:stun.l.google.com:19302"] },
+        { urls: ["stun:global.stun.twilio.com:3478?transport=udp"] }
+    ];
+    const servers = [...defaultIceServers, ...parseJsonIceServers(process.env.VOICE_ICE_SERVERS_JSON || "")];
+    const turnUrls = String(process.env.VOICE_TURN_URLS || process.env.TURN_URLS || "")
+        .split(",")
+        .map((value) => value.trim())
+        .filter(Boolean);
+    const turnUsername = String(process.env.VOICE_TURN_USERNAME || process.env.TURN_USERNAME || "").trim();
+    const turnCredential = String(process.env.VOICE_TURN_CREDENTIAL || process.env.TURN_CREDENTIAL || "").trim();
+
+    if (turnUrls.length > 0) {
+        servers.push({
+            urls: turnUrls,
+            ...(turnUsername ? { username: turnUsername } : {}),
+            ...(turnCredential ? { credential: turnCredential } : {})
+        });
+    }
+
+    const deduped = [];
+    const seen = new Set();
+    for (const server of servers) {
+        const urls = Array.isArray(server.urls) ? server.urls.map((url) => String(url || "").trim()).filter(Boolean) : [];
+        if (!urls.length) continue;
+        const key = JSON.stringify({
+            urls,
+            username: server.username || "",
+            credential: server.credential || ""
+        });
+        if (seen.has(key)) continue;
+        seen.add(key);
+        deduped.push({
+            urls,
+            ...(server.username ? { username: server.username } : {}),
+            ...(server.credential ? { credential: server.credential } : {})
+        });
+    }
+
+    return {
+        iceServers: deduped,
+        iceTransportPolicy: String(process.env.VOICE_ICE_TRANSPORT_POLICY || "").trim() || "all",
+        iceCandidatePoolSize: Math.max(0, Math.min(8, Number(process.env.VOICE_ICE_CANDIDATE_POOL_SIZE || 2) || 2))
+    };
+}
+
+const voiceConfig = buildVoiceConfig();
+
 async function getRedisClient() {
     if (!redis) return null;
     try {
@@ -240,6 +308,16 @@ app.get("/api/realtime/sessions/:sessionId", async (req, res) => {
 
 app.get("/api/realtime/rooms", async (req, res) => {
     res.json(await getOpenRooms(req.query));
+});
+
+app.get("/api/voice/config", (req, res) => {
+    res.setHeader("Cache-Control", "no-store");
+    res.json({
+        ...voiceConfig,
+        hasTurn: voiceConfig.iceServers.some((server) =>
+            Array.isArray(server.urls) && server.urls.some((url) => String(url).startsWith("turn:"))
+        )
+    });
 });
 
 const server = http.createServer(app);

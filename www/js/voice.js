@@ -25,6 +25,9 @@ export class VoiceChatManager {
         this.isEnabled = false;
         this.destroyed = false;
         this.statusText = "";
+        this.iceConfig = null;
+        this.iceConfigPromise = null;
+        this.iceConfigError = "";
     }
 
     isAvailable() {
@@ -58,6 +61,7 @@ export class VoiceChatManager {
     syncRoomState(roomState = null) {
         this.roomState = roomState;
         this.syncVisibility();
+        void this.prefetchIceConfig();
         if (!this.isAvailable()) {
             this.resetRoom();
             return;
@@ -168,6 +172,7 @@ export class VoiceChatManager {
     destroy() {
         this.stopSpeaking();
         this.resetRoom();
+        this.iceConfigPromise = null;
         if (this.localAudioTrack) {
             this.localAudioTrack.stop();
             this.localAudioTrack = null;
@@ -252,6 +257,72 @@ export class VoiceChatManager {
         }
     }
 
+    async prefetchIceConfig() {
+        if (this.iceConfig || this.iceConfigPromise) return this.iceConfig || null;
+        this.iceConfigPromise = this.resolveIceConfig().finally(() => {
+            this.iceConfigPromise = null;
+        });
+        return this.iceConfigPromise;
+    }
+
+    async resolveIceConfig() {
+        const fallback = {
+            iceServers: DEFAULT_ICE_SERVERS,
+            iceTransportPolicy: "all",
+            iceCandidatePoolSize: 2,
+            hasTurn: false
+        };
+
+        try {
+            const config = await this.game?.network?.getVoiceConfig?.();
+            if (!config || !Array.isArray(config.iceServers) || !config.iceServers.length) {
+                this.iceConfig = fallback;
+                return fallback;
+            }
+
+            const normalized = {
+                iceServers: config.iceServers
+                    .map((server) => ({
+                        urls: Array.isArray(server?.urls)
+                            ? server.urls.map((url) => String(url || "").trim()).filter(Boolean)
+                            : [],
+                        ...(server?.username ? { username: String(server.username).trim() } : {}),
+                        ...(server?.credential ? { credential: String(server.credential).trim() } : {})
+                    }))
+                    .filter((server) => server.urls.length > 0),
+                iceTransportPolicy: String(config.iceTransportPolicy || "all").trim() || "all",
+                iceCandidatePoolSize: Number(config.iceCandidatePoolSize || 2) || 2,
+                hasTurn: Boolean(config.hasTurn)
+            };
+
+            if (!normalized.iceServers.length) {
+                this.iceConfig = fallback;
+                return fallback;
+            }
+
+            this.iceConfig = normalized;
+            return normalized;
+        } catch (error) {
+            this.iceConfigError = String(error?.message || error || "");
+            this.iceConfig = fallback;
+            return fallback;
+        }
+    }
+
+    getPeerConfig() {
+        const config = this.iceConfig || {
+            iceServers: DEFAULT_ICE_SERVERS,
+            iceTransportPolicy: "all",
+            iceCandidatePoolSize: 2,
+            hasTurn: false
+        };
+        return {
+            iceServers: config.iceServers || DEFAULT_ICE_SERVERS,
+            iceTransportPolicy: config.iceTransportPolicy || "all",
+            iceCandidatePoolSize: config.iceCandidatePoolSize || 2
+        };
+    }
+
     ensurePeer(remoteSessionId) {
         const targetSessionId = String(remoteSessionId || "").trim();
         if (!targetSessionId || targetSessionId === this.mySessionId) return null;
@@ -259,7 +330,7 @@ export class VoiceChatManager {
         let peer = this.peerConnections.get(targetSessionId);
         if (peer) return peer;
 
-        peer = new RTCPeerConnection({ iceServers: DEFAULT_ICE_SERVERS });
+        peer = new RTCPeerConnection(this.getPeerConfig());
         this.peerConnections.set(targetSessionId, peer);
 
         const transceiver = peer.addTransceiver("audio", { direction: "sendrecv" });

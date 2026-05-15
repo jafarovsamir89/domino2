@@ -28,6 +28,8 @@ class NetworkManager {
         this.reconnectAttempt = 0;
         this.maxReconnectAttempts = 12;
         this.reconnectInProgress = false;
+        this.voiceConfig = null;
+        this.voiceConfigPromise = null;
 
         if (typeof window !== 'undefined') {
             window.addEventListener('online', () => {
@@ -204,6 +206,7 @@ class NetworkManager {
             this.setStoredReconnectionToken(this.room.reconnectionToken);
         }
         this.setupListeners();
+        void this.game?.voice?.prefetchIceConfig?.();
         if (notifyReconnect) {
             this.game.onNetworkReconnected?.();
         }
@@ -496,6 +499,58 @@ class NetworkManager {
 
     sendVoiceSignal(payload) {
         if (this.room) this.room.send("voice_signal", payload || {});
+    }
+
+    async getVoiceConfig() {
+        if (this.voiceConfig) return this.voiceConfig;
+        if (this.voiceConfigPromise) return this.voiceConfigPromise;
+
+        this.voiceConfigPromise = (async () => {
+            const endpoint = this.getServerUrl().replace(/\/$/, "");
+            const fallback = {
+                iceServers: [
+                    { urls: ["stun:stun.l.google.com:19302"] },
+                    { urls: ["stun:global.stun.twilio.com:3478?transport=udp"] }
+                ],
+                iceTransportPolicy: "all",
+                iceCandidatePoolSize: 2,
+                hasTurn: false
+            };
+
+            try {
+                const response = await fetch(`${endpoint}/api/voice/config`, {
+                    method: "GET",
+                    credentials: "include",
+                    headers: { Accept: "application/json" }
+                });
+                if (!response.ok) return fallback;
+                const data = await response.json().catch(() => null);
+                if (!data || !Array.isArray(data.iceServers) || !data.iceServers.length) return fallback;
+                const normalized = {
+                    iceServers: data.iceServers
+                        .map((server) => ({
+                            urls: Array.isArray(server?.urls)
+                                ? server.urls.map((url) => String(url || "").trim()).filter(Boolean)
+                                : [],
+                            ...(server?.username ? { username: String(server.username).trim() } : {}),
+                            ...(server?.credential ? { credential: String(server.credential).trim() } : {})
+                        }))
+                        .filter((server) => server.urls.length > 0),
+                    iceTransportPolicy: String(data.iceTransportPolicy || "all").trim() || "all",
+                    iceCandidatePoolSize: Number(data.iceCandidatePoolSize || 2) || 2,
+                    hasTurn: Boolean(data.hasTurn)
+                };
+                this.voiceConfig = normalized;
+                return normalized;
+            } catch (error) {
+                console.warn("[Network] Voice config fetch failed:", error);
+                return fallback;
+            } finally {
+                this.voiceConfigPromise = null;
+            }
+        })();
+
+        return this.voiceConfigPromise;
     }
   }
 
