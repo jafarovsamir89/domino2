@@ -1898,12 +1898,14 @@ input, button { font: inherit; }
     display: grid;
     grid-template-columns: repeat(5, minmax(0, 1fr));
     gap: 8px;
+    scroll-snap-type: y proximity;
     opacity: 0;
     pointer-events: none;
     overflow-y: auto;
     overscroll-behavior: contain;
     -webkit-overflow-scrolling: touch;
     touch-action: pan-y;
+    scrollbar-width: thin;
     transition: opacity 0.18s ease, transform 0.18s ease;
 }
 
@@ -2100,6 +2102,7 @@ input, button { font: inherit; }
     border: 1px solid rgba(255, 255, 255, 0.08);
     background: rgba(255, 255, 255, 0.03);
     cursor: pointer;
+    scroll-snap-align: start;
     transition: transform 0.16s ease, border-color 0.16s ease, background 0.16s ease;
 }
 

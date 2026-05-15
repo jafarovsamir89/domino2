@@ -122,6 +122,7 @@ class DominoGame {
         this.lastGiftSentKey = '';
         this.lastReactionSentAt = 0;
         this.lastReactionSentType = '';
+        this._reactionDragState = null;
         this.setLanguage(this.currentLang);
         this.setupStartScreen(); this.setupGameControls(); this.setupMenu();
         this.applySharedRoomCodeFromUrl();
@@ -3183,6 +3184,7 @@ class DominoGame {
 
         this.reactionBtn.innerHTML = this.buildReactionMarkup(this.reactionPalette[0], 48);
         this.renderReactionPicker();
+        this.bindReactionPickerDrag();
 
         this.reactionBtn.addEventListener('click', (event) => {
             event.stopPropagation();
@@ -3196,6 +3198,64 @@ class DominoGame {
             this.closeReactionPicker();
         };
         document.addEventListener('pointerdown', this._reactionOutsideHandler, true);
+    }
+    bindReactionPickerDrag() {
+        if (!this.reactionPicker || this._reactionPickerDragBound) return;
+        this._reactionPickerDragBound = true;
+        const picker = this.reactionPicker;
+        let startY = 0;
+        let startScrollTop = 0;
+        let dragging = false;
+        let pointerId = null;
+
+        const endDrag = () => {
+            if (pointerId !== null) {
+                picker.releasePointerCapture?.(pointerId);
+            }
+            pointerId = null;
+            dragging = false;
+            this._reactionDragState = null;
+        };
+
+        picker.addEventListener('pointerdown', (event) => {
+            if (!this.reactionPicker?.classList.contains('open')) return;
+            const target = event.target;
+            if (!(target instanceof Element)) return;
+            if (!target.closest('.reaction-choice')) return;
+            if (event.button !== 0 && event.pointerType !== 'touch') return;
+            startY = event.clientY;
+            startScrollTop = picker.scrollTop;
+            dragging = false;
+            pointerId = event.pointerId;
+            this._reactionDragState = { startY, startScrollTop };
+        });
+
+        picker.addEventListener('pointermove', (event) => {
+            if (pointerId === null || event.pointerId !== pointerId) return;
+            const state = this._reactionDragState;
+            if (!state) return;
+            const deltaY = event.clientY - state.startY;
+            if (!dragging && Math.abs(deltaY) < 6) return;
+            dragging = true;
+            event.preventDefault();
+            picker.scrollTop = state.startScrollTop - deltaY;
+        }, { passive: false });
+
+        picker.addEventListener('pointerup', () => {
+            endDrag();
+        });
+        picker.addEventListener('pointercancel', () => {
+            endDrag();
+        });
+        picker.addEventListener('lostpointercapture', () => {
+            endDrag();
+        });
+        picker.addEventListener('click', (event) => {
+            if (dragging) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+        }, true);
     }
     renderReactionPicker() {
         if (!this.reactionPicker) return;
