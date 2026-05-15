@@ -236,6 +236,7 @@ class DominoGame {
         const onlineModalClose = document.getElementById('online-modal-close');
         const accountModalClose = document.getElementById('account-modal-close');
         const coinShopModalClose = document.getElementById('coin-shop-modal-close');
+        const cosmeticsShopModalClose = document.getElementById('cosmetics-shop-modal-close');
         const coinShopVideoBtn = document.getElementById('coin-shop-video-btn');
 
         if (openSoloBtn) openSoloBtn.addEventListener('click', () => {
@@ -280,6 +281,7 @@ class DominoGame {
         if (onlineModalClose) onlineModalClose.addEventListener('click', () => this.showStartModal(null));
         if (accountModalClose) accountModalClose.addEventListener('click', () => this.closeAccountModal());
         if (coinShopModalClose) coinShopModalClose.addEventListener('click', () => this.closeCoinShopModal());
+        if (cosmeticsShopModalClose) cosmeticsShopModalClose.addEventListener('click', () => this.closeCosmeticsShopModal());
         if (coinShopVideoBtn) coinShopVideoBtn.addEventListener('click', async () => {
             await this.claimCoinShopVideoReward();
         });
@@ -1069,7 +1071,7 @@ class DominoGame {
         const action = document.createElement('button');
         action.type = 'button';
         action.className = `btn btn-menu table-skin-action${skin.equipped ? ' is-selected' : ''}`;
-        action.disabled = this.tableSkinLoading || this.tableSkinBusy || !skin.isActive;
+        action.disabled = this.tableSkinLoading || this.tableSkinBusy;
         action.textContent = skin.equipped
             ? this.t('coin-shop-skin-equipped')
             : skin.owned
@@ -1158,6 +1160,11 @@ class DominoGame {
         this.tableSkinBusy = true;
         try {
             const result = await this.account.purchaseTableSkin(skinKey);
+            try {
+                await this.account.equipTableSkin(skinKey);
+            } catch (equipErr) {
+                debugLog('Auto-equip after table skin purchase failed:', equipErr);
+            }
             if (result?.wallet) {
                 const equippedKey = result?.equippedKey || this.accountProfile?.tableSkinKey || null;
                 this.accountDetails = {
@@ -1183,6 +1190,7 @@ class DominoGame {
             }
             await this.loadTableSkinShop();
             this.applyActiveTableSkin();
+            this.setAccountProfileTab('skins');
             this.renderAccountModal();
             this.syncStartAuthButton();
             if (document.getElementById('cosmetics-shop-modal')?.classList.contains('active')) {
@@ -1327,9 +1335,10 @@ class DominoGame {
 
         const cosmeticsShopCloseButton = document.getElementById('cosmetics-shop-modal-close');
         if (cosmeticsShopCloseButton) {
-            cosmeticsShopCloseButton.textContent = 'x';
-            cosmeticsShopCloseButton.title = this.t('modal-close');
-            cosmeticsShopCloseButton.setAttribute('aria-label', this.t('modal-close'));
+            const label = this.t('online-room-back');
+            cosmeticsShopCloseButton.textContent = label;
+            cosmeticsShopCloseButton.title = label;
+            cosmeticsShopCloseButton.setAttribute('aria-label', label);
         }
 
         const placeholders = [

@@ -1190,6 +1190,7 @@ export class EconomyService {
     }
 
     const nextQuantity = Math.max(1, Math.min(99, Math.trunc(quantity) || 1));
+    await this.ensureBootstrap();
     return this.prisma.$transaction(async (tx) => {
       const product = await tx.catalogProduct.findUnique({
         where: { key: productKey },
