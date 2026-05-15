@@ -17,6 +17,21 @@ export class EconomyController {
     return this.economyService.listPublicStakes();
   }
 
+  @Get("economy/cosmetics/table-skins")
+  async listTableSkins(@Req() req: Request) {
+    return this.economyService.listTableSkins(req.headers);
+  }
+
+  @Post("economy/cosmetics/table-skins/purchase")
+  async purchaseTableSkin(@Req() req: Request, @Body() body: { key?: string | null }) {
+    return this.economyService.purchaseTableSkin(req.headers, body?.key || "");
+  }
+
+  @Post("economy/cosmetics/table-skins/equip")
+  async equipTableSkin(@Req() req: Request, @Body() body: { key?: string | null }) {
+    return this.economyService.equipTableSkin(req.headers, body?.key || "");
+  }
+
   @Get("economy/coin-shop/status")
   async getCoinShopStatus(@Req() req: Request) {
     return this.economyService.getCoinShopStatus(req.headers);

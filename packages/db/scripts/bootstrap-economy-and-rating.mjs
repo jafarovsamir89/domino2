@@ -17,6 +17,39 @@ const DEFAULT_STAKES = [
   { key: "stake_5000", title: "5,000 coins", stakeAmount: 5000, commissionBps: 500, isFree: false, isActive: true, sortOrder: 6 }
 ];
 
+const DEFAULT_TABLE_SKINS = [
+  {
+    key: "table_skin_01",
+    name: "Aurora Felt",
+    description: "Blue-green premium felt with a warm gold edge."
+  },
+  {
+    key: "table_skin_02",
+    name: "Midnight Carbon",
+    description: "Dark carbon weave with a subtle studio shine."
+  },
+  {
+    key: "table_skin_03",
+    name: "Emerald Classic",
+    description: "Rich green felt with clean tournament contrast."
+  },
+  {
+    key: "table_skin_04",
+    name: "Ocean Drift",
+    description: "Deep blue surface with soft motion lines."
+  },
+  {
+    key: "table_skin_05",
+    name: "Walnut Table",
+    description: "Warm wood grain for a premium club feel."
+  },
+  {
+    key: "table_skin_06",
+    name: "Ivory Marble",
+    description: "Light marble with elegant veins and depth."
+  }
+];
+
 function resolveAdminEmail() {
   const arg = process.argv.find((value) => value.startsWith("--email="));
   if (arg) {
@@ -77,6 +110,49 @@ async function main() {
         },
         create: stake
       });
+    }
+
+    for (const skin of DEFAULT_TABLE_SKINS) {
+      const product = await tx.catalogProduct.upsert({
+        where: { key: skin.key },
+        update: {
+          name: skin.name,
+          description: skin.description,
+          isActive: true
+        },
+        create: {
+          key: skin.key,
+          name: skin.name,
+          description: skin.description,
+          isActive: true
+        }
+      });
+
+      const price = await tx.catalogPrice.findFirst({
+        where: {
+          productId: product.id,
+          currency: "COIN"
+        }
+      });
+
+      if (price) {
+        await tx.catalogPrice.update({
+          where: { id: price.id },
+          data: {
+            amountMinor: 200,
+            isActive: true
+          }
+        });
+      } else {
+        await tx.catalogPrice.create({
+          data: {
+            productId: product.id,
+            currency: "COIN",
+            amountMinor: 200,
+            isActive: true
+          }
+        });
+      }
     }
 
     const idempotencyKey = `starter-coins:${user.id}`;

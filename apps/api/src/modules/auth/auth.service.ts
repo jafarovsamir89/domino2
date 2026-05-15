@@ -99,6 +99,7 @@ export class AuthService {
         displayName: player.displayName,
         avatarSeed: player.avatarSeed,
         avatarUrl: player.avatarUrl,
+        tableSkinKey: player.tableSkinKey,
         language: player.language,
         createdAt: player.createdAt,
         updatedAt: player.updatedAt

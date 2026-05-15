@@ -4,6 +4,7 @@ export class Renderer {
     constructor(app) {
         this.app = app;
         this.boardEl = document.getElementById('board');
+        this.boardContainerEl = document.getElementById('board-container');
         this.handEl = document.getElementById('player-hand');
         this.scoresEl = document.getElementById('scores-bar');
         this.messageEl = document.getElementById('message-area');
@@ -16,6 +17,12 @@ export class Renderer {
         this._pendingBoardTileTravel = null;
         this._activeTileTravel = null;
         this._animatedBoardTileIds = new Set();
+    }
+
+    setTableSkin(assetUrl) {
+        const skinValue = assetUrl ? `url("${assetUrl}")` : 'none';
+        const target = this.boardContainerEl || document.documentElement;
+        target.style.setProperty('--table-skin-image', skinValue);
     }
 
     pipLayout(v, orient = 'horizontal') {

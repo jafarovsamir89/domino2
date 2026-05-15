@@ -82,6 +82,7 @@ function normalizeProfile(payload = {}, source = "legacy") {
         role: String(user?.role || payload.role || "player"),
         isGuest: Boolean(payload.isGuest || player?.isGuest || user?.isGuest),
         avatarSeed: player?.avatarSeed || payload.avatarSeed || null,
+        tableSkinKey: player?.tableSkinKey || payload.tableSkinKey || null,
         language: player?.language || payload.language || null,
         rating: normalizedStats?.rating ?? Number(payload.rating ?? 1000),
         points: normalizedStats?.points ?? Number(payload.points ?? 0),
@@ -676,6 +677,24 @@ export class AccountClient {
         this.setPlatformProfile(normalized.profile);
         this.setStoredProfile(normalized.profile);
         return normalized;
+    }
+
+    async getTableSkinShop() {
+        return this.platformRequest("/economy/cosmetics/table-skins");
+    }
+
+    async purchaseTableSkin(key) {
+        return this.platformRequest("/economy/cosmetics/table-skins/purchase", {
+            method: "POST",
+            body: { key }
+        });
+    }
+
+    async equipTableSkin(key) {
+        return this.platformRequest("/economy/cosmetics/table-skins/equip", {
+            method: "POST",
+            body: { key }
+        });
     }
 
     async logout() {

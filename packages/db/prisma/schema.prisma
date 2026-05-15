@@ -148,6 +148,7 @@ model Player {
   displayName   String
   avatarSeed    String?
   avatarUrl     String?
+  tableSkinKey  String?
   isGuest       Boolean            @default(false)
   language      String?
   createdAt     DateTime           @default(now())

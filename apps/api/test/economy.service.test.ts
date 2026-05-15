@@ -21,6 +21,31 @@ test("getPublicConfig hides the free table from the public stake list", async ()
         { id: "1", key: "free", title: "Free table", stakeAmount: 0, commissionBps: 0, isFree: true, isActive: true, sortOrder: 0 },
         { id: "2", key: "stake_50", title: "50 coins", stakeAmount: 50, commissionBps: 500, isFree: false, isActive: true, sortOrder: 1 }
       ])
+    },
+    catalogProduct: {
+      upsert: async ({ create, update }: any) => ({
+        id: `catalog:${create?.key || update?.key || "skin"}`,
+        key: create?.key || update?.key || "skin",
+        name: create?.name || update?.name || "Skin",
+        description: create?.description || update?.description || null,
+        isActive: true
+      }),
+      findMany: async () => []
+    },
+    catalogPrice: {
+      findFirst: async () => null,
+      update: async (payload: any) => payload.data,
+      create: async (payload: any) => payload.data
+    },
+    playerEntitlement: {
+      findMany: async () => [],
+      findUnique: async () => null,
+      upsert: async ({ create }: any) => ({
+        id: `entitlement:${create?.productKey || "skin"}`,
+        playerId: create?.playerId || "player",
+        productKey: create?.productKey || "skin",
+        quantity: create?.quantity || 1
+      })
     }
   } as any;
 

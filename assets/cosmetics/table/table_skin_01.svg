@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" width="1600" height="900" role="img" aria-label="Aurora Felt">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#113a42"/>
+      <stop offset="46%" stop-color="#1c664d"/>
+      <stop offset="100%" stop-color="#0c1d24"/>
+    </linearGradient>
+    <linearGradient id="shine" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#f4d07f" stop-opacity=".0"/>
+      <stop offset="48%" stop-color="#f4d07f" stop-opacity=".16"/>
+      <stop offset="100%" stop-color="#f4d07f" stop-opacity=".0"/>
+    </linearGradient>
+    <pattern id="dots" width="56" height="56" patternUnits="userSpaceOnUse">
+      <circle cx="10" cy="12" r="1.8" fill="#ffffff" fill-opacity=".12"/>
+      <circle cx="39" cy="31" r="1.2" fill="#ffffff" fill-opacity=".08"/>
+    </pattern>
+  </defs>
+  <rect width="1600" height="900" fill="url(#bg)"/>
+  <rect width="1600" height="900" fill="url(#dots)"/>
+  <ellipse cx="800" cy="190" rx="720" ry="130" fill="#ffffff" opacity=".06"/>
+  <rect x="0" y="690" width="1600" height="210" fill="#091218" opacity=".35"/>
+  <rect x="0" y="0" width="1600" height="900" fill="url(#shine)"/>
+  <path d="M-40 740 C 160 670, 330 820, 540 744 S 980 675, 1210 744 S 1500 820, 1660 715" fill="none" stroke="#f4d07f" stroke-opacity=".18" stroke-width="10" stroke-linecap="round"/>
+  <path d="M-120 780 C 180 710, 380 850, 620 780 S 1030 730, 1280 786 S 1490 850, 1720 760" fill="none" stroke="#ffffff" stroke-opacity=".06" stroke-width="16" stroke-linecap="round"/>
+</svg>

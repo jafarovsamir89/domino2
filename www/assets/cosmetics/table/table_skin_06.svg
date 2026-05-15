@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" width="1600" height="900" role="img" aria-label="Ivory Marble">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f4efe5"/>
+      <stop offset="55%" stop-color="#ddd3c1"/>
+      <stop offset="100%" stop-color="#b7aa95"/>
+    </linearGradient>
+    <linearGradient id="vein" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity=".0"/>
+      <stop offset="45%" stop-color="#8a7c68" stop-opacity=".28"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity=".0"/>
+    </linearGradient>
+  </defs>
+  <rect width="1600" height="900" fill="url(#bg)"/>
+  <path d="M-70 170C150 80 330 170 560 120s360-40 560 15 320 55 620-15" fill="none" stroke="url(#vein)" stroke-width="22" stroke-linecap="round"/>
+  <path d="M-100 410C120 330 300 470 520 405s360-48 590 10 340 35 640-20" fill="none" stroke="url(#vein)" stroke-width="18" stroke-linecap="round"/>
+  <path d="M-60 700C130 620 340 760 560 705s360-36 580 8 320 40 610-18" fill="none" stroke="url(#vein)" stroke-width="20" stroke-linecap="round"/>
+  <path d="M180 40C240 160 170 240 230 360s140 160 110 280-140 190-100 320" fill="none" stroke="#5d5345" stroke-opacity=".18" stroke-width="10" stroke-linecap="round"/>
+  <rect x="0" y="0" width="1600" height="900" fill="none" stroke="#ffffff" stroke-opacity=".32" stroke-width="12"/>
+</svg>

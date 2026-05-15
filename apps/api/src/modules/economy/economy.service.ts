@@ -97,6 +97,45 @@ const DEFAULT_STAKES: EconomyStakeTablePayload[] = [
   { key: "stake_5000", title: "5,000 coins", stakeAmount: 5000, commissionBps: 500, isFree: false, isActive: true, sortOrder: 6 }
 ];
 
+const DEFAULT_TABLE_SKINS = [
+  {
+    key: "table_skin_01",
+    name: "Aurora Felt",
+    description: "Blue-green premium felt with a warm gold edge.",
+    sortOrder: 1
+  },
+  {
+    key: "table_skin_02",
+    name: "Midnight Carbon",
+    description: "Dark carbon weave with a subtle studio shine.",
+    sortOrder: 2
+  },
+  {
+    key: "table_skin_03",
+    name: "Emerald Classic",
+    description: "Rich green felt with clean tournament contrast.",
+    sortOrder: 3
+  },
+  {
+    key: "table_skin_04",
+    name: "Ocean Drift",
+    description: "Deep blue surface with soft motion lines.",
+    sortOrder: 4
+  },
+  {
+    key: "table_skin_05",
+    name: "Walnut Table",
+    description: "Warm wood grain for a premium club feel.",
+    sortOrder: 5
+  },
+  {
+    key: "table_skin_06",
+    name: "Ivory Marble",
+    description: "Light marble with elegant veins and depth.",
+    sortOrder: 6
+  }
+] as const;
+
 const SOLO_MAX_STAKE = 200;
 
 function toInt(value: unknown, fallback = 0) {
@@ -123,6 +162,14 @@ function formatStakeSummary(stake: { key: string; title: string; stakeAmount: nu
     commissionExample: calcCommission(Math.max(0, stake.stakeAmount * 2), stake.commissionBps),
     payoutExample: Math.max(0, stake.stakeAmount * 2) - calcCommission(Math.max(0, stake.stakeAmount * 2), stake.commissionBps)
   };
+}
+
+function isTableSkinProductKey(productKey: string) {
+  return String(productKey || "").startsWith("table_skin_");
+}
+
+function getTableSkinAssetUrl(productKey: string) {
+  return `/assets/cosmetics/table/${productKey}.svg`;
 }
 
 function startOfUtcDay(date: Date) {
@@ -189,6 +236,49 @@ export class EconomyService {
         },
         create: stake
       });
+    }
+
+    for (const skin of DEFAULT_TABLE_SKINS) {
+      const product = await db.catalogProduct.upsert({
+        where: { key: skin.key },
+        update: {
+          name: skin.name,
+          description: skin.description,
+          isActive: true
+        },
+        create: {
+          key: skin.key,
+          name: skin.name,
+          description: skin.description,
+          isActive: true
+        }
+      });
+
+      const price = await db.catalogPrice.findFirst({
+        where: {
+          productId: product.id,
+          currency: "COIN"
+        }
+      });
+
+      if (price) {
+        await db.catalogPrice.update({
+          where: { id: price.id },
+          data: {
+            amountMinor: 200,
+            isActive: true
+          }
+        });
+      } else {
+        await db.catalogPrice.create({
+          data: {
+            productId: product.id,
+            currency: "COIN",
+            amountMinor: 200,
+            isActive: true
+          }
+        });
+      }
     }
   }
 
@@ -1118,8 +1208,33 @@ export class EconomyService {
         throw new BadRequestException("Coin price missing");
       }
 
+      const wallet = await this.ensureWallet(tx, profile.player.id);
+
+      const tableSkin = isTableSkinProductKey(product.key);
+      if (tableSkin) {
+        const existingEntitlement = await tx.playerEntitlement.findUnique({
+          where: {
+            playerId_productKey: {
+              playerId: profile.player.id,
+              productKey: product.key
+            }
+          }
+        });
+
+        if (existingEntitlement && Number(existingEntitlement.quantity || 0) > 0) {
+          return {
+            entitlement: existingEntitlement,
+            product,
+            price,
+            totalCost: 0,
+            wallet,
+            alreadyOwned: true
+          };
+        }
+      }
+
       const totalCost = price.amountMinor * nextQuantity;
-      const wallet = await this.debitWallet(
+      const updatedWallet = await this.debitWallet(
         tx,
         profile.player.id,
         totalCost,
@@ -1144,14 +1259,16 @@ export class EconomyService {
           }
         },
         update: {
-          quantity: {
-            increment: nextQuantity
-          }
+          quantity: tableSkin
+            ? 1
+            : {
+                increment: nextQuantity
+              }
         },
         create: {
           playerId: profile.player.id,
           productKey: product.key,
-          quantity: nextQuantity
+          quantity: tableSkin ? 1 : nextQuantity
         }
       });
 
@@ -1160,7 +1277,7 @@ export class EconomyService {
         product,
         price,
         totalCost,
-        wallet
+        wallet: updatedWallet
       };
     });
   }
@@ -2101,6 +2218,83 @@ export class EconomyService {
     });
   }
 
+  async listTableSkins(headers: IncomingHttpHeaders) {
+    const profile = await this.authService.getCurrentProfile(headers);
+    if (!profile?.player) {
+      throw new UnauthorizedException("Login required");
+    }
+
+    await this.ensureBootstrap();
+
+    const skinKeys = DEFAULT_TABLE_SKINS.map((skin) => skin.key);
+    const [player, products, entitlements, wallet] = await Promise.all([
+      this.prisma.player.findUnique({
+        where: { id: profile.player.id },
+        select: { tableSkinKey: true }
+      }),
+      this.prisma.catalogProduct.findMany({
+        where: {
+          key: {
+            in: skinKeys
+          },
+          isActive: true
+        },
+        include: {
+          prices: {
+            where: { isActive: true },
+            orderBy: { amountMinor: "asc" }
+          }
+        }
+      }),
+      this.prisma.playerEntitlement.findMany({
+        where: {
+          playerId: profile.player.id,
+          productKey: {
+            in: skinKeys
+          }
+        },
+        select: {
+          productKey: true,
+          quantity: true
+        }
+      }),
+      this.ensureWallet(this.prisma, profile.player.id)
+    ]);
+
+    const productMap = new Map(products.map((product) => [product.key, product]));
+    const ownedKeys = new Set(
+      entitlements
+        .filter((entry) => Number(entry.quantity || 0) > 0)
+        .map((entry) => entry.productKey)
+    );
+
+    const tableSkins = DEFAULT_TABLE_SKINS.map((skin) => {
+      const product = productMap.get(skin.key);
+      const price = product?.prices?.find((entry) => String(entry.currency || "").toUpperCase() === "COIN");
+      return {
+        key: skin.key,
+        name: skin.name,
+        description: skin.description,
+        assetUrl: getTableSkinAssetUrl(skin.key),
+        price: Number(price?.amountMinor ?? 200),
+        owned: ownedKeys.has(skin.key),
+        equipped: player?.tableSkinKey === skin.key,
+        isActive: Boolean(product?.isActive)
+      };
+    });
+
+    return {
+      wallet: {
+        ...wallet,
+        availableBalance: Math.max(0, wallet.balance),
+        spendableBalance: Math.max(0, wallet.balance),
+        reservedBalance: wallet.reserved
+      },
+      equippedKey: player?.tableSkinKey || null,
+      tableSkins
+    };
+  }
+
   async upsertCatalog(headers: IncomingHttpHeaders, payload: { id?: string; key: string; name: string; description?: string | null; coinCost?: number; isActive?: boolean }) {
     const session = await this.requireAdmin(headers);
     await this.ensureBootstrap();
@@ -2173,6 +2367,65 @@ export class EconomyService {
     });
 
     return product;
+  }
+
+  async purchaseTableSkin(headers: IncomingHttpHeaders, key: string) {
+    const skinKey = toCleanString(key);
+    if (!DEFAULT_TABLE_SKINS.some((skin) => skin.key === skinKey)) {
+      throw new BadRequestException("Table skin not found");
+    }
+
+    const result = await this.purchaseCosmetic(headers, skinKey, 1);
+    const profile = await this.authService.getCurrentProfile(headers);
+    if (profile?.player) {
+      await this.prisma.player.update({
+        where: { id: profile.player.id },
+        data: {
+          tableSkinKey: skinKey
+        }
+      });
+    }
+    return {
+      ...result,
+      equippedKey: skinKey
+    };
+  }
+
+  async equipTableSkin(headers: IncomingHttpHeaders, key: string) {
+    const skinKey = toCleanString(key);
+    if (!DEFAULT_TABLE_SKINS.some((skin) => skin.key === skinKey)) {
+      throw new BadRequestException("Table skin not found");
+    }
+
+    const profile = await this.authService.getCurrentProfile(headers);
+    if (!profile?.player) {
+      throw new UnauthorizedException("Login required");
+    }
+
+    const entitlement = await this.prisma.playerEntitlement.findUnique({
+      where: {
+        playerId_productKey: {
+          playerId: profile.player.id,
+          productKey: skinKey
+        }
+      }
+    });
+
+    if (!entitlement || Number(entitlement.quantity || 0) <= 0) {
+      throw new BadRequestException("Table skin not owned");
+    }
+
+    const player = await this.prisma.player.update({
+      where: { id: profile.player.id },
+      data: {
+        tableSkinKey: skinKey
+      }
+    });
+
+    return {
+      equippedKey: player.tableSkinKey,
+      owned: true
+    };
   }
 
   async grantCoins(headers: IncomingHttpHeaders, playerId: string, payload: EconomyGrantPayload) {

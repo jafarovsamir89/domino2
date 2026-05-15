@@ -12,6 +12,44 @@ const TARGET=365, MAX_R=3, DLOSS=255, IWIN=35;
 const TURN_TIMEOUT_MS = 30000;
 const BOT_THINK_DELAY_MS = 1000;
 const DEAL_END_MODAL_MS = 2000;
+const DEFAULT_TABLE_SKINS = [
+    {
+        key: 'table_skin_01',
+        name: 'Aurora Felt',
+        description: 'Blue-green premium felt with a warm gold edge.',
+        assetUrl: 'assets/cosmetics/table/table_skin_01.svg'
+    },
+    {
+        key: 'table_skin_02',
+        name: 'Midnight Carbon',
+        description: 'Dark carbon weave with a subtle studio shine.',
+        assetUrl: 'assets/cosmetics/table/table_skin_02.svg'
+    },
+    {
+        key: 'table_skin_03',
+        name: 'Emerald Classic',
+        description: 'Rich green felt with clean tournament contrast.',
+        assetUrl: 'assets/cosmetics/table/table_skin_03.svg'
+    },
+    {
+        key: 'table_skin_04',
+        name: 'Ocean Drift',
+        description: 'Deep blue surface with soft motion lines.',
+        assetUrl: 'assets/cosmetics/table/table_skin_04.svg'
+    },
+    {
+        key: 'table_skin_05',
+        name: 'Walnut Table',
+        description: 'Warm wood grain for a premium club feel.',
+        assetUrl: 'assets/cosmetics/table/table_skin_05.svg'
+    },
+    {
+        key: 'table_skin_06',
+        name: 'Ivory Marble',
+        description: 'Light marble with elegant veins and depth.',
+        assetUrl: 'assets/cosmetics/table/table_skin_06.svg'
+    }
+];
 
 function isDebugLoggingEnabled() {
     if (typeof window === 'undefined') return false;
@@ -129,8 +167,11 @@ class DominoGame {
         this.lastGiftSentAt = 0;
         this.lastGiftSentKey = '';
         this.coinShopStatus = null;
+        this.tableSkinShop = null;
         this.coinShopLoading = false;
         this.coinShopClaiming = false;
+        this.tableSkinLoading = false;
+        this.tableSkinBusy = false;
         this._coinShopTickId = null;
         this.lastReactionSentAt = 0;
         this.lastReactionSentType = '';
@@ -499,6 +540,7 @@ class DominoGame {
         this.accountOnline = this.hasAuthenticatedAccount(this.accountProfile);
         this.accountMode = this.accountOnline ? 'profile' : 'login';
         this.prefillAccountNames();
+        this.applyActiveTableSkin();
         this.renderAccountModal();
         this.syncStartAuthButton();
         if (this.accountOnline) void this.loadGiftHub();
@@ -554,6 +596,7 @@ class DominoGame {
                 this.accountOnline = true;
                 if (this.accountProfile) this.accountMode = 'profile';
                 this.prefillAccountNames();
+                this.applyActiveTableSkin();
                 this.renderAccountModal();
                 this.syncStartAuthButton();
                 void this.loadGiftHub();
@@ -568,6 +611,7 @@ class DominoGame {
         this.accountOnline = false;
         this.accountDetails = null;
         if (!hadProfile) this.accountProfile = null;
+        if (!hadProfile) this.applyActiveTableSkin();
         this.renderAccountModal();
         this.syncStartAuthButton();
         if (!hadProfile) this.syncStartAuthGate();
@@ -602,7 +646,7 @@ class DominoGame {
         const modal = document.getElementById('coin-shop-modal');
         if (modal) modal.classList.add('active');
         this.ensureShopIconMarkup();
-        await this.loadCoinShopStatus();
+        await Promise.all([this.loadCoinShopStatus(), this.loadTableSkinShop()]);
         this.renderCoinShopModal();
         this.startCoinShopTicker();
     }
@@ -670,6 +714,60 @@ class DominoGame {
         }
     }
 
+    getTableSkinCatalogEntries() {
+        const remote = Array.isArray(this.tableSkinShop?.tableSkins) ? this.tableSkinShop.tableSkins : [];
+        if (remote.length) {
+            return remote;
+        }
+        return DEFAULT_TABLE_SKINS.map((skin) => ({
+            ...skin,
+            owned: false,
+            equipped: this.accountProfile?.tableSkinKey === skin.key,
+            price: 200,
+            isActive: true
+        }));
+    }
+
+    getTableSkinEntry(key) {
+        const normalizedKey = String(key || '').trim();
+        return this.getTableSkinCatalogEntries().find((skin) => skin.key === normalizedKey) || null;
+    }
+
+    applyActiveTableSkin() {
+        const selectedKey = this.tableSkinShop?.equippedKey || this.accountProfile?.tableSkinKey || null;
+        const skin = selectedKey ? this.getTableSkinEntry(selectedKey) : null;
+        this.renderer.setTableSkin(skin?.assetUrl || null);
+    }
+
+    async loadTableSkinShop() {
+        if (!this.account?.getTableSkinShop || this.tableSkinLoading) {
+            return this.tableSkinShop;
+        }
+        this.tableSkinLoading = true;
+        try {
+            const data = await this.account.getTableSkinShop();
+            this.tableSkinShop = data || null;
+            this.applyActiveTableSkin();
+            return this.tableSkinShop;
+        } catch (err) {
+            debugLog('Table skin shop load failed:', err);
+            this.tableSkinShop = {
+                equippedKey: this.accountProfile?.tableSkinKey || null,
+                tableSkins: DEFAULT_TABLE_SKINS.map((skin) => ({
+                    ...skin,
+                    price: 200,
+                    owned: false,
+                    equipped: this.accountProfile?.tableSkinKey === skin.key,
+                    isActive: true
+                }))
+            };
+            this.applyActiveTableSkin();
+            return this.tableSkinShop;
+        } finally {
+            this.tableSkinLoading = false;
+        }
+    }
+
     renderCoinShopModal() {
         const balanceValue = document.getElementById('coin-shop-balance-value');
         const statusEl = document.getElementById('coin-shop-status');
@@ -679,6 +777,7 @@ class DominoGame {
         const rewardBtn = document.getElementById('coin-shop-video-btn');
         const rewardState = document.getElementById('coin-shop-video-state');
         const packsGrid = document.getElementById('coin-shop-packs-grid');
+        const skinsGrid = document.getElementById('coin-shop-table-skins-grid');
         const note = document.getElementById('coin-shop-footnote');
         const shop = this.coinShopStatus?.coinShop || {
             videoReward: { amount: 25, cooldownMinutes: 30, dailyLimit: 6 },
@@ -780,6 +879,75 @@ class DominoGame {
                 packsGrid.appendChild(card);
             }
         }
+        if (skinsGrid) {
+            skinsGrid.innerHTML = '';
+            const skins = this.getTableSkinCatalogEntries();
+            for (const skin of skins) {
+                const card = document.createElement('article');
+                card.className = `table-skin-card${skin.equipped ? ' is-selected' : ''}${skin.owned ? ' is-owned' : ''}`;
+                const preview = document.createElement('div');
+                preview.className = 'table-skin-preview';
+                preview.style.backgroundImage = skin.assetUrl ? `url("${skin.assetUrl}")` : '';
+                const previewGlow = document.createElement('div');
+                previewGlow.className = 'table-skin-preview-glow';
+                preview.appendChild(previewGlow);
+                const body = document.createElement('div');
+                body.className = 'table-skin-body';
+                const topRow = document.createElement('div');
+                topRow.className = 'table-skin-top';
+                const title = document.createElement('div');
+                title.className = 'table-skin-title';
+                title.textContent = skin.name;
+                const badge = document.createElement('span');
+                badge.className = `table-skin-badge${skin.equipped ? ' is-equipped' : skin.owned ? ' is-owned' : ''}`;
+                badge.textContent = skin.equipped
+                    ? this.t('coin-shop-skin-equipped')
+                    : skin.owned
+                        ? this.t('coin-shop-skin-owned')
+                        : this.t('coin-shop-skin-price');
+                topRow.appendChild(title);
+                topRow.appendChild(badge);
+                const desc = document.createElement('p');
+                desc.className = 'table-skin-desc';
+                desc.textContent = skin.description;
+                const footer = document.createElement('div');
+                footer.className = 'table-skin-footer';
+                const price = document.createElement('div');
+                price.className = 'table-skin-price';
+                price.textContent = skin.owned ? this.t('coin-shop-skin-owned') : `${Number(skin.price || 200).toLocaleString('en-US')} coins`;
+                const action = document.createElement('button');
+                action.type = 'button';
+                action.className = `btn btn-menu table-skin-action${skin.equipped ? ' is-selected' : ''}`;
+                action.disabled = this.tableSkinLoading || this.tableSkinBusy || !skin.isActive;
+                action.textContent = skin.equipped
+                    ? this.t('coin-shop-skin-equipped')
+                    : skin.owned
+                        ? this.t('coin-shop-skin-use')
+                        : this.t('coin-shop-skin-buy');
+                action.addEventListener('click', async () => {
+                    if (this.tableSkinBusy || this.tableSkinLoading) return;
+                    this.tableSkinBusy = true;
+                    try {
+                        if (skin.owned) {
+                            await this.equipTableSkin(skin.key);
+                        } else {
+                            await this.buyTableSkin(skin.key);
+                        }
+                    } finally {
+                        this.tableSkinBusy = false;
+                        this.renderCoinShopModal();
+                    }
+                });
+                footer.appendChild(price);
+                footer.appendChild(action);
+                body.appendChild(topRow);
+                body.appendChild(desc);
+                body.appendChild(footer);
+                card.appendChild(preview);
+                card.appendChild(body);
+                skinsGrid.appendChild(card);
+            }
+        }
         this.ensureShopIconMarkup();
     }
 
@@ -825,6 +993,88 @@ class DominoGame {
         }
     }
 
+    async buyTableSkin(key) {
+        if (this.tableSkinBusy) return;
+        const skinKey = String(key || '').trim();
+        if (!skinKey) return;
+        this.tableSkinBusy = true;
+        try {
+            const result = await this.account.purchaseTableSkin(skinKey);
+            if (result?.wallet) {
+                this.accountDetails = {
+                    ...(this.accountDetails || {}),
+                    wallet: result.wallet,
+                    profile: {
+                        ...(this.accountDetails?.profile || {}),
+                        tableSkinKey: result.equippedKey || skinKey
+                    },
+                    player: {
+                        ...(this.accountDetails?.player || {}),
+                        tableSkinKey: result.equippedKey || skinKey
+                    }
+                };
+                this.accountProfile = {
+                    ...(this.accountProfile || {}),
+                    coins: result.wallet.balance,
+                    wallet: result.wallet,
+                    tableSkinKey: result.equippedKey || skinKey
+                };
+                this.account.setStoredProfile?.(this.accountProfile);
+                this.account.setPlatformProfile?.(this.accountProfile);
+            }
+            await this.loadTableSkinShop();
+            this.applyActiveTableSkin();
+            this.renderAccountModal();
+            this.syncStartAuthButton();
+            this.renderer.showMessage(
+                result?.alreadyOwned ? this.t('coin-shop-skin-applied') : this.t('coin-shop-skin-purchased'),
+                1800
+            );
+        } catch (err) {
+            this.renderer.showMessage(err.message || this.t('coin-shop-skin-buy-failed'), 2000);
+        } finally {
+            this.tableSkinBusy = false;
+            this.renderCoinShopModal();
+        }
+    }
+
+    async equipTableSkin(key) {
+        if (this.tableSkinBusy) return;
+        const skinKey = String(key || '').trim();
+        if (!skinKey) return;
+        this.tableSkinBusy = true;
+        try {
+            const result = await this.account.equipTableSkin(skinKey);
+            this.accountProfile = {
+                ...(this.accountProfile || {}),
+                tableSkinKey: result?.equippedKey || skinKey
+            };
+            this.account.setStoredProfile?.(this.accountProfile);
+            this.account.setPlatformProfile?.(this.accountProfile);
+            this.accountDetails = {
+                ...(this.accountDetails || {}),
+                profile: {
+                    ...(this.accountDetails?.profile || {}),
+                    tableSkinKey: this.accountProfile.tableSkinKey
+                },
+                player: {
+                    ...(this.accountDetails?.player || {}),
+                    tableSkinKey: this.accountProfile.tableSkinKey
+                }
+            };
+            await this.loadTableSkinShop();
+            this.applyActiveTableSkin();
+            this.renderAccountModal();
+            this.syncStartAuthButton();
+            this.renderer.showMessage(this.t('coin-shop-skin-applied'), 1800);
+        } catch (err) {
+            this.renderer.showMessage(err.message || this.t('coin-shop-skin-equip-failed'), 2000);
+        } finally {
+            this.tableSkinBusy = false;
+            this.renderCoinShopModal();
+        }
+    }
+
     syncStartAuthGate() {
         const startScreen = document.getElementById('start-screen');
         if (!startScreen) return;
@@ -844,6 +1094,7 @@ class DominoGame {
         }
         this.accountOnline = true;
         this.accountMode = 'profile';
+        this.applyActiveTableSkin();
         this.closeAccountModal();
         this.showStartModal(null);
         this.renderAccountModal();

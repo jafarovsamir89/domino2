@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" width="1600" height="900" role="img" aria-label="Ocean Drift">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#123b67"/>
+      <stop offset="48%" stop-color="#1f66ab"/>
+      <stop offset="100%" stop-color="#08223e"/>
+    </linearGradient>
+    <linearGradient id="wave" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity=".0"/>
+      <stop offset="50%" stop-color="#ffffff" stop-opacity=".13"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity=".0"/>
+    </linearGradient>
+  </defs>
+  <rect width="1600" height="900" fill="url(#bg)"/>
+  <ellipse cx="1120" cy="170" rx="340" ry="160" fill="#8fc7ff" opacity=".10"/>
+  <ellipse cx="410" cy="660" rx="420" ry="200" fill="#ffffff" opacity=".04"/>
+  <path d="M-60 160C170 110 340 240 560 188s400-40 610 20 340 30 530-40" fill="none" stroke="url(#wave)" stroke-width="18" stroke-linecap="round"/>
+  <path d="M-80 280C150 230 360 360 590 305s420-50 630 12 310 22 550-40" fill="none" stroke="#ffffff" stroke-opacity=".08" stroke-width="10" stroke-linecap="round"/>
+  <path d="M-80 740C120 690 330 820 570 770s420-48 650 10 300 20 530-34" fill="none" stroke="#ffffff" stroke-opacity=".07" stroke-width="14" stroke-linecap="round"/>
+  <rect x="0" y="0" width="1600" height="900" fill="none" stroke="#b8d9ff" stroke-opacity=".10" stroke-width="12"/>
+</svg>
