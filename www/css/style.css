@@ -1895,21 +1895,30 @@ input, button { font: inherit; }
     background: rgba(12, 21, 31, 0.92);
     backdrop-filter: blur(18px);
     box-shadow: 0 18px 40px rgba(0, 0, 0, 0.38);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    opacity: 0;
+    pointer-events: none;
+    overflow: hidden;
+    transition: opacity 0.18s ease, transform 0.18s ease;
+}
+
+.reaction-picker-scroll {
     display: grid;
     grid-template-columns: repeat(5, minmax(0, 1fr));
     align-content: start;
     grid-auto-rows: min-content;
     gap: 8px;
-    scroll-snap-type: y proximity;
-    opacity: 0;
-    pointer-events: none;
+    max-height: min(46vh, 280px);
+    padding-right: 4px;
     overflow-y: auto;
     overflow-x: hidden;
     overscroll-behavior: contain;
     -webkit-overflow-scrolling: touch;
     touch-action: pan-y;
     scrollbar-width: thin;
-    transition: opacity 0.18s ease, transform 0.18s ease;
+    scroll-snap-type: y proximity;
 }
 
 .gift-picker {
@@ -1947,6 +1956,15 @@ input, button { font: inherit; }
 }
 
 .reaction-picker::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.18);
+    border-radius: 999px;
+}
+
+.reaction-picker-scroll::-webkit-scrollbar {
+    width: 8px;
+}
+
+.reaction-picker-scroll::-webkit-scrollbar-thumb {
     background: rgba(255, 255, 255, 0.18);
     border-radius: 999px;
 }
@@ -2587,9 +2605,24 @@ input, button { font: inherit; }
     }
 
     .reaction-picker {
-        width: min(300px, calc(100vw - 20px));
+        position: fixed;
+        left: 10px;
+        right: 10px;
+        bottom: calc(74px + env(safe-area-inset-bottom, 0px));
+        transform: translateY(12px) scale(0.96);
+        width: auto;
         max-height: min(56vh, 340px);
         padding: 8px;
+        gap: 6px;
+        z-index: 2600;
+    }
+
+    .reaction-picker.open {
+        transform: translateY(0) scale(1);
+    }
+
+    .reaction-picker-scroll {
+        max-height: min(56vh, 340px);
         gap: 6px;
     }
 

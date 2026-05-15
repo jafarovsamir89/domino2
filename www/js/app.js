@@ -3203,18 +3203,17 @@ class DominoGame {
         if (!this.reactionPicker || this._reactionPickerDragBound) return;
         this._reactionPickerDragBound = true;
         const picker = this.reactionPicker;
+        const scrollRoot = () => picker.querySelector('.reaction-picker-scroll') || picker;
         let startY = 0;
         let startScrollTop = 0;
         let dragging = false;
         let pointerId = null;
-        let touchId = null;
 
         const endDrag = () => {
             if (pointerId !== null) {
                 picker.releasePointerCapture?.(pointerId);
             }
             pointerId = null;
-            touchId = null;
             dragging = false;
             this._reactionDragState = null;
         };
@@ -3227,7 +3226,7 @@ class DominoGame {
             if (event.pointerType === 'touch') return;
             if (event.button !== 0) return;
             startY = event.clientY;
-            startScrollTop = picker.scrollTop;
+            startScrollTop = scrollRoot().scrollTop;
             dragging = false;
             pointerId = event.pointerId;
             this._reactionDragState = { startY, startScrollTop };
@@ -3241,7 +3240,9 @@ class DominoGame {
             if (!dragging && Math.abs(deltaY) < 6) return;
             dragging = true;
             event.preventDefault();
-            picker.scrollTop = state.startScrollTop - deltaY;
+            const root = scrollRoot();
+            const maxScroll = Math.max(0, root.scrollHeight - root.clientHeight);
+            root.scrollTop = Math.min(maxScroll, Math.max(0, state.startScrollTop - deltaY));
         }, { passive: false });
 
         picker.addEventListener('pointerup', () => {
@@ -3253,34 +3254,6 @@ class DominoGame {
         picker.addEventListener('lostpointercapture', () => {
             endDrag();
         });
-        picker.addEventListener('touchstart', (event) => {
-            if (!this.reactionPicker?.classList.contains('open')) return;
-            const target = event.target;
-            if (!(target instanceof Element)) return;
-            if (!target.closest('.reaction-choice')) return;
-            const touch = event.changedTouches?.[0];
-            if (!touch) return;
-            touchId = touch.identifier;
-            startY = touch.clientY;
-            startScrollTop = picker.scrollTop;
-            dragging = false;
-            this._reactionDragState = { startY, startScrollTop };
-        }, { passive: true });
-        picker.addEventListener('touchmove', (event) => {
-            if (touchId === null) return;
-            const state = this._reactionDragState;
-            if (!state) return;
-            const touch = Array.from(event.changedTouches || []).find((item) => item.identifier === touchId);
-            if (!touch) return;
-            const deltaY = touch.clientY - state.startY;
-            if (!dragging && Math.abs(deltaY) < 4) return;
-            dragging = true;
-            event.preventDefault();
-            const maxScroll = Math.max(0, picker.scrollHeight - picker.clientHeight);
-            picker.scrollTop = Math.min(maxScroll, Math.max(0, state.startScrollTop - deltaY));
-        }, { passive: false });
-        picker.addEventListener('touchend', endDrag);
-        picker.addEventListener('touchcancel', endDrag);
         picker.addEventListener('click', (event) => {
             if (dragging) {
                 event.preventDefault();
@@ -3291,6 +3264,8 @@ class DominoGame {
     renderReactionPicker() {
         if (!this.reactionPicker) return;
         this.reactionPicker.innerHTML = '';
+        const scrollRoot = document.createElement('div');
+        scrollRoot.className = 'reaction-picker-scroll';
         for (const reaction of this.reactionPalette) {
             const btn = document.createElement('button');
             btn.type = 'button';
@@ -3303,8 +3278,9 @@ class DominoGame {
                 event.stopPropagation();
                 this.sendReaction(reaction.code);
             });
-            this.reactionPicker.appendChild(btn);
+            scrollRoot.appendChild(btn);
         }
+        this.reactionPicker.appendChild(scrollRoot);
     }
     toggleReactionPicker(force = null) {
         if (!this.reactionPicker || !this.reactionBtn) return;
