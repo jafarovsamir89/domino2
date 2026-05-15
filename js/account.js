@@ -342,6 +342,11 @@ export class AccountClient {
             return platformData;
         }
 
+        const profileData = await this.getProfileDetails();
+        if (profileData) {
+            return profileData;
+        }
+
         this.setStoredToken("");
         this.setStoredProfile(null);
         this.setPlatformProfile(null);
@@ -740,7 +745,16 @@ export class AccountClient {
         if (platform) {
             return platform;
         }
-        return null;
+
+        try {
+            const data = await this.platformRequest("/me");
+            const normalized = normalizeProfile(data, "better-auth");
+            this.setPlatformProfile(normalized.profile);
+            this.setStoredProfile(normalized.profile);
+            return normalized;
+        } catch {
+            return null;
+        }
     }
 
     async recordMatch(payload) {
