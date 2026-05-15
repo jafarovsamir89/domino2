@@ -1,7 +1,7 @@
 import type { IncomingHttpHeaders } from "node:http";
 
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException, UnauthorizedException } from "@nestjs/common";
-import { Prisma } from "@prisma/client";
+import { Prisma, type CoinLedgerType } from "@prisma/client";
 
 import { AuthService } from "../auth/auth.service.js";
 import { PrismaService } from "../prisma/prisma.service.js";
@@ -214,6 +214,7 @@ export class SocialService {
     db: Prisma.TransactionClient | PrismaService,
     playerId: string,
     amount: number,
+    type: CoinLedgerType,
     referenceType: string,
     referenceId: string,
     extras: { idempotencyKey?: string | null; note?: string | null; payloadJson?: Prisma.InputJsonValue; createdByUserId?: string | null } = {}
@@ -239,7 +240,7 @@ export class SocialService {
     await db.coinLedgerEntry.create({
       data: {
         playerId,
-        type: "shop_purchase",
+        type,
         amount: -nextAmount,
         balanceBefore: wallet.balance,
         balanceAfter: updated.balance,
@@ -261,6 +262,7 @@ export class SocialService {
     db: Prisma.TransactionClient | PrismaService,
     playerId: string,
     amount: number,
+    type: CoinLedgerType,
     referenceType: string,
     referenceId: string,
     extras: { idempotencyKey?: string | null; note?: string | null; payloadJson?: Prisma.InputJsonValue; createdByUserId?: string | null } = {}
@@ -282,7 +284,7 @@ export class SocialService {
     await db.coinLedgerEntry.create({
       data: {
         playerId,
-        type: "refund",
+        type,
         amount: nextAmount,
         balanceBefore: wallet.balance,
         balanceAfter: updated.balance,
@@ -857,6 +859,7 @@ export class SocialService {
         currentPlayer.id,
         nextCatalog.coinCost,
         "gift_send",
+        "gift_send",
         nextCatalog.id,
         {
           note: note || `Gift ${nextCatalog.name}`,
@@ -1003,6 +1006,7 @@ export class SocialService {
         tx,
         currentPlayer.id,
         exchangeValue,
+        "gift_exchange",
         "gift_exchange",
         catalog.id,
         {

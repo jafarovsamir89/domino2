@@ -164,14 +164,14 @@ export default async function EconomyPage() {
               title="Create or update stake"
               submitLabel="Save stake"
               method="POST"
-              note="Use a unique key like stake_50 or free."
+              note="Use a unique key like stake_50."
               fields={[
                 { name: "key", label: "Key", type: "text", required: true },
                 { name: "title", label: "Title", type: "text", required: true },
                 { name: "stakeAmount", label: "Stake amount", type: "number", min: 0, step: 1 },
                 { name: "commissionBps", label: "Commission bps", type: "number", min: 0, step: 1 },
                 { name: "sortOrder", label: "Sort order", type: "number", min: 0, step: 1 },
-                { name: "isFree", label: "Free table", type: "checkbox", help: "Leave this on for the zero-balance fallback table." },
+                { name: "isFree", label: "Free table", type: "checkbox", help: "Keep only for a legacy zero-balance fallback table." },
                 { name: "isActive", label: "Active", type: "checkbox" }
               ]}
             />

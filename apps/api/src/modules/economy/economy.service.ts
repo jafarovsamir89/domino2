@@ -88,7 +88,7 @@ const COIN_SHOP_VIDEO_COOLDOWN_MINUTES = 30;
 const COIN_SHOP_VIDEO_DAILY_LIMIT = 6;
 
 const DEFAULT_STAKES: EconomyStakeTablePayload[] = [
-  { key: "free", title: "Free table", stakeAmount: 0, commissionBps: 0, isFree: true, isActive: true, sortOrder: 0 },
+  { key: "free", title: "Free table", stakeAmount: 0, commissionBps: 0, isFree: true, isActive: false, sortOrder: 0 },
   { key: "stake_50", title: "50 coins", stakeAmount: 50, commissionBps: 500, isFree: false, isActive: true, sortOrder: 1 },
   { key: "stake_100", title: "100 coins", stakeAmount: 100, commissionBps: 500, isFree: false, isActive: true, sortOrder: 2 },
   { key: "stake_200", title: "200 coins", stakeAmount: 200, commissionBps: 500, isFree: false, isActive: true, sortOrder: 3 },
@@ -547,7 +547,7 @@ export class EconomyService {
 
     return {
       config,
-      stakes: stakes.map(formatStakeSummary),
+      stakes: stakes.filter((stake) => !stake.isFree).map(formatStakeSummary),
       coinShop: this.buildCoinShopConfig(config)
     };
   }
@@ -1453,10 +1453,27 @@ export class EconomyService {
           });
           void released;
         } else {
+          const consumed = await this.consumeReservedWallet(
+            tx,
+            reservation.playerId,
+            reservation.stakeAmount,
+            "match_settle",
+            matchId || roomId,
+            {
+              idempotencyKey: `${roomId}:${matchId || "match"}:${reservation.playerId}:${stakeTable.id}:consume`,
+              note: stakeTable.title,
+              payloadJson: {
+                roomId,
+                matchId: matchId || null,
+                stakeKey,
+                result
+              }
+            }
+          );
           settled.push({
             playerId: reservation.playerId,
             userId: reservation.player.userId || null,
-            wallet,
+            wallet: consumed,
             payout: 0
           });
         }

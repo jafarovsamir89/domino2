@@ -70,6 +70,62 @@ function nameKey(name) {
     return normalizeName(name).toLowerCase();
 }
 
+function clamp(value, min, max) {
+    return Math.max(min, Math.min(max, value));
+}
+
+function toFiniteInt(value, fallback = 0) {
+    const parsed = Number.parseInt(String(value ?? ""), 10);
+    return Number.isFinite(parsed) ? parsed : fallback;
+}
+
+function calculateLegacyPlayerRating(stats) {
+    const matchesPlayed = Math.max(0, toFiniteInt(stats?.matchesPlayed, 0));
+    if (matchesPlayed <= 0) {
+        return 1000;
+    }
+
+    const wins = Math.max(0, toFiniteInt(stats?.wins, 0));
+    const losses = Math.max(0, toFiniteInt(stats?.losses, 0));
+    const draws = Math.max(0, toFiniteInt(stats?.draws, 0));
+    const currentStreak = Math.max(0, toFiniteInt(stats?.currentStreak, 0));
+    const bestStreak = Math.max(0, toFiniteInt(stats?.bestStreak, 0));
+
+    const confidence = matchesPlayed / (matchesPlayed + 12);
+    const winRate = (wins + draws * 0.5) / matchesPlayed;
+    const balance = (wins - losses) / matchesPlayed;
+    const volumeBonus = Math.log10(matchesPlayed + 1) * 70;
+    const streakBonus = Math.min(100, currentStreak * 10 + bestStreak * 2);
+
+    const raw = 1000
+        + confidence * ((winRate - 0.5) * 850 + balance * 300)
+        + volumeBonus
+        + streakBonus;
+
+    return clamp(Math.round(raw), 300, 5000);
+}
+
+function getLegacyPlayerRatingTitleCode(rating) {
+    const tiers = [
+        { code: "rookie", minRating: 0 },
+        { code: "bronze", minRating: 1075 },
+        { code: "silver", minRating: 1200 },
+        { code: "gold", minRating: 1350 },
+        { code: "platinum", minRating: 1500 },
+        { code: "diamond", minRating: 1650 },
+        { code: "master", minRating: 1800 },
+        { code: "legend", minRating: 1950 }
+    ];
+    const safeRating = Number.isFinite(rating) ? rating : 1000;
+    let current = tiers[0];
+    for (const tier of tiers) {
+        if (safeRating >= tier.minRating) {
+            current = tier;
+        }
+    }
+    return current.code;
+}
+
 function safePublicUser(user) {
     if (!user) return null;
     return {
@@ -298,26 +354,19 @@ function getLeaderboard(limit = 10) {
         }));
 }
 
-function eloDelta(userRating, oppRating, result, k = 32) {
-    const expected = 1 / (1 + Math.pow(10, (oppRating - userRating) / 400));
-    return Math.round(k * (result - expected));
-}
-
-function applyResult(user, { result, points = 0, ratingDelta = 0, won = false, lost = false, draw = false }) {
+function applyResult(user, { points = 0, nextStats = null, nextRating = null }) {
     user.points += points;
-    user.matchesPlayed += 1;
-    if (won) {
-        user.wins += 1;
-        user.currentStreak += 1;
-        user.bestStreak = Math.max(user.bestStreak, user.currentStreak);
-    } else if (lost) {
-        user.losses += 1;
-        user.currentStreak = 0;
-    } else if (draw) {
-        user.draws += 1;
-        user.currentStreak = 0;
+    if (nextStats) {
+        user.wins = nextStats.wins;
+        user.losses = nextStats.losses;
+        user.draws = nextStats.draws;
+        user.matchesPlayed = nextStats.matchesPlayed;
+        user.currentStreak = nextStats.currentStreak;
+        user.bestStreak = nextStats.bestStreak;
     }
-    user.rating = Math.max(100, user.rating + ratingDelta);
+    if (Number.isFinite(nextRating)) {
+        user.rating = nextRating;
+    }
     touchUser(user);
 }
 
@@ -326,7 +375,6 @@ function recordMatch(payload) {
     const createdAt = new Date().toISOString();
     const matchId = crypto.randomUUID();
     const participants = Array.isArray(payload?.participants) ? payload.participants : [];
-    const teams = Array.isArray(payload?.teams) ? payload.teams : [];
     const isTeamMode = payload?.isTeamMode === true;
 
     const resolvedParticipants = participants.map((participant) => {
@@ -337,18 +385,6 @@ function recordMatch(payload) {
             ratingBefore: user ? user.rating : null
         };
     });
-
-    let teamRatings = null;
-    if (isTeamMode && teams.length >= 2) {
-        teamRatings = teams.map((team) => {
-            const memberRatings = team.memberIds
-                .map((id) => findUserById(id))
-                .filter(Boolean)
-                .map((user) => user.rating);
-            const avg = memberRatings.length ? memberRatings.reduce((a, b) => a + b, 0) / memberRatings.length : 1000;
-            return avg;
-        });
-    }
 
     const winnerKey = String(payload?.winnerKey || "").trim();
     const totalPoints = resolvedParticipants.reduce((sum, item) => sum + (parseInt(item.points, 10) || 0), 0);
@@ -364,57 +400,37 @@ function recordMatch(payload) {
         participants: resolvedParticipants
     };
 
-    if (teamRatings) {
-        matchRecord.teamRatings = teamRatings;
-    }
-
     const isDraw = winnerKey === "draw" || payload?.result === "draw";
-    const ratingSnapshot = new Map(state.users.map((user) => [user.id, user.rating]));
-    const deltas = resolvedParticipants.map((participant) => {
-        if (!participant.userId) return null;
+    for (const participant of resolvedParticipants) {
+        if (!participant.userId) continue;
         const user = findUserById(participant.userId);
-        if (!user) return null;
+        if (!user) continue;
 
-        const isWinner = winnerKey && participant.winnerKey === winnerKey;
-        const didWin = isDraw ? false : !!isWinner;
+        const isWinner = isDraw ? false : (
+            isTeamMode
+                ? participant.teamIndex !== undefined && participant.teamIndex !== null && `team:${participant.teamIndex}` === winnerKey
+                : participant.winnerKey === winnerKey || participant.result === "win"
+        );
+        const didWin = !isDraw && !!isWinner;
         const didLose = !didWin && !isDraw;
-
-        let ratingDelta = 0;
-        if (isTeamMode && teamRatings && participant.teamIndex !== undefined && participant.teamIndex !== null) {
-            const ownTeam = teamRatings[participant.teamIndex] || 1000;
-            const oppTeam = teamRatings[participant.teamIndex === 0 ? 1 : 0] || 1000;
-            const result = isDraw ? 0.5 : (didWin ? 1 : 0);
-            ratingDelta = eloDelta(ownTeam, oppTeam, result, 28);
-        } else {
-            const oppRatings = resolvedParticipants
-                .filter((other) => other.userId && other.userId !== participant.userId)
-                .map((other) => ratingSnapshot.get(other.userId) || 1000);
-            const oppAvg = oppRatings.length ? oppRatings.reduce((a, b) => a + b, 0) / oppRatings.length : 1000;
-            const result = isDraw ? 0.5 : (didWin ? 1 : 0);
-            ratingDelta = eloDelta(ratingSnapshot.get(participant.userId) || 1000, oppAvg, result, 32);
-        }
-
-        return {
-            participant,
-            user,
-            points: parseInt(participant.points, 10) || 0,
-            ratingDelta,
-            won: didWin,
-            lost: didLose,
-            draw: isDraw
+        const nextCurrentStreak = didWin ? user.currentStreak + 1 : 0;
+        const nextStats = {
+            wins: user.wins + (didWin ? 1 : 0),
+            losses: user.losses + (didLose ? 1 : 0),
+            draws: user.draws + (isDraw ? 1 : 0),
+            matchesPlayed: user.matchesPlayed + 1,
+            currentStreak: nextCurrentStreak,
+            bestStreak: Math.max(user.bestStreak, nextCurrentStreak)
         };
-    }).filter(Boolean);
+        const nextRating = calculateLegacyPlayerRating(nextStats);
 
-    for (const entry of deltas) {
-        applyResult(entry.user, {
-            points: entry.points,
-            ratingDelta: entry.ratingDelta,
-            won: entry.won,
-            lost: entry.lost,
-            draw: entry.draw
+        applyResult(user, {
+            points: parseInt(participant.points, 10) || 0,
+            nextStats,
+            nextRating
         });
-        entry.participant.ratingAfter = entry.user.rating;
-        entry.participant.ratingDelta = entry.ratingDelta;
+        participant.ratingAfter = user.rating;
+        participant.ratingDelta = user.rating - (participant.ratingBefore || 1000);
     }
 
     state.matches.push(matchRecord);
@@ -434,5 +450,7 @@ module.exports = {
     recordMatch,
     findUserById,
     getSession,
-    safePublicUser
+    safePublicUser,
+    calculateLegacyPlayerRating,
+    getLegacyPlayerRatingTitleCode
 };

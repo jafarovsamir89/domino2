@@ -38,6 +38,8 @@ enum CoinLedgerType {
   admin_adjustment
   shop_purchase
   ad_reward
+  gift_send
+  gift_exchange
 }
 
 enum CoinStakeStatus {
