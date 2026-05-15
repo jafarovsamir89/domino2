@@ -1150,7 +1150,23 @@ input, button { font: inherit; }
     gap: 8px;
 }
 
+.start-cosmetics-shop-btn,
+.btn-menu-cosmetics {
+    border-color: rgba(88, 162, 255, 0.26);
+    background: linear-gradient(135deg, rgba(88, 162, 255, 0.16), rgba(255, 255, 255, 0.05));
+}
+
+.start-cosmetics-shop-btn:hover,
+.btn-menu-cosmetics:hover {
+    border-color: rgba(88, 162, 255, 0.44);
+    box-shadow: 0 0 0 1px rgba(88, 162, 255, 0.08), 0 16px 30px rgba(88, 162, 255, 0.12);
+}
+
 .coin-shop-modal {
+    width: min(920px, 100%);
+}
+
+.cosmetics-shop-modal {
     width: min(920px, 100%);
 }
 
@@ -1212,6 +1228,11 @@ input, button { font: inherit; }
     gap: 10px;
 }
 
+.cosmetics-shop-panel {
+    grid-column: 1 / -1;
+    background: linear-gradient(180deg, rgba(88, 162, 255, 0.08), rgba(255, 255, 255, 0.04));
+}
+
 .coin-shop-video-panel {
     background: linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(240, 192, 64, 0.06));
 }
@@ -1245,6 +1266,10 @@ input, button { font: inherit; }
 
 .coin-shop-cosmetics-panel {
     grid-column: 1 / -1;
+}
+
+.cosmetics-shop-hero {
+    background: linear-gradient(135deg, rgba(88, 162, 255, 0.14), rgba(255, 255, 255, 0.03));
 }
 
 .table-skin-grid {
@@ -1431,6 +1456,19 @@ input, button { font: inherit; }
     border-radius: 22px;
     border: 1px solid rgba(255, 255, 255, 0.08);
     background: rgba(255, 255, 255, 0.03);
+}
+
+.account-skins {
+    display: grid;
+    gap: 10px;
+    padding: 12px;
+    border-radius: 22px;
+    border: 1px solid rgba(88, 162, 255, 0.18);
+    background: rgba(88, 162, 255, 0.04);
+}
+
+.account-skins-grid {
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
 }
 
 .gift-inventory-grid {

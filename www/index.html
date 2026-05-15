@@ -77,6 +77,7 @@
                 <button class="btn btn-action btn-large" id="open-rooms-btn" data-i18n="open-rooms-button">Açıq otaqlar</button>
                 <button class="btn btn-action btn-large start-auth-btn" id="account-btn" data-i18n="account-login">Sign in</button>
                 <button class="btn btn-menu btn-large start-shop-btn" id="start-coin-shop-btn" type="button" data-i18n="coin-shop-menu">Coin shop</button>
+                <button class="btn btn-menu btn-large start-shop-btn start-cosmetics-shop-btn" id="start-cosmetics-shop-btn" type="button" data-i18n="cosmetics-shop-menu">Decor shop</button>
             </div>
         </div>
 
@@ -324,6 +325,11 @@
                             <div class="section-kicker" data-i18n="account-gift-vault">Gift vault</div>
                             <div id="account-gifts-list" class="gift-inventory-grid"></div>
                         </div>
+                        <div class="account-skins is-hidden" id="account-skins-panel">
+                            <div class="section-kicker" data-i18n="account-skins-vault">Table skins</div>
+                            <p class="modal-desc" data-i18n="account-skins-desc">Owned table skins appear here. Pick one to apply it to the table.</p>
+                            <div id="account-skins-list" class="table-skin-grid account-skins-grid"></div>
+                        </div>
                         <div class="settings-grid compact-grid">
                             <div class="settings-group field-span-2">
                                 <label data-i18n="account-name">Ad</label>
@@ -409,15 +415,41 @@
                     </section>
                 </div>
 
-                <section class="coin-shop-panel coin-shop-cosmetics-panel">
-                    <div class="section-kicker" data-i18n="coin-shop-skins-title">Table skins</div>
-                    <div class="coin-shop-section-copy">
-                        <p class="modal-desc" data-i18n="coin-shop-skins-desc">Change the table look and choose an active skin.</p>
+                <p id="coin-shop-footnote" class="account-legal-copy" data-i18n="coin-shop-footnote">Coins are used for stakes, gifts and social actions.</p>
+            </section>
+        </div>
+
+        <div id="cosmetics-shop-modal" class="modal-backdrop">
+            <section class="modal-card modal-card-wide coin-shop-modal cosmetics-shop-modal">
+                <div class="modal-header">
+                    <div>
+                        <p class="section-kicker" data-i18n="cosmetics-shop-kicker">Decor shop</p>
+                        <h2 data-i18n="cosmetics-shop-title">Decor shop</h2>
+                        <p class="modal-desc" data-i18n="cosmetics-shop-desc">Buy and equip visual skins with coins.</p>
                     </div>
-                    <div id="coin-shop-table-skins-grid" class="table-skin-grid"></div>
+                    <button class="btn btn-menu modal-close-btn" id="cosmetics-shop-modal-close" data-i18n="modal-close">Close</button>
+                </div>
+
+                <div class="coin-shop-hero cosmetics-shop-hero">
+                    <div class="coin-shop-wallet">
+                        <span class="coin-shop-wallet-icon" data-shop-icon="coin" aria-hidden="true"></span>
+                        <div class="coin-shop-wallet-copy">
+                            <div class="coin-shop-wallet-label" data-i18n="cosmetics-shop-wallet-label">Wallet balance</div>
+                            <strong id="cosmetics-shop-balance-value">0</strong>
+                        </div>
+                    </div>
+                    <div id="cosmetics-shop-status" class="room-summary"></div>
+                </div>
+
+                <section class="coin-shop-panel cosmetics-shop-panel">
+                    <div class="section-kicker" data-i18n="cosmetics-shop-skins-title">Table skins</div>
+                    <div class="coin-shop-section-copy">
+                        <p class="modal-desc" data-i18n="cosmetics-shop-skins-desc">Choose a table look and equip it from your profile.</p>
+                    </div>
+                    <div id="cosmetics-shop-table-skins-grid" class="table-skin-grid"></div>
                 </section>
 
-                <p id="coin-shop-footnote" class="account-legal-copy" data-i18n="coin-shop-footnote">Coins are used for stakes, gifts and social actions.</p>
+                <p id="cosmetics-shop-footnote" class="account-legal-copy" data-i18n="cosmetics-shop-footnote">Cosmetics are bought with coins, but stay separate from coin packs.</p>
             </section>
         </div>
     </div>

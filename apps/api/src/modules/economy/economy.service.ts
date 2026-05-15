@@ -2377,17 +2377,9 @@ export class EconomyService {
 
     const result = await this.purchaseCosmetic(headers, skinKey, 1);
     const profile = await this.authService.getCurrentProfile(headers);
-    if (profile?.player) {
-      await this.prisma.player.update({
-        where: { id: profile.player.id },
-        data: {
-          tableSkinKey: skinKey
-        }
-      });
-    }
     return {
       ...result,
-      equippedKey: skinKey
+      equippedKey: profile?.player?.tableSkinKey || null
     };
   }
 
