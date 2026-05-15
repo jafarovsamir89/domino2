@@ -308,6 +308,7 @@ input, button { font: inherit; }
 }
 
 .start-shop-btn {
+    width: 100%;
     justify-content: center;
     text-align: center;
     gap: 0;
@@ -324,6 +325,25 @@ input, button { font: inherit; }
 
 .start-shop-btn::before {
     content: none;
+}
+
+.screen-copyright {
+    font-size: 0.56rem;
+    line-height: 1.2;
+    color: var(--text-dim);
+    opacity: 0.72;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    pointer-events: none;
+    user-select: none;
+}
+
+.start-screen-copyright {
+    position: absolute;
+    right: 18px;
+    bottom: 14px;
+    z-index: 8;
+    text-align: right;
 }
 
 .modal-backdrop {
@@ -2675,14 +2695,6 @@ input, button { font: inherit; }
     margin-top: auto;
     align-self: flex-end;
     padding-top: 18px;
-    font-size: 0.56rem;
-    line-height: 1.2;
-    color: var(--text-dim);
-    opacity: 0.72;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    pointer-events: none;
-    user-select: none;
 }
 
 .game-over-actions {
