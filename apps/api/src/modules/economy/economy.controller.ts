@@ -17,6 +17,16 @@ export class EconomyController {
     return this.economyService.listPublicStakes();
   }
 
+  @Get("economy/coin-shop/status")
+  async getCoinShopStatus(@Req() req: Request) {
+    return this.economyService.getCoinShopStatus(req.headers);
+  }
+
+  @Post("economy/coin-shop/video-reward")
+  async claimCoinShopVideoReward(@Req() req: Request) {
+    return this.economyService.claimCoinShopVideoReward(req.headers);
+  }
+
   @Get("economy/me/wallet")
   async getWallet(@Req() req: Request) {
     return this.economyService.getWallet(req.headers);

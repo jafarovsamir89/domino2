@@ -364,6 +364,51 @@
                 </div>
             </section>
         </div>
+
+        <div id="coin-shop-modal" class="modal-backdrop">
+            <section class="modal-card modal-card-wide coin-shop-modal">
+                <div class="modal-header">
+                    <div>
+                        <p class="section-kicker" data-i18n="coin-shop-kicker">Coin shop</p>
+                        <h2 data-i18n="coin-shop-title">Coin shop</h2>
+                        <p class="modal-desc" data-i18n="coin-shop-desc">Cheap top-ups and a free video reward.</p>
+                    </div>
+                    <button class="btn btn-menu modal-close-btn" id="coin-shop-modal-close" data-i18n="modal-close">Close</button>
+                </div>
+
+                <div class="coin-shop-hero">
+                    <div class="coin-shop-wallet">
+                        <span class="coin-shop-wallet-icon" data-shop-icon="coin" aria-hidden="true"></span>
+                        <div class="coin-shop-wallet-copy">
+                            <div class="coin-shop-wallet-label" data-i18n="coin-shop-balance-label">Wallet balance</div>
+                            <strong id="coin-shop-balance-value">0</strong>
+                        </div>
+                    </div>
+                    <div id="coin-shop-status" class="room-summary"></div>
+                </div>
+
+                <div class="coin-shop-grid">
+                    <section class="coin-shop-panel coin-shop-video-panel">
+                        <div class="section-kicker" data-i18n="coin-shop-video-kicker">Free coins</div>
+                        <h3 id="coin-shop-video-title">25 coins</h3>
+                        <p id="coin-shop-video-desc" class="modal-desc">Watch a short video and receive coins.</p>
+                        <div id="coin-shop-video-meta" class="room-summary"></div>
+                        <div class="coin-shop-video-cta">
+                            <span class="coin-shop-video-icon" data-shop-icon="video" aria-hidden="true"></span>
+                            <button class="btn btn-primary btn-large" id="coin-shop-video-btn" type="button" data-i18n="coin-shop-video-btn">Watch video</button>
+                        </div>
+                        <div id="coin-shop-video-state" class="room-summary"></div>
+                    </section>
+
+                    <section class="coin-shop-panel">
+                        <div class="section-kicker" data-i18n="coin-shop-packs-title">Coin packs</div>
+                        <div id="coin-shop-packs-grid" class="coin-pack-grid"></div>
+                    </section>
+                </div>
+
+                <p id="coin-shop-footnote" class="account-legal-copy" data-i18n="coin-shop-footnote">Coins are used for stakes, gifts and social actions.</p>
+            </section>
+        </div>
     </div>
 
     <div id="game-screen" class="screen">

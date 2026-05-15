@@ -83,6 +83,9 @@ type EconomyTournamentPayload = {
 };
 
 const DEFAULT_CONFIG_KEY = "default";
+const COIN_SHOP_VIDEO_REWARD_AMOUNT = 25;
+const COIN_SHOP_VIDEO_COOLDOWN_MINUTES = 30;
+const COIN_SHOP_VIDEO_DAILY_LIMIT = 6;
 
 const DEFAULT_STAKES: EconomyStakeTablePayload[] = [
   { key: "free", title: "Free table", stakeAmount: 0, commissionBps: 0, isFree: true, isActive: true, sortOrder: 0 },
@@ -120,6 +123,10 @@ function formatStakeSummary(stake: { key: string; title: string; stakeAmount: nu
     commissionExample: calcCommission(Math.max(0, stake.stakeAmount * 2), stake.commissionBps),
     payoutExample: Math.max(0, stake.stakeAmount * 2) - calcCommission(Math.max(0, stake.stakeAmount * 2), stake.commissionBps)
   };
+}
+
+function startOfUtcDay(date: Date) {
+  return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
 }
 
 @Injectable()
@@ -540,7 +547,150 @@ export class EconomyService {
 
     return {
       config,
-      stakes: stakes.map(formatStakeSummary)
+      stakes: stakes.map(formatStakeSummary),
+      coinShop: this.buildCoinShopConfig(config)
+    };
+  }
+
+  private buildCoinShopConfig(config: { adRewardAmount?: number | null; dailyClaimCooldown?: number | null } | null) {
+    const rewardAmount = Math.max(COIN_SHOP_VIDEO_REWARD_AMOUNT, Number(config?.adRewardAmount || 0) || COIN_SHOP_VIDEO_REWARD_AMOUNT);
+    const cooldownMinutes = Math.max(COIN_SHOP_VIDEO_COOLDOWN_MINUTES, Number(config?.dailyClaimCooldown || 0) || COIN_SHOP_VIDEO_COOLDOWN_MINUTES);
+    return {
+      videoReward: {
+        amount: rewardAmount,
+        cooldownMinutes,
+        dailyLimit: COIN_SHOP_VIDEO_DAILY_LIMIT
+      },
+      packs: [
+        { key: "coin_pack_100", coins: 100, priceLabel: "0.99 AZN", bonusCoins: 0, isRecommended: false },
+        { key: "coin_pack_250", coins: 250, priceLabel: "1.99 AZN", bonusCoins: 25, isRecommended: true },
+        { key: "coin_pack_600", coins: 600, priceLabel: "4.99 AZN", bonusCoins: 75, isRecommended: false },
+        { key: "coin_pack_1500", coins: 1500, priceLabel: "9.99 AZN", bonusCoins: 250, isRecommended: false },
+        { key: "coin_pack_3500", coins: 3500, priceLabel: "19.99 AZN", bonusCoins: 700, isRecommended: false }
+      ]
+    };
+  }
+
+  async getCoinShopStatus(headers: IncomingHttpHeaders) {
+    const profile = await this.authService.getCurrentProfile(headers);
+    if (!profile?.player) {
+      throw new UnauthorizedException("Login required");
+    }
+
+    await this.ensureBootstrap();
+    const config = await this.getConfig();
+    const wallet = await this.ensureWallet(this.prisma, profile.player.id);
+    const shop = this.buildCoinShopConfig(config);
+    const lastReward = await this.prisma.coinLedgerEntry.findFirst({
+      where: {
+        playerId: profile.player.id,
+        type: "ad_reward"
+      },
+      orderBy: { createdAt: "desc" }
+    });
+    const claimsToday = await this.prisma.coinLedgerEntry.count({
+      where: {
+        playerId: profile.player.id,
+        type: "ad_reward",
+        createdAt: {
+          gte: startOfUtcDay(new Date())
+        }
+      }
+    });
+    const nextAvailableAt = lastReward
+      ? new Date(lastReward.createdAt.getTime() + shop.videoReward.cooldownMinutes * 60_000)
+      : null;
+    const canClaim = claimsToday < shop.videoReward.dailyLimit && (!nextAvailableAt || nextAvailableAt.getTime() <= Date.now());
+
+    return {
+      wallet: {
+        ...wallet,
+        availableBalance: Math.max(0, wallet.balance),
+        spendableBalance: Math.max(0, wallet.balance),
+        reservedBalance: wallet.reserved
+      },
+      coinShop: {
+        ...shop,
+        claimsToday,
+        nextAvailableAt: nextAvailableAt ? nextAvailableAt.toISOString() : null,
+        canClaim,
+        remainingSeconds: nextAvailableAt ? Math.max(0, Math.ceil((nextAvailableAt.getTime() - Date.now()) / 1000)) : 0
+      }
+    };
+  }
+
+  async claimCoinShopVideoReward(headers: IncomingHttpHeaders) {
+    const profile = await this.authService.getCurrentProfile(headers);
+    if (!profile?.player) {
+      throw new UnauthorizedException("Login required");
+    }
+
+    await this.ensureBootstrap();
+    const config = await this.getConfig();
+    const shop = this.buildCoinShopConfig(config);
+    const now = new Date();
+    const lastReward = await this.prisma.coinLedgerEntry.findFirst({
+      where: {
+        playerId: profile.player.id,
+        type: "ad_reward"
+      },
+      orderBy: { createdAt: "desc" }
+    });
+    const claimsToday = await this.prisma.coinLedgerEntry.count({
+      where: {
+        playerId: profile.player.id,
+        type: "ad_reward",
+        createdAt: {
+          gte: startOfUtcDay(now)
+        }
+      }
+    });
+
+    if (claimsToday >= shop.videoReward.dailyLimit) {
+      throw new BadRequestException("Daily video reward limit reached");
+    }
+
+    if (lastReward) {
+      const nextAvailableAt = lastReward.createdAt.getTime() + shop.videoReward.cooldownMinutes * 60_000;
+      if (nextAvailableAt > now.getTime()) {
+        const remainingSeconds = Math.ceil((nextAvailableAt - now.getTime()) / 1000);
+        throw new BadRequestException(`Video reward available in ${Math.max(1, Math.ceil(remainingSeconds / 60))} min`);
+      }
+    }
+
+    const idempotencyKey = `coin-shop-video:${profile.player.id}:${toUtcDateKey(now)}:${claimsToday + 1}`;
+    const wallet = await this.creditWallet(
+      this.prisma,
+      profile.player.id,
+      shop.videoReward.amount,
+      "ad_reward",
+      "coin_shop",
+      idempotencyKey,
+      {
+        note: "Reward video",
+        payloadJson: {
+          rewardAmount: shop.videoReward.amount,
+          cooldownMinutes: shop.videoReward.cooldownMinutes,
+          dailyLimit: shop.videoReward.dailyLimit,
+          claimsToday: claimsToday + 1
+        }
+      }
+    );
+
+    const nextAvailableAt = new Date(now.getTime() + shop.videoReward.cooldownMinutes * 60_000);
+    return {
+      ok: true,
+      wallet: {
+        ...wallet,
+        availableBalance: Math.max(0, wallet.balance),
+        spendableBalance: Math.max(0, wallet.balance),
+        reservedBalance: wallet.reserved
+      },
+      rewardAmount: shop.videoReward.amount,
+      cooldownMinutes: shop.videoReward.cooldownMinutes,
+      dailyLimit: shop.videoReward.dailyLimit,
+      claimsToday: claimsToday + 1,
+      nextAvailableAt: nextAvailableAt.toISOString()
     };
   }
 

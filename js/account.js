@@ -506,6 +506,23 @@ export class AccountClient {
         };
     }
 
+    async getCoinShopStatus() {
+        const data = await this.platformRequest("/economy/coin-shop/status");
+        return {
+            wallet: data?.wallet || null,
+            coinShop: data?.coinShop || {
+                videoReward: { amount: 25, cooldownMinutes: 30, dailyLimit: 6 },
+                packs: []
+            }
+        };
+    }
+
+    async claimCoinShopVideoReward() {
+        return this.platformRequest("/economy/coin-shop/video-reward", {
+            method: "POST"
+        });
+    }
+
     async getGiftCatalog() {
         const data = await this.platformRequest("/social/gifts/catalog");
         return Array.isArray(data?.items) ? data.items : [];

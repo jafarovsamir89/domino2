@@ -31,6 +31,11 @@ const AUTH_ICON_SVGS = {
     camera: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M8.5 6.75 9.86 5h4.28l1.36 1.75H18A2.25 2.25 0 0 1 20.25 9v7A2.25 2.25 0 0 1 18 18.25H6A2.25 2.25 0 0 1 3.75 16V9A2.25 2.25 0 0 1 6 6.75h2.5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M12 15a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z" stroke="currentColor" stroke-width="1.6"/></svg>`
 };
 
+const SHOP_ICON_SVGS = {
+    coin: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2.75c5.11 0 9.25 1.9 9.25 4.25S17.11 11.25 12 11.25 2.75 9.35 2.75 7 6.89 2.75 12 2.75Z" stroke="currentColor" stroke-width="1.6"/><path d="M3 7v10c0 2.35 4.03 4.25 9 4.25s9-1.9 9-4.25V7" stroke="currentColor" stroke-width="1.6"/><path d="M3 12c0 2.35 4.03 4.25 9 4.25s9-1.9 9-4.25M12 6.5c2.76 0 5 .83 5 1.85S14.76 10.2 12 10.2 7 9.37 7 8.35 9.24 6.5 12 6.5Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>`,
+    video: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3.5" y="5.5" width="17" height="13" rx="3" stroke="currentColor" stroke-width="1.6"/><path d="m10 9 4.8 3-4.8 3V9Z" fill="currentColor"/></svg>`
+};
+
 class DominoGame {
     constructor() {
         this.renderer = new Renderer(this); this.board = new Board();
@@ -120,6 +125,10 @@ class DominoGame {
         this.selectedGiftRecipientId = '';
         this.lastGiftSentAt = 0;
         this.lastGiftSentKey = '';
+        this.coinShopStatus = null;
+        this.coinShopLoading = false;
+        this.coinShopClaiming = false;
+        this._coinShopTickId = null;
         this.lastReactionSentAt = 0;
         this.lastReactionSentType = '';
         this._reactionDragState = null;
@@ -150,6 +159,7 @@ class DominoGame {
             document.removeEventListener('pointerdown', this._giftOutsideHandler, true);
             this._giftOutsideHandler = null;
         }
+        this.stopCoinShopTicker();
         this.voice?.destroy?.();
         this.clearTurnTimers();
     }
@@ -172,6 +182,8 @@ class DominoGame {
         const soloModalClose = document.getElementById('solo-modal-close');
         const onlineModalClose = document.getElementById('online-modal-close');
         const accountModalClose = document.getElementById('account-modal-close');
+        const coinShopModalClose = document.getElementById('coin-shop-modal-close');
+        const coinShopVideoBtn = document.getElementById('coin-shop-video-btn');
 
         if (openSoloBtn) openSoloBtn.addEventListener('click', () => {
             this.syncSoloOptions();
@@ -206,6 +218,10 @@ class DominoGame {
         if (soloModalClose) soloModalClose.addEventListener('click', () => this.showStartModal(null));
         if (onlineModalClose) onlineModalClose.addEventListener('click', () => this.showStartModal(null));
         if (accountModalClose) accountModalClose.addEventListener('click', () => this.closeAccountModal());
+        if (coinShopModalClose) coinShopModalClose.addEventListener('click', () => this.closeCoinShopModal());
+        if (coinShopVideoBtn) coinShopVideoBtn.addEventListener('click', async () => {
+            await this.claimCoinShopVideoReward();
+        });
 
         const soloNameInput = document.getElementById('player-name');
         const onlineNameInput = document.getElementById('player-name-online');
@@ -455,6 +471,7 @@ class DominoGame {
         this.renderAccountModal();
         this.syncStartAuthButton();
         this.syncStartAuthGate();
+        this.ensureShopIconMarkup();
     }
 
     readPlayerName(preferred = 'any') {
@@ -567,16 +584,39 @@ class DominoGame {
         await this.loadLeaderboard();
     }
 
+    async openCoinShopModal() {
+        if (!this.hasAuthenticatedAccount()) {
+            await this.openAccountModal();
+            return;
+        }
+        this.closeStartModals();
+        this.closeAccountModal();
+        this.ensureCoinShopModalPortal();
+        const modal = document.getElementById('coin-shop-modal');
+        if (modal) modal.classList.add('active');
+        this.ensureShopIconMarkup();
+        await this.loadCoinShopStatus();
+        this.renderCoinShopModal();
+        this.startCoinShopTicker();
+    }
+
     closeAccountModal() {
         const modal = document.getElementById('account-modal');
         if (modal) modal.classList.remove('active');
         this.closeGiftPicker();
     }
 
+    closeCoinShopModal() {
+        const modal = document.getElementById('coin-shop-modal');
+        if (modal) modal.classList.remove('active');
+        this.stopCoinShopTicker();
+    }
+
     closeStartModals() {
         document.getElementById('solo-modal')?.classList.remove('active');
         document.getElementById('online-modal')?.classList.remove('active');
         this.closeGiftPicker();
+        this.closeCoinShopModal();
     }
 
     setAccountStatus(text) {
@@ -584,6 +624,198 @@ class DominoGame {
         if (el) el.textContent = text || '';
         const landingStatus = document.getElementById('landing-auth-status');
         if (landingStatus) landingStatus.textContent = text || '';
+    }
+
+    async loadCoinShopStatus() {
+        if (!this.account?.getCoinShopStatus || this.coinShopLoading) {
+            return this.coinShopStatus;
+        }
+        this.coinShopLoading = true;
+        try {
+            const status = await this.account.getCoinShopStatus();
+            this.coinShopStatus = status || null;
+            const wallet = status?.wallet || null;
+            if (wallet) {
+                this.accountDetails = {
+                    ...(this.accountDetails || {}),
+                    wallet
+                };
+                this.accountProfile = {
+                    ...(this.accountProfile || {}),
+                    coins: wallet.balance,
+                    wallet
+                };
+            }
+            return this.coinShopStatus;
+        } catch (err) {
+            debugLog('Coin shop status load failed:', err);
+            this.coinShopStatus = {
+                wallet: this.accountProfile?.wallet || null,
+                coinShop: {
+                    videoReward: { amount: 25, cooldownMinutes: 30, dailyLimit: 6 },
+                    packs: []
+                },
+                error: err?.message || ''
+            };
+            return this.coinShopStatus;
+        } finally {
+            this.coinShopLoading = false;
+        }
+    }
+
+    renderCoinShopModal() {
+        const balanceValue = document.getElementById('coin-shop-balance-value');
+        const statusEl = document.getElementById('coin-shop-status');
+        const rewardTitle = document.getElementById('coin-shop-video-title');
+        const rewardDesc = document.getElementById('coin-shop-video-desc');
+        const rewardMeta = document.getElementById('coin-shop-video-meta');
+        const rewardBtn = document.getElementById('coin-shop-video-btn');
+        const rewardState = document.getElementById('coin-shop-video-state');
+        const packsGrid = document.getElementById('coin-shop-packs-grid');
+        const note = document.getElementById('coin-shop-footnote');
+        const shop = this.coinShopStatus?.coinShop || {
+            videoReward: { amount: 25, cooldownMinutes: 30, dailyLimit: 6 },
+            packs: []
+        };
+        const wallet = this.coinShopStatus?.wallet || this.accountDetails?.wallet || this.accountProfile?.wallet || null;
+        const balance = Number(wallet?.balance ?? this.accountProfile?.coins ?? 0);
+        const reward = shop.videoReward || { amount: 25, cooldownMinutes: 30, dailyLimit: 6 };
+        const canClaim = Boolean(this.coinShopStatus?.canClaim);
+        const remainingSeconds = Number(this.coinShopStatus?.remainingSeconds || 0);
+        const claimsToday = Number(this.coinShopStatus?.claimsToday || 0);
+        const dailyLimit = Number(reward.dailyLimit || 6);
+        const amount = Number(reward.amount || 25);
+        const minutes = Math.max(0, Math.floor(remainingSeconds / 60));
+        const seconds = Math.max(0, remainingSeconds % 60);
+        const waitText = remainingSeconds > 0
+            ? this.format('coin-shop-video-wait', {
+                minutes: String(minutes).padStart(2, '0'),
+                seconds: String(seconds).padStart(2, '0')
+            })
+            : this.t('coin-shop-video-daily');
+
+        if (balanceValue) balanceValue.textContent = String(balance);
+        if (statusEl) {
+            statusEl.textContent = this.coinShopStatus?.error
+                ? this.coinShopStatus.error
+                : this.format('coin-shop-status-balance', {
+                    amount: balance.toLocaleString('en-US')
+                });
+        }
+        if (rewardTitle) {
+            rewardTitle.textContent = this.format('coin-shop-video-title', {
+                amount: amount.toLocaleString('en-US')
+            });
+        }
+        if (rewardDesc) {
+            rewardDesc.textContent = this.t('coin-shop-video-desc');
+        }
+        if (rewardMeta) {
+            rewardMeta.textContent = this.format('coin-shop-video-meta', {
+                cooldown: String(Math.max(1, Number(reward.cooldownMinutes || 30))),
+                claimsToday: String(claimsToday),
+                dailyLimit: String(dailyLimit)
+            });
+        }
+        if (rewardBtn) {
+            rewardBtn.disabled = this.coinShopLoading || this.coinShopClaiming || !canClaim;
+            rewardBtn.textContent = this.coinShopClaiming
+                ? this.t('coin-shop-video-claiming')
+                : (canClaim ? this.t('coin-shop-video-btn') : this.t('coin-shop-video-blocked'));
+        }
+        if (rewardState) {
+            rewardState.textContent = canClaim
+                ? this.format('coin-shop-video-ready', { amount: amount.toLocaleString('en-US') })
+                : waitText;
+        }
+        if (note) {
+            note.textContent = this.t('coin-shop-footnote');
+        }
+        if (packsGrid) {
+            packsGrid.innerHTML = '';
+            const packs = Array.isArray(shop.packs) ? shop.packs : [];
+            for (const pack of packs) {
+                const card = document.createElement('article');
+                card.className = `coin-pack-card${pack.isRecommended ? ' is-recommended' : ''}`;
+                const badge = document.createElement('div');
+                badge.className = 'coin-pack-badge';
+                badge.textContent = pack.isRecommended
+                    ? this.t('coin-shop-pack-recommended')
+                    : this.t('coin-shop-pack-fast');
+                const top = document.createElement('div');
+                top.className = 'coin-pack-top';
+                const icon = document.createElement('span');
+                icon.className = 'coin-pack-icon';
+                icon.dataset.shopIcon = 'coin';
+                const title = document.createElement('div');
+                title.className = 'coin-pack-title';
+                title.textContent = this.format('coin-shop-pack-title', { coins: Number(pack.coins || 0).toLocaleString('en-US') });
+                const price = document.createElement('div');
+                price.className = 'coin-pack-price';
+                price.textContent = pack.priceLabel || '';
+                top.appendChild(icon);
+                top.appendChild(title);
+                top.appendChild(price);
+                const body = document.createElement('div');
+                body.className = 'coin-pack-body';
+                body.textContent = this.format('coin-shop-pack-bonus', {
+                    bonus: Number(pack.bonusCoins || 0).toLocaleString('en-US')
+                });
+                const action = document.createElement('button');
+                action.type = 'button';
+                action.className = 'btn btn-menu coin-pack-action';
+                action.disabled = true;
+                action.textContent = this.t('coin-shop-pack-soon');
+                card.appendChild(badge);
+                card.appendChild(top);
+                card.appendChild(body);
+                card.appendChild(action);
+                packsGrid.appendChild(card);
+            }
+        }
+        this.ensureShopIconMarkup();
+    }
+
+    async claimCoinShopVideoReward() {
+        if (this.coinShopClaiming) return;
+        this.coinShopClaiming = true;
+        this.renderCoinShopModal();
+        try {
+            const result = await this.account.claimCoinShopVideoReward();
+            if (result?.wallet) {
+                this.accountDetails = {
+                    ...(this.accountDetails || {}),
+                    wallet: result.wallet
+                };
+                this.accountProfile = {
+                    ...(this.accountProfile || {}),
+                    coins: result.wallet.balance,
+                    wallet: result.wallet
+                };
+            }
+            this.coinShopStatus = {
+                ...(this.coinShopStatus || {}),
+                wallet: result?.wallet || this.coinShopStatus?.wallet || null,
+                coinShop: this.coinShopStatus?.coinShop || result?.coinShop || {
+                    videoReward: { amount: 25, cooldownMinutes: 30, dailyLimit: 6 },
+                    packs: []
+                },
+                claimsToday: Number(result?.claimsToday || 0),
+                nextAvailableAt: result?.nextAvailableAt || null,
+                canClaim: false,
+                remainingSeconds: Number(result?.cooldownMinutes || 30) * 60
+            };
+            this.renderAccountModal();
+            this.renderCoinShopModal();
+            this.startCoinShopTicker();
+            this.syncStartAuthButton();
+            this.renderer.showMessage(this.t('coin-shop-rewarded'), 1800);
+        } catch (err) {
+            this.renderer.showMessage(err.message || this.t('coin-shop-claim-failed'), 2000);
+        } finally {
+            this.coinShopClaiming = false;
+            this.renderCoinShopModal();
+        }
     }
 
     syncStartAuthGate() {
@@ -594,6 +826,7 @@ class DominoGame {
         if (!isAuthed) {
             this.showStartModal(null);
             this.closeAccountModal();
+            this.closeCoinShopModal();
         }
     }
 
@@ -621,6 +854,13 @@ class DominoGame {
             closeButton.textContent = 'x';
             closeButton.title = this.t('modal-close');
             closeButton.setAttribute('aria-label', this.t('modal-close'));
+        }
+
+        const coinShopCloseButton = document.getElementById('coin-shop-modal-close');
+        if (coinShopCloseButton) {
+            coinShopCloseButton.textContent = 'x';
+            coinShopCloseButton.title = this.t('modal-close');
+            coinShopCloseButton.setAttribute('aria-label', this.t('modal-close'));
         }
 
         const placeholders = [
@@ -1838,6 +2078,20 @@ class DominoGame {
             profileBtn.textContent = this.t('account-profile');
             menuPanel.insertBefore(profileBtn, document.getElementById('menu-quit'));
         }
+        if (menuPanel && !document.getElementById('menu-coin-shop')) {
+            const coinShopBtn = document.createElement('button');
+            coinShopBtn.className = 'btn btn-menu btn-menu-shop';
+            coinShopBtn.id = 'menu-coin-shop';
+            coinShopBtn.type = 'button';
+            coinShopBtn.title = this.t('coin-shop-menu');
+            coinShopBtn.setAttribute('aria-label', this.t('coin-shop-menu'));
+            coinShopBtn.innerHTML = `
+                <span class="menu-button-icon" data-shop-icon="coin" aria-hidden="true"></span>
+                <span class="menu-button-label" data-i18n="coin-shop-menu">${this.t('coin-shop-menu')}</span>
+            `;
+            menuPanel.insertBefore(coinShopBtn, document.getElementById('menu-quit'));
+        }
+        this.ensureShopIconMarkup();
     }
 
     ensureAccountModalPortal() {
@@ -1845,6 +2099,49 @@ class DominoGame {
         if (!accountModal) return;
         if (accountModal.parentElement === document.body) return;
         document.body.appendChild(accountModal);
+    }
+
+    ensureCoinShopModalPortal() {
+        const coinShopModal = document.getElementById('coin-shop-modal');
+        if (!coinShopModal) return;
+        if (coinShopModal.parentElement === document.body) return;
+        document.body.appendChild(coinShopModal);
+    }
+
+    startCoinShopTicker() {
+        this.stopCoinShopTicker();
+        if (!(Number(this.coinShopStatus?.remainingSeconds || 0) > 0) && this.coinShopStatus?.canClaim !== false) {
+            return;
+        }
+        this._coinShopTickId = window.setInterval(() => {
+            const modal = document.getElementById('coin-shop-modal');
+            if (!modal || !modal.classList.contains('active')) {
+                this.stopCoinShopTicker();
+                return;
+            }
+            if (this.coinShopStatus?.remainingSeconds > 0) {
+                this.coinShopStatus.remainingSeconds = Math.max(0, Number(this.coinShopStatus.remainingSeconds || 0) - 1);
+                if (this.coinShopStatus.remainingSeconds === 0) {
+                    this.coinShopStatus.canClaim = true;
+                }
+                this.renderCoinShopModal();
+            }
+        }, 1000);
+    }
+
+    stopCoinShopTicker() {
+        if (this._coinShopTickId) {
+            clearInterval(this._coinShopTickId);
+            this._coinShopTickId = null;
+        }
+    }
+
+    ensureShopIconMarkup() {
+        document.querySelectorAll('[data-shop-icon]').forEach((target) => {
+            const key = target.getAttribute('data-shop-icon');
+            if (!key) return;
+            target.innerHTML = SHOP_ICON_SVGS[key] || '';
+        });
     }
 
     syncSoloOptions() {
@@ -3804,6 +4101,13 @@ class DominoGame {
                 await this.openAccountModal();
             });
         }
+        const coinShopBtn = document.getElementById('menu-coin-shop');
+        if (coinShopBtn) {
+            coinShopBtn.addEventListener('click', async () => {
+                document.getElementById('menu-screen').classList.remove('active');
+                await this.openCoinShopModal();
+            });
+        }
         document.getElementById('menu-quit')?.addEventListener('click', async () => {
             document.getElementById('menu-screen').classList.remove('active');
             const shouldQuit = await this.confirmQuitCurrentMatch();
@@ -4396,10 +4700,14 @@ class DominoGame {
             b.classList.toggle('active', b.dataset.lang === nextLang);
         });
         this.syncAccountUiChrome();
+        this.ensureShopIconMarkup();
         this.syncStartAuthButton();
         this.syncVoiceUi();
         this.renderGiftPicker();
         this.renderGiftInventory();
+        if (document.getElementById('coin-shop-modal')?.classList.contains('active')) {
+            this.renderCoinShopModal();
+        }
         this.refreshResumeBanner();
         document.documentElement.lang = nextLang;
     }
