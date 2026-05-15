@@ -128,7 +128,7 @@ async function bootstrap() {
         res.setHeader("Vary", "Origin");
         res.setHeader("Access-Control-Allow-Credentials", "true");
         res.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,PATCH,DELETE,OPTIONS");
-        res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, Accept, Origin");
+        res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, Accept, Origin, Cache-Control, Pragma");
       }
 
       if (req.method === "OPTIONS") {

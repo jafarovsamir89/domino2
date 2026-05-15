@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Domino Telefon - Завершение входа</title>
+    <title>Domino Telefon - Completing Sign-In</title>
     <meta name="theme-color" content="#0f1923">
     <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
     <meta http-equiv="Pragma" content="no-cache">
@@ -90,10 +90,10 @@
 <body>
     <main>
         <h1>Domino Telefon</h1>
-        <p>Завершаем вход и подготавливаем игровую сессию.</p>
-        <div id="status" class="status">Проверяем серверную сессию…</div>
+        <p>Completing sign-in and preparing your game session.</p>
+        <div id="status" class="status">Checking the server session...</div>
         <div class="actions">
-            <button id="retry-btn" type="button" hidden>Открыть игру</button>
+            <button id="retry-btn" type="button" hidden>Open Domino</button>
         </div>
     </main>
     <script>
@@ -187,11 +187,7 @@
         async function fetchJson(path) {
             const response = await fetch(`${API_BASE}${path}`, {
                 method: "GET",
-                credentials: "include",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Cache-Control": "no-store"
-                }
+                credentials: "include"
             });
             if (!response.ok) {
                 return null;
@@ -204,18 +200,18 @@
             let attempt = 0;
             while (Date.now() < deadline) {
                 attempt += 1;
-                setStatus(`Проверяем серверную сессию… ${attempt}`);
+                setStatus(`Checking the server session... ${attempt}`);
                 const tokenData = await fetchJson("/platform/game-token");
                 if (tokenData?.token) {
                     storeSession(tokenData);
-                    setStatus("Вход выполнен. Открываем игру…");
+                    setStatus("Sign-in complete. Opening the game...");
                     window.location.replace(APP_ROOT);
                     return;
                 }
 
                 const meData = await fetchJson("/me");
                 if (meData?.user && meData?.player) {
-                    setStatus("Сессия найдена. Завершаем вход…");
+                    setStatus("Session found. Finalizing sign-in...");
                     window.location.replace(APP_ROOT);
                     return;
                 }
@@ -223,7 +219,7 @@
                 await new Promise((resolve) => window.setTimeout(resolve, 500));
             }
 
-            setStatus("Серверная сессия не подтянулась автоматически. Нажмите кнопку ниже, чтобы открыть игру и повторить проверку.");
+            setStatus("The server session did not attach automatically. Tap the button below to reopen the game and retry.");
             retryBtn.hidden = false;
             retryBtn.disabled = false;
         }
@@ -234,7 +230,7 @@
         });
 
         waitForSession().catch((error) => {
-            setStatus(error?.message || "Не удалось завершить вход автоматически.");
+            setStatus(error?.message || "Could not complete sign-in automatically.");
             retryBtn.hidden = false;
         });
     </script>
