@@ -556,10 +556,14 @@ class DominoGame {
         this.accountMode = this.accountOnline ? 'profile' : 'login';
         this.prefillAccountNames();
         this.applyActiveTableSkin();
-        void this.loadTableSkinShop();
+        if (this.accountOnline) {
+            void this.loadTableSkinShop();
+            void this.loadGiftHub();
+        } else {
+            this.tableSkinShop = null;
+        }
         this.renderAccountModal();
         this.syncStartAuthButton();
-        if (this.accountOnline) void this.loadGiftHub();
         this.refreshResumeBanner(null);
         await this.validateStoredResumeSnapshot();
         if (!this.hasAuthenticatedAccount()) this.setAccountStatus(this.t('account-login-required'));
@@ -812,6 +816,10 @@ class DominoGame {
     }
 
     async loadTableSkinShop() {
+        if (!this.hasAuthenticatedAccount()) {
+            this.tableSkinShop = null;
+            return null;
+        }
         if (!this.account?.getTableSkinShop || this.tableSkinLoading) {
             return this.tableSkinShop;
         }
