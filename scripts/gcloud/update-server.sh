@@ -272,6 +272,11 @@ fi
 log "installing root workspace dependencies"
 install_node_deps "$ROOT_DIR"
 
+if [[ -d packages/db ]]; then
+  log "generating Prisma client before checks"
+  npm run generate -w @domino2/db
+fi
+
 sync_www_assets
 
 if [[ "$RUN_CHECKS" -eq 1 ]]; then
