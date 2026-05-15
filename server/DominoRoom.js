@@ -10,6 +10,9 @@ const { upsertLivePlayer, removeLivePlayer, setRoomGameActive, removeRoomPlayers
 const { rememberRoom, forgetRoom } = require("./roomRegistry");
 
 const TARGET = 365, MAX_R = 3, DLOSS = 255, IWIN = 35;
+const TURN_TIMEOUT_MS = 30000;
+const BOT_THINK_DELAY_MS = 1000;
+const DEAL_END_MODAL_MS = 2000;
 const CUSTOM_STATE_TTL = 86400;
 const redisUrl = process.env.REDIS_URI || "";
 const redis = redisUrl
@@ -93,7 +96,7 @@ class DominoRoom extends Room {
         this.pendingEconomySettlement = Promise.resolve();
         this.botTimer = null;
         this.turnTimer = null;
-        this.turnTimeoutMs = 50000;
+        this.turnTimeoutMs = TURN_TIMEOUT_MS;
         this.turnAdvanceMs = 2000;
         this.turnDeadlineAt = 0;
         this.turnAdvancePending = false;
@@ -730,12 +733,12 @@ class DominoRoom extends Room {
         }
     }
 
-    scheduleBotTurn(delay = 650) {
+    scheduleBotTurn(delay = BOT_THINK_DELAY_MS) {
         if (this.botTimer) clearTimeout(this.botTimer);
         if (!this.state.gameActive) return;
         const cpSession = this.state.playerOrder[this.state.currentPlayerIndex];
         if (!cpSession || !cpSession.startsWith("bot-")) return;
-        this.botTimer = setTimeout(() => this.runBotTurn(), delay + crypto.randomInt(0, 300));
+        this.botTimer = setTimeout(() => this.runBotTurn(), delay);
     }
 
     runBotTurn() {
@@ -764,7 +767,7 @@ class DominoRoom extends Room {
 
         if (this.boneyard.length > 0) {
             this.performDraw(pi, true);
-            this.scheduleBotTurn(350);
+            this.scheduleBotTurn(BOT_THINK_DELAY_MS);
             return;
         }
 
@@ -1443,7 +1446,7 @@ class DominoRoom extends Room {
         this.broadcast("deal_end", { winnerIndex: wi, fish, bonus, hands: this.hands });
         this.state.deal++;
         this.syncState();
-        this.scheduleNextDeal(2000);
+        this.scheduleNextDeal(DEAL_END_MODAL_MS);
     }
 
     async endRound(wi, isInstantWin) {
@@ -1754,7 +1757,7 @@ class DominoRoom extends Room {
         debugLog(`[ROOM] Restoring room ${this.roomId}`);
         this.applyCustomStateSnapshot(cachedData || {});
         if (this.state.gameActive && this.state.playerOrder[this.state.currentPlayerIndex]?.startsWith('bot-')) {
-            this.scheduleBotTurn(1500);
+            this.scheduleBotTurn(BOT_THINK_DELAY_MS);
         }
     }
 

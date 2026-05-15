@@ -959,6 +959,20 @@ input, button { font: inherit; }
     text-align: left;
 }
 
+#start-screen .start-actions .start-shop-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    text-align: center;
+    padding-left: 16px;
+    padding-right: 16px;
+}
+
+#start-screen .start-actions .start-shop-btn::before {
+    content: none;
+}
+
 .btn-action:hover:not(:disabled),
 .btn-menu:hover {
     background: var(--glass-strong);
@@ -2689,6 +2703,16 @@ input, button { font: inherit; }
 
 .menu-panel .btn-menu {
     text-align: center;
+}
+
+.menu-panel .btn-menu-shop {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    width: 100%;
+    padding-left: 16px;
+    padding-right: 16px;
 }
 
 .menu-copyright {

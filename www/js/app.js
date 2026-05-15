@@ -9,6 +9,9 @@ import { sndPlace, sndScore, sndDraw, sndPass, sndWin, sndGosha } from './sounds
 // NetworkManager is loaded as global script
 
 const TARGET=365, MAX_R=3, DLOSS=255, IWIN=35;
+const TURN_TIMEOUT_MS = 30000;
+const BOT_THINK_DELAY_MS = 1000;
+const DEAL_END_MODAL_MS = 2000;
 
 function isDebugLoggingEnabled() {
     if (typeof window === 'undefined') return false;
@@ -64,7 +67,7 @@ class DominoGame {
         this._turnTimerTickId = null;
         this._nextDealAdvanceTimeout = null;
         this.turnDeadlineAt = 0;
-        this.turnTimeoutMs = 50000;
+        this.turnTimeoutMs = TURN_TIMEOUT_MS;
         this.postMoveAdvanceMs = 2000;
         this.postMoveWindowActive = false;
         this.postMoveWindowEndsAt = 0;
@@ -2492,7 +2495,7 @@ class DominoGame {
                 this.clearTurnTimers();
             }
             if (this.gameActive && this.currentPlayer !== this.humanPlayerIndex) {
-                this.queueAITurnIfNeeded(800);
+                this.queueAITurnIfNeeded(BOT_THINK_DELAY_MS);
             }
             this.refreshResumeBanner(snapshot);
             return true;
@@ -4368,7 +4371,7 @@ class DominoGame {
             this.startTurnTimer();
             debugLog('[startDeal] Last deal winner starts:', fp);
             this.broadcastMsg(this.format('msg-last-winner-starts', { player: this.playerNames[fp] }),2000);
-            this.queueAITurnIfNeeded(1500, turnCycleId);
+            this.queueAITurnIfNeeded(BOT_THINK_DELAY_MS, turnCycleId);
         }else{
             const f=determineFirstPlayer(this.hands);
             const fp=f.player; const fi=f.tileIndex;
@@ -4381,7 +4384,7 @@ class DominoGame {
                 if (turnCycleId !== this._turnCycleId) return;
                 this.turnInProgress=false;
                 this.playTile(fp,fi,-1);
-            },1200);
+            },BOT_THINK_DELAY_MS);
         }
     }
 
@@ -5004,8 +5007,8 @@ class DominoGame {
         const score = this.goshaCombo?.score || this.board.calculateScore();
         if(score>0){this.addScore(pi,score);if(this.checkEnd(pi,score))return;}
         this.broadcastMsg(this.format('msg-gosha', { player: this.playerNames[pi] }),2000);
-        if(hand.length===0){ this._dealEndTimeout = setTimeout(()=>this.endDeal(pi,false), 400); return;}
-        if(this.board.isBlocked(this.hands,this.boneyard)){ this._dealEndTimeout = setTimeout(()=>this.endDeal(this.findFishWinner(),true), 400); return;}
+        if(hand.length===0){ this._dealEndTimeout = setTimeout(()=>this.endDeal(pi,false), 0); return;}
+        if(this.board.isBlocked(this.hands,this.boneyard)){ this._dealEndTimeout = setTimeout(()=>this.endDeal(this.findFishWinner(),true), 0); return;}
         this.turnInProgress=false;
         const advanceDelay = this.shouldOpenGoshaChainWindow(pi) ? this.postMoveAdvanceMs : 0;
         this.scheduleTurnAdvance(advanceDelay, this._turnCycleId);
@@ -5128,8 +5131,8 @@ class DominoGame {
         await travelPromise;
         
         if(score>0){this.addScore(pi,score);if(this.checkEnd(pi,score))return;}
-        if(hand.length===0){ this._dealEndTimeout = setTimeout(()=>{ if (turnCycleId !== this._turnCycleId) return; this.endDeal(pi,false); }, 400); return;}
-        if(this.board.isBlocked(this.hands,this.boneyard)){ this._dealEndTimeout = setTimeout(()=>{ if (turnCycleId !== this._turnCycleId) return; this.endDeal(this.findFishWinner(),true); }, 400); return;}
+        if(hand.length===0){ this._dealEndTimeout = setTimeout(()=>{ if (turnCycleId !== this._turnCycleId) return; this.endDeal(pi,false); }, 0); return;}
+        if(this.board.isBlocked(this.hands,this.boneyard)){ this._dealEndTimeout = setTimeout(()=>{ if (turnCycleId !== this._turnCycleId) return; this.endDeal(this.findFishWinner(),true); }, 0); return;}
 
         this.turnInProgress=false;
         this.scheduleTurnAdvance(0, turnCycleId);
@@ -5157,7 +5160,7 @@ class DominoGame {
                 this.renderer.showMessage(this.t('msg-your-turn'), 1000);
             }
         }
-        this.queueAITurnIfNeeded(400);
+        this.queueAITurnIfNeeded(BOT_THINK_DELAY_MS);
     }
 
     queueAITurnIfNeeded(delay) {
@@ -5181,36 +5184,31 @@ class DominoGame {
         const hand = this.hands[pi];
         this.turnInProgress = true;
         const turnCycleId = this._turnCycleId;
-        
-        // Thinking delay
         clearTimeout(this._aiTurnTimeout);
-        this._aiTurnTimeout = setTimeout(() => {
-            if (turnCycleId !== this._turnCycleId) return;
-            // Check Gosha combo for AI
-            const combo = this.board.getGoshaCombo(hand);
-            if (combo) {
-                this.goshaCombo = combo;
-                this.turnInProgress = false; // reset so playGosha can take it
-                this.playGoshaCombo();
-                return;
-            }
+        if (turnCycleId !== this._turnCycleId) return;
 
-            // Regular move
-            const moves = this.board.getValidMoves(hand);
-            const move = ai.chooseMove(this.board, hand, moves, this.scores, this.hands, this.boneyard, this.playerMissingSuits);
-            
-            if (move) {
-                this.turnInProgress = false;
-                this.playTile(pi, move.tileIndex, move.openEndIndex);
-            } else if (this.boneyard.length > 0) {
-                this.turnInProgress = false;
-                this.drawFromBoneyard();
-                this.queueAITurnIfNeeded(300);
-            } else {
-                this.turnInProgress = false;
-                this.passTurn();
-            }
-        }, 600 + (window.crypto?.getRandomValues ? window.crypto.getRandomValues(new Uint32Array(1))[0] % 400 : 200));
+        const combo = this.board.getGoshaCombo(hand);
+        if (combo) {
+            this.goshaCombo = combo;
+            this.turnInProgress = false;
+            this.playGoshaCombo();
+            return;
+        }
+
+        const moves = this.board.getValidMoves(hand);
+        const move = ai.chooseMove(this.board, hand, moves, this.scores, this.hands, this.boneyard, this.playerMissingSuits);
+
+        if (move) {
+            this.turnInProgress = false;
+            this.playTile(pi, move.tileIndex, move.openEndIndex);
+        } else if (this.boneyard.length > 0) {
+            this.turnInProgress = false;
+            this.drawFromBoneyard();
+            this.queueAITurnIfNeeded(BOT_THINK_DELAY_MS);
+        } else {
+            this.turnInProgress = false;
+            this.passTurn();
+        }
     }
 
     findFishWinner(){
@@ -5275,7 +5273,7 @@ class DominoGame {
         this.deal++;
         this.persistGameResumeSnapshot();
         void this.syncLocalPresence();
-        this.scheduleNextDealAdvance(2000);
+        this.scheduleNextDealAdvance(DEAL_END_MODAL_MS);
     }
     endRound(wi){
         this.roundOver=true;
@@ -5309,7 +5307,7 @@ class DominoGame {
         void this.syncLocalPresence();
         const winnerLabel = this.isTeamMode ? this.getTeamDisplayName(this.getTeam(wi)) : this.playerNames[wi];
         this.renderer.renderRoundEnd(winnerLabel,displayEntities,wins,this.matchRound - 1,false);
-        this.scheduleNextDealAdvance(2000);
+        this.scheduleNextDealAdvance(DEAL_END_MODAL_MS);
     }
     showMatchResult(){
         this.clearNextDealAdvanceTimeout();
