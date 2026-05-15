@@ -156,6 +156,8 @@ sync_www_assets() {
   cp -f "$ROOT_DIR/index.html" "$ROOT_DIR/www/index.html"
   cp -f "$ROOT_DIR/manifest.json" "$ROOT_DIR/www/manifest.json"
   cp -f "$ROOT_DIR/sw.js" "$ROOT_DIR/www/sw.js"
+  cp -f "$ROOT_DIR/mobile-auth-complete.html" "$ROOT_DIR/www/mobile-auth-complete.html"
+  cp -f "$ROOT_DIR/auth-complete.html" "$ROOT_DIR/www/auth-complete.html"
 }
 
 restart_or_start_pm2() {

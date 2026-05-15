@@ -21,6 +21,23 @@ const DEFAULT_TABLE_SKIN = {
     assetUrl: null
 };
 
+function redirectLegacyAuthReturnToCallbackPage() {
+    if (typeof window === 'undefined' || window.Capacitor) return false;
+    try {
+        const url = new URL(window.location.href);
+        const isLegacyAuthReturn = url.searchParams.get('auth_return') === '1';
+        const isRootPath = url.pathname === '/' || url.pathname === '/index.html' || url.pathname === '';
+        if (!isLegacyAuthReturn || !isRootPath) {
+            return false;
+        }
+        const provider = url.searchParams.get('auth_provider') || 'google';
+        window.location.replace(`https://gamed.simplesoft.az/auth-complete.html?auth_provider=${encodeURIComponent(provider)}&auth_return=1`);
+        return true;
+    } catch {
+        return false;
+    }
+}
+
 const DEFAULT_TABLE_SKINS = [
     {
         key: 'table_skin_01',
@@ -1678,15 +1695,9 @@ class DominoGame {
             return `https://gamed.simplesoft.az/mobile-auth-complete.html?auth_provider=${encodeURIComponent(provider)}&auth_return=1`;
         }
         if (isLocalHost) {
-            const url = new URL(window.location.href);
-            url.searchParams.set('auth_provider', provider);
-            url.searchParams.set('auth_return', '1');
-            return url.toString();
+            return `${window.location.origin}/auth-complete.html?auth_provider=${encodeURIComponent(provider)}`;
         }
-        const url = new URL(window.location.href);
-        url.searchParams.set('auth_provider', provider);
-        url.searchParams.set('auth_return', '1');
-        return `${url.origin}/?${url.searchParams.toString()}`;
+        return `https://gamed.simplesoft.az/auth-complete.html?auth_provider=${encodeURIComponent(provider)}`;
     }
 
     async saveAccountDisplayName() {
@@ -6040,13 +6051,16 @@ class DominoGame {
         }
     }
 }
-const game=new DominoGame();
+let game = null;
+if (!redirectLegacyAuthReturnToCallbackPage()) {
+    game = new DominoGame();
 
-// Re-render board on resize for correct scaling (debounced)
-let _resizeTimer = null;
-window.addEventListener('resize', () => {
-    if (!game.gameActive) return;
-    clearTimeout(_resizeTimer);
-    _resizeTimer = setTimeout(() => game.renderState(), 150);
-});
+    // Re-render board on resize for correct scaling (debounced)
+    let _resizeTimer = null;
+    window.addEventListener('resize', () => {
+        if (!game?.gameActive) return;
+        clearTimeout(_resizeTimer);
+        _resizeTimer = setTimeout(() => game.renderState(), 150);
+    });
+}
 

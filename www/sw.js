@@ -1,7 +1,8 @@
-const CACHE_NAME = 'domino-v28';
+const CACHE_NAME = 'domino-v29';
 const ASSETS = [
     '/',
     '/index.html',
+    '/auth-complete.html',
     '/css/style.css',
     '/js/app.js',
     '/js/account.js',

@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Domino Telefon - Завершение входа</title>
+    <meta name="theme-color" content="#0f1923">
+    <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <style>
+        :root {
+            color-scheme: dark;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: grid;
+            place-items: center;
+            padding: 24px;
+            background:
+                radial-gradient(circle at top, rgba(44, 74, 97, 0.9), transparent 42%),
+                linear-gradient(180deg, #0f1923 0%, #0b131b 100%);
+            color: #f4efe3;
+            font: 500 16px/1.5 Inter, Arial, sans-serif;
+        }
+
+        main {
+            width: min(92vw, 440px);
+            padding: 28px 24px;
+            border-radius: 24px;
+            text-align: center;
+            background: rgba(12, 22, 32, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 24px 56px rgba(0, 0, 0, 0.35);
+        }
+
+        h1 {
+            margin: 0 0 10px;
+            font-size: 1.1rem;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+
+        p {
+            margin: 0;
+            color: rgba(244, 239, 227, 0.82);
+        }
+
+        .status {
+            margin-top: 16px;
+            padding: 12px 14px;
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.05);
+            color: #f4efe3;
+            min-height: 48px;
+        }
+
+        .actions {
+            display: flex;
+            justify-content: center;
+            margin-top: 18px;
+        }
+
+        button {
+            appearance: none;
+            border: 0;
+            border-radius: 999px;
+            padding: 12px 18px;
+            min-width: 180px;
+            font: inherit;
+            font-weight: 800;
+            cursor: pointer;
+            color: #161108;
+            background: linear-gradient(135deg, #f0c040, #d9892f);
+            box-shadow: 0 16px 34px rgba(217, 137, 47, 0.32);
+        }
+
+        button:disabled {
+            cursor: wait;
+            opacity: 0.75;
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <h1>Domino Telefon</h1>
+        <p>Завершаем вход и подготавливаем игровую сессию.</p>
+        <div id="status" class="status">Проверяем серверную сессию…</div>
+        <div class="actions">
+            <button id="retry-btn" type="button" hidden>Открыть игру</button>
+        </div>
+    </main>
+    <script>
+        const ACCOUNT_PROFILE_KEY = "dominoAuthProfile";
+        const PLATFORM_GAME_TOKEN_KEY = "dominoPlatformGameToken";
+        const PLATFORM_PROFILE_KEY = "dominoPlatformProfile";
+        const AUTH_RETURN_PENDING_KEY = "dominoAuthReturnPending";
+        const API_BASE = "https://apid.simplesoft.az/api";
+        const APP_ROOT = "https://gamed.simplesoft.az/";
+        const statusEl = document.getElementById("status");
+        const retryBtn = document.getElementById("retry-btn");
+
+        function setStatus(message) {
+            if (statusEl) statusEl.textContent = String(message || "");
+        }
+
+        function sanitizeName(value) {
+            return String(value || "Player")
+                .replace(/<[^>]*>/g, " ")
+                .replace(/[^\p{L}\p{N} _.-]/gu, "")
+                .trim()
+                .slice(0, 24) || "Player";
+        }
+
+        function normalizeProfile(payload = {}) {
+            const profilePayload = payload.profile || payload;
+            const user = profilePayload.user || payload.user || {};
+            const player = profilePayload.player || payload.player || {};
+            const stats = profilePayload.stats || payload.stats || {};
+            const wallet = profilePayload.wallet || payload.wallet || null;
+            const name = sanitizeName(
+                profilePayload?.player?.displayName ||
+                player?.displayName ||
+                profilePayload?.user?.name ||
+                user?.name ||
+                payload?.name ||
+                "Player"
+            );
+
+            return {
+                id: String(player?.id || user?.id || payload?.id || ""),
+                userId: String(user?.id || payload?.userId || ""),
+                playerId: String(player?.id || payload?.playerId || ""),
+                sessionId: String(profilePayload?.session?.id || payload?.session?.id || ""),
+                name,
+                displayName: name,
+                email: String(user?.email || payload?.email || ""),
+                image: player?.avatarUrl || user?.image || null,
+                providerImage: user?.image || null,
+                avatarUrl: player?.avatarUrl || null,
+                role: String(user?.role || "player"),
+                isGuest: false,
+                avatarSeed: player?.avatarSeed || null,
+                tableSkinKey: player?.tableSkinKey || null,
+                language: player?.language || null,
+                rating: Number(stats?.rating ?? payload?.rating ?? 1000),
+                points: Number(stats?.points ?? payload?.points ?? 0),
+                wins: Number(stats?.wins ?? payload?.wins ?? 0),
+                losses: Number(stats?.losses ?? payload?.losses ?? 0),
+                draws: Number(stats?.draws ?? payload?.draws ?? 0),
+                matchesPlayed: Number(stats?.matchesPlayed ?? payload?.matchesPlayed ?? 0),
+                currentStreak: Number(stats?.currentStreak ?? payload?.currentStreak ?? 0),
+                bestStreak: Number(stats?.bestStreak ?? payload?.bestStreak ?? 0),
+                titleCode: String(stats?.titleCode ?? payload?.titleCode ?? "rookie"),
+                coins: Number(wallet?.balance ?? payload?.coins ?? 0),
+                wallet: wallet ? {
+                    ...wallet,
+                    balance: Number(wallet.balance ?? 0),
+                    availableBalance: Number(wallet.availableBalance ?? wallet.balance ?? 0),
+                    spendableBalance: Number(wallet.spendableBalance ?? wallet.balance ?? 0),
+                    reservedBalance: Number(wallet.reservedBalance ?? wallet.reserved ?? 0)
+                } : null,
+                recentMatches: Array.isArray(payload?.recentMatches) ? payload.recentMatches : [],
+                provider: "better-auth"
+            };
+        }
+
+        function storeSession(data) {
+            const normalized = normalizeProfile(data);
+            try {
+                window.localStorage.setItem(PLATFORM_GAME_TOKEN_KEY, String(data?.token || ""));
+                window.localStorage.setItem(PLATFORM_PROFILE_KEY, JSON.stringify(normalized));
+                window.localStorage.setItem(ACCOUNT_PROFILE_KEY, JSON.stringify(normalized));
+                window.localStorage.removeItem(AUTH_RETURN_PENDING_KEY);
+            } catch {}
+            try {
+                window.sessionStorage.removeItem(AUTH_RETURN_PENDING_KEY);
+            } catch {}
+        }
+
+        async function fetchJson(path) {
+            const response = await fetch(`${API_BASE}${path}`, {
+                method: "GET",
+                credentials: "include",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Cache-Control": "no-store"
+                }
+            });
+            if (!response.ok) {
+                return null;
+            }
+            return response.json().catch(() => null);
+        }
+
+        async function waitForSession() {
+            const deadline = Date.now() + 15000;
+            let attempt = 0;
+            while (Date.now() < deadline) {
+                attempt += 1;
+                setStatus(`Проверяем серверную сессию… ${attempt}`);
+                const tokenData = await fetchJson("/platform/game-token");
+                if (tokenData?.token) {
+                    storeSession(tokenData);
+                    setStatus("Вход выполнен. Открываем игру…");
+                    window.location.replace(APP_ROOT);
+                    return;
+                }
+
+                const meData = await fetchJson("/me");
+                if (meData?.user && meData?.player) {
+                    setStatus("Сессия найдена. Завершаем вход…");
+                    window.location.replace(APP_ROOT);
+                    return;
+                }
+
+                await new Promise((resolve) => window.setTimeout(resolve, 500));
+            }
+
+            setStatus("Серверная сессия не подтянулась автоматически. Нажмите кнопку ниже, чтобы открыть игру и повторить проверку.");
+            retryBtn.hidden = false;
+            retryBtn.disabled = false;
+        }
+
+        retryBtn?.addEventListener("click", () => {
+            retryBtn.disabled = true;
+            window.location.replace(APP_ROOT);
+        });
+
+        waitForSession().catch((error) => {
+            setStatus(error?.message || "Не удалось завершить вход автоматически.");
+            retryBtn.hidden = false;
+        });
+    </script>
+</body>
+</html>
