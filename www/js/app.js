@@ -1950,8 +1950,13 @@ class DominoGame {
                 <button type="button" class="account-profile-tab" data-profile-tab="skins" data-i18n="account-skins-vault"></button>
                 <button type="button" class="account-profile-tab" data-profile-tab="gifts" data-i18n="account-gift-vault"></button>
             `;
-            const targetPanel = document.getElementById('account-gifts-panel') || document.getElementById('account-history-panel');
-            profileCopy.parentElement?.insertBefore(tabs, targetPanel || profileCopy.nextSibling);
+            const profilePanel = document.getElementById('account-profile-panel');
+            const statsGrid = document.getElementById('account-stats-grid');
+            if (profilePanel) {
+                profilePanel.insertBefore(tabs, statsGrid || null);
+            } else {
+                profileCopy.parentElement?.appendChild(tabs);
+            }
             tabs.querySelectorAll('[data-profile-tab]').forEach((button) => {
                 button.addEventListener('click', () => this.setAccountProfileTab(button.dataset.profileTab || 'skins'));
             });
