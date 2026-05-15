@@ -196,7 +196,11 @@ class DominoGame {
             this.showOnlineLanding();
         });
         const openRoomsBtn = document.getElementById('open-rooms-btn');
+        const startCoinShopBtn = document.getElementById('start-coin-shop-btn');
         if (openRoomsBtn) openRoomsBtn.addEventListener('click', () => this.showOpenRoomsModal());
+        if (startCoinShopBtn) startCoinShopBtn.addEventListener('click', async () => {
+            await this.openCoinShopModal();
+        });
         if (onlineCreateChoiceBtn) onlineCreateChoiceBtn.addEventListener('click', () => {
             this.showOnlineCreateFlow();
         });
