@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-import { fetchApi } from "../lib/api";
+import { fetchApiResult } from "../lib/api";
 
 type ActionButtonProps = {
   endpoint: string;
@@ -28,13 +28,13 @@ export function ActionButton({
     setBusy(true);
     setError(null);
 
-    const result = await fetchApi(endpoint, {
+    const result = await fetchApiResult(endpoint, {
       method,
       json: body
     });
 
-    if (!result) {
-      setError("Action failed");
+    if (!result.ok) {
+      setError(result.error || "Action failed");
       setBusy(false);
       return;
     }
@@ -55,7 +55,7 @@ export function ActionButton({
 
 const baseStyle = {
   borderRadius: 12,
-  border: "1px solid rgba(148,163,184,0.2)",
+  border: "1px solid rgba(148,163,184,0.18)",
   padding: "10px 14px",
   fontWeight: 700,
   cursor: "pointer",
@@ -67,25 +67,25 @@ const baseStyle = {
 
 const primaryStyle = {
   ...baseStyle,
-  background: "linear-gradient(135deg, #38bdf8, #0f766e)",
-  color: "#020617"
+  background: "linear-gradient(135deg, #e0f2fe, #dbeafe)",
+  color: "#0f172a"
 } as const;
 
 const secondaryStyle = {
   ...baseStyle,
-  background: "rgba(15,23,42,0.9)",
-  color: "#e2e8f0"
+  background: "#ffffff",
+  color: "#0f172a"
 } as const;
 
 const dangerStyle = {
   ...baseStyle,
-  background: "rgba(127,29,29,0.22)",
-  color: "#fecaca",
-  borderColor: "rgba(248,113,113,0.28)"
+  background: "#fff1f2",
+  color: "#9f1239",
+  borderColor: "rgba(244,63,94,0.22)"
 } as const;
 
 const errorStyle = {
-  color: "#fca5a5",
+  color: "#dc2626",
   fontSize: 12,
   fontWeight: 500
 } as const;

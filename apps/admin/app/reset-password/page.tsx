@@ -44,15 +44,15 @@ const pageStyle = {
 const topCardStyle = {
   padding: 32,
   borderRadius: 28,
-  background: "linear-gradient(180deg, rgba(15,23,42,0.95), rgba(2,6,23,0.98))",
+  background: "#ffffff",
   border: "1px solid rgba(148,163,184,0.18)",
-  boxShadow: "0 30px 80px rgba(15,23,42,0.45)"
+  boxShadow: "0 24px 60px rgba(15,23,42,0.08)"
 } as const;
 
 const eyebrowStyle = {
   textTransform: "uppercase",
   letterSpacing: 1.6,
-  color: "#38bdf8",
+  color: "#0284c7",
   fontSize: 12,
   margin: 0
 } as const;
@@ -60,11 +60,12 @@ const eyebrowStyle = {
 const titleStyle = {
   margin: "10px 0 12px",
   fontSize: 40,
-  lineHeight: 1.05
+  lineHeight: 1.05,
+  color: "#0f172a"
 } as const;
 
 const bodyStyle = {
-  color: "#94a3b8",
+  color: "#64748b",
   lineHeight: 1.7,
   margin: "0 0 18px"
 } as const;
@@ -76,7 +77,7 @@ const footerStyle = {
 } as const;
 
 const linkStyle = {
-  color: "#7dd3fc",
+  color: "#0284c7",
   textDecoration: "none",
   fontWeight: 600
 } as const;

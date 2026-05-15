@@ -44,14 +44,14 @@ const heroStyle = {
   padding: 34,
   borderRadius: 28,
   background:
-    "radial-gradient(circle at top left, rgba(56,189,248,0.18), transparent 34%), linear-gradient(180deg, rgba(15,23,42,0.96), rgba(2,6,23,0.98))",
-  border: "1px solid rgba(148,163,184,0.18)",
-  boxShadow: "0 30px 90px rgba(2,6,23,0.42)"
+    "radial-gradient(circle at top left, rgba(56,189,248,0.14), transparent 34%), linear-gradient(180deg, rgba(255,255,255,0.98), rgba(248,250,252,0.96))",
+  border: "1px solid rgba(148,163,184,0.16)",
+  boxShadow: "0 20px 60px rgba(15,23,42,0.08)"
 } as const;
 
 const eyebrowStyle = {
   margin: 0,
-  color: "#38bdf8",
+  color: "#0284c7",
   textTransform: "uppercase",
   letterSpacing: 1.6,
   fontSize: 12
@@ -67,7 +67,7 @@ const titleStyle = {
 const bodyStyle = {
   margin: 0,
   maxWidth: 640,
-  color: "#94a3b8",
+  color: "#64748b",
   lineHeight: 1.75,
   fontSize: 16
 } as const;
@@ -82,9 +82,9 @@ const chipRowStyle = {
 const chipStyle = {
   padding: "8px 12px",
   borderRadius: 999,
-  background: "rgba(15,23,42,0.9)",
-  border: "1px solid rgba(148,163,184,0.16)",
-  color: "#cbd5e1",
+  background: "#ffffff",
+  border: "1px solid rgba(148,163,184,0.14)",
+  color: "#334155",
   fontSize: 13,
   fontWeight: 600
 } as const;
@@ -92,9 +92,9 @@ const chipStyle = {
 const cardStyle = {
   padding: 28,
   borderRadius: 28,
-  background: "rgba(15,23,42,0.9)",
-  border: "1px solid rgba(148,163,184,0.18)",
-  boxShadow: "0 30px 90px rgba(2,6,23,0.36)",
+  background: "#ffffff",
+  border: "1px solid rgba(148,163,184,0.16)",
+  boxShadow: "0 20px 60px rgba(15,23,42,0.08)",
   display: "grid",
   gap: 18
 } as const;
@@ -107,7 +107,7 @@ const footerRowStyle = {
 } as const;
 
 const footerLinkStyle = {
-  color: "#7dd3fc",
+  color: "#0284c7",
   textDecoration: "none",
   fontWeight: 600
 } as const;

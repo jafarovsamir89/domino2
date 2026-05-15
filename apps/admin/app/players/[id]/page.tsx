@@ -246,7 +246,7 @@ function StatRow({ label, value }: { label: string; value: number | string }) {
 }
 
 const linkStyle = {
-  color: "#38bdf8",
+  color: "#0284c7",
   textDecoration: "none",
   fontWeight: 700
 } as const;
@@ -254,9 +254,10 @@ const linkStyle = {
 const emptyStyle = {
   padding: 24,
   borderRadius: 20,
-  background: "rgba(15,23,42,0.9)",
+  background: "#ffffff",
   border: "1px solid rgba(148,163,184,0.16)",
-  color: "#94a3b8"
+  color: "#64748b",
+  boxShadow: "0 12px 28px rgba(15,23,42,0.06)"
 } as const;
 
 const actionRowStyle = {
@@ -287,8 +288,9 @@ const adjustmentStackStyle = {
 const panelStyle = {
   padding: 20,
   borderRadius: 20,
-  background: "rgba(15,23,42,0.9)",
-  border: "1px solid rgba(148,163,184,0.16)"
+  background: "#ffffff",
+  border: "1px solid rgba(148,163,184,0.16)",
+  boxShadow: "0 12px 28px rgba(15,23,42,0.06)"
 } as const;
 
 const panelTitleStyle = {
@@ -305,13 +307,13 @@ const statRowStyle = {
 } as const;
 
 const mutedStyle = {
-  color: "#94a3b8"
+  color: "#64748b"
 } as const;
 
 const itemCardStyle = {
   padding: 14,
   borderRadius: 14,
-  background: "rgba(2,6,23,0.8)",
+  background: "#f8fafc",
   border: "1px solid rgba(148,163,184,0.12)",
   marginBottom: 10
 } as const;

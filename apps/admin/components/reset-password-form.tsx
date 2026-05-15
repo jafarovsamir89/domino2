@@ -87,15 +87,15 @@ export function ResetPasswordForm({ token }: ResetPasswordFormProps) {
 const cardStyle = {
   padding: 32,
   borderRadius: 28,
-  background: "linear-gradient(180deg, rgba(15,23,42,0.95), rgba(2,6,23,0.98))",
+  background: "#ffffff",
   border: "1px solid rgba(148,163,184,0.18)",
-  boxShadow: "0 30px 80px rgba(15,23,42,0.45)"
+  boxShadow: "0 24px 60px rgba(15,23,42,0.08)"
 } as const;
 
 const eyebrowStyle = {
   textTransform: "uppercase",
   letterSpacing: 1.6,
-  color: "#38bdf8",
+  color: "#0284c7",
   fontSize: 12,
   margin: 0
 } as const;
@@ -103,11 +103,12 @@ const eyebrowStyle = {
 const titleStyle = {
   margin: "10px 0 12px",
   fontSize: 40,
-  lineHeight: 1.05
+  lineHeight: 1.05,
+  color: "#0f172a"
 } as const;
 
 const bodyStyle = {
-  color: "#94a3b8",
+  color: "#64748b",
   lineHeight: 1.7,
   margin: "0 0 24px"
 } as const;
@@ -115,16 +116,16 @@ const bodyStyle = {
 const warningStyle = {
   padding: 14,
   borderRadius: 16,
-  background: "rgba(146,64,14,0.18)",
-  border: "1px solid rgba(251,191,36,0.28)",
-  color: "#fde68a",
+  background: "#fff7ed",
+  border: "1px solid rgba(251,191,36,0.22)",
+  color: "#92400e",
   margin: "0 0 16px"
 } as const;
 
 const labelStyle = {
   display: "grid",
   gap: 8,
-  color: "#cbd5e1",
+  color: "#334155",
   fontSize: 14
 } as const;
 
@@ -133,8 +134,8 @@ const inputStyle = {
   padding: "14px 16px",
   borderRadius: 14,
   border: "1px solid rgba(148,163,184,0.22)",
-  background: "rgba(15,23,42,0.92)",
-  color: "#e2e8f0",
+  background: "#ffffff",
+  color: "#0f172a",
   outline: "none"
 } as const;
 
@@ -142,8 +143,8 @@ const buttonStyle = {
   border: "none",
   borderRadius: 14,
   padding: "14px 16px",
-  background: "linear-gradient(135deg, #38bdf8, #0f766e)",
-  color: "#020617",
+  background: "linear-gradient(135deg, #dbeafe, #cffafe)",
+  color: "#0f172a",
   fontWeight: 700,
   cursor: "pointer"
 } as const;
@@ -152,18 +153,18 @@ const successStyle = {
   marginTop: 16,
   padding: 14,
   borderRadius: 16,
-  background: "rgba(21,128,61,0.18)",
-  border: "1px solid rgba(74,222,128,0.28)",
-  color: "#bbf7d0"
+  background: "#eff6ff",
+  border: "1px solid rgba(147,197,253,0.35)",
+  color: "#0f172a"
 } as const;
 
 const errorStyle = {
   marginTop: 16,
   padding: 14,
   borderRadius: 16,
-  background: "rgba(127,29,29,0.18)",
-  border: "1px solid rgba(248,113,113,0.28)",
-  color: "#fecaca"
+  background: "#fff1f2",
+  border: "1px solid rgba(251,113,133,0.25)",
+  color: "#9f1239"
 } as const;
 
 const footerStyle = {
@@ -174,7 +175,7 @@ const footerStyle = {
 } as const;
 
 const linkStyle = {
-  color: "#7dd3fc",
+  color: "#0284c7",
   textDecoration: "none",
   fontWeight: 600
 } as const;

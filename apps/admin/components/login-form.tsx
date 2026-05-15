@@ -13,8 +13,8 @@ const inputStyle = {
   padding: "14px 16px",
   borderRadius: 14,
   border: "1px solid rgba(148,163,184,0.22)",
-  background: "rgba(15,23,42,0.92)",
-  color: "#e2e8f0",
+  background: "#ffffff",
+  color: "#0f172a",
   outline: "none"
 } as const;
 
@@ -128,9 +128,6 @@ export function LoginForm() {
         <button style={secondaryButtonStyle} type="button" onClick={handleGoogleSignIn} disabled={isSubmitting}>
           Continue with Google
         </button>
-        <p style={helperStyle}>
-          Google sign-in will create or link the admin identity automatically when allowed by the backend config.
-        </p>
         <div style={linkRowStyle}>
           <Link href="/forgot-password" style={linkStyle}>
             Forgot password?
@@ -164,8 +161,8 @@ const primaryButtonStyle = {
   border: "none",
   borderRadius: 14,
   padding: "14px 16px",
-  background: "linear-gradient(135deg, #38bdf8, #0f766e)",
-  color: "#020617",
+  background: "linear-gradient(135deg, #dbeafe, #cffafe)",
+  color: "#0f172a",
   fontWeight: 700,
   cursor: "pointer"
 } as const;
@@ -174,15 +171,15 @@ const secondaryButtonStyle = {
   border: "1px solid rgba(148,163,184,0.22)",
   borderRadius: 14,
   padding: "14px 16px",
-  background: "rgba(15,23,42,0.88)",
-  color: "#e2e8f0",
+  background: "#ffffff",
+  color: "#0f172a",
   fontWeight: 600,
   cursor: "pointer"
 } as const;
 
 const helperStyle = {
   margin: 0,
-  color: "#94a3b8",
+  color: "#64748b",
   lineHeight: 1.6,
   fontSize: 14
 };
@@ -190,9 +187,9 @@ const helperStyle = {
 const errorBoxStyle = {
   borderRadius: 16,
   padding: 14,
-  background: "rgba(127,29,29,0.18)",
-  border: "1px solid rgba(248,113,113,0.28)",
-  color: "#fecaca"
+  background: "#fff1f2",
+  border: "1px solid rgba(244,63,94,0.18)",
+  color: "#9f1239"
 } as const;
 
 const linkRowStyle = {
@@ -202,7 +199,7 @@ const linkRowStyle = {
 } as const;
 
 const linkStyle = {
-  color: "#7dd3fc",
+  color: "#0284c7",
   textDecoration: "none",
   fontWeight: 600,
   fontSize: 14

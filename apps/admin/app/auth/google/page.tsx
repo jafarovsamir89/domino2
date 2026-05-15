@@ -12,8 +12,8 @@ const pageStyle: CSSProperties = {
   placeItems: "center",
   padding: "32px 20px",
   background:
-    "radial-gradient(circle at top, rgba(70, 150, 255, 0.16), transparent 40%), linear-gradient(180deg, #08111f 0%, #0d1728 55%, #101d31 100%)",
-  color: "#f5f7fb"
+    "radial-gradient(circle at top, rgba(70, 150, 255, 0.12), transparent 40%), linear-gradient(180deg, #f8fafc 0%, #eef2f7 100%)",
+  color: "#0f172a"
 };
 
 const cardStyle: CSSProperties = {
@@ -22,19 +22,19 @@ const cardStyle: CSSProperties = {
   gap: 14,
   padding: 28,
   borderRadius: 24,
-  background: "rgba(10, 18, 32, 0.9)",
-  border: "1px solid rgba(148, 163, 184, 0.18)",
-  boxShadow: "0 24px 80px rgba(0, 0, 0, 0.35)"
+  background: "#ffffff",
+  border: "1px solid rgba(148, 163, 184, 0.16)",
+  boxShadow: "0 24px 80px rgba(15,23,42,0.08)"
 };
 
 const hintStyle: CSSProperties = {
   margin: 0,
   lineHeight: 1.6,
-  color: "rgba(226, 232, 240, 0.78)"
+  color: "#64748b"
 };
 
 const linkStyle: CSSProperties = {
-  color: "#8ec5ff",
+  color: "#0284c7",
   textDecoration: "none",
   fontWeight: 600
 };

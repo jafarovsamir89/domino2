@@ -67,14 +67,14 @@ const buttonBaseStyle = {
 
 const primaryLinkStyle = {
   ...buttonBaseStyle,
-  background: "linear-gradient(135deg, #38bdf8, #0f766e)",
-  color: "#020617"
+  background: "linear-gradient(135deg, #dbeafe, #cffafe)",
+  color: "#0f172a"
 } satisfies CSSProperties;
 
 const secondaryLinkStyle = {
   ...buttonBaseStyle,
-  background: "rgba(15,23,42,0.9)",
-  color: "#e2e8f0"
+  background: "#ffffff",
+  color: "#0f172a"
 } satisfies CSSProperties;
 
 const heroGridStyle = {
@@ -86,14 +86,14 @@ const heroGridStyle = {
 const heroCardStyle = {
   padding: 28,
   borderRadius: 28,
-  background: "linear-gradient(135deg, rgba(15,23,42,0.98), rgba(8,15,31,0.95))",
+  background: "#ffffff",
   border: "1px solid rgba(148,163,184,0.16)",
-  boxShadow: "0 24px 80px rgba(2,6,23,0.35)"
+  boxShadow: "0 18px 44px rgba(15,23,42,0.06)"
 } satisfies CSSProperties;
 
 const heroEyebrowStyle = {
   margin: 0,
-  color: "#38bdf8",
+  color: "#0284c7",
   textTransform: "uppercase",
   letterSpacing: 1.6,
   fontSize: 12
@@ -108,14 +108,14 @@ const heroTitleStyle = {
 const heroBodyStyle = {
   margin: 0,
   maxWidth: 680,
-  color: "#94a3b8",
+  color: "#64748b",
   lineHeight: 1.7
 } satisfies CSSProperties;
 
 const quickCardStyle = {
   padding: 24,
   borderRadius: 28,
-  background: "rgba(15,23,42,0.92)",
+  background: "#ffffff",
   border: "1px solid rgba(148,163,184,0.16)",
   display: "grid",
   alignContent: "start",
@@ -123,7 +123,7 @@ const quickCardStyle = {
 } satisfies CSSProperties;
 
 const quickLabelStyle = {
-  color: "#94a3b8",
+  color: "#64748b",
   textTransform: "uppercase",
   letterSpacing: 1.1,
   fontSize: 11
@@ -136,7 +136,7 @@ const quickValueStyle = {
 } satisfies CSSProperties;
 
 const quickMetaStyle = {
-  color: "#7dd3fc",
+  color: "#0284c7",
   lineHeight: 1.6
 } satisfies CSSProperties;
 
@@ -152,7 +152,7 @@ const cardStyle = {
   borderRadius: 20,
   textDecoration: "none",
   color: "inherit",
-  background: "linear-gradient(135deg, rgba(30,41,59,0.95), rgba(15,23,42,0.9))",
+  background: "#ffffff",
   border: "1px solid rgba(148,163,184,0.16)",
   minHeight: 128
 } satisfies CSSProperties;
@@ -164,6 +164,6 @@ const cardTitleStyle = {
 const metaStyle = {
   display: "block",
   marginTop: 10,
-  color: "#94a3b8",
+  color: "#64748b",
   lineHeight: 1.5
 } satisfies CSSProperties;

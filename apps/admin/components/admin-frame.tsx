@@ -101,14 +101,14 @@ const sidebarStyle = {
   gap: 20,
   padding: 22,
   borderRadius: 28,
-  background: "linear-gradient(180deg, rgba(8,15,31,0.98), rgba(10,15,26,0.94))",
+  background: "#ffffff",
   border: "1px solid rgba(148,163,184,0.16)",
-  boxShadow: "0 24px 80px rgba(2,6,23,0.4)"
+  boxShadow: "0 18px 48px rgba(15,23,42,0.06)"
 } as const;
 
 const brandEyebrowStyle = {
   margin: 0,
-  color: "#38bdf8",
+  color: "#0284c7",
   textTransform: "uppercase",
   letterSpacing: 1.6,
   fontSize: 11
@@ -123,7 +123,7 @@ const brandTitleStyle = {
 
 const brandCopyStyle = {
   margin: "10px 0 0",
-  color: "#94a3b8",
+  color: "#64748b",
   lineHeight: 1.7,
   fontSize: 14
 } as const;
@@ -140,16 +140,16 @@ const navLinkStyle = {
   padding: "12px 14px",
   borderRadius: 16,
   textDecoration: "none",
-  color: "#cbd5e1",
-  background: "rgba(15,23,42,0.6)",
-  border: "1px solid rgba(148,163,184,0.1)",
+  color: "#334155",
+  background: "#f8fafc",
+  border: "1px solid rgba(148,163,184,0.12)",
   fontWeight: 600
 } as const;
 
 const navLinkActiveStyle = {
-  background: "linear-gradient(135deg, rgba(56,189,248,0.18), rgba(15,118,110,0.16))",
-  color: "#f8fafc",
-  borderColor: "rgba(56,189,248,0.28)"
+  background: "linear-gradient(135deg, rgba(224,242,254,0.95), rgba(224,231,255,0.9))",
+  color: "#0f172a",
+  borderColor: "rgba(59,130,246,0.18)"
 } as const;
 
 const navLinkDotStyle = {
@@ -163,12 +163,12 @@ const navLinkDotStyle = {
 const sidebarNoteStyle = {
   padding: 16,
   borderRadius: 18,
-  background: "rgba(2,6,23,0.72)",
+  background: "#f8fafc",
   border: "1px solid rgba(148,163,184,0.12)"
 } as const;
 
 const sidebarNoteLabelStyle = {
-  color: "#94a3b8",
+  color: "#64748b",
   fontSize: 12,
   textTransform: "uppercase",
   letterSpacing: 1.1,
@@ -176,14 +176,14 @@ const sidebarNoteLabelStyle = {
 } as const;
 
 const sidebarNoteValueStyle = {
-  color: "#e2e8f0",
+  color: "#0f172a",
   fontWeight: 700,
   lineHeight: 1.5
 } as const;
 
 const sidebarNoteMetaStyle = {
   marginTop: 6,
-  color: "#7dd3fc",
+  color: "#0284c7",
   fontSize: 13
 } as const;
 

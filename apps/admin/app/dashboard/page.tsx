@@ -150,7 +150,7 @@ export default async function DashboardPage() {
         </Panel>
 
         <div style={{ display: "grid", gap: 16 }}>
-          <DashboardSessionCard />
+          <DashboardSessionCard initialSession={session} />
           <Panel title="Deployment Notes">
             <p style={copyStyle}>What is already live: PostgreSQL, Nginx, API on `3000`, admin on `3001`.</p>
             <p style={copyStyle}>What still stays separate for now: the legacy game server under PM2 on port `2567`.</p>
@@ -277,9 +277,9 @@ const linkButtonStyle = {
   justifyContent: "center",
   padding: "12px 16px",
   borderRadius: 14,
-  background: "rgba(15,23,42,0.9)",
+  background: "#ffffff",
   border: "1px solid rgba(148,163,184,0.16)",
-  color: "#e2e8f0",
+  color: "#0f172a",
   textDecoration: "none",
   fontWeight: 700
 } as const;
@@ -305,13 +305,13 @@ const liveSectionStyle = {
 const metricCardStyle = {
   padding: 20,
   borderRadius: 22,
-  background: "linear-gradient(135deg, rgba(15,23,42,0.98), rgba(8,15,31,0.92))",
+  background: "#ffffff",
   border: "1px solid rgba(148,163,184,0.16)",
-  boxShadow: "0 16px 36px rgba(2,6,23,0.18)"
+  boxShadow: "0 12px 28px rgba(15,23,42,0.06)"
 } as const;
 
 const metricLabelStyle = {
-  color: "#94a3b8",
+  color: "#64748b",
   fontSize: 13,
   textTransform: "uppercase",
   letterSpacing: 1.1,
@@ -327,7 +327,7 @@ const metricValueStyle = {
 const panelStyle = {
   padding: 22,
   borderRadius: 24,
-  background: "rgba(15,23,42,0.9)",
+  background: "#ffffff",
   border: "1px solid rgba(148,163,184,0.16)"
 } as const;
 
@@ -346,17 +346,17 @@ const rowStyle = {
 } as const;
 
 const rowLabelStyle = {
-  color: "#94a3b8"
+  color: "#64748b"
 } as const;
 
 const rowValueStyle = {
-  color: "#e2e8f0",
+  color: "#0f172a",
   textAlign: "right"
 } as const;
 
 const copyStyle = {
   margin: "0 0 10px",
-  color: "#cbd5e1",
+  color: "#475569",
   lineHeight: 1.6
 } as const;
 
@@ -368,7 +368,7 @@ const liveListStyle = {
 const liveCardStyle = {
   padding: 14,
   borderRadius: 16,
-  background: "rgba(2,6,23,0.82)",
+  background: "#f8fafc",
   border: "1px solid rgba(148,163,184,0.12)"
 } as const;
 
@@ -384,9 +384,9 @@ const liveCardHeaderStyle = {
 const liveBadgeStyle = {
   padding: "4px 8px",
   borderRadius: 999,
-  background: "rgba(56,189,248,0.16)",
-  border: "1px solid rgba(56,189,248,0.24)",
-  color: "#7dd3fc",
+  background: "#dbeafe",
+  border: "1px solid rgba(59,130,246,0.16)",
+  color: "#1d4ed8",
   fontSize: 12,
   fontWeight: 700
 } as const;
@@ -395,6 +395,6 @@ const liveMetaStyle = {
   display: "flex",
   gap: 10,
   flexWrap: "wrap",
-  color: "#94a3b8",
+  color: "#64748b",
   fontSize: 13
 } as const;

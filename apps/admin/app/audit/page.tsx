@@ -60,8 +60,12 @@ export default async function AuditPage({
         <form style={searchFormStyle}>
           <input name="action" defaultValue={action} placeholder="Filter by action" style={searchInputStyle} />
           <input name="entityType" defaultValue={entityType} placeholder="Filter by entity" style={searchInputStyle} />
-          <button style={searchButtonStyle} type="submit">Filter</button>
-          <Link href="/dashboard" style={linkStyle}>Dashboard</Link>
+          <button style={searchButtonStyle} type="submit">
+            Filter
+          </button>
+          <Link href="/dashboard" style={linkStyle}>
+            Dashboard
+          </Link>
         </form>
       }
     >
@@ -71,13 +75,19 @@ export default async function AuditPage({
             <div style={headerStyle}>
               <div>
                 <strong>{log.action}</strong>
-                <div style={mutedStyle}>{log.entityType} · {log.entityId}</div>
+                <div style={mutedStyle}>
+                  {log.entityType} · {log.entityId}
+                </div>
               </div>
               <div style={mutedStyle}>{log.createdAt.slice(0, 10)}</div>
             </div>
             <div style={bodyStyle}>
-              <div><span style={labelStyle}>Admin</span> {log.adminUser.name} · {log.adminUser.email}</div>
-              <div><span style={labelStyle}>Role</span> {log.adminUser.role ?? "admin"}</div>
+              <div>
+                <span style={labelStyle}>Admin</span> {log.adminUser.name} · {log.adminUser.email}
+              </div>
+              <div>
+                <span style={labelStyle}>Role</span> {log.adminUser.role ?? "admin"}
+              </div>
               <pre style={payloadStyle}>{JSON.stringify(log.payloadJson ?? {}, null, 2)}</pre>
             </div>
           </article>
@@ -108,21 +118,21 @@ const searchInputStyle = {
   padding: "12px 14px",
   borderRadius: 14,
   border: "1px solid rgba(148,163,184,0.2)",
-  background: "rgba(15,23,42,0.95)",
-  color: "#e2e8f0"
+  background: "#ffffff",
+  color: "#0f172a"
 } as const;
 
 const searchButtonStyle = {
   border: "none",
   borderRadius: 14,
   padding: "12px 16px",
-  background: "linear-gradient(135deg, #38bdf8, #0f766e)",
-  color: "#020617",
+  background: "linear-gradient(135deg, #dbeafe, #cffafe)",
+  color: "#0f172a",
   fontWeight: 700
 } as const;
 
 const linkStyle = {
-  color: "#38bdf8",
+  color: "#0284c7",
   textDecoration: "none",
   fontWeight: 700
 } as const;
@@ -130,13 +140,14 @@ const linkStyle = {
 const cardStyle = {
   padding: 20,
   borderRadius: 20,
-  background: "rgba(15,23,42,0.9)",
-  border: "1px solid rgba(148,163,184,0.16)"
+  background: "#ffffff",
+  border: "1px solid rgba(148,163,184,0.16)",
+  boxShadow: "0 12px 28px rgba(15,23,42,0.06)"
 } as const;
 
 const emptyCardStyle = {
   ...cardStyle,
-  color: "#94a3b8"
+  color: "#64748b"
 } as const;
 
 const headerStyle = {
@@ -151,25 +162,25 @@ const headerStyle = {
 const bodyStyle = {
   display: "grid",
   gap: 10,
-  color: "#e2e8f0"
+  color: "#0f172a"
 } as const;
 
 const labelStyle = {
-  color: "#94a3b8",
+  color: "#64748b",
   marginRight: 6
 } as const;
 
 const mutedStyle = {
-  color: "#94a3b8"
+  color: "#64748b"
 } as const;
 
 const payloadStyle = {
   margin: 0,
   padding: 14,
   borderRadius: 14,
-  background: "rgba(2,6,23,0.84)",
+  background: "#f8fafc",
   border: "1px solid rgba(148,163,184,0.12)",
-  color: "#cbd5e1",
+  color: "#334155",
   overflowX: "auto",
   whiteSpace: "pre-wrap",
   wordBreak: "break-word"

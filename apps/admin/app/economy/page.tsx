@@ -256,9 +256,9 @@ const linkButtonStyle = {
   justifyContent: "center",
   padding: "12px 16px",
   borderRadius: 14,
-  background: "rgba(15,23,42,0.9)",
+  background: "#ffffff",
   border: "1px solid rgba(148,163,184,0.16)",
-  color: "#e2e8f0",
+  color: "#0f172a",
   textDecoration: "none",
   fontWeight: 700
 } as const;
@@ -272,12 +272,12 @@ const metricGridStyle = {
 const metricStyle = {
   padding: 18,
   borderRadius: 18,
-  background: "rgba(15,23,42,0.9)",
+  background: "#ffffff",
   border: "1px solid rgba(148,163,184,0.16)"
 } as const;
 
 const metricLabelStyle = {
-  color: "#94a3b8",
+  color: "#64748b",
   textTransform: "uppercase",
   letterSpacing: 1.1,
   fontSize: 12
@@ -298,7 +298,7 @@ const sectionGridStyle = {
 const panelStyle = {
   padding: 20,
   borderRadius: 22,
-  background: "rgba(15,23,42,0.9)",
+  background: "#ffffff",
   border: "1px solid rgba(148,163,184,0.16)"
 } as const;
 
@@ -317,7 +317,7 @@ const panelTitleStyle = {
 
 const panelSubtitleStyle = {
   marginTop: 6,
-  color: "#94a3b8",
+  color: "#64748b",
   fontSize: 13,
   lineHeight: 1.6
 } as const;
@@ -335,7 +335,7 @@ const listStyle = {
 const cardStyle = {
   padding: 14,
   borderRadius: 16,
-  background: "rgba(2,6,23,0.82)",
+  background: "#f8fafc",
   border: "1px solid rgba(148,163,184,0.12)"
 } as const;
 
@@ -352,15 +352,15 @@ const metaStyle = {
   display: "flex",
   gap: 12,
   flexWrap: "wrap",
-  color: "#94a3b8",
+  color: "#64748b",
   fontSize: 13
 } as const;
 
 const badgeStyle = {
   padding: "4px 8px",
   borderRadius: 999,
-  background: "rgba(56,189,248,0.16)",
-  color: "#7dd3fc",
+  background: "#dbeafe",
+  color: "#1d4ed8",
   border: "1px solid rgba(56,189,248,0.2)",
   fontSize: 12,
   fontWeight: 700
@@ -369,7 +369,7 @@ const badgeStyle = {
 const emptyStyle = {
   padding: 16,
   borderRadius: 16,
-  background: "rgba(2,6,23,0.82)",
+  background: "#f8fafc",
   border: "1px solid rgba(148,163,184,0.12)",
-  color: "#94a3b8"
+  color: "#64748b"
 } as const;

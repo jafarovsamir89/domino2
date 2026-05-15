@@ -70,9 +70,14 @@ export default async function PlayersPage({
   const offset = String(resolvedSearchParams.offset || "0");
   const scope = String(resolvedSearchParams.scope || "all");
   const sort = String(resolvedSearchParams.sort || "updated");
+  const offsetValue = Math.max(0, Number(offset) || 0);
   const data = await fetchAuthedApi<PlayerListResponse>(
     `/admin/players?query=${encodeURIComponent(query)}&offset=${encodeURIComponent(offset)}&scope=${encodeURIComponent(scope)}&sort=${encodeURIComponent(sort)}`
   );
+  const pageSize = data?.pagination.limit ?? 20;
+  const hasMore = Boolean(data?.pagination.hasMore);
+  const prevOffset = Math.max(0, offsetValue - pageSize);
+  const nextOffset = offsetValue + pageSize;
 
   return (
     <AdminFrame
@@ -165,9 +170,40 @@ export default async function PlayersPage({
               )}
           </tbody>
         </table>
+        <div style={paginationStyle}>
+          <Link
+            href={buildPlayersHref({ query, scope, sort, offset: prevOffset })}
+            style={{ ...pagerButtonStyle, ...(offsetValue <= 0 ? disabledPagerStyle : null) }}
+            aria-disabled={offsetValue <= 0}
+            tabIndex={offsetValue <= 0 ? -1 : 0}
+          >
+            Previous
+          </Link>
+          <div style={paginationMetaStyle}>
+            <span>Showing {data?.items.length || 0} players</span>
+            <span style={paginationMetaDimStyle}>offset {offsetValue}</span>
+          </div>
+          <Link
+            href={buildPlayersHref({ query, scope, sort, offset: nextOffset })}
+            style={{ ...pagerButtonStyle, ...(hasMore ? null : disabledPagerStyle) }}
+            aria-disabled={!hasMore}
+            tabIndex={!hasMore ? -1 : 0}
+          >
+            Next
+          </Link>
+        </div>
       </section>
     </AdminFrame>
   );
+}
+
+function buildPlayersHref({ query, scope, sort, offset }: { query: string; scope: string; sort: string; offset: number }) {
+  const params = new URLSearchParams();
+  if (query) params.set("query", query);
+  params.set("scope", scope);
+  params.set("sort", sort);
+  params.set("offset", String(Math.max(0, offset)));
+  return `/players?${params.toString()}`;
 }
 
 function Th({ children }: { children: ReactNode }) {
@@ -194,8 +230,8 @@ const searchInputStyle = {
   padding: "12px 14px",
   borderRadius: 14,
   border: "1px solid rgba(148,163,184,0.2)",
-  background: "rgba(15,23,42,0.95)",
-  color: "#e2e8f0"
+  background: "#ffffff",
+  color: "#0f172a"
 } as const;
 
 const selectStyle = {
@@ -203,16 +239,16 @@ const selectStyle = {
   padding: "12px 14px",
   borderRadius: 14,
   border: "1px solid rgba(148,163,184,0.2)",
-  background: "rgba(15,23,42,0.95)",
-  color: "#e2e8f0"
+  background: "#ffffff",
+  color: "#0f172a"
 } as const;
 
 const searchButtonStyle = {
   border: "none",
   borderRadius: 14,
   padding: "12px 16px",
-  background: "linear-gradient(135deg, #38bdf8, #0f766e)",
-  color: "#020617",
+  background: "linear-gradient(135deg, #dbeafe, #cffafe)",
+  color: "#0f172a",
   fontWeight: 700
 } as const;
 
@@ -220,7 +256,7 @@ const tableWrapStyle = {
   borderRadius: 24,
   overflow: "hidden",
   border: "1px solid rgba(148,163,184,0.16)",
-  background: "rgba(15,23,42,0.88)"
+  background: "#ffffff"
 };
 
 const tableStyle = {
@@ -231,11 +267,11 @@ const tableStyle = {
 const thStyle = {
   padding: "14px 16px",
   textAlign: "left",
-  color: "#94a3b8",
+  color: "#64748b",
   fontSize: 12,
   textTransform: "uppercase",
   letterSpacing: 1.1,
-  background: "rgba(15,23,42,0.98)"
+  background: "#f8fafc"
 } as const;
 
 const tdStyle = {
@@ -245,7 +281,7 @@ const tdStyle = {
 } as const;
 
 const mutedStyle = {
-  color: "#94a3b8",
+  color: "#64748b",
   marginTop: 4,
   fontSize: 13
 } as const;
@@ -258,14 +294,14 @@ const badgeStyle = {
   marginBottom: 6,
   padding: "6px 10px",
   borderRadius: 999,
-  background: "rgba(15,23,42,0.88)",
+  background: "#f8fafc",
   border: "1px solid rgba(148,163,184,0.16)",
-  color: "#cbd5e1",
+  color: "#334155",
   fontSize: 12
 } as const;
 
 const actionLinkStyle = {
-  color: "#38bdf8",
+  color: "#0284c7",
   textDecoration: "none",
   fontWeight: 700
 } as const;
@@ -274,4 +310,47 @@ const actionStackStyle = {
   marginTop: 10,
   display: "grid",
   gap: 8
+} as const;
+
+const paginationStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  gap: 12,
+  padding: 16,
+  borderTop: "1px solid rgba(148,163,184,0.12)",
+  background: "#f8fafc",
+  flexWrap: "wrap"
+} as const;
+
+const pagerButtonStyle = {
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
+  minWidth: 104,
+  padding: "10px 14px",
+  borderRadius: 12,
+  border: "1px solid rgba(148,163,184,0.18)",
+  background: "#ffffff",
+  color: "#0f172a",
+  textDecoration: "none",
+  fontWeight: 700
+} as const;
+
+const disabledPagerStyle = {
+  opacity: 0.45,
+  pointerEvents: "none"
+} as const;
+
+const paginationMetaStyle = {
+  display: "flex",
+  gap: 12,
+  alignItems: "center",
+  color: "#475569",
+  fontSize: 13,
+  flexWrap: "wrap"
+} as const;
+
+const paginationMetaDimStyle = {
+  color: "#64748b"
 } as const;

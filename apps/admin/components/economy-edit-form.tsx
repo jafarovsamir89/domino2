@@ -3,7 +3,7 @@
 import { useMemo, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 
-import { fetchApi } from "../lib/api";
+import { fetchApiResult } from "../lib/api";
 
 type EconomyField =
   | {
@@ -127,13 +127,13 @@ export function EconomyEditForm({
       body[field.name] = coerceFieldValue(field, formData.get(field.name));
     }
 
-    const result = await fetchApi(endpoint, {
+    const result = await fetchApiResult(endpoint, {
       method,
       json: body
     });
 
-    if (!result) {
-      setMessage("Action failed");
+    if (!result.ok) {
+      setMessage(result.error || "Action failed");
       setBusy(false);
       return;
     }
@@ -238,8 +238,8 @@ export function EconomyEditForm({
 const formStyle = {
   padding: 16,
   borderRadius: 18,
-  background: "rgba(2,6,23,0.8)",
-  border: "1px solid rgba(148,163,184,0.12)",
+  background: "#ffffff",
+  border: "1px solid rgba(148,163,184,0.16)",
   display: "grid",
   gap: 14
 } as const;
@@ -253,7 +253,7 @@ const headerStyle = {
 } as const;
 
 const noteStyle = {
-  color: "#94a3b8",
+  color: "#64748b",
   fontSize: 13
 } as const;
 
@@ -270,13 +270,13 @@ const checkboxStyle = {
 } as const;
 
 const labelStyle = {
-  color: "#e2e8f0",
+  color: "#0f172a",
   fontWeight: 700,
   fontSize: 14
 } as const;
 
 const helpStyle = {
-  color: "#94a3b8",
+  color: "#64748b",
   fontSize: 12,
   lineHeight: 1.5
 } as const;
@@ -284,9 +284,9 @@ const helpStyle = {
 const inputStyle = {
   width: "100%",
   borderRadius: 12,
-  border: "1px solid rgba(148,163,184,0.2)",
-  background: "rgba(15,23,42,0.96)",
-  color: "#e2e8f0",
+  border: "1px solid rgba(148,163,184,0.22)",
+  background: "#ffffff",
+  color: "#0f172a",
   padding: "12px 14px"
 } as const;
 
@@ -307,13 +307,13 @@ const buttonStyle = {
   border: "none",
   borderRadius: 14,
   padding: "12px 16px",
-  background: "linear-gradient(135deg, #38bdf8, #0f766e)",
-  color: "#020617",
+  background: "linear-gradient(135deg, #dbeafe, #cffafe)",
+  color: "#0f172a",
   fontWeight: 700,
   cursor: "pointer"
 } as const;
 
 const messageStyle = {
-  color: "#94a3b8",
+  color: "#64748b",
   fontSize: 13
 } as const;

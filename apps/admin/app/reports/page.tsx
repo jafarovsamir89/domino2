@@ -74,8 +74,12 @@ export default async function ReportsPage({
             <option value="all">All reports</option>
           </select>
           <input name="query" defaultValue={query} placeholder="Search reason or player" style={searchInputStyle} />
-          <button style={searchButtonStyle} type="submit">Filter</button>
-          <Link href="/players" style={linkStyle}>Players</Link>
+          <button style={searchButtonStyle} type="submit">
+            Filter
+          </button>
+          <Link href="/players" style={linkStyle}>
+            Players
+          </Link>
         </form>
       }
     >
@@ -85,7 +89,9 @@ export default async function ReportsPage({
             <div style={cardHeaderStyle}>
               <div>
                 <strong>{report.reason}</strong>
-                <div style={mutedStyle}>{report.status} · {report.createdAt.slice(0, 10)}</div>
+                <div style={mutedStyle}>
+                  {report.status} · {report.createdAt.slice(0, 10)}
+                </div>
               </div>
               <div style={buttonRowStyle}>
                 <ActionButton endpoint={`/admin/reports/${report.id}`} method="PATCH" label="Resolve" body={{ status: "resolved" }} />
@@ -120,7 +126,7 @@ function Detail({ label, value }: { label: string; value: string }) {
 }
 
 const linkStyle = {
-  color: "#38bdf8",
+  color: "#0284c7",
   textDecoration: "none",
   fontWeight: 700
 } as const;
@@ -137,8 +143,8 @@ const selectStyle = {
   padding: "12px 14px",
   borderRadius: 14,
   border: "1px solid rgba(148,163,184,0.2)",
-  background: "rgba(15,23,42,0.95)",
-  color: "#e2e8f0"
+  background: "#ffffff",
+  color: "#0f172a"
 } as const;
 
 const searchInputStyle = {
@@ -146,16 +152,16 @@ const searchInputStyle = {
   padding: "12px 14px",
   borderRadius: 14,
   border: "1px solid rgba(148,163,184,0.2)",
-  background: "rgba(15,23,42,0.95)",
-  color: "#e2e8f0"
+  background: "#ffffff",
+  color: "#0f172a"
 } as const;
 
 const searchButtonStyle = {
   border: "none",
   borderRadius: 14,
   padding: "12px 16px",
-  background: "linear-gradient(135deg, #38bdf8, #0f766e)",
-  color: "#020617",
+  background: "linear-gradient(135deg, #dbeafe, #cffafe)",
+  color: "#0f172a",
   fontWeight: 700
 } as const;
 
@@ -167,13 +173,14 @@ const stackStyle = {
 const cardStyle = {
   padding: 20,
   borderRadius: 20,
-  background: "rgba(15,23,42,0.9)",
-  border: "1px solid rgba(148,163,184,0.16)"
+  background: "#ffffff",
+  border: "1px solid rgba(148,163,184,0.16)",
+  boxShadow: "0 12px 28px rgba(15,23,42,0.06)"
 } as const;
 
 const emptyCardStyle = {
   ...cardStyle,
-  color: "#94a3b8"
+  color: "#64748b"
 } as const;
 
 const cardHeaderStyle = {
@@ -200,12 +207,12 @@ const twoColumnStyle = {
 const detailStyle = {
   padding: 14,
   borderRadius: 14,
-  background: "rgba(2,6,23,0.8)",
+  background: "#f8fafc",
   border: "1px solid rgba(148,163,184,0.12)",
   display: "grid",
   gap: 6
 } as const;
 
 const mutedStyle = {
-  color: "#94a3b8"
+  color: "#64748b"
 } as const;

@@ -21,12 +21,17 @@ type SessionResponse = {
   };
 } | null;
 
-export function DashboardSessionCard() {
+type DashboardSessionCardProps = {
+  initialSession?: SessionResponse;
+};
+
+export function DashboardSessionCard({ initialSession = null }: DashboardSessionCardProps) {
   const router = useRouter();
-  const [session, setSession] = useState<SessionResponse>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [session, setSession] = useState<SessionResponse>(initialSession);
+  const [isLoading, setIsLoading] = useState(!initialSession);
 
   useEffect(() => {
+    if (initialSession) return;
     let mounted = true;
 
     async function loadSession() {
@@ -43,7 +48,7 @@ export function DashboardSessionCard() {
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [initialSession]);
 
   async function handleSignOut() {
     await authClient.signOut({
@@ -105,8 +110,9 @@ export function DashboardSessionCard() {
 const panelStyle = {
   padding: 20,
   borderRadius: 20,
-  background: "rgba(15,23,42,0.92)",
-  border: "1px solid rgba(148,163,184,0.16)"
+  background: "#ffffff",
+  border: "1px solid rgba(148,163,184,0.16)",
+  boxShadow: "0 12px 30px rgba(15,23,42,0.06)"
 } as const;
 
 const titleStyle = {
@@ -116,12 +122,12 @@ const titleStyle = {
 
 const mutedStyle = {
   margin: 0,
-  color: "#94a3b8",
+  color: "#64748b",
   lineHeight: 1.6
 };
 
 const strongStyle = {
-  color: "#e2e8f0",
+  color: "#0f172a",
   fontWeight: 700,
   marginTop: 4
 };
@@ -130,8 +136,8 @@ const primaryButtonStyle = {
   border: "none",
   borderRadius: 14,
   padding: "12px 16px",
-  background: "linear-gradient(135deg, #38bdf8, #0f766e)",
-  color: "#020617",
+  background: "linear-gradient(135deg, #dbeafe, #cffafe)",
+  color: "#0f172a",
   fontWeight: 700,
   cursor: "pointer"
 } as const;
@@ -140,8 +146,8 @@ const secondaryButtonStyle = {
   border: "1px solid rgba(148,163,184,0.22)",
   borderRadius: 14,
   padding: "12px 16px",
-  background: "rgba(15,23,42,0.88)",
-  color: "#e2e8f0",
+  background: "#ffffff",
+  color: "#0f172a",
   fontWeight: 600,
   cursor: "pointer"
 } as const;
@@ -149,8 +155,8 @@ const secondaryButtonStyle = {
 const warningStyle = {
   borderRadius: 14,
   padding: 12,
-  background: "rgba(146,64,14,0.18)",
-  border: "1px solid rgba(251,191,36,0.28)",
-  color: "#fde68a",
+  background: "#fffbeb",
+  border: "1px solid rgba(245,158,11,0.24)",
+  color: "#92400e",
   lineHeight: 1.6
 } as const;
