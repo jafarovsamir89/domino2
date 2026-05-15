@@ -1,4 +1,4 @@
-const CACHE_NAME = 'domino-v30';
+const CACHE_NAME = 'domino-v31';
 const ASSETS = [
     '/',
     '/index.html',
@@ -50,6 +50,10 @@ self.addEventListener('install', e => {
 });
 
 self.addEventListener('fetch', e => {
+    const requestUrl = new URL(e.request.url);
+    if (requestUrl.origin !== self.location.origin) {
+        return;
+    }
     e.respondWith((async () => {
         try {
             return await fetch(e.request);
