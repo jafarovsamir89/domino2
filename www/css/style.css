@@ -1888,6 +1888,7 @@ input, button { font: inherit; }
     bottom: calc(100% + 10px);
     transform: translateX(-50%) translateY(12px) scale(0.96);
     width: min(320px, calc(100vw - 28px));
+    max-height: min(46vh, 280px);
     padding: 10px;
     border-radius: 22px;
     border: 1px solid rgba(255, 255, 255, 0.12);
@@ -1899,6 +1900,10 @@ input, button { font: inherit; }
     gap: 8px;
     opacity: 0;
     pointer-events: none;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
     transition: opacity 0.18s ease, transform 0.18s ease;
 }
 
@@ -1930,6 +1935,15 @@ input, button { font: inherit; }
     opacity: 1;
     transform: translateX(-50%) translateY(0) scale(1);
     pointer-events: auto;
+}
+
+.reaction-picker::-webkit-scrollbar {
+    width: 8px;
+}
+
+.reaction-picker::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.18);
+    border-radius: 999px;
 }
 
 .gift-picker.open {
