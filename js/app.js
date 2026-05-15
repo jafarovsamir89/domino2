@@ -2089,10 +2089,7 @@ class DominoGame {
             coinShopBtn.type = 'button';
             coinShopBtn.title = this.t('coin-shop-menu');
             coinShopBtn.setAttribute('aria-label', this.t('coin-shop-menu'));
-            coinShopBtn.innerHTML = `
-                <span class="menu-button-icon" data-shop-icon="coin" aria-hidden="true"></span>
-                <span class="menu-button-label" data-i18n="coin-shop-menu">${this.t('coin-shop-menu')}</span>
-            `;
+            coinShopBtn.textContent = this.t('coin-shop-menu');
             menuPanel.insertBefore(coinShopBtn, document.getElementById('menu-quit'));
         }
         this.ensureShopIconMarkup();
