@@ -145,6 +145,7 @@ class DominoGame {
         this.coinMatchSummary = { spent: 0, won: 0 };
         this.onlineCoinSummary = { spent: 0, won: 0 };
         this.currentRoomState = null;
+        this.pendingReconnectResolution = false;
         this.openRooms = [];
         this.onlineSocialPanel = 'rooms';
         this.onlineRoomFilters = {
@@ -3939,40 +3940,14 @@ class DominoGame {
     }
 
     onNetworkReconnected() {
-        this.showStartModal(null);
-        this.clearNextDealAdvanceTimeout();
-        const gameOverReason = String(this.currentRoomState?.gameOverReason || '').trim();
-        if (this.matchOver || gameOverReason === 'disconnect') {
-            let economy = this.lastDisconnectEconomySummary || null;
-            if (!economy && this.currentRoomState?.gameOverSummaryJson) {
-                try {
-                    economy = JSON.parse(this.currentRoomState.gameOverSummaryJson);
-                } catch {}
-            }
-            this.renderDisconnectGameOver({
-                reasonKey: 'game-over-disconnect',
-                values: { player: String(this.currentRoomState?.gameOverPlayerName || '').trim() },
-                economy,
-                players: this.playerNames.map((name, index) => ({
-                    name,
-                    score: this.scores[index] || 0,
-                    roundWins: this.roundWins[index] || 0
-                })),
-                isTeamMode: this.isTeamMode,
-                teamScores: Array.from(this.teamScores || [0, 0]),
-                teamRoundWins: Array.from(this.teamRoundWins || [0, 0])
-            });
-            this.renderer.showMessage(this.t('connection-restored'), 1600);
-            return;
-        }
         document.getElementById('start-screen')?.classList.remove('active');
         document.getElementById('menu-screen')?.classList.remove('active');
         document.getElementById('round-end-screen')?.classList.remove('active');
         document.getElementById('game-over-screen')?.classList.remove('active');
-        document.getElementById('game-screen')?.classList.add('active');
-        this.renderState();
-        this.renderer.showMessage(this.t('connection-restored'), 1600);
-        this.persistGameResumeSnapshot();
+        this.showStartModal(null);
+        this.clearNextDealAdvanceTimeout();
+        this.clearTurnTimers();
+        this.pendingReconnectResolution = true;
     }
 
     onNetworkReconnectFailed(error) {
@@ -5365,13 +5340,46 @@ class DominoGame {
             this.clearTurnTimers();
         }
 
+        const gameOverReason = String(state?.gameOverReason || '').trim();
+        if (this.pendingReconnectResolution) {
+            if (this.matchOver || gameOverReason === 'disconnect') {
+                let economy = this.lastDisconnectEconomySummary || null;
+                if (!economy && state?.gameOverSummaryJson) {
+                    try {
+                        economy = JSON.parse(state.gameOverSummaryJson);
+                    } catch {}
+                }
+                const payload = {
+                    reasonKey: 'game-over-disconnect',
+                    values: { player: String(state?.gameOverPlayerName || '').trim() },
+                    economy,
+                    players: this.playerNames.map((name, index) => ({
+                        name,
+                        score: this.scores[index] || 0,
+                        roundWins: this.roundWins[index] || 0
+                    })),
+                    isTeamMode: this.isTeamMode,
+                    teamScores: Array.from(this.teamScores || [0, 0]),
+                    teamRoundWins: Array.from(this.teamRoundWins || [0, 0])
+                };
+                this.renderDisconnectGameOver(payload);
+                this.renderer.showMessage(this.t('connection-restored'), 1600);
+                this.pendingReconnectResolution = false;
+                return;
+            }
+            if (!this.gameActive) {
+                return;
+            }
+            this.pendingReconnectResolution = false;
+        }
+
         // Hide start screen if we just started
         if (this.gameActive && document.getElementById('start-screen').classList.contains('active')) {
             document.getElementById('start-screen').classList.remove('active');
             document.getElementById('game-screen').classList.add('active');
         }
 
-        if (this.matchOver || String(state?.gameOverReason || '').trim() === 'disconnect') {
+        if (this.matchOver || gameOverReason === 'disconnect') {
             let economy = this.lastDisconnectEconomySummary || null;
             if (!economy && state?.gameOverSummaryJson) {
                 try {
