@@ -170,7 +170,7 @@ function isTableSkinProductKey(productKey: string) {
 }
 
 function getTableSkinAssetUrl(productKey: string) {
-  return `/assets/cosmetics/table/${productKey}.svg`;
+  return `/assets/cosmetics/table/${productKey}.png`;
 }
 
 function startOfUtcDay(date: Date) {
