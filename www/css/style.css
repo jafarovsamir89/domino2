@@ -1985,6 +1985,22 @@ input, button { font: inherit; }
     border-radius: 8px;
 }
 
+.opp-container.side .opp-hand-group {
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+}
+
+.opp-container.side .opp-tile-pile {
+    flex-direction: column;
+    align-items: center;
+}
+
+.opp-container.side .opp-tile {
+    width: 12px;
+    height: 22px;
+}
+
 .opp-container.left {
     left: 0;
     border-top-left-radius: 0;
@@ -2011,26 +2027,10 @@ input, button { font: inherit; }
     min-width: 0;
 }
 
-.opp-hand-group.side-seat {
-    flex-direction: column;
-    align-items: center;
-    gap: 6px;
-}
-
-.opp-hand-group.side-seat .opp-tile-pile {
-    flex-direction: column;
-    align-items: center;
-}
-
 .opp-tile-pile {
     display: flex;
     gap: 2px;
     min-width: 0;
-}
-
-.opp-hand-group.side-seat .opp-tile {
-    width: 12px;
-    height: 22px;
 }
 
 .opp-tile {

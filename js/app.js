@@ -118,6 +118,8 @@ class DominoGame {
         this.postMoveWindowActive = false;
         this.postMoveWindowEndsAt = 0;
         this.roomAvatarBySessionId = new Map();
+        this.lastDisconnectEconomySummary = null;
+        this.disconnectEconomyApplied = false;
         this.mobileAuthPending = false;
         this.network = new NetworkManager(this);
         this.voice = new VoiceChatManager(this);
@@ -3854,7 +3856,7 @@ class DominoGame {
             this.setJoinStatus(statusText);
         }
 
-        if (this.network?.isMultiplayer && roomState.roomVisibility === 'open' && !roomState.gameActive) {
+        if (this.network?.isMultiplayer && roomState.roomVisibility === 'open' && !roomState.gameActive && !roomState.gameOverReason && !roomState.matchOver) {
             this.enterOpenRoomWaitingScreen(roomState);
         }
 
@@ -3938,12 +3940,36 @@ class DominoGame {
 
     onNetworkReconnected() {
         this.showStartModal(null);
+        this.clearNextDealAdvanceTimeout();
+        const gameOverReason = String(this.currentRoomState?.gameOverReason || '').trim();
+        if (this.matchOver || gameOverReason === 'disconnect') {
+            let economy = this.lastDisconnectEconomySummary || null;
+            if (!economy && this.currentRoomState?.gameOverSummaryJson) {
+                try {
+                    economy = JSON.parse(this.currentRoomState.gameOverSummaryJson);
+                } catch {}
+            }
+            this.renderDisconnectGameOver({
+                reasonKey: 'game-over-disconnect',
+                values: { player: String(this.currentRoomState?.gameOverPlayerName || '').trim() },
+                economy,
+                players: this.playerNames.map((name, index) => ({
+                    name,
+                    score: this.scores[index] || 0,
+                    roundWins: this.roundWins[index] || 0
+                })),
+                isTeamMode: this.isTeamMode,
+                teamScores: Array.from(this.teamScores || [0, 0]),
+                teamRoundWins: Array.from(this.teamRoundWins || [0, 0])
+            });
+            this.renderer.showMessage(this.t('connection-restored'), 1600);
+            return;
+        }
         document.getElementById('start-screen')?.classList.remove('active');
         document.getElementById('menu-screen')?.classList.remove('active');
         document.getElementById('round-end-screen')?.classList.remove('active');
         document.getElementById('game-over-screen')?.classList.remove('active');
         document.getElementById('game-screen')?.classList.add('active');
-        this.clearNextDealAdvanceTimeout();
         this.renderState();
         this.renderer.showMessage(this.t('connection-restored'), 1600);
         this.persistGameResumeSnapshot();
@@ -4711,6 +4737,7 @@ class DominoGame {
         this.matchOver = false;
         this.roundOver = false;
         this.currentRoomState = null;
+        this.disconnectEconomyApplied = false;
         document.getElementById('game-screen').classList.remove('active');
         document.getElementById('start-screen').classList.add('active');
         this.showStartModal(null);
@@ -4743,6 +4770,7 @@ class DominoGame {
         this.roundWins = new Array(this.playerCount).fill(0);
         this.teamScores=[0,0]; this.teamRoundWins=[0,0];
         this.matchRound=1; this.matchOver=false; this.roundOver=false; this.lastDealWinner=null;
+        this.disconnectEconomyApplied = false;
         this.coinMatchSummary = { spent: 0, won: 0 };
         this.pendingSoloSettlement = Promise.resolve();
         if (this.network.isMultiplayer) {
@@ -5328,6 +5356,7 @@ class DominoGame {
         this.matchRound = state?.matchRound || 1;
         this.deal = state?.deal || 1;
         this.gameActive = !!state?.gameActive;
+        this.matchOver = !!state?.matchOver;
         this.onlineStakeKey = state?.stakeKey || this.onlineStakeKey;
         this.onlineRoundBankAmount = Math.max(0, Number(state?.bankAmount || 0));
         if (this.gameActive && Number(state?.turnDeadlineAt || 0) > 0) {
@@ -5340,6 +5369,30 @@ class DominoGame {
         if (this.gameActive && document.getElementById('start-screen').classList.contains('active')) {
             document.getElementById('start-screen').classList.remove('active');
             document.getElementById('game-screen').classList.add('active');
+        }
+
+        if (this.matchOver || String(state?.gameOverReason || '').trim() === 'disconnect') {
+            let economy = this.lastDisconnectEconomySummary || null;
+            if (!economy && state?.gameOverSummaryJson) {
+                try {
+                    economy = JSON.parse(state.gameOverSummaryJson);
+                } catch {}
+            }
+            const payload = {
+                reasonKey: 'game-over-disconnect',
+                values: { player: String(state?.gameOverPlayerName || '').trim() },
+                economy,
+                players: this.playerNames.map((name, index) => ({
+                    name,
+                    score: this.scores[index] || 0,
+                    roundWins: this.roundWins[index] || 0
+                })),
+                isTeamMode: this.isTeamMode,
+                teamScores: Array.from(this.teamScores || [0, 0]),
+                teamRoundWins: Array.from(this.teamRoundWins || [0, 0])
+            };
+            this.renderDisconnectGameOver(payload);
+            return;
         }
 
         // Create dummy opponent hands based on handCount from state
@@ -5408,6 +5461,24 @@ class DominoGame {
         this.persistGameResumeSnapshot();
     }
 
+    applyOnlineEconomySettlement(economy) {
+        if (!this.network.isMultiplayer || this.onlineEconomyMode !== 'coins' || !economy) return;
+        const stakeAmount = Math.max(0, Number(economy.stakeAmount || 0));
+        const reservations = Array.isArray(economy.reservations) ? economy.reservations : [];
+        const myUserId = String(
+            this.accountProfile?.profile?.userId ||
+            this.accountDetails?.user?.id ||
+            this.account?.getStoredProfile?.()?.userId ||
+            ''
+        ).trim();
+        const myReservation = reservations.find((entry) => String(entry?.userId || '').trim() === myUserId);
+        const myPayout = Math.max(0, Number(myReservation?.payout ?? 0));
+        if (stakeAmount > 0) {
+            this.onlineCoinSummary.spent += stakeAmount;
+            this.onlineCoinSummary.won += myPayout;
+        }
+    }
+
     onNetworkRoundEnd(data) {
         this.gameActive = false;
         this.clearTurnTimers();
@@ -5430,23 +5501,7 @@ class DominoGame {
 
         this.matchOver = data.isMatchOver;
 
-        if (this.network.isMultiplayer && this.onlineEconomyMode === 'coins' && data.economy) {
-            const economy = data.economy || {};
-            const stakeAmount = Math.max(0, Number(economy.stakeAmount || 0));
-            const reservations = Array.isArray(economy.reservations) ? economy.reservations : [];
-            const myUserId = String(
-                this.accountProfile?.profile?.userId ||
-                this.accountDetails?.user?.id ||
-                this.account?.getStoredProfile?.()?.userId ||
-                ''
-            ).trim();
-            const myReservation = reservations.find((entry) => String(entry?.userId || '').trim() === myUserId);
-            const myPayout = Math.max(0, Number(myReservation?.payout ?? 0));
-            if (stakeAmount > 0) {
-                this.onlineCoinSummary.spent += stakeAmount;
-                this.onlineCoinSummary.won += myPayout;
-            }
-        }
+        this.applyOnlineEconomySettlement(data.economy);
 
         let displayEntities;
         if (data.isTeamMode) {
@@ -5856,6 +5911,8 @@ class DominoGame {
     }
     showMatchResult(){
         this.clearNextDealAdvanceTimeout();
+        const newGameBtn = document.getElementById('new-game-btn');
+        if (newGameBtn) newGameBtn.style.display = '';
         const economySummary = this.network.isMultiplayer
             ? (this.onlineEconomyMode === 'coins' ? { ...this.onlineCoinSummary } : null)
             : (this.soloEconomyMode === 'coins' ? { ...this.coinMatchSummary } : null);
@@ -5874,6 +5931,44 @@ class DominoGame {
         }
         void this.clearLocalPresence();
         this.clearGameResumeSnapshot();
+    }
+
+    renderDisconnectGameOver(payload = {}) {
+        this.clearNextDealAdvanceTimeout();
+        this.clearTurnTimers();
+        this.gameActive = false;
+        this.roundOver = true;
+        this.matchOver = true;
+        this.lastDisconnectEconomySummary = payload.economy || null;
+        if (!this.disconnectEconomyApplied) {
+            this.applyOnlineEconomySettlement(payload.economy || null);
+            this.disconnectEconomyApplied = true;
+        }
+
+        const titleText = this.t('game-over-disconnect');
+        const players = Array.isArray(payload.players) && payload.players.length
+            ? payload.players
+            : this.playerNames.map((name, index) => ({
+                name,
+                score: this.scores[index] || 0,
+                roundWins: this.roundWins[index] || 0
+            }));
+        const winnerLabel = this.isTeamMode
+            ? (payload.teamScores?.[0] >= payload.teamScores?.[1] ? this.getTeamDisplayName(0) : this.getTeamDisplayName(1))
+            : (payload.values?.player || this.t('online-room-closed'));
+        const economySummary = this.network.isMultiplayer
+            ? (this.onlineEconomyMode === 'coins' ? { ...this.onlineCoinSummary } : null)
+            : (this.soloEconomyMode === 'coins' ? { ...this.coinMatchSummary } : null);
+        this.renderer.renderGameOver(winnerLabel, players, economySummary, { titleText });
+        const newGameBtn = document.getElementById('new-game-btn');
+        if (newGameBtn) newGameBtn.style.display = 'none';
+        const quitBtn = document.getElementById('game-over-quit-btn');
+        if (quitBtn) quitBtn.textContent = this.t('game-over-quit');
+        document.getElementById('round-end-screen')?.classList.remove('active');
+        document.getElementById('menu-screen')?.classList.remove('active');
+        document.getElementById('start-screen')?.classList.remove('active');
+        document.getElementById('game-screen')?.classList.remove('active');
+        document.getElementById('game-over-screen')?.classList.add('active');
     }
 
     async recordLocalMatchResult(winnerIndex) {

@@ -610,8 +610,9 @@ export class Renderer {
         document.getElementById('round-end-screen')?.classList.remove('active');
     }
 
-    renderGameOver(wn, players, economySummary = null) {
-        document.getElementById('game-over-title').textContent = `${wn} ${this.app.t('won-suffix')}`;
+    renderGameOver(wn, players, economySummary = null, options = {}) {
+        const title = options?.titleText || `${wn} ${this.app.t('won-suffix')}`;
+        document.getElementById('game-over-title').textContent = title;
         const d = document.getElementById('game-over-details');
         d.innerHTML = '';
         if (economySummary) {
@@ -624,7 +625,7 @@ export class Renderer {
             label.textContent = this.app.t('summary-coins');
             const value = document.createElement('span');
             value.className = 'detail-value';
-            value.textContent = `${this.app.t('summary-won')}: ${won} В· ${this.app.t('summary-lost')}: ${spent} В· ${this.app.t('summary-net')}: ${net >= 0 ? '+' : ''}${net}`;
+            value.textContent = `${this.app.t('summary-won')}: ${won} · ${this.app.t('summary-lost')}: ${spent} · ${this.app.t('summary-net')}: ${net >= 0 ? '+' : ''}${net}`;
             summary.appendChild(label);
             summary.appendChild(value);
             d.appendChild(summary);

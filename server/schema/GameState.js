@@ -36,6 +36,11 @@ class GameState extends Schema {
         this.isTeamMode = false;
         this.playerCount = 2;
         this.turnDeadlineAt = 0;
+        this.matchOver = false;
+        this.gameOverReason = "";
+        this.gameOverPlayerName = "";
+        this.gameOverWinnerIndex = -1;
+        this.gameOverSummaryJson = "";
         this.teamScores = new ArraySchema(0, 0);
         this.teamRoundWins = new ArraySchema(0, 0);
     }
@@ -51,6 +56,11 @@ type("string")(GameState.prototype, "boardJson");
 type("boolean")(GameState.prototype, "isTeamMode");
 type("number")(GameState.prototype, "playerCount");
 type("number")(GameState.prototype, "turnDeadlineAt");
+type("boolean")(GameState.prototype, "matchOver");
+type("string")(GameState.prototype, "gameOverReason");
+type("string")(GameState.prototype, "gameOverPlayerName");
+type("number")(GameState.prototype, "gameOverWinnerIndex");
+type("string")(GameState.prototype, "gameOverSummaryJson");
 type(["number"])(GameState.prototype, "teamScores");
 type(["number"])(GameState.prototype, "teamRoundWins");
 

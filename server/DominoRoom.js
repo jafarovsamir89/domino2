@@ -323,6 +323,7 @@ class DominoRoom extends Room {
     async onLeave(client, consented) {
         debugLog(`[ROOM] Client ${client.sessionId} left (consented: ${consented})`);
         const player = this.state.players.get(client.sessionId);
+        const leavingIndex = this.state.playerOrder.indexOf(client.sessionId);
         if (player) player.isConnected = false;
         const identity = this.identityBySessionId.get(client.sessionId);
         if (identity) {
@@ -385,26 +386,35 @@ class DominoRoom extends Room {
         } catch (e) {
             debugLog(`[ROOM] Client ${client.sessionId} removed permanently.`);
             const leftPlayerName = player ? player.name : "Player";
-            if (this.state.gameActive && this.currentStakeKey !== "free") {
-                void this.settleForfeitStake(client.sessionId).catch((err) => {
+            if (this.state.gameActive) {
+                const settlement = await this.settleForfeitStake(client.sessionId).catch((err) => {
                     console.error("[ROOM] Failed to settle forfeit stake during cleanup:", err);
+                    return null;
                 });
+                this.state.gameActive = false;
+                this.state.matchOver = true;
+                this.state.gameOverReason = "disconnect";
+                this.state.gameOverPlayerName = leftPlayerName;
+                this.state.gameOverWinnerIndex = this.state.isTeamMode && leavingIndex !== -1 ? (leavingIndex % 2 === 0 ? 1 : 0) : -1;
+                this.state.gameOverSummaryJson = settlement ? JSON.stringify(settlement) : "";
+                this.clearTurnTimer();
+                this.clearNextDealTimer();
+                this.broadcastRoomState();
+                this.broadcast("msg", {
+                    key: "game-over-disconnect",
+                    values: { player: leftPlayerName },
+                    time: 2500
+                });
+                this.syncState();
+                return;
             }
+
             this.state.players.delete(client.sessionId);
             this.identityBySessionId.delete(client.sessionId);
             removeLivePlayer(client.sessionId);
             const idx = this.state.playerOrder.indexOf(client.sessionId);
             if (idx !== -1) this.state.playerOrder.splice(idx, 1);
-
-            if (this.state.gameActive) {
-                this.state.gameActive = false;
-                this.broadcast("room_closed", {
-                    reasonKey: "room-closed-player-left",
-                    values: { player: leftPlayerName }
-                });
-            } else {
-                this.broadcast("msg", { key: "msg-player-left-room", values: { player: leftPlayerName }, time: 1500 });
-            }
+            this.broadcast("msg", { key: "msg-player-left-room", values: { player: leftPlayerName }, time: 1500 });
             this.broadcastRoomState();
         }
     }
@@ -412,6 +422,11 @@ class DominoRoom extends Room {
     async startGame() {
         this.state.matchRound = 1;
         this.state.deal = 1;
+        this.state.matchOver = false;
+        this.state.gameOverReason = "";
+        this.state.gameOverPlayerName = "";
+        this.state.gameOverWinnerIndex = -1;
+        this.state.gameOverSummaryJson = "";
         this.matchRecorded = false;
         this.matchFinished = false;
         this.pendingAdvanceKind = null;
@@ -437,6 +452,11 @@ class DominoRoom extends Room {
         await this.pendingEconomySettlement.catch(() => {});
         this.matchRecorded = false;
         this.pendingAdvanceKind = null;
+        this.state.matchOver = false;
+        this.state.gameOverReason = "";
+        this.state.gameOverPlayerName = "";
+        this.state.gameOverWinnerIndex = -1;
+        this.state.gameOverSummaryJson = "";
         this.internalBoard = new Board();
         this.state.gameActive = false;
         this.currentDealMatchId = `${this.roomId}:round:${this.state.matchRound}`;
@@ -971,9 +991,10 @@ class DominoRoom extends Room {
                 throw new Error(text || `Stake forfeit settle failed with ${response.status}`);
             }
 
+            const summary = await response.json().catch(() => null);
             this.forfeitSettlementMade = true;
             this.matchRecorded = true;
-            return true;
+            return summary;
         } catch (error) {
             console.warn("[ROOM] Failed to settle forfeit stake:", error);
             return false;
