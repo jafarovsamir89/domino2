@@ -26,7 +26,7 @@ class NetworkManager {
         this.manualLeaveRequested = false;
         this.reconnectTimer = null;
         this.reconnectAttempt = 0;
-        this.maxReconnectAttempts = 12;
+        this.maxReconnectAttempts = 10;
         this.reconnectInProgress = false;
         this.voiceConfig = null;
         this.voiceConfigPromise = null;
@@ -436,7 +436,7 @@ class NetworkManager {
         if (!nextToken || this.manualLeaveRequested) return;
         if (this.reconnectTimer || this.reconnectInProgress) return;
 
-        const delay = delayOverride ?? Math.min(1000 + this.reconnectAttempt * 750, 5000);
+        const delay = delayOverride ?? 1000;
         this.reconnectTimer = setTimeout(() => {
             this.reconnectTimer = null;
             void this.tryReconnect(nextToken, snapshot || this.game.account?.getStoredGameResumeState?.());

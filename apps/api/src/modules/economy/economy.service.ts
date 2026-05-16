@@ -89,12 +89,12 @@ const COIN_SHOP_VIDEO_DAILY_LIMIT = 6;
 
 const DEFAULT_STAKES: EconomyStakeTablePayload[] = [
   { key: "free", title: "Free table", stakeAmount: 0, commissionBps: 0, isFree: true, isActive: false, sortOrder: 0 },
-  { key: "stake_50", title: "50 coins", stakeAmount: 50, commissionBps: 500, isFree: false, isActive: true, sortOrder: 1 },
-  { key: "stake_100", title: "100 coins", stakeAmount: 100, commissionBps: 500, isFree: false, isActive: true, sortOrder: 2 },
-  { key: "stake_200", title: "200 coins", stakeAmount: 200, commissionBps: 500, isFree: false, isActive: true, sortOrder: 3 },
-  { key: "stake_500", title: "500 coins", stakeAmount: 500, commissionBps: 500, isFree: false, isActive: true, sortOrder: 4 },
-  { key: "stake_1000", title: "1,000 coins", stakeAmount: 1000, commissionBps: 500, isFree: false, isActive: true, sortOrder: 5 },
-  { key: "stake_5000", title: "5,000 coins", stakeAmount: 5000, commissionBps: 500, isFree: false, isActive: true, sortOrder: 6 }
+  { key: "stake_50", title: "50 coins", stakeAmount: 50, commissionBps: 1000, isFree: false, isActive: true, sortOrder: 1 },
+  { key: "stake_100", title: "100 coins", stakeAmount: 100, commissionBps: 1000, isFree: false, isActive: true, sortOrder: 2 },
+  { key: "stake_200", title: "200 coins", stakeAmount: 200, commissionBps: 1000, isFree: false, isActive: true, sortOrder: 3 },
+  { key: "stake_500", title: "500 coins", stakeAmount: 500, commissionBps: 1000, isFree: false, isActive: true, sortOrder: 4 },
+  { key: "stake_1000", title: "1,000 coins", stakeAmount: 1000, commissionBps: 1000, isFree: false, isActive: true, sortOrder: 5 },
+  { key: "stake_5000", title: "5,000 coins", stakeAmount: 5000, commissionBps: 1000, isFree: false, isActive: true, sortOrder: 6 }
 ];
 
 const DEFAULT_TABLE_SKINS = [
@@ -157,11 +157,12 @@ function calcCommission(amount: number, bps: number) {
 }
 
 function formatStakeSummary(stake: { key: string; title: string; stakeAmount: number; commissionBps: number; isFree: boolean; isActive: boolean; sortOrder: number }) {
+  const payoutBase = Math.max(0, stake.stakeAmount);
   return {
     ...stake,
-    bankExample: Math.max(0, stake.stakeAmount * 2),
-    commissionExample: calcCommission(Math.max(0, stake.stakeAmount * 2), stake.commissionBps),
-    payoutExample: Math.max(0, stake.stakeAmount * 2) - calcCommission(Math.max(0, stake.stakeAmount * 2), stake.commissionBps)
+    bankExample: payoutBase,
+    commissionExample: calcCommission(payoutBase, stake.commissionBps),
+    payoutExample: Math.max(0, payoutBase - calcCommission(payoutBase, stake.commissionBps))
   };
 }
 
@@ -1478,8 +1479,6 @@ export class EconomyService {
 
       const bank = reservations.reduce((sum, entry) => sum + Math.max(0, entry.stakeAmount), 0);
       const drawOrRefund = result === "draw" || result === "refund" || (!winnerPlayerIds.size && !winnerUserIds.size);
-      const commission = drawOrRefund ? 0 : calcCommission(bank, stakeTable.commissionBps);
-      const payoutPool = drawOrRefund ? bank : Math.max(0, bank - commission);
       const payoutIds = new Set<string>();
 
       for (const reservation of reservations) {
@@ -1490,6 +1489,12 @@ export class EconomyService {
         }
       }
 
+      const winnerBank = reservations
+        .filter((reservation) => payoutIds.has(reservation.playerId))
+        .reduce((sum, entry) => sum + Math.max(0, entry.stakeAmount), 0);
+      const loserBank = Math.max(0, bank - winnerBank);
+      const commission = drawOrRefund ? 0 : calcCommission(loserBank, stakeTable.commissionBps);
+      const payoutPool = drawOrRefund ? bank : Math.max(0, loserBank - commission);
       const payoutCount = payoutIds.size;
       const payoutShareBase = payoutCount > 0 ? Math.floor(payoutPool / payoutCount) : 0;
       const payoutRemainder = payoutCount > 0 ? payoutPool - payoutShareBase * payoutCount : 0;
@@ -1613,6 +1618,8 @@ export class EconomyService {
         settled: settled.length,
         stakeKey,
         bank,
+        winnerBank,
+        loserBank,
         commission,
         payout: drawOrRefund ? 0 : payoutPool,
         winners: payoutIds.size,
@@ -1837,7 +1844,7 @@ export class EconomyService {
       }
 
       const drawOrRefund = result === "draw" || result === "refund";
-      const commission = drawOrRefund ? 0 : calcCommission(reservation.stakeAmount * 2, stakeTable.commissionBps);
+      const commission = drawOrRefund ? 0 : calcCommission(reservation.stakeAmount, stakeTable.commissionBps);
       const payout = drawOrRefund ? reservation.stakeAmount : Math.max(0, reservation.stakeAmount - commission);
 
       let wallet;

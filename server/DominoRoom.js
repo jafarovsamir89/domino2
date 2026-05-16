@@ -13,6 +13,7 @@ const TARGET = 365, MAX_R = 3, DLOSS = 255, IWIN = 35;
 const TURN_TIMEOUT_MS = 30000;
 const BOT_THINK_DELAY_MS = 1000;
 const DEAL_END_MODAL_MS = 2000;
+const RECONNECT_GRACE_MS = 10000;
 const CUSTOM_STATE_TTL = 86400;
 const redisUrl = process.env.REDIS_URI || "";
 const redis = redisUrl
@@ -353,7 +354,7 @@ class DominoRoom extends Room {
             if (consented) throw new Error("consented leave");
             debugLog(`[ROOM] Waiting for reconnection for ${client.sessionId}...`);
             this.broadcastRoomState();
-            await this.allowReconnection(client, 60);
+            await this.allowReconnection(client, RECONNECT_GRACE_MS / 1000);
             player.isConnected = true;
             if (identity) {
                 upsertLivePlayer(client.sessionId, {
@@ -1416,14 +1417,16 @@ class DominoRoom extends Room {
             const otherMembers = this.getTeamMembers(1 - wt);
             for (const i of otherMembers) os += handPoints(this.hands[i] || []);
             if (fish) for (const i of teamMembers) os -= handPoints(this.hands[i] || []);
-            bonus = roundTo5(Math.max(0, os));
-            bonus = this.addScore(wi, bonus);
+            const currentScore = this.state.teamScores[wt] || 0;
+            bonus = currentScore > 300 ? 0 : roundTo5(Math.max(0, os));
+            if (bonus > 0) bonus = this.addScore(wi, bonus);
         } else {
             let os = 0;
             for (let i = 0; i < this.totalPlayers; i++) if (i !== wi) os += handPoints(this.hands[i]);
             if (fish) os -= handPoints(this.hands[wi]);
-            bonus = roundTo5(Math.max(0, os));
-            bonus = this.addScore(wi, bonus);
+            const currentScore = this.state.players.get(this.state.playerOrder[wi])?.score || 0;
+            bonus = currentScore > 300 ? 0 : roundTo5(Math.max(0, os));
+            if (bonus > 0) bonus = this.addScore(wi, bonus);
         }
 
         this.broadcast("sound", "win");

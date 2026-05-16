@@ -5790,7 +5790,9 @@ class DominoGame {
             const otherMembers = this.getTeamMembers(1 - wt);
             for (const i of otherMembers) os += handPoints(this.hands[i] || []);
             if (fish) for (const i of teamMembers) os -= handPoints(this.hands[i] || []);
-            bonus=roundTo5(Math.max(0,os));bonus=this.addScore(wi,bonus);
+            const currentScore = this.teamScores[wt] || 0;
+            bonus = currentScore > 300 ? 0 : roundTo5(Math.max(0, os));
+            if (bonus > 0) bonus = this.addScore(wi, bonus);
             displayEntities = [
                 {name: this.getTeamDisplayName(0), isWinner: wt===0, score: this.teamScores[0], handPoints: this.getTeamHandPoints(0), leftoverHands: this.getTeamLeftoverHands(0)},
                 {name: this.getTeamDisplayName(1), isWinner: wt===1, score: this.teamScores[1], handPoints: this.getTeamHandPoints(1), leftoverHands: this.getTeamLeftoverHands(1)}
@@ -5798,7 +5800,9 @@ class DominoGame {
         }else{
             let os=0;for(let i=0;i<this.playerCount;i++)if(i!==wi)os+=handPoints(this.hands[i]);
             if(fish)os-=handPoints(this.hands[wi]);
-            bonus=roundTo5(Math.max(0,os));bonus=this.addScore(wi,bonus);
+            const currentScore = this.scores[wi] || 0;
+            bonus = currentScore > 300 ? 0 : roundTo5(Math.max(0, os));
+            if (bonus > 0) bonus = this.addScore(wi, bonus);
             displayEntities = this.playerNames.map((n,i)=>({name:n,isWinner:i===wi,handPoints:handPoints(this.hands[i]),score:this.scores[i], leftoverHands: [this.hands[i]]}));
         }
         sndWin();

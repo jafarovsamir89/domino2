@@ -111,7 +111,7 @@
         "gosha-button": "Goşa",
         "out-suffix": "çıxdı!",
         "label-hand-points": "Əl",
-        "label-bonus": "Bonus",
+        "label-bonus": "Əldən",
         "label-total": "Cəmi",
         "label-score": "Xal",
         "label-rounds": "Raund",

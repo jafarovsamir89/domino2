@@ -94,7 +94,8 @@ export class Renderer {
             if (hands.length === 4) {
                 const relativeSeat = (i - hi + hands.length) % hands.length;
                 if (relativeSeat === 1) {
-                    g.style.flexDirection = 'column';
+                    g.classList.add('side-seat');
+                    pile.classList.add('vertical-pile');
                     const cont = document.getElementById('opp-left');
                     cont.appendChild(g);
                     if (i === cur) cont.classList.add('active-turn');
@@ -103,7 +104,8 @@ export class Renderer {
                     cont.appendChild(g);
                     if (i === cur) cont.classList.add('active-turn');
                 } else if (relativeSeat === 3) {
-                    g.style.flexDirection = 'column';
+                    g.classList.add('side-seat');
+                    pile.classList.add('vertical-pile');
                     const cont = document.getElementById('opp-right');
                     cont.appendChild(g);
                     if (i === cur) cont.classList.add('active-turn');

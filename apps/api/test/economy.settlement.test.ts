@@ -90,7 +90,7 @@ function makeEconomyHarness() {
     key: "stake_50",
     title: "50 coins",
     stakeAmount: 50,
-    commissionBps: 500,
+    commissionBps: 1000,
     isFree: false,
     isActive: true,
     sortOrder: 1
@@ -199,11 +199,60 @@ test("online stake reserve and settle keep the bank and payout balanced", async 
   assert.equal(settle.ok, true);
   assert.equal(settle.bank, 100);
   assert.equal(settle.commission, 5);
-  assert.equal(settle.payout, 95);
-  assert.equal(wallets.get("player-a")?.balance, 295);
+  assert.equal(settle.payout, 45);
+  assert.equal(settle.winnerBank, 50);
+  assert.equal(settle.loserBank, 50);
+  assert.equal(wallets.get("player-a")?.balance, 245);
   assert.equal(wallets.get("player-a")?.reserved, 0);
   assert.equal(wallets.get("player-b")?.balance, 150);
   assert.equal(wallets.get("player-b")?.reserved, 0);
+});
+
+test("online team stake settle splits the losing bank across winners", async () => {
+  const { service, wallets } = makeEconomyHarness();
+  const token = createGameToken({
+    userId: "user-team-a",
+    playerId: "player-team-a",
+    displayName: "Alpha",
+    role: "player",
+    sessionId: "session-team-a",
+    provider: "better-auth",
+    issuedAt: Date.now(),
+    expiresAt: Date.now() + 60_000
+  });
+
+  const reserve = await service.reserveMatchStake(token, {
+    roomId: "room-team",
+    matchId: "match-team",
+    stakeKey: "stake_50",
+    participants: [
+      { playerId: "player-team-a", userId: "user-team-a", displayName: "Alpha" },
+      { playerId: "player-team-b", userId: "user-team-b", displayName: "Beta" },
+      { playerId: "player-team-c", userId: "user-team-c", displayName: "Gamma" },
+      { playerId: "player-team-d", userId: "user-team-d", displayName: "Delta" }
+    ]
+  });
+
+  assert.equal(reserve.ok, true);
+  assert.equal(reserve.reserved, 200);
+
+  const settle = await service.settleMatchStake(token, {
+    roomId: "room-team",
+    matchId: "match-team",
+    stakeKey: "stake_50",
+    result: "win",
+    winnerPlayerIds: ["player-team-a", "player-team-c"],
+    winnerUserIds: ["user-team-a", "user-team-c"]
+  });
+
+  assert.equal(settle.ok, true);
+  assert.equal(settle.bank, 200);
+  assert.equal(settle.commission, 10);
+  assert.equal(settle.payout, 90);
+  assert.equal(wallets.get("player-team-a")?.balance, 245);
+  assert.equal(wallets.get("player-team-c")?.balance, 245);
+  assert.equal(wallets.get("player-team-b")?.balance, 150);
+  assert.equal(wallets.get("player-team-d")?.balance, 150);
 });
 
 test("solo stake reserve and settle return the stake on draw and pay on win", async () => {
