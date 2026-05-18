@@ -482,10 +482,14 @@ class NetworkManager {
         const until = Number(this.commandLocks.get(command) || 0);
         if (until > now) return false;
         this.commandLocks.set(command, now + Math.max(0, lockMs));
-        if (payload === null || payload === undefined) {
+        const turnVersion = Number(this.room?.state?.turnVersion || 0);
+        const nextPayload = turnVersion > 0
+            ? (payload === null || payload === undefined ? { turnVersion } : { ...payload, turnVersion })
+            : payload;
+        if (nextPayload === null || nextPayload === undefined) {
             this.room.send(command);
         } else {
-            this.room.send(command, payload);
+            this.room.send(command, nextPayload);
         }
         return true;
     }

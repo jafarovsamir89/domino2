@@ -148,9 +148,9 @@ class DominoRoom extends Room {
         }
 
         this.onMessage("play", (client, message) => this.handlePlay(client, message));
-        this.onMessage("draw", (client) => this.handleDraw(client));
-        this.onMessage("pass", (client) => this.handlePass(client));
-        this.onMessage("gosha", (client) => this.handleGosha(client));
+        this.onMessage("draw", (client, message) => this.handleDraw(client, message));
+        this.onMessage("pass", (client, message) => this.handlePass(client, message));
+        this.onMessage("gosha", (client, message) => this.handleGosha(client, message));
         this.onMessage("next_deal", (client) => this.handleNextDeal(client));
         this.onMessage("reaction", (client, message) => this.handleReaction(client, message));
         this.onMessage("gift", (client, message) => this.handleGift(client, message));
@@ -492,6 +492,7 @@ class DominoRoom extends Room {
         this.currentDealStakeKey = this.currentStakeKey;
         this.currentDealStakeAmount = 0;
         this.currentDealBankAmount = 0;
+        this.state.turnVersion = 1;
 
         const hs = getHandSize(this.totalPlayers);
         let attempts = 0;
@@ -564,6 +565,12 @@ class DominoRoom extends Room {
         this.clearTurnAdvanceTimer();
         this.turnDeadlineAt = 0;
         if (this.state) this.state.turnDeadlineAt = 0;
+    }
+
+    bumpTurnVersion() {
+        const nextVersion = Number(this.state?.turnVersion || 0) + 1;
+        this.state.turnVersion = nextVersion;
+        return nextVersion;
     }
 
     clearTurnAdvanceTimer() {
@@ -1182,30 +1189,34 @@ class DominoRoom extends Room {
         const pi = this.getPlayerIndex(client);
         if (pi !== this.state.currentPlayerIndex) return;
         if (this.turnAdvancePending) return;
+        if (Number(message?.turnVersion || 0) !== Number(this.state.turnVersion || 0)) return;
         const { tileIndex, openEndIndex } = message;
         this.performPlay(pi, tileIndex, openEndIndex, false);
     }
 
-    handleDraw(client) {
+    handleDraw(client, message = {}) {
         if (!this.state.gameActive) return;
         const pi = this.getPlayerIndex(client);
         if (pi !== this.state.currentPlayerIndex) return;
         if (this.turnAdvancePending) return;
+        if (Number(message?.turnVersion || 0) !== Number(this.state.turnVersion || 0)) return;
         this.performDraw(pi, false);
     }
 
-    handlePass(client) {
+    handlePass(client, message = {}) {
         if (!this.state.gameActive) return;
         const pi = this.getPlayerIndex(client);
         if (pi !== this.state.currentPlayerIndex) return;
         if (this.turnAdvancePending) return;
+        if (Number(message?.turnVersion || 0) !== Number(this.state.turnVersion || 0)) return;
         this.performPass(pi, false);
     }
 
-    handleGosha(client) {
+    handleGosha(client, message = {}) {
         if (!this.state.gameActive) return;
         const pi = this.getPlayerIndex(client);
         if (pi !== this.state.currentPlayerIndex) return;
+        if (Number(message?.turnVersion || 0) !== Number(this.state.turnVersion || 0)) return;
 
         const combo = this.internalBoard.getGoshaCombo(this.hands[pi]);
         if (!combo) return;
@@ -1251,6 +1262,7 @@ class DominoRoom extends Room {
             return;
         }
 
+        this.bumpTurnVersion();
         this.scheduleTurnAdvance(0);
     }
 
@@ -1271,6 +1283,7 @@ class DominoRoom extends Room {
             this.broadcast("msg", { text: `${actorName} drew a tile`, time: 1500 });
         }
         this.syncState();
+        this.bumpTurnVersion();
         return true;
     }
 
@@ -1291,6 +1304,7 @@ class DominoRoom extends Room {
         }
         this.clearTurnTimer();
         this.clearTurnAdvanceTimer();
+        this.bumpTurnVersion();
         this.advanceTurn();
         return true;
     }
@@ -1335,6 +1349,7 @@ class DominoRoom extends Room {
             return;
         }
 
+        this.bumpTurnVersion();
         const advanceDelay = isBot ? 0 : (this.shouldOpenGoshaChainWindow(pi) ? this.turnAdvanceMs : 0);
         this.scheduleTurnAdvance(advanceDelay);
     }
@@ -1617,6 +1632,7 @@ class DominoRoom extends Room {
             isTeamMode: this.state.isTeamMode,
             playerCount: this.state.playerCount,
             turnDeadlineAt: this.state.turnDeadlineAt || 0,
+            turnVersion: this.state.turnVersion || 1,
             teamScores: Array.from(this.state.teamScores || [0, 0]),
             teamRoundWins: Array.from(this.state.teamRoundWins || [0, 0]),
             players: playerOrder.map((sessionId) => {
@@ -1680,6 +1696,7 @@ class DominoRoom extends Room {
         this.state.isTeamMode = Boolean(snapshot.isTeamMode);
         this.state.playerCount = Number(snapshot.playerCount || this.totalPlayers || 2);
         this.state.turnDeadlineAt = Number(snapshot.turnDeadlineAt || 0);
+        this.state.turnVersion = Number(snapshot.turnVersion || 1);
 
         const teamScores = Array.isArray(snapshot.teamScores) ? snapshot.teamScores : [0, 0];
         const teamRoundWins = Array.isArray(snapshot.teamRoundWins) ? snapshot.teamRoundWins : [0, 0];

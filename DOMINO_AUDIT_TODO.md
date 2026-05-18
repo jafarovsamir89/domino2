@@ -9,6 +9,7 @@
 - Friend request `accept` больше не принимается со стороны requester.
 - `authToken` больше не сохраняется в Redis snapshot комнаты.
 - `next_deal` ограничен host-only и pending-окном.
+- `turnVersion` добавлен для server-side anti-replay игровых действий.
 - Добавлены DB constraints для ключевых money/match сущностей, leaderboard sorting moved to DB, health checks и system audit trail.
 
 Статус документа:

@@ -118,3 +118,22 @@ test("custom snapshots strip auth tokens from persisted identities", () => {
     assert.equal(restoredIdentity.userId, "u2");
     assert.equal(restoredIdentity.displayName, "Bob");
 });
+
+test("turnVersion rejects stale replayed turn actions", () => {
+    const room = Object.create(DominoRoom.prototype);
+    let plays = 0;
+    room.state = {
+        gameActive: true,
+        currentPlayerIndex: 0,
+        turnVersion: 7
+    };
+    room.turnAdvancePending = false;
+    room.getPlayerIndex = () => 0;
+    room.performPlay = () => { plays += 1; };
+
+    room.handlePlay({ sessionId: "session-1" }, { tileIndex: 0, openEndIndex: 0, turnVersion: 6 });
+    assert.equal(plays, 0);
+
+    room.handlePlay({ sessionId: "session-1" }, { tileIndex: 0, openEndIndex: 0, turnVersion: 7 });
+    assert.equal(plays, 1);
+});
