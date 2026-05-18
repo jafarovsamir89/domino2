@@ -26,7 +26,7 @@ CREATE INDEX "SystemAuditLog_actorUserId_createdAt_idx" ON "SystemAuditLog"("act
 CREATE INDEX "SystemAuditLog_actorPlayerId_createdAt_idx" ON "SystemAuditLog"("actorPlayerId", "createdAt");
 
 -- AddForeignKey
-ALTER TABLE "SystemAuditLog" ADD CONSTRAINT "SystemAuditLog_actorUserId_fkey" FOREIGN KEY ("actorUserId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "SystemAuditLog" ADD CONSTRAINT "SystemAuditLog_actorUserId_fkey" FOREIGN KEY ("actorUserId") REFERENCES "user"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "SystemAuditLog" ADD CONSTRAINT "SystemAuditLog_actorPlayerId_fkey" FOREIGN KEY ("actorPlayerId") REFERENCES "Player"("id") ON DELETE SET NULL ON UPDATE CASCADE;
