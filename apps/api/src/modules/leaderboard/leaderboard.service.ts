@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
 
 import { PrismaService } from "../prisma/prisma.service.js";
-import { calculatePlayerRating, getPlayerRatingTitleCode } from "../ranking/player-ranking.js";
+import { getPlayerRatingTitleCode } from "../ranking/player-ranking.js";
 
 @Injectable()
 export class LeaderboardService {
@@ -9,31 +9,30 @@ export class LeaderboardService {
 
   async getTopPlayers(limit = 10) {
     const rows = await this.prisma.playerStats.findMany({
+      orderBy: [
+        { rating: "desc" },
+        { matchesPlayed: "desc" },
+        { wins: "desc" },
+        { losses: "asc" },
+        { playerId: "asc" }
+      ],
+      take: Math.max(1, Math.min(100, Math.trunc(Number(limit || 10) || 10))),
       include: {
         player: true
       }
     });
 
-    return rows
-      .map((row: { playerId: string; player: { displayName: string } | null; points: number; wins: number; losses: number; draws: number; matchesPlayed: number; currentStreak: number; bestStreak: number }) => {
-        const rating = calculatePlayerRating(row);
-        return {
-          id: row.playerId,
-          displayName: row.player?.displayName ?? "Player",
-          rating,
-          titleCode: getPlayerRatingTitleCode(rating),
-          points: row.points,
-          wins: row.wins,
-          losses: row.losses,
-          draws: row.draws,
-          matchesPlayed: row.matchesPlayed
-        };
-      })
-      .sort((a, b) => b.rating - a.rating)
-      .slice(0, limit)
-      .map((row, index) => ({
-        ...row,
-        rank: index + 1
-      }));
+    return rows.map((row, index) => ({
+      id: row.playerId,
+      displayName: row.player?.displayName ?? "Player",
+      rating: row.rating ?? 1000,
+      titleCode: getPlayerRatingTitleCode(row.rating ?? 1000),
+      points: row.points,
+      wins: row.wins,
+      losses: row.losses,
+      draws: row.draws,
+      matchesPlayed: row.matchesPlayed,
+      rank: index + 1
+    }));
   }
 }

@@ -110,6 +110,9 @@ export class MatchesService {
       const resolvedParticipants: Array<{
         participant: MatchParticipantPayload;
         player: PlayerSnapshot;
+        ratingBefore: number;
+        ratingAfter: number;
+        ratingDelta: number;
       }> = [];
 
       for (const participant of dedupedParticipants) {
@@ -141,6 +144,7 @@ export class MatchesService {
                 playerId: player.id
               }
             });
+        const ratingBefore = stats.rating;
 
         await grantStarterCoins(
           tx,
@@ -164,7 +168,10 @@ export class MatchesService {
             matchesPlayed: stats.matchesPlayed,
             currentStreak: stats.currentStreak,
             bestStreak: stats.bestStreak
-          }
+          },
+          ratingBefore,
+          ratingAfter: ratingBefore,
+          ratingDelta: 0
         });
       }
 
@@ -182,7 +189,7 @@ export class MatchesService {
           totalPoints,
           createdAt: matchCreatedAt,
           participants: {
-            create: resolvedParticipants.map(({ participant, player }) => ({
+            create: resolvedParticipants.map(({ participant, player, ratingBefore, ratingAfter, ratingDelta }) => ({
               playerId: player.playerId,
               displayNameSnapshot: player.displayName,
               teamIndex: participant.teamIndex ?? null,
@@ -190,7 +197,10 @@ export class MatchesService {
               result: participant.result ?? null,
               points: toInt(participant.points),
               roundWins: toInt(participant.roundWins),
-              isBot: participant.isBot === true
+              isBot: participant.isBot === true,
+              ratingBefore,
+              ratingAfter,
+              ratingDelta
             }))
           }
         },
@@ -229,6 +239,7 @@ export class MatchesService {
           bestStreak: Math.max(player.bestStreak, nextCurrentStreak)
         };
         const nextRating = calculatePlayerRating(nextStats);
+        const ratingBefore = player.rating;
 
         await tx.playerStats.update({
           where: { playerId: player.playerId },
@@ -238,6 +249,13 @@ export class MatchesService {
             ...nextStats
           }
         });
+
+        const snapshot = resolvedParticipants.find((entry) => entry.player.playerId === player.playerId);
+        if (snapshot) {
+          snapshot.ratingBefore = ratingBefore;
+          snapshot.ratingAfter = nextRating;
+          snapshot.ratingDelta = nextRating - ratingBefore;
+        }
       }
 
       const settlement = await this.economyService.settleMatchStake(token, {

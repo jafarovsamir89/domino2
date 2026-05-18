@@ -188,6 +188,8 @@ model PlayerStats {
   currentStreak  Int    @default(0)
   bestStreak     Int    @default(0)
   player         Player @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  @@index([rating, matchesPlayed, wins])
 }
 
 model CoinEconomyConfig {
