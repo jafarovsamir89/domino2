@@ -14,7 +14,7 @@ if (-not (Test-Path $www)) {
     New-Item -ItemType Directory -Path $www | Out-Null
 }
 
-$items = @("js", "css", "assets")
+$items = @("js", "css", "assets", "shared")
 foreach ($item in $items) {
     $source = Join-Path $root $item
     $target = Join-Path $www $item

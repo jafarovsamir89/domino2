@@ -6023,6 +6023,10 @@ class DominoGame {
 }
 let game = null;
 game = new DominoGame();
+if (typeof window !== 'undefined') {
+    window.__DOMINO_GAME__ = game;
+    window.game = game;
+}
 
 // Re-render board on resize for correct scaling (debounced)
 let _resizeTimer = null;
