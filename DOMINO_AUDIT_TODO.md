@@ -10,6 +10,8 @@
 - `authToken` больше не сохраняется в Redis snapshot комнаты.
 - `next_deal` ограничен host-only и pending-окном.
 - `turnVersion` добавлен для server-side anti-replay игровых действий.
+- `shared/domino-model-core.cjs` вынес общие rules для server/browser model.
+- Добавлен reconnect banner и lifecycle regression test для restore flows.
 - Добавлены DB constraints для ключевых money/match сущностей, leaderboard sorting moved to DB, health checks и system audit trail.
 
 Статус документа:

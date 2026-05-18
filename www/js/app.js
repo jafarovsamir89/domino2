@@ -3942,11 +3942,13 @@ class DominoGame {
         this.refreshResumeBanner(snapshot);
         if (payload.reconnecting) {
             this.voice?.stopSpeaking?.();
+            this.setConnectionBanner(this.t('reconnecting-session'));
             this.renderer.showMessage(this.t('connection-lost'), 2200);
         }
     }
 
     onNetworkReconnected() {
+        this.clearConnectionBanner();
         document.getElementById('start-screen')?.classList.remove('active');
         document.getElementById('menu-screen')?.classList.remove('active');
         document.getElementById('round-end-screen')?.classList.remove('active');
@@ -3959,8 +3961,40 @@ class DominoGame {
 
     onNetworkReconnectFailed(error) {
         console.warn('[Network] Reconnect failed permanently', error);
+        this.clearConnectionBanner();
         void this.validateStoredResumeSnapshot();
         this.renderer.showMessage(this.t('session-restore-failed'), 2200);
+    }
+
+    ensureConnectionBanner() {
+        if (this.connectionBannerEl) return this.connectionBannerEl;
+        const banner = document.createElement('div');
+        banner.id = 'connection-banner';
+        banner.className = 'connection-banner';
+        banner.setAttribute('role', 'status');
+        banner.setAttribute('aria-live', 'polite');
+        banner.hidden = true;
+        document.body.appendChild(banner);
+        this.connectionBannerEl = banner;
+        return banner;
+    }
+
+    setConnectionBanner(text) {
+        const banner = this.ensureConnectionBanner();
+        banner.textContent = text;
+        banner.hidden = false;
+        banner.classList.add('is-visible');
+        document.body.classList.add('is-reconnecting');
+    }
+
+    clearConnectionBanner() {
+        const banner = this.connectionBannerEl;
+        if (banner) {
+            banner.hidden = true;
+            banner.classList.remove('is-visible');
+            banner.textContent = '';
+        }
+        document.body.classList.remove('is-reconnecting');
     }
 
     setupGameControls() {
@@ -5144,6 +5178,9 @@ class DominoGame {
             "online-room-status-connecting": { az: "Connecting...", en: "Connecting..." },
             "online-room-status-joined": { az: "Connected. Waiting for the room to fill", en: "Connected. Waiting for the room to fill" },
             "online-room-status-error": { az: "Error", en: "Error" },
+            "connection-lost": { az: "Bağlantı kəsildi", en: "Connection lost" },
+            "reconnecting-session": { az: "Yenidən qoşulur...", en: "Reconnecting..." },
+            "session-restore-failed": { az: "Sessiyanı bərpa etmək mümkün olmadı", en: "Could not restore session" },
             "online-room-cancel": { az: "Cancel", en: "Cancel" },
             "online-room-back": { az: "Back", en: "Back" },
             "online-room-code-placeholder": { az: "ABCD", en: "ABCD" },

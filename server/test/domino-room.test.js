@@ -137,3 +137,82 @@ test("turnVersion rejects stale replayed turn actions", () => {
     room.handlePlay({ sessionId: "session-1" }, { tileIndex: 0, openEndIndex: 0, turnVersion: 7 });
     assert.equal(plays, 1);
 });
+
+test("startDeal snapshot restore keeps a playable turn state", async () => {
+    const room = Object.create(DominoRoom.prototype);
+    Object.defineProperty(room, "roomId", { value: "room-live", writable: true, configurable: true });
+    room.roomCode = "LIVE";
+    room.totalPlayers = 2;
+    room.aiCount = 0;
+    room.humanSeats = 2;
+    room.currentStakeKey = "free";
+    room.lastReservedMatchRound = 0;
+    room.lastDealWinner = null;
+    room.shouldRedealOpeningHands = () => false;
+    room.reserveEconomyStake = async () => ({ ok: true });
+    room.pendingEconomySettlement = Promise.resolve();
+    room.scheduleTurnTimer = () => {};
+    room.broadcastRoomState = () => {};
+    room.clearNextDealTimer = () => {};
+    room.clearTurnTimer = () => {};
+    room.state = {
+        matchRound: 1,
+        gameActive: false,
+        currentPlayerIndex: 0,
+        turnVersion: 1,
+        players: new Map(),
+        playerOrder: [],
+        teamScores: [],
+        teamRoundWins: [],
+        isTeamMode: false
+    };
+    room.hands = [];
+    room.boneyard = [];
+    room.playerMissingSuits = [new Set(), new Set()];
+    room.identityBySessionId = new Map();
+    room.internalBoard = {
+        isBlocked: () => false,
+        getGoshaCombo: () => null
+    };
+    room.syncState = () => {};
+    room.broadcast = () => {};
+    room.addScore = () => {};
+    room.endRound = () => {};
+    room.endDeal = () => {};
+    room.findFishWinner = () => 0;
+    room.getOpeningScoreContext = () => 0;
+
+    await room.startDeal();
+    assert.equal(room.state.turnVersion, 1);
+    assert.equal(room.state.gameActive, true);
+    assert.equal(room.hands.length, 2);
+
+    const snapshot = room.buildCustomStateSnapshot();
+    const restoredRoom = Object.create(DominoRoom.prototype);
+    Object.defineProperty(restoredRoom, "roomId", { value: "room-live", writable: true, configurable: true });
+    restoredRoom.state = {
+        turnDeadlineAt: 0,
+        players: new Map(),
+        playerOrder: [],
+        teamScores: [],
+        teamRoundWins: []
+    };
+    restoredRoom.identityBySessionId = new Map();
+    restoredRoom.internalBoard = null;
+    restoredRoom.hands = null;
+    restoredRoom.boneyard = null;
+    restoredRoom.playerMissingSuits = null;
+    restoredRoom.ensureBotPlayers = () => {};
+    restoredRoom.clearTurnTimer = () => {};
+
+    restoredRoom.applyCustomStateSnapshot(snapshot);
+    assert.equal(restoredRoom.state.turnVersion, 1);
+    assert.equal(restoredRoom.state.gameActive, true);
+
+    let plays = 0;
+    restoredRoom.turnAdvancePending = false;
+    restoredRoom.getPlayerIndex = () => 0;
+    restoredRoom.performPlay = () => { plays += 1; };
+    restoredRoom.handlePlay({ sessionId: "session-1" }, { tileIndex: 0, openEndIndex: 0, turnVersion: 0 });
+    assert.equal(plays, 0);
+});
