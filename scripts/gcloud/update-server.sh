@@ -155,7 +155,8 @@ sync_www_assets() {
     cp -a "$ROOT_DIR/assets" "$ROOT_DIR/www/assets"
   fi
   if [[ -d "$ROOT_DIR/shared" ]]; then
-    cp -a "$ROOT_DIR/shared" "$ROOT_DIR/www/shared"
+    mkdir -p "$ROOT_DIR/www/shared"
+    cp -a "$ROOT_DIR/shared/." "$ROOT_DIR/www/shared/"
   fi
   cp -f "$ROOT_DIR/index.html" "$ROOT_DIR/www/index.html"
   cp -f "$ROOT_DIR/manifest.json" "$ROOT_DIR/www/manifest.json"
