@@ -2,6 +2,7 @@ import { Body, Controller, Get, Headers, Param, Post, UnauthorizedException } fr
 
 import { verifyGameToken } from "../auth/game-token.js";
 import { RealtimeService } from "./realtime.service.js";
+import { RealtimeHeartbeatDto } from "../validation/validation.dto.js";
 
 @Controller("realtime")
 export class RealtimeController {
@@ -18,17 +19,7 @@ export class RealtimeController {
   }
 
   @Post("heartbeat")
-  async heartbeat(@Headers("authorization") authorization: string | undefined, @Body() body: {
-    sessionId?: string;
-    provider?: string;
-    displayName?: string;
-    roomId?: string | null;
-    roomCode?: string | null;
-    gameMode?: string;
-    isPlaying?: boolean;
-    isConnected?: boolean;
-    source?: string;
-  }) {
+  async heartbeat(@Headers("authorization") authorization: string | undefined, @Body() body: RealtimeHeartbeatDto) {
     const token = String(authorization || "").replace(/^Bearer\s+/i, "").trim();
     if (!verifyGameToken(token)) {
       throw new UnauthorizedException("Login required");

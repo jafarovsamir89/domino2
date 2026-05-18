@@ -1,5 +1,6 @@
 import "reflect-metadata";
 
+import { ValidationPipe } from "@nestjs/common";
 import { NestFactory } from "@nestjs/core";
 import { toNodeHandler } from "better-auth/node";
 import { json, urlencoded, type NextFunction, type Request, type Response } from "express";
@@ -108,6 +109,14 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     bodyParser: false
   });
+  app.useGlobalPipes(new ValidationPipe({
+    transform: true,
+    whitelist: true,
+    forbidNonWhitelisted: true,
+    transformOptions: {
+      enableImplicitConversion: true
+    }
+  }));
   const authConfig = getBetterAuthConfig();
   const expressApp = app.getHttpAdapter().getInstance();
 

@@ -2,6 +2,14 @@ import { Body, Controller, Get, Headers, Param, Patch, Post, Query, Req } from "
 import type { Request } from "express";
 
 import { EconomyService } from "./economy.service.js";
+import {
+  AdminWalletAdjustDto,
+  EconomyReserveMatchDto,
+  EconomySettleMatchDto,
+  EconomySoloReserveDto,
+  EconomySoloSettleDto,
+  PurchaseTableSkinDto
+} from "../validation/validation.dto.js";
 
 @Controller()
 export class EconomyController {
@@ -23,12 +31,12 @@ export class EconomyController {
   }
 
   @Post("economy/cosmetics/table-skins/purchase")
-  async purchaseTableSkin(@Req() req: Request, @Body() body: { key?: string | null }) {
+  async purchaseTableSkin(@Req() req: Request, @Body() body: PurchaseTableSkinDto) {
     return this.economyService.purchaseTableSkin(req.headers, body?.key || "");
   }
 
   @Post("economy/cosmetics/table-skins/equip")
-  async equipTableSkin(@Req() req: Request, @Body() body: { key?: string | null }) {
+  async equipTableSkin(@Req() req: Request, @Body() body: PurchaseTableSkinDto) {
     return this.economyService.equipTableSkin(req.headers, body?.key || "");
   }
 
@@ -55,14 +63,7 @@ export class EconomyController {
   @Post("economy/matches/reserve")
   async reserveMatchStake(
     @Headers("authorization") authorization: string | undefined,
-    @Body()
-    body: {
-      roomId?: string | null;
-      roomCode?: string | null;
-      matchId?: string | null;
-      stakeKey?: string | null;
-      participants?: Array<{ playerId?: string; userId?: string; displayName?: string }>;
-    }
+    @Body() body: EconomyReserveMatchDto
   ) {
     const token = String(authorization || "").replace(/^Bearer\s+/i, "").trim();
     return this.economyService.reserveMatchStake(token, body || {});
@@ -71,17 +72,7 @@ export class EconomyController {
   @Post("economy/matches/settle")
   async settleMatchStake(
     @Headers("authorization") authorization: string | undefined,
-    @Body()
-    body: {
-      roomId?: string | null;
-      roomCode?: string | null;
-      matchId?: string | null;
-      stakeKey?: string | null;
-      result?: "win" | "draw" | "refund" | string | null;
-      winnerPlayerIds?: string[];
-      winnerUserIds?: string[];
-      participants?: Array<{ playerId?: string; userId?: string; displayName?: string }>;
-    }
+    @Body() body: EconomySettleMatchDto
   ) {
     const token = String(authorization || "").replace(/^Bearer\s+/i, "").trim();
     return this.economyService.settleMatchStake(token, body || {});
@@ -90,12 +81,7 @@ export class EconomyController {
   @Post("economy/solo/reserve")
   async reserveSoloMatchStake(
     @Headers("authorization") authorization: string | undefined,
-    @Body()
-    body: {
-      matchId?: string | null;
-      stakeKey?: string | null;
-      difficulty?: string | null;
-    }
+    @Body() body: EconomySoloReserveDto
   ) {
     const token = String(authorization || "").replace(/^Bearer\s+/i, "").trim();
     return this.economyService.reserveSoloMatchStake(token, body || {});
@@ -104,13 +90,7 @@ export class EconomyController {
   @Post("economy/solo/settle")
   async settleSoloMatchStake(
     @Headers("authorization") authorization: string | undefined,
-    @Body()
-    body: {
-      matchId?: string | null;
-      stakeKey?: string | null;
-      result?: "win" | "draw" | "refund" | "loss" | string | null;
-      difficulty?: string | null;
-    }
+    @Body() body: EconomySoloSettleDto
   ) {
     const token = String(authorization || "").replace(/^Bearer\s+/i, "").trim();
     return this.economyService.settleSoloMatchStake(token, body || {});
@@ -140,7 +120,7 @@ export class EconomyController {
   async grantCoins(
     @Req() req: Request,
     @Param("playerId") playerId: string,
-    @Body() body: { amount?: number; reason?: string; note?: string | null; idempotencyKey?: string | null }
+    @Body() body: AdminWalletAdjustDto
   ) {
     return this.economyService.grantCoins(req.headers, playerId, body);
   }
@@ -149,7 +129,7 @@ export class EconomyController {
   async spendCoins(
     @Req() req: Request,
     @Param("playerId") playerId: string,
-    @Body() body: { amount?: number; reason?: string; note?: string | null; idempotencyKey?: string | null }
+    @Body() body: AdminWalletAdjustDto
   ) {
     return this.economyService.spendCoins(req.headers, playerId, body);
   }

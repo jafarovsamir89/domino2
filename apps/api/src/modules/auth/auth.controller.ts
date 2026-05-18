@@ -2,6 +2,7 @@ import { Body, Controller, Get, Patch, Req } from "@nestjs/common";
 import type { Request } from "express";
 
 import { AuthService } from "./auth.service.js";
+import { UpdateProfileAvatarDto, UpdateProfileNameDto } from "../validation/validation.dto.js";
 
 @Controller()
 export class AuthController {
@@ -30,7 +31,7 @@ export class AuthController {
   @Patch("me")
   async updateCurrentProfileName(
     @Req() req: Request,
-    @Body() body: { name?: string }
+    @Body() body: UpdateProfileNameDto
   ) {
     return this.authService.updateCurrentProfileName(req.headers, body?.name);
   }
@@ -38,7 +39,7 @@ export class AuthController {
   @Patch("me/avatar")
   async updateCurrentProfileAvatar(
     @Req() req: Request,
-    @Body() body: { avatarUrl?: string | null }
+    @Body() body: UpdateProfileAvatarDto
   ) {
     return this.authService.updateCurrentProfileAvatar(req.headers, body?.avatarUrl ?? null);
   }

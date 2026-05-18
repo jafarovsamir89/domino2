@@ -1,6 +1,7 @@
-import { Controller, Headers, Post, Body } from "@nestjs/common";
+import { Body, Controller, Headers, Post } from "@nestjs/common";
 
 import { MatchesService } from "./matches.service.js";
+import { PlatformMatchDto } from "../validation/validation.dto.js";
 
 @Controller()
 export class MatchesController {
@@ -9,7 +10,7 @@ export class MatchesController {
   @Post("platform/matches")
   async recordPlatformMatch(
     @Headers("authorization") authorization: string | undefined,
-    @Body() body: Record<string, unknown>
+    @Body() body: PlatformMatchDto
   ) {
     const token = String(authorization || "").replace(/^Bearer\s+/i, "").trim();
     return this.matchesService.recordPlatformMatch(token, body);

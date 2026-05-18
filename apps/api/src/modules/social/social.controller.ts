@@ -2,6 +2,12 @@ import { Body, Controller, Get, Param, Post, Query, Req } from "@nestjs/common";
 import type { Request } from "express";
 
 import { SocialService } from "./social.service.js";
+import {
+  SocialExchangeGiftDto,
+  SocialSendGiftDto,
+  RoomInviteDto,
+  SocialRequestFriendDto
+} from "../validation/validation.dto.js";
 
 @Controller("social")
 export class SocialController {
@@ -18,7 +24,7 @@ export class SocialController {
   }
 
   @Post("friends/request")
-  async requestFriend(@Req() req: Request, @Body() body: { playerId?: string; note?: string }) {
+  async requestFriend(@Req() req: Request, @Body() body: SocialRequestFriendDto) {
     return this.socialService.requestFriend(req.headers, body);
   }
 
@@ -60,7 +66,7 @@ export class SocialController {
   @Post("gifts/send")
   async sendGift(
     @Req() req: Request,
-    @Body() body: { recipientPlayerId?: string; giftKey?: string; contextType?: string; contextId?: string; note?: string }
+    @Body() body: SocialSendGiftDto
   ) {
     return this.socialService.sendGift(req.headers, body);
   }
@@ -68,7 +74,7 @@ export class SocialController {
   @Post("gifts/exchange")
   async exchangeGift(
     @Req() req: Request,
-    @Body() body: { giftKey?: string; quantity?: number; note?: string }
+    @Body() body: SocialExchangeGiftDto
   ) {
     return this.socialService.exchangeGift(req.headers, body);
   }
@@ -77,19 +83,7 @@ export class SocialController {
   async inviteToRoom(
     @Req() req: Request,
     @Param("roomId") roomId: string,
-    @Body() body: {
-      inviteePlayerId?: string;
-      roomCode?: string | null;
-      roomMode?: string;
-      stakeKey?: string;
-      stakeAmount?: number;
-      humanSeats?: number;
-      totalPlayers?: number;
-      isTeamMode?: boolean;
-      note?: string;
-      payloadJson?: unknown;
-      expiresAt?: string | null;
-    }
+    @Body() body: RoomInviteDto
   ) {
     return this.socialService.inviteFriendToRoom(req.headers, roomId, body);
   }

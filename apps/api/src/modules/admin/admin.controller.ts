@@ -1,6 +1,7 @@
 import { Body, Controller, Get, Headers, Param, Patch, Post, Query } from "@nestjs/common";
 
 import { AdminService } from "./admin.service.js";
+import { AdminBanDto, AdminReportResolveDto } from "../validation/validation.dto.js";
 
 @Controller("admin")
 export class AdminController {
@@ -74,7 +75,7 @@ export class AdminController {
   async banPlayer(
     @Headers() headers: Record<string, string | string[] | undefined>,
     @Param("id") id: string,
-    @Body() body: { reason?: string; expiresAt?: string | null }
+    @Body() body: AdminBanDto
   ) {
     return this.adminService.banPlayer(headers, id, body);
   }
@@ -91,7 +92,7 @@ export class AdminController {
   async resolveReport(
     @Headers() headers: Record<string, string | string[] | undefined>,
     @Param("id") id: string,
-    @Body() body: { status?: "resolved" | "rejected" }
+    @Body() body: AdminReportResolveDto
   ) {
     return this.adminService.resolveReport(headers, id, body);
   }

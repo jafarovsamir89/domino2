@@ -8,7 +8,7 @@
     "prebuild": "cd ../.. && npm run generate -w @domino2/db",
     "build": "nest build",
     "start": "node dist/src/main.js",
-    "test": "npm run build && node --test dist/test/realtime.helpers.test.js dist/test/player-ranking.test.js dist/test/economy.service.test.js dist/test/economy.settlement.test.js dist/test/leaderboard.service.test.js dist/test/players.service.test.js dist/test/realtime.controller.test.js dist/test/social.service.test.js dist/test/health.controller.test.js dist/test/admin.service.test.js"
+    "test": "npm run build && node --test dist/test/realtime.helpers.test.js dist/test/player-ranking.test.js dist/test/economy.service.test.js dist/test/economy.settlement.test.js dist/test/leaderboard.service.test.js dist/test/players.service.test.js dist/test/realtime.controller.test.js dist/test/social.service.test.js dist/test/health.controller.test.js dist/test/admin.service.test.js dist/test/validation.pipe.test.js"
   },
   "dependencies": {
     "@better-auth/prisma-adapter": "^1.6.9",
@@ -19,6 +19,8 @@
     "@nestjs/platform-express": "^11.0.0",
     "@prisma/client": "^6.7.0",
     "better-auth": "^1.6.5",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.4",
     "ioredis": "^5.10.1",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1"
