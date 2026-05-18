@@ -55,6 +55,23 @@ function sanitizeName(name) {
         .slice(0, 24) || "Player";
 }
 
+function sanitizeSnapshotIdentity(identity = {}) {
+    const sanitized = {
+        provider: String(identity.provider || "platform").trim() || "platform",
+        userId: String(identity.userId || "").trim(),
+        displayName: sanitizeName(identity.displayName || identity.name || "Player"),
+        playerId: String(identity.playerId || identity.userId || "").trim(),
+        avatarUrl: String(identity.avatarUrl || "").trim(),
+        role: String(identity.role || "").trim() || "player"
+    };
+
+    if (identity.sessionId) {
+        sanitized.sessionId = String(identity.sessionId).trim();
+    }
+
+    return sanitized;
+}
+
 function buildSignedRequestBody(scope, payload = {}) {
     const body = {
         ...payload,
@@ -1676,6 +1693,11 @@ class DominoRoom extends Room {
     }
 
     buildCustomStateSnapshot() {
+        const identityBySessionId = Array.from(this.identityBySessionId.entries()).map(([sessionId, identity]) => [
+            sessionId,
+            sanitizeSnapshotIdentity(identity)
+        ]);
+
         return {
             roomId: this.roomId,
             roomCode: this.roomCode,
@@ -1702,7 +1724,7 @@ class DominoRoom extends Room {
             lastDealWinner: this.lastDealWinner,
             botIds: this.botIds,
             playerMissingSuits: this.playerMissingSuits ? this.playerMissingSuits.map((s) => Array.from(s)) : [],
-            identityBySessionId: Array.from(this.identityBySessionId.entries())
+            identityBySessionId
         };
     }
 
@@ -1731,9 +1753,14 @@ class DominoRoom extends Room {
         this.state.turnDeadlineAt = Number(data?.state?.turnDeadlineAt || this.state.turnDeadlineAt || 0);
         this.lastRoundEconomySummary = data.lastRoundEconomySummary ?? this.lastRoundEconomySummary;
         this.lastDealWinner = data.lastDealWinner ?? this.lastDealWinner;
-        this.botIds = data.botIds || this.botIds || [];
-        this.playerMissingSuits = (data.playerMissingSuits || []).map((arr) => new Set(arr));
-        this.identityBySessionId = new Map(data.identityBySessionId || this.identityBySessionId || []);
+        this.botIds = Array.isArray(data.botIds) ? data.botIds : (this.botIds || []);
+        this.playerMissingSuits = Array.isArray(data.playerMissingSuits)
+            ? data.playerMissingSuits.map((arr) => new Set(Array.isArray(arr) ? arr : []))
+            : (Array.isArray(this.playerMissingSuits) ? this.playerMissingSuits : []);
+        const restoredIdentityEntries = Array.isArray(data.identityBySessionId)
+            ? data.identityBySessionId.map(([sessionId, identity]) => [sessionId, sanitizeSnapshotIdentity(identity)])
+            : Array.from(this.identityBySessionId || [], ([sessionId, identity]) => [sessionId, sanitizeSnapshotIdentity(identity)]);
+        this.identityBySessionId = new Map(restoredIdentityEntries);
 
         if (data.state) {
             this.restoreSchemaState(data.state);
@@ -1749,6 +1776,9 @@ class DominoRoom extends Room {
             this.internalBoard = cloneBoard(data.internalBoard);
         }
 
+        this.hands = Array.isArray(this.hands) ? this.hands : [];
+        this.boneyard = Array.isArray(this.boneyard) ? this.boneyard : [];
+        this.internalBoard = this.internalBoard || new Board();
         this.state.playerCount = this.totalPlayers;
         this.state.isTeamMode = data.state ? Boolean(data.state.isTeamMode) : Boolean(this.state.isTeamMode);
         this.state.boneyardCount = this.boneyard.length;

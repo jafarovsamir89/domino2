@@ -2,6 +2,15 @@
 
 Рабочий документ для исправления найденных проблем в проекте Domino: Telephone / Five.
 
+## 0. Уже закрыто в текущем проходе
+- `Forged settlement` и trust-boundary для матчей и экономики закрыты server-signed proof'ами.
+- Публичный `GET /players/:id` больше не отдаёт `wallet`.
+- `POST /realtime/heartbeat` требует auth token и DTO validation.
+- Friend request `accept` больше не принимается со стороны requester.
+- `authToken` больше не сохраняется в Redis snapshot комнаты.
+- `next_deal` ограничен host-only и pending-окном.
+- Добавлены DB constraints для ключевых money/match сущностей, leaderboard sorting moved to DB, health checks и system audit trail.
+
 Статус документа:
 - [ ] Разобрать и подтвердить приоритеты
 - [ ] Ответить на вопросы выбора
@@ -253,4 +262,3 @@
 - Если выбираешь вариант, ставь `x` у нужного пункта.
 - Если нужен свой вариант, допиши его ниже.
 - Если хочешь, я потом превращу этот документ в чеклист с задачами по коммитам.
-

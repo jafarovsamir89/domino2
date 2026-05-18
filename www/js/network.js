@@ -28,6 +28,7 @@ class NetworkManager {
         this.reconnectAttempt = 0;
         this.maxReconnectAttempts = 10;
         this.reconnectInProgress = false;
+        this.commandLocks = new Map();
         this.voiceConfig = null;
         this.voiceConfigPromise = null;
 
@@ -195,6 +196,7 @@ class NetworkManager {
 
     activateRoom(room, { isHost = false, isGuest = false, notifyReconnect = false } = {}) {
         this.clearReconnectTimer();
+        this.clearCommandLocks();
         this.room = room;
         this.isMultiplayer = true;
         this.isHost = isHost;
@@ -372,6 +374,7 @@ class NetworkManager {
     leaveRoom() {
         this.manualLeaveRequested = true;
         this.clearReconnectTimer();
+        this.clearCommandLocks();
         if (this.room) {
             this.room.leave();
         }
@@ -469,24 +472,42 @@ class NetworkManager {
         }
     }
 
+    clearCommandLocks() {
+        this.commandLocks.clear();
+    }
+
+    sendLockedCommand(command, payload = null, lockMs = 300) {
+        if (!this.room) return false;
+        const now = Date.now();
+        const until = Number(this.commandLocks.get(command) || 0);
+        if (until > now) return false;
+        this.commandLocks.set(command, now + Math.max(0, lockMs));
+        if (payload === null || payload === undefined) {
+            this.room.send(command);
+        } else {
+            this.room.send(command, payload);
+        }
+        return true;
+    }
+
     sendPlay(tileIndex, openEndIndex) {
-        if (this.room) this.room.send("play", { tileIndex, openEndIndex });
+        return this.sendLockedCommand("play", { tileIndex, openEndIndex }, 350);
     }
 
     sendDraw() {
-        if (this.room) this.room.send("draw");
+        return this.sendLockedCommand("draw", null, 300);
     }
 
     sendPass() {
-        if (this.room) this.room.send("pass");
+        return this.sendLockedCommand("pass", null, 300);
     }
 
     sendGosha() {
-        if (this.room) this.room.send("gosha");
+        return this.sendLockedCommand("gosha", null, 350);
     }
 
     sendNextDeal() {
-        if (this.room) this.room.send("next_deal");
+        return this.sendLockedCommand("next_deal", null, 500);
     }
 
     sendReaction(type) {
