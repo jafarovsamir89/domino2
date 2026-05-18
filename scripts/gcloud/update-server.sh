@@ -148,10 +148,14 @@ sync_www_assets() {
 
   log "syncing web assets into www/"
   rm -rf "$ROOT_DIR/www/js" "$ROOT_DIR/www/css" "$ROOT_DIR/www/assets"
+  rm -rf "$ROOT_DIR/www/shared"
   cp -a "$ROOT_DIR/js" "$ROOT_DIR/www/js"
   cp -a "$ROOT_DIR/css" "$ROOT_DIR/www/css"
   if [[ -d "$ROOT_DIR/assets" ]]; then
     cp -a "$ROOT_DIR/assets" "$ROOT_DIR/www/assets"
+  fi
+  if [[ -d "$ROOT_DIR/shared" ]]; then
+    cp -a "$ROOT_DIR/shared" "$ROOT_DIR/www/shared"
   fi
   cp -f "$ROOT_DIR/index.html" "$ROOT_DIR/www/index.html"
   cp -f "$ROOT_DIR/manifest.json" "$ROOT_DIR/www/manifest.json"
