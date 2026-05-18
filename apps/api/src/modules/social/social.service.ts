@@ -158,6 +158,10 @@ export class SocialService {
     return Math.max(0, Math.floor((Math.max(0, Math.trunc(coinCost)) * this.giftCostBps(exchangeRateBps)) / 10_000));
   }
 
+  private isUniqueConstraintError(error: unknown) {
+    return Boolean(error && typeof error === "object" && "code" in error && (error as { code?: string }).code === "P2002");
+  }
+
   private giftSeedRows() {
     return DEFAULT_GIFT_CATALOG.map((gift) => ({
       key: gift.key,
@@ -697,6 +701,18 @@ export class SocialService {
 
   async getRoomInvitations(headers: IncomingHttpHeaders) {
     const currentPlayer = await this.getCurrentPlayer(headers);
+    const now = new Date();
+    await this.prisma.roomInvitation.updateMany({
+      where: {
+        status: "pending",
+        expiresAt: { lt: now }
+      },
+      data: {
+        status: "expired",
+        respondedAt: now
+      }
+    });
+
     const rows = await this.prisma.roomInvitation.findMany({
       where: {
         OR: [
@@ -1113,58 +1129,77 @@ export class SocialService {
     const roomCode = String(body?.roomCode || "").trim() || null;
     const roomMode = String(body?.roomMode || (body?.isTeamMode ? "team" : "ffa") || "ffa").trim();
     const note = String(body?.note || "").trim() || null;
+    const invitationData = {
+      roomId: cleanRoomId,
+      roomCode,
+      roomMode,
+      stakeKey: String(body?.stakeKey || "").trim() || null,
+      stakeAmount: Math.max(0, Number(body?.stakeAmount || 0)),
+      humanSeats: Math.max(0, Number(body?.humanSeats || 0)),
+      totalPlayers: Math.max(0, Number(body?.totalPlayers || 0)),
+      isTeamMode: Boolean(body?.isTeamMode),
+      inviterPlayerId: currentPlayer.id,
+      inviteePlayerId,
+      note,
+      ...payloadJsonData,
+      expiresAt
+    };
 
-    const existing = await this.prisma.roomInvitation.findFirst({
-      where: {
-        roomId: cleanRoomId,
-        inviterPlayerId: currentPlayer.id,
-        inviteePlayerId,
-        status: "pending"
-      },
-      orderBy: { createdAt: "desc" }
-    });
+    const invitationInclude = {
+      inviter: { select: this.playerSelect() },
+      invitee: { select: this.playerSelect() }
+    } as const;
 
-    const row = existing
-      ? await this.prisma.roomInvitation.update({
-          where: { id: existing.id },
-          data: {
-            roomCode,
-            roomMode,
-            stakeKey: String(body?.stakeKey || "").trim() || null,
-            stakeAmount: Math.max(0, Number(body?.stakeAmount || 0)),
-            humanSeats: Math.max(0, Number(body?.humanSeats || 0)),
-            totalPlayers: Math.max(0, Number(body?.totalPlayers || 0)),
-            isTeamMode: Boolean(body?.isTeamMode),
-            note,
-            ...payloadJsonData,
-            expiresAt
-          },
-          include: {
-            inviter: { select: this.playerSelect() },
-            invitee: { select: this.playerSelect() }
-          }
-        })
-      : await this.prisma.roomInvitation.create({
-          data: {
+    const row = await this.prisma
+      .$transaction(async (tx) => {
+        const existing = await tx.roomInvitation.findFirst({
+          where: {
             roomId: cleanRoomId,
-            roomCode,
-            roomMode,
-            stakeKey: String(body?.stakeKey || "").trim() || null,
-            stakeAmount: Math.max(0, Number(body?.stakeAmount || 0)),
-            humanSeats: Math.max(0, Number(body?.humanSeats || 0)),
-            totalPlayers: Math.max(0, Number(body?.totalPlayers || 0)),
-            isTeamMode: Boolean(body?.isTeamMode),
             inviterPlayerId: currentPlayer.id,
             inviteePlayerId,
-            note,
-            ...payloadJsonData,
-            expiresAt
+            status: "pending"
           },
-          include: {
-            inviter: { select: this.playerSelect() },
-            invitee: { select: this.playerSelect() }
-          }
+          orderBy: { updatedAt: "desc" }
         });
+
+        if (existing) {
+          return tx.roomInvitation.update({
+            where: { id: existing.id },
+            data: invitationData,
+            include: invitationInclude
+          });
+        }
+
+        return tx.roomInvitation.create({
+          data: invitationData,
+          include: invitationInclude
+        });
+      })
+      .catch(async (error) => {
+        if (!this.isUniqueConstraintError(error)) {
+          throw error;
+        }
+
+        const fallback = await this.prisma.roomInvitation.findFirst({
+          where: {
+            roomId: cleanRoomId,
+            inviterPlayerId: currentPlayer.id,
+            inviteePlayerId,
+            status: "pending"
+          },
+          orderBy: { updatedAt: "desc" }
+        });
+
+        if (!fallback) {
+          throw error;
+        }
+
+        return this.prisma.roomInvitation.update({
+          where: { id: fallback.id },
+          data: invitationData,
+          include: invitationInclude
+        });
+      });
 
     return { item: this.summarizeInvite(row as any) };
   }
@@ -1183,6 +1218,29 @@ export class SocialService {
     }
     if (row.inviteePlayerId !== currentPlayer.id) {
       throw new ForbiddenException("Invitation not found");
+    }
+    if (row.status === "expired") {
+      throw new BadRequestException("Invitation expired");
+    }
+    if (row.expiresAt && row.expiresAt.getTime() <= Date.now()) {
+      await this.prisma.roomInvitation.update({
+        where: { id },
+        data: {
+          status: "expired",
+          respondedAt: new Date()
+        },
+        include: {
+          inviter: { select: this.playerSelect() },
+          invitee: { select: this.playerSelect() }
+        }
+      });
+      throw new BadRequestException(`Invitation expired`);
+    }
+    if (row.status === "accepted") {
+      return { item: this.summarizeInvite(row) };
+    }
+    if (row.status !== "pending") {
+      throw new BadRequestException("Invitation already responded");
     }
 
     const accepted = await this.prisma.roomInvitation.update({
@@ -1208,6 +1266,29 @@ export class SocialService {
     }
     if (row.inviteePlayerId !== currentPlayer.id) {
       throw new ForbiddenException("Invitation not found");
+    }
+    if (row.status === "expired") {
+      throw new BadRequestException("Invitation expired");
+    }
+    if (row.expiresAt && row.expiresAt.getTime() <= Date.now()) {
+      await this.prisma.roomInvitation.update({
+        where: { id },
+        data: {
+          status: "expired",
+          respondedAt: new Date()
+        },
+        include: {
+          inviter: { select: this.playerSelect() },
+          invitee: { select: this.playerSelect() }
+        }
+      });
+      throw new BadRequestException(`Invitation expired`);
+    }
+    if (row.status === "declined") {
+      return { item: this.summarizeInvite(row as any) };
+    }
+    if (row.status !== "pending") {
+      throw new BadRequestException("Invitation already responded");
     }
 
     const declined = await this.prisma.roomInvitation.update({
