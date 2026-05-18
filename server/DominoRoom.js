@@ -1323,10 +1323,11 @@ class DominoRoom extends Room {
     }
 
     handleNextDeal(client) {
-        // Only proceed if game is not active (waiting for next deal)
         if (this.state.gameActive) return;
         if (this.matchFinished) return;
-        // Debounce to prevent one player from skipping results for others
+        if (!this.pendingAdvanceKind) return;
+        const isHost = this.state.playerOrder[0] === client?.sessionId;
+        if (!isHost) return;
         if (this._lastNextDealAt && Date.now() - this._lastNextDealAt < 1500) return;
         this._lastNextDealAt = Date.now();
         this.clearNextDealTimer();

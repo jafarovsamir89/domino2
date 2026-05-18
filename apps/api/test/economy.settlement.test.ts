@@ -221,6 +221,37 @@ test("online stake reserve and settle keep the bank and payout balanced", async 
   assert.equal(wallets.get("player-b")?.reserved, 0);
 });
 
+test("online stake reserve deduplicates repeated participants", async () => {
+  const { service, wallets } = makeEconomyHarness();
+  const token = createGameToken({
+    userId: "user-a",
+    playerId: "player-a",
+    displayName: "Alpha",
+    role: "player",
+    sessionId: "session-a",
+    provider: "better-auth",
+    issuedAt: Date.now(),
+    expiresAt: Date.now() + 60_000
+  });
+
+  const reserve = await service.reserveMatchStake(token, {
+    ...withProof({
+      roomId: "room-dup",
+      matchId: "match-dup",
+      stakeKey: "stake_50",
+      participants: [
+        { playerId: "player-a", userId: "user-a", displayName: "Alpha" },
+        { playerId: "player-a", userId: "user-a", displayName: "Alpha Duplicate" }
+      ]
+    }, "economy.reserve")
+  });
+
+  assert.equal(reserve.ok, true);
+  assert.equal(reserve.reserved, 50);
+  assert.equal(reserve.participants, 1);
+  assert.equal(wallets.get("player-a")?.balance, 150);
+});
+
 test("online team stake settle splits the losing bank across winners", async () => {
   const { service, wallets } = makeEconomyHarness();
   const token = createGameToken({
