@@ -88,6 +88,7 @@ model User {
   revokedBans     PlayerBan[]     @relation("BanRevokedBy")
   resolvedReports PlayerReport[]  @relation("ReportResolvedBy")
   auditLogs       AdminAuditLog[]
+  systemAuditLogs SystemAuditLog[] @relation("SystemAuditActorUser")
   coinLedgerEntries CoinLedgerEntry[]
 
   @@map("user")
@@ -174,6 +175,7 @@ model Player {
   giftsSent GiftTransaction[] @relation("GiftSender")
   giftsReceived GiftTransaction[] @relation("GiftRecipient")
   giftInventory PlayerGiftInventory[]
+  systemAuditLogs SystemAuditLog[] @relation("SystemAuditActorPlayer")
 }
 
 model PlayerStats {
@@ -531,6 +533,25 @@ model AdminAuditLog {
   payloadJson Json?
   createdAt   DateTime @default(now())
   adminUser   User     @relation(fields: [adminUserId], references: [id], onDelete: Cascade)
+}
+
+model SystemAuditLog {
+  id           String   @id @default(cuid())
+  actorType    String   @default("system")
+  actorUserId  String?
+  actorPlayerId String?
+  action       String
+  entityType   String
+  entityId     String
+  payloadJson  Json?
+  createdAt    DateTime @default(now())
+  actorUser    User?    @relation("SystemAuditActorUser", fields: [actorUserId], references: [id], onDelete: SetNull)
+  actorPlayer  Player?  @relation("SystemAuditActorPlayer", fields: [actorPlayerId], references: [id], onDelete: SetNull)
+
+  @@index([action, createdAt])
+  @@index([entityType, entityId])
+  @@index([actorUserId, createdAt])
+  @@index([actorPlayerId, createdAt])
 }
 
 model CatalogProduct {

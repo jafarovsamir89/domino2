@@ -234,6 +234,31 @@ export class EconomyService {
     });
   }
 
+  private async recordSystemAudit(
+    db: EconomyTx,
+    entry: {
+      actorType?: string;
+      actorUserId?: string | null;
+      actorPlayerId?: string | null;
+      action: string;
+      entityType: string;
+      entityId: string;
+      payloadJson?: Prisma.InputJsonValue;
+    }
+  ) {
+    await db.systemAuditLog.create({
+      data: {
+        actorType: entry.actorType || "system",
+        actorUserId: entry.actorUserId ?? undefined,
+        actorPlayerId: entry.actorPlayerId ?? undefined,
+        action: entry.action,
+        entityType: entry.entityType,
+        entityId: entry.entityId,
+        payloadJson: entry.payloadJson ?? undefined
+      }
+    });
+  }
+
   private async ensureBootstrap(db: EconomyTx = this.prisma) {
     await db.coinEconomyConfig.upsert({
       where: { key: DEFAULT_CONFIG_KEY },
@@ -426,6 +451,27 @@ export class EconomyService {
       }
     });
 
+    await this.recordSystemAudit(db, {
+      actorType: extras.createdByUserId ? "admin" : "system",
+      actorUserId: extras.createdByUserId ?? null,
+      actorPlayerId: playerId,
+      action: `wallet.${type}`,
+      entityType: "CoinWallet",
+      entityId: wallet.id,
+      payloadJson: {
+        playerId,
+        amount: nextAmount,
+        balanceBefore: wallet.balance,
+        balanceAfter: updated.balance,
+        reservedBefore: wallet.reserved,
+        reservedAfter: updated.reserved,
+        referenceType,
+        referenceId,
+        idempotencyKey: extras.idempotencyKey || null,
+        note: extras.note || null
+      }
+    });
+
     return updated;
   }
 
@@ -529,6 +575,27 @@ export class EconomyService {
       }
     });
 
+    await this.recordSystemAudit(db, {
+      actorType: extras.createdByUserId ? "admin" : "system",
+      actorUserId: extras.createdByUserId ?? null,
+      actorPlayerId: playerId,
+      action: "wallet.reserve",
+      entityType: "CoinWallet",
+      entityId: wallet.id,
+      payloadJson: {
+        playerId,
+        amount: nextAmount,
+        balanceBefore: wallet.balance,
+        balanceAfter: updated.balance,
+        reservedBefore: wallet.reserved,
+        reservedAfter: updated.reserved,
+        referenceType,
+        referenceId,
+        idempotencyKey: extras.idempotencyKey || null,
+        note: extras.note || null
+      }
+    });
+
     return updated;
   }
 
@@ -578,6 +645,27 @@ export class EconomyService {
         note: extras.note ?? undefined,
         payloadJson: extras.payloadJson ?? undefined,
         createdByUserId: extras.createdByUserId ?? undefined
+      }
+    });
+
+    await this.recordSystemAudit(db, {
+      actorType: extras.createdByUserId ? "admin" : "system",
+      actorUserId: extras.createdByUserId ?? null,
+      actorPlayerId: playerId,
+      action: `wallet.${type}`,
+      entityType: "CoinWallet",
+      entityId: wallet.id,
+      payloadJson: {
+        playerId,
+        amount: nextAmount,
+        balanceBefore: wallet.balance,
+        balanceAfter: updated.balance,
+        reservedBefore: wallet.reserved,
+        reservedAfter: updated.reserved,
+        referenceType,
+        referenceId,
+        idempotencyKey: extras.idempotencyKey || null,
+        note: extras.note || null
       }
     });
 
@@ -632,6 +720,27 @@ export class EconomyService {
           consumedAmount: nextAmount
         } as Prisma.InputJsonValue,
         createdByUserId: extras.createdByUserId ?? undefined
+      }
+    });
+
+    await this.recordSystemAudit(db, {
+      actorType: extras.createdByUserId ? "admin" : "system",
+      actorUserId: extras.createdByUserId ?? null,
+      actorPlayerId: playerId,
+      action: "wallet.consume_reserved",
+      entityType: "CoinWallet",
+      entityId: wallet.id,
+      payloadJson: {
+        playerId,
+        amount: nextAmount,
+        balanceBefore: wallet.balance,
+        balanceAfter: updated.balance,
+        reservedBefore: wallet.reserved,
+        reservedAfter: updated.reserved,
+        referenceType,
+        referenceId,
+        idempotencyKey: extras.idempotencyKey || null,
+        note: extras.note || null
       }
     });
 

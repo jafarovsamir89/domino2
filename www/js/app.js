@@ -2832,6 +2832,7 @@ class DominoGame {
     clearGameResumeSnapshot() {
         this.account?.clearStoredGameResumeState?.();
         this.network?.setStoredReconnectionToken?.('');
+        this.resumeSessionBusy = false;
         this.refreshResumeBanner(null);
     }
 
@@ -2857,7 +2858,12 @@ class DominoGame {
             desc.textContent = isOnline ? this.t('resume-session-online-desc') : this.t('resume-session-offline-desc');
         }
         if (button) {
+            button.disabled = Boolean(this.resumeSessionBusy);
+            button.setAttribute('aria-busy', this.resumeSessionBusy ? 'true' : 'false');
             button.textContent = this.t('resume-session');
+            if (this.resumeSessionBusy) {
+                button.textContent = `${this.t('resume-session')}...`;
+            }
         }
     }
 
@@ -2924,23 +2930,27 @@ class DominoGame {
     async resumeSavedSession() {
         const snapshot = this.account?.getStoredGameResumeState?.();
         if (!snapshot) return false;
+        if (this.resumeSessionBusy) return false;
 
-        const isValid = await this.validateStoredResumeSnapshot();
-        if (!isValid) {
-            this.renderer.showMessage(this.t('session-not-found'), 1800);
-            return false;
-        }
-        const isOnlineSnapshot = snapshot.kind === 'online'
-            || Boolean(String(snapshot.reconnectionToken || '').trim() || String(snapshot.roomId || '').trim());
+        this.resumeSessionBusy = true;
+        this.refreshResumeBanner(snapshot);
 
-        if (isOnlineSnapshot) {
-            const token = String(snapshot.reconnectionToken || this.network?.getStoredReconnectionToken?.() || '').trim();
-            if (!token) {
-                this.clearGameResumeSnapshot();
+        try {
+            const isValid = await this.validateStoredResumeSnapshot();
+            if (!isValid) {
                 this.renderer.showMessage(this.t('session-not-found'), 1800);
                 return false;
             }
-            try {
+            const isOnlineSnapshot = snapshot.kind === 'online'
+                || Boolean(String(snapshot.reconnectionToken || '').trim() || String(snapshot.roomId || '').trim());
+
+            if (isOnlineSnapshot) {
+                const token = String(snapshot.reconnectionToken || this.network?.getStoredReconnectionToken?.() || '').trim();
+                if (!token) {
+                    this.clearGameResumeSnapshot();
+                    this.renderer.showMessage(this.t('session-not-found'), 1800);
+                    return false;
+                }
                 this.playerName = snapshot.playerName || this.playerName;
                 this.onlineEconomyMode = snapshot.onlineEconomyMode || this.onlineEconomyMode;
                 this.onlineStakeKey = snapshot.onlineStakeKey || this.onlineStakeKey;
@@ -2956,15 +2966,17 @@ class DominoGame {
                 this.syncMultiplayerOptions();
                 this.refreshResumeBanner(snapshot);
                 return true;
-            } catch (error) {
-                console.warn('[Resume] Online session restore failed', error);
-                await this.validateStoredResumeSnapshot();
-                this.renderer.showMessage(this.t('session-restore-failed'), 2200);
-                return false;
             }
+            return this.restoreSoloSnapshot(snapshot);
+        } catch (error) {
+            console.warn('[Resume] Session restore failed', error);
+            await this.validateStoredResumeSnapshot();
+            this.renderer.showMessage(this.t('session-restore-failed'), 2200);
+            return false;
+        } finally {
+            this.resumeSessionBusy = false;
+            this.refreshResumeBanner(this.account?.getStoredGameResumeState?.());
         }
-
-        return this.restoreSoloSnapshot(snapshot);
     }
 
     restoreSoloSnapshot(snapshot) {

@@ -59,6 +59,17 @@ export class AdminController {
     return this.adminService.listAuditLogs(headers, limit, offset, action, entityType);
   }
 
+  @Get("system-audit-logs")
+  async listSystemAuditLogs(
+    @Headers() headers: Record<string, string | string[] | undefined>,
+    @Query("limit") limit?: string,
+    @Query("offset") offset?: string,
+    @Query("action") action?: string,
+    @Query("entityType") entityType?: string
+  ) {
+    return this.adminService.listSystemAuditLogs(headers, limit, offset, action, entityType);
+  }
+
   @Post("players/:id/ban")
   async banPlayer(
     @Headers() headers: Record<string, string | string[] | undefined>,

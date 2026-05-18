@@ -398,6 +398,40 @@ export class AdminService {
     };
   }
 
+  async listSystemAuditLogs(headers: AdminHeaders, limit: unknown, offset: unknown, action?: string, entityType?: string) {
+    await this.requireAdmin(headers);
+
+    const take = normalizePageSize(limit, 50);
+    const skip = normalizeOffset(offset);
+    const nextAction = normalizeFilter(action);
+    const nextEntityType = normalizeFilter(entityType);
+
+    const logs = await this.prisma.systemAuditLog.findMany({
+      take,
+      skip,
+      orderBy: {
+        createdAt: "desc"
+      },
+      include: {
+        actorUser: true,
+        actorPlayer: true
+      }
+    });
+
+    return {
+      items: logs.filter((log) => {
+        const matchesAction = !nextAction || log.action.toLowerCase().includes(nextAction);
+        const matchesEntity = !nextEntityType || log.entityType.toLowerCase().includes(nextEntityType);
+        return matchesAction && matchesEntity;
+      }),
+      pagination: {
+        limit: take,
+        offset: skip,
+        hasMore: logs.length === take
+      }
+    };
+  }
+
   async banPlayer(headers: AdminHeaders, playerId: string, body: { reason?: string; expiresAt?: string | null }) {
     const session = await this.requireAdmin(headers);
     const reason = String(body.reason || "").trim();

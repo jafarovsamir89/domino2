@@ -258,6 +258,32 @@ export class MatchesService {
         }
       }
 
+      await tx.systemAuditLog.create({
+        data: {
+          actorType: "system",
+          actorPlayerId: claims.playerId,
+          action: "match.recorded",
+          entityType: "Match",
+          entityId: match.id,
+          payloadJson: {
+            mode: payload.mode || "online",
+            roomId: payload.roomId || claims.sessionId || null,
+            winnerKey: winnerKey || null,
+            result: payload.result || null,
+            stakeKey: payload.stakeKey || null,
+            totalPoints,
+            participants: resolvedParticipants.map(({ player, ratingBefore, ratingAfter, ratingDelta }) => ({
+              playerId: player.playerId,
+              userId: player.userId,
+              displayName: player.displayName,
+              ratingBefore,
+              ratingAfter,
+              ratingDelta
+            }))
+          }
+        }
+      });
+
       const settlement = await this.economyService.settleMatchStake(token, {
         roomId: String(payload.roomId || claims.sessionId || ""),
         matchId: match.id,

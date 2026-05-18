@@ -8,7 +8,7 @@
     "prebuild": "cd ../.. && npm run generate -w @domino2/db",
     "build": "nest build",
     "start": "node dist/src/main.js",
-    "test": "npm run build && node --test dist/test/realtime.helpers.test.js dist/test/player-ranking.test.js dist/test/economy.service.test.js dist/test/economy.settlement.test.js dist/test/leaderboard.service.test.js dist/test/players.service.test.js dist/test/realtime.controller.test.js dist/test/social.service.test.js dist/test/health.controller.test.js"
+    "test": "npm run build && node --test dist/test/realtime.helpers.test.js dist/test/player-ranking.test.js dist/test/economy.service.test.js dist/test/economy.settlement.test.js dist/test/leaderboard.service.test.js dist/test/players.service.test.js dist/test/realtime.controller.test.js dist/test/social.service.test.js dist/test/health.controller.test.js dist/test/admin.service.test.js"
   },
   "dependencies": {
     "@better-auth/prisma-adapter": "^1.6.9",
