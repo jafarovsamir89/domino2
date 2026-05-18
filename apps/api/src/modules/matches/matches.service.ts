@@ -5,6 +5,7 @@ import { grantStarterCoins } from "../economy/economy-starter.js";
 import { PrismaService } from "../prisma/prisma.service.js";
 import { verifyGameToken } from "../auth/game-token.js";
 import { calculatePlayerRating } from "../ranking/player-ranking.js";
+import { signDominoPayload, verifyDominoPayload } from "../security/domino-proof.js";
 
 type MatchParticipantPayload = {
   userId?: string;
@@ -27,6 +28,8 @@ type MatchPayload = {
   participants?: MatchParticipantPayload[];
   teams?: Array<{ memberIds?: string[] }>;
   totalPoints?: number | null;
+  integrityScope?: string | null;
+  proof?: string | null;
 };
 
 type PlayerSnapshot = {
@@ -48,6 +51,13 @@ function toInt(value: unknown, fallback = 0) {
   return Number.isFinite(parsed) ? parsed : fallback;
 }
 
+function stripProof<T extends Record<string, unknown>>(payload: T) {
+  const next = { ...payload } as Record<string, unknown> & { proof?: unknown };
+  const proof = String(next.proof || "").trim();
+  delete next.proof;
+  return { proof, payload: next as Record<string, unknown> };
+}
+
 @Injectable()
 export class MatchesService {
   constructor(
@@ -65,12 +75,35 @@ export class MatchesService {
     if (!participants.length) {
       return null;
     }
+    const { proof, payload: signedPayload } = stripProof(payload as Record<string, unknown>);
+    if (String(signedPayload.integrityScope || "").trim() !== "platform.match") {
+      return null;
+    }
+    if (!verifyDominoPayload(signedPayload, proof)) {
+      return null;
+    }
+
+    const uniqueParticipants = new Map<string, MatchParticipantPayload>();
+    for (const participant of participants) {
+      const userId = String(participant.userId || "").trim();
+      if (!userId || uniqueParticipants.has(userId)) {
+        continue;
+      }
+      uniqueParticipants.set(userId, participant);
+    }
+    const dedupedParticipants = Array.from(uniqueParticipants.values());
+    if (!dedupedParticipants.length) {
+      return null;
+    }
+    if (!dedupedParticipants.some((participant) => String(participant.userId || "").trim() === claims.userId)) {
+      return null;
+    }
 
     const isTeamMode = payload.isTeamMode === true;
     const winnerKey = String(payload.winnerKey || "").trim();
     const totalPoints = Number.isFinite(Number(payload.totalPoints))
       ? Number(payload.totalPoints)
-      : participants.reduce((sum, participant) => sum + toInt(participant.points), 0);
+      : dedupedParticipants.reduce((sum, participant) => sum + toInt(participant.points), 0);
     const matchCreatedAt = new Date();
 
     return this.prisma.$transaction(async (tx) => {
@@ -79,7 +112,7 @@ export class MatchesService {
         player: PlayerSnapshot;
       }> = [];
 
-      for (const participant of participants) {
+      for (const participant of dedupedParticipants) {
         const userId = String(participant.userId || "").trim();
         if (!userId) {
           continue;
@@ -213,7 +246,17 @@ export class MatchesService {
         stakeKey: String(payload.stakeKey || "free"),
         result: winnerKey === "draw" || payload.result === "draw" ? "draw" : "win",
         winnerPlayerIds: winnerParticipants.map(({ player }) => player.playerId),
-        winnerUserIds: winnerParticipants.map(({ player }) => player.userId)
+        winnerUserIds: winnerParticipants.map(({ player }) => player.userId),
+        integrityScope: "economy.settle",
+        proof: signDominoPayload({
+          roomId: String(payload.roomId || claims.sessionId || ""),
+          matchId: match.id,
+          stakeKey: String(payload.stakeKey || "free"),
+          result: winnerKey === "draw" || payload.result === "draw" ? "draw" : "win",
+          winnerPlayerIds: winnerParticipants.map(({ player }) => player.playerId),
+          winnerUserIds: winnerParticipants.map(({ player }) => player.userId),
+          integrityScope: "economy.settle"
+        })
       });
 
       return {

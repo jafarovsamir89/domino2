@@ -6,6 +6,7 @@ const { Board, cloneBoard } = require("./board");
 const { AIPlayer } = require("./ai");
 const { Tile, createFullSet, shuffle, getHandSize, determineFirstPlayer, handPoints, getOpeningPlayScore, hasInvalidOpeningHand, roundTo5 } = require("./model");
 const { verifyGameToken } = require("./platformAuth");
+const { signDominoPayload } = require("./dominoProof");
 const { upsertLivePlayer, removeLivePlayer, setRoomGameActive, removeRoomPlayers } = require("./livePresence");
 const { rememberRoom, forgetRoom } = require("./roomRegistry");
 
@@ -52,6 +53,17 @@ function sanitizeName(name) {
         .replace(/[^\p{L}\p{N} _.-]/gu, "")
         .trim()
         .slice(0, 24) || "Player";
+}
+
+function buildSignedRequestBody(scope, payload = {}) {
+    const body = {
+        ...payload,
+        integrityScope: scope
+    };
+    return {
+        ...body,
+        proof: signDominoPayload(body)
+    };
 }
 
 class DominoRoom extends Room {
@@ -711,13 +723,13 @@ class DominoRoom extends Room {
                     "Content-Type": "application/json",
                     Authorization: `Bearer ${platformIdentity.authToken}`
                 },
-                body: JSON.stringify({
+                body: JSON.stringify(buildSignedRequestBody("economy.reserve", {
                     roomId: this.roomId,
                     roomCode: this.roomCode,
                     matchId: this.currentDealMatchId,
                     stakeKey: this.currentStakeKey,
                     participants
-                })
+                }))
             });
 
             if (!response.ok) {
@@ -977,13 +989,13 @@ class DominoRoom extends Room {
                     "Content-Type": "application/json",
                     Authorization: `Bearer ${platformIdentity.authToken}`
                 },
-                body: JSON.stringify({
+                body: JSON.stringify(buildSignedRequestBody("economy.settle", {
                     roomId: this.roomId,
                     matchId: this.currentDealMatchId,
                     stakeKey: this.currentDealStakeKey,
                     result: winnerUserIds.length ? "loss" : "refund",
                     winnerUserIds
-                })
+                }))
             });
 
             if (!response.ok) {
@@ -1031,13 +1043,13 @@ class DominoRoom extends Room {
                     "Content-Type": "application/json",
                     Authorization: `Bearer ${platformIdentity.authToken}`
                 },
-                body: JSON.stringify({
+                body: JSON.stringify(buildSignedRequestBody("economy.settle", {
                     roomId: this.roomId,
                     matchId: this.currentDealMatchId,
                     stakeKey: this.currentDealStakeKey,
                     result: winnerUserIds.length ? "win" : "refund",
                     winnerUserIds
-                })
+                }))
             });
 
             if (!response.ok) {
@@ -1140,7 +1152,7 @@ class DominoRoom extends Room {
 
             const platformIdentity = this.getPlatformMatchIdentity();
             if (platformIdentity) {
-                void this.recordPlatformMatch(payload);
+                void this.recordPlatformMatch(buildSignedRequestBody("platform.match", payload));
             }
             this.matchRecorded = true;
         } catch (err) {

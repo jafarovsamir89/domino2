@@ -1,5 +1,6 @@
-import { Body, Controller, Get, Param, Post } from "@nestjs/common";
+import { Body, Controller, Get, Headers, Param, Post, UnauthorizedException } from "@nestjs/common";
 
+import { verifyGameToken } from "../auth/game-token.js";
 import { RealtimeService } from "./realtime.service.js";
 
 @Controller("realtime")
@@ -17,7 +18,7 @@ export class RealtimeController {
   }
 
   @Post("heartbeat")
-  async heartbeat(@Body() body: {
+  async heartbeat(@Headers("authorization") authorization: string | undefined, @Body() body: {
     sessionId?: string;
     provider?: string;
     displayName?: string;
@@ -28,6 +29,10 @@ export class RealtimeController {
     isConnected?: boolean;
     source?: string;
   }) {
+    const token = String(authorization || "").replace(/^Bearer\s+/i, "").trim();
+    if (!verifyGameToken(token)) {
+      throw new UnauthorizedException("Login required");
+    }
     return { item: await this.realtimeService.heartbeat(body) };
   }
 }

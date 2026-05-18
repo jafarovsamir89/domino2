@@ -21,22 +21,15 @@ export class PlayersService {
     }
 
     const rating = player.stats ? calculatePlayerRating(player.stats) : 1000;
+    const { wallet, ...publicPlayer } = player as typeof player & { wallet?: unknown };
 
     return {
-      ...player,
+      ...publicPlayer,
       stats: player.stats
         ? {
             ...player.stats,
             rating,
             titleCode: getPlayerRatingTitleCode(rating)
-          }
-        : null,
-      wallet: player.wallet
-        ? {
-            ...player.wallet,
-            availableBalance: Math.max(0, player.wallet.balance),
-            spendableBalance: Math.max(0, player.wallet.balance),
-            reservedBalance: player.wallet.reserved
           }
         : null
     };

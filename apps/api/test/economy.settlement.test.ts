@@ -4,6 +4,7 @@ import assert from "node:assert/strict";
 process.env.BETTER_AUTH_SECRET ||= "b7f4c2d9a1e8f6c3b5a7d0e9f1c4b8a6d2e7f9c1";
 
 const { createGameToken } = await import("../src/modules/auth/game-token.js");
+const { signDominoPayload } = await import("../src/modules/security/domino-proof.js");
 const { EconomyService } = await import("../src/modules/economy/economy.service.js");
 
 type Wallet = {
@@ -157,6 +158,14 @@ function makeEconomyHarness() {
   return { service, wallets, matchStakes };
 }
 
+function withProof(payload: Record<string, unknown>, scope: string) {
+  const body = { ...payload, integrityScope: scope };
+  return {
+    ...body,
+    proof: signDominoPayload(body)
+  };
+}
+
 test("online stake reserve and settle keep the bank and payout balanced", async () => {
   const { service, wallets } = makeEconomyHarness();
   const token = createGameToken({
@@ -171,13 +180,15 @@ test("online stake reserve and settle keep the bank and payout balanced", async 
   });
 
   const reserve = await service.reserveMatchStake(token, {
-    roomId: "room-online",
-    matchId: "match-online",
-    stakeKey: "stake_50",
-    participants: [
+    ...withProof({
+      roomId: "room-online",
+      matchId: "match-online",
+      stakeKey: "stake_50",
+      participants: [
       { playerId: "player-a", userId: "user-a", displayName: "Alpha" },
       { playerId: "player-b", userId: "user-b", displayName: "Beta" }
-    ]
+      ]
+    }, "economy.reserve")
   });
 
   assert.equal(reserve.ok, true);
@@ -188,12 +199,14 @@ test("online stake reserve and settle keep the bank and payout balanced", async 
   assert.equal(wallets.get("player-b")?.reserved, 50);
 
   const settle = await service.settleMatchStake(token, {
-    roomId: "room-online",
-    matchId: "match-online",
-    stakeKey: "stake_50",
-    result: "win",
-    winnerPlayerIds: ["player-a"],
-    winnerUserIds: ["user-a"]
+    ...withProof({
+      roomId: "room-online",
+      matchId: "match-online",
+      stakeKey: "stake_50",
+      result: "win",
+      winnerPlayerIds: ["player-a"],
+      winnerUserIds: ["user-a"]
+    }, "economy.settle")
   });
 
   assert.equal(settle.ok, true);
@@ -222,27 +235,31 @@ test("online team stake settle splits the losing bank across winners", async () 
   });
 
   const reserve = await service.reserveMatchStake(token, {
-    roomId: "room-team",
-    matchId: "match-team",
-    stakeKey: "stake_50",
-    participants: [
+    ...withProof({
+      roomId: "room-team",
+      matchId: "match-team",
+      stakeKey: "stake_50",
+      participants: [
       { playerId: "player-team-a", userId: "user-team-a", displayName: "Alpha" },
       { playerId: "player-team-b", userId: "user-team-b", displayName: "Beta" },
       { playerId: "player-team-c", userId: "user-team-c", displayName: "Gamma" },
       { playerId: "player-team-d", userId: "user-team-d", displayName: "Delta" }
-    ]
+      ]
+    }, "economy.reserve")
   });
 
   assert.equal(reserve.ok, true);
   assert.equal(reserve.reserved, 200);
 
   const settle = await service.settleMatchStake(token, {
-    roomId: "room-team",
-    matchId: "match-team",
-    stakeKey: "stake_50",
-    result: "win",
-    winnerPlayerIds: ["player-team-a", "player-team-c"],
-    winnerUserIds: ["user-team-a", "user-team-c"]
+    ...withProof({
+      roomId: "room-team",
+      matchId: "match-team",
+      stakeKey: "stake_50",
+      result: "win",
+      winnerPlayerIds: ["player-team-a", "player-team-c"],
+      winnerUserIds: ["user-team-a", "user-team-c"]
+    }, "economy.settle")
   });
 
   assert.equal(settle.ok, true);
@@ -255,7 +272,7 @@ test("online team stake settle splits the losing bank across winners", async () 
   assert.equal(wallets.get("player-team-d")?.balance, 150);
 });
 
-test("solo stake reserve and settle return the stake on draw and pay on win", async () => {
+test("solo stake reserve and settle are disabled for coin staking", async () => {
   const { service, wallets } = makeEconomyHarness();
   const token = createGameToken({
     userId: "user-solo",
@@ -274,10 +291,9 @@ test("solo stake reserve and settle return the stake on draw and pay on win", as
     difficulty: "medium"
   });
 
-  assert.equal(reserve.ok, true);
-  assert.equal(reserve.reserved, 50);
-  assert.equal(wallets.get("player-solo")?.balance, 150);
-  assert.equal(wallets.get("player-solo")?.reserved, 50);
+  assert.equal(reserve.ok, false);
+  assert.equal(reserve.reason, "solo_stakes_disabled");
+  assert.equal(wallets.get("player-solo"), undefined);
 
   const settle = await service.settleSoloMatchStake(token, {
     matchId: "match-solo",
@@ -286,26 +302,7 @@ test("solo stake reserve and settle return the stake on draw and pay on win", as
     difficulty: "medium"
   });
 
-  assert.equal(settle.ok, true);
-  assert.equal(settle.payout, 45);
-  assert.equal(wallets.get("player-solo")?.balance, 245);
-  assert.equal(wallets.get("player-solo")?.reserved, 0);
-
-  const drawReserve = await service.reserveSoloMatchStake(token, {
-    matchId: "match-solo-draw",
-    stakeKey: "stake_50",
-    difficulty: "medium"
-  });
-  assert.equal(drawReserve.ok, true);
-
-  const drawSettle = await service.settleSoloMatchStake(token, {
-    matchId: "match-solo-draw",
-    stakeKey: "stake_50",
-    result: "draw",
-    difficulty: "medium"
-  });
-
-  assert.equal(drawSettle.ok, true);
-  assert.equal(drawSettle.payout, 50);
-  assert.equal(wallets.get("player-solo")?.reserved, 0);
+  assert.equal(settle.ok, false);
+  assert.equal(settle.reason, "solo_stakes_disabled");
+  assert.equal(wallets.get("player-solo"), undefined);
 });

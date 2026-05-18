@@ -637,7 +637,7 @@ export class SocialService {
     if (!row) {
       throw new NotFoundException("Friend request not found");
     }
-    if (row.addresseePlayerId !== currentPlayer.id && row.requesterPlayerId !== currentPlayer.id) {
+    if (row.addresseePlayerId !== currentPlayer.id) {
       throw new ForbiddenException("Friend request not found");
     }
 

@@ -94,8 +94,8 @@ class DominoGame {
         this.onlineRoomVisibility = 'closed';
         this.onlineEconomyMode = 'coins';
         this.onlineRoundBankAmount = 0;
-        this.soloEconomyMode = 'coins';
-        this.soloStakeKey = 'stake_50';
+        this.soloEconomyMode = 'free';
+        this.soloStakeKey = 'free';
         this.hands=[]; this.boneyard=[]; this.scores=[]; this.roundWins=[];
         this.playerNames=[]; this.currentPlayer=0; this.matchRound=1; this.deal=1;
         this.selectedTileIndex=-1; this.validMoves=[]; this.gameActive=false;
@@ -139,7 +139,7 @@ class DominoGame {
         this.activeMatchEconomyMode = 'coins';
         this.activeMatchStakeKey = 'stake_50';
         this.currentRoundStakeSessionId = null;
-        this.currentRoundStakeKey = 'stake_50';
+        this.currentRoundStakeKey = 'free';
         this.currentRoundStakeAmount = 0;
         this.currentRoundBankAmount = 0;
         this.coinMatchSummary = { spent: 0, won: 0 };
@@ -379,7 +379,6 @@ class DominoGame {
                 if (button.disabled) return;
                 document.querySelectorAll('#solo-stake-group .btn-option').forEach((item) => item.classList.remove('active'));
                 button.classList.add('active');
-                this.soloStakeKey = button.dataset.value || 'stake_50';
                 this.syncSoloOptions();
             });
         });
@@ -2684,26 +2683,22 @@ class DominoGame {
     syncSoloOptions() {
         const stakeWrapper = document.getElementById('solo-stake-wrapper');
         const stakeButtons = document.querySelectorAll('#solo-stake-group .btn-option');
-        if (!this.soloStakeKey || this.soloStakeKey === 'free') {
-            this.soloStakeKey = 'stake_50';
-        }
-        this.soloEconomyMode = 'coins';
+        this.soloEconomyMode = 'free';
+        this.soloStakeKey = 'free';
 
         if (stakeWrapper) {
-            stakeWrapper.classList.remove('is-hidden');
+            stakeWrapper.classList.add('is-hidden');
         }
 
         stakeButtons.forEach((button) => {
-            const shouldBeActive = button.dataset.value === this.soloStakeKey;
+            const shouldBeActive = false;
             button.classList.toggle('active', shouldBeActive);
-            button.disabled = false;
+            button.disabled = true;
         });
     }
 
     readSoloEconomySelectionFromUi() {
-        const selectedStakeButton = document.querySelector('#solo-stake-group .btn-option.active');
-        const stakeKey = selectedStakeButton?.dataset.value || this.soloStakeKey || 'stake_50';
-        return { mode: 'coins', stakeKey };
+        return { mode: 'free', stakeKey: 'free' };
     }
 
     getStakeLabelByKey(stakeKey) {
@@ -2985,8 +2980,8 @@ class DominoGame {
             this.onlineAiCount = snapshot.onlineAiCount || this.onlineAiCount;
             this.onlineEconomyMode = snapshot.onlineEconomyMode || this.onlineEconomyMode;
             this.onlineStakeKey = snapshot.onlineStakeKey || this.onlineStakeKey;
-            this.soloEconomyMode = 'coins';
-            this.soloStakeKey = snapshot.soloStakeKey && snapshot.soloStakeKey !== 'free' ? snapshot.soloStakeKey : 'stake_50';
+            this.soloEconomyMode = 'free';
+            this.soloStakeKey = 'free';
             this.difficulty = snapshot.difficulty || this.difficulty;
             this.isTeamMode = !!snapshot.isTeamMode;
             this.humanPlayerIndex = Math.max(0, snapshot.humanPlayerIndex || 0);
@@ -4785,7 +4780,7 @@ class DominoGame {
 
     async prepareSoloEconomyStake() {
         const selection = this.readSoloEconomySelectionFromUi();
-        this.soloEconomyMode = 'coins';
+        this.soloEconomyMode = selection.mode || 'free';
         this.soloStakeKey = selection.stakeKey;
 
         await this.loadAccountProfile();
@@ -4795,40 +4790,25 @@ class DominoGame {
             return { ok: false, reason: 'auth_required' };
         }
 
-        const stakeKey = this.soloStakeKey || 'stake_50';
-        this.soloStakeKey = stakeKey;
-        this.soloEconomyMode = 'coins';
-        this.activeMatchEconomyMode = 'coins';
-        this.activeMatchStakeKey = stakeKey;
+        this.soloStakeKey = 'free';
+        this.soloEconomyMode = 'free';
+        this.activeMatchEconomyMode = 'free';
+        this.activeMatchStakeKey = 'free';
         this.syncSoloOptions();
-        return { ok: true, mode: 'coins', stakeKey };
+        return { ok: true, mode: 'free', stakeKey: 'free' };
     }
     async reserveSoloRoundStake() {
-        const token = this.account?.getRoomAuthToken?.();
-        if (!token) {
-            return { ok: false, reason: 'auth_required' };
-        }
+        const roundStakeKey = 'free';
+        const roundStakeAmount = 0;
 
-        const roundStakeKey = this.currentRoundStakeKey
-            ? this.currentRoundStakeKey
-            : (this.soloStakeKey || 'stake_50');
-        const roundStakeAmount = this.getStakeAmountByKey(roundStakeKey);
+        this.currentRoundStakeKey = roundStakeKey;
+        this.currentRoundStakeAmount = roundStakeAmount;
+        this.currentRoundBankAmount = 0;
+        this.activeMatchEconomyMode = 'free';
+        this.activeMatchStakeKey = 'free';
 
         try {
-            const result = await this.account.reserveSoloMatchStake({
-                matchId: this.currentRoundStakeSessionId,
-                stakeKey: roundStakeKey,
-                difficulty: this.difficulty
-            });
-            if (!result?.ok) {
-                throw new Error(result?.reason || 'reserve_failed');
-            }
-            this.currentRoundStakeKey = roundStakeKey;
-            this.currentRoundStakeAmount = roundStakeAmount;
-            this.currentRoundBankAmount = roundStakeAmount > 0 ? roundStakeAmount * 2 : 0;
-            this.activeMatchEconomyMode = 'coins';
-            this.activeMatchStakeKey = roundStakeKey;
-            return { ok: true, mode: 'coins', stakeKey: roundStakeKey, stakeAmount: roundStakeAmount };
+            return { ok: true, mode: 'free', stakeKey: roundStakeKey, stakeAmount: roundStakeAmount };
         } catch (error) {
             return { ok: false, reason: error?.message || 'reserve_failed' };
         }
@@ -4844,26 +4824,10 @@ class DominoGame {
             ? ((winnerIndex % 2) === (this.humanPlayerIndex % 2) ? 'win' : 'loss')
             : (winnerIndex === this.humanPlayerIndex ? 'win' : 'loss');
 
-        const payout = result === 'win'
-            ? Math.max(0, (stakeAmount * 2) - Math.max(0, Math.floor((stakeAmount * 2) * 0.05)))
-            : 0;
-
-        this.coinMatchSummary.spent += stakeAmount;
-        this.coinMatchSummary.won += payout;
-
-        try {
-            await this.account.settleSoloMatchStake({
-                matchId: this.currentRoundStakeSessionId,
-                stakeKey: this.currentRoundStakeKey,
-                result,
-                difficulty: this.difficulty
-            });
-        } catch (settleError) {
-            console.warn('[Economy] Solo round settlement failed:', settleError);
-        }
+        const payout = 0;
 
         this.currentRoundStakeSessionId = null;
-        this.currentRoundStakeKey = 'stake_50';
+        this.currentRoundStakeKey = 'free';
         this.currentRoundStakeAmount = 0;
         this.currentRoundBankAmount = 0;
         return { result, stakeAmount, payout };
@@ -4874,7 +4838,7 @@ class DominoGame {
         this.roundOver=false; this.scores=new Array(this.playerCount).fill(0); if(this.isTeamMode) this.teamScores=[0,0]; this.deal=1; 
         this.clearNextDealAdvanceTimeout();
         await this.pendingSoloSettlement.catch(() => {});
-        this.currentRoundStakeKey = this.soloStakeKey || 'stake_50';
+        this.currentRoundStakeKey = 'free';
         this.currentRoundStakeSessionId = this.createResumeId(`solo-round-${this.matchRound}`);
         const stakeReady = await this.reserveSoloRoundStake();
         if (!stakeReady?.ok) {

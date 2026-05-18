@@ -7,6 +7,7 @@ import { AuthService } from "../auth/auth.service.js";
 import { verifyGameToken } from "../auth/game-token.js";
 import { PrismaService } from "../prisma/prisma.service.js";
 import { calculatePlayerRating } from "../ranking/player-ranking.js";
+import { verifyDominoPayload } from "../security/domino-proof.js";
 
 type EconomyTx = PrismaService | Prisma.TransactionClient;
 
@@ -22,6 +23,8 @@ type ReservePayload = {
   matchId?: string | null;
   stakeKey?: string | null;
   participants?: StakeParticipant[];
+  integrityScope?: string | null;
+  proof?: string | null;
 };
 
 type SettlePayload = ReservePayload & {
@@ -150,6 +153,21 @@ function toCleanString(value: unknown, fallback = "") {
 
 function toUtcDateKey(date = new Date()) {
   return date.toISOString().slice(0, 10);
+}
+
+function stripProof<T extends Record<string, unknown>>(payload: T) {
+  const next = { ...payload } as Record<string, unknown> & { proof?: unknown };
+  const proof = String(next.proof || "").trim();
+  delete next.proof;
+  return { proof, payload: next as Record<string, unknown> };
+}
+
+function verifySignedRequest<T extends Record<string, unknown>>(payload: T, expectedScope: string) {
+  const { proof, payload: signedPayload } = stripProof(payload);
+  if (String(signedPayload.integrityScope || "").trim() !== expectedScope) {
+    return false;
+  }
+  return verifyDominoPayload(signedPayload, proof);
 }
 
 function calcCommission(amount: number, bps: number) {
@@ -692,7 +710,8 @@ export class EconomyService {
     const nextAvailableAt = lastReward
       ? new Date(lastReward.createdAt.getTime() + shop.videoReward.cooldownMinutes * 60_000)
       : null;
-    const canClaim = claimsToday < shop.videoReward.dailyLimit && (!nextAvailableAt || nextAvailableAt.getTime() <= Date.now());
+    const videoRewardEnabled = process.env.ALLOW_UNVERIFIED_AD_REWARDS === "true";
+    const canClaim = videoRewardEnabled && claimsToday < shop.videoReward.dailyLimit && (!nextAvailableAt || nextAvailableAt.getTime() <= Date.now());
 
     return {
       wallet: {
@@ -703,6 +722,7 @@ export class EconomyService {
       },
       coinShop: {
         ...shop,
+        videoRewardEnabled,
         claimsToday,
         nextAvailableAt: nextAvailableAt ? nextAvailableAt.toISOString() : null,
         canClaim,
@@ -715,6 +735,10 @@ export class EconomyService {
     const profile = await this.authService.getCurrentProfile(headers);
     if (!profile?.player) {
       throw new UnauthorizedException("Login required");
+    }
+
+    if (process.env.ALLOW_UNVERIFIED_AD_REWARDS !== "true") {
+      throw new BadRequestException("Video rewards are temporarily disabled");
     }
 
     await this.ensureBootstrap();
@@ -1311,6 +1335,12 @@ export class EconomyService {
         reason: "missing_participants"
       };
     }
+    if (!verifySignedRequest(payload as Record<string, unknown>, "economy.reserve")) {
+      return {
+        ok: false,
+        reason: "invalid_proof"
+      };
+    }
 
     const stakeTable = await this.prisma.coinStakeTable.findUnique({
       where: { key: stakeKey }
@@ -1327,8 +1357,14 @@ export class EconomyService {
 
     try {
       const result = await this.prisma.$transaction(async (tx) => {
-        const resolved = [];
-        for (const participant of participants) {
+      const resolved = [];
+      const uniqueParticipants = new Map<string, StakeParticipant>();
+      for (const participant of participants) {
+        const playerKey = toCleanString(participant.playerId) || toCleanString(participant.userId);
+        if (!playerKey || uniqueParticipants.has(playerKey)) continue;
+        uniqueParticipants.set(playerKey, participant);
+      }
+        for (const participant of uniqueParticipants.values()) {
           const player = await this.findOrCreatePlayerByIdentity(tx, participant, claims.displayName);
           const wallet = await this.ensureWallet(tx, player.id);
           if (wallet.balance < stakeTable.stakeAmount) {
@@ -1437,6 +1473,12 @@ export class EconomyService {
       return {
         ok: false,
         reason: "missing_room"
+      };
+    }
+    if (!verifySignedRequest(payload as Record<string, unknown>, "economy.settle")) {
+      return {
+        ok: false,
+        reason: "invalid_proof"
       };
     }
 
@@ -1652,6 +1694,12 @@ export class EconomyService {
         reason: "missing_match"
       };
     }
+    if (stakeKey !== "free") {
+      return {
+        ok: false,
+        reason: "solo_stakes_disabled"
+      };
+    }
     if (difficulty === "easy" && stakeKey !== "free") {
       return {
         ok: false,
@@ -1789,6 +1837,12 @@ export class EconomyService {
       return {
         ok: false,
         reason: "missing_match"
+      };
+    }
+    if (stakeKey !== "free") {
+      return {
+        ok: false,
+        reason: "solo_stakes_disabled"
       };
     }
 
