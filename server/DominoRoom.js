@@ -8,6 +8,7 @@ const { verifyGameToken } = require("./platformAuth");
 const { buildSignedRequestBody } = require("./signedRequest");
 const { generateRoomCode, normalizeRoomVisibility, normalizeStakeKey, normalizePlayerCount, normalizeAiCount, normalizeDlossThreshold, normalizeInstantWinEnabled, normalizeAiDifficulty } = require("./roomConfig");
 const { normalizeAuthToken, buildRoomIdentity } = require("./roomIdentity");
+const { buildLivePlayerPayload } = require("./roomPresence");
 const { buildSnapshotIdentityEntries, restoreSnapshotIdentityEntries, sanitizeName } = require("./roomSnapshot");
 const { upsertLivePlayer, removeLivePlayer, setRoomGameActive, removeRoomPlayers } = require("./livePresence");
 const { rememberRoom, forgetRoom } = require("./roomRegistry");
@@ -160,31 +161,15 @@ class DominoRoom extends Room {
     }
 
     registerLivePlayer(sessionId, identity, player, joinedAt = null) {
-        const isHost = this.state.playerOrder[0] === sessionId;
         const hostPlayer = this.state.players.get(this.state.playerOrder[0]);
-        upsertLivePlayer(sessionId, {
+        upsertLivePlayer(sessionId, buildLivePlayerPayload({
             sessionId,
-            roomId: this.roomId,
-            roomCode: this.roomCode,
-            roomVisibility: this.roomVisibility,
-            roomMode: this.state.isTeamMode ? "team" : "ffa",
-            stakeKey: this.currentStakeKey,
-            stakeAmount: this.currentDealStakeAmount || 0,
-            humanSeats: this.humanSeats,
-            totalPlayers: this.totalPlayers,
-            aiCount: this.aiCount,
-            isTeamMode: this.state.isTeamMode,
-            provider: identity.provider || "platform",
-            userId: player.userId || "",
-            playerId: identity.playerId || player.userId || "",
-            avatarUrl: identity.avatarUrl || "",
-            displayName: player.name,
-            hostName: hostPlayer?.name || player.name,
-            role: identity.role || (isHost ? "host" : "player"),
-            isConnected: true,
-            isPlaying: Boolean(this.state.gameActive),
-            joinedAt: joinedAt || new Date().toISOString()
-        });
+            room: this,
+            identity,
+            player,
+            hostPlayer,
+            joinedAt
+        }));
     }
 
     onJoin(client, options, auth) {
