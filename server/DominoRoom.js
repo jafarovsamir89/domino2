@@ -12,6 +12,7 @@ const { buildLivePlayerPayload } = require("./roomPresence");
 const { postReserveEconomyMatch, postSettleEconomyMatch } = require("./economyClient");
 const { getSessionIdentities, hasUnlinkedHuman, buildReserveParticipants, buildWinnerUserIds, buildForfeitWinnerUserIds } = require("./economyParticipants");
 const { buildPlatformMatchPayload } = require("./matchResultPayload");
+const { buildRoomStatePlayers, buildRoomStatePayload } = require("./roomStatePayload");
 const { buildSnapshotIdentityEntries, restoreSnapshotIdentityEntries, sanitizeName } = require("./roomSnapshot");
 const { upsertLivePlayer, removeLivePlayer, setRoomGameActive, removeRoomPlayers } = require("./livePresence");
 const { rememberRoom, forgetRoom } = require("./roomRegistry");
@@ -834,38 +835,15 @@ class DominoRoom extends Room {
 
     broadcastRoomState() {
         setRoomGameActive(this.roomId, this.state.gameActive);
-        const players = this.state.playerOrder.map((sessionId, index) => {
-            const player = this.state.players.get(sessionId);
-            const identity = this.identityBySessionId.get(sessionId) || {};
-            return {
-                sessionId,
-                index,
-                name: player ? player.name : "Player",
-                userId: player ? player.userId : "",
-                playerId: identity.playerId || player?.userId || "",
-                avatarUrl: player?.avatarUrl || identity.avatarUrl || "",
-                isConnected: player ? player.isConnected : false,
-                isBot: player ? player.isBot : false
-            };
+        const players = buildRoomStatePlayers({
+            playerOrder: this.state.playerOrder,
+            players: this.state.players,
+            identityBySessionId: this.identityBySessionId
         });
-
-        this.broadcast("room_state", {
-            roomId: this.roomId,
-            roomCode: this.roomCode,
-            roomVisibility: this.roomVisibility,
-            stakeKey: this.currentDealStakeKey || this.currentStakeKey,
-            stakeAmount: this.currentDealStakeAmount,
-            bankAmount: this.currentDealBankAmount,
-            currentPlayers: this.state.gameActive ? this.totalPlayers : this.clients.length,
-            humanPlayers: this.clients.length,
-            humanSeats: this.maxClients,
-            aiCount: this.aiCount,
-            totalPlayers: this.totalPlayers,
-            isTeamMode: this.state.isTeamMode,
-            gameActive: this.state.gameActive,
-            hostName: this.state.players.get(this.state.playerOrder[0])?.name || "Player",
+        this.broadcast("room_state", buildRoomStatePayload({
+            room: this,
             players
-        });
+        }));
         void this.saveCustomStateToRedis();
     }
 
