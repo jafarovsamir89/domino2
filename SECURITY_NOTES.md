@@ -2,8 +2,9 @@
 
 ## Production Secret Guard
 
-- `BETTER_AUTH_SECRET` and the Domino server signing secret now reject weak fallback values in production.
-- Dev/test keep working with a shared in-process fallback secret so local startup and tests do not break.
+- `BETTER_AUTH_SECRET` rejects weak fallback values in production.
+- `platformAuth.js` keeps a dev/test fallback so local startup and tests do not break.
+- Signed server requests still require `DOMINO_SERVER_SECRET` or `BETTER_AUTH_SECRET`; the sprint keeps that path strict.
 
 ## XSS Review
 
