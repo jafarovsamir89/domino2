@@ -9,6 +9,7 @@ const { RedisDriver } = require("@colyseus/redis-driver");
 const DominoRoom = require("./DominoRoom");
 const { getLiveSummary, getOpenRooms, getLiveSession } = require("./livePresence");
 const { resolveRoomIdByCode, resolveRoomCodeById } = require("./roomRegistry");
+const { buildReadinessHealth } = require("./health");
 
 const port = process.env.PORT || 2567;
 const redisUrl = process.env.REDIS_URI || "";
@@ -216,6 +217,11 @@ app.get("/health", (req, res) => {
     res.send("Domino Telefon Server is running!");
 });
 
+app.get("/health/ready", async (req, res) => {
+    const health = await buildReadinessHealth({ redis, isProduction });
+    res.status(health.httpStatus).json(health.payload);
+});
+
 app.post("/api/auth/guest", (req, res) => {
     legacyAuthGone(res);
 });
@@ -349,5 +355,7 @@ const shutdown = async () => {
 process.once("SIGINT", shutdown);
 process.once("SIGTERM", shutdown);
 
-gameServer.listen(port);
-console.info(`[GameServer] Listening on http://localhost:${port}`);
+if (require.main === module) {
+    gameServer.listen(port);
+    console.info(`[GameServer] Listening on http://localhost:${port}`);
+}

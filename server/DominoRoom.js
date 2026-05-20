@@ -463,8 +463,9 @@ class DominoRoom extends Room {
         if (this.currentStakeKey !== "free" && this.lastReservedMatchRound !== this.state.matchRound) {
             const reserveResult = await this.reserveEconomyStake();
             if (!reserveResult?.ok) {
-                const reason = reserveResult?.reason || "stake_unavailable";
-                const message = reason === "insufficient_coins"
+                const reason = String(reserveResult?.reason || "stake_unavailable").trim().toLowerCase();
+                const isLowBalance = reason === "insufficient_coins" || reason.includes("insufficient coins") || reason.includes("insufficient balance");
+                const message = isLowBalance
                     ? "room-closed-insufficient-coins"
                     : reason === "auth_required"
                         ? "room-closed-auth-required"

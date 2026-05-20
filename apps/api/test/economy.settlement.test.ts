@@ -277,6 +277,36 @@ test("online stake reserve and settle keep the bank and payout balanced", async 
   assert.equal(wallets.get("player-b")?.reserved, 0);
 });
 
+test("online stake reserve normalizes low balance errors to insufficient_coins", async () => {
+  const { service, wallets } = makeEconomyHarness();
+  wallets.set("player-low", makeWallet("player-low", 20));
+
+  const token = createGameToken({
+    userId: "user-low",
+    playerId: "player-low",
+    displayName: "Low",
+    role: "player",
+    sessionId: "session-low",
+    provider: "better-auth",
+    issuedAt: Date.now(),
+    expiresAt: Date.now() + 60_000
+  });
+
+  const reserve = await service.reserveMatchStake(token, {
+    ...withProof({
+      roomId: "room-low",
+      matchId: "match-low",
+      stakeKey: "stake_50",
+      participants: [
+        { playerId: "player-low", userId: "user-low", displayName: "Low" }
+      ]
+    }, "economy.reserve")
+  });
+
+  assert.equal(reserve.ok, false);
+  assert.equal(reserve.reason, "insufficient_coins");
+});
+
 test("online stake reserve is idempotent for the same room and match", async () => {
   const { service, wallets, matchStakes, ledgerEntries } = makeEconomyHarness();
   const token = createGameToken({

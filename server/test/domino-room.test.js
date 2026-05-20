@@ -231,6 +231,54 @@ test("onCreate restores room identity and snapshot state without mutating the so
     assert.deepEqual(snapshot, snapshotClone);
 });
 
+test("startDeal maps low balance reserve failures to the insufficient-coins room message", async () => {
+    const room = Object.create(DominoRoom.prototype);
+    Object.defineProperty(room, "roomId", { value: "room-low", writable: true, configurable: true });
+    room.totalPlayers = 2;
+    room.currentStakeKey = "stake_200";
+    room.currentDealStakeKey = "stake_200";
+    room.currentDealStakeAmount = 0;
+    room.currentDealBankAmount = 0;
+    room.lastReservedMatchRound = 0;
+    room.lastDealWinner = null;
+    room.pendingEconomySettlement = Promise.resolve();
+    room.hands = [];
+    room.boneyard = [];
+    room.board = { getGoshaCombo: () => null };
+    room.state = {
+        matchRound: 1,
+        gameActive: false,
+        matchOver: false,
+        gameOverReason: "",
+        gameOverPlayerName: "",
+        gameOverWinnerIndex: -1,
+        gameOverSummaryJson: "",
+        turnVersion: 1,
+        currentPlayerIndex: 0,
+        playerOrder: [],
+        players: new Map(),
+        isTeamMode: false
+    };
+
+    let lastMsg = null;
+    let lastRoomClosed = null;
+    room.clearNextDealTimer = () => {};
+    room.clearTurnTimer = () => {};
+    room.scheduleTurnTimer = () => {};
+    room.broadcast = (event, payload) => {
+        if (event === "msg") lastMsg = payload;
+        if (event === "room_closed") lastRoomClosed = payload;
+    };
+    room.broadcastRoomState = () => {};
+    room.shouldRedealOpeningHands = () => false;
+    room.reserveEconomyStake = async () => ({ ok: false, reason: "Insufficient coins for Alice" });
+
+    await room.startDeal();
+
+    assert.equal(lastMsg?.key, "room-closed-insufficient-coins");
+    assert.equal(lastRoomClosed?.reasonKey, "room-closed-insufficient-coins");
+});
+
 test("applyCustomStateSnapshot tolerates empty and partial snapshots and keeps fallbacks", () => {
     const room = Object.create(DominoRoom.prototype);
     Object.defineProperty(room, "roomId", { value: "room-partial", writable: true, configurable: true });

@@ -3303,7 +3303,13 @@ input, button { font: inherit; }
     transform: translateX(-50%) translateY(0);
 }
 
+.connection-banner.is-error {
+    background: rgba(96, 20, 20, 0.96);
+    border-color: rgba(255, 160, 160, 0.28);
+}
+
 body.is-reconnecting .action-bar,
+body.is-reconnecting .menu-btn,
 body.is-reconnecting .hand-container {
     pointer-events: none;
     opacity: 0.88;

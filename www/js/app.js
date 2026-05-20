@@ -12,6 +12,8 @@ const TARGET=365, MAX_R=3, DLOSS=255, IWIN=35;
 const TURN_TIMEOUT_MS = 30000;
 const BOT_THINK_DELAY_MS = 1000;
 const DEAL_END_MODAL_MS = 2000;
+const DEFAULT_ONLINE_STAKE_KEY = 'stake_200';
+const ONLINE_STAKE_KEYS = new Set(['stake_200', 'stake_500', 'stake_1000', 'stake_5000']);
 const DEFAULT_TABLE_SKIN_KEY = 'table_skin_default';
 const DEFAULT_TABLE_SKIN = {
     key: DEFAULT_TABLE_SKIN_KEY,
@@ -388,7 +390,7 @@ class DominoGame {
             b.addEventListener('click', () => {
                 document.querySelectorAll('#online-stake-group .btn-option').forEach(x => x.classList.remove('active'));
                 b.classList.add('active');
-                this.onlineStakeKey = b.dataset.value || 'stake_50';
+                this.onlineStakeKey = this.normalizeOnlineStakeKey(b.dataset.value);
                 this.syncMultiplayerOptions();
             });
         });
@@ -2255,6 +2257,25 @@ class DominoGame {
         container.replaceChildren(node);
     }
 
+    setConnectionBanner(message = '', kind = 'reconnecting') {
+        const banner = document.getElementById('connection-banner');
+        const text = document.getElementById('connection-banner-text');
+        if (!banner) return;
+
+        const nextMessage = String(message || '').trim();
+        const shouldShow = Boolean(nextMessage);
+        if (text && shouldShow) {
+            text.textContent = nextMessage;
+        }
+        banner.classList.toggle('is-visible', shouldShow);
+        banner.classList.toggle('is-error', shouldShow && kind === 'error');
+        document.body.classList.toggle('is-reconnecting', shouldShow && kind === 'reconnecting');
+        if (!shouldShow) {
+            banner.classList.remove('is-error');
+            document.body.classList.remove('is-reconnecting');
+        }
+    }
+
     ensureStartScreenEnhancements() {
         const startShell = document.querySelector('.start-shell');
         const startActions = document.querySelector('.start-actions');
@@ -2288,6 +2309,20 @@ class DominoGame {
             banner.appendChild(copy);
             banner.appendChild(resumeBtn);
             startActions.insertAdjacentElement('afterend', banner);
+        }
+
+        if (!document.getElementById('connection-banner')) {
+            const banner = document.createElement('div');
+            banner.id = 'connection-banner';
+            banner.className = 'connection-banner';
+            banner.setAttribute('role', 'status');
+            banner.setAttribute('aria-live', 'polite');
+            banner.setAttribute('aria-atomic', 'true');
+            const text = document.createElement('span');
+            text.id = 'connection-banner-text';
+            text.textContent = this.t('connection-reconnecting');
+            banner.appendChild(text);
+            document.body.appendChild(banner);
         }
 
         const stakeGroup = document.getElementById('solo-stake-wrapper');
@@ -2711,7 +2746,6 @@ class DominoGame {
             stake_50: 50,
             stake_100: 100,
             stake_200: 200,
-            stake_250: 250,
             stake_500: 500,
             stake_1000: 1000,
             stake_5000: 5000
@@ -2725,13 +2759,17 @@ class DominoGame {
             stake_50: 50,
             stake_100: 100,
             stake_200: 200,
-            stake_250: 250,
             stake_500: 500,
             stake_1000: 1000,
             stake_5000: 5000
         };
 
         return amounts[stakeKey] || 0;
+    }
+
+    normalizeOnlineStakeKey(stakeKey) {
+        const next = String(stakeKey || '').trim();
+        return ONLINE_STAKE_KEYS.has(next) ? next : DEFAULT_ONLINE_STAKE_KEY;
     }
 
     getCurrentStakeLabel() {
@@ -2838,6 +2876,7 @@ class DominoGame {
         this.account?.clearStoredGameResumeState?.();
         this.network?.setStoredReconnectionToken?.('');
         this.refreshResumeBanner(null);
+        this.setConnectionBanner('', 'reconnecting');
     }
 
     refreshResumeBanner(snapshot = undefined) {
@@ -2948,7 +2987,7 @@ class DominoGame {
             try {
                 this.playerName = snapshot.playerName || this.playerName;
                 this.onlineEconomyMode = snapshot.onlineEconomyMode || this.onlineEconomyMode;
-                this.onlineStakeKey = snapshot.onlineStakeKey || this.onlineStakeKey;
+                this.onlineStakeKey = this.normalizeOnlineStakeKey(snapshot.onlineStakeKey || this.onlineStakeKey);
                 this.isTeamMode = !!snapshot.isTeamMode;
                 this.onlinePlayerCount = snapshot.onlinePlayerCount || this.onlinePlayerCount;
                 this.onlineAiCount = snapshot.onlineAiCount || this.onlineAiCount;
@@ -2984,7 +3023,7 @@ class DominoGame {
             this.onlinePlayerCount = snapshot.onlinePlayerCount || this.onlinePlayerCount;
             this.onlineAiCount = snapshot.onlineAiCount || this.onlineAiCount;
             this.onlineEconomyMode = snapshot.onlineEconomyMode || this.onlineEconomyMode;
-            this.onlineStakeKey = snapshot.onlineStakeKey || this.onlineStakeKey;
+            this.onlineStakeKey = this.normalizeOnlineStakeKey(snapshot.onlineStakeKey || this.onlineStakeKey);
             this.soloEconomyMode = 'coins';
             this.soloStakeKey = snapshot.soloStakeKey && snapshot.soloStakeKey !== 'free' ? snapshot.soloStakeKey : 'stake_50';
             this.difficulty = snapshot.difficulty || this.difficulty;
@@ -3087,7 +3126,7 @@ class DominoGame {
         });
 
         if (!this.onlineStakeKey) {
-            this.onlineStakeKey = 'stake_200';
+            this.onlineStakeKey = DEFAULT_ONLINE_STAKE_KEY;
         }
         if (!this.onlineRoomVisibility) {
             this.onlineRoomVisibility = 'closed';
@@ -3928,6 +3967,7 @@ class DominoGame {
         this.setJoinStatus(reason);
         this.setHostStatus(reason);
         this.clearGameResumeSnapshot();
+        this.setConnectionBanner('', 'reconnecting');
     }
 
     onNetworkDisconnected(payload = {}) {
@@ -3935,7 +3975,10 @@ class DominoGame {
         this.refreshResumeBanner(snapshot);
         if (payload.reconnecting) {
             this.voice?.stopSpeaking?.();
+            this.setConnectionBanner(this.t('connection-reconnecting'), 'reconnecting');
             this.renderer.showMessage(this.t('connection-lost'), 2200);
+        } else {
+            this.setConnectionBanner('', 'reconnecting');
         }
     }
 
@@ -3953,6 +3996,7 @@ class DominoGame {
     onNetworkReconnectFailed(error) {
         console.warn('[Network] Reconnect failed permanently', error);
         void this.validateStoredResumeSnapshot();
+        this.setConnectionBanner(this.t('connection-reconnect-failed'), 'error');
         this.renderer.showMessage(this.t('session-restore-failed'), 2200);
     }
 
@@ -4830,7 +4874,11 @@ class DominoGame {
             this.activeMatchStakeKey = roundStakeKey;
             return { ok: true, mode: 'coins', stakeKey: roundStakeKey, stakeAmount: roundStakeAmount };
         } catch (error) {
-            return { ok: false, reason: error?.message || 'reserve_failed' };
+            const message = String(error?.message || '').trim();
+            return {
+                ok: false,
+                reason: /insufficient (coins|balance)/i.test(message) ? 'insufficient_coins' : (message || 'reserve_failed')
+            };
         }
     }
 
@@ -5185,6 +5233,15 @@ class DominoGame {
             "online-offline": { az: "offline", en: "offline" },
             "online-waiting-slot": { az: "Waiting for player {index}", en: "Waiting for player {index}" },
             "online-room-closed": { az: "Room closed", en: "Room closed" },
+            "room-closed-insufficient-coins": { az: "Bu masaya girmek üçün kifayət qədər pul yoxdur", en: "Not enough coins to join this table", ru: "Недостаточно монет для входа за этот стол" },
+            "room-closed-auth-required": { az: "Hesab tələb olunur", en: "Account required", ru: "Требуется аккаунт" },
+            "room-closed-stake-unavailable": { az: "Mərc masası hazırda əlçatan deyil", en: "Stake table is unavailable", ru: "Стол ставок сейчас недоступен" },
+            "not-enough-coins-round": { az: "Bu masaya girmək üçün kifayət qədər pul yoxdur", en: "Not enough coins to join this table", ru: "Недостаточно монет для входа за этот стол" },
+            "connection-lost": { az: "Bağlantı itdi. Yenidən qoşulur...", en: "Connection lost. Reconnecting...", ru: "Соединение потеряно. Повторное подключение..." },
+            "connection-reconnecting": { az: "Bağlantı bərpa olunur...", en: "Restoring connection...", ru: "Восстановление соединения..." },
+            "connection-restored": { az: "Bağlantı bərpa olundu", en: "Connection restored", ru: "Соединение восстановлено" },
+            "connection-reconnect-failed": { az: "Bağlantını bərpa etmək alınmadı. Lobbiyə qayıdın.", en: "Could not restore the connection. Return to the lobby.", ru: "Не удалось восстановить соединение. Вернитесь в лобби." },
+            "session-restore-failed": { az: "Sessiyanı bərpa etmək alınmadı", en: "Could not restore the session", ru: "Не удалось восстановить сессию" },
             "online-room-summary": { az: "{humans} humans + {bots} AI, {total} total", en: "{humans} humans + {bots} AI, {total} total" },
             "online-bot-slot": { az: "AI {index}", en: "AI {index}" },
             "resume-session-kicker": { az: "Yar\u0131m\u00e7\u0131q sessiya", en: "Unfinished session", ru: "Незавершённая сессия" },
@@ -5332,7 +5389,7 @@ class DominoGame {
         this.deal = state?.deal || 1;
         this.gameActive = !!state?.gameActive;
         this.matchOver = !!state?.matchOver;
-        this.onlineStakeKey = state?.stakeKey || this.onlineStakeKey;
+        this.onlineStakeKey = this.normalizeOnlineStakeKey(state?.stakeKey || this.onlineStakeKey);
         this.onlineRoundBankAmount = Math.max(0, Number(state?.bankAmount || 0));
         if (this.gameActive && Number(state?.turnDeadlineAt || 0) > 0) {
             this.startTurnTimer(Number(state.turnDeadlineAt));
@@ -5363,13 +5420,16 @@ class DominoGame {
                     teamRoundWins: Array.from(this.teamRoundWins || [0, 0])
                 };
                 this.renderDisconnectGameOver(payload);
+                this.setConnectionBanner('', 'reconnecting');
                 this.renderer.showMessage(this.t('connection-restored'), 1600);
                 this.pendingReconnectResolution = false;
                 return;
             }
             if (!this.gameActive) {
+                this.setConnectionBanner('', 'reconnecting');
                 return;
             }
+            this.setConnectionBanner('', 'reconnecting');
             this.pendingReconnectResolution = false;
         }
 

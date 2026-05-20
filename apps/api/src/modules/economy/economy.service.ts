@@ -85,6 +85,14 @@ type EconomyTournamentPayload = {
   isActive?: boolean;
 };
 
+function normalizeReserveFailureReason(error: unknown): string {
+  const message = error instanceof Error ? error.message : String(error ?? "");
+  if (/insufficient (coins|balance)/i.test(message)) {
+    return "insufficient_coins";
+  }
+  return message || "reserve_failed";
+}
+
 const DEFAULT_CONFIG_KEY = "default";
 const COIN_SHOP_VIDEO_REWARD_AMOUNT = 25;
 const COIN_SHOP_VIDEO_COOLDOWN_MINUTES = 30;
@@ -1556,7 +1564,7 @@ export class EconomyService {
     } catch (error) {
       return {
         ok: false,
-        reason: error instanceof Error ? error.message : "reserve_failed"
+        reason: normalizeReserveFailureReason(error)
       };
     }
   }
@@ -1922,7 +1930,7 @@ export class EconomyService {
     } catch (error) {
       return {
         ok: false,
-        reason: error instanceof Error ? error.message : "reserve_failed"
+        reason: normalizeReserveFailureReason(error)
       };
     }
   }
