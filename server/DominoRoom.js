@@ -9,6 +9,7 @@ const { buildSignedRequestBody } = require("./signedRequest");
 const { generateRoomCode, normalizeRoomVisibility, normalizeStakeKey, normalizePlayerCount, normalizeAiCount, normalizeDlossThreshold, normalizeInstantWinEnabled, normalizeAiDifficulty } = require("./roomConfig");
 const { normalizeAuthToken, buildRoomIdentity } = require("./roomIdentity");
 const { buildLivePlayerPayload } = require("./roomPresence");
+const { buildEconomyUrl } = require("./economyConfig");
 const { buildSnapshotIdentityEntries, restoreSnapshotIdentityEntries, sanitizeName } = require("./roomSnapshot");
 const { upsertLivePlayer, removeLivePlayer, setRoomGameActive, removeRoomPlayers } = require("./livePresence");
 const { rememberRoom, forgetRoom } = require("./roomRegistry");
@@ -680,7 +681,7 @@ class DominoRoom extends Room {
         }
 
         try {
-            const response = await fetch(`${process.env.PLATFORM_API_URL || "http://127.0.0.1:3000"}/api/economy/matches/reserve`, {
+            const response = await fetch(buildEconomyUrl(process.env.PLATFORM_API_URL, "/api/economy/matches/reserve"), {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -946,7 +947,7 @@ class DominoRoom extends Room {
             .map((identity) => identity.userId);
 
         try {
-            const response = await fetch(`${process.env.PLATFORM_API_URL || "http://127.0.0.1:3000"}/api/economy/matches/settle`, {
+            const response = await fetch(buildEconomyUrl(process.env.PLATFORM_API_URL, "/api/economy/matches/settle"), {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -1000,7 +1001,7 @@ class DominoRoom extends Room {
             .map((identity) => identity.userId);
 
         try {
-            const response = await fetch(`${process.env.PLATFORM_API_URL || "http://127.0.0.1:3000"}/api/economy/matches/settle`, {
+            const response = await fetch(buildEconomyUrl(process.env.PLATFORM_API_URL, "/api/economy/matches/settle"), {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "test": "node --test test/model.test.js test/board.test.js test/domino-room.test.js test/room-config.test.js test/room-identity.test.js test/room-presence.test.js test/room-registry.test.js test/rating.test.js test/signed-request.test.js"
+    "test": "node --test test/model.test.js test/board.test.js test/domino-room.test.js test/room-config.test.js test/room-identity.test.js test/room-presence.test.js test/economy-config.test.js test/room-registry.test.js test/rating.test.js test/signed-request.test.js"
   },
   "keywords": [],
   "author": "",
