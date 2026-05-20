@@ -11,6 +11,7 @@ const { normalizeAuthToken, buildRoomIdentity } = require("./roomIdentity");
 const { buildLivePlayerPayload } = require("./roomPresence");
 const { postReserveEconomyMatch, postSettleEconomyMatch } = require("./economyClient");
 const { getSessionIdentities, hasUnlinkedHuman, buildReserveParticipants, buildWinnerUserIds, buildForfeitWinnerUserIds } = require("./economyParticipants");
+const { buildPlatformMatchPayload } = require("./matchResultPayload");
 const { buildSnapshotIdentityEntries, restoreSnapshotIdentityEntries, sanitizeName } = require("./roomSnapshot");
 const { upsertLivePlayer, removeLivePlayer, setRoomGameActive, removeRoomPlayers } = require("./livePresence");
 const { rememberRoom, forgetRoom } = require("./roomRegistry");
@@ -1037,54 +1038,23 @@ class DominoRoom extends Room {
 
     recordMatchResult(wi, isInstantWin, players, wins) {
         if (this.matchRecorded) return;
-        const participantRows = [];
-        const winnerTeamIndex = this.state.isTeamMode ? (wi % 2) : null;
-        const winnerKey = this.state.isTeamMode ? `team:${winnerTeamIndex}` : `player:${wi}`;
-        const teams = this.state.isTeamMode ? [
-            { memberIds: [], score: this.state.teamScores[0], roundWins: this.state.teamRoundWins[0] },
-            { memberIds: [], score: this.state.teamScores[1], roundWins: this.state.teamRoundWins[1] }
-        ] : [];
+        const payload = buildPlatformMatchPayload({
+            isTeamMode: this.state.isTeamMode,
+            roomId: this.roomId,
+            stakeKey: this.currentStakeKey,
+            playerOrder: this.state.playerOrder,
+            players: this.state.players,
+            teamScores: this.state.teamScores,
+            teamRoundWins: this.state.teamRoundWins,
+            winnerIndex: wi
+        });
 
-        for (let i = 0; i < this.state.playerOrder.length; i++) {
-            const sid = this.state.playerOrder[i];
-            const player = this.state.players.get(sid);
-            if (!player || !player.userId) continue;
-            const teamIndex = this.state.isTeamMode ? (i % 2) : null;
-            if (this.state.isTeamMode && teams[teamIndex]) {
-                teams[teamIndex].memberIds.push(player.userId);
-            }
-
-            participantRows.push({
-                userId: player.userId,
-                name: player.name,
-                isSelf: false,
-                teamIndex,
-                winnerKey: this.state.isTeamMode ? `team:${teamIndex}` : `player:${i}`,
-                points: this.state.isTeamMode ? this.state.teamScores[teamIndex] : player.score,
-                roundWins: this.state.isTeamMode ? this.state.teamRoundWins[teamIndex] : player.roundWins,
-                result: this.state.isTeamMode
-                    ? (teamIndex === winnerTeamIndex ? "win" : "loss")
-                    : (i === wi ? "win" : "loss")
-            });
-        }
-
-        if (!participantRows.length) {
+        if (!payload.participants.length) {
             this.matchRecorded = true;
             return;
         }
 
         try {
-            const payload = {
-                mode: this.state.isTeamMode ? "team" : "ffa",
-                isTeamMode: this.state.isTeamMode,
-                roomId: this.roomId,
-                winnerKey,
-                result: "win",
-                stakeKey: this.currentStakeKey,
-                teams,
-                participants: participantRows
-            };
-
             const platformIdentity = this.getPlatformMatchIdentity();
             if (platformIdentity) {
                 void this.recordPlatformMatch(buildSignedRequestBody("platform.match", payload));
