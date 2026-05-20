@@ -14,6 +14,7 @@ const { buildRoomStatePlayers, buildRoomStatePayload } = require("./roomStatePay
 const { reserveEconomyStakeForRoom, settleEconomyRoundForRoom, settleForfeitStakeForRoom } = require("./economyService");
 const { buildSnapshotIdentityEntries, restoreSnapshotIdentityEntries, sanitizeName } = require("./roomSnapshot");
 const { buildRestoredRoomMetadata } = require("./roomRestore");
+const { buildSchemaStateSnapshotData, buildRestoredSchemaStateData } = require("./schemaStateSnapshot");
 const { upsertLivePlayer, removeLivePlayer, setRoomGameActive, removeRoomPlayers } = require("./livePresence");
 const { rememberRoom, forgetRoom } = require("./roomRegistry");
 
@@ -1278,36 +1279,7 @@ class DominoRoom extends Room {
     }
 
     buildSchemaStateSnapshot() {
-        const playerOrder = Array.from(this.state.playerOrder || []);
-        return {
-            playerOrder,
-            currentPlayerIndex: this.state.currentPlayerIndex,
-            boneyardCount: this.state.boneyardCount,
-            gameActive: this.state.gameActive,
-            matchRound: this.state.matchRound,
-            deal: this.state.deal,
-            boardJson: this.state.boardJson,
-            isTeamMode: this.state.isTeamMode,
-            playerCount: this.state.playerCount,
-            turnDeadlineAt: this.state.turnDeadlineAt || 0,
-            turnVersion: this.state.turnVersion || 1,
-            teamScores: Array.from(this.state.teamScores || [0, 0]),
-            teamRoundWins: Array.from(this.state.teamRoundWins || [0, 0]),
-            players: playerOrder.map((sessionId) => {
-                const player = this.state.players.get(sessionId);
-                return {
-                    sessionId,
-                    name: player?.name || "Player",
-                    userId: player?.userId || "",
-                    avatarUrl: player?.avatarUrl || "",
-                    score: player?.score || 0,
-                    roundWins: player?.roundWins || 0,
-                    handCount: player?.handCount || 0,
-                    isConnected: player?.isConnected || false,
-                    isBot: player?.isBot || false
-                };
-            })
-        };
+        return buildSchemaStateSnapshotData({ state: this.state });
     }
 
     replaceSchemaArray(target, values = []) {
@@ -1324,42 +1296,39 @@ class DominoRoom extends Room {
             this.state.players.delete(key);
         }
 
-        const playerRows = Array.isArray(snapshot.players) ? snapshot.players : [];
-        const playerOrder = Array.isArray(snapshot.playerOrder) && snapshot.playerOrder.length
-            ? snapshot.playerOrder
-            : playerRows.map((entry) => String(entry.sessionId || "")).filter(Boolean);
+        const restored = buildRestoredSchemaStateData({
+            snapshot,
+            currentState: this.state,
+            totalPlayers: this.totalPlayers,
+            sanitizeName
+        });
 
-        for (const entry of playerRows) {
-            const sessionId = String(entry.sessionId || "").trim();
-            if (!sessionId) continue;
+        for (const entry of restored.players) {
             const player = new Player();
-            player.name = sanitizeName(entry.name || "Player");
-            player.userId = String(entry.userId || "");
-            player.score = Number(entry.score || 0);
-            player.roundWins = Number(entry.roundWins || 0);
-            player.handCount = Number(entry.handCount || 0);
-            player.avatarUrl = String(entry.avatarUrl || "").trim();
-            player.isBot = Boolean(entry.isBot);
-            player.isConnected = Boolean(entry.isBot);
-            this.state.players.set(sessionId, player);
+            player.name = entry.name;
+            player.userId = entry.userId;
+            player.score = entry.score;
+            player.roundWins = entry.roundWins;
+            player.handCount = entry.handCount;
+            player.avatarUrl = entry.avatarUrl;
+            player.isBot = entry.isBot;
+            player.isConnected = entry.isConnected;
+            this.state.players.set(entry.sessionId, player);
         }
 
-        this.replaceSchemaArray(this.state.playerOrder, playerOrder);
-        this.state.currentPlayerIndex = Number(snapshot.currentPlayerIndex || 0);
-        this.state.boneyardCount = Number(snapshot.boneyardCount || 0);
-        this.state.gameActive = Boolean(snapshot.gameActive);
-        this.state.matchRound = Number(snapshot.matchRound || 1);
-        this.state.deal = Number(snapshot.deal || 1);
-        this.state.boardJson = snapshot.boardJson || "{}";
-        this.state.isTeamMode = Boolean(snapshot.isTeamMode);
-        this.state.playerCount = Number(snapshot.playerCount || this.totalPlayers || 2);
-        this.state.turnDeadlineAt = Number(snapshot.turnDeadlineAt || 0);
-        this.state.turnVersion = Number(snapshot.turnVersion || 1);
-
-        const teamScores = Array.isArray(snapshot.teamScores) ? snapshot.teamScores : [0, 0];
-        const teamRoundWins = Array.isArray(snapshot.teamRoundWins) ? snapshot.teamRoundWins : [0, 0];
-        this.replaceSchemaArray(this.state.teamScores, teamScores.map((value) => Number(value || 0)));
-        this.replaceSchemaArray(this.state.teamRoundWins, teamRoundWins.map((value) => Number(value || 0)));
+        this.replaceSchemaArray(this.state.playerOrder, restored.playerOrder);
+        this.state.currentPlayerIndex = restored.currentPlayerIndex;
+        this.state.boneyardCount = restored.boneyardCount;
+        this.state.gameActive = restored.gameActive;
+        this.state.matchRound = restored.matchRound;
+        this.state.deal = restored.deal;
+        this.state.boardJson = restored.boardJson;
+        this.state.isTeamMode = restored.isTeamMode;
+        this.state.playerCount = restored.playerCount;
+        this.state.turnDeadlineAt = restored.turnDeadlineAt;
+        this.state.turnVersion = restored.turnVersion;
+        this.replaceSchemaArray(this.state.teamScores, restored.teamScores);
+        this.replaceSchemaArray(this.state.teamRoundWins, restored.teamRoundWins);
     }
 
     restoreTile(tile) {
