@@ -69,6 +69,7 @@ test("custom snapshots strip auth tokens from persisted identities", () => {
     room.currentDealStakeKey = "stake_200";
     room.currentDealStakeAmount = 200;
     room.currentDealBankAmount = 400;
+    room.economyReservationMade = true;
     room.lastReservedMatchRound = 1;
     room.matchRecorded = false;
     room.forfeitSettlementMade = false;
@@ -96,6 +97,7 @@ test("custom snapshots strip auth tokens from persisted identities", () => {
     assert.equal(snapshot.identityBySessionId[0][0], "session-1");
     assert.equal(snapshot.identityBySessionId[0][1].authToken, undefined);
     assert.equal(snapshot.identityBySessionId[0][1].displayName, "Alice");
+    assert.equal(snapshot.economyReservationMade, true);
     assert.deepEqual(Object.keys(snapshot.identityBySessionId[0][1]).sort(), [
         "avatarUrl",
         "displayName",
@@ -143,6 +145,7 @@ test("onCreate restores room identity and snapshot state without mutating the so
         currentDealStakeKey: "stake_500",
         currentDealStakeAmount: 150,
         currentDealBankAmount: 300,
+        economyReservationMade: true,
         lastReservedMatchRound: 3,
         matchRecorded: true,
         forfeitSettlementMade: true,
@@ -216,6 +219,7 @@ test("onCreate restores room identity and snapshot state without mutating the so
     assert.equal(room.currentDealStakeKey, "stake_500");
     assert.equal(room.currentDealStakeAmount, 150);
     assert.equal(room.currentDealBankAmount, 300);
+    assert.equal(room.economyReservationMade, true);
     assert.equal(room.lastReservedMatchRound, 3);
     assert.equal(room.matchRecorded, true);
     assert.equal(room.forfeitSettlementMade, true);
@@ -272,6 +276,7 @@ test("applyCustomStateSnapshot tolerates empty and partial snapshots and keeps f
     assert.equal(room.roomCode, "BASE");
     assert.equal(room.currentDealMatchId, "match-base");
     assert.equal(room.currentDealStakeAmount, 111);
+    assert.equal(room.economyReservationMade, false);
 
     const partialSnapshot = {
         roomCode: "PART",
@@ -287,6 +292,7 @@ test("applyCustomStateSnapshot tolerates empty and partial snapshots and keeps f
     assert.equal(room.currentDealStakeAmount, 333);
     assert.equal(room.currentDealMatchId, "match-base");
     assert.equal(room.currentDealBankAmount, 222);
+    assert.equal(room.economyReservationMade, false);
     assert.equal(room.hands.length, 1);
     assert.equal(room.boneyard.length, 1);
 });

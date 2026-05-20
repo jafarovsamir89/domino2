@@ -1385,6 +1385,7 @@ class DominoRoom extends Room {
             currentDealStakeKey: this.currentDealStakeKey,
             currentDealStakeAmount: this.currentDealStakeAmount,
             currentDealBankAmount: this.currentDealBankAmount,
+            economyReservationMade: Boolean(this.economyReservationMade),
             lastReservedMatchRound: this.lastReservedMatchRound,
             matchRecorded: this.matchRecorded,
             forfeitSettlementMade: this.forfeitSettlementMade,
@@ -1418,6 +1419,7 @@ class DominoRoom extends Room {
         this.currentDealStakeKey = data.currentDealStakeKey ?? this.currentDealStakeKey;
         this.currentDealStakeAmount = data.currentDealStakeAmount ?? this.currentDealStakeAmount;
         this.currentDealBankAmount = data.currentDealBankAmount ?? this.currentDealBankAmount;
+        this.economyReservationMade = Boolean(data.economyReservationMade);
         this.lastReservedMatchRound = data.lastReservedMatchRound ?? this.lastReservedMatchRound;
         this.matchRecorded = data.matchRecorded ?? this.matchRecorded;
         this.forfeitSettlementMade = data.forfeitSettlementMade ?? this.forfeitSettlementMade;

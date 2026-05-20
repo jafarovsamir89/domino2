@@ -46,6 +46,7 @@ The persisted custom room snapshot currently includes:
 - `currentDealStakeKey`
 - `currentDealStakeAmount`
 - `currentDealBankAmount`
+- `economyReservationMade`
 - `lastReservedMatchRound`
 - `matchRecorded`
 - `forfeitSettlementMade`
@@ -62,7 +63,6 @@ The persisted custom room snapshot currently includes:
 
 The following runtime/transient values are not persisted today:
 
-- `economyReservationMade`
 - `pendingEconomySettlement`
 - `pendingAdvanceKind`
 - `turnAdvancePending`
@@ -75,9 +75,8 @@ The following runtime/transient values are not persisted today:
 
 ## Important Risks
 
-- `economyReservationMade` is currently set in runtime, but it is not included in `buildCustomStateSnapshot()`, so it does not survive restart today.
-  - This is an existing behavior gap.
-  - It should be handled in a separate PR if we decide it should survive restart.
+- `economyReservationMade` is now included in `buildCustomStateSnapshot()` and restored in `applyCustomStateSnapshot()`.
+  - The restart gap was closed in PR #18.
 
 - Reconnect and restore logic still blends room lifecycle, snapshot recovery, and some state repair steps in `DominoRoom.js`.
 - `loadCustomStateForRestore()` depends on Redis availability and on lookup by `restoreRoomId`, `restoreRoomCode`, or `restoreSessionId`.
