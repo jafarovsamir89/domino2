@@ -9,11 +9,11 @@ const { buildSignedRequestBody } = require("./signedRequest");
 const { generateRoomCode, normalizeRoomVisibility, normalizeStakeKey, normalizePlayerCount, normalizeAiCount, normalizeDlossThreshold, normalizeInstantWinEnabled, normalizeAiDifficulty } = require("./roomConfig");
 const { normalizeAuthToken, buildRoomIdentity } = require("./roomIdentity");
 const { buildLivePlayerPayload } = require("./roomPresence");
-const { postReserveEconomyMatch, postSettleEconomyMatch } = require("./economyClient");
-const { getSessionIdentities, hasUnlinkedHuman, buildReserveParticipants, buildWinnerUserIds, buildForfeitWinnerUserIds } = require("./economyParticipants");
+const { postSettleEconomyMatch } = require("./economyClient");
+const { buildForfeitWinnerUserIds } = require("./economyParticipants");
 const { buildPlatformMatchPayload } = require("./matchResultPayload");
 const { buildRoomStatePlayers, buildRoomStatePayload } = require("./roomStatePayload");
-const { reserveEconomyStakeForRoom } = require("./economyService");
+const { reserveEconomyStakeForRoom, settleEconomyRoundForRoom } = require("./economyService");
 const { buildSnapshotIdentityEntries, restoreSnapshotIdentityEntries, sanitizeName } = require("./roomSnapshot");
 const { upsertLivePlayer, removeLivePlayer, setRoomGameActive, removeRoomPlayers } = require("./livePresence");
 const { rememberRoom, forgetRoom } = require("./roomRegistry");
@@ -858,82 +858,7 @@ class DominoRoom extends Room {
     }
 
     async settleEconomyRound(wi, isInstantWin, players, wins) {
-        if (this.currentStakeKey === "free") {
-            this.pendingEconomySettlement = Promise.resolve();
-            this.lastRoundEconomySummary = null;
-            return null;
-        }
-
-        const platformIdentity = this.getPlatformMatchIdentity();
-        if (!platformIdentity) {
-            return null;
-        }
-
-        const winnerUserIds = buildWinnerUserIds({
-            playerOrder: this.state.playerOrder,
-            identityBySessionId: this.identityBySessionId,
-            isTeamMode: this.state.isTeamMode,
-            winnerIndex: wi
-        });
-
-        try {
-            const response = await postSettleEconomyMatch({
-                baseUrl: process.env.PLATFORM_API_URL,
-                body: buildSignedRequestBody("economy.settle", {
-                    roomId: this.roomId,
-                    matchId: this.currentDealMatchId,
-                    stakeKey: this.currentDealStakeKey,
-                    result: winnerUserIds.length ? "win" : "refund",
-                    winnerUserIds
-                })
-            });
-
-            if (!response.ok) {
-                const text = await response.text().catch(() => "");
-                throw new Error(text || `Round settle failed with ${response.status}`);
-            }
-
-            const settlement = await response.json().catch(() => null);
-            const summary = settlement?.ok ? {
-                stakeKey: this.currentDealStakeKey,
-                stakeAmount: this.currentDealStakeAmount,
-                bankAmount: Math.max(0, settlement.bank || this.currentDealBankAmount || 0),
-                commission: Math.max(0, settlement.commission || 0),
-                payout: Math.max(0, settlement.payout || 0),
-                winners: Math.max(0, settlement.winners || 0),
-                result: settlement.result || "win",
-                reservations: Array.isArray(settlement.reservations) ? settlement.reservations : []
-            } : {
-                stakeKey: this.currentDealStakeKey,
-                stakeAmount: this.currentDealStakeAmount,
-                bankAmount: Math.max(0, this.currentDealBankAmount || 0),
-                commission: 0,
-                payout: 0,
-                winners: 0,
-                result: "refund",
-                reservations: []
-            };
-
-            this.currentDealBankAmount = 0;
-            this.currentDealStakeAmount = 0;
-            this.currentDealStakeKey = this.currentStakeKey;
-            this.pendingEconomySettlement = Promise.resolve();
-            this.lastRoundEconomySummary = summary;
-            return summary;
-        } catch (error) {
-            console.warn("[ROOM] Failed to settle round stake:", error);
-            this.lastRoundEconomySummary = {
-                stakeKey: this.currentDealStakeKey,
-                stakeAmount: this.currentDealStakeAmount,
-                bankAmount: Math.max(0, this.currentDealBankAmount || 0),
-                commission: 0,
-                payout: 0,
-                winners: 0,
-                result: "refund",
-                reservations: []
-            };
-            return this.lastRoundEconomySummary;
-        }
+        return settleEconomyRoundForRoom(this, wi);
     }
 
     recordMatchResult(wi, isInstantWin, players, wins) {

@@ -4,7 +4,43 @@ const assert = require("node:assert/strict");
 process.env.DOMINO_SERVER_SECRET ||= "b7f4c2d9a1e8f6c3b5a7d0e9f1c4b8a6d2e7f9c1";
 process.env.BETTER_AUTH_SECRET ||= process.env.DOMINO_SERVER_SECRET;
 
-const { reserveEconomyStakeForRoom } = require("../economyService");
+const { reserveEconomyStakeForRoom, settleEconomyRoundForRoom } = require("../economyService");
+
+function createSettleRoom(overrides = {}) {
+    return {
+        currentStakeKey: "stake_200",
+        currentDealMatchId: "match-1",
+        currentDealStakeKey: "stake_200",
+        currentDealStakeAmount: 400,
+        currentDealBankAmount: 800,
+        economyReservationMade: true,
+        matchRecorded: false,
+        forfeitSettlementMade: false,
+        pendingEconomySettlement: Promise.resolve("pending"),
+        lastRoundEconomySummary: { stale: true },
+        roomId: "room-1",
+        roomCode: "ABCD",
+        state: {
+            playerOrder: ["s1", "s2", "s3", "s4"],
+            players: new Map([
+                ["s1", { name: "Alice", userId: "u1" }],
+                ["s2", { name: "Bob", userId: "u2" }],
+                ["s3", { name: "Carol", userId: "u3" }],
+                ["s4", { name: "Dave", userId: "u4" }]
+            ]),
+            isTeamMode: false
+        },
+        identityBySessionId: new Map([
+            ["s1", { provider: "platform", userId: "u1", playerId: "p1", displayName: "Alice" }],
+            ["s2", { provider: "platform", userId: "u2", playerId: "p2", displayName: "Bob" }],
+            ["s3", { provider: "platform", userId: "u3", playerId: "p3", displayName: "Carol" }],
+            ["s4", { provider: "platform", userId: "u4", playerId: "p4", displayName: "Dave" }]
+        ]),
+        getPlatformMatchIdentity: () => ({ authToken: "token" }),
+        broadcast: () => {},
+        ...overrides
+    };
+}
 
 test("reserveEconomyStakeForRoom handles the free stake path", async () => {
     const room = {
@@ -225,6 +261,257 @@ test("reserveEconomyStakeForRoom returns reserve_error on transport failure", as
     try {
         const result = await reserveEconomyStakeForRoom(room);
         assert.deepEqual(result, { ok: false, reason: "reserve_error" });
+    } finally {
+        global.fetch = originalFetch;
+    }
+});
+
+test("settleEconomyRoundForRoom handles the free stake path", async () => {
+    const room = createSettleRoom({
+        currentStakeKey: "free",
+        currentDealStakeAmount: 123,
+        currentDealBankAmount: 456,
+        lastRoundEconomySummary: { stale: true }
+    });
+
+    const result = await settleEconomyRoundForRoom(room, 0);
+    assert.equal(result, null);
+    assert.equal(room.lastRoundEconomySummary, null);
+    await room.pendingEconomySettlement;
+});
+
+test("settleEconomyRoundForRoom returns null when there is no platform identity", async () => {
+    const room = createSettleRoom({
+        getPlatformMatchIdentity: () => null
+    });
+
+    const result = await settleEconomyRoundForRoom(room, 0);
+    assert.equal(result, null);
+});
+
+test("settleEconomyRoundForRoom updates room fields on success in ffa", async () => {
+    const room = createSettleRoom({
+        currentStakeKey: "stake_500",
+        currentDealStakeKey: "stake_200",
+        currentDealStakeAmount: 250,
+        currentDealBankAmount: 500,
+        state: {
+            playerOrder: ["s1", "s2", "s3"],
+            players: new Map([
+                ["s1", { name: "Alice", userId: "u1" }],
+                ["s2", { name: "Bob", userId: "u2" }],
+                ["s3", { name: "Carol", userId: "u3" }]
+            ]),
+            isTeamMode: false
+        },
+        identityBySessionId: new Map([
+            ["s1", { provider: "platform", userId: "u1", playerId: "p1", displayName: "Alice" }],
+            ["s2", { provider: "guest", userId: "u2", playerId: "p2", displayName: "Bob" }],
+            ["s3", { provider: "platform", userId: "u3", playerId: "p3", displayName: "Carol" }]
+        ])
+    });
+
+    const fetchCalls = [];
+    const originalFetch = global.fetch;
+    global.fetch = async (url, init) => {
+        fetchCalls.push({ url, init });
+        return {
+            ok: true,
+            status: 200,
+            text: async () => "",
+            json: async () => ({
+                ok: true,
+                bank: 900,
+                commission: 45,
+                payout: 855,
+                winners: 1,
+                result: "win",
+                reservations: [{ userId: "u3" }]
+            })
+        };
+    };
+
+    try {
+        const result = await settleEconomyRoundForRoom(room, 2);
+        assert.deepEqual(result, {
+            stakeKey: "stake_200",
+            stakeAmount: 250,
+            bankAmount: 900,
+            commission: 45,
+            payout: 855,
+            winners: 1,
+            result: "win",
+            reservations: [{ userId: "u3" }]
+        });
+        assert.equal(room.currentDealBankAmount, 0);
+        assert.equal(room.currentDealStakeAmount, 0);
+        assert.equal(room.currentDealStakeKey, "stake_500");
+        assert.equal(room.forfeitSettlementMade, false);
+        assert.deepEqual(room.lastRoundEconomySummary, result);
+        await room.pendingEconomySettlement;
+        assert.equal(fetchCalls.length, 1);
+        assert.equal(fetchCalls[0].url, "http://localhost:3001/api/economy/matches/settle");
+        assert.equal(fetchCalls[0].init.method, "POST");
+        assert.equal(fetchCalls[0].init.headers["content-type"], "application/json");
+        const body = JSON.parse(fetchCalls[0].init.body);
+        assert.equal(body.roomId, "room-1");
+        assert.equal(body.matchId, "match-1");
+        assert.equal(body.stakeKey, "stake_200");
+        assert.equal(body.result, "win");
+        assert.deepEqual(body.winnerUserIds, ["u3"]);
+        assert.equal(body.integrityScope, "economy.settle");
+    } finally {
+        global.fetch = originalFetch;
+    }
+});
+
+test("settleEconomyRoundForRoom sends the correct winnerUserIds in team mode", async () => {
+    const room = createSettleRoom({
+        currentStakeKey: "stake_500",
+        currentDealStakeKey: "stake_500",
+        state: {
+            playerOrder: ["s1", "s2", "s3", "s4"],
+            players: new Map([
+                ["s1", { name: "Alice", userId: "u1" }],
+                ["s2", { name: "Bob", userId: "u2" }],
+                ["s3", { name: "Carol", userId: "u3" }],
+                ["s4", { name: "Dave", userId: "u4" }]
+            ]),
+            isTeamMode: true
+        },
+        identityBySessionId: new Map([
+            ["s1", { provider: "platform", userId: "u1", playerId: "p1", displayName: "Alice" }],
+            ["s2", { provider: "platform", userId: "u2", playerId: "p2", displayName: "Bob" }],
+            ["s3", { provider: "platform", userId: "u3", playerId: "p3", displayName: "Carol" }],
+            ["s4", { provider: "platform", userId: "u4", playerId: "p4", displayName: "Dave" }]
+        ])
+    });
+
+    let capturedBody = null;
+    const originalFetch = global.fetch;
+    global.fetch = async (url, init) => {
+        capturedBody = JSON.parse(init.body);
+        return {
+            ok: true,
+            status: 200,
+            text: async () => "",
+            json: async () => ({ ok: true, bank: 1000, commission: 0, payout: 1000, winners: 2, result: "win", reservations: [] })
+        };
+    };
+
+    try {
+        const result = await settleEconomyRoundForRoom(room, 1);
+        assert.equal(result.result, "win");
+        assert.deepEqual(capturedBody.winnerUserIds, ["u2", "u4"]);
+        assert.equal(capturedBody.roomId, "room-1");
+        assert.equal(capturedBody.matchId, "match-1");
+        assert.equal(capturedBody.stakeKey, "stake_500");
+        assert.equal(capturedBody.result, "win");
+    } finally {
+        global.fetch = originalFetch;
+    }
+});
+
+test("settleEconomyRoundForRoom returns refund summary when response is not ok", async () => {
+    const room = createSettleRoom({
+        currentStakeKey: "stake_500",
+        currentDealStakeKey: "stake_200",
+        currentDealStakeAmount: 250,
+        currentDealBankAmount: 500
+    });
+
+    const originalFetch = global.fetch;
+    global.fetch = async () => ({
+        ok: false,
+        status: 500,
+        text: async () => "settle failed",
+        json: async () => ({})
+    });
+
+    try {
+        const result = await settleEconomyRoundForRoom(room, 2);
+        assert.deepEqual(result, {
+            stakeKey: "stake_200",
+            stakeAmount: 250,
+            bankAmount: 500,
+            commission: 0,
+            payout: 0,
+            winners: 0,
+            result: "refund",
+            reservations: []
+        });
+        assert.deepEqual(room.lastRoundEconomySummary, result);
+        assert.equal(room.currentDealBankAmount, 500);
+        assert.equal(room.currentDealStakeAmount, 250);
+        assert.equal(room.currentDealStakeKey, "stake_200");
+    } finally {
+        global.fetch = originalFetch;
+    }
+});
+
+test("settleEconomyRoundForRoom returns refund summary when the response body is rejected", async () => {
+    const room = createSettleRoom({
+        currentStakeKey: "stake_500",
+        currentDealStakeKey: "stake_200",
+        currentDealStakeAmount: 250,
+        currentDealBankAmount: 500
+    });
+
+    const originalFetch = global.fetch;
+    global.fetch = async () => ({
+        ok: true,
+        status: 200,
+        text: async () => "",
+        json: async () => ({ ok: false, reason: "rejected" })
+    });
+
+    try {
+        const result = await settleEconomyRoundForRoom(room, 2);
+        assert.deepEqual(result, {
+            stakeKey: "stake_200",
+            stakeAmount: 250,
+            bankAmount: 500,
+            commission: 0,
+            payout: 0,
+            winners: 0,
+            result: "refund",
+            reservations: []
+        });
+        assert.equal(room.currentDealBankAmount, 0);
+        assert.equal(room.currentDealStakeAmount, 0);
+        assert.equal(room.currentDealStakeKey, "stake_500");
+        assert.deepEqual(room.lastRoundEconomySummary, result);
+    } finally {
+        global.fetch = originalFetch;
+    }
+});
+
+test("settleEconomyRoundForRoom returns refund summary on transport failure", async () => {
+    const room = createSettleRoom({
+        currentStakeKey: "stake_500",
+        currentDealStakeKey: "stake_200",
+        currentDealStakeAmount: 250,
+        currentDealBankAmount: 500
+    });
+
+    const originalFetch = global.fetch;
+    global.fetch = async () => {
+        throw new Error("boom");
+    };
+
+    try {
+        const result = await settleEconomyRoundForRoom(room, 2);
+        assert.deepEqual(result, {
+            stakeKey: "stake_200",
+            stakeAmount: 250,
+            bankAmount: 500,
+            commission: 0,
+            payout: 0,
+            winners: 0,
+            result: "refund",
+            reservations: []
+        });
+        assert.deepEqual(room.lastRoundEconomySummary, result);
     } finally {
         global.fetch = originalFetch;
     }

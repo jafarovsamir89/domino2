@@ -1,6 +1,19 @@
 const { buildSignedRequestBody } = require("./signedRequest");
-const { postReserveEconomyMatch } = require("./economyClient");
-const { getSessionIdentities, hasUnlinkedHuman, buildReserveParticipants } = require("./economyParticipants");
+const { postReserveEconomyMatch, postSettleEconomyMatch } = require("./economyClient");
+const { getSessionIdentities, hasUnlinkedHuman, buildReserveParticipants, buildWinnerUserIds } = require("./economyParticipants");
+
+function buildRefundLikeSummary(room) {
+    return {
+        stakeKey: room.currentDealStakeKey,
+        stakeAmount: room.currentDealStakeAmount,
+        bankAmount: Math.max(0, room.currentDealBankAmount || 0),
+        commission: 0,
+        payout: 0,
+        winners: 0,
+        result: "refund",
+        reservations: []
+    };
+}
 
 async function reserveEconomyStakeForRoom(room) {
     if (room.currentStakeKey === "free") {
@@ -85,6 +98,68 @@ async function reserveEconomyStakeForRoom(room) {
     }
 }
 
+async function settleEconomyRoundForRoom(room, winnerIndex) {
+    if (room.currentStakeKey === "free") {
+        room.pendingEconomySettlement = Promise.resolve();
+        room.lastRoundEconomySummary = null;
+        return null;
+    }
+
+    const platformIdentity = room.getPlatformMatchIdentity();
+    if (!platformIdentity) {
+        return null;
+    }
+
+    const winnerUserIds = buildWinnerUserIds({
+        playerOrder: room.state.playerOrder,
+        identityBySessionId: room.identityBySessionId,
+        isTeamMode: room.state.isTeamMode,
+        winnerIndex
+    });
+
+    try {
+        const response = await postSettleEconomyMatch({
+            baseUrl: process.env.PLATFORM_API_URL,
+            body: buildSignedRequestBody("economy.settle", {
+                roomId: room.roomId,
+                matchId: room.currentDealMatchId,
+                stakeKey: room.currentDealStakeKey,
+                result: winnerUserIds.length ? "win" : "refund",
+                winnerUserIds
+            })
+        });
+
+        if (!response.ok) {
+            const text = await response.text().catch(() => "");
+            throw new Error(text || `Round settle failed with ${response.status}`);
+        }
+
+        const settlement = await response.json().catch(() => null);
+        const summary = settlement?.ok ? {
+            stakeKey: room.currentDealStakeKey,
+            stakeAmount: room.currentDealStakeAmount,
+            bankAmount: Math.max(0, settlement.bank || room.currentDealBankAmount || 0),
+            commission: Math.max(0, settlement.commission || 0),
+            payout: Math.max(0, settlement.payout || 0),
+            winners: Math.max(0, settlement.winners || 0),
+            result: settlement.result || "win",
+            reservations: Array.isArray(settlement.reservations) ? settlement.reservations : []
+        } : buildRefundLikeSummary(room);
+
+        room.currentDealBankAmount = 0;
+        room.currentDealStakeAmount = 0;
+        room.currentDealStakeKey = room.currentStakeKey;
+        room.pendingEconomySettlement = Promise.resolve();
+        room.lastRoundEconomySummary = summary;
+        return summary;
+    } catch (error) {
+        console.warn("[ROOM] Failed to settle round stake:", error);
+        room.lastRoundEconomySummary = buildRefundLikeSummary(room);
+        return room.lastRoundEconomySummary;
+    }
+}
+
 module.exports = {
-    reserveEconomyStakeForRoom
+    reserveEconomyStakeForRoom,
+    settleEconomyRoundForRoom
 };
