@@ -27,6 +27,28 @@ The reconnect and restore path currently involves these pieces:
 - `www/js/network.js`
   - client reconnect attempts and fallback behavior
 
+## Redis Restore Lookup Behavior
+
+`loadCustomStateForRestore(options)` currently looks up Redis snapshots in this order:
+
+1. `domino:custom:{restoreRoomId}`
+2. `domino:custom:code:{restoreRoomCode}`
+
+Matching rules today:
+
+- `restoreRoomId` is normalized with `String(...).trim()`.
+- `restoreRoomCode` is normalized with `String(...).trim().toUpperCase()`.
+- A snapshot returned from Redis is parsed with `JSON.parse`.
+- If `restoreRoomCode` was requested, the parsed snapshot is only accepted when `parsed.roomCode` matches that code.
+- If Redis returns invalid JSON, the method logs the error and returns `null`.
+- If Redis is unavailable or `connect()` / `get()` throws, the method logs the error and returns `null`.
+- If no restore keys are provided, the method returns `null` immediately.
+
+Important limitation:
+
+- `restoreSessionId` is not part of Redis snapshot lookup.
+- Session reuse is handled separately by `findReusableSessionId(options, identity)` during join flow.
+
 ## What Is Saved In Snapshot Today
 
 The persisted custom room snapshot currently includes:
@@ -88,6 +110,19 @@ The following runtime/transient values are not persisted today:
 - Rejoin using a different session id but the same platform identity.
 - Restore when Redis snapshot is missing, stale, or partial.
 - Restore when the room contains bot players and a timer should resume.
+- Restore/rejoin with a requested `restoreSessionId` that already exists in the active room state.
+
+## PR #21 Coverage
+
+The following restore lookup cases are now covered by tests:
+
+- restore by `restoreRoomId`
+- restore by `restoreRoomCode`
+- room-code mismatch rejection
+- invalid JSON handling
+- Redis unavailable / throws handling
+- no restore options
+- `restoreSessionId` fallback behavior in `findReusableSessionId`
 
 ## Safe Next Refactor
 
