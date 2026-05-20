@@ -5,6 +5,16 @@
 - `BETTER_AUTH_SECRET` rejects weak fallback values in production.
 - `platformAuth.js` keeps a dev/test fallback so local startup and tests do not break.
 - Signed server requests still require `DOMINO_SERVER_SECRET` or `BETTER_AUTH_SECRET`; the sprint keeps that path strict.
+- `platformGameToken` is still persisted in `localStorage`, so browser storage remains a known beta risk.
+- The PR does not migrate tokens to memory-only storage because that would be a broader auth/session architecture change.
+
+## Future Hardening
+
+- Move platform token/session handling to a memory-only or short-lived strategy after beta if we want stronger isolation.
+- Add or tighten CSP before wider release.
+- Keep auditing `innerHTML` usage for user-controlled values.
+- Prefer HTTPS-only Android configuration where possible.
+- Review token rotation and short TTL options after closed beta.
 
 ## XSS Review
 

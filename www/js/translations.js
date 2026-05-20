@@ -171,6 +171,8 @@
         "session-not-found": "Sessiya tapılmadı",
         "session-restore-failed": "Sessiyanı bərpa etmək olmadı",
         "connection-lost": "Bağlantı qırıldı. Yenidən qoşuluruq...",
+        "connection-reconnecting": "Bağlantı bərpa olunur...",
+        "connection-reconnect-failed": "Bağlantını bərpa etmək olmadı. Lobbiyə qayıdın.",
         "connection-restored": "Bağlantı bərpa olundu",
         "room-free-for-all": "Hamı hər kəsə",
         "room-free": "Pulsuz",
@@ -324,6 +326,7 @@
         ,"room-closed-session-expired": "Sessiyanın vaxtı bitdi. Yeni otaq başladın."
         ,"room-closed-stake-unavailable": "Mərc masası əlçatan deyil. Otaq bağlandı."
         ,"room-closed-auth-required": "Coin otaqları üçün qeydiyyatdan keçmiş hesab tələb olunur."
+        ,"forfeit-settlement-failed": "Mərc hesablanması tamamlanmadı. Coinlər qayıtmasa, dəstəyə müraciət edin."
         ,"room-closed-insufficient-coins": "Növbəti raund üçün monet çatmır."
         ,"msg-player-passed": "{player} pas verdi"
         ,"msg-player-gosha": "{player} Goşa oynadı"
@@ -501,6 +504,8 @@
         "session-not-found": "Session not found",
         "session-restore-failed": "Could not restore the session",
         "connection-lost": "Connection lost. Reconnecting...",
+        "connection-reconnecting": "Restoring connection...",
+        "connection-reconnect-failed": "Could not restore the connection. Return to the lobby.",
         "connection-restored": "Connection restored",
         "room-free-for-all": "Free for all",
         "room-free": "Free",
@@ -654,6 +659,7 @@
         ,"room-closed-session-expired": "Session expired. Please start a new room."
         ,"room-closed-stake-unavailable": "Stake table unavailable. Room closed."
         ,"room-closed-auth-required": "Registered accounts are required for coin tables."
+        ,"forfeit-settlement-failed": "Stake settlement was not completed. If coins are not returned, contact support."
         ,"room-closed-insufficient-coins": "Not enough coins for the next round."
         ,"msg-player-passed": "{player} passed"
         ,"msg-player-gosha": "{player} played Gosha"
@@ -826,6 +832,8 @@
         "session-not-found": "Сессия не найдена",
         "session-restore-failed": "Не удалось восстановить сессию",
         "connection-lost": "Связь потеряна. Переподключаемся...",
+        "connection-reconnecting": "Восстанавливаем соединение...",
+        "connection-reconnect-failed": "Не удалось восстановить соединение. Вернитесь в лобби.",
         "connection-restored": "Связь восстановлена",
         "room-free-for-all": "Все против всех",
         "room-free": "Бесплатно",
@@ -973,6 +981,7 @@
         ,"room-closed-session-expired": "Сессия истекла. Создайте новую комнату."
         ,"room-closed-stake-unavailable": "Стол ставок недоступен. Комната закрыта."
         ,"room-closed-auth-required": "Для комнат с монетами нужен зарегистрированный аккаунт."
+        ,"forfeit-settlement-failed": "Расчёт ставки не завершён. Если монеты не вернулись, обратитесь в поддержку."
         ,"room-closed-insufficient-coins": "Недостаточно монет для следующего раунда."
         ,"msg-player-passed": "{player} пасовал"
         ,"msg-player-gosha": "{player} сыграл Гошу"
