@@ -94,8 +94,8 @@ class DominoGame {
         this.onlineRoomVisibility = 'closed';
         this.onlineEconomyMode = 'coins';
         this.onlineRoundBankAmount = 0;
-        this.soloEconomyMode = 'free';
-        this.soloStakeKey = 'free';
+        this.soloEconomyMode = 'coins';
+        this.soloStakeKey = 'stake_50';
         this.hands=[]; this.boneyard=[]; this.scores=[]; this.roundWins=[];
         this.playerNames=[]; this.currentPlayer=0; this.matchRound=1; this.deal=1;
         this.selectedTileIndex=-1; this.validMoves=[]; this.gameActive=false;
@@ -139,7 +139,7 @@ class DominoGame {
         this.activeMatchEconomyMode = 'coins';
         this.activeMatchStakeKey = 'stake_50';
         this.currentRoundStakeSessionId = null;
-        this.currentRoundStakeKey = 'free';
+        this.currentRoundStakeKey = 'stake_50';
         this.currentRoundStakeAmount = 0;
         this.currentRoundBankAmount = 0;
         this.coinMatchSummary = { spent: 0, won: 0 };
@@ -379,6 +379,7 @@ class DominoGame {
                 if (button.disabled) return;
                 document.querySelectorAll('#solo-stake-group .btn-option').forEach((item) => item.classList.remove('active'));
                 button.classList.add('active');
+                this.soloStakeKey = button.dataset.value || 'stake_50';
                 this.syncSoloOptions();
             });
         });
@@ -2683,22 +2684,26 @@ class DominoGame {
     syncSoloOptions() {
         const stakeWrapper = document.getElementById('solo-stake-wrapper');
         const stakeButtons = document.querySelectorAll('#solo-stake-group .btn-option');
-        this.soloEconomyMode = 'free';
-        this.soloStakeKey = 'free';
+        if (!this.soloStakeKey || this.soloStakeKey === 'free') {
+            this.soloStakeKey = 'stake_50';
+        }
+        this.soloEconomyMode = 'coins';
 
         if (stakeWrapper) {
-            stakeWrapper.classList.add('is-hidden');
+            stakeWrapper.classList.remove('is-hidden');
         }
 
         stakeButtons.forEach((button) => {
-            const shouldBeActive = false;
+            const shouldBeActive = button.dataset.value === this.soloStakeKey;
             button.classList.toggle('active', shouldBeActive);
-            button.disabled = true;
+            button.disabled = false;
         });
     }
 
     readSoloEconomySelectionFromUi() {
-        return { mode: 'free', stakeKey: 'free' };
+        const selectedStakeButton = document.querySelector('#solo-stake-group .btn-option.active');
+        const stakeKey = selectedStakeButton?.dataset.value || this.soloStakeKey || 'stake_50';
+        return { mode: 'coins', stakeKey };
     }
 
     getStakeLabelByKey(stakeKey) {
@@ -2832,7 +2837,6 @@ class DominoGame {
     clearGameResumeSnapshot() {
         this.account?.clearStoredGameResumeState?.();
         this.network?.setStoredReconnectionToken?.('');
-        this.resumeSessionBusy = false;
         this.refreshResumeBanner(null);
     }
 
@@ -2858,12 +2862,7 @@ class DominoGame {
             desc.textContent = isOnline ? this.t('resume-session-online-desc') : this.t('resume-session-offline-desc');
         }
         if (button) {
-            button.disabled = Boolean(this.resumeSessionBusy);
-            button.setAttribute('aria-busy', this.resumeSessionBusy ? 'true' : 'false');
             button.textContent = this.t('resume-session');
-            if (this.resumeSessionBusy) {
-                button.textContent = `${this.t('resume-session')}...`;
-            }
         }
     }
 
@@ -2930,27 +2929,23 @@ class DominoGame {
     async resumeSavedSession() {
         const snapshot = this.account?.getStoredGameResumeState?.();
         if (!snapshot) return false;
-        if (this.resumeSessionBusy) return false;
 
-        this.resumeSessionBusy = true;
-        this.refreshResumeBanner(snapshot);
+        const isValid = await this.validateStoredResumeSnapshot();
+        if (!isValid) {
+            this.renderer.showMessage(this.t('session-not-found'), 1800);
+            return false;
+        }
+        const isOnlineSnapshot = snapshot.kind === 'online'
+            || Boolean(String(snapshot.reconnectionToken || '').trim() || String(snapshot.roomId || '').trim());
 
-        try {
-            const isValid = await this.validateStoredResumeSnapshot();
-            if (!isValid) {
+        if (isOnlineSnapshot) {
+            const token = String(snapshot.reconnectionToken || this.network?.getStoredReconnectionToken?.() || '').trim();
+            if (!token) {
+                this.clearGameResumeSnapshot();
                 this.renderer.showMessage(this.t('session-not-found'), 1800);
                 return false;
             }
-            const isOnlineSnapshot = snapshot.kind === 'online'
-                || Boolean(String(snapshot.reconnectionToken || '').trim() || String(snapshot.roomId || '').trim());
-
-            if (isOnlineSnapshot) {
-                const token = String(snapshot.reconnectionToken || this.network?.getStoredReconnectionToken?.() || '').trim();
-                if (!token) {
-                    this.clearGameResumeSnapshot();
-                    this.renderer.showMessage(this.t('session-not-found'), 1800);
-                    return false;
-                }
+            try {
                 this.playerName = snapshot.playerName || this.playerName;
                 this.onlineEconomyMode = snapshot.onlineEconomyMode || this.onlineEconomyMode;
                 this.onlineStakeKey = snapshot.onlineStakeKey || this.onlineStakeKey;
@@ -2966,17 +2961,15 @@ class DominoGame {
                 this.syncMultiplayerOptions();
                 this.refreshResumeBanner(snapshot);
                 return true;
+            } catch (error) {
+                console.warn('[Resume] Online session restore failed', error);
+                await this.validateStoredResumeSnapshot();
+                this.renderer.showMessage(this.t('session-restore-failed'), 2200);
+                return false;
             }
-            return this.restoreSoloSnapshot(snapshot);
-        } catch (error) {
-            console.warn('[Resume] Session restore failed', error);
-            await this.validateStoredResumeSnapshot();
-            this.renderer.showMessage(this.t('session-restore-failed'), 2200);
-            return false;
-        } finally {
-            this.resumeSessionBusy = false;
-            this.refreshResumeBanner(this.account?.getStoredGameResumeState?.());
         }
+
+        return this.restoreSoloSnapshot(snapshot);
     }
 
     restoreSoloSnapshot(snapshot) {
@@ -2992,8 +2985,8 @@ class DominoGame {
             this.onlineAiCount = snapshot.onlineAiCount || this.onlineAiCount;
             this.onlineEconomyMode = snapshot.onlineEconomyMode || this.onlineEconomyMode;
             this.onlineStakeKey = snapshot.onlineStakeKey || this.onlineStakeKey;
-            this.soloEconomyMode = 'free';
-            this.soloStakeKey = 'free';
+            this.soloEconomyMode = 'coins';
+            this.soloStakeKey = snapshot.soloStakeKey && snapshot.soloStakeKey !== 'free' ? snapshot.soloStakeKey : 'stake_50';
             this.difficulty = snapshot.difficulty || this.difficulty;
             this.isTeamMode = !!snapshot.isTeamMode;
             this.humanPlayerIndex = Math.max(0, snapshot.humanPlayerIndex || 0);
@@ -3942,13 +3935,11 @@ class DominoGame {
         this.refreshResumeBanner(snapshot);
         if (payload.reconnecting) {
             this.voice?.stopSpeaking?.();
-            this.setConnectionBanner(this.t('reconnecting-session'));
             this.renderer.showMessage(this.t('connection-lost'), 2200);
         }
     }
 
     onNetworkReconnected() {
-        this.clearConnectionBanner();
         document.getElementById('start-screen')?.classList.remove('active');
         document.getElementById('menu-screen')?.classList.remove('active');
         document.getElementById('round-end-screen')?.classList.remove('active');
@@ -3961,40 +3952,8 @@ class DominoGame {
 
     onNetworkReconnectFailed(error) {
         console.warn('[Network] Reconnect failed permanently', error);
-        this.clearConnectionBanner();
         void this.validateStoredResumeSnapshot();
         this.renderer.showMessage(this.t('session-restore-failed'), 2200);
-    }
-
-    ensureConnectionBanner() {
-        if (this.connectionBannerEl) return this.connectionBannerEl;
-        const banner = document.createElement('div');
-        banner.id = 'connection-banner';
-        banner.className = 'connection-banner';
-        banner.setAttribute('role', 'status');
-        banner.setAttribute('aria-live', 'polite');
-        banner.hidden = true;
-        document.body.appendChild(banner);
-        this.connectionBannerEl = banner;
-        return banner;
-    }
-
-    setConnectionBanner(text) {
-        const banner = this.ensureConnectionBanner();
-        banner.textContent = text;
-        banner.hidden = false;
-        banner.classList.add('is-visible');
-        document.body.classList.add('is-reconnecting');
-    }
-
-    clearConnectionBanner() {
-        const banner = this.connectionBannerEl;
-        if (banner) {
-            banner.hidden = true;
-            banner.classList.remove('is-visible');
-            banner.textContent = '';
-        }
-        document.body.classList.remove('is-reconnecting');
     }
 
     setupGameControls() {
@@ -4826,7 +4785,7 @@ class DominoGame {
 
     async prepareSoloEconomyStake() {
         const selection = this.readSoloEconomySelectionFromUi();
-        this.soloEconomyMode = selection.mode || 'free';
+        this.soloEconomyMode = 'coins';
         this.soloStakeKey = selection.stakeKey;
 
         await this.loadAccountProfile();
@@ -4836,25 +4795,40 @@ class DominoGame {
             return { ok: false, reason: 'auth_required' };
         }
 
-        this.soloStakeKey = 'free';
-        this.soloEconomyMode = 'free';
-        this.activeMatchEconomyMode = 'free';
-        this.activeMatchStakeKey = 'free';
+        const stakeKey = this.soloStakeKey || 'stake_50';
+        this.soloStakeKey = stakeKey;
+        this.soloEconomyMode = 'coins';
+        this.activeMatchEconomyMode = 'coins';
+        this.activeMatchStakeKey = stakeKey;
         this.syncSoloOptions();
-        return { ok: true, mode: 'free', stakeKey: 'free' };
+        return { ok: true, mode: 'coins', stakeKey };
     }
     async reserveSoloRoundStake() {
-        const roundStakeKey = 'free';
-        const roundStakeAmount = 0;
+        const token = this.account?.getRoomAuthToken?.();
+        if (!token) {
+            return { ok: false, reason: 'auth_required' };
+        }
 
-        this.currentRoundStakeKey = roundStakeKey;
-        this.currentRoundStakeAmount = roundStakeAmount;
-        this.currentRoundBankAmount = 0;
-        this.activeMatchEconomyMode = 'free';
-        this.activeMatchStakeKey = 'free';
+        const roundStakeKey = this.currentRoundStakeKey
+            ? this.currentRoundStakeKey
+            : (this.soloStakeKey || 'stake_50');
+        const roundStakeAmount = this.getStakeAmountByKey(roundStakeKey);
 
         try {
-            return { ok: true, mode: 'free', stakeKey: roundStakeKey, stakeAmount: roundStakeAmount };
+            const result = await this.account.reserveSoloMatchStake({
+                matchId: this.currentRoundStakeSessionId,
+                stakeKey: roundStakeKey,
+                difficulty: this.difficulty
+            });
+            if (!result?.ok) {
+                throw new Error(result?.reason || 'reserve_failed');
+            }
+            this.currentRoundStakeKey = roundStakeKey;
+            this.currentRoundStakeAmount = roundStakeAmount;
+            this.currentRoundBankAmount = roundStakeAmount > 0 ? roundStakeAmount * 2 : 0;
+            this.activeMatchEconomyMode = 'coins';
+            this.activeMatchStakeKey = roundStakeKey;
+            return { ok: true, mode: 'coins', stakeKey: roundStakeKey, stakeAmount: roundStakeAmount };
         } catch (error) {
             return { ok: false, reason: error?.message || 'reserve_failed' };
         }
@@ -4870,10 +4844,26 @@ class DominoGame {
             ? ((winnerIndex % 2) === (this.humanPlayerIndex % 2) ? 'win' : 'loss')
             : (winnerIndex === this.humanPlayerIndex ? 'win' : 'loss');
 
-        const payout = 0;
+        const payout = result === 'win'
+            ? Math.max(0, (stakeAmount * 2) - Math.max(0, Math.floor((stakeAmount * 2) * 0.05)))
+            : 0;
+
+        this.coinMatchSummary.spent += stakeAmount;
+        this.coinMatchSummary.won += payout;
+
+        try {
+            await this.account.settleSoloMatchStake({
+                matchId: this.currentRoundStakeSessionId,
+                stakeKey: this.currentRoundStakeKey,
+                result,
+                difficulty: this.difficulty
+            });
+        } catch (settleError) {
+            console.warn('[Economy] Solo round settlement failed:', settleError);
+        }
 
         this.currentRoundStakeSessionId = null;
-        this.currentRoundStakeKey = 'free';
+        this.currentRoundStakeKey = 'stake_50';
         this.currentRoundStakeAmount = 0;
         this.currentRoundBankAmount = 0;
         return { result, stakeAmount, payout };
@@ -4884,7 +4874,7 @@ class DominoGame {
         this.roundOver=false; this.scores=new Array(this.playerCount).fill(0); if(this.isTeamMode) this.teamScores=[0,0]; this.deal=1; 
         this.clearNextDealAdvanceTimeout();
         await this.pendingSoloSettlement.catch(() => {});
-        this.currentRoundStakeKey = 'free';
+        this.currentRoundStakeKey = this.soloStakeKey || 'stake_50';
         this.currentRoundStakeSessionId = this.createResumeId(`solo-round-${this.matchRound}`);
         const stakeReady = await this.reserveSoloRoundStake();
         if (!stakeReady?.ok) {
@@ -5178,9 +5168,6 @@ class DominoGame {
             "online-room-status-connecting": { az: "Connecting...", en: "Connecting..." },
             "online-room-status-joined": { az: "Connected. Waiting for the room to fill", en: "Connected. Waiting for the room to fill" },
             "online-room-status-error": { az: "Error", en: "Error" },
-            "connection-lost": { az: "Bağlantı kəsildi", en: "Connection lost" },
-            "reconnecting-session": { az: "Yenidən qoşulur...", en: "Reconnecting..." },
-            "session-restore-failed": { az: "Sessiyanı bərpa etmək mümkün olmadı", en: "Could not restore session" },
             "online-room-cancel": { az: "Cancel", en: "Cancel" },
             "online-room-back": { az: "Back", en: "Back" },
             "online-room-code-placeholder": { az: "ABCD", en: "ABCD" },
@@ -6023,10 +6010,6 @@ class DominoGame {
 }
 let game = null;
 game = new DominoGame();
-if (typeof window !== 'undefined') {
-    window.__DOMINO_GAME__ = game;
-    window.game = game;
-}
 
 // Re-render board on resize for correct scaling (debounced)
 let _resizeTimer = null;

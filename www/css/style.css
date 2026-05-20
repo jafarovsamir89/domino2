@@ -3245,6 +3245,71 @@ input, button { font: inherit; }
     line-height: 1.45;
 }
 
+.connection-banner {
+    position: fixed;
+    top: calc(14px + env(safe-area-inset-top));
+    left: 50%;
+    transform: translateX(-50%) translateY(-10px);
+    padding: 10px 14px;
+    border-radius: 999px;
+    background: rgba(15, 25, 35, 0.92);
+    color: #f5f7fb;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    box-shadow: 0 14px 34px rgba(0, 0, 0, 0.28);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    z-index: 3000;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 180ms ease, transform 180ms ease;
+    max-width: min(92vw, 420px);
+    text-align: center;
+}
+
+@media (max-width: 640px) {
+    .overlay-content,
+    .modal-card,
+    .start-shell {
+        margin-inline: 12px;
+    }
+
+    .overlay-content {
+        padding: 18px 16px 20px;
+    }
+
+    .menu-panel,
+    .modal-card {
+        width: min(100%, calc(100vw - 24px));
+    }
+
+    .resume-session-banner {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .resume-session-banner .btn {
+        width: 100%;
+    }
+
+    .connection-banner {
+        top: calc(10px + env(safe-area-inset-top));
+        max-width: calc(100vw - 20px);
+    }
+}
+
+.connection-banner.is-visible {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+body.is-reconnecting .action-bar,
+body.is-reconnecting .hand-container {
+    pointer-events: none;
+    opacity: 0.88;
+    filter: saturate(0.85);
+}
+
 @keyframes scorePopUp {
     0% { opacity: 1; transform: translateX(-50%) translateY(0); }
     100% { opacity: 0; transform: translateX(-50%) translateY(-60px); }

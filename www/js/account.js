@@ -388,8 +388,7 @@ export class AccountClient {
                 method: "POST",
                 credentials: "include",
                 headers: {
-                    "Content-Type": "application/json",
-                    ...(this.platformGameToken ? { Authorization: `Bearer ${this.platformGameToken}` } : {})
+                    "Content-Type": "application/json"
                 },
                 body: JSON.stringify({
                     sessionId: this.getLocalGameSessionId() || payload?.sessionId || "",

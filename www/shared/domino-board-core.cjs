@@ -1,8 +1,16 @@
-import { Tile } from './model.js';
+const boardModelCore = typeof module === "object" && module.exports
+    ? require("./domino-model-core.cjs")
+    : globalThis.DominoModelCore;
+
+if (!boardModelCore) {
+    throw new Error("DominoModelCore is not loaded");
+}
+
+const { Tile } = boardModelCore;
 // Board state, open ends, scoring
 const TILE_W = 66, TILE_H = 34, TILE_GAP = 2;
 
-export class OpenEnd {
+class OpenEnd {
     constructor(nodeId, side, value, growthDir) { 
         this.nodeId = nodeId; 
         this.side = side; 
@@ -10,7 +18,7 @@ export class OpenEnd {
         this.growthDir = growthDir || side; // left, right, top, bottom
     }
 }
-export class BoardNode {
+class BoardNode {
     constructor(tile, x, y, orientation, displayA, displayB) {
         this.tile = tile; this.x = x; this.y = y; this.orientation = orientation;
         this.displayA = displayA !== undefined ? displayA : tile.a;
@@ -31,7 +39,7 @@ export class BoardNode {
     }
 }
 
-export class Board {
+class Board {
     constructor() { this.nodes = []; this.openEnds = []; this.crossNodeId = null; this.crossSidesClosed = 0; }
     get isEmpty() { return this.nodes.length === 0; }
 
@@ -69,9 +77,7 @@ export class Board {
 
     static fromJSON(data) {
         const board = new Board();
-        if (!data || !Array.isArray(data.nodes) || !Array.isArray(data.openEnds)) {
-            return board;
-        }
+        if (!data || !Array.isArray(data.nodes) || !Array.isArray(data.openEnds)) return board;
         board.nodes = data.nodes.map((n) => {
             const tile = new Tile(n.tile?.a ?? 0, n.tile?.b ?? 0);
             const node = new BoardNode(tile, n.x, n.y, n.orientation, n.displayA, n.displayB);
@@ -356,10 +362,18 @@ export class Board {
 }
 function oppSide(s) { return { left:'right', right:'left', top:'bottom', bottom:'top' }[s] || s; }
 
-export function cloneBoard(b) {
+function cloneBoard(b) {
     return Board.fromJSON(b?.toJSON ? b.toJSON() : b);
 }
 
-export function reconstructBoard(data) {
+function reconstructBoard(data) {
     return Board.fromJSON(data);
+}
+
+const boardExports = { OpenEnd, BoardNode, Board, cloneBoard, reconstructBoard };
+
+if (typeof module === "object" && module.exports) {
+    module.exports = boardExports;
+} else {
+    globalThis.DominoBoardCore = boardExports;
 }
