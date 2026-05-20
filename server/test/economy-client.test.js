@@ -1,7 +1,12 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
 
-const { postEconomyRequest } = require("../economyClient");
+const {
+    postEconomyRequest,
+    postReserveEconomyMatch,
+    postSettleEconomyMatch,
+    postRefundEconomyMatch
+} = require("../economyClient");
 
 test("postEconomyRequest posts JSON to the resolved economy URL", async () => {
     const calls = [];
@@ -28,7 +33,61 @@ test("postEconomyRequest posts JSON to the resolved economy URL", async () => {
     assert.equal(calls[0].init.body, JSON.stringify(body));
 });
 
-test("postEconomyRequest returns the same response object", async () => {
+test("postReserveEconomyMatch calls the reserve endpoint", async () => {
+    const calls = [];
+    const fetchImpl = async (url, init) => {
+        calls.push({ url, init });
+        return { ok: true, kind: "reserve" };
+    };
+
+    const response = await postReserveEconomyMatch({
+        baseUrl: "http://example.com/",
+        body: { matchId: "match-1" },
+        fetchImpl
+    });
+
+    assert.equal(response.kind, "reserve");
+    assert.equal(calls[0].url, "http://example.com/api/economy/matches/reserve");
+    assert.equal(calls[0].init.method, "POST");
+});
+
+test("postSettleEconomyMatch calls the settle endpoint", async () => {
+    const calls = [];
+    const fetchImpl = async (url, init) => {
+        calls.push({ url, init });
+        return { ok: true, kind: "settle" };
+    };
+
+    const response = await postSettleEconomyMatch({
+        baseUrl: "http://example.com",
+        body: { matchId: "match-1" },
+        fetchImpl
+    });
+
+    assert.equal(response.kind, "settle");
+    assert.equal(calls[0].url, "http://example.com/api/economy/matches/settle");
+    assert.equal(calls[0].init.method, "POST");
+});
+
+test("postRefundEconomyMatch calls the refund endpoint", async () => {
+    const calls = [];
+    const fetchImpl = async (url, init) => {
+        calls.push({ url, init });
+        return { ok: true, kind: "refund" };
+    };
+
+    const response = await postRefundEconomyMatch({
+        baseUrl: "http://example.com",
+        body: { matchId: "match-1" },
+        fetchImpl
+    });
+
+    assert.equal(response.kind, "refund");
+    assert.equal(calls[0].url, "http://example.com/api/economy/matches/refund");
+    assert.equal(calls[0].init.method, "POST");
+});
+
+test("economy helpers return the same response object", async () => {
     const responseObject = { ok: false, status: 500 };
     const fetchImpl = async () => responseObject;
 

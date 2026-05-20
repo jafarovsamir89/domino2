@@ -10,6 +10,21 @@ async function postEconomyRequest({ baseUrl, path, body, fetchImpl = fetch } = {
     });
 }
 
+async function postReserveEconomyMatch({ baseUrl, body, fetchImpl = fetch } = {}) {
+    return postEconomyRequest({ baseUrl, path: "/api/economy/matches/reserve", body, fetchImpl });
+}
+
+async function postSettleEconomyMatch({ baseUrl, body, fetchImpl = fetch } = {}) {
+    return postEconomyRequest({ baseUrl, path: "/api/economy/matches/settle", body, fetchImpl });
+}
+
+async function postRefundEconomyMatch({ baseUrl, body, fetchImpl = fetch } = {}) {
+    return postEconomyRequest({ baseUrl, path: "/api/economy/matches/refund", body, fetchImpl });
+}
+
 module.exports = {
-    postEconomyRequest
+    postEconomyRequest,
+    postReserveEconomyMatch,
+    postSettleEconomyMatch,
+    postRefundEconomyMatch
 };
