@@ -13,6 +13,7 @@ const { postReserveEconomyMatch, postSettleEconomyMatch } = require("./economyCl
 const { getSessionIdentities, hasUnlinkedHuman, buildReserveParticipants, buildWinnerUserIds, buildForfeitWinnerUserIds } = require("./economyParticipants");
 const { buildPlatformMatchPayload } = require("./matchResultPayload");
 const { buildRoomStatePlayers, buildRoomStatePayload } = require("./roomStatePayload");
+const { reserveEconomyStakeForRoom } = require("./economyService");
 const { buildSnapshotIdentityEntries, restoreSnapshotIdentityEntries, sanitizeName } = require("./roomSnapshot");
 const { upsertLivePlayer, removeLivePlayer, setRoomGameActive, removeRoomPlayers } = require("./livePresence");
 const { rememberRoom, forgetRoom } = require("./roomRegistry");
@@ -638,86 +639,7 @@ class DominoRoom extends Room {
     }
 
     async reserveEconomyStake() {
-        if (this.currentStakeKey === "free") {
-            this.currentDealStakeAmount = 0;
-            this.currentDealBankAmount = 0;
-            this.economyReservationMade = true;
-            return { ok: true, reserved: 0, stakeKey: "free", bankAmount: 0 };
-        }
-
-        const platformIdentity = this.getPlatformMatchIdentity();
-        if (!platformIdentity) {
-            return { ok: false, reason: "missing_platform_identity" };
-        }
-
-        const sessionIdentities = getSessionIdentities({
-            playerOrder: this.state.playerOrder,
-            players: this.state.players,
-            identityBySessionId: this.identityBySessionId
-        });
-
-        const unlinkedHuman = hasUnlinkedHuman(sessionIdentities);
-        if (unlinkedHuman) {
-            this.broadcast("msg", { key: "room-closed-auth-required", time: 2400 });
-            this.currentDealStakeAmount = 0;
-            this.currentDealBankAmount = 0;
-            return { ok: false, reason: "auth_required" };
-        }
-
-        const participants = buildReserveParticipants({
-            sessionIdentities,
-            isTeamMode: this.state.isTeamMode
-        });
-
-        if (!participants.length) {
-            this.economyReservationMade = true;
-            return { ok: true, reserved: 0, stakeKey: this.currentStakeKey, bankAmount: 0 };
-        }
-
-        try {
-            const response = await postReserveEconomyMatch({
-                baseUrl: process.env.PLATFORM_API_URL,
-                body: buildSignedRequestBody("economy.reserve", {
-                    roomId: this.roomId,
-                    roomCode: this.roomCode,
-                    matchId: this.currentDealMatchId,
-                    stakeKey: this.currentStakeKey,
-                    participants
-                })
-            });
-
-            if (!response.ok) {
-                const text = await response.text().catch(() => "");
-                console.warn("[ROOM] Economy reserve failed:", text || response.status);
-                return { ok: false, reason: text || "reserve_failed" };
-            }
-
-            const data = await response.json().catch(() => null);
-            if (!data?.ok) {
-                console.warn("[ROOM] Economy reserve rejected:", data?.reason || "unknown");
-                return { ok: false, reason: data?.reason || "reserve_failed" };
-            }
-
-            this.economyReservationMade = true;
-            this.currentDealStakeKey = this.currentStakeKey;
-            this.currentDealStakeAmount = Math.max(0, data?.reserved ? Math.floor(data.reserved / Math.max(1, participants.length)) : 0);
-            this.currentDealBankAmount = Math.max(0, data?.reserved || this.currentDealStakeAmount * participants.length);
-            this.broadcast("msg", {
-                key: "msg-bank-reserved",
-                values: { amount: this.currentDealBankAmount, players: participants.length },
-                time: 2000
-            });
-            return {
-                ok: true,
-                reserved: data?.reserved || 0,
-                stakeKey: this.currentStakeKey,
-                bankAmount: this.currentDealBankAmount,
-                participants: participants.length
-            };
-        } catch (error) {
-            console.warn("[ROOM] Economy reserve error:", error);
-            return { ok: false, reason: "reserve_error" };
-        }
+        return reserveEconomyStakeForRoom(this);
     }
 
     scheduleBotTurn(delay = BOT_THINK_DELAY_MS) {
