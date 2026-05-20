@@ -7,6 +7,7 @@ const { Tile, createFullSet, shuffle, getHandSize, determineFirstPlayer, handPoi
 const { verifyGameToken } = require("./platformAuth");
 const { buildSignedRequestBody } = require("./signedRequest");
 const { generateRoomCode, normalizeRoomVisibility, normalizeStakeKey, normalizePlayerCount, normalizeAiCount, normalizeDlossThreshold, normalizeInstantWinEnabled, normalizeAiDifficulty } = require("./roomConfig");
+const { normalizeAuthToken, buildRoomIdentity } = require("./roomIdentity");
 const { buildSnapshotIdentityEntries, restoreSnapshotIdentityEntries, sanitizeName } = require("./roomSnapshot");
 const { upsertLivePlayer, removeLivePlayer, setRoomGameActive, removeRoomPlayers } = require("./livePresence");
 const { rememberRoom, forgetRoom } = require("./roomRegistry");
@@ -189,7 +190,7 @@ class DominoRoom extends Room {
     onJoin(client, options, auth) {
         const identity = auth || {};
         debugLog(`[ROOM] Client ${client.sessionId} joining with name: ${options.name}`);
-        const authToken = String(identity.authToken || options.authToken || "").trim();
+        const authToken = normalizeAuthToken(identity, options);
         const reusableSessionId = this.findReusableSessionId(options, identity);
         const humanPlayers = this.state.playerOrder.filter((sessionId) => !this.state.players.get(sessionId)?.isBot).length;
         let player;
@@ -206,16 +207,14 @@ class DominoRoom extends Room {
                 const existingIdentity = this.identityBySessionId.get(reusableSessionId) || {};
                 this.identityBySessionId.delete(reusableSessionId);
                 removeLivePlayer(reusableSessionId);
-                this.identityBySessionId.set(client.sessionId, {
-                    ...existingIdentity,
-                    provider: identity.provider || existingIdentity.provider || "platform",
-                    authToken: authToken || existingIdentity.authToken || "",
-                    userId: String(identity.userId || existingIdentity.userId || player.userId || ""),
-                    displayName: sanitizeName(identity.displayName || existingIdentity.displayName || player.name || options.name),
-                    playerId: identity.playerId || existingIdentity.playerId || identity.userId || player.userId || "",
-                    avatarUrl: String(identity.avatarUrl || existingIdentity.avatarUrl || options.avatarUrl || "").trim(),
-                    role: identity.role || existingIdentity.role || (this.state.playerOrder[0] === client.sessionId ? "host" : "player")
-                });
+                this.identityBySessionId.set(client.sessionId, buildRoomIdentity({
+                    existingIdentity,
+                    identity,
+                    authToken,
+                    player,
+                    options,
+                    isHost: this.state.playerOrder[0] === client.sessionId
+                }));
             }
         } else {
             if (this.hasRestoredMatchInProgress() || humanPlayers >= this.humanSeats) {
@@ -240,16 +239,14 @@ class DominoRoom extends Room {
         player.isConnected = true;
 
         const existingIdentity = this.identityBySessionId.get(client.sessionId) || {};
-        const nextIdentity = {
-            ...existingIdentity,
-            provider: identity.provider || "platform",
-            authToken: authToken || existingIdentity.authToken || "",
-            userId: player.userId,
-            displayName: player.name,
-            playerId: identity.playerId || existingIdentity.playerId || player.userId,
-            avatarUrl: String(identity.avatarUrl || existingIdentity.avatarUrl || options.avatarUrl || "").trim(),
-            role: identity.role || existingIdentity.role || (this.state.playerOrder[0] === client.sessionId ? "host" : "player")
-        };
+        const nextIdentity = buildRoomIdentity({
+            existingIdentity,
+            identity,
+            authToken,
+            player,
+            options,
+            isHost: this.state.playerOrder[0] === client.sessionId
+        });
         this.identityBySessionId.set(client.sessionId, nextIdentity);
 
         this.registerLivePlayer(client.sessionId, nextIdentity, player);
