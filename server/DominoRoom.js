@@ -13,6 +13,7 @@ const { buildPlatformMatchPayload } = require("./matchResultPayload");
 const { buildRoomStatePlayers, buildRoomStatePayload } = require("./roomStatePayload");
 const { reserveEconomyStakeForRoom, settleEconomyRoundForRoom, settleForfeitStakeForRoom } = require("./economyService");
 const { buildSnapshotIdentityEntries, restoreSnapshotIdentityEntries, sanitizeName } = require("./roomSnapshot");
+const { buildRestoredRoomMetadata } = require("./roomRestore");
 const { upsertLivePlayer, removeLivePlayer, setRoomGameActive, removeRoomPlayers } = require("./livePresence");
 const { rememberRoom, forgetRoom } = require("./roomRegistry");
 
@@ -1401,35 +1402,35 @@ class DominoRoom extends Room {
     }
 
     applyCustomStateSnapshot(data = {}) {
-        this.roomCode = data.roomCode || this.roomCode;
-        this.roomVisibility = String(data.roomVisibility || this.roomVisibility || "closed").trim() === "open" ? "open" : "closed";
+        const restoredMetadata = buildRestoredRoomMetadata({ room: this, data });
+
+        this.roomCode = restoredMetadata.roomCode;
+        this.roomVisibility = restoredMetadata.roomVisibility;
         if (this.roomCode) {
             void rememberRoom(this.roomCode, this.roomId);
         }
 
-        this.humanSeats = data.humanSeats ?? this.humanSeats;
-        this.totalPlayers = data.totalPlayers ?? this.totalPlayers;
-        this.aiCount = data.aiCount ?? this.aiCount;
+        this.humanSeats = restoredMetadata.humanSeats;
+        this.totalPlayers = restoredMetadata.totalPlayers;
+        this.aiCount = restoredMetadata.aiCount;
         this.maxClients = this.humanSeats;
-        this.dlossThreshold = data.dlossThreshold ?? this.dlossThreshold;
-        this.instantWinEnabled = data.instantWinEnabled ?? this.instantWinEnabled;
-        this.aiDifficulty = data.aiDifficulty ?? this.aiDifficulty;
-        this.currentStakeKey = data.currentStakeKey ?? this.currentStakeKey;
-        this.currentDealMatchId = data.currentDealMatchId ?? this.currentDealMatchId;
-        this.currentDealStakeKey = data.currentDealStakeKey ?? this.currentDealStakeKey;
-        this.currentDealStakeAmount = data.currentDealStakeAmount ?? this.currentDealStakeAmount;
-        this.currentDealBankAmount = data.currentDealBankAmount ?? this.currentDealBankAmount;
-        this.economyReservationMade = Boolean(data.economyReservationMade);
-        this.lastReservedMatchRound = data.lastReservedMatchRound ?? this.lastReservedMatchRound;
-        this.matchRecorded = data.matchRecorded ?? this.matchRecorded;
-        this.forfeitSettlementMade = data.forfeitSettlementMade ?? this.forfeitSettlementMade;
+        this.dlossThreshold = restoredMetadata.dlossThreshold;
+        this.instantWinEnabled = restoredMetadata.instantWinEnabled;
+        this.aiDifficulty = restoredMetadata.aiDifficulty;
+        this.currentStakeKey = restoredMetadata.currentStakeKey;
+        this.currentDealMatchId = restoredMetadata.currentDealMatchId;
+        this.currentDealStakeKey = restoredMetadata.currentDealStakeKey;
+        this.currentDealStakeAmount = restoredMetadata.currentDealStakeAmount;
+        this.currentDealBankAmount = restoredMetadata.currentDealBankAmount;
+        this.economyReservationMade = restoredMetadata.economyReservationMade;
+        this.lastReservedMatchRound = restoredMetadata.lastReservedMatchRound;
+        this.matchRecorded = restoredMetadata.matchRecorded;
+        this.forfeitSettlementMade = restoredMetadata.forfeitSettlementMade;
         this.state.turnDeadlineAt = Number(data?.state?.turnDeadlineAt || this.state.turnDeadlineAt || 0);
-        this.lastRoundEconomySummary = data.lastRoundEconomySummary ?? this.lastRoundEconomySummary;
-        this.lastDealWinner = data.lastDealWinner ?? this.lastDealWinner;
-        this.botIds = Array.isArray(data.botIds) ? data.botIds : (this.botIds || []);
-        this.playerMissingSuits = Array.isArray(data.playerMissingSuits)
-            ? data.playerMissingSuits.map((arr) => new Set(Array.isArray(arr) ? arr : []))
-            : (Array.isArray(this.playerMissingSuits) ? this.playerMissingSuits : []);
+        this.lastRoundEconomySummary = restoredMetadata.lastRoundEconomySummary;
+        this.lastDealWinner = restoredMetadata.lastDealWinner;
+        this.botIds = restoredMetadata.botIds;
+        this.playerMissingSuits = restoredMetadata.playerMissingSuits;
         this.identityBySessionId = restoreSnapshotIdentityEntries(data.identityBySessionId, this.identityBySessionId);
 
         if (data.state) {
