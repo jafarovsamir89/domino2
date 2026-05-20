@@ -29,7 +29,9 @@ The reconnect and restore path currently involves these pieces:
 
 ## Redis Restore Lookup Behavior
 
-`loadCustomStateForRestore(options)` currently looks up Redis snapshots in this order:
+`loadCustomStateForRestore(options)` now delegates to `server/roomRestoreLookup.js`, and the lookup behavior is unchanged.
+
+Current lookup order:
 
 1. `domino:custom:{restoreRoomId}`
 2. `domino:custom:code:{restoreRoomCode}`
@@ -102,6 +104,7 @@ The following runtime/transient values are not persisted today:
 
 - Reconnect and restore logic still blends room lifecycle, snapshot recovery, and some state repair steps in `DominoRoom.js`.
 - `loadCustomStateForRestore()` depends on Redis availability and on lookup by `restoreRoomId`, `restoreRoomCode`, or `restoreSessionId`.
+- The Redis lookup logic is now isolated in `server/roomRestoreLookup.js`.
 
 ## Manual Scenarios To Check Later
 
@@ -123,6 +126,7 @@ The following restore lookup cases are now covered by tests:
 - Redis unavailable / throws handling
 - no restore options
 - `restoreSessionId` fallback behavior in `findReusableSessionId`
+- direct helper coverage for `server/roomRestoreLookup.js`
 
 ## Safe Next Refactor
 

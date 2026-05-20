@@ -15,6 +15,7 @@ const { reserveEconomyStakeForRoom, settleEconomyRoundForRoom, settleForfeitStak
 const { buildSnapshotIdentityEntries, restoreSnapshotIdentityEntries, sanitizeName } = require("./roomSnapshot");
 const { buildRestoredRoomMetadata } = require("./roomRestore");
 const { buildSchemaStateSnapshotData, buildRestoredSchemaStateData } = require("./schemaStateSnapshot");
+const { loadCustomStateSnapshotForRestore } = require("./roomRestoreLookup");
 const { upsertLivePlayer, removeLivePlayer, setRoomGameActive, removeRoomPlayers } = require("./livePresence");
 const { rememberRoom, forgetRoom } = require("./roomRegistry");
 
@@ -1252,30 +1253,7 @@ class DominoRoom extends Room {
     }
 
     async loadCustomStateForRestore(options = {}) {
-        if (!redis) return null;
-        const restoreRoomId = String(options.restoreRoomId || "").trim();
-        const restoreRoomCode = String(options.restoreRoomCode || "").trim().toUpperCase();
-        const keys = [];
-        if (restoreRoomId) keys.push(`domino:custom:${restoreRoomId}`);
-        if (restoreRoomCode) keys.push(`domino:custom:code:${restoreRoomCode}`);
-        if (!keys.length) return null;
-
-        try {
-            if (redis.status !== "ready") {
-                await redis.connect();
-            }
-            for (const key of keys) {
-                const raw = await redis.get(key);
-                if (!raw) continue;
-                const parsed = JSON.parse(raw);
-                if (!restoreRoomCode || String(parsed.roomCode || "").toUpperCase() === restoreRoomCode) {
-                    return parsed;
-                }
-            }
-        } catch (e) {
-            console.error("[ROOM] Redis restore error", e);
-        }
-        return null;
+        return loadCustomStateSnapshotForRestore({ redis, options });
     }
 
     buildSchemaStateSnapshot() {
