@@ -1,14 +1,16 @@
 const crypto = require("crypto");
+const DEV_FALLBACK_SECRET = "domino-dev-secret";
 
 function getSecret() {
     const secret = process.env.BETTER_AUTH_SECRET;
-    if (!secret || ["change-me", "replace-me", "secret", "test"].includes(secret.trim())) {
+    const isWeak = !secret || ["change-me", "replace-me", "secret", "test"].includes(secret.trim());
+    if (process.env.NODE_ENV === "production" && isWeak) {
         throw new Error(
             "BETTER_AUTH_SECRET environment variable is required. " +
             "Generate a random 32+ character secret and set it in .env"
         );
     }
-    return secret;
+    return isWeak ? DEV_FALLBACK_SECRET : secret;
 }
 
 function base64UrlEncode(value) {

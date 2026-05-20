@@ -5125,7 +5125,8 @@ class DominoGame {
             "label-instant-win": { az: "35 points = match ends", en: "35 points = match ends" },
             "label-dloss": { az: "Loss threshold", en: "Loss threshold" },
             "label-rules": { az: "Rules", en: "Rules" },
-            "rule-match": { az: "365 points В· 3 rounds", en: "365 points В· 3 rounds" },
+            // Beta wording: the match ends at the 365-point target with a 3-round cap.
+            "rule-match": { az: "365 points hədəfi · 3 raund limiti", en: "365 points target · 3-round cap" },
             "rule-telephone": { az: "Telephone В· [3|2]", en: "Telephone В· [3|2]" },
             "btn-start": { az: "Solo play", en: "Solo play" },
             "btn-solo-start": { az: "Start", en: "Start" },
@@ -5241,6 +5242,7 @@ class DominoGame {
             "room-closed-auth-required": { az: "Hesab tЙ™lЙ™b olunur", en: "Account required", ru: "РўСЂРµР±СѓРµС‚СЃСЏ Р°РєРєР°СѓРЅС‚" },
             "room-closed-stake-unavailable": { az: "MЙ™rc masasД± hazД±rda Й™lГ§atan deyil", en: "Stake table is unavailable", ru: "РЎС‚РѕР» СЃС‚Р°РІРѕРє СЃРµР№С‡Р°СЃ РЅРµРґРѕСЃС‚СѓРїРµРЅ" },
             "not-enough-coins-round": { az: "Bu masaya girmЙ™k ГјГ§Гјn kifayЙ™t qЙ™dЙ™r pul yoxdur", en: "Not enough coins to join this table", ru: "РќРµРґРѕСЃС‚Р°С‚РѕС‡РЅРѕ РјРѕРЅРµС‚ РґР»СЏ РІС…РѕРґР° Р·Р° СЌС‚РѕС‚ СЃС‚РѕР»" },
+            "forfeit-settlement-failed": { az: "MЙ™rc hesablanmadД±. Pul qayД±tmadД±sa, dЙ™stЙ™klЙ™ Й™laqЙ™ saxlayД±n.", en: "Stake settlement was not completed. If coins were not returned, contact support.", ru: "Р Р°СЃС‡С‘С‚ СЃС‚Р°РІРєРё РЅРµ Р·Р°РІРµСЂС€С‘РЅ. Р•СЃР»Рё РјРѕРЅРµС‚С‹ РЅРµ РІРµСЂРЅСѓР»РёСЃСЊ, РѕР±СЂР°С‚РёС‚РµСЃСЊ РІ РїРѕРґРґРµСЂР¶РєСѓ." },
             "connection-lost": { az: "BaДџlantД± itdi. YenidЙ™n qoЕџulur...", en: "Connection lost. Reconnecting...", ru: "РЎРѕРµРґРёРЅРµРЅРёРµ РїРѕС‚РµСЂСЏРЅРѕ. РџРѕРІС‚РѕСЂРЅРѕРµ РїРѕРґРєР»СЋС‡РµРЅРёРµ..." },
             "connection-reconnecting": { az: "BaДџlantД± bЙ™rpa olunur...", en: "Restoring connection...", ru: "Р’РѕСЃСЃС‚Р°РЅРѕРІР»РµРЅРёРµ СЃРѕРµРґРёРЅРµРЅРёСЏ..." },
             "connection-restored": { az: "BaДџlantД± bЙ™rpa olundu", en: "Connection restored", ru: "РЎРѕРµРґРёРЅРµРЅРёРµ РІРѕСЃСЃС‚Р°РЅРѕРІР»РµРЅРѕ" },

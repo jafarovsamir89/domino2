@@ -19,6 +19,8 @@ export interface BetterAuthConfig {
   };
 }
 
+const DEV_FALLBACK_SECRET = "domino-dev-secret";
+
 export function getBetterAuthConfig(): BetterAuthConfig {
   const isProduction = process.env.NODE_ENV === "production";
   const defaultGameWebUrl = isProduction ? "https://gamed.simplesoft.az" : "http://localhost:2567";
@@ -98,13 +100,14 @@ export function getBetterAuthConfig(): BetterAuthConfig {
     secret:
       (() => {
         const secret = process.env.BETTER_AUTH_SECRET;
-        if (!secret || ["change-me", "replace-me", "secret", "test"].includes(secret.trim())) {
+        const isWeak = !secret || ["change-me", "replace-me", "secret", "test"].includes(secret.trim());
+        if (isProduction && isWeak) {
           throw new Error(
             "BETTER_AUTH_SECRET environment variable is required. " +
               "Generate a random 32+ character secret and set it in .env"
           );
         }
-        return secret;
+        return isWeak ? DEV_FALLBACK_SECRET : secret;
       })(),
     baseURL,
     trustedOrigins: normalizedTrustedOrigins,

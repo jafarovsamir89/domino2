@@ -365,6 +365,13 @@ class DominoRoom extends Room {
                     console.error("[ROOM] Failed to settle forfeit stake during cleanup:", err);
                     return null;
                 });
+                if (!settlement) {
+                    console.warn("[ROOM] Forfeit settlement did not complete; notifying the player that support may be needed.");
+                    this.broadcast("msg", {
+                        key: "forfeit-settlement-failed",
+                        time: 3500
+                    });
+                }
                 this.state.gameActive = false;
                 this.state.matchOver = true;
                 this.state.gameOverReason = "disconnect";

@@ -398,6 +398,34 @@ test("forfeit settle replay does not settle the same room twice", async () => {
     }
 });
 
+test("onLeave shows a support warning when forfeit settlement fails", async () => {
+    const room = Object.create(DominoRoom.prototype);
+    const messages = [];
+    room.state = {
+        gameActive: true,
+        matchOver: false,
+        isTeamMode: false,
+        playerOrder: ["session-1"],
+        players: new Map([["session-1", { name: "Alice", isConnected: true }]])
+    };
+    room.identityBySessionId = new Map();
+    room.allowReconnection = async () => {
+        throw new Error("reconnect failed");
+    };
+    room.settleForfeitStake = async () => false;
+    room.broadcastRoomState = () => {};
+    room.broadcast = (event, payload) => {
+        messages.push({ event, payload });
+    };
+    room.clearTurnTimer = () => {};
+    room.clearNextDealTimer = () => {};
+    room.syncState = () => {};
+
+    await room.onLeave({ sessionId: "session-1" }, false);
+
+    assert.ok(messages.some((item) => item.event === "msg" && item.payload?.key === "forfeit-settlement-failed"));
+});
+
 test("turnVersion rejects stale replayed turn actions", () => {
     const room = Object.create(DominoRoom.prototype);
     let plays = 0;

@@ -2,15 +2,20 @@ import crypto from "node:crypto";
 
 type ProofPayload = Record<string, unknown>;
 
+const DEV_FALLBACK_SECRET = "domino-dev-secret";
+
 function getSecret() {
-  const secret = process.env.DOMINO_SERVER_SECRET || process.env.BETTER_AUTH_SECRET || "";
-  if (!secret || ["change-me", "replace-me", "secret", "test"].includes(secret.trim())) {
+  const weakSecrets = new Set(["change-me", "replace-me", "secret", "test"]);
+  const candidates = [process.env.DOMINO_SERVER_SECRET || "", process.env.BETTER_AUTH_SECRET || ""];
+  const secret = candidates.find((value) => value && !weakSecrets.has(value.trim())) || "";
+  const isWeak = !secret;
+  if (process.env.NODE_ENV === "production" && isWeak) {
     throw new Error(
       "DOMINO_SERVER_SECRET or BETTER_AUTH_SECRET environment variable is required for signed server requests"
     );
   }
 
-  return secret;
+  return isWeak ? DEV_FALLBACK_SECRET : secret;
 }
 
 function normalizeValue(value: unknown): unknown {
