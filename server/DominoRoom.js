@@ -10,6 +10,7 @@ const { generateRoomCode, normalizeRoomVisibility, normalizeStakeKey, normalizeP
 const { normalizeAuthToken, buildRoomIdentity } = require("./roomIdentity");
 const { buildLivePlayerPayload } = require("./roomPresence");
 const { postReserveEconomyMatch, postSettleEconomyMatch } = require("./economyClient");
+const { getSessionIdentities, hasUnlinkedHuman, buildReserveParticipants, buildWinnerUserIds, buildForfeitWinnerUserIds } = require("./economyParticipants");
 const { buildSnapshotIdentityEntries, restoreSnapshotIdentityEntries, sanitizeName } = require("./roomSnapshot");
 const { upsertLivePlayer, removeLivePlayer, setRoomGameActive, removeRoomPlayers } = require("./livePresence");
 const { rememberRoom, forgetRoom } = require("./roomRegistry");
@@ -647,33 +648,24 @@ class DominoRoom extends Room {
             return { ok: false, reason: "missing_platform_identity" };
         }
 
-        const sessionIdentities = this.state.playerOrder
-            .map((sessionId, index) => {
-                const identity = this.identityBySessionId.get(sessionId);
-                const player = this.state.players.get(sessionId);
-                if (!identity) {
-                    return null;
-                }
-                return { identity, player, index };
-            })
-            .filter(Boolean);
+        const sessionIdentities = getSessionIdentities({
+            playerOrder: this.state.playerOrder,
+            players: this.state.players,
+            identityBySessionId: this.identityBySessionId
+        });
 
-        const hasUnlinkedHuman = sessionIdentities.some(({ identity }) => identity.provider !== "platform" && identity.provider !== "bot");
-        if (hasUnlinkedHuman) {
+        const unlinkedHuman = hasUnlinkedHuman(sessionIdentities);
+        if (unlinkedHuman) {
             this.broadcast("msg", { key: "room-closed-auth-required", time: 2400 });
             this.currentDealStakeAmount = 0;
             this.currentDealBankAmount = 0;
             return { ok: false, reason: "auth_required" };
         }
 
-        const participants = sessionIdentities
-            .filter(({ identity }) => identity.provider === "platform" && identity.userId)
-            .map(({ identity, player, index }) => ({
-                playerId: identity.playerId || "",
-                userId: identity.userId,
-                displayName: player ? player.name : identity.displayName,
-                teamIndex: this.state.isTeamMode ? index % 2 : null
-            }));
+        const participants = buildReserveParticipants({
+            sessionIdentities,
+            isTeamMode: this.state.isTeamMode
+        });
 
         if (!participants.length) {
             this.economyReservationMade = true;
@@ -929,18 +921,13 @@ class DominoRoom extends Room {
             return false;
         }
 
-        const leavingTeamIndex = this.state.isTeamMode ? leavingIndex % 2 : null;
-        const winnerUserIds = this.state.playerOrder
-            .filter((sessionId, index) => {
-                if (sessionId === leavingSessionId) return false;
-                if (this.state.isTeamMode && leavingTeamIndex !== null) {
-                    return (index % 2) !== leavingTeamIndex;
-                }
-                return true;
-            })
-            .map((sessionId) => this.identityBySessionId.get(sessionId))
-            .filter((identity) => identity?.provider === "platform" && identity.userId)
-            .map((identity) => identity.userId);
+        const winnerUserIds = buildForfeitWinnerUserIds({
+            playerOrder: this.state.playerOrder,
+            identityBySessionId: this.identityBySessionId,
+            isTeamMode: this.state.isTeamMode,
+            leavingSessionId,
+            leavingIndex
+        });
 
         try {
             const response = await postSettleEconomyMatch({
@@ -981,16 +968,12 @@ class DominoRoom extends Room {
             return null;
         }
 
-        const winnerUserIds = this.state.playerOrder
-            .filter((sessionId, index) => {
-                if (this.state.isTeamMode) {
-                    return (index % 2) === (wi % 2);
-                }
-                return index === wi;
-            })
-            .map((sessionId) => this.identityBySessionId.get(sessionId))
-            .filter((identity) => identity?.provider === "platform" && identity.userId)
-            .map((identity) => identity.userId);
+        const winnerUserIds = buildWinnerUserIds({
+            playerOrder: this.state.playerOrder,
+            identityBySessionId: this.identityBySessionId,
+            isTeamMode: this.state.isTeamMode,
+            winnerIndex: wi
+        });
 
         try {
             const response = await postSettleEconomyMatch({
