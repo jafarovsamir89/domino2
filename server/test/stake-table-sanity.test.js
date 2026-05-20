@@ -7,7 +7,7 @@ function extractStakeKeys(text) {
     return new Set((String(text || "").match(/stake_\d+/g) || []).map((value) => String(value).trim()));
 }
 
-test("client stake keys stay within backend supported stake keys", () => {
+test("client stake keys are a safe subset of backend supported stake keys", () => {
     const root = path.resolve(__dirname, "..", "..");
     const backendSource = fs.readFileSync(path.join(root, "apps/api/src/modules/economy/economy.service.ts"), "utf8");
     const indexHtml = fs.readFileSync(path.join(root, "index.html"), "utf8");
