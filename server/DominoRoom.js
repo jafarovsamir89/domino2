@@ -9,7 +9,7 @@ const { buildSignedRequestBody } = require("./signedRequest");
 const { generateRoomCode, normalizeRoomVisibility, normalizeStakeKey, normalizePlayerCount, normalizeAiCount, normalizeDlossThreshold, normalizeInstantWinEnabled, normalizeAiDifficulty } = require("./roomConfig");
 const { normalizeAuthToken, buildRoomIdentity } = require("./roomIdentity");
 const { buildLivePlayerPayload } = require("./roomPresence");
-const { buildEconomyUrl } = require("./economyConfig");
+const { postEconomyRequest } = require("./economyClient");
 const { buildSnapshotIdentityEntries, restoreSnapshotIdentityEntries, sanitizeName } = require("./roomSnapshot");
 const { upsertLivePlayer, removeLivePlayer, setRoomGameActive, removeRoomPlayers } = require("./livePresence");
 const { rememberRoom, forgetRoom } = require("./roomRegistry");
@@ -681,19 +681,16 @@ class DominoRoom extends Room {
         }
 
         try {
-            const response = await fetch(buildEconomyUrl(process.env.PLATFORM_API_URL, "/api/economy/matches/reserve"), {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${platformIdentity.authToken}`
-                },
-                body: JSON.stringify(buildSignedRequestBody("economy.reserve", {
+            const response = await postEconomyRequest({
+                baseUrl: process.env.PLATFORM_API_URL,
+                path: "/api/economy/matches/reserve",
+                body: buildSignedRequestBody("economy.reserve", {
                     roomId: this.roomId,
                     roomCode: this.roomCode,
                     matchId: this.currentDealMatchId,
                     stakeKey: this.currentStakeKey,
                     participants
-                }))
+                })
             });
 
             if (!response.ok) {
@@ -947,19 +944,16 @@ class DominoRoom extends Room {
             .map((identity) => identity.userId);
 
         try {
-            const response = await fetch(buildEconomyUrl(process.env.PLATFORM_API_URL, "/api/economy/matches/settle"), {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${platformIdentity.authToken}`
-                },
-                body: JSON.stringify(buildSignedRequestBody("economy.settle", {
+            const response = await postEconomyRequest({
+                baseUrl: process.env.PLATFORM_API_URL,
+                path: "/api/economy/matches/settle",
+                body: buildSignedRequestBody("economy.settle", {
                     roomId: this.roomId,
                     matchId: this.currentDealMatchId,
                     stakeKey: this.currentDealStakeKey,
                     result: winnerUserIds.length ? "loss" : "refund",
                     winnerUserIds
-                }))
+                })
             });
 
             if (!response.ok) {
@@ -1001,19 +995,16 @@ class DominoRoom extends Room {
             .map((identity) => identity.userId);
 
         try {
-            const response = await fetch(buildEconomyUrl(process.env.PLATFORM_API_URL, "/api/economy/matches/settle"), {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${platformIdentity.authToken}`
-                },
-                body: JSON.stringify(buildSignedRequestBody("economy.settle", {
+            const response = await postEconomyRequest({
+                baseUrl: process.env.PLATFORM_API_URL,
+                path: "/api/economy/matches/settle",
+                body: buildSignedRequestBody("economy.settle", {
                     roomId: this.roomId,
                     matchId: this.currentDealMatchId,
                     stakeKey: this.currentDealStakeKey,
                     result: winnerUserIds.length ? "win" : "refund",
                     winnerUserIds
-                }))
+                })
             });
 
             if (!response.ok) {
