@@ -6,7 +6,7 @@ const { Board, cloneBoard } = require("./board");
 const { AIPlayer } = require("./ai");
 const { Tile, createFullSet, shuffle, getHandSize, determineFirstPlayer, handPoints, getOpeningPlayScore, hasInvalidOpeningHand, roundTo5 } = require("./model");
 const { verifyGameToken } = require("./platformAuth");
-const { signDominoPayload } = require("./dominoProof");
+const { buildSignedRequestBody } = require("./signedRequest");
 const { buildSnapshotIdentityEntries, restoreSnapshotIdentityEntries, sanitizeName } = require("./roomSnapshot");
 const { upsertLivePlayer, removeLivePlayer, setRoomGameActive, removeRoomPlayers } = require("./livePresence");
 const { rememberRoom, forgetRoom } = require("./roomRegistry");
@@ -46,17 +46,6 @@ function generateRoomCode() {
     const bytes = crypto.randomBytes(4);
     for (let i = 0; i < 4; i++) code += chars[bytes[i] % chars.length];
     return code;
-}
-
-function buildSignedRequestBody(scope, payload = {}) {
-    const body = {
-        ...payload,
-        integrityScope: scope
-    };
-    return {
-        ...body,
-        proof: signDominoPayload(body)
-    };
 }
 
 class DominoRoom extends Room {
