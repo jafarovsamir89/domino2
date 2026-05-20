@@ -1,6 +1,9 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
 
+process.env.DOMINO_SERVER_SECRET ||= "b7f4c2d9a1e8f6c3b5a7d0e9f1c4b8a6d2e7f9c1";
+process.env.BETTER_AUTH_SECRET ||= process.env.DOMINO_SERVER_SECRET;
+
 const DominoRoom = require("../DominoRoom");
 
 test("generateRoomCode returns compact upper-case codes", () => {
@@ -93,6 +96,14 @@ test("custom snapshots strip auth tokens from persisted identities", () => {
     assert.equal(snapshot.identityBySessionId[0][0], "session-1");
     assert.equal(snapshot.identityBySessionId[0][1].authToken, undefined);
     assert.equal(snapshot.identityBySessionId[0][1].displayName, "Alice");
+    assert.deepEqual(Object.keys(snapshot.identityBySessionId[0][1]).sort(), [
+        "avatarUrl",
+        "displayName",
+        "playerId",
+        "provider",
+        "role",
+        "userId"
+    ]);
 
     const restoredRoom = Object.create(DominoRoom.prototype);
     restoredRoom.state = { turnDeadlineAt: 0 };
@@ -117,6 +128,59 @@ test("custom snapshots strip auth tokens from persisted identities", () => {
     assert.equal(restoredIdentity.authToken, undefined);
     assert.equal(restoredIdentity.userId, "u2");
     assert.equal(restoredIdentity.displayName, "Bob");
+});
+
+test("forfeit settle replay does not settle the same room twice", async () => {
+    const room = Object.create(DominoRoom.prototype);
+    const fetchCalls = [];
+    const originalFetch = global.fetch;
+
+    Object.defineProperty(room, "roomId", { value: "room-forfeit", writable: true, configurable: true });
+    room.currentDealMatchId = "match-forfeit";
+    room.currentDealStakeKey = "stake_200";
+    room.forfeitSettlementMade = false;
+    room.matchRecorded = false;
+    room.state = {
+        isTeamMode: false,
+        playerOrder: ["session-1", "session-2"],
+        players: new Map([
+            ["session-1", { name: "Alice", userId: "user-a" }],
+            ["session-2", { name: "Bob", userId: "user-b" }]
+        ])
+    };
+    room.identityBySessionId = new Map([
+        ["session-1", { provider: "platform", authToken: "token-a", userId: "user-a", displayName: "Alice", playerId: "player-a", avatarUrl: "", role: "player" }],
+        ["session-2", { provider: "platform", authToken: "token-b", userId: "user-b", displayName: "Bob", playerId: "player-b", avatarUrl: "", role: "player" }]
+    ]);
+    room.getPlatformMatchIdentity = () => room.identityBySessionId.get("session-1");
+
+    global.fetch = async (_url, init) => {
+        fetchCalls.push({
+            url: _url,
+            body: JSON.parse(init.body)
+        });
+        return {
+            ok: true,
+            status: 200,
+            text: async () => "",
+            json: async () => ({ ok: true, result: "loss" })
+        };
+    };
+
+    try {
+        const first = await room.settleForfeitStake("session-1");
+        const second = await room.settleForfeitStake("session-1");
+
+        assert.ok(first);
+        assert.equal(room.forfeitSettlementMade, true);
+        assert.equal(room.matchRecorded, true);
+        assert.equal(second, false);
+        assert.equal(fetchCalls.length, 1);
+        assert.equal(fetchCalls[0].body.matchId, "match-forfeit");
+        assert.equal(fetchCalls[0].body.result, "loss");
+    } finally {
+        global.fetch = originalFetch;
+    }
 });
 
 test("turnVersion rejects stale replayed turn actions", () => {
@@ -148,6 +212,8 @@ test("startDeal snapshot restore keeps a playable turn state", async () => {
     room.currentStakeKey = "free";
     room.lastReservedMatchRound = 0;
     room.lastDealWinner = null;
+    room.matchRecorded = false;
+    room.forfeitSettlementMade = false;
     room.shouldRedealOpeningHands = () => false;
     room.reserveEconomyStake = async () => ({ ok: true });
     room.pendingEconomySettlement = Promise.resolve();
@@ -186,8 +252,26 @@ test("startDeal snapshot restore keeps a playable turn state", async () => {
     assert.equal(room.state.turnVersion, 1);
     assert.equal(room.state.gameActive, true);
     assert.equal(room.hands.length, 2);
+    room.state.boardJson = JSON.stringify(room.internalBoard);
+    room.state.boneyardCount = room.boneyard.length;
 
     const snapshot = room.buildCustomStateSnapshot();
+    assert.equal(snapshot.roomId, "room-live");
+    assert.equal(snapshot.roomCode, "LIVE");
+    assert.equal(snapshot.currentStakeKey, "free");
+    assert.equal(snapshot.currentDealMatchId, "room-live:round:1");
+    assert.equal(snapshot.currentDealStakeKey, "free");
+    assert.equal(snapshot.currentDealStakeAmount, 0);
+    assert.equal(snapshot.currentDealBankAmount, 0);
+    assert.equal(snapshot.lastReservedMatchRound, 0);
+    assert.equal(snapshot.matchRecorded, false);
+    assert.equal(snapshot.forfeitSettlementMade, false);
+    assert.ok(Array.isArray(snapshot.hands));
+    assert.ok(Array.isArray(snapshot.boneyard));
+    assert.ok(snapshot.internalBoard);
+    assert.ok(snapshot.state);
+    assert.equal(snapshot.state.boardJson, JSON.stringify(room.internalBoard));
+
     const restoredRoom = Object.create(DominoRoom.prototype);
     Object.defineProperty(restoredRoom, "roomId", { value: "room-live", writable: true, configurable: true });
     restoredRoom.state = {
@@ -206,8 +290,21 @@ test("startDeal snapshot restore keeps a playable turn state", async () => {
     restoredRoom.clearTurnTimer = () => {};
 
     restoredRoom.applyCustomStateSnapshot(snapshot);
+    assert.equal(restoredRoom.roomId, "room-live");
+    assert.equal(restoredRoom.roomCode, "LIVE");
+    assert.equal(restoredRoom.currentStakeKey, "free");
+    assert.equal(restoredRoom.currentDealMatchId, "room-live:round:1");
+    assert.equal(restoredRoom.currentDealStakeKey, "free");
+    assert.equal(restoredRoom.currentDealStakeAmount, 0);
+    assert.equal(restoredRoom.currentDealBankAmount, 0);
+    assert.equal(restoredRoom.lastReservedMatchRound, 0);
+    assert.equal(restoredRoom.matchRecorded, false);
+    assert.equal(restoredRoom.forfeitSettlementMade, false);
     assert.equal(restoredRoom.state.turnVersion, 1);
     assert.equal(restoredRoom.state.gameActive, true);
+    assert.equal(restoredRoom.hands.length, 2);
+    assert.equal(restoredRoom.boneyard.length, room.boneyard.length);
+    assert.equal(restoredRoom.state.boardJson, JSON.stringify(restoredRoom.internalBoard));
 
     let plays = 0;
     restoredRoom.turnAdvancePending = false;

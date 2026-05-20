@@ -7,6 +7,7 @@ const { AIPlayer } = require("./ai");
 const { Tile, createFullSet, shuffle, getHandSize, determineFirstPlayer, handPoints, getOpeningPlayScore, hasInvalidOpeningHand, roundTo5 } = require("./model");
 const { verifyGameToken } = require("./platformAuth");
 const { signDominoPayload } = require("./dominoProof");
+const { buildSnapshotIdentityEntries, restoreSnapshotIdentityEntries, sanitizeName } = require("./roomSnapshot");
 const { upsertLivePlayer, removeLivePlayer, setRoomGameActive, removeRoomPlayers } = require("./livePresence");
 const { rememberRoom, forgetRoom } = require("./roomRegistry");
 
@@ -45,31 +46,6 @@ function generateRoomCode() {
     const bytes = crypto.randomBytes(4);
     for (let i = 0; i < 4; i++) code += chars[bytes[i] % chars.length];
     return code;
-}
-
-function sanitizeName(name) {
-    return String(name || "Player")
-        .replace(/<[^>]*>/g, " ")
-        .replace(/[^\p{L}\p{N} _.-]/gu, "")
-        .trim()
-        .slice(0, 24) || "Player";
-}
-
-function sanitizeSnapshotIdentity(identity = {}) {
-    const sanitized = {
-        provider: String(identity.provider || "platform").trim() || "platform",
-        userId: String(identity.userId || "").trim(),
-        displayName: sanitizeName(identity.displayName || identity.name || "Player"),
-        playerId: String(identity.playerId || identity.userId || "").trim(),
-        avatarUrl: String(identity.avatarUrl || "").trim(),
-        role: String(identity.role || "").trim() || "player"
-    };
-
-    if (identity.sessionId) {
-        sanitized.sessionId = String(identity.sessionId).trim();
-    }
-
-    return sanitized;
 }
 
 function buildSignedRequestBody(scope, payload = {}) {
@@ -1710,10 +1686,7 @@ class DominoRoom extends Room {
     }
 
     buildCustomStateSnapshot() {
-        const identityBySessionId = Array.from(this.identityBySessionId.entries()).map(([sessionId, identity]) => [
-            sessionId,
-            sanitizeSnapshotIdentity(identity)
-        ]);
+        const identityBySessionId = buildSnapshotIdentityEntries(this.identityBySessionId);
 
         return {
             roomId: this.roomId,
@@ -1774,10 +1747,7 @@ class DominoRoom extends Room {
         this.playerMissingSuits = Array.isArray(data.playerMissingSuits)
             ? data.playerMissingSuits.map((arr) => new Set(Array.isArray(arr) ? arr : []))
             : (Array.isArray(this.playerMissingSuits) ? this.playerMissingSuits : []);
-        const restoredIdentityEntries = Array.isArray(data.identityBySessionId)
-            ? data.identityBySessionId.map(([sessionId, identity]) => [sessionId, sanitizeSnapshotIdentity(identity)])
-            : Array.from(this.identityBySessionId || [], ([sessionId, identity]) => [sessionId, sanitizeSnapshotIdentity(identity)]);
-        this.identityBySessionId = new Map(restoredIdentityEntries);
+        this.identityBySessionId = restoreSnapshotIdentityEntries(data.identityBySessionId, this.identityBySessionId);
 
         if (data.state) {
             this.restoreSchemaState(data.state);

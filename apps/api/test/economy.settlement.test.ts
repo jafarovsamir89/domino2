@@ -32,6 +32,7 @@ function makeEconomyHarness() {
   const players = new Map<string, any>();
   const stakes = new Map<string, any>();
   const matchStakes: any[] = [];
+  const ledgerEntries: any[] = [];
 
   const prismaMock = {
     coinStakeTable: {
@@ -120,24 +121,63 @@ function makeEconomyHarness() {
     return wallet;
   };
   service.getLockedWallet = async (_db: any, playerId: string) => service.ensureWallet(_db, playerId);
-  service.reserveWallet = async (_db: any, playerId: string, amount: number) => {
+  service.reserveWallet = async (_db: any, playerId: string, amount: number, referenceType = "reserve", referenceId = "", extras: any = {}) => {
     const wallet = await service.ensureWallet(_db, playerId);
     if (wallet.balance < amount) throw new Error("Insufficient balance");
+    const before = { balance: wallet.balance, reserved: wallet.reserved };
     wallet.balance -= amount;
     wallet.reserved += amount;
+    ledgerEntries.push({
+      type: "reserve",
+      playerId,
+      amount,
+      referenceType,
+      referenceId,
+      idempotencyKey: extras?.idempotencyKey ?? null,
+      balanceBefore: before.balance,
+      balanceAfter: wallet.balance,
+      reservedBefore: before.reserved,
+      reservedAfter: wallet.reserved
+    });
     return wallet;
   };
-  service.releaseWallet = async (_db: any, playerId: string, amount: number) => {
+  service.releaseWallet = async (_db: any, playerId: string, amount: number, type = "release", referenceType = "", referenceId = "", extras: any = {}) => {
     const wallet = await service.ensureWallet(_db, playerId);
     if (wallet.reserved < amount) throw new Error("Reserved balance is too small");
+    const before = { balance: wallet.balance, reserved: wallet.reserved };
     wallet.balance += amount;
     wallet.reserved -= amount;
+    ledgerEntries.push({
+      type,
+      playerId,
+      amount,
+      referenceType,
+      referenceId,
+      idempotencyKey: extras?.idempotencyKey ?? null,
+      balanceBefore: before.balance,
+      balanceAfter: wallet.balance,
+      reservedBefore: before.reserved,
+      reservedAfter: wallet.reserved
+    });
     return wallet;
   };
-  service.creditWallet = async (_db: any, playerId: string, amount: number) => {
+  service.creditWallet = async (_db: any, playerId: string, amount: number, type = "payout", referenceType = "", referenceId = "", extras: any = {}) => {
     const wallet = await service.ensureWallet(_db, playerId);
+    const before = { balance: wallet.balance, reserved: wallet.reserved };
     wallet.balance += amount;
     wallet.lifetimeEarned += amount;
+    ledgerEntries.push({
+      type,
+      playerId,
+      amount,
+      referenceType,
+      referenceId,
+      idempotencyKey: extras?.idempotencyKey ?? null,
+      balanceBefore: before.balance,
+      balanceAfter: wallet.balance,
+      reservedBefore: before.reserved,
+      reservedAfter: wallet.reserved
+    });
     return wallet;
   };
   service.debitWallet = async (_db: any, playerId: string, amount: number) => {
@@ -147,15 +187,28 @@ function makeEconomyHarness() {
     wallet.lifetimeSpent += amount;
     return wallet;
   };
-  service.consumeReservedWallet = async (_db: any, playerId: string, amount: number) => {
+  service.consumeReservedWallet = async (_db: any, playerId: string, amount: number, referenceType = "", referenceId = "", extras: any = {}) => {
     const wallet = await service.ensureWallet(_db, playerId);
     if (wallet.reserved < amount) throw new Error("Reserved balance is too small");
+    const before = { balance: wallet.balance, reserved: wallet.reserved };
     wallet.reserved -= amount;
     wallet.lifetimeSpent += amount;
+    ledgerEntries.push({
+      type: "spend",
+      playerId,
+      amount,
+      referenceType,
+      referenceId,
+      idempotencyKey: extras?.idempotencyKey ?? null,
+      balanceBefore: before.balance,
+      balanceAfter: wallet.balance,
+      reservedBefore: before.reserved,
+      reservedAfter: wallet.reserved
+    });
     return wallet;
   };
 
-  return { service, wallets, matchStakes };
+  return { service, wallets, matchStakes, ledgerEntries };
 }
 
 function withProof(payload: Record<string, unknown>, scope: string) {
@@ -167,7 +220,7 @@ function withProof(payload: Record<string, unknown>, scope: string) {
 }
 
 test("online stake reserve and settle keep the bank and payout balanced", async () => {
-  const { service, wallets } = makeEconomyHarness();
+  const { service, wallets, matchStakes, ledgerEntries } = makeEconomyHarness();
   const token = createGameToken({
     userId: "user-a",
     playerId: "player-a",
@@ -193,6 +246,8 @@ test("online stake reserve and settle keep the bank and payout balanced", async 
 
   assert.equal(reserve.ok, true);
   assert.equal(reserve.reserved, 100);
+  assert.equal(matchStakes.length, 2);
+  assert.equal(ledgerEntries.length, 2);
   assert.equal(wallets.get("player-a")?.balance, 150);
   assert.equal(wallets.get("player-b")?.balance, 150);
   assert.equal(wallets.get("player-a")?.reserved, 50);
@@ -215,9 +270,171 @@ test("online stake reserve and settle keep the bank and payout balanced", async 
   assert.equal(settle.payout, 45);
   assert.equal(settle.winnerBank, 50);
   assert.equal(settle.loserBank, 50);
+  assert.equal(ledgerEntries.length, 5);
   assert.equal(wallets.get("player-a")?.balance, 245);
   assert.equal(wallets.get("player-a")?.reserved, 0);
   assert.equal(wallets.get("player-b")?.balance, 150);
+  assert.equal(wallets.get("player-b")?.reserved, 0);
+});
+
+test("online stake reserve is idempotent for the same room and match", async () => {
+  const { service, wallets, matchStakes, ledgerEntries } = makeEconomyHarness();
+  const token = createGameToken({
+    userId: "user-a",
+    playerId: "player-a",
+    displayName: "Alpha",
+    role: "player",
+    sessionId: "session-a",
+    provider: "better-auth",
+    issuedAt: Date.now(),
+    expiresAt: Date.now() + 60_000
+  });
+
+  const payload = {
+    ...withProof({
+      roomId: "room-idem-reserve",
+      matchId: "match-idem-reserve",
+      stakeKey: "stake_50",
+      participants: [
+        { playerId: "player-a", userId: "user-a", displayName: "Alpha" },
+        { playerId: "player-b", userId: "user-b", displayName: "Beta" }
+      ]
+    }, "economy.reserve")
+  };
+
+  const first = await service.reserveMatchStake(token, payload);
+  const ledgerAfterFirst = ledgerEntries.map((entry) => ({ ...entry }));
+  const second = await service.reserveMatchStake(token, payload);
+
+  assert.equal(first.ok, true);
+  assert.equal(second.ok, true);
+  assert.equal(first.reserved, 100);
+  assert.equal(second.reserved, 100);
+  assert.equal(matchStakes.length, 2);
+  assert.equal(ledgerEntries.length, ledgerAfterFirst.length);
+  assert.deepEqual(ledgerEntries, ledgerAfterFirst);
+  assert.equal(wallets.get("player-a")?.balance, 150);
+  assert.equal(wallets.get("player-b")?.balance, 150);
+  assert.equal(wallets.get("player-a")?.reserved, 50);
+  assert.equal(wallets.get("player-b")?.reserved, 50);
+});
+
+test("online stake settle is idempotent for the same match", async () => {
+  const { service, wallets, ledgerEntries, matchStakes } = makeEconomyHarness();
+  const token = createGameToken({
+    userId: "user-a",
+    playerId: "player-a",
+    displayName: "Alpha",
+    role: "player",
+    sessionId: "session-a",
+    provider: "better-auth",
+    issuedAt: Date.now(),
+    expiresAt: Date.now() + 60_000
+  });
+
+  await service.reserveMatchStake(token, {
+    ...withProof({
+      roomId: "room-idem-settle",
+      matchId: "match-idem-settle",
+      stakeKey: "stake_50",
+      participants: [
+        { playerId: "player-a", userId: "user-a", displayName: "Alpha" },
+        { playerId: "player-b", userId: "user-b", displayName: "Beta" }
+      ]
+    }, "economy.reserve")
+  });
+
+  const first = await service.settleMatchStake(token, {
+    ...withProof({
+      roomId: "room-idem-settle",
+      matchId: "match-idem-settle",
+      stakeKey: "stake_50",
+      result: "win",
+      winnerPlayerIds: ["player-a"],
+      winnerUserIds: ["user-a"]
+    }, "economy.settle")
+  });
+  const afterFirst = ledgerEntries.map((entry) => ({ ...entry }));
+  const second = await service.settleMatchStake(token, {
+    ...withProof({
+      roomId: "room-idem-settle",
+      matchId: "match-idem-settle",
+      stakeKey: "stake_50",
+      result: "win",
+      winnerPlayerIds: ["player-a"],
+      winnerUserIds: ["user-a"]
+    }, "economy.settle")
+  });
+
+  assert.equal(first.ok, true);
+  assert.equal(first.settled, 2);
+  assert.equal(second.ok, true);
+  assert.equal(second.skipped, true);
+  assert.equal(ledgerEntries.length, 5);
+  assert.equal(ledgerEntries.length, afterFirst.length);
+  assert.deepEqual(ledgerEntries, afterFirst);
+  assert.equal(wallets.get("player-a")?.balance, 245);
+  assert.equal(wallets.get("player-a")?.reserved, 0);
+  assert.equal(wallets.get("player-b")?.balance, 150);
+  assert.equal(wallets.get("player-b")?.reserved, 0);
+  assert.equal(matchStakes.filter((row: any) => row.status === "settled").length, 2);
+});
+
+test("forfeit-settle replay does not pay the bank twice", async () => {
+  const { service, wallets, ledgerEntries } = makeEconomyHarness();
+  const token = createGameToken({
+    userId: "user-a",
+    playerId: "player-a",
+    displayName: "Alpha",
+    role: "player",
+    sessionId: "session-a",
+    provider: "better-auth",
+    issuedAt: Date.now(),
+    expiresAt: Date.now() + 60_000
+  });
+
+  await service.reserveMatchStake(token, {
+    ...withProof({
+      roomId: "room-forfeit",
+      matchId: "match-forfeit",
+      stakeKey: "stake_50",
+      participants: [
+        { playerId: "player-a", userId: "user-a", displayName: "Alpha" },
+        { playerId: "player-b", userId: "user-b", displayName: "Beta" }
+      ]
+    }, "economy.reserve")
+  });
+
+  const first = await service.settleMatchStake(token, {
+    ...withProof({
+      roomId: "room-forfeit",
+      matchId: "match-forfeit",
+      stakeKey: "stake_50",
+      result: "loss",
+      winnerPlayerIds: ["player-b"],
+      winnerUserIds: ["user-b"]
+    }, "economy.settle")
+  });
+  const ledgerAfterFirst = ledgerEntries.map((entry) => ({ ...entry }));
+  const second = await service.settleMatchStake(token, {
+    ...withProof({
+      roomId: "room-forfeit",
+      matchId: "match-forfeit",
+      stakeKey: "stake_50",
+      result: "loss",
+      winnerPlayerIds: ["player-b"],
+      winnerUserIds: ["user-b"]
+    }, "economy.settle")
+  });
+
+  assert.equal(first.ok, true);
+  assert.equal(first.winners, 1);
+  assert.equal(second.ok, true);
+  assert.equal(second.skipped, true);
+  assert.deepEqual(ledgerEntries, ledgerAfterFirst);
+  assert.equal(wallets.get("player-a")?.balance, 150);
+  assert.equal(wallets.get("player-a")?.reserved, 0);
+  assert.equal(wallets.get("player-b")?.balance, 245);
   assert.equal(wallets.get("player-b")?.reserved, 0);
 });
 
