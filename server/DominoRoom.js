@@ -9,11 +9,9 @@ const { buildSignedRequestBody } = require("./signedRequest");
 const { generateRoomCode, normalizeRoomVisibility, normalizeStakeKey, normalizePlayerCount, normalizeAiCount, normalizeDlossThreshold, normalizeInstantWinEnabled, normalizeAiDifficulty } = require("./roomConfig");
 const { normalizeAuthToken, buildRoomIdentity } = require("./roomIdentity");
 const { buildLivePlayerPayload } = require("./roomPresence");
-const { postSettleEconomyMatch } = require("./economyClient");
-const { buildForfeitWinnerUserIds } = require("./economyParticipants");
 const { buildPlatformMatchPayload } = require("./matchResultPayload");
 const { buildRoomStatePlayers, buildRoomStatePayload } = require("./roomStatePayload");
-const { reserveEconomyStakeForRoom, settleEconomyRoundForRoom } = require("./economyService");
+const { reserveEconomyStakeForRoom, settleEconomyRoundForRoom, settleForfeitStakeForRoom } = require("./economyService");
 const { buildSnapshotIdentityEntries, restoreSnapshotIdentityEntries, sanitizeName } = require("./roomSnapshot");
 const { upsertLivePlayer, removeLivePlayer, setRoomGameActive, removeRoomPlayers } = require("./livePresence");
 const { rememberRoom, forgetRoom } = require("./roomRegistry");
@@ -807,54 +805,7 @@ class DominoRoom extends Room {
     }
 
     async settleForfeitStake(leavingSessionId) {
-        if (this.forfeitSettlementMade || this.currentDealStakeKey === "free") {
-            return false;
-        }
-
-        const platformIdentity = this.getPlatformMatchIdentity();
-        if (!platformIdentity) {
-            return false;
-        }
-
-        const leavingIndex = this.state.playerOrder.indexOf(leavingSessionId);
-        const leavingIdentity = this.identityBySessionId.get(leavingSessionId);
-        if (leavingIndex === -1 || !leavingIdentity?.userId) {
-            return false;
-        }
-
-        const winnerUserIds = buildForfeitWinnerUserIds({
-            playerOrder: this.state.playerOrder,
-            identityBySessionId: this.identityBySessionId,
-            isTeamMode: this.state.isTeamMode,
-            leavingSessionId,
-            leavingIndex
-        });
-
-        try {
-            const response = await postSettleEconomyMatch({
-                baseUrl: process.env.PLATFORM_API_URL,
-                body: buildSignedRequestBody("economy.settle", {
-                    roomId: this.roomId,
-                    matchId: this.currentDealMatchId,
-                    stakeKey: this.currentDealStakeKey,
-                    result: winnerUserIds.length ? "loss" : "refund",
-                    winnerUserIds
-                })
-            });
-
-            if (!response.ok) {
-                const text = await response.text().catch(() => "");
-                throw new Error(text || `Stake forfeit settle failed with ${response.status}`);
-            }
-
-            const summary = await response.json().catch(() => null);
-            this.forfeitSettlementMade = true;
-            this.matchRecorded = true;
-            return summary;
-        } catch (error) {
-            console.warn("[ROOM] Failed to settle forfeit stake:", error);
-            return false;
-        }
+        return settleForfeitStakeForRoom(this, leavingSessionId);
     }
 
     async settleEconomyRound(wi, isInstantWin, players, wins) {

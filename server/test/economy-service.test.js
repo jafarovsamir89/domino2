@@ -4,7 +4,7 @@ const assert = require("node:assert/strict");
 process.env.DOMINO_SERVER_SECRET ||= "b7f4c2d9a1e8f6c3b5a7d0e9f1c4b8a6d2e7f9c1";
 process.env.BETTER_AUTH_SECRET ||= process.env.DOMINO_SERVER_SECRET;
 
-const { reserveEconomyStakeForRoom, settleEconomyRoundForRoom } = require("../economyService");
+const { reserveEconomyStakeForRoom, settleEconomyRoundForRoom, settleForfeitStakeForRoom } = require("../economyService");
 
 function createSettleRoom(overrides = {}) {
     return {
@@ -512,6 +512,180 @@ test("settleEconomyRoundForRoom returns refund summary on transport failure", as
             reservations: []
         });
         assert.deepEqual(room.lastRoundEconomySummary, result);
+    } finally {
+        global.fetch = originalFetch;
+    }
+});
+
+function createForfeitRoom(overrides = {}) {
+    return createSettleRoom({
+        currentDealStakeKey: "stake_200",
+        currentDealStakeAmount: 250,
+        currentDealBankAmount: 500,
+        forfeitSettlementMade: false,
+        matchRecorded: false,
+        ...overrides
+    });
+}
+
+test("settleForfeitStakeForRoom returns false when forfeitSettlementMade is true", async () => {
+    const room = createForfeitRoom({ forfeitSettlementMade: true });
+    const result = await settleForfeitStakeForRoom(room, "s2");
+    assert.equal(result, false);
+});
+
+test("settleForfeitStakeForRoom returns false when currentDealStakeKey is free", async () => {
+    const room = createForfeitRoom({ currentDealStakeKey: "free" });
+    const result = await settleForfeitStakeForRoom(room, "s2");
+    assert.equal(result, false);
+});
+
+test("settleForfeitStakeForRoom returns false when there is no platform identity", async () => {
+    const room = createForfeitRoom({ getPlatformMatchIdentity: () => null });
+    const result = await settleForfeitStakeForRoom(room, "s2");
+    assert.equal(result, false);
+});
+
+test("settleForfeitStakeForRoom returns false when leaving session is missing", async () => {
+    const room = createForfeitRoom({
+        state: { playerOrder: ["s1", "s2"], players: new Map(), isTeamMode: false },
+        identityBySessionId: new Map()
+    });
+    const result = await settleForfeitStakeForRoom(room, "missing");
+    assert.equal(result, false);
+});
+
+test("settleForfeitStakeForRoom returns false when leaving identity has no userId", async () => {
+    const room = createForfeitRoom({
+        state: { playerOrder: ["s1", "s2"], players: new Map(), isTeamMode: false },
+        identityBySessionId: new Map([["s2", { provider: "platform", userId: "" }]])
+    });
+    const result = await settleForfeitStakeForRoom(room, "s2");
+    assert.equal(result, false);
+});
+
+test("settleForfeitStakeForRoom updates flags and request payload on success in ffa", async () => {
+    const room = createForfeitRoom({
+        state: {
+            playerOrder: ["s1", "s2", "s3"],
+            players: new Map([
+                ["s1", { name: "Alice", userId: "u1" }],
+                ["s2", { name: "Bob", userId: "u2" }],
+                ["s3", { name: "Carol", userId: "u3" }]
+            ]),
+            isTeamMode: false
+        },
+        identityBySessionId: new Map([
+            ["s1", { provider: "platform", userId: "u1", playerId: "p1", displayName: "Alice" }],
+            ["s2", { provider: "platform", userId: "u2", playerId: "p2", displayName: "Bob" }],
+            ["s3", { provider: "platform", userId: "u3", playerId: "p3", displayName: "Carol" }]
+        ])
+    });
+
+    let capturedBody = null;
+    const originalFetch = global.fetch;
+    global.fetch = async (url, init) => {
+        capturedBody = JSON.parse(init.body);
+        return {
+            ok: true,
+            status: 200,
+            text: async () => "",
+            json: async () => ({ ok: true, winners: 2, reservations: [] })
+        };
+    };
+
+    try {
+        const result = await settleForfeitStakeForRoom(room, "s2");
+        assert.deepEqual(result, { ok: true, winners: 2, reservations: [] });
+        assert.equal(room.forfeitSettlementMade, true);
+        assert.equal(room.matchRecorded, true);
+        assert.equal(capturedBody.roomId, "room-1");
+        assert.equal(capturedBody.matchId, "match-1");
+        assert.equal(capturedBody.stakeKey, "stake_200");
+        assert.equal(capturedBody.result, "loss");
+        assert.deepEqual(capturedBody.winnerUserIds, ["u1", "u3"]);
+        assert.equal(capturedBody.integrityScope, "economy.settle");
+    } finally {
+        global.fetch = originalFetch;
+    }
+});
+
+test("settleForfeitStakeForRoom excludes the leaving team in team mode", async () => {
+    const room = createForfeitRoom({
+        state: {
+            playerOrder: ["s1", "s2", "s3", "s4"],
+            players: new Map([
+                ["s1", { name: "Alice", userId: "u1" }],
+                ["s2", { name: "Bob", userId: "u2" }],
+                ["s3", { name: "Carol", userId: "u3" }],
+                ["s4", { name: "Dave", userId: "u4" }]
+            ]),
+            isTeamMode: true
+        },
+        identityBySessionId: new Map([
+            ["s1", { provider: "platform", userId: "u1", playerId: "p1", displayName: "Alice" }],
+            ["s2", { provider: "platform", userId: "u2", playerId: "p2", displayName: "Bob" }],
+            ["s3", { provider: "platform", userId: "u3", playerId: "p3", displayName: "Carol" }],
+            ["s4", { provider: "platform", userId: "u4", playerId: "p4", displayName: "Dave" }]
+        ])
+    });
+
+    let capturedBody = null;
+    const originalFetch = global.fetch;
+    global.fetch = async (url, init) => {
+        capturedBody = JSON.parse(init.body);
+        return {
+            ok: true,
+            status: 200,
+            text: async () => "",
+            json: async () => ({ ok: true, winners: 2, reservations: [] })
+        };
+    };
+
+    try {
+        const result = await settleForfeitStakeForRoom(room, "s1");
+        assert.deepEqual(result, { ok: true, winners: 2, reservations: [] });
+        assert.deepEqual(capturedBody.winnerUserIds, ["u2", "u4"]);
+        assert.equal(capturedBody.result, "loss");
+    } finally {
+        global.fetch = originalFetch;
+    }
+});
+
+test("settleForfeitStakeForRoom returns false when response is not ok", async () => {
+    const room = createForfeitRoom();
+
+    const originalFetch = global.fetch;
+    global.fetch = async () => ({
+        ok: false,
+        status: 500,
+        text: async () => "settle failed",
+        json: async () => ({})
+    });
+
+    try {
+        const result = await settleForfeitStakeForRoom(room, "s2");
+        assert.equal(result, false);
+        assert.equal(room.forfeitSettlementMade, false);
+        assert.equal(room.matchRecorded, false);
+    } finally {
+        global.fetch = originalFetch;
+    }
+});
+
+test("settleForfeitStakeForRoom returns false on transport failure", async () => {
+    const room = createForfeitRoom();
+
+    const originalFetch = global.fetch;
+    global.fetch = async () => {
+        throw new Error("boom");
+    };
+
+    try {
+        const result = await settleForfeitStakeForRoom(room, "s2");
+        assert.equal(result, false);
+        assert.equal(room.forfeitSettlementMade, false);
+        assert.equal(room.matchRecorded, false);
     } finally {
         global.fetch = originalFetch;
     }

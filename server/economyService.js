@@ -1,6 +1,6 @@
 const { buildSignedRequestBody } = require("./signedRequest");
 const { postReserveEconomyMatch, postSettleEconomyMatch } = require("./economyClient");
-const { getSessionIdentities, hasUnlinkedHuman, buildReserveParticipants, buildWinnerUserIds } = require("./economyParticipants");
+const { getSessionIdentities, hasUnlinkedHuman, buildReserveParticipants, buildWinnerUserIds, buildForfeitWinnerUserIds } = require("./economyParticipants");
 
 function buildRefundLikeSummary(room) {
     return {
@@ -159,7 +159,59 @@ async function settleEconomyRoundForRoom(room, winnerIndex) {
     }
 }
 
+async function settleForfeitStakeForRoom(room, leavingSessionId) {
+    if (room.forfeitSettlementMade || room.currentDealStakeKey === "free") {
+        return false;
+    }
+
+    const platformIdentity = room.getPlatformMatchIdentity();
+    if (!platformIdentity) {
+        return false;
+    }
+
+    const leavingIndex = room.state.playerOrder.indexOf(leavingSessionId);
+    const leavingIdentity = room.identityBySessionId.get(leavingSessionId);
+    if (leavingIndex === -1 || !leavingIdentity?.userId) {
+        return false;
+    }
+
+    const winnerUserIds = buildForfeitWinnerUserIds({
+        playerOrder: room.state.playerOrder,
+        identityBySessionId: room.identityBySessionId,
+        isTeamMode: room.state.isTeamMode,
+        leavingSessionId,
+        leavingIndex
+    });
+
+    try {
+        const response = await postSettleEconomyMatch({
+            baseUrl: process.env.PLATFORM_API_URL,
+            body: buildSignedRequestBody("economy.settle", {
+                roomId: room.roomId,
+                matchId: room.currentDealMatchId,
+                stakeKey: room.currentDealStakeKey,
+                result: winnerUserIds.length ? "loss" : "refund",
+                winnerUserIds
+            })
+        });
+
+        if (!response.ok) {
+            const text = await response.text().catch(() => "");
+            throw new Error(text || `Stake forfeit settle failed with ${response.status}`);
+        }
+
+        const summary = await response.json().catch(() => null);
+        room.forfeitSettlementMade = true;
+        room.matchRecorded = true;
+        return summary;
+    } catch (error) {
+        console.warn("[ROOM] Failed to settle forfeit stake:", error);
+        return false;
+    }
+}
+
 module.exports = {
     reserveEconomyStakeForRoom,
-    settleEconomyRoundForRoom
+    settleEconomyRoundForRoom,
+    settleForfeitStakeForRoom
 };
