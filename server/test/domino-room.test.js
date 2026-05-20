@@ -130,6 +130,167 @@ test("custom snapshots strip auth tokens from persisted identities", () => {
     assert.equal(restoredIdentity.displayName, "Bob");
 });
 
+test("onCreate restores room identity and snapshot state without mutating the source snapshot", async () => {
+    const room = Object.create(DominoRoom.prototype);
+    Object.defineProperty(room, "roomId", { value: "temp-room", writable: true, configurable: true });
+
+    const sourceSnapshot = {
+        roomId: "restored-room",
+        roomCode: "REST",
+        roomVisibility: "open",
+        currentStakeKey: "stake_500",
+        currentDealMatchId: "restored-room:round:3",
+        currentDealStakeKey: "stake_500",
+        currentDealStakeAmount: 150,
+        currentDealBankAmount: 300,
+        lastReservedMatchRound: 3,
+        matchRecorded: true,
+        forfeitSettlementMade: true,
+        state: {
+            playerOrder: ["session-1"],
+            players: [
+                {
+                    sessionId: "session-1",
+                    name: "Alice",
+                    userId: "u1",
+                    avatarUrl: "https://example.com/a.png",
+                    score: 12,
+                    roundWins: 1,
+                    handCount: 2,
+                    isConnected: true,
+                    isBot: false
+                }
+            ],
+            currentPlayerIndex: 0,
+            boneyardCount: 1,
+            gameActive: false,
+            matchRound: 3,
+            deal: 4,
+            boardJson: "{\"nodes\":[{\"id\":\"n1\"}]}",
+            isTeamMode: false,
+            playerCount: 2,
+            turnDeadlineAt: 0,
+            turnVersion: 4,
+            teamScores: [0, 0],
+            teamRoundWins: [0, 0]
+        },
+        hands: [[{ a: 0, b: 1 }]],
+        boneyard: [{ a: 2, b: 3 }],
+        internalBoard: { nodes: [{ id: "n1" }] },
+        identityBySessionId: [
+            ["session-1", {
+                provider: "platform",
+                authToken: "secret-token",
+                userId: "u1",
+                displayName: "Alice",
+                playerId: "p1",
+                avatarUrl: "https://example.com/a.png",
+                role: "host"
+            }]
+        ]
+    };
+    const snapshot = structuredClone(sourceSnapshot);
+    const snapshotClone = structuredClone(sourceSnapshot);
+
+    room.loadCustomStateForRestore = async () => snapshot;
+    room.setState = (state) => {
+        room.state = state;
+        room.state.players = new Map();
+        room.state.playerOrder = [];
+        room.state.teamScores = [];
+        room.state.teamRoundWins = [];
+    };
+    room.onMessage = () => {};
+    room.broadcast = () => {};
+    room.clearTurnTimer = () => {};
+    room.clearNextDealTimer = () => {};
+    room.ensureBotPlayers = () => {};
+    room.syncState = () => {};
+
+    await room.onCreate({ restoreRoomCode: "REST" });
+
+    assert.equal(room.roomId, "restored-room");
+    assert.equal(room.roomCode, "REST");
+    assert.equal(room.currentStakeKey, "stake_500");
+    assert.equal(room.currentDealMatchId, "restored-room:round:3");
+    assert.equal(room.currentDealStakeKey, "stake_500");
+    assert.equal(room.currentDealStakeAmount, 150);
+    assert.equal(room.currentDealBankAmount, 300);
+    assert.equal(room.lastReservedMatchRound, 3);
+    assert.equal(room.matchRecorded, true);
+    assert.equal(room.forfeitSettlementMade, true);
+    assert.equal(room.hands.length, 1);
+    assert.equal(room.boneyard.length, 1);
+    assert.ok(room.internalBoard);
+    assert.equal(room.state.playerOrder[0], "session-1");
+    assert.equal(room.identityBySessionId.get("session-1").displayName, "Alice");
+    assert.deepEqual(snapshot, snapshotClone);
+});
+
+test("applyCustomStateSnapshot tolerates empty and partial snapshots and keeps fallbacks", () => {
+    const room = Object.create(DominoRoom.prototype);
+    Object.defineProperty(room, "roomId", { value: "room-partial", writable: true, configurable: true });
+    room.roomCode = "BASE";
+    room.roomVisibility = "closed";
+    room.humanSeats = 2;
+    room.totalPlayers = 2;
+    room.aiCount = 0;
+    room.dlossThreshold = 255;
+    room.instantWinEnabled = false;
+    room.aiDifficulty = "medium";
+    room.currentStakeKey = "stake_200";
+    room.currentDealMatchId = "match-base";
+    room.currentDealStakeKey = "stake_200";
+    room.currentDealStakeAmount = 111;
+    room.currentDealBankAmount = 222;
+    room.lastReservedMatchRound = 1;
+    room.matchRecorded = false;
+    room.forfeitSettlementMade = false;
+    room.lastRoundEconomySummary = null;
+    room.identityBySessionId = new Map();
+    room.state = {
+        turnDeadlineAt: 0,
+        players: new Map(),
+        playerOrder: [],
+        teamScores: [],
+        teamRoundWins: [],
+        isTeamMode: false,
+        gameActive: false,
+        boneyardCount: 0,
+        boardJson: "{}"
+    };
+    room.hands = [];
+    room.boneyard = [];
+    room.internalBoard = { nodes: [] };
+    room.playerMissingSuits = [new Set()];
+    room.ensureBotPlayers = () => {};
+    room.clearTurnTimer = () => {};
+
+    const emptySnapshot = {};
+    assert.doesNotThrow(() => room.applyCustomStateSnapshot(emptySnapshot));
+    assert.deepEqual(emptySnapshot, {});
+    assert.equal(room.roomCode, "BASE");
+    assert.equal(room.currentDealMatchId, "match-base");
+    assert.equal(room.currentDealStakeAmount, 111);
+
+    const partialSnapshot = {
+        roomCode: "PART",
+        currentDealStakeAmount: 333,
+        hands: [[{ a: 4, b: 5 }]],
+        boneyard: [{ a: 1, b: 1 }]
+    };
+    const partialClone = structuredClone(partialSnapshot);
+
+    assert.doesNotThrow(() => room.applyCustomStateSnapshot(partialSnapshot));
+    assert.deepEqual(partialSnapshot, partialClone);
+    assert.equal(room.roomCode, "PART");
+    assert.equal(room.currentDealStakeAmount, 333);
+    assert.equal(room.currentDealMatchId, "match-base");
+    assert.equal(room.currentDealBankAmount, 222);
+    assert.equal(room.hands.length, 1);
+    assert.equal(room.boneyard.length, 1);
+});
+
 test("forfeit settle replay does not settle the same room twice", async () => {
     const room = Object.create(DominoRoom.prototype);
     const fetchCalls = [];
