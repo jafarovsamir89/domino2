@@ -2711,7 +2711,6 @@ class DominoGame {
             stake_50: 50,
             stake_100: 100,
             stake_200: 200,
-            stake_250: 250,
             stake_500: 500,
             stake_1000: 1000,
             stake_5000: 5000
@@ -2725,7 +2724,6 @@ class DominoGame {
             stake_50: 50,
             stake_100: 100,
             stake_200: 200,
-            stake_250: 250,
             stake_500: 500,
             stake_1000: 1000,
             stake_5000: 5000
