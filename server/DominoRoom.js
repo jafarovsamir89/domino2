@@ -1,5 +1,4 @@
 const { Room } = require("colyseus");
-const crypto = require("crypto");
 const Redis = require("ioredis");
 const { GameState, Player } = require("./schema/GameState");
 const { Board, cloneBoard } = require("./board");
@@ -7,6 +6,7 @@ const { AIPlayer } = require("./ai");
 const { Tile, createFullSet, shuffle, getHandSize, determineFirstPlayer, handPoints, getOpeningPlayScore, hasInvalidOpeningHand, roundTo5 } = require("./model");
 const { verifyGameToken } = require("./platformAuth");
 const { buildSignedRequestBody } = require("./signedRequest");
+const { generateRoomCode, normalizeRoomVisibility, normalizeStakeKey, normalizePlayerCount, normalizeAiCount, normalizeDlossThreshold, normalizeInstantWinEnabled, normalizeAiDifficulty } = require("./roomConfig");
 const { buildSnapshotIdentityEntries, restoreSnapshotIdentityEntries, sanitizeName } = require("./roomSnapshot");
 const { upsertLivePlayer, removeLivePlayer, setRoomGameActive, removeRoomPlayers } = require("./livePresence");
 const { rememberRoom, forgetRoom } = require("./roomRegistry");
@@ -40,14 +40,6 @@ function debugLog(...args) {
     if (DEBUG_LOGS) console.log(...args);
 }
 
-function generateRoomCode() {
-    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-    let code = '';
-    const bytes = crypto.randomBytes(4);
-    for (let i = 0; i < 4; i++) code += chars[bytes[i] % chars.length];
-    return code;
-}
-
 class DominoRoom extends Room {
     maxClients = 2;
 
@@ -66,8 +58,8 @@ class DominoRoom extends Room {
 
         this.setState(new GameState());
         this.state.isTeamMode = options.isTeamMode === true;
-        this.totalPlayers = this.state.isTeamMode ? 4 : Math.min(Math.max(options.playerCount || 2, 2), 4);
-        this.aiCount = Math.min(Math.max(options.aiCount || 0, 0), this.totalPlayers - 1);
+        this.totalPlayers = normalizePlayerCount(options.playerCount, this.state.isTeamMode);
+        this.aiCount = normalizeAiCount(options.aiCount, this.totalPlayers);
         this.humanSeats = this.totalPlayers - this.aiCount;
         this.maxClients = this.humanSeats;
         this.state.playerCount = this.totalPlayers;
@@ -77,11 +69,11 @@ class DominoRoom extends Room {
         this.internalBoard = new Board();
         this.playerMissingSuits = Array.from({ length: this.totalPlayers }, () => new Set());
         this.lastDealWinner = null;
-        this.dlossThreshold = options.dlossThreshold || DLOSS;
-        this.instantWinEnabled = options.instantWinEnabled !== false;
-        this.aiDifficulty = options.difficulty || "medium";
-        this.roomVisibility = String(options.roomVisibility || "closed").trim() === "open" ? "open" : "closed";
-        this.currentStakeKey = String(options.stakeKey || "stake_200").trim() || "stake_200";
+        this.dlossThreshold = normalizeDlossThreshold(options.dlossThreshold);
+        this.instantWinEnabled = normalizeInstantWinEnabled(options.instantWinEnabled);
+        this.aiDifficulty = normalizeAiDifficulty(options.difficulty);
+        this.roomVisibility = normalizeRoomVisibility(options.roomVisibility);
+        this.currentStakeKey = normalizeStakeKey(options.stakeKey);
         this.economyReservationMade = false;
         this.currentDealMatchId = "";
         this.currentDealStakeKey = this.currentStakeKey;
