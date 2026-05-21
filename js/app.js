@@ -4122,7 +4122,7 @@ class DominoGame {
             this.setJoinStatus(statusText);
         }
 
-        if (this.network?.isMultiplayer && roomState.roomVisibility === 'open' && !roomState.gameActive && roomState.seatSelectionRequired === false && !roomState.gameOverReason && !roomState.matchOver) {
+        if (this.network?.isMultiplayer && roomState.roomVisibility === 'open' && !roomState.gameActive && roomState.seatSelectionRequired === true && !roomState.gameOverReason && !roomState.matchOver) {
             this.enterOpenRoomWaitingScreen(roomState);
         }
 
@@ -4134,7 +4134,11 @@ class DominoGame {
 
         this.renderSeatSelectionUi(roomState);
 
-        this.voice?.syncRoomState?.(roomState);
+        try {
+            this.voice?.syncRoomState?.(roomState);
+        } catch (error) {
+            console.warn("[VOICE] Failed to sync voice state", error);
+        }
     }
 
     enterOpenRoomWaitingScreen(roomState) {

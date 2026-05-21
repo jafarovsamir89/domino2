@@ -101,6 +101,23 @@ test("host joins Seat 1 automatically", async () => {
     assert.equal(host.messages.length, 0);
 });
 
+test("1v1 online auto-starts without seat selection", async () => {
+    const room = createRoom({ totalPlayers: 2, aiCount: 0, isTeamMode: false });
+    let startCalls = 0;
+    room.maybeAutoStartGame = DominoRoom.prototype.maybeAutoStartGame.bind(room);
+    room.startGame = async () => {
+        startCalls += 1;
+    };
+
+    await joinHuman(room, "host", "Host");
+    await joinHuman(room, "guest", "Guest");
+
+    assert.equal(room.getPlayerSeatIndex("host"), 0);
+    assert.equal(room.getPlayerSeatIndex("guest"), 1);
+    assert.equal(room.state.playerOrder.join(","), "host,guest");
+    assert.equal(startCalls, 1);
+});
+
 test("a player can choose Seat 3 and playerOrder follows seat order", async () => {
     const room = createRoom();
     await joinHuman(room, "host", "Host");
@@ -127,6 +144,33 @@ test("two players cannot choose the same seat", async () => {
     assert.equal(room.getPlayerSeatIndex("guest-a"), 2);
     assert.equal(room.getPlayerSeatIndex("guest-b"), -1);
     assert.equal(guestB.messages.some((item) => item.payload?.key === "seat-taken"), true);
+});
+
+test("startGame is called only once after the final seat is selected", async () => {
+    const room = createRoom({ totalPlayers: 4, aiCount: 0, isTeamMode: true });
+    let startCalls = 0;
+    room.maybeAutoStartGame = DominoRoom.prototype.maybeAutoStartGame.bind(room);
+    room.startGame = async () => {
+        startCalls += 1;
+    };
+
+    await joinHuman(room, "host", "Host");
+    const guestA = await joinHuman(room, "guest-a", "Alice");
+    const guestB = await joinHuman(room, "guest-b", "Bob");
+    const guestC = await joinHuman(room, "guest-c", "Carol");
+
+    assert.equal(startCalls, 0);
+
+    room.handleChooseSeat(guestA, { seatIndex: 1 });
+    assert.equal(startCalls, 0);
+
+    room.handleChooseSeat(guestB, { seatIndex: 2 });
+    assert.equal(startCalls, 0);
+
+    room.handleChooseSeat(guestC, { seatIndex: 3 });
+    assert.equal(startCalls, 1);
+
+    assert.deepEqual(room.state.playerOrder, ["host", "guest-a", "guest-b", "guest-c"]);
 });
 
 test("seat cannot be changed after the game starts", async () => {
