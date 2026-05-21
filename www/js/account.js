@@ -384,11 +384,16 @@ export class AccountClient {
 
     async sendLocalGameHeartbeat(payload) {
         try {
+            const platformToken = this.platformGameToken;
+            if (!platformToken) {
+                return null;
+            }
             const response = await fetch(`${this.platformApiBase}/realtime/heartbeat`, {
                 method: "POST",
                 credentials: "include",
                 headers: {
-                    "Content-Type": "application/json"
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${platformToken}`
                 },
                 body: JSON.stringify({
                     sessionId: this.getLocalGameSessionId() || payload?.sessionId || "",
