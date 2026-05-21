@@ -1,6 +1,6 @@
 const DEFAULT_ICE_SERVERS = [
     { urls: ["stun:stun.l.google.com:19302"] },
-    { urls: ["stun:global.stun.twilio.com:3478?transport=udp"] }
+    { urls: ["stun:global.stun.twilio.com:3478"] }
 ];
 
 function supportsVoiceChat() {
@@ -59,24 +59,32 @@ export class VoiceChatManager {
     }
 
     syncRoomState(roomState = null) {
-        this.roomState = roomState;
-        this.syncVisibility();
-        void this.prefetchIceConfig();
-        if (!this.isAvailable()) {
-            this.resetRoom();
-            return;
-        }
-
-        const remoteSessions = new Set(this.getRemoteHumanSessions());
-        for (const sessionId of Array.from(this.peerConnections.keys())) {
-            if (!remoteSessions.has(sessionId)) {
-                this.closePeer(sessionId);
+        try {
+            this.roomState = roomState;
+            this.syncVisibility();
+            void this.prefetchIceConfig();
+            if (!this.isAvailable()) {
+                this.resetRoom();
+                return;
             }
+
+            const remoteSessions = new Set(this.getRemoteHumanSessions());
+            for (const sessionId of Array.from(this.peerConnections.keys())) {
+                if (!remoteSessions.has(sessionId)) {
+                    this.closePeer(sessionId);
+                }
+            }
+            for (const sessionId of remoteSessions) {
+                try {
+                    this.ensurePeer(sessionId);
+                } catch (error) {
+                    console.warn("[VOICE] Failed to sync voice state", error);
+                }
+            }
+            this.updateSpeakerUi();
+        } catch (error) {
+            console.warn("[VOICE] Failed to sync voice state", error);
         }
-        for (const sessionId of remoteSessions) {
-            this.ensurePeer(sessionId);
-        }
-        this.updateSpeakerUi();
     }
 
     syncVisibility() {
@@ -330,7 +338,14 @@ export class VoiceChatManager {
         let peer = this.peerConnections.get(targetSessionId);
         if (peer) return peer;
 
-        peer = new RTCPeerConnection(this.getPeerConfig());
+        try {
+            peer = new RTCPeerConnection(this.getPeerConfig());
+        } catch (error) {
+            console.warn("[VOICE] Failed to create peer connection:", error);
+            this.peerConnections.delete(targetSessionId);
+            this.peerSenders.delete(targetSessionId);
+            return null;
+        }
         this.peerConnections.set(targetSessionId, peer);
 
         const transceiver = peer.addTransceiver("audio", { direction: "sendrecv" });

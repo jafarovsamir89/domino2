@@ -639,6 +639,7 @@ class DominoRoom extends Room {
             this.lastReservedMatchRound = this.state.matchRound;
         }
         this.state.gameActive = true;
+        this.broadcastRoomState();
         this.scheduleTurnTimer();
     }
 

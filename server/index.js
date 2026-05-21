@@ -57,7 +57,7 @@ function parseJsonIceServers(raw) {
 function buildVoiceConfig() {
     const defaultIceServers = [
         { urls: ["stun:stun.l.google.com:19302"] },
-        { urls: ["stun:global.stun.twilio.com:3478?transport=udp"] }
+        { urls: ["stun:global.stun.twilio.com:3478"] }
     ];
     const servers = [...defaultIceServers, ...parseJsonIceServers(process.env.VOICE_ICE_SERVERS_JSON || "")];
     const turnUrls = String(process.env.VOICE_TURN_URLS || process.env.TURN_URLS || "")

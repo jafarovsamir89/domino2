@@ -66,6 +66,40 @@ export class RealtimeHeartbeatDto {
   @IsString()
   @MaxLength(32)
   source?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(32)
+  roomMode?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(64)
+  stakeKey?: string | null;
+
+  @IsOptional()
+  @IsNumber()
+  @Type(() => Number)
+  stakeAmount?: number;
+
+  @IsOptional()
+  @IsNumber()
+  @Type(() => Number)
+  humanSeats?: number;
+
+  @IsOptional()
+  @IsNumber()
+  @Type(() => Number)
+  totalPlayers?: number;
+
+  @IsOptional()
+  @IsNumber()
+  @Type(() => Number)
+  aiCount?: number;
+
+  @IsOptional()
+  @IsBoolean()
+  isTeamMode?: boolean;
 }
 
 export class SocialRequestFriendDto {

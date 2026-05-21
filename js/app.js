@@ -2498,6 +2498,21 @@ class DominoGame {
         const totalSeats = Number(roomState?.totalPlayers || roomState?.humanSeats || 0);
         const isTeamMode = Boolean(roomState?.isTeamMode);
         const seat = Number(seatNumber);
+        if (!occupant) {
+            if (isTeamMode && totalSeats >= 4 && seat === 3) {
+                return this.t('seat-partner-host');
+            }
+            if (seat === 1) {
+                return this.t('seat-host');
+            }
+            if (isTeamMode && totalSeats >= 4 && (seat === 2 || seat === 4)) {
+                return this.t('seat-opponent');
+            }
+            const opposite = this.getSeatOppositeNumber(seat, totalSeats);
+            return opposite
+                ? this.format('seat-opposite-seat', { seat: opposite })
+                : this.t('seat-opponent');
+        }
         if (occupant?.sessionId === mySessionId) {
             return this.t('seat-your-seat');
         }
@@ -2508,7 +2523,7 @@ class DominoGame {
             if (seat === 3) {
                 return hostName
                     ? this.format('seat-partner', { player: hostName })
-                    : this.t('seat-partner');
+                    : this.t('seat-partner-host');
             }
             return this.t('seat-opponent');
         }
@@ -2604,7 +2619,7 @@ class DominoGame {
             if (occupant) {
                 occupantLine.textContent = isMine ? `${occupant.name || this.t('seat-your-seat')} (${this.t('online-you')})` : (occupant.name || this.t('seat-taken'));
             } else {
-                occupantLine.textContent = this.t('seat-sit-here');
+                occupantLine.textContent = this.t('seat-free');
             }
 
             const meta = document.createElement('div');
@@ -2612,13 +2627,13 @@ class DominoGame {
             if (roomState?.isTeamMode && totalSeats >= 4) {
                 meta.textContent = seatNumber % 2 === 1 ? this.t('seat-team-a') : this.t('seat-team-b');
             } else {
-                meta.textContent = relation.textContent;
+                meta.textContent = occupant ? relation.textContent : this.t('seat-free');
             }
 
             const action = document.createElement('button');
             action.className = 'btn btn-action seat-selection-seat-btn';
             action.type = 'button';
-            action.textContent = isMine ? this.t('seat-your-seat') : this.t('seat-sit-here');
+            action.textContent = isMine ? this.t('seat-your-seat') : (isOccupied ? this.t('seat-taken') : this.t('seat-choose'));
             action.disabled = isOccupied || this.network?.reconnectInProgress === true;
             if (!isOccupied) {
                 action.addEventListener('click', () => {

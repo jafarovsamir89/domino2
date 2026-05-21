@@ -1822,9 +1822,9 @@ input, button { font: inherit; }
 }
 
 .seat-selection-panel {
-    width: min(92vw, 720px);
-    border-radius: 24px;
-    padding: 18px;
+    width: min(94vw, 680px);
+    border-radius: 22px;
+    padding: 16px;
     background: linear-gradient(180deg, rgba(11, 18, 28, 0.98), rgba(7, 12, 19, 0.98));
     border: 1px solid rgba(255, 255, 255, 0.08);
     box-shadow: 0 24px 80px rgba(0, 0, 0, 0.45);
@@ -1832,8 +1832,8 @@ input, button { font: inherit; }
 
 .seat-selection-head {
     display: grid;
-    gap: 6px;
-    margin-bottom: 16px;
+    gap: 4px;
+    margin-bottom: 12px;
 }
 
 .seat-selection-title {
@@ -1843,8 +1843,8 @@ input, button { font: inherit; }
 
 .seat-selection-desc {
     color: var(--text-dim);
-    font-size: 0.84rem;
-    line-height: 1.45;
+    font-size: 0.82rem;
+    line-height: 1.35;
 }
 
 .seat-selection-status {
@@ -1856,12 +1856,12 @@ input, button { font: inherit; }
 .seat-selection-table-wrap {
     display: grid;
     place-items: center;
-    margin: 4px 0 16px;
+    margin: 4px 0 12px;
 }
 
 .seat-selection-table {
     position: relative;
-    width: min(90vw, 520px);
+    width: min(90vw, 500px);
     aspect-ratio: 1;
     border-radius: 999px;
     background:
@@ -1872,8 +1872,8 @@ input, button { font: inherit; }
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     grid-template-rows: repeat(3, 1fr);
-    gap: 12px;
-    padding: 16px;
+    gap: 10px;
+    padding: 14px;
 }
 
 .seat-selection-center {
@@ -1885,28 +1885,28 @@ input, button { font: inherit; }
     display: grid;
     place-items: center;
     text-align: center;
-    padding: 18px;
+    padding: 14px;
     color: var(--text-dim);
 }
 
 .seat-selection-center-title {
     color: var(--text);
-    font-size: 0.88rem;
+    font-size: 0.84rem;
     font-weight: 800;
-    margin-bottom: 6px;
+    margin-bottom: 4px;
 }
 
 .seat-selection-center-note {
-    font-size: 0.76rem;
-    line-height: 1.4;
+    font-size: 0.72rem;
+    line-height: 1.35;
 }
 
 .seat-selection-seat {
     display: grid;
-    gap: 5px;
+    gap: 4px;
     align-content: start;
-    border-radius: 18px;
-    padding: 12px;
+    border-radius: 16px;
+    padding: 10px;
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.08);
     box-shadow: 0 12px 32px rgba(0, 0, 0, 0.18);
@@ -1928,7 +1928,7 @@ input, button { font: inherit; }
 
 .seat-selection-seat-label {
     color: var(--accent);
-    font-size: 0.72rem;
+    font-size: 0.68rem;
     font-weight: 800;
     letter-spacing: 0.12em;
     text-transform: uppercase;
@@ -1936,26 +1936,65 @@ input, button { font: inherit; }
 
 .seat-selection-seat-relation {
     color: var(--text-dim);
-    font-size: 0.72rem;
+    font-size: 0.68rem;
 }
 
 .seat-selection-seat-name {
     color: var(--text);
-    font-size: 0.96rem;
+    font-size: 0.9rem;
     font-weight: 800;
     min-height: 1.2em;
 }
 
 .seat-selection-seat-meta {
     color: var(--text-dim);
-    font-size: 0.72rem;
+    font-size: 0.68rem;
 }
 
 .seat-selection-seat-btn {
     width: 100%;
     margin-top: 2px;
-    padding: 8px 10px;
-    font-size: 0.76rem;
+    padding: 7px 9px;
+    font-size: 0.72rem;
+}
+
+@media (max-width: 640px) {
+    .seat-selection-overlay {
+        padding: 10px;
+    }
+
+    .seat-selection-panel {
+        width: min(96vw, 640px);
+        padding: 12px;
+        border-radius: 18px;
+    }
+
+    .seat-selection-head {
+        margin-bottom: 10px;
+    }
+
+    .seat-selection-table-wrap {
+        margin-bottom: 10px;
+    }
+
+    .seat-selection-table {
+        width: min(96vw, 420px);
+        gap: 8px;
+        padding: 10px;
+    }
+
+    .seat-selection-center {
+        padding: 12px;
+    }
+
+    .seat-selection-seat {
+        padding: 9px;
+    }
+
+    .seat-selection-seat-btn {
+        padding: 6px 8px;
+        font-size: 0.7rem;
+    }
 }
 
 body.seat-selection-active #game-screen {

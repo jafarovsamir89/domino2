@@ -33,6 +33,13 @@ test("ValidationPipe accepts a valid heartbeat DTO payload", async () => {
     roomId: "room-1",
     roomCode: "ABCD",
     gameMode: "solo",
+    roomMode: "solo",
+    stakeKey: "stake_200",
+    stakeAmount: 200,
+    humanSeats: 2,
+    totalPlayers: 2,
+    aiCount: 0,
+    isTeamMode: false,
     isPlaying: true,
     isConnected: true,
     source: "client-local"

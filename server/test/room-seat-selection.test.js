@@ -197,3 +197,33 @@ test("bots fill remaining seats without stealing human seats", async () => {
     assert.equal(room.getPlayerSeatIndex("host"), 0);
     assert.equal(room.getPlayerSeatIndex("guest"), 2);
 });
+
+test("open room starts without closing after seats are chosen", async () => {
+    const room = createRoom({ totalPlayers: 4, aiCount: 0, isTeamMode: true });
+    room.roomVisibility = "open";
+    room.humanSeats = 4;
+    room.maxClients = 4;
+
+    await joinHuman(room, "host", "Host");
+    const guestA = await joinHuman(room, "guest-a", "Alice");
+    const guestB = await joinHuman(room, "guest-b", "Bob");
+    const guestC = await joinHuman(room, "guest-c", "Carol");
+
+    room.handleChooseSeat(guestA, { seatIndex: 1 });
+    room.handleChooseSeat(guestB, { seatIndex: 2 });
+    room.handleChooseSeat(guestC, { seatIndex: 3 });
+
+    room.clearTurnTimer = () => {};
+    room.scheduleTurnTimer = () => {};
+    room.reserveEconomyStake = async () => ({ ok: true, reserved: 0, stakeKey: "free", bankAmount: 0 });
+    room.shouldRedealOpeningHands = () => false;
+    room.getOpeningScoreContext = () => 0;
+    room.internalBoard = new (require("../board").Board)();
+
+    await room.startGame();
+
+    assert.equal(room.state.gameActive, true);
+    assert.equal(room.roomVisibility, "open");
+    assert.ok(!room.broadcasts.some((item) => item.type === "room_closed"));
+    assert.ok(room.broadcasts.some((item) => item.type === "room_state"));
+});
