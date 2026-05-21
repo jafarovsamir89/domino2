@@ -4122,6 +4122,10 @@ class DominoGame {
             this.setJoinStatus(statusText);
         }
 
+        if (this.network?.isMultiplayer && roomState.roomVisibility === 'open' && !roomState.gameActive && roomState.seatSelectionRequired === false && !roomState.gameOverReason && !roomState.matchOver) {
+            this.enterOpenRoomWaitingScreen(roomState);
+        }
+
         this.renderGiftPicker();
 
         if (this.network?.isMultiplayer) {

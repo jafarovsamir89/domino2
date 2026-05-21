@@ -7,18 +7,18 @@ function read(relativePath) {
     return fs.readFileSync(path.join(__dirname, "..", "..", relativePath), "utf8");
 }
 
-test("client does not force open rooms into the game screen before gameActive", () => {
+test("client only enters open-room waiting screen after seat selection is no longer required", () => {
     const appSource = read("js/app.js");
     const webAppSource = read("www/js/app.js");
 
     assert.equal(
-        appSource.includes("roomState.roomVisibility === 'open' && !roomState.gameActive") &&
+        appSource.includes("roomState.roomVisibility === 'open' && !roomState.gameActive && roomState.seatSelectionRequired === false") &&
         appSource.includes("this.enterOpenRoomWaitingScreen(roomState);"),
-        false
+        true
     );
     assert.equal(
-        webAppSource.includes("roomState.roomVisibility === 'open' && !roomState.gameActive") &&
+        webAppSource.includes("roomState.roomVisibility === 'open' && !roomState.gameActive && roomState.seatSelectionRequired === false") &&
         webAppSource.includes("this.enterOpenRoomWaitingScreen(roomState);"),
-        false
+        true
     );
 });
