@@ -10,8 +10,8 @@ import { sndPlace, sndScore, sndDraw, sndPass, sndWin, sndGosha } from './sounds
 
 const TARGET=365, MAX_R=3, DLOSS=255, IWIN=35;
 const TURN_TIMEOUT_MS = 30000;
-const BOT_THINK_DELAY_MS = 1000;
-const DEAL_END_MODAL_MS = 2000;
+const BOT_THINK_DELAY_MS = 1500;
+const DEAL_END_MODAL_MS = 5000;
 const DEFAULT_ONLINE_STAKE_KEY = 'stake_200';
 const ONLINE_STAKE_KEYS = new Set(['stake_200', 'stake_500', 'stake_1000', 'stake_5000']);
 const DEFAULT_TABLE_SKIN_KEY = 'table_skin_default';

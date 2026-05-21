@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "test": "node --test test/model.test.js test/board.test.js test/domino-room.test.js test/security-secret.test.js test/room-restore.test.js test/schema-state-snapshot.test.js test/restore-lookup.test.js test/room-restore-lookup.test.js test/room-config.test.js test/room-identity.test.js test/room-presence.test.js test/economy-config.test.js test/economy-client.test.js test/economy-participants.test.js test/match-result-payload.test.js test/room-state-payload.test.js test/economy-service.test.js test/room-registry.test.js test/rating.test.js test/signed-request.test.js test/health.test.js test/stake-table-sanity.test.js test/translation-sync.test.js"
+    "test": "node --test test/model.test.js test/board.test.js test/domino-room.test.js test/security-secret.test.js test/room-restore.test.js test/schema-state-snapshot.test.js test/restore-lookup.test.js test/room-restore-lookup.test.js test/room-config.test.js test/room-identity.test.js test/room-presence.test.js test/economy-config.test.js test/economy-client.test.js test/economy-participants.test.js test/match-result-payload.test.js test/room-state-payload.test.js test/economy-service.test.js test/room-registry.test.js test/rating.test.js test/signed-request.test.js test/health.test.js test/stake-table-sanity.test.js test/translation-sync.test.js test/tempo-ux.test.js"
   },
   "keywords": [],
   "author": "",

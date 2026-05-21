@@ -21,8 +21,8 @@ const { rememberRoom, forgetRoom } = require("./roomRegistry");
 
 const TARGET = 365, MAX_R = 3, DLOSS = 255, IWIN = 35;
 const TURN_TIMEOUT_MS = 30000;
-const BOT_THINK_DELAY_MS = 1000;
-const DEAL_END_MODAL_MS = 2000;
+const BOT_THINK_DELAY_MS = 1500;
+const DEAL_END_MODAL_MS = 5000;
 const RECONNECT_GRACE_MS = 10000;
 const CUSTOM_STATE_TTL = 86400;
 const redisUrl = process.env.REDIS_URI || "";
