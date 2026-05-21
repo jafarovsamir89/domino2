@@ -3,8 +3,8 @@
 ## Production Secret Guard
 
 - `BETTER_AUTH_SECRET` rejects weak fallback values in production.
-- `platformAuth.js` keeps a dev/test fallback so local startup and tests do not break.
-- Signed server requests still require `DOMINO_SERVER_SECRET` or `BETTER_AUTH_SECRET`; the sprint keeps that path strict.
+- `platformAuth.js dev/test fallback` keeps local startup and tests from breaking.
+- `dominoProof.js strict secret behavior` still requires `DOMINO_SERVER_SECRET` or `BETTER_AUTH_SECRET` for signed server requests.
 - `platformGameToken` is still persisted in `localStorage`, so browser storage remains a known beta risk.
 - The PR does not migrate tokens to memory-only storage because that would be a broader auth/session architecture change.
 
@@ -15,6 +15,14 @@
 - Keep auditing `innerHTML` usage for user-controlled values.
 - Prefer HTTPS-only Android configuration where possible.
 - Review token rotation and short TTL options after closed beta.
+- `platformAuth.js` dev/test fallback
+- `dominoProof.js` strict secret behavior
+- `localStorage platformGameToken risk`
+- `memory-only / short-lived token strategy`
+- `CSP`
+- `innerHTML audit`
+- `HTTPS-only Android config`
+- `token rotation / short TTL review`
 
 ## XSS Review
 

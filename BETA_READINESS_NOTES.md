@@ -38,6 +38,7 @@
 - Android build
 - Redis outage drill
 - production weak secret check
+- 50-player load / stress pass
 
 ## Beta Go / No-Go
 
