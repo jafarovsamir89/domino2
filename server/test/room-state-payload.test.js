@@ -64,8 +64,11 @@ test("buildRoomStatePayload preserves room_state fields and currentPlayers logic
         state: {
             gameActive: true,
             isTeamMode: true,
-            players: new Map([["s1", { name: "Host" }]]),
-            playerOrder: ["s1"]
+            players: new Map([
+                ["s1", { name: "Host", isConnected: true, isBot: false, seatIndex: 0 }],
+                ["s2", { name: "Guest", isConnected: true, isBot: false, seatIndex: 1 }]
+            ]),
+            playerOrder: ["s1", "s2"]
         },
         totalPlayers: 4,
         clients: [{}, {}],
@@ -95,7 +98,7 @@ test("buildRoomStatePayload preserves room_state fields and currentPlayers logic
     });
 });
 
-test("buildRoomStatePayload uses clients length when the game is inactive", () => {
+test("buildRoomStatePayload uses connected human count when the game is inactive", () => {
     const room = {
         roomId: "room-2",
         roomCode: "EFGH",
@@ -107,8 +110,12 @@ test("buildRoomStatePayload uses clients length when the game is inactive", () =
         state: {
             gameActive: false,
             isTeamMode: false,
-            players: new Map([["s1", { name: "Host" }]]),
-            playerOrder: ["s1"]
+            players: new Map([
+                ["s1", { name: "Host", isConnected: true, isBot: false, seatIndex: 0 }],
+                ["s2", { name: "Guest", isConnected: true, isBot: false, seatIndex: 1 }],
+                ["s3", { name: "Bot", isConnected: false, isBot: true, seatIndex: 2 }]
+            ]),
+            playerOrder: ["s1", "s2", "s3"]
         },
         totalPlayers: 4,
         clients: [{}, {}, {}],
@@ -117,7 +124,8 @@ test("buildRoomStatePayload uses clients length when the game is inactive", () =
     };
 
     const payload = buildRoomStatePayload({ room, players: [] });
-    assert.equal(payload.currentPlayers, 3);
+    assert.equal(payload.currentPlayers, 2);
+    assert.equal(payload.humanPlayers, 2);
     assert.equal(payload.stakeKey, "stake_200");
     assert.equal(payload.hostName, "Host");
     assert.equal(payload.seatSelectionRequired, true);

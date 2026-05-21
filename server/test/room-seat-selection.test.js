@@ -91,6 +91,17 @@ async function joinHuman(room, sessionId, name) {
     return client;
 }
 
+async function joinHumanWithoutClientList(room, sessionId, name) {
+    const client = createClient(sessionId);
+    await room.onJoin(client, { name }, {
+        provider: "platform",
+        userId: `u-${sessionId}`,
+        displayName: name,
+        playerId: `p-${sessionId}`
+    });
+    return client;
+}
+
 test("host joins Seat 1 automatically", async () => {
     const room = createRoom();
     const host = await joinHuman(room, "host", "Host");
@@ -110,12 +121,14 @@ test("1v1 online auto-starts without seat selection", async () => {
     };
 
     await joinHuman(room, "host", "Host");
-    await joinHuman(room, "guest", "Guest");
+    const guest = await joinHumanWithoutClientList(room, "guest", "Guest");
 
     assert.equal(room.getPlayerSeatIndex("host"), 0);
     assert.equal(room.getPlayerSeatIndex("guest"), 1);
     assert.equal(room.state.playerOrder.join(","), "host,guest");
     assert.equal(startCalls, 1);
+    assert.equal(room.clients.length, 1);
+    assert.equal(guest.messages.length, 0);
 });
 
 test("a player can choose Seat 3 and playerOrder follows seat order", async () => {
@@ -171,6 +184,22 @@ test("startGame is called only once after the final seat is selected", async () 
     assert.equal(startCalls, 1);
 
     assert.deepEqual(room.state.playerOrder, ["host", "guest-a", "guest-b", "guest-c"]);
+});
+
+test("maybeAutoStartGame does not rely on clients length when humans are already ready", async () => {
+    const room = createRoom({ totalPlayers: 2, aiCount: 0, isTeamMode: false });
+    let startCalls = 0;
+    room.maybeAutoStartGame = DominoRoom.prototype.maybeAutoStartGame.bind(room);
+    room.startGame = async () => {
+        startCalls += 1;
+    };
+
+    await joinHuman(room, "host", "Host");
+    await joinHumanWithoutClientList(room, "guest", "Guest");
+
+    assert.equal(startCalls, 1);
+    assert.equal(room.countConnectedHumanPlayers(), 2);
+    assert.equal(room.countReadyHumanPlayers(), 2);
 });
 
 test("seat cannot be changed after the game starts", async () => {

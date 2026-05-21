@@ -18,6 +18,20 @@ function buildRoomStatePlayers({ playerOrder = [], players, identityBySessionId 
 }
 
 function buildRoomStatePayload({ room, players } = {}) {
+    const connectedHumanPlayers = (() => {
+        const playerOrder = Array.from(room?.state?.playerOrder || []);
+        const playersMap = room?.state?.players;
+        if (playerOrder.length && playersMap) {
+            let count = 0;
+            for (const sessionId of playerOrder) {
+                const player = playersMap.get(sessionId);
+                if (!player || player.isBot || !player.isConnected) continue;
+                count += 1;
+            }
+            return count;
+        }
+        return Array.isArray(room?.clients) ? room.clients.length : 0;
+    })();
     return {
         roomId: room.roomId,
         roomCode: room.roomCode,
@@ -25,8 +39,8 @@ function buildRoomStatePayload({ room, players } = {}) {
         stakeKey: room.currentDealStakeKey || room.currentStakeKey,
         stakeAmount: room.currentDealStakeAmount,
         bankAmount: room.currentDealBankAmount,
-        currentPlayers: room.state.gameActive ? room.totalPlayers : room.clients.length,
-        humanPlayers: room.clients.length,
+        currentPlayers: room.state.gameActive ? room.totalPlayers : connectedHumanPlayers,
+        humanPlayers: connectedHumanPlayers,
         humanSeats: room.maxClients,
         aiCount: room.aiCount,
         totalPlayers: room.totalPlayers,
