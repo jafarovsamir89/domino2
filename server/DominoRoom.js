@@ -632,7 +632,9 @@ class DominoRoom extends Room {
                         : "room-closed-stake-unavailable";
                 this.state.gameActive = false;
                 this.broadcast("msg", { key: message, time: 2500 });
-                this.broadcast("room_closed", { reasonKey: message });
+                if (this.roomVisibility !== "open") {
+                    this.broadcast("room_closed", { reasonKey: message });
+                }
                 this.broadcastRoomState();
                 return;
             }

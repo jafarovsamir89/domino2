@@ -227,3 +227,31 @@ test("open room starts without closing after seats are chosen", async () => {
     assert.ok(!room.broadcasts.some((item) => item.type === "room_closed"));
     assert.ok(room.broadcasts.some((item) => item.type === "room_state"));
 });
+
+test("open room keeps waiting when stake reserve fails at start", async () => {
+    const room = createRoom({ totalPlayers: 2, aiCount: 0, isTeamMode: false });
+    room.roomVisibility = "open";
+    room.humanSeats = 2;
+    room.maxClients = 2;
+    room.currentStakeKey = "stake_200";
+    room.currentDealStakeKey = "stake_200";
+
+    await joinHuman(room, "host", "Host");
+    const guest = await joinHuman(room, "guest", "Guest");
+
+    room.handleChooseSeat(guest, { seatIndex: 1 });
+    room.clearTurnTimer = () => {};
+    room.scheduleTurnTimer = () => {};
+    room.reserveEconomyStake = async () => ({ ok: false, reason: "insufficient_coins" });
+    room.shouldRedealOpeningHands = () => false;
+    room.getOpeningScoreContext = () => 0;
+    room.internalBoard = new (require("../board").Board)();
+
+    await room.startGame();
+
+    assert.equal(room.state.gameActive, false);
+    assert.equal(room.roomVisibility, "open");
+    assert.ok(!room.broadcasts.some((item) => item.type === "room_closed"));
+    assert.ok(room.broadcasts.some((item) => item.type === "msg" && item.payload?.key === "room-closed-insufficient-coins"));
+    assert.ok(room.broadcasts.some((item) => item.type === "room_state"));
+});
