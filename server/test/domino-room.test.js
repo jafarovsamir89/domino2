@@ -5,6 +5,8 @@ process.env.DOMINO_SERVER_SECRET ||= "b7f4c2d9a1e8f6c3b5a7d0e9f1c4b8a6d2e7f9c1";
 process.env.BETTER_AUTH_SECRET ||= process.env.DOMINO_SERVER_SECRET;
 
 const DominoRoom = require("../DominoRoom");
+const { Board } = require("../board");
+const { Tile } = require("../model");
 
 test("generateRoomCode returns compact upper-case codes", () => {
     const codes = new Set();
@@ -443,6 +445,75 @@ test("turnVersion rejects stale replayed turn actions", () => {
 
     room.handlePlay({ sessionId: "session-1" }, { tileIndex: 0, openEndIndex: 0, turnVersion: 7 });
     assert.equal(plays, 1);
+});
+
+test("performPlay rejects a tile that does not match the selected open end and keeps the board unchanged", () => {
+    const room = Object.create(DominoRoom.prototype);
+    let advanced = 0;
+    let bumped = 0;
+    room.state = {
+        gameActive: true,
+        currentPlayerIndex: 0,
+        turnVersion: 7,
+        isTeamMode: false,
+        playerOrder: ["session-1"],
+        players: new Map([["session-1", { name: "Alice", score: 0, roundWins: 0 }]])
+    };
+    room.internalBoard = new Board();
+    room.internalBoard.placeFirst(new Tile(0, 0));
+    room.hands = [[new Tile(1, 3)]];
+    room.playerMissingSuits = [new Set()];
+    room.clearTurnTimer = () => {};
+    room.broadcast = () => {};
+    room.addScore = () => {};
+    room.endRound = () => {};
+    room.endDeal = () => {};
+    room.findFishWinner = () => 0;
+    room.scheduleTurnAdvance = () => { advanced += 1; };
+    room.bumpTurnVersion = () => { bumped += 1; };
+    room.getOpeningScoreContext = () => 0;
+
+    room.performPlay(0, 0, 0, false);
+
+    assert.equal(room.hands[0].length, 1);
+    assert.equal(room.internalBoard.nodes.length, 1);
+    assert.equal(room.state.turnVersion, 7);
+    assert.equal(advanced, 0);
+    assert.equal(bumped, 0);
+});
+
+test("performPlay keeps legal 0/3 placement on open end 0 and turns the new open end to 3", () => {
+    const room = Object.create(DominoRoom.prototype);
+    room.state = {
+        gameActive: true,
+        currentPlayerIndex: 0,
+        turnVersion: 7,
+        isTeamMode: false,
+        playerOrder: ["session-1"],
+        players: new Map([["session-1", { name: "Alice", score: 0, roundWins: 0 }]])
+    };
+    room.internalBoard = new Board();
+    room.internalBoard.placeFirst(new Tile(0, 0));
+    room.hands = [[new Tile(0, 3), new Tile(3, 6)]];
+    room.boneyard = [];
+    room.playerMissingSuits = [new Set()];
+    room.clearTurnTimer = () => {};
+    room.broadcast = () => {};
+    room.addScore = () => {};
+    room.endRound = () => {};
+    room.endDeal = () => {};
+    room.findFishWinner = () => 0;
+    room.scheduleTurnAdvance = () => {};
+    room.bumpTurnVersion = () => {};
+    room.getOpeningScoreContext = () => 0;
+
+    room.performPlay(0, 0, 0, false);
+
+    assert.equal(room.hands[0].length, 1);
+    assert.equal(room.internalBoard.nodes.length, 2);
+    assert.equal(room.internalBoard.nodes[1].displayA, 3);
+    assert.equal(room.internalBoard.nodes[1].displayB, 0);
+    assert.ok(room.internalBoard.openEnds.some((oe) => oe.value === 3));
 });
 
 test("startDeal snapshot restore keeps a playable turn state", async () => {

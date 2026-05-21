@@ -58,6 +58,30 @@ test("opening [5|5] stops giving 10 points after 300 score", () => {
     assert.equal(getOpeningPlayScore(new Tile(5, 5), 365), 0);
 });
 
+test("placeTile rejects tiles that do not match the selected open end", () => {
+    const board = new Board();
+    board.placeFirst(new Tile(0, 0));
+    const before = board.toJSON();
+
+    const score = board.placeTile(new Tile(1, 3), 0);
+
+    assert.equal(score, 0);
+    assert.deepEqual(board.toJSON(), before);
+});
+
+test("placeTile keeps legal 0/3 placements on the 0 end and exposes 3 as the next open end", () => {
+    const board = new Board();
+    board.placeFirst(new Tile(0, 0));
+
+    const score = board.placeTile(new Tile(0, 3), 0);
+
+    assert.equal(score, 0);
+    assert.equal(board.nodes.length, 2);
+    assert.equal(board.nodes[1].displayA, 3);
+    assert.equal(board.nodes[1].displayB, 0);
+    assert.ok(board.openEnds.some((oe) => oe.value === 3));
+});
+
 test("hand with five different doubles is invalid for opening deal", () => {
     const hand = [
         new Tile(0, 0),

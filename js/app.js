@@ -5704,6 +5704,13 @@ class DominoGame {
         const hand=this.hands[pi],tile=hand && hand[ti];
         if(!tile){this.turnInProgress=false;return;}
         if(!this.board.isEmpty && !this.board.openEnds[oei]){this.turnInProgress=false;return;}
+        if (!this.board.isEmpty) {
+            const openEnd = this.board.openEnds[oei];
+            if (!openEnd || !tile.hasValue(openEnd.value)) {
+                this.turnInProgress = false;
+                return;
+            }
+        }
         const sourceEl = pi === this.humanPlayerIndex ? this.renderer.handEl?.children?.[ti] || null : null;
         const sourceRect = sourceEl?.getBoundingClientRect?.() || null;
         const sourceNode = sourceEl?.cloneNode?.(true) || null;

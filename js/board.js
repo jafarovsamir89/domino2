@@ -102,7 +102,7 @@ export class Board {
     placeTile(tile, openEndIndex) {
         this.normalizeOpenEnds();
         const oe = this.openEnds[openEndIndex];
-        if (!this.isOpenEndAvailable(oe)) return 0;
+        if (!this.isOpenEndAvailable(oe) || !tile?.hasValue?.(oe.value)) return 0;
         const parent = this.nodes[oe.nodeId];
         const val = oe.value;
         const pos = this.calcPosition(parent, oe.side, tile, val, oe.growthDir);

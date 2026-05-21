@@ -1001,6 +1001,11 @@ class DominoRoom extends Room {
         const tile = hand && hand[tileIndex];
         if (!tile) return;
 
+        if (!this.internalBoard.isEmpty) {
+            const currentOpenEnd = this.internalBoard.openEnds?.[openEndIndex];
+            if (!currentOpenEnd || !tile.hasValue(currentOpenEnd.value)) return;
+        }
+
         const moves = this.internalBoard.getValidMoves(hand);
         const isValid = moves.some((m) => m.tileIndex === tileIndex && m.openEndIndex === openEndIndex);
         if (!isValid) return;

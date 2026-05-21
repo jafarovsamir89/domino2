@@ -470,23 +470,27 @@ class NetworkManager {
     }
 
     sendPlay(tileIndex, openEndIndex) {
-        if (this.room) this.room.send("play", { tileIndex, openEndIndex });
+        if (this.room) this.room.send("play", {
+            tileIndex,
+            openEndIndex,
+            turnVersion: Number(this.room?.state?.turnVersion || 0)
+        });
     }
 
     sendDraw() {
-        if (this.room) this.room.send("draw");
+        if (this.room) this.room.send("draw", { turnVersion: Number(this.room?.state?.turnVersion || 0) });
     }
 
     sendPass() {
-        if (this.room) this.room.send("pass");
+        if (this.room) this.room.send("pass", { turnVersion: Number(this.room?.state?.turnVersion || 0) });
     }
 
     sendGosha() {
-        if (this.room) this.room.send("gosha");
+        if (this.room) this.room.send("gosha", { turnVersion: Number(this.room?.state?.turnVersion || 0) });
     }
 
     sendNextDeal() {
-        if (this.room) this.room.send("next_deal");
+        if (this.room) this.room.send("next_deal", { turnVersion: Number(this.room?.state?.turnVersion || 0) });
     }
 
     sendReaction(type) {
