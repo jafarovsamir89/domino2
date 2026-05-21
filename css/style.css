@@ -1806,6 +1806,162 @@ input, button { font: inherit; }
     margin-bottom: 12px;
 }
 
+.seat-selection-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 80;
+    display: grid;
+    place-items: center;
+    padding: 16px;
+    background: rgba(4, 10, 16, 0.72);
+    backdrop-filter: blur(8px);
+}
+
+.seat-selection-overlay.is-hidden {
+    display: none;
+}
+
+.seat-selection-panel {
+    width: min(92vw, 720px);
+    border-radius: 24px;
+    padding: 18px;
+    background: linear-gradient(180deg, rgba(11, 18, 28, 0.98), rgba(7, 12, 19, 0.98));
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.45);
+}
+
+.seat-selection-head {
+    display: grid;
+    gap: 6px;
+    margin-bottom: 16px;
+}
+
+.seat-selection-title {
+    font-size: 1.15rem;
+    font-weight: 800;
+}
+
+.seat-selection-desc {
+    color: var(--text-dim);
+    font-size: 0.84rem;
+    line-height: 1.45;
+}
+
+.seat-selection-status {
+    color: var(--accent);
+    font-size: 0.82rem;
+    font-weight: 800;
+}
+
+.seat-selection-table-wrap {
+    display: grid;
+    place-items: center;
+    margin: 4px 0 16px;
+}
+
+.seat-selection-table {
+    position: relative;
+    width: min(90vw, 520px);
+    aspect-ratio: 1;
+    border-radius: 999px;
+    background:
+        radial-gradient(circle at center, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03) 34%, rgba(0, 0, 0, 0) 35%),
+        radial-gradient(circle at center, rgba(39, 64, 52, 0.96), rgba(19, 33, 28, 0.98) 68%, rgba(13, 24, 21, 1) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.32) inset;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    gap: 12px;
+    padding: 16px;
+}
+
+.seat-selection-center {
+    grid-column: 2;
+    grid-row: 2;
+    border-radius: 999px;
+    background: rgba(4, 10, 16, 0.48);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    display: grid;
+    place-items: center;
+    text-align: center;
+    padding: 18px;
+    color: var(--text-dim);
+}
+
+.seat-selection-center-title {
+    color: var(--text);
+    font-size: 0.88rem;
+    font-weight: 800;
+    margin-bottom: 6px;
+}
+
+.seat-selection-center-note {
+    font-size: 0.76rem;
+    line-height: 1.4;
+}
+
+.seat-selection-seat {
+    display: grid;
+    gap: 5px;
+    align-content: start;
+    border-radius: 18px;
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.18);
+}
+
+.seat-selection-seat.seat-bottom { grid-column: 2; grid-row: 3; }
+.seat-selection-seat.seat-left { grid-column: 1; grid-row: 2; }
+.seat-selection-seat.seat-top { grid-column: 2; grid-row: 1; }
+.seat-selection-seat.seat-right { grid-column: 3; grid-row: 2; }
+
+.seat-selection-seat.is-occupied {
+    background: rgba(255, 255, 255, 0.07);
+}
+
+.seat-selection-seat.is-mine {
+    border-color: rgba(240, 192, 64, 0.45);
+    box-shadow: 0 0 0 1px rgba(240, 192, 64, 0.15) inset;
+}
+
+.seat-selection-seat-label {
+    color: var(--accent);
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.seat-selection-seat-relation {
+    color: var(--text-dim);
+    font-size: 0.72rem;
+}
+
+.seat-selection-seat-name {
+    color: var(--text);
+    font-size: 0.96rem;
+    font-weight: 800;
+    min-height: 1.2em;
+}
+
+.seat-selection-seat-meta {
+    color: var(--text-dim);
+    font-size: 0.72rem;
+}
+
+.seat-selection-seat-btn {
+    width: 100%;
+    margin-top: 2px;
+    padding: 8px 10px;
+    font-size: 0.76rem;
+}
+
+body.seat-selection-active #game-screen {
+    filter: blur(1px) saturate(0.95);
+}
+
 .room-player-chip {
     display: flex;
     align-items: center;
@@ -1861,6 +2017,14 @@ input, button { font: inherit; }
 .multi-status {
     color: var(--text-dim);
     font-size: 0.76rem;
+}
+
+.room-player-seat {
+    color: var(--accent);
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
 }
 
 .multi-status {

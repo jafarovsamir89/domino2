@@ -10,7 +10,9 @@ function buildRoomStatePlayers({ playerOrder = [], players, identityBySessionId 
             playerId: identity.playerId || player?.userId || "",
             avatarUrl: player?.avatarUrl || identity.avatarUrl || "",
             isConnected: player ? player.isConnected : false,
-            isBot: player ? player.isBot : false
+            isBot: player ? player.isBot : false,
+            seatIndex: Number.isInteger(Number(player?.seatIndex)) ? Number(player.seatIndex) : -1,
+            seatNumber: Number.isInteger(Number(player?.seatIndex)) && Number(player.seatIndex) >= 0 ? Number(player.seatIndex) + 1 : 0
         };
     });
 }
@@ -30,6 +32,7 @@ function buildRoomStatePayload({ room, players } = {}) {
         totalPlayers: room.totalPlayers,
         isTeamMode: room.state.isTeamMode,
         gameActive: room.state.gameActive,
+        seatSelectionRequired: !room.state.gameActive && room.totalPlayers > 2 && !room.areAllHumanPlayersSeated?.(),
         hostName: room.state.players.get(room.state.playerOrder[0])?.name || "Player",
         players
     };

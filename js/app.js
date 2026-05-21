@@ -145,6 +145,7 @@ class DominoGame {
         this.coinMatchSummary = { spent: 0, won: 0 };
         this.onlineCoinSummary = { spent: 0, won: 0 };
         this.currentRoomState = null;
+        this.seatSelectionUi = null;
         this.pendingReconnectResolution = false;
         this.openRooms = [];
         this.onlineSocialPanel = 'rooms';
@@ -225,6 +226,7 @@ class DominoGame {
         this.ensureMenuEnhancements();
         this.ensureAuthIconMarkup();
         this.ensureNameEditModal();
+        this.ensureSeatSelectionUi();
         this.setLanguage(this.currentLang);
 
         const openSoloBtn = document.getElementById('open-solo-modal-btn');
@@ -2391,6 +2393,249 @@ class DominoGame {
         onlineFlow.insertAdjacentElement('beforebegin', social);
     }
 
+    ensureSeatSelectionUi() {
+        if (document.getElementById('seat-selection-overlay')) {
+            this.seatSelectionUi = this.seatSelectionUi || {
+                overlay: document.getElementById('seat-selection-overlay'),
+                table: document.getElementById('seat-selection-table'),
+                status: document.getElementById('seat-selection-status'),
+                title: document.getElementById('seat-selection-overlay')?.querySelector('.seat-selection-title'),
+                desc: document.getElementById('seat-selection-overlay')?.querySelector('.seat-selection-desc'),
+                footerText: document.getElementById('seat-selection-overlay')?.querySelector('.seat-selection-footer-text'),
+                centerTitle: document.getElementById('seat-selection-overlay')?.querySelector('.seat-selection-center-title'),
+                centerNote: document.getElementById('seat-selection-overlay')?.querySelector('.seat-selection-center-note')
+            };
+            return;
+        }
+
+        if (typeof document === 'undefined' || !document.body) return;
+
+        const overlay = document.createElement('div');
+        overlay.id = 'seat-selection-overlay';
+        overlay.className = 'seat-selection-overlay is-hidden';
+        overlay.setAttribute('aria-hidden', 'true');
+
+        const panel = document.createElement('div');
+        panel.className = 'seat-selection-panel';
+
+        const head = document.createElement('div');
+        head.className = 'seat-selection-head';
+        const kicker = document.createElement('div');
+        kicker.className = 'section-kicker';
+        kicker.dataset.i18n = 'seat-selection-title';
+        kicker.textContent = this.t('seat-selection-title');
+        const title = document.createElement('div');
+        title.className = 'seat-selection-title';
+        title.id = 'seat-selection-title';
+        title.textContent = this.t('seat-selection-title');
+        const desc = document.createElement('div');
+        desc.className = 'seat-selection-desc';
+        desc.id = 'seat-selection-desc';
+        desc.textContent = this.t('seat-selection-desc');
+        const status = document.createElement('div');
+        status.className = 'seat-selection-status';
+        status.id = 'seat-selection-status';
+        head.appendChild(kicker);
+        head.appendChild(title);
+        head.appendChild(desc);
+        head.appendChild(status);
+
+        const tableWrap = document.createElement('div');
+        tableWrap.className = 'seat-selection-table-wrap';
+        const table = document.createElement('div');
+        table.id = 'seat-selection-table';
+        table.className = 'seat-selection-table';
+        const center = document.createElement('div');
+        center.className = 'seat-selection-center';
+        const centerTitle = document.createElement('div');
+        centerTitle.className = 'seat-selection-center-title';
+        centerTitle.textContent = this.t('seat-selection-title');
+        const centerNote = document.createElement('div');
+        centerNote.className = 'seat-selection-center-note';
+        centerNote.textContent = this.t('seat-selection-desc');
+        center.appendChild(centerTitle);
+        center.appendChild(centerNote);
+        table.appendChild(center);
+        tableWrap.appendChild(table);
+
+        const footer = document.createElement('div');
+        footer.className = 'seat-selection-footer';
+        const footerText = document.createElement('div');
+        footerText.className = 'seat-selection-footer-text';
+        footerText.textContent = this.t('seat-selection-required');
+        footer.appendChild(footerText);
+
+        panel.appendChild(head);
+        panel.appendChild(tableWrap);
+        panel.appendChild(footer);
+        overlay.appendChild(panel);
+        document.body.appendChild(overlay);
+        this.seatSelectionUi = { overlay, table, status, title, desc, footerText, centerTitle, centerNote };
+    }
+
+    hideSeatSelectionUi() {
+        const overlay = document.getElementById('seat-selection-overlay');
+        if (overlay) {
+            overlay.classList.add('is-hidden');
+            overlay.setAttribute('aria-hidden', 'true');
+        }
+        document.body.classList.remove('seat-selection-active');
+    }
+
+    getSeatOppositeNumber(seatNumber, totalSeats) {
+        const normalizedSeat = Number(seatNumber);
+        const normalizedTotal = Number(totalSeats || 0);
+        if (!Number.isInteger(normalizedSeat) || normalizedSeat < 1) return 0;
+        if (normalizedTotal < 4) return 0;
+        return normalizedSeat === 1 ? 3
+            : normalizedSeat === 2 ? 4
+                : normalizedSeat === 3 ? 1
+                    : normalizedSeat === 4 ? 2
+                        : 0;
+    }
+
+    getSeatRelationText(roomState, seatNumber, occupant, mySessionId, hostName = '') {
+        const totalSeats = Number(roomState?.totalPlayers || roomState?.humanSeats || 0);
+        const isTeamMode = Boolean(roomState?.isTeamMode);
+        const seat = Number(seatNumber);
+        if (occupant?.sessionId === mySessionId) {
+            return this.t('seat-your-seat');
+        }
+        if (seat === 1) {
+            return this.t('seat-host');
+        }
+        if (isTeamMode && totalSeats >= 4) {
+            if (seat === 3) {
+                return hostName
+                    ? this.format('seat-partner', { player: hostName })
+                    : this.t('seat-partner');
+            }
+            return this.t('seat-opponent');
+        }
+        const opposite = this.getSeatOppositeNumber(seat, totalSeats);
+        if (opposite) {
+            return this.format('seat-opposite-seat', { seat: opposite });
+        }
+        return this.t('seat-opponent');
+    }
+
+    renderSeatSelectionUi(roomState = this.currentRoomState) {
+        this.ensureSeatSelectionUi();
+        const overlay = document.getElementById('seat-selection-overlay');
+        const table = document.getElementById('seat-selection-table');
+        const status = document.getElementById('seat-selection-status');
+        const footerText = this.seatSelectionUi?.footerText || overlay?.querySelector('.seat-selection-footer-text');
+        if (!overlay || !table || !status) return;
+
+        const totalSeats = Number(roomState?.totalPlayers || roomState?.humanSeats || 0);
+        const shouldShow = Boolean(this.network?.isMultiplayer && !roomState?.gameActive && totalSeats > 2 && roomState?.seatSelectionRequired !== false);
+        if (!shouldShow) {
+            this.hideSeatSelectionUi();
+            return;
+        }
+
+        const mySessionId = this.network?.room?.sessionId || '';
+        const players = Array.isArray(roomState?.players) ? roomState.players : [];
+        const seatMap = new Map();
+        players.forEach((player) => {
+            const seatIndex = Number(player?.seatIndex);
+            if (Number.isInteger(seatIndex) && seatIndex >= 0) {
+                seatMap.set(seatIndex, player);
+            }
+        });
+        const seatedCount = seatMap.size;
+        const seatOrder = totalSeats === 3 ? [2, 1, 0] : totalSeats >= 4 ? [2, 1, 3, 0] : Array.from({ length: totalSeats }, (_, i) => i);
+
+        overlay.classList.remove('is-hidden');
+        overlay.setAttribute('aria-hidden', 'false');
+        document.body.classList.add('seat-selection-active');
+        status.textContent = this.format('seat-selection-status', {
+            seated: seatedCount,
+            total: Math.max(totalSeats, 0)
+        });
+        if (footerText) {
+            footerText.textContent = roomState?.seatSelectionRequired === false
+                ? this.t('seat-selection-title')
+                : this.t('seat-selection-required');
+        }
+        table.innerHTML = '';
+        table.dataset.totalSeats = String(totalSeats || 0);
+        table.dataset.teamMode = roomState?.isTeamMode ? 'true' : 'false';
+        const center = document.createElement('div');
+        center.className = 'seat-selection-center';
+        table.appendChild(center);
+        const centerTitle = document.createElement('div');
+        centerTitle.className = 'seat-selection-center-title';
+        centerTitle.textContent = roomState?.isTeamMode && totalSeats >= 4
+            ? `${this.t('seat-team-a')} / ${this.t('seat-team-b')}`
+            : this.t('seat-selection-title');
+        const centerNote = document.createElement('div');
+        centerNote.className = 'seat-selection-center-note';
+        centerNote.textContent = roomState?.isTeamMode && totalSeats >= 4
+            ? `${this.t('seat-prefix')} 1 + ${this.t('seat-prefix')} 3 · ${this.t('seat-team-a')} | ${this.t('seat-prefix')} 2 + ${this.t('seat-prefix')} 4 · ${this.t('seat-team-b')}`
+            : this.t('seat-selection-desc');
+        center.appendChild(centerTitle);
+        center.appendChild(centerNote);
+
+        for (const seatIndex of seatOrder) {
+            const seatNumber = seatIndex + 1;
+            const occupant = seatMap.get(seatIndex) || null;
+            const isMine = occupant?.sessionId === mySessionId;
+            const isOccupied = Boolean(occupant);
+            const slot = document.createElement('div');
+            slot.className = `seat-selection-seat seat-selection-seat-${seatNumber}`;
+            if (seatNumber === 1) slot.classList.add('seat-bottom');
+            if (seatNumber === 2) slot.classList.add('seat-left');
+            if (seatNumber === 3) slot.classList.add('seat-top');
+            if (seatNumber === 4) slot.classList.add('seat-right');
+            if (isMine) slot.classList.add('is-mine');
+            if (isOccupied) slot.classList.add('is-occupied');
+
+            const seatLabel = document.createElement('div');
+            seatLabel.className = 'seat-selection-seat-label';
+            seatLabel.textContent = `${this.t('seat-prefix')} ${seatNumber}`;
+
+            const relation = document.createElement('div');
+            relation.className = 'seat-selection-seat-relation';
+            relation.textContent = this.getSeatRelationText(roomState, seatNumber, occupant, mySessionId, roomState?.hostName || '');
+
+            const occupantLine = document.createElement('div');
+            occupantLine.className = 'seat-selection-seat-name';
+            if (occupant) {
+                occupantLine.textContent = isMine ? `${occupant.name || this.t('seat-your-seat')} (${this.t('online-you')})` : (occupant.name || this.t('seat-taken'));
+            } else {
+                occupantLine.textContent = this.t('seat-sit-here');
+            }
+
+            const meta = document.createElement('div');
+            meta.className = 'seat-selection-seat-meta';
+            if (roomState?.isTeamMode && totalSeats >= 4) {
+                meta.textContent = seatNumber % 2 === 1 ? this.t('seat-team-a') : this.t('seat-team-b');
+            } else {
+                meta.textContent = relation.textContent;
+            }
+
+            const action = document.createElement('button');
+            action.className = 'btn btn-action seat-selection-seat-btn';
+            action.type = 'button';
+            action.textContent = isMine ? this.t('seat-your-seat') : this.t('seat-sit-here');
+            action.disabled = isOccupied || this.network?.reconnectInProgress === true;
+            if (!isOccupied) {
+                action.addEventListener('click', () => {
+                    if (action.disabled) return;
+                    this.network?.sendChooseSeat?.(seatIndex);
+                });
+            }
+
+            slot.appendChild(seatLabel);
+            slot.appendChild(relation);
+            slot.appendChild(occupantLine);
+            slot.appendChild(meta);
+            slot.appendChild(action);
+            table.appendChild(slot);
+        }
+    }
+
     ensureGameHudEnhancements() {
         const gameInfo = document.querySelector('.game-info');
         if (gameInfo && !document.getElementById('stake-info')) {
@@ -3696,6 +3941,7 @@ class DominoGame {
         const roomCountEl = document.getElementById('room-player-count-display');
         if (roomCountEl) roomCountEl.textContent = `${this.onlinePlayerCount} / ${this.onlinePlayerCount}`;
         document.getElementById('room-player-list').innerHTML = '';
+        this.hideSeatSelectionUi();
         this.setHostStatus(this.t('online-room-create-hint'));
         this.setJoinStatus(this.t('online-room-join-hint'));
     }
@@ -3823,6 +4069,12 @@ class DominoGame {
             state.className = 'room-player-state';
             state.textContent = player.isConnected ? this.t('online-ready') : this.t('online-offline');
             chip.dataset.sessionId = player.sessionId || '';
+            if (player.seatNumber) {
+                const seat = document.createElement('span');
+                seat.className = 'room-player-seat';
+                seat.textContent = `${this.t('seat-prefix')} ${player.seatNumber}`;
+                chip.appendChild(seat);
+            }
 
             chip.appendChild(avatar);
             chip.appendChild(name);
@@ -3865,6 +4117,8 @@ class DominoGame {
             this.persistGameResumeSnapshot();
         }
 
+        this.renderSeatSelectionUi(roomState);
+
         this.voice?.syncRoomState?.(roomState);
     }
 
@@ -3901,6 +4155,7 @@ class DominoGame {
         this.roundOver = false;
         this.matchOver = false;
         this.gameActive = false;
+        this.renderSeatSelectionUi(roomState);
         this.renderState();
     }
 
@@ -3923,6 +4178,7 @@ class DominoGame {
         document.getElementById('game-over-screen').classList.remove('active');
         document.getElementById('game-screen').classList.remove('active');
         document.getElementById('start-screen').classList.add('active');
+        this.hideSeatSelectionUi();
         this.setJoinStatus(reason);
         this.setHostStatus(reason);
         this.clearGameResumeSnapshot();

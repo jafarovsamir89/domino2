@@ -163,7 +163,8 @@ test("onCreate restores room identity and snapshot state without mutating the so
                     roundWins: 1,
                     handCount: 2,
                     isConnected: true,
-                    isBot: false
+                    isBot: false,
+                    seatIndex: 0
                 }
             ],
             currentPlayerIndex: 0,
@@ -230,6 +231,7 @@ test("onCreate restores room identity and snapshot state without mutating the so
     assert.ok(room.internalBoard);
     assert.equal(room.state.playerOrder[0], "session-1");
     assert.equal(room.identityBySessionId.get("session-1").displayName, "Alice");
+    assert.equal(room.state.players.get("session-1").seatIndex, 0);
     assert.deepEqual(snapshot, snapshotClone);
 });
 

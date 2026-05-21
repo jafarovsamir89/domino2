@@ -1,0 +1,199 @@
+const test = require("node:test");
+const assert = require("node:assert/strict");
+
+process.env.DOMINO_SERVER_SECRET ||= "b7f4c2d9a1e8f6c3b5a7d0e9f1c4b8a6d2e7f9c1";
+process.env.BETTER_AUTH_SECRET ||= process.env.DOMINO_SERVER_SECRET;
+
+const DominoRoom = require("../DominoRoom");
+
+function createRoom({ totalPlayers = 4, aiCount = 0, isTeamMode = true } = {}) {
+    const room = Object.create(DominoRoom.prototype);
+    Object.defineProperty(room, "roomId", { value: "room-seat", writable: true, configurable: true });
+    room.roomCode = "SEAT";
+    room.roomVisibility = "closed";
+    room.totalPlayers = totalPlayers;
+    room.aiCount = aiCount;
+    room.humanSeats = totalPlayers - aiCount;
+    room.maxClients = room.humanSeats;
+    room.aiDifficulty = "medium";
+    room.state = {
+        players: new Map(),
+        playerOrder: [],
+        gameActive: false,
+        matchFinished: false,
+        isTeamMode,
+        turnVersion: 1,
+        teamScores: [0, 0],
+        teamRoundWins: [0, 0]
+    };
+    room.playerCount = totalPlayers;
+    room.playerNames = Array.from({ length: totalPlayers }, (_, index) => `Player ${index + 1}`);
+    room.hands = Array.from({ length: totalPlayers }, () => []);
+    room.scores = Array.from({ length: totalPlayers }, () => 0);
+    room.roundWins = Array.from({ length: totalPlayers }, () => 0);
+    room.currentPlayer = 0;
+    room.humanPlayerIndex = 0;
+    room.identityBySessionId = new Map();
+    room.broadcasts = [];
+    room.clients = [];
+    room.botIds = [];
+    room.aiPlayers = new Map();
+    room.currentStakeKey = "free";
+    room.currentDealStakeAmount = 0;
+    room.currentDealBankAmount = 0;
+    room.matchRecorded = false;
+    room.forfeitSettlementMade = false;
+    room.restoredFromSnapshot = false;
+    room.lastReservedMatchRound = 0;
+    room.pendingMatchRecording = null;
+    room.matchRecordInFlight = false;
+    room.pendingEconomySettlement = Promise.resolve();
+    room.turnTimer = null;
+    room.turnAdvanceTimer = null;
+    room.nextDealTimer = null;
+    room.botTimer = null;
+    room.matchFinished = false;
+    room.hasRestoredMatchInProgress = () => false;
+    room.broadcast = (type, payload) => {
+        room.broadcasts.push({ type, payload });
+    };
+    room.broadcastRoomState = () => {
+        room.broadcasts.push({ type: "room_state" });
+    };
+    room.syncState = () => {};
+    room.registerLivePlayer = () => {};
+    room.maybeAutoStartGame = () => false;
+    room.allowReconnection = async () => {};
+    return room;
+}
+
+function createClient(sessionId) {
+    const messages = [];
+    return {
+        sessionId,
+        messages,
+        send(type, payload) {
+            messages.push({ type, payload });
+        },
+        leave() {}
+    };
+}
+
+async function joinHuman(room, sessionId, name) {
+    const client = createClient(sessionId);
+    room.clients.push(client);
+    await room.onJoin(client, { name }, {
+        provider: "platform",
+        userId: `u-${sessionId}`,
+        displayName: name,
+        playerId: `p-${sessionId}`
+    });
+    return client;
+}
+
+test("host joins Seat 1 automatically", async () => {
+    const room = createRoom();
+    const host = await joinHuman(room, "host", "Host");
+
+    assert.equal(room.getPlayerSeatIndex("host"), 0);
+    assert.deepEqual(room.state.playerOrder, ["host"]);
+    assert.equal(room.state.players.get("host").seatIndex, 0);
+    assert.equal(host.messages.length, 0);
+});
+
+test("a player can choose Seat 3 and playerOrder follows seat order", async () => {
+    const room = createRoom();
+    await joinHuman(room, "host", "Host");
+    const guestA = await joinHuman(room, "guest-a", "Alice");
+    const guestB = await joinHuman(room, "guest-b", "Bob");
+
+    room.handleChooseSeat(guestA, { seatIndex: 3 });
+    room.handleChooseSeat(guestB, { seatIndex: 1 });
+
+    assert.equal(room.getPlayerSeatIndex("guest-a"), 3);
+    assert.equal(room.getPlayerSeatIndex("guest-b"), 1);
+    assert.deepEqual(room.state.playerOrder, ["host", "guest-b", "guest-a"]);
+});
+
+test("two players cannot choose the same seat", async () => {
+    const room = createRoom();
+    await joinHuman(room, "host", "Host");
+    const guestA = await joinHuman(room, "guest-a", "Alice");
+    const guestB = await joinHuman(room, "guest-b", "Bob");
+
+    room.handleChooseSeat(guestA, { seatIndex: 2 });
+    room.handleChooseSeat(guestB, { seatIndex: 2 });
+
+    assert.equal(room.getPlayerSeatIndex("guest-a"), 2);
+    assert.equal(room.getPlayerSeatIndex("guest-b"), -1);
+    assert.equal(guestB.messages.some((item) => item.payload?.key === "seat-taken"), true);
+});
+
+test("seat cannot be changed after the game starts", async () => {
+    const room = createRoom();
+    await joinHuman(room, "host", "Host");
+    const guest = await joinHuman(room, "guest", "Guest");
+
+    room.handleChooseSeat(guest, { seatIndex: 2 });
+    room.state.gameActive = true;
+    room.handleChooseSeat(guest, { seatIndex: 1 });
+
+    assert.equal(room.getPlayerSeatIndex("guest"), 2);
+});
+
+test("team mode pairs Seat 1 + Seat 3 and Seat 2 + Seat 4", async () => {
+    const room = createRoom({ totalPlayers: 4, aiCount: 0, isTeamMode: true });
+    const host = await joinHuman(room, "host", "Host");
+    const guestA = await joinHuman(room, "guest-a", "Alice");
+    const guestB = await joinHuman(room, "guest-b", "Bob");
+    const guestC = await joinHuman(room, "guest-c", "Carol");
+
+    room.handleChooseSeat(guestA, { seatIndex: 2 });
+    room.handleChooseSeat(guestB, { seatIndex: 1 });
+    room.handleChooseSeat(guestC, { seatIndex: 3 });
+
+    room.rebuildPlayerOrderBySeats();
+
+    assert.equal(room.getPlayerSeatIndex(host.sessionId), 0);
+    assert.deepEqual(room.getTeamMembers(0), [0, 2]);
+    assert.deepEqual(room.getTeamMembers(1), [1, 3]);
+});
+
+test("leaving before the game starts frees the seat", async () => {
+    const room = createRoom();
+    await joinHuman(room, "host", "Host");
+    const guest = await joinHuman(room, "guest", "Guest");
+
+    room.handleChooseSeat(guest, { seatIndex: 2 });
+    await room.onLeave(guest, true);
+
+    assert.equal(room.state.players.has("guest"), false);
+    assert.equal(room.isSeatAvailable(2), true);
+});
+
+test("reconnect before the game starts keeps the seat", async () => {
+    const room = createRoom();
+    await joinHuman(room, "host", "Host");
+    const guest = await joinHuman(room, "guest", "Guest");
+
+    room.handleChooseSeat(guest, { seatIndex: 2 });
+    room.allowReconnection = async () => {};
+    await room.onLeave(guest, false);
+
+    assert.equal(room.state.players.get("guest").seatIndex, 2);
+    assert.equal(room.state.players.get("guest").isConnected, true);
+});
+
+test("bots fill remaining seats without stealing human seats", async () => {
+    const room = createRoom({ totalPlayers: 4, aiCount: 2, isTeamMode: true });
+    await joinHuman(room, "host", "Host");
+    const guest = await joinHuman(room, "guest", "Guest");
+
+    room.handleChooseSeat(guest, { seatIndex: 2 });
+    room.ensureBotPlayers();
+
+    const botSeats = room.botIds.map((botId) => room.getPlayerSeatIndex(botId)).sort((a, b) => a - b);
+    assert.deepEqual(botSeats, [1, 3]);
+    assert.equal(room.getPlayerSeatIndex("host"), 0);
+    assert.equal(room.getPlayerSeatIndex("guest"), 2);
+});

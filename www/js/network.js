@@ -493,6 +493,12 @@ class NetworkManager {
         if (this.room) this.room.send("next_deal", { turnVersion: Number(this.room?.state?.turnVersion || 0) });
     }
 
+    sendChooseSeat(seatIndex) {
+        if (this.room) this.room.send("choose_seat", {
+            seatIndex: Number(seatIndex)
+        });
+    }
+
     sendReaction(type) {
         if (this.room) this.room.send("reaction", { type });
     }

@@ -5,9 +5,9 @@ const { buildRoomStatePlayers, buildRoomStatePayload } = require("../roomStatePa
 
 test("buildRoomStatePlayers builds rows in player order with current fallbacks", () => {
     const players = new Map([
-        ["s1", { name: "Alice", userId: "u1", avatarUrl: "a1", isConnected: true, isBot: false }],
-        ["s2", { name: "Bob", userId: "u2", avatarUrl: "a2", isConnected: false, isBot: true }],
-        ["s3", { name: "Carol", userId: "u3", avatarUrl: "a3", isConnected: true, isBot: false }]
+        ["s1", { name: "Alice", userId: "u1", avatarUrl: "a1", isConnected: true, isBot: false, seatIndex: 0 }],
+        ["s2", { name: "Bob", userId: "u2", avatarUrl: "a2", isConnected: false, isBot: true, seatIndex: -1 }],
+        ["s3", { name: "Carol", userId: "u3", avatarUrl: "a3", isConnected: true, isBot: false, seatIndex: 2 }]
     ]);
     const identities = new Map([
         ["s1", { playerId: "p1", avatarUrl: "ia1" }],
@@ -23,9 +23,9 @@ test("buildRoomStatePlayers builds rows in player order with current fallbacks",
     });
 
     assert.deepEqual(rows, [
-        { sessionId: "s1", index: 0, name: "Alice", userId: "u1", playerId: "p1", avatarUrl: "a1", isConnected: true, isBot: false },
-        { sessionId: "s2", index: 1, name: "Bob", userId: "u2", playerId: "u2", avatarUrl: "a2", isConnected: false, isBot: true },
-        { sessionId: "s3", index: 2, name: "Carol", userId: "u3", playerId: "p3", avatarUrl: "a3", isConnected: true, isBot: false }
+        { sessionId: "s1", index: 0, name: "Alice", userId: "u1", playerId: "p1", avatarUrl: "a1", isConnected: true, isBot: false, seatIndex: 0, seatNumber: 1 },
+        { sessionId: "s2", index: 1, name: "Bob", userId: "u2", playerId: "u2", avatarUrl: "a2", isConnected: false, isBot: true, seatIndex: -1, seatNumber: 0 },
+        { sessionId: "s3", index: 2, name: "Carol", userId: "u3", playerId: "p3", avatarUrl: "a3", isConnected: true, isBot: false, seatIndex: 2, seatNumber: 3 }
     ]);
     assert.deepEqual(players, playersClone);
     assert.deepEqual(identities, identitiesClone);
@@ -46,7 +46,9 @@ test("buildRoomStatePlayers keeps fallback values for missing players", () => {
         playerId: "",
         avatarUrl: "",
         isConnected: false,
-        isBot: false
+        isBot: false,
+        seatIndex: -1,
+        seatNumber: 0
     }]);
 });
 
@@ -87,6 +89,7 @@ test("buildRoomStatePayload preserves room_state fields and currentPlayers logic
         totalPlayers: 4,
         isTeamMode: true,
         gameActive: true,
+        seatSelectionRequired: false,
         hostName: "Host",
         players
     });
@@ -117,4 +120,5 @@ test("buildRoomStatePayload uses clients length when the game is inactive", () =
     assert.equal(payload.currentPlayers, 3);
     assert.equal(payload.stakeKey, "stake_200");
     assert.equal(payload.hostName, "Host");
+    assert.equal(payload.seatSelectionRequired, true);
 });

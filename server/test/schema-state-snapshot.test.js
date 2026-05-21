@@ -21,7 +21,8 @@ test("buildSchemaStateSnapshotData returns the expected snapshot shape", () => {
                 roundWins: 2,
                 handCount: 3,
                 isConnected: true,
-                isBot: false
+                isBot: false,
+                seatIndex: 0
             }],
             ["session-2", {
                 name: "Bot",
@@ -31,7 +32,8 @@ test("buildSchemaStateSnapshotData returns the expected snapshot shape", () => {
                 roundWins: 0,
                 handCount: 0,
                 isConnected: false,
-                isBot: true
+                isBot: true,
+                seatIndex: 2
             }]
         ]),
         currentPlayerIndex: 1,
@@ -66,7 +68,8 @@ test("buildSchemaStateSnapshotData returns the expected snapshot shape", () => {
             roundWins: 2,
             handCount: 3,
             isConnected: true,
-            isBot: false
+            isBot: false,
+            seatIndex: 0
         },
         {
             sessionId: "session-2",
@@ -77,7 +80,8 @@ test("buildSchemaStateSnapshotData returns the expected snapshot shape", () => {
             roundWins: 0,
             handCount: 0,
             isConnected: false,
-            isBot: true
+            isBot: true,
+            seatIndex: 2
         }
     ]);
     assert.equal(snapshot.currentPlayerIndex, 1);
@@ -122,7 +126,8 @@ test("buildSchemaStateSnapshotData keeps fallback values for missing players", (
                 roundWins: 0,
                 handCount: 1,
                 isConnected: false,
-                isBot: false
+                isBot: false,
+                seatIndex: -1
             }]
         ]),
         teamScores: [],
@@ -141,7 +146,8 @@ test("buildSchemaStateSnapshotData keeps fallback values for missing players", (
             roundWins: 0,
             handCount: 1,
             isConnected: false,
-            isBot: false
+            isBot: false,
+            seatIndex: -1
         },
         {
             sessionId: "missing",
@@ -152,7 +158,8 @@ test("buildSchemaStateSnapshotData keeps fallback values for missing players", (
             roundWins: 0,
             handCount: 0,
             isConnected: false,
-            isBot: false
+            isBot: false,
+            seatIndex: -1
         }
     ]);
 });
@@ -185,7 +192,8 @@ test("buildRestoredPlayerRows sanitizes names and normalizes raw values", () => 
             roundWins: "2",
             handCount: "3",
             avatarUrl: " https://example.com/a.png ",
-            isBot: false
+            isBot: false,
+            seatIndex: "2"
         },
         {
             sessionId: "session-2",
@@ -195,7 +203,8 @@ test("buildRestoredPlayerRows sanitizes names and normalizes raw values", () => 
             roundWins: undefined,
             handCount: undefined,
             avatarUrl: "",
-            isBot: true
+            isBot: true,
+            seatIndex: 0
         }
     ];
     const playerRowsClone = structuredClone(playerRows);
@@ -215,7 +224,8 @@ test("buildRestoredPlayerRows sanitizes names and normalizes raw values", () => 
             handCount: 3,
             avatarUrl: "https://example.com/a.png",
             isBot: false,
-            isConnected: false
+            isConnected: false,
+            seatIndex: 2
         },
         {
             sessionId: "session-2",
@@ -226,7 +236,8 @@ test("buildRestoredPlayerRows sanitizes names and normalizes raw values", () => 
             handCount: 0,
             avatarUrl: "",
             isBot: true,
-            isConnected: true
+            isConnected: true,
+            seatIndex: 0
         }
     ]);
     assert.deepEqual(playerRows, playerRowsClone);
@@ -244,7 +255,8 @@ test("buildRestoredSchemaStateData applies current fallbacks and does not mutate
                 roundWins: "1",
                 handCount: "2",
                 avatarUrl: " https://example.com/b.png ",
-                isBot: true
+                isBot: true,
+                seatIndex: "1"
             }
         ],
         currentPlayerIndex: "2",
@@ -282,7 +294,8 @@ test("buildRestoredSchemaStateData applies current fallbacks and does not mutate
             handCount: 2,
             avatarUrl: "https://example.com/b.png",
             isBot: true,
-            isConnected: true
+            isConnected: true,
+            seatIndex: 1
         }
     ]);
     assert.equal(restored.currentPlayerIndex, 2);

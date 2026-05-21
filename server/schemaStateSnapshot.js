@@ -17,6 +17,7 @@ function buildSchemaStateSnapshotData({ state }) {
         teamRoundWins: Array.from(state?.teamRoundWins || [0, 0]),
         players: playerOrder.map((sessionId) => {
             const player = state?.players?.get(sessionId);
+            const seatIndex = Number.isInteger(Number(player?.seatIndex)) ? Number(player.seatIndex) : -1;
             return {
                 sessionId,
                 name: player?.name || "Player",
@@ -26,7 +27,8 @@ function buildSchemaStateSnapshotData({ state }) {
                 roundWins: player?.roundWins || 0,
                 handCount: player?.handCount || 0,
                 isConnected: player?.isConnected || false,
-                isBot: player?.isBot || false
+                isBot: player?.isBot || false,
+                seatIndex
             };
         })
     };
@@ -56,7 +58,8 @@ function buildRestoredPlayerRows({ playerRows, sanitizeName }) {
                     handCount: Number(entry?.handCount || 0),
                     avatarUrl: String(entry?.avatarUrl || "").trim(),
                     isBot: Boolean(entry?.isBot),
-                    isConnected: Boolean(entry?.isBot)
+                    isConnected: Boolean(entry?.isBot),
+                    seatIndex: Number.isInteger(Number(entry?.seatIndex)) ? Number(entry.seatIndex) : -1
                 };
             })
             .filter(Boolean)

@@ -1,4 +1,4 @@
-﻿import { Tile, createFullSet, shuffle, getHandSize, determineFirstPlayer, handPoints, getOpeningPlayScore, hasInvalidOpeningHand, roundTo5 } from './model.js';
+import { Tile, createFullSet, shuffle, getHandSize, determineFirstPlayer, handPoints, getOpeningPlayScore, hasInvalidOpeningHand, roundTo5 } from './model.js';
 import { Board, reconstructBoard } from './board.js';
 import { AIPlayer } from './ai.js';
 import { Renderer } from './renderer.js';
@@ -12,8 +12,6 @@ const TARGET=365, MAX_R=3, DLOSS=255, IWIN=35;
 const TURN_TIMEOUT_MS = 30000;
 const BOT_THINK_DELAY_MS = 1500;
 const DEAL_END_MODAL_MS = 5000;
-const DEFAULT_ONLINE_STAKE_KEY = 'stake_200';
-const ONLINE_STAKE_KEYS = new Set(['stake_200', 'stake_500', 'stake_1000', 'stake_5000']);
 const DEFAULT_TABLE_SKIN_KEY = 'table_skin_default';
 const DEFAULT_TABLE_SKIN = {
     key: DEFAULT_TABLE_SKIN_KEY,
@@ -147,6 +145,7 @@ class DominoGame {
         this.coinMatchSummary = { spent: 0, won: 0 };
         this.onlineCoinSummary = { spent: 0, won: 0 };
         this.currentRoomState = null;
+        this.seatSelectionUi = null;
         this.pendingReconnectResolution = false;
         this.openRooms = [];
         this.onlineSocialPanel = 'rooms';
@@ -227,6 +226,7 @@ class DominoGame {
         this.ensureMenuEnhancements();
         this.ensureAuthIconMarkup();
         this.ensureNameEditModal();
+        this.ensureSeatSelectionUi();
         this.setLanguage(this.currentLang);
 
         const openSoloBtn = document.getElementById('open-solo-modal-btn');
@@ -390,7 +390,7 @@ class DominoGame {
             b.addEventListener('click', () => {
                 document.querySelectorAll('#online-stake-group .btn-option').forEach(x => x.classList.remove('active'));
                 b.classList.add('active');
-                this.onlineStakeKey = this.normalizeOnlineStakeKey(b.dataset.value);
+                this.onlineStakeKey = b.dataset.value || 'stake_50';
                 this.syncMultiplayerOptions();
             });
         });
@@ -410,7 +410,7 @@ class DominoGame {
             if (!profile) {
                 this.setHostStatus(this.t('account-registration-required-online'));
                 return;
-            summary.textContent = `${this.format('online-room-summary', { humans, bots: this.onlineAiCount, total: this.onlinePlayerCount })} В· ${stakeLabel}`;
+            summary.textContent = `${this.format('online-room-summary', { humans, bots: this.onlineAiCount, total: this.onlinePlayerCount })} · ${stakeLabel}`;
             }
             this.playerName = name;
             this.showMultiplayerPanel('host');
@@ -1910,11 +1910,7 @@ class DominoGame {
             list.innerHTML = '';
             rows.forEach((row) => {
                 const item = document.createElement('div');
-                const label = document.createElement('div');
-                const rating = document.createElement('div');
                 item.className = 'room-player-chip';
-                label.className = 'room-player-state';
-                rating.className = 'room-player-state';
                 const titleKey = `title-${String(row.titleCode || 'rookie')}`;
                 const title = this.t(titleKey);
                 label.textContent = `#${row.rank} ${row.name} · ${title}`;
@@ -2045,7 +2041,7 @@ class DominoGame {
             : `${this.t('account-player-id')}: -`;
         if (profileMeta) {
             profileMeta.textContent = profile
-                ? `${titleLabel} В· ${this.t('account-rating')}: ${profile.rating}`
+                ? `${titleLabel} · ${this.t('account-rating')}: ${profile.rating}`
                 : this.t('account-guest-profile');
         }
         if (ratingValue) ratingValue.textContent = String(profile?.rating ?? 1000);
@@ -2082,7 +2078,7 @@ class DominoGame {
                             ? 'account-history-loss'
                             : 'account-history-draw';
                     item.className = 'room-player-chip';
-                    label.textContent = `${this.t(resultKey)} В· ${match.mode}`;
+                    label.textContent = `${this.t(resultKey)} · ${match.mode}`;
                     value.textContent = deltaLabel;
                     item.appendChild(label);
                     item.appendChild(value);
@@ -2261,25 +2257,6 @@ class DominoGame {
         container.replaceChildren(node);
     }
 
-    setConnectionBanner(message = '', kind = 'reconnecting') {
-        const banner = document.getElementById('connection-banner');
-        const text = document.getElementById('connection-banner-text');
-        if (!banner) return;
-
-        const nextMessage = String(message || '').trim();
-        const shouldShow = Boolean(nextMessage);
-        if (text && shouldShow) {
-            text.textContent = nextMessage;
-        }
-        banner.classList.toggle('is-visible', shouldShow);
-        banner.classList.toggle('is-error', shouldShow && kind === 'error');
-        document.body.classList.toggle('is-reconnecting', shouldShow && kind === 'reconnecting');
-        if (!shouldShow) {
-            banner.classList.remove('is-error');
-            document.body.classList.remove('is-reconnecting');
-        }
-    }
-
     ensureStartScreenEnhancements() {
         const startShell = document.querySelector('.start-shell');
         const startActions = document.querySelector('.start-actions');
@@ -2313,20 +2290,6 @@ class DominoGame {
             banner.appendChild(copy);
             banner.appendChild(resumeBtn);
             startActions.insertAdjacentElement('afterend', banner);
-        }
-
-        if (!document.getElementById('connection-banner')) {
-            const banner = document.createElement('div');
-            banner.id = 'connection-banner';
-            banner.className = 'connection-banner';
-            banner.setAttribute('role', 'status');
-            banner.setAttribute('aria-live', 'polite');
-            banner.setAttribute('aria-atomic', 'true');
-            const text = document.createElement('span');
-            text.id = 'connection-banner-text';
-            text.textContent = this.t('connection-reconnecting');
-            banner.appendChild(text);
-            document.body.appendChild(banner);
         }
 
         const stakeGroup = document.getElementById('solo-stake-wrapper');
@@ -2430,6 +2393,249 @@ class DominoGame {
         onlineFlow.insertAdjacentElement('beforebegin', social);
     }
 
+    ensureSeatSelectionUi() {
+        if (document.getElementById('seat-selection-overlay')) {
+            this.seatSelectionUi = this.seatSelectionUi || {
+                overlay: document.getElementById('seat-selection-overlay'),
+                table: document.getElementById('seat-selection-table'),
+                status: document.getElementById('seat-selection-status'),
+                title: document.getElementById('seat-selection-overlay')?.querySelector('.seat-selection-title'),
+                desc: document.getElementById('seat-selection-overlay')?.querySelector('.seat-selection-desc'),
+                footerText: document.getElementById('seat-selection-overlay')?.querySelector('.seat-selection-footer-text'),
+                centerTitle: document.getElementById('seat-selection-overlay')?.querySelector('.seat-selection-center-title'),
+                centerNote: document.getElementById('seat-selection-overlay')?.querySelector('.seat-selection-center-note')
+            };
+            return;
+        }
+
+        if (typeof document === 'undefined' || !document.body) return;
+
+        const overlay = document.createElement('div');
+        overlay.id = 'seat-selection-overlay';
+        overlay.className = 'seat-selection-overlay is-hidden';
+        overlay.setAttribute('aria-hidden', 'true');
+
+        const panel = document.createElement('div');
+        panel.className = 'seat-selection-panel';
+
+        const head = document.createElement('div');
+        head.className = 'seat-selection-head';
+        const kicker = document.createElement('div');
+        kicker.className = 'section-kicker';
+        kicker.dataset.i18n = 'seat-selection-title';
+        kicker.textContent = this.t('seat-selection-title');
+        const title = document.createElement('div');
+        title.className = 'seat-selection-title';
+        title.id = 'seat-selection-title';
+        title.textContent = this.t('seat-selection-title');
+        const desc = document.createElement('div');
+        desc.className = 'seat-selection-desc';
+        desc.id = 'seat-selection-desc';
+        desc.textContent = this.t('seat-selection-desc');
+        const status = document.createElement('div');
+        status.className = 'seat-selection-status';
+        status.id = 'seat-selection-status';
+        head.appendChild(kicker);
+        head.appendChild(title);
+        head.appendChild(desc);
+        head.appendChild(status);
+
+        const tableWrap = document.createElement('div');
+        tableWrap.className = 'seat-selection-table-wrap';
+        const table = document.createElement('div');
+        table.id = 'seat-selection-table';
+        table.className = 'seat-selection-table';
+        const center = document.createElement('div');
+        center.className = 'seat-selection-center';
+        const centerTitle = document.createElement('div');
+        centerTitle.className = 'seat-selection-center-title';
+        centerTitle.textContent = this.t('seat-selection-title');
+        const centerNote = document.createElement('div');
+        centerNote.className = 'seat-selection-center-note';
+        centerNote.textContent = this.t('seat-selection-desc');
+        center.appendChild(centerTitle);
+        center.appendChild(centerNote);
+        table.appendChild(center);
+        tableWrap.appendChild(table);
+
+        const footer = document.createElement('div');
+        footer.className = 'seat-selection-footer';
+        const footerText = document.createElement('div');
+        footerText.className = 'seat-selection-footer-text';
+        footerText.textContent = this.t('seat-selection-required');
+        footer.appendChild(footerText);
+
+        panel.appendChild(head);
+        panel.appendChild(tableWrap);
+        panel.appendChild(footer);
+        overlay.appendChild(panel);
+        document.body.appendChild(overlay);
+        this.seatSelectionUi = { overlay, table, status, title, desc, footerText, centerTitle, centerNote };
+    }
+
+    hideSeatSelectionUi() {
+        const overlay = document.getElementById('seat-selection-overlay');
+        if (overlay) {
+            overlay.classList.add('is-hidden');
+            overlay.setAttribute('aria-hidden', 'true');
+        }
+        document.body.classList.remove('seat-selection-active');
+    }
+
+    getSeatOppositeNumber(seatNumber, totalSeats) {
+        const normalizedSeat = Number(seatNumber);
+        const normalizedTotal = Number(totalSeats || 0);
+        if (!Number.isInteger(normalizedSeat) || normalizedSeat < 1) return 0;
+        if (normalizedTotal < 4) return 0;
+        return normalizedSeat === 1 ? 3
+            : normalizedSeat === 2 ? 4
+                : normalizedSeat === 3 ? 1
+                    : normalizedSeat === 4 ? 2
+                        : 0;
+    }
+
+    getSeatRelationText(roomState, seatNumber, occupant, mySessionId, hostName = '') {
+        const totalSeats = Number(roomState?.totalPlayers || roomState?.humanSeats || 0);
+        const isTeamMode = Boolean(roomState?.isTeamMode);
+        const seat = Number(seatNumber);
+        if (occupant?.sessionId === mySessionId) {
+            return this.t('seat-your-seat');
+        }
+        if (seat === 1) {
+            return this.t('seat-host');
+        }
+        if (isTeamMode && totalSeats >= 4) {
+            if (seat === 3) {
+                return hostName
+                    ? this.format('seat-partner', { player: hostName })
+                    : this.t('seat-partner');
+            }
+            return this.t('seat-opponent');
+        }
+        const opposite = this.getSeatOppositeNumber(seat, totalSeats);
+        if (opposite) {
+            return this.format('seat-opposite-seat', { seat: opposite });
+        }
+        return this.t('seat-opponent');
+    }
+
+    renderSeatSelectionUi(roomState = this.currentRoomState) {
+        this.ensureSeatSelectionUi();
+        const overlay = document.getElementById('seat-selection-overlay');
+        const table = document.getElementById('seat-selection-table');
+        const status = document.getElementById('seat-selection-status');
+        const footerText = this.seatSelectionUi?.footerText || overlay?.querySelector('.seat-selection-footer-text');
+        if (!overlay || !table || !status) return;
+
+        const totalSeats = Number(roomState?.totalPlayers || roomState?.humanSeats || 0);
+        const shouldShow = Boolean(this.network?.isMultiplayer && !roomState?.gameActive && totalSeats > 2 && roomState?.seatSelectionRequired !== false);
+        if (!shouldShow) {
+            this.hideSeatSelectionUi();
+            return;
+        }
+
+        const mySessionId = this.network?.room?.sessionId || '';
+        const players = Array.isArray(roomState?.players) ? roomState.players : [];
+        const seatMap = new Map();
+        players.forEach((player) => {
+            const seatIndex = Number(player?.seatIndex);
+            if (Number.isInteger(seatIndex) && seatIndex >= 0) {
+                seatMap.set(seatIndex, player);
+            }
+        });
+        const seatedCount = seatMap.size;
+        const seatOrder = totalSeats === 3 ? [2, 1, 0] : totalSeats >= 4 ? [2, 1, 3, 0] : Array.from({ length: totalSeats }, (_, i) => i);
+
+        overlay.classList.remove('is-hidden');
+        overlay.setAttribute('aria-hidden', 'false');
+        document.body.classList.add('seat-selection-active');
+        status.textContent = this.format('seat-selection-status', {
+            seated: seatedCount,
+            total: Math.max(totalSeats, 0)
+        });
+        if (footerText) {
+            footerText.textContent = roomState?.seatSelectionRequired === false
+                ? this.t('seat-selection-title')
+                : this.t('seat-selection-required');
+        }
+        table.innerHTML = '';
+        table.dataset.totalSeats = String(totalSeats || 0);
+        table.dataset.teamMode = roomState?.isTeamMode ? 'true' : 'false';
+        const center = document.createElement('div');
+        center.className = 'seat-selection-center';
+        table.appendChild(center);
+        const centerTitle = document.createElement('div');
+        centerTitle.className = 'seat-selection-center-title';
+        centerTitle.textContent = roomState?.isTeamMode && totalSeats >= 4
+            ? `${this.t('seat-team-a')} / ${this.t('seat-team-b')}`
+            : this.t('seat-selection-title');
+        const centerNote = document.createElement('div');
+        centerNote.className = 'seat-selection-center-note';
+        centerNote.textContent = roomState?.isTeamMode && totalSeats >= 4
+            ? `${this.t('seat-prefix')} 1 + ${this.t('seat-prefix')} 3 · ${this.t('seat-team-a')} | ${this.t('seat-prefix')} 2 + ${this.t('seat-prefix')} 4 · ${this.t('seat-team-b')}`
+            : this.t('seat-selection-desc');
+        center.appendChild(centerTitle);
+        center.appendChild(centerNote);
+
+        for (const seatIndex of seatOrder) {
+            const seatNumber = seatIndex + 1;
+            const occupant = seatMap.get(seatIndex) || null;
+            const isMine = occupant?.sessionId === mySessionId;
+            const isOccupied = Boolean(occupant);
+            const slot = document.createElement('div');
+            slot.className = `seat-selection-seat seat-selection-seat-${seatNumber}`;
+            if (seatNumber === 1) slot.classList.add('seat-bottom');
+            if (seatNumber === 2) slot.classList.add('seat-left');
+            if (seatNumber === 3) slot.classList.add('seat-top');
+            if (seatNumber === 4) slot.classList.add('seat-right');
+            if (isMine) slot.classList.add('is-mine');
+            if (isOccupied) slot.classList.add('is-occupied');
+
+            const seatLabel = document.createElement('div');
+            seatLabel.className = 'seat-selection-seat-label';
+            seatLabel.textContent = `${this.t('seat-prefix')} ${seatNumber}`;
+
+            const relation = document.createElement('div');
+            relation.className = 'seat-selection-seat-relation';
+            relation.textContent = this.getSeatRelationText(roomState, seatNumber, occupant, mySessionId, roomState?.hostName || '');
+
+            const occupantLine = document.createElement('div');
+            occupantLine.className = 'seat-selection-seat-name';
+            if (occupant) {
+                occupantLine.textContent = isMine ? `${occupant.name || this.t('seat-your-seat')} (${this.t('online-you')})` : (occupant.name || this.t('seat-taken'));
+            } else {
+                occupantLine.textContent = this.t('seat-sit-here');
+            }
+
+            const meta = document.createElement('div');
+            meta.className = 'seat-selection-seat-meta';
+            if (roomState?.isTeamMode && totalSeats >= 4) {
+                meta.textContent = seatNumber % 2 === 1 ? this.t('seat-team-a') : this.t('seat-team-b');
+            } else {
+                meta.textContent = relation.textContent;
+            }
+
+            const action = document.createElement('button');
+            action.className = 'btn btn-action seat-selection-seat-btn';
+            action.type = 'button';
+            action.textContent = isMine ? this.t('seat-your-seat') : this.t('seat-sit-here');
+            action.disabled = isOccupied || this.network?.reconnectInProgress === true;
+            if (!isOccupied) {
+                action.addEventListener('click', () => {
+                    if (action.disabled) return;
+                    this.network?.sendChooseSeat?.(seatIndex);
+                });
+            }
+
+            slot.appendChild(seatLabel);
+            slot.appendChild(relation);
+            slot.appendChild(occupantLine);
+            slot.appendChild(meta);
+            slot.appendChild(action);
+            table.appendChild(slot);
+        }
+    }
+
     ensureGameHudEnhancements() {
         const gameInfo = document.querySelector('.game-info');
         if (gameInfo && !document.getElementById('stake-info')) {
@@ -2481,7 +2687,7 @@ class DominoGame {
     getTurnAvatarText(name) {
         const clean = String(name || '').trim();
         if (!clean) return '?';
-        if (/^(player|domino player|РёРіСЂРѕРє)(\s*\d+)?$/i.test(clean)) return '?';
+        if (/^(player|domino player|игрок)(\s*\d+)?$/i.test(clean)) return '?';
         if (/^p\d+$/i.test(clean)) return '?';
         const parts = clean.split(/\s+/).filter(Boolean);
         if (parts.length === 1) return parts[0].slice(0, 1).toUpperCase();
@@ -2771,11 +2977,6 @@ class DominoGame {
         return amounts[stakeKey] || 0;
     }
 
-    normalizeOnlineStakeKey(stakeKey) {
-        const next = String(stakeKey || '').trim();
-        return ONLINE_STAKE_KEYS.has(next) ? next : DEFAULT_ONLINE_STAKE_KEY;
-    }
-
     getCurrentStakeLabel() {
         const stakeKey = this.network.isMultiplayer ? this.onlineStakeKey : (this.gameActive ? this.currentRoundStakeKey : this.soloStakeKey);
         const resolvedStakeKey = !stakeKey
@@ -2880,7 +3081,6 @@ class DominoGame {
         this.account?.clearStoredGameResumeState?.();
         this.network?.setStoredReconnectionToken?.('');
         this.refreshResumeBanner(null);
-        this.setConnectionBanner('', 'reconnecting');
     }
 
     refreshResumeBanner(snapshot = undefined) {
@@ -2991,7 +3191,7 @@ class DominoGame {
             try {
                 this.playerName = snapshot.playerName || this.playerName;
                 this.onlineEconomyMode = snapshot.onlineEconomyMode || this.onlineEconomyMode;
-                this.onlineStakeKey = this.normalizeOnlineStakeKey(snapshot.onlineStakeKey || this.onlineStakeKey);
+                this.onlineStakeKey = snapshot.onlineStakeKey || this.onlineStakeKey;
                 this.isTeamMode = !!snapshot.isTeamMode;
                 this.onlinePlayerCount = snapshot.onlinePlayerCount || this.onlinePlayerCount;
                 this.onlineAiCount = snapshot.onlineAiCount || this.onlineAiCount;
@@ -3027,7 +3227,7 @@ class DominoGame {
             this.onlinePlayerCount = snapshot.onlinePlayerCount || this.onlinePlayerCount;
             this.onlineAiCount = snapshot.onlineAiCount || this.onlineAiCount;
             this.onlineEconomyMode = snapshot.onlineEconomyMode || this.onlineEconomyMode;
-            this.onlineStakeKey = this.normalizeOnlineStakeKey(snapshot.onlineStakeKey || this.onlineStakeKey);
+            this.onlineStakeKey = snapshot.onlineStakeKey || this.onlineStakeKey;
             this.soloEconomyMode = 'coins';
             this.soloStakeKey = snapshot.soloStakeKey && snapshot.soloStakeKey !== 'free' ? snapshot.soloStakeKey : 'stake_50';
             this.difficulty = snapshot.difficulty || this.difficulty;
@@ -3130,7 +3330,7 @@ class DominoGame {
         });
 
         if (!this.onlineStakeKey) {
-            this.onlineStakeKey = DEFAULT_ONLINE_STAKE_KEY;
+            this.onlineStakeKey = 'stake_200';
         }
         if (!this.onlineRoomVisibility) {
             this.onlineRoomVisibility = 'closed';
@@ -3626,7 +3826,7 @@ class DominoGame {
                     copy.className = 'friend-card-copy';
                     const name = document.createElement('strong');
                     name.textContent = invite.inviter.displayName;
-                    meta.textContent = `${invite.roomCode || invite.roomId} В· ${invite.roomMode || 'ffa'}`;
+                    meta.textContent = `${invite.roomCode || invite.roomId} · ${invite.roomMode || 'ffa'}`;
                     copy.appendChild(name);
                     copy.appendChild(meta);
                     const action = document.createElement('div');
@@ -3741,6 +3941,7 @@ class DominoGame {
         const roomCountEl = document.getElementById('room-player-count-display');
         if (roomCountEl) roomCountEl.textContent = `${this.onlinePlayerCount} / ${this.onlinePlayerCount}`;
         document.getElementById('room-player-list').innerHTML = '';
+        this.hideSeatSelectionUi();
         this.setHostStatus(this.t('online-room-create-hint'));
         this.setJoinStatus(this.t('online-room-join-hint'));
     }
@@ -3868,6 +4069,12 @@ class DominoGame {
             state.className = 'room-player-state';
             state.textContent = player.isConnected ? this.t('online-ready') : this.t('online-offline');
             chip.dataset.sessionId = player.sessionId || '';
+            if (player.seatNumber) {
+                const seat = document.createElement('span');
+                seat.className = 'room-player-seat';
+                seat.textContent = `${this.t('seat-prefix')} ${player.seatNumber}`;
+                chip.appendChild(seat);
+            }
 
             chip.appendChild(avatar);
             chip.appendChild(name);
@@ -3910,6 +4117,8 @@ class DominoGame {
             this.persistGameResumeSnapshot();
         }
 
+        this.renderSeatSelectionUi(roomState);
+
         this.voice?.syncRoomState?.(roomState);
     }
 
@@ -3946,6 +4155,7 @@ class DominoGame {
         this.roundOver = false;
         this.matchOver = false;
         this.gameActive = false;
+        this.renderSeatSelectionUi(roomState);
         this.renderState();
     }
 
@@ -3968,10 +4178,10 @@ class DominoGame {
         document.getElementById('game-over-screen').classList.remove('active');
         document.getElementById('game-screen').classList.remove('active');
         document.getElementById('start-screen').classList.add('active');
+        this.hideSeatSelectionUi();
         this.setJoinStatus(reason);
         this.setHostStatus(reason);
         this.clearGameResumeSnapshot();
-        this.setConnectionBanner('', 'reconnecting');
     }
 
     onNetworkDisconnected(payload = {}) {
@@ -3979,10 +4189,7 @@ class DominoGame {
         this.refreshResumeBanner(snapshot);
         if (payload.reconnecting) {
             this.voice?.stopSpeaking?.();
-            this.setConnectionBanner(this.t('connection-reconnecting'), 'reconnecting');
             this.renderer.showMessage(this.t('connection-lost'), 2200);
-        } else {
-            this.setConnectionBanner('', 'reconnecting');
         }
     }
 
@@ -4000,7 +4207,6 @@ class DominoGame {
     onNetworkReconnectFailed(error) {
         console.warn('[Network] Reconnect failed permanently', error);
         void this.validateStoredResumeSnapshot();
-        this.setConnectionBanner(this.t('connection-reconnect-failed'), 'error');
         this.renderer.showMessage(this.t('session-restore-failed'), 2200);
     }
 
@@ -4391,7 +4597,7 @@ class DominoGame {
                 name.textContent = gift.name;
                 const meta = document.createElement('div');
                 meta.className = 'gift-choice-meta';
-                meta.textContent = `${gift.rarity || 'common'} вЂў ${gift.exchangeValue || 0} back`;
+                meta.textContent = `${gift.rarity || 'common'} • ${gift.exchangeValue || 0} back`;
                 const cost = document.createElement('div');
                 cost.className = 'gift-choice-cost';
                 cost.textContent = `${gift.coinCost || 100} coins`;
@@ -4512,7 +4718,7 @@ class DominoGame {
             name.textContent = item.catalog?.name || item.catalog?.key || this.t('gift-button');
             const meta = document.createElement('div');
             meta.className = 'gift-inventory-meta';
-            meta.textContent = `${item.quantity || 0} pcs вЂў back ${item.catalog?.exchangeValue || 0}`;
+            meta.textContent = `${item.quantity || 0} pcs • back ${item.catalog?.exchangeValue || 0}`;
             copy.appendChild(name);
             copy.appendChild(meta);
             top.appendChild(thumb);
@@ -4649,7 +4855,7 @@ class DominoGame {
         burst.appendChild(icon);
         const label = document.createElement('div');
         label.className = 'gift-burst-label';
-        label.textContent = `${senderName || 'Player'} в†’ ${recipientName || 'Player'}`;
+        label.textContent = `${senderName || 'Player'} → ${recipientName || 'Player'}`;
         burst.appendChild(label);
         if (gift?.name) {
             const chip = document.createElement('div');
@@ -4878,11 +5084,7 @@ class DominoGame {
             this.activeMatchStakeKey = roundStakeKey;
             return { ok: true, mode: 'coins', stakeKey: roundStakeKey, stakeAmount: roundStakeAmount };
         } catch (error) {
-            const message = String(error?.message || '').trim();
-            return {
-                ok: false,
-                reason: /insufficient (coins|balance)/i.test(message) ? 'insufficient_coins' : (message || 'reserve_failed')
-            };
+            return { ok: false, reason: error?.message || 'reserve_failed' };
         }
     }
 
@@ -5125,9 +5327,8 @@ class DominoGame {
             "label-instant-win": { az: "35 points = match ends", en: "35 points = match ends" },
             "label-dloss": { az: "Loss threshold", en: "Loss threshold" },
             "label-rules": { az: "Rules", en: "Rules" },
-            // Beta wording: the match ends at the 365-point target with a 3-round cap.
-            "rule-match": { az: "365 points hədəfi · 3 raund limiti", en: "365 points target · 3-round cap" },
-            "rule-telephone": { az: "Telephone В· [3|2]", en: "Telephone В· [3|2]" },
+            "rule-match": { az: "365 points · 3 rounds", en: "365 points · 3 rounds" },
+            "rule-telephone": { az: "Telephone · [3|2]", en: "Telephone · [3|2]" },
             "btn-start": { az: "Solo play", en: "Solo play" },
             "btn-solo-start": { az: "Start", en: "Start" },
             "label-online": { az: "Online room", en: "Online room" },
@@ -5140,12 +5341,12 @@ class DominoGame {
             "label-round-short": { az: "R", en: "R" },
             "label-deal-short": { az: "D", en: "D" },
             "label-boneyard-short": { az: "Bazaar", en: "Bazaar" },
-            "summary-coins": { az: "CoinlЙ™r", en: "Coins" },
-            "summary-won": { az: "QazanД±lan", en: "Won" },
-            "summary-lost": { az: "Д°tirilЙ™n", en: "Lost" },
-            "summary-net": { az: "FЙ™rq", en: "Net" },
+            "summary-coins": { az: "Coinlər", en: "Coins" },
+            "summary-won": { az: "Qazanılan", en: "Won" },
+            "summary-lost": { az: "İtirilən", en: "Lost" },
+            "summary-net": { az: "Fərq", en: "Net" },
             "label-economy-mode": { az: "Game mode", en: "Game mode" },
-            "label-stake-table": { az: "M\u0259rc masas\u0131", en: "Stake table", ru: "РЎС‚РѕР» СЃС‚Р°РІРѕРє" },
+            "label-stake-table": { az: "M\u0259rc masas\u0131", en: "Stake table", ru: "Стол ставок" },
             "label-stake-short": { az: "Bank", en: "Bank" },
             "economy-free": { az: "Free play", en: "Free play" },
             "economy-coins": { az: "Play on coins", en: "Play on coins" },
@@ -5154,8 +5355,8 @@ class DominoGame {
             "btn-draw": { az: "Draw", en: "Draw" },
             "btn-pass": { az: "Pass", en: "Pass" },
             "btn-reactions": { az: "Reactions", en: "Reactions" },
-            "room-visibility-closed": { az: "BaДџlД± otaq", en: "Closed room", ru: "Р—Р°РєСЂС‹С‚Р°СЏ РєРѕРјРЅР°С‚Р°" },
-            "room-visibility-open": { az: "AГ§Д±q otaq", en: "Open room", ru: "РћС‚РєСЂС‹С‚Р°СЏ РєРѕРјРЅР°С‚Р°" },
+            "room-visibility-closed": { az: "Bağlı otaq", en: "Closed room", ru: "Закрытая комната" },
+            "room-visibility-open": { az: "Açıq otaq", en: "Open room", ru: "Открытая комната" },
             "menu-title": { az: "Menu", en: "Menu" },
             "menu-resume": { az: "Resume", en: "Resume" },
             "menu-new": { az: "New game", en: "New game" },
@@ -5165,8 +5366,8 @@ class DominoGame {
             "solo-modal-desc": { az: "Pick difficulty, player count and game mode.", en: "Pick difficulty, player count and game mode." },
             "online-modal-title": { az: "Online room", en: "Online room" },
             "online-modal-desc": { az: "Create a room, add bots or join with a code.", en: "Create a room, add bots or join with a code." },
-            "online-choice-create": { az: "Otaq yarat", en: "Create", ru: "РЎРѕР·РґР°С‚СЊ" },
-            "online-choice-connect": { az: "QoЕџul", en: "Connect", ru: "РџРѕРґРєР»СЋС‡РёС‚СЊСЃСЏ" },
+            "online-choice-create": { az: "Otaq yarat", en: "Create", ru: "Создать" },
+            "online-choice-connect": { az: "Qoşul", en: "Connect", ru: "Подключиться" },
             "account-btn": { az: "Account", en: "Account" },
             "account-kicker": { az: "Profile", en: "Profile" },
             "account-title": { az: "Account", en: "Account" },
@@ -5204,8 +5405,8 @@ class DominoGame {
             "account-history-loss": { az: "Loss", en: "Loss" },
             "account-history-draw": { az: "Draw", en: "Draw" },
             "account-server-unavailable": { az: "Server unavailable", en: "Server unavailable" },
-            "account-registration-required": { az: "Coin oyunu ГјГ§Гјn hesaba daxil olun vЙ™ ya qeydiyyatdan keГ§in", en: "Sign in or register to play coin matches" },
-            "account-registration-required-online": { az: "Onlayn coin otaqlarД± ГјГ§Гјn hesab mГјtlЙ™qdir", en: "An account is required for online coin rooms" },
+            "account-registration-required": { az: "Coin oyunu üçün hesaba daxil olun və ya qeydiyyatdan keçin", en: "Sign in or register to play coin matches" },
+            "account-registration-required-online": { az: "Onlayn coin otaqları üçün hesab mütləqdir", en: "An account is required for online coin rooms" },
             "title-rookie": { az: "Rookie", en: "Rookie" },
             "title-bronze": { az: "Bronze", en: "Bronze" },
             "title-silver": { az: "Silver", en: "Silver" },
@@ -5238,26 +5439,16 @@ class DominoGame {
             "online-offline": { az: "offline", en: "offline" },
             "online-waiting-slot": { az: "Waiting for player {index}", en: "Waiting for player {index}" },
             "online-room-closed": { az: "Room closed", en: "Room closed" },
-            "room-closed-insufficient-coins": { az: "Bu masaya girmək üçün kifayət qədər pul yoxdur", en: "Not enough coins to join this table", ru: "Недостаточно монет для входа за этот стол" },
-            "room-closed-auth-required": { az: "Hesab tələb olunur", en: "Account required", ru: "Требуется аккаунт" },
-            "room-closed-stake-unavailable": { az: "Mərc masası hazırda əlçatan deyil", en: "Stake table is unavailable", ru: "Стол ставок сейчас недоступен" },
-            "not-enough-coins-round": { az: "Bu masaya girmək üçün kifayət qədər pul yoxdur", en: "Not enough coins to join this table", ru: "Недостаточно монет для входа за этот стол" },
-            "forfeit-settlement-failed": { az: "Mərc hesablanması tamamlanmadı. Coinlər qayıtmasa, dəstəyə müraciət edin.", en: "Stake settlement was not completed. If coins are not returned, contact support.", ru: "Расчёт ставки не завершён. Если монеты не вернулись, обратитесь в поддержку." },
-            "connection-lost": { az: "Bağlantı itdi. Yenidən qoşulur...", en: "Connection lost. Reconnecting...", ru: "Соединение потеряно. Повторное подключение..." },
-            "connection-reconnecting": { az: "Bağlantı bərpa olunur...", en: "Restoring connection...", ru: "Восстанавливаем соединение..." },
-            "connection-restored": { az: "Bağlantı bərpa olundu", en: "Connection restored", ru: "Соединение восстановлено" },
-            "connection-reconnect-failed": { az: "Bağlantını bərpa etmək olmadı. Lobbiyə qayıdın.", en: "Could not restore the connection. Return to the lobby.", ru: "Не удалось восстановить соединение. Вернитесь в лобби." },
-            "session-restore-failed": { az: "SessiyanД± bЙ™rpa etmЙ™k alД±nmadД±", en: "Could not restore the session", ru: "РќРµ СѓРґР°Р»РѕСЃСЊ РІРѕСЃСЃС‚Р°РЅРѕРІРёС‚СЊ СЃРµСЃСЃРёСЋ" },
             "online-room-summary": { az: "{humans} humans + {bots} AI, {total} total", en: "{humans} humans + {bots} AI, {total} total" },
             "online-bot-slot": { az: "AI {index}", en: "AI {index}" },
-            "resume-session-kicker": { az: "Yar\u0131m\u00e7\u0131q sessiya", en: "Unfinished session", ru: "РќРµР·Р°РІРµСЂС€С‘РЅРЅР°СЏ СЃРµСЃСЃРёСЏ" },
-            "resume-session": { az: "Davam et", en: "Resume", ru: "РџСЂРѕРґРѕР»Р¶РёС‚СЊ" },
-            "resume-session-title": { az: "Yar\u0131m\u00e7\u0131q sessiyan\u0131 davam etdir", en: "Continue your unfinished session", ru: "РџСЂРѕРґРѕР»Р¶РёС‚СЊ РЅРµР·Р°РІРµСЂС€С‘РЅРЅСѓСЋ СЃРµСЃСЃРёСЋ" },
-            "resume-session-desc": { az: "Yar\u0131mda qalan oyunu eyni yerd\u0259n davam etdir\u0259 bil\u0259rsiniz.", en: "You can pick up the game from where you left off.", ru: "РњРѕР¶РЅРѕ РїСЂРѕРґРѕР»Р¶РёС‚СЊ РёРіСЂСѓ СЃ С‚РѕРіРѕ Р¶Рµ РјРµСЃС‚Р°." },
-            "resume-session-online-title": { az: "Onlayn sessiyan\u0131z yar\u0131m\u00e7\u0131q qalД±b", en: "Your online session is unfinished", ru: "Р’Р°С€Р° РѕРЅР»Р°Р№РЅ-СЃРµСЃСЃРёСЏ РЅРµ Р·Р°РІРµСЂС€РµРЅР°" },
-            "resume-session-offline-title": { az: "Oyun yar\u0131m\u00e7\u0131q qalД±b", en: "Your offline game is unfinished", ru: "РРіСЂР° РЅРµ Р·Р°РІРµСЂС€РµРЅР°" },
-            "resume-session-online-desc": { az: "Ota\u011fa geri qayД±dД±b hЙ™min matГ§Д± davam etdirin.", en: "Reconnect and continue the same match.", ru: "Р’РµСЂРЅРёС‚РµСЃСЊ РІ РєРѕРјРЅР°С‚Сѓ Рё РїСЂРѕРґРѕР»Р¶РёС‚Рµ С‚РѕС‚ Р¶Рµ РјР°С‚С‡." },
-            "resume-session-offline-desc": { az: "Yar\u0131m\u00e7\u0131q oyunu eyni yerd\u0259n davam etdirin.", en: "Resume the game from the same point.", ru: "РџСЂРѕРґРѕР»Р¶РёС‚Рµ РёРіСЂСѓ СЃ С‚РѕРіРѕ Р¶Рµ РјРµСЃС‚Р°." },
+            "resume-session-kicker": { az: "Yar\u0131m\u00e7\u0131q sessiya", en: "Unfinished session", ru: "Незавершённая сессия" },
+            "resume-session": { az: "Davam et", en: "Resume", ru: "Продолжить" },
+            "resume-session-title": { az: "Yar\u0131m\u00e7\u0131q sessiyan\u0131 davam etdir", en: "Continue your unfinished session", ru: "Продолжить незавершённую сессию" },
+            "resume-session-desc": { az: "Yar\u0131mda qalan oyunu eyni yerd\u0259n davam etdir\u0259 bil\u0259rsiniz.", en: "You can pick up the game from where you left off.", ru: "Можно продолжить игру с того же места." },
+            "resume-session-online-title": { az: "Onlayn sessiyan\u0131z yar\u0131m\u00e7\u0131q qalıb", en: "Your online session is unfinished", ru: "Ваша онлайн-сессия не завершена" },
+            "resume-session-offline-title": { az: "Oyun yar\u0131m\u00e7\u0131q qalıb", en: "Your offline game is unfinished", ru: "Игра не завершена" },
+            "resume-session-online-desc": { az: "Ota\u011fa geri qayıdıb həmin matçı davam etdirin.", en: "Reconnect and continue the same match.", ru: "Вернитесь в комнату и продолжите тот же матч." },
+            "resume-session-offline-desc": { az: "Yar\u0131m\u00e7\u0131q oyunu eyni yerd\u0259n davam etdirin.", en: "Resume the game from the same point.", ru: "Продолжите игру с того же места." },
             "round-end-next": { az: "Continue", en: "Continue" },
             "new-game-btn": { az: "New game", en: "New game" },
             "summary-title": { az: "Summary", en: "Summary" }
@@ -5395,7 +5586,7 @@ class DominoGame {
         this.deal = state?.deal || 1;
         this.gameActive = !!state?.gameActive;
         this.matchOver = !!state?.matchOver;
-        this.onlineStakeKey = this.normalizeOnlineStakeKey(state?.stakeKey || this.onlineStakeKey);
+        this.onlineStakeKey = state?.stakeKey || this.onlineStakeKey;
         this.onlineRoundBankAmount = Math.max(0, Number(state?.bankAmount || 0));
         if (this.gameActive && Number(state?.turnDeadlineAt || 0) > 0) {
             this.startTurnTimer(Number(state.turnDeadlineAt));
@@ -5426,16 +5617,13 @@ class DominoGame {
                     teamRoundWins: Array.from(this.teamRoundWins || [0, 0])
                 };
                 this.renderDisconnectGameOver(payload);
-                this.setConnectionBanner('', 'reconnecting');
                 this.renderer.showMessage(this.t('connection-restored'), 1600);
                 this.pendingReconnectResolution = false;
                 return;
             }
             if (!this.gameActive) {
-                this.setConnectionBanner('', 'reconnecting');
                 return;
             }
-            this.setConnectionBanner('', 'reconnecting');
             this.pendingReconnectResolution = false;
         }
 
@@ -6091,5 +6279,4 @@ window.addEventListener('resize', () => {
     clearTimeout(_resizeTimer);
     _resizeTimer = setTimeout(() => game.renderState(), 150);
 });
-
 

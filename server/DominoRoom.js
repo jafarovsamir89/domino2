@@ -121,6 +121,7 @@ class DominoRoom extends Room {
         this.onMessage("pass", (client, message) => this.handlePass(client, message));
         this.onMessage("gosha", (client, message) => this.handleGosha(client, message));
         this.onMessage("next_deal", (client) => this.handleNextDeal(client));
+        this.onMessage("choose_seat", (client, message) => this.handleChooseSeat(client, message));
         this.onMessage("reaction", (client, message) => this.handleReaction(client, message));
         this.onMessage("gift", (client, message) => this.handleGift(client, message));
         this.onMessage("voice_signal", (client, message) => this.handleVoiceSignal(client, message));
@@ -164,6 +165,81 @@ class DominoRoom extends Room {
             }
         }
         return "";
+    }
+
+    getPlayerSeatIndex(sessionId) {
+        const player = this.state.players.get(sessionId);
+        const seatIndex = Number(player?.seatIndex);
+        return Number.isInteger(seatIndex) && seatIndex >= 0 ? seatIndex : -1;
+    }
+
+    isSeatAvailable(seatIndex, ignoreSessionId = "") {
+        const normalizedSeatIndex = Number(seatIndex);
+        if (!Number.isInteger(normalizedSeatIndex) || normalizedSeatIndex < 0 || normalizedSeatIndex >= this.totalPlayers) {
+            return false;
+        }
+        for (const [sessionId, player] of this.state.players.entries()) {
+            if (!player || player.isBot || sessionId === ignoreSessionId) continue;
+            if (Number(player.seatIndex) === normalizedSeatIndex) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    rebuildPlayerOrderBySeats() {
+        const currentOrder = Array.from(this.state.playerOrder || []);
+        const orderIndex = new Map(currentOrder.map((sessionId, index) => [sessionId, index]));
+        currentOrder.sort((a, b) => {
+            const seatA = this.getPlayerSeatIndex(a);
+            const seatB = this.getPlayerSeatIndex(b);
+            const rankA = seatA >= 0 ? seatA : this.totalPlayers + (orderIndex.get(a) ?? 0);
+            const rankB = seatB >= 0 ? seatB : this.totalPlayers + (orderIndex.get(b) ?? 0);
+            if (rankA !== rankB) return rankA - rankB;
+            return (orderIndex.get(a) ?? 0) - (orderIndex.get(b) ?? 0);
+        });
+        this.replaceSchemaArray(this.state.playerOrder, currentOrder);
+    }
+
+    countSeatedHumanPlayers() {
+        let count = 0;
+        for (const sessionId of this.state.playerOrder) {
+            const player = this.state.players.get(sessionId);
+            if (!player || player.isBot) continue;
+            if (Number.isInteger(Number(player.seatIndex)) && Number(player.seatIndex) >= 0) {
+                count += 1;
+            }
+        }
+        return count;
+    }
+
+    areAllHumanPlayersSeated() {
+        if (this.totalPlayers <= 2) return true;
+        return this.countSeatedHumanPlayers() >= this.humanSeats;
+    }
+
+    setPlayerSeat(sessionId, seatIndex) {
+        const player = this.state.players.get(sessionId);
+        if (!player || player.isBot) return false;
+        const normalizedSeatIndex = Number(seatIndex);
+        if (!Number.isInteger(normalizedSeatIndex) || normalizedSeatIndex < 0 || normalizedSeatIndex >= this.totalPlayers) {
+            return false;
+        }
+        const currentSeatIndex = this.getPlayerSeatIndex(sessionId);
+        if (currentSeatIndex === normalizedSeatIndex) return true;
+        if (!this.isSeatAvailable(normalizedSeatIndex, sessionId)) return false;
+        player.seatIndex = normalizedSeatIndex;
+        this.rebuildPlayerOrderBySeats();
+        return true;
+    }
+
+    maybeAutoStartGame() {
+        if (this.state.gameActive || this.matchFinished) return false;
+        if (this.hasRestoredMatchInProgress()) return false;
+        if (this.clients.length !== this.maxClients) return false;
+        if (!this.areAllHumanPlayersSeated()) return false;
+        void this.startGame();
+        return true;
     }
 
     hasRestoredMatchInProgress() {
@@ -226,8 +302,12 @@ class DominoRoom extends Room {
             player.name = sanitizeName(identity.displayName || options.name);
             player.userId = String(identity.userId || "");
             player.avatarUrl = String(identity.avatarUrl || options.avatarUrl || "").trim();
+            player.seatIndex = this.state.playerOrder.length === 0 ? 0 : (this.totalPlayers <= 2 ? 1 : -1);
             this.state.players.set(client.sessionId, player);
             this.state.playerOrder.push(client.sessionId);
+            if (player.seatIndex >= 0) {
+                this.rebuildPlayerOrderBySeats();
+            }
         }
 
         if (!player) return;
@@ -236,6 +316,9 @@ class DominoRoom extends Room {
         player.userId = String(identity.userId || player.userId || "");
         player.avatarUrl = String(identity.avatarUrl || player.avatarUrl || options.avatarUrl || "").trim();
         player.isConnected = true;
+        if (!Number.isInteger(Number(player.seatIndex))) {
+            player.seatIndex = -1;
+        }
 
         const existingIdentity = this.identityBySessionId.get(client.sessionId) || {};
         const nextIdentity = buildRoomIdentity({
@@ -261,9 +344,8 @@ class DominoRoom extends Room {
         } else {
             this.broadcastRoomState();
         }
-        if (!this.state.gameActive && this.clients.length === this.maxClients && !this.hasRestoredMatchInProgress()) {
+        if (this.maybeAutoStartGame()) {
             debugLog(`[ROOM] Room full. Starting game...`);
-            void this.startGame();
         }
     }
 
@@ -283,23 +365,34 @@ class DominoRoom extends Room {
 
     ensureBotPlayers() {
         if (!this.aiCount) return;
+        const occupiedSeats = new Set();
+        for (const player of this.state.players.values()) {
+            if (!player || player.isBot) continue;
+            const seatIndex = Number(player.seatIndex);
+            if (Number.isInteger(seatIndex) && seatIndex >= 0) {
+                occupiedSeats.add(seatIndex);
+            }
+        }
+        const freeSeats = [];
+        for (let i = 0; i < this.totalPlayers; i++) {
+            if (!occupiedSeats.has(i)) freeSeats.push(i);
+        }
+        this.botIds = [];
         for (let i = 0; i < this.aiCount; i++) {
             const botId = `bot-${i}`;
-            const botIndex = this.state.playerOrder.indexOf(botId);
-            if (!this.aiPlayers.has(botId) && botIndex !== -1) {
-                this.aiPlayers.set(botId, new AIPlayer(botIndex, this.aiDifficulty));
-            }
+            const botSeatIndex = freeSeats[i] ?? i;
+            this.aiPlayers.set(botId, new AIPlayer(botSeatIndex, this.aiDifficulty));
             if (this.state.players.has(botId)) continue;
 
             const bot = new Player();
             bot.name = `AI ${i + 1}`;
             bot.isBot = true;
             bot.isConnected = true;
+            bot.seatIndex = botSeatIndex;
             this.state.players.set(botId, bot);
-            this.state.playerOrder.push(botId);
             this.botIds.push(botId);
-            this.aiPlayers.set(botId, new AIPlayer(this.state.playerOrder.length - 1, this.aiDifficulty));
         }
+        this.rebuildPlayerOrderBySeats();
         this.state.playerCount = this.totalPlayers;
     }
 
@@ -404,6 +497,7 @@ class DominoRoom extends Room {
             removeLivePlayer(client.sessionId);
             const idx = this.state.playerOrder.indexOf(client.sessionId);
             if (idx !== -1) this.state.playerOrder.splice(idx, 1);
+            this.rebuildPlayerOrderBySeats();
             this.broadcast("msg", { key: "msg-player-left-room", values: { player: leftPlayerName }, time: 1500 });
             this.broadcastRoomState();
         }
@@ -412,6 +506,14 @@ class DominoRoom extends Room {
     async startGame() {
         if ((this.pendingMatchRecording && !this.matchRecorded) || this.matchRecordInFlight) {
             console.warn("[ROOM] Deferring new match start until the previous match is recorded.");
+            return;
+        }
+        if (!this.areAllHumanPlayersSeated()) {
+            this.broadcast("msg", {
+                key: "seat-selection-required",
+                time: 2200
+            });
+            this.broadcastRoomState();
             return;
         }
         this.state.matchRound = 1;
@@ -433,9 +535,45 @@ class DominoRoom extends Room {
         this.currentDealStakeAmount = 0;
         this.currentDealBankAmount = 0;
         this.lastReservedMatchRound = 0;
+        this.rebuildPlayerOrderBySeats();
         this.ensureBotPlayers();
         this.broadcastRoomState();
         await this.startDeal();
+    }
+
+    handleChooseSeat(client, message = {}) {
+        if (this.state.gameActive || this.matchFinished) return;
+        if (this.hasRestoredMatchInProgress()) return;
+        const seatIndex = Number(message?.seatIndex);
+        if (!Number.isInteger(seatIndex) || seatIndex < 0 || seatIndex >= this.totalPlayers) return;
+        const player = this.state.players.get(client.sessionId);
+        if (!player || player.isBot) return;
+
+        const currentSeatIndex = this.getPlayerSeatIndex(client.sessionId);
+        if (currentSeatIndex === seatIndex) {
+            this.broadcastRoomState();
+            return;
+        }
+
+        if (!this.isSeatAvailable(seatIndex, client.sessionId)) {
+            client.send("msg", {
+                key: "seat-taken",
+                values: { seat: seatIndex + 1 },
+                time: 2000
+            });
+            return;
+        }
+
+        player.seatIndex = seatIndex;
+        this.rebuildPlayerOrderBySeats();
+        this.syncState();
+        this.broadcast("msg", {
+            key: "seat-selected",
+            values: { seat: seatIndex + 1, player: player.name },
+            time: 1600
+        });
+        this.broadcastRoomState();
+        this.maybeAutoStartGame();
     }
 
     async startDeal() {
@@ -1408,6 +1546,7 @@ class DominoRoom extends Room {
             player.avatarUrl = entry.avatarUrl;
             player.isBot = entry.isBot;
             player.isConnected = entry.isConnected;
+            player.seatIndex = entry.seatIndex;
             this.state.players.set(entry.sessionId, player);
         }
 
