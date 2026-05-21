@@ -85,6 +85,7 @@ test("buildPlatformMatchPayload fills team memberIds and keeps payload shape", (
         isTeamMode: true,
         roomId: "room-1",
         stakeKey: "stake_200",
+        sourceMatchId: "room-1:match:abc123",
         playerOrder,
         players,
         teamScores: [100, 200],
@@ -95,6 +96,7 @@ test("buildPlatformMatchPayload fills team memberIds and keeps payload shape", (
     assert.equal(payload.mode, "team");
     assert.equal(payload.result, "win");
     assert.equal(payload.winnerKey, "team:1");
+    assert.equal(payload.sourceMatchId, "room-1:match:abc123");
     assert.deepEqual(payload.teams, [
         { memberIds: ["u1", "u3"], score: 100, roundWins: 7 },
         { memberIds: ["u2", "u4"], score: 200, roundWins: 8 }
@@ -114,6 +116,7 @@ test("buildPlatformMatchPayload keeps ffa payload mode and result", () => {
         isTeamMode: false,
         roomId: "room-1",
         stakeKey: "stake_200",
+        sourceMatchId: "room-1:match:def456",
         playerOrder: ["s1", "s2"],
         players,
         teamScores: [0, 0],
@@ -124,6 +127,7 @@ test("buildPlatformMatchPayload keeps ffa payload mode and result", () => {
     assert.equal(payload.mode, "ffa");
     assert.equal(payload.result, "win");
     assert.equal(payload.winnerKey, "player:1");
+    assert.equal(payload.sourceMatchId, "room-1:match:def456");
     assert.deepEqual(payload.teams, []);
     assert.deepEqual(payload.participants.map((p) => p.result), ["loss", "win"]);
 });

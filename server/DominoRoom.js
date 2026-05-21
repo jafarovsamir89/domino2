@@ -88,6 +88,10 @@ class DominoRoom extends Room {
         this.currentDealStakeAmount = 0;
         this.currentDealBankAmount = 0;
         this.lastReservedMatchRound = 0;
+        this.matchRecordId = "";
+        this.pendingMatchRecording = null;
+        this.matchRecordInFlight = false;
+        this.matchRecordRetryTimer = null;
         this.pendingEconomySettlement = Promise.resolve();
         this.botTimer = null;
         this.turnTimer = null;
@@ -120,6 +124,10 @@ class DominoRoom extends Room {
         this.onMessage("reaction", (client, message) => this.handleReaction(client, message));
         this.onMessage("gift", (client, message) => this.handleGift(client, message));
         this.onMessage("voice_signal", (client, message) => this.handleVoiceSignal(client, message));
+
+        if (this.pendingMatchRecording && !this.matchRecorded) {
+            void this.retryPendingMatchRecording();
+        }
 
         debugLog(`[ROOM] Created room ${this.roomId} (code ${this.roomCode}), humanSeats=${this.humanSeats}, totalPlayers=${this.totalPlayers}, aiCount=${this.aiCount}, teamMode=${this.state.isTeamMode}`);
     }
@@ -267,6 +275,7 @@ class DominoRoom extends Room {
         this.botTimer && clearTimeout(this.botTimer);
         this.clearNextDealTimer();
         this.clearTurnTimer();
+        this.clearMatchRecordingRetryTimer();
         this.botTimer = null;
         this.aiPlayers?.clear?.();
         this.identityBySessionId?.clear?.();
@@ -401,6 +410,10 @@ class DominoRoom extends Room {
     }
 
     async startGame() {
+        if ((this.pendingMatchRecording && !this.matchRecorded) || this.matchRecordInFlight) {
+            console.warn("[ROOM] Deferring new match start until the previous match is recorded.");
+            return;
+        }
         this.state.matchRound = 1;
         this.state.deal = 1;
         this.state.matchOver = false;
@@ -413,6 +426,8 @@ class DominoRoom extends Room {
         this.pendingAdvanceKind = null;
         this.forfeitSettlementMade = false;
         this.pendingEconomySettlement = Promise.resolve();
+        this.matchRecordId = `${this.roomId}:match:${Date.now().toString(36)}:${Math.random().toString(36).slice(2, 10)}`;
+        this.matchRecordInFlight = false;
         this.currentDealMatchId = "";
         this.currentDealStakeKey = this.currentStakeKey;
         this.currentDealStakeAmount = 0;
@@ -815,6 +830,70 @@ class DominoRoom extends Room {
         }
     }
 
+    clearMatchRecordingRetryTimer() {
+        if (this.matchRecordRetryTimer) {
+            clearTimeout(this.matchRecordRetryTimer);
+            this.matchRecordRetryTimer = null;
+        }
+    }
+
+    scheduleMatchRecordingRetry() {
+        if (this.matchRecorded || this.matchRecordRetryTimer || !this.pendingMatchRecording) {
+            return;
+        }
+        const pendingMatchRecordId = String(this.pendingMatchRecording.sourceMatchId || "").trim();
+        if (!pendingMatchRecordId) {
+            return;
+        }
+        this.matchRecordRetryTimer = setTimeout(() => {
+            this.matchRecordRetryTimer = null;
+            if (this.matchRecorded || !this.pendingMatchRecording) return;
+            if (String(this.pendingMatchRecording.sourceMatchId || "").trim() !== pendingMatchRecordId) return;
+            void this.retryPendingMatchRecording();
+        }, 5000);
+    }
+
+    async retryPendingMatchRecording() {
+        if (this.matchRecorded || this.matchRecordInFlight || !this.pendingMatchRecording) {
+            return false;
+        }
+
+        const payload = this.pendingMatchRecording;
+        const identity = this.getPlatformMatchIdentity();
+        if (!identity) {
+            console.warn("[ROOM] Failed to record match: platform identity missing.");
+            this.scheduleMatchRecordingRetry();
+            return false;
+        }
+
+        this.matchRecordInFlight = true;
+        try {
+            const recorded = await this.recordPlatformMatch(buildSignedRequestBody("platform.match", payload));
+            if (!recorded) {
+                throw new Error("Platform match recording failed");
+            }
+            this.matchRecorded = true;
+            this.pendingMatchRecording = null;
+            this.clearMatchRecordingRetryTimer();
+            void this.saveCustomStateToRedis();
+            const clientCount = Array.isArray(this.clients) ? this.clients.length : 0;
+            if (!this.state.gameActive && clientCount === this.maxClients) {
+                setTimeout(() => {
+                    void this.startGame();
+                }, 0);
+            }
+            return true;
+        } catch (err) {
+            console.error("[ROOM] Failed to record match:", err);
+            this.matchRecorded = false;
+            this.scheduleMatchRecordingRetry();
+            void this.saveCustomStateToRedis();
+            return false;
+        } finally {
+            this.matchRecordInFlight = false;
+        }
+    }
+
     async settleForfeitStake(leavingSessionId) {
         return settleForfeitStakeForRoom(this, leavingSessionId);
     }
@@ -823,12 +902,16 @@ class DominoRoom extends Room {
         return settleEconomyRoundForRoom(this, wi);
     }
 
-    recordMatchResult(wi, isInstantWin, players, wins) {
-        if (this.matchRecorded) return;
+    async recordMatchResult(wi, isInstantWin, players, wins) {
+        if (this.matchRecorded || this.matchRecordInFlight) return false;
+        if (!this.matchRecordId) {
+            this.matchRecordId = this.currentDealMatchId || `${this.roomId}:match:${Date.now().toString(36)}:${Math.random().toString(36).slice(2, 10)}`;
+        }
         const payload = buildPlatformMatchPayload({
             isTeamMode: this.state.isTeamMode,
             roomId: this.roomId,
             stakeKey: this.currentStakeKey,
+            sourceMatchId: this.matchRecordId,
             playerOrder: this.state.playerOrder,
             players: this.state.players,
             teamScores: this.state.teamScores,
@@ -837,18 +920,39 @@ class DominoRoom extends Room {
         });
 
         if (!payload.participants.length) {
+            console.warn("[ROOM] Skipping match recording because no participants had userIds.");
             this.matchRecorded = true;
-            return;
+            this.pendingMatchRecording = null;
+            this.clearMatchRecordingRetryTimer();
+            return true;
         }
 
+        this.pendingMatchRecording = payload;
+        this.matchRecordInFlight = true;
         try {
-            const platformIdentity = this.getPlatformMatchIdentity();
-            if (platformIdentity) {
-                void this.recordPlatformMatch(buildSignedRequestBody("platform.match", payload));
+            const recorded = await this.recordPlatformMatch(buildSignedRequestBody("platform.match", payload));
+            if (!recorded) {
+                throw new Error("Platform match recording failed");
             }
             this.matchRecorded = true;
+            this.pendingMatchRecording = null;
+            this.clearMatchRecordingRetryTimer();
+            void this.saveCustomStateToRedis();
+            const clientCount = Array.isArray(this.clients) ? this.clients.length : 0;
+            if (!this.state.gameActive && clientCount === this.maxClients) {
+                setTimeout(() => {
+                    void this.startGame();
+                }, 0);
+            }
+            return true;
         } catch (err) {
             console.error("[ROOM] Failed to record match:", err);
+            this.matchRecorded = false;
+            this.scheduleMatchRecordingRetry();
+            void this.saveCustomStateToRedis();
+            return false;
+        } finally {
+            this.matchRecordInFlight = false;
         }
     }
 
@@ -1346,6 +1450,8 @@ class DominoRoom extends Room {
             matchRecorded: this.matchRecorded,
             forfeitSettlementMade: this.forfeitSettlementMade,
             lastRoundEconomySummary: this.lastRoundEconomySummary,
+            matchRecordId: this.matchRecordId,
+            pendingMatchRecording: this.pendingMatchRecording,
             hands: this.hands,
             boneyard: this.boneyard,
             internalBoard: this.internalBoard,
@@ -1386,6 +1492,8 @@ class DominoRoom extends Room {
         this.lastDealWinner = restoredMetadata.lastDealWinner;
         this.botIds = restoredMetadata.botIds;
         this.playerMissingSuits = restoredMetadata.playerMissingSuits;
+        this.matchRecordId = String(data.matchRecordId || this.matchRecordId || "");
+        this.pendingMatchRecording = data.pendingMatchRecording || this.pendingMatchRecording || null;
         this.identityBySessionId = restoreSnapshotIdentityEntries(data.identityBySessionId, this.identityBySessionId);
 
         if (data.state) {
@@ -1409,6 +1517,10 @@ class DominoRoom extends Room {
         this.state.isTeamMode = data.state ? Boolean(data.state.isTeamMode) : Boolean(this.state.isTeamMode);
         this.state.boneyardCount = this.boneyard.length;
         this.state.boardJson = JSON.stringify(this.internalBoard);
+        if (this.matchRecorded) {
+            this.pendingMatchRecording = null;
+            this.clearMatchRecordingRetryTimer();
+        }
         while (this.playerMissingSuits.length < this.totalPlayers) {
             this.playerMissingSuits.push(new Set());
         }
@@ -1449,12 +1561,16 @@ class DominoRoom extends Room {
     onRestoreRoom(cachedData) {
         debugLog(`[ROOM] Restoring room ${this.roomId}`);
         this.applyCustomStateSnapshot(cachedData || {});
+        if (this.pendingMatchRecording && !this.matchRecorded) {
+            void this.retryPendingMatchRecording();
+        }
         if (this.state.gameActive && this.state.playerOrder[this.state.currentPlayerIndex]?.startsWith('bot-')) {
             this.scheduleBotTurn(BOT_THINK_DELAY_MS);
         }
     }
 
     async onBeforeShutdown() {
+        this.clearMatchRecordingRetryTimer();
         await this.saveCustomStateToRedis();
         return this.disconnect();
     }

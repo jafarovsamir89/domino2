@@ -225,6 +225,11 @@ export class EconomyReserveMatchDto {
   stakeKey?: string | null;
 
   @IsOptional()
+  @IsString()
+  @MaxLength(64)
+  sourceMatchId?: string | null;
+
+  @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => EconomyMatchParticipantDto)

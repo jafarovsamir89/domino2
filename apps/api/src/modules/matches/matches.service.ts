@@ -22,6 +22,7 @@ type MatchPayload = {
   mode?: string;
   isTeamMode?: boolean;
   roomId?: string | null;
+  sourceMatchId?: string | null;
   winnerKey?: string | null;
   result?: string | null;
   stakeKey?: string | null;
@@ -75,6 +76,10 @@ export class MatchesService {
     if (!participants.length) {
       return null;
     }
+    const sourceMatchId = String(payload.sourceMatchId || "").trim();
+    if (!sourceMatchId) {
+      return null;
+    }
     const { proof, payload: signedPayload } = stripProof(payload as Record<string, unknown>);
     if (String(signedPayload.integrityScope || "").trim() !== "platform.match") {
       return null;
@@ -107,6 +112,24 @@ export class MatchesService {
     const matchCreatedAt = new Date();
 
     return this.prisma.$transaction(async (tx) => {
+      const existingMatch = await tx.match.findUnique({
+        where: { id: sourceMatchId },
+        include: {
+          participants: true
+        }
+      });
+      if (existingMatch) {
+        return {
+          matchId: existingMatch.id,
+          createdAt: existingMatch.createdAt,
+          participants: existingMatch.participants.length,
+          economy: {
+            ok: true,
+            duplicate: true
+          }
+        };
+      }
+
       const resolvedParticipants: Array<{
         participant: MatchParticipantPayload;
         player: PlayerSnapshot;
@@ -181,6 +204,7 @@ export class MatchesService {
 
       const match = await tx.match.create({
         data: {
+          id: sourceMatchId,
           mode: payload.mode || "online",
           isTeamMode,
           roomId: payload.roomId || claims.sessionId || null,
