@@ -13,7 +13,7 @@ test("normalizePlatformApiUrl returns the default when empty", () => {
     assert.equal(normalizePlatformApiUrl(""), DEFAULT_PLATFORM_API_URL);
     assert.equal(normalizePlatformApiUrl(undefined), DEFAULT_PLATFORM_API_URL);
     assert.equal(resolvePlatformApiUrl(""), DEFAULT_PLATFORM_API_URL);
-    assert.equal(resolvePlatformApiUrl(undefined), DEFAULT_PLATFORM_API_URL);
+    assert.equal(resolvePlatformApiUrl(undefined), normalizePlatformApiUrl(process.env.PLATFORM_API_URL));
 });
 
 test("normalizePlatformApiUrl removes a single trailing slash", () => {

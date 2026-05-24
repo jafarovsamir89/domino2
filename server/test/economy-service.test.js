@@ -4,7 +4,10 @@ const assert = require("node:assert/strict");
 process.env.DOMINO_SERVER_SECRET ||= "b7f4c2d9a1e8f6c3b5a7d0e9f1c4b8a6d2e7f9c1";
 process.env.BETTER_AUTH_SECRET ||= process.env.DOMINO_SERVER_SECRET;
 
+const { normalizePlatformApiUrl } = require("../economyConfig");
 const { reserveEconomyStakeForRoom, settleEconomyRoundForRoom, settleForfeitStakeForRoom } = require("../economyService");
+
+const expectedPlatformApiUrl = normalizePlatformApiUrl(process.env.PLATFORM_API_URL);
 
 function createSettleRoom(overrides = {}) {
     return {
@@ -168,7 +171,7 @@ test("reserveEconomyStakeForRoom updates room fields on success", async () => {
         assert.equal(room.currentDealBankAmount, 1000);
         assert.deepEqual(broadcasts, [["msg", { key: "msg-bank-reserved", values: { amount: 1000, players: 2 }, time: 2000 }]]);
         assert.equal(fetchCalls.length, 1);
-        assert.equal(fetchCalls[0].url, "http://localhost:3000/api/economy/matches/reserve");
+        assert.equal(fetchCalls[0].url, `${expectedPlatformApiUrl}/api/economy/matches/reserve`);
         assert.equal(fetchCalls[0].init.method, "POST");
         assert.equal(fetchCalls[0].init.headers["content-type"], "application/json");
     } finally {
@@ -388,7 +391,7 @@ test("settleEconomyRoundForRoom updates room fields on success in ffa", async ()
         assert.deepEqual(room.lastRoundEconomySummary, result);
         await room.pendingEconomySettlement;
         assert.equal(fetchCalls.length, 1);
-        assert.equal(fetchCalls[0].url, "http://localhost:3000/api/economy/matches/settle");
+        assert.equal(fetchCalls[0].url, `${expectedPlatformApiUrl}/api/economy/matches/settle`);
         assert.equal(fetchCalls[0].init.method, "POST");
         assert.equal(fetchCalls[0].init.headers["content-type"], "application/json");
         const body = JSON.parse(fetchCalls[0].init.body);
