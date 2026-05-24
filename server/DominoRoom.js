@@ -43,9 +43,34 @@ if (redis) {
     });
 }
 
-const DEBUG_LOGS = process.env.NODE_ENV !== "production" && process.env.DOMINO_DEBUG_LOGS !== "false";
+const DEBUG_LOGS = process.env.DOMINO_DEBUG_LOGS === "true" || (process.env.NODE_ENV !== "production" && process.env.DOMINO_DEBUG_LOGS !== "false");
 function debugLog(...args) {
     if (DEBUG_LOGS) console.log(...args);
+}
+
+function debugPlayerSummary(room) {
+    return Array.from(room?.state?.playerOrder || []).map((sessionId) => {
+        const player = room?.state?.players?.get?.(sessionId) || {};
+        const identity = room?.identityBySessionId?.get?.(sessionId) || {};
+        const seatIndex = Number(player?.seatIndex);
+        return {
+            sessionId,
+            isBot: Boolean(player?.isBot),
+            isConnected: Boolean(player?.isConnected),
+            seatIndex: Number.isInteger(seatIndex) ? seatIndex : -1,
+            hasUserId: Boolean(String(player?.userId || identity?.userId || "").trim()),
+            hasPlayerId: Boolean(String(identity?.playerId || player?.userId || "").trim()),
+            hasAuthToken: Boolean(String(identity?.authToken || "").trim())
+        };
+    });
+}
+
+function getSafeRoomId(room) {
+    try {
+        return String(room?.roomId || "").trim();
+    } catch {
+        return String(room?.id || room?.state?.roomId || "").trim();
+    }
 }
 
 class DominoRoom extends Room {
@@ -116,6 +141,18 @@ class DominoRoom extends Room {
             this.applyCustomStateSnapshot(restoreSnapshot);
             this.restoredFromSnapshot = true;
         }
+
+        debugLog("[ROOM_DEBUG] create", {
+            roomId: this.roomId,
+            roomCode: this.roomCode,
+            roomVisibility: this.roomVisibility,
+            stakeKey: this.currentStakeKey,
+            totalPlayers: this.totalPlayers,
+            aiCount: this.aiCount,
+            humanSeats: this.humanSeats,
+            maxClients: this.maxClients,
+            isTeamMode: this.state.isTeamMode
+        });
 
         this.onMessage("play", (client, message) => this.handlePlay(client, message));
         this.onMessage("draw", (client, message) => this.handleDraw(client, message));
@@ -257,8 +294,6 @@ class DominoRoom extends Room {
     }
 
     maybeAutoStartGame() {
-        if (this.state.gameActive || this.matchFinished || this.gameStarting) return false;
-        if (this.hasRestoredMatchInProgress()) return false;
         const readyHumans = this.countReadyHumanPlayers();
         const seatedHumans = this.countSeatedHumanPlayers();
         const botsNeeded = Math.max(0, this.aiCount - this.botIds.length);
@@ -266,8 +301,17 @@ class DominoRoom extends Room {
             const seatIndex = Number(player?.seatIndex);
             return player && Number.isInteger(seatIndex) && seatIndex >= 0;
         }).length;
-        const decision = readyHumans >= this.humanSeats && seatedHumans >= this.humanSeats ? "start" : "wait";
-        debugLog("[ROOM] maybeAutoStartGame", {
+        const reason = this.state.gameActive
+            ? "already_game_active"
+            : this.gameStarting
+                ? "game_starting"
+                : this.matchFinished
+                    ? "match_finished"
+                    : this.hasRestoredMatchInProgress()
+                        ? "restored_match"
+                        : (readyHumans >= this.humanSeats && seatedHumans >= this.humanSeats ? "start" : "not_enough_ready_humans");
+        const decision = reason === "start" ? "start" : "wait";
+        debugLog("[ROOM_DEBUG] autostart:decision", {
             roomId: this.roomId,
             roomCode: this.roomCode,
             totalPlayers: this.totalPlayers,
@@ -281,9 +325,12 @@ class DominoRoom extends Room {
             readyHumans,
             seatedHumans,
             botsNeeded,
+            botIdsLength: this.botIds.length,
             playerOrder: Array.from(this.state.playerOrder || []),
+            players: debugPlayerSummary(this),
             seatsOccupied,
-            decision
+            decision,
+            reason
         });
         if (decision !== "start") return false;
         void this.startGame();
@@ -313,6 +360,17 @@ class DominoRoom extends Room {
     onJoin(client, options, auth) {
         const identity = auth || {};
         debugLog(`[ROOM] Client ${client.sessionId} joining with name: ${options.name}`);
+        debugLog("[ROOM_DEBUG] join:start", {
+            roomId: this.roomId,
+            roomCode: this.roomCode,
+            sessionId: client.sessionId,
+            clientsLength: this.clients.length,
+            playerOrder: Array.from(this.state.playerOrder || []),
+            totalPlayers: this.totalPlayers,
+            aiCount: this.aiCount,
+            humanSeats: this.humanSeats,
+            maxClients: this.maxClients
+        });
         const authToken = normalizeAuthToken(identity, options);
         const reusableSessionId = this.findReusableSessionId(options, identity);
         const humanPlayers = this.state.playerOrder.filter((sessionId) => !this.state.players.get(sessionId)?.isBot).length;
@@ -378,6 +436,14 @@ class DominoRoom extends Room {
             isHost: this.state.playerOrder[0] === client.sessionId
         });
         this.identityBySessionId.set(client.sessionId, nextIdentity);
+        debugLog("[ROOM_DEBUG] join:identity", {
+            sessionId: client.sessionId,
+            hasUserId: Boolean(String(nextIdentity.userId || "").trim()),
+            hasPlayerId: Boolean(String(nextIdentity.playerId || "").trim()),
+            hasAuthToken: Boolean(String(nextIdentity.authToken || "").trim()),
+            provider: nextIdentity.provider || "platform",
+            displayName: nextIdentity.displayName || player.name || options.name || "Player"
+        });
 
         this.registerLivePlayer(client.sessionId, nextIdentity, player);
 
@@ -395,6 +461,15 @@ class DominoRoom extends Room {
         if (this.maybeAutoStartGame()) {
             debugLog(`[ROOM] Room full. Starting game...`);
         }
+        debugLog("[ROOM_DEBUG] join:assigned", {
+            sessionId: client.sessionId,
+            seatIndex: Number.isInteger(Number(player.seatIndex)) ? Number(player.seatIndex) : -1,
+            isHost: this.state.playerOrder[0] === client.sessionId,
+            playerOrder: Array.from(this.state.playerOrder || []),
+            connectedHumans: typeof this.countConnectedHumanPlayers === "function" ? this.countConnectedHumanPlayers() : this.clients.length,
+            readyHumans: this.countReadyHumanPlayers(),
+            seatedHumans: this.countSeatedHumanPlayers()
+        });
     }
 
     onDispose() {
@@ -425,6 +500,14 @@ class DominoRoom extends Room {
         for (let i = 0; i < this.totalPlayers; i++) {
             if (!occupiedSeats.has(i)) freeSeats.push(i);
         }
+        debugLog("[ROOM_DEBUG] bots:ensure", {
+            roomId: this.roomId,
+            roomCode: this.roomCode,
+            aiCount: this.aiCount,
+            existingBotIds: Array.from(this.botIds || []),
+            occupiedSeats: Array.from(occupiedSeats.values()),
+            freeSeats
+        });
         this.botIds = [];
         for (let i = 0; i < this.aiCount; i++) {
             const botId = `bot-${i}`;
@@ -439,13 +522,31 @@ class DominoRoom extends Room {
             bot.seatIndex = botSeatIndex;
             this.state.players.set(botId, bot);
             this.botIds.push(botId);
+            debugLog("[ROOM_DEBUG] bots:added", {
+                botId,
+                seatIndex: botSeatIndex
+            });
         }
         this.rebuildPlayerOrderBySeats();
         this.state.playerCount = this.totalPlayers;
+        debugLog("[ROOM_DEBUG] bots:final", {
+            playerOrder: Array.from(this.state.playerOrder || []),
+            botIds: Array.from(this.botIds || []),
+            players: debugPlayerSummary(this)
+        });
     }
 
     async onLeave(client, consented) {
-        debugLog(`[ROOM] Client ${client.sessionId} left (consented: ${consented})`);
+        const roomId = getSafeRoomId(this);
+        const roomCode = String(this.roomCode || "").trim();
+        debugLog("[ROOM_DEBUG] leave:start", {
+            roomId,
+            roomCode,
+            sessionId: client.sessionId,
+            consented,
+            playerOrder: Array.from(this.state.playerOrder || []),
+            players: debugPlayerSummary(this)
+        });
         const player = this.state.players.get(client.sessionId);
         const leavingIndex = this.state.playerOrder.indexOf(client.sessionId);
         if (player) player.isConnected = false;
@@ -453,8 +554,8 @@ class DominoRoom extends Room {
         if (identity) {
             upsertLivePlayer(client.sessionId, {
                 sessionId: client.sessionId,
-                roomId: this.roomId,
-                roomCode: this.roomCode,
+                roomId,
+                roomCode,
                 roomVisibility: this.roomVisibility,
                 roomMode: this.state.isTeamMode ? "team" : "ffa",
                 stakeKey: this.currentStakeKey,
@@ -477,15 +578,19 @@ class DominoRoom extends Room {
 
         try {
             if (consented) throw new Error("consented leave");
-            debugLog(`[ROOM] Waiting for reconnection for ${client.sessionId}...`);
+            debugLog("[ROOM_DEBUG] leave:waiting_reconnect", {
+                roomId,
+                roomCode,
+                sessionId: client.sessionId
+            });
             this.broadcastRoomState();
             await this.allowReconnection(client, RECONNECT_GRACE_MS / 1000);
             player.isConnected = true;
             if (identity) {
                 upsertLivePlayer(client.sessionId, {
                     sessionId: client.sessionId,
-                    roomId: this.roomId,
-                    roomCode: this.roomCode,
+                    roomId,
+                    roomCode,
                     roomVisibility: this.roomVisibility,
                     roomMode: this.state.isTeamMode ? "team" : "ffa",
                     stakeKey: this.currentStakeKey,
@@ -504,11 +609,20 @@ class DominoRoom extends Room {
                     isPlaying: Boolean(this.state.gameActive)
                 });
             }
-            debugLog(`[ROOM] Client ${client.sessionId} reconnected!`);
+            debugLog("[ROOM_DEBUG] leave:reconnected", {
+                roomId,
+                roomCode,
+                sessionId: client.sessionId
+            });
             this.broadcast("msg", { key: "msg-player-reconnected", values: { player: player.name }, time: 1500 });
             this.syncState();
         } catch (e) {
-            debugLog(`[ROOM] Client ${client.sessionId} removed permanently.`);
+            debugLog("[ROOM_DEBUG] leave:removed", {
+                roomId,
+                roomCode,
+                sessionId: client.sessionId,
+                reason: e?.message || "leave_error"
+            });
             const leftPlayerName = player ? player.name : "Player";
             if (this.state.gameActive) {
                 const settlement = await this.settleForfeitStake(client.sessionId).catch((err) => {
@@ -552,17 +666,45 @@ class DominoRoom extends Room {
     }
 
     async startGame() {
+        debugLog("[ROOM_DEBUG] startGame:enter", {
+            roomId: this.roomId,
+            roomCode: this.roomCode,
+            gameActive: this.state.gameActive,
+            gameStarting: this.gameStarting,
+            matchFinished: this.matchFinished,
+            playerOrder: Array.from(this.state.playerOrder || []),
+            players: debugPlayerSummary(this)
+        });
         if (this.state.gameActive || this.gameStarting || this.matchFinished) {
+            debugLog("[ROOM_DEBUG] startGame:blocked", {
+                roomId: this.roomId,
+                roomCode: this.roomCode,
+                reason: this.state.gameActive ? "already_game_active" : this.gameStarting ? "game_starting" : "match_finished"
+            });
             return;
         }
         this.gameStarting = true;
         if ((this.pendingMatchRecording && !this.matchRecorded) || this.matchRecordInFlight) {
             this.gameStarting = false;
+            debugLog("[ROOM_DEBUG] startGame:blocked", {
+                roomId: this.roomId,
+                roomCode: this.roomCode,
+                reason: "pending_match_recording"
+            });
             console.warn("[ROOM] Deferring new match start until the previous match is recorded.");
             return;
         }
         if (this.countReadyHumanPlayers() < this.humanSeats || this.countSeatedHumanPlayers() < this.humanSeats) {
             this.gameStarting = false;
+            debugLog("[ROOM_DEBUG] startGame:blocked", {
+                roomId: this.roomId,
+                roomCode: this.roomCode,
+                reason: "not_enough_ready_humans",
+                readyHumans: this.countReadyHumanPlayers(),
+                seatedHumans: this.countSeatedHumanPlayers(),
+                humanSeats: this.humanSeats,
+                players: debugPlayerSummary(this)
+            });
             this.broadcast("msg", {
                 key: "seat-selection-required",
                 time: 2200
@@ -591,7 +733,19 @@ class DominoRoom extends Room {
             this.currentDealBankAmount = 0;
             this.lastReservedMatchRound = 0;
             this.rebuildPlayerOrderBySeats();
+            debugLog("[ROOM_DEBUG] startGame:beforeBots", {
+                roomId: this.roomId,
+                roomCode: this.roomCode,
+                playerOrder: Array.from(this.state.playerOrder || []),
+                players: debugPlayerSummary(this)
+            });
             this.ensureBotPlayers();
+            debugLog("[ROOM_DEBUG] startGame:afterBots", {
+                roomId: this.roomId,
+                roomCode: this.roomCode,
+                playerOrder: Array.from(this.state.playerOrder || []),
+                players: debugPlayerSummary(this)
+            });
             this.broadcastRoomState();
             await this.startDeal();
         } finally {
@@ -635,6 +789,15 @@ class DominoRoom extends Room {
     }
 
     async startDeal() {
+        debugLog("[ROOM_DEBUG] startDeal:enter", {
+            roomId: this.roomId,
+            roomCode: this.roomCode,
+            stakeKey: this.currentStakeKey,
+            currentDealMatchId: this.currentDealMatchId,
+            matchRound: this.state.matchRound,
+            playerOrder: Array.from(this.state.playerOrder || []),
+            players: debugPlayerSummary(this)
+        });
         if (this.botTimer) {
             clearTimeout(this.botTimer);
             this.botTimer = null;
@@ -677,9 +840,36 @@ class DominoRoom extends Room {
             const f = determineFirstPlayer(this.hands);
             this.state.currentPlayerIndex = f.player;
         }
-        
+
         if (this.currentStakeKey !== "free" && this.lastReservedMatchRound !== this.state.matchRound) {
+            debugLog("[ROOM_DEBUG] reserve:before", {
+                roomId: this.roomId,
+                roomCode: this.roomCode,
+                stakeKey: this.currentStakeKey,
+                currentDealMatchId: this.currentDealMatchId,
+                humans: Array.from(this.state.playerOrder || []).map((sessionId) => {
+                    const player = this.state.players.get(sessionId) || {};
+                    const identity = this.identityBySessionId.get(sessionId) || {};
+                    return {
+                        sessionId,
+                        seatIndex: Number.isInteger(Number(player.seatIndex)) ? Number(player.seatIndex) : -1,
+                        isBot: Boolean(player.isBot),
+                        isConnected: Boolean(player.isConnected),
+                        hasUserId: Boolean(String(player.userId || identity.userId || "").trim()),
+                        hasPlayerId: Boolean(String(identity.playerId || player.userId || "").trim()),
+                        hasAuthToken: Boolean(String(identity.authToken || "").trim())
+                    };
+                }).filter((item) => !item.isBot)
+            });
             const reserveResult = await this.reserveEconomyStake();
+            debugLog("[ROOM_DEBUG] reserve:result", {
+                roomId: this.roomId,
+                roomCode: this.roomCode,
+                ok: Boolean(reserveResult?.ok),
+                reason: reserveResult?.reason || "",
+                status: reserveResult?.status || "",
+                messageKey: reserveResult?.messageKey || ""
+            });
             if (!reserveResult?.ok) {
                 const reason = String(reserveResult?.reason || "stake_unavailable").trim().toLowerCase();
                 const isLowBalance = reason === "insufficient_coins" || reason.includes("insufficient coins") || reason.includes("insufficient balance");
@@ -688,6 +878,14 @@ class DominoRoom extends Room {
                     : reason === "auth_required"
                         ? "room-closed-auth-required"
                         : "room-closed-stake-unavailable";
+                debugLog("[ROOM_DEBUG] startDeal:reserve_failed", {
+                    roomId: this.roomId,
+                    roomCode: this.roomCode,
+                    roomVisibility: this.roomVisibility,
+                    reason,
+                    message,
+                    willSendRoomClosed: this.roomVisibility !== "open"
+                });
                 this.state.gameActive = false;
                 this.broadcast("msg", { key: message, time: 2500 });
                 if (this.roomVisibility !== "open") {
@@ -985,10 +1183,23 @@ class DominoRoom extends Room {
             players: this.state.players,
             identityBySessionId: this.identityBySessionId
         });
-        this.broadcast("room_state", buildRoomStatePayload({
+        const payload = buildRoomStatePayload({
             room: this,
             players
-        }));
+        });
+        debugLog("[ROOM_DEBUG] room_state", {
+            roomId: this.roomId,
+            roomCode: this.roomCode,
+            gameActive: payload.gameActive,
+            seatSelectionRequired: payload.seatSelectionRequired,
+            currentPlayers: payload.currentPlayers,
+            humanPlayers: payload.humanPlayers,
+            humanSeats: payload.humanSeats,
+            aiCount: payload.aiCount,
+            totalPlayers: payload.totalPlayers,
+            players: debugPlayerSummary(this)
+        });
+        this.broadcast("room_state", payload);
         void this.saveCustomStateToRedis();
     }
 

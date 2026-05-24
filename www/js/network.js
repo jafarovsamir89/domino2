@@ -254,6 +254,16 @@ class NetworkManager {
             this.clearReconnectTimer();
             const options = this.buildJoinOptions();
 
+            debugLog("[CLIENT_DEBUG] network:connect", {
+                mode,
+                roomId: roomId || "",
+                roomVisibility: options.roomVisibility,
+                stakeKey: options.stakeKey,
+                playerCount: options.playerCount,
+                aiCount: options.aiCount,
+                isTeamMode: options.isTeamMode,
+                hasAuthToken: Boolean(options.authToken)
+            });
             debugLog(`Connecting to ${mode}...`);
             let room;
             if (mode === "create") {
@@ -291,6 +301,28 @@ class NetworkManager {
         if (!this.room) return;
 
         this.room.onMessage("room_state", (roomState) => {
+            debugLog("[CLIENT_DEBUG] room_state received", {
+                roomId: roomState?.roomId,
+                roomCode: roomState?.roomCode,
+                roomVisibility: roomState?.roomVisibility,
+                gameActive: roomState?.gameActive,
+                seatSelectionRequired: roomState?.seatSelectionRequired,
+                currentPlayers: roomState?.currentPlayers,
+                humanPlayers: roomState?.humanPlayers,
+                humanSeats: roomState?.humanSeats,
+                aiCount: roomState?.aiCount,
+                totalPlayers: roomState?.totalPlayers,
+                players: Array.isArray(roomState?.players)
+                    ? roomState.players.map((player) => ({
+                        sessionId: player?.sessionId || "",
+                        seatIndex: Number.isInteger(Number(player?.seatIndex)) ? Number(player.seatIndex) : -1,
+                        isBot: Boolean(player?.isBot),
+                        isConnected: Boolean(player?.isConnected),
+                        hasUserId: Boolean(String(player?.userId || "").trim()),
+                        hasPlayerId: Boolean(String(player?.playerId || "").trim())
+                    }))
+                    : []
+            });
             this.game.onRoomStateUpdate(roomState);
         });
 
@@ -321,6 +353,11 @@ class NetworkManager {
         });
 
         this.room.onMessage("msg", (msg) => {
+            debugLog("[CLIENT_DEBUG] msg received", {
+                key: msg?.key || "",
+                time: Number(msg?.time || 0),
+                hasValues: Boolean(msg?.values && Object.keys(msg.values).length)
+            });
             this.game.renderer.showMessage(this.game.resolveUiMessage?.(msg) || msg.text || "", msg.time);
         });
 
@@ -341,6 +378,7 @@ class NetworkManager {
         });
 
         this.room.onMessage("room_closed", (payload) => {
+            debugLog("[CLIENT_DEBUG] room_closed received", payload || {});
             this.game.onRoomClosed(payload);
         });
 
@@ -370,6 +408,11 @@ class NetworkManager {
     }
 
     leaveRoom() {
+        debugLog("[CLIENT_DEBUG] network:leaveRoom", {
+            hasRoom: Boolean(this.room),
+            manualLeaveRequested: this.manualLeaveRequested,
+            reconnectInProgress: this.reconnectInProgress
+        });
         this.manualLeaveRequested = true;
         this.clearReconnectTimer();
         if (this.room) {
@@ -386,6 +429,10 @@ class NetworkManager {
         if (!token) {
             throw new Error("Missing reconnection token");
         }
+        debugLog("[CLIENT_DEBUG] network:reconnect", {
+            hasSnapshot: Boolean(snapshot),
+            tokenLength: token.length
+        });
         const initialized = await this.initClient();
         if (!initialized) {
             throw new Error("Colyseus not loaded");
@@ -409,6 +456,12 @@ class NetworkManager {
         const roomCode = String(snapshot?.roomCode || '').trim().toUpperCase();
         const restoreSessionId = String(snapshot?.sessionId || '').trim();
         if (!roomCode || !restoreSessionId) return null;
+        debugLog("[CLIENT_DEBUG] network:restoreFromSnapshot", {
+            roomId: String(snapshot?.roomId || "").trim(),
+            roomCode,
+            restoreSessionId: restoreSessionId ? "***" : "",
+            hasReconnectionToken: Boolean(String(reconnectionToken || "").trim())
+        });
 
         const options = this.buildJoinOptions({
             name: snapshot.playerName || this.game.playerName,
@@ -494,6 +547,9 @@ class NetworkManager {
     }
 
     sendChooseSeat(seatIndex) {
+        debugLog("[CLIENT_DEBUG] seat selection action", {
+            seatIndex: Number(seatIndex)
+        });
         if (this.room) this.room.send("choose_seat", {
             seatIndex: Number(seatIndex)
         });

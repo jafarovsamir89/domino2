@@ -2544,6 +2544,14 @@ class DominoGame {
 
         const totalSeats = Number(roomState?.totalPlayers || roomState?.humanSeats || 0);
         const shouldShow = Boolean(this.network?.isMultiplayer && !roomState?.gameActive && totalSeats > 2 && roomState?.seatSelectionRequired !== false);
+        debugLog("[CLIENT_DEBUG] renderSeatSelectionUi", {
+            roomId: roomState?.roomId,
+            roomCode: roomState?.roomCode,
+            totalSeats,
+            shouldShow,
+            gameActive: roomState?.gameActive,
+            seatSelectionRequired: roomState?.seatSelectionRequired
+        });
         if (!shouldShow) {
             this.hideSeatSelectionUi();
             return;
@@ -2638,6 +2646,11 @@ class DominoGame {
             if (!isOccupied) {
                 action.addEventListener('click', () => {
                     if (action.disabled) return;
+                    debugLog("[CLIENT_DEBUG] seat-selection action", {
+                        roomId: roomState?.roomId,
+                        roomCode: roomState?.roomCode,
+                        seatIndex
+                    });
                     this.network?.sendChooseSeat?.(seatIndex);
                 });
             }
@@ -4040,6 +4053,18 @@ class DominoGame {
     onRoomStateUpdate(roomState) {
         if (!roomState) return;
         this.currentRoomState = roomState;
+        debugLog("[CLIENT_DEBUG] onRoomStateUpdate", {
+            roomId: roomState?.roomId,
+            roomCode: roomState?.roomCode,
+            roomVisibility: roomState?.roomVisibility,
+            gameActive: roomState?.gameActive,
+            seatSelectionRequired: roomState?.seatSelectionRequired,
+            currentPlayers: roomState?.currentPlayers,
+            humanPlayers: roomState?.humanPlayers,
+            humanSeats: roomState?.humanSeats,
+            aiCount: roomState?.aiCount,
+            totalPlayers: roomState?.totalPlayers
+        });
 
         document.getElementById('room-code-display').textContent = roomState.roomCode || roomState.roomId || '....';
         const roomCountEl = document.getElementById('room-player-count-display');
@@ -4142,6 +4167,18 @@ class DominoGame {
     }
 
     enterOpenRoomWaitingScreen(roomState) {
+        debugLog("[CLIENT_DEBUG] enterOpenRoomWaitingScreen", {
+            roomId: roomState?.roomId,
+            roomCode: roomState?.roomCode,
+            roomVisibility: roomState?.roomVisibility,
+            gameActive: roomState?.gameActive,
+            seatSelectionRequired: roomState?.seatSelectionRequired,
+            currentPlayers: roomState?.currentPlayers,
+            humanPlayers: roomState?.humanPlayers,
+            humanSeats: roomState?.humanSeats,
+            aiCount: roomState?.aiCount,
+            totalPlayers: roomState?.totalPlayers
+        });
         const startScreen = document.getElementById('start-screen');
         const gameScreen = document.getElementById('game-screen');
         startScreen?.classList.remove('active');
@@ -4179,6 +4216,9 @@ class DominoGame {
     }
 
     onRoomClosed(payload) {
+        if (isDebugLoggingEnabled()) {
+            console.trace("[CLIENT_DEBUG] onRoomClosed", payload || {});
+        }
         const reason = this.resolveUiReason(payload) || this.t('online-room-closed');
         this.clearNextDealAdvanceTimeout();
         this.clearTurnTimers();
