@@ -33,6 +33,43 @@ test("postEconomyRequest posts JSON to the resolved economy URL", async () => {
     assert.equal(calls[0].init.body, JSON.stringify(body));
 });
 
+test("postEconomyRequest adds Authorization when authToken is provided", async () => {
+    const calls = [];
+    const fetchImpl = async (url, init) => {
+        calls.push({ url, init });
+        return { ok: true, marker: "response" };
+    };
+
+    const response = await postEconomyRequest({
+        baseUrl: "http://example.com/",
+        path: "/api/economy/matches/reserve",
+        body: { roomId: "room-1" },
+        authToken: "token-123",
+        fetchImpl
+    });
+
+    assert.equal(response.marker, "response");
+    assert.equal(calls[0].init.headers.Authorization, "Bearer token-123");
+    assert.equal(calls[0].init.headers["content-type"], "application/json");
+});
+
+test("postEconomyRequest does not add Authorization when authToken is missing", async () => {
+    const calls = [];
+    const fetchImpl = async (url, init) => {
+        calls.push({ url, init });
+        return { ok: true, marker: "response" };
+    };
+
+    await postEconomyRequest({
+        baseUrl: "http://example.com/",
+        path: "/api/economy/matches/reserve",
+        body: { roomId: "room-1" },
+        fetchImpl
+    });
+
+    assert.equal(Object.prototype.hasOwnProperty.call(calls[0].init.headers, "Authorization"), false);
+});
+
 test("postReserveEconomyMatch calls the reserve endpoint", async () => {
     const calls = [];
     const fetchImpl = async (url, init) => {

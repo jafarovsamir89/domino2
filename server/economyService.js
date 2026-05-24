@@ -131,6 +131,7 @@ async function reserveEconomyStakeForRoom(room) {
     try {
         const response = await postReserveEconomyMatch({
             baseUrl: process.env.PLATFORM_API_URL,
+            authToken: platformIdentity.authToken,
             body: buildSignedRequestBody("economy.reserve", {
                 roomId: room.roomId,
                 roomCode: room.roomCode,
@@ -242,6 +243,7 @@ async function settleEconomyRoundForRoom(room, winnerIndex) {
     try {
         const response = await postSettleEconomyMatch({
             baseUrl: process.env.PLATFORM_API_URL,
+            authToken: platformIdentity.authToken,
             body: buildSignedRequestBody("economy.settle", {
                 roomId: room.roomId,
                 matchId: room.currentDealMatchId,
@@ -316,6 +318,7 @@ async function settleForfeitStakeForRoom(room, leavingSessionId) {
     try {
         const response = await postSettleEconomyMatch({
             baseUrl: process.env.PLATFORM_API_URL,
+            authToken: platformIdentity.authToken,
             body: buildSignedRequestBody("economy.settle", {
                 roomId: room.roomId,
                 matchId: room.currentDealMatchId,

@@ -174,11 +174,70 @@ test("reserveEconomyStakeForRoom updates room fields on success", async () => {
         assert.equal(fetchCalls[0].url, `${expectedPlatformApiUrl}/api/economy/matches/reserve`);
         assert.equal(fetchCalls[0].init.method, "POST");
         assert.equal(fetchCalls[0].init.headers["content-type"], "application/json");
+        assert.equal(fetchCalls[0].init.headers.Authorization, "Bearer token");
         const body = JSON.parse(fetchCalls[0].init.body);
         assert.equal(body.integrityScope, "economy.reserve");
         assert.equal(typeof body.proof, "string");
         assert.equal(body.participants[0].teamIndex, null);
         assert.equal(body.participants[1].teamIndex, null);
+    } finally {
+        global.fetch = originalFetch;
+    }
+});
+
+test("settleEconomyRoundForRoom forwards authToken to the settle request", async () => {
+    const room = createSettleRoom({
+        getPlatformMatchIdentity: () => ({ authToken: "token-xyz" })
+    });
+
+    const fetchCalls = [];
+    const originalFetch = global.fetch;
+    global.fetch = async (url, init) => {
+        fetchCalls.push({ url, init });
+        return {
+            ok: true,
+            status: 200,
+            text: async () => "",
+            json: async () => ({ ok: true, bank: 800, commission: 0, payout: 0, winners: 0, result: "refund", reservations: [] })
+        };
+    };
+
+    try {
+        await settleEconomyRoundForRoom(room, 0);
+        assert.equal(fetchCalls.length, 1);
+        assert.equal(fetchCalls[0].init.headers.Authorization, "Bearer token-xyz");
+        const body = JSON.parse(fetchCalls[0].init.body);
+        assert.equal(body.integrityScope, "economy.settle");
+    } finally {
+        global.fetch = originalFetch;
+    }
+});
+
+test("settleForfeitStakeForRoom forwards authToken to the settle request", async () => {
+    const room = createSettleRoom({
+        currentDealStakeKey: "stake_200",
+        getPlatformMatchIdentity: () => ({ authToken: "token-abc" })
+    });
+
+    const fetchCalls = [];
+    const originalFetch = global.fetch;
+    global.fetch = async (url, init) => {
+        fetchCalls.push({ url, init });
+        return {
+            ok: true,
+            status: 200,
+            text: async () => "",
+            json: async () => ({ ok: true, bank: 800, commission: 0, payout: 0, winners: 0, result: "loss", reservations: [] })
+        };
+    };
+
+    try {
+        const result = await settleForfeitStakeForRoom(room, "s2");
+        assert.equal(result.ok, true);
+        assert.equal(fetchCalls.length, 1);
+        assert.equal(fetchCalls[0].init.headers.Authorization, "Bearer token-abc");
+        const body = JSON.parse(fetchCalls[0].init.body);
+        assert.equal(body.integrityScope, "economy.settle");
     } finally {
         global.fetch = originalFetch;
     }
