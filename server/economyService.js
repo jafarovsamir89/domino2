@@ -15,6 +15,63 @@ function buildRefundLikeSummary(room) {
     };
 }
 
+function getResponseContentType(response) {
+    return String(response?.headers?.get?.("content-type") || "").toLowerCase();
+}
+
+function isLikelyHtmlResponse(text, contentType) {
+    const sample = String(text || "").trim();
+    return contentType.includes("text/html") || sample.startsWith("<!DOCTYPE html") || sample.startsWith("<!doctype html") || sample.startsWith("<html");
+}
+
+function buildSafePlatformApiReason(status, isHtml) {
+    if (isHtml) {
+        return status === 404 ? "reserve_endpoint_not_found" : "platform_api_unreachable";
+    }
+    if (status === 404) {
+        return "reserve_endpoint_not_found";
+    }
+    return "platform_api_unreachable";
+}
+
+function previewEconomyResponse(text) {
+    return String(text || "").replace(/\s+/g, " ").trim().slice(0, 200);
+}
+
+async function readEconomyResponse(response) {
+    const contentType = getResponseContentType(response);
+    const text = await response.text().catch(() => "");
+    const preview = previewEconomyResponse(text);
+    const isHtml = isLikelyHtmlResponse(text, contentType);
+    let json = null;
+
+    if (!isHtml) {
+        const trimmed = String(text || "").trim();
+        if (trimmed) {
+            try {
+                json = JSON.parse(trimmed);
+            } catch {
+                json = null;
+            }
+        }
+        if (!json && typeof response?.json === "function") {
+            try {
+                json = await response.json();
+            } catch {
+                json = null;
+            }
+        }
+    }
+
+    return {
+        contentType,
+        text,
+        preview,
+        isHtml,
+        json
+    };
+}
+
 async function reserveEconomyStakeForRoom(room) {
     if (room.currentStakeKey === "free") {
         room.currentDealStakeAmount = 0;
@@ -63,17 +120,46 @@ async function reserveEconomyStakeForRoom(room) {
                 participants
             })
         });
+        const economyResponse = await readEconomyResponse(response);
 
         if (!response.ok) {
-            const text = await response.text().catch(() => "");
-            console.warn("[ROOM] Economy reserve failed:", text || response.status);
-            return { ok: false, reason: text || "reserve_failed" };
+            const reason = buildSafePlatformApiReason(response.status, economyResponse.isHtml);
+            console.warn("[ROOM] Economy reserve failed:", {
+                status: response.status,
+                contentType: economyResponse.contentType,
+                preview: economyResponse.preview
+            });
+            return economyResponse.isHtml
+                ? {
+                    ok: false,
+                    reason,
+                    status: response.status,
+                    contentType: economyResponse.contentType,
+                    preview: economyResponse.preview
+                }
+                : { ok: false, reason: economyResponse.text || "reserve_failed" };
         }
 
-        const data = await response.json().catch(() => null);
+        const data = economyResponse.json;
         if (!data?.ok) {
-            console.warn("[ROOM] Economy reserve rejected:", data?.reason || "unknown");
-            return { ok: false, reason: data?.reason || "reserve_failed" };
+            const reason = economyResponse.isHtml
+                ? buildSafePlatformApiReason(response.status, true)
+                : data?.reason || "reserve_failed";
+            console.warn("[ROOM] Economy reserve rejected:", {
+                status: response.status,
+                contentType: economyResponse.contentType,
+                preview: economyResponse.preview,
+                reason: data?.reason || "unknown"
+            });
+            return economyResponse.isHtml
+                ? {
+                    ok: false,
+                    reason,
+                    status: response.status,
+                    contentType: economyResponse.contentType,
+                    preview: economyResponse.preview
+                }
+                : { ok: false, reason };
         }
 
         room.economyReservationMade = true;
@@ -128,13 +214,17 @@ async function settleEconomyRoundForRoom(room, winnerIndex) {
                 winnerUserIds
             })
         });
+        const economyResponse = await readEconomyResponse(response);
 
         if (!response.ok) {
-            const text = await response.text().catch(() => "");
-            throw new Error(text || `Round settle failed with ${response.status}`);
+            throw new Error(
+                economyResponse.isHtml
+                    ? `Round settle failed with ${response.status} (${economyResponse.contentType || "unknown"}): ${economyResponse.preview}`
+                    : economyResponse.text || `Round settle failed with ${response.status}`
+            );
         }
 
-        const settlement = await response.json().catch(() => null);
+        const settlement = economyResponse.json;
         const summary = settlement?.ok ? {
             stakeKey: room.currentDealStakeKey,
             stakeAmount: room.currentDealStakeAmount,
@@ -194,13 +284,17 @@ async function settleForfeitStakeForRoom(room, leavingSessionId) {
                 winnerUserIds
             })
         });
+        const economyResponse = await readEconomyResponse(response);
 
         if (!response.ok) {
-            const text = await response.text().catch(() => "");
-            throw new Error(text || `Stake forfeit settle failed with ${response.status}`);
+            throw new Error(
+                economyResponse.isHtml
+                    ? `Stake forfeit settle failed with ${response.status} (${economyResponse.contentType || "unknown"}): ${economyResponse.preview}`
+                    : economyResponse.text || `Stake forfeit settle failed with ${response.status}`
+            );
         }
 
-        const summary = await response.json().catch(() => null);
+        const summary = economyResponse.json;
         room.forfeitSettlementMade = true;
         room.matchRecorded = true;
         return summary;

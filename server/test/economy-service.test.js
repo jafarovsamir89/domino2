@@ -168,9 +168,47 @@ test("reserveEconomyStakeForRoom updates room fields on success", async () => {
         assert.equal(room.currentDealBankAmount, 1000);
         assert.deepEqual(broadcasts, [["msg", { key: "msg-bank-reserved", values: { amount: 1000, players: 2 }, time: 2000 }]]);
         assert.equal(fetchCalls.length, 1);
-        assert.equal(fetchCalls[0].url, "http://localhost:3001/api/economy/matches/reserve");
+        assert.equal(fetchCalls[0].url, "http://localhost:3000/api/economy/matches/reserve");
         assert.equal(fetchCalls[0].init.method, "POST");
         assert.equal(fetchCalls[0].init.headers["content-type"], "application/json");
+    } finally {
+        global.fetch = originalFetch;
+    }
+});
+
+test("reserveEconomyStakeForRoom returns a safe reason for html 404 responses", async () => {
+    const room = {
+        currentStakeKey: "stake_200",
+        currentDealMatchId: "match-1",
+        roomId: "room-1",
+        roomCode: "ABCD",
+        state: {
+            playerOrder: ["s1"],
+            players: new Map([["s1", { name: "Alice", userId: "u1" }]]),
+            isTeamMode: false
+        },
+        identityBySessionId: new Map([["s1", { provider: "platform", userId: "u1", playerId: "p1", displayName: "Alice" }]]),
+        getPlatformMatchIdentity: () => ({ authToken: "token" })
+    };
+
+    const originalFetch = global.fetch;
+    global.fetch = async () => ({
+        ok: false,
+        status: 404,
+        headers: {
+            get: () => "text/html; charset=utf-8"
+        },
+        text: async () => "<!DOCTYPE html><html><body>Domino2 Admin 404: This page could not be found</body></html>"
+    });
+
+    try {
+        const result = await reserveEconomyStakeForRoom(room);
+        assert.equal(result.ok, false);
+        assert.equal(result.reason, "reserve_endpoint_not_found");
+        assert.equal(result.status, 404);
+        assert.equal(result.contentType, "text/html; charset=utf-8");
+        assert.equal(result.preview.includes("<!DOCTYPE html>"), true);
+        assert.equal(result.preview.includes("Domino2 Admin"), true);
     } finally {
         global.fetch = originalFetch;
     }
@@ -350,7 +388,7 @@ test("settleEconomyRoundForRoom updates room fields on success in ffa", async ()
         assert.deepEqual(room.lastRoundEconomySummary, result);
         await room.pendingEconomySettlement;
         assert.equal(fetchCalls.length, 1);
-        assert.equal(fetchCalls[0].url, "http://localhost:3001/api/economy/matches/settle");
+        assert.equal(fetchCalls[0].url, "http://localhost:3000/api/economy/matches/settle");
         assert.equal(fetchCalls[0].init.method, "POST");
         assert.equal(fetchCalls[0].init.headers["content-type"], "application/json");
         const body = JSON.parse(fetchCalls[0].init.body);

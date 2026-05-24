@@ -226,8 +226,13 @@ class DominoRoom extends Room {
     }
 
     rebuildPlayerOrderBySeats() {
-        const currentOrder = Array.from(this.state.playerOrder || []);
+        const currentOrder = Array.from(this.state.playerOrder || []).filter((sessionId) => this.state.players.has(sessionId));
         const orderIndex = new Map(currentOrder.map((sessionId, index) => [sessionId, index]));
+        for (const sessionId of this.state.players.keys()) {
+            if (orderIndex.has(sessionId)) continue;
+            orderIndex.set(sessionId, currentOrder.length);
+            currentOrder.push(sessionId);
+        }
         currentOrder.sort((a, b) => {
             const seatA = this.getPlayerSeatIndex(a);
             const seatB = this.getPlayerSeatIndex(b);
@@ -508,12 +513,20 @@ class DominoRoom extends Room {
             occupiedSeats: Array.from(occupiedSeats.values()),
             freeSeats
         });
-        this.botIds = [];
+        const nextBotIds = [];
         for (let i = 0; i < this.aiCount; i++) {
             const botId = `bot-${i}`;
             const botSeatIndex = freeSeats[i] ?? i;
             this.aiPlayers.set(botId, new AIPlayer(botSeatIndex, this.aiDifficulty));
-            if (this.state.players.has(botId)) continue;
+            const existingBot = this.state.players.get(botId);
+            if (existingBot) {
+                existingBot.name = existingBot.name || `AI ${i + 1}`;
+                existingBot.isBot = true;
+                existingBot.isConnected = true;
+                existingBot.seatIndex = botSeatIndex;
+                nextBotIds.push(botId);
+                continue;
+            }
 
             const bot = new Player();
             bot.name = `AI ${i + 1}`;
@@ -521,12 +534,13 @@ class DominoRoom extends Room {
             bot.isConnected = true;
             bot.seatIndex = botSeatIndex;
             this.state.players.set(botId, bot);
-            this.botIds.push(botId);
+            nextBotIds.push(botId);
             debugLog("[ROOM_DEBUG] bots:added", {
                 botId,
                 seatIndex: botSeatIndex
             });
         }
+        this.botIds = nextBotIds;
         this.rebuildPlayerOrderBySeats();
         this.state.playerCount = this.totalPlayers;
         debugLog("[ROOM_DEBUG] bots:final", {

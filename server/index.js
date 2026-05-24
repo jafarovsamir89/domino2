@@ -7,6 +7,7 @@ const { Server } = require("colyseus");
 const { RedisPresence } = require("@colyseus/redis-presence");
 const { RedisDriver } = require("@colyseus/redis-driver");
 const DominoRoom = require("./DominoRoom");
+const { resolvePlatformApiUrl, probePlatformApiUrl } = require("./economyConfig");
 const { getLiveSummary, getOpenRooms, getLiveSession } = require("./livePresence");
 const { resolveRoomIdByCode, resolveRoomCodeById } = require("./roomRegistry");
 const { buildReadinessHealth } = require("./health");
@@ -342,6 +343,20 @@ if (redisUrl) {
 const gameServer = new Server(gameServerOptions);
 
 gameServer.define('domino', DominoRoom);
+
+const resolvedPlatformApiUrl = resolvePlatformApiUrl(process.env.PLATFORM_API_URL);
+console.info(`[ROOM] PLATFORM_API_URL resolved: ${resolvedPlatformApiUrl}`);
+if (process.env.DOMINO_DEBUG_LOGS === "true") {
+    setTimeout(() => {
+        void probePlatformApiUrl(resolvedPlatformApiUrl).then((result) => {
+            if (!result?.ok) {
+                console.warn(`[ROOM] Invalid PLATFORM_API_URL: expected platform API, got ${result?.contentType || result?.reason || "unknown"}${result?.status ? ` / ${result.status}` : ""}`);
+            }
+        }).catch((error) => {
+            console.warn("[ROOM] PLATFORM_API_URL probe failed:", error?.message || error);
+        });
+    }, 5000);
+}
 
 const shutdown = async () => {
     try {

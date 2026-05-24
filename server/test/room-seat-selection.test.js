@@ -265,10 +265,39 @@ test("bots fill remaining seats without stealing human seats", async () => {
     room.handleChooseSeat(guest, { seatIndex: 2 });
     room.ensureBotPlayers();
 
+    assert.equal(room.botIds.length, 2);
+    assert.equal(room.state.players.has("bot-0"), true);
+    assert.equal(room.state.players.has("bot-1"), true);
     const botSeats = room.botIds.map((botId) => room.getPlayerSeatIndex(botId)).sort((a, b) => a - b);
     assert.deepEqual(botSeats, [1, 3]);
     assert.equal(room.getPlayerSeatIndex("host"), 0);
     assert.equal(room.getPlayerSeatIndex("guest"), 2);
+    assert.equal(room.state.playerOrder.length, 4);
+    assert.deepEqual(room.state.playerOrder, ["host", "bot-0", "guest", "bot-1"]);
+});
+
+test("startGame includes bots in playerOrder and reaches startDeal with four players", async () => {
+    const room = createRoom({ totalPlayers: 4, aiCount: 2, isTeamMode: true });
+    await joinHuman(room, "host", "Host");
+    const guest = await joinHuman(room, "guest", "Guest");
+
+    room.handleChooseSeat(guest, { seatIndex: 2 });
+    room.clearTurnTimer = () => {};
+    room.scheduleTurnTimer = () => {};
+    room.reserveEconomyStake = async () => ({ ok: true, reserved: 0, stakeKey: "free", bankAmount: 0 });
+    room.shouldRedealOpeningHands = () => false;
+    room.getOpeningScoreContext = () => 0;
+
+    let startDealCalls = 0;
+    room.startDeal = async function () {
+        startDealCalls += 1;
+        assert.equal(this.state.playerOrder.length, 4);
+        assert.deepEqual(this.state.playerOrder, ["host", "bot-0", "guest", "bot-1"]);
+    };
+
+    await room.startGame();
+
+    assert.equal(startDealCalls, 1);
 });
 
 test("open room starts without closing after seats are chosen", async () => {
