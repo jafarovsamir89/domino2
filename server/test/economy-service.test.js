@@ -174,6 +174,115 @@ test("reserveEconomyStakeForRoom updates room fields on success", async () => {
         assert.equal(fetchCalls[0].url, `${expectedPlatformApiUrl}/api/economy/matches/reserve`);
         assert.equal(fetchCalls[0].init.method, "POST");
         assert.equal(fetchCalls[0].init.headers["content-type"], "application/json");
+        const body = JSON.parse(fetchCalls[0].init.body);
+        assert.equal(body.integrityScope, "economy.reserve");
+        assert.equal(typeof body.proof, "string");
+        assert.equal(body.participants[0].teamIndex, null);
+        assert.equal(body.participants[1].teamIndex, null);
+    } finally {
+        global.fetch = originalFetch;
+    }
+});
+
+test("reserveEconomyStakeForRoom maps DTO validation errors to a safe reason", async () => {
+    const room = {
+        currentStakeKey: "stake_500",
+        currentDealMatchId: "match-1",
+        roomId: "room-1",
+        roomCode: "ABCD",
+        state: {
+            playerOrder: ["s1", "s2"],
+            players: new Map([
+                ["s1", { name: "Alice", userId: "u1" }],
+                ["s2", { name: "Bob", userId: "u2" }]
+            ]),
+            isTeamMode: true
+        },
+        identityBySessionId: new Map([
+            ["s1", { provider: "platform", userId: "u1", playerId: "p1", displayName: "Alice" }],
+            ["s2", { provider: "platform", userId: "u2", playerId: "p2", displayName: "Bob" }]
+        ]),
+        getPlatformMatchIdentity: () => ({ authToken: "token" })
+    };
+
+    const originalFetch = global.fetch;
+    global.fetch = async () => ({
+        ok: false,
+        status: 400,
+        headers: {
+            get: () => "application/json; charset=utf-8"
+        },
+        text: async () => JSON.stringify({
+            message: [
+                "property integrityScope should not exist",
+                "property proof should not exist",
+                "participants.0.property teamIndex should not exist"
+            ],
+            error: "Bad Request",
+            statusCode: 400
+        })
+    });
+
+    try {
+        const result = await reserveEconomyStakeForRoom(room);
+        assert.equal(result.ok, false);
+        assert.equal(result.reason, "economy_validation_failed");
+        assert.equal(result.status, 400);
+        assert.equal(Array.isArray(result.message), true);
+        assert.equal(result.message.length > 0, true);
+        assert.equal(String(result.message.join(" ")).includes("integrityScope should not exist"), true);
+    } finally {
+        global.fetch = originalFetch;
+    }
+});
+
+test("reserveEconomyStakeForRoom includes teamIndex in the signed reserve body for team rooms", async () => {
+    const room = {
+        currentStakeKey: "stake_500",
+        currentDealMatchId: "match-1",
+        roomId: "room-1",
+        roomCode: "ABCD",
+        state: {
+            playerOrder: ["s1", "s2", "s3", "s4"],
+            players: new Map([
+                ["s1", { name: "Alice", userId: "u1" }],
+                ["s2", { name: "Bob", userId: "u2" }],
+                ["s3", { name: "Carol", userId: "u3" }],
+                ["s4", { name: "Dave", userId: "u4" }]
+            ]),
+            isTeamMode: true
+        },
+        identityBySessionId: new Map([
+            ["s1", { provider: "platform", userId: "u1", playerId: "p1", displayName: "Alice" }],
+            ["s2", { provider: "platform", userId: "u2", playerId: "p2", displayName: "Bob" }],
+            ["s3", { provider: "platform", userId: "u3", playerId: "p3", displayName: "Carol" }],
+            ["s4", { provider: "platform", userId: "u4", playerId: "p4", displayName: "Dave" }]
+        ]),
+        getPlatformMatchIdentity: () => ({ authToken: "token" }),
+        broadcast: () => {}
+    };
+
+    const fetchCalls = [];
+    const originalFetch = global.fetch;
+    global.fetch = async (url, init) => {
+        fetchCalls.push({ url, init });
+        return {
+            ok: true,
+            status: 200,
+            text: async () => "",
+            json: async () => ({ ok: true, reserved: 2000 })
+        };
+    };
+
+    try {
+        const result = await reserveEconomyStakeForRoom(room);
+        assert.equal(result.ok, true);
+        assert.equal(fetchCalls.length, 1);
+        const body = JSON.parse(fetchCalls[0].init.body);
+        assert.equal(body.integrityScope, "economy.reserve");
+        assert.equal(typeof body.proof, "string");
+        assert.equal(body.participants[0].teamIndex, 0);
+        assert.equal(body.participants[1].teamIndex, 1);
     } finally {
         global.fetch = originalFetch;
     }

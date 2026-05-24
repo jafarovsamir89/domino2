@@ -235,6 +235,11 @@ export class EconomyMatchParticipantDto {
   @IsString()
   @MaxLength(64)
   displayName?: string;
+
+  @IsOptional()
+  @IsInt()
+  @Type(() => Number)
+  teamIndex?: number | null;
 }
 
 export class EconomyReserveMatchDto {
@@ -262,6 +267,16 @@ export class EconomyReserveMatchDto {
   @IsString()
   @MaxLength(64)
   sourceMatchId?: string | null;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(64)
+  integrityScope?: string | null;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(1024)
+  proof?: string | null;
 
   @IsOptional()
   @IsArray()

@@ -34,6 +34,25 @@ function buildSafePlatformApiReason(status, isHtml) {
     return "platform_api_unreachable";
 }
 
+function isDtoValidationErrorPayload(payload) {
+    return Boolean(
+        payload &&
+        typeof payload === "object" &&
+        Number(payload.statusCode) === 400 &&
+        String(payload.error || "").toLowerCase() === "bad request" &&
+        Array.isArray(payload.message)
+    );
+}
+
+function summarizeValidationMessages(messages) {
+    return Array.isArray(messages)
+        ? messages
+            .map((message) => String(message || "").trim())
+            .filter(Boolean)
+            .slice(0, 4)
+        : [];
+}
+
 function previewEconomyResponse(text) {
     return String(text || "").replace(/\s+/g, " ").trim().slice(0, 200);
 }
@@ -123,6 +142,23 @@ async function reserveEconomyStakeForRoom(room) {
         const economyResponse = await readEconomyResponse(response);
 
         if (!response.ok) {
+            if (isDtoValidationErrorPayload(economyResponse.json)) {
+                const validationMessages = summarizeValidationMessages(economyResponse.json.message);
+                console.warn("[ROOM] Economy reserve validation failed:", {
+                    status: response.status,
+                    contentType: economyResponse.contentType,
+                    preview: economyResponse.preview,
+                    message: validationMessages
+                });
+                return {
+                    ok: false,
+                    reason: "economy_validation_failed",
+                    status: response.status,
+                    contentType: economyResponse.contentType,
+                    preview: economyResponse.preview,
+                    message: validationMessages
+                };
+            }
             const reason = buildSafePlatformApiReason(response.status, economyResponse.isHtml);
             console.warn("[ROOM] Economy reserve failed:", {
                 status: response.status,
@@ -217,6 +253,10 @@ async function settleEconomyRoundForRoom(room, winnerIndex) {
         const economyResponse = await readEconomyResponse(response);
 
         if (!response.ok) {
+            if (isDtoValidationErrorPayload(economyResponse.json)) {
+                const validationMessages = summarizeValidationMessages(economyResponse.json.message);
+                throw new Error(`Economy validation failed: ${validationMessages.join("; ") || "Bad Request"}`);
+            }
             throw new Error(
                 economyResponse.isHtml
                     ? `Round settle failed with ${response.status} (${economyResponse.contentType || "unknown"}): ${economyResponse.preview}`
@@ -287,6 +327,10 @@ async function settleForfeitStakeForRoom(room, leavingSessionId) {
         const economyResponse = await readEconomyResponse(response);
 
         if (!response.ok) {
+            if (isDtoValidationErrorPayload(economyResponse.json)) {
+                const validationMessages = summarizeValidationMessages(economyResponse.json.message);
+                throw new Error(`Economy validation failed: ${validationMessages.join("; ") || "Bad Request"}`);
+            }
             throw new Error(
                 economyResponse.isHtml
                     ? `Stake forfeit settle failed with ${response.status} (${economyResponse.contentType || "unknown"}): ${economyResponse.preview}`
