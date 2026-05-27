@@ -375,6 +375,7 @@ input, button { font: inherit; }
 
 #account-modal {
     z-index: 30;
+    padding: 12px;
 }
 
 #account-name-modal {
@@ -401,15 +402,41 @@ input, button { font: inherit; }
 }
 
 .modal-card-wide {
-    width: min(840px, 100%);
+    width: min(760px, 100%);
+}
+
+.account-modal .modal-card-wide {
+    width: min(760px, calc(100vw - 24px));
 }
 
 .modal-header {
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     justify-content: space-between;
     gap: 16px;
     margin-bottom: 16px;
+    flex-wrap: nowrap;
+}
+
+.account-modal-header > div {
+    min-width: 0;
+    flex: 1 1 auto;
+}
+
+.account-modal-header {
+    gap: 12px;
+}
+
+.account-modal-title-wrap {
+    min-width: 0;
+    flex: 1 1 auto;
+}
+
+.account-modal-title-wrap h2 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin: 0;
 }
 
 .modal-desc {
@@ -3279,6 +3306,11 @@ body.seat-selection-active #game-screen {
     .modal-header {
         flex-direction: column;
     }
+
+    .account-modal .modal-header {
+        flex-direction: row;
+        align-items: center;
+    }
 }
 
 @media (max-width: 680px) {
@@ -3324,6 +3356,10 @@ body.seat-selection-active #game-screen {
 
     .modal-card {
         padding: 16px;
+    }
+
+    #account-modal {
+        padding: 10px;
     }
 
     .account-cabinet {
