@@ -1348,6 +1348,13 @@ class DominoGame {
             cosmeticsShopCloseButton.setAttribute('aria-label', this.t('modal-close'));
         }
 
+        const soloModalCloseButton = document.getElementById('solo-modal-close');
+        if (soloModalCloseButton) {
+            soloModalCloseButton.textContent = '\u00d7';
+            soloModalCloseButton.title = this.t('modal-close');
+            soloModalCloseButton.setAttribute('aria-label', this.t('modal-close'));
+        }
+
         const placeholders = [
             ['account-name-modal-input', this.t('placeholder-player-name')]
         ];

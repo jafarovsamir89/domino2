@@ -100,11 +100,12 @@
 
         <div id="solo-modal" class="modal-backdrop">
             <section class="modal-card">
-                <div class="modal-header">
-                    <div>
+                <div class="modal-header account-modal-header">
+                    <div class="account-modal-title-wrap">
                         <h2 data-i18n="solo-modal-title">Solo play</h2>
                         <p class="modal-desc" data-i18n="solo-modal-desc">Pick difficulty, player count and game mode.</p>
                     </div>
+                    <button class="btn btn-menu modal-close-btn account-modal-close-btn" id="solo-modal-close" type="button" aria-label="Close">×</button>
                 </div>
 
                 <div class="settings-grid">
@@ -145,9 +146,8 @@
                     </div>
                 </div>
 
-                <div class="modal-footer modal-footer-split">
+                <div class="modal-footer">
                     <button class="btn btn-primary btn-large modal-primary-btn" id="start-game-btn" data-i18n="btn-solo-start">Start</button>
-                    <button class="btn btn-menu modal-close-btn modal-secondary-btn" id="solo-modal-close" data-i18n="modal-close">Close</button>
                 </div>
             </section>
         </div>
