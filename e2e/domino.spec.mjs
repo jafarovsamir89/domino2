@@ -50,8 +50,12 @@ test("start screen loads and stays within mobile viewport", async ({ page }) => 
   await expect(page.locator("#account-btn")).toHaveClass(/icon-btn/);
   await expect(page.locator("#account-btn")).toHaveAttribute("aria-label", "\u0412\u0445\u043e\u0434");
   await expect(page.locator("#account-btn")).toHaveText("");
+  await expect(page.locator("#start-screen .start-topbar")).toBeVisible();
   await expect(page.locator("#open-online-modal-btn")).not.toHaveText("");
   await expect(page.locator("#start-coin-shop-btn")).not.toHaveText("");
+  await expect(page.locator("#start-coin-shop-btn")).toHaveClass(/start-top-shop-btn/);
+  await expect(page.locator("#start-cosmetics-shop-btn")).toHaveClass(/start-top-shop-btn/);
+  await expect(page.locator("#start-screen .start-actions .start-shop-btn")).toHaveCount(0);
   await expect(page.locator("#account-modal-title")).toHaveText("\u0410\u043a\u043a\u0430\u0443\u043d\u0442");
 
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1);

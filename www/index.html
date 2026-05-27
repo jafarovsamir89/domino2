@@ -15,13 +15,25 @@
 </head>
 <body>
     <div id="start-screen" class="screen active auth-required">
-        <div class="lang-switcher">
-            <button class="btn btn-lang active" data-lang="az">AZ</button>
-            <button class="btn btn-lang" data-lang="en">EN</button>
-            <button class="btn btn-lang" data-lang="ru">RU</button>
-        </div>
+        <div class="start-topbar">
+            <button class="icon-btn start-profile-btn" id="account-btn" type="button" aria-label="Account"></button>
 
-        <button class="icon-btn start-profile-btn" id="account-btn" type="button" aria-label="Account"></button>
+            <button class="btn btn-menu-shop start-top-shop-btn" id="start-coin-shop-btn" type="button">
+                <span class="start-top-shop-icon" data-shop-icon="cart" aria-hidden="true"></span>
+                <span class="start-top-shop-label" data-i18n="start-coin-shop">Coinlər</span>
+            </button>
+
+            <button class="btn btn-menu-shop start-top-shop-btn start-cosmetics-shop-btn" id="start-cosmetics-shop-btn" type="button">
+                <span class="start-top-shop-icon" data-shop-icon="cart" aria-hidden="true"></span>
+                <span class="start-top-shop-label" data-i18n="start-skin-shop">Skinlər</span>
+            </button>
+
+            <div class="lang-switcher">
+                <button class="btn btn-lang active" data-lang="az">AZ</button>
+                <button class="btn btn-lang" data-lang="en">EN</button>
+                <button class="btn btn-lang" data-lang="ru">RU</button>
+            </div>
+        </div>
 
         <div class="start-shell">
             <section class="start-hero">
@@ -77,8 +89,6 @@
                 <button class="btn btn-primary btn-large" id="open-solo-modal-btn" data-i18n="btn-solo">Solo play</button>
                 <button class="btn btn-action btn-large" id="open-online-modal-btn" data-i18n="btn-online">Online</button>
                 <button class="btn btn-action btn-large" id="open-rooms-btn" data-i18n="open-rooms-button">Açıq otaqlar</button>
-                <button class="btn btn-menu btn-large start-shop-btn" id="start-coin-shop-btn" type="button" data-i18n="coin-shop-menu">Coin shop</button>
-                <button class="btn btn-menu btn-large start-shop-btn start-cosmetics-shop-btn" id="start-cosmetics-shop-btn" type="button" data-i18n="cosmetics-shop-menu">Decor shop</button>
             </div>
         </div>
 

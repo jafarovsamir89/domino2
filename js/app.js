@@ -83,6 +83,7 @@ const AUTH_ICON_SVGS = {
 };
 
 const SHOP_ICON_SVGS = {
+    cart: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3.5 4.75h2.3l1.45 7.2A2.25 2.25 0 0 0 9.48 13.8h7.47a2.25 2.25 0 0 0 2.16-1.66l1.38-5.1H7.18" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M9.25 19.25a1 1 0 1 1 0 .01Zm8.25 0a1 1 0 1 1 0 .01Z" fill="currentColor"/><path d="M6.5 4.75 7.6 10.1M8.2 13.8h10.75" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>`,
     coin: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2.75c5.11 0 9.25 1.9 9.25 4.25S17.11 11.25 12 11.25 2.75 9.35 2.75 7 6.89 2.75 12 2.75Z" stroke="currentColor" stroke-width="1.6"/><path d="M3 7v10c0 2.35 4.03 4.25 9 4.25s9-1.9 9-4.25V7" stroke="currentColor" stroke-width="1.6"/><path d="M3 12c0 2.35 4.03 4.25 9 4.25s9-1.9 9-4.25M12 6.5c2.76 0 5 .83 5 1.85S14.76 10.2 12 10.2 7 9.37 7 8.35 9.24 6.5 12 6.5Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>`,
     video: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3.5" y="5.5" width="17" height="13" rx="3" stroke="currentColor" stroke-width="1.6"/><path d="m10 9 4.8 3-4.8 3V9Z" fill="currentColor"/></svg>`
 };
@@ -2150,6 +2151,25 @@ class DominoGame {
         button.setAttribute('aria-label', label);
         button.title = label;
         button.classList.toggle('is-authenticated', hasSession);
+        this.syncStartShopButtons();
+    }
+
+    syncStartShopButtons() {
+        const shopButtons = [
+            { id: 'start-coin-shop-btn', labelKey: 'start-coin-shop' },
+            { id: 'start-cosmetics-shop-btn', labelKey: 'start-skin-shop' }
+        ];
+        for (const { id, labelKey } of shopButtons) {
+            const button = document.getElementById(id);
+            if (!button) continue;
+            const label = this.t(labelKey);
+            button.title = label;
+            button.setAttribute('aria-label', label);
+            const labelNode = button.querySelector('.start-top-shop-label');
+            if (labelNode) {
+                labelNode.textContent = label;
+            }
+        }
     }
 
     hasGuestSession() {
