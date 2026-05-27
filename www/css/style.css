@@ -405,7 +405,7 @@ input, button { font: inherit; }
     width: min(760px, 100%);
 }
 
-.account-modal .modal-card-wide {
+#account-modal .modal-card-wide {
     width: min(760px, calc(100vw - 24px));
 }
 
@@ -418,12 +418,12 @@ input, button { font: inherit; }
     flex-wrap: nowrap;
 }
 
-.account-modal-header > div {
+#account-modal .account-modal-header > div {
     min-width: 0;
     flex: 1 1 auto;
 }
 
-.account-modal-header {
+#account-modal .account-modal-header {
     gap: 12px;
 }
 
@@ -3307,7 +3307,7 @@ body.seat-selection-active #game-screen {
         flex-direction: column;
     }
 
-    .account-modal .modal-header {
+    #account-modal .modal-header {
         flex-direction: row;
         align-items: center;
     }

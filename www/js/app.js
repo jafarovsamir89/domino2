@@ -1915,6 +1915,8 @@ class DominoGame {
             rows.forEach((row) => {
                 const item = document.createElement('div');
                 item.className = 'room-player-chip';
+                const label = document.createElement('div');
+                const rating = document.createElement('div');
                 const titleKey = `title-${String(row.titleCode || 'rookie')}`;
                 const title = this.t(titleKey);
                 label.textContent = `#${row.rank} ${row.name} · ${title}`;
@@ -1973,8 +1975,23 @@ class DominoGame {
             } else {
                 profileCopy.parentElement?.appendChild(tabs);
             }
+            tabs.querySelectorAll('[data-i18n]').forEach((button) => {
+                const key = button.dataset.i18n;
+                const label = this.t(key || '');
+                button.textContent = label;
+                button.title = label;
+                button.setAttribute('aria-label', label);
+            });
             tabs.querySelectorAll('[data-profile-tab]').forEach((button) => {
                 button.addEventListener('click', () => this.setAccountProfileTab(button.dataset.profileTab || 'skins'));
+            });
+        } else if (profileTabs) {
+            profileTabs.querySelectorAll('[data-i18n]').forEach((button) => {
+                const key = button.dataset.i18n;
+                const label = this.t(key || '');
+                button.textContent = label;
+                button.title = label;
+                button.setAttribute('aria-label', label);
             });
         }
         if (profileCopy && profileName && !document.getElementById('account-edit-name-btn')) {
