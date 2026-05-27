@@ -81,15 +81,16 @@ input, button { font: inherit; }
 .start-topbar {
     position: absolute;
     top: 18px;
-    left: 18px;
-    right: 18px;
+    left: 50%;
+    width: min(100% - 36px, 780px);
+    transform: translateX(-50%);
     display: grid;
     grid-template-columns:
-        minmax(44px, 15%)
-        minmax(0, 3fr)
-        minmax(12px, 1fr)
-        minmax(0, 3fr)
-        minmax(64px, 15%);
+        minmax(44px, 14%)
+        minmax(0, 1.55fr)
+        minmax(12px, 0.28fr)
+        minmax(0, 1.55fr)
+        minmax(64px, 14%);
     align-items: center;
     gap: 0;
     z-index: 12;
@@ -3405,12 +3406,13 @@ body.seat-selection-active #game-screen {
     .start-topbar {
         top: 12px;
         left: 12px;
-        right: 12px;
+        width: calc(100% - 24px);
+        transform: none;
         grid-template-columns:
             minmax(40px, 15%)
-            minmax(0, 3fr)
-            minmax(10px, 1fr)
-            minmax(0, 3fr)
+            minmax(0, 1.65fr)
+            minmax(10px, 0.3fr)
+            minmax(0, 1.65fr)
             minmax(56px, 15%);
     }
 
@@ -3473,12 +3475,13 @@ body.seat-selection-active #game-screen {
     .start-topbar {
         top: 12px;
         left: 12px;
-        right: 12px;
+        width: calc(100% - 24px);
+        transform: none;
         grid-template-columns:
             minmax(38px, 14%)
-            minmax(0, 3fr)
-            minmax(8px, 1fr)
-            minmax(0, 3fr)
+            minmax(0, 1.7fr)
+            minmax(8px, 0.28fr)
+            minmax(0, 1.7fr)
             minmax(54px, 14%);
     }
 
