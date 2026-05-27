@@ -84,7 +84,12 @@ input, button { font: inherit; }
     left: 18px;
     right: 18px;
     display: grid;
-    grid-template-columns: 15% 30% 10% 30% 15%;
+    grid-template-columns:
+        minmax(44px, 15%)
+        minmax(0, 3fr)
+        minmax(12px, 1fr)
+        minmax(0, 3fr)
+        minmax(64px, 15%);
     align-items: center;
     gap: 0;
     z-index: 12;
@@ -3401,7 +3406,12 @@ body.seat-selection-active #game-screen {
         top: 12px;
         left: 12px;
         right: 12px;
-        grid-template-columns: 15% 30% 10% 30% 15%;
+        grid-template-columns:
+            minmax(40px, 15%)
+            minmax(0, 3fr)
+            minmax(10px, 1fr)
+            minmax(0, 3fr)
+            minmax(56px, 15%);
     }
 
     .start-top-shop-btn {
@@ -3464,7 +3474,12 @@ body.seat-selection-active #game-screen {
         top: 12px;
         left: 12px;
         right: 12px;
-        grid-template-columns: 15% 30% 10% 30% 15%;
+        grid-template-columns:
+            minmax(38px, 14%)
+            minmax(0, 3fr)
+            minmax(8px, 1fr)
+            minmax(0, 3fr)
+            minmax(54px, 14%);
     }
 
     .start-top-shop-btn {
