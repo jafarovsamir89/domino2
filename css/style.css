@@ -532,12 +532,12 @@ input, button { font: inherit; }
     flex-wrap: nowrap;
 }
 
-#account-modal .account-modal-header > div {
+.account-modal-header > div {
     min-width: 0;
     flex: 1 1 auto;
 }
 
-#account-modal .account-modal-header {
+.account-modal-header {
     gap: 12px;
 }
 
@@ -3493,7 +3493,8 @@ body.seat-selection-active #game-screen {
         text-align: center;
     }
 
-    #account-modal .modal-header {
+    #account-modal .modal-header,
+    .account-modal-header {
         flex-direction: row;
         align-items: center;
     }
