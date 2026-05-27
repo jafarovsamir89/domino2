@@ -3488,20 +3488,14 @@ class DominoGame {
             button.textContent = '\u00d7';
             button.title = this.t('modal-close');
             button.setAttribute('aria-label', this.t('modal-close'));
-            button.classList.add('btn-menu');
-            button.classList.remove('btn-action');
-            button.classList.add('online-back-btn');
         }
         return button;
     }
 
     placeOnlineBackButton(target, hidden = false) {
-        const button = this.getOnlineBackButton();
-        if (!button || !target) return;
-        if (button.parentElement !== target) {
-            target.appendChild(button);
-        }
-        button.classList.toggle('is-hidden', hidden);
+        void target;
+        void hidden;
+        this.getOnlineBackButton();
     }
 
     showOnlineLanding() {
@@ -3513,7 +3507,6 @@ class DominoGame {
         document.getElementById('host-game-btn')?.classList.remove('is-hidden');
         document.getElementById('join-game-btn')?.classList.remove('is-hidden');
         document.getElementById('host-game-btn')?.classList.remove('online-create-btn');
-        this.placeOnlineBackButton(document.getElementById('online-entry-ui'), false);
         this.showMultiplayerPanel(null);
         this.setHostStatus(this.t('online-room-create-hint'));
         this.setJoinStatus(this.t('online-room-join-hint'));
@@ -3549,9 +3542,7 @@ class DominoGame {
         document.getElementById('online-flow-ui')?.classList.remove('online-join-flow');
         document.querySelector('#online-flow-ui .settings-grid')?.classList.remove('is-hidden');
         document.querySelector('#online-flow-ui .multiplayer-actions')?.classList.remove('is-hidden');
-        const actions = document.querySelector('#online-flow-ui .multiplayer-actions');
-        actions?.classList.add('online-create-actions');
-        this.placeOnlineBackButton(actions, false);
+        document.querySelector('#online-flow-ui .multiplayer-actions')?.classList.add('online-create-actions');
         document.getElementById('host-game-btn')?.classList.remove('is-hidden');
         document.getElementById('host-game-btn')?.classList.add('online-create-btn');
         document.getElementById('join-game-btn')?.classList.add('is-hidden');
@@ -3571,7 +3562,6 @@ class DominoGame {
         document.querySelector('#online-flow-ui .multiplayer-actions')?.classList.add('is-hidden');
         document.getElementById('host-game-btn')?.classList.add('is-hidden');
         document.getElementById('join-game-btn')?.classList.add('is-hidden');
-        this.placeOnlineBackButton(document.getElementById('online-flow-ui'), true);
         this.showMultiplayerPanel('join');
         const joinInput = document.getElementById('join-code-input');
         if (joinInput && this.pendingSharedRoomCode && !String(joinInput.value || '').trim()) {
@@ -4048,7 +4038,6 @@ class DominoGame {
         document.getElementById('join-game-btn')?.classList.remove('is-hidden');
         document.getElementById('host-cancel-btn')?.classList.remove('is-hidden');
         document.querySelector('#online-flow-ui .multiplayer-actions')?.classList.remove('online-create-actions');
-        this.placeOnlineBackButton(document.getElementById('online-modal').querySelector('.modal-header > div') || document.getElementById('online-modal-close')?.parentElement, true);
         document.getElementById('connect-btn').disabled = false;
         document.getElementById('join-code-input').value = '';
         document.getElementById('room-code-display').textContent = '....';
