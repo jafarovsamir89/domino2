@@ -3485,9 +3485,11 @@ class DominoGame {
     getOnlineBackButton() {
         const button = document.getElementById('online-modal-close');
         if (button) {
-            button.textContent = this.t('online-room-back');
-            button.classList.add('btn-action');
-            button.classList.remove('btn-menu');
+            button.textContent = '\u00d7';
+            button.title = this.t('modal-close');
+            button.setAttribute('aria-label', this.t('modal-close'));
+            button.classList.add('btn-menu');
+            button.classList.remove('btn-action');
             button.classList.add('online-back-btn');
         }
         return button;
