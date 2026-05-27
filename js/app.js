@@ -530,12 +530,13 @@ class DominoGame {
             await this.saveAccountAvatar();
         });
 
-        document.querySelectorAll('.btn-lang[data-lang]').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const lang = btn.dataset.lang;
+        const startLangSelect = document.getElementById('start-lang-select');
+        if (startLangSelect) {
+            startLangSelect.addEventListener('change', () => {
+                const lang = String(startLangSelect.value || '').trim().toLowerCase();
                 if (lang) this.setLanguage(lang);
             });
-        });
+        }
         this.syncMultiplayerOptions();
         this.resetMultiplayerPanels(false);
         this.showStartModal(null);
@@ -2170,6 +2171,16 @@ class DominoGame {
                 labelNode.textContent = label;
             }
         }
+    }
+
+    syncStartLanguageSelect() {
+        const select = document.getElementById('start-lang-select');
+        if (!select) return;
+        if (select.value !== this.currentLang) {
+            select.value = this.currentLang;
+        }
+        select.title = 'Language';
+        select.setAttribute('aria-label', 'Language');
     }
 
     hasGuestSession() {
@@ -5630,6 +5641,7 @@ class DominoGame {
         this.syncAccountUiChrome();
         this.ensureShopIconMarkup();
         this.syncStartAuthButton();
+        this.syncStartLanguageSelect();
         this.syncVoiceUi();
         this.renderGiftPicker();
         this.renderGiftInventory();

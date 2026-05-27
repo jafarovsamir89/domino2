@@ -51,6 +51,9 @@ test("start screen loads and stays within mobile viewport", async ({ page }) => 
   await expect(page.locator("#account-btn")).toHaveAttribute("aria-label", "\u0412\u0445\u043e\u0434");
   await expect(page.locator("#account-btn")).toHaveText("");
   await expect(page.locator("#start-screen .start-topbar")).toBeVisible();
+  await expect(page.locator("#start-lang-select")).toHaveCount(1);
+  await expect(page.locator("#start-lang-select")).toHaveValue(/^(az|ru|en)$/);
+  await expect(page.locator("#start-screen .btn-lang")).toHaveCount(0);
   await expect(page.locator("#open-online-modal-btn")).not.toHaveText("");
   await expect(page.locator("#start-coin-shop-btn")).not.toHaveText("");
   await expect(page.locator("#start-coin-shop-btn")).toHaveClass(/start-top-shop-btn/);

@@ -83,33 +83,34 @@ input, button { font: inherit; }
     top: 18px;
     left: 18px;
     right: 18px;
-    display: flex;
+    display: grid;
+    grid-template-columns: 15% 30% 10% 30% 15%;
     align-items: center;
-    gap: 8px;
+    gap: 0;
     z-index: 12;
     min-width: 0;
 }
 
+.start-topbar > * {
+    min-width: 0;
+}
+
 .start-topbar .start-profile-btn {
-    flex: 0 0 auto;
+    justify-self: start;
+    width: 42px;
+    height: 42px;
 }
 
-.start-topbar .lang-switcher {
-    position: static;
-    top: auto;
-    right: auto;
-    flex: 0 0 auto;
-    margin-left: auto;
-    max-width: none;
-    flex-wrap: nowrap;
+.start-top-spacer {
+    min-width: 0;
 }
 
-.start-top-shop-btn {
+#start-screen .start-topbar .start-top-shop-btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 6px;
-    width: auto;
+    width: 100%;
     min-width: 0;
     min-height: 42px;
     padding: 0 12px;
@@ -117,9 +118,20 @@ input, button { font: inherit; }
     white-space: nowrap;
     flex: 0 1 auto;
     text-align: center;
+    background: linear-gradient(135deg, #ffe283 0%, #f0c040 52%, #e6b12b 100%);
+    color: #111;
+    border: 1px solid rgba(120, 89, 0, 0.16);
+    box-shadow: 0 12px 22px rgba(0, 0, 0, 0.18), 0 0 0 1px rgba(255, 235, 170, 0.26) inset;
+    font-weight: 800;
 }
 
-.start-top-shop-btn .start-top-shop-icon {
+#start-screen .start-topbar .start-top-shop-btn:hover {
+    background: linear-gradient(135deg, #ffeaa3 0%, #f2c94c 52%, #e6b12b 100%);
+    box-shadow: 0 14px 26px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(255, 235, 170, 0.34) inset;
+    color: #111;
+}
+
+#start-screen .start-topbar .start-top-shop-btn .start-top-shop-icon {
     width: 16px;
     height: 16px;
     display: inline-grid;
@@ -127,28 +139,65 @@ input, button { font: inherit; }
     flex: 0 0 auto;
 }
 
-.start-top-shop-btn .start-top-shop-icon svg {
+#start-screen .start-topbar .start-top-shop-btn .start-top-shop-icon svg {
     width: 100%;
     height: 100%;
     display: block;
 }
 
-.start-top-shop-label {
+#start-screen .start-topbar .start-top-shop-label {
     white-space: nowrap;
-    font-weight: 700;
+    font-weight: 800;
     font-size: 0.88rem;
+    color: #111;
 }
 
-.lang-switcher {
+.start-lang-select-wrap {
+    position: relative;
+    display: block;
+    min-width: 0;
+    width: 100%;
+    justify-self: end;
+}
+
+.start-lang-select-wrap::after {
+    content: "▾";
     position: absolute;
-    top: 18px;
-    right: 18px;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    z-index: 10;
-    max-width: min(320px, calc(100vw - 36px));
-    justify-content: flex-end;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-dim);
+    pointer-events: none;
+    font-size: 0.72rem;
+    line-height: 1;
+}
+
+.start-lang-select {
+    width: 100%;
+    min-width: 0;
+    height: 42px;
+    padding: 0 28px 0 10px;
+    border-radius: 14px;
+    border: 1px solid var(--glass-border);
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--text);
+    font-weight: 800;
+    font-size: 0.82rem;
+    letter-spacing: 0.02em;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    outline: none;
+    cursor: pointer;
+}
+
+.start-lang-select:focus {
+    border-color: rgba(240, 192, 64, 0.45);
+    box-shadow: 0 0 0 2px rgba(240, 192, 64, 0.12);
+}
+
+.start-lang-select option {
+    color: #111;
 }
 
 .start-shell {
@@ -3352,7 +3401,7 @@ body.seat-selection-active #game-screen {
         top: 12px;
         left: 12px;
         right: 12px;
-        gap: 6px;
+        grid-template-columns: 15% 30% 10% 30% 15%;
     }
 
     .start-top-shop-btn {
@@ -3363,6 +3412,12 @@ body.seat-selection-active #game-screen {
 
     .start-top-shop-label {
         font-size: 0.82rem;
+    }
+
+    .start-lang-select {
+        height: 40px;
+        border-radius: 12px;
+        font-size: 0.78rem;
     }
 
     .auth-landing-actions {
@@ -3409,12 +3464,7 @@ body.seat-selection-active #game-screen {
         top: 12px;
         left: 12px;
         right: 12px;
-        gap: 5px;
-    }
-
-    .start-topbar .btn-lang {
-        padding-inline: 8px;
-        min-width: 0;
+        grid-template-columns: 15% 30% 10% 30% 15%;
     }
 
     .start-top-shop-btn {
@@ -3425,6 +3475,18 @@ body.seat-selection-active #game-screen {
 
     .start-top-shop-label {
         font-size: 0.77rem;
+    }
+
+    .start-lang-select {
+        height: 38px;
+        border-radius: 12px;
+        font-size: 0.72rem;
+        padding: 0 22px 0 8px;
+    }
+
+    .start-lang-select-wrap::after {
+        right: 8px;
+        font-size: 0.65rem;
     }
 
     .auth-landing-card {
