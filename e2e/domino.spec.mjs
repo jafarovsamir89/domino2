@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+﻿import { test, expect } from "@playwright/test";
 
 async function stubApi(page) {
   await page.route("**/api/**", async (route) => {
@@ -13,10 +13,7 @@ async function stubApi(page) {
     };
 
     if (route.request().method() === "OPTIONS") {
-      return route.fulfill({
-        status: 204,
-        headers
-      });
+      return route.fulfill({ status: 204, headers });
     }
 
     if (url.includes("/api/auth/")) {
@@ -49,8 +46,13 @@ test("start screen loads and stays within mobile viewport", async ({ page }) => 
   await page.goto("/index.html");
 
   await expect(page.locator("#start-screen")).toHaveClass(/active/);
-  await expect(page.locator("#open-online-modal-btn")).toHaveText(/online|онлайн/i);
-  await expect(page.locator("#start-coin-shop-btn")).toHaveText(/coin shop|shop|монет/i);
+  await expect(page.locator("#account-btn")).toHaveClass(/start-profile-btn/);
+  await expect(page.locator("#account-btn")).toHaveClass(/icon-btn/);
+  await expect(page.locator("#account-btn")).toHaveAttribute("aria-label", "\u0412\u0445\u043e\u0434");
+  await expect(page.locator("#account-btn")).toHaveText("");
+  await expect(page.locator("#open-online-modal-btn")).not.toHaveText("");
+  await expect(page.locator("#start-coin-shop-btn")).not.toHaveText("");
+  await expect(page.locator("#account-modal-title")).toHaveText("\u0410\u043a\u043a\u0430\u0443\u043d\u0442");
 
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1);
   expect(overflow).toBe(false);

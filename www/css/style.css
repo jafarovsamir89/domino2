@@ -63,7 +63,22 @@ input, button { font: inherit; }
     background:
         radial-gradient(circle at 15% 15%, rgba(240, 192, 64, 0.12), transparent 22%),
         radial-gradient(circle at 85% 20%, rgba(55, 143, 92, 0.18), transparent 24%),
-        linear-gradient(160deg, #0b1420 0%, #122335 50%, #0f1923 100%);
+    linear-gradient(160deg, #0b1420 0%, #122335 50%, #0f1923 100%);
+}
+
+.start-profile-btn {
+    position: absolute;
+    top: 18px;
+    left: 18px;
+    z-index: 12;
+    width: 42px;
+    height: 42px;
+    border-radius: 14px;
+}
+
+.start-profile-btn .auth-icon {
+    width: 16px;
+    height: 16px;
 }
 
 .lang-switcher {
@@ -1450,14 +1465,15 @@ input, button { font: inherit; }
 }
 
 .account-profile-tabs {
-    display: inline-flex;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 8px;
     padding: 6px;
     border-radius: 16px;
     background: rgba(255, 255, 255, 0.04);
     border: 1px solid rgba(255, 255, 255, 0.08);
-    width: fit-content;
-    flex-wrap: wrap;
+    width: 100%;
+    min-width: 0;
 }
 
 .account-profile-tab {
@@ -1465,11 +1481,15 @@ input, button { font: inherit; }
     border-radius: 999px;
     background: transparent;
     color: var(--text-dim);
-    padding: 8px 14px;
+    padding: 8px 12px;
     font-size: 0.8rem;
     font-weight: 700;
     cursor: pointer;
     transition: all .18s ease;
+    min-width: 0;
+    width: 100%;
+    text-align: center;
+    line-height: 1.15;
 }
 
 .account-profile-tab.is-active {
@@ -1599,6 +1619,7 @@ input, button { font: inherit; }
     display: flex;
     align-items: center;
     gap: 8px;
+    flex-wrap: wrap;
 }
 
 .account-avatar {
@@ -1672,6 +1693,8 @@ input, button { font: inherit; }
     font-weight: 800;
     line-height: 1.2;
     word-break: break-word;
+    min-width: 0;
+    flex: 1 1 auto;
 }
 
 .account-profile-id {
@@ -1722,6 +1745,27 @@ input, button { font: inherit; }
 
 .account-toolbar .btn {
     flex: 1;
+}
+
+.account-modal-close-btn {
+    width: 42px;
+    min-width: 42px;
+    height: 42px;
+    padding: 0;
+    display: grid;
+    place-items: center;
+    font-size: 1.6rem;
+    line-height: 1;
+}
+
+.account-modal-close-btn:focus-visible,
+.start-profile-btn:focus-visible {
+    outline: 2px solid rgba(240, 192, 64, 0.7);
+    outline-offset: 2px;
+}
+
+.account-profile-logout-btn {
+    color: var(--text);
 }
 
 .icon-btn {
@@ -3212,6 +3256,13 @@ body.seat-selection-active #game-screen {
         grid-template-columns: 1fr;
     }
 
+    .start-profile-btn {
+        top: 12px;
+        left: 12px;
+        width: 40px;
+        height: 40px;
+    }
+
     .auth-landing-actions {
         grid-template-columns: 1fr;
     }
@@ -3277,6 +3328,16 @@ body.seat-selection-active #game-screen {
 
     .account-cabinet {
         grid-template-columns: 1fr;
+    }
+
+    .account-profile-tabs {
+        gap: 6px;
+        padding: 5px;
+    }
+
+    .account-profile-tab {
+        padding: 8px 8px;
+        font-size: 0.76rem;
     }
 
     .coin-shop-hero {
