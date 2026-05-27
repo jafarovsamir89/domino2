@@ -1322,6 +1322,18 @@ input, button { font: inherit; }
     width: min(920px, 100%);
 }
 
+.coin-shop-modal .modal-header > div {
+    min-width: 0;
+    flex: 1 1 auto;
+}
+
+.coin-shop-title-wrap h2 {
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 .cosmetics-shop-modal {
     width: min(920px, 100%);
 }
@@ -3449,6 +3461,11 @@ body.seat-selection-active #game-screen {
 
     .modal-header {
         flex-direction: column;
+    }
+
+    .coin-shop-modal .modal-header {
+        flex-direction: row;
+        align-items: center;
     }
 
     #account-modal .modal-header {
