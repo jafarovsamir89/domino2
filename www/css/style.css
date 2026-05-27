@@ -162,7 +162,8 @@ input, button { font: inherit; }
     position: relative;
     display: block;
     min-width: 0;
-    width: 100%;
+    width: auto;
+    max-width: 76px;
     justify-self: end;
 }
 
@@ -3430,6 +3431,7 @@ body.seat-selection-active #game-screen {
         height: 36px;
         border-radius: 12px;
         font-size: 0.74rem;
+        max-width: 70px;
     }
 
     .auth-landing-actions {
@@ -3500,6 +3502,7 @@ body.seat-selection-active #game-screen {
         border-radius: 10px;
         font-size: 0.7rem;
         padding: 0 22px 0 8px;
+        max-width: 60px;
     }
 
     .start-lang-select-wrap::after {
