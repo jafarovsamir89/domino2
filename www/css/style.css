@@ -80,17 +80,17 @@ input, button { font: inherit; }
 
 .start-topbar {
     position: absolute;
-    top: 18px;
+    top: 14px;
     left: 50%;
-    width: min(100% - 36px, 780px);
+    width: min(100% - 28px, 660px);
     transform: translateX(-50%);
     display: grid;
     grid-template-columns:
-        minmax(44px, 14%)
-        minmax(0, 1.55fr)
-        minmax(12px, 0.28fr)
-        minmax(0, 1.55fr)
-        minmax(64px, 14%);
+        minmax(38px, 10%)
+        minmax(0, 2.25fr)
+        minmax(18px, 0.42fr)
+        minmax(0, 2.25fr)
+        minmax(56px, 10%);
     align-items: center;
     gap: 0;
     z-index: 12;
@@ -103,8 +103,8 @@ input, button { font: inherit; }
 
 .start-topbar .start-profile-btn {
     justify-self: start;
-    width: 42px;
-    height: 42px;
+    width: 38px;
+    height: 38px;
 }
 
 .start-top-spacer {
@@ -118,9 +118,9 @@ input, button { font: inherit; }
     gap: 6px;
     width: 100%;
     min-width: 0;
-    min-height: 42px;
-    padding: 0 12px;
-    border-radius: 14px;
+    min-height: 46px;
+    padding: 0 16px;
+    border-radius: 16px;
     white-space: nowrap;
     flex: 0 1 auto;
     text-align: center;
@@ -138,8 +138,8 @@ input, button { font: inherit; }
 }
 
 #start-screen .start-topbar .start-top-shop-btn .start-top-shop-icon {
-    width: 16px;
-    height: 16px;
+    width: 17px;
+    height: 17px;
     display: inline-grid;
     place-items: center;
     flex: 0 0 auto;
@@ -154,7 +154,7 @@ input, button { font: inherit; }
 #start-screen .start-topbar .start-top-shop-label {
     white-space: nowrap;
     font-weight: 800;
-    font-size: 0.88rem;
+    font-size: 0.92rem;
     color: #111;
 }
 
@@ -181,14 +181,14 @@ input, button { font: inherit; }
 .start-lang-select {
     width: 100%;
     min-width: 0;
-    height: 42px;
-    padding: 0 28px 0 10px;
-    border-radius: 14px;
+    height: 38px;
+    padding: 0 26px 0 10px;
+    border-radius: 12px;
     border: 1px solid var(--glass-border);
     background: rgba(255, 255, 255, 0.06);
     color: var(--text);
     font-weight: 800;
-    font-size: 0.82rem;
+    font-size: 0.78rem;
     letter-spacing: 0.02em;
     appearance: none;
     -webkit-appearance: none;
@@ -3409,27 +3409,27 @@ body.seat-selection-active #game-screen {
         width: calc(100% - 24px);
         transform: none;
         grid-template-columns:
-            minmax(40px, 15%)
-            minmax(0, 1.65fr)
-            minmax(10px, 0.3fr)
-            minmax(0, 1.65fr)
-            minmax(56px, 15%);
+            minmax(36px, 10%)
+            minmax(0, 2fr)
+            minmax(12px, 0.35fr)
+            minmax(0, 2fr)
+            minmax(56px, 10%);
     }
 
     .start-top-shop-btn {
-        padding: 0 10px;
-        min-height: 40px;
-        border-radius: 12px;
+        padding: 0 12px;
+        min-height: 44px;
+        border-radius: 14px;
     }
 
     .start-top-shop-label {
-        font-size: 0.82rem;
+        font-size: 0.84rem;
     }
 
     .start-lang-select {
-        height: 40px;
+        height: 36px;
         border-radius: 12px;
-        font-size: 0.78rem;
+        font-size: 0.74rem;
     }
 
     .auth-landing-actions {
@@ -3478,27 +3478,27 @@ body.seat-selection-active #game-screen {
         width: calc(100% - 24px);
         transform: none;
         grid-template-columns:
-            minmax(38px, 14%)
-            minmax(0, 1.7fr)
-            minmax(8px, 0.28fr)
-            minmax(0, 1.7fr)
-            minmax(54px, 14%);
+            minmax(34px, 10%)
+            minmax(0, 2fr)
+            minmax(8px, 0.32fr)
+            minmax(0, 2fr)
+            minmax(52px, 10%);
     }
 
     .start-top-shop-btn {
-        padding: 0 9px;
-        min-height: 38px;
+        padding: 0 10px;
+        min-height: 40px;
         border-radius: 12px;
     }
 
     .start-top-shop-label {
-        font-size: 0.77rem;
+        font-size: 0.8rem;
     }
 
     .start-lang-select {
-        height: 38px;
-        border-radius: 12px;
-        font-size: 0.72rem;
+        height: 34px;
+        border-radius: 10px;
+        font-size: 0.7rem;
         padding: 0 22px 0 8px;
     }
 
