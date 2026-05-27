@@ -1343,10 +1343,9 @@ class DominoGame {
 
         const cosmeticsShopCloseButton = document.getElementById('cosmetics-shop-modal-close');
         if (cosmeticsShopCloseButton) {
-            const label = this.t('online-room-back');
-            cosmeticsShopCloseButton.textContent = label;
-            cosmeticsShopCloseButton.title = label;
-            cosmeticsShopCloseButton.setAttribute('aria-label', label);
+            cosmeticsShopCloseButton.textContent = '\u00d7';
+            cosmeticsShopCloseButton.title = this.t('modal-close');
+            cosmeticsShopCloseButton.setAttribute('aria-label', this.t('modal-close'));
         }
 
         const placeholders = [

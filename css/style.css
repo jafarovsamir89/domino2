@@ -1338,21 +1338,19 @@ input, button { font: inherit; }
     text-overflow: ellipsis;
 }
 
-.coin-shop-intro {
+.coin-shop-intro,
+.cosmetics-shop-intro {
     text-align: center;
     margin: 0 0 16px;
 }
 
-#coin-shop-modal-close {
-    width: 40px;
-    height: 40px;
-    min-width: 40px;
-    border-radius: 12px;
-    padding: 0;
-}
-
 .cosmetics-shop-modal {
     width: min(920px, 100%);
+}
+
+.cosmetics-shop-modal .modal-header {
+    flex-direction: row;
+    align-items: center;
 }
 
 .coin-shop-hero {
@@ -3485,7 +3483,13 @@ body.seat-selection-active #game-screen {
         align-items: center;
     }
 
-    .coin-shop-intro {
+    .cosmetics-shop-modal .modal-header {
+        flex-direction: row;
+        align-items: center;
+    }
+
+    .coin-shop-intro,
+    .cosmetics-shop-intro {
         text-align: center;
     }
 
