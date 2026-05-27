@@ -1327,11 +1327,28 @@ input, button { font: inherit; }
     flex: 1 1 auto;
 }
 
-.coin-shop-title-wrap h2 {
+.coin-shop-title-wrap .section-kicker {
     margin: 0;
+    color: #f0c040;
+    font-weight: 900;
+    letter-spacing: 0.04em;
+    text-transform: none;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+.coin-shop-intro {
+    text-align: center;
+    margin: 0 0 16px;
+}
+
+#coin-shop-modal-close {
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    border-radius: 12px;
+    padding: 0;
 }
 
 .cosmetics-shop-modal {
@@ -3466,6 +3483,10 @@ body.seat-selection-active #game-screen {
     .coin-shop-modal .modal-header {
         flex-direction: row;
         align-items: center;
+    }
+
+    .coin-shop-intro {
+        text-align: center;
     }
 
     #account-modal .modal-header {
