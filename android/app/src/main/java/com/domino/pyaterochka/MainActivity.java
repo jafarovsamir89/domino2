@@ -25,7 +25,7 @@ public class MainActivity extends BridgeActivity {
             getBridge().getWebView().getSettings().setMediaPlaybackRequiresUserGesture(false);
             getBridge().getWebView().setWebChromeClient(new WebChromeClient() {
                 @Override
-                public void onPermissionRequest(PermissionRequest request) {
+                public void onPermissionRequest(final PermissionRequest request) {
                     if (request == null) {
                         return;
                     }
@@ -33,7 +33,12 @@ public class MainActivity extends BridgeActivity {
                     boolean wantsAudio = false;
                     String[] resources = request.getResources();
                     if (resources == null || resources.length == 0) {
-                        request.deny();
+                        MainActivity.this.runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                request.deny();
+                            }
+                        });
                         return;
                     }
                     for (String resource : resources) {
@@ -44,12 +49,22 @@ public class MainActivity extends BridgeActivity {
                     }
 
                     if (!wantsAudio) {
-                        request.deny();
+                        MainActivity.this.runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                request.deny();
+                            }
+                        });
                         return;
                     }
 
                     if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
-                        request.grant(new String[] { PermissionRequest.RESOURCE_AUDIO_CAPTURE });
+                        MainActivity.this.runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                request.grant(new String[] { PermissionRequest.RESOURCE_AUDIO_CAPTURE });
+                            }
+                        });
                         return;
                     }
 
@@ -61,22 +76,27 @@ public class MainActivity extends BridgeActivity {
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, final int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode != REQ_RECORD_AUDIO) {
             return;
         }
 
-        PermissionRequest request = pendingAudioPermissionRequest;
+        final PermissionRequest request = pendingAudioPermissionRequest;
         pendingAudioPermissionRequest = null;
         if (request == null) {
             return;
         }
 
-        if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            request.grant(new String[] { PermissionRequest.RESOURCE_AUDIO_CAPTURE });
-        } else {
-            request.deny();
-        }
+        MainActivity.this.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    request.grant(new String[] { PermissionRequest.RESOURCE_AUDIO_CAPTURE });
+                } else {
+                    request.deny();
+                }
+            }
+        });
     }
 }

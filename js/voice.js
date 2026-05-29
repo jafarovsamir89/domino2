@@ -1,6 +1,5 @@
 const DEFAULT_ICE_SERVERS = [
-    { urls: ["stun:stun.l.google.com:19302"] },
-    { urls: ["stun:global.stun.twilio.com:3478"] }
+    { urls: "stun:stun.l.google.com:19302" }
 ];
 
 function isDebugLoggingEnabled() {
@@ -21,12 +20,13 @@ function supportsVoiceChat() {
         && typeof RTCIceCandidate !== "undefined"
         && typeof RTCSessionDescription !== "undefined"
         && typeof navigator !== "undefined"
-        && (typeof window === "undefined" || window.isSecureContext || ["localhost", "127.0.0.1"].includes(window.location?.hostname))
+        && (typeof window === "undefined" || window.isSecureContext || ["localhost", "127.0.0.1"].includes(window.location?.hostname) || !!window.Capacitor)
         && Boolean(navigator.mediaDevices?.getUserMedia);
 }
 
 export class VoiceChatManager {
     constructor(game) {
+        debugLog("[VOICE_DEBUG] init");
         this.game = game;
         this.peerConnections = new Map();
         this.peerSenders = new Map();
@@ -148,6 +148,7 @@ export class VoiceChatManager {
         if (this.destroyed || !this.isAvailable()) return false;
         if (!this.localStream) {
             try {
+                debugLog("[VOICE_DEBUG] getUserMedia:start");
                 debugLog("[VOICE] voice:getUserMedia:start", {
                     secureContext: Boolean(typeof window === "undefined" ? true : window.isSecureContext),
                     hasNavigator: typeof navigator !== "undefined"
@@ -164,6 +165,15 @@ export class VoiceChatManager {
                 if (this.localAudioTrack) {
                     this.localAudioTrack.enabled = false;
                 }
+                debugLog("[VOICE_DEBUG] getUserMedia:success");
+                if (this.localAudioTrack) {
+                    debugLog("[VOICE_DEBUG] localTrack", {
+                        kind: this.localAudioTrack.kind,
+                        enabled: this.localAudioTrack.enabled,
+                        muted: this.localAudioTrack.muted,
+                        readyState: this.localAudioTrack.readyState
+                    });
+                }
                 debugLog("[VOICE] voice:getUserMedia:success", {
                     trackCount: this.localStream?.getAudioTracks?.().length || 0,
                     trackReadyState: this.localAudioTrack?.readyState || "",
@@ -173,6 +183,7 @@ export class VoiceChatManager {
                 await this.unlockRemoteAudio();
                 this.setStatus(this.game?.t?.("voice-ready") || "Voice ready");
             } catch (error) {
+                debugLog("[VOICE_DEBUG] getUserMedia:error");
                 debugLog("[VOICE] voice:getUserMedia:error", {
                     name: String(error?.name || ""),
                     message: String(error?.message || error || "")
@@ -186,7 +197,15 @@ export class VoiceChatManager {
 
         this.isEnabled = true;
         this.isSpeaking = true;
-        if (this.localAudioTrack) this.localAudioTrack.enabled = true;
+        if (this.localAudioTrack) {
+            this.localAudioTrack.enabled = true;
+            debugLog("[VOICE_DEBUG] localTrack", {
+                kind: this.localAudioTrack.kind,
+                enabled: this.localAudioTrack.enabled,
+                muted: this.localAudioTrack.muted,
+                readyState: this.localAudioTrack.readyState
+            });
+        }
         this.updateLocalSpeakingUi(true);
         this.broadcastSpeakingState(true);
         this.setStatus(this.game?.t?.("voice-speaking") || "Speaking");
@@ -196,7 +215,15 @@ export class VoiceChatManager {
     stopSpeaking() {
         if (this.destroyed) return;
         this.isSpeaking = false;
-        if (this.localAudioTrack) this.localAudioTrack.enabled = false;
+        if (this.localAudioTrack) {
+            this.localAudioTrack.enabled = false;
+            debugLog("[VOICE_DEBUG] localTrack", {
+                kind: this.localAudioTrack.kind,
+                enabled: this.localAudioTrack.enabled,
+                muted: this.localAudioTrack.muted,
+                readyState: this.localAudioTrack.readyState
+            });
+        }
         this.updateLocalSpeakingUi(false);
         if (this.isEnabled && this.isAvailable()) {
             this.broadcastSpeakingState(false);
@@ -249,6 +276,9 @@ export class VoiceChatManager {
         const button = document.getElementById("voice-unlock-btn");
         if (!button) return;
         const shouldShow = this.audioPlaybackBlocked && this.isAvailable();
+        if (shouldShow && button.classList.contains("is-hidden")) {
+            debugLog("[VOICE_DEBUG] enableSound:shown");
+        }
         button.classList.toggle("is-hidden", !shouldShow);
         const title = this.game?.t?.("voice-enable-sound") || "Enable sound";
         button.textContent = title;
@@ -270,11 +300,22 @@ export class VoiceChatManager {
             try {
                 audio.muted = false;
                 audio.volume = 1;
+                debugLog("[VOICE_DEBUG] audio:play:start", { sessionId, context: "unlock" });
                 await audio.play();
+                debugLog("[VOICE_DEBUG] audio:play:success", { sessionId, context: "unlock" });
                 this.remoteAudioPlayback.set(sessionId, true);
                 unlocked = true;
             } catch (error) {
                 this.remoteAudioPlayback.set(sessionId, false);
+                if (error?.name === "NotAllowedError" || error?.name === "SecurityError") {
+                    debugLog("[VOICE_DEBUG] autoplay:blocked", { sessionId, context: "unlock", error: error.name });
+                }
+                debugLog("[VOICE_DEBUG] audio:play:error", {
+                    sessionId,
+                    context: "unlock",
+                    name: String(error?.name || ""),
+                    message: String(error?.message || error || "")
+                });
                 debugLog("[VOICE] voice:audioElement:play-blocked", {
                     sessionId,
                     name: String(error?.name || ""),
@@ -295,7 +336,15 @@ export class VoiceChatManager {
         const playerBySession = new Map(players.map((player) => [String(player.sessionId || ""), player]));
         for (const [sessionId, state] of this.remoteSpeaking.entries()) {
             if (!state?.speaking) continue;
+            
+            // Check peer connection state
+            const peer = this.peerConnections.get(sessionId);
+            const isConn = peer && (peer.connectionState === "connected" || peer.iceConnectionState === "connected" || peer.iceConnectionState === "completed");
+            if (!isConn) continue;
+
+            // Check remote audio playback
             if (this.remoteAudioPlayback.get(sessionId) === false) continue;
+
             const name = playerBySession.get(sessionId)?.name || state.name || "";
             if (name) activeNames.push(name);
         }
@@ -327,7 +376,12 @@ export class VoiceChatManager {
         const chips = document.querySelectorAll('.room-player-chip[data-session-id]');
         chips.forEach((chip) => {
             const sessionId = String(chip.dataset.sessionId || "");
-            chip.classList.toggle("speaking", this.remoteSpeaking.get(sessionId)?.speaking || false);
+            
+            // Apply speaking indicator only if connection is established and remote audio is playing
+            const peer = this.peerConnections.get(sessionId);
+            const isConn = peer && (peer.connectionState === "connected" || peer.iceConnectionState === "connected" || peer.iceConnectionState === "completed");
+            const isSpeaking = isConn && (this.remoteSpeaking.get(sessionId)?.speaking || false) && (this.remoteAudioPlayback.get(sessionId) !== false);
+            chip.classList.toggle("speaking", isSpeaking);
         });
 
         const indicatorSource = !this.isAvailable()
@@ -450,6 +504,11 @@ export class VoiceChatManager {
             this.peerSenders.delete(targetSessionId);
             return null;
         }
+        debugLog("[VOICE_DEBUG] peer:create", {
+            sessionId: targetSessionId,
+            hasLocalTrack: Boolean(this.localAudioTrack),
+            iceServers: Array.isArray(this.getPeerConfig()?.iceServers) ? this.getPeerConfig().iceServers.length : 0
+        });
         debugLog("[VOICE] voice:peer:create", {
             sessionId: targetSessionId,
             hasLocalTrack: Boolean(this.localAudioTrack),
@@ -459,6 +518,11 @@ export class VoiceChatManager {
 
         const transceiver = peer.addTransceiver("audio", { direction: "sendrecv" });
         this.peerSenders.set(targetSessionId, transceiver.sender);
+        debugLog("[VOICE_DEBUG] peer:addTrack", {
+            sessionId: targetSessionId,
+            trackKind: transceiver.sender?.track?.kind || "audio",
+            trackEnabled: Boolean(transceiver.sender?.track?.enabled)
+        });
         debugLog("[VOICE] voice:track:add", {
             sessionId: targetSessionId,
             trackKind: transceiver.sender?.track?.kind || "audio",
@@ -467,21 +531,35 @@ export class VoiceChatManager {
 
         peer.onicecandidate = (event) => {
             if (event.candidate) {
+                debugLog("[VOICE_DEBUG] signaling:ice:send", { sessionId: targetSessionId });
                 this.sendSignal(targetSessionId, "candidate", { candidate: event.candidate });
             }
         };
 
         peer.ontrack = (event) => {
-            const stream = event.streams?.[0] || null;
-            debugLog("[VOICE] voice:remoteTrack", {
+            debugLog("[VOICE_DEBUG] remote:ontrack", {
                 sessionId: targetSessionId,
-                trackCount: Array.isArray(event.streams) ? event.streams.length : 0,
-                hasStream: Boolean(stream)
+                trackKind: event.track?.kind,
+                trackEnabled: event.track?.enabled,
+                trackMuted: event.track?.muted,
+                readyState: event.track?.readyState,
+                streamsCount: event.streams ? event.streams.length : 0
             });
-            if (stream) this.attachRemoteStream(targetSessionId, stream);
+            const stream = event.streams?.[0] || (event.track ? new MediaStream([event.track]) : null);
+            if (stream) {
+                debugLog("[VOICE_DEBUG] remote:stream", {
+                    sessionId: targetSessionId,
+                    trackCount: stream.getAudioTracks().length
+                });
+                this.attachRemoteStream(targetSessionId, stream);
+            }
         };
 
         peer.onconnectionstatechange = () => {
+            debugLog("[VOICE_DEBUG] peer:connectionState", {
+                sessionId: targetSessionId,
+                state: peer.connectionState
+            });
             debugLog("[VOICE] voice:connectionState", {
                 sessionId: targetSessionId,
                 state: peer.connectionState
@@ -495,6 +573,10 @@ export class VoiceChatManager {
         };
 
         peer.oniceconnectionstatechange = () => {
+            debugLog("[VOICE_DEBUG] peer:iceState", {
+                sessionId: targetSessionId,
+                state: peer.iceConnectionState
+            });
             debugLog("[VOICE] voice:iceState", {
                 sessionId: targetSessionId,
                 state: peer.iceConnectionState
@@ -505,7 +587,13 @@ export class VoiceChatManager {
         };
 
         if (this.localAudioTrack) {
-            transceiver.sender.replaceTrack(this.localAudioTrack).catch((error) => {
+            transceiver.sender.replaceTrack(this.localAudioTrack).then(() => {
+                debugLog("[VOICE_DEBUG] peer:addTrack", {
+                    sessionId: targetSessionId,
+                    trackKind: this.localAudioTrack.kind,
+                    trackEnabled: this.localAudioTrack.enabled
+                });
+            }).catch((error) => {
                 console.warn("[Voice] initial replaceTrack failed:", error);
             });
         }
@@ -529,6 +617,7 @@ export class VoiceChatManager {
         try {
             const offer = await peer.createOffer();
             await peer.setLocalDescription(offer);
+            debugLog("[VOICE_DEBUG] signaling:offer:send", { sessionId: remoteSessionId });
             this.sendSignal(remoteSessionId, "offer", { description: peer.localDescription });
         } catch (error) {
             console.warn("[Voice] offer failed:", error);
@@ -562,21 +651,29 @@ export class VoiceChatManager {
 
         try {
             if (payload.kind === "offer" && description) {
+                debugLog("[VOICE_DEBUG] signaling:offer:receive", { fromSessionId });
                 await peer.setRemoteDescription(new RTCSessionDescription(description));
                 await this.flushQueuedCandidates(peer);
                 if (this.localAudioTrack) {
                     const sender = this.peerSenders.get(fromSessionId);
                     if (sender && sender.track !== this.localAudioTrack) {
                         await sender.replaceTrack(this.localAudioTrack);
+                        debugLog("[VOICE_DEBUG] peer:addTrack", {
+                            sessionId: fromSessionId,
+                            trackKind: this.localAudioTrack.kind,
+                            trackEnabled: this.localAudioTrack.enabled
+                        });
                     }
                 }
                 const answer = await peer.createAnswer();
                 await peer.setLocalDescription(answer);
+                debugLog("[VOICE_DEBUG] signaling:answer:send", { targetSessionId: fromSessionId });
                 this.sendSignal(fromSessionId, "answer", { description: peer.localDescription });
                 return;
             }
 
             if (payload.kind === "answer" && description) {
+                debugLog("[VOICE_DEBUG] signaling:answer:receive", { fromSessionId });
                 if (peer.currentRemoteDescription) return;
                 await peer.setRemoteDescription(new RTCSessionDescription(description));
                 await this.flushQueuedCandidates(peer);
@@ -584,6 +681,7 @@ export class VoiceChatManager {
             }
 
             if (payload.kind === "candidate" && candidate) {
+                debugLog("[VOICE_DEBUG] signaling:ice:receive", { fromSessionId });
                 if (peer.remoteDescription) {
                     await peer.addIceCandidate(new RTCIceCandidate(candidate));
                 } else {
@@ -625,7 +723,7 @@ export class VoiceChatManager {
             audio = document.createElement("audio");
             audio.autoplay = true;
             audio.playsInline = true;
-            audio.preload = "none";
+            audio.preload = "auto";
             audio.className = "voice-remote-audio";
             audio.dataset.sessionId = sessionId;
             audio.style.display = "none";
@@ -649,11 +747,17 @@ export class VoiceChatManager {
             this.remoteAudioElements.set(sessionId, audio);
         }
         audio.srcObject = stream;
+        debugLog("[VOICE_DEBUG] audio:attach", {
+            sessionId,
+            trackCount: Array.isArray(stream?.getAudioTracks?.()) ? stream.getAudioTracks().length : 0
+        });
         debugLog("[VOICE] voice:audioElement:attached", {
             sessionId,
             trackCount: Array.isArray(stream?.getAudioTracks?.()) ? stream.getAudioTracks().length : 0
         });
+        debugLog("[VOICE_DEBUG] audio:play:start", { sessionId });
         audio.play().then(() => {
+            debugLog("[VOICE_DEBUG] audio:play:success", { sessionId });
             this.remoteAudioPlayback.set(sessionId, true);
             this.audioPlaybackBlocked = false;
             this.updateAudioUnlockUi();
@@ -661,6 +765,14 @@ export class VoiceChatManager {
         }).catch((error) => {
             this.remoteAudioPlayback.set(sessionId, false);
             this.audioPlaybackBlocked = true;
+            if (error?.name === "NotAllowedError" || error?.name === "SecurityError") {
+                debugLog("[VOICE_DEBUG] autoplay:blocked", { sessionId, name: error.name });
+            }
+            debugLog("[VOICE_DEBUG] audio:play:error", {
+                sessionId,
+                name: String(error?.name || ""),
+                message: String(error?.message || error || "")
+            });
             debugLog("[VOICE] voice:audioElement:play-blocked", {
                 sessionId,
                 name: String(error?.name || ""),

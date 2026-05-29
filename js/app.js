@@ -4701,6 +4701,7 @@ class DominoGame {
 
         const pressStart = async (event) => {
             if (!this.network?.isMultiplayer) return;
+            debugLog("[VOICE_DEBUG] mic:click");
             if (event) {
                 event.preventDefault();
                 event.stopPropagation();
@@ -4739,6 +4740,7 @@ class DominoGame {
         });
         if (this.voiceUnlockBtn) {
             this.voiceUnlockBtn.addEventListener('click', async (event) => {
+                debugLog("[VOICE_DEBUG] enableSound:clicked");
                 event.preventDefault();
                 event.stopPropagation();
                 await this.voice.unlockRemoteAudio();
