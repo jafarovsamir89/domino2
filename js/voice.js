@@ -150,63 +150,80 @@ export class VoiceChatManager {
         }
     }
 
+    async ensureLocalVoiceReady() {
+        if (this.localStream && this.localAudioTrack) return true;
+        try {
+            debugLog("[VOICE_DEBUG] getUserMedia:start");
+            debugLog("[VOICE] voice:getUserMedia:start", {
+                secureContext: Boolean(typeof window === "undefined" ? true : window.isSecureContext),
+                hasNavigator: typeof navigator !== "undefined"
+            });
+            this.localStream = await navigator.mediaDevices.getUserMedia({
+                audio: {
+                    echoCancellation: true,
+                    noiseSuppression: true,
+                    autoGainControl: true
+                },
+                video: false
+            });
+            this.localAudioTrack = this.localStream.getAudioTracks()[0] || null;
+            if (this.localAudioTrack) {
+                this.localAudioTrack.enabled = false;
+            }
+            debugLog("[VOICE_DEBUG] voice:mic:ready", {
+                sessionId: this.mySessionId,
+                tracks: this.localStream.getAudioTracks().map(t => ({
+                    enabled: t.enabled,
+                    muted: t.muted,
+                    readyState: t.readyState
+                }))
+            });
+            debugLog("[VOICE] voice:getUserMedia:success", {
+                trackCount: this.localStream?.getAudioTracks?.().length || 0,
+                trackReadyState: this.localAudioTrack?.readyState || "",
+                trackEnabled: Boolean(this.localAudioTrack?.enabled)
+            });
+            return true;
+        } catch (error) {
+            debugLog("[VOICE_DEBUG] getUserMedia:error");
+            debugLog("[VOICE] voice:getUserMedia:error", {
+                name: String(error?.name || ""),
+                message: String(error?.message || error || "")
+            });
+            console.warn("[Voice] Microphone access failed:", error);
+            this.setStatus(this.game?.t?.("voice-denied") || "Microphone access denied");
+            this.game?.renderer?.showMessage?.(this.game?.t?.("voice-denied") || "Microphone access denied", 2200);
+            return false;
+        }
+    }
+
+    async rebuildVoicePeersAfterMicReady() {
+        debugLog("[VOICE_DEBUG] voice:peers:rebuild:start");
+        const sessionIds = Array.from(this.peerConnections.keys());
+        for (const sessionId of sessionIds) {
+            this.closePeer(sessionId);
+        }
+        this.peerConnections.clear();
+        this.peerSenders.clear();
+        this.remoteAudioElements.clear();
+
+        const remoteSessions = this.getRemoteHumanSessions();
+        for (const sessionId of remoteSessions) {
+            try {
+                this.ensurePeer(sessionId);
+            } catch (error) {
+                console.warn("[VOICE] Failed to rebuild voice peer for", sessionId, error);
+            }
+        }
+        debugLog("[VOICE_DEBUG] voice:peers:rebuild:done");
+    }
+
     async startSpeaking() {
         if (this.destroyed || !this.isAvailable()) return false;
-        if (!this.localStream) {
-            try {
-                debugLog("[VOICE_DEBUG] getUserMedia:start");
-                debugLog("[VOICE] voice:getUserMedia:start", {
-                    secureContext: Boolean(typeof window === "undefined" ? true : window.isSecureContext),
-                    hasNavigator: typeof navigator !== "undefined"
-                });
-                this.localStream = await navigator.mediaDevices.getUserMedia({
-                    audio: {
-                        echoCancellation: true,
-                        noiseSuppression: true,
-                        autoGainControl: true
-                    },
-                    video: false
-                });
-                this.localAudioTrack = this.localStream.getAudioTracks()[0] || null;
-                if (this.localAudioTrack) {
-                    this.localAudioTrack.enabled = false;
-                }
-                debugLog("[VOICE_DEBUG] getUserMedia:success");
-                debugLog("[VOICE_DEBUG] mic:success", {
-                    sessionId: this.mySessionId,
-                    tracks: this.localStream.getAudioTracks().map(t => ({
-                        enabled: t.enabled,
-                        muted: t.muted,
-                        readyState: t.readyState
-                    }))
-                });
-                if (this.localAudioTrack) {
-                    debugLog("[VOICE_DEBUG] localTrack", {
-                        kind: this.localAudioTrack.kind,
-                        enabled: this.localAudioTrack.enabled,
-                        muted: this.localAudioTrack.muted,
-                        readyState: this.localAudioTrack.readyState
-                    });
-                }
-                debugLog("[VOICE] voice:getUserMedia:success", {
-                    trackCount: this.localStream?.getAudioTracks?.().length || 0,
-                    trackReadyState: this.localAudioTrack?.readyState || "",
-                    trackEnabled: Boolean(this.localAudioTrack?.enabled)
-                });
-                this.attachLocalTrackToPeers();
-                await this.unlockRemoteAudio();
-                this.setStatus(this.game?.t?.("voice-ready") || "Voice ready");
-            } catch (error) {
-                debugLog("[VOICE_DEBUG] getUserMedia:error");
-                debugLog("[VOICE] voice:getUserMedia:error", {
-                    name: String(error?.name || ""),
-                    message: String(error?.message || error || "")
-                });
-                console.warn("[Voice] Microphone access failed:", error);
-                this.setStatus(this.game?.t?.("voice-denied") || "Microphone access denied");
-                this.game?.renderer?.showMessage?.(this.game?.t?.("voice-denied") || "Microphone access denied", 2200);
-                return false;
-            }
+        if (!this.localStream || !this.localAudioTrack) {
+            const ok = await this.ensureLocalVoiceReady();
+            if (!ok) return false;
+            await this.rebuildVoicePeersAfterMicReady();
         }
 
         this.isEnabled = true;
@@ -220,6 +237,7 @@ export class VoiceChatManager {
                 readyState: this.localAudioTrack.readyState
             });
         }
+        debugLog("[VOICE_DEBUG] voice:speaking:on", { sessionId: this.mySessionId });
         this.updateLocalSpeakingUi(true);
         this.broadcastSpeakingState(true);
         this.setStatus(this.game?.t?.("voice-speaking") || "Speaking");
@@ -238,6 +256,7 @@ export class VoiceChatManager {
                 readyState: this.localAudioTrack.readyState
             });
         }
+        debugLog("[VOICE_DEBUG] voice:speaking:off", { sessionId: this.mySessionId });
         this.updateLocalSpeakingUi(false);
         if (this.isEnabled && this.isAvailable()) {
             this.broadcastSpeakingState(false);
@@ -439,11 +458,6 @@ export class VoiceChatManager {
                     trackId: this.localAudioTrack.id,
                     readyState: this.localAudioTrack.readyState
                 });
-                if (this.shouldInitiate(sessionId)) {
-                    void this.startOffer(sessionId);
-                } else {
-                    this.sendSignal(sessionId, "renegotiate");
-                }
             }).catch((error) => {
                 console.warn("[Voice] replaceTrack failed for", sessionId, error);
             });
@@ -543,7 +557,12 @@ export class VoiceChatManager {
         });
         this.peerConnections.set(targetSessionId, peer);
 
-        const transceiver = peer.addTransceiver("audio", { direction: "sendrecv" });
+        let transceiver;
+        if (this.localAudioTrack) {
+            transceiver = peer.addTransceiver(this.localAudioTrack, { direction: "sendrecv" });
+        } else {
+            transceiver = peer.addTransceiver("audio", { direction: "sendrecv" });
+        }
         this.peerSenders.set(targetSessionId, transceiver.sender);
         debugLog("[VOICE_DEBUG] peer:addTrack", {
             localSessionId: this.mySessionId,
@@ -570,7 +589,7 @@ export class VoiceChatManager {
 
         peer.ontrack = (event) => {
             const stream = event.streams?.[0] || (event.track ? new MediaStream([event.track]) : null);
-            debugLog("[VOICE_DEBUG] remote:ontrack", {
+            debugLog("[VOICE_DEBUG] voice:remote:ontrack", {
                 localSessionId: this.mySessionId,
                 fromSessionId: targetSessionId,
                 streamId: stream ? stream.id : "null",
@@ -630,21 +649,13 @@ export class VoiceChatManager {
         };
 
         if (this.localAudioTrack) {
-            transceiver.sender.replaceTrack(this.localAudioTrack).then(() => {
-                debugLog("[VOICE_DEBUG] peer:addTrack", {
-                    localSessionId: this.mySessionId,
-                    remoteSessionId: targetSessionId,
-                    trackKind: this.localAudioTrack.kind,
-                    trackId: this.localAudioTrack.id,
-                    readyState: this.localAudioTrack.readyState
-                });
-            }).catch((error) => {
-                console.warn("[Voice] initial replaceTrack failed:", error);
-            });
-        }
-
-        if (this.shouldInitiate(targetSessionId)) {
-            void this.startOffer(targetSessionId);
+            debugLog("[VOICE_DEBUG] voice:offer:send:with-local-track true", { targetSessionId });
+            if (this.shouldInitiate(targetSessionId)) {
+                void this.startOffer(targetSessionId);
+            }
+        } else {
+            debugLog("[VOICE_DEBUG] voice:offer:send:with-local-track false", { targetSessionId });
+            debugLog("[VOICE_DEBUG] voice:offer:blocked:no-local-track", { targetSessionId });
         }
 
         return peer;
@@ -847,6 +858,10 @@ export class VoiceChatManager {
             audio.muted = false;
             audio.volume = 1;
             audio.addEventListener("playing", () => {
+                debugLog("[VOICE_DEBUG] voice:audio:playing", {
+                    localSessionId: this.mySessionId,
+                    fromSessionId: sessionId
+                });
                 this.remoteAudioPlayback.set(sessionId, true);
                 this.audioPlaybackBlocked = false;
                 this.updateAudioUnlockUi();
@@ -875,6 +890,10 @@ export class VoiceChatManager {
         });
         debugLog("[VOICE_DEBUG] audio:play:start", { sessionId });
         audio.play().then(() => {
+            debugLog("[VOICE_DEBUG] voice:audio:playing", {
+                localSessionId: this.mySessionId,
+                fromSessionId: sessionId
+            });
             debugLog("[VOICE_DEBUG] audio:play:success", {
                 localSessionId: this.mySessionId,
                 fromSessionId: sessionId
