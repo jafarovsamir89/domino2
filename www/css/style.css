@@ -1780,6 +1780,8 @@ input, button { font: inherit; }
     display: flex;
     align-items: center;
     gap: 14px;
+    width: 100%;
+    min-width: 0;
 }
 
 .account-avatar-shell {
@@ -1793,14 +1795,16 @@ input, button { font: inherit; }
     min-width: 0;
     display: grid;
     gap: 4px;
+    flex: 1 1 auto;
 }
 
 .account-profile-name-row {
-    display: flex;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 40px 40px;
     align-items: center;
     gap: 8px;
-    flex-wrap: nowrap;
     min-width: 0;
+    width: 100%;
 }
 
 .account-avatar {
@@ -1878,6 +1882,7 @@ input, button { font: inherit; }
     text-overflow: ellipsis;
     min-width: 0;
     flex: 1 1 auto;
+    justify-self: start;
 }
 
 .account-profile-id {
@@ -1987,6 +1992,7 @@ input, button { font: inherit; }
     height: 40px;
     border-radius: 12px;
     flex: 0 0 40px;
+    justify-self: end;
 }
 
 #account-edit-name-btn .auth-icon,
