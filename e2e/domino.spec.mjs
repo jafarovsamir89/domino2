@@ -94,6 +94,22 @@ test("open rooms modal uses a standard title bar and close button", async ({ pag
   await expect(page.locator("#open-rooms-modal")).not.toHaveClass(/active/);
 });
 
+test("solo and online modals keep header title separate from description", async ({ page }) => {
+  await page.goto("/index.html");
+
+  await page.evaluate(() => document.getElementById("open-solo-modal-btn")?.click());
+  await expect(page.locator("#solo-modal .account-modal-header h2")).toBeVisible();
+  await expect(page.locator("#solo-modal .modal-desc")).toBeVisible();
+  await expect(page.locator("#solo-modal-close")).toHaveText("×");
+  await page.locator("#solo-modal-close").click();
+
+  await page.evaluate(() => document.getElementById("open-online-modal-btn")?.click());
+  await expect(page.locator("#online-modal .account-modal-header h2")).toBeVisible();
+  await expect(page.locator("#online-modal .modal-desc")).toBeVisible();
+  await expect(page.locator("#online-modal-close")).toHaveText("×");
+  await page.locator("#online-modal-close").click();
+});
+
 test("reconnect banner appears during network reconnect and clears on recovery", async ({ page }) => {
   await page.goto("/index.html");
   await page.evaluate(() => {
