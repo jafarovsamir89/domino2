@@ -576,6 +576,16 @@ input, button { font: inherit; }
     margin-bottom: 12px;
 }
 
+.open-rooms-actions {
+    display: flex;
+    justify-content: flex-start;
+    margin: 0 0 12px;
+}
+
+.open-rooms-create-btn {
+    width: fit-content;
+}
+
 .modal-close-btn {
     width: auto;
     white-space: nowrap;

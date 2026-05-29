@@ -94,6 +94,35 @@ test("open rooms modal uses a standard title bar and close button", async ({ pag
   await expect(page.locator("#open-rooms-modal")).not.toHaveClass(/active/);
 });
 
+test("closed and open rooms create flows use contextual visibility without toggle UI", async ({ page }) => {
+  await page.goto("/index.html");
+
+  await expect(page.locator("#open-online-modal-btn")).toHaveText(/Bağlı otaqlar|Private rooms|Закрытые комнаты/);
+  await page.evaluate(() => document.getElementById("open-online-modal-btn")?.click());
+  await expect(page.locator("#online-modal")).toHaveClass(/active/);
+  await expect(page.locator("#online-modal h2")).toHaveText(/Bağlı otaqlar|Private rooms|Закрытые комнаты/);
+  await expect(page.locator("#online-visibility-wrapper")).toHaveCount(0);
+
+  await page.locator("#online-create-choice-btn").click();
+  await expect(page.locator("#online-flow-ui")).not.toHaveClass(/is-hidden/);
+  await expect(page.locator("#online-visibility-wrapper")).toHaveCount(0);
+
+  await page.evaluate(() => document.getElementById("online-modal-close")?.click());
+  await expect(page.locator("#online-modal")).toHaveClass(/active/);
+  await expect(page.locator("#online-entry-ui")).not.toHaveClass(/is-hidden/);
+
+  await page.evaluate(() => document.getElementById("open-rooms-btn")?.click());
+  await expect(page.locator("#open-rooms-modal")).toHaveClass(/active/);
+  await expect(page.locator("#open-rooms-create-btn")).toBeVisible();
+
+  await page.locator("#open-rooms-create-btn").click();
+  await expect(page.locator("#online-modal")).toHaveClass(/active/);
+  await expect(page.locator("#online-visibility-wrapper")).toHaveCount(0);
+
+  await page.evaluate(() => document.getElementById("online-modal-close")?.click());
+  await expect(page.locator("#open-rooms-modal")).toHaveClass(/active/);
+});
+
 test("solo and online modals keep header title separate from description", async ({ page }) => {
   await page.goto("/index.html");
 

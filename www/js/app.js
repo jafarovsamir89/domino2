@@ -95,6 +95,7 @@ class DominoGame {
         this.playerCount=2; this.onlinePlayerCount=2; this.onlineAiCount=0; this.playerName=''; this.difficulty='medium';
         this.onlineStakeKey = 'stake_200';
         this.onlineRoomVisibility = 'closed';
+        this.onlineRoomSource = 'closed';
         this.onlineEconomyMode = 'coins';
         this.onlineRoundBankAmount = 0;
         this.soloEconomyMode = 'coins';
@@ -252,15 +253,25 @@ class DominoGame {
             this.showStartModal('solo');
         });
         if (openOnlineBtn) openOnlineBtn.addEventListener('click', () => {
+            this.onlineRoomSource = 'closed';
+            this.onlineRoomVisibility = 'closed';
             this.resetMultiplayerPanels(false);
             this.syncMultiplayerOptions();
             this.showStartModal('online');
             this.showOnlineLanding();
         });
         const openRoomsBtn = document.getElementById('open-rooms-btn');
+        const openRoomsCreateBtn = document.getElementById('open-rooms-create-btn');
         const startCoinShopBtn = document.getElementById('start-coin-shop-btn');
         const startCosmeticsShopBtn = document.getElementById('start-cosmetics-shop-btn');
         if (openRoomsBtn) openRoomsBtn.addEventListener('click', () => this.showOpenRoomsModal());
+        if (openRoomsCreateBtn) openRoomsCreateBtn.addEventListener('click', () => {
+            this.onlineRoomSource = 'open';
+            this.onlineRoomVisibility = 'open';
+            this.prefillOnlineNameIfPossible();
+            this.showStartModal('online');
+            this.showOnlineCreateFlow('open');
+        });
         if (startCoinShopBtn) startCoinShopBtn.addEventListener('click', async () => {
             await this.openCoinShopModal();
         });
@@ -286,7 +297,7 @@ class DominoGame {
             await this.resumeSavedSession();
         });
         if (soloModalClose) soloModalClose.addEventListener('click', () => this.showStartModal(null));
-        if (onlineModalClose) onlineModalClose.addEventListener('click', () => this.showStartModal(null));
+        if (onlineModalClose) onlineModalClose.addEventListener('click', () => this.closeOnlineModalToSource());
         if (accountModalClose) accountModalClose.addEventListener('click', () => this.closeAccountModal());
         if (coinShopModalClose) coinShopModalClose.addEventListener('click', () => this.closeCoinShopModal());
         if (cosmeticsShopModalClose) cosmeticsShopModalClose.addEventListener('click', () => this.closeCosmeticsShopModal());
@@ -398,14 +409,6 @@ class DominoGame {
             });
         });
 
-        document.querySelectorAll('#online-visibility-group .btn-option').forEach((button) => {
-            button.addEventListener('click', () => {
-                document.querySelectorAll('#online-visibility-group .btn-option').forEach((item) => item.classList.remove('active'));
-                button.classList.add('active');
-                this.onlineRoomVisibility = button.dataset.value || 'closed';
-            });
-        });
-
         document.getElementById('host-game-btn')?.addEventListener('click', async () => {
             const name = this.requirePlayerName('online');
             if (!name) return;
@@ -467,20 +470,10 @@ class DominoGame {
             await this.shareCurrentRoomCode();
         });
         document.getElementById('host-cancel-btn')?.addEventListener('click', () => {
-            if (this.network?.room) {
-                this.showStartModal(null);
-                this.resetMultiplayerPanels(true);
-                return;
-            }
-            this.showOnlineLanding();
+            this.closeOnlineModalToSource();
         });
         document.getElementById('join-cancel-btn')?.addEventListener('click', () => {
-            if (this.network?.room) {
-                this.showStartModal(null);
-                this.resetMultiplayerPanels(true);
-                return;
-            }
-            this.showOnlineLanding();
+            this.closeOnlineModalToSource();
         });
 
         const googleLoginBtn = document.getElementById('google-login-btn');
@@ -3444,9 +3437,6 @@ class DominoGame {
         if (!this.onlineStakeKey) {
             this.onlineStakeKey = 'stake_200';
         }
-        if (!this.onlineRoomVisibility) {
-            this.onlineRoomVisibility = 'closed';
-        }
 
         const stakeWrapper = document.getElementById('online-stake-wrapper');
         if (stakeWrapper) {
@@ -3455,11 +3445,6 @@ class DominoGame {
 
         document.querySelectorAll('#online-stake-group .btn-option').forEach((button) => {
             const shouldBeActive = button.dataset.value === this.onlineStakeKey;
-            button.classList.toggle('active', shouldBeActive);
-        });
-
-        document.querySelectorAll('#online-visibility-group .btn-option').forEach((button) => {
-            const shouldBeActive = button.dataset.value === this.onlineRoomVisibility;
             button.classList.toggle('active', shouldBeActive);
         });
 
@@ -3499,6 +3484,8 @@ class DominoGame {
     }
 
     showOnlineLanding() {
+        this.onlineRoomSource = 'closed';
+        this.onlineRoomVisibility = 'closed';
         document.getElementById('online-entry-ui')?.classList.remove('is-hidden');
         document.getElementById('online-flow-ui')?.classList.add('is-hidden');
         document.getElementById('online-entry-ui')?.classList.add('online-landing-actions');
@@ -3522,6 +3509,25 @@ class DominoGame {
         void this.loadOpenRooms();
     }
 
+    closeOnlineModalToSource() {
+        if (this.network?.room) {
+            this.showStartModal(null);
+            this.resetMultiplayerPanels(true);
+            return;
+        }
+        const onlineModal = document.getElementById('online-modal');
+        const flowVisible = Boolean(onlineModal?.classList.contains('active') && !document.getElementById('online-flow-ui')?.classList.contains('is-hidden'));
+        if (this.onlineRoomSource === 'open' && flowVisible) {
+            this.showStartModal(null);
+            return;
+        }
+        if (flowVisible) {
+            this.showOnlineLanding();
+            return;
+        }
+        this.showStartModal(null);
+    }
+
     hideOpenRoomsModal() {
         document.getElementById('open-rooms-modal')?.classList.remove('active');
     }
@@ -3535,7 +3541,9 @@ class DominoGame {
         if (stake) stake.value = this.onlineRoomFilters.stakeKey || 'all';
     }
 
-    showOnlineCreateFlow() {
+    showOnlineCreateFlow(visibility = 'closed') {
+        this.onlineRoomSource = visibility === 'open' ? 'open' : 'closed';
+        this.onlineRoomVisibility = visibility === 'open' ? 'open' : 'closed';
         document.getElementById('online-entry-ui')?.classList.add('is-hidden');
         document.getElementById('online-flow-ui')?.classList.remove('is-hidden');
         document.getElementById('online-flow-ui')?.classList.add('online-create-flow');
@@ -3552,6 +3560,8 @@ class DominoGame {
     }
 
     showOnlineJoinFlow() {
+        this.onlineRoomSource = 'closed';
+        this.onlineRoomVisibility = 'closed';
         document.getElementById('online-entry-ui')?.classList.add('is-hidden');
         document.getElementById('online-flow-ui')?.classList.remove('is-hidden');
         document.getElementById('online-flow-ui')?.classList.remove('online-create-flow');
@@ -5465,7 +5475,7 @@ class DominoGame {
             "rule-telephone": { az: "Telephone · [3|2]", en: "Telephone · [3|2]" },
             "btn-start": { az: "Solo play", en: "Solo play" },
             "btn-solo-start": { az: "Start", en: "Start" },
-            "label-online": { az: "Online room", en: "Online room" },
+            "label-online": { az: "Bağlı otaqlar", en: "Private rooms" },
             "label-online-help": { az: "Create a room or join with a code", en: "Create a room or join with a code" },
             "label-online-players": { az: "Room size", en: "Room size" },
             "label-ai-slots": { az: "AI slots", en: "AI slots" },
@@ -5498,8 +5508,8 @@ class DominoGame {
             "modal-close": { az: "Close", en: "Close" },
             "solo-modal-title": { az: "Solo play", en: "Solo play" },
             "solo-modal-desc": { az: "Pick difficulty, player count and game mode.", en: "Pick difficulty, player count and game mode." },
-            "online-modal-title": { az: "Online room", en: "Online room" },
-            "online-modal-desc": { az: "Create a room, add bots or join with a code.", en: "Create a room, add bots or join with a code." },
+            "online-modal-title": { az: "Bağlı otaqlar", en: "Private rooms" },
+            "online-modal-desc": { az: "Bağlı otaq yaradın və ya kodla qoşulun.", en: "Create a private room or join with a code." },
             "online-choice-create": { az: "Otaq yarat", en: "Create", ru: "Создать" },
             "online-choice-connect": { az: "Qoşul", en: "Connect", ru: "Подключиться" },
             "account-btn": { az: "Account", en: "Account" },
@@ -5611,14 +5621,6 @@ class DominoGame {
                     if (el.id === 'menu-btn') el.title = value;
                 }
             }
-        });
-        const closedRoomLabel = t['room-visibility-closed'] || translations.en?.['room-visibility-closed'] || translations.az?.['room-visibility-closed'] || 'Closed room';
-        const openRoomLabel = t['room-visibility-open'] || translations.en?.['room-visibility-open'] || translations.az?.['room-visibility-open'] || 'Open room';
-        document.querySelectorAll('#online-visibility-group [data-value="closed"]').forEach((el) => {
-            el.textContent = closedRoomLabel;
-        });
-        document.querySelectorAll('#online-visibility-group [data-value="open"]').forEach((el) => {
-            el.textContent = openRoomLabel;
         });
         const reactionBtn = document.getElementById('reaction-btn');
         if (reactionBtn) {

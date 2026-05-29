@@ -91,7 +91,7 @@
 
             <div class="start-actions">
                 <button class="btn btn-primary btn-large" id="open-solo-modal-btn" data-i18n="btn-solo">Solo play</button>
-                <button class="btn btn-action btn-large" id="open-online-modal-btn" data-i18n="btn-online">Online</button>
+                <button class="btn btn-action btn-large" id="open-online-modal-btn" data-i18n="btn-closed-rooms">Bağlı otaqlar</button>
                 <button class="btn btn-action btn-large" id="open-rooms-btn" data-i18n="open-rooms-button">Açıq otaqlar</button>
             </div>
         </div>
@@ -156,11 +156,11 @@
             <section class="modal-card modal-card-wide">
                 <div class="modal-header account-modal-header">
                     <div class="account-modal-title-wrap">
-                        <h2 data-i18n="online-modal-title">Onlayn otaq</h2>
+                        <h2 data-i18n="online-modal-title">Bağlı otaqlar</h2>
                     </div>
                     <button class="btn btn-menu modal-close-btn account-modal-close-btn" id="online-modal-close" type="button" aria-label="Close">×</button>
                 </div>
-                <p class="modal-desc page-description" data-i18n="online-modal-desc">Otaq yaradın, bot əlavə edin və ya kodla qoşulun.</p>
+                <p class="modal-desc page-description" data-i18n="online-modal-desc">Bağlı otaq yaradın və ya kodla qoşulun.</p>
 
                 <div id="online-entry-ui" class="btn-group">
                     <button class="btn btn-action btn-strong" id="online-create-choice-btn" data-i18n="online-choice-create">Otaq yarat</button>
@@ -203,14 +203,6 @@
                             <button class="btn btn-option" data-value="stake_500">500</button>
                             <button class="btn btn-option" data-value="stake_1000">1,000</button>
                             <button class="btn btn-option" data-value="stake_5000">5,000</button>
-                        </div>
-                    </div>
-
-                    <div class="settings-group field-span-2" id="online-visibility-wrapper">
-                        <label data-i18n="label-room-visibility">Otaq növü</label>
-                        <div class="btn-group" id="online-visibility-group">
-                            <button class="btn btn-option active" data-value="closed" data-i18n="room-visibility-closed">Bağlı otaq</button>
-                            <button class="btn btn-option" data-value="open" data-i18n="room-visibility-open">Açıq otaq</button>
                         </div>
                     </div>
 
@@ -259,6 +251,10 @@
                     <button class="btn btn-menu modal-close-btn account-modal-close-btn" id="open-rooms-modal-close" type="button" aria-label="Close" title="Close">×</button>
                 </div>
                 <p class="modal-desc page-description" data-i18n="open-rooms-desc">Açıq otaqlara baxın və birbaşa qoşulun.</p>
+
+                <div class="open-rooms-actions">
+                    <button class="btn btn-action btn-strong open-rooms-create-btn" id="open-rooms-create-btn" data-i18n="open-rooms-create">Yarat</button>
+                </div>
 
                 <div class="online-social-filters">
                     <input type="search" id="open-room-search-input" data-i18n="open-rooms-search-placeholder" placeholder="Otaq və ya adla axtar">
