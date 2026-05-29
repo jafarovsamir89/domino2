@@ -283,7 +283,7 @@ export class VoiceChatManager {
         peer.onicecandidate = (event) => {
             if (event.candidate) {
                 debugLog(`[VOICE_DEBUG] ice:send ${targetSessionId}`);
-                this.sendSignal(targetSessionId, "ice", { candidate: event.candidate });
+                this.sendSignal(targetSessionId, "candidate", { candidate: event.candidate });
             }
         };
 
