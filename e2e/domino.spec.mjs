@@ -80,6 +80,20 @@ test("guest start screen hides auth-only top buttons and keeps language visible"
   expect(overflow).toBe(false);
 });
 
+test("open rooms modal uses a standard title bar and close button", async ({ page }) => {
+  await page.goto("/index.html");
+  await page.evaluate(() => document.getElementById("open-rooms-btn")?.click());
+
+  await expect(page.locator("#open-rooms-modal")).toHaveClass(/active/);
+  await expect(page.locator("#open-rooms-modal .section-kicker")).toHaveCount(0);
+  await expect(page.locator("#open-rooms-modal h2")).toHaveText(/Açıq otaqlar|Open rooms|Открытые комнаты/);
+  await expect(page.locator("#open-rooms-modal-close")).toHaveText("×");
+  await expect(page.locator("#open-rooms-modal-close")).toHaveAttribute("aria-label", /Bağla|Close|Закрыть/);
+
+  await page.locator("#open-rooms-modal-close").click();
+  await expect(page.locator("#open-rooms-modal")).not.toHaveClass(/active/);
+});
+
 test("reconnect banner appears during network reconnect and clears on recovery", async ({ page }) => {
   await page.goto("/index.html");
   await page.evaluate(() => {
