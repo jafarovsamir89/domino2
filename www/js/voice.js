@@ -218,12 +218,27 @@ export class VoiceChatManager {
         debugLog("[VOICE_DEBUG] voice:peers:rebuild:done");
     }
 
+    requestNegotiationForLocalTrack() {
+        const remoteSessions = this.getRemoteHumanSessions();
+        for (const remoteSessionId of remoteSessions) {
+            if (this.shouldInitiate(remoteSessionId)) {
+                void this.startOffer(remoteSessionId, { reason: "local-track-ready" });
+            } else {
+                debugLog(`[VOICE_DEBUG] renegotiate:send reason local-track-ready targetSessionId=${remoteSessionId}`);
+                this.sendSignal(remoteSessionId, "renegotiate", {
+                    reason: "local-track-ready"
+                });
+            }
+        }
+    }
+
     async startSpeaking() {
         if (this.destroyed || !this.isAvailable()) return false;
         if (!this.localStream || !this.localAudioTrack) {
             const ok = await this.ensureLocalVoiceReady();
             if (!ok) return false;
             await this.rebuildVoicePeersAfterMicReady();
+            this.requestNegotiationForLocalTrack();
         }
 
         this.isEnabled = true;
@@ -596,6 +611,7 @@ export class VoiceChatManager {
                 trackId: event.track ? event.track.id : "null",
                 readyState: event.track ? event.track.readyState : "null"
             });
+            debugLog(`[VOICE_DEBUG] remote:ontrack fromSessionId=${targetSessionId}`);
             if (stream) {
                 this.attachRemoteStream(targetSessionId, stream);
             }
@@ -667,17 +683,30 @@ export class VoiceChatManager {
         return !!mine && !!remote && mine < remote;
     }
 
-    async startOffer(remoteSessionId) {
+    async startOffer(remoteSessionId, options = {}) {
         const peer = this.peerConnections.get(remoteSessionId);
         if (!peer || peer.signalingState !== "stable") return;
+
+        const allowReceiveOnlyOffer = ["renegotiate", "remote-track-ready", "local-track-ready"].includes(options.reason);
+        if (!this.localAudioTrack && !allowReceiveOnlyOffer) {
+            debugLog("[VOICE_DEBUG] voice:offer:blocked:no-local-track", { targetSessionId: remoteSessionId });
+            return;
+        }
+
         try {
             const offer = await peer.createOffer();
             await peer.setLocalDescription(offer);
+            const reason = options.reason || "initial";
             debugLog("[VOICE_DEBUG] offer:send", {
                 fromSessionId: this.mySessionId,
-                targetSessionId: remoteSessionId
+                targetSessionId: remoteSessionId,
+                reason: reason
             });
-            this.sendSignal(remoteSessionId, "offer", { description: peer.localDescription });
+            debugLog(`[VOICE_DEBUG] offer:send reason ${reason} targetSessionId=${remoteSessionId}`);
+            this.sendSignal(remoteSessionId, "offer", {
+                description: peer.localDescription,
+                reason: reason
+            });
         } catch (error) {
             console.warn("[Voice] offer failed:", error);
         }
@@ -716,9 +745,19 @@ export class VoiceChatManager {
                 debugLog("[VOICE_DEBUG] renegotiate:receive", {
                     fromSessionId,
                     targetSessionId,
-                    accepted: "accepted"
+                    accepted: "accepted",
+                    reason: payload.reason || "renegotiate"
                 });
-                void this.startOffer(fromSessionId);
+                debugLog(`[VOICE_DEBUG] renegotiate:receive accepted reason ${payload.reason || "renegotiate"} fromSessionId=${fromSessionId}`);
+                const offerReason = payload.reason === "local-track-ready" ? "remote-track-ready" : (payload.reason || "renegotiate");
+                void this.startOffer(fromSessionId, { reason: offerReason });
+            } else {
+                debugLog("[VOICE_DEBUG] renegotiate:receive", {
+                    fromSessionId,
+                    targetSessionId,
+                    accepted: "ignored",
+                    reason: "not_initiator"
+                });
             }
             return;
         }
@@ -778,6 +817,7 @@ export class VoiceChatManager {
                     targetSessionId,
                     signalingState: peer.signalingState
                 });
+                debugLog(`[VOICE_DEBUG] answer:receive fromSessionId=${fromSessionId} targetSessionId=${targetSessionId}`);
                 if (peer.signalingState !== "have-local-offer") {
                     debugLog("[VOICE_DEBUG] answer:ignored", {
                         reason: "unexpected_signaling_state",
