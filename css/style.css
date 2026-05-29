@@ -1799,7 +1799,8 @@ input, button { font: inherit; }
     display: flex;
     align-items: center;
     gap: 8px;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
+    min-width: 0;
 }
 
 .account-avatar {
@@ -1872,7 +1873,9 @@ input, button { font: inherit; }
     font-size: 1.05rem;
     font-weight: 800;
     line-height: 1.2;
-    word-break: break-word;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
     min-width: 0;
     flex: 1 1 auto;
 }
@@ -1928,13 +1931,13 @@ input, button { font: inherit; }
 }
 
 .account-modal-close-btn {
-    width: 42px;
-    min-width: 42px;
-    height: 42px;
+    width: 40px;
+    min-width: 40px;
+    height: 40px;
     padding: 0;
     display: grid;
     place-items: center;
-    font-size: 1.6rem;
+    font-size: 1.45rem;
     line-height: 1;
 }
 
@@ -1975,6 +1978,21 @@ input, button { font: inherit; }
 
 .account-avatar-edit-btn {
     color: var(--accent);
+}
+
+#account-edit-name-btn,
+#account-logout-btn {
+    width: 40px;
+    min-width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    flex: 0 0 40px;
+}
+
+#account-edit-name-btn .auth-icon,
+#account-logout-btn .auth-icon {
+    width: 16px;
+    height: 16px;
 }
 
 .account-avatar-edit-btn .auth-icon {
