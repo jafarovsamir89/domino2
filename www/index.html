@@ -252,29 +252,34 @@
                 </div>
                 <p class="modal-desc page-description" data-i18n="open-rooms-desc">Açıq otaqlara baxın və birbaşa qoşulun.</p>
 
-                <div class="open-rooms-actions">
-                    <button class="btn btn-action btn-strong open-rooms-create-btn" id="open-rooms-create-btn" data-i18n="open-rooms-create">Yarat</button>
-                </div>
-
-                <div class="online-social-filters">
-                    <input type="search" id="open-room-search-input" data-i18n="open-rooms-search-placeholder" placeholder="Otaq və ya adla axtar">
-                    <div class="filter-row">
-                        <select id="open-room-mode-filter">
-                            <option value="all" data-i18n="filter-all">Hamısı</option>
-                            <option value="ffa" data-i18n="mode-ffa">Hamı hər kəsə</option>
-                            <option value="team" data-i18n="mode-team">2 vs 2</option>
-                        </select>
-                        <select id="open-room-stake-filter">
-                            <option value="all" data-i18n="stake-table-all">Bütün mərc masaları</option>
-                            <option value="stake_200">200</option>
-                            <option value="stake_500">500</option>
-                            <option value="stake_1000">1,000</option>
-                            <option value="stake_5000">5,000</option>
-                        </select>
+                <div id="open-rooms-menu-ui">
+                    <div class="open-rooms-actions">
+                        <button class="btn btn-action btn-strong open-rooms-create-btn" id="open-rooms-create-btn" data-i18n="open-rooms-create">Yarat</button>
+                        <button class="btn btn-action open-rooms-join-btn" id="open-rooms-join-btn" data-i18n="open-rooms-join">Qoşul</button>
                     </div>
                 </div>
 
-                <div id="open-rooms-list" class="room-player-list"></div>
+                <div id="open-rooms-list-ui" class="is-hidden">
+                    <div class="online-social-filters">
+                        <input type="search" id="open-room-search-input" data-i18n="open-rooms-search-placeholder" placeholder="Otaq və ya adla axtar">
+                        <div class="filter-row">
+                            <select id="open-room-mode-filter">
+                                <option value="all" data-i18n="filter-all">Hamısı</option>
+                                <option value="ffa" data-i18n="mode-ffa">Hamı hər kəsə</option>
+                                <option value="team" data-i18n="mode-team">2 vs 2</option>
+                            </select>
+                            <select id="open-room-stake-filter">
+                                <option value="all" data-i18n="stake-table-all">Bütün mərc masaları</option>
+                                <option value="stake_200">200</option>
+                                <option value="stake_500">500</option>
+                                <option value="stake_1000">1,000</option>
+                                <option value="stake_5000">5,000</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div id="open-rooms-list" class="room-player-list"></div>
+                </div>
             </section>
         </div>
 

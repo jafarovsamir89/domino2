@@ -113,7 +113,18 @@ test("closed and open rooms create flows use contextual visibility without toggl
 
   await page.evaluate(() => document.getElementById("open-rooms-btn")?.click());
   await expect(page.locator("#open-rooms-modal")).toHaveClass(/active/);
+  await expect(page.locator("#open-rooms-menu-ui")).not.toHaveClass(/is-hidden/);
+  await expect(page.locator("#open-rooms-list-ui")).toHaveClass(/is-hidden/);
   await expect(page.locator("#open-rooms-create-btn")).toBeVisible();
+  await expect(page.locator("#open-rooms-join-btn")).toBeVisible();
+
+  await page.locator("#open-rooms-join-btn").click();
+  await expect(page.locator("#open-rooms-menu-ui")).toHaveClass(/is-hidden/);
+  await expect(page.locator("#open-rooms-list-ui")).not.toHaveClass(/is-hidden/);
+
+  await page.locator("#open-rooms-modal-close").click();
+  await expect(page.locator("#open-rooms-menu-ui")).not.toHaveClass(/is-hidden/);
+  await expect(page.locator("#open-rooms-list-ui")).toHaveClass(/is-hidden/);
 
   await page.locator("#open-rooms-create-btn").click();
   await expect(page.locator("#online-modal")).toHaveClass(/active/);

@@ -577,13 +577,15 @@ input, button { font: inherit; }
 }
 
 .open-rooms-actions {
-    display: flex;
-    justify-content: flex-start;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 12px;
     margin: 0 0 12px;
 }
 
-.open-rooms-create-btn {
-    width: fit-content;
+.open-rooms-actions .btn {
+    width: 100%;
+    min-width: 0;
 }
 
 .modal-close-btn {

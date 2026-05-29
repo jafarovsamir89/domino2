@@ -96,6 +96,7 @@ class DominoGame {
         this.onlineStakeKey = 'stake_200';
         this.onlineRoomVisibility = 'closed';
         this.onlineRoomSource = 'closed';
+        this.openRoomsStage = 'menu';
         this.onlineEconomyMode = 'coins';
         this.onlineRoundBankAmount = 0;
         this.soloEconomyMode = 'coins';
@@ -272,6 +273,8 @@ class DominoGame {
             this.showStartModal('online');
             this.showOnlineCreateFlow('open');
         });
+        const openRoomsJoinBtn = document.getElementById('open-rooms-join-btn');
+        if (openRoomsJoinBtn) openRoomsJoinBtn.addEventListener('click', () => this.showOpenRoomsList());
         if (startCoinShopBtn) startCoinShopBtn.addEventListener('click', async () => {
             await this.openCoinShopModal();
         });
@@ -287,7 +290,7 @@ class DominoGame {
         const onlineSocialRefreshBtn = document.getElementById('online-social-refresh-btn');
         const openRoomsModalClose = document.getElementById('open-rooms-modal-close');
         if (onlineSocialRefreshBtn) onlineSocialRefreshBtn.addEventListener('click', () => void this.loadFriendsHub());
-        if (openRoomsModalClose) openRoomsModalClose.addEventListener('click', () => this.hideOpenRoomsModal());
+        if (openRoomsModalClose) openRoomsModalClose.addEventListener('click', () => this.closeOpenRoomsModal());
         if (accountBtn) accountBtn.addEventListener('click', async () => {
             await this.openAccountModal();
         });
@@ -3504,7 +3507,26 @@ class DominoGame {
         const modal = document.getElementById('open-rooms-modal');
         if (!modal) return;
         this.prefillOnlineNameIfPossible();
+        this.openRoomsStage = 'menu';
+        this.syncOpenRoomsStage();
+        modal.classList.add('active');
         this.resetOpenRoomsModalState();
+    }
+
+    showOpenRoomsMenu() {
+        const modal = document.getElementById('open-rooms-modal');
+        if (!modal) return;
+        this.openRoomsStage = 'menu';
+        this.syncOpenRoomsStage();
+        modal.classList.add('active');
+        this.resetOpenRoomsModalState();
+    }
+
+    showOpenRoomsList() {
+        const modal = document.getElementById('open-rooms-modal');
+        if (!modal) return;
+        this.openRoomsStage = 'list';
+        this.syncOpenRoomsStage();
         modal.classList.add('active');
         void this.loadOpenRooms();
     }
@@ -3532,6 +3554,14 @@ class DominoGame {
         document.getElementById('open-rooms-modal')?.classList.remove('active');
     }
 
+    closeOpenRoomsModal() {
+        if (this.openRoomsStage === 'list') {
+            this.showOpenRoomsMenu();
+            return;
+        }
+        this.hideOpenRoomsModal();
+    }
+
     resetOpenRoomsModalState() {
         const search = document.getElementById('open-room-search-input');
         const mode = document.getElementById('open-room-mode-filter');
@@ -3539,6 +3569,14 @@ class DominoGame {
         if (search) search.value = this.onlineRoomFilters.search || '';
         if (mode) mode.value = this.onlineRoomFilters.roomMode || 'all';
         if (stake) stake.value = this.onlineRoomFilters.stakeKey || 'all';
+    }
+
+    syncOpenRoomsStage() {
+        const menuUi = document.getElementById('open-rooms-menu-ui');
+        const listUi = document.getElementById('open-rooms-list-ui');
+        const menuVisible = this.openRoomsStage !== 'list';
+        menuUi?.classList.toggle('is-hidden', !menuVisible);
+        listUi?.classList.toggle('is-hidden', menuVisible);
     }
 
     showOnlineCreateFlow(visibility = 'closed') {
