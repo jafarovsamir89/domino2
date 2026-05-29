@@ -749,6 +749,13 @@ export class VoiceChatManager {
                     reason: payload.reason || "renegotiate"
                 });
                 debugLog(`[VOICE_DEBUG] renegotiate:receive accepted reason ${payload.reason || "renegotiate"} fromSessionId=${fromSessionId}`);
+                
+                if (payload.reason === "local-track-ready") {
+                    debugLog("[VOICE_DEBUG] renegotiate: recreate peer connection to match remote", { fromSessionId });
+                    this.closePeer(fromSessionId);
+                }
+                
+                this.ensurePeer(fromSessionId);
                 const offerReason = payload.reason === "local-track-ready" ? "remote-track-ready" : (payload.reason || "renegotiate");
                 void this.startOffer(fromSessionId, { reason: offerReason });
             } else {
@@ -770,6 +777,13 @@ export class VoiceChatManager {
                     accepted: "ignored"
                 });
                 return;
+            }
+        }
+
+        if (payload.kind === "offer" && description) {
+            if (payload.reason === "local-track-ready") {
+                debugLog("[VOICE_DEBUG] offer: recreate peer connection to match remote", { fromSessionId });
+                this.closePeer(fromSessionId);
             }
         }
 
