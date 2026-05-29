@@ -3502,6 +3502,7 @@ class DominoGame {
         this.showMultiplayerPanel(null);
         this.setHostStatus(this.t('online-room-create-hint'));
         this.setJoinStatus(this.t('online-room-join-hint'));
+        this.syncOnlineModalTitle('landing');
         void this.loadFriendsHub();
     }
 
@@ -3582,6 +3583,18 @@ class DominoGame {
         listUi?.classList.toggle('is-hidden', menuVisible);
     }
 
+    syncOnlineModalTitle(mode = null) {
+        const title = document.querySelector('#online-modal .account-modal-title-wrap h2');
+        if (!title) return;
+        const key = mode === 'create-open'
+            ? 'online-create-title-open'
+            : mode === 'create-closed'
+                ? 'online-create-title-closed'
+                : 'online-modal-title';
+        title.dataset.i18n = key;
+        title.textContent = this.t(key);
+    }
+
     showOnlineCreateFlow(visibility = 'closed') {
         this.onlineRoomSource = visibility === 'open' ? 'open' : 'closed';
         this.onlineRoomVisibility = visibility === 'open' ? 'open' : 'closed';
@@ -3596,6 +3609,7 @@ class DominoGame {
         document.getElementById('host-game-btn')?.classList.add('online-create-btn');
         document.getElementById('join-game-btn')?.classList.add('is-hidden');
         this.showMultiplayerPanel(null);
+        this.syncOnlineModalTitle(this.onlineRoomVisibility === 'open' ? 'create-open' : 'create-closed');
         this.setHostStatus(this.t('online-room-create-hint'));
         this.setJoinStatus(this.t('online-room-join-hint'));
     }
@@ -3614,6 +3628,7 @@ class DominoGame {
         document.getElementById('host-game-btn')?.classList.add('is-hidden');
         document.getElementById('join-game-btn')?.classList.add('is-hidden');
         this.showMultiplayerPanel('join');
+        this.syncOnlineModalTitle('landing');
         const joinInput = document.getElementById('join-code-input');
         if (joinInput && this.pendingSharedRoomCode && !String(joinInput.value || '').trim()) {
             joinInput.value = this.pendingSharedRoomCode;

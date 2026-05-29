@@ -245,6 +245,8 @@
         "online-modal-kicker": "Bağlı otaqlar",
         "online-modal-title": "Bağlı otaqlar",
         "online-modal-desc": "Bağlı otaq yaradın və ya kodla qoşulun.",
+        "online-create-title-closed": "Bağlı otaq yarat",
+        "online-create-title-open": "Açıq otaq yarat",
         "label-ai-slots": "AI slotları",
         "online-room-summary": "{humans} insan + {bots} AI, cəmi {total}",
         "online-bot-slot": "AI {index}"
@@ -603,6 +605,8 @@
         "online-modal-kicker": "Private rooms",
         "online-modal-title": "Private rooms",
         "online-modal-desc": "Create a private room or join with a code.",
+        "online-create-title-closed": "Create private room",
+        "online-create-title-open": "Create open room",
         "label-ai-slots": "AI slots",
         "online-room-summary": "{humans} humans + {bots} AI, {total} total",
         "online-bot-slot": "AI {index}"
@@ -958,6 +962,8 @@
         "online-modal-kicker": "Закрытые комнаты",
         "online-modal-title": "Закрытые комнаты",
         "online-modal-desc": "Создайте закрытую комнату или подключитесь по коду.",
+        "online-create-title-closed": "Создать закрытую комнату",
+        "online-create-title-open": "Создать открытую комнату",
         "label-ai-slots": "Слоты AI",
         "online-room-summary": "{humans} человек + {bots} AI, всего {total}",
         "online-bot-slot": "AI {index}"

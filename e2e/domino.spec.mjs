@@ -130,6 +130,7 @@ test("closed and open rooms create flows use contextual visibility without toggl
   await expect(page.locator("#online-modal")).toHaveClass(/active/);
   await expect(page.locator("#open-rooms-modal")).not.toHaveClass(/active/);
   await expect(page.locator("#online-visibility-wrapper")).toHaveCount(0);
+  await expect(page.locator("#online-modal .account-modal-title-wrap h2")).toHaveText(/Açıq otaq yarat|Create open room|Создать открытую комнату/);
 
   await page.evaluate(() => document.getElementById("online-modal-close")?.click());
   await expect(page.locator("#open-rooms-modal")).toHaveClass(/active/);
