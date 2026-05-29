@@ -28,9 +28,9 @@ export class VoiceChatManager {
     constructor(game) {
         debugLog("[VOICE_DEBUG] init");
         this.game = game;
-        this.peerConnections = new Map();
-        this.peerSenders = new Map();
-        this.remoteAudioElements = new Map();
+        this.peersBySessionId = new Map();
+        this.remoteAudioBySessionId = new Map();
+        this.voiceEnabledBySessionId = new Map();
         this.remoteSpeaking = new Map();
         this.roomState = null;
         this.localStream = null;
@@ -77,37 +77,50 @@ export class VoiceChatManager {
     syncRoomState(roomState = null) {
         try {
             this.roomState = roomState;
-            if (this.game?.network?.room) {
-                debugLog("[VOICE_DEBUG] identity", {
-                    sessionId: this.mySessionId,
-                    roomId: this.game.network.room.roomId || this.game.network.room.id
-                });
+            
+            if (roomState && Array.isArray(roomState.players)) {
+                for (const p of roomState.players) {
+                    if (p && p.sessionId && p.sessionId !== this.mySessionId) {
+                        this.voiceEnabledBySessionId.set(p.sessionId, Boolean(p.voiceEnabled));
+                    }
+                }
             }
-            debugLog("[VOICE] voice:init", {
-                hasRoom: Boolean(this.game?.network?.room),
-                remoteHumans: this.getRemoteHumanSessions().length,
-                audioPlaybackBlocked: this.audioPlaybackBlocked
-            });
-            this.syncVisibility();
-            void this.prefetchIceConfig();
+
             if (!this.isAvailable()) {
                 this.resetRoom();
                 return;
             }
 
-            const remoteSessions = new Set(this.getRemoteHumanSessions());
-            for (const sessionId of Array.from(this.peerConnections.keys())) {
-                if (!remoteSessions.has(sessionId)) {
-                    this.closePeer(sessionId);
+            if (!this.isEnabled) {
+                this.syncVisibility();
+                this.updateSpeakerUi();
+                return;
+            }
+
+            const activeRemoteEnabled = new Set();
+            if (roomState && Array.isArray(roomState.players)) {
+                for (const p of roomState.players) {
+                    if (p && p.sessionId && p.sessionId !== this.mySessionId && p.voiceEnabled) {
+                        activeRemoteEnabled.add(p.sessionId);
+                    }
                 }
             }
-            for (const sessionId of remoteSessions) {
-                try {
-                    this.ensurePeer(sessionId);
-                } catch (error) {
-                    console.warn("[VOICE] Failed to sync voice state", error);
+
+            for (const sessionId of Array.from(this.peersBySessionId.keys())) {
+                if (!activeRemoteEnabled.has(sessionId)) {
+                    this.closePeer(sessionId, "sync-disabled");
                 }
             }
+
+            if (this.localStream) {
+                for (const sessionId of activeRemoteEnabled) {
+                    if (!this.peersBySessionId.has(sessionId)) {
+                        this.connectPeer(sessionId);
+                    }
+                }
+            }
+
+            this.syncVisibility();
             this.updateSpeakerUi();
         } catch (error) {
             console.warn("[VOICE] Failed to sync voice state", error);
@@ -122,9 +135,7 @@ export class VoiceChatManager {
         if (button) {
             button.disabled = !online;
             button.classList.toggle("is-ready", online);
-            if (!online) {
-                button.classList.remove("is-speaking");
-            }
+            button.classList.toggle("is-speaking", online && this.isEnabled);
         }
         if (!online) {
             this.setStatus("");
@@ -144,20 +155,30 @@ export class VoiceChatManager {
         if (el) el.textContent = this.statusText;
         const button = this.getVoiceButton();
         if (button) {
-            const title = this.statusText || this.game?.t?.("voice-hold-to-talk") || "Hold to talk";
+            const title = this.statusText || this.game?.t?.("voice-ready") || "Voice ready";
             button.title = title;
             button.setAttribute("aria-label", title);
         }
     }
 
-    async ensureLocalVoiceReady() {
-        if (this.localStream && this.localAudioTrack) return true;
+    async toggleVoice() {
+        if (this.destroyed || !this.isAvailable()) return;
+        if (this.isEnabled) {
+            debugLog("[VOICE_DEBUG] toggle:off");
+            await this.disableVoice();
+        } else {
+            debugLog("[VOICE_DEBUG] toggle:on");
+            await this.enableVoice();
+        }
+    }
+
+    async enableVoice() {
+        if (this.destroyed || !this.isAvailable()) return;
+        this.isEnabled = true;
+        this.isSpeaking = true;
+
+        debugLog("[VOICE_DEBUG] getUserMedia:start");
         try {
-            debugLog("[VOICE_DEBUG] getUserMedia:start");
-            debugLog("[VOICE] voice:getUserMedia:start", {
-                secureContext: Boolean(typeof window === "undefined" ? true : window.isSecureContext),
-                hasNavigator: typeof navigator !== "undefined"
-            });
             this.localStream = await navigator.mediaDevices.getUserMedia({
                 audio: {
                     echoCancellation: true,
@@ -168,137 +189,310 @@ export class VoiceChatManager {
             });
             this.localAudioTrack = this.localStream.getAudioTracks()[0] || null;
             if (this.localAudioTrack) {
-                this.localAudioTrack.enabled = false;
+                this.localAudioTrack.enabled = true;
             }
-            debugLog("[VOICE_DEBUG] voice:mic:ready", {
-                sessionId: this.mySessionId,
-                tracks: this.localStream.getAudioTracks().map(t => ({
-                    enabled: t.enabled,
-                    muted: t.muted,
-                    readyState: t.readyState
-                }))
-            });
-            debugLog("[VOICE] voice:getUserMedia:success", {
-                trackCount: this.localStream?.getAudioTracks?.().length || 0,
-                trackReadyState: this.localAudioTrack?.readyState || "",
-                trackEnabled: Boolean(this.localAudioTrack?.enabled)
-            });
-            return true;
+            debugLog("[VOICE_DEBUG] getUserMedia:success");
         } catch (error) {
             debugLog("[VOICE_DEBUG] getUserMedia:error");
-            debugLog("[VOICE] voice:getUserMedia:error", {
-                name: String(error?.name || ""),
-                message: String(error?.message || error || "")
-            });
-            console.warn("[Voice] Microphone access failed:", error);
+            this.isEnabled = false;
+            this.isSpeaking = false;
             this.setStatus(this.game?.t?.("voice-denied") || "Microphone access denied");
             this.game?.renderer?.showMessage?.(this.game?.t?.("voice-denied") || "Microphone access denied", 2200);
-            return false;
+            return;
         }
-    }
 
-    async rebuildVoicePeersAfterMicReady() {
-        debugLog("[VOICE_DEBUG] voice:peers:rebuild:start");
-        const sessionIds = Array.from(this.peerConnections.keys());
-        for (const sessionId of sessionIds) {
-            this.closePeer(sessionId);
-        }
-        this.peerConnections.clear();
-        this.peerSenders.clear();
-        this.remoteAudioElements.clear();
+        debugLog("[VOICE_DEBUG] voice:state:send enabled true");
+        this.game.network.sendVoiceSignal({
+            kind: "state",
+            enabled: true,
+            speaking: true,
+            name: this.game?.playerName || ""
+        });
 
         const remoteSessions = this.getRemoteHumanSessions();
         for (const sessionId of remoteSessions) {
-            try {
-                this.ensurePeer(sessionId);
-            } catch (error) {
-                console.warn("[VOICE] Failed to rebuild voice peer for", sessionId, error);
+            if (this.voiceEnabledBySessionId.get(sessionId) === true) {
+                this.connectPeer(sessionId);
             }
         }
-        debugLog("[VOICE_DEBUG] voice:peers:rebuild:done");
-    }
 
-    requestNegotiationForLocalTrack() {
-        const remoteSessions = this.getRemoteHumanSessions();
-        for (const remoteSessionId of remoteSessions) {
-            if (this.shouldInitiate(remoteSessionId)) {
-                void this.startOffer(remoteSessionId, { reason: "local-track-ready" });
-            } else {
-                debugLog(`[VOICE_DEBUG] renegotiate:send reason local-track-ready targetSessionId=${remoteSessionId}`);
-                this.sendSignal(remoteSessionId, "renegotiate", {
-                    reason: "local-track-ready"
-                });
-            }
-        }
-    }
-
-    async startSpeaking() {
-        if (this.destroyed || !this.isAvailable()) return false;
-        if (!this.localStream || !this.localAudioTrack) {
-            const ok = await this.ensureLocalVoiceReady();
-            if (!ok) return false;
-            await this.rebuildVoicePeersAfterMicReady();
-            this.requestNegotiationForLocalTrack();
-        }
-
-        this.isEnabled = true;
-        this.isSpeaking = true;
-        if (this.localAudioTrack) {
-            this.localAudioTrack.enabled = true;
-            debugLog("[VOICE_DEBUG] localTrack", {
-                kind: this.localAudioTrack.kind,
-                enabled: this.localAudioTrack.enabled,
-                muted: this.localAudioTrack.muted,
-                readyState: this.localAudioTrack.readyState
-            });
-        }
-        debugLog("[VOICE_DEBUG] voice:speaking:on", { sessionId: this.mySessionId });
-        this.updateLocalSpeakingUi(true);
-        this.broadcastSpeakingState(true);
         this.setStatus(this.game?.t?.("voice-speaking") || "Speaking");
-        return true;
+        this.syncVisibility();
+        this.updateSpeakerUi();
     }
 
-    stopSpeaking() {
-        if (this.destroyed) return;
+    async disableVoice() {
+        this.isEnabled = false;
         this.isSpeaking = false;
+
+        debugLog("[VOICE_DEBUG] voice:state:send enabled false");
+        this.game.network.sendVoiceSignal({
+            kind: "state",
+            enabled: false,
+            speaking: false,
+            name: this.game?.playerName || ""
+        });
+
+        for (const sessionId of Array.from(this.peersBySessionId.keys())) {
+            this.closePeer(sessionId, "local-disabled");
+        }
+
         if (this.localAudioTrack) {
-            this.localAudioTrack.enabled = false;
-            debugLog("[VOICE_DEBUG] localTrack", {
-                kind: this.localAudioTrack.kind,
-                enabled: this.localAudioTrack.enabled,
-                muted: this.localAudioTrack.muted,
-                readyState: this.localAudioTrack.readyState
-            });
+            try { this.localAudioTrack.stop(); } catch {}
+            this.localAudioTrack = null;
         }
-        debugLog("[VOICE_DEBUG] voice:speaking:off", { sessionId: this.mySessionId });
-        this.updateLocalSpeakingUi(false);
-        if (this.isEnabled && this.isAvailable()) {
-            this.broadcastSpeakingState(false);
-            this.setStatus(this.game?.t?.("voice-ready") || "Voice ready");
+        if (this.localStream) {
+            for (const track of this.localStream.getTracks()) {
+                try { track.stop(); } catch {}
+            }
+            this.localStream = null;
         }
+
+        debugLog("[VOICE_DEBUG] voice:off:cleanup");
+
+        this.setStatus(this.game?.t?.("voice-ready") || "Voice ready");
+        this.syncVisibility();
+        this.updateSpeakerUi();
+    }
+
+    connectPeer(remoteSessionId) {
+        const targetSessionId = String(remoteSessionId || "").trim();
+        if (!targetSessionId || targetSessionId === this.mySessionId) return null;
+
+        let peer = this.peersBySessionId.get(targetSessionId);
+        if (peer) return peer;
+
+        const initiator = this.mySessionId < targetSessionId;
+        debugLog(`[VOICE_DEBUG] peer:create ${this.mySessionId} ${targetSessionId} initiator ${initiator}`);
+
+        try {
+            peer = new RTCPeerConnection(this.getPeerConfig());
+        } catch (error) {
+            console.warn("[VOICE] Failed to create peer connection:", error);
+            return null;
+        }
+        this.peersBySessionId.set(targetSessionId, peer);
+
+        if (this.localStream) {
+            for (const track of this.localStream.getAudioTracks()) {
+                peer.addTrack(track, this.localStream);
+                debugLog(`[VOICE_DEBUG] peer:addTrack ${track.id} ${track.readyState} ${track.enabled}`);
+            }
+        }
+
+        peer.onicecandidate = (event) => {
+            if (event.candidate) {
+                debugLog(`[VOICE_DEBUG] ice:send ${targetSessionId}`);
+                this.sendSignal(targetSessionId, "ice", { candidate: event.candidate });
+            }
+        };
+
+        peer.ontrack = (event) => {
+            debugLog(`[VOICE_DEBUG] remote:ontrack ${targetSessionId}`);
+            const stream = event.streams?.[0] || (event.track ? new MediaStream([event.track]) : null);
+            if (stream) {
+                this.attachRemoteStream(targetSessionId, stream);
+            }
+        };
+
+        if (initiator) {
+            void this.startOffer(targetSessionId);
+        }
+
+        return peer;
+    }
+
+    async startOffer(remoteSessionId) {
+        const peer = this.peersBySessionId.get(remoteSessionId);
+        if (!peer) return;
+        try {
+            const offer = await peer.createOffer();
+            await peer.setLocalDescription(offer);
+            debugLog(`[VOICE_DEBUG] offer:send ${remoteSessionId}`);
+            this.sendSignal(remoteSessionId, "offer", { description: peer.localDescription });
+        } catch (error) {
+            console.warn("[Voice] createOffer failed for", remoteSessionId, error);
+        }
+    }
+
+    async handleSignal(payload = {}) {
+        if (!this.isAvailable()) return;
+        const fromSessionId = String(payload.fromSessionId || "").trim();
+        const targetSessionId = String(payload.targetSessionId || "").trim();
+        if (!fromSessionId || fromSessionId === this.mySessionId) return;
+
+        if (payload.kind === "state") {
+            const enabled = Boolean(payload.enabled);
+            debugLog(`[VOICE_DEBUG] voice:state:receive ${fromSessionId} enabled ${enabled}`);
+            this.voiceEnabledBySessionId.set(fromSessionId, enabled);
+            if (payload.speaking) {
+                this.remoteSpeaking.set(fromSessionId, {
+                    speaking: true,
+                    name: String(payload.name || "").trim()
+                });
+            } else {
+                this.remoteSpeaking.delete(fromSessionId);
+            }
+
+            if (enabled) {
+                if (this.isEnabled && this.localStream && !this.peersBySessionId.has(fromSessionId)) {
+                    this.connectPeer(fromSessionId);
+                }
+            } else {
+                if (this.peersBySessionId.has(fromSessionId)) {
+                    this.closePeer(fromSessionId, "remote-disabled");
+                }
+            }
+            this.updateSpeakerUi();
+            return;
+        }
+
+        if (payload.kind !== "state" && targetSessionId !== this.mySessionId) {
+            const logKind = (payload.kind === "candidate" || payload.kind === "ice") ? "ice" : payload.kind;
+            debugLog(`[VOICE_DEBUG] ${logKind}:receive ${fromSessionId} ${targetSessionId} ignored`);
+            return;
+        }
+
+        let peer = this.peersBySessionId.get(fromSessionId);
+        if (!peer && this.isEnabled && this.localStream && this.voiceEnabledBySessionId.get(fromSessionId) === true) {
+            peer = this.connectPeer(fromSessionId);
+        }
+        if (!peer) return;
+
+        try {
+            if (payload.kind === "offer") {
+                debugLog(`[VOICE_DEBUG] offer:receive ${fromSessionId} ${targetSessionId} accepted`);
+                await peer.setRemoteDescription(new RTCSessionDescription(payload.description || payload.sdp));
+                await this.flushQueuedCandidates(peer);
+                const answer = await peer.createAnswer();
+                await peer.setLocalDescription(answer);
+                debugLog(`[VOICE_DEBUG] answer:send ${fromSessionId}`);
+                this.sendSignal(fromSessionId, "answer", { description: peer.localDescription });
+                return;
+            }
+
+            if (payload.kind === "answer") {
+                debugLog(`[VOICE_DEBUG] answer:receive ${fromSessionId} ${targetSessionId} accepted`);
+                await peer.setRemoteDescription(new RTCSessionDescription(payload.description || payload.sdp));
+                await this.flushQueuedCandidates(peer);
+                return;
+            }
+
+            if (payload.kind === "candidate" || payload.kind === "ice") {
+                debugLog(`[VOICE_DEBUG] ice:receive ${fromSessionId} ${targetSessionId} accepted`);
+                const candidate = payload.candidate;
+                if (candidate) {
+                    if (peer.remoteDescription) {
+                        await peer.addIceCandidate(new RTCIceCandidate(candidate));
+                    } else {
+                        peer._queuedCandidates = peer._queuedCandidates || [];
+                        peer._queuedCandidates.push(candidate);
+                    }
+                }
+                return;
+            }
+        } catch (error) {
+            console.warn("[Voice] signal handling failed:", error);
+        }
+    }
+
+    async flushQueuedCandidates(peer) {
+        if (!peer?.remoteDescription || !Array.isArray(peer._queuedCandidates) || !peer._queuedCandidates.length) return;
+        const queued = peer._queuedCandidates.splice(0);
+        for (const item of queued) {
+            try {
+                await peer.addIceCandidate(new RTCIceCandidate(item));
+            } catch (error) {
+                console.warn("[Voice] queued candidate failed:", error);
+            }
+        }
+    }
+
+    sendSignal(targetSessionId, kind, data = {}) {
+        if (!this.game?.network?.room) return;
+        this.game.network.sendVoiceSignal({
+            kind,
+            targetSessionId,
+            ...data
+        });
+    }
+
+    attachRemoteStream(sessionId, stream) {
+        let audio = this.remoteAudioBySessionId.get(sessionId);
+        if (!audio) {
+            audio = document.createElement("audio");
+            audio.id = "audio-element-" + sessionId;
+            audio.autoplay = true;
+            audio.playsInline = true;
+            audio.preload = "auto";
+            audio.className = "voice-remote-audio";
+            audio.dataset.sessionId = sessionId;
+            audio.style.display = "none";
+            audio.muted = false;
+            audio.volume = 1;
+            document.body.appendChild(audio);
+            this.remoteAudioBySessionId.set(sessionId, audio);
+        }
+        audio.srcObject = stream;
+        
+        audio.play().then(() => {
+            debugLog(`[VOICE_DEBUG] audio:play:success ${sessionId}`);
+            this.remoteAudioPlayback.set(sessionId, true);
+            this.audioPlaybackBlocked = false;
+            this.updateAudioUnlockUi();
+            this.updateSpeakerUi();
+        }).catch((error) => {
+            this.remoteAudioPlayback.set(sessionId, false);
+            this.audioPlaybackBlocked = true;
+            debugLog(`[VOICE_DEBUG] audio:play:error ${sessionId} ${error?.name || error}`);
+            this.updateAudioUnlockUi();
+            this.updateSpeakerUi();
+        });
+    }
+
+    closePeer(sessionId, reason) {
+        debugLog(`[VOICE_DEBUG] peer:close ${sessionId} ${reason}`);
+        const peer = this.peersBySessionId.get(sessionId);
+        if (peer) {
+            try { peer.close(); } catch {}
+        }
+        this.peersBySessionId.delete(sessionId);
+        
+        const audio = this.remoteAudioBySessionId.get(sessionId);
+        if (audio) {
+            try { audio.srcObject = null; } catch {}
+            audio.remove();
+        }
+        this.remoteAudioBySessionId.delete(sessionId);
+        this.remoteSpeaking.delete(sessionId);
+        this.remoteAudioPlayback.delete(sessionId);
+        if (!this.remoteAudioBySessionId.size) {
+            this.audioPlaybackBlocked = false;
+        }
+        this.updateAudioUnlockUi();
+        this.updateSpeakerUi();
     }
 
     resetRoom() {
-        this.isSpeaking = false;
         this.isEnabled = false;
+        this.isSpeaking = false;
         this.statusText = "";
         this.audioPlaybackBlocked = false;
-        this.updateLocalSpeakingUi(false);
-        for (const sessionId of Array.from(this.peerConnections.keys())) {
-            this.closePeer(sessionId);
+        for (const sessionId of Array.from(this.peersBySessionId.keys())) {
+            this.closePeer(sessionId, "room-reset");
         }
-        this.clearRemoteSpeaking();
+        this.peersBySessionId.clear();
+        this.remoteAudioBySessionId.clear();
+        this.voiceEnabledBySessionId.clear();
+        this.remoteSpeaking.clear();
         this.remoteAudioPlayback.clear();
         this.updateAudioUnlockUi();
     }
 
     destroy() {
-        this.stopSpeaking();
         this.resetRoom();
-        this.iceConfigPromise = null;
         if (this.localAudioTrack) {
-            this.localAudioTrack.stop();
+            try { this.localAudioTrack.stop(); } catch {}
             this.localAudioTrack = null;
         }
         if (this.localStream) {
@@ -310,23 +504,10 @@ export class VoiceChatManager {
         this.setStatus("");
     }
 
-    updateLocalSpeakingUi(active) {
-        const button = this.getVoiceButton();
-        if (button) button.classList.toggle("is-speaking", !!active);
-    }
-
-    clearRemoteSpeaking() {
-        this.remoteSpeaking.clear();
-        this.updateSpeakerUi();
-    }
-
     updateAudioUnlockUi() {
         const button = document.getElementById("voice-unlock-btn");
         if (!button) return;
         const shouldShow = this.audioPlaybackBlocked && this.isAvailable();
-        if (shouldShow && button.classList.contains("is-hidden")) {
-            debugLog("[VOICE_DEBUG] enableSound:shown");
-        }
         button.classList.toggle("is-hidden", !shouldShow);
         const title = this.game?.t?.("voice-enable-sound") || "Enable sound";
         button.textContent = title;
@@ -335,7 +516,7 @@ export class VoiceChatManager {
     }
 
     async unlockRemoteAudio() {
-        const audioEntries = Array.from(this.remoteAudioElements.entries());
+        const audioEntries = Array.from(this.remoteAudioBySessionId.entries());
         if (!audioEntries.length) {
             this.audioPlaybackBlocked = false;
             this.updateAudioUnlockUi();
@@ -348,27 +529,13 @@ export class VoiceChatManager {
             try {
                 audio.muted = false;
                 audio.volume = 1;
-                debugLog("[VOICE_DEBUG] audio:play:start", { sessionId, context: "unlock" });
                 await audio.play();
-                debugLog("[VOICE_DEBUG] audio:play:success", { sessionId, context: "unlock" });
+                debugLog(`[VOICE_DEBUG] audio:play:success ${sessionId}`);
                 this.remoteAudioPlayback.set(sessionId, true);
                 unlocked = true;
             } catch (error) {
                 this.remoteAudioPlayback.set(sessionId, false);
-                if (error?.name === "NotAllowedError" || error?.name === "SecurityError") {
-                    debugLog("[VOICE_DEBUG] autoplay:blocked", { sessionId, context: "unlock", error: error.name });
-                }
-                debugLog("[VOICE_DEBUG] audio:play:error", {
-                    sessionId,
-                    context: "unlock",
-                    name: String(error?.name || ""),
-                    message: String(error?.message || error || "")
-                });
-                debugLog("[VOICE] voice:audioElement:play-blocked", {
-                    sessionId,
-                    name: String(error?.name || ""),
-                    message: String(error?.message || error || "")
-                });
+                debugLog(`[VOICE_DEBUG] audio:play:error ${sessionId} ${error?.name || error}`);
             }
         }
 
@@ -385,12 +552,10 @@ export class VoiceChatManager {
         for (const [sessionId, state] of this.remoteSpeaking.entries()) {
             if (!state?.speaking) continue;
             
-            // Check peer connection state
-            const peer = this.peerConnections.get(sessionId);
+            const peer = this.peersBySessionId.get(sessionId);
             const isConn = peer && (peer.connectionState === "connected" || peer.iceConnectionState === "connected" || peer.iceConnectionState === "completed");
             if (!isConn) continue;
 
-            // Check remote audio playback
             if (this.remoteAudioPlayback.get(sessionId) === false) continue;
 
             const name = playerBySession.get(sessionId)?.name || state.name || "";
@@ -409,7 +574,7 @@ export class VoiceChatManager {
                 statusEl.textContent = "";
             } else if (this.audioPlaybackBlocked) {
                 statusEl.textContent = this.game?.t?.("voice-enable-sound") || "Enable sound";
-            } else if (this.isSpeaking) {
+            } else if (this.isEnabled) {
                 statusEl.textContent = this.game?.t?.("voice-speaking") || "Speaking";
             } else if (activeNames.length > 0) {
                 const label = this.game?.t?.("voice-listening-to") || "Hearing";
@@ -424,59 +589,11 @@ export class VoiceChatManager {
         const chips = document.querySelectorAll('.room-player-chip[data-session-id]');
         chips.forEach((chip) => {
             const sessionId = String(chip.dataset.sessionId || "");
-            
-            // Apply speaking indicator only if connection is established and remote audio is playing
-            const peer = this.peerConnections.get(sessionId);
+            const peer = this.peersBySessionId.get(sessionId);
             const isConn = peer && (peer.connectionState === "connected" || peer.iceConnectionState === "connected" || peer.iceConnectionState === "completed");
             const isSpeaking = isConn && (this.remoteSpeaking.get(sessionId)?.speaking || false) && (this.remoteAudioPlayback.get(sessionId) !== false);
             chip.classList.toggle("speaking", isSpeaking);
         });
-
-        const indicatorSource = !this.isAvailable()
-            ? "unavailable"
-            : this.audioPlaybackBlocked
-                ? "audio-playback-blocked"
-                : this.isSpeaking
-                    ? "local-track"
-                    : activeNames.length > 0
-                        ? "remote-track"
-                        : "idle";
-        debugLog("[VOICE] voice:speakingIndicator", {
-            source: indicatorSource,
-            localTrackReady: Boolean(this.localAudioTrack?.readyState === "live" && this.localAudioTrack?.enabled),
-            remoteSpeakingCount: activeNames.length,
-            audioPlaybackBlocked: this.audioPlaybackBlocked
-        });
-    }
-
-    broadcastSpeakingState(speaking) {
-        if (!this.game?.network?.room) return;
-        const players = Array.isArray(this.roomState?.players) ? this.roomState.players : [];
-        const selfPlayer = players.find((player) => String(player?.sessionId || "") === this.mySessionId);
-        this.game.network.sendVoiceSignal({
-            kind: "state",
-            speaking: Boolean(speaking),
-            name: selfPlayer?.name || this.game?.playerName || ""
-        });
-        this.updateSpeakerUi();
-    }
-
-    attachLocalTrackToPeers() {
-        if (!this.localAudioTrack) return;
-        for (const [sessionId, sender] of this.peerSenders.entries()) {
-            if (!sender) continue;
-            sender.replaceTrack(this.localAudioTrack).then(() => {
-                debugLog("[VOICE_DEBUG] peer:addTrack", {
-                    localSessionId: this.mySessionId,
-                    remoteSessionId: sessionId,
-                    trackKind: this.localAudioTrack.kind,
-                    trackId: this.localAudioTrack.id,
-                    readyState: this.localAudioTrack.readyState
-                });
-            }).catch((error) => {
-                console.warn("[Voice] replaceTrack failed for", sessionId, error);
-            });
-        }
     }
 
     async prefetchIceConfig() {
@@ -543,460 +660,5 @@ export class VoiceChatManager {
             iceTransportPolicy: config.iceTransportPolicy || "all",
             iceCandidatePoolSize: config.iceCandidatePoolSize || 2
         };
-    }
-
-    ensurePeer(remoteSessionId) {
-        const targetSessionId = String(remoteSessionId || "").trim();
-        if (!targetSessionId || targetSessionId === this.mySessionId) return null;
-
-        let peer = this.peerConnections.get(targetSessionId);
-        if (peer) return peer;
-
-        try {
-            peer = new RTCPeerConnection(this.getPeerConfig());
-        } catch (error) {
-            console.warn("[VOICE] Failed to create peer connection:", error);
-            this.peerConnections.delete(targetSessionId);
-            this.peerSenders.delete(targetSessionId);
-            return null;
-        }
-        debugLog("[VOICE_DEBUG] peer:create", {
-            localSessionId: this.mySessionId,
-            remoteSessionId: targetSessionId,
-            initiator: this.shouldInitiate(targetSessionId) ? "true" : "false"
-        });
-        debugLog("[VOICE] voice:peer:create", {
-            sessionId: targetSessionId,
-            hasLocalTrack: Boolean(this.localAudioTrack),
-            iceServers: Array.isArray(this.getPeerConfig()?.iceServers) ? this.getPeerConfig().iceServers.length : 0
-        });
-        this.peerConnections.set(targetSessionId, peer);
-
-        const transceiver = peer.addTransceiver("audio", { direction: "sendrecv" });
-        this.peerSenders.set(targetSessionId, transceiver.sender);
-        if (this.localAudioTrack) {
-            transceiver.sender.replaceTrack(this.localAudioTrack).catch((error) => {
-                console.warn("[Voice] initial replaceTrack failed:", error);
-            });
-        }
-        debugLog("[VOICE_DEBUG] peer:addTrack", {
-            localSessionId: this.mySessionId,
-            remoteSessionId: targetSessionId,
-            trackKind: transceiver.sender?.track?.kind || "audio",
-            trackId: transceiver.sender?.track?.id || "null",
-            readyState: transceiver.sender?.track?.readyState || "live"
-        });
-        debugLog("[VOICE] voice:track:add", {
-            sessionId: targetSessionId,
-            trackKind: transceiver.sender?.track?.kind || "audio",
-            trackEnabled: Boolean(transceiver.sender?.track?.enabled)
-        });
-
-        peer.onicecandidate = (event) => {
-            if (event.candidate) {
-                debugLog("[VOICE_DEBUG] ice:send", {
-                    fromSessionId: this.mySessionId,
-                    targetSessionId: targetSessionId
-                });
-                this.sendSignal(targetSessionId, "candidate", { candidate: event.candidate });
-            }
-        };
-
-        peer.ontrack = (event) => {
-            const stream = event.streams?.[0] || (event.track ? new MediaStream([event.track]) : null);
-            debugLog("[VOICE_DEBUG] voice:remote:ontrack", {
-                localSessionId: this.mySessionId,
-                fromSessionId: targetSessionId,
-                streamId: stream ? stream.id : "null",
-                trackId: event.track ? event.track.id : "null",
-                readyState: event.track ? event.track.readyState : "null"
-            });
-            debugLog(`[VOICE_DEBUG] remote:ontrack fromSessionId=${targetSessionId}`);
-            if (stream) {
-                this.attachRemoteStream(targetSessionId, stream);
-            }
-        };
-
-        peer.onconnectionstatechange = () => {
-            debugLog("[VOICE_DEBUG] peer:state", {
-                localSessionId: this.mySessionId,
-                remoteSessionId: targetSessionId,
-                iceConnectionState: peer.iceConnectionState,
-                connectionState: peer.connectionState,
-                signalingState: peer.signalingState
-            });
-            debugLog("[VOICE] voice:connectionState", {
-                sessionId: targetSessionId,
-                state: peer.connectionState
-            });
-            if (["failed", "closed", "disconnected"].includes(peer.connectionState)) {
-                const isStale = !this.getRemoteHumanSessions().includes(targetSessionId);
-                if (isStale || peer.connectionState === "failed") {
-                    this.closePeer(targetSessionId);
-                }
-            }
-        };
-
-        peer.oniceconnectionstatechange = () => {
-            debugLog("[VOICE_DEBUG] peer:state", {
-                localSessionId: this.mySessionId,
-                remoteSessionId: targetSessionId,
-                iceConnectionState: peer.iceConnectionState,
-                connectionState: peer.connectionState,
-                signalingState: peer.signalingState
-            });
-            debugLog("[VOICE] voice:iceState", {
-                sessionId: targetSessionId,
-                state: peer.iceConnectionState
-            });
-            if (["failed", "closed"].includes(peer.iceConnectionState)) {
-                this.closePeer(targetSessionId);
-            }
-        };
-
-        peer.onsignalingstatechange = () => {
-            debugLog("[VOICE_DEBUG] peer:state", {
-                localSessionId: this.mySessionId,
-                remoteSessionId: targetSessionId,
-                iceConnectionState: peer.iceConnectionState,
-                connectionState: peer.connectionState,
-                signalingState: peer.signalingState
-            });
-        };
-
-        if (this.localAudioTrack) {
-            debugLog("[VOICE_DEBUG] voice:offer:send:with-local-track true", { targetSessionId });
-            if (this.shouldInitiate(targetSessionId)) {
-                void this.startOffer(targetSessionId);
-            }
-        } else {
-            debugLog("[VOICE_DEBUG] voice:offer:send:with-local-track false", { targetSessionId });
-            debugLog("[VOICE_DEBUG] voice:offer:blocked:no-local-track", { targetSessionId });
-        }
-
-        return peer;
-    }
-
-    shouldInitiate(remoteSessionId) {
-        const mine = String(this.mySessionId || "");
-        const remote = String(remoteSessionId || "");
-        return !!mine && !!remote && mine < remote;
-    }
-
-    async startOffer(remoteSessionId, options = {}) {
-        const peer = this.peerConnections.get(remoteSessionId);
-        if (!peer || peer.signalingState !== "stable") return;
-
-        const allowReceiveOnlyOffer = ["renegotiate", "remote-track-ready", "local-track-ready"].includes(options.reason);
-        if (!this.localAudioTrack && !allowReceiveOnlyOffer) {
-            debugLog("[VOICE_DEBUG] voice:offer:blocked:no-local-track", { targetSessionId: remoteSessionId });
-            return;
-        }
-
-        try {
-            const offer = await peer.createOffer();
-            await peer.setLocalDescription(offer);
-            const reason = options.reason || "initial";
-            debugLog("[VOICE_DEBUG] offer:send", {
-                fromSessionId: this.mySessionId,
-                targetSessionId: remoteSessionId,
-                reason: reason
-            });
-            debugLog(`[VOICE_DEBUG] offer:send reason ${reason} targetSessionId=${remoteSessionId}`);
-            this.sendSignal(remoteSessionId, "offer", {
-                description: peer.localDescription,
-                reason: reason
-            });
-        } catch (error) {
-            console.warn("[Voice] offer failed:", error);
-        }
-    }
-
-    async handleSignal(payload = {}) {
-        if (!this.isAvailable()) return;
-        const fromSessionId = String(payload.fromSessionId || "").trim();
-        const targetSessionId = String(payload.targetSessionId || "").trim();
-        if (!fromSessionId || fromSessionId === this.mySessionId) return;
-
-        if (payload.kind === "state") {
-            if (payload.speaking) {
-                this.remoteSpeaking.set(fromSessionId, {
-                    speaking: true,
-                    name: String(payload.name || "").trim()
-                });
-            } else {
-                this.remoteSpeaking.delete(fromSessionId);
-            }
-            this.updateSpeakerUi();
-            return;
-        }
-
-        if (payload.kind === "renegotiate") {
-            if (targetSessionId !== this.mySessionId) {
-                debugLog("[VOICE_DEBUG] renegotiate:receive", {
-                    fromSessionId,
-                    targetSessionId,
-                    accepted: "ignored"
-                });
-                return;
-            }
-
-            if (this.shouldInitiate(fromSessionId)) {
-                debugLog("[VOICE_DEBUG] renegotiate:receive", {
-                    fromSessionId,
-                    targetSessionId,
-                    accepted: "accepted",
-                    reason: payload.reason || "renegotiate"
-                });
-                debugLog(`[VOICE_DEBUG] renegotiate:receive accepted reason ${payload.reason || "renegotiate"} fromSessionId=${fromSessionId}`);
-                
-                if (payload.reason === "local-track-ready") {
-                    debugLog("[VOICE_DEBUG] renegotiate: recreate peer connection to match remote", { fromSessionId });
-                    this.closePeer(fromSessionId);
-                }
-                
-                this.ensurePeer(fromSessionId);
-                const offerReason = payload.reason === "local-track-ready" ? "remote-track-ready" : (payload.reason || "renegotiate");
-                void this.startOffer(fromSessionId, { reason: offerReason });
-            } else {
-                debugLog("[VOICE_DEBUG] renegotiate:receive", {
-                    fromSessionId,
-                    targetSessionId,
-                    accepted: "ignored",
-                    reason: "not_initiator"
-                });
-            }
-            return;
-        }
-
-        if (["offer", "answer", "candidate"].includes(payload.kind)) {
-            if (targetSessionId !== this.mySessionId) {
-                debugLog(`[VOICE_DEBUG] ${payload.kind}:receive`, {
-                    fromSessionId,
-                    targetSessionId,
-                    accepted: "ignored"
-                });
-                return;
-            }
-        }
-
-        if (payload.kind === "offer" && description) {
-            if (payload.reason === "local-track-ready") {
-                debugLog("[VOICE_DEBUG] offer: recreate peer connection to match remote", { fromSessionId });
-                this.closePeer(fromSessionId);
-            }
-        }
-
-        const peer = this.ensurePeer(fromSessionId);
-        if (!peer) return;
-
-        const description = payload.description || payload.sdp || null;
-        const candidate = payload.candidate || null;
-
-        try {
-            if (payload.kind === "offer" && description) {
-                debugLog("[VOICE_DEBUG] offer:receive", {
-                    fromSessionId,
-                    targetSessionId,
-                    accepted: "accepted"
-                });
-                await peer.setRemoteDescription(new RTCSessionDescription(description));
-                await this.flushQueuedCandidates(peer);
-                if (this.localAudioTrack) {
-                    const sender = this.peerSenders.get(fromSessionId);
-                    if (sender && sender.track !== this.localAudioTrack) {
-                        await sender.replaceTrack(this.localAudioTrack);
-                        debugLog("[VOICE_DEBUG] peer:addTrack", {
-                            localSessionId: this.mySessionId,
-                            remoteSessionId: fromSessionId,
-                            trackKind: this.localAudioTrack.kind,
-                            trackId: this.localAudioTrack.id,
-                            readyState: this.localAudioTrack.readyState
-                        });
-                    }
-                }
-                const answer = await peer.createAnswer();
-                await peer.setLocalDescription(answer);
-                debugLog("[VOICE_DEBUG] answer:send", {
-                    fromSessionId: this.mySessionId,
-                    targetSessionId: fromSessionId
-                });
-                this.sendSignal(fromSessionId, "answer", { description: peer.localDescription });
-                return;
-            }
-
-            if (payload.kind === "answer" && description) {
-                debugLog("[VOICE_DEBUG] answer:receive", {
-                    fromSessionId,
-                    targetSessionId,
-                    signalingState: peer.signalingState
-                });
-                debugLog(`[VOICE_DEBUG] answer:receive fromSessionId=${fromSessionId} targetSessionId=${targetSessionId}`);
-                if (peer.signalingState !== "have-local-offer") {
-                    debugLog("[VOICE_DEBUG] answer:ignored", {
-                        reason: "unexpected_signaling_state",
-                        signalingState: peer.signalingState,
-                        fromSessionId,
-                        targetSessionId
-                    });
-                    return;
-                }
-                await peer.setRemoteDescription(new RTCSessionDescription(description));
-                debugLog("[VOICE_DEBUG] answer:setRemoteDescription:success", {
-                    fromSessionId,
-                    targetSessionId
-                });
-                await this.flushQueuedCandidates(peer);
-                debugLog("[VOICE_DEBUG] peer:state", {
-                    localSessionId: this.mySessionId,
-                    remoteSessionId: fromSessionId,
-                    iceConnectionState: peer.iceConnectionState,
-                    connectionState: peer.connectionState,
-                    signalingState: peer.signalingState
-                });
-                return;
-            }
-
-            if (payload.kind === "candidate" && candidate) {
-                debugLog("[VOICE_DEBUG] ice:receive", {
-                    fromSessionId,
-                    targetSessionId,
-                    accepted: "accepted"
-                });
-                if (peer.remoteDescription) {
-                    await peer.addIceCandidate(new RTCIceCandidate(candidate));
-                } else {
-                    peer._queuedCandidates = peer._queuedCandidates || [];
-                    peer._queuedCandidates.push(candidate);
-                }
-                return;
-            }
-
-        } catch (error) {
-            console.warn("[Voice] signal handling failed:", error);
-        }
-    }
-
-    async flushQueuedCandidates(peer) {
-        if (!peer?.remoteDescription || !Array.isArray(peer._queuedCandidates) || !peer._queuedCandidates.length) return;
-        const queued = peer._queuedCandidates.splice(0);
-        for (const item of queued) {
-            try {
-                await peer.addIceCandidate(new RTCIceCandidate(item));
-            } catch (error) {
-                console.warn("[Voice] queued candidate failed:", error);
-            }
-        }
-    }
-
-    sendSignal(targetSessionId, kind, data = {}) {
-        if (!this.game?.network?.room) return;
-        this.game.network.sendVoiceSignal({
-            kind,
-            targetSessionId,
-            ...data
-        });
-    }
-
-    attachRemoteStream(sessionId, stream) {
-        let audio = this.remoteAudioElements.get(sessionId);
-        if (!audio) {
-            audio = document.createElement("audio");
-            audio.id = "audio-element-" + sessionId;
-            audio.autoplay = true;
-            audio.playsInline = true;
-            audio.preload = "auto";
-            audio.className = "voice-remote-audio";
-            audio.dataset.sessionId = sessionId;
-            audio.style.display = "none";
-            audio.muted = false;
-            audio.volume = 1;
-            audio.addEventListener("playing", () => {
-                debugLog("[VOICE_DEBUG] voice:audio:playing", {
-                    localSessionId: this.mySessionId,
-                    fromSessionId: sessionId
-                });
-                this.remoteAudioPlayback.set(sessionId, true);
-                this.audioPlaybackBlocked = false;
-                this.updateAudioUnlockUi();
-                this.updateSpeakerUi();
-            });
-            audio.addEventListener("pause", () => {
-                this.remoteAudioPlayback.set(sessionId, false);
-                this.updateSpeakerUi();
-            });
-            audio.addEventListener("ended", () => {
-                this.remoteAudioPlayback.set(sessionId, false);
-                this.updateSpeakerUi();
-            });
-            document.body.appendChild(audio);
-            this.remoteAudioElements.set(sessionId, audio);
-        }
-        audio.srcObject = stream;
-        debugLog("[VOICE_DEBUG] audio:attach", {
-            localSessionId: this.mySessionId,
-            fromSessionId: sessionId,
-            audioElementId: audio.id
-        });
-        debugLog("[VOICE] voice:audioElement:attached", {
-            sessionId,
-            trackCount: Array.isArray(stream?.getAudioTracks?.()) ? stream.getAudioTracks().length : 0
-        });
-        debugLog("[VOICE_DEBUG] audio:play:start", { sessionId });
-        audio.play().then(() => {
-            debugLog("[VOICE_DEBUG] voice:audio:playing", {
-                localSessionId: this.mySessionId,
-                fromSessionId: sessionId
-            });
-            debugLog("[VOICE_DEBUG] audio:play:success", {
-                localSessionId: this.mySessionId,
-                fromSessionId: sessionId
-            });
-            this.remoteAudioPlayback.set(sessionId, true);
-            this.audioPlaybackBlocked = false;
-            this.updateAudioUnlockUi();
-            this.updateSpeakerUi();
-        }).catch((error) => {
-            this.remoteAudioPlayback.set(sessionId, false);
-            this.audioPlaybackBlocked = true;
-            if (error?.name === "NotAllowedError" || error?.name === "SecurityError") {
-                debugLog("[VOICE_DEBUG] autoplay:blocked", { sessionId, name: error.name });
-            }
-            debugLog("[VOICE_DEBUG] audio:play:error", {
-                localSessionId: this.mySessionId,
-                fromSessionId: sessionId,
-                errorName: String(error?.name || ""),
-                errorMessage: String(error?.message || error || "")
-            });
-            debugLog("[VOICE] voice:audioElement:play-blocked", {
-                sessionId,
-                name: String(error?.name || ""),
-                message: String(error?.message || error || "")
-            });
-            this.updateAudioUnlockUi();
-            this.updateSpeakerUi();
-        });
-    }
-
-    closePeer(sessionId) {
-        const peer = this.peerConnections.get(sessionId);
-        if (peer) {
-            try { peer.close(); } catch {}
-        }
-        this.peerConnections.delete(sessionId);
-        this.peerSenders.delete(sessionId);
-        const audio = this.remoteAudioElements.get(sessionId);
-        if (audio) {
-            try { audio.srcObject = null; } catch {}
-            audio.remove();
-        }
-        this.remoteAudioElements.delete(sessionId);
-        this.remoteSpeaking.delete(sessionId);
-        this.remoteAudioPlayback.delete(sessionId);
-        if (!this.remoteAudioElements.size) {
-            this.audioPlaybackBlocked = false;
-        }
-        this.updateAudioUnlockUi();
-        this.updateSpeakerUi();
     }
 }

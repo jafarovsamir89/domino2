@@ -4697,47 +4697,16 @@ class DominoGame {
         this.voiceUnlockBtn = document.getElementById('voice-unlock-btn');
         this.voiceStatusEl = document.getElementById('voice-status');
         if (!this.voiceBtn || !this.voiceStatusEl) return;
-        this._voicePointerActive = false;
 
-        const pressStart = async (event) => {
+        this.voiceBtn.addEventListener('click', async (event) => {
             if (!this.network?.isMultiplayer) return;
             debugLog("[VOICE_DEBUG] mic:click");
-            if (event) {
-                event.preventDefault();
-                event.stopPropagation();
-            }
-            this._voicePointerActive = true;
-            this.voiceBtn.setPointerCapture?.(event?.pointerId);
-            const started = await this.voice.startSpeaking();
-            if (!started || !this._voicePointerActive) {
-                this.voice.stopSpeaking();
-                return;
-            }
-            this.syncVoiceUi();
-        };
-
-        const pressEnd = (event) => {
-            if (event) {
-                event.preventDefault();
-                event.stopPropagation();
-            }
-            this._voicePointerActive = false;
-            this.voice.stopSpeaking();
-            this.syncVoiceUi();
-        };
-
-        this.voiceBtn.addEventListener('pointerdown', (event) => {
-            void pressStart(event);
-        });
-        this.voiceBtn.addEventListener('pointerup', pressEnd);
-        this.voiceBtn.addEventListener('pointercancel', pressEnd);
-        this.voiceBtn.addEventListener('pointerleave', (event) => {
-            if (event.buttons === 0) pressEnd(event);
-        });
-        this.voiceBtn.addEventListener('lostpointercapture', pressEnd);
-        this.voiceBtn.addEventListener('contextmenu', (event) => {
             event.preventDefault();
+            event.stopPropagation();
+            await this.voice.toggleVoice();
+            this.syncVoiceUi();
         });
+
         if (this.voiceUnlockBtn) {
             this.voiceUnlockBtn.addEventListener('click', async (event) => {
                 debugLog("[VOICE_DEBUG] enableSound:clicked");

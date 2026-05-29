@@ -1,4 +1,4 @@
-function buildRoomStatePlayers({ playerOrder = [], players, identityBySessionId } = {}) {
+function buildRoomStatePlayers({ playerOrder = [], players, identityBySessionId, voiceEnabledBySessionId } = {}) {
     return playerOrder.map((sessionId, index) => {
         const player = players?.get(sessionId);
         const identity = identityBySessionId?.get(sessionId) || {};
@@ -12,7 +12,8 @@ function buildRoomStatePlayers({ playerOrder = [], players, identityBySessionId 
             isConnected: player ? player.isConnected : false,
             isBot: player ? player.isBot : false,
             seatIndex: Number.isInteger(Number(player?.seatIndex)) ? Number(player.seatIndex) : -1,
-            seatNumber: Number.isInteger(Number(player?.seatIndex)) && Number(player.seatIndex) >= 0 ? Number(player.seatIndex) + 1 : 0
+            seatNumber: Number.isInteger(Number(player?.seatIndex)) && Number(player.seatIndex) >= 0 ? Number(player.seatIndex) + 1 : 0,
+            voiceEnabled: Boolean(voiceEnabledBySessionId?.has(sessionId))
         };
     });
 }

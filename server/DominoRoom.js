@@ -90,6 +90,7 @@ class DominoRoom extends Room {
         void rememberRoom(this.roomCode, this.roomId);
 
         this.setState(new GameState());
+        this.voiceEnabledBySessionId = new Set();
         this.state.isTeamMode = options.isTeamMode === true;
         this.totalPlayers = normalizePlayerCount(options.playerCount, this.state.isTeamMode);
         this.aiCount = normalizeAiCount(options.aiCount, this.totalPlayers);
@@ -551,6 +552,16 @@ class DominoRoom extends Room {
     }
 
     async onLeave(client, consented) {
+        if (this.voiceEnabledBySessionId) {
+            this.voiceEnabledBySessionId.delete(client.sessionId);
+        }
+        this.broadcast("voice_signal", {
+            kind: "state",
+            fromSessionId: client.sessionId,
+            enabled: false,
+            ts: Date.now()
+        });
+
         const roomId = getSafeRoomId(this);
         const roomCode = String(this.roomCode || "").trim();
         debugLog("[ROOM_DEBUG] leave:start", {
@@ -1195,7 +1206,8 @@ class DominoRoom extends Room {
         const players = buildRoomStatePlayers({
             playerOrder: this.state.playerOrder,
             players: this.state.players,
-            identityBySessionId: this.identityBySessionId
+            identityBySessionId: this.identityBySessionId,
+            voiceEnabledBySessionId: this.voiceEnabledBySessionId
         });
         const payload = buildRoomStatePayload({
             room: this,
@@ -1607,12 +1619,23 @@ class DominoRoom extends Room {
         if (!client || !this.state?.players?.has(client.sessionId)) return;
         const kind = String(message.kind || "").trim();
         if (!["offer", "answer", "candidate", "state", "renegotiate"].includes(kind)) return;
+        
+        if (kind === "state") {
+            const enabled = Boolean(message.enabled);
+            if (enabled) {
+                this.voiceEnabledBySessionId.add(client.sessionId);
+            } else {
+                this.voiceEnabledBySessionId.delete(client.sessionId);
+            }
+        }
+
         const targetSessionId = String(message.targetSessionId || "").trim();
         this.broadcast("voice_signal", {
             kind,
             fromSessionId: client.sessionId,
             targetSessionId,
             speaking: Boolean(message.speaking),
+            enabled: typeof message.enabled === "boolean" ? message.enabled : undefined,
             description: message.description || message.sdp || null,
             candidate: message.candidate || null,
             ts: Date.now()

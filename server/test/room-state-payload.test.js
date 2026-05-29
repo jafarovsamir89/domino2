@@ -23,9 +23,9 @@ test("buildRoomStatePlayers builds rows in player order with current fallbacks",
     });
 
     assert.deepEqual(rows, [
-        { sessionId: "s1", index: 0, name: "Alice", userId: "u1", playerId: "p1", avatarUrl: "a1", isConnected: true, isBot: false, seatIndex: 0, seatNumber: 1 },
-        { sessionId: "s2", index: 1, name: "Bob", userId: "u2", playerId: "u2", avatarUrl: "a2", isConnected: false, isBot: true, seatIndex: -1, seatNumber: 0 },
-        { sessionId: "s3", index: 2, name: "Carol", userId: "u3", playerId: "p3", avatarUrl: "a3", isConnected: true, isBot: false, seatIndex: 2, seatNumber: 3 }
+        { sessionId: "s1", index: 0, name: "Alice", userId: "u1", playerId: "p1", avatarUrl: "a1", isConnected: true, isBot: false, seatIndex: 0, seatNumber: 1, voiceEnabled: false },
+        { sessionId: "s2", index: 1, name: "Bob", userId: "u2", playerId: "u2", avatarUrl: "a2", isConnected: false, isBot: true, seatIndex: -1, seatNumber: 0, voiceEnabled: false },
+        { sessionId: "s3", index: 2, name: "Carol", userId: "u3", playerId: "p3", avatarUrl: "a3", isConnected: true, isBot: false, seatIndex: 2, seatNumber: 3, voiceEnabled: false }
     ]);
     assert.deepEqual(players, playersClone);
     assert.deepEqual(identities, identitiesClone);
@@ -48,7 +48,8 @@ test("buildRoomStatePlayers keeps fallback values for missing players", () => {
         isConnected: false,
         isBot: false,
         seatIndex: -1,
-        seatNumber: 0
+        seatNumber: 0,
+        voiceEnabled: false
     }]);
 });
 
