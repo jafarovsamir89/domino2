@@ -572,6 +572,10 @@ input, button { font: inherit; }
     line-height: 1.45;
 }
 
+.page-description {
+    margin-bottom: 12px;
+}
+
 .modal-close-btn {
     width: auto;
     white-space: nowrap;
