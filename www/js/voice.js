@@ -572,13 +572,13 @@ export class VoiceChatManager {
         });
         this.peerConnections.set(targetSessionId, peer);
 
-        let transceiver;
-        if (this.localAudioTrack) {
-            transceiver = peer.addTransceiver(this.localAudioTrack, { direction: "sendrecv" });
-        } else {
-            transceiver = peer.addTransceiver("audio", { direction: "sendrecv" });
-        }
+        const transceiver = peer.addTransceiver("audio", { direction: "sendrecv" });
         this.peerSenders.set(targetSessionId, transceiver.sender);
+        if (this.localAudioTrack) {
+            transceiver.sender.replaceTrack(this.localAudioTrack).catch((error) => {
+                console.warn("[Voice] initial replaceTrack failed:", error);
+            });
+        }
         debugLog("[VOICE_DEBUG] peer:addTrack", {
             localSessionId: this.mySessionId,
             remoteSessionId: targetSessionId,
