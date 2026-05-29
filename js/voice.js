@@ -3,11 +3,25 @@ const DEFAULT_ICE_SERVERS = [
     { urls: ["stun:global.stun.twilio.com:3478"] }
 ];
 
+function isDebugLoggingEnabled() {
+    if (typeof window === "undefined") return false;
+    try {
+        return window.__DOMINO_DEBUG_LOGS === true || window.localStorage?.getItem("dominoDebugLogs") === "true";
+    } catch {
+        return false;
+    }
+}
+
+function debugLog(...args) {
+    if (isDebugLoggingEnabled()) console.log(...args);
+}
+
 function supportsVoiceChat() {
     return typeof RTCPeerConnection !== "undefined"
         && typeof RTCIceCandidate !== "undefined"
         && typeof RTCSessionDescription !== "undefined"
         && typeof navigator !== "undefined"
+        && (typeof window === "undefined" || window.isSecureContext || ["localhost", "127.0.0.1"].includes(window.location?.hostname))
         && Boolean(navigator.mediaDevices?.getUserMedia);
 }
 
@@ -28,6 +42,8 @@ export class VoiceChatManager {
         this.iceConfig = null;
         this.iceConfigPromise = null;
         this.iceConfigError = "";
+        this.audioPlaybackBlocked = false;
+        this.remoteAudioPlayback = new Map();
     }
 
     isAvailable() {
@@ -61,6 +77,11 @@ export class VoiceChatManager {
     syncRoomState(roomState = null) {
         try {
             this.roomState = roomState;
+            debugLog("[VOICE] voice:init", {
+                hasRoom: Boolean(this.game?.network?.room),
+                remoteHumans: this.getRemoteHumanSessions().length,
+                audioPlaybackBlocked: this.audioPlaybackBlocked
+            });
             this.syncVisibility();
             void this.prefetchIceConfig();
             if (!this.isAvailable()) {
@@ -103,9 +124,12 @@ export class VoiceChatManager {
             this.setStatus("");
         } else if (!supportsVoiceChat()) {
             this.setStatus(this.game?.t?.("voice-unavailable") || "Voice unavailable");
+        } else if (this.audioPlaybackBlocked) {
+            this.setStatus(this.game?.t?.("voice-enable-sound") || "Enable sound");
         } else if (!this.statusText) {
             this.setStatus(this.game?.t?.("voice-ready") || "Voice ready");
         }
+        this.updateAudioUnlockUi();
     }
 
     setStatus(text = "") {
@@ -124,6 +148,10 @@ export class VoiceChatManager {
         if (this.destroyed || !this.isAvailable()) return false;
         if (!this.localStream) {
             try {
+                debugLog("[VOICE] voice:getUserMedia:start", {
+                    secureContext: Boolean(typeof window === "undefined" ? true : window.isSecureContext),
+                    hasNavigator: typeof navigator !== "undefined"
+                });
                 this.localStream = await navigator.mediaDevices.getUserMedia({
                     audio: {
                         echoCancellation: true,
@@ -136,9 +164,19 @@ export class VoiceChatManager {
                 if (this.localAudioTrack) {
                     this.localAudioTrack.enabled = false;
                 }
+                debugLog("[VOICE] voice:getUserMedia:success", {
+                    trackCount: this.localStream?.getAudioTracks?.().length || 0,
+                    trackReadyState: this.localAudioTrack?.readyState || "",
+                    trackEnabled: Boolean(this.localAudioTrack?.enabled)
+                });
                 this.attachLocalTrackToPeers();
+                await this.unlockRemoteAudio();
                 this.setStatus(this.game?.t?.("voice-ready") || "Voice ready");
             } catch (error) {
+                debugLog("[VOICE] voice:getUserMedia:error", {
+                    name: String(error?.name || ""),
+                    message: String(error?.message || error || "")
+                });
                 console.warn("[Voice] Microphone access failed:", error);
                 this.setStatus(this.game?.t?.("voice-denied") || "Microphone access denied");
                 this.game?.renderer?.showMessage?.(this.game?.t?.("voice-denied") || "Microphone access denied", 2200);
@@ -170,11 +208,14 @@ export class VoiceChatManager {
         this.isSpeaking = false;
         this.isEnabled = false;
         this.statusText = "";
+        this.audioPlaybackBlocked = false;
         this.updateLocalSpeakingUi(false);
         for (const sessionId of Array.from(this.peerConnections.keys())) {
             this.closePeer(sessionId);
         }
         this.clearRemoteSpeaking();
+        this.remoteAudioPlayback.clear();
+        this.updateAudioUnlockUi();
     }
 
     destroy() {
@@ -204,12 +245,57 @@ export class VoiceChatManager {
         this.updateSpeakerUi();
     }
 
+    updateAudioUnlockUi() {
+        const button = document.getElementById("voice-unlock-btn");
+        if (!button) return;
+        const shouldShow = this.audioPlaybackBlocked && this.isAvailable();
+        button.classList.toggle("is-hidden", !shouldShow);
+        const title = this.game?.t?.("voice-enable-sound") || "Enable sound";
+        button.textContent = title;
+        button.title = title;
+        button.setAttribute("aria-label", title);
+    }
+
+    async unlockRemoteAudio() {
+        const audioEntries = Array.from(this.remoteAudioElements.entries());
+        if (!audioEntries.length) {
+            this.audioPlaybackBlocked = false;
+            this.updateAudioUnlockUi();
+            return true;
+        }
+
+        let unlocked = false;
+        for (const [sessionId, audio] of audioEntries) {
+            if (!audio) continue;
+            try {
+                audio.muted = false;
+                audio.volume = 1;
+                await audio.play();
+                this.remoteAudioPlayback.set(sessionId, true);
+                unlocked = true;
+            } catch (error) {
+                this.remoteAudioPlayback.set(sessionId, false);
+                debugLog("[VOICE] voice:audioElement:play-blocked", {
+                    sessionId,
+                    name: String(error?.name || ""),
+                    message: String(error?.message || error || "")
+                });
+            }
+        }
+
+        this.audioPlaybackBlocked = !unlocked && audioEntries.length > 0;
+        this.updateAudioUnlockUi();
+        this.updateSpeakerUi();
+        return unlocked;
+    }
+
     updateSpeakerUi() {
         const activeNames = [];
         const players = Array.isArray(this.roomState?.players) ? this.roomState.players : [];
         const playerBySession = new Map(players.map((player) => [String(player.sessionId || ""), player]));
         for (const [sessionId, state] of this.remoteSpeaking.entries()) {
             if (!state?.speaking) continue;
+            if (this.remoteAudioPlayback.get(sessionId) === false) continue;
             const name = playerBySession.get(sessionId)?.name || state.name || "";
             if (name) activeNames.push(name);
         }
@@ -224,6 +310,8 @@ export class VoiceChatManager {
         if (statusEl) {
             if (!this.isAvailable()) {
                 statusEl.textContent = "";
+            } else if (this.audioPlaybackBlocked) {
+                statusEl.textContent = this.game?.t?.("voice-enable-sound") || "Enable sound";
             } else if (this.isSpeaking) {
                 statusEl.textContent = this.game?.t?.("voice-speaking") || "Speaking";
             } else if (activeNames.length > 0) {
@@ -240,6 +328,22 @@ export class VoiceChatManager {
         chips.forEach((chip) => {
             const sessionId = String(chip.dataset.sessionId || "");
             chip.classList.toggle("speaking", this.remoteSpeaking.get(sessionId)?.speaking || false);
+        });
+
+        const indicatorSource = !this.isAvailable()
+            ? "unavailable"
+            : this.audioPlaybackBlocked
+                ? "audio-playback-blocked"
+                : this.isSpeaking
+                    ? "local-track"
+                    : activeNames.length > 0
+                        ? "remote-track"
+                        : "idle";
+        debugLog("[VOICE] voice:speakingIndicator", {
+            source: indicatorSource,
+            localTrackReady: Boolean(this.localAudioTrack?.readyState === "live" && this.localAudioTrack?.enabled),
+            remoteSpeakingCount: activeNames.length,
+            audioPlaybackBlocked: this.audioPlaybackBlocked
         });
     }
 
@@ -346,10 +450,20 @@ export class VoiceChatManager {
             this.peerSenders.delete(targetSessionId);
             return null;
         }
+        debugLog("[VOICE] voice:peer:create", {
+            sessionId: targetSessionId,
+            hasLocalTrack: Boolean(this.localAudioTrack),
+            iceServers: Array.isArray(this.getPeerConfig()?.iceServers) ? this.getPeerConfig().iceServers.length : 0
+        });
         this.peerConnections.set(targetSessionId, peer);
 
         const transceiver = peer.addTransceiver("audio", { direction: "sendrecv" });
         this.peerSenders.set(targetSessionId, transceiver.sender);
+        debugLog("[VOICE] voice:track:add", {
+            sessionId: targetSessionId,
+            trackKind: transceiver.sender?.track?.kind || "audio",
+            trackEnabled: Boolean(transceiver.sender?.track?.enabled)
+        });
 
         peer.onicecandidate = (event) => {
             if (event.candidate) {
@@ -359,10 +473,19 @@ export class VoiceChatManager {
 
         peer.ontrack = (event) => {
             const stream = event.streams?.[0] || null;
+            debugLog("[VOICE] voice:remoteTrack", {
+                sessionId: targetSessionId,
+                trackCount: Array.isArray(event.streams) ? event.streams.length : 0,
+                hasStream: Boolean(stream)
+            });
             if (stream) this.attachRemoteStream(targetSessionId, stream);
         };
 
         peer.onconnectionstatechange = () => {
+            debugLog("[VOICE] voice:connectionState", {
+                sessionId: targetSessionId,
+                state: peer.connectionState
+            });
             if (["failed", "closed", "disconnected"].includes(peer.connectionState)) {
                 const isStale = !this.getRemoteHumanSessions().includes(targetSessionId);
                 if (isStale || peer.connectionState === "failed") {
@@ -372,6 +495,10 @@ export class VoiceChatManager {
         };
 
         peer.oniceconnectionstatechange = () => {
+            debugLog("[VOICE] voice:iceState", {
+                sessionId: targetSessionId,
+                state: peer.iceConnectionState
+            });
             if (["failed", "closed"].includes(peer.iceConnectionState)) {
                 this.closePeer(targetSessionId);
             }
@@ -502,11 +629,46 @@ export class VoiceChatManager {
             audio.className = "voice-remote-audio";
             audio.dataset.sessionId = sessionId;
             audio.style.display = "none";
+            audio.muted = false;
+            audio.volume = 1;
+            audio.addEventListener("playing", () => {
+                this.remoteAudioPlayback.set(sessionId, true);
+                this.audioPlaybackBlocked = false;
+                this.updateAudioUnlockUi();
+                this.updateSpeakerUi();
+            });
+            audio.addEventListener("pause", () => {
+                this.remoteAudioPlayback.set(sessionId, false);
+                this.updateSpeakerUi();
+            });
+            audio.addEventListener("ended", () => {
+                this.remoteAudioPlayback.set(sessionId, false);
+                this.updateSpeakerUi();
+            });
             document.body.appendChild(audio);
             this.remoteAudioElements.set(sessionId, audio);
         }
         audio.srcObject = stream;
-        audio.play().catch(() => {});
+        debugLog("[VOICE] voice:audioElement:attached", {
+            sessionId,
+            trackCount: Array.isArray(stream?.getAudioTracks?.()) ? stream.getAudioTracks().length : 0
+        });
+        audio.play().then(() => {
+            this.remoteAudioPlayback.set(sessionId, true);
+            this.audioPlaybackBlocked = false;
+            this.updateAudioUnlockUi();
+            this.updateSpeakerUi();
+        }).catch((error) => {
+            this.remoteAudioPlayback.set(sessionId, false);
+            this.audioPlaybackBlocked = true;
+            debugLog("[VOICE] voice:audioElement:play-blocked", {
+                sessionId,
+                name: String(error?.name || ""),
+                message: String(error?.message || error || "")
+            });
+            this.updateAudioUnlockUi();
+            this.updateSpeakerUi();
+        });
     }
 
     closePeer(sessionId) {
@@ -523,6 +685,11 @@ export class VoiceChatManager {
         }
         this.remoteAudioElements.delete(sessionId);
         this.remoteSpeaking.delete(sessionId);
+        this.remoteAudioPlayback.delete(sessionId);
+        if (!this.remoteAudioElements.size) {
+            this.audioPlaybackBlocked = false;
+        }
+        this.updateAudioUnlockUi();
         this.updateSpeakerUi();
     }
 }

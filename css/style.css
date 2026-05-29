@@ -2629,8 +2629,8 @@ body.seat-selection-active #game-screen {
 }
 
 .voice-slot {
-    width: 66px;
-    min-width: 66px;
+    width: 78px;
+    min-width: 78px;
     flex: 0 0 auto;
     display: grid;
     place-items: center;
@@ -2642,6 +2642,21 @@ body.seat-selection-active #game-screen {
 .voice-slot.is-hidden {
     opacity: 0;
     pointer-events: none;
+}
+
+.voice-unlock-btn {
+    width: 100%;
+    min-width: 0;
+    padding: 5px 6px;
+    font-size: 0.55rem;
+    line-height: 1.08;
+    white-space: normal;
+    text-align: center;
+    border-radius: 10px;
+}
+
+.voice-unlock-btn.is-hidden {
+    display: none;
 }
 
 .voice-fab {

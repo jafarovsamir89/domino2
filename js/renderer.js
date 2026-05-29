@@ -486,8 +486,12 @@ export class Renderer {
         this.roundInfoEl.textContent = `${rText}${mr}/3 В· ${sText}${deal}`;
         if (!this.stakeInfoEl) this.stakeInfoEl = document.getElementById('stake-info');
         if (this.stakeInfoEl) {
-            this.stakeInfoEl.textContent = stakeLabel ? `${this.app.t('label-stake-short')}: ${stakeLabel}` : '';
+            const hud = this.app?.getTopRightHudState?.() || null;
+            const labelKey = hud?.labelKey || 'label-stake-short';
+            this.stakeInfoEl.textContent = stakeLabel ? `${this.app.t(labelKey)}: ${stakeLabel}` : '';
             this.stakeInfoEl.classList.toggle('is-hidden', !stakeLabel);
+            this.stakeInfoEl.dataset.source = hud?.sourceField || '';
+            this.stakeInfoEl.dataset.value = stakeLabel || '';
         }
         this.boneyardInfoEl.textContent = `${this.app.t('label-boneyard-short')}: ${sum}`;
         this.renderBoneyard(by);

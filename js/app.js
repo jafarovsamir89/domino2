@@ -2778,6 +2778,7 @@ class DominoGame {
                 <button class="reaction-fab voice-fab" id="voice-btn" type="button" aria-label="Voice" title="Voice">
                     ${this.buildVoiceButtonMarkup(22)}
                 </button>
+                <button class="voice-unlock-btn is-hidden" id="voice-unlock-btn" type="button" data-i18n="voice-enable-sound">Enable sound</button>
                 <div class="voice-status" id="voice-status"></div>
             `;
             const reactionSlot = document.querySelector('.reaction-slot');
@@ -3087,22 +3088,36 @@ class DominoGame {
         return amounts[stakeKey] || 0;
     }
 
-    getCurrentStakeLabel() {
+    getTopRightHudState() {
+        const onlineActive = this.network.isMultiplayer && (Boolean(this.currentRoomState?.gameActive) || this.gameActive);
         const stakeKey = this.network.isMultiplayer ? this.onlineStakeKey : (this.gameActive ? this.currentRoundStakeKey : this.soloStakeKey);
         const resolvedStakeKey = !stakeKey
             ? (this.network.isMultiplayer ? 'stake_200' : 'stake_50')
             : stakeKey;
-
         const stakeAmount = this.getStakeAmountByKey(resolvedStakeKey);
-        const participants = this.network.isMultiplayer
-            ? Math.max(2, this.onlinePlayerCount || 2)
-            : 2;
-        const bankAmount = this.network.isMultiplayer
-            ? (this.gameActive
-                ? (this.onlineRoundBankAmount > 0 ? this.onlineRoundBankAmount : stakeAmount * participants)
-                : 0)
-            : (this.gameActive && this.currentRoundBankAmount > 0 ? this.currentRoundBankAmount : stakeAmount * participants);
-        return bankAmount > 0 ? this.format('gift-coins', { value: Number(bankAmount).toLocaleString('en-US') }) : '';
+
+        if (onlineActive) {
+            const bankAmount = Math.max(0, Number(this.currentRoomState?.bankAmount || 0));
+            return {
+                sourceField: 'room_state.bankAmount',
+                labelKey: 'label-bank-short',
+                value: bankAmount
+            };
+        }
+
+        const bankAmount = this.gameActive
+            ? (this.currentRoundBankAmount > 0 ? this.currentRoundBankAmount : stakeAmount * 2)
+            : 0;
+        return {
+            sourceField: 'currentRoundBankAmount',
+            labelKey: 'label-stake-short',
+            value: Math.max(0, Number(bankAmount || 0))
+        };
+    }
+
+    getCurrentStakeLabel() {
+        const hud = this.getTopRightHudState();
+        return hud.value > 0 ? this.format(hud.labelKey === 'label-bank-short' ? 'gift-coins' : 'gift-coins', { value: Number(hud.value).toLocaleString('en-US') }) : '';
     }
 
     resetOnlineCoinSummary() {
@@ -4194,6 +4209,7 @@ class DominoGame {
     onRoomStateUpdate(roomState) {
         if (!roomState) return;
         this.currentRoomState = roomState;
+        const topRightHud = this.getTopRightHudState();
         debugLog("[CLIENT_DEBUG] onRoomStateUpdate", {
             roomId: roomState?.roomId,
             roomCode: roomState?.roomCode,
@@ -4204,7 +4220,14 @@ class DominoGame {
             humanPlayers: roomState?.humanPlayers,
             humanSeats: roomState?.humanSeats,
             aiCount: roomState?.aiCount,
-            totalPlayers: roomState?.totalPlayers
+            totalPlayers: roomState?.totalPlayers,
+            bankAmount: Number(roomState?.bankAmount || 0),
+            stakeAmount: Number(roomState?.stakeAmount || 0),
+            currentDealBankAmount: Number(roomState?.bankAmount || 0),
+            playerScores: Array.isArray(this.scores) ? this.scores.slice() : [],
+            rating: Number(this.accountProfile?.rating ?? this.accountDetails?.rating ?? 0),
+            topRightHudValue: topRightHud.value,
+            topRightHudSource: topRightHud.sourceField
         });
 
         document.getElementById('room-code-display').textContent = roomState.roomCode || roomState.roomId || '....';
@@ -4671,6 +4694,7 @@ class DominoGame {
     }
     setupVoiceUI() {
         this.voiceBtn = document.getElementById('voice-btn');
+        this.voiceUnlockBtn = document.getElementById('voice-unlock-btn');
         this.voiceStatusEl = document.getElementById('voice-status');
         if (!this.voiceBtn || !this.voiceStatusEl) return;
         this._voicePointerActive = false;
@@ -4713,12 +4737,21 @@ class DominoGame {
         this.voiceBtn.addEventListener('contextmenu', (event) => {
             event.preventDefault();
         });
+        if (this.voiceUnlockBtn) {
+            this.voiceUnlockBtn.addEventListener('click', async (event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                await this.voice.unlockRemoteAudio();
+                this.syncVoiceUi();
+            });
+        }
         this.syncVoiceUi();
     }
     syncVoiceUi() {
         if (this.voice?.syncVisibility) {
             this.voice.syncVisibility();
             this.voice.updateSpeakerUi?.();
+            this.voice.updateAudioUnlockUi?.();
         }
     }
     renderGiftPicker() {
