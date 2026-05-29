@@ -1606,7 +1606,7 @@ class DominoRoom extends Room {
     handleVoiceSignal(client, message = {}) {
         if (!client || !this.state?.players?.has(client.sessionId)) return;
         const kind = String(message.kind || "").trim();
-        if (!["offer", "answer", "candidate", "state"].includes(kind)) return;
+        if (!["offer", "answer", "candidate", "state", "renegotiate"].includes(kind)) return;
         const targetSessionId = String(message.targetSessionId || "").trim();
         this.broadcast("voice_signal", {
             kind,
