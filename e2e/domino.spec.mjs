@@ -65,6 +65,21 @@ test("start screen loads and stays within mobile viewport", async ({ page }) => 
   expect(overflow).toBe(false);
 });
 
+test("guest start screen hides auth-only top buttons and keeps language visible", async ({ page }) => {
+  await page.goto("/index.html");
+
+  await expect(page.locator("#start-screen")).toHaveClass(/auth-required/);
+  await expect(page.locator("#account-btn")).toBeHidden();
+  await expect(page.locator("#start-coin-shop-btn")).toBeHidden();
+  await expect(page.locator("#start-cosmetics-shop-btn")).toBeHidden();
+  await expect(page.locator("#start-lang-select")).toBeVisible();
+
+  const topbarBounds = await page.locator("#start-screen .start-topbar").boundingBox();
+  expect(topbarBounds).not.toBeNull();
+  const overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1);
+  expect(overflow).toBe(false);
+});
+
 test("reconnect banner appears during network reconnect and clears on recovery", async ({ page }) => {
   await page.goto("/index.html");
   await page.evaluate(() => {

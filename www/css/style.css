@@ -97,6 +97,18 @@ input, button { font: inherit; }
     min-width: 0;
 }
 
+#start-screen.auth-required .start-topbar {
+    grid-template-columns: 1fr;
+    justify-content: end;
+    justify-items: end;
+}
+
+#start-screen.auth-required .start-topbar .start-profile-btn,
+#start-screen.auth-required .start-topbar .start-top-shop-btn,
+#start-screen.auth-required .start-topbar .start-top-spacer {
+    display: none !important;
+}
+
 .start-topbar > * {
     min-width: 0;
 }
