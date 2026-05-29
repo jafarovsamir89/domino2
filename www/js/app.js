@@ -270,6 +270,8 @@ class DominoGame {
             this.onlineRoomSource = 'open';
             this.onlineRoomVisibility = 'open';
             this.prefillOnlineNameIfPossible();
+            this.openRoomsStage = 'menu';
+            this.hideOpenRoomsModal();
             this.showStartModal('online');
             this.showOnlineCreateFlow('open');
         });
@@ -3541,6 +3543,7 @@ class DominoGame {
         const flowVisible = Boolean(onlineModal?.classList.contains('active') && !document.getElementById('online-flow-ui')?.classList.contains('is-hidden'));
         if (this.onlineRoomSource === 'open' && flowVisible) {
             this.showStartModal(null);
+            this.showOpenRoomsMenu();
             return;
         }
         if (flowVisible) {

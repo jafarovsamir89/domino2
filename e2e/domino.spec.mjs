@@ -128,10 +128,12 @@ test("closed and open rooms create flows use contextual visibility without toggl
 
   await page.locator("#open-rooms-create-btn").click();
   await expect(page.locator("#online-modal")).toHaveClass(/active/);
+  await expect(page.locator("#open-rooms-modal")).not.toHaveClass(/active/);
   await expect(page.locator("#online-visibility-wrapper")).toHaveCount(0);
 
   await page.evaluate(() => document.getElementById("online-modal-close")?.click());
   await expect(page.locator("#open-rooms-modal")).toHaveClass(/active/);
+  await expect(page.locator("#open-rooms-menu-ui")).not.toHaveClass(/is-hidden/);
 });
 
 test("solo and online modals keep header title separate from description", async ({ page }) => {
