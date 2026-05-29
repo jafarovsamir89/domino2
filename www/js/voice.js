@@ -692,8 +692,21 @@ export class VoiceChatManager {
         }
 
         if (payload.kind === "renegotiate") {
+            if (targetSessionId !== this.mySessionId) {
+                debugLog("[VOICE_DEBUG] renegotiate:receive", {
+                    fromSessionId,
+                    targetSessionId,
+                    accepted: "ignored"
+                });
+                return;
+            }
+
             if (this.shouldInitiate(fromSessionId)) {
-                debugLog("[VOICE_DEBUG] signaling:renegotiate:receive", { fromSessionId });
+                debugLog("[VOICE_DEBUG] renegotiate:receive", {
+                    fromSessionId,
+                    targetSessionId,
+                    accepted: "accepted"
+                });
                 void this.startOffer(fromSessionId);
             }
             return;
@@ -752,11 +765,30 @@ export class VoiceChatManager {
                 debugLog("[VOICE_DEBUG] answer:receive", {
                     fromSessionId,
                     targetSessionId,
-                    accepted: "accepted"
+                    signalingState: peer.signalingState
                 });
-                if (peer.currentRemoteDescription) return;
+                if (peer.signalingState !== "have-local-offer") {
+                    debugLog("[VOICE_DEBUG] answer:ignored", {
+                        reason: "unexpected_signaling_state",
+                        signalingState: peer.signalingState,
+                        fromSessionId,
+                        targetSessionId
+                    });
+                    return;
+                }
                 await peer.setRemoteDescription(new RTCSessionDescription(description));
+                debugLog("[VOICE_DEBUG] answer:setRemoteDescription:success", {
+                    fromSessionId,
+                    targetSessionId
+                });
                 await this.flushQueuedCandidates(peer);
+                debugLog("[VOICE_DEBUG] peer:state", {
+                    localSessionId: this.mySessionId,
+                    remoteSessionId: fromSessionId,
+                    iceConnectionState: peer.iceConnectionState,
+                    connectionState: peer.connectionState,
+                    signalingState: peer.signalingState
+                });
                 return;
             }
 
