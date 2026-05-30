@@ -244,6 +244,69 @@ test("solo and online modals keep header title separate from description", async
   await page.locator("#online-modal-close").click();
 });
 
+test("in-game pause menu keeps only continue and exit and round summary hides winner hand details", async ({ page }) => {
+  await page.goto("/index.html");
+
+  await page.evaluate(() => {
+    document.getElementById("menu-screen")?.classList.add("active");
+    document.getElementById("game-over-screen")?.classList.add("active");
+    document.getElementById("round-end-details")?.replaceChildren();
+  });
+
+  await expect(page.locator("#menu-screen .menu-panel .btn-menu")).toHaveCount(2);
+  await expect(page.locator("#menu-screen")).not.toContainText(/Profile|Профиль|Coin|Coins|Магазин|Skin|Скины/i);
+  await expect(page.locator("#menu-screen")).toContainText(/Davam et|Продолжить|Continue/);
+  await expect(page.locator("#menu-screen")).toContainText(/Çıxış|Выход|Exit/);
+
+  await page.evaluate(async () => {
+    const { Renderer } = await import("/js/renderer.js");
+    const mockApp = {
+      t: (key) => ({
+        "label-hand-points": "El",
+        "label-bonus": "Bonus",
+        "label-total": "Total",
+        "msg-fish": "Fish",
+        "out-suffix": "out"
+      }[key] || key),
+      createTileEl: () => {
+        const tile = document.createElement("span");
+        tile.className = "tile";
+        tile.textContent = "tile";
+        return tile;
+      }
+    };
+    const renderer = new Renderer(mockApp);
+    renderer.renderDealEnd("Samir", [
+      { name: "Samir", isWinner: true, handPoints: 0, score: 100, leftoverHands: [[{ a: 1, b: 2 }]] },
+      { name: "Elvin", isWinner: false, handPoints: 12, score: 88, leftoverHands: [[{ a: 3, b: 4 }]] }
+    ], false, 10);
+  });
+
+  const roundRows = page.locator("#round-end-details .detail-row");
+  await expect(roundRows).toHaveCount(2);
+  await expect(roundRows.nth(0)).not.toContainText(/El:\s*0|El:/i);
+  await expect(roundRows.nth(0).locator(".tile")).toHaveCount(0);
+  await expect(roundRows.nth(1)).toContainText(/El:\s*12/i);
+  await expect(roundRows.nth(1).locator(".tile")).toHaveCount(1);
+
+  const gameOverButtons = page.locator("#game-over-screen .game-over-actions .btn");
+  await expect(gameOverButtons).toHaveCount(2);
+  const firstBox = await gameOverButtons.nth(0).boundingBox();
+  const secondBox = await gameOverButtons.nth(1).boundingBox();
+  expect(firstBox).not.toBeNull();
+  expect(secondBox).not.toBeNull();
+  if (firstBox && secondBox) {
+    expect(Math.abs(firstBox.width - secondBox.width)).toBeLessThanOrEqual(1);
+    expect(Math.abs(firstBox.y - secondBox.y)).toBeLessThanOrEqual(1);
+  }
+
+  await page.evaluate(() => {
+    document.getElementById("game-over-screen")?.classList.remove("active");
+    document.getElementById("round-end-screen")?.classList.remove("active");
+    document.getElementById("menu-screen")?.classList.remove("active");
+  });
+});
+
 test("reconnect banner appears during network reconnect and clears on recovery", async ({ page }) => {
   await page.goto("/index.html");
   await page.evaluate(() => {

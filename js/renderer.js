@@ -586,7 +586,10 @@ export class Renderer {
 
                 const value = document.createElement('span');
                 value.className = 'detail-value';
-                const parts = [`${this.app.t('label-hand-points')}: ${p.handPoints || 0}`];
+                const parts = [];
+                if (!p.isWinner) {
+                    parts.push(`${this.app.t('label-hand-points')}: ${p.handPoints || 0}`);
+                }
                 if (p.isWinner) parts.push(`${this.app.t('label-bonus')}: +${bonus || 0}`);
                 parts.push(`${this.app.t('label-total')}: ${p.score || 0}`);
                 value.textContent = parts.join(' · ');
@@ -595,7 +598,7 @@ export class Renderer {
                 top.appendChild(value);
                 row.appendChild(top);
 
-                if (Array.isArray(p.leftoverHands) && p.leftoverHands.length) {
+                if (!p.isWinner && Array.isArray(p.leftoverHands) && p.leftoverHands.length) {
                     const handsDiv = document.createElement('div');
                     handsDiv.style.display = 'flex';
                     handsDiv.style.flexWrap = 'wrap';

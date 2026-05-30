@@ -2947,36 +2947,7 @@ class DominoGame {
     }
 
     ensureMenuEnhancements() {
-        const menuPanel = document.querySelector('#menu-screen .menu-panel');
-        if (menuPanel && !document.getElementById('menu-profile')) {
-            const profileBtn = document.createElement('button');
-            profileBtn.className = 'btn btn-menu';
-            profileBtn.id = 'menu-profile';
-            profileBtn.type = 'button';
-            profileBtn.dataset.i18n = 'account-profile';
-            profileBtn.textContent = this.t('account-profile');
-            menuPanel.insertBefore(profileBtn, document.getElementById('menu-quit'));
-        }
-        if (menuPanel && !document.getElementById('menu-coin-shop')) {
-            const coinShopBtn = document.createElement('button');
-            coinShopBtn.className = 'btn btn-menu btn-menu-shop';
-            coinShopBtn.id = 'menu-coin-shop';
-            coinShopBtn.type = 'button';
-            coinShopBtn.title = this.t('coin-shop-menu');
-            coinShopBtn.setAttribute('aria-label', this.t('coin-shop-menu'));
-            coinShopBtn.textContent = this.t('coin-shop-menu');
-            menuPanel.insertBefore(coinShopBtn, document.getElementById('menu-quit'));
-        }
-        if (menuPanel && !document.getElementById('menu-cosmetics-shop')) {
-            const cosmeticsShopBtn = document.createElement('button');
-            cosmeticsShopBtn.className = 'btn btn-menu btn-menu-shop btn-menu-cosmetics';
-            cosmeticsShopBtn.id = 'menu-cosmetics-shop';
-            cosmeticsShopBtn.type = 'button';
-            cosmeticsShopBtn.title = this.t('cosmetics-shop-menu');
-            cosmeticsShopBtn.setAttribute('aria-label', this.t('cosmetics-shop-menu'));
-            cosmeticsShopBtn.textContent = this.t('cosmetics-shop-menu');
-            menuPanel.insertBefore(cosmeticsShopBtn, document.getElementById('menu-quit'));
-        }
+        document.getElementById('menu-newgame')?.remove();
         this.ensureShopIconMarkup();
     }
 
@@ -5100,28 +5071,6 @@ class DominoGame {
             });
         }
         document.getElementById('menu-resume')?.addEventListener('click', () => document.getElementById('menu-screen').classList.remove('active'));
-        document.getElementById('menu-newgame')?.addEventListener('click', () => { document.getElementById('menu-screen').classList.remove('active'); void this.startNewGame(); });
-        const menuProfileBtn = document.getElementById('menu-profile');
-        if (menuProfileBtn) {
-            menuProfileBtn.addEventListener('click', async () => {
-                document.getElementById('menu-screen').classList.remove('active');
-                await this.openAccountModal();
-            });
-        }
-        const coinShopBtn = document.getElementById('menu-coin-shop');
-        if (coinShopBtn) {
-            coinShopBtn.addEventListener('click', async () => {
-                document.getElementById('menu-screen').classList.remove('active');
-                await this.openCoinShopModal();
-            });
-        }
-        const cosmeticsShopBtn = document.getElementById('menu-cosmetics-shop');
-        if (cosmeticsShopBtn) {
-            cosmeticsShopBtn.addEventListener('click', async () => {
-                document.getElementById('menu-screen').classList.remove('active');
-                await this.openCosmeticsShopModal();
-            });
-        }
         document.getElementById('menu-quit')?.addEventListener('click', async () => {
             document.getElementById('menu-screen').classList.remove('active');
             const shouldQuit = await this.confirmQuitCurrentMatch();
