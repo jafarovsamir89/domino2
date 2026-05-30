@@ -1,11 +1,17 @@
+const { getFirstNameDisplayName } = require("./roomIdentity");
+
 function buildRoomStatePlayers({ playerOrder = [], players, identityBySessionId, voiceEnabledBySessionId } = {}) {
     return playerOrder.map((sessionId, index) => {
         const player = players?.get(sessionId);
         const identity = identityBySessionId?.get(sessionId) || {};
+        const displayName = getFirstNameDisplayName(
+            player ? player.name : identity.displayName || "Player",
+            identity.displayName || "Player"
+        );
         return {
             sessionId,
             index,
-            name: player ? player.name : "Player",
+            name: displayName,
             userId: player ? player.userId : "",
             playerId: identity.playerId || player?.userId || "",
             avatarUrl: player?.avatarUrl || identity.avatarUrl || "",
@@ -48,7 +54,7 @@ function buildRoomStatePayload({ room, players } = {}) {
         isTeamMode: room.state.isTeamMode,
         gameActive: room.state.gameActive,
         seatSelectionRequired: !room.state.gameActive && room.totalPlayers > 2 && !room.areAllHumanPlayersSeated?.(),
-        hostName: room.state.players.get(room.state.playerOrder[0])?.name || "Player",
+        hostName: getFirstNameDisplayName(room.state.players.get(room.state.playerOrder[0])?.name || "Player", "Player"),
         players
     };
 }

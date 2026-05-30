@@ -23,14 +23,14 @@ test("buildLivePlayerPayload uses team mode and host fallback correctly", () => 
         sessionId: "session-1",
         room,
         identity: { provider: "platform", playerId: "player-1", avatarUrl: "https://example.com/a.png", role: "host" },
-        player: { userId: "user-1", name: "Alice" },
+        player: { userId: "user-1", name: "Alice Doe" },
         hostPlayer: { name: "Host Alice" },
         joinedAt: "2026-05-20T10:00:00.000Z"
     });
 
     assert.equal(payload.roomMode, "team");
     assert.equal(payload.role, "host");
-    assert.equal(payload.hostName, "Host Alice");
+    assert.equal(payload.hostName, "Host");
     assert.equal(payload.stakeAmount, 500);
     assert.equal(payload.joinedAt, "2026-05-20T10:00:00.000Z");
 });
@@ -52,7 +52,7 @@ test("buildLivePlayerPayload uses ffa mode and preserves current fallbacks", () 
         aiCount: 1
     };
     const identity = {};
-    const player = { userId: "user-2", name: "Bob" };
+    const player = { userId: "user-2", name: "Bob Marley" };
     const roomClone = structuredClone(room);
     const identityClone = structuredClone(identity);
     const playerClone = structuredClone(player);

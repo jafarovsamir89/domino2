@@ -1,3 +1,5 @@
+const { getFirstNameDisplayName } = require("./roomIdentity");
+
 function buildLivePlayerPayload({
     sessionId,
     room,
@@ -23,8 +25,8 @@ function buildLivePlayerPayload({
         userId: player.userId || "",
         playerId: identity.playerId || player.userId || "",
         avatarUrl: identity.avatarUrl || "",
-        displayName: player.name,
-        hostName: hostPlayer?.name || player.name,
+        displayName: getFirstNameDisplayName(player.name, player.name || "Player"),
+        hostName: getFirstNameDisplayName(hostPlayer?.name || player.name, player.name || "Player"),
         role: identity.role || (isHost ? "host" : "player"),
         isConnected: true,
         isPlaying: Boolean(room?.state?.gameActive),

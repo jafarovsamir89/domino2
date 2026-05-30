@@ -497,14 +497,12 @@ export class Renderer {
         if (this.stakeInfoEl) {
             const hud = this.app?.getTopRightHudState?.() || null;
             const labelKey = hud?.labelKey || 'label-stake-short';
-            const isBankHud = labelKey === 'label-bank-short';
-            const bankText = isBankHud ? Number(hud?.value || 0).toLocaleString('en-US') : stakeLabel;
+            const isBankHud = Boolean(stakeLabel);
+            const bankText = Number(hud?.value || 0).toLocaleString('en-US');
             this.stakeInfoEl.classList.toggle('is-hidden', !stakeLabel);
-            this.stakeInfoEl.classList.toggle('is-bank-hud', isBankHud && Boolean(stakeLabel));
+            this.stakeInfoEl.classList.toggle('is-bank-hud', Boolean(stakeLabel));
             this.stakeInfoEl.innerHTML = stakeLabel
-                ? (isBankHud
-                    ? `${this.getBankIconMarkup()}<span class="stake-info-bank-value">${bankText}</span>`
-                    : `${this.app.t(labelKey)}: ${stakeLabel}`)
+                ? `${this.getBankIconMarkup()}<span class="stake-info-bank-value">${bankText}</span>`
                 : '';
             const ariaLabel = isBankHud ? this.app.t('label-bank-short') : this.app.t(labelKey);
             this.stakeInfoEl.title = ariaLabel;

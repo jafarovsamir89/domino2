@@ -5,9 +5,9 @@ const { buildRoomStatePlayers, buildRoomStatePayload } = require("../roomStatePa
 
 test("buildRoomStatePlayers builds rows in player order with current fallbacks", () => {
     const players = new Map([
-        ["s1", { name: "Alice", userId: "u1", avatarUrl: "a1", isConnected: true, isBot: false, seatIndex: 0 }],
-        ["s2", { name: "Bob", userId: "u2", avatarUrl: "a2", isConnected: false, isBot: true, seatIndex: -1 }],
-        ["s3", { name: "Carol", userId: "u3", avatarUrl: "a3", isConnected: true, isBot: false, seatIndex: 2 }]
+        ["s1", { name: "Alice Johnson", userId: "u1", avatarUrl: "a1", isConnected: true, isBot: false, seatIndex: 0 }],
+        ["s2", { name: "Bob Marley", userId: "u2", avatarUrl: "a2", isConnected: false, isBot: true, seatIndex: -1 }],
+        ["s3", { name: "Carol Smith", userId: "u3", avatarUrl: "a3", isConnected: true, isBot: false, seatIndex: 2 }]
     ]);
     const identities = new Map([
         ["s1", { playerId: "p1", avatarUrl: "ia1" }],
@@ -66,8 +66,8 @@ test("buildRoomStatePayload preserves room_state fields and currentPlayers logic
             gameActive: true,
             isTeamMode: true,
             players: new Map([
-                ["s1", { name: "Host", isConnected: true, isBot: false, seatIndex: 0 }],
-                ["s2", { name: "Guest", isConnected: true, isBot: false, seatIndex: 1 }]
+                ["s1", { name: "Host Alpha", isConnected: true, isBot: false, seatIndex: 0 }],
+                ["s2", { name: "Guest Beta", isConnected: true, isBot: false, seatIndex: 1 }]
             ]),
             playerOrder: ["s1", "s2"]
         },

@@ -7,6 +7,7 @@ const {
     normalizePlayerAvatarUrl,
     normalizePlayerId,
     normalizePlayerRole,
+    getFirstNameDisplayName,
     buildRoomIdentity
 } = require("../roomIdentity");
 
@@ -22,6 +23,13 @@ test("room identity helpers preserve current fallback behavior", () => {
     assert.equal(normalizePlayerRole({ role: "host" }, { role: "player" }, false), "host");
     assert.equal(normalizePlayerRole({}, {}, true), "host");
     assert.equal(normalizePlayerRole({}, {}, false), "player");
+});
+
+test("getFirstNameDisplayName returns the first token safely", () => {
+    assert.equal(getFirstNameDisplayName("Samir Jafarov", "Player"), "Samir");
+    assert.equal(getFirstNameDisplayName("  Elvin   Məmmədov  ", "Player"), "Elvin");
+    assert.equal(getFirstNameDisplayName("Nigar", "Player"), "Nigar");
+    assert.equal(getFirstNameDisplayName("", "Fallback"), "Fallback");
 });
 
 test("buildRoomIdentity sanitizes, trims, preserves existing fields, and does not mutate inputs", () => {

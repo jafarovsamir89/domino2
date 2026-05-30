@@ -7,7 +7,7 @@ const { Tile, createFullSet, shuffle, getHandSize, determineFirstPlayer, handPoi
 const { verifyGameToken } = require("./platformAuth");
 const { buildSignedRequestBody } = require("./signedRequest");
 const { generateRoomCode, normalizeRoomVisibility, normalizeStakeKey, normalizePlayerCount, normalizeAiCount, normalizeDlossThreshold, normalizeInstantWinEnabled, normalizeAiDifficulty } = require("./roomConfig");
-const { normalizeAuthToken, buildRoomIdentity } = require("./roomIdentity");
+const { normalizeAuthToken, buildRoomIdentity, getFirstNameDisplayName } = require("./roomIdentity");
 const { buildLivePlayerPayload } = require("./roomPresence");
 const { buildPlatformMatchPayload } = require("./matchResultPayload");
 const { buildRoomStatePlayers, buildRoomStatePayload } = require("./roomStatePayload");
@@ -411,7 +411,7 @@ class DominoRoom extends Room {
             }
 
             player = new Player();
-            player.name = sanitizeName(identity.displayName || options.name);
+            player.name = getFirstNameDisplayName(identity.displayName || options.name, options.name || "Player");
             player.userId = String(identity.userId || "");
             player.avatarUrl = String(identity.avatarUrl || options.avatarUrl || "").trim();
             player.seatIndex = this.state.playerOrder.length === 0 ? 0 : (this.totalPlayers <= 2 ? 1 : -1);
@@ -424,7 +424,7 @@ class DominoRoom extends Room {
 
         if (!player) return;
 
-        player.name = sanitizeName(identity.displayName || player.name || options.name);
+        player.name = getFirstNameDisplayName(identity.displayName || player.name || options.name, player.name || options.name || "Player");
         player.userId = String(identity.userId || player.userId || "");
         player.avatarUrl = String(identity.avatarUrl || player.avatarUrl || options.avatarUrl || "").trim();
         player.isConnected = true;
@@ -1905,7 +1905,7 @@ class DominoRoom extends Room {
 
         for (const entry of restored.players) {
             const player = new Player();
-            player.name = entry.name;
+            player.name = getFirstNameDisplayName(entry.name, entry.name || "Player");
             player.userId = entry.userId;
             player.score = entry.score;
             player.roundWins = entry.roundWins;
