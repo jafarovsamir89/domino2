@@ -921,7 +921,7 @@ class DominoRoom extends Room {
             this.lastReservedMatchRound = this.state.matchRound;
         }
         this.state.gameActive = true;
-        this.broadcastRoomState();
+        this.syncState();
         this.scheduleTurnTimer();
     }
 
@@ -1112,7 +1112,7 @@ class DominoRoom extends Room {
             return;
         }
 
-        const moves = this.internalBoard.getValidMoves(hand);
+        const moves = this.getValidMovesForPlayer(pi);
         const move = bot.chooseMove(this.internalBoard, hand, moves, this.state.players, this.hands, this.boneyard, this.playerMissingSuits);
         if (move) {
             this.performPlay(pi, move.tileIndex, move.openEndIndex, true);
@@ -1160,6 +1160,43 @@ class DominoRoom extends Room {
         const sessionId = this.state.playerOrder[pi];
         return Number(this.state.players.get(sessionId)?.score || 0);
     }
+    getOpeningMoveRequirement() {
+        if (!this.state?.gameActive) return null;
+        if (this.lastDealWinner !== null) return null;
+        if (!this.internalBoard?.isEmpty) return null;
+        if (!Array.isArray(this.hands) || !this.hands.length) return null;
+
+        const opening = determineFirstPlayer(this.hands);
+        const playerIndex = Number(opening?.player);
+        const tileIndex = Number(opening?.tileIndex);
+        if (!Number.isInteger(playerIndex) || !Number.isInteger(tileIndex)) return null;
+
+        const hand = this.hands[playerIndex];
+        const tile = hand?.[tileIndex];
+        if (!tile) return null;
+
+        return {
+            playerIndex,
+            tileIndex,
+            tileId: tile.id
+        };
+    }
+    getValidMovesForPlayer(pi) {
+        const hand = this.hands?.[pi] || [];
+        if (!Array.isArray(hand)) return [];
+        if (!this.internalBoard) return [];
+
+        if (this.internalBoard.isEmpty) {
+            const opening = this.getOpeningMoveRequirement();
+            if (opening) {
+                return opening.playerIndex === pi
+                    ? [{ tileIndex: opening.tileIndex, openEndIndex: -1 }]
+                    : [];
+            }
+        }
+
+        return this.internalBoard.getValidMoves(hand);
+    }
     shouldRedealOpeningHands(hands = []) {
         return (Array.isArray(hands) ? hands : []).some((hand) => hasInvalidOpeningHand(hand));
     }
@@ -1188,11 +1225,12 @@ class DominoRoom extends Room {
         }
         
         // Broadcast valid moves to the current player
-        const cpSession = this.state.playerOrder[this.state.currentPlayerIndex];
+        const currentPlayerIndex = Number(this.state.currentPlayerIndex || 0);
+        const cpSession = this.state.playerOrder[currentPlayerIndex];
         const cpClient = this.clients.find(c => c.sessionId === cpSession);
-        if (cpClient && this.hands[this.state.currentPlayerIndex]) {
-            const validMoves = this.internalBoard.getValidMoves(this.hands[this.state.currentPlayerIndex]);
-            const goshaCombo = this.internalBoard.getGoshaCombo(this.hands[this.state.currentPlayerIndex]);
+        if (cpClient && this.hands[currentPlayerIndex]) {
+            const validMoves = this.getValidMovesForPlayer(currentPlayerIndex);
+            const goshaCombo = this.internalBoard.getGoshaCombo(this.hands[currentPlayerIndex]);
             cpClient.send("turn_info", { validMoves, goshaCombo });
         }
 
@@ -1500,7 +1538,7 @@ class DominoRoom extends Room {
             if (!currentOpenEnd || !tile.hasValue(currentOpenEnd.value)) return;
         }
 
-        const moves = this.internalBoard.getValidMoves(hand);
+        const moves = this.getValidMovesForPlayer(pi);
         const isValid = moves.some((m) => m.tileIndex === tileIndex && m.openEndIndex === openEndIndex);
         if (!isValid) return;
 

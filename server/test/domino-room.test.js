@@ -605,6 +605,198 @@ test("performPlay keeps legal 0/3 placement on open end 0 and turns the new open
     assert.ok(room.internalBoard.openEnds.some((oe) => oe.value === 3));
 });
 
+test("opening move requirement forces 3|2 on the first deal and rejects any other opening tile", () => {
+    const room = Object.create(DominoRoom.prototype);
+    room.state = {
+        gameActive: true,
+        currentPlayerIndex: 0,
+        turnVersion: 7,
+        isTeamMode: false,
+        playerOrder: ["session-1", "session-2"],
+        players: new Map([
+            ["session-1", { name: "Alice", score: 0, roundWins: 0, isBot: false }],
+            ["session-2", { name: "Bob", score: 0, roundWins: 0, isBot: false }]
+        ])
+    };
+    room.lastDealWinner = null;
+    room.internalBoard = new Board();
+    room.hands = [
+        [new Tile(4, 4), new Tile(3, 2), new Tile(0, 6)],
+        [new Tile(1, 1)]
+    ];
+    room.boneyard = [];
+    room.playerMissingSuits = [new Set(), new Set()];
+    room.clearTurnTimer = () => {};
+    room.broadcast = () => {};
+    room.addScore = () => {};
+    room.endRound = () => {};
+    room.endDeal = () => {};
+    room.findFishWinner = () => 0;
+    room.scheduleTurnAdvance = () => {};
+    room.bumpTurnVersion = () => {};
+    room.getOpeningScoreContext = () => 0;
+
+    const opening = room.getOpeningMoveRequirement();
+    assert.equal(opening.playerIndex, 0);
+    assert.equal(opening.tileIndex, 1);
+    assert.equal(opening.tileId, "3-2");
+
+    room.performPlay(0, 0, -1, false);
+    assert.equal(room.internalBoard.nodes.length, 0);
+    assert.equal(room.hands[0].length, 3);
+
+    room.performPlay(0, 1, -1, false);
+    assert.equal(room.internalBoard.nodes.length, 1);
+    assert.equal(room.internalBoard.nodes[0].tile.id, "3-2");
+    assert.equal(room.hands[0].length, 2);
+});
+
+test("opening move requirement falls back to the smallest double when 3|2 is not dealt", () => {
+    const room = Object.create(DominoRoom.prototype);
+    room.state = {
+        gameActive: true,
+        currentPlayerIndex: 1,
+        turnVersion: 7,
+        isTeamMode: false,
+        playerOrder: ["session-1", "session-2"],
+        players: new Map([
+            ["session-1", { name: "Alice", score: 0, roundWins: 0, isBot: false }],
+            ["session-2", { name: "Bob", score: 0, roundWins: 0, isBot: false }]
+        ])
+    };
+    room.lastDealWinner = null;
+    room.internalBoard = new Board();
+    room.hands = [
+        [new Tile(4, 4), new Tile(6, 6)],
+        [new Tile(1, 1), new Tile(2, 5)]
+    ];
+    room.boneyard = [];
+    room.playerMissingSuits = [new Set(), new Set()];
+    room.clearTurnTimer = () => {};
+    room.broadcast = () => {};
+    room.addScore = () => {};
+    room.endRound = () => {};
+    room.endDeal = () => {};
+    room.findFishWinner = () => 0;
+    room.scheduleTurnAdvance = () => {};
+    room.bumpTurnVersion = () => {};
+    room.getOpeningScoreContext = () => 0;
+
+    const opening = room.getOpeningMoveRequirement();
+    assert.equal(opening.playerIndex, 1);
+    assert.equal(opening.tileIndex, 0);
+    assert.equal(opening.tileId, "1-1");
+
+    room.performPlay(1, 1, -1, false);
+    assert.equal(room.internalBoard.nodes.length, 0);
+    assert.equal(room.hands[1].length, 2);
+
+    room.performPlay(1, 0, -1, false);
+    assert.equal(room.internalBoard.nodes.length, 1);
+    assert.equal(room.internalBoard.nodes[0].tile.id, "1-1");
+    assert.equal(room.hands[1].length, 1);
+});
+
+test("startDeal turn_info sends only the required opening move on an empty board", () => {
+    const room = Object.create(DominoRoom.prototype);
+    const messages = [];
+    const client = {
+        sessionId: "session-1",
+        send(type, payload) {
+            messages.push({ type, payload });
+        }
+    };
+    room.state = {
+        gameActive: true,
+        currentPlayerIndex: 0,
+        turnVersion: 7,
+        isTeamMode: false,
+        playerOrder: ["session-1", "session-2"],
+        players: new Map([
+            ["session-1", { name: "Alice", score: 0, roundWins: 0, isBot: false, handCount: 2 }],
+            ["session-2", { name: "Bob", score: 0, roundWins: 0, isBot: false, handCount: 2 }]
+        ])
+    };
+    room.clients = [client];
+    room.lastDealWinner = null;
+    room.internalBoard = new Board();
+    room.hands = [
+        [new Tile(3, 2), new Tile(4, 4)],
+        [new Tile(1, 1), new Tile(2, 5)]
+    ];
+    room.boneyard = [];
+    room.broadcastRoomState = () => {};
+    room.scheduleBotTurn = () => {};
+
+    room.syncState();
+
+    const turnInfo = messages.find((entry) => entry.type === "turn_info");
+    assert.ok(turnInfo);
+    assert.deepEqual(turnInfo.payload.validMoves, [{ tileIndex: 0, openEndIndex: -1 }]);
+});
+
+test("runBotTurn uses only the required opening move on the first deal", () => {
+    const room = Object.create(DominoRoom.prototype);
+    let played = null;
+    room.state = {
+        gameActive: true,
+        currentPlayerIndex: 0,
+        turnVersion: 7,
+        isTeamMode: false,
+        playerOrder: ["bot-0"],
+        players: new Map([["bot-0", { name: "Bot", score: 0, roundWins: 0, isBot: true }]])
+    };
+    room.lastDealWinner = null;
+    room.internalBoard = new Board();
+    room.hands = [[new Tile(4, 4), new Tile(3, 2)]];
+    room.boneyard = [];
+    room.playerMissingSuits = [new Set()];
+    room.clearTurnTimer = () => {};
+    room.broadcast = () => {};
+    room.performPlay = (pi, tileIndex, openEndIndex) => {
+        played = { pi, tileIndex, openEndIndex };
+    };
+    room.performDraw = () => false;
+    room.performPass = () => false;
+    room.scheduleBotTurn = () => {};
+    room.getOpeningScoreContext = () => 0;
+    room.aiPlayers = new Map([
+        ["bot-0", {
+            chooseMove(board, hand, moves) {
+                assert.deepEqual(moves, [{ tileIndex: 1, openEndIndex: -1 }]);
+                return { tileIndex: 1, openEndIndex: -1 };
+            }
+        }]
+    ]);
+
+    room.runBotTurn();
+
+    assert.deepEqual(played, { pi: 0, tileIndex: 1, openEndIndex: -1 });
+});
+
+test("after the opening move, valid moves return to normal board behavior", () => {
+    const room = Object.create(DominoRoom.prototype);
+    room.state = {
+        gameActive: true,
+        currentPlayerIndex: 0,
+        turnVersion: 7,
+        isTeamMode: false,
+        playerOrder: ["session-1"],
+        players: new Map([["session-1", { name: "Alice", score: 0, roundWins: 0, isBot: false }]])
+    };
+    room.lastDealWinner = 0;
+    room.internalBoard = new Board();
+    room.internalBoard.placeFirst(new Tile(0, 0));
+    room.hands = [[new Tile(0, 3), new Tile(3, 6)]];
+    room.playerMissingSuits = [new Set()];
+
+    const moves = room.getValidMovesForPlayer(0);
+    assert.deepEqual(moves, [
+        { tileIndex: 0, openEndIndex: 0 },
+        { tileIndex: 0, openEndIndex: 1 }
+    ]);
+});
+
 test("startDeal snapshot restore keeps a playable turn state", async () => {
     const room = Object.create(DominoRoom.prototype);
     Object.defineProperty(room, "roomId", { value: "room-live", writable: true, configurable: true });

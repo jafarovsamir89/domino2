@@ -5451,7 +5451,9 @@ class DominoGame {
         this.renderer.renderBoard(this.board);
         this.renderer.renderOpponentHands(this.hands, this.humanPlayerIndex, this.playerNames, this.currentPlayer);
         const myHand = this.myHand || this.hands[this.humanPlayerIndex] || [];
-        this.validMoves = this.board.getValidMoves(myHand);
+        if (!this.network.isMultiplayer) {
+            this.validMoves = this.board.getValidMoves(myHand);
+        }
         const myTurn = this.currentPlayer === this.humanPlayerIndex;
         this.renderer.renderHand(myHand, this.validMoves, this.selectedTileIndex, myTurn);
 
@@ -5750,6 +5752,8 @@ class DominoGame {
         this.matchOver = !!state?.matchOver;
         this.onlineStakeKey = state?.stakeKey || this.onlineStakeKey;
         this.onlineRoundBankAmount = Math.max(0, Number(state?.bankAmount || 0));
+        this.validMoves = [];
+        this.goshaCombo = null;
         if (this.gameActive && Number(state?.turnDeadlineAt || 0) > 0) {
             this.startTurnTimer(Number(state.turnDeadlineAt));
         } else {
