@@ -1924,7 +1924,7 @@ class DominoGame {
                 const label = document.createElement('div');
                 const rating = document.createElement('div');
                 label.textContent = `#${row.rank} ${row.name}`;
-                rating.textContent = `ELO ${String(row.rating)}`;
+                rating.textContent = `${this.t('account-rating')} ${String(row.rating)}`;
                 item.appendChild(label);
                 item.appendChild(rating);
                 list.appendChild(item);
@@ -1950,7 +1950,6 @@ class DominoGame {
         const profileMeta = document.getElementById('account-profile-meta');
         const profileCopy = document.querySelector('#account-profile-panel .account-profile-copy');
         const ratingValue = document.getElementById('account-rating-value');
-        const pointsValue = document.getElementById('account-points-value');
         const winsValue = document.getElementById('account-wins-value');
         const matchesValue = document.getElementById('account-matches-value');
         const coinsValue = document.getElementById('account-coins-value');
@@ -2097,7 +2096,6 @@ class DominoGame {
             : this.t('account-guest-profile');
         if (title) title.textContent = this.t('account-profile-title');
         if (ratingValue) ratingValue.textContent = String(profile?.rating ?? 1000);
-        if (pointsValue) pointsValue.textContent = String(profile?.points ?? 0);
         if (winsValue) winsValue.textContent = String(profile?.wins ?? 0);
         if (matchesValue) matchesValue.textContent = String(profile?.matchesPlayed ?? 0);
         if (coinsValue) coinsValue.textContent = String(details?.wallet?.balance ?? profile?.coins ?? profile?.wallet?.balance ?? 0);
@@ -5572,7 +5570,7 @@ class DominoGame {
             "account-btn": { az: "Account", en: "Account" },
             "account-kicker": { az: "Profile", en: "Profile" },
             "account-title": { az: "Account", en: "Account" },
-            "account-desc": { az: "Keep your score, rating and match history.", en: "Keep your score, rating and match history." },
+            "account-desc": { az: "Reytinqi və tarixçəni saxla.", en: "Keep your rating and match history." },
             "account-name": { az: "Name", en: "Name" },
             "account-password": { az: "Password", en: "Password" },
             "account-create-account": { az: "Create account", en: "Create account" },
@@ -5589,14 +5587,14 @@ class DominoGame {
             "account-profile-loading": { az: "Loading profile...", en: "Loading profile..." },
             "account-profile-empty": { az: "No profile yet", en: "No profile yet" },
             "account-leaderboard": { az: "Leaderboard", en: "Leaderboard" },
-            "account-rating": { az: "Rating", en: "Rating" },
-            "account-rank": { az: "Rank", en: "Rank" },
+            "account-rating": { az: "Reyting", en: "Rating" },
+            "account-rank": { az: "Reyting", en: "Rating" },
             "account-points": { az: "Points", en: "Points" },
-            "account-coins": { az: "Coins", en: "Coins" },
-            "account-wins": { az: "Wins", en: "Wins" },
+            "account-coins": { az: "Coin", en: "Coins" },
+            "account-wins": { az: "Qələbələr", en: "Wins" },
             "account-losses": { az: "Losses", en: "Losses" },
             "account-draws": { az: "Draws", en: "Draws" },
-            "account-matches": { az: "Matches", en: "Matches" },
+            "account-matches": { az: "Oyunlar", en: "Games" },
             "account-refresh": { az: "Refresh", en: "Refresh" },
             "account-logout": { az: "Logout", en: "Logout" },
             "account-online": { az: "Server connected", en: "Server connected" },

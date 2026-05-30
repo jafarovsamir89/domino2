@@ -80,6 +80,97 @@ test("guest start screen hides auth-only top buttons and keeps language visible"
   expect(overflow).toBe(false);
 });
 
+test("authenticated profile shows four stats cards without Xal and leaderboard uses Reyting", async ({ page }) => {
+  await page.route("**/platform/game-token", async (route) => {
+    const headers = {
+      "Access-Control-Allow-Origin": route.request().headers().origin ?? "http://127.0.0.1:4173",
+      "Access-Control-Allow-Methods": "GET,POST,PUT,PATCH,DELETE,OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With",
+      "Access-Control-Allow-Credentials": "true",
+      "Vary": "Origin"
+    };
+
+    return route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      headers,
+      body: JSON.stringify({
+        token: "test-token",
+        user: {
+          id: "u-1",
+          name: "Samir",
+          email: "samir@example.com",
+          role: "player"
+        },
+        player: {
+          id: "p-1",
+          displayName: "Samir",
+          avatarUrl: "",
+          isGuest: false
+        },
+        stats: {
+          rating: 1234,
+          points: 88,
+          wins: 11,
+          losses: 4,
+          draws: 0,
+          matchesPlayed: 15,
+          currentStreak: 2,
+          bestStreak: 5,
+          titleCode: "rookie"
+        },
+        wallet: {
+          balance: 777,
+          availableBalance: 777,
+          spendableBalance: 777,
+          reservedBalance: 0
+        },
+        recentMatches: []
+      })
+    });
+  });
+
+  await page.route("**/leaderboard*", async (route) => {
+    const headers = {
+      "Access-Control-Allow-Origin": route.request().headers().origin ?? "http://127.0.0.1:4173",
+      "Access-Control-Allow-Methods": "GET,POST,PUT,PATCH,DELETE,OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With",
+      "Access-Control-Allow-Credentials": "true",
+      "Vary": "Origin"
+    };
+
+    return route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      headers,
+      body: JSON.stringify({
+        items: [
+          { rank: 1, name: "Samir", rating: 1234 },
+          { rank: 2, name: "Alice", rating: 1200 }
+        ]
+      })
+    });
+  });
+
+  await page.goto("/index.html");
+  await page.locator("#account-btn").click();
+
+  await expect(page.locator("#account-modal")).toHaveClass(/active/);
+  await expect(page.locator("#account-profile-panel")).not.toHaveClass(/is-hidden/);
+  await expect(page.locator("#account-auth-panel")).toHaveClass(/is-hidden/);
+  await expect(page.locator("#account-points-value")).toHaveCount(0);
+  await expect(page.locator("#account-stats-grid .account-stat-card")).toHaveCount(4);
+  await expect(page.locator("#account-stats-grid")).toContainText(/Reyting|Rating|Рейтинг/);
+  await expect(page.locator("#account-stats-grid")).toContainText(/Coin|Coins|Монеты/);
+  await expect(page.locator("#account-stats-grid")).toContainText(/Oyunlar|Games|Игры/);
+  await expect(page.locator("#account-stats-grid")).toContainText(/Qələbələr|Wins|Победы/);
+  await expect(page.locator("#account-stats-grid")).not.toContainText(/Xal|Points|ELO/i);
+
+  await expect(page.locator("#leaderboard-list .room-player-chip")).toHaveCount(2);
+  await expect(page.locator("#leaderboard-list")).toContainText(/Reyting|Rating|Рейтинг/);
+  await expect(page.locator("#leaderboard-list")).not.toContainText(/ELO/i);
+});
+
 test("open rooms modal uses a standard title bar and close button", async ({ page }) => {
   await page.goto("/index.html");
   await page.evaluate(() => document.getElementById("open-rooms-btn")?.click());
