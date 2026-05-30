@@ -1923,10 +1923,8 @@ class DominoGame {
                 item.className = 'room-player-chip';
                 const label = document.createElement('div');
                 const rating = document.createElement('div');
-                const titleKey = `title-${String(row.titleCode || 'rookie')}`;
-                const title = this.t(titleKey);
-                label.textContent = `#${row.rank} ${row.name} · ${title}`;
-                rating.textContent = String(row.rating);
+                label.textContent = `#${row.rank} ${row.name}`;
+                rating.textContent = `ELO ${String(row.rating)}`;
                 item.appendChild(label);
                 item.appendChild(rating);
                 list.appendChild(item);
@@ -1952,7 +1950,6 @@ class DominoGame {
         const profileMeta = document.getElementById('account-profile-meta');
         const profileCopy = document.querySelector('#account-profile-panel .account-profile-copy');
         const ratingValue = document.getElementById('account-rating-value');
-        const titleValue = document.getElementById('account-title-value');
         const pointsValue = document.getElementById('account-points-value');
         const winsValue = document.getElementById('account-wins-value');
         const matchesValue = document.getElementById('account-matches-value');
@@ -1961,7 +1958,6 @@ class DominoGame {
         const refreshButton = document.getElementById('account-refresh-btn');
         const logoutButton = document.getElementById('account-logout-btn');
         const closeButton = document.getElementById('account-modal-close');
-        const titleLabel = this.t(`title-${profile?.titleCode || 'rookie'}`);
         this.syncAccountUiChrome();
         this.ensureAuthIconMarkup();
         this.removeLegacyNameControls();
@@ -2101,11 +2097,12 @@ class DominoGame {
             : this.t('account-guest-profile');
         if (title) title.textContent = this.t('account-profile-title');
         if (ratingValue) ratingValue.textContent = String(profile?.rating ?? 1000);
-        if (titleValue) titleValue.textContent = titleLabel;
         if (pointsValue) pointsValue.textContent = String(profile?.points ?? 0);
         if (winsValue) winsValue.textContent = String(profile?.wins ?? 0);
         if (matchesValue) matchesValue.textContent = String(profile?.matchesPlayed ?? 0);
         if (coinsValue) coinsValue.textContent = String(details?.wallet?.balance ?? profile?.coins ?? profile?.wallet?.balance ?? 0);
+        const titleCard = document.getElementById('account-title-value')?.closest?.('.account-stat-card');
+        if (titleCard) titleCard.classList.add('is-hidden');
         if (!profile) {
             summary.textContent = this.accountOnline ? this.t('account-profile-empty') : this.t('account-offline');
             if (historyList) this.setSummaryMessage(historyList, this.t('account-history-empty'));

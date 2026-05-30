@@ -1,4 +1,5 @@
 export type PlayerProgressStats = {
+  rating?: number;
   wins?: number;
   losses?: number;
   draws?: number;
@@ -6,6 +7,14 @@ export type PlayerProgressStats = {
   currentStreak?: number;
   bestStreak?: number;
 };
+
+export const ELO_STARTING_RATING = 1000;
+export const ELO_MIN_RATING = 300;
+export const ELO_MAX_RATING = 5000;
+export const ELO_STANDARD_K_FACTOR = 32;
+export const ELO_PROVISIONAL_K_FACTOR = 40;
+export const ELO_PROVISIONAL_MATCHES = 20;
+export const ELO_FORFEIT_PENALTY = 5;
 
 const TITLE_TIERS = [
   { code: "rookie", minRating: 0 },
@@ -27,30 +36,65 @@ function toFiniteInt(value: unknown, fallback = 0) {
   return Number.isFinite(parsed) ? parsed : fallback;
 }
 
-export function calculatePlayerRating(stats: PlayerProgressStats) {
-  const matchesPlayed = Math.max(0, toFiniteInt(stats.matchesPlayed, 0));
-  if (matchesPlayed <= 0) {
-    return 1000;
+export function normalizeEloRating(value: unknown, fallback = ELO_STARTING_RATING) {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) {
+    return clamp(Math.round(fallback), ELO_MIN_RATING, ELO_MAX_RATING);
   }
+  return clamp(Math.round(parsed), ELO_MIN_RATING, ELO_MAX_RATING);
+}
 
-  const wins = Math.max(0, toFiniteInt(stats.wins, 0));
-  const losses = Math.max(0, toFiniteInt(stats.losses, 0));
-  const draws = Math.max(0, toFiniteInt(stats.draws, 0));
-  const currentStreak = Math.max(0, toFiniteInt(stats.currentStreak, 0));
-  const bestStreak = Math.max(0, toFiniteInt(stats.bestStreak, 0));
+export function calculatePlayerRating(stats: PlayerProgressStats) {
+  return normalizeEloRating(stats?.rating ?? ELO_STARTING_RATING);
+}
 
-  const confidence = matchesPlayed / (matchesPlayed + 12);
-  const winRate = (wins + draws * 0.5) / matchesPlayed;
-  const balance = (wins - losses) / matchesPlayed;
-  const volumeBonus = Math.log10(matchesPlayed + 1) * 70;
-  const streakBonus = Math.min(100, currentStreak * 10 + bestStreak * 2);
+export function calculateEloExpectedScore(playerRating: number, opponentRating: number) {
+  const player = normalizeEloRating(playerRating);
+  const opponent = normalizeEloRating(opponentRating);
+  return 1 / (1 + 10 ** ((opponent - player) / 400));
+}
 
-  const raw = 1000
-    + confidence * ((winRate - 0.5) * 850 + balance * 300)
-    + volumeBonus
-    + streakBonus;
+export function calculateEloDelta({
+  playerRating,
+  opponentRating,
+  actualScore,
+  matchesPlayed = 0,
+  penalty = 0
+}: {
+  playerRating: number;
+  opponentRating: number;
+  actualScore: number;
+  matchesPlayed?: number;
+  penalty?: number;
+}) {
+  const safeActualScore = Number.isFinite(Number(actualScore)) ? Number(actualScore) : 0;
+  const safeMatchesPlayed = Math.max(0, toFiniteInt(matchesPlayed, 0));
+  const kFactor = safeMatchesPlayed < ELO_PROVISIONAL_MATCHES ? ELO_PROVISIONAL_K_FACTOR : ELO_STANDARD_K_FACTOR;
+  const expectedScore = calculateEloExpectedScore(playerRating, opponentRating);
+  return Math.round(kFactor * (safeActualScore - expectedScore)) + Math.trunc(penalty);
+}
 
-  return clamp(Math.round(raw), 300, 5000);
+export function calculateEloUpdate({
+  playerRating,
+  opponentRating,
+  actualScore,
+  matchesPlayed = 0,
+  penalty = 0
+}: {
+  playerRating: number;
+  opponentRating: number;
+  actualScore: number;
+  matchesPlayed?: number;
+  penalty?: number;
+}) {
+  const delta = calculateEloDelta({
+    playerRating,
+    opponentRating,
+    actualScore,
+    matchesPlayed,
+    penalty
+  });
+  return normalizeEloRating(playerRating + delta);
 }
 
 export function getPlayerRatingTitleCode(rating: number) {

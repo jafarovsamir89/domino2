@@ -439,6 +439,21 @@ export class PlatformMatchDto {
   stakeKey?: string | null;
 
   @IsOptional()
+  @IsString()
+  @MaxLength(64)
+  sourceMatchId?: string | null;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(64)
+  integrityScope?: string | null;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(1024)
+  proof?: string | null;
+
+  @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => MatchesParticipantDto)
@@ -452,4 +467,21 @@ export class PlatformMatchDto {
   @IsNumber()
   @Type(() => Number)
   totalPoints?: number | null;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(16)
+  matchOutcome?: string | null;
+
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(8)
+  @IsString({ each: true })
+  forfeitUserIds?: string[];
+
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(8)
+  @IsString({ each: true })
+  forfeitPlayerIds?: string[];
 }

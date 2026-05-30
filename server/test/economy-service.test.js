@@ -807,7 +807,7 @@ test("settleForfeitStakeForRoom updates flags and request payload on success in 
         const result = await settleForfeitStakeForRoom(room, "s2");
         assert.deepEqual(result, { ok: true, winners: 2, reservations: [] });
         assert.equal(room.forfeitSettlementMade, true);
-        assert.equal(room.matchRecorded, true);
+        assert.equal(room.matchRecorded, false);
         assert.equal(capturedBody.roomId, "room-1");
         assert.equal(capturedBody.matchId, "match-1");
         assert.equal(capturedBody.stakeKey, "stake_200");

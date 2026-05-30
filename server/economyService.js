@@ -343,7 +343,6 @@ async function settleForfeitStakeForRoom(room, leavingSessionId) {
 
         const summary = economyResponse.json;
         room.forfeitSettlementMade = true;
-        room.matchRecorded = true;
         return summary;
     } catch (error) {
         console.warn("[ROOM] Failed to settle forfeit stake:", error);

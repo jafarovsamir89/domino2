@@ -6,6 +6,7 @@ import { ValidationPipe } from "@nestjs/common";
 import {
   EconomyReserveMatchDto,
   EconomySettleMatchDto,
+  PlatformMatchDto,
   RealtimeHeartbeatDto,
   UpdateProfileNameDto
 } from "../src/modules/validation/validation.dto.js";
@@ -114,4 +115,41 @@ test("ValidationPipe accepts signed economy settle payload fields", async () => 
   assert.equal(result.proof, "signed-proof-value");
   assert.equal(result.result, "win");
   assert.deepEqual(result.winnerUserIds, ["user-1", "user-2"]);
+});
+
+test("ValidationPipe accepts signed platform match payload fields", async () => {
+  const result = await pipe.transform({
+    mode: "team",
+    isTeamMode: true,
+    roomId: "room-1",
+    sourceMatchId: "match-1",
+    winnerKey: "team:0",
+    result: "win",
+    stakeKey: "stake_200",
+    integrityScope: "platform.match",
+    proof: "signed-proof-value",
+    matchOutcome: "forfeit",
+    forfeitUserIds: ["user-1"],
+    forfeitPlayerIds: ["player-1"],
+    participants: [
+      {
+        userId: "user-1",
+        name: "Alice",
+        teamIndex: 0,
+        result: "win"
+      }
+    ]
+  }, {
+    type: "body",
+    metatype: PlatformMatchDto,
+    data: ""
+  } as any);
+
+  assert.equal(result.roomId, "room-1");
+  assert.equal(result.integrityScope, "platform.match");
+  assert.equal(result.proof, "signed-proof-value");
+  assert.equal(result.matchOutcome, "forfeit");
+  assert.deepEqual(result.forfeitUserIds, ["user-1"]);
+  assert.deepEqual(result.forfeitPlayerIds, ["player-1"]);
+  assert.equal(result.participants?.[0]?.teamIndex, 0);
 });

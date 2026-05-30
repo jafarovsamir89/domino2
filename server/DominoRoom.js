@@ -661,6 +661,7 @@ class DominoRoom extends Room {
                         time: 3500
                     });
                 }
+                await this.recordForfeitMatchResult(client.sessionId);
                 this.state.gameActive = false;
                 this.state.matchOver = true;
                 this.state.gameOverReason = "disconnect";
@@ -1332,6 +1333,65 @@ class DominoRoom extends Room {
 
     async settleForfeitStake(leavingSessionId) {
         return settleForfeitStakeForRoom(this, leavingSessionId);
+    }
+
+    async recordForfeitMatchResult(leavingSessionId) {
+        if (this.matchRecorded || this.matchRecordInFlight) return false;
+        const leavingIndex = this.state.playerOrder.indexOf(leavingSessionId);
+        if (leavingIndex === -1) return false;
+        const leavingPlayer = this.state.players.get(leavingSessionId);
+        const leavingIdentity = this.identityBySessionId.get(leavingSessionId);
+        if (!leavingPlayer || leavingPlayer.isBot || !leavingIdentity?.userId) {
+            return false;
+        }
+
+        if (!this.matchRecordId) {
+            this.matchRecordId = this.currentDealMatchId || `${this.roomId}:match:${Date.now().toString(36)}:${Math.random().toString(36).slice(2, 10)}`;
+        }
+
+        const winnerIndex = this.state.isTeamMode
+            ? (leavingIndex % 2 === 0 ? 1 : 0)
+            : (leavingIndex === 0 ? 1 : 0);
+        const payload = buildPlatformMatchPayload({
+            isTeamMode: this.state.isTeamMode,
+            roomId: this.roomId,
+            stakeKey: this.currentStakeKey,
+            sourceMatchId: this.matchRecordId,
+            playerOrder: this.state.playerOrder,
+            players: this.state.players,
+            teamScores: this.state.teamScores,
+            teamRoundWins: this.state.teamRoundWins,
+            winnerIndex,
+            matchOutcome: "forfeit",
+            forfeitUserIds: [leavingIdentity.userId],
+            forfeitPlayerIds: [leavingIdentity.playerId || leavingIdentity.userId]
+        });
+
+        if (!payload.participants.length) {
+            return false;
+        }
+
+        this.pendingMatchRecording = payload;
+        this.matchRecordInFlight = true;
+        try {
+            const recorded = await this.recordPlatformMatch(buildSignedRequestBody("platform.match", payload));
+            if (!recorded) {
+                throw new Error("Platform match recording failed");
+            }
+            this.matchRecorded = true;
+            this.pendingMatchRecording = null;
+            this.clearMatchRecordingRetryTimer();
+            void this.saveCustomStateToRedis();
+            return true;
+        } catch (err) {
+            console.error("[ROOM] Failed to record forfeit match:", err);
+            this.matchRecorded = false;
+            this.scheduleMatchRecordingRetry();
+            void this.saveCustomStateToRedis();
+            return false;
+        } finally {
+            this.matchRecordInFlight = false;
+        }
     }
 
     async settleEconomyRound(wi, isInstantWin, players, wins) {

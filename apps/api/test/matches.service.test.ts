@@ -4,7 +4,6 @@ import assert from "node:assert/strict";
 import { createGameToken } from "../src/modules/auth/game-token.js";
 import { signDominoPayload } from "../src/modules/security/domino-proof.js";
 import { MatchesService } from "../src/modules/matches/matches.service.js";
-import { LeaderboardService } from "../src/modules/leaderboard/leaderboard.service.js";
 
 type PlayerRow = {
   id: string;
@@ -86,14 +85,14 @@ function makePrismaHarness() {
       create: async ({ data }: any) => {
         const row = {
           playerId: data.playerId,
-          rating: 1000,
-          points: 0,
-          wins: 0,
-          losses: 0,
-          draws: 0,
-          matchesPlayed: 0,
-          currentStreak: 0,
-          bestStreak: 0
+          rating: data.rating ?? 1000,
+          points: data.points ?? 0,
+          wins: data.wins ?? 0,
+          losses: data.losses ?? 0,
+          draws: data.draws ?? 0,
+          matchesPlayed: data.matchesPlayed ?? 0,
+          currentStreak: data.currentStreak ?? 0,
+          bestStreak: data.bestStreak ?? 0
         };
         statsByPlayerId.set(data.playerId, row);
         return row;
@@ -174,23 +173,36 @@ function makePrismaHarness() {
   return { prismaMock, playersById, statsByPlayerId, wallets, matchesById, participantsByMatchId, auditLogs };
 }
 
-test("recordPlatformMatch updates stats, wins, and leaderboard after a successful match record", async () => {
-  const { prismaMock, statsByPlayerId, matchesById } = makePrismaHarness();
+function makeService() {
+  const { prismaMock, ...rest } = makePrismaHarness();
   const economyStub = {
-    settleMatchStake: async () => ({ ok: true, settled: true })
+    settleMatchStake: async (_token: string, payload: any) => ({
+      ok: true,
+      settled: true,
+      result: payload.result,
+      winnerUserIds: payload.winnerUserIds
+    })
   } as any;
   const service = new MatchesService(prismaMock, economyStub);
-  const leaderboard = new LeaderboardService(prismaMock);
-  const token = createGameToken({
-    userId: "user-a",
-    playerId: "player-a",
-    displayName: "Alpha",
+  return { service, prismaMock, economyStub, ...rest };
+}
+
+function makeToken(userId = "user-a", playerId = "player-a", displayName = "Alpha") {
+  return createGameToken({
+    userId,
+    playerId,
+    displayName,
     role: "player",
-    sessionId: "session-a",
+    sessionId: `session-${userId}`,
     provider: "better-auth",
     issuedAt: Date.now(),
     expiresAt: Date.now() + 60_000
   });
+}
+
+test("1v1 human vs human updates ELO, wins, losses, and matchesPlayed", async () => {
+  const { service, statsByPlayerId, matchesById } = makeService();
+  const token = makeToken();
 
   const result = await service.recordPlatformMatch(token, withProof({
     sourceMatchId: "room-a:match:001",
@@ -212,37 +224,74 @@ test("recordPlatformMatch updates stats, wins, and leaderboard after a successfu
   assert.equal(matchesById.size, 1);
   assert.equal(statsByPlayerId.get("player:1")?.matchesPlayed, 1);
   assert.equal(statsByPlayerId.get("player:1")?.wins, 1);
+  assert.equal(statsByPlayerId.get("player:1")?.rating, 1020);
   assert.equal(statsByPlayerId.get("player:2")?.matchesPlayed, 1);
   assert.equal(statsByPlayerId.get("player:2")?.losses, 1);
-  assert.ok((statsByPlayerId.get("player:1")?.rating ?? 0) > (statsByPlayerId.get("player:2")?.rating ?? 0));
-
-  const items = await leaderboard.getTopPlayers(10);
-  assert.equal(items[0].id, "player:1");
-  assert.equal(items[0].rating, statsByPlayerId.get("player:1")?.rating);
+  assert.equal(statsByPlayerId.get("player:2")?.rating, 980);
 });
 
-test("recordPlatformMatch is idempotent for the same sourceMatchId", async () => {
-  const { prismaMock, statsByPlayerId, matchesById } = makePrismaHarness();
-  const economyStub = {
-    settleMatchStake: async () => ({ ok: true, settled: true })
-  } as any;
-  const service = new MatchesService(prismaMock, economyStub);
-  const token = createGameToken({
-    userId: "user-a",
-    playerId: "player-a",
-    displayName: "Alpha",
-    role: "player",
-    sessionId: "session-a",
-    provider: "better-auth",
-    issuedAt: Date.now(),
-    expiresAt: Date.now() + 60_000
-  });
+test("human vs bot stays unranked and does not create player stats", async () => {
+  const { service, statsByPlayerId, matchesById } = makeService();
+  const token = makeToken();
 
-  const payload = withProof({
+  const result = await service.recordPlatformMatch(token, withProof({
     sourceMatchId: "room-b:match:001",
     mode: "ffa",
     isTeamMode: false,
     roomId: "room-b",
+    winnerKey: "player:0",
+    result: "win",
+    stakeKey: "free",
+    participants: [
+      { playerId: "player-a", userId: "user-a", name: "Alpha", winnerKey: "player:0", points: 10, roundWins: 1, result: "win" }
+    ],
+    totalPoints: 10
+  }, "platform.match"));
+
+  assert.ok(result);
+  assert.equal(matchesById.size, 1);
+  assert.equal(statsByPlayerId.size, 0);
+});
+
+test("team mode ranks humans while ignoring bots", async () => {
+  const { service, statsByPlayerId } = makeService();
+  const token = makeToken();
+
+  const result = await service.recordPlatformMatch(token, withProof({
+    sourceMatchId: "room-c:match:001",
+    mode: "team",
+    isTeamMode: true,
+    roomId: "room-c",
+    winnerKey: "team:0",
+    result: "win",
+    stakeKey: "stake_500",
+    participants: [
+      { playerId: "player-a", userId: "user-a", name: "Alpha", teamIndex: 0, winnerKey: "team:0", points: 30, roundWins: 2, result: "win" },
+      { playerId: "player-b", userId: "user-b", name: "Bravo", teamIndex: 1, winnerKey: "team:1", points: 15, roundWins: 0, result: "loss" },
+      { playerId: "player-c", userId: "user-c", name: "Charlie", teamIndex: 0, winnerKey: "team:0", points: 30, roundWins: 2, result: "win" }
+    ],
+    teams: [
+      { memberIds: ["user-a", "user-c"] },
+      { memberIds: ["user-b"] }
+    ],
+    totalPoints: 75
+  }, "platform.match"));
+
+  assert.ok(result);
+  assert.equal(statsByPlayerId.get("player:1")?.rating, 1020);
+  assert.equal(statsByPlayerId.get("player:2")?.rating, 980);
+  assert.equal(statsByPlayerId.get("player:3")?.rating, 1020);
+});
+
+test("duplicate sourceMatchId does not update ELO twice", async () => {
+  const { service, statsByPlayerId, matchesById } = makeService();
+  const token = makeToken();
+
+  const payload = withProof({
+    sourceMatchId: "room-d:match:001",
+    mode: "ffa",
+    isTeamMode: false,
+    roomId: "room-d",
     winnerKey: "player:0",
     result: "win",
     stakeKey: "stake_200",
@@ -263,7 +312,69 @@ test("recordPlatformMatch is idempotent for the same sourceMatchId", async () =>
   assert.ok(first);
   assert.ok(second);
   assert.equal(matchesById.size, 1);
-  assert.equal(second.matchId, "room-b:match:001");
+  assert.equal(second.matchId, "room-d:match:001");
   assert.deepEqual(statsByPlayerId.get("player:1"), snapshotAfterFirst.playerA);
   assert.deepEqual(statsByPlayerId.get("player:2"), snapshotAfterFirst.playerB);
+});
+
+test("forfeit 1v1 applies an extra penalty to the leaving player", async () => {
+  const { service, statsByPlayerId } = makeService();
+  const token = makeToken();
+
+  const result = await service.recordPlatformMatch(token, withProof({
+    sourceMatchId: "room-e:match:001",
+    mode: "ffa",
+    isTeamMode: false,
+    roomId: "room-e",
+    winnerKey: "player:1",
+    result: "win",
+    matchOutcome: "forfeit",
+    forfeitUserIds: ["user-a"],
+    stakeKey: "stake_200",
+    participants: [
+      { playerId: "player-a", userId: "user-a", name: "Alpha", winnerKey: "player:0", points: 12, roundWins: 0, result: "loss" },
+      { playerId: "player-b", userId: "user-b", name: "Beta", winnerKey: "player:1", points: 18, roundWins: 2, result: "win" }
+    ],
+    totalPoints: 30
+  }, "platform.match"));
+
+  assert.ok(result);
+  assert.equal(statsByPlayerId.get("player:1")?.rating, 975);
+  assert.equal(statsByPlayerId.get("player:1")?.losses, 1);
+  assert.equal(statsByPlayerId.get("player:2")?.rating, 1020);
+  assert.equal(statsByPlayerId.get("player:2")?.wins, 1);
+});
+
+test("forfeit team applies the penalty only to the leaving player", async () => {
+  const { service, statsByPlayerId } = makeService();
+  const token = makeToken();
+
+  const result = await service.recordPlatformMatch(token, withProof({
+    sourceMatchId: "room-f:match:001",
+    mode: "team",
+    isTeamMode: true,
+    roomId: "room-f",
+    winnerKey: "team:1",
+    result: "win",
+    matchOutcome: "forfeit",
+    forfeitUserIds: ["user-a"],
+    stakeKey: "stake_500",
+    participants: [
+      { playerId: "player-a", userId: "user-a", name: "Alpha", teamIndex: 0, winnerKey: "team:0", points: 10, roundWins: 0, result: "loss" },
+      { playerId: "player-b", userId: "user-b", name: "Bravo", teamIndex: 0, winnerKey: "team:0", points: 10, roundWins: 0, result: "loss" },
+      { playerId: "player-c", userId: "user-c", name: "Charlie", teamIndex: 1, winnerKey: "team:1", points: 20, roundWins: 2, result: "win" },
+      { playerId: "player-d", userId: "user-d", name: "Delta", teamIndex: 1, winnerKey: "team:1", points: 20, roundWins: 2, result: "win" }
+    ],
+    teams: [
+      { memberIds: ["user-a", "user-b"] },
+      { memberIds: ["user-c", "user-d"] }
+    ],
+    totalPoints: 60
+  }, "platform.match"));
+
+  assert.ok(result);
+  assert.equal(statsByPlayerId.get("player:1")?.rating, 975);
+  assert.equal(statsByPlayerId.get("player:2")?.rating, 980);
+  assert.equal(statsByPlayerId.get("player:3")?.rating, 1020);
+  assert.equal(statsByPlayerId.get("player:4")?.rating, 1020);
 });

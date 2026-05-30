@@ -4,7 +4,11 @@ import { EconomyService } from "../economy/economy.service.js";
 import { grantStarterCoins } from "../economy/economy-starter.js";
 import { PrismaService } from "../prisma/prisma.service.js";
 import { verifyGameToken } from "../auth/game-token.js";
-import { calculatePlayerRating } from "../ranking/player-ranking.js";
+import {
+  calculateEloUpdate,
+  ELO_FORFEIT_PENALTY,
+  normalizeEloRating
+} from "../ranking/player-ranking.js";
 import { signDominoPayload, verifyDominoPayload } from "../security/domino-proof.js";
 
 type MatchParticipantPayload = {
@@ -31,6 +35,9 @@ type MatchPayload = {
   totalPoints?: number | null;
   integrityScope?: string | null;
   proof?: string | null;
+  matchOutcome?: string | null;
+  forfeitUserIds?: string[];
+  forfeitPlayerIds?: string[];
 };
 
 type PlayerSnapshot = {
@@ -47,9 +54,23 @@ type PlayerSnapshot = {
   bestStreak: number;
 };
 
+type ResolvedParticipant = {
+  participant: MatchParticipantPayload;
+  player: PlayerSnapshot;
+  statsExists: boolean;
+  sideKey: string;
+  ratingBefore: number;
+  ratingAfter: number;
+  ratingDelta: number;
+};
+
 function toInt(value: unknown, fallback = 0) {
   const parsed = Number.parseInt(String(value ?? ""), 10);
   return Number.isFinite(parsed) ? parsed : fallback;
+}
+
+function normalizeText(value: unknown) {
+  return String(value ?? "").trim();
 }
 
 function stripProof<T extends Record<string, unknown>>(payload: T) {
@@ -57,6 +78,164 @@ function stripProof<T extends Record<string, unknown>>(payload: T) {
   const proof = String(next.proof || "").trim();
   delete next.proof;
   return { proof, payload: next as Record<string, unknown> };
+}
+
+function getParticipantSideKey(participant: MatchParticipantPayload, isTeamMode: boolean) {
+  if (isTeamMode) {
+    const teamIndex = Number(participant.teamIndex);
+    return Number.isInteger(teamIndex) && teamIndex >= 0 ? `team:${teamIndex}` : "";
+  }
+
+  const result = normalizeText(participant.result).toLowerCase();
+  if (result === "win" || result === "loss") {
+    return result;
+  }
+
+  const winnerKey = normalizeText(participant.winnerKey).toLowerCase();
+  if (winnerKey.startsWith("player:")) {
+    return result === "win" ? "win" : "loss";
+  }
+
+  return "";
+}
+
+function averageRating(participants: ResolvedParticipant[]) {
+  if (!participants.length) return 0;
+  const total = participants.reduce((sum, entry) => sum + normalizeEloRating(entry.player.rating), 0);
+  return Math.round(total / participants.length);
+}
+
+function buildRankedMatchContext({
+  payload,
+  participants
+}: {
+  payload: MatchPayload;
+  participants: ResolvedParticipant[];
+}) {
+  const isTeamMode = payload.isTeamMode === true;
+  const result = normalizeText(payload.result).toLowerCase();
+  const matchOutcome = normalizeText(payload.matchOutcome).toLowerCase();
+  const isForfeit = matchOutcome === "forfeit";
+  const forfeitUserIds = new Set(
+    Array.isArray(payload.forfeitUserIds)
+      ? payload.forfeitUserIds.map((value) => normalizeText(value)).filter(Boolean)
+      : []
+  );
+
+  if (result === "draw" || result === "refund") {
+    return {
+      ranked: false,
+      reason: "no_rank_result",
+      isTeamMode,
+      isForfeit,
+      forfeitUserIds
+    };
+  }
+
+  const humanParticipants = participants.filter(({ participant }) => Boolean(normalizeText(participant.userId)));
+  if (humanParticipants.length < 2) {
+    return {
+      ranked: false,
+      reason: "not_enough_humans",
+      isTeamMode,
+      isForfeit,
+      forfeitUserIds
+    };
+  }
+
+  const sides = new Map<string, ResolvedParticipant[]>();
+  for (const entry of humanParticipants) {
+    const sideKey = getParticipantSideKey(entry.participant, isTeamMode);
+    if (!sideKey) {
+      return {
+        ranked: false,
+        reason: "invalid_participant_side",
+        isTeamMode,
+        isForfeit,
+        forfeitUserIds
+      };
+    }
+
+    const list = sides.get(sideKey) || [];
+    list.push(entry);
+    sides.set(sideKey, list);
+  }
+
+  if (isTeamMode) {
+    const team0 = sides.get("team:0") || [];
+    const team1 = sides.get("team:1") || [];
+    if (!team0.length || !team1.length) {
+      return {
+        ranked: false,
+        reason: "not_enough_opposing_humans",
+        isTeamMode,
+        isForfeit,
+        forfeitUserIds
+      };
+    }
+
+    const winnerKey = normalizeText(payload.winnerKey);
+    if (!winnerKey.startsWith("team:")) {
+      return {
+        ranked: false,
+        reason: "missing_winner_side",
+        isTeamMode,
+        isForfeit,
+        forfeitUserIds
+      };
+    }
+  } else {
+    const winners = sides.get("win") || [];
+    const losers = sides.get("loss") || [];
+    if (!winners.length || !losers.length) {
+      return {
+        ranked: false,
+        reason: "not_enough_opposing_humans",
+        isTeamMode,
+        isForfeit,
+        forfeitUserIds
+      };
+    }
+  }
+
+  const sideAverageRatings = new Map<string, number>();
+  for (const [sideKey, sideParticipants] of sides.entries()) {
+    sideAverageRatings.set(sideKey, averageRating(sideParticipants));
+  }
+
+  return {
+    ranked: true,
+    reason: "ranked",
+    isTeamMode,
+    isForfeit,
+    forfeitUserIds,
+    humanParticipants,
+    sides,
+    sideAverageRatings
+  };
+}
+
+function buildWinnerParticipants({
+  payload,
+  participants
+}: {
+  payload: MatchPayload;
+  participants: ResolvedParticipant[];
+}) {
+  const isTeamMode = payload.isTeamMode === true;
+  if (normalizeText(payload.result).toLowerCase() === "draw") {
+    return [];
+  }
+
+  if (isTeamMode) {
+    const winnerKey = normalizeText(payload.winnerKey);
+    if (!winnerKey.startsWith("team:")) {
+      return [];
+    }
+    return participants.filter(({ participant }) => getParticipantSideKey(participant, true) === winnerKey);
+  }
+
+  return participants.filter(({ participant }) => getParticipantSideKey(participant, false) === "win");
 }
 
 @Injectable()
@@ -76,10 +255,12 @@ export class MatchesService {
     if (!participants.length) {
       return null;
     }
+
     const sourceMatchId = String(payload.sourceMatchId || "").trim();
     if (!sourceMatchId) {
       return null;
     }
+
     const { proof, payload: signedPayload } = stripProof(payload as Record<string, unknown>);
     if (String(signedPayload.integrityScope || "").trim() !== "platform.match") {
       return null;
@@ -104,11 +285,6 @@ export class MatchesService {
       return null;
     }
 
-    const isTeamMode = payload.isTeamMode === true;
-    const winnerKey = String(payload.winnerKey || "").trim();
-    const totalPoints = Number.isFinite(Number(payload.totalPoints))
-      ? Number(payload.totalPoints)
-      : dedupedParticipants.reduce((sum, participant) => sum + toInt(participant.points), 0);
     const matchCreatedAt = new Date();
 
     return this.prisma.$transaction(async (tx) => {
@@ -130,13 +306,7 @@ export class MatchesService {
         };
       }
 
-      const resolvedParticipants: Array<{
-        participant: MatchParticipantPayload;
-        player: PlayerSnapshot;
-        ratingBefore: number;
-        ratingAfter: number;
-        ratingDelta: number;
-      }> = [];
+      const resolvedParticipants: ResolvedParticipant[] = [];
 
       for (const participant of dedupedParticipants) {
         const userId = String(participant.userId || "").trim();
@@ -160,14 +330,17 @@ export class MatchesService {
           }
         });
 
-        const stats = player.stats
-          ? player.stats
-          : await tx.playerStats.create({
-              data: {
-                playerId: player.id
-              }
-            });
-        const ratingBefore = stats.rating;
+        const stats = player.stats || null;
+        const snapshotStats = stats || {
+          rating: 1000,
+          points: 0,
+          wins: 0,
+          losses: 0,
+          draws: 0,
+          matchesPlayed: 0,
+          currentStreak: 0,
+          bestStreak: 0
+        };
 
         await grantStarterCoins(
           tx,
@@ -183,17 +356,19 @@ export class MatchesService {
             playerId: player.id,
             userId: player.userId ?? userId,
             displayName: player.displayName,
-            rating: stats.rating,
-            points: stats.points,
-            wins: stats.wins,
-            losses: stats.losses,
-            draws: stats.draws,
-            matchesPlayed: stats.matchesPlayed,
-            currentStreak: stats.currentStreak,
-            bestStreak: stats.bestStreak
+            rating: normalizeEloRating(snapshotStats.rating),
+            points: toInt(snapshotStats.points),
+            wins: toInt(snapshotStats.wins),
+            losses: toInt(snapshotStats.losses),
+            draws: toInt(snapshotStats.draws),
+            matchesPlayed: toInt(snapshotStats.matchesPlayed),
+            currentStreak: toInt(snapshotStats.currentStreak),
+            bestStreak: toInt(snapshotStats.bestStreak)
           },
-          ratingBefore,
-          ratingAfter: ratingBefore,
+          statsExists: Boolean(stats),
+          sideKey: "",
+          ratingBefore: normalizeEloRating(snapshotStats.rating),
+          ratingAfter: normalizeEloRating(snapshotStats.rating),
           ratingDelta: 0
         });
       }
@@ -202,29 +377,62 @@ export class MatchesService {
         return null;
       }
 
+      const rankingContext = buildRankedMatchContext({
+        payload,
+        participants: resolvedParticipants
+      });
+
+      if (rankingContext.ranked) {
+        for (const entry of resolvedParticipants) {
+          if (!entry.statsExists) {
+            await tx.playerStats.create({
+              data: {
+                playerId: entry.player.playerId,
+                rating: 1000,
+                points: 0,
+                wins: 0,
+                losses: 0,
+                draws: 0,
+                matchesPlayed: 0,
+                currentStreak: 0,
+                bestStreak: 0
+              }
+            });
+            entry.statsExists = true;
+          }
+        }
+      }
+
+      const winnerParticipants = buildWinnerParticipants({
+        payload,
+        participants: resolvedParticipants
+      });
+
       const match = await tx.match.create({
         data: {
           id: sourceMatchId,
           mode: payload.mode || "online",
-          isTeamMode,
+          isTeamMode: Boolean(payload.isTeamMode),
           roomId: payload.roomId || claims.sessionId || null,
-          winnerKey: winnerKey || null,
+          winnerKey: payload.winnerKey || null,
           result: payload.result || null,
-          totalPoints,
+          totalPoints: Number.isFinite(Number(payload.totalPoints))
+            ? Number(payload.totalPoints)
+            : resolvedParticipants.reduce((sum, entry) => sum + toInt(entry.participant.points), 0),
           createdAt: matchCreatedAt,
           participants: {
-            create: resolvedParticipants.map(({ participant, player, ratingBefore, ratingAfter, ratingDelta }) => ({
-              playerId: player.playerId,
-              displayNameSnapshot: player.displayName,
-              teamIndex: participant.teamIndex ?? null,
-              winnerKey: participant.winnerKey ?? null,
-              result: participant.result ?? null,
-              points: toInt(participant.points),
-              roundWins: toInt(participant.roundWins),
-              isBot: participant.isBot === true,
-              ratingBefore,
-              ratingAfter,
-              ratingDelta
+            create: resolvedParticipants.map((entry) => ({
+              playerId: entry.player.playerId,
+              displayNameSnapshot: entry.player.displayName,
+              teamIndex: entry.participant.teamIndex ?? null,
+              winnerKey: entry.participant.winnerKey ?? null,
+              result: entry.participant.result ?? null,
+              points: toInt(entry.participant.points),
+              roundWins: toInt(entry.participant.roundWins),
+              isBot: entry.participant.isBot === true,
+              ratingBefore: entry.ratingBefore,
+              ratingAfter: entry.ratingAfter,
+              ratingDelta: entry.ratingDelta
             }))
           }
         },
@@ -233,52 +441,61 @@ export class MatchesService {
         }
       });
 
-      const winnerTeamIndex = isTeamMode && winnerKey.startsWith("team:")
-        ? Number.parseInt(winnerKey.slice(5), 10)
-        : -1;
-      const winnerParticipants = resolvedParticipants.filter(({ participant }) => {
-        if (winnerKey === "draw") {
-          return false;
-        }
-        if (isTeamMode) {
-          return Number.isFinite(winnerTeamIndex) && participant.teamIndex !== null && participant.teamIndex === winnerTeamIndex;
-        }
-        return participant.winnerKey === winnerKey || participant.result === "win";
-      });
+      if (rankingContext.ranked) {
+        const isTeamMode = Boolean(payload.isTeamMode);
+        const winnerSideKey = isTeamMode
+          ? normalizeText(payload.winnerKey)
+          : "win";
+        const losingSideKey = isTeamMode
+          ? (winnerSideKey === "team:0" ? "team:1" : "team:0")
+          : "loss";
 
-      for (const { participant, player } of resolvedParticipants) {
-        const isDraw = winnerKey === "draw" || payload.result === "draw";
-        const isWinner = !isDraw && (isTeamMode
-          ? participant.teamIndex !== null && participant.teamIndex !== undefined && `team:${participant.teamIndex}` === winnerKey
-          : participant.winnerKey === winnerKey);
-        const didWin = isDraw ? false : isWinner;
-        const didLose = !didWin && !isDraw;
-        const nextCurrentStreak = didWin ? player.currentStreak + 1 : 0;
-        const nextStats = {
-          wins: player.wins + (didWin ? 1 : 0),
-          losses: player.losses + (didLose ? 1 : 0),
-          draws: player.draws + (isDraw ? 1 : 0),
-          matchesPlayed: player.matchesPlayed + 1,
-          currentStreak: nextCurrentStreak,
-          bestStreak: Math.max(player.bestStreak, nextCurrentStreak)
-        };
-        const nextRating = calculatePlayerRating(nextStats);
-        const ratingBefore = player.rating;
-
-        await tx.playerStats.update({
-          where: { playerId: player.playerId },
-          data: {
-            rating: nextRating,
-            points: player.points + toInt(participant.points),
-            ...nextStats
+        for (const entry of resolvedParticipants) {
+          const userId = String(entry.participant.userId || "").trim();
+          if (!userId) {
+            continue;
           }
-        });
 
-        const snapshot = resolvedParticipants.find((entry) => entry.player.playerId === player.playerId);
-        if (snapshot) {
-          snapshot.ratingBefore = ratingBefore;
-          snapshot.ratingAfter = nextRating;
-          snapshot.ratingDelta = nextRating - ratingBefore;
+          const currentSideKey = getParticipantSideKey(entry.participant, isTeamMode);
+          if (!currentSideKey) {
+            continue;
+          }
+
+          const isWinner = currentSideKey === winnerSideKey;
+          const isLoser = currentSideKey === losingSideKey;
+          const actualScore = isWinner ? 1 : 0;
+          const opponentKey = isWinner ? losingSideKey : winnerSideKey;
+          const opponentRating = rankingContext.sideAverageRatings?.get(opponentKey) ?? entry.player.rating;
+          const penalty = rankingContext.isForfeit && rankingContext.forfeitUserIds.has(userId) ? -ELO_FORFEIT_PENALTY : 0;
+          const nextRating = calculateEloUpdate({
+            playerRating: entry.player.rating,
+            opponentRating,
+            actualScore,
+            matchesPlayed: entry.player.matchesPlayed,
+            penalty
+          });
+          const nextCurrentStreak = isWinner ? entry.player.currentStreak + 1 : 0;
+          const nextStats = {
+            wins: entry.player.wins + (isWinner ? 1 : 0),
+            losses: entry.player.losses + (isLoser ? 1 : 0),
+            draws: entry.player.draws,
+            matchesPlayed: entry.player.matchesPlayed + 1,
+            currentStreak: nextCurrentStreak,
+            bestStreak: Math.max(entry.player.bestStreak, nextCurrentStreak)
+          };
+
+          await tx.playerStats.update({
+            where: { playerId: entry.player.playerId },
+            data: {
+              rating: nextRating,
+              points: entry.player.points + toInt(entry.participant.points),
+              ...nextStats
+            }
+          });
+
+          entry.ratingBefore = entry.player.rating;
+          entry.ratingAfter = nextRating;
+          entry.ratingDelta = nextRating - entry.player.rating;
         }
       }
 
@@ -292,17 +509,22 @@ export class MatchesService {
           payloadJson: {
             mode: payload.mode || "online",
             roomId: payload.roomId || claims.sessionId || null,
-            winnerKey: winnerKey || null,
+            winnerKey: payload.winnerKey || null,
             result: payload.result || null,
+            matchOutcome: payload.matchOutcome || "normal",
             stakeKey: payload.stakeKey || null,
-            totalPoints,
-            participants: resolvedParticipants.map(({ player, ratingBefore, ratingAfter, ratingDelta }) => ({
-              playerId: player.playerId,
-              userId: player.userId,
-              displayName: player.displayName,
-              ratingBefore,
-              ratingAfter,
-              ratingDelta
+            totalPoints: Number.isFinite(Number(payload.totalPoints))
+              ? Number(payload.totalPoints)
+              : resolvedParticipants.reduce((sum, entry) => sum + toInt(entry.participant.points), 0),
+            ranked: rankingContext.ranked,
+            forfeitUserIds: Array.isArray(payload.forfeitUserIds) ? payload.forfeitUserIds : [],
+            participants: resolvedParticipants.map((entry) => ({
+              playerId: entry.player.playerId,
+              userId: entry.player.userId,
+              displayName: entry.player.displayName,
+              ratingBefore: entry.ratingBefore,
+              ratingAfter: entry.ratingAfter,
+              ratingDelta: entry.ratingDelta
             }))
           }
         }
@@ -312,7 +534,7 @@ export class MatchesService {
         roomId: String(payload.roomId || claims.sessionId || ""),
         matchId: match.id,
         stakeKey: String(payload.stakeKey || "free"),
-        result: winnerKey === "draw" || payload.result === "draw" ? "draw" : "win",
+        result: winnerParticipants.length ? "win" : "refund",
         winnerPlayerIds: winnerParticipants.map(({ player }) => player.playerId),
         winnerUserIds: winnerParticipants.map(({ player }) => player.userId),
         integrityScope: "economy.settle",
@@ -320,7 +542,7 @@ export class MatchesService {
           roomId: String(payload.roomId || claims.sessionId || ""),
           matchId: match.id,
           stakeKey: String(payload.stakeKey || "free"),
-          result: winnerKey === "draw" || payload.result === "draw" ? "draw" : "win",
+          result: winnerParticipants.length ? "win" : "refund",
           winnerPlayerIds: winnerParticipants.map(({ player }) => player.playerId),
           winnerUserIds: winnerParticipants.map(({ player }) => player.userId),
           integrityScope: "economy.settle"

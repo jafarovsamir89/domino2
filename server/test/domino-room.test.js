@@ -392,7 +392,7 @@ test("forfeit settle replay does not settle the same room twice", async () => {
 
         assert.ok(first);
         assert.equal(room.forfeitSettlementMade, true);
-        assert.equal(room.matchRecorded, true);
+        assert.equal(room.matchRecorded, false);
         assert.equal(second, false);
         assert.equal(fetchCalls.length, 1);
         assert.equal(fetchCalls[0].body.matchId, "match-forfeit");
@@ -428,6 +428,42 @@ test("onLeave shows a support warning when forfeit settlement fails", async () =
     await room.onLeave({ sessionId: "session-1" }, false);
 
     assert.ok(messages.some((item) => item.event === "msg" && item.payload?.key === "forfeit-settlement-failed"));
+});
+
+test("onLeave records a forfeit match after successful settlement", async () => {
+    const room = Object.create(DominoRoom.prototype);
+    let recorded = 0;
+    room.state = {
+        gameActive: true,
+        matchOver: false,
+        isTeamMode: false,
+        playerOrder: ["session-1", "session-2"],
+        players: new Map([
+            ["session-1", { name: "Alice", isConnected: true }],
+            ["session-2", { name: "Bob", isConnected: true }]
+        ])
+    };
+    room.identityBySessionId = new Map([
+        ["session-1", { provider: "platform", authToken: "token-a", userId: "user-a", displayName: "Alice", playerId: "player-a", avatarUrl: "", role: "player" }],
+        ["session-2", { provider: "platform", authToken: "token-b", userId: "user-b", displayName: "Bob", playerId: "player-b", avatarUrl: "", role: "player" }]
+    ]);
+    room.allowReconnection = async () => {
+        throw new Error("reconnect failed");
+    };
+    room.settleForfeitStake = async () => ({ ok: true });
+    room.recordForfeitMatchResult = async () => {
+        recorded += 1;
+        return true;
+    };
+    room.broadcastRoomState = () => {};
+    room.broadcast = () => {};
+    room.clearTurnTimer = () => {};
+    room.clearNextDealTimer = () => {};
+    room.syncState = () => {};
+
+    await room.onLeave({ sessionId: "session-1" }, false);
+
+    assert.equal(recorded, 1);
 });
 
 test("turnVersion rejects stale replayed turn actions", () => {

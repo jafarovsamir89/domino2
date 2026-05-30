@@ -50,7 +50,10 @@ function buildPlatformMatchPayload({
     players,
     teamScores = [],
     teamRoundWins = [],
-    winnerIndex = 0
+    winnerIndex = 0,
+    matchOutcome = "normal",
+    forfeitUserIds = [],
+    forfeitPlayerIds = []
 } = {}) {
     const winnerKey = buildWinnerKey({ isTeamMode, winnerIndex });
     const teams = buildMatchTeams({ isTeamMode, teamScores, teamRoundWins });
@@ -83,6 +86,9 @@ function buildPlatformMatchPayload({
         winnerKey,
         result: "win",
         stakeKey,
+        matchOutcome: String(matchOutcome || "normal").trim() || "normal",
+        forfeitUserIds: Array.isArray(forfeitUserIds) ? forfeitUserIds.map((value) => String(value || "").trim()).filter(Boolean) : [],
+        forfeitPlayerIds: Array.isArray(forfeitPlayerIds) ? forfeitPlayerIds.map((value) => String(value || "").trim()).filter(Boolean) : [],
         teams,
         participants
     };
