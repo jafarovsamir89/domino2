@@ -5752,8 +5752,11 @@ class DominoGame {
         this.matchOver = !!state?.matchOver;
         this.onlineStakeKey = state?.stakeKey || this.onlineStakeKey;
         this.onlineRoundBankAmount = Math.max(0, Number(state?.bankAmount || 0));
-        this.validMoves = [];
-        this.goshaCombo = null;
+        const shouldKeepTurnHints = this.gameActive && this.currentPlayer === this.humanPlayerIndex;
+        if (!shouldKeepTurnHints) {
+            this.validMoves = [];
+            this.goshaCombo = null;
+        }
         if (this.gameActive && Number(state?.turnDeadlineAt || 0) > 0) {
             this.startTurnTimer(Number(state.turnDeadlineAt));
         } else {
