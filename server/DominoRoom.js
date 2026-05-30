@@ -711,14 +711,12 @@ class DominoRoom extends Room {
         }
         this.gameStarting = true;
         if ((this.pendingMatchRecording && !this.matchRecorded) || this.matchRecordInFlight) {
-            this.gameStarting = false;
-            debugLog("[ROOM_DEBUG] startGame:blocked", {
+            debugLog("[ROOM_DEBUG] startGame:pending_match_recording", {
                 roomId: this.roomId,
                 roomCode: this.roomCode,
                 reason: "pending_match_recording"
             });
-            console.warn("[ROOM] Deferring new match start until the previous match is recorded.");
-            return;
+            console.warn("[ROOM] Previous match recording is still pending; continuing with the new game start.");
         }
         if (this.countReadyHumanPlayers() < this.humanSeats || this.countSeatedHumanPlayers() < this.humanSeats) {
             this.gameStarting = false;

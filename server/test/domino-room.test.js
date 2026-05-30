@@ -466,6 +466,57 @@ test("onLeave records a forfeit match after successful settlement", async () => 
     assert.equal(recorded, 1);
 });
 
+test("startGame does not block a fresh match when a stale recording is still pending", async () => {
+    const room = Object.create(DominoRoom.prototype);
+    let started = 0;
+    Object.defineProperty(room, "roomId", {
+        value: "room-fresh",
+        writable: true,
+        configurable: true
+    });
+    room.roomCode = "FRESH";
+    room.state = {
+        gameActive: false,
+        matchFinished: false,
+        isTeamMode: false,
+        matchRound: 1,
+        deal: 1,
+        currentPlayerIndex: 0,
+        turnVersion: 1,
+        teamScores: [0, 0],
+        teamRoundWins: [0, 0],
+        players: new Map([
+            ["host", { name: "Host", isBot: false, isConnected: true, seatIndex: 0, userId: "user-a", score: 0, roundWins: 0 }],
+            ["guest", { name: "Guest", isBot: false, isConnected: true, seatIndex: 1, userId: "user-b", score: 0, roundWins: 0 }]
+        ]),
+        playerOrder: ["host", "guest"]
+    };
+    room.humanSeats = 2;
+    room.totalPlayers = 2;
+    room.aiCount = 0;
+    room.pendingMatchRecording = { sourceMatchId: "old-match" };
+    room.matchRecordInFlight = true;
+    room.matchRecorded = false;
+    room.matchFinished = false;
+    room.currentStakeKey = "stake_200";
+    room.pendingEconomySettlement = Promise.resolve();
+    room.clearNextDealTimer = () => {};
+    room.clearTurnTimer = () => {};
+    room.broadcastRoomState = () => {};
+    room.ensureBotPlayers = () => {};
+    room.rebuildPlayerOrderBySeats = () => {};
+    room.startDeal = async () => {
+        started += 1;
+    };
+    room.countReadyHumanPlayers = () => 2;
+    room.countSeatedHumanPlayers = () => 2;
+
+    await room.startGame();
+
+    assert.equal(started, 1);
+    assert.equal(room.gameStarting, false);
+});
+
 test("turnVersion rejects stale replayed turn actions", () => {
     const room = Object.create(DominoRoom.prototype);
     let plays = 0;
