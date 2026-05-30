@@ -169,7 +169,7 @@ class NetworkManager {
 
     buildJoinOptions(extra = {}) {
         return {
-            name: extra.name || this.game.playerName,
+            name: extra.name || this.game.getOnlineDisplayName?.() || this.game.playerName,
             authToken: this.game.account?.getRoomAuthToken?.() || '',
             avatarUrl: this.game.accountProfile?.avatarUrl
                 || this.game.accountProfile?.image

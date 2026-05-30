@@ -3794,12 +3794,34 @@ body.seat-selection-active #game-screen {
 }
 
 #stake-info {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
     padding: 4px 8px;
     border-radius: 999px;
     background: rgba(240, 192, 64, 0.12);
     border: 1px solid rgba(240, 192, 64, 0.22);
     color: var(--accent);
     font-weight: 700;
+}
+
+#stake-info .stake-info-bank-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    flex: 0 0 auto;
+}
+
+#stake-info .stake-info-bank-icon svg {
+    width: 100%;
+    height: 100%;
+    fill: currentColor;
+}
+
+#stake-info .stake-info-bank-value {
+    line-height: 1;
 }
 
 .resume-session-banner {

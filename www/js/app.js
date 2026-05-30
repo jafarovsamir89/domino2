@@ -1943,7 +1943,6 @@ class DominoGame {
         const title = document.getElementById('account-modal-title');
         const historyPanel = document.getElementById('account-history-panel');
         const leaderboardPanel = document.getElementById('account-leaderboard-panel');
-        const summary = document.getElementById('account-profile-summary');
         const avatar = document.getElementById('account-avatar');
         const avatarEditButton = document.getElementById('account-edit-avatar-btn');
         const profileName = document.getElementById('account-profile-name');
@@ -2061,7 +2060,6 @@ class DominoGame {
         if (profileMeta) {
             profileMeta.classList.toggle('is-hidden', this.hasAuthenticatedAccount(profile));
         }
-        if (!summary) return;
         const isAuthenticated = this.hasAuthenticatedAccount(profile);
         if (profilePanel) profilePanel.classList.toggle('is-hidden', !isAuthenticated);
         if (authPanel) authPanel.classList.toggle('is-hidden', isAuthenticated);
@@ -2102,14 +2100,9 @@ class DominoGame {
         const titleCard = document.getElementById('account-title-value')?.closest?.('.account-stat-card');
         if (titleCard) titleCard.classList.add('is-hidden');
         if (!profile) {
-            summary.textContent = this.accountOnline ? this.t('account-profile-empty') : this.t('account-offline');
             if (historyList) this.setSummaryMessage(historyList, this.t('account-history-empty'));
             return;
         }
-        summary.innerHTML = '';
-        const line2 = document.createElement('div');
-        line2.textContent = `${this.t('account-wins')}: ${profile.wins} | ${this.t('account-losses')}: ${profile.losses} | ${this.t('account-draws')}: ${profile.draws}`;
-        summary.appendChild(line2);
         if (historyList) {
             const recentMatches = Array.isArray(details?.recentMatches) ? details.recentMatches : [];
             if (!recentMatches.length) {
@@ -2204,7 +2197,7 @@ class DominoGame {
                 this.localPresenceClearQueued = true;
                 await this.account.sendLocalGameHeartbeat({
                     sessionId: localSessionId,
-                    displayName: this.accountProfile?.name || this.playerName || "Player",
+                    displayName: this.getOnlineDisplayName?.() || this.playerName || "Player",
                     provider: this.accountProfile?.provider || "platform",
                     gameMode: this.isTeamMode ? "team" : "solo",
                     isPlaying: false,
@@ -2222,7 +2215,7 @@ class DominoGame {
         this.localPresenceClearQueued = false;
         await this.account.sendLocalGameHeartbeat({
             sessionId: localSessionId,
-            displayName: this.accountProfile?.name || this.playerName || "Player",
+            displayName: this.getOnlineDisplayName?.() || this.playerName || "Player",
             provider: this.accountProfile?.provider || "platform",
             gameMode: this.isTeamMode ? "team" : "solo",
             isPlaying: true,
@@ -2242,7 +2235,7 @@ class DominoGame {
             || "";
         await this.account.sendLocalGameHeartbeat({
             sessionId: localSessionId,
-            displayName: this.accountProfile?.name || this.playerName || "Player",
+            displayName: this.getOnlineDisplayName?.() || this.playerName || "Player",
             provider: this.accountProfile?.provider || "platform",
             gameMode: this.isTeamMode ? "team" : "solo",
             isPlaying: false,
@@ -4479,6 +4472,14 @@ class DominoGame {
     }
     sanitizeName(name, fallback = 'Player') {
         return String(name || '').replace(/[<>&"']/g, '').trim().slice(0, 12) || fallback;
+    }
+    getOnlineDisplayName(fallback = '') {
+        const current = this.sanitizeName(fallback || this.playerName || this.accountProfile?.name || 'Player', 'Player');
+        const accountName = this.sanitizeName(this.accountProfile?.name || '', '');
+        if (accountName && current === accountName) {
+            return this.accountProfile?.gameDisplayName || current.split(/\s+/).find(Boolean) || current;
+        }
+        return current;
     }
     setupReactionUI() {
         this.reactionBtn = document.getElementById('reaction-btn');

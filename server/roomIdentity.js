@@ -4,6 +4,12 @@ function normalizeAuthToken(identity = {}, options = {}) {
     return String(identity.authToken || options.authToken || "").trim();
 }
 
+function getFirstNameDisplayName(value, fallback = "Player") {
+    const normalized = sanitizeName(value || fallback);
+    const firstToken = String(normalized || "").trim().split(/\s+/).find(Boolean);
+    return sanitizeName(firstToken || fallback);
+}
+
 function normalizePlayerUserId(identity = {}, player = {}) {
     return String(identity.userId || player.userId || "");
 }
@@ -26,7 +32,7 @@ function buildRoomIdentity({ existingIdentity = {}, identity = {}, authToken = "
         provider: identity.provider || existingIdentity.provider || "platform",
         authToken: authToken || existingIdentity.authToken || "",
         userId: String(identity.userId || existingIdentity.userId || player.userId || ""),
-        displayName: sanitizeName(identity.displayName || existingIdentity.displayName || player.name || options.name),
+        displayName: getFirstNameDisplayName(identity.displayName || existingIdentity.displayName || player.name || options.name),
         playerId: normalizePlayerId(identity, existingIdentity, player),
         avatarUrl: normalizePlayerAvatarUrl(identity, existingIdentity, options),
         role: normalizePlayerRole(identity, existingIdentity, isHost)
@@ -39,5 +45,6 @@ module.exports = {
     normalizePlayerAvatarUrl,
     normalizePlayerId,
     normalizePlayerRole,
+    getFirstNameDisplayName,
     buildRoomIdentity
 };

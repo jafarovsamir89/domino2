@@ -28,6 +28,13 @@ function sanitizeEmail(value, fallbackName = "player") {
     return `${alias}@domino.local`;
 }
 
+function getFirstNameDisplayName(value, fallback = "Player") {
+    const normalized = sanitizeName(value, "").trim();
+    if (!normalized) return sanitizeName(fallback, "Player");
+    const firstToken = normalized.split(/\s+/).find(Boolean);
+    return sanitizeName(firstToken || fallback, "Player");
+}
+
 function createLocalSessionId() {
     if (window.crypto?.randomUUID) {
         return window.crypto.randomUUID();
@@ -84,6 +91,7 @@ function normalizeProfile(payload = {}, source = "legacy") {
         avatarSeed: player?.avatarSeed || payload.avatarSeed || null,
         tableSkinKey: player?.tableSkinKey || payload.tableSkinKey || null,
         language: player?.language || payload.language || null,
+        gameDisplayName: getFirstNameDisplayName(displayName, displayName),
         rating: normalizedStats?.rating ?? Number(payload.rating ?? 1000),
         points: normalizedStats?.points ?? Number(payload.points ?? 0),
         wins: normalizedStats?.wins ?? Number(payload.wins ?? 0),

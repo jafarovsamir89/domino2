@@ -64,6 +64,15 @@ export class Renderer {
         return el;
     }
 
+    getBankIconMarkup() {
+        return `
+            <span class="stake-info-bank-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" focusable="false" aria-hidden="true">
+                    <path d="M12 2 3 6v2h18V6l-9-4Zm-7 8v8h2v-8H5Zm4 0v8h2v-8H9Zm4 0v8h2v-8h-2Zm4 0v8h2v-8h-2ZM3 20v2h18v-2H3Z"/>
+                </svg>
+            </span>`;
+    }
+
     renderOpponentHands(hands, hi, names, cur = -1) {
         document.getElementById('opp-top').innerHTML = '';
         document.getElementById('opp-left').innerHTML = '';
@@ -488,8 +497,18 @@ export class Renderer {
         if (this.stakeInfoEl) {
             const hud = this.app?.getTopRightHudState?.() || null;
             const labelKey = hud?.labelKey || 'label-stake-short';
-            this.stakeInfoEl.textContent = stakeLabel ? `${this.app.t(labelKey)}: ${stakeLabel}` : '';
+            const isBankHud = labelKey === 'label-bank-short';
+            const bankText = isBankHud ? Number(hud?.value || 0).toLocaleString('en-US') : stakeLabel;
             this.stakeInfoEl.classList.toggle('is-hidden', !stakeLabel);
+            this.stakeInfoEl.classList.toggle('is-bank-hud', isBankHud && Boolean(stakeLabel));
+            this.stakeInfoEl.innerHTML = stakeLabel
+                ? (isBankHud
+                    ? `${this.getBankIconMarkup()}<span class="stake-info-bank-value">${bankText}</span>`
+                    : `${this.app.t(labelKey)}: ${stakeLabel}`)
+                : '';
+            const ariaLabel = isBankHud ? this.app.t('label-bank-short') : this.app.t(labelKey);
+            this.stakeInfoEl.title = ariaLabel;
+            this.stakeInfoEl.setAttribute('aria-label', ariaLabel);
             this.stakeInfoEl.dataset.source = hud?.sourceField || '';
             this.stakeInfoEl.dataset.value = stakeLabel || '';
         }
