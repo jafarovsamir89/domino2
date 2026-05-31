@@ -93,6 +93,7 @@
                 <button class="btn btn-primary btn-large" id="open-solo-modal-btn" data-i18n="btn-solo">Solo play</button>
                 <button class="btn btn-action btn-large" id="open-online-modal-btn" data-i18n="btn-closed-rooms">Bağlı otaqlar</button>
                 <button class="btn btn-action btn-large" id="open-rooms-btn" data-i18n="open-rooms-button">Açıq otaqlar</button>
+                <button class="btn btn-action btn-large" id="open-leaderboard-btn" data-i18n="leaderboard-title">Reytinq</button>
             </div>
         </div>
 
@@ -340,7 +341,7 @@
                             </div>
                         </div>
                         <div class="account-toolbar">
-                            <button class="btn btn-action btn-strong" id="account-save-name-btn" data-i18n="account-save-name">Save name</button>
+                            <button class="btn btn-action btn-strong" id="account-friends-btn" data-i18n="friends-title">Dostlar</button>
                         </div>
                     </section>
 
@@ -368,9 +369,51 @@
                     <div class="section-kicker" data-i18n="account-history">Son oyunlar</div>
                     <div id="account-history-list" class="room-player-list"></div>
                 </div>
-                <div class="account-history is-hidden" id="account-leaderboard-panel">
-                    <div class="section-kicker" data-i18n="account-leaderboard">Liderlər cədvəli</div>
-                    <div id="leaderboard-list" class="room-player-list"></div>
+            </section>
+        </div>
+
+        <div id="leaderboard-modal" class="modal-backdrop">
+            <section class="modal-card modal-card-wide leaderboard-modal">
+                <div class="modal-header account-modal-header">
+                    <div class="account-modal-title-wrap">
+                        <h2 id="leaderboard-modal-title" data-i18n="leaderboard-title">Reytinq</h2>
+                    </div>
+                    <button class="btn btn-menu modal-close-btn account-modal-close-btn" id="leaderboard-modal-close" type="button" aria-label="Close">Г—</button>
+                </div>
+                <p class="modal-desc page-description" id="leaderboard-modal-desc" data-i18n="leaderboard-desc">Oyuncular reytinqə görə sıralanır.</p>
+                <div id="leaderboard-list" class="leaderboard-list"></div>
+            </section>
+        </div>
+
+        <div id="friends-modal" class="modal-backdrop">
+            <section class="modal-card modal-card-wide friends-modal">
+                <div class="modal-header account-modal-header">
+                    <div class="account-modal-title-wrap">
+                        <h2 id="friends-modal-title" data-i18n="friends-title">Dostlar</h2>
+                    </div>
+                    <button class="btn btn-menu modal-close-btn account-modal-close-btn" id="friends-modal-close" type="button" aria-label="Close">Г—</button>
+                </div>
+                <p class="modal-desc page-description" id="friends-modal-desc" data-i18n="friends-desc">Dostlarını idarə et, sorğuları yoxla və oyunçu axtar.</p>
+
+                <div class="friends-page">
+                    <section class="friends-section">
+                        <div class="section-kicker" data-i18n="friends-list-title">Dostlar</div>
+                        <div id="friends-list" class="friends-list"></div>
+                    </section>
+
+                    <section class="friends-section">
+                        <div class="section-kicker" data-i18n="friends-requests">Sorğular</div>
+                        <div id="friends-requests-list" class="friends-list"></div>
+                    </section>
+
+                    <section class="friends-section">
+                        <div class="section-kicker" data-i18n="friends-search">Axtar</div>
+                        <div class="friends-search-bar">
+                            <input type="search" id="friends-search-input" data-i18n="friends-search-placeholder" placeholder="Oyunçu axtar" minlength="2">
+                            <button type="button" class="btn btn-action btn-strong" id="friends-search-btn" data-i18n="friends-search">Axtar</button>
+                        </div>
+                        <div id="friends-search-results" class="friends-list"></div>
+                    </section>
                 </div>
             </section>
         </div>

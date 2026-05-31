@@ -334,7 +334,7 @@ input, button { font: inherit; }
 .start-actions {
     display: grid;
     gap: 12px;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
 #start-screen.auth-required .start-actions {
@@ -945,6 +945,121 @@ input, button { font: inherit; }
     gap: 10px;
     align-items: flex-start;
     justify-content: space-between;
+}
+
+.leaderboard-modal .modal-desc,
+.friends-modal .modal-desc.page-description {
+    margin-bottom: 4px;
+}
+
+.leaderboard-list {
+    display: grid;
+    gap: 10px;
+}
+
+.leaderboard-card {
+    display: grid;
+    gap: 10px;
+    padding: 12px;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.leaderboard-card-top {
+    display: grid;
+    grid-template-columns: 42px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+}
+
+.leaderboard-rank {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    display: grid;
+    place-items: center;
+    background: rgba(240, 192, 64, 0.12);
+    border: 1px solid rgba(240, 192, 64, 0.22);
+    color: var(--accent);
+    font-size: 0.8rem;
+    font-weight: 800;
+}
+
+.leaderboard-card-copy {
+    display: grid;
+    gap: 4px;
+    min-width: 0;
+}
+
+.leaderboard-card-copy strong {
+    color: var(--text);
+    font-size: 0.98rem;
+    font-weight: 800;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.leaderboard-card-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0;
+    color: var(--text-dim);
+    font-size: 0.78rem;
+    line-height: 1.35;
+}
+
+.leaderboard-card-rating {
+    color: var(--accent);
+    font-size: 0.84rem;
+    font-weight: 800;
+    white-space: nowrap;
+    text-align: right;
+}
+
+.friends-page {
+    display: grid;
+    gap: 12px;
+}
+
+.friends-list {
+    display: grid;
+    gap: 10px;
+}
+
+.friends-section {
+    display: grid;
+    gap: 8px;
+    padding: 12px;
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.friends-search-bar {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 8px;
+}
+
+.friends-search-bar input {
+    width: 100%;
+    min-width: 0;
+    min-height: 44px;
+    padding: 12px 14px;
+    border-radius: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.03));
+    color: var(--text);
+}
+
+.friends-search-bar input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(240, 192, 64, 0.12);
 }
 
 @media (min-width: 768px) {

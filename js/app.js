@@ -251,12 +251,15 @@ class DominoGame {
         const onlineCreateChoiceBtn = document.getElementById('online-create-choice-btn');
         const onlineConnectChoiceBtn = document.getElementById('online-connect-choice-btn');
         const accountBtn = document.getElementById('account-btn');
+        const openLeaderboardBtn = document.getElementById('open-leaderboard-btn');
         const landingGoogleBtn = document.getElementById('landing-google-login-btn');
         const landingAppleBtn = document.getElementById('landing-apple-login-btn');
         const resumeSessionBtn = document.getElementById('resume-session-btn');
         const soloModalClose = document.getElementById('solo-modal-close');
         const onlineModalClose = document.getElementById('online-modal-close');
         const accountModalClose = document.getElementById('account-modal-close');
+        const leaderboardModalClose = document.getElementById('leaderboard-modal-close');
+        const friendsModalClose = document.getElementById('friends-modal-close');
         const coinShopModalClose = document.getElementById('coin-shop-modal-close');
         const cosmeticsShopModalClose = document.getElementById('cosmetics-shop-modal-close');
         const coinShopVideoBtn = document.getElementById('coin-shop-video-btn');
@@ -289,6 +292,9 @@ class DominoGame {
         });
         const openRoomsJoinBtn = document.getElementById('open-rooms-join-btn');
         if (openRoomsJoinBtn) openRoomsJoinBtn.addEventListener('click', () => this.showOpenRoomsList());
+        if (openLeaderboardBtn) openLeaderboardBtn.addEventListener('click', async () => {
+            await this.openLeaderboardModal();
+        });
         if (startCoinShopBtn) startCoinShopBtn.addEventListener('click', async () => {
             await this.openCoinShopModal();
         });
@@ -308,6 +314,8 @@ class DominoGame {
         if (accountBtn) accountBtn.addEventListener('click', async () => {
             await this.openAccountModal();
         });
+        if (leaderboardModalClose) leaderboardModalClose.addEventListener('click', () => this.closeLeaderboardModal());
+        if (friendsModalClose) friendsModalClose.addEventListener('click', () => this.closeFriendsModal());
         if (landingGoogleBtn) landingGoogleBtn.addEventListener('click', () => this.startGoogleAccountSignIn());
         if (landingAppleBtn) landingAppleBtn.addEventListener('click', () => this.startAppleAccountSignIn());
         if (resumeSessionBtn) resumeSessionBtn.addEventListener('click', async () => {
@@ -321,6 +329,16 @@ class DominoGame {
         if (coinShopVideoBtn) coinShopVideoBtn.addEventListener('click', async () => {
             await this.claimCoinShopVideoReward();
         });
+        const friendsButton = document.getElementById('account-friends-btn');
+        if (friendsButton) friendsButton.addEventListener('click', async () => {
+            await this.openFriendsModal();
+        });
+        const friendsSearchBtn = document.getElementById('friends-search-btn');
+        const friendsSearchInput = document.getElementById('friends-search-input');
+        if (friendsSearchBtn) friendsSearchBtn.addEventListener('click', () => void this.searchFriendsPage());
+        if (friendsSearchInput) {
+            friendsSearchInput.addEventListener('input', () => this.scheduleFriendsSearch());
+        }
 
         const soloNameInput = document.getElementById('player-name');
         const onlineNameInput = document.getElementById('player-name-online');
@@ -673,7 +691,36 @@ class DominoGame {
         await this.loadAccountProfile();
         void this.loadTableSkinShop();
         await this.loadGiftHub();
+    }
+
+    async openLeaderboardModal() {
+        this.closeStartModals();
+        this.closeAccountModal();
+        this.closeCoinShopModal();
+        this.closeCosmeticsShopModal();
+        const modal = document.getElementById('leaderboard-modal');
+        if (!modal) return;
+        modal.classList.add('active');
         await this.loadLeaderboard();
+    }
+
+    closeLeaderboardModal() {
+        document.getElementById('leaderboard-modal')?.classList.remove('active');
+    }
+
+    async openFriendsModal() {
+        this.closeStartModals();
+        this.closeAccountModal();
+        this.closeCoinShopModal();
+        this.closeCosmeticsShopModal();
+        const modal = document.getElementById('friends-modal');
+        if (!modal) return;
+        modal.classList.add('active');
+        await this.loadFriendsPage();
+    }
+
+    closeFriendsModal() {
+        document.getElementById('friends-modal')?.classList.remove('active');
     }
 
     async openCoinShopModal() {
@@ -727,6 +774,9 @@ class DominoGame {
     closeStartModals() {
         document.getElementById('solo-modal')?.classList.remove('active');
         document.getElementById('online-modal')?.classList.remove('active');
+        document.getElementById('open-rooms-modal')?.classList.remove('active');
+        this.closeLeaderboardModal();
+        this.closeFriendsModal();
         this.closeGiftPicker();
         this.closeCoinShopModal();
         this.closeCosmeticsShopModal();
@@ -1358,6 +1408,20 @@ class DominoGame {
             cosmeticsShopCloseButton.setAttribute('aria-label', this.t('modal-close'));
         }
 
+        const leaderboardCloseButton = document.getElementById('leaderboard-modal-close');
+        if (leaderboardCloseButton) {
+            leaderboardCloseButton.textContent = '\u00d7';
+            leaderboardCloseButton.title = this.t('modal-close');
+            leaderboardCloseButton.setAttribute('aria-label', this.t('modal-close'));
+        }
+
+        const friendsCloseButton = document.getElementById('friends-modal-close');
+        if (friendsCloseButton) {
+            friendsCloseButton.textContent = '\u00d7';
+            friendsCloseButton.title = this.t('modal-close');
+            friendsCloseButton.setAttribute('aria-label', this.t('modal-close'));
+        }
+
         const soloModalCloseButton = document.getElementById('solo-modal-close');
         if (soloModalCloseButton) {
             soloModalCloseButton.textContent = '\u00d7';
@@ -1923,27 +1987,283 @@ class DominoGame {
         if (!list) return;
         this.setSummaryMessage(list, this.t('account-profile-loading'));
         try {
-            const rows = await this.account.getLeaderboard(10);
+            const rows = await this.account.getLeaderboard(20);
             this.accountOnline = true;
             if (!rows.length) {
-                this.setSummaryMessage(list, this.t('account-profile-empty'));
+                this.setSummaryMessage(list, this.t('leaderboard-empty'));
                 return;
             }
             list.innerHTML = '';
             rows.forEach((row) => {
                 const item = document.createElement('div');
-                item.className = 'room-player-chip';
-                const label = document.createElement('div');
-                const rating = document.createElement('div');
-                label.textContent = `#${row.rank} ${row.name}`;
-                rating.textContent = `${this.t('account-rating')} ${String(row.rating)}`;
-                item.appendChild(label);
-                item.appendChild(rating);
+                item.className = 'leaderboard-card';
+                const top = document.createElement('div');
+                top.className = 'leaderboard-card-top';
+                const rank = document.createElement('div');
+                rank.className = 'leaderboard-rank';
+                rank.textContent = `#${row.rank}`;
+                const copy = document.createElement('div');
+                copy.className = 'leaderboard-card-copy';
+                const name = document.createElement('strong');
+                name.textContent = row.displayName || row.name || 'Player';
+                const meta = document.createElement('div');
+                meta.className = 'leaderboard-card-meta';
+                const rating = document.createElement('span');
+                rating.className = 'leaderboard-card-rating';
+                rating.textContent = `${this.t('leaderboard-rating')}: ${String(row.rating ?? 1000)}`;
+                copy.appendChild(name);
+                copy.appendChild(meta);
+                const games = document.createElement('span');
+                games.textContent = `${this.t('leaderboard-games')}: ${String(row.matchesPlayed ?? 0)}`;
+                const wins = document.createElement('span');
+                wins.textContent = `${this.t('leaderboard-wins')}: ${String(row.wins ?? 0)}`;
+                meta.appendChild(games);
+                meta.appendChild(document.createTextNode(' · '));
+                meta.appendChild(wins);
+                top.appendChild(rank);
+                top.appendChild(copy);
+                top.appendChild(rating);
+                item.appendChild(top);
                 list.appendChild(item);
             });
         } catch (err) {
             this.accountOnline = false;
-            this.setSummaryMessage(list, err.message || this.t('account-server-unavailable'));
+            this.setSummaryMessage(list, this.t('leaderboard-load-failed'));
+        }
+    }
+
+    scheduleFriendsSearch() {
+        if (this._friendsSearchTimer) {
+            clearTimeout(this._friendsSearchTimer);
+            this._friendsSearchTimer = null;
+        }
+        this._friendsSearchTimer = window.setTimeout(() => {
+            this._friendsSearchTimer = null;
+            void this.searchFriendsPage();
+        }, 300);
+    }
+
+    async loadFriendsPage() {
+        const friendsList = document.getElementById('friends-list');
+        const requestsList = document.getElementById('friends-requests-list');
+        const searchResults = document.getElementById('friends-search-results');
+        const searchInput = document.getElementById('friends-search-input');
+        const searchBtn = document.getElementById('friends-search-btn');
+        if (!friendsList || !requestsList || !searchResults || !searchInput || !searchBtn) return;
+
+        const loggedIn = Boolean(this.account?.getRoomAuthToken?.());
+        const loading = this.t('account-profile-loading');
+        if (!loggedIn) {
+            this.setSummaryMessage(friendsList, this.t('friends-login-required'));
+            this.setSummaryMessage(requestsList, this.t('friends-login-required'));
+            this.setSummaryMessage(searchResults, this.t('friends-login-required'));
+            searchInput.disabled = true;
+            searchBtn.disabled = true;
+            return;
+        }
+
+        searchInput.disabled = false;
+        searchBtn.disabled = false;
+        this.setSummaryMessage(friendsList, loading);
+        this.setSummaryMessage(requestsList, loading);
+        this.setSummaryMessage(searchResults, loading);
+
+        try {
+            const [friends, leaderboardRows] = await Promise.all([
+                this.account.getFriends(),
+                this.account.getLeaderboard(100).catch(() => [])
+            ]);
+            this.friendHub = friends || { accepted: [], incoming: [], outgoing: [], items: [] };
+            this.friendRatingMap = new Map((Array.isArray(leaderboardRows) ? leaderboardRows : []).map((row) => [String(row.id || ''), Number(row.rating ?? 0)]));
+
+            friendsList.innerHTML = '';
+            if (!this.friendHub.accepted.length) {
+                this.setSummaryMessage(friendsList, this.t('friends-empty'));
+            } else {
+                this.friendHub.accepted.forEach((item) => {
+                    const card = document.createElement('div');
+                    card.className = 'friend-card';
+                    const copy = document.createElement('div');
+                    copy.className = 'friend-card-copy';
+                    const name = document.createElement('strong');
+                    name.textContent = item.friend.displayName;
+                    const meta = document.createElement('span');
+                    const rating = this.friendRatingMap.get(String(item.friend.id || ''));
+                    meta.textContent = Number.isFinite(rating) && rating > 0
+                        ? `${this.t('leaderboard-rating')}: ${rating}`
+                        : '';
+                    copy.appendChild(name);
+                    if (meta.textContent) copy.appendChild(meta);
+                    const action = document.createElement('div');
+                    action.className = 'friend-card-actions';
+                    const removeBtn = document.createElement('button');
+                    removeBtn.className = 'btn btn-menu';
+                    removeBtn.textContent = this.t('friend-remove');
+                    removeBtn.addEventListener('click', async () => {
+                        removeBtn.disabled = true;
+                        try {
+                            await this.account.removeFriend(item.id);
+                            await this.loadFriendsPage();
+                            this.renderer.showMessage(this.t('friends-removed'), 1400);
+                        } catch (err) {
+                            this.renderer.showMessage(err.message || this.t('friends-load-failed'), 1800);
+                        } finally {
+                            removeBtn.disabled = false;
+                        }
+                    });
+                    action.appendChild(removeBtn);
+                    card.appendChild(copy);
+                    card.appendChild(action);
+                    friendsList.appendChild(card);
+                });
+            }
+
+            requestsList.innerHTML = '';
+            if (!this.friendHub.incoming.length) {
+                this.setSummaryMessage(requestsList, this.t('no-friend-requests'));
+            } else {
+                this.friendHub.incoming.forEach((item) => {
+                    const card = document.createElement('div');
+                    card.className = 'friend-card';
+                    const copy = document.createElement('div');
+                    copy.className = 'friend-card-copy';
+                    const name = document.createElement('strong');
+                    name.textContent = item.friend.displayName;
+                    const meta = document.createElement('span');
+                    const rating = this.friendRatingMap.get(String(item.friend.id || ''));
+                    meta.textContent = Number.isFinite(rating) && rating > 0
+                        ? `${this.t('leaderboard-rating')}: ${rating}`
+                        : '';
+                    copy.appendChild(name);
+                    if (meta.textContent) copy.appendChild(meta);
+                    const action = document.createElement('div');
+                    action.className = 'friend-card-actions';
+                    const acceptBtn = document.createElement('button');
+                    acceptBtn.className = 'btn btn-action btn-strong';
+                    acceptBtn.textContent = this.t('friend-accept');
+                    acceptBtn.addEventListener('click', async () => {
+                        acceptBtn.disabled = true;
+                        try {
+                            await this.account.acceptFriendRequest(item.id);
+                            await this.loadFriendsPage();
+                            this.renderer.showMessage(this.t('friends-request-accepted'), 1400);
+                        } catch (err) {
+                            this.renderer.showMessage(err.message || this.t('friends-load-failed'), 1800);
+                        } finally {
+                            acceptBtn.disabled = false;
+                        }
+                    });
+                    const declineBtn = document.createElement('button');
+                    declineBtn.className = 'btn btn-menu';
+                    declineBtn.textContent = this.t('friend-decline');
+                    declineBtn.addEventListener('click', async () => {
+                        declineBtn.disabled = true;
+                        try {
+                            await this.account.declineFriendRequest(item.id);
+                            await this.loadFriendsPage();
+                            this.renderer.showMessage(this.t('friends-request-declined'), 1400);
+                        } catch (err) {
+                            this.renderer.showMessage(err.message || this.t('friends-load-failed'), 1800);
+                        } finally {
+                            declineBtn.disabled = false;
+                        }
+                    });
+                    action.appendChild(acceptBtn);
+                    action.appendChild(declineBtn);
+                    card.appendChild(copy);
+                    card.appendChild(action);
+                    requestsList.appendChild(card);
+                });
+            }
+
+            await this.searchFriendsPage(true);
+        } catch (err) {
+            this.setSummaryMessage(friendsList, err.message || this.t('friends-load-failed'));
+            this.setSummaryMessage(requestsList, err.message || this.t('friends-load-failed'));
+            this.setSummaryMessage(searchResults, err.message || this.t('friends-load-failed'));
+        }
+    }
+
+    async searchFriendsPage(skipLoading = false) {
+        const searchInput = document.getElementById('friends-search-input');
+        const resultsList = document.getElementById('friends-search-results');
+        if (!searchInput || !resultsList) return;
+
+        const query = String(searchInput.value || '').trim();
+        if (query.length < 2) {
+            this.setSummaryMessage(resultsList, this.t('friends-search-empty'));
+            return;
+        }
+
+        if (!skipLoading) {
+            this.setSummaryMessage(resultsList, this.t('account-profile-loading'));
+        }
+        try {
+            const items = await this.account.searchPlayers(query);
+            const hub = this.friendHub || { accepted: [], incoming: [], outgoing: [] };
+            const acceptedIds = new Set((hub.accepted || []).map((item) => String(item.friend?.id || '')));
+            const incomingIds = new Set((hub.incoming || []).map((item) => String(item.friend?.id || '')));
+            const outgoingIds = new Set((hub.outgoing || []).map((item) => String(item.friend?.id || '')));
+
+            this.friendSearchResults = Array.isArray(items) ? items : [];
+            resultsList.innerHTML = '';
+            if (!this.friendSearchResults.length) {
+                this.setSummaryMessage(resultsList, this.t('friends-search-empty'));
+                return;
+            }
+            this.friendSearchResults.forEach((player) => {
+                const card = document.createElement('div');
+                card.className = 'friend-card';
+                const copy = document.createElement('div');
+                copy.className = 'friend-card-copy';
+                const name = document.createElement('strong');
+                name.textContent = player.displayName;
+                const meta = document.createElement('span');
+                const rating = this.friendRatingMap?.get?.(String(player.id || ''));
+                meta.textContent = Number.isFinite(rating) && rating > 0
+                    ? `${this.t('leaderboard-rating')}: ${rating}`
+                    : '';
+                copy.appendChild(name);
+                if (meta.textContent) copy.appendChild(meta);
+                const action = document.createElement('div');
+                action.className = 'friend-card-actions';
+                const playerId = String(player.id || '');
+                if (acceptedIds.has(playerId)) {
+                    const statusBtn = document.createElement('button');
+                    statusBtn.className = 'btn btn-menu';
+                    statusBtn.disabled = true;
+                    statusBtn.textContent = this.t('friends-request-accepted');
+                    action.appendChild(statusBtn);
+                } else if (outgoingIds.has(playerId) || incomingIds.has(playerId)) {
+                    const pendingBtn = document.createElement('button');
+                    pendingBtn.className = 'btn btn-menu';
+                    pendingBtn.disabled = true;
+                    pendingBtn.textContent = this.t('friends-pending');
+                    action.appendChild(pendingBtn);
+                } else {
+                    const addBtn = document.createElement('button');
+                    addBtn.className = 'btn btn-action btn-strong';
+                    addBtn.textContent = this.t('friends-add');
+                    addBtn.addEventListener('click', async () => {
+                        addBtn.disabled = true;
+                        try {
+                            await this.account.sendFriendRequest(player.id);
+                            await this.loadFriendsPage();
+                            this.renderer.showMessage(this.t('friends-request-sent'), 1400);
+                        } catch (err) {
+                            this.renderer.showMessage(err.message || this.t('friends-load-failed'), 1800);
+                        } finally {
+                            addBtn.disabled = false;
+                        }
+                    });
+                    action.appendChild(addBtn);
+                }
+                card.appendChild(copy);
+                card.appendChild(action);
+                resultsList.appendChild(card);
+            });
+        } catch (err) {
+            this.setSummaryMessage(resultsList, err.message || this.t('friends-load-failed'));
         }
     }
 
@@ -1954,7 +2274,6 @@ class DominoGame {
         const authPanel = document.getElementById('account-auth-panel');
         const title = document.getElementById('account-modal-title');
         const historyPanel = document.getElementById('account-history-panel');
-        const leaderboardPanel = document.getElementById('account-leaderboard-panel');
         const avatar = document.getElementById('account-avatar');
         const avatarEditButton = document.getElementById('account-edit-avatar-btn');
         const profileName = document.getElementById('account-profile-name');
@@ -2076,7 +2395,6 @@ class DominoGame {
         if (profilePanel) profilePanel.classList.toggle('is-hidden', !isAuthenticated);
         if (authPanel) authPanel.classList.toggle('is-hidden', isAuthenticated);
         if (historyPanel) historyPanel.classList.add('is-hidden');
-        if (leaderboardPanel) leaderboardPanel.classList.add('is-hidden');
         const canRefresh = this.hasAuthenticatedAccount(profile);
         const canLogout = this.hasAuthenticatedAccount(profile);
         if (refreshButton) refreshButton.disabled = !canRefresh;

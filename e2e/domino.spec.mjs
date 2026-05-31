@@ -152,6 +152,85 @@ test("authenticated profile shows four stats cards without Xal and leaderboard u
     });
   });
 
+  await page.route("**/social/friends", async (route) => {
+    const headers = {
+      "Access-Control-Allow-Origin": route.request().headers().origin ?? "http://127.0.0.1:4173",
+      "Access-Control-Allow-Methods": "GET,POST,PUT,PATCH,DELETE,OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With",
+      "Access-Control-Allow-Credentials": "true",
+      "Vary": "Origin"
+    };
+
+    return route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      headers,
+      body: JSON.stringify({
+        accepted: [
+          {
+            id: "f-1",
+            status: "accepted",
+            relation: "accepted",
+            friend: { id: "p-2", displayName: "Alice", avatarSeed: null, avatarUrl: null, isGuest: false }
+          }
+        ],
+        incoming: [
+          {
+            id: "f-2",
+            status: "pending",
+            relation: "incoming",
+            friend: { id: "p-3", displayName: "Bob", avatarSeed: null, avatarUrl: null, isGuest: false }
+          }
+        ],
+        outgoing: [],
+        items: []
+      })
+    });
+  });
+
+  await page.route("**/social/players/search?query=*", async (route) => {
+    const headers = {
+      "Access-Control-Allow-Origin": route.request().headers().origin ?? "http://127.0.0.1:4173",
+      "Access-Control-Allow-Methods": "GET,POST,PUT,PATCH,DELETE,OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With",
+      "Access-Control-Allow-Credentials": "true",
+      "Vary": "Origin"
+    };
+    return route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      headers,
+      body: JSON.stringify({
+        items: [
+          { id: "p-4", displayName: "Charlie", avatarSeed: null, avatarUrl: null, isGuest: false }
+        ]
+      })
+    });
+  });
+
+  await page.route("**/social/friends/request", async (route) => {
+    const headers = {
+      "Access-Control-Allow-Origin": route.request().headers().origin ?? "http://127.0.0.1:4173",
+      "Access-Control-Allow-Methods": "GET,POST,PUT,PATCH,DELETE,OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With",
+      "Access-Control-Allow-Credentials": "true",
+      "Vary": "Origin"
+    };
+    return route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      headers,
+      body: JSON.stringify({
+        item: {
+          id: "f-3",
+          status: "pending",
+          relation: "outgoing",
+          friend: { id: "p-4", displayName: "Charlie", avatarSeed: null, avatarUrl: null, isGuest: false }
+        }
+      })
+    });
+  });
+
   await page.goto("/index.html");
   await page.locator("#account-btn").click();
 
@@ -166,9 +245,32 @@ test("authenticated profile shows four stats cards without Xal and leaderboard u
   await expect(page.locator("#account-stats-grid")).toContainText(/Qələbələr|Wins|Победы/);
   await expect(page.locator("#account-stats-grid")).not.toContainText(/Xal|Points|ELO/i);
 
-  await expect(page.locator("#leaderboard-list .room-player-chip")).toHaveCount(2);
+  await page.locator("#account-modal-close").click();
+  await expect(page.locator("#account-modal")).not.toHaveClass(/active/);
+
+  await expect(page.locator("#open-leaderboard-btn")).toHaveText(/Reytinq|Rating|Рейтинг/);
+  await page.locator("#open-leaderboard-btn").click();
+  await expect(page.locator("#leaderboard-modal")).toHaveClass(/active/);
+  await expect(page.locator("#leaderboard-list .leaderboard-card")).toHaveCount(2);
   await expect(page.locator("#leaderboard-list")).toContainText(/Reyting|Rating|Рейтинг/);
-  await expect(page.locator("#leaderboard-list")).not.toContainText(/ELO/i);
+  await expect(page.locator("#leaderboard-list")).toContainText(/Oyunlar|Games|Игры/);
+  await expect(page.locator("#leaderboard-list")).toContainText(/Qələbələr|Wins|Победы/);
+  await page.locator("#leaderboard-modal-close").click();
+  await expect(page.locator("#leaderboard-modal")).not.toHaveClass(/active/);
+
+  await page.locator("#account-btn").click();
+  await expect(page.locator("#account-modal")).toHaveClass(/active/);
+  await page.locator("#account-friends-btn").click();
+  await expect(page.locator("#friends-modal")).toHaveClass(/active/);
+  await expect(page.locator("#friends-list")).toContainText("Alice");
+  await expect(page.locator("#friends-requests-list")).toContainText("Bob");
+  await expect(page.locator("#friends-search-input")).toHaveAttribute("placeholder", /Oyunçu axtar|Search players|Поиск игроков/);
+  await page.locator("#friends-search-input").fill("Cha");
+  await page.locator("#friends-search-btn").click();
+  await expect(page.locator("#friends-search-results")).toContainText("Charlie");
+  await expect(page.locator("#friends-search-results")).toContainText(/Əlavə et|Add|Добавить/);
+  await page.locator("#friends-modal-close").click();
+  await expect(page.locator("#friends-modal")).not.toHaveClass(/active/);
 });
 
 test("open rooms modal uses a standard title bar and close button", async ({ page }) => {
