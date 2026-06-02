@@ -107,6 +107,13 @@ type DirectMessageRow = {
   receiver: PlayerSummary;
 };
 
+type MessageThreadRow = {
+  player: PlayerSummary;
+  lastMessage: any;
+  unreadCount: number;
+  messageCount: number;
+};
+
 const DEFAULT_GIFT_CATALOG = [
   { key: "gift_001", name: "Gift 001", assetKey: "gift_001", rarity: "common", sortOrder: 1 },
   { key: "gift_002", name: "Gift 002", assetKey: "gift_002", rarity: "common", sortOrder: 2 },
@@ -431,6 +438,18 @@ export class SocialService {
     };
   }
 
+  private summarizeMessageThread(currentPlayerId: string, rows: DirectMessageRow[]): MessageThreadRow {
+    const sortedRows = Array.isArray(rows) ? rows : [];
+    const lastMessage = sortedRows[0];
+    const partnerRow = lastMessage?.senderPlayerId === currentPlayerId ? lastMessage.receiver : lastMessage?.sender;
+    return {
+      player: this.summarizePlayer(partnerRow || { id: "", displayName: "Player", isGuest: false, avatarSeed: null, avatarUrl: null }),
+      lastMessage: lastMessage ? this.summarizeDirectMessage(lastMessage) : null,
+      unreadCount: sortedRows.filter((row) => row.receiverPlayerId === currentPlayerId && !row.readAt).length,
+      messageCount: sortedRows.length
+    };
+  }
+
   private summarizeFriend(
     currentPlayerId: string,
     row: {
@@ -628,6 +647,44 @@ export class SocialService {
         friendshipStatus
       }
     };
+  }
+
+  async getMessageThreads(headers: IncomingHttpHeaders) {
+    const currentPlayer = await this.getCurrentPlayer(headers);
+    const rows = await this.prisma.directMessage.findMany({
+      where: {
+        OR: [
+          { senderPlayerId: currentPlayer.id },
+          { receiverPlayerId: currentPlayer.id }
+        ]
+      },
+      include: {
+        sender: { select: this.playerSelect() },
+        receiver: { select: this.playerSelect() }
+      },
+      orderBy: { createdAt: "desc" },
+      take: 200
+    });
+
+    const grouped = new Map<string, DirectMessageRow[]>();
+    rows.forEach((row) => {
+      const partnerId = row.senderPlayerId === currentPlayer.id ? row.receiverPlayerId : row.senderPlayerId;
+      if (!partnerId) return;
+      const normalized = row as unknown as DirectMessageRow;
+      const list = grouped.get(partnerId) || [];
+      list.push(normalized);
+      grouped.set(partnerId, list);
+    });
+
+    const items = Array.from(grouped.values())
+      .map((group) => this.summarizeMessageThread(currentPlayer.id, group))
+      .sort((left, right) => {
+        const leftAt = new Date(left.lastMessage?.createdAt || 0).getTime();
+        const rightAt = new Date(right.lastMessage?.createdAt || 0).getTime();
+        return rightAt - leftAt;
+      });
+
+    return { items };
   }
 
   async requestFriend(headers: IncomingHttpHeaders, body: { playerId?: string; note?: string }) {

@@ -202,6 +202,16 @@ class DominoGame {
         this.tableSkinLoading = false;
         this.tableSkinBusy = false;
         this.accountProfileTab = 'skins';
+        this.accountMessagesState = {
+            threads: [],
+            activePlayerId: '',
+            activePlayerProfile: null,
+            messages: [],
+            threadsLoading: false,
+            conversationLoading: false,
+            sendLoading: false,
+            error: ''
+        };
         this.leaderboardScope = 'overall';
         this.playerProfileState = null;
         this._coinShopTickId = null;
@@ -749,28 +759,23 @@ class DominoGame {
         this.playerProfileState = {
             id: playerId,
             loading: true,
-            profile: null,
-            messages: []
+            profile: null
         };
         this.renderPlayerProfileModal();
 
         if (!this.hasAuthenticatedAccount()) {
             this.playerProfileState.loading = false;
-            this.playerProfileState.error = this.t('friends-login-required');
+            this.playerProfileState.error = this.t('player-profile-login-required');
             this.renderPlayerProfileModal();
             return;
         }
 
         try {
-            const [profile, messages] = await Promise.all([
-                this.account.getPlayerProfile(playerId),
-                this.account.getPlayerMessages(playerId)
-            ]);
+            const profile = await this.account.getPlayerProfile(playerId);
             this.playerProfileState = {
                 id: playerId,
                 loading: false,
                 profile: profile || null,
-                messages: Array.isArray(messages) ? messages : [],
                 error: ''
             };
             this.renderPlayerProfileModal();
@@ -779,10 +784,315 @@ class DominoGame {
                 id: playerId,
                 loading: false,
                 profile: null,
-                messages: [],
-                error: err?.message || this.t('friends-load-failed')
+                error: err?.message || this.t('player-profile-load-failed')
             };
             this.renderPlayerProfileModal();
+        }
+    }
+
+    async openConversationWithPlayer(playerRef) {
+        const playerId = String(playerRef?.playerId || playerRef?.userId || playerRef?.id || playerRef || '').trim();
+        if (!playerId) return;
+        if (!this.hasAuthenticatedAccount()) {
+            await this.openAccountModal();
+            return;
+        }
+
+        this.accountProfileTab = 'messages';
+        this.accountMessagesState = {
+            ...(this.accountMessagesState || {}),
+            activePlayerId: playerId,
+            error: ''
+        };
+        await this.openAccountModal();
+        await this.loadMessageThreads();
+        await this.loadConversationWithPlayer(playerId);
+    }
+
+    async loadMessageThreads() {
+        if (!this.hasAuthenticatedAccount()) {
+            return [];
+        }
+        if (!this.account?.getMessageThreads || this.accountMessagesState?.threadsLoading) {
+            return Array.isArray(this.accountMessagesState?.threads) ? this.accountMessagesState.threads : [];
+        }
+
+        this.accountMessagesState = {
+            ...(this.accountMessagesState || {}),
+            threadsLoading: true,
+            error: ''
+        };
+        this.renderAccountMessagesPanel();
+
+        try {
+            const items = await this.account.getMessageThreads();
+            const threads = Array.isArray(items) ? items : [];
+            const currentActiveId = String(this.accountMessagesState?.activePlayerId || '').trim();
+            const activeThread = threads.find((thread) => String(thread?.player?.id || thread?.playerId || thread?.id || '').trim() === currentActiveId) || null;
+            const nextActiveId = activeThread
+                ? currentActiveId
+                : String(threads[0]?.player?.id || threads[0]?.playerId || threads[0]?.id || '').trim();
+            this.accountMessagesState = {
+                ...(this.accountMessagesState || {}),
+                threads,
+                threadsLoading: false,
+                error: '',
+                activePlayerId: nextActiveId || currentActiveId
+            };
+            this.renderAccountMessagesPanel();
+            if (nextActiveId && nextActiveId !== currentActiveId) {
+                await this.loadConversationWithPlayer(nextActiveId);
+            }
+            return threads;
+        } catch (err) {
+            this.accountMessagesState = {
+                ...(this.accountMessagesState || {}),
+                threads: [],
+                threadsLoading: false,
+                error: err?.message || this.t('messages-load-failed')
+            };
+            this.renderAccountMessagesPanel();
+            return [];
+        }
+    }
+
+    async loadConversationWithPlayer(playerRef) {
+        const playerId = String(playerRef?.playerId || playerRef?.userId || playerRef?.id || playerRef || '').trim();
+        if (!playerId || !this.hasAuthenticatedAccount()) {
+            return [];
+        }
+
+        this.accountMessagesState = {
+            ...(this.accountMessagesState || {}),
+            activePlayerId: playerId,
+            conversationLoading: true,
+            error: ''
+        };
+        this.renderAccountMessagesPanel();
+
+        try {
+            const [profile, messages] = await Promise.all([
+                this.account.getPlayerProfile(playerId).catch(() => null),
+                this.account.getDirectMessages(playerId)
+            ]);
+            this.accountMessagesState = {
+                ...(this.accountMessagesState || {}),
+                activePlayerId: playerId,
+                activePlayerProfile: profile || this.accountMessagesState?.activePlayerProfile || null,
+                messages: Array.isArray(messages) ? messages : [],
+                conversationLoading: false,
+                error: ''
+            };
+            this.renderAccountMessagesPanel();
+            return this.accountMessagesState.messages;
+        } catch (err) {
+            this.accountMessagesState = {
+                ...(this.accountMessagesState || {}),
+                activePlayerId: playerId,
+                conversationLoading: false,
+                error: err?.message || this.t('messages-load-failed')
+            };
+            this.renderAccountMessagesPanel();
+            return [];
+        }
+    }
+
+    renderAccountMessagesPanel() {
+        const panel = document.getElementById('account-messages-panel');
+        const threadList = document.getElementById('account-messages-thread-list');
+        const conversationList = document.getElementById('account-messages-conversation-list');
+        const conversationTitle = document.getElementById('account-messages-conversation-title');
+        const summary = document.getElementById('account-messages-summary');
+        const messageInput = document.getElementById('account-message-input');
+        const sendBtn = document.getElementById('account-message-send-btn');
+        const backBtn = document.getElementById('account-messages-back-btn');
+        const openBtn = document.getElementById('account-messages-open-btn');
+        if (!panel || !threadList || !conversationList || !conversationTitle || !summary || !messageInput || !sendBtn || !backBtn || !openBtn) return;
+
+        const isAuthed = this.hasAuthenticatedAccount();
+        const state = this.accountMessagesState || {};
+        const threads = Array.isArray(state.threads) ? state.threads : [];
+        const activePlayerId = String(state.activePlayerId || '').trim();
+        const activeThread = threads.find((thread) => String(thread?.player?.id || thread?.playerId || thread?.id || '').trim() === activePlayerId) || null;
+        const activePlayer = state.activePlayerProfile || activeThread?.player || null;
+        const activeMessages = Array.isArray(state.messages) ? state.messages : [];
+        const currentPlayerId = String(this.accountProfile?.playerId || this.accountProfile?.id || '').trim();
+
+        if (!isAuthed) {
+            summary.textContent = this.t('friends-login-required');
+            threadList.innerHTML = '';
+            conversationList.innerHTML = '';
+            conversationTitle.textContent = '';
+            messageInput.value = '';
+            messageInput.disabled = true;
+            sendBtn.disabled = true;
+            backBtn.hidden = true;
+            openBtn.disabled = true;
+            return;
+        }
+
+        summary.textContent = state.error
+            || (state.threadsLoading
+                ? this.t('account-profile-loading')
+                : this.format('messages-thread-count', { count: String(threads.length) }));
+
+        threadList.innerHTML = '';
+        if (!threads.length) {
+            const empty = document.createElement('div');
+            empty.className = 'room-summary';
+            empty.textContent = state.threadsLoading ? this.t('account-profile-loading') : this.t('messages-empty');
+            threadList.appendChild(empty);
+        } else {
+            threads.forEach((thread) => {
+                const partner = thread?.player || {};
+                const partnerId = String(partner?.id || thread?.playerId || thread?.id || '').trim();
+                const isActive = partnerId && partnerId === activePlayerId;
+                const row = document.createElement('button');
+                row.type = 'button';
+                row.className = `message-thread-card${isActive ? ' is-active' : ''}`;
+                const avatar = document.createElement('div');
+                avatar.className = 'message-thread-avatar';
+                if (partner?.avatarUrl) {
+                    const img = document.createElement('img');
+                    img.alt = partner?.displayName || 'Player avatar';
+                    img.src = partner.avatarUrl;
+                    img.referrerPolicy = 'no-referrer';
+                    avatar.appendChild(img);
+                } else {
+                    const fallback = document.createElement('span');
+                    fallback.textContent = this.getTurnAvatarText?.(partner?.displayName || 'P') || 'P';
+                    avatar.appendChild(fallback);
+                }
+                const copy = document.createElement('div');
+                copy.className = 'message-thread-copy';
+                const top = document.createElement('div');
+                top.className = 'message-thread-top';
+                const name = document.createElement('strong');
+                name.textContent = partner?.displayName || this.t('messages-empty');
+                const time = document.createElement('span');
+                const lastMessage = thread?.lastMessage || null;
+                time.textContent = lastMessage?.createdAt ? new Date(lastMessage.createdAt).toLocaleString() : '';
+                top.appendChild(name);
+                top.appendChild(time);
+                const preview = document.createElement('div');
+                preview.className = 'message-thread-preview';
+                preview.textContent = lastMessage?.text || this.t('messages-empty');
+                copy.appendChild(top);
+                copy.appendChild(preview);
+                row.appendChild(avatar);
+                row.appendChild(copy);
+                const unreadCount = Number(thread?.unreadCount || 0);
+                if (unreadCount > 0) {
+                    const badge = document.createElement('div');
+                    badge.className = 'message-thread-badge';
+                    badge.textContent = unreadCount > 9 ? '9+' : String(unreadCount);
+                    row.appendChild(badge);
+                }
+                row.addEventListener('click', () => {
+                    void this.loadConversationWithPlayer(partnerId);
+                });
+                threadList.appendChild(row);
+            });
+        }
+
+        conversationTitle.textContent = activePlayer?.displayName || this.t('messages-conversation-title');
+        conversationList.innerHTML = '';
+        if (state.conversationLoading) {
+            const loading = document.createElement('div');
+            loading.className = 'room-summary';
+            loading.textContent = this.t('account-profile-loading');
+            conversationList.appendChild(loading);
+        } else if (!activePlayerId) {
+            const empty = document.createElement('div');
+            empty.className = 'room-summary';
+            empty.textContent = this.t('messages-empty');
+            conversationList.appendChild(empty);
+        } else if (!activeMessages.length) {
+            const empty = document.createElement('div');
+            empty.className = 'room-summary';
+            empty.textContent = this.t('messages-empty');
+            conversationList.appendChild(empty);
+        } else {
+            activeMessages.forEach((message) => {
+                const row = document.createElement('div');
+                row.className = 'message-row';
+                const mine = String(message.senderPlayerId || '') === currentPlayerId;
+                if (mine) row.classList.add('is-self');
+                const author = document.createElement('div');
+                author.className = 'message-row-author';
+                author.textContent = mine ? this.t('online-you') : (message.sender?.displayName || activePlayer?.displayName || 'Player');
+                const text = document.createElement('div');
+                text.className = 'message-row-text';
+                text.textContent = message.text || '';
+                row.appendChild(author);
+                row.appendChild(text);
+                conversationList.appendChild(row);
+            });
+        }
+
+        messageInput.disabled = !activePlayerId || state.conversationLoading || state.sendLoading;
+        messageInput.placeholder = activePlayerId ? this.t('messages-placeholder') : this.t('messages-empty');
+        messageInput.value = messageInput.value || '';
+        sendBtn.disabled = !activePlayerId || state.conversationLoading || state.sendLoading;
+        sendBtn.textContent = state.sendLoading ? this.t('account-profile-loading') : this.t('messages-send');
+        openBtn.hidden = !activePlayerId;
+        backBtn.hidden = !activePlayerId;
+
+        if (!backBtn.dataset.bound) {
+            backBtn.dataset.bound = '1';
+            backBtn.addEventListener('click', () => {
+                this.accountMessagesState = {
+                    ...(this.accountMessagesState || {}),
+                    activePlayerId: '',
+                    activePlayerProfile: null,
+                    messages: []
+                };
+                this.renderAccountMessagesPanel();
+            });
+        }
+
+        if (!openBtn.dataset.bound) {
+            openBtn.dataset.bound = '1';
+            openBtn.addEventListener('click', async () => {
+                if (!activePlayerId) return;
+                await this.loadConversationWithPlayer(activePlayerId);
+            });
+        }
+
+        if (!sendBtn.dataset.bound) {
+            sendBtn.dataset.bound = '1';
+            sendBtn.addEventListener('click', async () => {
+                const targetId = String(this.accountMessagesState?.activePlayerId || '').trim();
+                const text = String(messageInput.value || '').trim();
+                if (!targetId || !text) return;
+                this.accountMessagesState = {
+                    ...(this.accountMessagesState || {}),
+                    sendLoading: true,
+                    error: ''
+                };
+                this.renderAccountMessagesPanel();
+                try {
+                    await this.account.sendDirectMessage(targetId, text);
+                    messageInput.value = '';
+                    this.renderer.showMessage(this.t('messages-sent'), 1400);
+                    await this.loadConversationWithPlayer(targetId);
+                    await this.loadMessageThreads();
+                } catch (err) {
+                    this.accountMessagesState = {
+                        ...(this.accountMessagesState || {}),
+                        sendLoading: false,
+                        error: err?.message || this.t('messages-send-failed')
+                    };
+                    this.renderAccountMessagesPanel();
+                    this.renderer.showMessage(err?.message || this.t('messages-send-failed'), 1800);
+                } finally {
+                    this.accountMessagesState = {
+                        ...(this.accountMessagesState || {}),
+                        sendLoading: false
+                    };
+                    this.renderAccountMessagesPanel();
+                }
+            });
         }
     }
 
@@ -1511,10 +1821,6 @@ class DominoGame {
             if (input) input.setAttribute('placeholder', value);
         });
 
-        const playerProfileMessageInput = document.getElementById('player-profile-message-input');
-        if (playerProfileMessageInput) {
-            playerProfileMessageInput.placeholder = this.t('player-profile-message-placeholder');
-        }
     }
 
     setAccountMode(mode) {
@@ -1523,7 +1829,7 @@ class DominoGame {
     }
 
     setAccountProfileTab(tab) {
-        this.accountProfileTab = tab === 'gifts' ? 'gifts' : 'skins';
+        this.accountProfileTab = tab === 'gifts' || tab === 'messages' ? tab : 'skins';
         this.renderAccountModal();
     }
 
@@ -1539,8 +1845,10 @@ class DominoGame {
         });
         const giftsPanel = document.getElementById('account-gifts-panel');
         const skinsPanel = document.getElementById('account-skins-panel');
+        const messagesPanel = document.getElementById('account-messages-panel');
         if (giftsPanel) giftsPanel.classList.toggle('is-hidden', activeTab !== 'gifts');
         if (skinsPanel) skinsPanel.classList.toggle('is-hidden', activeTab !== 'skins');
+        if (messagesPanel) messagesPanel.classList.toggle('is-hidden', activeTab !== 'messages');
     }
 
     setupMobileAuthResume() {
@@ -2384,14 +2692,11 @@ class DominoGame {
         const status = document.getElementById('player-profile-status');
         const stats = document.getElementById('player-profile-stats');
         const friendBtn = document.getElementById('player-profile-friend-btn');
-        const messageInput = document.getElementById('player-profile-message-input');
         const messageBtn = document.getElementById('player-profile-message-btn');
-        const thread = document.getElementById('player-profile-message-thread');
         const profile = this.playerProfileState?.profile || null;
         const isAuthed = this.hasAuthenticatedAccount();
         const isSelf = profile?.friendshipStatus === 'self';
         const loading = Boolean(this.playerProfileState?.loading);
-        const currentPlayerId = String(this.accountProfile?.playerId || this.accountProfile?.id || '').trim();
 
         if (name) name.textContent = profile?.displayName || this.playerProfileState?.error || this.t('account-profile-loading');
         if (status) {
@@ -2438,6 +2743,7 @@ class DominoGame {
             });
         }
 
+        const canMessage = isAuthed && !isSelf && Boolean(profile?.id);
         if (friendBtn) {
             const statusKey = profile?.friendshipStatus || 'none';
             const labels = {
@@ -2467,72 +2773,13 @@ class DominoGame {
             };
         }
 
-        const messageBox = messageInput?.closest('.player-profile-message-box');
-        const canMessage = isAuthed && !isSelf && Boolean(profile?.id);
-        if (messageBox) {
-            messageBox.classList.toggle('is-hidden', !canMessage);
-        }
-        if (messageInput) {
-            messageInput.disabled = !canMessage;
-            messageInput.placeholder = canMessage
-                ? this.t('player-profile-message-placeholder')
-                : this.t('friends-login-required');
-        }
         if (messageBtn) {
+            messageBtn.hidden = !canMessage;
             messageBtn.disabled = !canMessage || loading;
             messageBtn.onclick = async () => {
-                const text = String(messageInput?.value || '').trim();
-                if (!text || !profile?.id) return;
-                messageBtn.disabled = true;
-                try {
-                    await this.account.sendPlayerMessage(profile.id, text);
-                    if (messageInput) messageInput.value = '';
-                    const messages = await this.account.getPlayerMessages(profile.id);
-                    this.playerProfileState = {
-                        ...(this.playerProfileState || {}),
-                        loading: false,
-                        messages: Array.isArray(messages) ? messages : []
-                    };
-                    this.renderPlayerProfileModal();
-                    this.renderer.showMessage(this.t('player-profile-message-sent'), 1400);
-                } catch (err) {
-                    this.renderer.showMessage(err?.message || this.t('player-profile-message-failed'), 1800);
-                } finally {
-                    messageBtn.disabled = !canMessage || loading;
-                }
+                if (!canMessage || !profile?.id) return;
+                await this.openConversationWithPlayer(profile.id);
             };
-        }
-
-        if (thread) {
-            thread.innerHTML = '';
-            const messages = Array.isArray(this.playerProfileState?.messages) ? this.playerProfileState.messages : [];
-            if (!canMessage) {
-                const empty = document.createElement('div');
-                empty.className = 'room-summary';
-                empty.textContent = isAuthed ? this.t('player-profile-message-disabled') : this.t('friends-login-required');
-                thread.appendChild(empty);
-            } else if (!messages.length) {
-                const empty = document.createElement('div');
-                empty.className = 'room-summary';
-                empty.textContent = this.t('player-profile-message-empty');
-                thread.appendChild(empty);
-            } else {
-                messages.forEach((message) => {
-                    const row = document.createElement('div');
-                    row.className = 'player-profile-message-row';
-                    const mine = String(message.senderPlayerId || '') === currentPlayerId;
-                    if (mine) row.classList.add('is-self');
-                    const author = document.createElement('div');
-                    author.className = 'player-profile-message-author';
-                    author.textContent = mine ? this.t('online-you') : (message.sender?.displayName || profile?.displayName || 'Player');
-                    const body = document.createElement('div');
-                    body.className = 'player-profile-message-text';
-                    body.textContent = message.text || '';
-                    row.appendChild(author);
-                    row.appendChild(body);
-                    thread.appendChild(row);
-                });
-            }
         }
     }
 
@@ -2567,6 +2814,7 @@ class DominoGame {
             tabs.innerHTML = `
                 <button type="button" class="account-profile-tab" data-profile-tab="skins" data-i18n="account-skins-vault"></button>
                 <button type="button" class="account-profile-tab" data-profile-tab="gifts" data-i18n="account-gift-vault"></button>
+                <button type="button" class="account-profile-tab" data-profile-tab="messages" data-i18n="messages-title"></button>
             `;
             const profilePanel = document.getElementById('account-profile-panel');
             const statsGrid = document.getElementById('account-stats-grid');
@@ -2582,9 +2830,6 @@ class DominoGame {
                 button.title = label;
                 button.setAttribute('aria-label', label);
             });
-            tabs.querySelectorAll('[data-profile-tab]').forEach((button) => {
-                button.addEventListener('click', () => this.setAccountProfileTab(button.dataset.profileTab || 'skins'));
-            });
         } else if (profileTabs) {
             profileTabs.querySelectorAll('[data-i18n]').forEach((button) => {
                 const key = button.dataset.i18n;
@@ -2592,6 +2837,13 @@ class DominoGame {
                 button.textContent = label;
                 button.title = label;
                 button.setAttribute('aria-label', label);
+            });
+        }
+        if (profileTabs) {
+            profileTabs.querySelectorAll('[data-profile-tab]').forEach((button) => {
+                if (button.dataset.bound === '1') return;
+                button.dataset.bound = '1';
+                button.addEventListener('click', () => this.setAccountProfileTab(button.dataset.profileTab || 'skins'));
             });
         }
         if (profileCopy && profileName && !document.getElementById('account-edit-name-btn')) {
@@ -2728,7 +2980,16 @@ class DominoGame {
         }
         this.renderGiftInventory();
         this.renderTableSkinInventory();
+        this.renderAccountMessagesPanel();
         this.syncAccountProfileTabs();
+        if (
+            isAuthenticated
+            && this.accountProfileTab === 'messages'
+            && !this.accountMessagesState?.threadsLoading
+            && (!Array.isArray(this.accountMessagesState?.threads) || !this.accountMessagesState?.threads.length)
+        ) {
+            void this.loadMessageThreads();
+        }
         this.syncStartAuthButton();
     }
 
@@ -2745,7 +3006,7 @@ class DominoGame {
         button.classList.toggle('is-authenticated', hasSession);
         const friendsButton = document.getElementById('open-friends-btn');
         if (friendsButton) {
-            const friendsLabel = this.t('friends-title');
+            const friendsLabel = this.t('friends-open-button');
             friendsButton.style.display = hasSession ? '' : 'none';
             friendsButton.setAttribute('aria-label', friendsLabel);
             friendsButton.title = friendsLabel;

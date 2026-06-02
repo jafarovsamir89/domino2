@@ -756,6 +756,11 @@ export class AccountClient {
         }
     }
 
+    async getMessageThreads() {
+        const data = await this.platformRequest("/social/messages");
+        return Array.isArray(data?.items) ? data.items : [];
+    }
+
     async getPlayerProfile(playerId) {
         const id = String(playerId || "").trim();
         if (!id) throw new Error("Player not found");
@@ -763,20 +768,28 @@ export class AccountClient {
         return data?.item || null;
     }
 
-    async getPlayerMessages(playerId) {
+    async getDirectMessages(playerId) {
         const id = String(playerId || "").trim();
         if (!id) return [];
         const data = await this.platformRequest(`/social/messages/${encodeURIComponent(id)}`);
         return Array.isArray(data?.items) ? data.items : [];
     }
 
-    async sendPlayerMessage(playerId, text) {
+    async sendDirectMessage(playerId, text) {
         const id = String(playerId || "").trim();
         const body = { text: String(text || "").trim() };
         return this.platformRequest(`/social/messages/${encodeURIComponent(id)}`, {
             method: "POST",
             body
         });
+    }
+
+    async getPlayerMessages(playerId) {
+        return this.getDirectMessages(playerId);
+    }
+
+    async sendPlayerMessage(playerId, text) {
+        return this.sendDirectMessage(playerId, text);
     }
 
     async getProfileDetails() {

@@ -90,9 +90,9 @@ input, button { font: inherit; }
     align-items: center;
     justify-content: center;
     gap: 6px;
-    min-height: 38px;
-    padding: 0 12px;
-    border-radius: 13px;
+    min-height: 42px;
+    padding: 0 11px;
+    border-radius: 14px;
     white-space: nowrap;
 }
 
@@ -1258,75 +1258,7 @@ input, button { font: inherit; }
 .player-profile-actions {
     display: flex;
     justify-content: flex-start;
-}
-
-.player-profile-message-box {
-    display: grid;
-    gap: 10px;
-    padding: 14px;
-    border-radius: 18px;
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.player-profile-message-box.is-hidden {
-    display: none;
-}
-
-.player-profile-message-input {
-    width: 100%;
-    min-height: 88px;
-    padding: 12px 14px;
-    border-radius: 14px;
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.03));
-    color: var(--text);
-    resize: vertical;
-}
-
-.player-profile-message-input:focus {
-    outline: none;
-    border-color: var(--accent);
-    box-shadow: 0 0 0 3px rgba(240, 192, 64, 0.12);
-}
-
-.player-profile-message-actions {
-    display: flex;
-    justify-content: flex-end;
-}
-
-.player-profile-message-thread {
-    display: grid;
     gap: 8px;
-}
-
-.player-profile-message-row {
-    display: grid;
-    gap: 4px;
-    padding: 10px 12px;
-    border-radius: 14px;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.06);
-}
-
-.player-profile-message-row.is-self {
-    background: rgba(240, 192, 64, 0.06);
-    border-color: rgba(240, 192, 64, 0.18);
-}
-
-.player-profile-message-author {
-    color: var(--text-dim);
-    font-size: 0.72rem;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-}
-
-.player-profile-message-text {
-    color: var(--text);
-    font-size: 0.9rem;
-    line-height: 1.45;
-    white-space: pre-wrap;
 }
 
 @media (min-width: 768px) {
@@ -1358,6 +1290,11 @@ input, button { font: inherit; }
 
     .filter-row {
         grid-template-columns: minmax(0, 1.2fr) minmax(180px, 0.8fr);
+    }
+
+    .account-messages-layout {
+        grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+        align-items: start;
     }
 
     .friend-card-actions .btn {
@@ -2044,7 +1981,7 @@ input, button { font: inherit; }
 
 .account-profile-tabs {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 8px;
     padding: 6px;
     border-radius: 16px;
@@ -2097,6 +2034,208 @@ input, button { font: inherit; }
 
 .account-skins-grid {
     grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+}
+
+.account-messages {
+    display: grid;
+    gap: 10px;
+    padding: 12px;
+    border-radius: 22px;
+    border: 1px solid rgba(88, 162, 255, 0.18);
+    background: rgba(88, 162, 255, 0.04);
+}
+
+.account-messages-layout {
+    display: grid;
+    gap: 12px;
+}
+
+.account-messages-sidebar,
+.account-messages-conversation {
+    display: grid;
+    gap: 10px;
+}
+
+.account-messages-head,
+.account-messages-conversation-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.account-messages-summary {
+    color: var(--text-dim);
+    font-size: 0.78rem;
+    line-height: 1.35;
+}
+
+.account-messages-thread-list,
+.account-messages-conversation-list {
+    display: grid;
+    gap: 8px;
+}
+
+.message-thread-card {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 44px minmax(0, 1fr) auto;
+    gap: 10px;
+    align-items: center;
+    padding: 10px 12px;
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.04);
+    color: inherit;
+    text-align: left;
+}
+
+.message-thread-card.is-active {
+    border-color: rgba(88, 162, 255, 0.32);
+    background: rgba(88, 162, 255, 0.08);
+}
+
+.message-thread-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+    overflow: hidden;
+    display: grid;
+    place-items: center;
+    background: rgba(240, 192, 64, 0.12);
+    border: 1px solid rgba(240, 192, 64, 0.18);
+    color: var(--accent);
+    font-weight: 900;
+}
+
+.message-thread-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.message-thread-copy {
+    min-width: 0;
+    display: grid;
+    gap: 4px;
+}
+
+.message-thread-top {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 10px;
+    min-width: 0;
+}
+
+.message-thread-top strong {
+    color: var(--text);
+    font-size: 0.92rem;
+    font-weight: 800;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.message-thread-top span {
+    color: var(--text-dim);
+    font-size: 0.72rem;
+    flex: 0 0 auto;
+}
+
+.message-thread-preview {
+    color: var(--text-dim);
+    font-size: 0.8rem;
+    line-height: 1.35;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+.message-thread-badge {
+    min-width: 22px;
+    height: 22px;
+    padding: 0 6px;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--accent);
+    color: #1a1a1a;
+    font-size: 0.72rem;
+    font-weight: 900;
+}
+
+.account-messages-conversation {
+    padding-top: 2px;
+}
+
+.account-messages-conversation-title {
+    color: var(--text);
+    font-size: 0.94rem;
+    font-weight: 800;
+}
+
+.account-messages-compose {
+    display: grid;
+    gap: 10px;
+    padding: 12px;
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.account-message-input {
+    width: 100%;
+    min-height: 86px;
+    padding: 12px 14px;
+    border-radius: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.03));
+    color: var(--text);
+    resize: vertical;
+}
+
+.account-message-input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(240, 192, 64, 0.12);
+}
+
+.account-messages-compose-actions {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.message-row {
+    display: grid;
+    gap: 4px;
+    padding: 10px 12px;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.message-row.is-self {
+    background: rgba(240, 192, 64, 0.06);
+    border-color: rgba(240, 192, 64, 0.18);
+}
+
+.message-row-author {
+    color: var(--text-dim);
+    font-size: 0.72rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.message-row-text {
+    color: var(--text);
+    font-size: 0.9rem;
+    line-height: 1.45;
+    white-space: pre-wrap;
 }
 
 .gift-inventory-grid {
@@ -3972,6 +4111,10 @@ body.seat-selection-active #game-screen {
 
     .brand-lockup {
         align-items: center;
+    }
+
+    .start-compact-label {
+        display: none;
     }
 
     .hero-notes,

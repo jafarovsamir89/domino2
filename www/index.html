@@ -20,7 +20,7 @@
                 <button class="icon-btn start-profile-btn" id="account-btn" type="button" aria-label="Account"></button>
                 <button class="btn btn-menu start-friends-btn" id="open-friends-btn" type="button">
                     <span class="auth-icon auth-icon-user" aria-hidden="true"></span>
-                    <span class="start-compact-label" data-i18n="friends-title">Dostlar</span>
+                    <span class="start-compact-label" data-i18n="friends-open-button">Dostlar</span>
                 </button>
             </div>
 
@@ -313,6 +313,11 @@
                                 <div class="account-profile-meta" id="account-profile-meta" data-i18n="account-guest-profile">Qonaq profil</div>
                             </div>
                         </div>
+                        <div class="account-profile-tabs" id="account-profile-tabs">
+                            <button type="button" class="account-profile-tab" data-profile-tab="skins" data-i18n="account-skins-vault">Table skins</button>
+                            <button type="button" class="account-profile-tab" data-profile-tab="gifts" data-i18n="account-gift-vault">Gift vault</button>
+                            <button type="button" class="account-profile-tab" data-profile-tab="messages" data-i18n="messages-title">Mesajlar</button>
+                        </div>
                         <div class="account-stats-grid" id="account-stats-grid">
                             <div class="account-stat-card">
                                 <span data-i18n="account-rating">Reyting</span>
@@ -339,6 +344,36 @@
                             <div class="section-kicker" data-i18n="account-skins-vault">Table skins</div>
                             <p class="modal-desc" data-i18n="account-skins-desc">Owned table skins appear here. Pick one to apply it to the table.</p>
                             <div id="account-skins-list" class="table-skin-grid account-skins-grid"></div>
+                        </div>
+                        <div class="account-messages is-hidden" id="account-messages-panel">
+                            <div class="account-messages-layout">
+                                <div class="account-messages-sidebar">
+                                    <div class="account-messages-head">
+                                        <div>
+                                            <div class="section-kicker" data-i18n="messages-inbox">Inbox</div>
+                                            <div class="account-messages-summary" id="account-messages-summary"></div>
+                                        </div>
+                                        <button type="button" class="btn btn-menu account-messages-back" id="account-messages-back-btn" data-i18n="messages-back">Geri</button>
+                                    </div>
+                                    <div class="account-messages-thread-list" id="account-messages-thread-list"></div>
+                                </div>
+                                <div class="account-messages-conversation">
+                                    <div class="account-messages-conversation-head">
+                                        <div class="account-messages-conversation-copy">
+                                            <div class="section-kicker" data-i18n="messages-conversation-title">Conversation</div>
+                                            <div class="account-messages-conversation-title" id="account-messages-conversation-title"></div>
+                                        </div>
+                                        <button type="button" class="btn btn-action btn-strong account-messages-open" id="account-messages-open-btn" data-i18n="messages-open">Mesajlar</button>
+                                    </div>
+                                    <div class="account-messages-conversation-list" id="account-messages-conversation-list"></div>
+                                    <div class="account-messages-compose">
+                                        <textarea id="account-message-input" class="account-message-input" rows="3" maxlength="500" data-i18n="messages-placeholder" placeholder="Write a message"></textarea>
+                                        <div class="account-messages-compose-actions">
+                                            <button type="button" class="btn btn-action btn-strong" id="account-message-send-btn" data-i18n="messages-send">Send</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                         <div class="settings-grid compact-grid">
                             <div class="settings-group field-span-2">
@@ -412,14 +447,7 @@
                     <div class="player-profile-stats" id="player-profile-stats"></div>
                     <div class="player-profile-actions">
                         <button type="button" class="btn btn-action btn-strong" id="player-profile-friend-btn" data-i18n="friend-add">Dost et</button>
-                    </div>
-                    <div class="player-profile-message-box">
-                        <label class="section-kicker" for="player-profile-message-input" data-i18n="player-profile-message-label">Message</label>
-                        <textarea id="player-profile-message-input" class="player-profile-message-input" rows="3" maxlength="500" placeholder="Write a short message"></textarea>
-                        <div class="player-profile-message-actions">
-                        <button type="button" class="btn btn-action btn-strong" id="player-profile-message-btn" data-i18n="player-profile-send">Send</button>
-                        </div>
-                        <div class="player-profile-message-thread" id="player-profile-message-thread"></div>
+                        <button type="button" class="btn btn-menu" id="player-profile-message-btn" data-i18n="player-profile-message">Mesajlar</button>
                     </div>
                 </div>
             </section>

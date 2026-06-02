@@ -338,3 +338,89 @@ test("getDirectMessages returns the conversation history between two players", a
   assert.equal(result.items[0].id, "message-1");
   assert.equal(result.items[1].id, "message-2");
 });
+
+test("getMessageThreads returns only the current player's conversations with unread counts", async () => {
+  const currentPlayer = makePlayer("player-a", "Alpha");
+  const playerB = makePlayer("player-b", "Beta");
+  const playerC = makePlayer("player-c", "Gamma");
+  const stranger = makePlayer("player-d", "Delta");
+
+  const rows = [
+    {
+      id: "m-5",
+      senderPlayerId: stranger.id,
+      receiverPlayerId: playerB.id,
+      text: "Not visible",
+      createdAt: new Date("2024-03-03T10:00:00.000Z"),
+      readAt: null,
+      sender: stranger,
+      receiver: playerB
+    },
+    {
+      id: "m-4",
+      senderPlayerId: playerC.id,
+      receiverPlayerId: currentPlayer.id,
+      text: "Hey Alpha",
+      createdAt: new Date("2024-03-02T09:00:00.000Z"),
+      readAt: null,
+      sender: playerC,
+      receiver: currentPlayer
+    },
+    {
+      id: "m-3",
+      senderPlayerId: playerB.id,
+      receiverPlayerId: currentPlayer.id,
+      text: "Seen message",
+      createdAt: new Date("2024-03-01T12:00:00.000Z"),
+      readAt: new Date("2024-03-01T12:30:00.000Z"),
+      sender: playerB,
+      receiver: currentPlayer
+    },
+    {
+      id: "m-2",
+      senderPlayerId: playerB.id,
+      receiverPlayerId: currentPlayer.id,
+      text: "Unread message",
+      createdAt: new Date("2024-03-01T11:00:00.000Z"),
+      readAt: null,
+      sender: playerB,
+      receiver: currentPlayer
+    },
+    {
+      id: "m-1",
+      senderPlayerId: currentPlayer.id,
+      receiverPlayerId: playerB.id,
+      text: "Hello Beta",
+      createdAt: new Date("2024-03-01T10:00:00.000Z"),
+      readAt: null,
+      sender: currentPlayer,
+      receiver: playerB
+    }
+  ];
+
+  const prismaMock = {
+    directMessage: {
+      findMany: async ({ where, take }: any) => {
+        assert.equal(take, 200);
+        assert.deepEqual(where.OR, [
+          { senderPlayerId: currentPlayer.id },
+          { receiverPlayerId: currentPlayer.id }
+        ]);
+        return rows.filter((row) => row.senderPlayerId === currentPlayer.id || row.receiverPlayerId === currentPlayer.id);
+      }
+    }
+  } as any;
+
+  const service = new SocialService(prismaMock, {} as any);
+  (service as any).getCurrentPlayer = async () => currentPlayer;
+
+  const result = await service.getMessageThreads({} as any);
+
+  assert.equal(result.items.length, 2);
+  assert.equal(result.items[0].player.id, playerC.id);
+  assert.equal(result.items[0].lastMessage.text, "Hey Alpha");
+  assert.equal(result.items[0].unreadCount, 1);
+  assert.equal(result.items[1].player.id, playerB.id);
+  assert.equal(result.items[1].lastMessage.text, "Seen message");
+  assert.equal(result.items[1].unreadCount, 1);
+});

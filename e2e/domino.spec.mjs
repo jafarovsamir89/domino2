@@ -231,6 +231,118 @@ test("authenticated profile shows four stats cards without Xal and leaderboard u
     });
   });
 
+  await page.route("**/social/players/p-2/profile", async (route) => {
+    const headers = {
+      "Access-Control-Allow-Origin": route.request().headers().origin ?? "http://127.0.0.1:4173",
+      "Access-Control-Allow-Methods": "GET,POST,PUT,PATCH,DELETE,OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With",
+      "Access-Control-Allow-Credentials": "true",
+      "Vary": "Origin"
+    };
+    return route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      headers,
+      body: JSON.stringify({
+        item: {
+          id: "p-2",
+          displayName: "Alice",
+          avatarSeed: null,
+          avatarUrl: null,
+          stats: {
+            rating: 1200,
+            matchesPlayed: 13,
+            wins: 9,
+            losses: 4
+          },
+          friendshipStatus: "none"
+        }
+      })
+    });
+  });
+
+  await page.route("**/social/messages", async (route) => {
+    const headers = {
+      "Access-Control-Allow-Origin": route.request().headers().origin ?? "http://127.0.0.1:4173",
+      "Access-Control-Allow-Methods": "GET,POST,PUT,PATCH,DELETE,OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With",
+      "Access-Control-Allow-Credentials": "true",
+      "Vary": "Origin"
+    };
+    return route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      headers,
+      body: JSON.stringify({
+        items: [
+          {
+            player: { id: "p-2", displayName: "Alice", avatarSeed: null, avatarUrl: null, isGuest: false },
+            lastMessage: {
+              id: "m-1",
+              senderPlayerId: "p-2",
+              receiverPlayerId: "p-1",
+              text: "Hello",
+              createdAt: "2024-03-01T10:00:00.000Z",
+              readAt: null,
+              sender: { id: "p-2", displayName: "Alice", avatarSeed: null, avatarUrl: null, isGuest: false },
+              receiver: { id: "p-1", displayName: "Samir", avatarSeed: null, avatarUrl: null, isGuest: false }
+            },
+            unreadCount: 1,
+            messageCount: 1
+          }
+        ]
+      })
+    });
+  });
+
+  await page.route("**/social/messages/p-2", async (route) => {
+    const headers = {
+      "Access-Control-Allow-Origin": route.request().headers().origin ?? "http://127.0.0.1:4173",
+      "Access-Control-Allow-Methods": "GET,POST,PUT,PATCH,DELETE,OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With",
+      "Access-Control-Allow-Credentials": "true",
+      "Vary": "Origin"
+    };
+    if (route.request().method() === "POST") {
+      return route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        headers,
+        body: JSON.stringify({
+          item: {
+            id: "m-2",
+            senderPlayerId: "p-1",
+            receiverPlayerId: "p-2",
+            text: "Ping",
+            createdAt: "2024-03-01T10:10:00.000Z",
+            readAt: null,
+            sender: { id: "p-1", displayName: "Samir", avatarSeed: null, avatarUrl: null, isGuest: false },
+            receiver: { id: "p-2", displayName: "Alice", avatarSeed: null, avatarUrl: null, isGuest: false }
+          }
+        })
+      });
+    }
+    return route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      headers,
+      body: JSON.stringify({
+        items: [
+          {
+            id: "m-1",
+            senderPlayerId: "p-2",
+            receiverPlayerId: "p-1",
+            text: "Hello",
+            createdAt: "2024-03-01T10:00:00.000Z",
+            readAt: null,
+            sender: { id: "p-2", displayName: "Alice", avatarSeed: null, avatarUrl: null, isGuest: false },
+            receiver: { id: "p-1", displayName: "Samir", avatarSeed: null, avatarUrl: null, isGuest: false }
+          }
+        ]
+      })
+    });
+  });
+
   await page.goto("/index.html");
   await page.locator("#account-btn").click();
 
@@ -253,8 +365,16 @@ test("authenticated profile shows four stats cards without Xal and leaderboard u
   await expect(page.locator("#leaderboard-modal")).toHaveClass(/active/);
   await expect(page.locator("#leaderboard-list .leaderboard-card")).toHaveCount(2);
   await expect(page.locator("#leaderboard-list")).toContainText(/Reyting|Rating|Рейтинг/);
-  await page.locator("#leaderboard-modal-close").click();
-  await expect(page.locator("#leaderboard-modal")).not.toHaveClass(/active/);
+  await page.locator("#leaderboard-list .leaderboard-card .leaderboard-name-btn").last().click();
+  await expect(page.locator("#player-profile-modal")).toHaveClass(/active/);
+  await expect(page.locator("#player-profile-modal textarea")).toHaveCount(0);
+  await expect(page.locator("#player-profile-message-btn")).toBeVisible();
+  await page.locator("#player-profile-message-btn").click();
+  await expect(page.locator("#account-modal")).toHaveClass(/active/);
+  await expect(page.locator("#account-messages-panel")).not.toHaveClass(/is-hidden/);
+  await expect(page.locator("#player-profile-modal")).not.toHaveClass(/active/);
+  await page.locator("#account-modal-close").click();
+  await expect(page.locator("#account-modal")).not.toHaveClass(/active/);
 
 });
 

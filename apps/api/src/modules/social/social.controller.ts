@@ -29,6 +29,11 @@ export class SocialController {
     return this.socialService.getPlayerProfile(req.headers, id);
   }
 
+  @Get("messages")
+  async getMessageThreads(@Req() req: Request) {
+    return this.socialService.getMessageThreads(req.headers);
+  }
+
   @Post("friends/request")
   async requestFriend(@Req() req: Request, @Body() body: SocialRequestFriendDto) {
     return this.socialService.requestFriend(req.headers, body);
