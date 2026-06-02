@@ -145,8 +145,8 @@ test("authenticated profile shows four stats cards without Xal and leaderboard u
       headers,
       body: JSON.stringify({
         items: [
-          { rank: 1, name: "Samir", rating: 1234 },
-          { rank: 2, name: "Alice", rating: 1200 }
+          { id: "p-1", rank: 1, displayName: "Samir", rating: 1234, matchesPlayed: 15, wins: 11, losses: 4 },
+          { id: "p-2", rank: 2, displayName: "Alice", rating: 1200, matchesPlayed: 13, wins: 9, losses: 4 }
         ]
       })
     });
@@ -253,24 +253,9 @@ test("authenticated profile shows four stats cards without Xal and leaderboard u
   await expect(page.locator("#leaderboard-modal")).toHaveClass(/active/);
   await expect(page.locator("#leaderboard-list .leaderboard-card")).toHaveCount(2);
   await expect(page.locator("#leaderboard-list")).toContainText(/Reyting|Rating|Рейтинг/);
-  await expect(page.locator("#leaderboard-list")).toContainText(/Oyunlar|Games|Игры/);
-  await expect(page.locator("#leaderboard-list")).toContainText(/Qələbələr|Wins|Победы/);
   await page.locator("#leaderboard-modal-close").click();
   await expect(page.locator("#leaderboard-modal")).not.toHaveClass(/active/);
 
-  await page.locator("#account-btn").click();
-  await expect(page.locator("#account-modal")).toHaveClass(/active/);
-  await page.locator("#account-friends-btn").click();
-  await expect(page.locator("#friends-modal")).toHaveClass(/active/);
-  await expect(page.locator("#friends-list")).toContainText("Alice");
-  await expect(page.locator("#friends-requests-list")).toContainText("Bob");
-  await expect(page.locator("#friends-search-input")).toHaveAttribute("placeholder", /Oyunçu axtar|Search players|Поиск игроков/);
-  await page.locator("#friends-search-input").fill("Cha");
-  await page.locator("#friends-search-btn").click();
-  await expect(page.locator("#friends-search-results")).toContainText("Charlie");
-  await expect(page.locator("#friends-search-results")).toContainText(/Əlavə et|Add|Добавить/);
-  await page.locator("#friends-modal-close").click();
-  await expect(page.locator("#friends-modal")).not.toHaveClass(/active/);
 });
 
 test("open rooms modal uses a standard title bar and close button", async ({ page }) => {

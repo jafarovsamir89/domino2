@@ -178,3 +178,163 @@ test("acceptRoomInvitation rejects expired invites and marks them expired", asyn
   assert.equal(expiredMarked, true);
   assert.equal(invite.status, "expired");
 });
+
+test("sendDirectMessage rejects messaging yourself", async () => {
+  const currentPlayer = makePlayer("player-a", "Alpha");
+  const prismaMock = {
+    player: {
+      findUnique: async () => {
+        throw new Error("should not be called");
+      }
+    },
+    directMessage: {
+      create: async () => {
+        throw new Error("should not be called");
+      }
+    }
+  } as any;
+
+  const service = new SocialService(prismaMock, {} as any);
+  (service as any).getCurrentPlayer = async () => currentPlayer;
+
+  await assert.rejects(
+    () => service.sendDirectMessage({} as any, currentPlayer.id, { text: "Hello" }),
+    /You cannot message yourself/
+  );
+});
+
+test("sendDirectMessage rejects empty and overlong text", async () => {
+  const currentPlayer = makePlayer("player-a", "Alpha");
+  const targetPlayer = makePlayer("player-b", "Beta");
+  const prismaMock = {
+    player: {
+      findUnique: async () => targetPlayer
+    },
+    directMessage: {
+      create: async () => {
+        throw new Error("should not be called");
+      }
+    }
+  } as any;
+
+  const service = new SocialService(prismaMock, {} as any);
+  (service as any).getCurrentPlayer = async () => currentPlayer;
+
+  await assert.rejects(
+    () => service.sendDirectMessage({} as any, targetPlayer.id, { text: "   " }),
+    /Message cannot be empty/
+  );
+  await assert.rejects(
+    () => service.sendDirectMessage({} as any, targetPlayer.id, { text: "x".repeat(501) }),
+    /Message is too long/
+  );
+});
+
+test("sendDirectMessage creates a message between two players", async () => {
+  const currentPlayer = makePlayer("player-a", "Alpha");
+  const targetPlayer = makePlayer("player-b", "Beta");
+  let capturedCreate: any = null;
+
+  const prismaMock = {
+    player: {
+      findUnique: async ({ where }: any) => {
+        if (where.id === targetPlayer.id) return targetPlayer;
+        return null;
+      }
+    },
+    directMessage: {
+      create: async (query: any) => {
+        capturedCreate = query;
+        return {
+          id: "message-1",
+          senderPlayerId: currentPlayer.id,
+          receiverPlayerId: targetPlayer.id,
+          text: "Hello from Alpha",
+          createdAt: new Date("2024-03-01T10:00:00.000Z"),
+          readAt: null,
+          sender: currentPlayer,
+          receiver: targetPlayer
+        };
+      }
+    }
+  } as any;
+
+  const service = new SocialService(prismaMock, {} as any);
+  (service as any).getCurrentPlayer = async () => currentPlayer;
+
+  const result = await service.sendDirectMessage({} as any, targetPlayer.id, { text: "  Hello from Alpha  " });
+
+  assert.ok(capturedCreate);
+  assert.deepEqual(capturedCreate.data, {
+    senderPlayerId: currentPlayer.id,
+    receiverPlayerId: targetPlayer.id,
+    text: "Hello from Alpha"
+  });
+  assert.equal(result.item.id, "message-1");
+  assert.equal(result.item.text, "Hello from Alpha");
+  assert.equal(result.item.sender.displayName, "Alpha");
+  assert.equal(result.item.receiver.displayName, "Beta");
+});
+
+test("getDirectMessages returns the conversation history between two players", async () => {
+  const currentPlayer = makePlayer("player-a", "Alpha");
+  const targetPlayer = makePlayer("player-b", "Beta");
+  let capturedQuery: any = null;
+  const rows = [
+    {
+      id: "message-1",
+      senderPlayerId: currentPlayer.id,
+      receiverPlayerId: targetPlayer.id,
+      text: "First",
+      createdAt: new Date("2024-03-01T10:00:00.000Z"),
+      readAt: null,
+      sender: currentPlayer,
+      receiver: targetPlayer
+    },
+    {
+      id: "message-2",
+      senderPlayerId: targetPlayer.id,
+      receiverPlayerId: currentPlayer.id,
+      text: "Second",
+      createdAt: new Date("2024-03-01T10:05:00.000Z"),
+      readAt: null,
+      sender: targetPlayer,
+      receiver: currentPlayer
+    }
+  ];
+
+  const prismaMock = {
+    player: {
+      findUnique: async ({ where }: any) => {
+        if (where.id === targetPlayer.id) return targetPlayer;
+        return null;
+      }
+    },
+    directMessage: {
+      findMany: async (query: any) => {
+        capturedQuery = query;
+        return rows;
+      }
+    }
+  } as any;
+
+  const service = new SocialService(prismaMock, {} as any);
+  (service as any).getCurrentPlayer = async () => currentPlayer;
+
+  const result = await service.getDirectMessages({} as any, targetPlayer.id);
+
+  assert.ok(capturedQuery);
+  assert.deepEqual(capturedQuery.where.OR, [
+    { senderPlayerId: currentPlayer.id, receiverPlayerId: targetPlayer.id },
+    { senderPlayerId: targetPlayer.id, receiverPlayerId: currentPlayer.id }
+  ]);
+  assert.deepEqual(capturedQuery.include, {
+    sender: { select: { id: true, displayName: true, avatarSeed: true, avatarUrl: true, isGuest: true, createdAt: true } },
+    receiver: { select: { id: true, displayName: true, avatarSeed: true, avatarUrl: true, isGuest: true, createdAt: true } }
+  });
+  assert.deepEqual(capturedQuery.orderBy, { createdAt: "asc" });
+  assert.equal(capturedQuery.take, 50);
+  assert.equal(result.items.length, 2);
+  assert.equal(result.items[0].id, "message-1");
+  assert.equal(result.items[1].id, "message-2");
+});

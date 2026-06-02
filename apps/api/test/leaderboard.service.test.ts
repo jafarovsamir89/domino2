@@ -39,8 +39,8 @@ test("LeaderboardService uses db ordering and limit for top players", async () =
     }
   } as any;
 
-  const service = new LeaderboardService(prismaMock);
-  const items = await service.getTopPlayers(5);
+  const service = new LeaderboardService(prismaMock, {} as any);
+  const items = await service.getLeaderboard({} as any, "overall", 5);
 
   assert.ok(captured);
   assert.deepEqual(captured.orderBy, [
