@@ -78,6 +78,35 @@ input, button { font: inherit; }
     height: 16px;
 }
 
+.start-profile-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+}
+
+.start-friends-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-height: 38px;
+    padding: 0 12px;
+    border-radius: 13px;
+    white-space: nowrap;
+}
+
+.start-friends-btn .auth-icon {
+    width: 14px;
+    height: 14px;
+}
+
+.start-compact-label {
+    font-size: 0.8rem;
+    font-weight: 800;
+    letter-spacing: 0.01em;
+}
+
 .start-topbar {
     position: absolute;
     top: 14px;
@@ -86,7 +115,7 @@ input, button { font: inherit; }
     transform: translateX(-50%);
     display: grid;
     grid-template-columns:
-        minmax(38px, 20%)
+        minmax(154px, 28%)
         minmax(0, 1.14fr)
         minmax(12px, 0.24fr)
         minmax(0, 1.14fr)
@@ -103,7 +132,7 @@ input, button { font: inherit; }
     justify-items: end;
 }
 
-#start-screen.auth-required .start-topbar .start-profile-btn,
+#start-screen.auth-required .start-topbar .start-profile-group,
 #start-screen.auth-required .start-topbar .start-top-shop-btn,
 #start-screen.auth-required .start-topbar .start-top-spacer {
     display: none !important;
@@ -957,6 +986,30 @@ input, button { font: inherit; }
     gap: 10px;
 }
 
+.leaderboard-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 4px;
+}
+
+.leaderboard-tab {
+    min-height: 36px;
+    padding: 0 12px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--text-dim);
+    font-size: 0.82rem;
+    font-weight: 800;
+}
+
+.leaderboard-tab.is-active {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #1a1a1a;
+    border-color: transparent;
+}
+
 .leaderboard-card {
     display: grid;
     gap: 10px;
@@ -964,6 +1017,11 @@ input, button { font: inherit; }
     border-radius: 16px;
     background: rgba(255, 255, 255, 0.04);
     border: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.leaderboard-card.is-self {
+    border-color: rgba(240, 192, 64, 0.3);
+    background: rgba(240, 192, 64, 0.06);
 }
 
 .leaderboard-card-top {
@@ -993,6 +1051,44 @@ input, button { font: inherit; }
     min-width: 0;
 }
 
+.leaderboard-name-btn,
+.player-name-btn,
+.opp-label-button {
+    appearance: none;
+    border: 0;
+    background: none;
+    padding: 0;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+}
+
+.leaderboard-name-btn,
+.player-name-btn {
+    cursor: pointer;
+}
+
+.leaderboard-name-btn {
+    color: var(--text);
+    font-size: 0.98rem;
+    font-weight: 800;
+    line-height: 1.2;
+}
+
+.leaderboard-name-btn:hover,
+.leaderboard-name-btn:focus-visible,
+.player-name-btn:hover,
+.player-name-btn:focus-visible {
+    color: var(--accent);
+}
+
+.player-name-btn.friend-card-name {
+    color: var(--text);
+    font-size: 0.96rem;
+    font-weight: 800;
+    line-height: 1.2;
+}
+
 .leaderboard-card-copy strong {
     color: var(--text);
     font-size: 0.98rem;
@@ -1018,6 +1114,13 @@ input, button { font: inherit; }
     font-weight: 800;
     white-space: nowrap;
     text-align: right;
+}
+
+.leaderboard-card-week,
+.leaderboard-self-tag {
+    color: var(--text-dim);
+    font-size: 0.78rem;
+    font-weight: 700;
 }
 
 .friends-page {
@@ -1060,6 +1163,170 @@ input, button { font: inherit; }
     outline: none;
     border-color: var(--accent);
     box-shadow: 0 0 0 3px rgba(240, 192, 64, 0.12);
+}
+
+.player-profile-modal .modal-desc {
+    margin-bottom: 8px;
+}
+
+.player-profile-body {
+    display: grid;
+    gap: 14px;
+}
+
+.player-profile-hero {
+    display: grid;
+    grid-template-columns: 64px minmax(0, 1fr);
+    gap: 12px;
+    align-items: center;
+    padding: 14px;
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.player-profile-avatar {
+    width: 64px;
+    height: 64px;
+    border-radius: 20px;
+    background: rgba(240, 192, 64, 0.12);
+    border: 1px solid rgba(240, 192, 64, 0.18);
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+}
+
+.player-profile-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.player-profile-avatar-fallback {
+    color: var(--accent);
+    font-size: 1.1rem;
+    font-weight: 900;
+}
+
+.player-profile-copy {
+    display: grid;
+    gap: 4px;
+    min-width: 0;
+}
+
+.player-profile-name {
+    color: var(--text);
+    font-size: 1.05rem;
+    font-weight: 900;
+    line-height: 1.2;
+}
+
+.player-profile-status {
+    color: var(--text-dim);
+    font-size: 0.82rem;
+}
+
+.player-profile-stats {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+}
+
+.player-profile-stat {
+    display: grid;
+    gap: 3px;
+    padding: 10px 12px;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.player-profile-stat-key {
+    color: var(--text-dim);
+    font-size: 0.74rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.player-profile-stat strong {
+    color: var(--text);
+    font-size: 1rem;
+    font-weight: 900;
+}
+
+.player-profile-actions {
+    display: flex;
+    justify-content: flex-start;
+}
+
+.player-profile-message-box {
+    display: grid;
+    gap: 10px;
+    padding: 14px;
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.player-profile-message-box.is-hidden {
+    display: none;
+}
+
+.player-profile-message-input {
+    width: 100%;
+    min-height: 88px;
+    padding: 12px 14px;
+    border-radius: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.03));
+    color: var(--text);
+    resize: vertical;
+}
+
+.player-profile-message-input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(240, 192, 64, 0.12);
+}
+
+.player-profile-message-actions {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.player-profile-message-thread {
+    display: grid;
+    gap: 8px;
+}
+
+.player-profile-message-row {
+    display: grid;
+    gap: 4px;
+    padding: 10px 12px;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.player-profile-message-row.is-self {
+    background: rgba(240, 192, 64, 0.06);
+    border-color: rgba(240, 192, 64, 0.18);
+}
+
+.player-profile-message-author {
+    color: var(--text-dim);
+    font-size: 0.72rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.player-profile-message-text {
+    color: var(--text);
+    font-size: 0.9rem;
+    line-height: 1.45;
+    white-space: pre-wrap;
 }
 
 @media (min-width: 768px) {
@@ -2605,6 +2872,10 @@ body.seat-selection-active #game-screen {
     text-shadow: 1px 1px 2px #000;
 }
 
+.opp-label-button {
+    cursor: pointer;
+}
+
 .opp-hand-group {
     min-width: 0;
 }
@@ -3614,13 +3885,22 @@ body.seat-selection-active #game-screen {
         height: 40px;
     }
 
+    .start-profile-group {
+        gap: 6px;
+    }
+
+    .start-friends-btn {
+        min-height: 40px;
+        padding: 0 10px;
+    }
+
     .start-topbar {
         top: 12px;
         left: 12px;
         width: calc(100% - 24px);
         transform: none;
         grid-template-columns:
-            minmax(36px, 20%)
+            minmax(136px, 28%)
             minmax(0, 1.1fr)
             minmax(10px, 0.22fr)
             minmax(0, 1.1fr)

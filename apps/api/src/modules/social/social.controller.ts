@@ -5,6 +5,7 @@ import { SocialService } from "./social.service.js";
 import {
   SocialExchangeGiftDto,
   SocialSendGiftDto,
+  SocialSendMessageDto,
   RoomInviteDto,
   SocialRequestFriendDto
 } from "../validation/validation.dto.js";
@@ -21,6 +22,11 @@ export class SocialController {
   @Get("players/search")
   async searchPlayers(@Req() req: Request, @Query("query") query?: string) {
     return this.socialService.searchPlayers(req.headers, query);
+  }
+
+  @Get("players/:id/profile")
+  async getPlayerProfile(@Req() req: Request, @Param("id") id: string) {
+    return this.socialService.getPlayerProfile(req.headers, id);
   }
 
   @Post("friends/request")
@@ -69,6 +75,20 @@ export class SocialController {
     @Body() body: SocialSendGiftDto
   ) {
     return this.socialService.sendGift(req.headers, body);
+  }
+
+  @Get("messages/:playerId")
+  async getMessages(@Req() req: Request, @Param("playerId") playerId: string) {
+    return this.socialService.getDirectMessages(req.headers, playerId);
+  }
+
+  @Post("messages/:playerId")
+  async sendMessage(
+    @Req() req: Request,
+    @Param("playerId") playerId: string,
+    @Body() body: SocialSendMessageDto
+  ) {
+    return this.socialService.sendDirectMessage(req.headers, playerId, body);
   }
 
   @Post("gifts/exchange")

@@ -73,7 +73,7 @@ export class Renderer {
             </span>`;
     }
 
-    renderOpponentHands(hands, hi, names, cur = -1) {
+    renderOpponentHands(hands, hi, playersOrNames, cur = -1) {
         document.getElementById('opp-top').innerHTML = '';
         document.getElementById('opp-left').innerHTML = '';
         document.getElementById('opp-right').innerHTML = '';
@@ -83,13 +83,27 @@ export class Renderer {
 
         for (let i = 0; i < hands.length; i++) {
             if (i === hi) continue;
+            const playerRef = Array.isArray(playersOrNames) ? (playersOrNames[i] || {}) : {};
+            const labelText = typeof playerRef === 'string'
+                ? playerRef
+                : (playerRef?.name || playerRef?.displayName || `Player ${i + 1}`);
+            const playerId = typeof playerRef === 'object'
+                ? String(playerRef?.playerId || playerRef?.userId || playerRef?.id || '')
+                : '';
+            const isBot = Boolean(playerRef?.isBot);
             const g = document.createElement('div');
             g.className = 'opp-hand-group';
             g.style.cssText = 'display:flex;align-items:center;gap:4px;';
-            const l = document.createElement('span');
-            l.className = 'opp-label';
-            l.textContent = names[i] || `Player ${i + 1}`;
+            const l = document.createElement(playerId && !isBot ? 'button' : 'span');
+            l.className = playerId && !isBot ? 'opp-label opp-label-button' : 'opp-label';
+            l.textContent = labelText;
             l.title = l.textContent;
+            if (playerId && !isBot) {
+                l.type = 'button';
+                l.addEventListener('click', () => {
+                    this.app.openPlayerProfileModal({ id: playerId, displayName: labelText, playerId });
+                });
+            }
             g.appendChild(l);
             const pile = document.createElement('div');
             pile.className = 'opp-tile-pile';

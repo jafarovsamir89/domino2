@@ -727,9 +727,12 @@ export class AccountClient {
         return true;
     }
 
-    async getLeaderboard(limit = 10) {
+    async getLeaderboard(limit = 10, scope = "overall") {
         try {
-            const data = await this.platformRequest(`/leaderboard?limit=${encodeURIComponent(limit)}`);
+            const params = new URLSearchParams();
+            params.set("limit", String(limit));
+            if (scope) params.set("scope", String(scope));
+            const data = await this.platformRequest(`/leaderboard?${params.toString()}`);
             const items = Array.isArray(data?.items) ? data.items : [];
             return items.map((row, index) => ({
                 rank: Number(row.rank ?? index + 1),
@@ -741,11 +744,39 @@ export class AccountClient {
                 wins: Number(row.wins ?? 0),
                 losses: Number(row.losses ?? 0),
                 draws: Number(row.draws ?? 0),
-                matchesPlayed: Number(row.matchesPlayed ?? 0)
+                matchesPlayed: Number(row.matchesPlayed ?? 0),
+                isSelf: Boolean(row.isSelf),
+                weeklyRatingDelta: Number(row.weeklyRatingDelta ?? 0),
+                weeklyWins: Number(row.weeklyWins ?? 0),
+                weeklyLosses: Number(row.weeklyLosses ?? 0),
+                weeklyMatchesPlayed: Number(row.weeklyMatchesPlayed ?? 0)
             }));
         } catch (error) {
             throw error;
         }
+    }
+
+    async getPlayerProfile(playerId) {
+        const id = String(playerId || "").trim();
+        if (!id) throw new Error("Player not found");
+        const data = await this.platformRequest(`/social/players/${encodeURIComponent(id)}/profile`);
+        return data?.item || null;
+    }
+
+    async getPlayerMessages(playerId) {
+        const id = String(playerId || "").trim();
+        if (!id) return [];
+        const data = await this.platformRequest(`/social/messages/${encodeURIComponent(id)}`);
+        return Array.isArray(data?.items) ? data.items : [];
+    }
+
+    async sendPlayerMessage(playerId, text) {
+        const id = String(playerId || "").trim();
+        const body = { text: String(text || "").trim() };
+        return this.platformRequest(`/social/messages/${encodeURIComponent(id)}`, {
+            method: "POST",
+            body
+        });
     }
 
     async getProfileDetails() {

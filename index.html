@@ -16,7 +16,13 @@
 <body>
     <div id="start-screen" class="screen active auth-required">
         <div class="start-topbar">
-            <button class="icon-btn start-profile-btn" id="account-btn" type="button" aria-label="Account"></button>
+            <div class="start-profile-group">
+                <button class="icon-btn start-profile-btn" id="account-btn" type="button" aria-label="Account"></button>
+                <button class="btn btn-menu start-friends-btn" id="open-friends-btn" type="button">
+                    <span class="auth-icon auth-icon-user" aria-hidden="true"></span>
+                    <span class="start-compact-label" data-i18n="friends-title">Dostlar</span>
+                </button>
+            </div>
 
             <button class="btn btn-menu-shop start-top-shop-btn" id="start-coin-shop-btn" type="button">
                 <span class="start-top-shop-icon" data-shop-icon="cart" aria-hidden="true"></span>
@@ -340,9 +346,6 @@
                                 <input type="text" id="account-display-name-input" data-i18n="placeholder-player-name" maxlength="24" placeholder="Player">
                             </div>
                         </div>
-                        <div class="account-toolbar">
-                            <button class="btn btn-action btn-strong" id="account-friends-btn" data-i18n="friends-title">Dostlar</button>
-                        </div>
                     </section>
 
                     <section class="account-panel account-auth-panel" id="account-auth-panel">
@@ -381,7 +384,44 @@
                     <button class="btn btn-menu modal-close-btn account-modal-close-btn" id="leaderboard-modal-close" type="button" aria-label="Close">Г—</button>
                 </div>
                 <p class="modal-desc page-description" id="leaderboard-modal-desc" data-i18n="leaderboard-desc">Oyuncular reytinqə görə sıralanır.</p>
+                <div class="leaderboard-tabs" id="leaderboard-tabs">
+                    <button type="button" class="leaderboard-tab is-active" data-leaderboard-scope="overall" data-i18n="leaderboard-tab-overall">Overall</button>
+                    <button type="button" class="leaderboard-tab" data-leaderboard-scope="weekly" data-i18n="leaderboard-tab-weekly">Weekly</button>
+                    <button type="button" class="leaderboard-tab" data-leaderboard-scope="friends" data-i18n="leaderboard-tab-friends">Friends</button>
+                </div>
                 <div id="leaderboard-list" class="leaderboard-list"></div>
+            </section>
+        </div>
+
+        <div id="player-profile-modal" class="modal-backdrop">
+            <section class="modal-card modal-card-wide player-profile-modal">
+                <div class="modal-header account-modal-header">
+                    <div class="account-modal-title-wrap">
+                        <h2 id="player-profile-title" data-i18n="player-profile-title">Player profile</h2>
+                    </div>
+                    <button class="btn btn-menu modal-close-btn account-modal-close-btn" id="player-profile-modal-close" type="button" aria-label="Close">Г—</button>
+                </div>
+                <div class="player-profile-body">
+                    <div class="player-profile-hero">
+                        <div class="player-profile-avatar" id="player-profile-avatar" aria-hidden="true"></div>
+                        <div class="player-profile-copy">
+                            <div class="player-profile-name" id="player-profile-name">Player</div>
+                            <div class="player-profile-status" id="player-profile-status"></div>
+                        </div>
+                    </div>
+                    <div class="player-profile-stats" id="player-profile-stats"></div>
+                    <div class="player-profile-actions">
+                        <button type="button" class="btn btn-action btn-strong" id="player-profile-friend-btn" data-i18n="friend-add">Dost et</button>
+                    </div>
+                    <div class="player-profile-message-box">
+                        <label class="section-kicker" for="player-profile-message-input" data-i18n="player-profile-message-label">Message</label>
+                        <textarea id="player-profile-message-input" class="player-profile-message-input" rows="3" maxlength="500" placeholder="Write a short message"></textarea>
+                        <div class="player-profile-message-actions">
+                        <button type="button" class="btn btn-action btn-strong" id="player-profile-message-btn" data-i18n="player-profile-send">Send</button>
+                        </div>
+                        <div class="player-profile-message-thread" id="player-profile-message-thread"></div>
+                    </div>
+                </div>
             </section>
         </div>
 

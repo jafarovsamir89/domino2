@@ -96,6 +96,17 @@ type GiftTransactionRow = {
   recipient: PlayerSummary;
 };
 
+type DirectMessageRow = {
+  id: string;
+  senderPlayerId: string;
+  receiverPlayerId: string;
+  text: string;
+  createdAt: Date;
+  readAt: Date | null;
+  sender: PlayerSummary;
+  receiver: PlayerSummary;
+};
+
 const DEFAULT_GIFT_CATALOG = [
   { key: "gift_001", name: "Gift 001", assetKey: "gift_001", rarity: "common", sortOrder: 1 },
   { key: "gift_002", name: "Gift 002", assetKey: "gift_002", rarity: "common", sortOrder: 2 },
@@ -135,6 +146,25 @@ export class SocialService {
       avatarUrl: true,
       isGuest: true,
       createdAt: true
+    } as const;
+  }
+
+  private playerProfileSelect() {
+    return {
+      id: true,
+      displayName: true,
+      avatarSeed: true,
+      avatarUrl: true,
+      isGuest: true,
+      createdAt: true,
+      stats: {
+        select: {
+          rating: true,
+          matchesPlayed: true,
+          wins: true,
+          losses: true
+        }
+      }
     } as const;
   }
 
@@ -388,6 +418,19 @@ export class SocialService {
     };
   }
 
+  private summarizeDirectMessage(row: DirectMessageRow) {
+    return {
+      id: row.id,
+      senderPlayerId: row.senderPlayerId,
+      receiverPlayerId: row.receiverPlayerId,
+      text: row.text,
+      createdAt: row.createdAt.toISOString(),
+      readAt: row.readAt ? row.readAt.toISOString() : null,
+      sender: row.sender,
+      receiver: row.receiver
+    };
+  }
+
   private summarizeFriend(
     currentPlayerId: string,
     row: {
@@ -531,6 +574,62 @@ export class SocialService {
     };
   }
 
+  async getPlayerProfile(headers: IncomingHttpHeaders, id: string) {
+    const currentPlayer = await this.getCurrentPlayer(headers);
+    const playerId = String(id || "").trim();
+    if (!playerId) {
+      throw new NotFoundException("Player not found");
+    }
+
+    const player = await this.prisma.player.findUnique({
+      where: { id: playerId },
+      select: this.playerProfileSelect()
+    });
+    if (!player) {
+      throw new NotFoundException("Player not found");
+    }
+
+    const stats = player.stats || { rating: 1000, matchesPlayed: 0, wins: 0, losses: 0 };
+    const friendship = await this.prisma.friendConnection.findFirst({
+      where: {
+        OR: [
+          { requesterPlayerId: currentPlayer.id, addresseePlayerId: playerId },
+          { requesterPlayerId: playerId, addresseePlayerId: currentPlayer.id }
+        ]
+      },
+      select: {
+        requesterPlayerId: true,
+        addresseePlayerId: true,
+        status: true
+      }
+    });
+
+    let friendshipStatus: "self" | "none" | "pending_incoming" | "pending_outgoing" | "accepted" = "none";
+    if (playerId === currentPlayer.id) {
+      friendshipStatus = "self";
+    } else if (friendship?.status === "accepted") {
+      friendshipStatus = "accepted";
+    } else if (friendship?.status === "pending") {
+      friendshipStatus = friendship.requesterPlayerId === currentPlayer.id ? "pending_outgoing" : "pending_incoming";
+    }
+
+    return {
+      item: {
+        id: player.id,
+        displayName: player.displayName,
+        avatarSeed: player.avatarSeed ?? null,
+        avatarUrl: player.avatarUrl ?? null,
+        stats: {
+          rating: Number(stats.rating ?? 1000),
+          matchesPlayed: Number(stats.matchesPlayed ?? 0),
+          wins: Number(stats.wins ?? 0),
+          losses: Number(stats.losses ?? 0)
+        },
+        friendshipStatus
+      }
+    };
+  }
+
   async requestFriend(headers: IncomingHttpHeaders, body: { playerId?: string; note?: string }) {
     const currentPlayer = await this.getCurrentPlayer(headers);
     const targetPlayerId = String(body?.playerId || "").trim();
@@ -626,6 +725,79 @@ export class SocialService {
 
     return {
       item: this.summarizeFriend(currentPlayer.id, pending)
+    };
+  }
+
+  async getDirectMessages(headers: IncomingHttpHeaders, playerId: string) {
+    const currentPlayer = await this.getCurrentPlayer(headers);
+    const targetPlayerId = String(playerId || "").trim();
+    if (!targetPlayerId) {
+      throw new NotFoundException("Player not found");
+    }
+    if (targetPlayerId === currentPlayer.id) {
+      return { items: [] };
+    }
+
+    const rows = await this.prisma.directMessage.findMany({
+      where: {
+        OR: [
+          { senderPlayerId: currentPlayer.id, receiverPlayerId: targetPlayerId },
+          { senderPlayerId: targetPlayerId, receiverPlayerId: currentPlayer.id }
+        ]
+      },
+      include: {
+        sender: { select: this.playerSelect() },
+        receiver: { select: this.playerSelect() }
+      },
+      orderBy: { createdAt: "asc" },
+      take: 50
+    });
+
+    return {
+      items: rows.map((row) => this.summarizeDirectMessage(row as unknown as DirectMessageRow))
+    };
+  }
+
+  async sendDirectMessage(headers: IncomingHttpHeaders, playerId: string, body: { text?: string }) {
+    const currentPlayer = await this.getCurrentPlayer(headers);
+    const targetPlayerId = String(playerId || "").trim();
+    if (!targetPlayerId) {
+      throw new NotFoundException("Player not found");
+    }
+    if (targetPlayerId === currentPlayer.id) {
+      throw new BadRequestException("You cannot message yourself");
+    }
+
+    const targetPlayer = await this.prisma.player.findUnique({
+      where: { id: targetPlayerId },
+      select: this.playerSelect()
+    });
+    if (!targetPlayer) {
+      throw new NotFoundException("Player not found");
+    }
+
+    const text = String(body?.text || "").trim();
+    if (!text) {
+      throw new BadRequestException("Message cannot be empty");
+    }
+    if (text.length > 500) {
+      throw new BadRequestException("Message is too long");
+    }
+
+    const row = await this.prisma.directMessage.create({
+      data: {
+        senderPlayerId: currentPlayer.id,
+        receiverPlayerId: targetPlayerId,
+        text
+      },
+      include: {
+        sender: { select: this.playerSelect() },
+        receiver: { select: this.playerSelect() }
+      }
+    });
+
+    return {
+      item: this.summarizeDirectMessage(row as unknown as DirectMessageRow)
     };
   }
 

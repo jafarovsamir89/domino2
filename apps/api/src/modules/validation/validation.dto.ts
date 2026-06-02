@@ -138,6 +138,13 @@ export class SocialSendGiftDto {
   note?: string;
 }
 
+export class SocialSendMessageDto {
+  @IsOptional()
+  @IsString()
+  @MaxLength(500)
+  text?: string;
+}
+
 export class SocialExchangeGiftDto {
   @IsString()
   @MaxLength(64)

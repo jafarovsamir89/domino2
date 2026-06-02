@@ -202,6 +202,8 @@ class DominoGame {
         this.tableSkinLoading = false;
         this.tableSkinBusy = false;
         this.accountProfileTab = 'skins';
+        this.leaderboardScope = 'overall';
+        this.playerProfileState = null;
         this._coinShopTickId = null;
         this.lastReactionSentAt = 0;
         this.lastReactionSentType = '';
@@ -252,6 +254,7 @@ class DominoGame {
         const onlineConnectChoiceBtn = document.getElementById('online-connect-choice-btn');
         const accountBtn = document.getElementById('account-btn');
         const openLeaderboardBtn = document.getElementById('open-leaderboard-btn');
+        const openFriendsBtn = document.getElementById('open-friends-btn');
         const landingGoogleBtn = document.getElementById('landing-google-login-btn');
         const landingAppleBtn = document.getElementById('landing-apple-login-btn');
         const resumeSessionBtn = document.getElementById('resume-session-btn');
@@ -295,6 +298,14 @@ class DominoGame {
         if (openLeaderboardBtn) openLeaderboardBtn.addEventListener('click', async () => {
             await this.openLeaderboardModal();
         });
+        document.querySelectorAll('[data-leaderboard-scope]').forEach((button) => {
+            button.addEventListener('click', () => {
+                void this.loadLeaderboard(button.dataset.leaderboardScope || 'overall');
+            });
+        });
+        if (openFriendsBtn) openFriendsBtn.addEventListener('click', async () => {
+            await this.openFriendsModal();
+        });
         if (startCoinShopBtn) startCoinShopBtn.addEventListener('click', async () => {
             await this.openCoinShopModal();
         });
@@ -316,6 +327,8 @@ class DominoGame {
         });
         if (leaderboardModalClose) leaderboardModalClose.addEventListener('click', () => this.closeLeaderboardModal());
         if (friendsModalClose) friendsModalClose.addEventListener('click', () => this.closeFriendsModal());
+        const playerProfileModalClose = document.getElementById('player-profile-modal-close');
+        if (playerProfileModalClose) playerProfileModalClose.addEventListener('click', () => this.closePlayerProfileModal());
         if (landingGoogleBtn) landingGoogleBtn.addEventListener('click', () => this.startGoogleAccountSignIn());
         if (landingAppleBtn) landingAppleBtn.addEventListener('click', () => this.startAppleAccountSignIn());
         if (resumeSessionBtn) resumeSessionBtn.addEventListener('click', async () => {
@@ -328,10 +341,6 @@ class DominoGame {
         if (cosmeticsShopModalClose) cosmeticsShopModalClose.addEventListener('click', () => this.closeCosmeticsShopModal());
         if (coinShopVideoBtn) coinShopVideoBtn.addEventListener('click', async () => {
             await this.claimCoinShopVideoReward();
-        });
-        const friendsButton = document.getElementById('account-friends-btn');
-        if (friendsButton) friendsButton.addEventListener('click', async () => {
-            await this.openFriendsModal();
         });
         const friendsSearchBtn = document.getElementById('friends-search-btn');
         const friendsSearchInput = document.getElementById('friends-search-input');
@@ -681,6 +690,7 @@ class DominoGame {
             this.syncStartAuthGate();
             return;
         }
+        this.closePlayerProfileModal();
         this.closeStartModals();
         this.ensureAccountModalPortal();
         const modal = document.getElementById('account-modal');
@@ -695,13 +705,14 @@ class DominoGame {
 
     async openLeaderboardModal() {
         this.closeStartModals();
+        this.closePlayerProfileModal();
         this.closeAccountModal();
         this.closeCoinShopModal();
         this.closeCosmeticsShopModal();
         const modal = document.getElementById('leaderboard-modal');
         if (!modal) return;
         modal.classList.add('active');
-        await this.loadLeaderboard();
+        await this.loadLeaderboard(this.leaderboardScope || 'overall');
     }
 
     closeLeaderboardModal() {
@@ -710,6 +721,7 @@ class DominoGame {
 
     async openFriendsModal() {
         this.closeStartModals();
+        this.closePlayerProfileModal();
         this.closeAccountModal();
         this.closeCoinShopModal();
         this.closeCosmeticsShopModal();
@@ -723,11 +735,63 @@ class DominoGame {
         document.getElementById('friends-modal')?.classList.remove('active');
     }
 
+    closePlayerProfileModal() {
+        document.getElementById('player-profile-modal')?.classList.remove('active');
+        this.playerProfileState = null;
+    }
+
+    async openPlayerProfileModal(playerRef) {
+        const playerId = String(playerRef?.playerId || playerRef?.userId || playerRef?.id || playerRef || '').trim();
+        const modal = document.getElementById('player-profile-modal');
+        if (!modal || !playerId) return;
+
+        modal.classList.add('active');
+        this.playerProfileState = {
+            id: playerId,
+            loading: true,
+            profile: null,
+            messages: []
+        };
+        this.renderPlayerProfileModal();
+
+        if (!this.hasAuthenticatedAccount()) {
+            this.playerProfileState.loading = false;
+            this.playerProfileState.error = this.t('friends-login-required');
+            this.renderPlayerProfileModal();
+            return;
+        }
+
+        try {
+            const [profile, messages] = await Promise.all([
+                this.account.getPlayerProfile(playerId),
+                this.account.getPlayerMessages(playerId)
+            ]);
+            this.playerProfileState = {
+                id: playerId,
+                loading: false,
+                profile: profile || null,
+                messages: Array.isArray(messages) ? messages : [],
+                error: ''
+            };
+            this.renderPlayerProfileModal();
+        } catch (err) {
+            this.playerProfileState = {
+                id: playerId,
+                loading: false,
+                profile: null,
+                messages: [],
+                error: err?.message || this.t('friends-load-failed')
+            };
+            this.renderPlayerProfileModal();
+        }
+    }
+
     async openCoinShopModal() {
         if (!this.hasAuthenticatedAccount()) {
             await this.openAccountModal();
             return;
         }
+        this.closePlayerProfileModal();
         this.closeStartModals();
         this.closeAccountModal();
         this.ensureCoinShopModalPortal();
@@ -744,6 +808,7 @@ class DominoGame {
             await this.openAccountModal();
             return;
         }
+        this.closePlayerProfileModal();
         this.closeStartModals();
         this.closeAccountModal();
         this.closeCoinShopModal();
@@ -777,6 +842,7 @@ class DominoGame {
         document.getElementById('open-rooms-modal')?.classList.remove('active');
         this.closeLeaderboardModal();
         this.closeFriendsModal();
+        this.closePlayerProfileModal();
         this.closeGiftPicker();
         this.closeCoinShopModal();
         this.closeCosmeticsShopModal();
@@ -1422,6 +1488,13 @@ class DominoGame {
             friendsCloseButton.setAttribute('aria-label', this.t('modal-close'));
         }
 
+        const playerProfileCloseButton = document.getElementById('player-profile-modal-close');
+        if (playerProfileCloseButton) {
+            playerProfileCloseButton.textContent = '\u00d7';
+            playerProfileCloseButton.title = this.t('modal-close');
+            playerProfileCloseButton.setAttribute('aria-label', this.t('modal-close'));
+        }
+
         const soloModalCloseButton = document.getElementById('solo-modal-close');
         if (soloModalCloseButton) {
             soloModalCloseButton.textContent = '\u00d7';
@@ -1437,6 +1510,11 @@ class DominoGame {
             const input = document.getElementById(id);
             if (input) input.setAttribute('placeholder', value);
         });
+
+        const playerProfileMessageInput = document.getElementById('player-profile-message-input');
+        if (playerProfileMessageInput) {
+            playerProfileMessageInput.placeholder = this.t('player-profile-message-placeholder');
+        }
     }
 
     setAccountMode(mode) {
@@ -1982,12 +2060,25 @@ class DominoGame {
         document.getElementById('account-avatar-modal')?.classList.remove('active');
     }
 
-    async loadLeaderboard() {
+    async loadLeaderboard(scope = this.leaderboardScope || 'overall') {
         const list = document.getElementById('leaderboard-list');
+        const tabs = document.getElementById('leaderboard-tabs');
         if (!list) return;
+        this.leaderboardScope = scope === 'weekly' || scope === 'friends' ? scope : 'overall';
+        if (tabs) {
+            tabs.querySelectorAll('[data-leaderboard-scope]').forEach((button) => {
+                const isActive = button.dataset.leaderboardScope === this.leaderboardScope;
+                button.classList.toggle('is-active', isActive);
+                button.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+            });
+        }
         this.setSummaryMessage(list, this.t('account-profile-loading'));
         try {
-            const rows = await this.account.getLeaderboard(20);
+            if (this.leaderboardScope === 'friends' && !this.hasAuthenticatedAccount()) {
+                this.setSummaryMessage(list, this.t('friends-login-required'));
+                return;
+            }
+            const rows = await this.account.getLeaderboard(20, this.leaderboardScope);
             this.accountOnline = true;
             if (!rows.length) {
                 this.setSummaryMessage(list, this.t('leaderboard-empty'));
@@ -1997,6 +2088,7 @@ class DominoGame {
             rows.forEach((row) => {
                 const item = document.createElement('div');
                 item.className = 'leaderboard-card';
+                if (row.isSelf) item.classList.add('is-self');
                 const top = document.createElement('div');
                 top.className = 'leaderboard-card-top';
                 const rank = document.createElement('div');
@@ -2004,15 +2096,28 @@ class DominoGame {
                 rank.textContent = `#${row.rank}`;
                 const copy = document.createElement('div');
                 copy.className = 'leaderboard-card-copy';
-                const name = document.createElement('strong');
-                name.textContent = row.displayName || row.name || 'Player';
+                const nameBtn = document.createElement('button');
+                nameBtn.type = 'button';
+                nameBtn.className = 'leaderboard-name-btn';
+                nameBtn.textContent = row.displayName || row.name || 'Player';
+                if (row.id) {
+                    nameBtn.addEventListener('click', () => this.openPlayerProfileModal({ id: row.id, displayName: row.displayName }));
+                } else {
+                    nameBtn.disabled = true;
+                }
                 const meta = document.createElement('div');
                 meta.className = 'leaderboard-card-meta';
                 const rating = document.createElement('span');
                 rating.className = 'leaderboard-card-rating';
                 rating.textContent = `${this.t('leaderboard-rating')}: ${String(row.rating ?? 1000)}`;
-                copy.appendChild(name);
-                copy.appendChild(meta);
+                if (this.leaderboardScope === 'weekly' && Number(row.weeklyRatingDelta || 0)) {
+                    const week = document.createElement('span');
+                    week.className = 'leaderboard-card-week';
+                    const delta = Number(row.weeklyRatingDelta || 0);
+                    week.textContent = `${delta >= 0 ? '+' : ''}${delta} ${this.t('leaderboard-week-delta')}`;
+                    meta.appendChild(week);
+                }
+                copy.appendChild(nameBtn);
                 const games = document.createElement('span');
                 games.textContent = `${this.t('leaderboard-games')}: ${String(row.matchesPlayed ?? 0)}`;
                 const wins = document.createElement('span');
@@ -2020,6 +2125,13 @@ class DominoGame {
                 meta.appendChild(games);
                 meta.appendChild(document.createTextNode(' · '));
                 meta.appendChild(wins);
+                if (row.isSelf) {
+                    const selfTag = document.createElement('span');
+                    selfTag.className = 'leaderboard-self-tag';
+                    selfTag.textContent = this.t('leaderboard-self');
+                    meta.appendChild(document.createTextNode(' · '));
+                    meta.appendChild(selfTag);
+                }
                 top.appendChild(rank);
                 top.appendChild(copy);
                 top.appendChild(rating);
@@ -2028,7 +2140,7 @@ class DominoGame {
             });
         } catch (err) {
             this.accountOnline = false;
-            this.setSummaryMessage(list, this.t('leaderboard-load-failed'));
+            this.setSummaryMessage(list, err?.message || this.t('leaderboard-load-failed'));
         }
     }
 
@@ -2085,8 +2197,7 @@ class DominoGame {
                     card.className = 'friend-card';
                     const copy = document.createElement('div');
                     copy.className = 'friend-card-copy';
-                    const name = document.createElement('strong');
-                    name.textContent = item.friend.displayName;
+                    const name = this.createPlayerNameButton(item.friend.displayName, item.friend, 'friend-card-name');
                     const meta = document.createElement('span');
                     const rating = this.friendRatingMap.get(String(item.friend.id || ''));
                     meta.textContent = Number.isFinite(rating) && rating > 0
@@ -2127,8 +2238,7 @@ class DominoGame {
                     card.className = 'friend-card';
                     const copy = document.createElement('div');
                     copy.className = 'friend-card-copy';
-                    const name = document.createElement('strong');
-                    name.textContent = item.friend.displayName;
+                    const name = this.createPlayerNameButton(item.friend.displayName, item.friend, 'friend-card-name');
                     const meta = document.createElement('span');
                     const rating = this.friendRatingMap.get(String(item.friend.id || ''));
                     meta.textContent = Number.isFinite(rating) && rating > 0
@@ -2216,8 +2326,7 @@ class DominoGame {
                 card.className = 'friend-card';
                 const copy = document.createElement('div');
                 copy.className = 'friend-card-copy';
-                const name = document.createElement('strong');
-                name.textContent = player.displayName;
+                const name = this.createPlayerNameButton(player.displayName, player, 'friend-card-name');
                 const meta = document.createElement('span');
                 const rating = this.friendRatingMap?.get?.(String(player.id || ''));
                 meta.textContent = Number.isFinite(rating) && rating > 0
@@ -2264,6 +2373,166 @@ class DominoGame {
             });
         } catch (err) {
             this.setSummaryMessage(resultsList, err.message || this.t('friends-load-failed'));
+        }
+    }
+
+    renderPlayerProfileModal() {
+        const modal = document.getElementById('player-profile-modal');
+        if (!modal) return;
+        const avatar = document.getElementById('player-profile-avatar');
+        const name = document.getElementById('player-profile-name');
+        const status = document.getElementById('player-profile-status');
+        const stats = document.getElementById('player-profile-stats');
+        const friendBtn = document.getElementById('player-profile-friend-btn');
+        const messageInput = document.getElementById('player-profile-message-input');
+        const messageBtn = document.getElementById('player-profile-message-btn');
+        const thread = document.getElementById('player-profile-message-thread');
+        const profile = this.playerProfileState?.profile || null;
+        const isAuthed = this.hasAuthenticatedAccount();
+        const isSelf = profile?.friendshipStatus === 'self';
+        const loading = Boolean(this.playerProfileState?.loading);
+        const currentPlayerId = String(this.accountProfile?.playerId || this.accountProfile?.id || '').trim();
+
+        if (name) name.textContent = profile?.displayName || this.playerProfileState?.error || this.t('account-profile-loading');
+        if (status) {
+            status.textContent = this.playerProfileState?.error
+                || (loading ? this.t('account-profile-loading') : this.t('player-profile-status-ready'));
+        }
+
+        if (avatar) {
+            avatar.innerHTML = '';
+            const avatarUrl = profile?.avatarUrl || null;
+            if (avatarUrl) {
+                const img = document.createElement('img');
+                img.alt = profile?.displayName || 'Player avatar';
+                img.src = avatarUrl;
+                img.referrerPolicy = 'no-referrer';
+                avatar.appendChild(img);
+            } else {
+                const fallback = document.createElement('span');
+                fallback.className = 'player-profile-avatar-fallback';
+                fallback.textContent = this.getTurnAvatarText?.(profile?.displayName || 'P') || 'P';
+                avatar.appendChild(fallback);
+            }
+        }
+
+        if (stats) {
+            stats.innerHTML = '';
+            const fields = [
+                [this.t('leaderboard-rating'), profile?.stats?.rating ?? 1000],
+                [this.t('leaderboard-games'), profile?.stats?.matchesPlayed ?? 0],
+                [this.t('leaderboard-wins'), profile?.stats?.wins ?? 0],
+                [this.t('leaderboard-losses') || this.t('leaderboard-wins'), profile?.stats?.losses ?? 0]
+            ];
+            fields.forEach(([label, value]) => {
+                const chip = document.createElement('div');
+                chip.className = 'player-profile-stat';
+                const key = document.createElement('span');
+                key.className = 'player-profile-stat-key';
+                key.textContent = String(label);
+                const val = document.createElement('strong');
+                val.textContent = String(value);
+                chip.appendChild(key);
+                chip.appendChild(val);
+                stats.appendChild(chip);
+            });
+        }
+
+        if (friendBtn) {
+            const statusKey = profile?.friendshipStatus || 'none';
+            const labels = {
+                self: this.t('player-profile-self'),
+                none: this.t('friend-add'),
+                pending_incoming: this.t('friend-accept'),
+                pending_outgoing: this.t('friends-pending'),
+                accepted: this.t('friends-request-accepted')
+            };
+            friendBtn.textContent = labels[statusKey] || this.t('friend-add');
+            const allowAction = isAuthed && !isSelf && (statusKey === 'none' || statusKey === 'pending_incoming');
+            friendBtn.hidden = isSelf || !isAuthed || statusKey === 'accepted' || statusKey === 'pending_outgoing';
+            friendBtn.disabled = !allowAction;
+            friendBtn.onclick = async () => {
+                if (!allowAction || !profile?.id) return;
+                friendBtn.disabled = true;
+                try {
+                    await this.account.sendFriendRequest(profile.id);
+                    await this.openPlayerProfileModal(profile.id);
+                    await this.loadFriendsPage().catch(() => {});
+                    this.renderer.showMessage(this.t('friends-request-sent'), 1400);
+                } catch (err) {
+                    this.renderer.showMessage(err?.message || this.t('friends-load-failed'), 1800);
+                } finally {
+                    friendBtn.disabled = false;
+                }
+            };
+        }
+
+        const messageBox = messageInput?.closest('.player-profile-message-box');
+        const canMessage = isAuthed && !isSelf && Boolean(profile?.id);
+        if (messageBox) {
+            messageBox.classList.toggle('is-hidden', !canMessage);
+        }
+        if (messageInput) {
+            messageInput.disabled = !canMessage;
+            messageInput.placeholder = canMessage
+                ? this.t('player-profile-message-placeholder')
+                : this.t('friends-login-required');
+        }
+        if (messageBtn) {
+            messageBtn.disabled = !canMessage || loading;
+            messageBtn.onclick = async () => {
+                const text = String(messageInput?.value || '').trim();
+                if (!text || !profile?.id) return;
+                messageBtn.disabled = true;
+                try {
+                    await this.account.sendPlayerMessage(profile.id, text);
+                    if (messageInput) messageInput.value = '';
+                    const messages = await this.account.getPlayerMessages(profile.id);
+                    this.playerProfileState = {
+                        ...(this.playerProfileState || {}),
+                        loading: false,
+                        messages: Array.isArray(messages) ? messages : []
+                    };
+                    this.renderPlayerProfileModal();
+                    this.renderer.showMessage(this.t('player-profile-message-sent'), 1400);
+                } catch (err) {
+                    this.renderer.showMessage(err?.message || this.t('player-profile-message-failed'), 1800);
+                } finally {
+                    messageBtn.disabled = !canMessage || loading;
+                }
+            };
+        }
+
+        if (thread) {
+            thread.innerHTML = '';
+            const messages = Array.isArray(this.playerProfileState?.messages) ? this.playerProfileState.messages : [];
+            if (!canMessage) {
+                const empty = document.createElement('div');
+                empty.className = 'room-summary';
+                empty.textContent = isAuthed ? this.t('player-profile-message-disabled') : this.t('friends-login-required');
+                thread.appendChild(empty);
+            } else if (!messages.length) {
+                const empty = document.createElement('div');
+                empty.className = 'room-summary';
+                empty.textContent = this.t('player-profile-message-empty');
+                thread.appendChild(empty);
+            } else {
+                messages.forEach((message) => {
+                    const row = document.createElement('div');
+                    row.className = 'player-profile-message-row';
+                    const mine = String(message.senderPlayerId || '') === currentPlayerId;
+                    if (mine) row.classList.add('is-self');
+                    const author = document.createElement('div');
+                    author.className = 'player-profile-message-author';
+                    author.textContent = mine ? this.t('online-you') : (message.sender?.displayName || profile?.displayName || 'Player');
+                    const body = document.createElement('div');
+                    body.className = 'player-profile-message-text';
+                    body.textContent = message.text || '';
+                    row.appendChild(author);
+                    row.appendChild(body);
+                    thread.appendChild(row);
+                });
+            }
         }
     }
 
@@ -2474,6 +2743,15 @@ class DominoGame {
         button.setAttribute('aria-label', label);
         button.title = label;
         button.classList.toggle('is-authenticated', hasSession);
+        const friendsButton = document.getElementById('open-friends-btn');
+        if (friendsButton) {
+            const friendsLabel = this.t('friends-title');
+            friendsButton.style.display = hasSession ? '' : 'none';
+            friendsButton.setAttribute('aria-label', friendsLabel);
+            friendsButton.title = friendsLabel;
+            const text = friendsButton.querySelector('.start-compact-label');
+            if (text) text.textContent = friendsLabel;
+        }
         this.syncStartShopButtons();
     }
 
@@ -2655,6 +2933,21 @@ class DominoGame {
         node.className = 'room-summary';
         node.textContent = String(message ?? '');
         container.replaceChildren(node);
+    }
+
+    createPlayerNameButton(label, playerRef, className = '') {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = `player-name-btn ${className}`.trim();
+        button.textContent = String(label || 'Player');
+        const playerId = String(playerRef?.playerId || playerRef?.userId || playerRef?.id || '').trim();
+        if (playerId && !playerRef?.isBot) {
+            button.addEventListener('click', () => this.openPlayerProfileModal(playerRef));
+        } else {
+            button.disabled = true;
+            button.classList.add('is-static');
+        }
+        return button;
     }
 
     ensureStartScreenEnhancements() {
@@ -4090,8 +4383,7 @@ class DominoGame {
                 card.className = 'friend-card';
                 const copy = document.createElement('div');
                 copy.className = 'friend-card-copy';
-                const name = document.createElement('strong');
-                name.textContent = player.displayName;
+                const name = this.createPlayerNameButton(player.displayName, player, 'friend-card-name');
                 const id = document.createElement('span');
                 id.textContent = player.id;
                 copy.appendChild(name);
@@ -4159,8 +4451,7 @@ class DominoGame {
                     card.className = 'friend-card';
                     const copy = document.createElement('div');
                     copy.className = 'friend-card-copy';
-                    const name = document.createElement('strong');
-                    name.textContent = item.friend.displayName;
+                    const name = this.createPlayerNameButton(item.friend.displayName, item.friend, 'friend-card-name');
                     const id = document.createElement('span');
                     id.textContent = item.friend.id;
                     copy.appendChild(name);
@@ -4242,8 +4533,7 @@ class DominoGame {
                     card.className = 'friend-card';
                     const copy = document.createElement('div');
                     copy.className = 'friend-card-copy';
-                    const name = document.createElement('strong');
-                    name.textContent = item.friend.displayName;
+                    const name = this.createPlayerNameButton(item.friend.displayName, item.friend, 'friend-card-name');
                     const labelEl = document.createElement('span');
                     labelEl.textContent = label;
                     copy.appendChild(name);
@@ -5767,7 +6057,8 @@ class DominoGame {
         }
         
         this.renderer.renderBoard(this.board);
-        this.renderer.renderOpponentHands(this.hands, this.humanPlayerIndex, this.playerNames, this.currentPlayer);
+        const roomPlayers = Array.isArray(this.currentRoomState?.players) ? this.currentRoomState.players : [];
+        this.renderer.renderOpponentHands(this.hands, this.humanPlayerIndex, roomPlayers.length ? roomPlayers : this.playerNames, this.currentPlayer);
         const myHand = this.myHand || this.hands[this.humanPlayerIndex] || [];
         if (!this.network.isMultiplayer) {
             this.validMoves = this.board.getValidMoves(myHand);
