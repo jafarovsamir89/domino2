@@ -281,6 +281,7 @@ class DominoGame {
         const onlineModalClose = document.getElementById('online-modal-close');
         const accountModalClose = document.getElementById('account-modal-close');
         const leaderboardModalClose = document.getElementById('leaderboard-modal-close');
+        const friendsModalClose = document.getElementById('friends-modal-close');
         const socialCenterModalClose = document.getElementById('social-center-modal-close');
         const coinShopModalClose = document.getElementById('coin-shop-modal-close');
         const cosmeticsShopModalClose = document.getElementById('cosmetics-shop-modal-close');
