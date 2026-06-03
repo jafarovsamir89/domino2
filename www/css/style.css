@@ -1441,6 +1441,12 @@ input, button { font: inherit; }
     display: flex;
     justify-content: flex-start;
     gap: 8px;
+    flex-wrap: wrap;
+}
+
+.player-profile-actions .btn {
+    flex: 1 1 0;
+    min-width: 0;
 }
 
 @media (min-width: 768px) {
@@ -3195,10 +3201,14 @@ body.seat-selection-active #game-screen {
 
 .opp-label-button {
     cursor: pointer;
+    pointer-events: auto;
+    position: relative;
+    z-index: 2;
 }
 
 .opp-hand-group {
     min-width: 0;
+    pointer-events: auto;
 }
 
 .opp-tile-pile {

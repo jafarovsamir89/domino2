@@ -833,6 +833,14 @@ export class AccountClient {
         });
     }
 
+    async deleteMessageThread(playerId) {
+        const id = String(playerId || "").trim();
+        if (!id) return { ok: true };
+        return this.platformRequest(`/social/messages/${encodeURIComponent(id)}/delete`, {
+            method: "POST"
+        });
+    }
+
     async getPlayerMessages(playerId) {
         return this.getDirectMessages(playerId);
     }

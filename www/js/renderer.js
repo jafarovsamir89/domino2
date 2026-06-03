@@ -93,7 +93,7 @@ export class Renderer {
             const isBot = Boolean(playerRef?.isBot);
             const g = document.createElement('div');
             g.className = 'opp-hand-group';
-            g.style.cssText = 'display:flex;align-items:center;gap:4px;';
+            g.style.cssText = 'display:flex;align-items:center;gap:4px;pointer-events:auto;';
             const l = document.createElement(playerId && !isBot ? 'button' : 'span');
             l.className = playerId && !isBot ? 'opp-label opp-label-button' : 'opp-label';
             l.textContent = labelText;

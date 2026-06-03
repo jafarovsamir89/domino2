@@ -185,6 +185,7 @@ class DominoGame {
         this.socialSummaryLoaded = false;
         this.socialInboxState = {
             items: [],
+            threads: [],
             unreadCount: 0,
             loading: false,
             error: ''
@@ -978,6 +979,7 @@ class DominoGame {
         if (!this.hasAuthenticatedAccount()) {
             this.socialInboxState = {
                 items: [],
+                threads: [],
                 unreadCount: 0,
                 loading: false,
                 error: this.t('friends-login-required')
@@ -990,6 +992,7 @@ class DominoGame {
         this.socialInboxState = {
             ...(this.socialInboxState || {}),
             items: [],
+            threads: [],
             unreadCount: 0,
             loading: true,
             error: ''
@@ -997,11 +1000,16 @@ class DominoGame {
         this.renderSocialInboxPanel();
 
         try {
-            const data = await this.account.getInbox();
+            const [data, threadData] = await Promise.all([
+                this.account.getInbox(),
+                this.account.getMessageThreads().catch(() => [])
+            ]);
             const items = Array.isArray(data?.items) ? data.items : [];
+            const threads = Array.isArray(threadData) ? threadData : [];
             const unreadCount = Math.max(0, Number(data?.unreadCount || 0));
             this.socialInboxState = {
                 items,
+                threads,
                 unreadCount,
                 loading: false,
                 error: ''
@@ -1029,6 +1037,9 @@ class DominoGame {
 
         const state = this.socialInboxState || {};
         const unreadCount = Math.max(0, Number(state.unreadCount || 0));
+        const threads = Array.isArray(state.threads) ? state.threads : [];
+        const threadUnreadCount = threads.reduce((sum, thread) => sum + Math.max(0, Number(thread?.unreadCount || 0)), 0);
+        const totalUnreadCount = unreadCount + threadUnreadCount;
         if (!this.hasAuthenticatedAccount()) {
             summary.textContent = this.t('friends-login-required');
             this.setSummaryMessage(list, this.t('friends-login-required'));
@@ -1047,13 +1058,86 @@ class DominoGame {
             return;
         }
 
-        summary.textContent = unreadCount > 0
-            ? `${this.t('inbox-unread')}: ${unreadCount}`
+        summary.textContent = totalUnreadCount > 0
+            ? `${this.t('inbox-unread')}: ${totalUnreadCount}`
             : this.t('inbox-read');
 
         const items = Array.isArray(state.items) ? state.items : [];
         list.innerHTML = '';
-        if (!items.length) {
+        const renderedThreadIds = new Set();
+        if (threads.length) {
+            threads.forEach((thread) => {
+                const partner = thread?.player || {};
+                const playerId = String(partner?.id || thread?.playerId || thread?.id || '').trim();
+                if (!playerId || renderedThreadIds.has(playerId)) return;
+                renderedThreadIds.add(playerId);
+                const card = document.createElement('div');
+                card.className = `inbox-card friend-card${Number(thread?.unreadCount || 0) > 0 ? ' is-unread' : ''}`.trim();
+                const copy = document.createElement('div');
+                copy.className = 'friend-card-copy';
+                const top = document.createElement('div');
+                top.className = 'inbox-card-top';
+                const type = document.createElement('strong');
+                type.textContent = this.t('messages-conversation-title') || this.t('inbox-message');
+                top.appendChild(type);
+                const status = document.createElement('span');
+                status.className = `inbox-status is-${Number(thread?.unreadCount || 0) > 0 ? 'unread' : 'read'}`;
+                status.textContent = Number(thread?.unreadCount || 0) > 0 ? this.t('inbox-unread') : this.t('inbox-read');
+                top.appendChild(status);
+                const body = document.createElement('span');
+                body.className = 'inbox-card-body';
+                const lastText = String(thread?.lastMessage?.text || thread?.lastMessage?.body || '').trim();
+                body.textContent = lastText ? `${partner?.displayName || this.t('inbox-message')}: ${lastText}` : (partner?.displayName || this.t('inbox-message'));
+                const meta = document.createElement('span');
+                meta.className = 'inbox-card-meta';
+                meta.textContent = thread?.lastMessage?.createdAt ? new Date(thread.lastMessage.createdAt).toLocaleString() : '';
+                copy.appendChild(top);
+                copy.appendChild(body);
+                copy.appendChild(meta);
+
+                const actions = document.createElement('div');
+                actions.className = 'friend-card-actions inbox-card-actions';
+                const openBtn = document.createElement('button');
+                openBtn.className = 'btn btn-action btn-strong';
+                openBtn.type = 'button';
+                openBtn.textContent = this.t('messages-open');
+                openBtn.addEventListener('click', async () => {
+                    openBtn.disabled = true;
+                    try {
+                        await this.openConversationWithPlayer(partner);
+                    } catch (err) {
+                        this.renderer.showMessage(err?.message || this.t('messages-load-failed'), 1800);
+                    } finally {
+                        openBtn.disabled = false;
+                    }
+                });
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'btn btn-menu';
+                deleteBtn.type = 'button';
+                deleteBtn.textContent = this.t('inbox-delete');
+                deleteBtn.addEventListener('click', async () => {
+                    deleteBtn.disabled = true;
+                    try {
+                        await this.account.deleteMessageThread(playerId);
+                        await this.loadInboxPage();
+                    } catch (err) {
+                        this.renderer.showMessage(err?.message || this.t('messages-load-failed'), 1800);
+                    } finally {
+                        deleteBtn.disabled = false;
+                    }
+                });
+                actions.appendChild(openBtn);
+                actions.appendChild(deleteBtn);
+                card.appendChild(copy);
+                card.appendChild(actions);
+                list.appendChild(card);
+            });
+        }
+
+        const filteredItems = threads.length
+            ? items.filter((item) => item.type !== 'direct_message' && item.type !== 'direct_message_thread_hidden')
+            : items;
+        if (!threads.length && !filteredItems.length) {
             this.setSummaryMessage(list, this.t('inbox-empty'));
             return;
         }
@@ -1078,7 +1162,7 @@ class DominoGame {
             deleted: this.t('inbox-delete')
         };
 
-        items.forEach((item) => {
+        filteredItems.forEach((item) => {
             const card = document.createElement('div');
             card.className = `inbox-card friend-card${item.status === 'unread' ? ' is-unread' : ''}`.trim();
 
@@ -3341,11 +3425,24 @@ class DominoGame {
         const status = document.getElementById('player-profile-status');
         const stats = document.getElementById('player-profile-stats');
         const friendBtn = document.getElementById('player-profile-friend-btn');
+        const inviteBtn = document.getElementById('player-profile-invite-btn');
         const messageBtn = document.getElementById('player-profile-message-btn');
         const profile = this.playerProfileState?.profile || null;
         const isAuthed = this.hasAuthenticatedAccount();
         const isSelf = profile?.friendshipStatus === 'self';
         const loading = Boolean(this.playerProfileState?.loading);
+        const roomSnapshot = this.getCurrentRoomSnapshot();
+        const canInvite = Boolean(
+            isAuthed &&
+            !isSelf &&
+            profile?.id &&
+            roomSnapshot &&
+            roomSnapshot.roomId &&
+            roomSnapshot.roomCode &&
+            roomSnapshot.humanSeats > 0 &&
+            this.network?.isHost &&
+            !roomSnapshot.gameActive
+        );
 
         if (name) name.textContent = profile?.displayName || this.playerProfileState?.error || this.t('account-profile-loading');
         if (status) {
@@ -3418,6 +3515,39 @@ class DominoGame {
                     this.renderer.showMessage(err?.message || this.t('friends-load-failed'), 1800);
                 } finally {
                     friendBtn.disabled = false;
+                }
+            };
+        }
+
+        if (inviteBtn) {
+            inviteBtn.hidden = isSelf || !isAuthed;
+            inviteBtn.disabled = !canInvite || loading;
+            inviteBtn.title = canInvite
+                ? this.t('friend-invite')
+                : this.t('player-profile-invite-unavailable');
+            inviteBtn.onclick = async () => {
+                if (!isAuthed || isSelf || !profile?.id) return;
+                if (!canInvite || !roomSnapshot) {
+                    this.renderer.showMessage(this.t('player-profile-invite-unavailable'), 1600);
+                    return;
+                }
+                inviteBtn.disabled = true;
+                try {
+                    await this.account.inviteFriendToRoom(roomSnapshot.roomId, {
+                        inviteePlayerId: profile.id,
+                        roomCode: roomSnapshot.roomCode,
+                        roomMode: roomSnapshot.roomMode,
+                        stakeKey: roomSnapshot.stakeKey,
+                        stakeAmount: roomSnapshot.stakeAmount,
+                        humanSeats: roomSnapshot.humanSeats,
+                        totalPlayers: roomSnapshot.totalPlayers,
+                        isTeamMode: roomSnapshot.isTeamMode
+                    });
+                    this.renderer.showMessage(this.t('invite-sent'), 1400);
+                } catch (err) {
+                    this.renderer.showMessage(err?.message || this.t('friends-load-failed'), 1800);
+                } finally {
+                    inviteBtn.disabled = !canInvite;
                 }
             };
         }

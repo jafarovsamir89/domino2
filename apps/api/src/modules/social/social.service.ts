@@ -484,7 +484,11 @@ export class SocialService {
       : null;
     const relatedPlayerId = typeof payload?.senderPlayerId === "string"
       ? String(payload.senderPlayerId || "").trim()
-      : "";
+      : typeof payload?.relatedPlayerId === "string"
+        ? String(payload.relatedPlayerId || "").trim()
+        : typeof payload?.receiverPlayerId === "string"
+          ? String(payload.receiverPlayerId || "").trim()
+          : "";
     return {
       id: row.id,
       playerId: row.playerId,
@@ -501,8 +505,31 @@ export class SocialService {
       isUnread: row.status === "unread",
       isClaimable: this.isInboxClaimable(row),
       relatedPlayerId: relatedPlayerId || null,
-      relatedMessageId: typeof payload?.messageId === "string" ? String(payload.messageId || "").trim() || null : null
+      relatedMessageId: typeof payload?.messageId === "string" ? String(payload.messageId || "").trim() || null : null,
+      threadKey: typeof payload?.threadKey === "string" ? String(payload.threadKey || "").trim() || null : null
     };
+  }
+
+  private async getHiddenDirectMessageThreadPlayerIds(headers: IncomingHttpHeaders) {
+    const currentPlayer = await this.getCurrentPlayer(headers);
+    const rows = await this.prisma.inboxMessage.findMany({
+      where: {
+        playerId: currentPlayer.id,
+        type: "direct_message_thread_hidden"
+      },
+      select: {
+        payloadJson: true
+      }
+    });
+    const hiddenPlayerIds = new Set<string>();
+    rows.forEach((row) => {
+      const payload = row.payloadJson && typeof row.payloadJson === "object" && !Array.isArray(row.payloadJson)
+        ? row.payloadJson as Record<string, unknown>
+        : null;
+      const relatedPlayerId = String(payload?.relatedPlayerId || payload?.playerId || "").trim();
+      if (relatedPlayerId) hiddenPlayerIds.add(relatedPlayerId);
+    });
+    return { currentPlayer, hiddenPlayerIds };
   }
 
   private isInboxClaimable(row: Pick<InboxMessageRow, "type" | "rewardJson" | "status">) {
@@ -760,12 +787,25 @@ export class SocialService {
   }
 
   async getSocialSummary(headers: IncomingHttpHeaders) {
-    const currentPlayer = await this.getCurrentPlayer(headers);
-    const [inboxUnreadCount, inviteUnreadCount, friendRequestCount] = await Promise.all([
+    const { currentPlayer, hiddenPlayerIds } = await this.getHiddenDirectMessageThreadPlayerIds(headers);
+    const [inboxUnreadCount, directMessageUnreadCount, inviteUnreadCount, friendRequestCount] = await Promise.all([
       this.prisma.inboxMessage.count({
         where: {
           playerId: currentPlayer.id,
           status: "unread"
+        }
+      }),
+      this.prisma.directMessage.count({
+        where: {
+          receiverPlayerId: currentPlayer.id,
+          readAt: null,
+          ...(hiddenPlayerIds.size
+            ? {
+              senderPlayerId: {
+                notIn: Array.from(hiddenPlayerIds)
+              }
+            }
+            : {})
         }
       }),
       this.prisma.roomInvitation.count({
@@ -784,10 +824,10 @@ export class SocialService {
 
     return {
       inboxUnreadCount,
-      chatUnreadCount: 0,
+      chatUnreadCount: directMessageUnreadCount,
       inviteUnreadCount,
       friendRequestCount,
-      totalUnreadCount: inboxUnreadCount + inviteUnreadCount + friendRequestCount
+      totalUnreadCount: inboxUnreadCount + directMessageUnreadCount + inviteUnreadCount + friendRequestCount
     } satisfies SocialSummaryRow;
   }
 
@@ -876,7 +916,7 @@ export class SocialService {
   }
 
   async getMessageThreads(headers: IncomingHttpHeaders) {
-    const currentPlayer = await this.getCurrentPlayer(headers);
+    const { currentPlayer, hiddenPlayerIds } = await this.getHiddenDirectMessageThreadPlayerIds(headers);
     const rows = await this.prisma.directMessage.findMany({
       where: {
         OR: [
@@ -896,6 +936,7 @@ export class SocialService {
     rows.forEach((row) => {
       const partnerId = row.senderPlayerId === currentPlayer.id ? row.receiverPlayerId : row.senderPlayerId;
       if (!partnerId) return;
+      if (hiddenPlayerIds.has(partnerId)) return;
       const normalized = row as unknown as DirectMessageRow;
       const list = grouped.get(partnerId) || [];
       list.push(normalized);
@@ -911,6 +952,82 @@ export class SocialService {
       });
 
     return { items };
+  }
+
+  async deleteMessageThread(headers: IncomingHttpHeaders, playerId: string) {
+    const currentPlayer = await this.getCurrentPlayer(headers);
+    const targetPlayerId = String(playerId || "").trim();
+    if (!targetPlayerId) {
+      throw new NotFoundException("Player not found");
+    }
+    if (targetPlayerId === currentPlayer.id) {
+      return { ok: true };
+    }
+
+    const targetPlayer = await this.prisma.player.findUnique({
+      where: { id: targetPlayerId },
+      select: this.playerSelect()
+    });
+    if (!targetPlayer) {
+      throw new NotFoundException("Player not found");
+    }
+
+    const now = new Date();
+    await this.prisma.$transaction(async (tx) => {
+      const inboxRows = await tx.inboxMessage.findMany({
+        where: {
+          playerId: currentPlayer.id,
+          type: "direct_message",
+          status: {
+            not: "deleted"
+          }
+        },
+        select: {
+          id: true,
+          payloadJson: true
+        }
+      });
+
+      const relatedIds = new Set<string>();
+      inboxRows.forEach((row) => {
+        const payload = row.payloadJson && typeof row.payloadJson === "object" && !Array.isArray(row.payloadJson)
+          ? row.payloadJson as Record<string, unknown>
+          : null;
+        const relatedPlayerId = String(payload?.senderPlayerId || payload?.receiverPlayerId || payload?.relatedPlayerId || "").trim();
+        if (relatedPlayerId === targetPlayerId) {
+          relatedIds.add(row.id);
+        }
+      });
+
+      if (relatedIds.size) {
+        await tx.inboxMessage.updateMany({
+          where: {
+            id: { in: Array.from(relatedIds) },
+            playerId: currentPlayer.id
+          },
+          data: {
+            status: "deleted",
+            readAt: now
+          }
+        });
+      }
+
+      await tx.inboxMessage.create({
+        data: {
+          playerId: currentPlayer.id,
+          type: "direct_message_thread_hidden",
+          title: `Thread hidden with ${targetPlayer.displayName}`,
+          body: null,
+          status: "deleted",
+          payloadJson: {
+            relatedPlayerId: targetPlayerId
+          },
+          readAt: now
+        }
+      });
+    });
+
+    return { ok: true };
   }
 
   async requestFriend(headers: IncomingHttpHeaders, body: { playerId?: string; note?: string }) {

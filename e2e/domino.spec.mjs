@@ -261,6 +261,8 @@ test("authenticated profile shows four stats cards without Xal and leaderboard u
     });
   });
 
+  let threadHidden = false;
+
   await page.route("**/social/messages", async (route) => {
     const headers = {
       "Access-Control-Allow-Origin": route.request().headers().origin ?? "http://127.0.0.1:4173",
@@ -274,7 +276,7 @@ test("authenticated profile shows four stats cards without Xal and leaderboard u
       contentType: "application/json",
       headers,
       body: JSON.stringify({
-        items: [
+        items: threadHidden ? [] : [
           {
             player: { id: "p-2", displayName: "Alice", avatarSeed: null, avatarUrl: null, isGuest: false },
             lastMessage: {
@@ -330,8 +332,8 @@ test("authenticated profile shows four stats cards without Xal and leaderboard u
       contentType: "application/json",
       headers,
       body: JSON.stringify({
-        unreadCount: 2,
-        items: [
+        unreadCount: threadHidden ? 0 : 2,
+        items: threadHidden ? [] : [
           {
             id: "i-1",
             playerId: "p-1",
@@ -401,6 +403,23 @@ test("authenticated profile shows four stats cards without Xal and leaderboard u
     });
   });
 
+  await page.route("**/social/messages/p-2/delete", async (route) => {
+    threadHidden = true;
+    const headers = {
+      "Access-Control-Allow-Origin": route.request().headers().origin ?? "http://127.0.0.1:4173",
+      "Access-Control-Allow-Methods": "GET,POST,PUT,PATCH,DELETE,OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With",
+      "Access-Control-Allow-Credentials": "true",
+      "Vary": "Origin"
+    };
+    return route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      headers,
+      body: JSON.stringify({ ok: true })
+    });
+  });
+
   await page.addInitScript(() => {
     window.localStorage.setItem("dominoPlatformGameToken", "test-token");
     window.localStorage.setItem("dominoPlatformProfile", JSON.stringify({
@@ -447,6 +466,24 @@ test("authenticated profile shows four stats cards without Xal and leaderboard u
   await page.locator("#leaderboard-list .leaderboard-card .leaderboard-name-btn").last().click();
   await expect(page.locator("#player-profile-modal")).toHaveClass(/active/);
   await expect(page.locator("#player-profile-modal textarea")).toHaveCount(0);
+  await page.evaluate(() => {
+    const game = window.game;
+    if (!game) return;
+    game.currentRoomState = {
+      roomId: "room-1",
+      roomCode: "ABCD",
+      roomMode: "ffa",
+      stakeKey: "stake_50",
+      stakeAmount: 50,
+      humanSeats: 2,
+      totalPlayers: 2,
+      isTeamMode: false,
+      gameActive: false
+    };
+    game.network = { ...(game.network || {}), isHost: true };
+    game.renderPlayerProfileModal?.();
+  });
+  await expect(page.locator("#player-profile-invite-btn")).toBeVisible();
   await expect(page.locator("#player-profile-message-btn")).toBeVisible();
   await page.locator("#player-profile-message-btn").click();
   await expect(page.locator("#social-center-modal")).toHaveClass(/active/);
@@ -458,13 +495,18 @@ test("authenticated profile shows four stats cards without Xal and leaderboard u
   await page.locator("#social-center-tabs [data-social-tab='inbox']").click();
   await expect(page.locator("#social-inbox-panel")).not.toHaveClass(/is-hidden/);
   await expect(page.locator("#social-inbox-list .inbox-card")).toHaveCount(1);
-  await expect(page.locator("#social-inbox-list .inbox-card")).toContainText(/Message from Alice|Hello from Alice/);
+  await expect(page.locator("#social-inbox-list .inbox-card")).toContainText(/Alice|Hello from Alice/);
   await page.locator("#social-inbox-list .inbox-card .btn").first().click();
   await expect(page.locator("#social-chats-panel")).not.toHaveClass(/is-hidden/);
   await expect(page.locator("#account-messages-conversation-title")).toContainText(/Alice/);
   await expect(page.locator("#player-profile-modal")).not.toHaveClass(/active/);
   await page.evaluate(() => document.getElementById("social-center-modal-close")?.click());
   await expect(page.locator("#social-center-modal")).not.toHaveClass(/active/);
+  await page.evaluate(() => document.getElementById("open-social-btn")?.click());
+  await expect(page.locator("#social-center-modal")).toHaveClass(/active/);
+  await expect(page.locator("#social-inbox-list .inbox-card")).toHaveCount(1);
+  await page.locator("#social-inbox-list .inbox-card .btn").nth(1).click();
+  await expect(page.locator("#social-inbox-list .inbox-card")).toHaveCount(0);
 
 });
 

@@ -121,6 +121,11 @@ export class SocialController {
     return this.socialService.sendDirectMessage(req.headers, playerId, body);
   }
 
+  @Post("messages/:playerId/delete")
+  async deleteMessageThread(@Req() req: Request, @Param("playerId") playerId: string) {
+    return this.socialService.deleteMessageThread(req.headers, playerId);
+  }
+
   @Post("gifts/exchange")
   async exchangeGift(
     @Req() req: Request,
