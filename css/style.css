@@ -1092,6 +1092,97 @@ input, button { font: inherit; }
     display: none;
 }
 
+.social-inbox-head {
+    display: grid;
+    gap: 6px;
+}
+
+.social-inbox-list {
+    display: grid;
+    gap: 10px;
+}
+
+.inbox-card {
+    display: grid;
+    gap: 12px;
+}
+
+.inbox-card-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.inbox-card-body,
+.inbox-card-meta {
+    color: var(--text-dim);
+    font-size: 0.82rem;
+    line-height: 1.45;
+}
+
+.inbox-card-body {
+    word-break: break-word;
+}
+
+.inbox-status {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 24px;
+    padding: 0 9px;
+    border-radius: 999px;
+    font-size: 0.7rem;
+    font-weight: 800;
+    line-height: 1;
+    white-space: nowrap;
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--text-dim);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.inbox-status.is-unread {
+    background: rgba(255, 214, 102, 0.18);
+    color: #ffe39b;
+    border-color: rgba(255, 214, 102, 0.24);
+}
+
+.inbox-status.is-read {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.inbox-status.is-claimed {
+    background: rgba(121, 224, 140, 0.14);
+    color: #9af0a5;
+    border-color: rgba(121, 224, 140, 0.18);
+}
+
+.inbox-status.is-expired,
+.inbox-status.is-deleted {
+    background: rgba(255, 120, 120, 0.12);
+    color: #ffb0b0;
+    border-color: rgba(255, 120, 120, 0.18);
+}
+
+.inbox-card-actions {
+    flex-wrap: wrap;
+}
+
+.inbox-card-actions .btn {
+    min-width: 108px;
+}
+
+.social-center-panel .room-summary {
+    margin-top: 0;
+}
+
+@media (max-width: 640px) {
+    .inbox-card-actions .btn {
+        min-width: 0;
+        flex: 1 1 0;
+    }
+}
+
 .social-empty-state {
     display: grid;
     gap: 8px;

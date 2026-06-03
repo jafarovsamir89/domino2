@@ -16,6 +16,30 @@ function makePlayer(id: string, displayName: string) {
   };
 }
 
+function makeInboxRow(overrides: Record<string, any> = {}) {
+  return {
+    id: "inbox-1",
+    playerId: "player-a",
+    type: "gift_received",
+    title: "Gift from Alpha",
+    body: "You received Gift 001",
+    status: "unread",
+    payloadJson: {
+      senderPlayerId: "player-z",
+      giftKey: "gift_001"
+    },
+    rewardJson: {
+      type: "gift",
+      giftKey: "gift_001"
+    },
+    createdAt: new Date("2024-03-01T10:00:00.000Z"),
+    readAt: null,
+    claimedAt: null,
+    expiresAt: null,
+    ...overrides
+  };
+}
+
 test("acceptFriend only allows the addressee to accept a request", async () => {
   const prismaMock = {
     friendConnection: {
@@ -423,4 +447,255 @@ test("getMessageThreads returns only the current player's conversations with unr
   assert.equal(result.items[1].player.id, playerB.id);
   assert.equal(result.items[1].lastMessage.text, "Seen message");
   assert.equal(result.items[1].unreadCount, 1);
+});
+
+test("getInbox returns inbox items and unread count", async () => {
+  const currentPlayer = makePlayer("player-a", "Alpha");
+  const rows = [
+    makeInboxRow({ id: "inbox-1", status: "unread", title: "First", createdAt: new Date("2024-03-03T10:00:00.000Z") }),
+    makeInboxRow({ id: "inbox-2", status: "unread", title: "Second", createdAt: new Date("2024-03-02T10:00:00.000Z") }),
+    makeInboxRow({ id: "inbox-3", status: "read", readAt: new Date("2024-03-01T11:00:00.000Z") })
+  ];
+  let capturedWhere: any = null;
+  const prismaMock = {
+    inboxMessage: {
+      findMany: async ({ where, take }: any) => {
+        capturedWhere = where;
+        assert.equal(take, 30);
+        return rows;
+      },
+      count: async ({ where }: any) => {
+        assert.deepEqual(where, { playerId: currentPlayer.id, status: "unread" });
+        return 2;
+      }
+    }
+  } as any;
+
+  const service = new SocialService(prismaMock, {} as any);
+  (service as any).getCurrentPlayer = async () => currentPlayer;
+
+  const result = await service.getInbox({} as any, { status: "all", limit: "30" });
+
+  assert.deepEqual(capturedWhere, {
+    playerId: currentPlayer.id,
+    status: { not: "deleted" }
+  });
+  assert.equal(result.unreadCount, 2);
+  assert.equal(result.items[0].id, "inbox-1");
+  assert.equal(result.items[0].isUnread, true);
+  assert.equal(result.items[0].isClaimable, true);
+});
+
+test("markInboxRead claimInboxMessage and deleteInboxMessage update inbox state", async () => {
+  const currentPlayer = makePlayer("player-a", "Alpha");
+  const unreadRow = makeInboxRow({ id: "inbox-10", status: "unread" });
+  const claimableRow = makeInboxRow({ id: "inbox-11", status: "read" });
+  const deletableRow = makeInboxRow({ id: "inbox-12", status: "read", rewardJson: null, type: "system_news" });
+  const updatedRows: Record<string, any> = {};
+  const prismaMock = {
+    inboxMessage: {
+      findUnique: async ({ where }: any) => {
+        if (where.id === unreadRow.id) return unreadRow;
+        if (where.id === claimableRow.id) return claimableRow;
+        if (where.id === deletableRow.id) return deletableRow;
+        return null;
+      },
+      update: async ({ where, data }: any) => {
+        updatedRows[where.id] = { ...(updatedRows[where.id] || {}), ...data };
+        const base = where.id === unreadRow.id ? unreadRow : where.id === claimableRow.id ? claimableRow : deletableRow;
+        return { ...base, ...data };
+      }
+    }
+  } as any;
+
+  const service = new SocialService(prismaMock, {} as any);
+  (service as any).getCurrentPlayer = async () => currentPlayer;
+
+  const marked = await service.markInboxRead({} as any, unreadRow.id);
+  assert.equal(marked.item.status, "read");
+  assert.equal(updatedRows[unreadRow.id].status, "read");
+
+  const claimed = await service.claimInboxMessage({} as any, claimableRow.id);
+  assert.equal(claimed.item?.status, "claimed");
+  assert.equal(updatedRows[claimableRow.id].status, "claimed");
+
+  const deleted = await service.deleteInboxMessage({} as any, deletableRow.id);
+  assert.equal(deleted.item.status, "deleted");
+  assert.equal(updatedRows[deletableRow.id].status, "deleted");
+});
+
+test("getSocialSummary counts inbox chats invites and friend requests", async () => {
+  const currentPlayer = makePlayer("player-a", "Alpha");
+  const prismaMock = {
+    inboxMessage: {
+      count: async ({ where }: any) => {
+        assert.deepEqual(where, { playerId: currentPlayer.id, status: "unread" });
+        return 2;
+      }
+    },
+    directMessage: {
+      count: async ({ where }: any) => {
+        assert.deepEqual(where, { receiverPlayerId: currentPlayer.id, readAt: null });
+        return 3;
+      }
+    },
+    roomInvitation: {
+      count: async ({ where }: any) => {
+        assert.deepEqual(where, { inviteePlayerId: currentPlayer.id, status: "pending" });
+        return 4;
+      }
+    },
+    friendConnection: {
+      count: async ({ where }: any) => {
+        assert.deepEqual(where, { addresseePlayerId: currentPlayer.id, status: "pending" });
+        return 5;
+      }
+    }
+  } as any;
+
+  const service = new SocialService(prismaMock, {} as any);
+  (service as any).getCurrentPlayer = async () => currentPlayer;
+
+  const result = await service.getSocialSummary({} as any);
+  assert.equal(result.inboxUnreadCount, 2);
+  assert.equal(result.chatUnreadCount, 3);
+  assert.equal(result.inviteUnreadCount, 4);
+  assert.equal(result.friendRequestCount, 5);
+  assert.equal(result.totalUnreadCount, 14);
+});
+
+test("sendGift creates an inbox notification for the recipient", async () => {
+  const currentPlayer = makePlayer("player-a", "Alpha");
+  const recipient = makePlayer("player-b", "Beta");
+  let inboxCreateData: any = null;
+  let transactionUsed = false;
+
+  const prismaMock = {
+    player: {
+      findUnique: async ({ where }: any) => {
+        if (where.id === recipient.id) return recipient;
+        if (where.id === currentPlayer.id) return currentPlayer;
+        return null;
+      }
+    },
+    giftCatalog: {
+      findUnique: async () => ({
+        id: "catalog-1",
+        key: "gift_001",
+        name: "Gift 001",
+        assetKey: "gift_001",
+        coinCost: 100,
+        exchangeRateBps: 7000,
+        isActive: true
+      })
+    },
+    $transaction: async (fn: any) => {
+      transactionUsed = true;
+      return fn({
+        giftCatalog: {
+          findUnique: async () => ({
+            id: "catalog-1",
+            key: "gift_001",
+            name: "Gift 001",
+            assetKey: "gift_001",
+            coinCost: 100,
+            exchangeRateBps: 7000,
+            isActive: true
+          })
+        },
+        playerGiftInventory: {
+          upsert: async () => ({
+            id: "inventory-1",
+            playerId: recipient.id,
+            giftCatalogId: "catalog-1",
+            quantity: 1,
+            receivedCount: 1,
+            sentCount: 0,
+            exchangedCount: 0,
+            lastReceivedAt: new Date("2024-03-03T10:00:00.000Z"),
+            lastSentAt: null,
+            createdAt: new Date("2024-03-03T10:00:00.000Z"),
+            updatedAt: new Date("2024-03-03T10:00:00.000Z"),
+            catalog: {
+              id: "catalog-1",
+              key: "gift_001",
+              name: "Gift 001",
+              description: null,
+              assetKey: "gift_001",
+              coinCost: 100,
+              exchangeRateBps: 7000,
+              rarity: "common",
+              sortOrder: 1,
+              isActive: true,
+              createdAt: new Date("2024-03-03T10:00:00.000Z"),
+              updatedAt: new Date("2024-03-03T10:00:00.000Z")
+            }
+          })
+        },
+        giftTransaction: {
+          create: async ({ data }: any) => ({
+            id: "gift-1",
+            senderPlayerId: currentPlayer.id,
+            recipientPlayerId: recipient.id,
+            giftCatalogId: "catalog-1",
+            giftKeySnapshot: data.giftKeySnapshot,
+            giftNameSnapshot: data.giftNameSnapshot,
+            assetKeySnapshot: data.assetKeySnapshot,
+            coinCost: data.coinCost,
+            exchangeValue: data.exchangeValue,
+            contextType: data.contextType,
+            contextId: data.contextId,
+            note: data.note,
+            status: data.status,
+            createdAt: new Date("2024-03-03T10:00:00.000Z"),
+            updatedAt: new Date("2024-03-03T10:00:00.000Z"),
+            sender: currentPlayer,
+            recipient
+          })
+        },
+        inboxMessage: {
+          create: async ({ data }: any) => {
+            inboxCreateData = data;
+            return makeInboxRow({
+              id: "inbox-100",
+              playerId: recipient.id,
+              type: data.type,
+              title: data.title,
+              body: data.body,
+              status: data.status,
+              payloadJson: data.payloadJson,
+              rewardJson: data.rewardJson
+            });
+          }
+        },
+        coinWallet: {
+          update: async () => ({ balance: 900, reserved: 0, lifetimeEarned: 0, lifetimeSpent: 100 })
+        },
+        coinLedgerEntry: {
+          create: async () => ({})
+        }
+      });
+    }
+  } as any;
+
+  const service = new SocialService(prismaMock, {} as any);
+  (service as any).getCurrentPlayer = async () => currentPlayer;
+  (service as any).ensureGiftCatalog = async () => {};
+  (service as any).debitWallet = async () => ({ balance: 900 });
+
+  const result = await service.sendGift({} as any, {
+    recipientPlayerId: recipient.id,
+    giftKey: "gift_001",
+    contextType: "profile",
+    contextId: "profile-1",
+    note: "Gift 001"
+  });
+
+  assert.equal(transactionUsed, true);
+  assert.ok(inboxCreateData);
+  assert.equal(inboxCreateData.playerId, recipient.id);
+  assert.equal(inboxCreateData.type, "gift_received");
+  assert.equal(inboxCreateData.status, "unread");
+  assert.equal(result.ok, true);
+  assert.equal(result.inbox.id, "inbox-100");
 });

@@ -295,6 +295,64 @@ test("authenticated profile shows four stats cards without Xal and leaderboard u
     });
   });
 
+  await page.route("**/social/summary", async (route) => {
+    const headers = {
+      "Access-Control-Allow-Origin": route.request().headers().origin ?? "http://127.0.0.1:4173",
+      "Access-Control-Allow-Methods": "GET,POST,PUT,PATCH,DELETE,OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With",
+      "Access-Control-Allow-Credentials": "true",
+      "Vary": "Origin"
+    };
+    return route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      headers,
+      body: JSON.stringify({
+        inboxUnreadCount: 2,
+        chatUnreadCount: 1,
+        inviteUnreadCount: 1,
+        friendRequestCount: 1,
+        totalUnreadCount: 5
+      })
+    });
+  });
+
+  await page.route("**/social/inbox*", async (route) => {
+    const headers = {
+      "Access-Control-Allow-Origin": route.request().headers().origin ?? "http://127.0.0.1:4173",
+      "Access-Control-Allow-Methods": "GET,POST,PUT,PATCH,DELETE,OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With",
+      "Access-Control-Allow-Credentials": "true",
+      "Vary": "Origin"
+    };
+    return route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      headers,
+      body: JSON.stringify({
+        unreadCount: 2,
+        items: [
+          {
+            id: "i-1",
+            playerId: "p-1",
+            type: "gift_received",
+            title: "Gift from Alice",
+            body: "You received Gift 001",
+            status: "unread",
+            payloadJson: { giftKey: "gift_001" },
+            rewardJson: { type: "gift", giftKey: "gift_001" },
+            createdAt: "2024-03-03T10:00:00.000Z",
+            readAt: null,
+            claimedAt: null,
+            expiresAt: null,
+            isUnread: true,
+            isClaimable: true
+          }
+        ]
+      })
+    });
+  });
+
   await page.route("**/social/messages/p-2", async (route) => {
     const headers = {
       "Access-Control-Allow-Origin": route.request().headers().origin ?? "http://127.0.0.1:4173",
@@ -394,6 +452,10 @@ test("authenticated profile shows four stats cards without Xal and leaderboard u
   await expect(page.locator("#social-center-modal")).toHaveClass(/active/);
   await expect(page.locator("#social-center-modal-title")).toContainText(/Messages|Mesajlar|Сообщения/);
   await expect(page.locator("#social-chats-panel")).not.toHaveClass(/is-hidden/);
+  await page.locator("#social-center-tabs [data-social-tab='inbox']").click();
+  await expect(page.locator("#social-inbox-panel")).not.toHaveClass(/is-hidden/);
+  await expect(page.locator("#social-inbox-list .inbox-card")).toHaveCount(1);
+  await expect(page.locator("#social-center-modal .start-social-badge")).toContainText(/5|9\+/);
   await expect(page.locator("#player-profile-modal")).not.toHaveClass(/active/);
 
 });

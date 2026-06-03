@@ -34,6 +34,16 @@ export class SocialController {
     return this.socialService.getMessageThreads(req.headers);
   }
 
+  @Get("inbox")
+  async getInbox(@Req() req: Request, @Query("status") status?: string, @Query("limit") limit?: string) {
+    return this.socialService.getInbox(req.headers, { status, limit });
+  }
+
+  @Get("summary")
+  async getSummary(@Req() req: Request) {
+    return this.socialService.getSocialSummary(req.headers);
+  }
+
   @Post("friends/request")
   async requestFriend(@Req() req: Request, @Body() body: SocialRequestFriendDto) {
     return this.socialService.requestFriend(req.headers, body);
@@ -80,6 +90,21 @@ export class SocialController {
     @Body() body: SocialSendGiftDto
   ) {
     return this.socialService.sendGift(req.headers, body);
+  }
+
+  @Post("inbox/:id/read")
+  async markInboxRead(@Req() req: Request, @Param("id") id: string) {
+    return this.socialService.markInboxRead(req.headers, id);
+  }
+
+  @Post("inbox/:id/claim")
+  async claimInboxMessage(@Req() req: Request, @Param("id") id: string) {
+    return this.socialService.claimInboxMessage(req.headers, id);
+  }
+
+  @Post("inbox/:id/delete")
+  async deleteInboxMessage(@Req() req: Request, @Param("id") id: string) {
+    return this.socialService.deleteInboxMessage(req.headers, id);
   }
 
   @Get("messages/:playerId")

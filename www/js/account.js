@@ -520,6 +520,55 @@ export class AccountClient {
         };
     }
 
+    async getInbox(filters = {}) {
+        const params = new URLSearchParams();
+        const status = String(filters?.status || "").trim();
+        const limit = Number(filters?.limit);
+        if (status) params.set("status", status);
+        if (Number.isFinite(limit) && limit > 0) params.set("limit", String(Math.trunc(limit)));
+        const query = params.toString();
+        const data = await this.platformRequest(`/social/inbox${query ? `?${query}` : ""}`);
+        return {
+            items: Array.isArray(data?.items) ? data.items : [],
+            unreadCount: Number(data?.unreadCount || 0)
+        };
+    }
+
+    async markInboxRead(id) {
+        const key = String(id || "").trim();
+        if (!key) throw new Error("Inbox item not found");
+        return this.platformRequest(`/social/inbox/${encodeURIComponent(key)}/read`, {
+            method: "POST"
+        });
+    }
+
+    async claimInboxMessage(id) {
+        const key = String(id || "").trim();
+        if (!key) throw new Error("Inbox item not found");
+        return this.platformRequest(`/social/inbox/${encodeURIComponent(key)}/claim`, {
+            method: "POST"
+        });
+    }
+
+    async deleteInboxMessage(id) {
+        const key = String(id || "").trim();
+        if (!key) throw new Error("Inbox item not found");
+        return this.platformRequest(`/social/inbox/${encodeURIComponent(key)}/delete`, {
+            method: "POST"
+        });
+    }
+
+    async getSocialSummary() {
+        const data = await this.platformRequest("/social/summary");
+        return {
+            inboxUnreadCount: Number(data?.inboxUnreadCount || 0),
+            chatUnreadCount: Number(data?.chatUnreadCount || 0),
+            inviteUnreadCount: Number(data?.inviteUnreadCount || 0),
+            friendRequestCount: Number(data?.friendRequestCount || 0),
+            totalUnreadCount: Number(data?.totalUnreadCount || 0)
+        };
+    }
+
     async getCoinShopStatus() {
         const data = await this.platformRequest("/economy/coin-shop/status");
         return {

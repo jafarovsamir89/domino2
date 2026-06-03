@@ -172,6 +172,7 @@ model Player {
   friendRequestsReceived FriendConnection[] @relation("FriendRequestRecipient")
   sentDirectMessages DirectMessage[] @relation("SentDirectMessages")
   receivedDirectMessages DirectMessage[] @relation("ReceivedDirectMessages")
+  inboxMessages InboxMessage[]
   roomInvitesSent RoomInvitation[] @relation("RoomInviteSender")
   roomInvitesReceived RoomInvitation[] @relation("RoomInviteRecipient")
   giftsSent GiftTransaction[] @relation("GiftSender")
@@ -448,6 +449,26 @@ model DirectMessage {
 
   @@index([senderPlayerId, receiverPlayerId, createdAt])
   @@index([receiverPlayerId, senderPlayerId, createdAt])
+}
+
+model InboxMessage {
+  id          String   @id @default(cuid())
+  playerId    String
+  type        String
+  title       String
+  body        String?
+  status      String   @default("unread")
+  payloadJson Json?
+  rewardJson  Json?
+  createdAt   DateTime @default(now())
+  readAt      DateTime?
+  claimedAt   DateTime?
+  expiresAt   DateTime?
+
+  player      Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  @@index([playerId, status, createdAt])
+  @@index([playerId, type, createdAt])
 }
 
 model GiftCatalog {

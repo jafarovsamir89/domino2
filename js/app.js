@@ -180,6 +180,14 @@ class DominoGame {
         this.friendSearchResults = [];
         this.friendHub = { accepted: [], incoming: [], outgoing: [] };
         this.roomInvitations = { incoming: [], sent: [] };
+        this.socialSummary = null;
+        this.socialSummaryLoaded = false;
+        this.socialInboxState = {
+            items: [],
+            unreadCount: 0,
+            loading: false,
+            error: ''
+        };
         this.pendingSoloSettlement = Promise.resolve();
         this.reactionPalette = [
             { code: '1F923', label: 'ROFL' },
@@ -329,6 +337,17 @@ class DominoGame {
         if (openSocialBtn) openSocialBtn.addEventListener('click', async () => {
             await this.openSocialCenterModal('chats');
         });
+        const socialCenterTabs = document.getElementById('social-center-tabs');
+        if (socialCenterTabs && !socialCenterTabs.dataset.bound) {
+            socialCenterTabs.dataset.bound = '1';
+            socialCenterTabs.addEventListener('click', async (event) => {
+                const button = event.target.closest?.('[data-social-tab]');
+                if (!button) return;
+                const tab = String(button.dataset.socialTab || '').trim();
+                if (!tab) return;
+                await this.loadSocialCenterTab(tab);
+            });
+        }
         if (startCoinShopBtn) startCoinShopBtn.addEventListener('click', async () => {
             await this.openCoinShopModal();
         });
@@ -572,11 +591,13 @@ class DominoGame {
             this.accountProfile = null;
             this.accountDetails = null;
             this.accountOnline = false;
+            this.resetSocialCenterState();
             this.setAccountMode('login');
             this.setAccountStatus('');
             this.renderAccountModal();
             this.syncStartAuthButton();
             this.syncStartAuthGate();
+            this.updateSocialCenterBadge();
         });
         if (nameModalCloseBtn) nameModalCloseBtn.addEventListener('click', () => this.closeNameEditModal());
         if (nameModalCancelBtn) nameModalCancelBtn.addEventListener('click', () => this.closeNameEditModal());
@@ -636,6 +657,7 @@ class DominoGame {
         this.syncStartAuthButton();
         this.refreshResumeBanner(null);
         await this.validateStoredResumeSnapshot();
+        void this.loadSocialSummary();
         if (!this.hasAuthenticatedAccount()) this.setAccountStatus(this.t('account-login-required'));
         this.syncStartAuthGate();
     }
@@ -691,6 +713,7 @@ class DominoGame {
                 this.renderAccountModal();
                 this.syncStartAuthButton();
                 void this.loadGiftHub();
+                void this.loadSocialSummary();
                 this.setAccountStatus(this.t('account-online'));
                 return details;
             }
@@ -703,8 +726,10 @@ class DominoGame {
         this.accountDetails = null;
         if (!hadProfile) this.accountProfile = null;
         if (!hadProfile) this.applyActiveTableSkin();
+        this.resetSocialCenterState();
         this.renderAccountModal();
         this.syncStartAuthButton();
+        this.updateSocialCenterBadge();
         if (!hadProfile) this.syncStartAuthGate();
         return null;
     }
@@ -760,6 +785,18 @@ class DominoGame {
         const modal = document.getElementById('social-center-modal');
         if (!modal) return;
         modal.classList.add('active');
+        await this.loadSocialCenterTab(tab, playerRef);
+    }
+
+    closeSocialCenterModal() {
+        document.getElementById('social-center-modal')?.classList.remove('active');
+        this.socialCenterTab = 'inbox';
+    }
+
+    async loadSocialCenterTab(tab = 'inbox', playerRef = null) {
+        const nextTab = tab === 'friends' || tab === 'invites' || tab === 'chats' || tab === 'inbox'
+            ? tab
+            : 'inbox';
         if (playerRef) {
             const playerId = String(playerRef?.playerId || playerRef?.userId || playerRef?.id || playerRef || '').trim();
             if (playerId) {
@@ -770,26 +807,34 @@ class DominoGame {
                 };
             }
         }
-        this.socialCenterTab = tab === 'friends' || tab === 'invites' || tab === 'chats' ? tab : 'inbox';
+        this.socialCenterTab = nextTab;
         this.renderSocialCenter();
-        if (this.socialCenterTab === 'friends') {
-            await this.loadFriendsPage();
-            await this.loadSocialInvitesPage().catch(() => {});
-        } else if (this.socialCenterTab === 'invites') {
-            await this.loadSocialInvitesPage();
-        } else if (this.socialCenterTab === 'chats') {
-            await this.loadMessageThreads();
-            const activeId = String(this.accountMessagesState?.activePlayerId || '').trim();
-            if (activeId) {
-                await this.loadConversationWithPlayer(activeId);
+
+        if (!this.hasAuthenticatedAccount()) {
+            this.updateSocialCenterBadge();
+            return;
+        }
+
+        if (nextTab === 'inbox') {
+            await this.loadInboxPage();
+        } else {
+            await this.loadSocialSummary();
+            if (nextTab === 'friends') {
+                await this.loadFriendsPage();
+                await this.loadSocialInvitesPage().catch(() => {});
+            } else if (nextTab === 'invites') {
+                await this.loadSocialInvitesPage();
+            } else if (nextTab === 'chats') {
+                await this.loadMessageThreads();
+                const activeId = String(this.accountMessagesState?.activePlayerId || '').trim();
+                if (activeId) {
+                    await this.loadConversationWithPlayer(activeId);
+                }
             }
         }
-        this.updateSocialCenterBadge();
-    }
 
-    closeSocialCenterModal() {
-        document.getElementById('social-center-modal')?.classList.remove('active');
-        this.socialCenterTab = 'inbox';
+        await this.loadSocialSummary();
+        this.updateSocialCenterBadge();
     }
 
     closePlayerProfileModal() {
@@ -847,6 +892,260 @@ class DominoGame {
         await this.openSocialCenterModal('chats', playerId);
     }
 
+    resetSocialCenterState() {
+        this.socialSummary = {
+            inboxUnreadCount: 0,
+            chatUnreadCount: 0,
+            inviteUnreadCount: 0,
+            friendRequestCount: 0,
+            totalUnreadCount: 0
+        };
+        this.socialSummaryLoaded = false;
+        this.socialInboxState = {
+            items: [],
+            unreadCount: 0,
+            loading: false,
+            error: ''
+        };
+    }
+
+    async loadSocialSummary() {
+        if (!this.hasAuthenticatedAccount()) {
+            this.resetSocialCenterState();
+            this.updateSocialCenterBadge();
+            return this.socialSummary;
+        }
+
+        try {
+            const summary = await this.account.getSocialSummary();
+            this.socialSummary = {
+                inboxUnreadCount: Math.max(0, Number(summary?.inboxUnreadCount || 0)),
+                chatUnreadCount: Math.max(0, Number(summary?.chatUnreadCount || 0)),
+                inviteUnreadCount: Math.max(0, Number(summary?.inviteUnreadCount || 0)),
+                friendRequestCount: Math.max(0, Number(summary?.friendRequestCount || 0)),
+                totalUnreadCount: Math.max(0, Number(summary?.totalUnreadCount || 0))
+            };
+            this.socialSummaryLoaded = true;
+        } catch {
+            if (!this.socialSummaryLoaded) {
+                this.socialSummary = {
+                    inboxUnreadCount: 0,
+                    chatUnreadCount: 0,
+                    inviteUnreadCount: 0,
+                    friendRequestCount: 0,
+                    totalUnreadCount: 0
+                };
+            }
+        }
+        this.updateSocialCenterBadge();
+        return this.socialSummary;
+    }
+
+    async loadInboxPage() {
+        const list = document.getElementById('social-inbox-list');
+        const summary = document.getElementById('social-inbox-summary');
+        if (!list || !summary) return [];
+
+        if (!this.hasAuthenticatedAccount()) {
+            this.socialInboxState = {
+                items: [],
+                unreadCount: 0,
+                loading: false,
+                error: this.t('friends-login-required')
+            };
+            this.renderSocialInboxPanel();
+            this.updateSocialCenterBadge();
+            return [];
+        }
+
+        this.socialInboxState = {
+            ...(this.socialInboxState || {}),
+            items: [],
+            unreadCount: 0,
+            loading: true,
+            error: ''
+        };
+        this.renderSocialInboxPanel();
+
+        try {
+            const data = await this.account.getInbox();
+            const items = Array.isArray(data?.items) ? data.items : [];
+            const unreadCount = Math.max(0, Number(data?.unreadCount || 0));
+            this.socialInboxState = {
+                items,
+                unreadCount,
+                loading: false,
+                error: ''
+            };
+            this.renderSocialInboxPanel();
+            await this.loadSocialSummary();
+            return items;
+        } catch (err) {
+            this.socialInboxState = {
+                items: [],
+                unreadCount: 0,
+                loading: false,
+                error: err?.message || this.t('inbox-load-failed')
+            };
+            this.renderSocialInboxPanel();
+            this.updateSocialCenterBadge();
+            return [];
+        }
+    }
+
+    renderSocialInboxPanel() {
+        const list = document.getElementById('social-inbox-list');
+        const summary = document.getElementById('social-inbox-summary');
+        if (!list || !summary) return;
+
+        const state = this.socialInboxState || {};
+        const unreadCount = Math.max(0, Number(state.unreadCount || 0));
+        if (!this.hasAuthenticatedAccount()) {
+            summary.textContent = this.t('friends-login-required');
+            this.setSummaryMessage(list, this.t('friends-login-required'));
+            return;
+        }
+
+        if (state.error) {
+            summary.textContent = state.error;
+            this.setSummaryMessage(list, state.error);
+            return;
+        }
+
+        if (state.loading) {
+            summary.textContent = this.t('account-profile-loading');
+            this.setSummaryMessage(list, this.t('account-profile-loading'));
+            return;
+        }
+
+        summary.textContent = unreadCount > 0
+            ? `${this.t('inbox-unread')}: ${unreadCount}`
+            : this.t('inbox-read');
+
+        const items = Array.isArray(state.items) ? state.items : [];
+        list.innerHTML = '';
+        if (!items.length) {
+            this.setSummaryMessage(list, this.t('inbox-empty'));
+            return;
+        }
+
+        const typeLabelMap = {
+            gift_received: this.t('inbox-gift'),
+            reward: this.t('inbox-reward'),
+            compensation: this.t('inbox-compensation'),
+            tournament: this.t('inbox-tournament'),
+            daily_bonus: this.t('inbox-reward'),
+            system_news: this.t('inbox-system'),
+            room_invite: this.t('social-tab-invites'),
+            friend_request: this.t('friends-title')
+        };
+
+        const statusLabelMap = {
+            unread: this.t('inbox-unread'),
+            read: this.t('inbox-read'),
+            claimed: this.t('inbox-claimed'),
+            expired: this.t('inbox-expired'),
+            deleted: this.t('inbox-delete')
+        };
+
+        items.forEach((item) => {
+            const card = document.createElement('div');
+            card.className = `inbox-card friend-card${item.status === 'unread' ? ' is-unread' : ''}`.trim();
+
+            const copy = document.createElement('div');
+            copy.className = 'friend-card-copy';
+
+            const top = document.createElement('div');
+            top.className = 'inbox-card-top';
+            const type = document.createElement('strong');
+            type.textContent = typeLabelMap[item.type] || String(item.title || item.type || this.t('inbox-system'));
+            top.appendChild(type);
+
+            const status = document.createElement('span');
+            status.className = `inbox-status is-${String(item.status || 'unread').toLowerCase()}`;
+            status.textContent = statusLabelMap[item.status] || String(item.status || this.t('inbox-read'));
+            top.appendChild(status);
+
+            const body = document.createElement('span');
+            body.className = 'inbox-card-body';
+            body.textContent = String(item.body || item.title || '');
+
+            const meta = document.createElement('span');
+            meta.className = 'inbox-card-meta';
+            meta.textContent = item.createdAt ? new Date(item.createdAt).toLocaleString() : '';
+
+            copy.appendChild(top);
+            copy.appendChild(body);
+            copy.appendChild(meta);
+
+            const actions = document.createElement('div');
+            actions.className = 'friend-card-actions inbox-card-actions';
+
+            if (item.status === 'unread') {
+                const readBtn = document.createElement('button');
+                readBtn.className = 'btn btn-action btn-strong';
+                readBtn.type = 'button';
+                readBtn.textContent = this.t('inbox-read');
+                readBtn.addEventListener('click', async () => {
+                    readBtn.disabled = true;
+                    try {
+                        await this.account.markInboxRead(item.id);
+                        await this.loadInboxPage();
+                    } catch (err) {
+                        this.renderer.showMessage(err?.message || this.t('inbox-load-failed'), 1800);
+                    } finally {
+                        readBtn.disabled = false;
+                    }
+                });
+                actions.appendChild(readBtn);
+            }
+
+            if (item.isClaimable) {
+                const claimBtn = document.createElement('button');
+                claimBtn.className = 'btn btn-menu';
+                claimBtn.type = 'button';
+                claimBtn.textContent = item.type === 'gift_received' ? this.t('inbox-open-gifts') : this.t('inbox-claim');
+                claimBtn.addEventListener('click', async () => {
+                    claimBtn.disabled = true;
+                    try {
+                        const result = await this.account.claimInboxMessage(item.id);
+                        if (result?.ok === false && result?.reason === 'claim_not_available') {
+                            this.renderer.showMessage(this.t('inbox-claim-failed'), 1800);
+                        } else {
+                            await this.loadInboxPage();
+                        }
+                    } catch (err) {
+                        this.renderer.showMessage(err?.message || this.t('inbox-claim-failed'), 1800);
+                    } finally {
+                        claimBtn.disabled = false;
+                    }
+                });
+                actions.appendChild(claimBtn);
+            }
+
+            const deleteBtn = document.createElement('button');
+            deleteBtn.className = 'btn btn-menu';
+            deleteBtn.type = 'button';
+            deleteBtn.textContent = this.t('inbox-delete');
+            deleteBtn.addEventListener('click', async () => {
+                deleteBtn.disabled = true;
+                try {
+                    await this.account.deleteInboxMessage(item.id);
+                    await this.loadInboxPage();
+                } catch (err) {
+                    this.renderer.showMessage(err?.message || this.t('inbox-load-failed'), 1800);
+                } finally {
+                    deleteBtn.disabled = false;
+                }
+            });
+            actions.appendChild(deleteBtn);
+
+            card.appendChild(copy);
+            card.appendChild(actions);
+            list.appendChild(card);
+        });
+    }
+
     async loadMessageThreads() {
         if (!this.hasAuthenticatedAccount()) {
             return [];
@@ -878,6 +1177,7 @@ class DominoGame {
                 activePlayerId: nextActiveId || currentActiveId
             };
             this.renderAccountMessagesPanel();
+            await this.loadSocialSummary();
             this.updateSocialCenterBadge();
             if (nextActiveId && nextActiveId !== currentActiveId) {
                 await this.loadConversationWithPlayer(nextActiveId);
@@ -891,6 +1191,7 @@ class DominoGame {
                 error: err?.message || this.t('chats-load-failed') || this.t('messages-load-failed')
             };
             this.renderAccountMessagesPanel();
+            await this.loadSocialSummary();
             this.updateSocialCenterBadge();
             return [];
         }
@@ -924,6 +1225,7 @@ class DominoGame {
                 error: ''
             };
             this.renderAccountMessagesPanel();
+            await this.loadSocialSummary();
             this.updateSocialCenterBadge();
             return this.accountMessagesState.messages;
         } catch (err) {
@@ -934,6 +1236,7 @@ class DominoGame {
                 error: err?.message || this.t('chats-load-failed') || this.t('messages-load-failed')
             };
             this.renderAccountMessagesPanel();
+            await this.loadSocialSummary();
             this.updateSocialCenterBadge();
             return [];
         }
@@ -1036,6 +1339,7 @@ class DominoGame {
         } catch (err) {
             this.setSummaryMessage(invitesList, err?.message || this.t('friends-load-failed'));
         }
+        await this.loadSocialSummary();
         this.updateSocialCenterBadge();
         return [];
     }
@@ -2274,16 +2578,25 @@ class DominoGame {
         if (!button) return;
         const badge = button.querySelector('.start-social-badge');
         if (!badge) return;
+        if (!this.hasAuthenticatedAccount()) {
+            badge.textContent = '';
+            badge.classList.add('is-hidden');
+            badge.removeAttribute('title');
+            return;
+        }
+        const summaryCount = this.socialSummaryLoaded
+            ? Math.max(0, Number(this.socialSummary?.totalUnreadCount || 0))
+            : null;
         const unreadMessages = Array.isArray(this.accountMessagesState?.threads)
             ? this.accountMessagesState.threads.reduce((sum, thread) => sum + Math.max(0, Number(thread?.unreadCount || 0)), 0)
             : 0;
         const incomingFriends = Math.max(0, Number(this.friendHub?.incoming?.length || 0));
         const incomingInvites = Math.max(0, Number(this.roomInvitations?.incoming?.length || 0));
-        const count = unreadMessages + incomingFriends + incomingInvites;
+        const count = Number.isFinite(summaryCount) ? summaryCount : unreadMessages + incomingFriends + incomingInvites;
         if (count > 0) {
             badge.textContent = count > 9 ? '9+' : String(count);
             badge.classList.remove('is-hidden');
-            badge.title = this.t('social-unread');
+            badge.title = `${this.t('social-badge-label')}: ${count}`;
         } else {
             badge.textContent = '';
             badge.classList.add('is-hidden');
@@ -2807,6 +3120,7 @@ class DominoGame {
             this.setSummaryMessage(requestsList, err.message || this.t('friends-load-failed'));
             this.setSummaryMessage(searchResults, err.message || this.t('friends-load-failed'));
         }
+        await this.loadSocialSummary();
         this.updateSocialCenterBadge();
     }
 
@@ -3091,11 +3405,13 @@ class DominoGame {
                 this.accountProfile = null;
                 this.accountDetails = null;
                 this.accountOnline = false;
+                this.resetSocialCenterState();
                 this.setAccountMode('login');
                 this.setAccountStatus('');
                 this.renderAccountModal();
                 this.syncStartAuthButton();
                 this.syncStartAuthGate();
+                this.updateSocialCenterBadge();
             });
             nameRow.appendChild(logoutBtn);
         }
@@ -3513,10 +3829,11 @@ class DominoGame {
 
                 <div class="social-center-panels">
                     <section class="social-center-panel" id="social-inbox-panel">
-                        <div class="social-empty-state">
+                        <div class="social-inbox-head">
                             <div class="section-kicker" data-i18n="inbox-title">Inbox</div>
-                            <div class="room-summary" data-i18n="inbox-empty">No inbox items yet.</div>
+                            <div class="room-summary social-inbox-summary" id="social-inbox-summary" data-i18n="inbox-empty">No inbox items yet.</div>
                         </div>
+                        <div class="social-inbox-list" id="social-inbox-list"></div>
                     </section>
 
                     <section class="social-center-panel is-hidden" id="social-chats-panel">
@@ -5212,6 +5529,7 @@ class DominoGame {
             this.setSummaryMessage(requestsList, err.message || this.t('account-server-unavailable'));
             this.setSummaryMessage(invitesList, err.message || this.t('account-server-unavailable'));
         }
+        await this.loadSocialSummary();
         this.renderGiftPicker();
     }
 
@@ -6168,6 +6486,7 @@ class DominoGame {
             }
             await this.loadAccountProfile();
             await this.loadGiftHub();
+            await this.loadSocialSummary();
             this.renderAccountModal();
             this.renderer.showMessage(this.t('gift-sent'), 1500);
             return result;

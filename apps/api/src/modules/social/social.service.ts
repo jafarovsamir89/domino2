@@ -114,6 +114,29 @@ type MessageThreadRow = {
   messageCount: number;
 };
 
+type InboxMessageRow = {
+  id: string;
+  playerId: string;
+  type: string;
+  title: string;
+  body: string | null;
+  status: string;
+  payloadJson: Prisma.JsonValue | null;
+  rewardJson: Prisma.JsonValue | null;
+  createdAt: Date;
+  readAt: Date | null;
+  claimedAt: Date | null;
+  expiresAt: Date | null;
+};
+
+type SocialSummaryRow = {
+  inboxUnreadCount: number;
+  chatUnreadCount: number;
+  inviteUnreadCount: number;
+  friendRequestCount: number;
+  totalUnreadCount: number;
+};
+
 const DEFAULT_GIFT_CATALOG = [
   { key: "gift_001", name: "Gift 001", assetKey: "gift_001", rarity: "common", sortOrder: 1 },
   { key: "gift_002", name: "Gift 002", assetKey: "gift_002", rarity: "common", sortOrder: 2 },
@@ -143,6 +166,23 @@ export class SocialService {
     }
 
     return profile.player;
+  }
+
+  private async getInboxMessageForCurrentPlayer(headers: IncomingHttpHeaders, id: string) {
+    const currentPlayer = await this.getCurrentPlayer(headers);
+    const messageId = String(id || "").trim();
+    if (!messageId) {
+      throw new NotFoundException("Inbox message not found");
+    }
+
+    const row = await this.prisma.inboxMessage.findUnique({
+      where: { id: messageId }
+    });
+    if (!row || row.playerId !== currentPlayer.id) {
+      throw new NotFoundException("Inbox message not found");
+    }
+
+    return { currentPlayer, row };
   }
 
   private playerSelect() {
@@ -438,6 +478,35 @@ export class SocialService {
     };
   }
 
+  private summarizeInboxMessage(row: InboxMessageRow) {
+    return {
+      id: row.id,
+      playerId: row.playerId,
+      type: row.type,
+      title: row.title,
+      body: row.body ?? null,
+      status: row.status,
+      payloadJson: row.payloadJson ?? null,
+      rewardJson: row.rewardJson ?? null,
+      createdAt: row.createdAt.toISOString(),
+      readAt: row.readAt ? row.readAt.toISOString() : null,
+      claimedAt: row.claimedAt ? row.claimedAt.toISOString() : null,
+      expiresAt: row.expiresAt ? row.expiresAt.toISOString() : null,
+      isUnread: row.status === "unread",
+      isClaimable: this.isInboxClaimable(row)
+    };
+  }
+
+  private isInboxClaimable(row: Pick<InboxMessageRow, "type" | "rewardJson" | "status">) {
+    if (row.status === "deleted" || row.status === "expired") {
+      return false;
+    }
+    if (row.rewardJson && typeof row.rewardJson === "object") {
+      return true;
+    }
+    return ["gift_received", "reward", "compensation", "daily_bonus", "tournament"].includes(String(row.type || ""));
+  }
+
   private summarizeMessageThread(currentPlayerId: string, rows: DirectMessageRow[]): MessageThreadRow {
     const sortedRows = Array.isArray(rows) ? rows : [];
     const lastMessage = sortedRows[0];
@@ -563,6 +632,143 @@ export class SocialService {
       outgoing,
       items: rows.map((row) => this.summarizeFriend(currentPlayerId, row))
     };
+  }
+
+  async getInbox(
+    headers: IncomingHttpHeaders,
+    query: { status?: string | null; limit?: string | number | null } = {}
+  ) {
+    const currentPlayer = await this.getCurrentPlayer(headers);
+    const status = String(query?.status || "").trim().toLowerCase();
+    const limit = Math.max(1, Math.min(100, Math.trunc(Number(query?.limit ?? 30)) || 30));
+    const where: Prisma.InboxMessageWhereInput = {
+      playerId: currentPlayer.id
+    };
+    if (status && status !== "all") {
+      where.status = status;
+    } else {
+      where.status = {
+        not: "deleted"
+      };
+    }
+
+    const [rows, unreadCount] = await Promise.all([
+      this.prisma.inboxMessage.findMany({
+        where,
+        orderBy: [{ createdAt: "desc" }],
+        take: limit
+      }),
+      this.prisma.inboxMessage.count({
+        where: {
+          playerId: currentPlayer.id,
+          status: "unread"
+        }
+      })
+    ]);
+
+    return {
+      items: rows.map((row) => this.summarizeInboxMessage(row as unknown as InboxMessageRow)),
+      unreadCount
+    };
+  }
+
+  async markInboxRead(headers: IncomingHttpHeaders, id: string) {
+    const { row } = await this.getInboxMessageForCurrentPlayer(headers, id);
+    if (row.status === "deleted") {
+      throw new NotFoundException("Inbox message not found");
+    }
+    if (row.status === "read" || row.status === "claimed" || row.status === "expired") {
+      return { item: this.summarizeInboxMessage(row as InboxMessageRow) };
+    }
+
+    const updated = await this.prisma.inboxMessage.update({
+      where: { id: row.id },
+      data: {
+        status: "read",
+        readAt: row.readAt || new Date()
+      }
+    });
+
+    return { item: this.summarizeInboxMessage(updated as unknown as InboxMessageRow) };
+  }
+
+  async claimInboxMessage(headers: IncomingHttpHeaders, id: string) {
+    const { row } = await this.getInboxMessageForCurrentPlayer(headers, id);
+    if (row.status === "deleted") {
+      throw new NotFoundException("Inbox message not found");
+    }
+    if (!this.isInboxClaimable(row as InboxMessageRow)) {
+      return { ok: false, reason: "claim_not_available" };
+    }
+    if (row.status === "claimed") {
+      return { item: this.summarizeInboxMessage(row as InboxMessageRow) };
+    }
+
+    const updated = await this.prisma.inboxMessage.update({
+      where: { id: row.id },
+      data: {
+        status: "claimed",
+        claimedAt: row.claimedAt || new Date(),
+        readAt: row.readAt || new Date()
+      }
+    });
+
+    return { item: this.summarizeInboxMessage(updated as unknown as InboxMessageRow) };
+  }
+
+  async deleteInboxMessage(headers: IncomingHttpHeaders, id: string) {
+    const { row } = await this.getInboxMessageForCurrentPlayer(headers, id);
+    if (row.status === "deleted") {
+      return { item: this.summarizeInboxMessage(row as InboxMessageRow) };
+    }
+
+    const updated = await this.prisma.inboxMessage.update({
+      where: { id: row.id },
+      data: {
+        status: "deleted",
+        readAt: row.readAt || new Date()
+      }
+    });
+
+    return { item: this.summarizeInboxMessage(updated as unknown as InboxMessageRow) };
+  }
+
+  async getSocialSummary(headers: IncomingHttpHeaders) {
+    const currentPlayer = await this.getCurrentPlayer(headers);
+    const [inboxUnreadCount, chatUnreadCount, inviteUnreadCount, friendRequestCount] = await Promise.all([
+      this.prisma.inboxMessage.count({
+        where: {
+          playerId: currentPlayer.id,
+          status: "unread"
+        }
+      }),
+      this.prisma.directMessage.count({
+        where: {
+          receiverPlayerId: currentPlayer.id,
+          readAt: null
+        }
+      }),
+      this.prisma.roomInvitation.count({
+        where: {
+          inviteePlayerId: currentPlayer.id,
+          status: "pending"
+        }
+      }),
+      this.prisma.friendConnection.count({
+        where: {
+          addresseePlayerId: currentPlayer.id,
+          status: "pending"
+        }
+      })
+    ]);
+
+    return {
+      inboxUnreadCount,
+      chatUnreadCount,
+      inviteUnreadCount,
+      friendRequestCount,
+      totalUnreadCount: inboxUnreadCount + chatUnreadCount + inviteUnreadCount + friendRequestCount
+    } satisfies SocialSummaryRow;
   }
 
   async searchPlayers(headers: IncomingHttpHeaders, query?: string) {
@@ -1162,10 +1368,35 @@ export class SocialService {
         }
       });
 
+      const inbox = await tx.inboxMessage.create({
+        data: {
+          playerId: recipientPlayerId,
+          type: "gift_received",
+          title: `Gift from ${currentPlayer.displayName}`,
+          body: `You received ${nextCatalog.name}`,
+          status: "unread",
+          payloadJson: {
+            senderPlayerId: currentPlayer.id,
+            giftKey: nextCatalog.key,
+            giftName: nextCatalog.name,
+            assetKey: nextCatalog.assetKey,
+            transactionId: gift.id
+          },
+          rewardJson: {
+            type: "gift",
+            giftKey: nextCatalog.key,
+            giftName: nextCatalog.name,
+            assetKey: nextCatalog.assetKey,
+            transactionId: gift.id
+          }
+        }
+      });
+
       return {
         wallet,
         gift: this.summarizeGiftTransaction(gift as unknown as GiftTransactionRow),
-        inventory: this.summarizeGiftInventory(inventory as unknown as GiftInventoryRow)
+        inventory: this.summarizeGiftInventory(inventory as unknown as GiftInventoryRow),
+        inbox: this.summarizeInboxMessage(inbox as unknown as InboxMessageRow)
       };
     });
 
