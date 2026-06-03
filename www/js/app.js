@@ -524,8 +524,10 @@ class DominoGame {
             this.playerName = name;
             this.showMultiplayerPanel('host');
             this.setHostStatus(this.t('online-room-status-created'));
-            this.network.hostGame((roomId) => {
-                document.getElementById('room-code-display').textContent = roomId;
+            this.network.hostGame(async (roomId) => {
+                const inviteCode = await this.network.resolveRoomCode(roomId).catch(() => null);
+                const roomCode = String(inviteCode || '').trim().toUpperCase();
+                document.getElementById('room-code-display').textContent = roomCode || String(roomId || '').trim();
                 void this.attachGameInviteRoom(roomId).catch(() => {});
                 this.setHostStatus(this.t('online-room-status-waiting'));
             }, (err) => {
@@ -760,7 +762,9 @@ class DominoGame {
         this.closeStartModals();
         this.ensureAccountModalPortal();
         const modal = document.getElementById('account-modal');
-        if (modal) modal.classList.add('active');
+        if (modal) if (modal.parentElement !== document.body) document.body.appendChild(modal);
+        modal.style.zIndex = '24000';
+        modal.classList.add('active');
         this.accountMode = this.accountProfile ? 'profile' : 'login';
         this.renderAccountModal();
         this.syncStartAuthButton();
@@ -777,6 +781,8 @@ class DominoGame {
         this.closeCosmeticsShopModal();
         const modal = document.getElementById('leaderboard-modal');
         if (!modal) return;
+        if (modal.parentElement !== document.body) document.body.appendChild(modal);
+        modal.style.zIndex = '24000';
         modal.classList.add('active');
         await this.loadLeaderboard(this.leaderboardScope || 'overall');
     }
@@ -802,6 +808,8 @@ class DominoGame {
         this.closeLeaderboardModal();
         const modal = document.getElementById('social-center-modal');
         if (!modal) return;
+        if (modal.parentElement !== document.body) document.body.appendChild(modal);
+        modal.style.zIndex = '24000';
         modal.classList.add('active');
         await this.loadSocialCenterTab(tab, playerRef);
     }
@@ -880,6 +888,9 @@ class DominoGame {
         this.closeCoinShopModal();
         this.closeCosmeticsShopModal();
         this.closeLeaderboardModal();
+        document.body.appendChild(modal);
+        modal.style.zIndex = '32000';
+        modal.style.position = 'fixed';
         modal.classList.add('active');
         this.playerProfileState = {
             id: playerId,
@@ -1470,8 +1481,11 @@ class DominoGame {
                         try {
                             const accepted = await this.account.acceptRoomInvitation(invite.id);
                             const row = accepted?.item || invite;
-                            if (row.roomCode) {
-                                await this.joinOnlineRoom(row.roomCode || row.roomId);
+                            const resolvedRoomCode = String(row.roomCode || '').trim()
+                                || await this.network.resolveRoomCode(String(row.roomId || '').trim()).catch(() => null)
+                                || '';
+                            if (resolvedRoomCode) {
+                                await this.joinOnlineRoom(resolvedRoomCode);
                             } else {
                                 this.gameInviteState = {
                                     inviteId: String(row.id || invite.id || '').trim(),
@@ -1734,7 +1748,9 @@ class DominoGame {
         this.closeAccountModal();
         this.ensureCoinShopModalPortal();
         const modal = document.getElementById('coin-shop-modal');
-        if (modal) modal.classList.add('active');
+        if (modal) if (modal.parentElement !== document.body) document.body.appendChild(modal);
+        modal.style.zIndex = '24000';
+        modal.classList.add('active');
         this.ensureShopIconMarkup();
         await this.loadCoinShopStatus();
         this.renderCoinShopModal();
@@ -1752,7 +1768,9 @@ class DominoGame {
         this.closeCoinShopModal();
         this.ensureCosmeticsShopModalPortal();
         const modal = document.getElementById('cosmetics-shop-modal');
-        if (modal) modal.classList.add('active');
+        if (modal) if (modal.parentElement !== document.body) document.body.appendChild(modal);
+        modal.style.zIndex = '24000';
+        modal.classList.add('active');
         await Promise.all([this.loadCoinShopStatus(), this.loadTableSkinShop()]);
         this.renderCosmeticsShopModal();
     }
@@ -2832,6 +2850,8 @@ class DominoGame {
         const status = document.getElementById('account-name-modal-status');
         if (input) input.value = this.accountProfile?.name || '';
         if (status) status.textContent = '';
+        if (modal.parentElement !== document.body) document.body.appendChild(modal);
+        modal.style.zIndex = '24000';
         modal.classList.add('active');
         input?.focus?.();
         input?.select?.();
@@ -3059,6 +3079,8 @@ class DominoGame {
         this.pendingAvatarDataUrl = this.accountProfile?.avatarUrl || null;
         this.pendingAvatarProfile = this.accountProfile || null;
         this.syncAvatarModalPreview();
+        if (modal.parentElement !== document.body) document.body.appendChild(modal);
+        modal.style.zIndex = '24000';
         modal.classList.add('active');
         document.getElementById('account-avatar-modal-pick')?.focus?.();
     }
@@ -4107,8 +4129,19 @@ class DominoGame {
         const inviteePlayerId = String(invite.inviteePlayerId || '').trim();
         const sessionId = String(invite.sessionId || '').trim();
         const room = this.getCurrentRoomSnapshot();
-        const nextRoomCode = String(roomCode || room?.roomCode || '').trim();
+        const rawRoomCode = String(roomCode || room?.roomCode || '').trim();
+        let nextRoomCode = rawRoomCode.toUpperCase();
         if (!sessionId || !inviteePlayerId || !nextRoomCode) return null;
+        const looksLikeRoomCode = /^[A-Z0-9]{4,8}$/.test(nextRoomCode);
+        if (!looksLikeRoomCode || nextRoomCode.length > 8) {
+            const resolvedRoomCode = await this.network.resolveRoomCode(rawRoomCode).catch(() => null);
+            const normalizedResolvedCode = String(resolvedRoomCode || '').trim().toUpperCase();
+            if (normalizedResolvedCode) {
+                nextRoomCode = normalizedResolvedCode;
+            } else if (!looksLikeRoomCode) {
+                return null;
+            }
+        }
         const payload = {
             inviteePlayerId,
             roomCode: nextRoomCode,
@@ -5549,6 +5582,8 @@ class DominoGame {
         this.prefillOnlineNameIfPossible();
         this.openRoomsStage = 'menu';
         this.syncOpenRoomsStage();
+        if (modal.parentElement !== document.body) document.body.appendChild(modal);
+        modal.style.zIndex = '24000';
         modal.classList.add('active');
         this.stopOpenRoomsAutoRefresh();
         this.resetOpenRoomsModalState();
@@ -5559,6 +5594,8 @@ class DominoGame {
         if (!modal) return;
         this.openRoomsStage = 'menu';
         this.syncOpenRoomsStage();
+        if (modal.parentElement !== document.body) document.body.appendChild(modal);
+        modal.style.zIndex = '24000';
         modal.classList.add('active');
         this.stopOpenRoomsAutoRefresh();
         this.resetOpenRoomsModalState();
@@ -5569,6 +5606,8 @@ class DominoGame {
         if (!modal) return;
         this.openRoomsStage = 'list';
         this.syncOpenRoomsStage();
+        if (modal.parentElement !== document.body) document.body.appendChild(modal);
+        modal.style.zIndex = '24000';
         modal.classList.add('active');
         void this.loadOpenRooms();
         this.startOpenRoomsAutoRefresh();
@@ -7491,9 +7530,12 @@ class DominoGame {
         if (this.isTeamMode) {
             const teamA = this.getTeamMembers(0);
             const teamB = this.getTeamMembers(1);
+            const resolveTeamProfile = (members) => members.map((index) => this.roomPlayerRefs?.[index] || null).find((player) => Boolean(String(player?.playerId || player?.userId || player?.id || '').trim()) && !player?.isBot) || members.map((index) => this.roomPlayerRefs?.[index] || null).find((player) => Boolean(String(player?.playerId || player?.userId || player?.id || '').trim())) || null;
+            const teamAProfile = resolveTeamProfile(teamA);
+            const teamBProfile = resolveTeamProfile(teamB);
             displayEntities = [
-                { name: this.getTeamDisplayName(0), score: this.teamScores[0], roundWins: this.teamRoundWins[0], isCurrent: this.isPlayerInTeam(0, this.currentPlayer), index: teamA.includes(this.currentPlayer) ? this.currentPlayer : -1, playerId: '', isBot: false },
-                { name: this.getTeamDisplayName(1), score: this.teamScores[1], roundWins: this.teamRoundWins[1], isCurrent: this.isPlayerInTeam(1, this.currentPlayer), index: teamB.includes(this.currentPlayer) ? this.currentPlayer : -1, playerId: '', isBot: false }
+                { name: this.getTeamDisplayName(0), score: this.teamScores[0], roundWins: this.teamRoundWins[0], isCurrent: this.isPlayerInTeam(0, this.currentPlayer), index: teamA.includes(this.currentPlayer) ? this.currentPlayer : -1, playerId: String(teamAProfile?.playerId || teamAProfile?.userId || teamAProfile?.id || '').trim(), isBot: Boolean(teamAProfile?.isBot) },
+                { name: this.getTeamDisplayName(1), score: this.teamScores[1], roundWins: this.teamRoundWins[1], isCurrent: this.isPlayerInTeam(1, this.currentPlayer), index: teamB.includes(this.currentPlayer) ? this.currentPlayer : -1, playerId: String(teamBProfile?.playerId || teamBProfile?.userId || teamBProfile?.id || '').trim(), isBot: Boolean(teamBProfile?.isBot) }
             ];
         } else {
             displayEntities = this.playerNames.map((n,i) => ({
@@ -8528,6 +8570,7 @@ class DominoGame {
 }
 let game = null;
 game = new DominoGame();
+window.game = game;
 
 // Re-render board on resize for correct scaling (debounced)
 let _resizeTimer = null;
@@ -8536,4 +8579,5 @@ window.addEventListener('resize', () => {
     clearTimeout(_resizeTimer);
     _resizeTimer = setTimeout(() => game.renderState(), 150);
 });
+
 

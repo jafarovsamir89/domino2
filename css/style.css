@@ -1,4 +1,4 @@
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+﻿*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
     --bg: #0f1923;
@@ -253,7 +253,7 @@ input, button { font: inherit; }
 }
 
 .start-lang-select-wrap::after {
-    content: "▾";
+    content: "в–ѕ";
     position: absolute;
     right: 10px;
     top: 50%;
@@ -600,7 +600,7 @@ input, button { font: inherit; }
 #friends-modal.active,
 #social-center-modal.active,
 #leaderboard-modal.active {
-    z-index: 12000;
+    z-index: 24000;
 }
 
 #player-profile-modal .modal-card,
@@ -3111,7 +3111,7 @@ body.seat-selection-active #game-screen {
 }
 
 .menu-btn::before {
-    content: "☰";
+    content: "в°";
     font-size: 1rem;
     line-height: 1;
 }
@@ -4603,7 +4603,7 @@ body.seat-selection-active #game-screen {
 
 /* Late overrides for dynamically injected HUD elements and legacy fallback strings. */
 .menu-btn::before {
-    content: "☰";
+    content: "в°";
 }
 
 .game-info {
@@ -4749,3 +4749,4 @@ body.is-reconnecting .hand-container {
     0% { opacity: 1; transform: translateX(-50%) translateY(0); }
     100% { opacity: 0; transform: translateX(-50%) translateY(-60px); }
 }
+

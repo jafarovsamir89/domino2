@@ -687,3 +687,77 @@ test("resume banner renders stored session state", async ({ page }) => {
   await expect(banner).not.toHaveClass(/is-hidden/);
   await expect(page.locator("#resume-session-title")).toContainText(/unfinished|sessiya/i);
 });
+test("team score names open the player profile modal above the table", async ({ page }) => {
+  await page.goto("/index.html");
+  const result = await page.evaluate(() => {
+    const dominoGame = typeof game !== "undefined" ? game : window.game;
+    if (!dominoGame) return null;
+    dominoGame.roomPlayerRefs = [
+      { playerId: "p-1", displayName: "Samir", isBot: false },
+      { playerId: "bot-1", displayName: "AI", isBot: true },
+      { playerId: "p-2", displayName: "Alice", isBot: false },
+      { playerId: "bot-2", displayName: "AI 2", isBot: true }
+    ];
+    dominoGame.playerNames = ["Samir", "AI", "Alice", "AI 2"];
+    dominoGame.teamScores = [12, 8];
+    dominoGame.teamRoundWins = [1, 0];
+    dominoGame.isTeamMode = true;
+    dominoGame.currentPlayer = 0;
+    dominoGame.playerCount = 4;
+    dominoGame.renderer.renderScores([
+      { name: dominoGame.getTeamDisplayName(0), score: 12, roundWins: 1, index: 0, playerId: "p-1", isBot: false },
+      { name: dominoGame.getTeamDisplayName(1), score: 8, roundWins: 0, index: 1, playerId: "p-2", isBot: false }
+    ], 0);
+    const buttons = Array.from(document.querySelectorAll("#scores-bar .score-name-button"));
+    buttons[0]?.click();
+    const modal = document.getElementById("player-profile-modal");
+    return {
+      buttonCount: buttons.length,
+      modalActive: Boolean(modal?.classList.contains("active")),
+      modalZ: window.getComputedStyle(modal || document.body).zIndex
+    };
+  });
+
+  expect(result).toBeTruthy();
+  expect(result.buttonCount).toBe(2);
+  expect(result.modalActive).toBe(true);
+  expect(result.modalZ).toBe("32000");
+});
+
+test("game invite attaches the resolved room code instead of the room id", async ({ page }) => {
+  await page.goto("/index.html");
+  const payload = await page.evaluate(async () => {
+    const dominoGame = typeof game !== "undefined" ? game : window.game;
+    if (!dominoGame) return null;
+    dominoGame.gameInviteState = {
+      inviteId: "invite-1",
+      inviteePlayerId: "player-2",
+      inviteeDisplayName: "Alice",
+      sessionId: "session-1",
+      role: "inviter",
+      roomLinked: false,
+      createPromptShown: false,
+      waitingPromptShown: false
+    };
+    dominoGame.getCurrentRoomSnapshot = () => ({
+      roomMode: "ffa",
+      stakeKey: "stake_200",
+      stakeAmount: 200,
+      humanSeats: 2,
+      totalPlayers: 2,
+      isTeamMode: false
+    });
+    dominoGame.network.resolveRoomCode = async (roomId) => (String(roomId || "") === "room-123" ? "ABCD" : null);
+    let captured = null;
+    dominoGame.account.inviteFriendToRoom = async (_sessionId, nextPayload) => {
+      captured = nextPayload;
+      return { item: { id: "invite-2", roomCode: nextPayload.roomCode } };
+    };
+    await dominoGame.attachGameInviteRoom("room-123");
+    return captured;
+  });
+
+  expect(payload).toBeTruthy();
+  expect(payload.roomCode).toBe("ABCD");
+});
+
