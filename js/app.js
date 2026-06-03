@@ -113,6 +113,7 @@ class DominoGame {
         this.onlineRoomVisibility = 'closed';
         this.onlineRoomSource = 'closed';
         this.openRoomsStage = 'menu';
+        this._openRoomsRefreshId = null;
         this.onlineEconomyMode = 'coins';
         this.onlineRoundBankAmount = 0;
         this.soloEconomyMode = 'coins';
@@ -180,6 +181,7 @@ class DominoGame {
         this.pendingSharedRoomCode = '';
         this.friendSearchResults = [];
         this.friendHub = { accepted: [], incoming: [], outgoing: [] };
+        this.friendPresenceMap = new Map();
         this.roomInvitations = { incoming: [], sent: [] };
         this.socialSummary = null;
         this.socialSummaryLoaded = false;
@@ -261,6 +263,7 @@ class DominoGame {
             document.removeEventListener('pointerdown', this._giftOutsideHandler, true);
             this._giftOutsideHandler = null;
         }
+        this.stopOpenRoomsAutoRefresh();
         this.stopCoinShopTicker();
         this.voice?.destroy?.();
         this.clearTurnTimers();
@@ -1347,6 +1350,7 @@ class DominoGame {
         this.renderAccountMessagesPanel();
 
         try {
+            await this.account.markMessageThreadRead?.(playerId).catch(() => {});
             const [profile, messages] = await Promise.all([
                 this.account.getPlayerProfile(playerId).catch(() => null),
                 this.account.getDirectMessages(playerId)
@@ -1360,6 +1364,7 @@ class DominoGame {
                 error: ''
             };
             this.renderAccountMessagesPanel();
+            await this.loadMessageThreads().catch(() => {});
             await this.loadSocialSummary();
             this.updateSocialCenterBadge();
             return this.accountMessagesState.messages;
@@ -3122,6 +3127,72 @@ class DominoGame {
         }, 300);
     }
 
+    normalizePresenceKey(value) {
+        return String(value || '').trim().toLowerCase();
+    }
+
+    getPresenceKeysForPlayer(player = {}) {
+        return [
+            this.normalizePresenceKey(player?.playerId),
+            this.normalizePresenceKey(player?.userId),
+            this.normalizePresenceKey(player?.sessionId),
+            this.normalizePresenceKey(player?.id),
+            this.normalizePresenceKey(player?.displayName)
+        ].filter(Boolean);
+    }
+
+    isFriendOnline(friend, presenceMap = this.friendPresenceMap) {
+        const map = presenceMap instanceof Map ? presenceMap : this.friendPresenceMap;
+        if (!map?.size) return false;
+        return this.getPresenceKeysForPlayer(friend).some((key) => map.has(key));
+    }
+
+    createFriendStatusBadge(isOnline) {
+        const badge = document.createElement('span');
+        badge.className = `friend-status-badge${isOnline ? ' is-online' : ''}`;
+        badge.textContent = isOnline ? this.t('friend-online') : this.t('friend-offline');
+        return badge;
+    }
+
+    async loadFriendPresenceMap() {
+        if (!this.account?.getRealtimeSummary) {
+            this.friendPresenceMap = new Map();
+            return this.friendPresenceMap;
+        }
+        try {
+            const summary = await this.account.getRealtimeSummary();
+            const players = Array.isArray(summary?.players) ? summary.players : [];
+            const map = new Map();
+            players.forEach((player) => {
+                if (!player || player.provider !== 'platform' || player.isConnected === false) return;
+                this.getPresenceKeysForPlayer(player).forEach((key) => {
+                    if (!map.has(key)) map.set(key, player);
+                });
+            });
+            this.friendPresenceMap = map;
+            return map;
+        } catch {
+            this.friendPresenceMap = new Map();
+            return this.friendPresenceMap;
+        }
+    }
+
+    startOpenRoomsAutoRefresh() {
+        this.stopOpenRoomsAutoRefresh();
+        this._openRoomsRefreshId = window.setInterval(() => {
+            const modal = document.getElementById('open-rooms-modal');
+            if (!modal?.classList.contains('active') || this.openRoomsStage !== 'list') return;
+            void this.loadOpenRooms();
+        }, 12000);
+    }
+
+    stopOpenRoomsAutoRefresh() {
+        if (this._openRoomsRefreshId) {
+            clearInterval(this._openRoomsRefreshId);
+            this._openRoomsRefreshId = null;
+        }
+    }
+
     async loadFriendsPage() {
         const friendsList = document.getElementById('friends-list');
         const requestsList = document.getElementById('friends-requests-list');
@@ -3150,10 +3221,12 @@ class DominoGame {
         try {
             const [friends, leaderboardRows] = await Promise.all([
                 this.account.getFriends(),
-                this.account.getLeaderboard(100).catch(() => [])
+                this.account.getLeaderboard(100).catch(() => []),
+                this.loadFriendPresenceMap().catch(() => new Map())
             ]);
             this.friendHub = friends || { accepted: [], incoming: [], outgoing: [], items: [] };
             this.friendRatingMap = new Map((Array.isArray(leaderboardRows) ? leaderboardRows : []).map((row) => [String(row.id || ''), Number(row.rating ?? 0)]));
+            const presenceMap = this.friendPresenceMap instanceof Map ? this.friendPresenceMap : new Map();
 
             friendsList.innerHTML = '';
             if (!this.friendHub.accepted.length) {
@@ -3165,12 +3238,14 @@ class DominoGame {
                     const copy = document.createElement('div');
                     copy.className = 'friend-card-copy';
                     const name = this.createPlayerNameButton(item.friend.displayName, item.friend, 'friend-card-name');
+                    const status = this.createFriendStatusBadge(this.isFriendOnline(item.friend, presenceMap));
                     const meta = document.createElement('span');
                     const rating = this.friendRatingMap.get(String(item.friend.id || ''));
                     meta.textContent = Number.isFinite(rating) && rating > 0
                         ? `${this.t('leaderboard-rating')}: ${rating}`
                         : '';
                     copy.appendChild(name);
+                    copy.appendChild(status);
                     if (meta.textContent) copy.appendChild(meta);
                     const action = document.createElement('div');
                     action.className = 'friend-card-actions';
@@ -3242,12 +3317,14 @@ class DominoGame {
                     const copy = document.createElement('div');
                     copy.className = 'friend-card-copy';
                     const name = this.createPlayerNameButton(item.friend.displayName, item.friend, 'friend-card-name');
+                    const status = this.createFriendStatusBadge(this.isFriendOnline(item.friend, presenceMap));
                     const meta = document.createElement('span');
                     const rating = this.friendRatingMap.get(String(item.friend.id || ''));
                     meta.textContent = Number.isFinite(rating) && rating > 0
                         ? `${this.t('leaderboard-rating')}: ${rating}`
                         : '';
                     copy.appendChild(name);
+                    copy.appendChild(status);
                     if (meta.textContent) copy.appendChild(meta);
                     const action = document.createElement('div');
                     action.className = 'friend-card-actions';
@@ -3319,6 +3396,7 @@ class DominoGame {
             const acceptedIds = new Set((hub.accepted || []).map((item) => String(item.friend?.id || '')));
             const incomingIds = new Set((hub.incoming || []).map((item) => String(item.friend?.id || '')));
             const outgoingIds = new Set((hub.outgoing || []).map((item) => String(item.friend?.id || '')));
+            const presenceMap = this.friendPresenceMap instanceof Map ? this.friendPresenceMap : await this.loadFriendPresenceMap().catch(() => new Map());
 
             this.friendSearchResults = Array.isArray(items) ? items : [];
             resultsList.innerHTML = '';
@@ -3332,12 +3410,14 @@ class DominoGame {
                 const copy = document.createElement('div');
                 copy.className = 'friend-card-copy';
                 const name = this.createPlayerNameButton(player.displayName, player, 'friend-card-name');
+                const status = this.createFriendStatusBadge(this.isFriendOnline(player, presenceMap));
                 const meta = document.createElement('span');
                 const rating = this.friendRatingMap?.get?.(String(player.id || ''));
                 meta.textContent = Number.isFinite(rating) && rating > 0
                     ? `${this.t('leaderboard-rating')}: ${rating}`
                     : '';
                 copy.appendChild(name);
+                copy.appendChild(status);
                 if (meta.textContent) copy.appendChild(meta);
                 const action = document.createElement('div');
                 action.className = 'friend-card-actions';
@@ -5259,6 +5339,7 @@ class DominoGame {
         this.openRoomsStage = 'menu';
         this.syncOpenRoomsStage();
         modal.classList.add('active');
+        this.stopOpenRoomsAutoRefresh();
         this.resetOpenRoomsModalState();
     }
 
@@ -5268,6 +5349,7 @@ class DominoGame {
         this.openRoomsStage = 'menu';
         this.syncOpenRoomsStage();
         modal.classList.add('active');
+        this.stopOpenRoomsAutoRefresh();
         this.resetOpenRoomsModalState();
     }
 
@@ -5278,6 +5360,7 @@ class DominoGame {
         this.syncOpenRoomsStage();
         modal.classList.add('active');
         void this.loadOpenRooms();
+        this.startOpenRoomsAutoRefresh();
     }
 
     closeOnlineModalToSource() {
@@ -5302,6 +5385,7 @@ class DominoGame {
 
     hideOpenRoomsModal() {
         document.getElementById('open-rooms-modal')?.classList.remove('active');
+        this.stopOpenRoomsAutoRefresh();
     }
 
     closeOpenRoomsModal() {
@@ -5309,6 +5393,7 @@ class DominoGame {
             this.showOpenRoomsMenu();
             return;
         }
+        this.stopOpenRoomsAutoRefresh();
         this.hideOpenRoomsModal();
     }
 
@@ -5427,7 +5512,8 @@ class DominoGame {
 
     async loadOpenRooms() {
         const list = document.getElementById('open-rooms-list');
-        if (!list) return;
+        const modal = document.getElementById('open-rooms-modal');
+        if (!list || !modal?.classList.contains('active') || this.openRoomsStage !== 'list') return;
         this.setSummaryMessage(list, this.t('account-profile-loading'));
         try {
             const rooms = await this.account.getOpenRooms({
@@ -5438,6 +5524,7 @@ class DominoGame {
                 joinableOnly: true,
                 limit: 24
             });
+            if (!modal?.classList.contains('active') || this.openRoomsStage !== 'list') return;
             this.openRooms = Array.isArray(rooms) ? rooms : [];
             if (!this.openRooms.length) {
                 this.setSummaryMessage(list, this.t('no-open-rooms'));
@@ -5519,6 +5606,7 @@ class DominoGame {
         }
         this.setSummaryMessage(resultsList, this.t('account-profile-loading'));
         try {
+            const presenceMap = this.friendPresenceMap instanceof Map ? this.friendPresenceMap : await this.loadFriendPresenceMap().catch(() => new Map());
             const items = await this.account.searchPlayers(query);
             this.friendSearchResults = Array.isArray(items) ? items : [];
             if (!this.friendSearchResults.length) {
@@ -5532,9 +5620,11 @@ class DominoGame {
                 const copy = document.createElement('div');
                 copy.className = 'friend-card-copy';
                 const name = this.createPlayerNameButton(player.displayName, player, 'friend-card-name');
+                const status = this.createFriendStatusBadge(this.isFriendOnline(player, presenceMap));
                 const id = document.createElement('span');
                 id.textContent = player.id;
                 copy.appendChild(name);
+                copy.appendChild(status);
                 copy.appendChild(id);
                 const action = document.createElement('div');
                 action.className = 'friend-card-actions';
@@ -5585,10 +5675,12 @@ class DominoGame {
         try {
             const [friends, invitations] = await Promise.all([
                 this.account.getFriends(),
-                this.account.getRoomInvitations()
+                this.account.getRoomInvitations(),
+                this.loadFriendPresenceMap().catch(() => new Map())
             ]);
             this.friendHub = friends || { accepted: [], incoming: [], outgoing: [] };
             this.roomInvitations = invitations || { incoming: [], sent: [] };
+            const presenceMap = this.friendPresenceMap instanceof Map ? this.friendPresenceMap : new Map();
 
             friendsList.innerHTML = '';
             if (!this.friendHub.accepted.length) {
@@ -5600,9 +5692,11 @@ class DominoGame {
                     const copy = document.createElement('div');
                     copy.className = 'friend-card-copy';
                     const name = this.createPlayerNameButton(item.friend.displayName, item.friend, 'friend-card-name');
+                    const status = this.createFriendStatusBadge(this.isFriendOnline(item.friend, presenceMap));
                     const id = document.createElement('span');
                     id.textContent = item.friend.id;
                     copy.appendChild(name);
+                    copy.appendChild(status);
                     copy.appendChild(id);
                     const action = document.createElement('div');
                     action.className = 'friend-card-actions';
@@ -5682,9 +5776,11 @@ class DominoGame {
                     const copy = document.createElement('div');
                     copy.className = 'friend-card-copy';
                     const name = this.createPlayerNameButton(item.friend.displayName, item.friend, 'friend-card-name');
+                    const status = this.createFriendStatusBadge(this.isFriendOnline(item.friend, presenceMap));
                     const labelEl = document.createElement('span');
                     labelEl.textContent = label;
                     copy.appendChild(name);
+                    copy.appendChild(status);
                     copy.appendChild(labelEl);
                     const action = document.createElement('div');
                     action.className = 'friend-card-actions';
@@ -7170,12 +7266,18 @@ class DominoGame {
             const teamA = this.getTeamMembers(0);
             const teamB = this.getTeamMembers(1);
             displayEntities = [
-                { name: this.getTeamDisplayName(0), score: this.teamScores[0], roundWins: this.teamRoundWins[0], isCurrent: this.isPlayerInTeam(0, this.currentPlayer), index: teamA.includes(this.currentPlayer) ? this.currentPlayer : -1 },
-                { name: this.getTeamDisplayName(1), score: this.teamScores[1], roundWins: this.teamRoundWins[1], isCurrent: this.isPlayerInTeam(1, this.currentPlayer), index: teamB.includes(this.currentPlayer) ? this.currentPlayer : -1 }
+                { name: this.getTeamDisplayName(0), score: this.teamScores[0], roundWins: this.teamRoundWins[0], isCurrent: this.isPlayerInTeam(0, this.currentPlayer), index: teamA.includes(this.currentPlayer) ? this.currentPlayer : -1, playerId: '', isBot: false },
+                { name: this.getTeamDisplayName(1), score: this.teamScores[1], roundWins: this.teamRoundWins[1], isCurrent: this.isPlayerInTeam(1, this.currentPlayer), index: teamB.includes(this.currentPlayer) ? this.currentPlayer : -1, playerId: '', isBot: false }
             ];
         } else {
             displayEntities = this.playerNames.map((n,i) => ({
-                name: n, score: this.scores[i], roundWins: this.roundWins[i], isCurrent: this.currentPlayer === i, index: i
+                name: n,
+                score: this.scores[i],
+                roundWins: this.roundWins[i],
+                isCurrent: this.currentPlayer === i,
+                index: i,
+                playerId: String(this.roomPlayerRefs?.[i]?.playerId || this.roomPlayerRefs?.[i]?.userId || this.roomPlayerRefs?.[i]?.id || '').trim(),
+                isBot: Boolean(this.roomPlayerRefs?.[i]?.isBot)
             }));
         }
         this.renderer.renderScores(displayEntities, this.currentPlayer);
@@ -7482,6 +7584,7 @@ class DominoGame {
         const playerOrder = Array.from(state?.playerOrder || []);
         const players = state?.players;
         const getPlayer = (sid) => (players && sid !== undefined && sid !== null) ? players.get(sid) : null;
+        this.roomPlayerRefs = playerOrder.map((sid) => getPlayer(sid) || null);
         for (const sid of playerOrder) {
             if (!sid) continue;
             const avatarUrl = getPlayer(sid)?.avatarUrl || '';

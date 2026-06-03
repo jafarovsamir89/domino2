@@ -696,7 +696,10 @@ export class SocialService {
       this.prisma.inboxMessage.count({
         where: {
           playerId: currentPlayer.id,
-          status: "unread"
+          status: "unread",
+          type: {
+            not: "direct_message"
+          }
         }
       })
     ]);
@@ -743,6 +746,63 @@ export class SocialService {
     }
 
     return { item: this.summarizeInboxMessage(updated as unknown as InboxMessageRow) };
+  }
+
+  async markDirectMessageThreadRead(headers: IncomingHttpHeaders, playerId: string) {
+    const currentPlayer = await this.getCurrentPlayer(headers);
+    const targetPlayerId = String(playerId || "").trim();
+    if (!targetPlayerId || targetPlayerId === currentPlayer.id) {
+      return { ok: true };
+    }
+
+    const now = new Date();
+    await Promise.all([
+      this.prisma.directMessage.updateMany({
+        where: {
+          OR: [
+            {
+              senderPlayerId: targetPlayerId,
+              receiverPlayerId: currentPlayer.id
+            },
+            {
+              senderPlayerId: currentPlayer.id,
+              receiverPlayerId: targetPlayerId
+            }
+          ],
+          readAt: null
+        },
+        data: {
+          readAt: now
+        }
+      }),
+      this.prisma.inboxMessage.updateMany({
+        where: {
+          playerId: currentPlayer.id,
+          type: "direct_message",
+          status: "unread",
+          OR: [
+            {
+              payloadJson: {
+                path: ["senderPlayerId"],
+                equals: targetPlayerId
+              }
+            },
+            {
+              payloadJson: {
+                path: ["receiverPlayerId"],
+                equals: targetPlayerId
+              }
+            }
+          ]
+        },
+        data: {
+          status: "read",
+          readAt: now
+        }
+      })
+    ]);
+
+    return { ok: true };
   }
 
   async claimInboxMessage(headers: IncomingHttpHeaders, id: string) {
@@ -792,7 +852,10 @@ export class SocialService {
       this.prisma.inboxMessage.count({
         where: {
           playerId: currentPlayer.id,
-          status: "unread"
+          status: "unread",
+          type: {
+            not: "direct_message"
+          }
         }
       }),
       this.prisma.directMessage.count({

@@ -520,6 +520,11 @@ export class AccountClient {
         };
     }
 
+    async getRealtimeSummary() {
+        const data = await this.platformRequest("/realtime/summary");
+        return data || null;
+    }
+
     async getInbox(filters = {}) {
         const params = new URLSearchParams();
         const status = String(filters?.status || "").trim();
@@ -822,6 +827,14 @@ export class AccountClient {
         if (!id) return [];
         const data = await this.platformRequest(`/social/messages/${encodeURIComponent(id)}`);
         return Array.isArray(data?.items) ? data.items : [];
+    }
+
+    async markMessageThreadRead(playerId) {
+        const id = String(playerId || "").trim();
+        if (!id) return { ok: true };
+        return this.platformRequest(`/social/messages/${encodeURIComponent(id)}/read`, {
+            method: "POST"
+        });
     }
 
     async sendDirectMessage(playerId, text) {

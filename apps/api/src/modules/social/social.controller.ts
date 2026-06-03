@@ -112,6 +112,11 @@ export class SocialController {
     return this.socialService.getDirectMessages(req.headers, playerId);
   }
 
+  @Post("messages/:playerId/read")
+  async markDirectMessageThreadRead(@Req() req: Request, @Param("playerId") playerId: string) {
+    return this.socialService.markDirectMessageThreadRead(req.headers, playerId);
+  }
+
   @Post("messages/:playerId")
   async sendMessage(
     @Req() req: Request,

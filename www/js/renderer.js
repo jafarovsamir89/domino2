@@ -93,13 +93,14 @@ export class Renderer {
             const isBot = Boolean(playerRef?.isBot);
             const g = document.createElement('div');
             g.className = 'opp-hand-group';
-            g.style.cssText = 'display:flex;align-items:center;gap:4px;pointer-events:auto;';
+            g.style.cssText = 'display:flex;align-items:center;gap:4px;pointer-events:auto;position:relative;z-index:3;';
             const l = document.createElement(playerId && !isBot ? 'button' : 'span');
             l.className = playerId && !isBot ? 'opp-label opp-label-button' : 'opp-label';
             l.textContent = labelText;
             l.title = l.textContent;
             if (playerId && !isBot) {
                 l.type = 'button';
+                l.style.cssText = 'pointer-events:auto;position:relative;z-index:4;cursor:pointer;';
                 l.addEventListener('click', () => {
                     this.app.openPlayerProfileModal({ id: playerId, displayName: labelText, playerId });
                 });
@@ -486,9 +487,18 @@ export class Renderer {
                 teamTag.textContent = `[${p.team}] `;
                 it.appendChild(teamTag);
             }
-            const name = document.createElement('span');
-            name.className = 'score-name';
+            const playerId = String(p?.playerId || '').trim();
+            const canOpenProfile = Boolean(playerId && !p?.isBot);
+            const name = document.createElement(canOpenProfile ? 'button' : 'span');
+            name.className = canOpenProfile ? 'score-name score-name-button' : 'score-name';
             name.textContent = `${p.name}:`;
+            if (canOpenProfile) {
+                name.type = 'button';
+                name.title = p.name || 'Player';
+                name.addEventListener('click', () => {
+                    this.app.openPlayerProfileModal({ id: playerId, displayName: p.name, playerId });
+                });
+            }
             const value = document.createElement('span');
             value.className = 'score-value';
             value.textContent = String(p.score);

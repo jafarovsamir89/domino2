@@ -569,7 +569,7 @@ input, button { font: inherit; }
     padding: 18px;
     background: rgba(4, 8, 13, 0.72);
     backdrop-filter: blur(10px);
-    z-index: 25;
+    z-index: 8000;
 }
 
 #account-modal {
@@ -3068,6 +3068,8 @@ body.seat-selection-active #game-screen {
     backdrop-filter: blur(6px);
     font-size: 0.78rem;
     flex-shrink: 0;
+    position: relative;
+    z-index: 30;
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
@@ -3102,12 +3104,18 @@ body.seat-selection-active #game-screen {
     display: flex;
     gap: 16px;
     flex: 1;
+    min-width: 0;
+    position: relative;
+    z-index: 31;
+    pointer-events: auto;
 }
 
 .score-item {
     display: flex;
     align-items: center;
     gap: 4px;
+    min-width: 0;
+    position: relative;
 }
 
 .score-name { color: var(--text-dim); }
@@ -3132,6 +3140,26 @@ body.seat-selection-active #game-screen {
 }
 
 .score-item.current-player .score-name { color: var(--accent); }
+
+.score-name-button {
+    appearance: none;
+    border: 0;
+    padding: 0;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+    pointer-events: auto;
+    position: relative;
+    z-index: 32;
+}
+
+.score-name-button:hover,
+.score-name-button:focus-visible {
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
 
 .game-info { display: none; }
 
@@ -3203,12 +3231,45 @@ body.seat-selection-active #game-screen {
     cursor: pointer;
     pointer-events: auto;
     position: relative;
-    z-index: 2;
+    z-index: 4;
 }
 
 .opp-hand-group {
     min-width: 0;
     pointer-events: auto;
+    position: relative;
+    z-index: 3;
+}
+
+.friend-status-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 20px;
+    padding: 0 8px;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.01em;
+    white-space: nowrap;
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-muted);
+}
+
+.friend-status-badge.is-online {
+    background: rgba(255, 198, 74, 0.18);
+    color: #ffd56a;
+}
+
+.score-name-button {
+    appearance: none;
+    border: 0;
+    padding: 0;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
 }
 
 .opp-tile-pile {

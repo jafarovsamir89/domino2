@@ -552,7 +552,17 @@ test("getInbox returns inbox items and unread count", async () => {
   const rows = [
     makeInboxRow({ id: "inbox-1", status: "unread", title: "First", createdAt: new Date("2024-03-03T10:00:00.000Z") }),
     makeInboxRow({ id: "inbox-2", status: "unread", title: "Second", createdAt: new Date("2024-03-02T10:00:00.000Z") }),
-    makeInboxRow({ id: "inbox-3", status: "read", readAt: new Date("2024-03-01T11:00:00.000Z") })
+    makeInboxRow({ id: "inbox-3", status: "read", readAt: new Date("2024-03-01T11:00:00.000Z") }),
+    makeInboxRow({
+      id: "inbox-4",
+      status: "unread",
+      type: "direct_message",
+      payloadJson: {
+        senderPlayerId: "player-z",
+        receiverPlayerId: currentPlayer.id,
+        messageId: "message-4"
+      }
+    })
   ];
   let capturedWhere: any = null;
   const prismaMock = {
@@ -563,7 +573,11 @@ test("getInbox returns inbox items and unread count", async () => {
         return rows;
       },
       count: async ({ where }: any) => {
-        assert.deepEqual(where, { playerId: currentPlayer.id, status: "unread" });
+        assert.deepEqual(where, {
+          playerId: currentPlayer.id,
+          status: "unread",
+          type: { not: "direct_message" }
+        });
         return 2;
       }
     },
@@ -585,6 +599,43 @@ test("getInbox returns inbox items and unread count", async () => {
   assert.equal(result.items[0].id, "inbox-1");
   assert.equal(result.items[0].isUnread, true);
   assert.equal(result.items[0].isClaimable, true);
+});
+
+test("markDirectMessageThreadRead marks the matching direct message rows as read", async () => {
+  const currentPlayer = makePlayer("player-a", "Alpha");
+  const targetPlayer = makePlayer("player-b", "Beta");
+  const updates: any[] = [];
+  const prismaMock = {
+    directMessage: {
+      updateMany: async (query: any) => {
+        updates.push({ kind: "direct", query });
+        return { count: 2 };
+      }
+    },
+    inboxMessage: {
+      updateMany: async (query: any) => {
+        updates.push({ kind: "inbox", query });
+        return { count: 2 };
+      }
+    }
+  } as any;
+
+  const service = new SocialService(prismaMock, {} as any);
+  (service as any).getCurrentPlayer = async () => currentPlayer;
+
+  const result = await service.markDirectMessageThreadRead({} as any, targetPlayer.id);
+  assert.equal(result.ok, true);
+  assert.equal(updates.length, 2);
+  assert.deepEqual(updates[0].query.where.OR[0], {
+    senderPlayerId: targetPlayer.id,
+    receiverPlayerId: currentPlayer.id
+  });
+  assert.deepEqual(updates[1].query.where.OR[0], {
+    payloadJson: {
+      path: ["senderPlayerId"],
+      equals: targetPlayer.id
+    }
+  });
 });
 
 test("markInboxRead claimInboxMessage and deleteInboxMessage update inbox state", async () => {
@@ -753,7 +804,11 @@ test("getSocialSummary counts inbox chats invites and friend requests", async ()
     inboxMessage: {
       findMany: async () => [],
       count: async ({ where }: any) => {
-        assert.deepEqual(where, { playerId: currentPlayer.id, status: "unread" });
+        assert.deepEqual(where, {
+          playerId: currentPlayer.id,
+          status: "unread",
+          type: { not: "direct_message" }
+        });
         return 2;
       }
     },
