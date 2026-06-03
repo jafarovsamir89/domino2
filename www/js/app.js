@@ -878,7 +878,7 @@ class DominoGame {
     }
 
     async openPlayerProfileModal(playerRef) {
-        const playerId = String(playerRef?.playerId || playerRef?.id || playerRef || '').trim();
+        const playerId = this.resolvePlayerProfileId(playerRef);
         const modal = document.getElementById('player-profile-modal');
         if (!modal || !playerId) return;
 
@@ -927,7 +927,7 @@ class DominoGame {
     }
 
     async openConversationWithPlayer(playerRef) {
-        const playerId = String(playerRef?.playerId || playerRef?.id || playerRef || '').trim();
+        const playerId = this.resolvePlayerProfileId(playerRef);
         if (!playerId) return;
         if (!this.hasAuthenticatedAccount()) {
             await this.openAccountModal();
@@ -1510,6 +1510,11 @@ class DominoGame {
                     const declineBtn = document.createElement('button');
                     declineBtn.className = 'btn btn-menu';
                     declineBtn.textContent = this.t('invites-decline');
+                    const inviteStatus = String(invite?.status || '').trim().toLowerCase();
+                    const inviteExpiresAt = Number(Date.parse(String(invite?.expiresAt || '')));
+                    const inviteIsExpired = Number.isFinite(inviteExpiresAt) && inviteExpiresAt > 0 && inviteExpiresAt <= Date.now();
+                    const canDecline = inviteStatus === 'pending' && !inviteIsExpired;
+                    declineBtn.disabled = !canDecline;
                     declineBtn.addEventListener('click', async () => {
                         declineBtn.disabled = true;
                         const inviteId = String(invite?.id || invite?.invitationId || invite?.roomInvitationId || '').trim();
@@ -3546,7 +3551,7 @@ class DominoGame {
         const isAuthed = this.hasAuthenticatedAccount();
         const isSelf = profile?.friendshipStatus === 'self';
         const loading = Boolean(this.playerProfileState?.loading);
-        const canInvite = Boolean(isAuthed && !isSelf && profile?.id && profile?.friendshipStatus === 'accepted');
+        const canInvite = Boolean(isAuthed && !isSelf && profile?.id);
 
         if (name) name.textContent = profile?.displayName || this.playerProfileState?.error || this.t('account-profile-loading');
         if (status) {
@@ -4316,7 +4321,7 @@ class DominoGame {
         button.type = 'button';
         button.className = `player-name-btn ${className}`.trim();
         button.textContent = String(label || 'Player');
-        const playerId = String(playerRef?.playerId || playerRef?.id || '').trim();
+        const playerId = this.resolvePlayerProfileId(playerRef);
         if (playerId && !playerRef?.isBot) {
             button.addEventListener('click', () => this.openPlayerProfileModal(playerRef));
         } else {
@@ -4324,6 +4329,41 @@ class DominoGame {
             button.classList.add('is-static');
         }
         return button;
+    }
+
+    resolvePlayerProfileId(playerRef) {
+        if (typeof playerRef === 'string') {
+            const directText = String(playerRef || '').trim();
+            if (directText) return directText;
+        }
+
+        const directId = String(playerRef?.playerId || playerRef?.id || '').trim();
+        if (directId) return directId;
+        const roomPlayers = Array.isArray(this.currentRoomState?.players) ? this.currentRoomState.players : [];
+        const name = String(playerRef?.displayName || playerRef?.name || '').trim().toLowerCase();
+        const playerOrder = Array.isArray(this.currentRoomState?.players) ? this.currentRoomState.players : [];
+        const match = roomPlayers.find((player, index) => {
+            const sessionId = String(player?.sessionId || '').trim();
+            const playerId = String(player?.playerId || '').trim();
+            const userId = String(player?.userId || '').trim();
+            const displayName = String(player?.displayName || player?.name || '').trim().toLowerCase();
+            const candidate = String(playerRef?.sessionId || playerRef?.playerId || playerRef?.id || '').trim().toLowerCase();
+            if (candidate && (candidate === sessionId.toLowerCase() || candidate === playerId.toLowerCase() || candidate === userId.toLowerCase())) {
+                return true;
+            }
+            if (playerRef && typeof playerRef === 'object') {
+                const refSessionId = String(playerRef?.sessionId || '').trim().toLowerCase();
+                if (refSessionId && refSessionId === sessionId.toLowerCase()) return true;
+                const refDisplayName = String(playerRef?.displayName || playerRef?.name || '').trim().toLowerCase();
+                if (refDisplayName && refDisplayName === displayName) return true;
+                if (Number.isInteger(Number(playerRef?.index)) && Number(playerRef.index) === index) return true;
+            }
+            if (!playerRef || typeof playerRef === 'string') {
+                return Boolean(name && name === displayName);
+            }
+            return false;
+        });
+        return String(match?.playerId || match?.id || '').trim();
     }
 
     ensureStartScreenEnhancements() {
@@ -6124,6 +6164,11 @@ class DominoGame {
                     const declineBtn = document.createElement('button');
                     declineBtn.className = 'btn btn-menu';
                     declineBtn.textContent = this.t('friend-decline');
+                    const inviteStatus = String(invite?.status || '').trim().toLowerCase();
+                    const inviteExpiresAt = Number(Date.parse(String(invite?.expiresAt || '')));
+                    const inviteIsExpired = Number.isFinite(inviteExpiresAt) && inviteExpiresAt > 0 && inviteExpiresAt <= Date.now();
+                    const canDecline = inviteStatus === 'pending' && !inviteIsExpired;
+                    declineBtn.disabled = !canDecline;
                     declineBtn.addEventListener('click', async () => {
                         declineBtn.disabled = true;
                         const inviteId = String(invite?.id || invite?.invitationId || invite?.roomInvitationId || '').trim();
