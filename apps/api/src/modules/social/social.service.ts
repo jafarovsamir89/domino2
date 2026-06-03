@@ -1804,7 +1804,7 @@ export class SocialService {
       throw new ForbiddenException("Invitee must be your friend");
     }
 
-    const expiresAt = body?.expiresAt ? new Date(body.expiresAt) : new Date(Date.now() + 1000 * 60 * 60 * 24);
+    const expiresAt = body?.expiresAt ? new Date(body.expiresAt) : new Date(Date.now() + 1000 * 60);
     const payloadJson = body?.payloadJson === undefined ? null : body.payloadJson;
     const payloadJsonData = payloadJson === null ? {} : { payloadJson: payloadJson as Prisma.InputJsonValue };
     const roomCode = String(body?.roomCode || "").trim() || null;
@@ -1838,15 +1838,36 @@ export class SocialService {
             roomId: cleanRoomId,
             inviterPlayerId: currentPlayer.id,
             inviteePlayerId,
-            status: "pending"
+            status: {
+              in: ["pending", "accepted"]
+            }
           },
           orderBy: { updatedAt: "desc" }
         });
 
         if (existing) {
+          const nextRoomCode = roomCode || existing.roomCode || null;
+          const nextRoomMode = roomMode || existing.roomMode || "ffa";
+          const nextStakeKey = String(body?.stakeKey || "").trim() || existing.stakeKey || null;
+          const nextStakeAmount = Math.max(0, Number(body?.stakeAmount ?? existing.stakeAmount ?? 0));
+          const nextHumanSeats = Math.max(0, Number(body?.humanSeats ?? existing.humanSeats ?? 0));
+          const nextTotalPlayers = Math.max(0, Number(body?.totalPlayers ?? existing.totalPlayers ?? 0));
+          const nextIsTeamMode = body?.isTeamMode === undefined ? existing.isTeamMode : Boolean(body?.isTeamMode);
+          const nextExpiresAt = body?.expiresAt ? expiresAt : existing.expiresAt || expiresAt;
           return tx.roomInvitation.update({
             where: { id: existing.id },
-            data: invitationData,
+            data: {
+              ...invitationData,
+              roomCode: nextRoomCode,
+              roomMode: nextRoomMode,
+              stakeKey: nextStakeKey,
+              stakeAmount: nextStakeAmount,
+              humanSeats: nextHumanSeats,
+              totalPlayers: nextTotalPlayers,
+              isTeamMode: nextIsTeamMode,
+              expiresAt: nextExpiresAt,
+              note: note ?? existing.note ?? null
+            },
             include: invitationInclude
           });
         }
@@ -1866,7 +1887,9 @@ export class SocialService {
             roomId: cleanRoomId,
             inviterPlayerId: currentPlayer.id,
             inviteePlayerId,
-            status: "pending"
+            status: {
+              in: ["pending", "accepted"]
+            }
           },
           orderBy: { updatedAt: "desc" }
         });

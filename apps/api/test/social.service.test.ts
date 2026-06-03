@@ -155,6 +155,144 @@ test("inviteFriendToRoom refreshes an existing pending invite after a unique con
   assert.equal(result.item.note, "fresh note");
 });
 
+test("inviteFriendToRoom updates an accepted invite when the room is linked later", async () => {
+  const inviter = makePlayer("player-a", "Alpha");
+  const invitee = makePlayer("player-b", "Beta");
+  const existingInvite = {
+    id: "invite-2",
+    roomId: "invite-session-1",
+    roomCode: null,
+    roomMode: "ffa",
+    stakeKey: "stake_50",
+    stakeAmount: 50,
+    humanSeats: 2,
+    totalPlayers: 4,
+    isTeamMode: false,
+    status: "accepted",
+    note: "waiting",
+    payloadJson: null,
+    inviterPlayerId: inviter.id,
+    inviteePlayerId: invitee.id,
+    createdAt: new Date("2024-01-01T00:00:00.000Z"),
+    updatedAt: new Date("2024-01-01T00:00:00.000Z"),
+    respondedAt: new Date("2024-01-01T00:00:01.000Z"),
+    expiresAt: new Date("2024-01-01T00:01:00.000Z"),
+    inviter,
+    invitee
+  };
+
+  const prismaMock = {
+    player: {
+      findUnique: async ({ where }: any) => {
+        if (where.id === invitee.id) return invitee;
+        if (where.id === inviter.id) return inviter;
+        return null;
+      }
+    },
+    friendConnection: {
+      findFirst: async () => ({
+        id: "friend-1",
+        requesterPlayerId: inviter.id,
+        addresseePlayerId: invitee.id,
+        status: "accepted"
+      })
+    },
+    roomInvitation: {
+      findFirst: async () => existingInvite,
+      update: async ({ data }: any) => Object.assign(existingInvite, data),
+      create: async () => {
+        throw new Error("should not be called");
+      }
+    },
+    $transaction: async (fn: any) => fn({ ...prismaMock, roomInvitation: prismaMock.roomInvitation })
+  } as any;
+
+  const service = new SocialService(prismaMock, {} as any);
+  (service as any).getCurrentPlayer = async () => inviter;
+
+  const result = await service.inviteFriendToRoom(
+    { authorization: "Bearer fake" } as any,
+    "invite-session-1",
+    {
+      inviteePlayerId: invitee.id,
+      roomCode: "WXYZ",
+      roomMode: "team",
+      stakeKey: "stake_100",
+      stakeAmount: 100,
+      humanSeats: 4,
+      totalPlayers: 4,
+      isTeamMode: true,
+      note: "room linked"
+    }
+  );
+
+  assert.equal(result.item.id, existingInvite.id);
+  assert.equal(result.item.status, "accepted");
+  assert.equal(result.item.roomCode, "WXYZ");
+  assert.equal(result.item.note, "room linked");
+});
+
+test("inviteFriendToRoom defaults invite expiration to about 60 seconds", async () => {
+  const inviter = makePlayer("player-a", "Alpha");
+  const invitee = makePlayer("player-b", "Beta");
+  let capturedCreateData: any = null;
+
+  const prismaMock = {
+    player: {
+      findUnique: async ({ where }: any) => {
+        if (where.id === invitee.id) return invitee;
+        if (where.id === inviter.id) return inviter;
+        return null;
+      }
+    },
+    friendConnection: {
+      findFirst: async () => ({
+        id: "friend-1",
+        requesterPlayerId: inviter.id,
+        addresseePlayerId: invitee.id,
+        status: "accepted"
+      })
+    },
+    roomInvitation: {
+      findFirst: async () => null,
+      create: async ({ data }: any) => {
+        capturedCreateData = data;
+        return {
+          ...data,
+          id: "invite-3",
+          inviter,
+          invitee,
+          createdAt: new Date("2024-01-01T00:00:00.000Z"),
+          updatedAt: new Date("2024-01-01T00:00:00.000Z"),
+          respondedAt: null
+        };
+      }
+    },
+    $transaction: async (fn: any) => fn({ ...prismaMock })
+  } as any;
+
+  const service = new SocialService(prismaMock, {} as any);
+  (service as any).getCurrentPlayer = async () => inviter;
+  const now = new Date("2024-02-01T00:00:00.000Z");
+  const realNow = Date.now;
+  Date.now = () => now.getTime();
+  try {
+    await service.inviteFriendToRoom(
+      { authorization: "Bearer fake" } as any,
+      "invite-session-2",
+      {
+        inviteePlayerId: invitee.id
+      }
+    );
+  } finally {
+    Date.now = realNow;
+  }
+
+  assert.ok(capturedCreateData?.expiresAt instanceof Date);
+  const deltaMs = Math.abs(capturedCreateData.expiresAt.getTime() - now.getTime());
+  assert.ok(deltaMs >= 59000 && deltaMs <= 61000);
+});
+
 test("acceptRoomInvitation rejects expired invites and marks them expired", async () => {
   const invitee = makePlayer("player-b", "Beta");
   const inviter = makePlayer("player-a", "Alpha");

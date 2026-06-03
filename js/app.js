@@ -1,4 +1,4 @@
-import { Tile, createFullSet, shuffle, getHandSize, determineFirstPlayer, handPoints, getOpeningPlayScore, hasInvalidOpeningHand, roundTo5 } from './model.js';
+﻿import { Tile, createFullSet, shuffle, getHandSize, determineFirstPlayer, handPoints, getOpeningPlayScore, hasInvalidOpeningHand, roundTo5 } from './model.js';
 import { Board, reconstructBoard } from './board.js';
 import { AIPlayer } from './ai.js';
 import { Renderer } from './renderer.js';
@@ -183,6 +183,17 @@ class DominoGame {
         this.friendHub = { accepted: [], incoming: [], outgoing: [] };
         this.friendPresenceMap = new Map();
         this.roomInvitations = { incoming: [], sent: [] };
+        this.gameInviteState = {
+            inviteId: '',
+            inviteePlayerId: '',
+            inviteeDisplayName: '',
+            sessionId: '',
+            role: '',
+            roomLinked: false,
+            createPromptShown: false,
+            waitingPromptShown: false
+        };
+        this._gameInviteRefreshId = null;
         this.socialSummary = null;
         this.socialSummaryLoaded = false;
         this.socialInboxState = {
@@ -515,6 +526,7 @@ class DominoGame {
             this.setHostStatus(this.t('online-room-status-created'));
             this.network.hostGame((roomId) => {
                 document.getElementById('room-code-display').textContent = roomId;
+                void this.attachGameInviteRoom(roomId).catch(() => {});
                 this.setHostStatus(this.t('online-room-status-waiting'));
             }, (err) => {
                 this.setHostStatus(`${this.t('online-room-status-error')}: ${err}`);
@@ -1425,6 +1437,8 @@ class DominoGame {
         try {
             const invitations = await this.account.getRoomInvitations();
             this.roomInvitations = invitations || { incoming: [], sent: [] };
+            this.restoreGameInviteStateFromInvitations();
+            void this.refreshGameInviteState().catch(() => {});
             invitesList.innerHTML = '';
             const incoming = Array.isArray(this.roomInvitations.incoming) ? this.roomInvitations.incoming : [];
             if (!incoming.length) {
@@ -1445,13 +1459,34 @@ class DominoGame {
                     action.className = 'friend-card-actions';
                     const acceptBtn = document.createElement('button');
                     acceptBtn.className = 'btn btn-action btn-strong';
-                    acceptBtn.textContent = this.t('invites-accept');
+                    const isAcceptedWaiting = String(invite?.status || '').trim() === 'accepted' && !String(invite?.roomCode || '').trim();
+                    acceptBtn.textContent = isAcceptedWaiting
+                        ? this.t('invite-waiting-room')
+                        : this.t('invites-accept');
+                    acceptBtn.disabled = isAcceptedWaiting;
                     acceptBtn.addEventListener('click', async () => {
+                        if (isAcceptedWaiting) return;
                         acceptBtn.disabled = true;
                         try {
                             const accepted = await this.account.acceptRoomInvitation(invite.id);
                             const row = accepted?.item || invite;
-                            await this.joinOnlineRoom(row.roomCode || row.roomId);
+                            if (row.roomCode) {
+                                await this.joinOnlineRoom(row.roomCode || row.roomId);
+                            } else {
+                                this.gameInviteState = {
+                                    inviteId: String(row.id || invite.id || '').trim(),
+                                    inviteePlayerId: String(row.invitee?.id || this.accountProfile?.playerId || this.accountProfile?.id || '').trim(),
+                                    inviteeDisplayName: String(row.invitee?.displayName || this.accountProfile?.displayName || '').trim(),
+                                    sessionId: String(row.roomId || invite.roomId || '').trim(),
+                                    role: 'invitee',
+                                    roomLinked: false,
+                                    createPromptShown: false,
+                                    waitingPromptShown: true
+                                };
+                                this.startGameInviteRefresh();
+                                this.renderer.showMessage(this.t('invite-waiting-room'), 1800);
+                                await this.loadSocialInvitesPage();
+                            }
                         } catch (err) {
                             this.renderer.showMessage(err?.message || this.t('friends-load-failed'), 1800);
                         } finally {
@@ -3253,32 +3288,16 @@ class DominoGame {
                     if (meta.textContent) copy.appendChild(meta);
                     const action = document.createElement('div');
                     action.className = 'friend-card-actions';
-                    const roomSnapshot = this.getCurrentRoomSnapshot();
-                    const canInvite = Boolean(
-                        roomSnapshot &&
-                        roomSnapshot.roomId &&
-                        roomSnapshot.roomCode &&
-                        !roomSnapshot.gameActive
-                    );
+                    const canInvite = Boolean(item.friend?.id);
                     const inviteBtn = document.createElement('button');
                     inviteBtn.className = 'btn btn-action btn-strong';
                     inviteBtn.textContent = this.t('friend-invite');
                     inviteBtn.disabled = !canInvite;
                     inviteBtn.addEventListener('click', async () => {
-                        if (!roomSnapshot) return;
                         inviteBtn.disabled = true;
                         try {
-                            await this.account.inviteFriendToRoom(roomSnapshot.roomId, {
-                                inviteePlayerId: item.friend.id,
-                                roomCode: roomSnapshot.roomCode,
-                                roomMode: roomSnapshot.roomMode,
-                                stakeKey: roomSnapshot.stakeKey,
-                                stakeAmount: roomSnapshot.stakeAmount,
-                                humanSeats: roomSnapshot.humanSeats,
-                                totalPlayers: roomSnapshot.totalPlayers,
-                                isTeamMode: roomSnapshot.isTeamMode
-                            });
-                            this.renderer.showMessage(this.t('friends-request-sent'), 1400);
+                            await this.sendGameInviteToPlayer(item.friend, { source: 'friends-page' });
+                            this.renderer.showMessage(this.t('invite-sent'), 1400);
                             await this.loadFriendsPage();
                         } catch (err) {
                             this.renderer.showMessage(err.message || this.t('friends-load-failed'), 1800);
@@ -3430,32 +3449,16 @@ class DominoGame {
                     statusBtn.disabled = true;
                     statusBtn.textContent = this.t('friends-request-accepted');
                     action.appendChild(statusBtn);
-                    const roomSnapshot = this.getCurrentRoomSnapshot();
-                    const canInvite = Boolean(
-                        roomSnapshot &&
-                        roomSnapshot.roomId &&
-                        roomSnapshot.roomCode &&
-                        !roomSnapshot.gameActive
-                    );
+                    const canInvite = Boolean(player.id);
                     const inviteBtn = document.createElement('button');
                     inviteBtn.className = 'btn btn-action btn-strong';
                     inviteBtn.textContent = this.t('friend-invite');
                     inviteBtn.disabled = !canInvite;
                     inviteBtn.addEventListener('click', async () => {
-                        if (!roomSnapshot) return;
                         inviteBtn.disabled = true;
                         try {
-                            await this.account.inviteFriendToRoom(roomSnapshot.roomId, {
-                                inviteePlayerId: player.id,
-                                roomCode: roomSnapshot.roomCode,
-                                roomMode: roomSnapshot.roomMode,
-                                stakeKey: roomSnapshot.stakeKey,
-                                stakeAmount: roomSnapshot.stakeAmount,
-                                humanSeats: roomSnapshot.humanSeats,
-                                totalPlayers: roomSnapshot.totalPlayers,
-                                isTeamMode: roomSnapshot.isTeamMode
-                            });
-                            this.renderer.showMessage(this.t('friends-request-sent'), 1400);
+                            await this.sendGameInviteToPlayer(player, { source: 'friends-search' });
+                            this.renderer.showMessage(this.t('invite-sent'), 1400);
                             await this.loadFriendsPage();
                         } catch (err) {
                             this.renderer.showMessage(err.message || this.t('friends-load-failed'), 1800);
@@ -3511,16 +3514,7 @@ class DominoGame {
         const isAuthed = this.hasAuthenticatedAccount();
         const isSelf = profile?.friendshipStatus === 'self';
         const loading = Boolean(this.playerProfileState?.loading);
-        const roomSnapshot = this.getCurrentRoomSnapshot();
-        const canInvite = Boolean(
-            isAuthed &&
-            !isSelf &&
-            profile?.id &&
-            roomSnapshot &&
-            roomSnapshot.roomId &&
-            roomSnapshot.roomCode &&
-            !roomSnapshot.gameActive
-        );
+        const canInvite = Boolean(isAuthed && !isSelf && profile?.id && profile?.friendshipStatus === 'accepted');
 
         if (name) name.textContent = profile?.displayName || this.playerProfileState?.error || this.t('account-profile-loading');
         if (status) {
@@ -3605,22 +3599,13 @@ class DominoGame {
                 : this.t('player-profile-invite-unavailable');
             inviteBtn.onclick = async () => {
                 if (!isAuthed || isSelf || !profile?.id) return;
-                if (!canInvite || !roomSnapshot) {
+                if (!canInvite) {
                     this.renderer.showMessage(this.t('player-profile-invite-unavailable'), 1600);
                     return;
                 }
                 inviteBtn.disabled = true;
                 try {
-                    await this.account.inviteFriendToRoom(roomSnapshot.roomId, {
-                        inviteePlayerId: profile.id,
-                        roomCode: roomSnapshot.roomCode,
-                        roomMode: roomSnapshot.roomMode,
-                        stakeKey: roomSnapshot.stakeKey,
-                        stakeAmount: roomSnapshot.stakeAmount,
-                        humanSeats: roomSnapshot.humanSeats,
-                        totalPlayers: roomSnapshot.totalPlayers,
-                        isTeamMode: roomSnapshot.isTeamMode
-                    });
+                    await this.sendGameInviteToPlayer(profile, { source: 'profile' });
                     this.renderer.showMessage(this.t('invite-sent'), 1400);
                 } catch (err) {
                     this.renderer.showMessage(err?.message || this.t('friends-load-failed'), 1800);
@@ -4056,6 +4041,233 @@ class DominoGame {
         container.replaceChildren(node);
     }
 
+    makeGameInviteSessionId() {
+        const base = String(this.accountProfile?.playerId || this.accountProfile?.id || this.accountProfile?.userId || 'invite').trim();
+        const token = Math.random().toString(36).slice(2, 8);
+        return `game_invite_${Date.now()}_${base.slice(0, 8)}_${token}`;
+    }
+
+    startGameInviteRefresh() {
+        if (this._gameInviteRefreshId) return;
+        this._gameInviteRefreshId = window.setInterval(() => {
+            void this.refreshGameInviteState().catch(() => {});
+        }, 4000);
+    }
+
+    stopGameInviteRefresh() {
+        if (this._gameInviteRefreshId) {
+            clearInterval(this._gameInviteRefreshId);
+            this._gameInviteRefreshId = null;
+        }
+    }
+
+    async sendGameInviteToPlayer(playerRef, context = {}) {
+        const inviteePlayerId = String(playerRef?.id || playerRef?.playerId || '').trim();
+        if (!inviteePlayerId) {
+            throw new Error(this.t('friends-load-failed'));
+        }
+        const sessionId = this.gameInviteState?.sessionId && this.gameInviteState.inviteePlayerId === inviteePlayerId
+            ? this.gameInviteState.sessionId
+            : this.makeGameInviteSessionId();
+        const payload = {
+            inviteePlayerId,
+            roomCode: null,
+            roomMode: String(context.roomMode || '').trim() || null,
+            stakeKey: String(context.stakeKey || '').trim() || null,
+            stakeAmount: Number(context.stakeAmount || 0),
+            humanSeats: Number(context.humanSeats || 0),
+            totalPlayers: Number(context.totalPlayers || 0),
+            isTeamMode: Boolean(context.isTeamMode),
+            note: String(context.note || context.source || 'game-invite').trim() || 'game-invite',
+            payloadJson: {
+                source: String(context.source || 'social').trim() || 'social',
+                inviteeDisplayName: String(playerRef?.displayName || '').trim() || null
+            },
+            expiresAt: new Date(Date.now() + 60000).toISOString()
+        };
+        const result = await this.account.inviteFriendToRoom(sessionId, payload);
+        const item = result?.item || null;
+        this.gameInviteState = {
+            inviteId: String(item?.id || '').trim(),
+            inviteePlayerId,
+            inviteeDisplayName: String(playerRef?.displayName || '').trim(),
+            sessionId,
+            role: 'inviter',
+            roomLinked: Boolean(item?.roomCode),
+            createPromptShown: false,
+            waitingPromptShown: false
+        };
+        this.startGameInviteRefresh();
+        await this.loadSocialSummary().catch(() => {});
+        return item;
+    }
+
+    async attachGameInviteRoom(roomCode) {
+        const invite = this.gameInviteState || {};
+        const inviteePlayerId = String(invite.inviteePlayerId || '').trim();
+        const sessionId = String(invite.sessionId || '').trim();
+        const room = this.getCurrentRoomSnapshot();
+        const nextRoomCode = String(roomCode || room?.roomCode || '').trim();
+        if (!sessionId || !inviteePlayerId || !nextRoomCode) return null;
+        const payload = {
+            inviteePlayerId,
+            roomCode: nextRoomCode,
+            roomMode: String(room?.roomMode || (this.isTeamMode ? 'team' : 'ffa')).trim(),
+            stakeKey: String(room?.stakeKey || this.onlineStakeKey || 'stake_200').trim(),
+            stakeAmount: Number(room?.stakeAmount || this.onlineRoundBankAmount || 0),
+            humanSeats: Number(room?.humanSeats || this.onlinePlayerCount || 0),
+            totalPlayers: Number(room?.totalPlayers || this.onlinePlayerCount || 0),
+            isTeamMode: Boolean(room?.isTeamMode ?? this.isTeamMode),
+            note: 'invite-room-linked',
+            payloadJson: {
+                source: 'game-invite-room-linked',
+                roomCode: nextRoomCode
+            },
+            expiresAt: new Date(Date.now() + 60000).toISOString()
+        };
+        const result = await this.account.inviteFriendToRoom(sessionId, payload);
+        if (this.gameInviteState) {
+            this.gameInviteState.roomLinked = true;
+            this.gameInviteState.inviteId = String(result?.item?.id || this.gameInviteState.inviteId || '').trim();
+        }
+        await this.loadSocialSummary().catch(() => {});
+        return result?.item || null;
+    }
+
+    async refreshGameInviteState({ forceRerender = false } = {}) {
+        const state = this.gameInviteState || null;
+        if (!state || !this.hasAuthenticatedAccount()) {
+            this.stopGameInviteRefresh();
+            return null;
+        }
+
+        const invitations = await this.account.getRoomInvitations().catch(() => null);
+        if (!invitations) return null;
+        this.roomInvitations = invitations;
+
+        const allItems = [
+            ...(Array.isArray(invitations.incoming) ? invitations.incoming : []),
+            ...(Array.isArray(invitations.sent) ? invitations.sent : [])
+        ];
+        const target = allItems.find((item) => {
+            const itemId = String(item?.id || '').trim();
+            const itemRoomId = String(item?.roomId || '').trim();
+            const itemInviteeId = String(item?.invitee?.id || '').trim();
+            const itemInviterId = String(item?.inviter?.id || '').trim();
+            return Boolean(
+                (state.inviteId && itemId === String(state.inviteId).trim()) ||
+                (state.sessionId && itemRoomId === String(state.sessionId).trim() && (
+                    (state.role === 'inviter' && itemInviteeId === String(state.inviteePlayerId).trim()) ||
+                    (state.role === 'invitee' && itemInviterId)
+                ))
+            );
+        }) || null;
+
+        if (!target) {
+            this.stopGameInviteRefresh();
+            this.gameInviteState = null;
+            return null;
+        }
+
+        const roomCode = String(target.roomCode || '').trim();
+        const status = String(target.status || '').trim();
+
+        if (state.role === 'invitee') {
+            if (status === 'accepted' && roomCode) {
+                this.stopGameInviteRefresh();
+                this.gameInviteState = null;
+                await this.joinOnlineRoom(roomCode);
+                return target;
+            }
+            if (status === 'accepted' && !roomCode) {
+                if (!state.waitingPromptShown) {
+                    this.renderer.showMessage(this.t('invite-waiting-room'), 1800);
+                    state.waitingPromptShown = true;
+                }
+                if (forceRerender) {
+                    void this.loadSocialInvitesPage().catch(() => {});
+                }
+                return target;
+            }
+            if (status === 'declined' || status === 'expired') {
+                this.stopGameInviteRefresh();
+                this.gameInviteState = null;
+                this.renderer.showMessage(this.t('friends-load-failed'), 1800);
+                return target;
+            }
+            return target;
+        }
+
+        if (state.role === 'inviter') {
+            if (status === 'accepted' && roomCode) {
+                this.stopGameInviteRefresh();
+                this.gameInviteState = null;
+                return target;
+            }
+            if (status === 'accepted' && !roomCode) {
+                if (!state.createPromptShown) {
+                    this.showStartModal('online');
+                    this.showOnlineCreateFlow('closed');
+                    this.prefillOnlineNameIfPossible();
+                    this.setHostStatus(this.t('invite-create-room'));
+                    state.createPromptShown = true;
+                }
+                if (forceRerender) {
+                    void this.loadFriendsHub().catch(() => {});
+                }
+                return target;
+            }
+            if (status === 'declined' || status === 'expired') {
+                this.stopGameInviteRefresh();
+                this.gameInviteState = null;
+                this.renderer.showMessage(this.t('friends-load-failed'), 1800);
+                return target;
+            }
+        }
+
+        return target;
+    }
+
+    restoreGameInviteStateFromInvitations() {
+        if (this.gameInviteState?.sessionId) return this.gameInviteState;
+        const invitations = this.roomInvitations || { incoming: [], sent: [] };
+        const sent = (Array.isArray(invitations.sent) ? invitations.sent : [])
+            .filter((item) => String(item?.status || '').trim() === 'accepted' && !String(item?.roomCode || '').trim())
+            .sort((a, b) => new Date(b?.updatedAt || 0).getTime() - new Date(a?.updatedAt || 0).getTime())[0] || null;
+        if (sent) {
+            this.gameInviteState = {
+                inviteId: String(sent.id || '').trim(),
+                inviteePlayerId: String(sent.invitee?.id || '').trim(),
+                inviteeDisplayName: String(sent.invitee?.displayName || '').trim(),
+                sessionId: String(sent.roomId || '').trim(),
+                role: 'inviter',
+                roomLinked: false,
+                createPromptShown: false,
+                waitingPromptShown: false
+            };
+            this.startGameInviteRefresh();
+            return this.gameInviteState;
+        }
+
+        const incoming = (Array.isArray(invitations.incoming) ? invitations.incoming : [])
+            .filter((item) => String(item?.status || '').trim() === 'accepted' && !String(item?.roomCode || '').trim())
+            .sort((a, b) => new Date(b?.updatedAt || 0).getTime() - new Date(a?.updatedAt || 0).getTime())[0] || null;
+        if (incoming) {
+            this.gameInviteState = {
+                inviteId: String(incoming.id || '').trim(),
+                inviteePlayerId: String(incoming.invitee?.id || '').trim(),
+                inviteeDisplayName: String(incoming.invitee?.displayName || '').trim(),
+                sessionId: String(incoming.roomId || '').trim(),
+                role: 'invitee',
+                roomLinked: false,
+                createPromptShown: false,
+                waitingPromptShown: false
+            };
+            this.startGameInviteRefresh();
+        }
+        return this.gameInviteState;
+    }
+
     createPlayerNameButton(label, playerRef, className = '') {
         const button = document.createElement('button');
         button.type = 'button';
@@ -4153,7 +4365,7 @@ class DominoGame {
                     </div>
                     <button class="btn btn-menu modal-close-btn account-modal-close-btn" id="social-center-modal-close" type="button" aria-label="Close" title="Close">×</button>
                 </div>
-                <p class="modal-desc page-description" id="social-center-modal-desc" data-i18n="social-subtitle">Mesajları, dəvətləri və dostları bir yerdə idarə et.</p>
+                <p class="modal-desc page-description" id="social-center-modal-desc" data-i18n="social-subtitle">Mesajları, dəvətiləri və dostları bir yerdə idarə et.</p>
 
                 <div class="social-center-tabs" id="social-center-tabs">
                     <button type="button" class="social-center-tab is-active" data-social-tab="inbox" data-i18n="social-tab-inbox">Inbox</button>
@@ -5286,7 +5498,8 @@ class DominoGame {
             const summary = document.getElementById('online-player-summary');
             if (summary) {
                 const humans = Math.max(1, this.onlinePlayerCount - this.onlineAiCount);
-                const stakeLabel = (Array.from(document.querySelectorAll('#online-stake-group .btn-option')).find((button) => button.dataset.value === this.onlineStakeKey)?.textContent || '200').trim();            summary.textContent = `${this.format('online-room-summary', { humans, bots: this.onlineAiCount, total: this.onlinePlayerCount })} ? ${stakeLabel}`;
+                const stakeLabel = (Array.from(document.querySelectorAll('#online-stake-group .btn-option')).find((button) => button.dataset.value === this.onlineStakeKey)?.textContent || '200').trim();
+            summary.textContent = `${this.format('online-room-summary', { humans, bots: this.onlineAiCount, total: this.onlinePlayerCount })} ? ${stakeLabel}`;
             }
         }
     }
@@ -5678,6 +5891,8 @@ class DominoGame {
             ]);
             this.friendHub = friends || { accepted: [], incoming: [], outgoing: [] };
             this.roomInvitations = invitations || { incoming: [], sent: [] };
+            this.restoreGameInviteStateFromInvitations();
+            void this.refreshGameInviteState().catch(() => {});
             const presenceMap = this.friendPresenceMap instanceof Map ? this.friendPresenceMap : new Map();
 
             friendsList.innerHTML = '';
@@ -5701,28 +5916,12 @@ class DominoGame {
                     const inviteBtn = document.createElement('button');
                     inviteBtn.className = 'btn btn-action btn-strong';
                     inviteBtn.textContent = this.t('friend-invite');
-                    const roomSnapshot = this.getCurrentRoomSnapshot();
-                    const canInvite = Boolean(
-                        roomSnapshot &&
-                        roomSnapshot.roomId &&
-                        roomSnapshot.roomCode &&
-                        !roomSnapshot.gameActive
-                    );
+                    const canInvite = Boolean(item.friend?.id);
                     inviteBtn.disabled = !canInvite;
                     inviteBtn.addEventListener('click', async () => {
-                        if (!roomSnapshot) return;
                         inviteBtn.disabled = true;
                         try {
-                            await this.account.inviteFriendToRoom(roomSnapshot.roomId, {
-                                inviteePlayerId: item.friend.id,
-                                roomCode: roomSnapshot.roomCode,
-                                roomMode: roomSnapshot.roomMode,
-                                stakeKey: roomSnapshot.stakeKey,
-                                stakeAmount: roomSnapshot.stakeAmount,
-                                humanSeats: roomSnapshot.humanSeats,
-                                totalPlayers: roomSnapshot.totalPlayers,
-                                isTeamMode: roomSnapshot.isTeamMode
-                            });
+                            await this.sendGameInviteToPlayer(item.friend, { source: 'friends-hub' });
                             await this.loadFriendsHub();
                             this.renderer.showMessage(this.t('invite-sent'), 1400);
                         } catch (err) {
@@ -5831,6 +6030,7 @@ class DominoGame {
                     copy.className = 'friend-card-copy';
                     const name = document.createElement('strong');
                     name.textContent = invite.inviter.displayName;
+                    const meta = document.createElement('span');
                     meta.textContent = `${invite.roomCode || invite.roomId} · ${invite.roomMode || 'ffa'}`;
                     copy.appendChild(name);
                     copy.appendChild(meta);
@@ -5838,13 +6038,34 @@ class DominoGame {
                     action.className = 'friend-card-actions';
                     const acceptBtn = document.createElement('button');
                     acceptBtn.className = 'btn btn-action btn-strong';
-                    acceptBtn.textContent = this.t('room-join');
+                    const isAcceptedWaiting = String(invite?.status || '').trim() === 'accepted' && !String(invite?.roomCode || '').trim();
+                    acceptBtn.textContent = isAcceptedWaiting
+                        ? this.t('invite-waiting-room')
+                        : this.t('room-join');
+                    acceptBtn.disabled = isAcceptedWaiting;
                     acceptBtn.addEventListener('click', async () => {
+                        if (isAcceptedWaiting) return;
                         acceptBtn.disabled = true;
                         try {
                             const accepted = await this.account.acceptRoomInvitation(invite.id);
                             const row = accepted?.item || invite;
-                            await this.joinOnlineRoom(row.roomCode || row.roomId);
+                            if (row.roomCode) {
+                                await this.joinOnlineRoom(row.roomCode || row.roomId);
+                            } else {
+                                this.gameInviteState = {
+                                    inviteId: String(row.id || invite.id || '').trim(),
+                                    inviteePlayerId: String(row.invitee?.id || this.accountProfile?.playerId || this.accountProfile?.id || '').trim(),
+                                    inviteeDisplayName: String(row.invitee?.displayName || this.accountProfile?.displayName || '').trim(),
+                                    sessionId: String(row.roomId || invite.roomId || '').trim(),
+                                    role: 'invitee',
+                                    roomLinked: false,
+                                    createPromptShown: false,
+                                    waitingPromptShown: true
+                                };
+                                this.startGameInviteRefresh();
+                                this.renderer.showMessage(this.t('invite-waiting-room'), 1800);
+                                await this.loadFriendsHub();
+                            }
                         } catch (err) {
                             this.renderer.showMessage(err.message || this.t('account-server-unavailable'), 1800);
                         } finally {
@@ -5919,6 +6140,15 @@ class DominoGame {
 
     showStartModal(modalName) {
         this.closeReactionPicker();
+        if (modalName) {
+            this.closeLeaderboardModal();
+            this.closeFriendsModal();
+            this.closeSocialCenterModal();
+            this.closePlayerProfileModal();
+            this.closeAccountModal();
+            this.closeCoinShopModal();
+            this.closeCosmeticsShopModal();
+        }
         const solo = document.getElementById('solo-modal');
         const online = document.getElementById('online-modal');
         if (solo) solo.classList.toggle('active', modalName === 'solo');
@@ -6631,7 +6861,7 @@ class DominoGame {
                 name.textContent = gift.name;
                 const meta = document.createElement('div');
                 meta.className = 'gift-choice-meta';
-                meta.textContent = `${gift.rarity || 'common'} • ${gift.exchangeValue || 0} back`;
+                meta.textContent = `${gift.rarity || 'common'} вЂў ${gift.exchangeValue || 0} back`;
                 const cost = document.createElement('div');
                 cost.className = 'gift-choice-cost';
                 cost.textContent = `${gift.coinCost || 100} coins`;
@@ -6752,7 +6982,7 @@ class DominoGame {
             name.textContent = item.catalog?.name || item.catalog?.key || this.t('gift-button');
             const meta = document.createElement('div');
             meta.className = 'gift-inventory-meta';
-            meta.textContent = `${item.quantity || 0} pcs • back ${item.catalog?.exchangeValue || 0}`;
+            meta.textContent = `${item.quantity || 0} pcs вЂў back ${item.catalog?.exchangeValue || 0}`;
             copy.appendChild(name);
             copy.appendChild(meta);
             top.appendChild(thumb);
@@ -6890,7 +7120,7 @@ class DominoGame {
         burst.appendChild(icon);
         const label = document.createElement('div');
         label.className = 'gift-burst-label';
-        label.textContent = `${senderName || 'Player'} → ${recipientName || 'Player'}`;
+        label.textContent = `${senderName || 'Player'} в†’ ${recipientName || 'Player'}`;
         burst.appendChild(label);
         if (gift?.name) {
             const chip = document.createElement('div');
@@ -7368,7 +7598,7 @@ class DominoGame {
             "summary-lost": { az: "İtirilən", en: "Lost" },
             "summary-net": { az: "Fərq", en: "Net" },
             "label-economy-mode": { az: "Game mode", en: "Game mode" },
-            "label-stake-table": { az: "M\u0259rc masas\u0131", en: "Stake table", ru: "Стол ставок" },
+            "label-stake-table": { az: "Mərc masası", en: "Stake table", ru: "Стол ставок" },
             "label-stake-short": { az: "Bank", en: "Bank" },
             "economy-free": { az: "Free play", en: "Free play" },
             "economy-coins": { az: "Play on coins", en: "Play on coins" },
@@ -7389,7 +7619,7 @@ class DominoGame {
             "online-modal-title": { az: "Bağlı otaqlar", en: "Private rooms" },
             "online-modal-desc": { az: "Bağlı otaq yaradın və ya kodla qoşulun.", en: "Create a private room or join with a code." },
             "online-choice-create": { az: "Otaq yarat", en: "Create", ru: "Создать" },
-            "online-choice-connect": { az: "Qoşul", en: "Connect", ru: "Подключиться" },
+            "online-choice-connect": { az: "Qoşul", en: "Join", ru: "Подключиться" },
             "account-btn": { az: "Account", en: "Account" },
             "account-kicker": { az: "Profile", en: "Profile" },
             "account-title": { az: "Account", en: "Account" },
@@ -7463,14 +7693,14 @@ class DominoGame {
             "online-room-closed": { az: "Room closed", en: "Room closed" },
             "online-room-summary": { az: "{humans} humans + {bots} AI, {total} total", en: "{humans} humans + {bots} AI, {total} total" },
             "online-bot-slot": { az: "AI {index}", en: "AI {index}" },
-            "resume-session-kicker": { az: "Yar\u0131m\u00e7\u0131q sessiya", en: "Unfinished session", ru: "Незавершённая сессия" },
+            "resume-session-kicker": { az: "Yarımçıq sessiya", en: "Unfinished session", ru: "Незавершённая сессия" },
             "resume-session": { az: "Davam et", en: "Resume", ru: "Продолжить" },
-            "resume-session-title": { az: "Yar\u0131m\u00e7\u0131q sessiyan\u0131 davam etdir", en: "Continue your unfinished session", ru: "Продолжить незавершённую сессию" },
-            "resume-session-desc": { az: "Yar\u0131mda qalan oyunu eyni yerd\u0259n davam etdir\u0259 bil\u0259rsiniz.", en: "You can pick up the game from where you left off.", ru: "Можно продолжить игру с того же места." },
-            "resume-session-online-title": { az: "Onlayn sessiyan\u0131z yar\u0131m\u00e7\u0131q qalıb", en: "Your online session is unfinished", ru: "Ваша онлайн-сессия не завершена" },
-            "resume-session-offline-title": { az: "Oyun yar\u0131m\u00e7\u0131q qalıb", en: "Your offline game is unfinished", ru: "Игра не завершена" },
-            "resume-session-online-desc": { az: "Ota\u011fa geri qayıdıb həmin matçı davam etdirin.", en: "Reconnect and continue the same match.", ru: "Вернитесь в комнату и продолжите тот же матч." },
-            "resume-session-offline-desc": { az: "Yar\u0131m\u00e7\u0131q oyunu eyni yerd\u0259n davam etdirin.", en: "Resume the game from the same point.", ru: "Продолжите игру с того же места." },
+            "resume-session-title": { az: "Yarımçıq sessiyanı davam etdir", en: "Continue your unfinished session", ru: "Продолжить незавершённую сессию" },
+            "resume-session-desc": { az: "Yarımda qalan oyunu eyni yerdən davam etdirə bilərsiniz.", en: "You can pick up the game from where you left off.", ru: "Можно продолжить игру с того же места." },
+            "resume-session-online-title": { az: "Onlayn sessiyanız yarımçıq qalıb", en: "Your online session is unfinished", ru: "Ваша онлайн-сессия не завершена" },
+            "resume-session-offline-title": { az: "Oyun yarımçıq qalıb", en: "Your offline game is unfinished", ru: "Игра не завершена" },
+            "resume-session-online-desc": { az: "Otağa geri qayıdıb həmin matçı davam etdirin.", en: "Reconnect and continue the same match.", ru: "Вернитесь в комнату и продолжите тот же матч." },
+            "resume-session-offline-desc": { az: "Yarımçıq oyunu eyni yerdən davam etdirin.", en: "Resume the game from the same point.", ru: "Продолжите игру с того же места." },
             "round-end-next": { az: "Continue", en: "Continue" },
             "new-game-btn": { az: "New game", en: "New game" },
             "summary-title": { az: "Summary", en: "Summary" }
