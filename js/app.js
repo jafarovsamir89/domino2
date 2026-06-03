@@ -170,6 +170,7 @@ class DominoGame {
         this.pendingReconnectResolution = false;
         this.openRooms = [];
         this.socialCenterTab = 'inbox';
+        this.socialCenterView = 'list';
         this.onlineSocialPanel = 'rooms';
         this.onlineRoomFilters = {
             search: '',
@@ -335,7 +336,7 @@ class DominoGame {
             await this.openFriendsModal();
         });
         if (openSocialBtn) openSocialBtn.addEventListener('click', async () => {
-            await this.openSocialCenterModal('chats');
+            await this.openSocialCenterModal('inbox');
         });
         const socialCenterTabs = document.getElementById('social-center-tabs');
         if (socialCenterTabs && !socialCenterTabs.dataset.bound) {
@@ -782,6 +783,7 @@ class DominoGame {
         this.closeAccountModal();
         this.closeCoinShopModal();
         this.closeCosmeticsShopModal();
+        this.closeLeaderboardModal();
         const modal = document.getElementById('social-center-modal');
         if (!modal) return;
         modal.classList.add('active');
@@ -791,10 +793,16 @@ class DominoGame {
     closeSocialCenterModal() {
         document.getElementById('social-center-modal')?.classList.remove('active');
         this.socialCenterTab = 'inbox';
+        this.socialCenterView = 'list';
+        this.accountMessagesState = {
+            ...(this.accountMessagesState || {}),
+            activePlayerId: '',
+            activePlayerProfile: null
+        };
     }
 
     async loadSocialCenterTab(tab = 'inbox', playerRef = null) {
-        const nextTab = tab === 'friends' || tab === 'invites' || tab === 'chats' || tab === 'inbox'
+        const nextTab = tab === 'friends' || tab === 'invites' || tab === 'inbox'
             ? tab
             : 'inbox';
         if (playerRef) {
@@ -808,6 +816,7 @@ class DominoGame {
             }
         }
         this.socialCenterTab = nextTab;
+        this.socialCenterView = nextTab === 'inbox' && playerRef ? 'conversation' : 'list';
         this.renderSocialCenter();
 
         if (!this.hasAuthenticatedAccount()) {
@@ -824,12 +833,14 @@ class DominoGame {
                 await this.loadSocialInvitesPage().catch(() => {});
             } else if (nextTab === 'invites') {
                 await this.loadSocialInvitesPage();
-            } else if (nextTab === 'chats') {
+            }
+        }
+
+        if (nextTab === 'inbox' && this.socialCenterView === 'conversation') {
+            const activeId = String(this.accountMessagesState?.activePlayerId || '').trim();
+            if (activeId) {
                 await this.loadMessageThreads();
-                const activeId = String(this.accountMessagesState?.activePlayerId || '').trim();
-                if (activeId) {
-                    await this.loadConversationWithPlayer(activeId);
-                }
+                await this.loadConversationWithPlayer(activeId);
             }
         }
 
@@ -847,6 +858,12 @@ class DominoGame {
         const modal = document.getElementById('player-profile-modal');
         if (!modal || !playerId) return;
 
+        this.closeSocialCenterModal();
+        this.closeStartModals();
+        this.closeAccountModal();
+        this.closeCoinShopModal();
+        this.closeCosmeticsShopModal();
+        this.closeLeaderboardModal();
         modal.classList.add('active');
         this.playerProfileState = {
             id: playerId,
@@ -889,7 +906,19 @@ class DominoGame {
             await this.openAccountModal();
             return;
         }
-        await this.openSocialCenterModal('chats', playerId);
+        this.socialCenterTab = 'inbox';
+        this.socialCenterView = 'conversation';
+        this.accountMessagesState = {
+            ...(this.accountMessagesState || {}),
+            activePlayerId: playerId,
+            error: ''
+        };
+        const modal = document.getElementById('social-center-modal');
+        if (modal?.classList.contains('active')) {
+            await this.loadSocialCenterTab('inbox', playerId);
+            return;
+        }
+        await this.openSocialCenterModal('inbox', playerId);
     }
 
     resetSocialCenterState() {
@@ -1031,6 +1060,7 @@ class DominoGame {
 
         const typeLabelMap = {
             gift_received: this.t('inbox-gift'),
+            direct_message: this.t('inbox-message'),
             reward: this.t('inbox-reward'),
             compensation: this.t('inbox-compensation'),
             tournament: this.t('inbox-tournament'),
@@ -1085,18 +1115,38 @@ class DominoGame {
                 const readBtn = document.createElement('button');
                 readBtn.className = 'btn btn-action btn-strong';
                 readBtn.type = 'button';
-                readBtn.textContent = this.t('inbox-read');
-                readBtn.addEventListener('click', async () => {
-                    readBtn.disabled = true;
-                    try {
-                        await this.account.markInboxRead(item.id);
-                        await this.loadInboxPage();
-                    } catch (err) {
-                        this.renderer.showMessage(err?.message || this.t('inbox-load-failed'), 1800);
-                    } finally {
-                        readBtn.disabled = false;
-                    }
-                });
+                if (item.type === 'direct_message') {
+                    readBtn.textContent = this.t('inbox-open-message');
+                    readBtn.addEventListener('click', async () => {
+                        readBtn.disabled = true;
+                        try {
+                            await this.account.markInboxRead(item.id);
+                            const playerId = String(item.relatedPlayerId || item?.payloadJson?.senderPlayerId || '').trim();
+                            if (playerId) {
+                                await this.openConversationWithPlayer({ id: playerId, playerId });
+                            } else {
+                                await this.loadInboxPage();
+                            }
+                        } catch (err) {
+                            this.renderer.showMessage(err?.message || this.t('inbox-load-failed'), 1800);
+                        } finally {
+                            readBtn.disabled = false;
+                        }
+                    });
+                } else {
+                    readBtn.textContent = this.t('inbox-read');
+                    readBtn.addEventListener('click', async () => {
+                        readBtn.disabled = true;
+                        try {
+                            await this.account.markInboxRead(item.id);
+                            await this.loadInboxPage();
+                        } catch (err) {
+                            this.renderer.showMessage(err?.message || this.t('inbox-load-failed'), 1800);
+                        } finally {
+                            readBtn.disabled = false;
+                        }
+                    });
+                }
                 actions.appendChild(readBtn);
             }
 
@@ -1188,7 +1238,7 @@ class DominoGame {
                 ...(this.accountMessagesState || {}),
                 threads: [],
                 threadsLoading: false,
-                error: err?.message || this.t('chats-load-failed') || this.t('messages-load-failed')
+                error: err?.message || this.t('messages-load-failed') || this.t('chats-load-failed')
             };
             this.renderAccountMessagesPanel();
             await this.loadSocialSummary();
@@ -1202,6 +1252,7 @@ class DominoGame {
         if (!playerId || !this.hasAuthenticatedAccount()) {
             return [];
         }
+        this.socialCenterView = 'conversation';
 
         this.accountMessagesState = {
             ...(this.accountMessagesState || {}),
@@ -1233,7 +1284,7 @@ class DominoGame {
                 ...(this.accountMessagesState || {}),
                 activePlayerId: playerId,
                 conversationLoading: false,
-                error: err?.message || this.t('chats-load-failed') || this.t('messages-load-failed')
+                error: err?.message || this.t('messages-load-failed') || this.t('chats-load-failed')
             };
             this.renderAccountMessagesPanel();
             await this.loadSocialSummary();
@@ -1248,13 +1299,14 @@ class DominoGame {
         const activeTab = this.hasAuthenticatedAccount()
             ? (this.socialCenterTab || 'inbox')
             : 'inbox';
+        const activeView = this.socialCenterView || 'list';
         tabs.querySelectorAll('[data-social-tab]').forEach((button) => {
             const isActive = button.dataset.socialTab === activeTab;
             button.classList.toggle('is-active', isActive);
             button.setAttribute('aria-pressed', isActive ? 'true' : 'false');
         });
-        document.getElementById('social-inbox-panel')?.classList.toggle('is-hidden', activeTab !== 'inbox');
-        document.getElementById('social-chats-panel')?.classList.toggle('is-hidden', activeTab !== 'chats');
+        document.getElementById('social-inbox-panel')?.classList.toggle('is-hidden', activeTab !== 'inbox' || activeView !== 'list');
+        document.getElementById('social-chats-panel')?.classList.toggle('is-hidden', activeView !== 'conversation');
         document.getElementById('social-invites-panel')?.classList.toggle('is-hidden', activeTab !== 'invites');
         document.getElementById('social-friends-panel')?.classList.toggle('is-hidden', activeTab !== 'friends');
     }
@@ -1265,7 +1317,9 @@ class DominoGame {
         const title = document.getElementById('social-center-modal-title');
         const desc = document.getElementById('social-center-modal-desc');
         if (title) title.textContent = this.t('social-title');
-        if (desc) desc.textContent = this.t('social-subtitle');
+        if (desc) desc.textContent = this.socialCenterView === 'conversation'
+            ? (this.t('messages-conversation-title') || this.t('social-subtitle'))
+            : this.t('social-subtitle');
         this.syncSocialCenterTabs();
         this.updateSocialCenterBadge();
     }
@@ -1387,7 +1441,7 @@ class DominoGame {
         if (!threads.length) {
             const empty = document.createElement('div');
             empty.className = 'room-summary';
-            empty.textContent = state.threadsLoading ? this.t('account-profile-loading') : (this.t('chats-empty') || this.t('messages-empty'));
+            empty.textContent = state.threadsLoading ? this.t('account-profile-loading') : (this.t('messages-empty') || this.t('chats-empty'));
             threadList.appendChild(empty);
         } else {
             threads.forEach((thread) => {
@@ -1442,7 +1496,7 @@ class DominoGame {
             });
         }
 
-        conversationTitle.textContent = activePlayer?.displayName || this.t('chats-title') || this.t('messages-conversation-title');
+        conversationTitle.textContent = activePlayer?.displayName || this.t('messages-conversation-title');
         conversationList.innerHTML = '';
         if (state.conversationLoading) {
             const loading = document.createElement('div');
@@ -1452,12 +1506,12 @@ class DominoGame {
         } else if (!activePlayerId) {
             const empty = document.createElement('div');
             empty.className = 'room-summary';
-            empty.textContent = this.t('chats-empty') || this.t('messages-empty');
+            empty.textContent = this.t('messages-empty') || this.t('chats-empty');
             conversationList.appendChild(empty);
         } else if (!activeMessages.length) {
             const empty = document.createElement('div');
             empty.className = 'room-summary';
-            empty.textContent = this.t('chats-empty') || this.t('messages-empty');
+            empty.textContent = this.t('messages-empty') || this.t('chats-empty');
             conversationList.appendChild(empty);
         } else {
             activeMessages.forEach((message) => {
@@ -1478,10 +1532,10 @@ class DominoGame {
         }
 
         messageInput.disabled = !activePlayerId || state.conversationLoading || state.sendLoading;
-        messageInput.placeholder = activePlayerId ? (this.t('chats-placeholder') || this.t('messages-placeholder')) : (this.t('chats-empty') || this.t('messages-empty'));
+        messageInput.placeholder = activePlayerId ? (this.t('messages-placeholder') || this.t('chats-placeholder')) : (this.t('messages-empty') || this.t('chats-empty'));
         messageInput.value = messageInput.value || '';
         sendBtn.disabled = !activePlayerId || state.conversationLoading || state.sendLoading;
-        sendBtn.textContent = state.sendLoading ? this.t('account-profile-loading') : (this.t('chats-send') || this.t('messages-send'));
+        sendBtn.textContent = state.sendLoading ? this.t('account-profile-loading') : (this.t('messages-send') || this.t('chats-send'));
         openBtn.hidden = !activePlayerId;
         backBtn.hidden = !activePlayerId;
 
@@ -1494,7 +1548,10 @@ class DominoGame {
                     activePlayerProfile: null,
                     messages: []
                 };
-                this.renderAccountMessagesPanel();
+                this.socialCenterView = 'list';
+                this.socialCenterTab = 'inbox';
+                this.renderSocialCenter();
+                void this.loadInboxPage();
             });
         }
 
@@ -1521,17 +1578,17 @@ class DominoGame {
                 try {
                     await this.account.sendDirectMessage(targetId, text);
                     messageInput.value = '';
-                    this.renderer.showMessage(this.t('chats-sent') || this.t('messages-sent'), 1400);
+                    this.renderer.showMessage(this.t('messages-sent') || this.t('chats-sent'), 1400);
                     await this.loadConversationWithPlayer(targetId);
                     await this.loadMessageThreads();
                 } catch (err) {
                     this.accountMessagesState = {
                         ...(this.accountMessagesState || {}),
                         sendLoading: false,
-                        error: err?.message || this.t('chats-send-failed') || this.t('messages-send-failed')
+                        error: err?.message || this.t('messages-send-failed') || this.t('chats-send-failed')
                     };
                     this.renderAccountMessagesPanel();
-                    this.renderer.showMessage(err?.message || this.t('chats-send-failed') || this.t('messages-send-failed'), 1800);
+                    this.renderer.showMessage(err?.message || this.t('messages-send-failed') || this.t('chats-send-failed'), 1800);
                 } finally {
                     this.accountMessagesState = {
                         ...(this.accountMessagesState || {}),
@@ -2587,9 +2644,7 @@ class DominoGame {
         const summaryCount = this.socialSummaryLoaded
             ? Math.max(0, Number(this.socialSummary?.totalUnreadCount || 0))
             : null;
-        const unreadMessages = Array.isArray(this.accountMessagesState?.threads)
-            ? this.accountMessagesState.threads.reduce((sum, thread) => sum + Math.max(0, Number(thread?.unreadCount || 0)), 0)
-            : 0;
+        const unreadMessages = Math.max(0, Number(this.socialInboxState?.unreadCount || 0));
         const incomingFriends = Math.max(0, Number(this.friendHub?.incoming?.length || 0));
         const incomingInvites = Math.max(0, Number(this.roomInvitations?.incoming?.length || 0));
         const count = Number.isFinite(summaryCount) ? summaryCount : unreadMessages + incomingFriends + incomingInvites;
@@ -3035,6 +3090,41 @@ class DominoGame {
                     if (meta.textContent) copy.appendChild(meta);
                     const action = document.createElement('div');
                     action.className = 'friend-card-actions';
+                    const roomSnapshot = this.getCurrentRoomSnapshot();
+                    const canInvite = Boolean(
+                        roomSnapshot &&
+                        roomSnapshot.roomId &&
+                        roomSnapshot.roomCode &&
+                        roomSnapshot.humanSeats > 0 &&
+                        this.network?.isHost &&
+                        !roomSnapshot.gameActive
+                    );
+                    const inviteBtn = document.createElement('button');
+                    inviteBtn.className = 'btn btn-action btn-strong';
+                    inviteBtn.textContent = this.t('friend-invite');
+                    inviteBtn.disabled = !canInvite;
+                    inviteBtn.addEventListener('click', async () => {
+                        if (!roomSnapshot) return;
+                        inviteBtn.disabled = true;
+                        try {
+                            await this.account.inviteFriendToRoom(roomSnapshot.roomId, {
+                                inviteePlayerId: item.friend.id,
+                                roomCode: roomSnapshot.roomCode,
+                                roomMode: roomSnapshot.roomMode,
+                                stakeKey: roomSnapshot.stakeKey,
+                                stakeAmount: roomSnapshot.stakeAmount,
+                                humanSeats: roomSnapshot.humanSeats,
+                                totalPlayers: roomSnapshot.totalPlayers,
+                                isTeamMode: roomSnapshot.isTeamMode
+                            });
+                            this.renderer.showMessage(this.t('friends-request-sent'), 1400);
+                            await this.loadFriendsPage();
+                        } catch (err) {
+                            this.renderer.showMessage(err.message || this.t('friends-load-failed'), 1800);
+                        } finally {
+                            inviteBtn.disabled = !canInvite;
+                        }
+                    });
                     const removeBtn = document.createElement('button');
                     removeBtn.className = 'btn btn-menu';
                     removeBtn.textContent = this.t('friend-remove');
@@ -3050,6 +3140,7 @@ class DominoGame {
                             removeBtn.disabled = false;
                         }
                     });
+                    action.appendChild(inviteBtn);
                     action.appendChild(removeBtn);
                     card.appendChild(copy);
                     card.appendChild(action);
@@ -3173,6 +3264,42 @@ class DominoGame {
                     statusBtn.disabled = true;
                     statusBtn.textContent = this.t('friends-request-accepted');
                     action.appendChild(statusBtn);
+                    const roomSnapshot = this.getCurrentRoomSnapshot();
+                    const canInvite = Boolean(
+                        roomSnapshot &&
+                        roomSnapshot.roomId &&
+                        roomSnapshot.roomCode &&
+                        roomSnapshot.humanSeats > 0 &&
+                        this.network?.isHost &&
+                        !roomSnapshot.gameActive
+                    );
+                    const inviteBtn = document.createElement('button');
+                    inviteBtn.className = 'btn btn-action btn-strong';
+                    inviteBtn.textContent = this.t('friend-invite');
+                    inviteBtn.disabled = !canInvite;
+                    inviteBtn.addEventListener('click', async () => {
+                        if (!roomSnapshot) return;
+                        inviteBtn.disabled = true;
+                        try {
+                            await this.account.inviteFriendToRoom(roomSnapshot.roomId, {
+                                inviteePlayerId: player.id,
+                                roomCode: roomSnapshot.roomCode,
+                                roomMode: roomSnapshot.roomMode,
+                                stakeKey: roomSnapshot.stakeKey,
+                                stakeAmount: roomSnapshot.stakeAmount,
+                                humanSeats: roomSnapshot.humanSeats,
+                                totalPlayers: roomSnapshot.totalPlayers,
+                                isTeamMode: roomSnapshot.isTeamMode
+                            });
+                            this.renderer.showMessage(this.t('friends-request-sent'), 1400);
+                            await this.loadFriendsPage();
+                        } catch (err) {
+                            this.renderer.showMessage(err.message || this.t('friends-load-failed'), 1800);
+                        } finally {
+                            inviteBtn.disabled = !canInvite;
+                        }
+                    });
+                    action.appendChild(inviteBtn);
                 } else if (outgoingIds.has(playerId) || incomingIds.has(playerId)) {
                     const pendingBtn = document.createElement('button');
                     pendingBtn.className = 'btn btn-menu';
@@ -3822,7 +3949,6 @@ class DominoGame {
 
                 <div class="social-center-tabs" id="social-center-tabs">
                     <button type="button" class="social-center-tab is-active" data-social-tab="inbox" data-i18n="social-tab-inbox">Inbox</button>
-                    <button type="button" class="social-center-tab" data-social-tab="chats" data-i18n="social-tab-chats">Chats</button>
                     <button type="button" class="social-center-tab" data-social-tab="invites" data-i18n="social-tab-invites">Invites</button>
                     <button type="button" class="social-center-tab" data-social-tab="friends" data-i18n="social-tab-friends">Friends</button>
                 </div>
@@ -3842,26 +3968,26 @@ class DominoGame {
                                 <div class="account-messages-sidebar">
                                     <div class="account-messages-head">
                                         <div>
-                                            <div class="section-kicker" data-i18n="chats-title">Chats</div>
+                                            <div class="section-kicker" data-i18n="messages-conversation-title">Conversation</div>
                                             <div class="account-messages-summary" id="account-messages-summary"></div>
                                         </div>
-                                        <button type="button" class="btn btn-menu account-messages-back" id="account-messages-back-btn" data-i18n="chats-back">Back</button>
+                                        <button type="button" class="btn btn-menu account-messages-back" id="account-messages-back-btn" data-i18n="messages-back">Back</button>
                                     </div>
                                     <div class="account-messages-thread-list" id="account-messages-thread-list"></div>
                                 </div>
                                 <div class="account-messages-conversation">
                                     <div class="account-messages-conversation-head">
                                         <div class="account-messages-conversation-copy">
-                                            <div class="section-kicker" data-i18n="chats-title">Chats</div>
+                                            <div class="section-kicker" data-i18n="messages-conversation-title">Conversation</div>
                                             <div class="account-messages-conversation-title" id="account-messages-conversation-title"></div>
                                         </div>
-                                        <button type="button" class="btn btn-action btn-strong account-messages-open" id="account-messages-open-btn" data-i18n="chats-open">Open</button>
+                                        <button type="button" class="btn btn-action btn-strong account-messages-open" id="account-messages-open-btn" data-i18n="messages-open">Open</button>
                                     </div>
                                     <div class="account-messages-conversation-list" id="account-messages-conversation-list"></div>
                                     <div class="account-messages-compose">
-                                        <textarea id="account-message-input" class="account-message-input" rows="3" maxlength="500" data-i18n="chats-placeholder" placeholder="Write a message"></textarea>
+                                        <textarea id="account-message-input" class="account-message-input" rows="3" maxlength="500" data-i18n="messages-placeholder" placeholder="Write a message"></textarea>
                                         <div class="account-messages-compose-actions">
-                                            <button type="button" class="btn btn-action btn-strong" id="account-message-send-btn" data-i18n="chats-send">Send</button>
+                                            <button type="button" class="btn btn-action btn-strong" id="account-message-send-btn" data-i18n="messages-send">Send</button>
                                         </div>
                                     </div>
                                 </div>

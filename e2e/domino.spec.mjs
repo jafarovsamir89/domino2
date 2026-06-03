@@ -309,10 +309,10 @@ test("authenticated profile shows four stats cards without Xal and leaderboard u
       headers,
       body: JSON.stringify({
         inboxUnreadCount: 2,
-        chatUnreadCount: 1,
+        chatUnreadCount: 0,
         inviteUnreadCount: 1,
         friendRequestCount: 1,
-        totalUnreadCount: 5
+        totalUnreadCount: 4
       })
     });
   });
@@ -335,18 +335,18 @@ test("authenticated profile shows four stats cards without Xal and leaderboard u
           {
             id: "i-1",
             playerId: "p-1",
-            type: "gift_received",
-            title: "Gift from Alice",
-            body: "You received Gift 001",
+            type: "direct_message",
+            title: "Message from Alice",
+            body: "Hello from Alice",
             status: "unread",
-            payloadJson: { giftKey: "gift_001" },
-            rewardJson: { type: "gift", giftKey: "gift_001" },
+            payloadJson: { messageId: "m-1", senderPlayerId: "p-2", senderDisplayName: "Alice", receiverPlayerId: "p-1" },
             createdAt: "2024-03-03T10:00:00.000Z",
             readAt: null,
-            claimedAt: null,
             expiresAt: null,
             isUnread: true,
-            isClaimable: true
+            isClaimable: false,
+            relatedPlayerId: "p-2",
+            relatedMessageId: "m-1"
           }
         ]
       })
@@ -451,12 +451,20 @@ test("authenticated profile shows four stats cards without Xal and leaderboard u
   await page.locator("#player-profile-message-btn").click();
   await expect(page.locator("#social-center-modal")).toHaveClass(/active/);
   await expect(page.locator("#social-center-modal-title")).toContainText(/Messages|Mesajlar|Сообщения/);
-  await expect(page.locator("#social-chats-panel")).not.toHaveClass(/is-hidden/);
+  await expect(page.locator("#social-center-tabs [data-social-tab='inbox']")).toHaveClass(/is-active/);
+  await expect(page.locator("#social-center-tabs [data-social-tab='invites']")).toBeVisible();
+  await expect(page.locator("#social-center-tabs [data-social-tab='friends']")).toBeVisible();
+  await expect(page.locator("#social-center-tabs [data-social-tab='chats']")).toHaveCount(0);
   await page.locator("#social-center-tabs [data-social-tab='inbox']").click();
   await expect(page.locator("#social-inbox-panel")).not.toHaveClass(/is-hidden/);
   await expect(page.locator("#social-inbox-list .inbox-card")).toHaveCount(1);
-  await expect(page.locator("#social-center-modal .start-social-badge")).toContainText(/5|9\+/);
+  await expect(page.locator("#social-inbox-list .inbox-card")).toContainText(/Message from Alice|Hello from Alice/);
+  await page.locator("#social-inbox-list .inbox-card .btn").first().click();
+  await expect(page.locator("#social-chats-panel")).not.toHaveClass(/is-hidden/);
+  await expect(page.locator("#account-messages-conversation-title")).toContainText(/Alice/);
   await expect(page.locator("#player-profile-modal")).not.toHaveClass(/active/);
+  await page.evaluate(() => document.getElementById("social-center-modal-close")?.click());
+  await expect(page.locator("#social-center-modal")).not.toHaveClass(/active/);
 
 });
 

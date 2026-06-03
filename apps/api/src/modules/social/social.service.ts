@@ -479,6 +479,12 @@ export class SocialService {
   }
 
   private summarizeInboxMessage(row: InboxMessageRow) {
+    const payload = row.payloadJson && typeof row.payloadJson === "object" && !Array.isArray(row.payloadJson)
+      ? row.payloadJson as Record<string, unknown>
+      : null;
+    const relatedPlayerId = typeof payload?.senderPlayerId === "string"
+      ? String(payload.senderPlayerId || "").trim()
+      : "";
     return {
       id: row.id,
       playerId: row.playerId,
@@ -493,7 +499,9 @@ export class SocialService {
       claimedAt: row.claimedAt ? row.claimedAt.toISOString() : null,
       expiresAt: row.expiresAt ? row.expiresAt.toISOString() : null,
       isUnread: row.status === "unread",
-      isClaimable: this.isInboxClaimable(row)
+      isClaimable: this.isInboxClaimable(row),
+      relatedPlayerId: relatedPlayerId || null,
+      relatedMessageId: typeof payload?.messageId === "string" ? String(payload.messageId || "").trim() || null : null
     };
   }
 
@@ -689,6 +697,24 @@ export class SocialService {
       }
     });
 
+    if (row.type === "direct_message" && row.payloadJson && typeof row.payloadJson === "object" && !Array.isArray(row.payloadJson)) {
+      const messageId = typeof (row.payloadJson as Record<string, unknown>).messageId === "string"
+        ? String((row.payloadJson as Record<string, unknown>).messageId || "").trim()
+        : "";
+      if (messageId) {
+        await this.prisma.directMessage.updateMany({
+          where: {
+            id: messageId,
+            receiverPlayerId: updated.playerId,
+            readAt: null
+          },
+          data: {
+            readAt: new Date()
+          }
+        });
+      }
+    }
+
     return { item: this.summarizeInboxMessage(updated as unknown as InboxMessageRow) };
   }
 
@@ -735,17 +761,11 @@ export class SocialService {
 
   async getSocialSummary(headers: IncomingHttpHeaders) {
     const currentPlayer = await this.getCurrentPlayer(headers);
-    const [inboxUnreadCount, chatUnreadCount, inviteUnreadCount, friendRequestCount] = await Promise.all([
+    const [inboxUnreadCount, inviteUnreadCount, friendRequestCount] = await Promise.all([
       this.prisma.inboxMessage.count({
         where: {
           playerId: currentPlayer.id,
           status: "unread"
-        }
-      }),
-      this.prisma.directMessage.count({
-        where: {
-          receiverPlayerId: currentPlayer.id,
-          readAt: null
         }
       }),
       this.prisma.roomInvitation.count({
@@ -764,10 +784,10 @@ export class SocialService {
 
     return {
       inboxUnreadCount,
-      chatUnreadCount,
+      chatUnreadCount: 0,
       inviteUnreadCount,
       friendRequestCount,
-      totalUnreadCount: inboxUnreadCount + chatUnreadCount + inviteUnreadCount + friendRequestCount
+      totalUnreadCount: inboxUnreadCount + inviteUnreadCount + friendRequestCount
     } satisfies SocialSummaryRow;
   }
 
@@ -1047,20 +1067,41 @@ export class SocialService {
       throw new BadRequestException("Message is too long");
     }
 
-    const row = await this.prisma.directMessage.create({
-      data: {
-        senderPlayerId: currentPlayer.id,
-        receiverPlayerId: targetPlayerId,
-        text
-      },
-      include: {
-        sender: { select: this.playerSelect() },
-        receiver: { select: this.playerSelect() }
-      }
+    const row = await this.prisma.$transaction(async (tx) => {
+      const messageRow = await tx.directMessage.create({
+        data: {
+          senderPlayerId: currentPlayer.id,
+          receiverPlayerId: targetPlayerId,
+          text
+        },
+        include: {
+          sender: { select: this.playerSelect() },
+          receiver: { select: this.playerSelect() }
+        }
+      });
+
+      const inboxRow = await tx.inboxMessage.create({
+        data: {
+          playerId: targetPlayerId,
+          type: "direct_message",
+          title: `Message from ${currentPlayer.displayName}`,
+          body: text.slice(0, 160),
+          status: "unread",
+          payloadJson: {
+            messageId: messageRow.id,
+            senderPlayerId: currentPlayer.id,
+            senderDisplayName: currentPlayer.displayName,
+            receiverPlayerId: targetPlayerId
+          }
+        }
+      });
+
+      return { messageRow, inboxRow };
     });
 
     return {
-      item: this.summarizeDirectMessage(row as unknown as DirectMessageRow)
+      item: this.summarizeDirectMessage(row.messageRow as unknown as DirectMessageRow),
+      inbox: this.summarizeInboxMessage(row.inboxRow as unknown as InboxMessageRow)
     };
   }
 

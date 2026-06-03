@@ -258,6 +258,7 @@ test("sendDirectMessage creates a message between two players", async () => {
   const currentPlayer = makePlayer("player-a", "Alpha");
   const targetPlayer = makePlayer("player-b", "Beta");
   let capturedCreate: any = null;
+  let capturedInboxCreate: any = null;
 
   const prismaMock = {
     player: {
@@ -266,21 +267,42 @@ test("sendDirectMessage creates a message between two players", async () => {
         return null;
       }
     },
-    directMessage: {
-      create: async (query: any) => {
-        capturedCreate = query;
-        return {
-          id: "message-1",
-          senderPlayerId: currentPlayer.id,
-          receiverPlayerId: targetPlayer.id,
-          text: "Hello from Alpha",
-          createdAt: new Date("2024-03-01T10:00:00.000Z"),
-          readAt: null,
-          sender: currentPlayer,
-          receiver: targetPlayer
-        };
+    $transaction: async (fn: any) => fn({
+      directMessage: {
+        create: async (query: any) => {
+          capturedCreate = query;
+          return {
+            id: "message-1",
+            senderPlayerId: currentPlayer.id,
+            receiverPlayerId: targetPlayer.id,
+            text: "Hello from Alpha",
+            createdAt: new Date("2024-03-01T10:00:00.000Z"),
+            readAt: null,
+            sender: currentPlayer,
+            receiver: targetPlayer
+          };
+        }
+      },
+      inboxMessage: {
+        create: async (query: any) => {
+          capturedInboxCreate = query;
+          return makeInboxRow({
+            id: "inbox-1",
+            playerId: targetPlayer.id,
+            type: "direct_message",
+            title: `Message from ${currentPlayer.displayName}`,
+            body: "Hello from Alpha",
+            payloadJson: {
+              messageId: "message-1",
+              senderPlayerId: currentPlayer.id,
+              senderDisplayName: currentPlayer.displayName,
+              receiverPlayerId: targetPlayer.id
+            },
+            rewardJson: null
+          });
+        }
       }
-    }
+    })
   } as any;
 
   const service = new SocialService(prismaMock, {} as any);
@@ -294,10 +316,25 @@ test("sendDirectMessage creates a message between two players", async () => {
     receiverPlayerId: targetPlayer.id,
     text: "Hello from Alpha"
   });
+  assert.deepEqual(capturedInboxCreate.data, {
+    playerId: targetPlayer.id,
+    type: "direct_message",
+    title: "Message from Alpha",
+    body: "Hello from Alpha",
+    status: "unread",
+    payloadJson: {
+      messageId: "message-1",
+      senderPlayerId: currentPlayer.id,
+      senderDisplayName: currentPlayer.displayName,
+      receiverPlayerId: targetPlayer.id
+    }
+  });
   assert.equal(result.item.id, "message-1");
   assert.equal(result.item.text, "Hello from Alpha");
   assert.equal(result.item.sender.displayName, "Alpha");
   assert.equal(result.item.receiver.displayName, "Beta");
+  assert.equal(result.inbox.id, "inbox-1");
+  assert.equal(result.inbox.type, "direct_message");
 });
 
 test("getDirectMessages returns the conversation history between two players", async () => {
@@ -489,13 +526,25 @@ test("getInbox returns inbox items and unread count", async () => {
 test("markInboxRead claimInboxMessage and deleteInboxMessage update inbox state", async () => {
   const currentPlayer = makePlayer("player-a", "Alpha");
   const unreadRow = makeInboxRow({ id: "inbox-10", status: "unread" });
+  const dmRow = makeInboxRow({
+    id: "inbox-10-dm",
+    status: "unread",
+    type: "direct_message",
+    payloadJson: {
+      messageId: "message-10",
+      senderPlayerId: "player-z",
+      receiverPlayerId: currentPlayer.id
+    }
+  });
   const claimableRow = makeInboxRow({ id: "inbox-11", status: "read" });
   const deletableRow = makeInboxRow({ id: "inbox-12", status: "read", rewardJson: null, type: "system_news" });
   const updatedRows: Record<string, any> = {};
+  const directMessageUpdates: any[] = [];
   const prismaMock = {
     inboxMessage: {
       findUnique: async ({ where }: any) => {
         if (where.id === unreadRow.id) return unreadRow;
+        if (where.id === dmRow.id) return dmRow;
         if (where.id === claimableRow.id) return claimableRow;
         if (where.id === deletableRow.id) return deletableRow;
         return null;
@@ -504,6 +553,12 @@ test("markInboxRead claimInboxMessage and deleteInboxMessage update inbox state"
         updatedRows[where.id] = { ...(updatedRows[where.id] || {}), ...data };
         const base = where.id === unreadRow.id ? unreadRow : where.id === claimableRow.id ? claimableRow : deletableRow;
         return { ...base, ...data };
+      }
+    },
+    directMessage: {
+      updateMany: async (query: any) => {
+        directMessageUpdates.push(query);
+        return { count: 1 };
       }
     }
   } as any;
@@ -514,6 +569,16 @@ test("markInboxRead claimInboxMessage and deleteInboxMessage update inbox state"
   const marked = await service.markInboxRead({} as any, unreadRow.id);
   assert.equal(marked.item.status, "read");
   assert.equal(updatedRows[unreadRow.id].status, "read");
+
+  const markedDm = await service.markInboxRead({} as any, dmRow.id);
+  assert.equal(markedDm.item.status, "read");
+  assert.equal(directMessageUpdates.length, 1);
+  assert.deepEqual(directMessageUpdates[0].where, {
+    id: "message-10",
+    receiverPlayerId: currentPlayer.id,
+    readAt: null
+  });
+  assert.ok(directMessageUpdates[0].data.readAt instanceof Date);
 
   const claimed = await service.claimInboxMessage({} as any, claimableRow.id);
   assert.equal(claimed.item?.status, "claimed");
@@ -531,12 +596,6 @@ test("getSocialSummary counts inbox chats invites and friend requests", async ()
       count: async ({ where }: any) => {
         assert.deepEqual(where, { playerId: currentPlayer.id, status: "unread" });
         return 2;
-      }
-    },
-    directMessage: {
-      count: async ({ where }: any) => {
-        assert.deepEqual(where, { receiverPlayerId: currentPlayer.id, readAt: null });
-        return 3;
       }
     },
     roomInvitation: {
@@ -558,10 +617,10 @@ test("getSocialSummary counts inbox chats invites and friend requests", async ()
 
   const result = await service.getSocialSummary({} as any);
   assert.equal(result.inboxUnreadCount, 2);
-  assert.equal(result.chatUnreadCount, 3);
+  assert.equal(result.chatUnreadCount, 0);
   assert.equal(result.inviteUnreadCount, 4);
   assert.equal(result.friendRequestCount, 5);
-  assert.equal(result.totalUnreadCount, 14);
+  assert.equal(result.totalUnreadCount, 11);
 });
 
 test("sendGift creates an inbox notification for the recipient", async () => {
