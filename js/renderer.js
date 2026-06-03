@@ -462,8 +462,10 @@ export class Renderer {
         if (isCurrent) this.handEl.parentElement.classList.add('active-turn');
         else this.handEl.parentElement.classList.remove('active-turn');
 
-        for (let i = 0; i < hand.length; i++) {
-            const t = hand[i];
+        const tiles = Array.isArray(hand) ? hand : [];
+        for (let i = 0; i < tiles.length; i++) {
+            const t = tiles[i];
+            if (!t || typeof t.a !== 'number' || typeof t.b !== 'number') continue;
             const el = this.createTileEl(t.a, t.b, 'vertical', false, t.id);
             if (validMoves.some(m => m.tileIndex === i)) {
                 el.classList.add('playable');

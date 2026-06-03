@@ -878,7 +878,7 @@ class DominoGame {
     }
 
     async openPlayerProfileModal(playerRef) {
-        const playerId = String(playerRef?.playerId || playerRef?.userId || playerRef?.id || playerRef || '').trim();
+        const playerId = String(playerRef?.playerId || playerRef?.id || playerRef || '').trim();
         const modal = document.getElementById('player-profile-modal');
         if (!modal || !playerId) return;
 
@@ -927,7 +927,7 @@ class DominoGame {
     }
 
     async openConversationWithPlayer(playerRef) {
-        const playerId = String(playerRef?.playerId || playerRef?.userId || playerRef?.id || playerRef || '').trim();
+        const playerId = String(playerRef?.playerId || playerRef?.id || playerRef || '').trim();
         if (!playerId) return;
         if (!this.hasAuthenticatedAccount()) {
             await this.openAccountModal();
@@ -1512,11 +1512,21 @@ class DominoGame {
                     declineBtn.textContent = this.t('invites-decline');
                     declineBtn.addEventListener('click', async () => {
                         declineBtn.disabled = true;
+                        const inviteId = String(invite?.id || invite?.invitationId || invite?.roomInvitationId || '').trim();
+                        if (!inviteId) {
+                            declineBtn.disabled = false;
+                            return;
+                        }
                         try {
-                            await this.account.declineRoomInvitation(invite.id);
+                            await this.account.declineRoomInvitation(inviteId);
                             await this.loadSocialInvitesPage();
                         } catch (err) {
-                            this.renderer.showMessage(err?.message || this.t('friends-load-failed'), 1800);
+                            const msg = String(err?.message || '').toLowerCase();
+                            if (msg.includes('already responded') || msg.includes('expired') || msg.includes('not found')) {
+                                await this.loadSocialInvitesPage().catch(() => {});
+                            } else {
+                                this.renderer.showMessage(err?.message || this.t('friends-load-failed'), 1800);
+                            }
                         } finally {
                             declineBtn.disabled = false;
                         }
@@ -4306,7 +4316,7 @@ class DominoGame {
         button.type = 'button';
         button.className = `player-name-btn ${className}`.trim();
         button.textContent = String(label || 'Player');
-        const playerId = String(playerRef?.playerId || playerRef?.userId || playerRef?.id || '').trim();
+        const playerId = String(playerRef?.playerId || playerRef?.id || '').trim();
         if (playerId && !playerRef?.isBot) {
             button.addEventListener('click', () => this.openPlayerProfileModal(playerRef));
         } else {
@@ -5903,10 +5913,10 @@ class DominoGame {
     }
 
     async loadFriendsHub() {
-        const friendsList = document.getElementById('friend-list');
-        const requestsList = document.getElementById('friend-requests-list');
-        const invitesList = document.getElementById('room-invites-list');
-        const searchResults = document.getElementById('friend-search-results');
+        const friendsList = document.getElementById('friends-list') || document.getElementById('friend-list');
+        const requestsList = document.getElementById('friends-requests-list') || document.getElementById('friend-requests-list');
+        const invitesList = document.getElementById('social-invites-list') || document.getElementById('room-invites-list');
+        const searchResults = document.getElementById('friends-search-results') || document.getElementById('friend-search-results');
         const loggedIn = Boolean(this.account?.getRoomAuthToken?.());
         const emptyText = this.t('friends-sign-in');
 
@@ -6116,11 +6126,21 @@ class DominoGame {
                     declineBtn.textContent = this.t('friend-decline');
                     declineBtn.addEventListener('click', async () => {
                         declineBtn.disabled = true;
+                        const inviteId = String(invite?.id || invite?.invitationId || invite?.roomInvitationId || '').trim();
+                        if (!inviteId) {
+                            declineBtn.disabled = false;
+                            return;
+                        }
                         try {
-                            await this.account.declineRoomInvitation(invite.id);
+                            await this.account.declineRoomInvitation(inviteId);
                             await this.loadFriendsHub();
                         } catch (err) {
-                            this.renderer.showMessage(err.message || this.t('account-server-unavailable'), 1800);
+                            const msg = String(err?.message || '').toLowerCase();
+                            if (msg.includes('already responded') || msg.includes('expired') || msg.includes('not found')) {
+                                await this.loadFriendsHub().catch(() => {});
+                            } else {
+                                this.renderer.showMessage(err.message || this.t('account-server-unavailable'), 1800);
+                            }
                         } finally {
                             declineBtn.disabled = false;
                         }
@@ -7852,7 +7872,22 @@ class DominoGame {
         const playerOrder = Array.from(state?.playerOrder || []);
         const players = state?.players;
         const getPlayer = (sid) => (players && sid !== undefined && sid !== null) ? players.get(sid) : null;
-        this.roomPlayerRefs = playerOrder.map((sid) => getPlayer(sid) || null);
+        const roomPlayers = Array.isArray(this.currentRoomState?.players) ? this.currentRoomState.players : [];
+        this.roomPlayerRefs = playerOrder.map((sid, index) => {
+            const schemaPlayer = getPlayer(sid) || null;
+            const roomPlayer = roomPlayers.find((player) => {
+                const sessionId = String(player?.sessionId || '').trim();
+                if (sessionId && sessionId === String(sid || '').trim()) return true;
+                if (Number.isInteger(Number(player?.index)) && Number(player.index) === index) return true;
+                if (Number.isInteger(Number(player?.seatNumber)) && Number(player.seatNumber) - 1 === index) return true;
+                return false;
+            }) || null;
+            return {
+                ...(schemaPlayer || {}),
+                ...(roomPlayer || {}),
+                sessionId: sid
+            };
+        });
         for (const sid of playerOrder) {
             if (!sid) continue;
             const avatarUrl = getPlayer(sid)?.avatarUrl || '';
