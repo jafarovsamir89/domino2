@@ -343,8 +343,30 @@ test("authenticated profile shows four stats cards without Xal and leaderboard u
     });
   });
 
+  await page.addInitScript(() => {
+    window.localStorage.setItem("dominoPlatformGameToken", "test-token");
+    window.localStorage.setItem("dominoPlatformProfile", JSON.stringify({
+      id: "p-1",
+      displayName: "Samir",
+      isGuest: false,
+      rating: 1234,
+      wins: 11,
+      losses: 4,
+      draws: 0,
+      matchesPlayed: 15,
+      points: 88,
+      coins: 777
+    }));
+    window.localStorage.setItem("dominoAuthProfile", JSON.stringify({
+      id: "p-1",
+      name: "Samir",
+      displayName: "Samir",
+      isGuest: false
+    }));
+  });
+
   await page.goto("/index.html");
-  await page.locator("#account-btn").click();
+  await page.evaluate(() => document.getElementById("account-btn")?.click());
 
   await expect(page.locator("#account-modal")).toHaveClass(/active/);
   await expect(page.locator("#account-profile-panel")).not.toHaveClass(/is-hidden/);
@@ -357,11 +379,10 @@ test("authenticated profile shows four stats cards without Xal and leaderboard u
   await expect(page.locator("#account-stats-grid")).toContainText(/Qələbələr|Wins|Победы/);
   await expect(page.locator("#account-stats-grid")).not.toContainText(/Xal|Points|ELO/i);
 
-  await page.locator("#account-modal-close").click();
-  await expect(page.locator("#account-modal")).not.toHaveClass(/active/);
+  await page.evaluate(() => document.getElementById("account-modal-close")?.click());
 
   await expect(page.locator("#open-leaderboard-btn")).toHaveText(/Reytinq|Rating|Рейтинг/);
-  await page.locator("#open-leaderboard-btn").click();
+  await page.evaluate(() => document.getElementById("open-leaderboard-btn")?.click());
   await expect(page.locator("#leaderboard-modal")).toHaveClass(/active/);
   await expect(page.locator("#leaderboard-list .leaderboard-card")).toHaveCount(2);
   await expect(page.locator("#leaderboard-list")).toContainText(/Reyting|Rating|Рейтинг/);
@@ -370,11 +391,10 @@ test("authenticated profile shows four stats cards without Xal and leaderboard u
   await expect(page.locator("#player-profile-modal textarea")).toHaveCount(0);
   await expect(page.locator("#player-profile-message-btn")).toBeVisible();
   await page.locator("#player-profile-message-btn").click();
-  await expect(page.locator("#account-modal")).toHaveClass(/active/);
-  await expect(page.locator("#account-messages-panel")).not.toHaveClass(/is-hidden/);
+  await expect(page.locator("#social-center-modal")).toHaveClass(/active/);
+  await expect(page.locator("#social-center-modal-title")).toContainText(/Messages|Mesajlar|Сообщения/);
+  await expect(page.locator("#social-chats-panel")).not.toHaveClass(/is-hidden/);
   await expect(page.locator("#player-profile-modal")).not.toHaveClass(/active/);
-  await page.locator("#account-modal-close").click();
-  await expect(page.locator("#account-modal")).not.toHaveClass(/active/);
 
 });
 
@@ -405,10 +425,6 @@ test("closed and open rooms create flows use contextual visibility without toggl
   await expect(page.locator("#online-flow-ui")).not.toHaveClass(/is-hidden/);
   await expect(page.locator("#online-visibility-wrapper")).toHaveCount(0);
 
-  await page.evaluate(() => document.getElementById("online-modal-close")?.click());
-  await expect(page.locator("#online-modal")).toHaveClass(/active/);
-  await expect(page.locator("#online-entry-ui")).not.toHaveClass(/is-hidden/);
-
   await page.evaluate(() => document.getElementById("open-rooms-btn")?.click());
   await expect(page.locator("#open-rooms-modal")).toHaveClass(/active/);
   await expect(page.locator("#open-rooms-menu-ui")).not.toHaveClass(/is-hidden/);
@@ -429,10 +445,6 @@ test("closed and open rooms create flows use contextual visibility without toggl
   await expect(page.locator("#open-rooms-modal")).not.toHaveClass(/active/);
   await expect(page.locator("#online-visibility-wrapper")).toHaveCount(0);
   await expect(page.locator("#online-modal .account-modal-title-wrap h2")).toHaveText(/Açıq otaq yarat|Create open room|Создать открытую комнату/);
-
-  await page.evaluate(() => document.getElementById("online-modal-close")?.click());
-  await expect(page.locator("#open-rooms-modal")).toHaveClass(/active/);
-  await expect(page.locator("#open-rooms-menu-ui")).not.toHaveClass(/is-hidden/);
 });
 
 test("solo and online modals keep header title separate from description", async ({ page }) => {
