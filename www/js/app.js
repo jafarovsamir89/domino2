@@ -3132,12 +3132,16 @@ class DominoGame {
     }
 
     getPresenceKeysForPlayer(player = {}) {
+        const displayName = String(player?.displayName || '').trim();
+        const displayNameParts = displayName ? displayName.split(/\s+/).filter(Boolean) : [];
+        const shortDisplayName = displayNameParts[0] || '';
         return [
             this.normalizePresenceKey(player?.playerId),
             this.normalizePresenceKey(player?.userId),
             this.normalizePresenceKey(player?.sessionId),
             this.normalizePresenceKey(player?.id),
-            this.normalizePresenceKey(player?.displayName)
+            this.normalizePresenceKey(displayName),
+            this.normalizePresenceKey(shortDisplayName)
         ].filter(Boolean);
     }
 
@@ -3254,8 +3258,6 @@ class DominoGame {
                         roomSnapshot &&
                         roomSnapshot.roomId &&
                         roomSnapshot.roomCode &&
-                        roomSnapshot.humanSeats > 0 &&
-                        this.network?.isHost &&
                         !roomSnapshot.gameActive
                     );
                     const inviteBtn = document.createElement('button');
@@ -3433,8 +3435,6 @@ class DominoGame {
                         roomSnapshot &&
                         roomSnapshot.roomId &&
                         roomSnapshot.roomCode &&
-                        roomSnapshot.humanSeats > 0 &&
-                        this.network?.isHost &&
                         !roomSnapshot.gameActive
                     );
                     const inviteBtn = document.createElement('button');
@@ -3519,8 +3519,6 @@ class DominoGame {
             roomSnapshot &&
             roomSnapshot.roomId &&
             roomSnapshot.roomCode &&
-            roomSnapshot.humanSeats > 0 &&
-            this.network?.isHost &&
             !roomSnapshot.gameActive
         );
 
@@ -5708,8 +5706,6 @@ class DominoGame {
                         roomSnapshot &&
                         roomSnapshot.roomId &&
                         roomSnapshot.roomCode &&
-                        roomSnapshot.humanSeats > 0 &&
-                        this.network?.isHost &&
                         !roomSnapshot.gameActive
                     );
                     inviteBtn.disabled = !canInvite;

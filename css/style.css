@@ -589,6 +589,28 @@ input, button { font: inherit; }
     display: flex;
 }
 
+#player-profile-modal,
+#friends-modal,
+#social-center-modal,
+#leaderboard-modal {
+    z-index: 9000;
+}
+
+#player-profile-modal.active,
+#friends-modal.active,
+#social-center-modal.active,
+#leaderboard-modal.active {
+    z-index: 12000;
+}
+
+#player-profile-modal .modal-card,
+#friends-modal .modal-card,
+#social-center-modal .modal-card,
+#leaderboard-modal .modal-card {
+    position: relative;
+    z-index: 1;
+}
+
 .modal-card {
     width: min(720px, 100%);
     max-height: min(88vh, 920px);
