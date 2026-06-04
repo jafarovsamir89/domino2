@@ -14,7 +14,7 @@ async function main() {
     include: {
       stats: true,
       wallet: true,
-      matchParticipants: {
+      matches: {
         include: {
           match: true
         }
@@ -29,10 +29,10 @@ async function main() {
     console.log(`  Stats: rating=${p.stats?.rating}, matchesPlayed=${p.stats?.matchesPlayed}, wins=${p.stats?.wins}, losses=${p.stats?.losses}`);
     console.log(`  Wallet: balance=${p.wallet?.balance}, reserved=${p.wallet?.reserved}`);
     console.log(`  Matches:`);
-    if (!p.matchParticipants || p.matchParticipants.length === 0) {
+    if (!p.matches || p.matches.length === 0) {
       console.log(`    None`);
     } else {
-      for (const mp of p.matchParticipants) {
+      for (const mp of p.matches) {
         console.log(`    - MatchId: ${mp.matchId}`);
         console.log(`      Mode: ${mp.match.mode}, isTeamMode: ${mp.match.isTeamMode}, result: ${mp.result}`);
         console.log(`      WinnerKey: ${mp.match.winnerKey}, points: ${mp.points}, roundWins: ${mp.roundWins}`);
