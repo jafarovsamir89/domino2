@@ -180,10 +180,14 @@ export async function getPlayerProfileSnapshot(username, cookies, config) {
     // Fallback: Query HTTP /api/me using session cookies
     if (cookies && cookies.length > 0) {
         try {
+            const origin = new URL(config.baseUrl).origin;
             const res = await fetch(`${config.baseUrl}/api/me`, {
                 method: "GET",
                 headers: {
-                    "Cookie": cookies.join("; ")
+                    "Content-Type": "application/json",
+                    "Cookie": cookies.join("; "),
+                    "Origin": origin,
+                    "Referer": origin + "/"
                 }
             });
             if (res.ok) {
@@ -256,12 +260,17 @@ export async function authenticateViaHttp(username, config) {
     const displayName = username;
     
     let cookies = [];
+    const origin = new URL(config.baseUrl).origin;
     
     // Attempt sign-in first
     const t0 = Date.now();
     let response = await fetch(`${config.baseUrl}/api/auth/sign-in/email`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+            "Content-Type": "application/json",
+            "Origin": origin,
+            "Referer": origin + "/"
+        },
         body: JSON.stringify({ email, password, rememberMe: true })
     });
     
@@ -269,7 +278,11 @@ export async function authenticateViaHttp(username, config) {
         // If sign-in fails, attempt sign-up
         response = await fetch(`${config.baseUrl}/api/auth/sign-up/email`, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: {
+                "Content-Type": "application/json",
+                "Origin": origin,
+                "Referer": origin + "/"
+            },
             body: JSON.stringify({ name: displayName, email, password, callbackURL: "/dashboard", rememberMe: true })
         });
         if (!response.ok) {
@@ -292,7 +305,9 @@ export async function authenticateViaHttp(username, config) {
     const tokenResponse = await fetch(`${config.baseUrl}/api/platform/game-token`, {
         method: "GET",
         headers: {
-            "Cookie": cookies.join("; ")
+            "Cookie": cookies.join("; "),
+            "Origin": origin,
+            "Referer": origin + "/"
         }
     });
     
