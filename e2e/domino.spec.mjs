@@ -231,6 +231,89 @@ test("authenticated profile shows four stats cards without Xal and leaderboard u
     });
   });
 
+  await page.route("**/social/invitations**", async (route) => {
+    const headers = {
+      "Access-Control-Allow-Origin": route.request().headers().origin ?? "http://127.0.0.1:4173",
+      "Access-Control-Allow-Methods": "GET,POST,PUT,PATCH,DELETE,OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With",
+      "Access-Control-Allow-Credentials": "true",
+      "Vary": "Origin"
+    };
+    return route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      headers,
+      body: JSON.stringify({
+        incoming: [
+          {
+            id: "inv-incoming",
+            status: "pending",
+            roomId: "room-11",
+            roomCode: "ABCD",
+            roomMode: "ffa",
+            stakeKey: "stake_50",
+            stakeAmount: 50,
+            humanSeats: 2,
+            totalPlayers: 2,
+            isTeamMode: false,
+            inviter: { id: "p-2", displayName: "Alice", avatarSeed: null, avatarUrl: null, isGuest: false },
+            invitee: { id: "p-1", displayName: "Samir", avatarSeed: null, avatarUrl: null, isGuest: false }
+          }
+        ],
+        sent: [
+          {
+            id: "inv-sent",
+            status: "pending",
+            roomId: "room-12",
+            roomCode: null,
+            roomMode: "team",
+            stakeKey: "stake_100",
+            stakeAmount: 100,
+            humanSeats: 4,
+            totalPlayers: 4,
+            isTeamMode: true,
+            inviter: { id: "p-1", displayName: "Samir", avatarSeed: null, avatarUrl: null, isGuest: false },
+            invitee: { id: "p-4", displayName: "Charlie", avatarSeed: null, avatarUrl: null, isGuest: false }
+          }
+        ],
+        items: []
+      })
+    });
+  });
+
+  let cancelInviteCalled = false;
+  await page.route("**/social/invitations/*/cancel**", async (route) => {
+    cancelInviteCalled = true;
+    const headers = {
+      "Access-Control-Allow-Origin": route.request().headers().origin ?? "http://127.0.0.1:4173",
+      "Access-Control-Allow-Methods": "GET,POST,PUT,PATCH,DELETE,OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With",
+      "Access-Control-Allow-Credentials": "true",
+      "Vary": "Origin"
+    };
+    return route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      headers,
+      body: JSON.stringify({
+        item: {
+          id: "inv-sent",
+          status: "revoked",
+          roomId: "room-12",
+          roomCode: null,
+          roomMode: "team",
+          stakeKey: "stake_100",
+          stakeAmount: 100,
+          humanSeats: 4,
+          totalPlayers: 4,
+          isTeamMode: true,
+          inviter: { id: "p-1", displayName: "Samir", avatarSeed: null, avatarUrl: null, isGuest: false },
+          invitee: { id: "p-4", displayName: "Charlie", avatarSeed: null, avatarUrl: null, isGuest: false }
+        }
+      })
+    });
+  });
+
   await page.route("**/social/players/p-2/profile", async (route) => {
     const headers = {
       "Access-Control-Allow-Origin": route.request().headers().origin ?? "http://127.0.0.1:4173",
@@ -505,6 +588,14 @@ test("authenticated profile shows four stats cards without Xal and leaderboard u
   await page.evaluate(() => document.getElementById("open-social-btn")?.click());
   await expect(page.locator("#social-center-modal")).toHaveClass(/active/);
   await expect(page.locator("#social-inbox-list .inbox-card")).toHaveCount(1);
+  await page.locator("#social-center-tabs [data-social-tab='invites']").click();
+  await expect(page.locator("#social-invites-incoming-list .friend-card")).toHaveCount(1);
+  await expect(page.locator("#social-invites-sent-list .friend-card")).toHaveCount(1);
+  await expect(page.locator("#social-invites-sent-list")).toContainText(/Cancel|Ləğv et|Отменить/);
+  await page.locator("#social-invites-sent-list .friend-card .btn").click();
+  await expect.poll(() => cancelInviteCalled).toBeTruthy();
+  await page.locator("#social-center-tabs [data-social-tab='inbox']").click();
+  await expect(page.locator("#social-inbox-panel")).not.toHaveClass(/is-hidden/);
   await page.locator("#social-inbox-list .inbox-card .btn").nth(1).click();
   await expect(page.locator("#social-inbox-list .inbox-card")).toHaveCount(0);
 

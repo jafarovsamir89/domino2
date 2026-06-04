@@ -649,6 +649,12 @@ export class AccountClient {
         });
     }
 
+    async cancelRoomInvitation(id) {
+        return this.platformRequest(`/social/invitations/${encodeURIComponent(id)}/cancel`, {
+            method: "POST"
+        });
+    }
+
     async register(nameOrOptions, passwordMaybe) {
         const options = typeof nameOrOptions === "object" && nameOrOptions !== null
             ? nameOrOptions

@@ -341,6 +341,157 @@ test("acceptRoomInvitation rejects expired invites and marks them expired", asyn
   assert.equal(invite.status, "expired");
 });
 
+test("getRoomInvitations returns incoming and sent invites separately", async () => {
+  const currentPlayer = makePlayer("player-a", "Alpha");
+  const friend = makePlayer("player-b", "Beta");
+  const incomingInvite = {
+    id: "invite-incoming",
+    roomId: "room-1",
+    roomCode: "ABCD",
+    roomMode: "ffa",
+    stakeKey: null,
+    stakeAmount: 50,
+    humanSeats: 2,
+    totalPlayers: 2,
+    isTeamMode: false,
+    status: "pending",
+    note: null,
+    createdAt: new Date("2024-01-01T00:00:00.000Z"),
+    updatedAt: new Date("2024-01-01T00:00:00.000Z"),
+    respondedAt: null,
+    expiresAt: new Date("2024-01-01T00:01:00.000Z"),
+    inviterPlayerId: friend.id,
+    inviteePlayerId: currentPlayer.id,
+    inviter: friend,
+    invitee: currentPlayer
+  };
+  const sentInvite = {
+    id: "invite-sent",
+    roomId: "room-2",
+    roomCode: null,
+    roomMode: "team",
+    stakeKey: "stake_100",
+    stakeAmount: 100,
+    humanSeats: 4,
+    totalPlayers: 4,
+    isTeamMode: true,
+    status: "accepted",
+    note: null,
+    createdAt: new Date("2024-01-02T00:00:00.000Z"),
+    updatedAt: new Date("2024-01-02T00:00:00.000Z"),
+    respondedAt: new Date("2024-01-02T00:00:01.000Z"),
+    expiresAt: new Date("2024-01-02T00:01:00.000Z"),
+    inviterPlayerId: currentPlayer.id,
+    inviteePlayerId: friend.id,
+    inviter: currentPlayer,
+    invitee: friend
+  };
+  const prismaMock = {
+    roomInvitation: {
+      updateMany: async () => ({ count: 0 }),
+      findMany: async () => [incomingInvite, sentInvite]
+    }
+  } as any;
+
+  const service = new SocialService(prismaMock, {} as any);
+  (service as any).getCurrentPlayer = async () => currentPlayer;
+
+  const result = await service.getRoomInvitations({} as any);
+  assert.equal(result.incoming.length, 1);
+  assert.equal(result.sent.length, 1);
+  assert.equal(result.incoming[0].id, incomingInvite.id);
+  assert.equal(result.sent[0].id, sentInvite.id);
+});
+
+test("cancelRoomInvitation allows the inviter to cancel pending sent invites", async () => {
+  const currentPlayer = makePlayer("player-a", "Alpha");
+  const invitee = makePlayer("player-b", "Beta");
+  const invite = {
+    id: "invite-cancel",
+    roomId: "room-3",
+    roomCode: "EFGH",
+    roomMode: "ffa",
+    stakeKey: null,
+    stakeAmount: 50,
+    humanSeats: 2,
+    totalPlayers: 2,
+    isTeamMode: false,
+    status: "pending",
+    note: null,
+    createdAt: new Date("2024-01-03T00:00:00.000Z"),
+    updatedAt: new Date("2024-01-03T00:00:00.000Z"),
+    respondedAt: null,
+    expiresAt: new Date("2024-01-03T00:01:00.000Z"),
+    inviterPlayerId: currentPlayer.id,
+    inviteePlayerId: invitee.id,
+    inviter: currentPlayer,
+    invitee
+  };
+  let cancelled = false;
+
+  const prismaMock = {
+    roomInvitation: {
+      findUnique: async () => invite,
+      update: async ({ data }: any) => {
+        cancelled = data.status === "revoked";
+        Object.assign(invite, data);
+        return invite;
+      }
+    }
+  } as any;
+
+  const service = new SocialService(prismaMock, {} as any);
+  (service as any).getCurrentPlayer = async () => currentPlayer;
+
+  const result = await service.cancelRoomInvitation({} as any, invite.id);
+  assert.equal(cancelled, true);
+  assert.equal(result.item.status, "revoked");
+  assert.equal(invite.status, "revoked");
+});
+
+test("cancelRoomInvitation rejects an invitee trying to cancel someone else's invite", async () => {
+  const inviter = makePlayer("player-a", "Alpha");
+  const invitee = makePlayer("player-b", "Beta");
+  const invite = {
+    id: "invite-cancel-forbidden",
+    roomId: "room-4",
+    roomCode: "IJKL",
+    roomMode: "ffa",
+    stakeKey: null,
+    stakeAmount: 50,
+    humanSeats: 2,
+    totalPlayers: 2,
+    isTeamMode: false,
+    status: "pending",
+    note: null,
+    createdAt: new Date("2024-01-04T00:00:00.000Z"),
+    updatedAt: new Date("2024-01-04T00:00:00.000Z"),
+    respondedAt: null,
+    expiresAt: new Date("2024-01-04T00:01:00.000Z"),
+    inviterPlayerId: inviter.id,
+    inviteePlayerId: invitee.id,
+    inviter,
+    invitee
+  };
+
+  const prismaMock = {
+    roomInvitation: {
+      findUnique: async () => invite,
+      update: async () => {
+        throw new Error("should not be called");
+      }
+    }
+  } as any;
+
+  const service = new SocialService(prismaMock, {} as any);
+  (service as any).getCurrentPlayer = async () => invitee;
+
+  await assert.rejects(
+    () => service.cancelRoomInvitation({} as any, invite.id),
+    /Invitation not found/
+  );
+});
+
 test("sendDirectMessage rejects messaging yourself", async () => {
   const currentPlayer = makePlayer("player-a", "Alpha");
   const prismaMock = {

@@ -2009,4 +2009,44 @@ export class SocialService {
 
     return { item: this.summarizeInvite(declined) };
   }
+
+  async cancelRoomInvitation(headers: IncomingHttpHeaders, id: string) {
+    const currentPlayer = await this.getCurrentPlayer(headers);
+    const row = await this.prisma.roomInvitation.findUnique({
+      where: { id },
+      include: {
+        inviter: { select: this.playerSelect() },
+        invitee: { select: this.playerSelect() }
+      }
+    });
+    if (!row) {
+      throw new NotFoundException("Invitation not found");
+    }
+    if (row.inviterPlayerId !== currentPlayer.id) {
+      throw new ForbiddenException("Invitation not found");
+    }
+    if (row.status === "revoked") {
+      return { item: this.summarizeInvite(row) };
+    }
+    if (row.status === "expired") {
+      throw new BadRequestException("Invitation expired");
+    }
+    if (row.status !== "pending") {
+      throw new BadRequestException("Invitation already responded");
+    }
+
+    const cancelled = await this.prisma.roomInvitation.update({
+      where: { id },
+      data: {
+        status: "revoked",
+        respondedAt: new Date()
+      },
+      include: {
+        inviter: { select: this.playerSelect() },
+        invitee: { select: this.playerSelect() }
+      }
+    });
+
+    return { item: this.summarizeInvite(cancelled) };
+  }
 }

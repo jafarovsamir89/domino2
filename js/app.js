@@ -1437,7 +1437,11 @@ class DominoGame {
     }
 
     async loadSocialInvitesPage() {
-        const invitesList = document.getElementById('social-invites-list');
+        const incomingList = document.getElementById('social-invites-incoming-list');
+        const sentList = document.getElementById('social-invites-sent-list');
+        const fallbackList = document.getElementById('social-invites-list');
+        const hasSplitLayout = Boolean(incomingList && sentList);
+        const invitesList = fallbackList || incomingList || sentList;
         if (!invitesList) return [];
         if (!this.hasAuthenticatedAccount()) {
             this.setSummaryMessage(invitesList, this.t('friends-login-required'));
@@ -1450,101 +1454,42 @@ class DominoGame {
             this.roomInvitations = invitations || { incoming: [], sent: [] };
             this.restoreGameInviteStateFromInvitations();
             void this.refreshGameInviteState().catch(() => {});
-            invitesList.innerHTML = '';
             const incoming = Array.isArray(this.roomInvitations.incoming) ? this.roomInvitations.incoming : [];
-            if (!incoming.length) {
-                this.setSummaryMessage(invitesList, this.t('no-room-invites'));
-            } else {
-                incoming.forEach((invite) => {
-                    const card = document.createElement('div');
-                    card.className = 'friend-card';
-                    const copy = document.createElement('div');
-                    copy.className = 'friend-card-copy';
-                    const name = document.createElement('strong');
-                    name.textContent = invite?.inviter?.displayName || this.t('no-room-invites');
-                    const meta = document.createElement('span');
-                    meta.textContent = `${invite?.roomCode || invite?.roomId || ''}${invite?.roomMode ? ` · ${invite.roomMode}` : ''}`;
-                    copy.appendChild(name);
-                    copy.appendChild(meta);
-                    const action = document.createElement('div');
-                    action.className = 'friend-card-actions';
-                    const acceptBtn = document.createElement('button');
-                    acceptBtn.className = 'btn btn-action btn-strong';
-                    const isAcceptedWaiting = String(invite?.status || '').trim() === 'accepted' && !String(invite?.roomCode || '').trim();
-                    acceptBtn.textContent = isAcceptedWaiting
-                        ? this.t('invite-waiting-room')
-                        : this.t('invites-accept');
-                    acceptBtn.disabled = isAcceptedWaiting;
-                    acceptBtn.addEventListener('click', async () => {
-                        if (isAcceptedWaiting) return;
-                        acceptBtn.disabled = true;
-                        try {
-                            const accepted = await this.account.acceptRoomInvitation(invite.id);
-                            const row = accepted?.item || invite;
-                            const resolvedRoomCode = String(row.roomCode || '').trim()
-                                || await this.network.resolveRoomCode(String(row.roomId || '').trim()).catch(() => null)
-                                || '';
-                            if (resolvedRoomCode) {
-                                await this.joinOnlineRoom(resolvedRoomCode);
-                            } else {
-                                this.gameInviteState = {
-                                    inviteId: String(row.id || invite.id || '').trim(),
-                                    inviteePlayerId: String(row.invitee?.id || this.accountProfile?.playerId || this.accountProfile?.id || '').trim(),
-                                    inviteeDisplayName: String(row.invitee?.displayName || this.accountProfile?.displayName || '').trim(),
-                                    sessionId: String(row.roomId || invite.roomId || '').trim(),
-                                    role: 'invitee',
-                                    roomLinked: false,
-                                    createPromptShown: false,
-                                    waitingPromptShown: true
-                                };
-                                this.startGameInviteRefresh();
-                                this.renderer.showMessage(this.t('invite-waiting-room'), 1800);
-                                await this.loadSocialInvitesPage();
-                            }
-                        } catch (err) {
-                            this.renderer.showMessage(err?.message || this.t('friends-load-failed'), 1800);
-                        } finally {
-                            acceptBtn.disabled = false;
-                        }
-                    });
-                    const declineBtn = document.createElement('button');
-                    declineBtn.className = 'btn btn-menu';
-                    declineBtn.textContent = this.t('invites-decline');
-                    const inviteStatus = String(invite?.status || '').trim().toLowerCase();
-                    const inviteExpiresAt = Number(Date.parse(String(invite?.expiresAt || '')));
-                    const inviteIsExpired = Number.isFinite(inviteExpiresAt) && inviteExpiresAt > 0 && inviteExpiresAt <= Date.now();
-                    const canDecline = inviteStatus === 'pending' && !inviteIsExpired;
-                    declineBtn.disabled = !canDecline;
-                    declineBtn.addEventListener('click', async () => {
-                        declineBtn.disabled = true;
-                        const inviteId = String(invite?.id || invite?.invitationId || invite?.roomInvitationId || '').trim();
-                        if (!inviteId) {
-                            declineBtn.disabled = false;
-                            return;
-                        }
-                        try {
-                            await this.account.declineRoomInvitation(inviteId);
-                            await this.loadSocialInvitesPage();
-                        } catch (err) {
-                            const msg = String(err?.message || '').toLowerCase();
-                            if (msg.includes('already responded') || msg.includes('expired') || msg.includes('not found')) {
-                                await this.loadSocialInvitesPage().catch(() => {});
-                            } else {
-                                this.renderer.showMessage(err?.message || this.t('friends-load-failed'), 1800);
-                            }
-                        } finally {
-                            declineBtn.disabled = false;
-                        }
-                    });
-                    action.appendChild(acceptBtn);
-                    action.appendChild(declineBtn);
-                    card.appendChild(copy);
-                    card.appendChild(action);
-                    invitesList.appendChild(card);
+            const sent = Array.isArray(this.roomInvitations.sent) ? this.roomInvitations.sent : [];
+
+            const renderList = (container, items, kind, emptyKey) => {
+                if (!container) return;
+                container.innerHTML = '';
+                if (!items.length) {
+                    this.setSummaryMessage(container, this.t(emptyKey));
+                    return;
+                }
+                items.forEach((invite) => {
+                    container.appendChild(this.createRoomInvitationCard(invite, kind));
                 });
+            };
+
+            if (hasSplitLayout) {
+                renderList(incomingList, incoming, 'incoming', 'no-room-invites');
+                renderList(sentList, sent, 'sent', 'invite-sent-empty');
+            } else {
+                invitesList.innerHTML = '';
+                const combined = [...incoming, ...sent];
+                if (!combined.length) {
+                    this.setSummaryMessage(invitesList, this.t('no-room-invites'));
+                } else {
+                    combined.forEach((invite) => {
+                        invitesList.appendChild(this.createRoomInvitationCard(invite, incoming.some((item) => item?.id === invite?.id) ? 'incoming' : 'sent'));
+                    });
+                }
             }
         } catch (err) {
-            this.setSummaryMessage(invitesList, err?.message || this.t('friends-load-failed'));
+            const message = err?.message || this.t('friends-load-failed');
+            this.setSummaryMessage(invitesList, message);
+            if (incomingList && sentList) {
+                this.setSummaryMessage(incomingList, message);
+                this.setSummaryMessage(sentList, message);
+            }
         }
         await this.loadSocialSummary();
         this.updateSocialCenterBadge();
@@ -3277,7 +3222,7 @@ class DominoGame {
         const searchBtn = document.getElementById('friends-search-btn');
         if (!friendsList || !requestsList || !searchResults || !searchInput || !searchBtn) return;
 
-        const loggedIn = Boolean(this.account?.getRoomAuthToken?.());
+        const loggedIn = this.hasAuthenticatedAccount();
         const loading = this.t('account-profile-loading');
         if (!loggedIn) {
             this.setSummaryMessage(friendsList, this.t('friends-login-required'));
@@ -3432,6 +3377,178 @@ class DominoGame {
         }
         await this.loadSocialSummary();
         this.updateSocialCenterBadge();
+    }
+
+    getRoomInvitationStatusKey(invite) {
+        const status = String(invite?.status || '').trim().toLowerCase();
+        if (!status) return 'invite-status-pending';
+        if (status === 'accepted' && !String(invite?.roomCode || '').trim()) return 'invite-waiting-room';
+        if (status === 'declined') return 'invite-status-declined';
+        if (status === 'expired') return 'invite-status-expired';
+        if (status === 'cancelled' || status === 'revoked') return 'invite-status-cancelled';
+        return `invite-status-${status}`;
+    }
+
+    getRoomInvitationStatusLabel(invite) {
+        const key = this.getRoomInvitationStatusKey(invite);
+        return this.t(key) || String(invite?.status || '').trim() || this.t('invite-status-pending');
+    }
+
+    isRoomInvitationPending(invite) {
+        const status = String(invite?.status || '').trim().toLowerCase();
+        const inviteExpiresAt = Number(Date.parse(String(invite?.expiresAt || '')));
+        const inviteIsExpired = Number.isFinite(inviteExpiresAt) && inviteExpiresAt > 0 && inviteExpiresAt <= Date.now();
+        return status === 'pending' && !inviteIsExpired;
+    }
+
+    createRoomInvitationCard(invite, kind = 'incoming') {
+        const card = document.createElement('div');
+        card.className = 'friend-card';
+        const pending = this.isRoomInvitationPending(invite);
+
+        const copy = document.createElement('div');
+        copy.className = 'friend-card-copy';
+        const name = document.createElement('strong');
+        const otherParty = kind === 'incoming' ? invite?.inviter : invite?.invitee;
+        name.textContent = otherParty?.displayName || this.t('no-room-invites');
+        const meta = document.createElement('span');
+        meta.textContent = `${invite?.roomCode || invite?.roomId || ''}${invite?.roomMode ? ` · ${invite.roomMode}` : ''}`;
+        copy.appendChild(name);
+        copy.appendChild(meta);
+
+        const statusLabel = document.createElement('span');
+        statusLabel.className = 'room-summary';
+        statusLabel.textContent = this.getRoomInvitationStatusLabel(invite);
+        const showStatusLabel = kind === 'sent' || !pending;
+        if (showStatusLabel) {
+            copy.appendChild(statusLabel);
+        }
+
+        const action = document.createElement('div');
+        action.className = 'friend-card-actions';
+
+        if (kind === 'incoming') {
+            const acceptBtn = document.createElement('button');
+            acceptBtn.className = 'btn btn-action btn-strong';
+            const isAcceptedWaiting = String(invite?.status || '').trim() === 'accepted' && !String(invite?.roomCode || '').trim();
+            acceptBtn.textContent = isAcceptedWaiting
+                ? this.t('invite-waiting-room')
+                : this.t('invites-accept');
+            acceptBtn.disabled = isAcceptedWaiting || !pending;
+            acceptBtn.addEventListener('click', async () => {
+                if (isAcceptedWaiting || !pending) return;
+                acceptBtn.disabled = true;
+                try {
+                    const accepted = await this.account.acceptRoomInvitation(invite.id);
+                    const row = accepted?.item || invite;
+                    const resolvedRoomCode = String(row.roomCode || '').trim()
+                        || await this.network.resolveRoomCode(String(row.roomId || '').trim()).catch(() => null)
+                        || '';
+                    if (resolvedRoomCode) {
+                        await this.joinOnlineRoom(resolvedRoomCode);
+                    } else {
+                        this.gameInviteState = {
+                            inviteId: String(row.id || invite.id || '').trim(),
+                            inviteePlayerId: String(row.invitee?.id || this.accountProfile?.playerId || this.accountProfile?.id || '').trim(),
+                            inviteeDisplayName: String(row.invitee?.displayName || this.accountProfile?.displayName || '').trim(),
+                            sessionId: String(row.roomId || invite.roomId || '').trim(),
+                            role: 'invitee',
+                            roomLinked: false,
+                            createPromptShown: false,
+                            waitingPromptShown: true
+                        };
+                        this.startGameInviteRefresh();
+                        this.renderer.showMessage(this.t('invite-waiting-room'), 1800);
+                        await this.loadSocialInvitesPage();
+                    }
+                } catch (err) {
+                    this.renderer.showMessage(err?.message || this.t('friends-load-failed'), 1800);
+                } finally {
+                    acceptBtn.disabled = false;
+                }
+            });
+            const declineBtn = document.createElement('button');
+            declineBtn.className = 'btn btn-menu';
+            declineBtn.textContent = this.t('invites-decline');
+            declineBtn.disabled = !pending;
+            declineBtn.addEventListener('click', async () => {
+                if (!pending) return;
+                declineBtn.disabled = true;
+                const inviteId = String(invite?.id || invite?.invitationId || invite?.roomInvitationId || '').trim();
+                if (!inviteId) {
+                    declineBtn.disabled = false;
+                    return;
+                }
+                try {
+                    await this.account.declineRoomInvitation(inviteId);
+                    await this.loadSocialInvitesPage();
+                } catch (err) {
+                    const msg = String(err?.message || '').toLowerCase();
+                    if (msg.includes('already responded') || msg.includes('expired') || msg.includes('not found')) {
+                        await this.loadSocialInvitesPage().catch(() => {});
+                    } else {
+                        this.renderer.showMessage(err?.message || this.t('friends-load-failed'), 1800);
+                    }
+                } finally {
+                    declineBtn.disabled = false;
+                }
+            });
+            action.appendChild(acceptBtn);
+            action.appendChild(declineBtn);
+        } else {
+            const statusOnly = !pending && String(invite?.status || '').trim() !== 'accepted';
+            const isAcceptedWaiting = String(invite?.status || '').trim() === 'accepted' && !String(invite?.roomCode || '').trim();
+            if (pending) {
+                const cancelBtn = document.createElement('button');
+                cancelBtn.className = 'btn btn-menu';
+                cancelBtn.textContent = this.t('invite-cancel');
+                cancelBtn.addEventListener('click', async () => {
+                    cancelBtn.disabled = true;
+                    const inviteId = String(invite?.id || invite?.invitationId || invite?.roomInvitationId || '').trim();
+                    if (!inviteId) {
+                        cancelBtn.disabled = false;
+                        return;
+                    }
+                    try {
+                        await this.account.cancelRoomInvitation(inviteId);
+                        await this.loadSocialInvitesPage();
+                        this.renderer.showMessage(this.t('invite-cancelled'), 1400);
+                    } catch (err) {
+                        const msg = String(err?.message || '').toLowerCase();
+                        if (msg.includes('already responded') || msg.includes('expired') || msg.includes('not found')) {
+                            await this.loadSocialInvitesPage().catch(() => {});
+                        } else {
+                            this.renderer.showMessage(err?.message || this.t('friends-load-failed'), 1800);
+                        }
+                    } finally {
+                        cancelBtn.disabled = false;
+                    }
+                });
+                action.appendChild(cancelBtn);
+            } else if (isAcceptedWaiting) {
+                const waitingBtn = document.createElement('button');
+                waitingBtn.className = 'btn btn-menu';
+                waitingBtn.disabled = true;
+                waitingBtn.textContent = this.t('invite-waiting-room');
+                action.appendChild(waitingBtn);
+            } else if (statusOnly) {
+                const statusBtn = document.createElement('button');
+                statusBtn.className = 'btn btn-menu';
+                statusBtn.disabled = true;
+                statusBtn.textContent = this.getRoomInvitationStatusLabel(invite);
+                action.appendChild(statusBtn);
+            } else {
+                const statusBtn = document.createElement('button');
+                statusBtn.className = 'btn btn-menu';
+                statusBtn.disabled = true;
+                statusBtn.textContent = this.getRoomInvitationStatusLabel(invite);
+                action.appendChild(statusBtn);
+            }
+        }
+
+        card.appendChild(copy);
+        card.appendChild(action);
+        return card;
     }
 
     async searchFriendsPage(skipLoading = false) {
@@ -4499,10 +4616,16 @@ class DominoGame {
                     </section>
 
                     <section class="social-center-panel is-hidden" id="social-invites-panel">
-                        <section class="friends-section">
-                            <div class="section-kicker" data-i18n="invites-title">Room invites</div>
-                            <div id="social-invites-list" class="friends-list"></div>
-                        </section>
+                        <div class="friends-page social-invites-page">
+                            <section class="friends-section">
+                                <div class="section-kicker" data-i18n="invites-incoming-title">Incoming invites</div>
+                                <div id="social-invites-incoming-list" class="friends-list"></div>
+                            </section>
+                            <section class="friends-section">
+                                <div class="section-kicker" data-i18n="invites-sent-title">Sent invites</div>
+                                <div id="social-invites-sent-list" class="friends-list"></div>
+                            </section>
+                        </div>
                     </section>
 
                     <section class="social-center-panel is-hidden" id="social-friends-panel">
@@ -5957,7 +6080,7 @@ class DominoGame {
         const requestsList = document.getElementById('friends-requests-list') || document.getElementById('friend-requests-list');
         const invitesList = document.getElementById('social-invites-list') || document.getElementById('room-invites-list');
         const searchResults = document.getElementById('friends-search-results') || document.getElementById('friend-search-results');
-        const loggedIn = Boolean(this.account?.getRoomAuthToken?.());
+        const loggedIn = this.hasAuthenticatedAccount();
         const emptyText = this.t('friends-sign-in');
 
         if (!friendsList || !requestsList || !invitesList || !searchResults) return;
@@ -6104,98 +6227,38 @@ class DominoGame {
                     card.appendChild(action);
                     requestsList.appendChild(card);
                 };
-                this.friendHub.incoming.forEach((item) => renderRequest(item, this.t('friend-incoming'), true));
+            this.friendHub.incoming.forEach((item) => renderRequest(item, this.t('friend-incoming'), true));
                 this.friendHub.outgoing.forEach((item) => renderRequest(item, this.t('friend-outgoing'), false));
             }
 
-            invitesList.innerHTML = '';
-            if (!this.roomInvitations.incoming.length) {
-                this.setSummaryMessage(invitesList, this.t('no-room-invites'));
-            } else {
-                this.roomInvitations.incoming.forEach((invite) => {
-                    const card = document.createElement('div');
-                    card.className = 'friend-card';
-                    const copy = document.createElement('div');
-                    copy.className = 'friend-card-copy';
-                    const name = document.createElement('strong');
-                    name.textContent = invite.inviter.displayName;
-                    const meta = document.createElement('span');
-                    meta.textContent = `${invite.roomCode || invite.roomId} · ${invite.roomMode || 'ffa'}`;
-                    copy.appendChild(name);
-                    copy.appendChild(meta);
-                    const action = document.createElement('div');
-                    action.className = 'friend-card-actions';
-                    const acceptBtn = document.createElement('button');
-                    acceptBtn.className = 'btn btn-action btn-strong';
-                    const isAcceptedWaiting = String(invite?.status || '').trim() === 'accepted' && !String(invite?.roomCode || '').trim();
-                    acceptBtn.textContent = isAcceptedWaiting
-                        ? this.t('invite-waiting-room')
-                        : this.t('room-join');
-                    acceptBtn.disabled = isAcceptedWaiting;
-                    acceptBtn.addEventListener('click', async () => {
-                        if (isAcceptedWaiting) return;
-                        acceptBtn.disabled = true;
-                        try {
-                            const accepted = await this.account.acceptRoomInvitation(invite.id);
-                            const row = accepted?.item || invite;
-                            if (row.roomCode) {
-                                await this.joinOnlineRoom(row.roomCode || row.roomId);
-                            } else {
-                                this.gameInviteState = {
-                                    inviteId: String(row.id || invite.id || '').trim(),
-                                    inviteePlayerId: String(row.invitee?.id || this.accountProfile?.playerId || this.accountProfile?.id || '').trim(),
-                                    inviteeDisplayName: String(row.invitee?.displayName || this.accountProfile?.displayName || '').trim(),
-                                    sessionId: String(row.roomId || invite.roomId || '').trim(),
-                                    role: 'invitee',
-                                    roomLinked: false,
-                                    createPromptShown: false,
-                                    waitingPromptShown: true
-                                };
-                                this.startGameInviteRefresh();
-                                this.renderer.showMessage(this.t('invite-waiting-room'), 1800);
-                                await this.loadFriendsHub();
-                            }
-                        } catch (err) {
-                            this.renderer.showMessage(err.message || this.t('account-server-unavailable'), 1800);
-                        } finally {
-                            acceptBtn.disabled = false;
-                        }
-                    });
-                    const declineBtn = document.createElement('button');
-                    declineBtn.className = 'btn btn-menu';
-                    declineBtn.textContent = this.t('friend-decline');
-                    const inviteStatus = String(invite?.status || '').trim().toLowerCase();
-                    const inviteExpiresAt = Number(Date.parse(String(invite?.expiresAt || '')));
-                    const inviteIsExpired = Number.isFinite(inviteExpiresAt) && inviteExpiresAt > 0 && inviteExpiresAt <= Date.now();
-                    const canDecline = inviteStatus === 'pending' && !inviteIsExpired;
-                    declineBtn.disabled = !canDecline;
-                    declineBtn.addEventListener('click', async () => {
-                        declineBtn.disabled = true;
-                        const inviteId = String(invite?.id || invite?.invitationId || invite?.roomInvitationId || '').trim();
-                        if (!inviteId) {
-                            declineBtn.disabled = false;
-                            return;
-                        }
-                        try {
-                            await this.account.declineRoomInvitation(inviteId);
-                            await this.loadFriendsHub();
-                        } catch (err) {
-                            const msg = String(err?.message || '').toLowerCase();
-                            if (msg.includes('already responded') || msg.includes('expired') || msg.includes('not found')) {
-                                await this.loadFriendsHub().catch(() => {});
-                            } else {
-                                this.renderer.showMessage(err.message || this.t('account-server-unavailable'), 1800);
-                            }
-                        } finally {
-                            declineBtn.disabled = false;
-                        }
-                    });
-                    action.appendChild(acceptBtn);
-                    action.appendChild(declineBtn);
-                    card.appendChild(copy);
-                    card.appendChild(action);
-                    invitesList.appendChild(card);
-                });
+            try {
+                invitesList.innerHTML = '';
+                const incomingInvites = Array.isArray(this.roomInvitations.incoming) ? this.roomInvitations.incoming : [];
+                const sentInvites = Array.isArray(this.roomInvitations.sent) ? this.roomInvitations.sent : [];
+                if (!incomingInvites.length && !sentInvites.length) {
+                    this.setSummaryMessage(invitesList, this.t('no-room-invites'));
+                } else {
+                    if (incomingInvites.length) {
+                        const incomingTitle = document.createElement('div');
+                        incomingTitle.className = 'section-kicker';
+                        incomingTitle.textContent = this.t('invites-incoming-title');
+                        invitesList.appendChild(incomingTitle);
+                        incomingInvites.forEach((invite) => {
+                            invitesList.appendChild(this.createRoomInvitationCard(invite, 'incoming'));
+                        });
+                    }
+                    if (sentInvites.length) {
+                        const sentTitle = document.createElement('div');
+                        sentTitle.className = 'section-kicker';
+                        sentTitle.textContent = this.t('invites-sent-title');
+                        invitesList.appendChild(sentTitle);
+                        sentInvites.forEach((invite) => {
+                            invitesList.appendChild(this.createRoomInvitationCard(invite, 'sent'));
+                        });
+                    }
+                }
+            } catch (invitesErr) {
+                this.setSummaryMessage(invitesList, invitesErr?.message || this.t('friends-load-failed'));
             }
         } catch (err) {
             this.setSummaryMessage(friendsList, err.message || this.t('account-server-unavailable'));

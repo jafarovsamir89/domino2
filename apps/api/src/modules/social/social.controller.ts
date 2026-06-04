@@ -157,4 +157,9 @@ export class SocialController {
   async declineRoomInvitation(@Req() req: Request, @Param("id") id: string) {
     return this.socialService.declineRoomInvitation(req.headers, id);
   }
+
+  @Post("invitations/:id/cancel")
+  async cancelRoomInvitation(@Req() req: Request, @Param("id") id: string) {
+    return this.socialService.cancelRoomInvitation(req.headers, id);
+  }
 }
