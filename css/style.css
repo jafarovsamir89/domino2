@@ -5955,5 +5955,14 @@ body.is-reconnecting .hand-container {
     transform: none;
 }
 
+/* Disabled button feedback across modal buttons */
+.btn:disabled, .btn-action:disabled, .btn-menu:disabled {
+    opacity: 0.55 !important;
+    cursor: not-allowed !important;
+    filter: brightness(0.8) grayscale(0.2) !important;
+    pointer-events: none !important;
+}
+
+
 
 

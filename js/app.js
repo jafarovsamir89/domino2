@@ -4012,8 +4012,15 @@ class DominoGame {
         const status = String(invite?.status || '').trim().toLowerCase();
         if (!status) return false;
         if (this.isRoomInvitationPending(invite)) return true;
-        if (status === 'accepted' && !String(invite?.roomCode || '').trim()) return true;
+        if (status === 'accepted' && !this.isValidRoomCode(invite?.roomCode)) return true;
         return false;
+    }
+
+    isValidRoomCode(code) {
+        const clean = String(code || '').trim().toUpperCase();
+        if (!clean || clean.length < 4 || clean.length > 12) return false;
+        if (clean === 'NULL' || clean === 'UNDEFINED') return false;
+        return /^[A-Z0-9]{4,12}$/.test(clean);
     }
 
     getActiveRoomInvitations(invitations = {}) {
@@ -4069,16 +4076,18 @@ class DominoGame {
             acceptBtn.addEventListener('click', async () => {
                 if (isAcceptedWaiting || !pending) return;
                 acceptBtn.disabled = true;
+                const originalText = acceptBtn.textContent;
+                acceptBtn.textContent = '...';
                 try {
                     const accepted = await this.account.acceptRoomInvitation(invite.id);
                     const row = accepted?.item || invite;
                     let resolvedRoomCode = String(row.roomCode || '').trim();
-                    if (resolvedRoomCode.toLowerCase().startsWith('game_invite_')) {
+                    if (!this.isValidRoomCode(resolvedRoomCode)) {
                         resolvedRoomCode = '';
                     }
                     if (!resolvedRoomCode) {
                         const resolved = await this.network.resolveRoomCode(String(row.roomId || '').trim()).catch(() => null);
-                        if (resolved && !resolved.toLowerCase().startsWith('game_invite_')) {
+                        if (this.isValidRoomCode(resolved)) {
                             resolvedRoomCode = resolved;
                         }
                     }
@@ -4102,6 +4111,7 @@ class DominoGame {
                 } catch (err) {
                     this.renderer.showMessage(err?.message || this.t('friends-load-failed'), 1800);
                 } finally {
+                    acceptBtn.textContent = originalText;
                     acceptBtn.disabled = false;
                 }
             });
@@ -4113,9 +4123,12 @@ class DominoGame {
             declineBtn.addEventListener('click', async () => {
                 if (!pending) return;
                 declineBtn.disabled = true;
+                const originalText = declineBtn.textContent;
+                declineBtn.textContent = '...';
                 const inviteId = String(invite?.id || invite?.invitationId || invite?.roomInvitationId || '').trim();
                 if (!inviteId) {
                     declineBtn.disabled = false;
+                    declineBtn.textContent = originalText;
                     return;
                 }
                 try {
@@ -4130,6 +4143,7 @@ class DominoGame {
                     }
                 } finally {
                     declineBtn.disabled = false;
+                    declineBtn.textContent = originalText;
                 }
             });
             action.appendChild(acceptBtn);
@@ -4143,9 +4157,12 @@ class DominoGame {
                 cancelBtn.textContent = this.t('invite-cancel');
                 cancelBtn.addEventListener('click', async () => {
                     cancelBtn.disabled = true;
+                    const originalText = cancelBtn.textContent;
+                    cancelBtn.textContent = '...';
                     const inviteId = String(invite?.id || invite?.invitationId || invite?.roomInvitationId || '').trim();
                     if (!inviteId) {
                         cancelBtn.disabled = false;
+                        cancelBtn.textContent = originalText;
                         return;
                     }
                     try {
@@ -4161,6 +4178,7 @@ class DominoGame {
                         }
                     } finally {
                         cancelBtn.disabled = false;
+                        cancelBtn.textContent = originalText;
                     }
                 });
                 action.appendChild(cancelBtn);
@@ -4259,6 +4277,8 @@ class DominoGame {
                     inviteBtn.disabled = !canInvite;
                     inviteBtn.addEventListener('click', async () => {
                         inviteBtn.disabled = true;
+                        const originalText = inviteBtn.textContent;
+                        inviteBtn.textContent = '...';
                         try {
                             await this.sendGameInviteToPlayer(player, { source: 'friends-search' });
                             this.renderer.showMessage(this.t('invite-sent'), 1400);
@@ -4266,6 +4286,7 @@ class DominoGame {
                         } catch (err) {
                             this.renderer.showMessage(err.message || this.t('friends-load-failed'), 1800);
                         } finally {
+                            inviteBtn.textContent = originalText;
                             inviteBtn.disabled = !canInvite;
                         }
                     });
@@ -4406,12 +4427,15 @@ class DominoGame {
                     return;
                 }
                 inviteBtn.disabled = true;
+                const originalText = inviteBtn.textContent;
+                inviteBtn.textContent = '...';
                 try {
                     await this.sendGameInviteToPlayer(profile, { source: 'profile' });
                     this.renderer.showMessage(this.t('invite-sent'), 1400);
                 } catch (err) {
                     this.renderer.showMessage(err?.message || this.t('friends-load-failed'), 1800);
                 } finally {
+                    inviteBtn.textContent = originalText;
                     inviteBtn.disabled = !canInvite;
                 }
             };
@@ -5026,7 +5050,7 @@ class DominoGame {
 
         const roomCode = String(target.roomCode || '').trim();
         const status = String(target.status || '').trim();
-        const cleanRoomCode = (roomCode && !roomCode.toLowerCase().startsWith('game_invite_')) ? roomCode : '';
+        const cleanRoomCode = this.isValidRoomCode(roomCode) ? roomCode : '';
 
         if (state.role === 'invitee') {
             if (status === 'accepted' && cleanRoomCode) {
