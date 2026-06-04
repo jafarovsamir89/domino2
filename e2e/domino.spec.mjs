@@ -258,6 +258,20 @@ test("authenticated profile shows four stats cards without Xal and leaderboard u
             isTeamMode: false,
             inviter: { id: "p-2", displayName: "Alice", avatarSeed: null, avatarUrl: null, isGuest: false },
             invitee: { id: "p-1", displayName: "Samir", avatarSeed: null, avatarUrl: null, isGuest: false }
+          },
+          {
+            id: "inv-incoming-expired",
+            status: "expired",
+            roomId: "room-old",
+            roomCode: "ZZZZ",
+            roomMode: "ffa",
+            stakeKey: "stake_50",
+            stakeAmount: 50,
+            humanSeats: 2,
+            totalPlayers: 2,
+            isTeamMode: false,
+            inviter: { id: "p-3", displayName: "Bob", avatarSeed: null, avatarUrl: null, isGuest: false },
+            invitee: { id: "p-1", displayName: "Samir", avatarSeed: null, avatarUrl: null, isGuest: false }
           }
         ],
         sent: [
@@ -274,6 +288,20 @@ test("authenticated profile shows four stats cards without Xal and leaderboard u
             isTeamMode: true,
             inviter: { id: "p-1", displayName: "Samir", avatarSeed: null, avatarUrl: null, isGuest: false },
             invitee: { id: "p-4", displayName: "Charlie", avatarSeed: null, avatarUrl: null, isGuest: false }
+          },
+          {
+            id: "inv-sent-revoked",
+            status: "revoked",
+            roomId: "room-old-2",
+            roomCode: null,
+            roomMode: "ffa",
+            stakeKey: "stake_50",
+            stakeAmount: 50,
+            humanSeats: 2,
+            totalPlayers: 2,
+            isTeamMode: false,
+            inviter: { id: "p-1", displayName: "Samir", avatarSeed: null, avatarUrl: null, isGuest: false },
+            invitee: { id: "p-5", displayName: "Delta", avatarSeed: null, avatarUrl: null, isGuest: false }
           }
         ],
         items: []
@@ -591,6 +619,7 @@ test("authenticated profile shows four stats cards without Xal and leaderboard u
   await page.locator("#social-center-tabs [data-social-tab='invites']").click();
   await expect(page.locator("#social-invites-incoming-list .friend-card")).toHaveCount(1);
   await expect(page.locator("#social-invites-sent-list .friend-card")).toHaveCount(1);
+  await expect(page.locator("#social-center-modal")).not.toContainText(/Expired|Declined|Cancelled|Истекло|Отклонено|Отменено/);
   await expect(page.locator("#social-invites-sent-list")).toContainText(/Cancel|Ləğv et|Отменить/);
   await page.locator("#social-invites-sent-list .friend-card .btn").click();
   await expect.poll(() => cancelInviteCalled).toBeTruthy();

@@ -1454,17 +1454,17 @@ class DominoGame {
             this.roomInvitations = invitations || { incoming: [], sent: [] };
             this.restoreGameInviteStateFromInvitations();
             void this.refreshGameInviteState().catch(() => {});
-            const incoming = Array.isArray(this.roomInvitations.incoming) ? this.roomInvitations.incoming : [];
-            const sent = Array.isArray(this.roomInvitations.sent) ? this.roomInvitations.sent : [];
+            const { incoming, sent } = this.getActiveRoomInvitations(this.roomInvitations);
 
             const renderList = (container, items, kind, emptyKey) => {
                 if (!container) return;
                 container.innerHTML = '';
-                if (!items.length) {
+                const activeItems = Array.isArray(items) ? items : [];
+                if (!activeItems.length) {
                     this.setSummaryMessage(container, this.t(emptyKey));
                     return;
                 }
-                items.forEach((invite) => {
+                activeItems.forEach((invite) => {
                     container.appendChild(this.createRoomInvitationCard(invite, kind));
                 });
             };
@@ -1474,7 +1474,7 @@ class DominoGame {
                 renderList(sentList, sent, 'sent', 'invite-sent-empty');
             } else {
                 invitesList.innerHTML = '';
-                const combined = [...incoming, ...sent];
+                const combined = [...incoming, ...sent].filter((invite) => this.isRoomInvitationActive(invite));
                 if (!combined.length) {
                     this.setSummaryMessage(invitesList, this.t('no-room-invites'));
                 } else {
@@ -3185,7 +3185,7 @@ class DominoGame {
             const players = Array.isArray(summary?.players) ? summary.players : [];
             const map = new Map();
             players.forEach((player) => {
-                if (!player || player.provider !== 'platform' || player.isConnected === false) return;
+                if (!player || player.isConnected === false) return;
                 this.getPresenceKeysForPlayer(player).forEach((key) => {
                     if (!map.has(key)) map.set(key, player);
                 });
@@ -3399,6 +3399,23 @@ class DominoGame {
         const inviteExpiresAt = Number(Date.parse(String(invite?.expiresAt || '')));
         const inviteIsExpired = Number.isFinite(inviteExpiresAt) && inviteExpiresAt > 0 && inviteExpiresAt <= Date.now();
         return status === 'pending' && !inviteIsExpired;
+    }
+
+    isRoomInvitationActive(invite) {
+        const status = String(invite?.status || '').trim().toLowerCase();
+        if (!status) return false;
+        if (this.isRoomInvitationPending(invite)) return true;
+        if (status === 'accepted' && !String(invite?.roomCode || '').trim()) return true;
+        return false;
+    }
+
+    getActiveRoomInvitations(invitations = {}) {
+        const incoming = Array.isArray(invitations?.incoming) ? invitations.incoming : [];
+        const sent = Array.isArray(invitations?.sent) ? invitations.sent : [];
+        return {
+            incoming: incoming.filter((invite) => this.isRoomInvitationActive(invite)),
+            sent: sent.filter((invite) => this.isRoomInvitationActive(invite))
+        };
     }
 
     createRoomInvitationCard(invite, kind = 'incoming') {
@@ -6096,19 +6113,26 @@ class DominoGame {
         this.setSummaryMessage(requestsList, this.t('account-profile-loading'));
         this.setSummaryMessage(invitesList, this.t('account-profile-loading'));
         try {
-            const [friends, invitations] = await Promise.all([
+            const [friendsResult, invitationsResult, presenceResult] = await Promise.allSettled([
                 this.account.getFriends(),
                 this.account.getRoomInvitations(),
-                this.loadFriendPresenceMap().catch(() => new Map())
+                this.loadFriendPresenceMap()
             ]);
-            this.friendHub = friends || { accepted: [], incoming: [], outgoing: [] };
+            const friends = friendsResult.status === 'fulfilled' ? friendsResult.value : null;
+            const invitations = invitationsResult.status === 'fulfilled' ? invitationsResult.value : null;
+            if (presenceResult.status === 'fulfilled' && presenceResult.value instanceof Map) {
+                this.friendPresenceMap = presenceResult.value;
+            }
+            this.friendHub = friends || { accepted: [], incoming: [], outgoing: [], items: [] };
             this.roomInvitations = invitations || { incoming: [], sent: [] };
             this.restoreGameInviteStateFromInvitations();
             void this.refreshGameInviteState().catch(() => {});
             const presenceMap = this.friendPresenceMap instanceof Map ? this.friendPresenceMap : new Map();
 
             friendsList.innerHTML = '';
-            if (!this.friendHub.accepted.length) {
+            if (friendsResult.status !== 'fulfilled') {
+                this.setSummaryMessage(friendsList, friendsResult.reason?.message || this.t('friends-load-failed'));
+            } else if (!this.friendHub.accepted.length) {
                 this.setSummaryMessage(friendsList, this.t('no-friends-yet'));
             } else {
                 this.friendHub.accepted.forEach((item) => {
@@ -6174,7 +6198,9 @@ class DominoGame {
             }
 
             requestsList.innerHTML = '';
-            if (!this.friendHub.incoming.length && !this.friendHub.outgoing.length) {
+            if (friendsResult.status !== 'fulfilled') {
+                this.setSummaryMessage(requestsList, friendsResult.reason?.message || this.t('friends-load-failed'));
+            } else if (!this.friendHub.incoming.length && !this.friendHub.outgoing.length) {
                 this.setSummaryMessage(requestsList, this.t('no-friend-requests'));
             } else {
                 const renderRequest = (item, label, acceptable) => {
@@ -6233,28 +6259,31 @@ class DominoGame {
 
             try {
                 invitesList.innerHTML = '';
-                const incomingInvites = Array.isArray(this.roomInvitations.incoming) ? this.roomInvitations.incoming : [];
-                const sentInvites = Array.isArray(this.roomInvitations.sent) ? this.roomInvitations.sent : [];
-                if (!incomingInvites.length && !sentInvites.length) {
-                    this.setSummaryMessage(invitesList, this.t('no-room-invites'));
+                if (invitationsResult.status !== 'fulfilled') {
+                    this.setSummaryMessage(invitesList, invitationsResult.reason?.message || this.t('friends-load-failed'));
                 } else {
-                    if (incomingInvites.length) {
-                        const incomingTitle = document.createElement('div');
-                        incomingTitle.className = 'section-kicker';
-                        incomingTitle.textContent = this.t('invites-incoming-title');
-                        invitesList.appendChild(incomingTitle);
-                        incomingInvites.forEach((invite) => {
-                            invitesList.appendChild(this.createRoomInvitationCard(invite, 'incoming'));
-                        });
-                    }
-                    if (sentInvites.length) {
-                        const sentTitle = document.createElement('div');
-                        sentTitle.className = 'section-kicker';
-                        sentTitle.textContent = this.t('invites-sent-title');
-                        invitesList.appendChild(sentTitle);
-                        sentInvites.forEach((invite) => {
-                            invitesList.appendChild(this.createRoomInvitationCard(invite, 'sent'));
-                        });
+                    const { incoming: incomingInvites, sent: sentInvites } = this.getActiveRoomInvitations(this.roomInvitations);
+                    if (!incomingInvites.length && !sentInvites.length) {
+                        this.setSummaryMessage(invitesList, this.t('no-room-invites'));
+                    } else {
+                        if (incomingInvites.length) {
+                            const incomingTitle = document.createElement('div');
+                            incomingTitle.className = 'section-kicker';
+                            incomingTitle.textContent = this.t('invites-incoming-title');
+                            invitesList.appendChild(incomingTitle);
+                            incomingInvites.forEach((invite) => {
+                                invitesList.appendChild(this.createRoomInvitationCard(invite, 'incoming'));
+                            });
+                        }
+                        if (sentInvites.length) {
+                            const sentTitle = document.createElement('div');
+                            sentTitle.className = 'section-kicker';
+                            sentTitle.textContent = this.t('invites-sent-title');
+                            invitesList.appendChild(sentTitle);
+                            sentInvites.forEach((invite) => {
+                                invitesList.appendChild(this.createRoomInvitationCard(invite, 'sent'));
+                            });
+                        }
                     }
                 }
             } catch (invitesErr) {

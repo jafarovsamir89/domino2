@@ -929,8 +929,13 @@ export class SocialService {
       throw new NotFoundException("Player not found");
     }
 
-    const player = await this.prisma.player.findUnique({
-      where: { id: playerId },
+    const player = await this.prisma.player.findFirst({
+      where: {
+        OR: [
+          { id: playerId },
+          { userId: playerId }
+        ]
+      },
       select: this.playerProfileSelect()
     });
     if (!player) {

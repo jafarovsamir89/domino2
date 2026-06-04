@@ -64,6 +64,46 @@ test("acceptFriend only allows the addressee to accept a request", async () => {
   );
 });
 
+test("getPlayerProfile resolves profiles by userId when playerId is not provided", async () => {
+  const currentPlayer = makePlayer("player-current", "Current");
+  const targetPlayer = {
+    id: "player-target",
+    userId: "user-target",
+    displayName: "Target Player",
+    avatarSeed: null,
+    avatarUrl: null,
+    stats: {
+      rating: 1111,
+      matchesPlayed: 22,
+      wins: 15,
+      losses: 7
+    }
+  };
+
+  const prismaMock = {
+    player: {
+      findFirst: async ({ where }: any) => {
+        const filters = Array.isArray(where?.OR) ? where.OR : [];
+        if (filters.some((item: any) => item.id === targetPlayer.userId || item.userId === targetPlayer.userId)) {
+          return targetPlayer;
+        }
+        return null;
+      }
+    },
+    friendConnection: {
+      findFirst: async () => null
+    }
+  } as any;
+
+  const service = new SocialService(prismaMock, {} as any);
+  (service as any).getCurrentPlayer = async () => currentPlayer;
+
+  const result = await service.getPlayerProfile({} as any, targetPlayer.userId);
+  assert.equal(result.item.id, targetPlayer.id);
+  assert.equal(result.item.displayName, targetPlayer.displayName);
+  assert.equal(result.item.stats.rating, 1111);
+});
+
 test("inviteFriendToRoom refreshes an existing pending invite after a unique constraint race", async () => {
   const inviter = makePlayer("player-a", "Alpha");
   const invitee = makePlayer("player-b", "Beta");
