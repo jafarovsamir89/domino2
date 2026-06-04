@@ -537,6 +537,7 @@ class DominoGame {
                 document.getElementById('room-code-display').textContent = roomCode || String(roomId || '').trim();
                 void this.attachGameInviteRoom(roomId).catch(() => {});
                 this.setHostStatus(this.t('online-room-status-waiting'));
+                document.getElementById('online-invite-status-banner')?.classList.add('is-hidden');
             }, (err) => {
                 this.setHostStatus(`${this.t('online-room-status-error')}: ${err}`);
             });
@@ -4102,7 +4103,8 @@ class DominoGame {
                             role: 'invitee',
                             roomLinked: false,
                             createPromptShown: false,
-                            waitingPromptShown: true
+                            waitingPromptShown: true,
+                            createdAt: Date.now()
                         };
                         this.startGameInviteRefresh();
                         this.renderer.showMessage(this.t('invite-waiting-room'), 1800);
@@ -4963,7 +4965,8 @@ class DominoGame {
             role: 'inviter',
             roomLinked: Boolean(item?.roomCode),
             createPromptShown: false,
-            waitingPromptShown: false
+            waitingPromptShown: false,
+            createdAt: Date.now()
         };
         this.startGameInviteRefresh();
         await this.loadSocialSummary().catch(() => {});
@@ -5043,13 +5046,19 @@ class DominoGame {
         }) || null;
 
         if (!target) {
+            const ageMs = Date.now() - (state.createdAt || 0);
+            if (ageMs < 40000) {
+                return null;
+            }
             this.stopGameInviteRefresh();
             this.gameInviteState = null;
             return null;
         }
 
         const roomCode = String(target.roomCode || '').trim();
-        const status = String(target.status || '').trim();
+        const expiresAtStr = target.expiresAt ? String(target.expiresAt).trim() : '';
+        const isExpired = expiresAtStr && new Date(expiresAtStr).getTime() <= Date.now();
+        const status = (isExpired ? 'expired' : String(target.status || '').trim()).toLowerCase();
         const cleanRoomCode = this.isValidRoomCode(roomCode) ? roomCode : '';
 
         if (state.role === 'invitee') {
@@ -5082,32 +5091,41 @@ class DominoGame {
             if (status === 'accepted' && cleanRoomCode) {
                 this.stopGameInviteRefresh();
                 this.gameInviteState = null;
+                document.getElementById('online-invite-status-banner')?.classList.add('is-hidden');
                 return target;
             }
             if (status === 'accepted' && !cleanRoomCode) {
+                const inviteeName = state.inviteeDisplayName || target.invitee?.displayName || 'Игрок';
+                let statusMsg = this.t('invitee-accepted-waiting') || '{name} qəbul etdi, otaq gözləyir';
+                if (statusMsg.includes('{name}')) {
+                    statusMsg = statusMsg.replace('{name}', inviteeName);
+                } else {
+                    const lang = this.currentLang || 'ru';
+                    if (lang === 'ru') {
+                        statusMsg = `${inviteeName} принял приглашение и ожидает создания комнаты`;
+                    } else if (lang === 'az') {
+                        statusMsg = `${inviteeName} dəvəti qəbul etdi və otaq qurulmasını gözləyir`;
+                    } else {
+                        statusMsg = `${inviteeName} accepted the invite and is waiting for room creation`;
+                    }
+                }
+
                 if (!state.createPromptShown) {
                     this.closePlayerProfileModal();
                     this.closeSocialCenterModal();
                     this.showStartModal('online');
                     this.showOnlineCreateFlow('closed');
                     this.prefillOnlineNameIfPossible();
-                    const inviteeName = state.inviteeDisplayName || target.invitee?.displayName || 'Игрок';
-                    let statusMsg = this.t('invitee-accepted-waiting') || '{name} qəbul etdi, otaq gözləyir';
-                    if (statusMsg.includes('{name}')) {
-                        statusMsg = statusMsg.replace('{name}', inviteeName);
-                    } else {
-                        const lang = this.currentLang || 'ru';
-                        if (lang === 'ru') {
-                            statusMsg = `${inviteeName} принял приглашение и ожидает создания комнаты`;
-                        } else if (lang === 'az') {
-                            statusMsg = `${inviteeName} dəvəti qəbul etdi və otaq qurulmasını gözləyir`;
-                        } else {
-                            statusMsg = `${inviteeName} accepted the invite and is waiting for room creation`;
-                        }
-                    }
                     this.setHostStatus(statusMsg);
                     state.createPromptShown = true;
                 }
+
+                const banner = document.getElementById('online-invite-status-banner');
+                if (banner) {
+                    banner.textContent = statusMsg;
+                    banner.classList.remove('is-hidden');
+                }
+
                 if (forceRerender) {
                     void this.loadFriendsHub().catch(() => {});
                 }
@@ -5116,6 +5134,7 @@ class DominoGame {
             if (status === 'declined' || status === 'expired') {
                 this.stopGameInviteRefresh();
                 this.gameInviteState = null;
+                document.getElementById('online-invite-status-banner')?.classList.add('is-hidden');
                 this.renderer.showMessage(this.t('friends-load-failed'), 1800);
                 return target;
             }
@@ -5139,7 +5158,8 @@ class DominoGame {
                 role: 'inviter',
                 roomLinked: false,
                 createPromptShown: false,
-                waitingPromptShown: false
+                waitingPromptShown: false,
+                createdAt: Date.now()
             };
             this.startGameInviteRefresh();
             return this.gameInviteState;
@@ -5157,7 +5177,8 @@ class DominoGame {
                 role: 'invitee',
                 roomLinked: false,
                 createPromptShown: false,
-                waitingPromptShown: false
+                waitingPromptShown: false,
+                createdAt: Date.now()
             };
             this.startGameInviteRefresh();
         }
@@ -6639,6 +6660,7 @@ class DominoGame {
         this.setJoinStatus(this.t('online-room-join-hint'));
         this.syncOnlineModalTitle('landing');
         void this.loadFriendsHub();
+        document.getElementById('online-invite-status-banner')?.classList.add('is-hidden');
     }
 
     showOpenRoomsModal() {
@@ -6758,6 +6780,26 @@ class DominoGame {
         this.syncOnlineModalTitle(this.onlineRoomVisibility === 'open' ? 'create-open' : 'create-closed');
         this.setHostStatus(this.t('online-room-create-hint'));
         this.setJoinStatus(this.t('online-room-join-hint'));
+
+        if (this.gameInviteState && this.gameInviteState.role === 'inviter' && this.gameInviteState.createPromptShown) {
+            const banner = document.getElementById('online-invite-status-banner');
+            if (banner) {
+                const inviteeName = this.gameInviteState.inviteeDisplayName || 'Игрок';
+                const lang = this.currentLang || 'ru';
+                let statusMsg = '';
+                if (lang === 'ru') {
+                    statusMsg = `${inviteeName} принял приглашение и ожидает создания комнаты`;
+                } else if (lang === 'az') {
+                    statusMsg = `${inviteeName} dəvəti qəbul etdi və otaq qurulmasını gözləyir`;
+                } else {
+                    statusMsg = `${inviteeName} accepted the invite and is waiting for room creation`;
+                }
+                banner.textContent = statusMsg;
+                banner.classList.remove('is-hidden');
+            }
+        } else {
+            document.getElementById('online-invite-status-banner')?.classList.add('is-hidden');
+        }
     }
 
     showOnlineJoinFlow() {
@@ -7272,6 +7314,16 @@ class DominoGame {
         this.hideSeatSelectionUi();
         this.setHostStatus(this.t('online-room-create-hint'));
         this.setJoinStatus(this.t('online-room-join-hint'));
+
+        document.getElementById('online-invite-status-banner')?.classList.add('is-hidden');
+        if (this.gameInviteState) {
+            const inviteId = this.gameInviteState.inviteId;
+            if (inviteId && this.gameInviteState.role === 'inviter') {
+                void this.account.cancelRoomInvitation(inviteId).catch(() => {});
+            }
+            this.stopGameInviteRefresh();
+            this.gameInviteState = null;
+        }
     }
 
     setHostStatus(text) {
