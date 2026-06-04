@@ -576,6 +576,17 @@ export class LoadTestClient {
                     movesInDealCount = 0;
                     if (dealWatchdog) clearTimeout(dealWatchdog);
                     
+                    if (data?.isMatchOver) {
+                        clearWatchdogs();
+                        const duration = Date.now() - tStart;
+                        this.completedMatches++;
+                        this.reporter.logEvent("match_completed", { username: this.username, roomId: room.roomId, duration });
+                        this.reporter.recordRoomSuccess(room.roomId, duration);
+                        room.leave();
+                        resolve({ success: true });
+                        return;
+                    }
+                    
                     // Host must advance round
                     if (isHost) {
                         await sleep(2000); // Wait for modal
