@@ -9,7 +9,7 @@ const { buildSignedRequestBody } = require("./signedRequest");
 const { generateRoomCode, normalizeRoomVisibility, normalizeStakeKey, normalizePlayerCount, normalizeAiCount, normalizeDlossThreshold, normalizeInstantWinEnabled, normalizeAiDifficulty } = require("./roomConfig");
 const { normalizeAuthToken, buildRoomIdentity, getFirstNameDisplayName } = require("./roomIdentity");
 const { buildLivePlayerPayload } = require("./roomPresence");
-const { buildPlatformMatchPayload } = require("./matchResultPayload");
+const { buildPlatformMatchPayload, sanitizeParticipant } = require("./matchResultPayload");
 const { buildRoomStatePlayers, buildRoomStatePayload } = require("./roomStatePayload");
 const { reserveEconomyStakeForRoom, settleEconomyRoundForRoom, settleForfeitStakeForRoom } = require("./economyService");
 const { buildSnapshotIdentityEntries, restoreSnapshotIdentityEntries, sanitizeName } = require("./roomSnapshot");
@@ -1332,6 +1332,11 @@ class DominoRoom extends Room {
         }
 
         const payload = this.pendingMatchRecording;
+        // Sanitize participants in case the payload was restored from Redis
+        // with extra Colyseus Schema fields (isSelf, isConnected, avatarUrl, etc.)
+        if (Array.isArray(payload.participants)) {
+            payload.participants = payload.participants.map(sanitizeParticipant);
+        }
         const identity = this.getPlatformMatchIdentity();
         if (!identity) {
             console.warn("[ROOM] Failed to record match: platform identity missing.");

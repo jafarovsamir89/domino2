@@ -40,6 +40,19 @@ function buildMatchParticipantRows({
     return rows;
 }
 
+// Only these fields are accepted by the API MatchesParticipantDto.
+// Any extra properties (e.g. isSelf, isConnected, avatarUrl, seatIndex, handCount, score)
+// will cause a 400 Bad Request from the NestJS validation pipe (forbidNonWhitelisted).
+const PARTICIPANT_ALLOWED_KEYS = ["userId", "name", "teamIndex", "winnerKey", "points", "roundWins", "result", "isBot"];
+
+function sanitizeParticipant(row) {
+    const clean = {};
+    for (const key of PARTICIPANT_ALLOWED_KEYS) {
+        if (key in row) clean[key] = row[key];
+    }
+    return clean;
+}
+
 function buildPlatformMatchPayload({
     isTeamMode = false,
     roomId,
@@ -63,7 +76,7 @@ function buildPlatformMatchPayload({
         teamScores,
         teamRoundWins,
         winnerIndex
-    });
+    }).map(sanitizeParticipant);
 
     if (isTeamMode) {
         for (let i = 0; i < playerOrder.length; i++) {
@@ -97,5 +110,6 @@ module.exports = {
     buildWinnerKey,
     buildMatchTeams,
     buildMatchParticipantRows,
-    buildPlatformMatchPayload
+    buildPlatformMatchPayload,
+    sanitizeParticipant
 };
