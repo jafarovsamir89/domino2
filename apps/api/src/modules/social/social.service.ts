@@ -756,7 +756,26 @@ export class SocialService {
     }
 
     const now = new Date();
-    await Promise.all([
+    const unreadInboxMsgs = await this.prisma.inboxMessage.findMany({
+      where: {
+        playerId: currentPlayer.id,
+        type: "direct_message",
+        status: "unread"
+      }
+    });
+
+    const inboxIdsToUpdate = unreadInboxMsgs
+      .filter((row) => {
+        const payload = row.payloadJson && typeof row.payloadJson === "object" && !Array.isArray(row.payloadJson)
+          ? row.payloadJson as Record<string, unknown>
+          : null;
+        const senderId = String(payload?.senderPlayerId || "").trim();
+        const receiverId = String(payload?.receiverPlayerId || "").trim();
+        return senderId === targetPlayerId || receiverId === targetPlayerId;
+      })
+      .map((row) => row.id);
+
+    const updatePromises: Promise<any>[] = [
       this.prisma.directMessage.updateMany({
         where: {
           OR: [
@@ -774,34 +793,24 @@ export class SocialService {
         data: {
           readAt: now
         }
-      }),
-      this.prisma.inboxMessage.updateMany({
-        where: {
-          playerId: currentPlayer.id,
-          type: "direct_message",
-          status: "unread",
-          OR: [
-            {
-              payloadJson: {
-                path: ["senderPlayerId"],
-                equals: targetPlayerId
-              }
-            },
-            {
-              payloadJson: {
-                path: ["receiverPlayerId"],
-                equals: targetPlayerId
-              }
-            }
-          ]
-        },
-        data: {
-          status: "read",
-          readAt: now
-        }
       })
-    ]);
+    ];
 
+    if (inboxIdsToUpdate.length > 0) {
+      updatePromises.push(
+        this.prisma.inboxMessage.updateMany({
+          where: {
+            id: { in: inboxIdsToUpdate }
+          },
+          data: {
+            status: "read",
+            readAt: now
+          }
+        })
+      );
+    }
+
+    await Promise.all(updatePromises);
     return { ok: true };
   }
 

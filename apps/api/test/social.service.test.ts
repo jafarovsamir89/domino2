@@ -934,6 +934,30 @@ test("markDirectMessageThreadRead marks the matching direct message rows as read
   const currentPlayer = makePlayer("player-a", "Alpha");
   const targetPlayer = makePlayer("player-b", "Beta");
   const updates: any[] = [];
+  const inboxRows = [
+    makeInboxRow({
+      id: "inbox-dm-1",
+      playerId: currentPlayer.id,
+      type: "direct_message",
+      status: "unread",
+      payloadJson: {
+        senderPlayerId: targetPlayer.id,
+        receiverPlayerId: currentPlayer.id,
+        messageId: "message-1"
+      }
+    }),
+    makeInboxRow({
+      id: "inbox-dm-2",
+      playerId: currentPlayer.id,
+      type: "direct_message",
+      status: "unread",
+      payloadJson: {
+        senderPlayerId: "player-other",
+        receiverPlayerId: currentPlayer.id,
+        messageId: "message-other"
+      }
+    })
+  ];
   const prismaMock = {
     directMessage: {
       updateMany: async (query: any) => {
@@ -942,9 +966,15 @@ test("markDirectMessageThreadRead marks the matching direct message rows as read
       }
     },
     inboxMessage: {
+      findMany: async ({ where }: any) => {
+        assert.equal(where.playerId, currentPlayer.id);
+        assert.equal(where.type, "direct_message");
+        assert.equal(where.status, "unread");
+        return inboxRows;
+      },
       updateMany: async (query: any) => {
         updates.push({ kind: "inbox", query });
-        return { count: 2 };
+        return { count: 1 };
       }
     }
   } as any;
@@ -959,12 +989,8 @@ test("markDirectMessageThreadRead marks the matching direct message rows as read
     senderPlayerId: targetPlayer.id,
     receiverPlayerId: currentPlayer.id
   });
-  assert.deepEqual(updates[1].query.where.OR[0], {
-    payloadJson: {
-      path: ["senderPlayerId"],
-      equals: targetPlayer.id
-    }
-  });
+  // Inbox update should use filtered IDs, not JSON path queries
+  assert.deepEqual(updates[1].query.where.id, { in: ["inbox-dm-1"] });
 });
 
 test("markInboxRead claimInboxMessage and deleteInboxMessage update inbox state", async () => {

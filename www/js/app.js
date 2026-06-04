@@ -3293,8 +3293,13 @@ class DominoGame {
             : null;
         const unreadMessages = Math.max(0, Number(this.socialInboxState?.unreadCount || 0));
         const incomingFriends = Math.max(0, Number(this.friendHub?.incoming?.length || 0));
-        const incomingInvites = Math.max(0, Number(this.roomInvitations?.incoming?.length || 0));
-        const count = Number.isFinite(summaryCount) ? summaryCount : unreadMessages + incomingFriends + incomingInvites;
+        const incomingInvites = Array.isArray(this.roomInvitations?.incoming)
+            ? this.roomInvitations.incoming.filter(inv => this.isRoomInvitationPending(inv)).length
+            : 0;
+        const localCount = unreadMessages + incomingFriends + incomingInvites;
+        const count = (this.friendHub || this.roomInvitations || this.socialInboxState)
+            ? localCount
+            : (Number.isFinite(summaryCount) ? summaryCount : 0);
         if (count > 0) {
             badge.textContent = count > 9 ? '9+' : String(count);
             badge.classList.remove('is-hidden');
@@ -4002,9 +4007,7 @@ class DominoGame {
 
     isRoomInvitationPending(invite) {
         const status = String(invite?.status || '').trim().toLowerCase();
-        const inviteExpiresAt = Number(Date.parse(String(invite?.expiresAt || '')));
-        const inviteIsExpired = Number.isFinite(inviteExpiresAt) && inviteExpiresAt > 0 && inviteExpiresAt <= Date.now();
-        return status === 'pending' && !inviteIsExpired;
+        return status === 'pending';
     }
 
     isRoomInvitationActive(invite) {
@@ -4041,7 +4044,7 @@ class DominoGame {
         name.textContent = otherParty?.displayName || this.t('no-room-invites');
         const meta = document.createElement('span');
         meta.className = 'friend-card-desc';
-        meta.textContent = `${invite?.roomCode || invite?.roomId || ''}${invite?.roomMode ? ` · ${invite.roomMode}` : ''}`;
+        meta.textContent = `${invite?.roomCode || ''}${invite?.roomMode ? ` · ${invite.roomMode}` : ''}`.trim();
         copy.appendChild(name);
         copy.appendChild(meta);
 
@@ -4187,10 +4190,13 @@ class DominoGame {
         if (!searchInput || !resultsList) return;
 
         const query = String(searchInput.value || '').trim();
+        const searchSection = document.getElementById('social-search-results-section');
         if (query.length < 2) {
             resultsList.innerHTML = '';
+            if (searchSection) searchSection.classList.add('is-hidden');
             return;
         }
+        if (searchSection) searchSection.classList.remove('is-hidden');
 
         if (!skipLoading) {
             this.setSummaryMessage(resultsList, this.t('account-profile-loading'));
@@ -5050,6 +5056,7 @@ class DominoGame {
             }
             if (status === 'accepted' && !roomCode) {
                 if (!state.createPromptShown) {
+                    this.closePlayerProfileModal();
                     this.closeSocialCenterModal();
                     this.showStartModal('online');
                     this.showOnlineCreateFlow('closed');
@@ -5350,7 +5357,7 @@ class DominoGame {
                             </div>
                         </div>
 
-                        <section class="friends-section" id="social-search-results-section">
+                        <section class="friends-section is-hidden" id="social-search-results-section">
                             <div id="friends-search-results" class="friends-list"></div>
                         </section>
 
@@ -5359,7 +5366,7 @@ class DominoGame {
                             <div id="friends-requests-list" class="friends-list"></div>
                         </section>
 
-                        <section class="friends-section" id="social-chats-section">
+                        <section class="friends-section is-hidden" id="social-chats-section">
                             <div class="chats-section-header">
                                 <div class="section-kicker" data-i18n="social-tab-chats">Söhbətlər</div>
                                 <span class="chats-section-summary" id="account-messages-summary"></span>
