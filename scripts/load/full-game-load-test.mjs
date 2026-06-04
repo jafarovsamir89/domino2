@@ -134,17 +134,17 @@ async function main() {
                             
                             // Wait for host room ID to be populated
                             let attempts = 0;
-                            while (!host.room?.id && attempts < 100) {
+                            while (!host.room?.roomId && attempts < 100) {
                                 await sleep(100);
                                 attempts++;
                             }
                             
-                            if (!host.room?.id) {
+                            if (!host.room?.roomId) {
                                 throw new Error("Host failed to create room");
                             }
 
                             // Guests join the host's room ID
-                            const guestPromises = guests.map(g => g.playMatch(gameMode, host.room.id));
+                            const guestPromises = guests.map(g => g.playMatch(gameMode, host.room.roomId));
                             await Promise.all([hostPromise, ...guestPromises]);
                         } catch (err) {
                             console.error(`[LOAD_TEST] Game failed in mode ${gameMode}: ${err.message}`);

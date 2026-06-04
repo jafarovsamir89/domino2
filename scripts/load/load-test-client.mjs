@@ -1,4 +1,4 @@
-import { Client } from "colyseus.js";
+import { Client } from "@colyseus/sdk";
 import WebSocket from "ws";
 import crypto from "node:crypto";
 
@@ -464,8 +464,8 @@ export class LoadTestClient {
             const handleStuck = (reasonKey, message) => {
                 clearWatchdogs();
                 this.errors.push(`Stuck: ${message}`);
-                this.reporter.logEvent("error", { username: this.username, roomId: room?.id, phase: "gameplay", reason: reasonKey, error: message });
-                this.reporter.recordRoomFailure(room?.id || "unknown", reasonKey, message);
+                this.reporter.logEvent("error", { username: this.username, roomId: room?.roomId, phase: "gameplay", reason: reasonKey, error: message });
+                this.reporter.recordRoomFailure(room?.roomId || "unknown", reasonKey, message);
                 
                 if (room) {
                     try { room.leave(); } catch {}
@@ -484,7 +484,7 @@ export class LoadTestClient {
                 }
 
                 this.room = room;
-                this.reporter.recordRoomStart(room.id, Date.now() - tStart);
+                this.reporter.recordRoomStart(room.roomId, Date.now() - tStart);
 
                 setupWatchdogs();
 
@@ -494,8 +494,8 @@ export class LoadTestClient {
                         clearWatchdogs();
                         const duration = Date.now() - tStart;
                         this.completedMatches++;
-                        this.reporter.logEvent("match_completed", { username: this.username, roomId: room.id, duration });
-                        this.reporter.recordRoomSuccess(room.id, duration);
+                        this.reporter.logEvent("match_completed", { username: this.username, roomId: room.roomId, duration });
+                        this.reporter.recordRoomSuccess(room.roomId, duration);
                         room.leave();
                         resolve({ success: true });
                     }
@@ -520,9 +520,9 @@ export class LoadTestClient {
                     }
                 });
 
-                room.onMessage("turn_info", async (info) => {
+                 room.onMessage("turn_info", async (info) => {
                     lastTurnTime = Date.now();
-                    this.reporter.logEvent("turn_received", { username: this.username, roomId: room.id });
+                    this.reporter.logEvent("turn_received", { username: this.username, roomId: room.roomId });
                     
                     movesInDealCount++;
                     if (movesInDealCount > this.config.limits.maxMovesPerDeal) {
@@ -541,7 +541,7 @@ export class LoadTestClient {
                                 openEndIndex: move.openEndIndex,
                                 turnVersion: room.state.turnVersion
                             });
-                            this.reporter.logEvent("move_sent", { username: this.username, roomId: room.id, tileIndex: move.tileIndex, openEndIndex: move.openEndIndex });
+                            this.reporter.logEvent("move_sent", { username: this.username, roomId: room.roomId, tileIndex: move.tileIndex, openEndIndex: move.openEndIndex });
                         } else {
                             // If no valid moves, draw or pass
                             const boneyardCount = room.state.boneyardCount;
@@ -589,7 +589,7 @@ export class LoadTestClient {
                     clearWatchdogs();
                     if (!room.state.matchOver) {
                         this.wsDisconnects++;
-                        this.reporter.logEvent("error", { username: this.username, roomId: room.id, phase: "websocket", error: `Closed with code ${code}` });
+                        this.reporter.logEvent("error", { username: this.username, roomId: room.roomId, phase: "websocket", error: `Closed with code ${code}` });
                         resolve({ success: false, reason: "websocket_disconnect" });
                     }
                 });
@@ -597,14 +597,14 @@ export class LoadTestClient {
                 room.onError((code, message) => {
                     clearWatchdogs();
                     this.errors.push(`Room Error: [${code}] ${message}`);
-                    this.reporter.logEvent("error", { username: this.username, roomId: room.id, phase: "colyseus_error", error: message });
+                    this.reporter.logEvent("error", { username: this.username, roomId: room.roomId, phase: "colyseus_error", error: message });
                     resolve({ success: false, reason: "room_error" });
                 });
 
             } catch (e) {
                 clearWatchdogs();
-                this.errors.push(`Join Error: ${e.message}`);
-                this.reporter.logEvent("error", { username: this.username, phase: "join", error: e.message });
+                this.errors.push(`Join Error: ${e.stack || e.message}`);
+                this.reporter.logEvent("error", { username: this.username, phase: "join", error: e.stack || e.message });
                 resolve({ success: false, reason: "join_error" });
             }
         });
