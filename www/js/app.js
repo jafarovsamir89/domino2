@@ -1028,7 +1028,7 @@ class DominoGame {
         return this.socialSummary;
     }
 
-    async loadInboxPage() {
+    async loadInboxPage(isBackground = false) {
         const list = document.getElementById('social-inbox-list');
         const summary = document.getElementById('social-inbox-summary');
         if (!list || !summary) return [];
@@ -1046,15 +1046,17 @@ class DominoGame {
             return [];
         }
 
-        this.socialInboxState = {
-            ...(this.socialInboxState || {}),
-            items: [],
-            threads: [],
-            unreadCount: 0,
-            loading: true,
-            error: ''
-        };
-        this.renderSocialInboxPanel();
+        if (!isBackground) {
+            this.socialInboxState = {
+                ...(this.socialInboxState || {}),
+                items: [],
+                threads: [],
+                unreadCount: 0,
+                loading: true,
+                error: ''
+            };
+            this.renderSocialInboxPanel();
+        }
 
         try {
             const [data, threadData] = await Promise.all([
@@ -1446,20 +1448,22 @@ class DominoGame {
         }
     }
 
-    async loadConversationWithPlayer(playerRef) {
+    async loadConversationWithPlayer(playerRef, isBackground = false) {
         const playerId = String(playerRef?.playerId || playerRef?.userId || playerRef?.id || playerRef || '').trim();
         if (!playerId || !this.hasAuthenticatedAccount()) {
             return [];
         }
         this.socialCenterView = 'conversation';
 
-        this.accountMessagesState = {
-            ...(this.accountMessagesState || {}),
-            activePlayerId: playerId,
-            conversationLoading: true,
-            error: ''
-        };
-        this.renderAccountMessagesPanel();
+        if (!isBackground) {
+            this.accountMessagesState = {
+                ...(this.accountMessagesState || {}),
+                activePlayerId: playerId,
+                conversationLoading: true,
+                error: ''
+            };
+            this.renderAccountMessagesPanel();
+        }
 
         try {
             await this.account.markMessageThreadRead?.(playerId).catch(() => {});
@@ -1562,8 +1566,11 @@ class DominoGame {
         const mailBadge = document.getElementById('social-mail-unread-badge');
         const friendsBadge = document.getElementById('social-friends-unread-badge');
         
-        const mailUnread = Math.max(0, Number(this.socialInboxState?.unreadCount || 0)) + Math.max(0, Number(this.roomInvitations?.incoming?.length || 0));
-        const friendsUnread = Math.max(0, Number(this.friendHub?.incoming?.length || 0));
+        const actualInboxUnread = (this.socialInboxState?.items || []).filter(item => item.status === 'unread' && item.type !== 'direct_message' && item.type !== 'direct_message_thread_hidden').length;
+        const mailUnread = actualInboxUnread + Math.max(0, Number(this.roomInvitations?.incoming?.length || 0));
+
+        const chatThreadsUnread = (this.socialInboxState?.threads || []).reduce((sum, t) => sum + Math.max(0, Number(t?.unreadCount || 0)), 0);
+        const friendsUnread = Math.max(0, Number(this.friendHub?.incoming?.length || 0)) + chatThreadsUnread;
 
         if (mailBadge) {
             if (mailUnread > 0) {
@@ -1628,7 +1635,7 @@ class DominoGame {
         }
     }
 
-    async loadSocialInvitesPage() {
+    async loadSocialInvitesPage(isBackground = false) {
         const incomingList = document.getElementById('social-invites-incoming-list');
         const sentList = document.getElementById('social-invites-sent-list');
         const fallbackList = document.getElementById('social-invites-list');
@@ -1640,7 +1647,9 @@ class DominoGame {
             return [];
         }
 
-        this.setSummaryMessage(invitesList, this.t('account-profile-loading'));
+        if (!isBackground) {
+            this.setSummaryMessage(invitesList, this.t('account-profile-loading'));
+        }
         try {
             const invitations = await this.account.getRoomInvitations();
             this.roomInvitations = invitations || { incoming: [], sent: [] };
@@ -3770,7 +3779,7 @@ class DominoGame {
         };
     }
 
-    async loadFriendsPage() {
+    async loadFriendsPage(isBackground = false) {
         const {
             friendsList,
             requestsList,
@@ -3793,9 +3802,11 @@ class DominoGame {
 
         searchInput.disabled = false;
         searchBtn.disabled = false;
-        this.setSummaryMessage(friendsList, loading);
-        this.setSummaryMessage(requestsList, loading);
-        this.setSummaryMessage(searchResults, loading);
+        if (!isBackground) {
+            this.setSummaryMessage(friendsList, loading);
+            this.setSummaryMessage(requestsList, loading);
+            this.setSummaryMessage(searchResults, loading);
+        }
 
         try {
             const [friends, leaderboardRows, presenceMap] = await Promise.all([
@@ -4177,7 +4188,7 @@ class DominoGame {
 
         const query = String(searchInput.value || '').trim();
         if (query.length < 2) {
-            this.setSummaryMessage(resultsList, this.t('friends-search-empty'));
+            resultsList.innerHTML = '';
             return;
         }
 
@@ -4842,14 +4853,14 @@ class DominoGame {
                 if (this.socialCenterView === 'conversation') {
                     const activeId = String(this.accountMessagesState?.activePlayerId || '').trim();
                     if (activeId) {
-                        await this.loadConversationWithPlayer(activeId);
+                        await this.loadConversationWithPlayer(activeId, true);
                     }
                 } else {
                     if (this.socialCenterTab === 'inbox') {
-                        await this.loadInboxPage();
-                        await this.loadSocialInvitesPage().catch(() => {});
+                        await this.loadInboxPage(true);
+                        await this.loadSocialInvitesPage(true).catch(() => {});
                     } else if (this.socialCenterTab === 'friends') {
-                        await this.loadFriendsPage();
+                        await this.loadFriendsPage(true);
                     }
                 }
             } catch (e) {
@@ -5039,6 +5050,7 @@ class DominoGame {
             }
             if (status === 'accepted' && !roomCode) {
                 if (!state.createPromptShown) {
+                    this.closeSocialCenterModal();
                     this.showStartModal('online');
                     this.showOnlineCreateFlow('closed');
                     this.prefillOnlineNameIfPossible();
