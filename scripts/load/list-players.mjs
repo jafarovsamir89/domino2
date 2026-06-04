@@ -9,21 +9,15 @@ const prisma = new PrismaClient({
 });
 
 async function main() {
-  const players = await prisma.player.findMany({
-    where: {
-      NOT: {
-        displayName: {
-          startsWith: "loadtest_"
-        }
-      }
-    },
-    select: {
-      id: true,
-      displayName: true,
-      userId: true
-    }
+  const user = await prisma.user.findFirst({
+    where: { email: "loadtest_009@domino.local" }
   });
-  console.log("Non-loadtest players:", JSON.stringify(players, null, 2));
+  console.log("User loadtest_009:", JSON.stringify(user, null, 2));
+
+  const player = await prisma.player.findFirst({
+    where: { displayName: "loadtest_009" }
+  });
+  console.log("Player loadtest_009:", JSON.stringify(player, null, 2));
 }
 
 main()

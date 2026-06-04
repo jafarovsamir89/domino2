@@ -1,0 +1,82 @@
+[
+  {
+    "username": "loadtest_001",
+    "before": 1000520,
+    "after": 1000320,
+    "delta": -200,
+    "reservedBefore": 0,
+    "reservedAfter": 0,
+    "stuckReserved": false,
+    "negativeBalance": false
+  },
+  {
+    "username": "loadtest_002",
+    "before": 999380,
+    "after": 999560,
+    "delta": 180,
+    "reservedBefore": 0,
+    "reservedAfter": 0,
+    "stuckReserved": false,
+    "negativeBalance": false
+  },
+  {
+    "username": "loadtest_003",
+    "before": 1000700,
+    "after": 1000500,
+    "delta": -200,
+    "reservedBefore": 0,
+    "reservedAfter": 0,
+    "stuckReserved": false,
+    "negativeBalance": false
+  },
+  {
+    "username": "loadtest_004",
+    "before": 999180,
+    "after": 999360,
+    "delta": 180,
+    "reservedBefore": 0,
+    "reservedAfter": 0,
+    "stuckReserved": false,
+    "negativeBalance": false
+  },
+  {
+    "username": "loadtest_005",
+    "before": 1000000,
+    "after": 999800,
+    "delta": -200,
+    "reservedBefore": 0,
+    "reservedAfter": 0,
+    "stuckReserved": false,
+    "negativeBalance": false
+  },
+  {
+    "username": "loadtest_006",
+    "before": 1000000,
+    "after": 1000180,
+    "delta": 180,
+    "reservedBefore": 0,
+    "reservedAfter": 0,
+    "stuckReserved": false,
+    "negativeBalance": false
+  },
+  {
+    "username": "loadtest_007",
+    "before": 1000000,
+    "after": 999800,
+    "delta": -200,
+    "reservedBefore": 0,
+    "reservedAfter": 0,
+    "stuckReserved": false,
+    "negativeBalance": false
+  },
+  {
+    "username": "loadtest_008",
+    "before": 1000000,
+    "after": 1000180,
+    "delta": 180,
+    "reservedBefore": 0,
+    "reservedAfter": 0,
+    "stuckReserved": false,
+    "negativeBalance": false
+  }
+]

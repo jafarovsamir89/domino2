@@ -1,0 +1,202 @@
+[
+  {
+    "username": "loadtest_001",
+    "before": 1000320,
+    "after": 1000500,
+    "delta": 180,
+    "reservedBefore": 0,
+    "reservedAfter": 0,
+    "stuckReserved": false,
+    "negativeBalance": false
+  },
+  {
+    "username": "loadtest_002",
+    "before": 999560,
+    "after": 999360,
+    "delta": -200,
+    "reservedBefore": 0,
+    "reservedAfter": 0,
+    "stuckReserved": false,
+    "negativeBalance": false
+  },
+  {
+    "username": "loadtest_003",
+    "before": 1000500,
+    "after": 1000300,
+    "delta": -200,
+    "reservedBefore": 0,
+    "reservedAfter": 0,
+    "stuckReserved": false,
+    "negativeBalance": false
+  },
+  {
+    "username": "loadtest_004",
+    "before": 999360,
+    "after": 999540,
+    "delta": 180,
+    "reservedBefore": 0,
+    "reservedAfter": 0,
+    "stuckReserved": false,
+    "negativeBalance": false
+  },
+  {
+    "username": "loadtest_005",
+    "before": 999800,
+    "after": 1000160,
+    "delta": 360,
+    "reservedBefore": 0,
+    "reservedAfter": 0,
+    "stuckReserved": false,
+    "negativeBalance": false
+  },
+  {
+    "username": "loadtest_006",
+    "before": 1000180,
+    "after": 999780,
+    "delta": -400,
+    "reservedBefore": 0,
+    "reservedAfter": 0,
+    "stuckReserved": false,
+    "negativeBalance": false
+  },
+  {
+    "username": "loadtest_007",
+    "before": 999800,
+    "after": 999980,
+    "delta": 180,
+    "reservedBefore": 0,
+    "reservedAfter": 0,
+    "stuckReserved": false,
+    "negativeBalance": false
+  },
+  {
+    "username": "loadtest_008",
+    "before": 1000180,
+    "after": 999980,
+    "delta": -200,
+    "reservedBefore": 0,
+    "reservedAfter": 0,
+    "stuckReserved": false,
+    "negativeBalance": false
+  },
+  {
+    "username": "loadtest_009",
+    "before": 1000,
+    "after": 1180,
+    "delta": 180,
+    "reservedBefore": 0,
+    "reservedAfter": 0,
+    "stuckReserved": false,
+    "negativeBalance": false
+  },
+  {
+    "username": "loadtest_010",
+    "before": 1000,
+    "after": 800,
+    "delta": -200,
+    "reservedBefore": 0,
+    "reservedAfter": 0,
+    "stuckReserved": false,
+    "negativeBalance": false
+  },
+  {
+    "username": "loadtest_011",
+    "before": 1000,
+    "after": 800,
+    "delta": -200,
+    "reservedBefore": 0,
+    "reservedAfter": 0,
+    "stuckReserved": false,
+    "negativeBalance": false
+  },
+  {
+    "username": "loadtest_012",
+    "before": 1000,
+    "after": 1180,
+    "delta": 180,
+    "reservedBefore": 0,
+    "reservedAfter": 0,
+    "stuckReserved": false,
+    "negativeBalance": false
+  },
+  {
+    "username": "loadtest_013",
+    "before": 1000,
+    "after": 800,
+    "delta": -200,
+    "reservedBefore": 0,
+    "reservedAfter": 0,
+    "stuckReserved": false,
+    "negativeBalance": false
+  },
+  {
+    "username": "loadtest_014",
+    "before": 1000,
+    "after": 1180,
+    "delta": 180,
+    "reservedBefore": 0,
+    "reservedAfter": 0,
+    "stuckReserved": false,
+    "negativeBalance": false
+  },
+  {
+    "username": "loadtest_015",
+    "before": 1000,
+    "after": 1180,
+    "delta": 180,
+    "reservedBefore": 0,
+    "reservedAfter": 0,
+    "stuckReserved": false,
+    "negativeBalance": false
+  },
+  {
+    "username": "loadtest_016",
+    "before": 1000,
+    "after": 800,
+    "delta": -200,
+    "reservedBefore": 0,
+    "reservedAfter": 0,
+    "stuckReserved": false,
+    "negativeBalance": false
+  },
+  {
+    "username": "loadtest_017",
+    "before": 1000,
+    "after": 1180,
+    "delta": 180,
+    "reservedBefore": 0,
+    "reservedAfter": 0,
+    "stuckReserved": false,
+    "negativeBalance": false
+  },
+  {
+    "username": "loadtest_018",
+    "before": 1000,
+    "after": 800,
+    "delta": -200,
+    "reservedBefore": 0,
+    "reservedAfter": 0,
+    "stuckReserved": false,
+    "negativeBalance": false
+  },
+  {
+    "username": "loadtest_019",
+    "before": 1000,
+    "after": 1180,
+    "delta": 180,
+    "reservedBefore": 0,
+    "reservedAfter": 0,
+    "stuckReserved": false,
+    "negativeBalance": false
+  },
+  {
+    "username": "loadtest_020",
+    "before": 1000,
+    "after": 800,
+    "delta": -200,
+    "reservedBefore": 0,
+    "reservedAfter": 0,
+    "stuckReserved": false,
+    "negativeBalance": false
+  }
+]

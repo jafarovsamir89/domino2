@@ -1,0 +1,63 @@
+{
+  "result": "FAIL",
+  "failReasons": [
+    "User loadtest_009 completed 1 ranked matches, but matches delta is only 0 in database.",
+    "User loadtest_009 played ranked matches but rating delta is 0 (stayed at 1000).",
+    "User loadtest_009 had economy changes (delta: 180) but stats matches delta is 0.",
+    "User loadtest_010 completed 1 ranked matches, but matches delta is only 0 in database.",
+    "User loadtest_010 played ranked matches but rating delta is 0 (stayed at 1000).",
+    "User loadtest_010 had economy changes (delta: -200) but stats matches delta is 0.",
+    "User loadtest_011 completed 1 ranked matches, but matches delta is only 0 in database.",
+    "User loadtest_011 played ranked matches but rating delta is 0 (stayed at 1000).",
+    "User loadtest_011 had economy changes (delta: -200) but stats matches delta is 0.",
+    "User loadtest_012 completed 1 ranked matches, but matches delta is only 0 in database.",
+    "User loadtest_012 played ranked matches but rating delta is 0 (stayed at 1000).",
+    "User loadtest_012 had economy changes (delta: 180) but stats matches delta is 0."
+  ],
+  "config": {
+    "users": 20,
+    "minDeals": 3,
+    "minMatches": 1,
+    "concurrency": 5,
+    "stake": "stake_200",
+    "baseUrl": "https://apid.simplesoft.az",
+    "gameUrl": "wss://gamed.simplesoft.az",
+    "mode": "mixed",
+    "reportDir": "load-test-results",
+    "timeoutMinutes": 60,
+    "dryRun": false,
+    "cleanup": false,
+    "allowProd": true,
+    "seedEnabled": false,
+    "authHelperEnabled": false,
+    "isDatabaseLocal": false,
+    "limits": {
+      "maxRoomDurationMs": 1200000,
+      "maxDealDurationMs": 180000,
+      "maxStuckTurnMs": 45000,
+      "maxMovesPerDeal": 50,
+      "maxReconnectAttempts": 5,
+      "globalTimeoutMs": 3600000
+    }
+  },
+  "integrity": {
+    "expectedRankedParticipations": 16,
+    "actualPlayerStatsUpdates": 12,
+    "usersWithEconomyChangeButNoStatsChange": 8
+  },
+  "metrics": {
+    "totalDurationSeconds": 290,
+    "roomsCreated": 20,
+    "roomsStarted": 20,
+    "roomsCompleted": 20,
+    "roomsFailed": 0,
+    "roomsFailReasons": {},
+    "averageRoomStartTimeMs": 875,
+    "averageMatchDurationMs": 127371,
+    "totalWsDisconnects": 0,
+    "apiLatenciesAverage": {
+      "auth": 1818,
+      "mintGameToken": 391
+    }
+  }
+}
