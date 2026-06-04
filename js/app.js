@@ -1379,7 +1379,7 @@ class DominoGame {
             const actions = document.createElement('div');
             actions.className = 'friend-card-actions';
 
-            if (item.status === 'unread') {
+            {
                 const readBtn = document.createElement('button');
                 readBtn.className = 'btn btn-action btn-strong';
                 readBtn.type = 'button';
@@ -1389,7 +1389,9 @@ class DominoGame {
                         e.stopPropagation();
                         readBtn.disabled = true;
                         try {
-                            await this.account.markInboxRead(item.id);
+                            if (item.status === 'unread') {
+                                await this.account.markInboxRead(item.id);
+                            }
                             const playerId = String(item.relatedPlayerId || item?.payloadJson?.senderPlayerId || '').trim();
                             if (playerId) {
                                 await this.openConversationWithPlayer({ id: playerId, playerId });
@@ -1403,12 +1405,14 @@ class DominoGame {
                         }
                     });
                 } else {
-                    readBtn.textContent = this.t('inbox-read');
+                    readBtn.textContent = item.status === 'unread' ? this.t('inbox-read') : this.t('inbox-open-message');
                     readBtn.addEventListener('click', async (e) => {
                         e.stopPropagation();
                         readBtn.disabled = true;
                         try {
-                            await this.account.markInboxRead(item.id);
+                            if (item.status === 'unread') {
+                                await this.account.markInboxRead(item.id);
+                            }
                             await this.loadInboxPage();
                         } catch (err) {
                             this.renderer.showMessage(err?.message || this.t('inbox-load-failed'), 1800);
@@ -1711,6 +1715,7 @@ class DominoGame {
         }
 
         if (viewProfileBtn) {
+            viewProfileBtn.textContent = this.t('account-profile');
             viewProfileBtn.onclick = () => {
                 if (activePlayer) {
                     void this.openPlayerProfileModal(activePlayer);
