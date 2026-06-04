@@ -1,0 +1,62 @@
+[
+  {
+    "username": "loadtest_001",
+    "before": 1038,
+    "after": 1054,
+    "delta": 16,
+    "matchesPlayedBefore": 2,
+    "matchesPlayedAfter": 3,
+    "matchesDelta": 1,
+    "winsBefore": 2,
+    "winsAfter": 3,
+    "lossesBefore": 0,
+    "lossesAfter": 0,
+    "suspicious": false,
+    "completedRankedMatches": 1
+  },
+  {
+    "username": "loadtest_002",
+    "before": 962,
+    "after": 946,
+    "delta": -16,
+    "matchesPlayedBefore": 2,
+    "matchesPlayedAfter": 3,
+    "matchesDelta": 1,
+    "winsBefore": 0,
+    "winsAfter": 0,
+    "lossesBefore": 2,
+    "lossesAfter": 3,
+    "suspicious": false,
+    "completedRankedMatches": 1
+  },
+  {
+    "username": "loadtest_003",
+    "before": 1002,
+    "after": 1022,
+    "delta": 20,
+    "matchesPlayedBefore": 2,
+    "matchesPlayedAfter": 3,
+    "matchesDelta": 1,
+    "winsBefore": 1,
+    "winsAfter": 2,
+    "lossesBefore": 1,
+    "lossesAfter": 1,
+    "suspicious": false,
+    "completedRankedMatches": 1
+  },
+  {
+    "username": "loadtest_004",
+    "before": 998,
+    "after": 978,
+    "delta": -20,
+    "matchesPlayedBefore": 2,
+    "matchesPlayedAfter": 3,
+    "matchesDelta": 1,
+    "winsBefore": 1,
+    "winsAfter": 1,
+    "lossesBefore": 1,
+    "lossesAfter": 2,
+    "suspicious": false,
+    "completedRankedMatches": 1
+  }
+]
