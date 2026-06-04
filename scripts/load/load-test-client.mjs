@@ -427,7 +427,7 @@ export class LoadTestClient {
                 aiCount: mode === "2v2-ai" ? 2 : 0,
                 roomVisibility: (mode === "open") ? "open" : "closed",
                 stakeKey: this.config.stake,
-                instantWinEnabled: false,
+                instantWinEnabled: true,
                 dlossThreshold: 255
             };
 
