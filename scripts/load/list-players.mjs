@@ -41,6 +41,34 @@ async function main() {
     }
     console.log("-----------------------------------------");
   }
+
+  console.log("\n=== RECENT MATCHES ===");
+  const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000);
+  const recentMatches = await prisma.match.findMany({
+    where: {
+      createdAt: { gte: fifteenMinutesAgo }
+    },
+    include: {
+      participants: {
+        include: {
+          player: true
+        }
+      }
+    },
+    orderBy: { createdAt: "desc" }
+  });
+
+  for (const m of recentMatches) {
+    console.log(`Match: ${m.id}`);
+    console.log(`  Mode: ${m.mode}, isTeamMode: ${m.isTeamMode}, winnerKey: ${m.winnerKey}, result: ${m.result}, points: ${m.totalPoints}, createdAt: ${m.createdAt}`);
+    console.log(`  Participants:`);
+    for (const p of m.participants) {
+      console.log(`    - Player: ${p.player.displayName}`);
+      console.log(`      Points: ${p.points}, roundWins: ${p.roundWins}, result: ${p.result}, teamIndex: ${p.teamIndex}`);
+      console.log(`      RatingBefore: ${p.ratingBefore}, ratingDelta: ${p.ratingDelta}, ratingAfter: ${p.ratingAfter}`);
+    }
+    console.log("-----------------------------------------");
+  }
 }
 
 main()
