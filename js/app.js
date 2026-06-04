@@ -835,10 +835,12 @@ class DominoGame {
         modal.classList.add('active');
         document.getElementById('start-screen')?.classList.remove('active');
         document.getElementById('social-chats-panel')?.classList.add('is-hidden');
+        this.startSocialHubAutoRefresh();
         await this.loadSocialCenterTab(tab, playerRef);
     }
 
     closeSocialCenterModal() {
+        this.stopSocialHubAutoRefresh();
         const modal = document.getElementById('social-center-modal');
         if (modal) modal.dataset.opened = 'false';
         modal?.classList.remove('active');
@@ -4825,6 +4827,44 @@ class DominoGame {
         return `game_invite_${Date.now()}_${base.slice(0, 8)}_${token}`;
     }
 
+    startSocialHubAutoRefresh() {
+        this.stopSocialHubAutoRefresh();
+        this._socialHubRefreshInterval = window.setInterval(async () => {
+            if (!this.hasAuthenticatedAccount()) return;
+            const modal = document.getElementById('social-center-modal');
+            const chat = document.getElementById('social-chats-panel');
+            const isOpen = modal?.classList.contains('active') || (chat && !chat.classList.contains('is-hidden'));
+            if (!isOpen) {
+                this.stopSocialHubAutoRefresh();
+                return;
+            }
+            try {
+                if (this.socialCenterView === 'conversation') {
+                    const activeId = String(this.accountMessagesState?.activePlayerId || '').trim();
+                    if (activeId) {
+                        await this.loadConversationWithPlayer(activeId);
+                    }
+                } else {
+                    if (this.socialCenterTab === 'inbox') {
+                        await this.loadInboxPage();
+                        await this.loadSocialInvitesPage().catch(() => {});
+                    } else if (this.socialCenterTab === 'friends') {
+                        await this.loadFriendsPage();
+                    }
+                }
+            } catch (e) {
+                console.error("Social hub refresh error:", e);
+            }
+        }, 4000);
+    }
+
+    stopSocialHubAutoRefresh() {
+        if (this._socialHubRefreshInterval) {
+            clearInterval(this._socialHubRefreshInterval);
+            this._socialHubRefreshInterval = null;
+        }
+    }
+
     startGameInviteRefresh() {
         if (this._gameInviteRefreshId) return;
         this._gameInviteRefreshId = window.setInterval(() => {
@@ -4847,15 +4887,19 @@ class DominoGame {
         const sessionId = this.gameInviteState?.sessionId && this.gameInviteState.inviteePlayerId === inviteePlayerId
             ? this.gameInviteState.sessionId
             : this.makeGameInviteSessionId();
+
+        const room = this.getCurrentRoomSnapshot();
+        const activeRoomCode = String(room?.roomCode || this.network?.room?.state?.roomCode || '').trim().toUpperCase();
+
         const payload = {
             inviteePlayerId,
-            roomCode: null,
-            roomMode: String(context.roomMode || '').trim() || null,
-            stakeKey: String(context.stakeKey || '').trim() || null,
-            stakeAmount: Number(context.stakeAmount || 0),
-            humanSeats: Number(context.humanSeats || 0),
-            totalPlayers: Number(context.totalPlayers || 0),
-            isTeamMode: Boolean(context.isTeamMode),
+            roomCode: activeRoomCode || null,
+            roomMode: String(context.roomMode || room?.roomMode || '').trim() || null,
+            stakeKey: String(context.stakeKey || room?.stakeKey || '').trim() || null,
+            stakeAmount: Number(context.stakeAmount || room?.stakeAmount || 0),
+            humanSeats: Number(context.humanSeats || room?.humanSeats || 0),
+            totalPlayers: Number(context.totalPlayers || room?.totalPlayers || 0),
+            isTeamMode: Boolean(context.isTeamMode ?? room?.isTeamMode),
             note: String(context.note || context.source || 'game-invite').trim() || 'game-invite',
             payloadJson: {
                 source: String(context.source || 'social').trim() || 'social',
@@ -5229,12 +5273,11 @@ class DominoGame {
                     <div class="header-currency-chip rating-chip">
                         <span class="currency-icon rating-icon"></span>
                         <span class="currency-value" id="social-header-rating">1,000</span>
-                        <span class="currency-plus">+</span>
                     </div>
                     <button class="social-close-btn" id="social-center-modal-close" type="button" aria-label="Close">×</button>
                 </div>
             </header>
-
+            
             <div class="social-hub-tabs-container">
                 <div class="social-hub-tabs" id="social-center-tabs">
                     <button type="button" class="social-hub-tab social-center-tab is-active" data-social-tab="inbox" id="social-tab-mail-btn">
@@ -5313,7 +5356,7 @@ class DominoGame {
                         </section>
 
                         <section class="friends-section" id="social-friends-list-section">
-                            <div class="section-kicker" data-i18n="friends-list-title">Dostlar</div>
+                            <div class="section-kicker is-hidden" data-i18n="friends-list-title">Dostlar</div>
                             <div id="friends-list" class="friends-list"></div>
                         </section>
                     </div>
@@ -5370,6 +5413,81 @@ class DominoGame {
             document.body.appendChild(hub);
             document.body.appendChild(chat);
         }
+
+        this.attachSocialUiEventListeners();
+    }
+
+    attachSocialUiEventListeners() {
+        const attachBtn = document.querySelector('#social-chats-panel .composer-attach-btn');
+        const emojiBtn = document.querySelector('#social-chats-panel .composer-emoji-btn');
+        const coinsChip = document.querySelector('#social-center-modal .coins-chip');
+
+        if (attachBtn) {
+            attachBtn.addEventListener('click', () => {
+                const fileInput = document.createElement('input');
+                fileInput.type = 'file';
+                fileInput.accept = 'image/*';
+                fileInput.onchange = async (e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    const targetId = String(this.accountMessagesState?.activePlayerId || '').trim();
+                    if (!targetId) return;
+                    try {
+                        this.renderer.showMessage(this.t('sending-attachment') || 'Photo sending...', 1200);
+                        await this.account.sendDirectMessage(targetId, `📷 ${file.name}`);
+                        await this.loadConversationWithPlayer(targetId);
+                        await this.loadMessageThreads();
+                    } catch (err) {
+                        this.renderer.showMessage(err.message, 1800);
+                    }
+                };
+                fileInput.click();
+            });
+        }
+
+        if (emojiBtn) {
+            emojiBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                let picker = document.querySelector('#social-chats-panel .chat-emoji-picker');
+                if (picker) {
+                    picker.classList.toggle('is-hidden');
+                    return;
+                }
+                picker = document.createElement('div');
+                picker.className = 'chat-emoji-picker';
+                const emojis = ['😊', '😂', '👍', '🔥', '🏆', '🎉', '❤️', '👏', '🎲', '💬', '😜', '😎', '😮', '😢', '😡', '🤝'];
+                emojis.forEach(emoji => {
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = 'emoji-picker-item';
+                    btn.textContent = emoji;
+                    btn.addEventListener('click', (evt) => {
+                        evt.stopPropagation();
+                        const input = document.getElementById('account-message-input');
+                        if (input) {
+                            input.value += emoji;
+                            input.focus();
+                        }
+                        picker.classList.add('is-hidden');
+                    });
+                    picker.appendChild(btn);
+                });
+                document.querySelector('#social-chats-panel .chat-compose-input-wrapper')?.appendChild(picker);
+            });
+        }
+
+        if (coinsChip) {
+            coinsChip.addEventListener('click', () => {
+                void this.openCoinShopModal();
+            });
+        }
+
+        document.addEventListener('click', () => {
+            const picker = document.querySelector('#social-chats-panel .chat-emoji-picker');
+            if (picker) {
+                picker.classList.add('is-hidden');
+            }
+        });
     }
 
     ensureOnlineSocialUi() {

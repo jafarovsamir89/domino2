@@ -5519,6 +5519,7 @@ body.is-reconnecting .hand-container {
     inset: 0;
     width: 100vw;
     height: 100vh;
+    height: 100dvh;
     z-index: 25000;
     background: #060a10;
     flex-direction: column;
@@ -5808,11 +5809,48 @@ body.is-reconnecting .hand-container {
     display: flex;
     align-items: center;
     gap: 10px;
-    padding: 10px 12px 24px 12px; /* Extra padding for bottom home indicator bar on mobile */
+    padding: 10px 12px calc(10px + env(safe-area-inset-bottom, 0px)) 12px;
     background: rgba(10, 16, 26, 0.98);
     border-top: 1px solid rgba(88, 162, 255, 0.15);
     flex-shrink: 0;
     box-sizing: border-box;
+}
+
+/* Emoji Picker Overlay */
+.chat-emoji-picker {
+    position: absolute;
+    bottom: 46px;
+    right: 0;
+    background: #0f1c2e;
+    border: 1px solid rgba(88, 162, 255, 0.25);
+    border-radius: 12px;
+    padding: 8px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+    z-index: 26000;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+}
+
+.chat-emoji-picker.is-hidden {
+    display: none;
+}
+
+.emoji-picker-item {
+    font-size: 1.25rem;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 6px;
+    transition: background 0.15s ease;
+    display: grid;
+    place-items: center;
+    line-height: 1;
+}
+
+.emoji-picker-item:hover {
+    background: rgba(255, 255, 255, 0.08);
 }
 
 /* composer Buttons */
