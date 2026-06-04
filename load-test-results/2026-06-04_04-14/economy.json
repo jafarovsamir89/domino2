@@ -1,0 +1,42 @@
+[
+  {
+    "username": "loadtest_001",
+    "before": 10000,
+    "after": 10000,
+    "delta": 0,
+    "reservedBefore": 0,
+    "reservedAfter": 0,
+    "stuckReserved": false,
+    "negativeBalance": false
+  },
+  {
+    "username": "loadtest_002",
+    "before": 10000,
+    "after": 10000,
+    "delta": 0,
+    "reservedBefore": 0,
+    "reservedAfter": 0,
+    "stuckReserved": false,
+    "negativeBalance": false
+  },
+  {
+    "username": "loadtest_003",
+    "before": 10000,
+    "after": 10000,
+    "delta": 0,
+    "reservedBefore": 0,
+    "reservedAfter": 0,
+    "stuckReserved": false,
+    "negativeBalance": false
+  },
+  {
+    "username": "loadtest_004",
+    "before": 10000,
+    "after": 10000,
+    "delta": 0,
+    "reservedBefore": 0,
+    "reservedAfter": 0,
+    "stuckReserved": false,
+    "negativeBalance": false
+  }
+]

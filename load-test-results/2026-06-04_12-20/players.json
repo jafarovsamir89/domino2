@@ -1,0 +1,82 @@
+[
+  {
+    "username": "loadtest_001",
+    "completedDeals": 20,
+    "completedMatches": 1,
+    "dealsTargetMet": true,
+    "matchesTargetMet": true,
+    "disconnects": 0,
+    "reconnects": 0,
+    "errors": []
+  },
+  {
+    "username": "loadtest_002",
+    "completedDeals": 20,
+    "completedMatches": 1,
+    "dealsTargetMet": true,
+    "matchesTargetMet": true,
+    "disconnects": 0,
+    "reconnects": 0,
+    "errors": []
+  },
+  {
+    "username": "loadtest_003",
+    "completedDeals": 11,
+    "completedMatches": 1,
+    "dealsTargetMet": true,
+    "matchesTargetMet": true,
+    "disconnects": 0,
+    "reconnects": 0,
+    "errors": []
+  },
+  {
+    "username": "loadtest_004",
+    "completedDeals": 11,
+    "completedMatches": 1,
+    "dealsTargetMet": true,
+    "matchesTargetMet": true,
+    "disconnects": 0,
+    "reconnects": 0,
+    "errors": []
+  },
+  {
+    "username": "loadtest_005",
+    "completedDeals": 11,
+    "completedMatches": 1,
+    "dealsTargetMet": true,
+    "matchesTargetMet": true,
+    "disconnects": 0,
+    "reconnects": 0,
+    "errors": []
+  },
+  {
+    "username": "loadtest_006",
+    "completedDeals": 11,
+    "completedMatches": 1,
+    "dealsTargetMet": true,
+    "matchesTargetMet": true,
+    "disconnects": 0,
+    "reconnects": 0,
+    "errors": []
+  },
+  {
+    "username": "loadtest_007",
+    "completedDeals": 7,
+    "completedMatches": 1,
+    "dealsTargetMet": true,
+    "matchesTargetMet": true,
+    "disconnects": 0,
+    "reconnects": 0,
+    "errors": []
+  },
+  {
+    "username": "loadtest_008",
+    "completedDeals": 7,
+    "completedMatches": 1,
+    "dealsTargetMet": true,
+    "matchesTargetMet": true,
+    "disconnects": 0,
+    "reconnects": 0,
+    "errors": []
+  }
+]

@@ -1,0 +1,7 @@
+{"timestamp":1780532097004,"event":"test_started","users":4,"minDeals":1,"minMatches":1,"mode":"1v1","concurrency":10,"stake":"stake_200","dryRun":false}
+{"timestamp":1780532097005,"event":"user_created","username":"loadtest_001","authMode":"http"}
+{"timestamp":1780532097005,"event":"user_created","username":"loadtest_002","authMode":"http"}
+{"timestamp":1780532097006,"event":"user_created","username":"loadtest_003","authMode":"http"}
+{"timestamp":1780532097006,"event":"user_created","username":"loadtest_004","authMode":"http"}
+{"timestamp":1780532101598,"event":"error","username":"loadtest_003","phase":"auth","error":"HTTP Authentication failed for user loadtest_003: {\"error\":\"Cross-site request rejected\"}"}
+{"timestamp":1780532101603,"event":"error","phase":"initialization","error":"HTTP Authentication failed for user loadtest_003: {\"error\":\"Cross-site request rejected\"}"}

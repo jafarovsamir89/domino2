@@ -1,0 +1,7 @@
+{
+  "peakConcurrentRooms": 0,
+  "peakConcurrentClients": 4,
+  "websocketDisconnects": 0,
+  "reconnects": 0,
+  "errors": []
+}

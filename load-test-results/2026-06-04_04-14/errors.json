@@ -1,0 +1,11 @@
+[
+  {
+    "username": "loadtest_003",
+    "phase": "auth",
+    "error": "HTTP Authentication failed for user loadtest_003: {\"error\":\"Cross-site request rejected\"}"
+  },
+  {
+    "phase": "initialization",
+    "error": "HTTP Authentication failed for user loadtest_003: {\"error\":\"Cross-site request rejected\"}"
+  }
+]

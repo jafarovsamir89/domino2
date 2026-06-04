@@ -1,0 +1,48 @@
+{
+  "result": "FAIL",
+  "failReasons": [
+    "Not all fake users reached required minDeals or minMatches.",
+    "Detected stuck reserved coins (reservedAfter > 0) after gameplay completion."
+  ],
+  "config": {
+    "users": 4,
+    "minDeals": 1,
+    "minMatches": 1,
+    "concurrency": 10,
+    "stake": "stake_200",
+    "baseUrl": "https://apid.simplesoft.az",
+    "gameUrl": "wss://gamed.simplesoft.az",
+    "mode": "1v1",
+    "reportDir": "load-test-results",
+    "timeoutMinutes": 60,
+    "dryRun": false,
+    "cleanup": false,
+    "allowProd": true,
+    "seedEnabled": false,
+    "authHelperEnabled": false,
+    "isDatabaseLocal": false,
+    "limits": {
+      "maxRoomDurationMs": 600000,
+      "maxDealDurationMs": 180000,
+      "maxStuckTurnMs": 45000,
+      "maxMovesPerDeal": 50,
+      "maxReconnectAttempts": 5,
+      "globalTimeoutMs": 3600000
+    }
+  },
+  "metrics": {
+    "totalDurationSeconds": 3605,
+    "roomsCreated": 0,
+    "roomsStarted": 0,
+    "roomsCompleted": 0,
+    "roomsFailed": 0,
+    "roomsFailReasons": {},
+    "averageRoomStartTimeMs": 0,
+    "averageMatchDurationMs": 0,
+    "totalWsDisconnects": 0,
+    "apiLatenciesAverage": {
+      "auth": 1436,
+      "mintGameToken": 225
+    }
+  }
+}

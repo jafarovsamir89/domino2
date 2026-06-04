@@ -1,0 +1,42 @@
+[
+  {
+    "username": "loadtest_001",
+    "completedDeals": 0,
+    "completedMatches": 0,
+    "dealsTargetMet": false,
+    "matchesTargetMet": false,
+    "disconnects": 0,
+    "reconnects": 0,
+    "errors": []
+  },
+  {
+    "username": "loadtest_002",
+    "completedDeals": 0,
+    "completedMatches": 0,
+    "dealsTargetMet": false,
+    "matchesTargetMet": false,
+    "disconnects": 0,
+    "reconnects": 0,
+    "errors": []
+  },
+  {
+    "username": "loadtest_003",
+    "completedDeals": 0,
+    "completedMatches": 0,
+    "dealsTargetMet": false,
+    "matchesTargetMet": false,
+    "disconnects": 0,
+    "reconnects": 0,
+    "errors": []
+  },
+  {
+    "username": "loadtest_004",
+    "completedDeals": 0,
+    "completedMatches": 0,
+    "dealsTargetMet": false,
+    "matchesTargetMet": false,
+    "disconnects": 0,
+    "reconnects": 0,
+    "errors": []
+  }
+]

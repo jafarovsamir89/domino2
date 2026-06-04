@@ -1,0 +1,50 @@
+{
+  "result": "FAIL",
+  "failReasons": [
+    "Not all fake users reached required minDeals or minMatches.",
+    "There were 3 failed/stuck rooms."
+  ],
+  "config": {
+    "users": 4,
+    "minDeals": 1,
+    "minMatches": 1,
+    "concurrency": 10,
+    "stake": "stake_200",
+    "baseUrl": "https://apid.simplesoft.az",
+    "gameUrl": "wss://gamed.simplesoft.az",
+    "mode": "1v1",
+    "reportDir": "load-test-results",
+    "timeoutMinutes": 60,
+    "dryRun": false,
+    "cleanup": false,
+    "allowProd": true,
+    "seedEnabled": false,
+    "authHelperEnabled": false,
+    "isDatabaseLocal": false,
+    "limits": {
+      "maxRoomDurationMs": 1200000,
+      "maxDealDurationMs": 180000,
+      "maxStuckTurnMs": 45000,
+      "maxMovesPerDeal": 50,
+      "maxReconnectAttempts": 5,
+      "globalTimeoutMs": 3600000
+    }
+  },
+  "metrics": {
+    "totalDurationSeconds": 3605,
+    "roomsCreated": 6,
+    "roomsStarted": 6,
+    "roomsCompleted": 3,
+    "roomsFailed": 3,
+    "roomsFailReasons": {
+      "room_timeout": 3
+    },
+    "averageRoomStartTimeMs": 915,
+    "averageMatchDurationMs": 1200294,
+    "totalWsDisconnects": 3,
+    "apiLatenciesAverage": {
+      "auth": 1466,
+      "mintGameToken": 418
+    }
+  }
+}

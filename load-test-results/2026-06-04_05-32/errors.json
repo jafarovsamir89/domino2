@@ -1,0 +1,26 @@
+[
+  {
+    "username": "loadtest_001",
+    "roomId": "U8RwX08zi",
+    "phase": "websocket",
+    "error": "Closed with code 4000"
+  },
+  {
+    "username": "loadtest_002",
+    "roomId": "U8RwX08zi",
+    "phase": "websocket",
+    "error": "Closed with code 4000"
+  },
+  {
+    "username": "loadtest_003",
+    "roomId": "LRx7rTypz",
+    "phase": "websocket",
+    "error": "Closed with code 4000"
+  },
+  {
+    "username": "loadtest_004",
+    "roomId": "LRx7rTypz",
+    "phase": "websocket",
+    "error": "Closed with code 4000"
+  }
+]

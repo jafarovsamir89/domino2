@@ -1,0 +1,52 @@
+{
+  "result": "FAIL",
+  "failReasons": [
+    "Not all fake users reached required minDeals or minMatches.",
+    "There were 536 failed/stuck rooms.",
+    "Detected stuck reserved coins (reservedAfter > 0) after gameplay completion.",
+    "Unusual number of WebSocket disconnects detected (538)."
+  ],
+  "config": {
+    "users": 4,
+    "minDeals": 1,
+    "minMatches": 1,
+    "concurrency": 10,
+    "stake": "stake_200",
+    "baseUrl": "https://apid.simplesoft.az",
+    "gameUrl": "wss://gamed.simplesoft.az",
+    "mode": "1v1",
+    "reportDir": "load-test-results",
+    "timeoutMinutes": 60,
+    "dryRun": false,
+    "cleanup": false,
+    "allowProd": true,
+    "seedEnabled": false,
+    "authHelperEnabled": false,
+    "isDatabaseLocal": false,
+    "limits": {
+      "maxRoomDurationMs": 600000,
+      "maxDealDurationMs": 180000,
+      "maxStuckTurnMs": 45000,
+      "maxMovesPerDeal": 50,
+      "maxReconnectAttempts": 5,
+      "globalTimeoutMs": 3600000
+    }
+  },
+  "metrics": {
+    "totalDurationSeconds": 3604,
+    "roomsCreated": 642,
+    "roomsStarted": 642,
+    "roomsCompleted": 0,
+    "roomsFailed": 536,
+    "roomsFailReasons": {
+      "room_timeout": 536
+    },
+    "averageRoomStartTimeMs": 1107,
+    "averageMatchDurationMs": 0,
+    "totalWsDisconnects": 538,
+    "apiLatenciesAverage": {
+      "auth": 789,
+      "mintGameToken": 294
+    }
+  }
+}

@@ -1,0 +1,63 @@
+[
+  {
+    "username": "loadtest_003",
+    "roomId": "Dodcdfyfp",
+    "phase": "gameplay",
+    "reason": "room_timeout",
+    "error": "Room exceeded max duration of 1200000ms"
+  },
+  {
+    "phase": "room",
+    "roomId": "Dodcdfyfp",
+    "reason": "room_timeout",
+    "message": "Room exceeded max duration of 1200000ms"
+  },
+  {
+    "username": "loadtest_001",
+    "roomId": "VvUV5hrut",
+    "phase": "gameplay",
+    "reason": "room_timeout",
+    "error": "Room exceeded max duration of 1200000ms"
+  },
+  {
+    "phase": "room",
+    "roomId": "VvUV5hrut",
+    "reason": "room_timeout",
+    "message": "Room exceeded max duration of 1200000ms"
+  },
+  {
+    "username": "loadtest_003",
+    "roomId": "Dodcdfyfp",
+    "phase": "websocket",
+    "error": "Closed with code 4000"
+  },
+  {
+    "username": "loadtest_001",
+    "roomId": "VvUV5hrut",
+    "phase": "websocket",
+    "error": "Closed with code 4000"
+  },
+  {
+    "username": "loadtest_001",
+    "roomId": "ZW_72AfRH",
+    "phase": "gameplay",
+    "reason": "room_timeout",
+    "error": "Room exceeded max duration of 1200000ms"
+  },
+  {
+    "phase": "room",
+    "roomId": "ZW_72AfRH",
+    "reason": "room_timeout",
+    "message": "Room exceeded max duration of 1200000ms"
+  },
+  {
+    "username": "loadtest_001",
+    "roomId": "ZW_72AfRH",
+    "phase": "websocket",
+    "error": "Closed with code 4000"
+  },
+  {
+    "phase": "global_timeout",
+    "message": "Global timeout reached"
+  }
+]

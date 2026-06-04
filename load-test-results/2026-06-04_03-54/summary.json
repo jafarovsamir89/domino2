@@ -1,0 +1,45 @@
+{
+  "result": "PASS",
+  "failReasons": [],
+  "config": {
+    "users": 4,
+    "minDeals": 1,
+    "minMatches": 1,
+    "concurrency": 10,
+    "stake": "stake_200",
+    "baseUrl": "http://127.0.0.1:3000",
+    "gameUrl": "ws://127.0.0.1:2567",
+    "mode": "1v1",
+    "reportDir": "load-test-results",
+    "timeoutMinutes": 60,
+    "dryRun": true,
+    "cleanup": false,
+    "allowProd": false,
+    "seedEnabled": false,
+    "authHelperEnabled": false,
+    "isDatabaseLocal": true,
+    "limits": {
+      "maxRoomDurationMs": 600000,
+      "maxDealDurationMs": 180000,
+      "maxStuckTurnMs": 45000,
+      "maxMovesPerDeal": 50,
+      "maxReconnectAttempts": 5,
+      "globalTimeoutMs": 3600000
+    }
+  },
+  "metrics": {
+    "totalDurationSeconds": 0,
+    "roomsCreated": 0,
+    "roomsStarted": 0,
+    "roomsCompleted": 0,
+    "roomsFailed": 0,
+    "roomsFailReasons": {},
+    "averageRoomStartTimeMs": 0,
+    "averageMatchDurationMs": 0,
+    "totalWsDisconnects": 0,
+    "apiLatenciesAverage": {
+      "auth": 0,
+      "mintGameToken": 0
+    }
+  }
+}

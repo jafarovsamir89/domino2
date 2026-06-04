@@ -1,0 +1,58 @@
+[
+  {
+    "username": "loadtest_001",
+    "before": 1000,
+    "after": 1000,
+    "delta": 0,
+    "matchesPlayedBefore": 0,
+    "matchesPlayedAfter": 0,
+    "matchesDelta": 0,
+    "winsBefore": 0,
+    "winsAfter": 0,
+    "lossesBefore": 0,
+    "lossesAfter": 0,
+    "suspicious": false
+  },
+  {
+    "username": "loadtest_002",
+    "before": 1000,
+    "after": 1000,
+    "delta": 0,
+    "matchesPlayedBefore": 0,
+    "matchesPlayedAfter": 0,
+    "matchesDelta": 0,
+    "winsBefore": 0,
+    "winsAfter": 0,
+    "lossesBefore": 0,
+    "lossesAfter": 0,
+    "suspicious": false
+  },
+  {
+    "username": "loadtest_003",
+    "before": 1000,
+    "after": 1000,
+    "delta": 0,
+    "matchesPlayedBefore": 0,
+    "matchesPlayedAfter": 0,
+    "matchesDelta": 0,
+    "winsBefore": 0,
+    "winsAfter": 0,
+    "lossesBefore": 0,
+    "lossesAfter": 0,
+    "suspicious": false
+  },
+  {
+    "username": "loadtest_004",
+    "before": 1000,
+    "after": 1000,
+    "delta": 0,
+    "matchesPlayedBefore": 0,
+    "matchesPlayedAfter": 0,
+    "matchesDelta": 0,
+    "winsBefore": 0,
+    "winsAfter": 0,
+    "lossesBefore": 0,
+    "lossesAfter": 0,
+    "suspicious": false
+  }
+]

@@ -1,0 +1,47 @@
+[
+  {
+    "username": "loadtest_001",
+    "completedDeals": 80,
+    "completedMatches": 0,
+    "dealsTargetMet": true,
+    "matchesTargetMet": false,
+    "disconnects": 2,
+    "reconnects": 0,
+    "errors": [
+      "Stuck: Room exceeded max duration of 1200000ms",
+      "Stuck: Room exceeded max duration of 1200000ms"
+    ]
+  },
+  {
+    "username": "loadtest_002",
+    "completedDeals": 40,
+    "completedMatches": 1,
+    "dealsTargetMet": true,
+    "matchesTargetMet": true,
+    "disconnects": 0,
+    "reconnects": 0,
+    "errors": []
+  },
+  {
+    "username": "loadtest_003",
+    "completedDeals": 80,
+    "completedMatches": 1,
+    "dealsTargetMet": true,
+    "matchesTargetMet": true,
+    "disconnects": 1,
+    "reconnects": 0,
+    "errors": [
+      "Stuck: Room exceeded max duration of 1200000ms"
+    ]
+  },
+  {
+    "username": "loadtest_004",
+    "completedDeals": 40,
+    "completedMatches": 1,
+    "dealsTargetMet": true,
+    "matchesTargetMet": true,
+    "disconnects": 0,
+    "reconnects": 0,
+    "errors": []
+  }
+]

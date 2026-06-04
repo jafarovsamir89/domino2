@@ -1,0 +1,17 @@
+{
+  "peakConcurrentRooms": 0,
+  "peakConcurrentClients": 4,
+  "websocketDisconnects": 1,
+  "reconnects": 0,
+  "errors": [
+    {
+      "username": "loadtest_003",
+      "phase": "auth",
+      "error": "HTTP Authentication failed for user loadtest_003: {\"error\":\"Cross-site request rejected\"}"
+    },
+    {
+      "phase": "initialization",
+      "error": "HTTP Authentication failed for user loadtest_003: {\"error\":\"Cross-site request rejected\"}"
+    }
+  ]
+}

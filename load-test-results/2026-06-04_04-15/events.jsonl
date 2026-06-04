@@ -1,0 +1,1298 @@
+{"timestamp":1780532131273,"event":"test_started","users":4,"minDeals":1,"minMatches":1,"mode":"1v1","concurrency":10,"stake":"stake_200","dryRun":false}
+{"timestamp":1780532131275,"event":"user_created","username":"loadtest_001","authMode":"http"}
+{"timestamp":1780532131276,"event":"user_created","username":"loadtest_002","authMode":"http"}
+{"timestamp":1780532131276,"event":"user_created","username":"loadtest_003","authMode":"http"}
+{"timestamp":1780532131277,"event":"user_created","username":"loadtest_004","authMode":"http"}
+{"timestamp":1780532133086,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780532133099,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780532133672,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532133681,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532144227,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780532144233,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780532144796,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532144806,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532155468,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780532155470,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780532156029,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532156032,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532166684,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780532166687,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780532167259,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532167264,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532177913,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780532177920,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780532178481,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532178500,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532189154,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780532189157,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780532191394,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532191397,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532200388,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780532200392,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780532200957,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532200960,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532211666,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780532211669,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780532212235,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532212240,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532222860,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780532222863,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780532223416,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532223431,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532234073,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780532234075,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780532234646,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532234652,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532245293,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780532245297,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780532245852,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532245872,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532256518,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780532256519,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780532257095,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532257117,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532267759,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780532267761,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780532268332,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532268333,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532278938,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780532278940,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780532279515,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532279556,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532290166,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780532290168,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780532290740,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532290742,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532301362,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780532301366,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780532301961,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532301962,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532312578,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780532312580,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780532313140,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532313145,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532323830,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780532323832,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780532324411,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532324421,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532335095,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780532335098,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780532335652,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532335689,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532346351,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780532346356,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780532347564,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532347566,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532357574,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780532357576,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780532358145,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532358150,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532368816,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780532368819,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780532369379,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532369993,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532380062,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780532380064,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780532380626,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532380643,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532391263,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780532391267,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780532391823,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532391832,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532402477,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780532402480,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780532403046,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532403058,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532413733,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780532413736,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780532414311,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532414318,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532424932,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780532424935,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780532425525,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532425533,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532436162,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780532436164,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780532436722,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532436731,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532447386,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780532447389,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780532447960,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532447962,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532458596,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780532458598,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780532459165,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532459173,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532469815,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780532469822,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780532470383,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532470391,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532480997,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780532480999,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780532481572,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532481573,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532492200,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780532492203,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780532492762,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532492782,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532503445,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780532503448,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780532504025,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532504026,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532514679,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780532514681,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780532515259,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532515261,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532525908,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780532525910,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780532526482,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532526495,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532537129,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780532537132,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780532537699,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532537711,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532548367,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780532548369,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780532548925,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532548927,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532559564,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780532559568,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780532560133,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532560135,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532570784,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780532571221,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780532571892,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532571909,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532582433,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780532582435,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780532582998,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532583002,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532593626,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780532593632,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780532594208,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532594214,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532604898,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780532604901,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780532605589,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532605601,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532616194,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780532616196,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780532616762,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532616764,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532627424,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780532627428,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780532627991,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532627996,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532638629,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780532638631,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780532639194,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532639200,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532649824,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780532649827,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780532650409,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532650421,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532661041,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780532661044,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780532661612,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532661622,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532672270,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780532672272,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780532672830,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532672838,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532683510,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780532683513,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780532684066,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532684079,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532694765,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780532694768,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780532695333,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532695338,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532706012,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780532706016,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780532706572,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532706573,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532717249,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780532717251,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780532717812,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532717827,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532728549,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780532728553,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780532729120,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532729132,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532739817,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780532739819,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780532741184,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532741191,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532751066,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780532751068,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780532751637,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532751638,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532762344,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780532762346,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780532762903,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532762919,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532773572,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780532773574,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780532774138,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532774143,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532784795,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780532784797,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780532785364,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532785373,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532796056,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780532796058,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780532796620,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532796629,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532807270,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780532807272,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780532807843,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532807844,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532818502,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780532818505,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780532819094,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532819096,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532829782,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780532829786,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780532830365,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532830370,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532841037,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780532841048,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780532841610,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532841613,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532852302,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780532852305,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780532852871,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532852887,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532863535,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780532863537,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780532864097,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532864099,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532874790,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780532874793,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780532875356,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532875357,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532886093,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780532886094,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780532886825,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532886827,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532897353,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780532897355,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780532897926,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532897943,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532908584,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780532908587,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780532909153,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532909159,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532919804,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780532919806,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780532920360,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532920371,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532931031,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780532931034,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780532931603,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532931604,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532942234,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780532942236,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780532943725,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532943755,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532953444,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780532953447,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780532954347,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532954349,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532964693,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780532964695,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780532965267,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532965271,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532975919,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780532975921,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780532976488,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532976519,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532987110,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780532987112,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780532987683,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532987684,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532998332,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780532998335,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780532998900,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780532998913,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533009555,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780533009557,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780533010111,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533010116,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533020728,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780533020730,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780533021294,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533021303,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533031929,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780533031932,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780533032502,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533032504,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533043182,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780533043184,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780533043760,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533043761,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533054464,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780533054470,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780533055032,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533055037,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533065682,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780533065684,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780533066259,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533066262,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533076895,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780533076897,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780533077922,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533077924,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533088132,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780533088135,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780533088705,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533088711,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533099348,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780533099350,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780533100538,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533100539,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533110557,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780533110559,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780533111124,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533111133,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533121780,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780533121782,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780533122359,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533122360,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533133022,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780533133025,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780533133599,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533133600,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533144224,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780533144225,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780533144780,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533144802,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533155458,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780533155461,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780533156027,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533156032,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533166693,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780533166695,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780533167255,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533167268,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533177910,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780533177914,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780533178487,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533178488,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533189151,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780533189154,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780533189712,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533189719,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533200361,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780533200363,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780533201423,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533201424,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533211587,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780533211589,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780533212150,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533212156,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533222825,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780533222827,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780533223384,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533223423,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533234076,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780533234078,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780533235271,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533235642,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533245371,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780533245374,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780533245930,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533245955,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533256599,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780533256602,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780533257236,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533257237,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533267781,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780533267783,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780533268343,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533268367,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533279004,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780533279007,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780533279576,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533279585,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533290241,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780533290243,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780533290805,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533290823,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533301461,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780533301463,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780533302035,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533302038,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533312703,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780533312705,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780533313294,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533313295,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533323932,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780533323934,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780533325241,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533325242,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533335164,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780533335166,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780533335729,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533335734,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533346346,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780533346350,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780533346937,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533346948,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533357618,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780533357621,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780533358208,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533358212,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533368856,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780533368858,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780533369432,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533369459,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533380095,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780533380099,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780533380663,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533380667,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533391283,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780533391285,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780533391846,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533391859,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533402501,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780533402503,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780533403867,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533403868,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533413762,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780533413764,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780533414325,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533414332,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533424984,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780533424987,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780533425561,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533425562,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533436207,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780533436209,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780533436782,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533436786,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533447361,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780533447363,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780533447925,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533447927,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533458574,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780533458576,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780533459151,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533459162,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533469810,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780533469813,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780533470372,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533470380,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533481045,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780533481047,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780533481647,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533481648,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533492264,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780533492267,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780533492861,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533493424,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533503476,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780533503480,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780533504045,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533504050,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533514640,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780533514642,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780533515212,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533515221,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533525889,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780533525891,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780533526448,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533526452,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533537110,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780533537111,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780533537692,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533537694,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533548336,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780533548337,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780533548909,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533548914,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533559577,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780533559579,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780533560134,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533560161,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533570804,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780533570806,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780533571358,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533571370,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533582024,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780533582026,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780533582605,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533582606,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533593259,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780533593261,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780533594155,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533594156,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533604457,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780533604459,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780533605024,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533605029,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533615715,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780533615717,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780533616294,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533616298,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533626909,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780533626911,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780533627481,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533627485,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533638109,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780533638111,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780533638665,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533638697,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533649342,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780533649344,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780533649904,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533649921,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533660520,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780533660521,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780533661108,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533661690,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533671699,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780533671701,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780533672271,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533672279,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533682896,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780533682898,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780533683473,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533683480,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533694103,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780533694104,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780533694653,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533694660,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533705326,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780533705328,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780533706690,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533706706,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533716574,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780533716576,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780533717147,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533717201,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533727825,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780533727827,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780533728400,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533728406,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533739027,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780533739029,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780533739591,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533739609,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533750242,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780533750244,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780533750807,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533750808,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533761427,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780533761429,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780533761995,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533762001,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533772583,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780533772587,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780533773147,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533773156,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533783758,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780533783760,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780533784325,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533784330,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533794961,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780533794963,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780533795530,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533795535,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533806164,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780533806167,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780533806726,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533806736,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533817393,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780533817396,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780533818538,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533818984,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533828640,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780533828642,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780533829215,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533829812,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533839886,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780533839888,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780533840446,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533840457,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533851134,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780533851135,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780533851710,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533851715,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533862339,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780533862341,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780533862902,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533862905,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533873562,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780533873564,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780533874120,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533874138,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533884814,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780533884816,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780533885385,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533885389,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533896002,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780533896004,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780533896559,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533896584,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533907253,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780533907255,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780533907810,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533907817,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533918470,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780533918472,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780533919665,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533919854,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533929662,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780533929664,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780533930237,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533930238,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533940896,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780533940898,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780533941476,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533941479,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533952127,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780533952129,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780533952686,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533952702,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533963324,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780533963328,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780533964463,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533964469,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533974532,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780533974536,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780533975108,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533975119,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533985762,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780533985766,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780533987353,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533987354,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533996979,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780533996981,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780533997536,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780533997541,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534008236,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780534008238,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780534008806,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534008813,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534019469,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780534019471,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780534020038,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534020043,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534030622,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780534030624,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780534031791,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534031798,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534041810,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780534041813,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780534042398,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534043393,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534053042,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780534053044,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780534053628,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534054428,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534064261,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780534064263,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780534064828,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534064841,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534075420,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780534075422,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780534075986,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534075987,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534086641,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780534086643,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780534087212,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534087228,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534097850,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780534097853,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780534098418,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534098428,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534109005,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780534109008,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780534109565,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534109584,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534120231,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780534120234,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780534120813,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534120814,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534131453,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780534131454,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780534132035,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534132036,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534142676,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780534142677,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780534143217,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534143249,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534153845,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780534153847,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780534154410,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534154426,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534165097,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780534165099,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780534165666,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534165675,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534176324,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780534176326,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780534176895,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534176914,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534187515,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780534187517,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780534188081,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534188083,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534198705,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780534198708,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780534199276,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534199279,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534209901,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780534209903,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780534210465,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534210470,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534221129,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780534221131,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780534221702,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534221734,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534232320,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780534232322,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780534232878,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534232901,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534243511,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780534243515,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780534244080,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534244081,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534254726,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780534254727,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780534255293,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534255298,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534265954,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780534265955,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780534266522,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534266531,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534277181,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780534277183,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780534277741,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534277751,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534288407,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780534288409,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780534288992,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534288993,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534299641,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780534299642,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780534300229,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534301230,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534310846,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780534310848,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780534311409,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534311414,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534322064,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780534322068,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780534322637,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534322644,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534333292,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780534333295,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780534333864,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534333867,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534344478,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780534344480,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780534345047,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534345641,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534355705,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780534355707,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780534356269,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534356278,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534366926,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780534366929,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780534367481,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534367513,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534378090,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780534378092,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780534378665,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534379240,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534389255,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780534389257,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780534389835,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534389836,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534400488,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780534400491,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780534401061,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534401063,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534411734,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780534411736,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780534412301,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534412307,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534422929,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780534422931,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780534423489,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534423504,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534434164,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780534434165,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780534434724,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534435541,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534445395,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780534445399,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780534445960,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534445962,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534456671,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780534456675,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780534457238,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534457249,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534467861,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780534467863,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780534468422,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534468446,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534479115,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780534479117,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780534479690,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534479700,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534490360,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780534490362,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780534490911,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534490930,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534501599,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780534501601,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780534502158,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534502183,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534512816,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780534512818,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780534513381,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534513400,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534524028,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780534524030,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780534524595,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534524597,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534535262,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780534535265,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780534535833,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534535840,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534546495,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780534546497,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780534547074,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534547075,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534557698,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780534557701,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780534558259,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534558264,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534568908,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780534568911,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780534569484,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534569488,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534580134,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780534580138,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780534580698,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534580721,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534591351,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780534591353,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780534591918,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534591927,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534602618,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780534602620,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780534603200,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534603209,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534613828,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780534613830,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780534614392,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534614403,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534625052,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780534625055,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780534625617,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534625632,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534636285,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780534636289,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780534636850,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534636872,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534647482,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780534647484,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780534648050,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534648061,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534658721,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780534658724,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780534659290,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534659292,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534669937,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780534669938,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780534670507,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534670509,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534681139,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780534681141,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780534681717,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534681718,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534692340,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780534692342,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780534692906,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534692916,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534703559,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780534703561,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780534704134,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534704135,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534714789,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780534714792,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780534715349,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534715385,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534726016,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780534726020,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780534726595,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534726596,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534737230,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780534737231,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780534737795,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534737803,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534748493,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780534748495,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780534749057,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534749074,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534759651,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780534759653,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780534760286,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534760287,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534770828,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780534770830,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780534771384,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534771403,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534782030,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780534782031,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780534782596,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534782612,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534793224,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780534793226,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780534793788,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534793793,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534804484,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780534804486,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780534805045,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534805054,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534815720,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780534815721,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780534816296,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534816297,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534826965,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780534826967,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780534827534,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534827538,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534838219,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780534838222,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780534838791,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534838792,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534849465,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780534849467,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780534850045,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534850048,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534860688,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780534860691,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780534861251,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534861271,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534871913,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780534871915,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780534872604,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534872606,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534883131,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780534883133,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780534883697,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534883702,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534894342,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780534894344,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780534894926,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534894928,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534905548,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780534905550,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780534906117,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534906128,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534916747,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780534916749,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780534917312,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534917334,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534927962,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780534927964,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780534928522,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534928530,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534939136,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780534939138,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780534940150,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534940151,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534950363,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780534950365,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780534950935,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534950945,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534961590,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780534961592,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780534962151,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534962153,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534972799,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780534972801,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780534973381,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534973382,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534983992,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780534983994,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780534984572,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534984573,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534995211,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780534995214,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780534995777,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780534995781,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535006394,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780535006395,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780535006983,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535006984,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535017636,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780535017639,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780535018206,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535018207,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535028860,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780535028862,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780535029422,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535029426,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535040045,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780535040047,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780535040610,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535040627,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535051293,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780535051297,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780535051857,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535051865,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535062539,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780535062542,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780535063700,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535063702,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535073765,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780535073768,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780535074341,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535074346,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535084989,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780535084991,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780535085569,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535085570,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535096214,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780535096216,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780535096774,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535096788,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535107395,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780535107398,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780535107980,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535107992,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535118626,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780535118628,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780535119189,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535119210,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535129829,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780535129831,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780535130409,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535130416,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535141090,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780535141092,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780535141659,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535141672,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535152329,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780535152331,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780535152891,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535152898,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535163548,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780535163550,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780535164113,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535164116,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535174759,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780535174761,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780535175316,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535175326,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535185963,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780535185965,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780535187200,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535187201,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535197183,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780535197185,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780535197744,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535197765,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535208391,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780535208393,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780535208955,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535208967,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535219608,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780535219610,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780535220172,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535220175,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535230891,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780535230894,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780535231471,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535231473,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535242143,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780535242145,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780535242726,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535242727,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535253356,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780535253358,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780535254483,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535254484,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535264561,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780535264563,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780535265132,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535265134,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535275819,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780535275821,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780535276403,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535276405,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535287056,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780535287058,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780535288419,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535288455,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535298243,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780535298245,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780535298829,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535298837,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535309461,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780535309465,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780535310054,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535310055,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535320644,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780535320646,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780535321222,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535321223,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535331858,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780535331860,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780535332434,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535332436,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535343075,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780535343079,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780535344241,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535344247,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535354245,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780535354247,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780535354852,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535354864,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535365454,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780535365456,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780535366042,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535367035,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535376676,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780535376678,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780535377682,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535377990,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535387857,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780535387859,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780535388448,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535388451,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535399102,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780535399105,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780535399691,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535399692,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535410333,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780535410336,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780535410917,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535410918,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535421611,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780535421613,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780535422192,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535422201,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535432767,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780535432769,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780535433653,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535433654,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535443983,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780535443987,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780535444559,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535444567,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535455176,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780535455178,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780535455743,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535455762,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535466377,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780535466379,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780535466956,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535466982,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535477603,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780535477605,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780535478189,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535478190,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535488833,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780535488835,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780535489399,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535489426,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535500019,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780535500022,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780535501745,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535501746,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535511281,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780535511284,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780535511848,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535511850,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535522541,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780535522544,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780535523109,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535523113,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535533776,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780535533778,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780535534362,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535534368,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535544999,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780535545001,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780535545592,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535545593,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535556238,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780535556241,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780535556849,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535557432,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535567422,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780535567424,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780535568010,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535568027,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535578672,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780535578676,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780535579256,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535579263,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535589888,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780535589890,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780535590453,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535590458,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535601114,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780535601116,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780535601702,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535601710,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535612376,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780535612378,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780535612950,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535612960,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535623599,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780535623602,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780535624165,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535624185,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535634825,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780535634829,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780535635412,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535635414,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535646067,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780535646071,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780535646626,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535646662,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535657341,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780535657343,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780535657906,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535657910,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535668564,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780535668566,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780535669141,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535669152,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535679734,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780535679737,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780535680318,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535680325,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535690990,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780535690992,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780535691561,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535691579,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535702209,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780535702211,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780535702786,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535702803,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535713434,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780535713436,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780535714016,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535714021,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535724603,"event":"room_created","username":"loadtest_001"}
+{"timestamp":1780535724606,"event":"room_created","username":"loadtest_003"}
+{"timestamp":1780535725178,"event":"error","username":"loadtest_003","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535725179,"event":"error","username":"loadtest_001","phase":"join","error":"Cannot read properties of undefined (reading 'name')"}
+{"timestamp":1780535733292,"event":"error","phase":"global_timeout","message":"Global timeout reached"}
+{"timestamp":1780535735896,"event":"rating_checked","username":"loadtest_001","ratingBefore":1000,"ratingAfter":1000}
+{"timestamp":1780535735896,"event":"economy_checked","username":"loadtest_001","coinsBefore":10000,"coinsAfter":999980}
+{"timestamp":1780535735905,"event":"rating_checked","username":"loadtest_003","ratingBefore":1000,"ratingAfter":1000}
+{"timestamp":1780535735906,"event":"economy_checked","username":"loadtest_003","coinsBefore":10000,"coinsAfter":999980}
+{"timestamp":1780535735915,"event":"rating_checked","username":"loadtest_002","ratingBefore":1000,"ratingAfter":1000}
+{"timestamp":1780535735916,"event":"economy_checked","username":"loadtest_002","coinsBefore":10000,"coinsAfter":999600}
+{"timestamp":1780535735918,"event":"rating_checked","username":"loadtest_004","ratingBefore":1000,"ratingAfter":1000}
+{"timestamp":1780535735919,"event":"economy_checked","username":"loadtest_004","coinsBefore":10000,"coinsAfter":999600}
