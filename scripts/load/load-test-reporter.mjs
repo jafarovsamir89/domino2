@@ -150,7 +150,8 @@ export class LoadTestReporter {
                 winsAfter: after.wins,
                 lossesBefore: before.losses,
                 lossesAfter: after.losses,
-                suspicious: suspiciousRating
+                suspicious: suspiciousRating,
+                completedRankedMatches: client.completedRankedMatches || 0
             });
 
             economyReport.push({
@@ -206,7 +207,41 @@ export class LoadTestReporter {
                 isPass = false;
                 failReasons.push(`Unusual number of WebSocket disconnects detected (${totalWsDisconnects}).`);
             }
+
+            // Stronger validation for expected ranked matches:
+            for (const client of clients) {
+                const before = client.beforeSnapshot || { rating: 1000, coins: 10000, reservedCoins: 0, wins: 0, losses: 0, matchesPlayed: 0 };
+                const after = client.afterSnapshot || before;
+
+                const ratingDelta = after.rating - before.rating;
+                const coinsDelta = after.coins - before.coins;
+                const matchesDelta = after.matchesPlayed - before.matchesPlayed;
+                const completedRanked = client.completedRankedMatches || 0;
+
+                const isExpectedRanked = config.stake !== "free" && config.stake !== "stake_free" && completedRanked > 0;
+                if (isExpectedRanked) {
+                    if (matchesDelta < completedRanked) {
+                        isPass = false;
+                        failReasons.push(`User ${client.username} completed ${completedRanked} ranked matches, but matches delta is only ${matchesDelta} in database.`);
+                    }
+                    if (ratingDelta === 0) {
+                        isPass = false;
+                        failReasons.push(`User ${client.username} played ranked matches but rating delta is 0 (stayed at ${before.rating}).`);
+                    }
+                    if (coinsDelta !== 0 && matchesDelta === 0) {
+                        isPass = false;
+                        failReasons.push(`User ${client.username} had economy changes (delta: ${coinsDelta}) but stats matches delta is 0.`);
+                    }
+                }
+            }
         }
+
+        const expectedRanked = ratingReport.reduce((acc, r) => acc + (r.completedRankedMatches || 0), 0);
+        const actualStatsUpdates = ratingReport.reduce((acc, r) => acc + r.matchesDelta, 0);
+        const economyChangeNoStats = ratingReport.filter((r, idx) => {
+            const econ = economyReport[idx];
+            return econ.delta !== 0 && r.matchesDelta === 0;
+        }).length;
 
         const summaryMd = this.buildSummaryMarkdown(config, durationSec, isPass, failReasons, playerReport, ratingReport, economyReport, cleanupMsg);
         
@@ -214,6 +249,11 @@ export class LoadTestReporter {
             result: isPass ? "PASS" : "FAIL",
             failReasons,
             config,
+            integrity: {
+                expectedRankedParticipations: expectedRanked,
+                actualPlayerStatsUpdates: actualStatsUpdates,
+                usersWithEconomyChangeButNoStatsChange: economyChangeNoStats
+            },
             metrics: {
                 totalDurationSeconds: durationSec,
                 roomsCreated: this.roomsCreated,
@@ -267,6 +307,14 @@ export class LoadTestReporter {
         const totalCoinsWon = economyReport.filter(e => e.delta > 0).reduce((acc, e) => acc + e.delta, 0);
         const stuckCoinsCount = economyReport.filter(e => e.reservedAfter > 0).reduce((acc, e) => acc + e.reservedAfter, 0);
 
+        // Integrity metrics
+        const expectedRanked = ratingReport.reduce((acc, r) => acc + (r.completedRankedMatches || 0), 0);
+        const actualStatsUpdates = ratingReport.reduce((acc, r) => acc + r.matchesDelta, 0);
+        const economyChangeNoStats = ratingReport.filter((r, idx) => {
+            const econ = economyReport[idx];
+            return econ.delta !== 0 && r.matchesDelta === 0;
+        }).length;
+
         return `# ${title}
 
 ## Test Configuration
@@ -309,6 +357,11 @@ ${topLosers || "*None*"}
 * **Total Coins Won (Prizes Distributed)**: ${totalCoinsWon}
 * **Stuck Reserved Coins**: ${stuckCoinsCount}
 * **Negative Balance Users**: ${economyReport.filter(e => e.negativeBalance).length}
+
+## ELO & PlayerStats Integrity
+* **Expected Ranked Participations**: ${expectedRanked}
+* **Actual PlayerStats Updates (matchesPlayed delta)**: ${actualStatsUpdates}
+* **Users with Economy Change but No Stats Change**: ${economyChangeNoStats}
 
 ## Cleanup Status
 * \`${cleanupMsg || "No cleanup message logged"}\`

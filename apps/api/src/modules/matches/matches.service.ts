@@ -403,44 +403,6 @@ export class MatchesService {
         }
       }
 
-      const winnerParticipants = buildWinnerParticipants({
-        payload,
-        participants: resolvedParticipants
-      });
-
-      const match = await tx.match.create({
-        data: {
-          id: sourceMatchId,
-          mode: payload.mode || "online",
-          isTeamMode: Boolean(payload.isTeamMode),
-          roomId: payload.roomId || claims.sessionId || null,
-          winnerKey: payload.winnerKey || null,
-          result: payload.result || null,
-          totalPoints: Number.isFinite(Number(payload.totalPoints))
-            ? Number(payload.totalPoints)
-            : resolvedParticipants.reduce((sum, entry) => sum + toInt(entry.participant.points), 0),
-          createdAt: matchCreatedAt,
-          participants: {
-            create: resolvedParticipants.map((entry) => ({
-              playerId: entry.player.playerId,
-              displayNameSnapshot: entry.player.displayName,
-              teamIndex: entry.participant.teamIndex ?? null,
-              winnerKey: entry.participant.winnerKey ?? null,
-              result: entry.participant.result ?? null,
-              points: toInt(entry.participant.points),
-              roundWins: toInt(entry.participant.roundWins),
-              isBot: entry.participant.isBot === true,
-              ratingBefore: entry.ratingBefore,
-              ratingAfter: entry.ratingAfter,
-              ratingDelta: entry.ratingDelta
-            }))
-          }
-        },
-        include: {
-          participants: true
-        }
-      });
-
       if (rankingContext.ranked) {
         const isTeamMode = Boolean(payload.isTeamMode);
         const winnerSideKey = isTeamMode
@@ -498,6 +460,44 @@ export class MatchesService {
           entry.ratingDelta = nextRating - entry.player.rating;
         }
       }
+
+      const winnerParticipants = buildWinnerParticipants({
+        payload,
+        participants: resolvedParticipants
+      });
+
+      const match = await tx.match.create({
+        data: {
+          id: sourceMatchId,
+          mode: payload.mode || "online",
+          isTeamMode: Boolean(payload.isTeamMode),
+          roomId: payload.roomId || claims.sessionId || null,
+          winnerKey: payload.winnerKey || null,
+          result: payload.result || null,
+          totalPoints: Number.isFinite(Number(payload.totalPoints))
+            ? Number(payload.totalPoints)
+            : resolvedParticipants.reduce((sum, entry) => sum + toInt(entry.participant.points), 0),
+          createdAt: matchCreatedAt,
+          participants: {
+            create: resolvedParticipants.map((entry) => ({
+              playerId: entry.player.playerId,
+              displayNameSnapshot: entry.player.displayName,
+              teamIndex: entry.participant.teamIndex ?? null,
+              winnerKey: entry.participant.winnerKey ?? null,
+              result: entry.participant.result ?? null,
+              points: toInt(entry.participant.points),
+              roundWins: toInt(entry.participant.roundWins),
+              isBot: entry.participant.isBot === true,
+              ratingBefore: entry.ratingBefore,
+              ratingAfter: entry.ratingAfter,
+              ratingDelta: entry.ratingDelta
+            }))
+          }
+        },
+        include: {
+          participants: true
+        }
+      });
 
       await tx.systemAuditLog.create({
         data: {

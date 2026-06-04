@@ -140,7 +140,7 @@ export function parseArgs(args) {
 
     // Hard stop conditions / limits
     config.limits = {
-        maxRoomDurationMs: 10 * 60 * 1000,   // 10 minutes
+        maxRoomDurationMs: 20 * 60 * 1000,   // 20 minutes
         maxDealDurationMs: 3 * 60 * 1000,    // 3 minutes
         maxStuckTurnMs: 45 * 1000,           // 45 seconds (server TURN_TIMEOUT_MS is 30s)
         maxMovesPerDeal: 50,

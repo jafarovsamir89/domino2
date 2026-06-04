@@ -343,6 +343,7 @@ export class LoadTestClient {
         
         this.completedDeals = 0;
         this.completedMatches = 0;
+        this.completedRankedMatches = 0;
         this.matchHistory = [];
         this.errors = [];
         this.wsDisconnects = 0;
@@ -365,9 +366,6 @@ export class LoadTestClient {
             this.reporter.logEvent("economy_checked", { username: this.username, action: "seeded" });
         }
 
-        // Snapshot rating & balance BEFORE the test
-        this.beforeSnapshot = await getPlayerProfileSnapshot(this.username, this.cookies, this.config);
-
         if (mode === "local") {
             const res = generateLocalToken(this.username);
             this.token = res.token;
@@ -387,6 +385,9 @@ export class LoadTestClient {
                 throw e;
             }
         }
+
+        // Snapshot rating & balance BEFORE the test
+        this.beforeSnapshot = await getPlayerProfileSnapshot(this.username, this.cookies, this.config);
 
         this.client = new Client(this.config.gameUrl);
     }
@@ -417,6 +418,7 @@ export class LoadTestClient {
     }
 
     async playMatch(mode, roomToJoin = null) {
+        this.room = null;
         return new Promise(async (resolve, reject) => {
             let room;
             const options = {
@@ -439,6 +441,8 @@ export class LoadTestClient {
             let roomCleanupTimer = null;
             let turnWatchdog = null;
             let dealWatchdog = null;
+            let lastUsedTurnVersion = 0;
+            let matchCompleted = false;
 
             const setupWatchdogs = () => {
                 // Global room timeout watchdog
@@ -491,9 +495,13 @@ export class LoadTestClient {
                 // Listen to room events
                 room.onStateChange((state) => {
                     if (state.matchOver) {
+                        matchCompleted = true;
                         clearWatchdogs();
                         const duration = Date.now() - tStart;
                         this.completedMatches++;
+                        if (mode !== "2v2-ai") {
+                            this.completedRankedMatches++;
+                        }
                         this.reporter.logEvent("match_completed", { username: this.username, roomId: room.roomId, duration });
                         this.reporter.recordRoomSuccess(room.roomId, duration);
                         room.leave();
@@ -530,8 +538,22 @@ export class LoadTestClient {
                         return;
                     }
 
-                    // Simulate human think time (100ms - 300ms)
-                    await sleep(100 + Math.random() * 200);
+                    // Wait for state to sync turnVersion and currentPlayerIndex
+                    const tStartWait = Date.now();
+                    while (true) {
+                        const myIndex = room.state?.playerOrder?.indexOf(room.sessionId);
+                        if (myIndex !== undefined && myIndex !== -1 && room.state.currentPlayerIndex === myIndex && (room.state.turnVersion || 0) > lastUsedTurnVersion) {
+                            break;
+                        }
+                        if (Date.now() - tStartWait > 500) {
+                            break;
+                        }
+                        await sleep(10);
+                    }
+                    const currentVersion = room.state?.turnVersion || lastUsedTurnVersion + 1;
+
+                    // Simulate human think time (60ms - 100ms)
+                    await sleep(60 + Math.random() * 40);
 
                     try {
                         if (info.validMoves && info.validMoves.length > 0) {
@@ -539,18 +561,19 @@ export class LoadTestClient {
                             room.send("play", {
                                 tileIndex: move.tileIndex,
                                 openEndIndex: move.openEndIndex,
-                                turnVersion: room.state.turnVersion
+                                turnVersion: currentVersion
                             });
                             this.reporter.logEvent("move_sent", { username: this.username, roomId: room.roomId, tileIndex: move.tileIndex, openEndIndex: move.openEndIndex });
                         } else {
                             // If no valid moves, draw or pass
                             const boneyardCount = room.state.boneyardCount;
                             if (boneyardCount > 0) {
-                                room.send("draw", { turnVersion: room.state.turnVersion });
+                                room.send("draw", { turnVersion: currentVersion });
                             } else {
-                                room.send("pass", { turnVersion: room.state.turnVersion });
+                                room.send("pass", { turnVersion: currentVersion });
                             }
                         }
+                        lastUsedTurnVersion = currentVersion;
                     } catch (err) {
                         this.reporter.logEvent("error", { username: this.username, phase: "move_execution", error: err.message });
                     }
@@ -559,11 +582,12 @@ export class LoadTestClient {
                 room.onMessage("deal_end", async (data) => {
                     this.completedDeals++;
                     movesInDealCount = 0;
+                    lastUsedTurnVersion = 0;
                     if (dealWatchdog) clearTimeout(dealWatchdog);
                     
                     // Host must advance deal
                     if (isHost) {
-                        await sleep(2000); // Wait for modal
+                        await sleep(200); // Wait for modal
                         room.send("next_deal", { turnVersion: room.state.turnVersion });
                     }
 
@@ -574,12 +598,17 @@ export class LoadTestClient {
                 room.onMessage("round_end", async (data) => {
                     this.completedDeals++;
                     movesInDealCount = 0;
+                    lastUsedTurnVersion = 0;
                     if (dealWatchdog) clearTimeout(dealWatchdog);
                     
                     if (data?.isMatchOver) {
+                        matchCompleted = true;
                         clearWatchdogs();
                         const duration = Date.now() - tStart;
                         this.completedMatches++;
+                        if (mode !== "2v2-ai") {
+                            this.completedRankedMatches++;
+                        }
                         this.reporter.logEvent("match_completed", { username: this.username, roomId: room.roomId, duration });
                         this.reporter.recordRoomSuccess(room.roomId, duration);
                         room.leave();
@@ -589,7 +618,7 @@ export class LoadTestClient {
                     
                     // Host must advance round
                     if (isHost) {
-                        await sleep(2000); // Wait for modal
+                        await sleep(200); // Wait for modal
                         room.send("next_deal", { turnVersion: room.state.turnVersion });
                     }
 
@@ -598,7 +627,7 @@ export class LoadTestClient {
 
                 room.onLeave((code) => {
                     clearWatchdogs();
-                    if (!room.state.matchOver) {
+                    if (!matchCompleted) {
                         this.wsDisconnects++;
                         this.reporter.logEvent("error", { username: this.username, roomId: room.roomId, phase: "websocket", error: `Closed with code ${code}` });
                         resolve({ success: false, reason: "websocket_disconnect" });

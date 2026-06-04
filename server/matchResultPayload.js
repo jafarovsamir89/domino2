@@ -28,7 +28,6 @@ function buildMatchParticipantRows({
         rows.push({
             userId: player.userId,
             name: player.name,
-            isSelf: false,
             teamIndex,
             winnerKey: isTeamMode ? `team:${teamIndex}` : `player:${i}`,
             points: isTeamMode ? teamScores[teamIndex] : player.score,

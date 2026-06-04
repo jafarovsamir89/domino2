@@ -135,3 +135,158 @@ test("reporter rating and economy diff aggregation", () => {
     assert.strictEqual(economy[0].delta, 190);
     assert.strictEqual(economy[1].delta, -190);
 });
+
+test("reporter validation - economy change without stats update fails", () => {
+    const reporter = new LoadTestReporter("tmp-loadtest-results-test");
+    reporter.init();
+
+    const config = {
+        minDeals: 1,
+        minMatches: 1,
+        stake: "stake_200",
+        dryRun: false,
+        users: 2
+    };
+
+    const clients = [
+        {
+            username: "loadtest_001",
+            completedDeals: 1,
+            completedMatches: 1,
+            completedRankedMatches: 1,
+            wsDisconnects: 0,
+            wsReconnects: 0,
+            errors: [],
+            beforeSnapshot: { rating: 1000, coins: 10000, reservedCoins: 0, wins: 0, losses: 0, matchesPlayed: 0 },
+            afterSnapshot: { rating: 1010, coins: 9800, reservedCoins: 0, wins: 0, losses: 0, matchesPlayed: 0 }
+        }
+    ];
+
+    try {
+        const result = reporter.generateReports(config, clients);
+        assert.strictEqual(result.isPass, false);
+        assert.ok(result.summaryMd.includes("had economy changes (delta: -200) but stats matches delta is 0"));
+    } finally {
+        try {
+            import("node:fs").then((fs) => {
+                fs.rmSync(reporter.reportDir, { recursive: true, force: true });
+            });
+        } catch {}
+    }
+});
+
+test("reporter validation - ranked match without stats change fails", () => {
+    const reporter = new LoadTestReporter("tmp-loadtest-results-test");
+    reporter.init();
+
+    const config = {
+        minDeals: 1,
+        minMatches: 1,
+        stake: "stake_200",
+        dryRun: false,
+        users: 2
+    };
+
+    const clients = [
+        {
+            username: "loadtest_001",
+            completedDeals: 1,
+            completedMatches: 1,
+            completedRankedMatches: 1,
+            wsDisconnects: 0,
+            wsReconnects: 0,
+            errors: [],
+            beforeSnapshot: { rating: 1000, coins: 10000, reservedCoins: 0, wins: 0, losses: 0, matchesPlayed: 0 },
+            afterSnapshot: { rating: 1010, coins: 10000, reservedCoins: 0, wins: 0, losses: 0, matchesPlayed: 0 }
+        }
+    ];
+
+    try {
+        const result = reporter.generateReports(config, clients);
+        assert.strictEqual(result.isPass, false);
+        assert.ok(result.summaryMd.includes("completed 1 ranked matches, but matches delta is only 0"));
+    } finally {
+        try {
+            import("node:fs").then((fs) => {
+                fs.rmSync(reporter.reportDir, { recursive: true, force: true });
+            });
+        } catch {}
+    }
+});
+
+test("reporter validation - human-vs-human match without ELO change fails", () => {
+    const reporter = new LoadTestReporter("tmp-loadtest-results-test");
+    reporter.init();
+
+    const config = {
+        minDeals: 1,
+        minMatches: 1,
+        stake: "stake_200",
+        dryRun: false,
+        users: 2
+    };
+
+    const clients = [
+        {
+            username: "loadtest_001",
+            completedDeals: 1,
+            completedMatches: 1,
+            completedRankedMatches: 1,
+            wsDisconnects: 0,
+            wsReconnects: 0,
+            errors: [],
+            beforeSnapshot: { rating: 1000, coins: 10000, reservedCoins: 0, wins: 0, losses: 0, matchesPlayed: 0 },
+            afterSnapshot: { rating: 1000, coins: 10000, reservedCoins: 0, wins: 0, losses: 0, matchesPlayed: 1 }
+        }
+    ];
+
+    try {
+        const result = reporter.generateReports(config, clients);
+        assert.strictEqual(result.isPass, false);
+        assert.ok(result.summaryMd.includes("played ranked matches but rating delta is 0"));
+    } finally {
+        try {
+            import("node:fs").then((fs) => {
+                fs.rmSync(reporter.reportDir, { recursive: true, force: true });
+            });
+        } catch {}
+    }
+});
+
+test("reporter validation - human-vs-bot match does not require ELO changes", () => {
+    const reporter = new LoadTestReporter("tmp-loadtest-results-test");
+    reporter.init();
+
+    const config = {
+        minDeals: 1,
+        minMatches: 1,
+        stake: "stake_200",
+        dryRun: false,
+        users: 2
+    };
+
+    const clients = [
+        {
+            username: "loadtest_001",
+            completedDeals: 1,
+            completedMatches: 1,
+            completedRankedMatches: 0,
+            wsDisconnects: 0,
+            wsReconnects: 0,
+            errors: [],
+            beforeSnapshot: { rating: 1000, coins: 10000, reservedCoins: 0, wins: 0, losses: 0, matchesPlayed: 0 },
+            afterSnapshot: { rating: 1000, coins: 10000, reservedCoins: 0, wins: 0, losses: 0, matchesPlayed: 1 }
+        }
+    ];
+
+    try {
+        const result = reporter.generateReports(config, clients);
+        assert.strictEqual(result.isPass, true);
+    } finally {
+        try {
+            import("node:fs").then((fs) => {
+                fs.rmSync(reporter.reportDir, { recursive: true, force: true });
+            });
+        } catch {}
+    }
+});

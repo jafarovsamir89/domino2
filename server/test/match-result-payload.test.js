@@ -39,8 +39,8 @@ test("buildMatchParticipantRows keeps ffa shape and skips players without userId
     });
 
     assert.deepEqual(rows, [
-        { userId: "u1", name: "Alice", isSelf: false, teamIndex: null, winnerKey: "player:0", points: 11, roundWins: 1, result: "loss" },
-        { userId: "u3", name: "Carol", isSelf: false, teamIndex: null, winnerKey: "player:2", points: 33, roundWins: 3, result: "win" }
+        { userId: "u1", name: "Alice", teamIndex: null, winnerKey: "player:0", points: 11, roundWins: 1, result: "loss" },
+        { userId: "u3", name: "Carol", teamIndex: null, winnerKey: "player:2", points: 33, roundWins: 3, result: "win" }
     ]);
     assert.deepEqual(players, playersClone);
 });
@@ -63,10 +63,10 @@ test("buildMatchParticipantRows keeps team shape", () => {
     });
 
     assert.deepEqual(rows, [
-        { userId: "u1", name: "Alice", isSelf: false, teamIndex: 0, winnerKey: "team:0", points: 100, roundWins: 7, result: "loss" },
-        { userId: "u2", name: "Bob", isSelf: false, teamIndex: 1, winnerKey: "team:1", points: 200, roundWins: 8, result: "win" },
-        { userId: "u3", name: "Carol", isSelf: false, teamIndex: 0, winnerKey: "team:0", points: 100, roundWins: 7, result: "loss" },
-        { userId: "u4", name: "Dave", isSelf: false, teamIndex: 1, winnerKey: "team:1", points: 200, roundWins: 8, result: "win" }
+        { userId: "u1", name: "Alice", teamIndex: 0, winnerKey: "team:0", points: 100, roundWins: 7, result: "loss" },
+        { userId: "u2", name: "Bob", teamIndex: 1, winnerKey: "team:1", points: 200, roundWins: 8, result: "win" },
+        { userId: "u3", name: "Carol", teamIndex: 0, winnerKey: "team:0", points: 100, roundWins: 7, result: "loss" },
+        { userId: "u4", name: "Dave", teamIndex: 1, winnerKey: "team:1", points: 200, roundWins: 8, result: "win" }
     ]);
 });
 
