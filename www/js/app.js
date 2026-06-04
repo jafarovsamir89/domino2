@@ -829,13 +829,21 @@ class DominoGame {
         const modal = document.getElementById('social-center-modal');
         if (!modal) return;
         if (modal.parentElement !== document.body) document.body.appendChild(modal);
-        modal.style.zIndex = '24000';
+        const chat = document.getElementById('social-chats-panel');
+        if (chat && chat.parentElement !== document.body) document.body.appendChild(chat);
+        modal.dataset.opened = 'true';
         modal.classList.add('active');
+        document.getElementById('start-screen')?.classList.remove('active');
+        document.getElementById('social-chats-panel')?.classList.add('is-hidden');
         await this.loadSocialCenterTab(tab, playerRef);
     }
 
     closeSocialCenterModal() {
-        document.getElementById('social-center-modal')?.classList.remove('active');
+        const modal = document.getElementById('social-center-modal');
+        if (modal) modal.dataset.opened = 'false';
+        modal?.classList.remove('active');
+        document.getElementById('social-chats-panel')?.classList.add('is-hidden');
+        document.getElementById('start-screen')?.classList.add('active');
         this.socialCenterTab = 'inbox';
         this.socialCenterView = 'list';
         this.accountMessagesState = {
@@ -870,6 +878,7 @@ class DominoGame {
 
         if (nextTab === 'inbox') {
             await this.loadInboxPage();
+            await this.loadSocialInvitesPage().catch(() => {});
         } else {
             await this.loadSocialSummary();
             if (nextTab === 'friends') {
@@ -1426,21 +1435,51 @@ class DominoGame {
     }
 
     syncSocialCenterTabs() {
-        const tabs = document.getElementById('social-center-tabs');
-        if (!tabs) return;
         const activeTab = this.hasAuthenticatedAccount()
             ? (this.socialCenterTab || 'inbox')
             : 'inbox';
         const activeView = this.socialCenterView || 'list';
-        tabs.querySelectorAll('[data-social-tab]').forEach((button) => {
-            const isActive = button.dataset.socialTab === activeTab;
-            button.classList.toggle('is-active', isActive);
-            button.setAttribute('aria-pressed', isActive ? 'true' : 'false');
-        });
-        document.getElementById('social-inbox-panel')?.classList.toggle('is-hidden', activeTab !== 'inbox' || activeView !== 'list');
-        document.getElementById('social-chats-panel')?.classList.toggle('is-hidden', activeView !== 'conversation');
-        document.getElementById('social-invites-panel')?.classList.toggle('is-hidden', activeTab !== 'invites');
-        document.getElementById('social-friends-panel')?.classList.toggle('is-hidden', activeTab !== 'friends');
+        const isConversation = activeView === 'conversation';
+
+        const hub = document.getElementById('social-center-modal');
+        const chat = document.getElementById('social-chats-panel');
+
+        if (hub && chat) {
+            if (isConversation) {
+                hub.classList.remove('active');
+                chat.classList.remove('is-hidden');
+            } else {
+                if (hub.dataset.opened === 'true') {
+                    hub.classList.add('active');
+                }
+                chat.classList.add('is-hidden');
+            }
+        }
+
+        const isMailActive = activeTab === 'inbox' || activeTab === 'invites';
+        const isFriendsActive = activeTab === 'friends';
+
+        const mailBtn = document.getElementById('social-tab-mail-btn');
+        const friendsBtn = document.getElementById('social-tab-friends-btn');
+        if (mailBtn) mailBtn.classList.toggle('is-active', isMailActive);
+        if (friendsBtn) friendsBtn.classList.toggle('is-active', isFriendsActive);
+
+        const inboxPanel = document.getElementById('social-inbox-panel');
+        const invitesPanel = document.getElementById('social-invites-panel');
+        const friendsPanel = document.getElementById('social-friends-panel');
+
+        if (inboxPanel) inboxPanel.classList.toggle('is-hidden', !isMailActive || isConversation);
+        if (invitesPanel) invitesPanel.classList.toggle('is-hidden', !isMailActive || isConversation);
+        if (friendsPanel) friendsPanel.classList.toggle('is-hidden', !isFriendsActive || isConversation);
+
+        const tabs = document.getElementById('social-center-tabs');
+        if (tabs) {
+            tabs.querySelectorAll('[data-social-tab]').forEach((button) => {
+                const isActive = button.dataset.socialTab === activeTab ||
+                    (activeTab === 'invites' && button.dataset.socialTab === 'inbox');
+                button.classList.toggle('is-active', isActive);
+            });
+        }
     }
 
     renderSocialCenter() {
@@ -1452,8 +1491,55 @@ class DominoGame {
         if (desc) desc.textContent = this.socialCenterView === 'conversation'
             ? (this.t('messages-conversation-title') || this.t('social-subtitle'))
             : this.t('social-subtitle');
+        
+        if (this.socialCenterView === 'conversation') {
+            this.renderChatHeaderDetails();
+        }
+
         this.syncSocialCenterTabs();
         this.updateSocialCenterBadge();
+    }
+
+    renderChatHeaderDetails() {
+        const state = this.accountMessagesState || {};
+        const threads = Array.isArray(state.threads) ? state.threads : [];
+        const activePlayerId = String(state.activePlayerId || '').trim();
+        const activeThread = threads.find((t) => String(t?.player?.id || t?.playerId || t?.id || '').trim() === activePlayerId) || null;
+        const activePlayer = state.activePlayerProfile || activeThread?.player || null;
+
+        const avatarEl = document.getElementById('chat-header-avatar');
+        const statusEl = document.getElementById('chat-header-status');
+        const viewProfileBtn = document.getElementById('account-messages-open-btn');
+
+        if (avatarEl) {
+            avatarEl.innerHTML = '';
+            if (activePlayer?.avatarUrl) {
+                const img = document.createElement('img');
+                img.src = activePlayer.avatarUrl;
+                img.alt = activePlayer.displayName || 'Avatar';
+                img.referrerPolicy = 'no-referrer';
+                avatarEl.appendChild(img);
+            } else {
+                const fallback = document.createElement('span');
+                fallback.textContent = this.getTurnAvatarText?.(activePlayer?.displayName || 'P') || 'P';
+                avatarEl.appendChild(fallback);
+            }
+        }
+
+        if (statusEl) {
+            const resolvedPresenceMap = this.friendPresenceMap instanceof Map ? this.friendPresenceMap : new Map();
+            const isOnline = activePlayer ? this.isFriendOnline(activePlayer, resolvedPresenceMap) : false;
+            statusEl.className = `chat-header-status ${isOnline ? 'is-online' : 'is-offline'}`;
+            statusEl.textContent = isOnline ? this.t('friend-online') : this.t('friend-offline');
+        }
+
+        if (viewProfileBtn) {
+            viewProfileBtn.onclick = () => {
+                if (activePlayer) {
+                    void this.openPlayerProfileModal(activePlayer);
+                }
+            };
+        }
     }
 
     async loadSocialInvitesPage() {
@@ -1647,6 +1733,10 @@ class DominoGame {
                 row.appendChild(text);
                 conversationList.appendChild(row);
             });
+            const scrollContainer = document.getElementById('chat-messages-container-scroll');
+            if (scrollContainer) {
+                scrollContainer.scrollTop = scrollContainer.scrollHeight;
+            }
         }
 
         messageInput.disabled = !activePlayerId || state.conversationLoading || state.sendLoading;
@@ -4898,68 +4988,25 @@ class DominoGame {
         if (document.getElementById('social-center-modal')) return;
         if (typeof document === 'undefined' || !document.body) return;
 
-        const modal = document.createElement('div');
-        modal.id = 'social-center-modal';
-        modal.className = 'modal-backdrop';
-        modal.innerHTML = `
-            <section class="modal-card modal-card-wide social-center-modal">
-                <div class="modal-header account-modal-header">
-                    <div class="account-modal-title-wrap">
-                        <h2 id="social-center-modal-title" data-i18n="social-title">Mesajlar</h2>
-                    </div>
-                    <button class="btn btn-menu modal-close-btn account-modal-close-btn" id="social-center-modal-close" type="button" aria-label="Close" title="Close">×</button>
-                </div>
-                <p class="modal-desc page-description" id="social-center-modal-desc" data-i18n="social-subtitle">Mesajları, dəvətiləri və dostları bir yerdə idarə et.</p>
+        // Social Hub Screen
+        const hub = document.createElement('div');
+        hub.id = 'social-center-modal';
+        hub.className = 'social-hub-screen';
+        hub.innerHTML = `
+            <header class="social-hub-header">
+                <button class="icon-btn social-hub-back-btn" id="social-center-modal-close" type="button" aria-label="Back"></button>
+                <h1 id="social-center-modal-title" data-i18n="social-title">Mesajlar</h1>
+                <div style="width: 38px;"></div> <!-- spacer -->
+            </header>
 
-                <div class="social-center-tabs" id="social-center-tabs">
-                    <button type="button" class="social-center-tab is-active" data-social-tab="inbox" data-i18n="social-tab-inbox">Inbox</button>
-                    <button type="button" class="social-center-tab" data-social-tab="invites" data-i18n="social-tab-invites">Invites</button>
-                    <button type="button" class="social-center-tab" data-social-tab="friends" data-i18n="social-tab-friends">Friends</button>
-                </div>
+            <div class="social-hub-tabs" id="social-center-tabs">
+                <button type="button" class="social-hub-tab social-center-tab is-active" data-social-tab="inbox" id="social-tab-mail-btn" data-i18n="social-tab-mail">Poçt</button>
+                <button type="button" class="social-hub-tab social-center-tab" data-social-tab="friends" id="social-tab-friends-btn" data-i18n="social-tab-friends">Dostlar</button>
+            </div>
 
-                <div class="social-center-panels">
-                    <section class="social-center-panel" id="social-inbox-panel">
-                        <div class="social-inbox-head">
-                            <div class="section-kicker" data-i18n="inbox-title">Inbox</div>
-                            <div class="room-summary social-inbox-summary" id="social-inbox-summary" data-i18n="inbox-empty">No inbox items yet.</div>
-                        </div>
-                        <div class="social-inbox-list" id="social-inbox-list"></div>
-                    </section>
-
-                    <section class="social-center-panel is-hidden" id="social-chats-panel">
-                        <div class="account-messages" id="account-messages-panel">
-                            <div class="account-messages-layout">
-                                <div class="account-messages-sidebar">
-                                    <div class="account-messages-head">
-                                        <div>
-                                            <div class="section-kicker" data-i18n="messages-conversation-title">Conversation</div>
-                                            <div class="account-messages-summary" id="account-messages-summary"></div>
-                                        </div>
-                                        <button type="button" class="btn btn-menu account-messages-back" id="account-messages-back-btn" data-i18n="messages-back">Back</button>
-                                    </div>
-                                    <div class="account-messages-thread-list" id="account-messages-thread-list"></div>
-                                </div>
-                                <div class="account-messages-conversation">
-                                    <div class="account-messages-conversation-head">
-                                        <div class="account-messages-conversation-copy">
-                                            <div class="section-kicker" data-i18n="messages-conversation-title">Conversation</div>
-                                            <div class="account-messages-conversation-title" id="account-messages-conversation-title"></div>
-                                        </div>
-                                        <button type="button" class="btn btn-action btn-strong account-messages-open" id="account-messages-open-btn" data-i18n="messages-open">Open</button>
-                                    </div>
-                                    <div class="account-messages-conversation-list" id="account-messages-conversation-list"></div>
-                                    <div class="account-messages-compose">
-                                        <textarea id="account-message-input" class="account-message-input" rows="3" maxlength="500" data-i18n="messages-placeholder" placeholder="Write a message"></textarea>
-                                        <div class="account-messages-compose-actions">
-                                            <button type="button" class="btn btn-action btn-strong" id="account-message-send-btn" data-i18n="messages-send">Send</button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </section>
-
-                    <section class="social-center-panel is-hidden" id="social-invites-panel">
+            <div class="social-hub-content">
+                <div id="social-mail-wrapper" class="social-hub-panel-group">
+                    <section class="social-center-panel" id="social-invites-panel">
                         <div class="friends-page social-invites-page">
                             <section class="friends-section">
                                 <div class="section-kicker" data-i18n="invites-incoming-title">Incoming invites</div>
@@ -4971,37 +5018,84 @@ class DominoGame {
                             </section>
                         </div>
                     </section>
-
-                    <section class="social-center-panel is-hidden" id="social-friends-panel">
-                        <div class="friends-page">
-                            <section class="friends-section">
-                                <div class="section-kicker" data-i18n="friends-list-title">Dostlar</div>
-                                <div id="friends-list" class="friends-list"></div>
-                            </section>
-
-                            <section class="friends-section">
-                                <div class="section-kicker" data-i18n="friend-requests-title">Sorğular</div>
-                                <div id="friends-requests-list" class="friends-list"></div>
-                            </section>
-
-                            <section class="friends-section">
-                                <div class="section-kicker" data-i18n="friends-search">Axtar</div>
-                                <div class="friends-search-bar">
-                                    <input type="search" id="friends-search-input" data-i18n="friends-search-placeholder" placeholder="Oyunçu axtar" minlength="2">
-                                    <button type="button" class="btn btn-action btn-strong" id="friends-search-btn" data-i18n="friends-search">Axtar</button>
-                                </div>
-                                <div id="friends-search-results" class="friends-list"></div>
-                            </section>
+                    
+                    <section class="social-center-panel" id="social-inbox-panel">
+                        <div class="social-inbox-head">
+                            <div class="section-kicker" data-i18n="inbox-title">Inbox</div>
+                            <div class="room-summary social-inbox-summary" id="social-inbox-summary" data-i18n="inbox-empty">No inbox items yet.</div>
                         </div>
+                        <div class="social-inbox-list" id="social-inbox-list"></div>
                     </section>
                 </div>
-            </section>`;
+
+                <section class="social-center-panel is-hidden" id="social-friends-panel">
+                    <div class="friends-page">
+                        <section class="friends-section">
+                            <div class="friends-search-bar">
+                                <input type="search" id="friends-search-input" data-i18n="friends-search-placeholder" placeholder="Oyunçu axtar" minlength="2">
+                                <button type="button" class="btn btn-action btn-strong" id="friends-search-btn" data-i18n="friends-search">Axtar</button>
+                            </div>
+                            <div id="friends-search-results" class="friends-list"></div>
+                        </section>
+
+                        <section class="friends-section">
+                            <div class="section-kicker" data-i18n="friend-requests-title">Sorğular</div>
+                            <div id="friends-requests-list" class="friends-list"></div>
+                        </section>
+
+                        <section class="friends-section" id="social-chats-section">
+                            <div class="chats-section-header">
+                                <div class="section-kicker" data-i18n="social-tab-chats">Söhbətlər</div>
+                                <span class="chats-section-summary" id="account-messages-summary"></span>
+                            </div>
+                            <div id="account-messages-thread-list" class="friends-list"></div>
+                        </section>
+
+                        <section class="friends-section">
+                            <div class="section-kicker" data-i18n="friends-list-title">Dostlar</div>
+                            <div id="friends-list" class="friends-list"></div>
+                        </section>
+                    </div>
+                </section>
+            </div>
+        `;
+
+        // Chat Screen
+        const chat = document.createElement('div');
+        chat.id = 'social-chats-panel';
+        chat.className = 'chat-screen is-hidden';
+        chat.innerHTML = `
+            <div class="chat-screen-layout" id="account-messages-panel">
+                <header class="chat-header">
+                    <button type="button" class="icon-btn chat-back-btn" id="account-messages-back-btn" aria-label="Back"></button>
+                    <div class="chat-header-profile" id="chat-header-profile-btn">
+                        <div class="chat-header-avatar" id="chat-header-avatar"></div>
+                        <div class="chat-header-info">
+                            <strong class="chat-header-name" id="account-messages-conversation-title"></strong>
+                            <span class="chat-header-status" id="chat-header-status"></span>
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-action chat-header-profile-action" id="account-messages-open-btn" data-i18n="profile-title">Profil</button>
+                </header>
+
+                <div class="chat-messages-container" id="chat-messages-container-scroll">
+                    <div class="chat-messages-list" id="account-messages-conversation-list"></div>
+                </div>
+
+                <div class="chat-compose-area">
+                    <textarea id="account-message-input" class="chat-message-input" rows="1" maxlength="500" data-i18n="messages-placeholder" placeholder="Write a message"></textarea>
+                    <button type="button" class="btn btn-action btn-strong chat-send-btn" id="account-message-send-btn" data-i18n="messages-send">Send</button>
+                </div>
+            </div>
+        `;
 
         const anchor = document.getElementById('friends-modal');
         if (anchor?.parentNode) {
-            anchor.parentNode.insertBefore(modal, anchor);
+            anchor.parentNode.insertBefore(hub, anchor);
+            anchor.parentNode.insertBefore(chat, anchor);
         } else {
-            document.body.appendChild(modal);
+            document.body.appendChild(hub);
+            document.body.appendChild(chat);
         }
     }
 

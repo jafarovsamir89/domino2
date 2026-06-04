@@ -597,33 +597,52 @@ test("authenticated profile shows four stats cards without Xal and leaderboard u
   await expect(page.locator("#player-profile-invite-btn")).toBeVisible();
   await expect(page.locator("#player-profile-message-btn")).toBeVisible();
   await page.locator("#player-profile-message-btn").click();
-  await expect(page.locator("#social-center-modal")).toHaveClass(/active/);
-  await expect(page.locator("#social-center-modal-title")).toContainText(/Messages|Mesajlar|Сообщения/);
-  await expect(page.locator("#social-center-tabs [data-social-tab='inbox']")).toHaveClass(/is-active/);
-  await expect(page.locator("#social-center-tabs [data-social-tab='invites']")).toBeVisible();
-  await expect(page.locator("#social-center-tabs [data-social-tab='friends']")).toBeVisible();
-  await expect(page.locator("#social-center-tabs [data-social-tab='chats']")).toHaveCount(0);
-  await page.locator("#social-center-tabs [data-social-tab='inbox']").click();
-  await expect(page.locator("#social-inbox-panel")).not.toHaveClass(/is-hidden/);
-  await expect(page.locator("#social-inbox-list .inbox-card")).toHaveCount(1);
-  await expect(page.locator("#social-inbox-list .inbox-card")).toContainText(/Alice|Hello from Alice/);
-  await page.locator("#social-inbox-list .inbox-card .btn").first().click();
+
+  // Clicking message button on player profile now opens Chat Screen directly
   await expect(page.locator("#social-chats-panel")).not.toHaveClass(/is-hidden/);
   await expect(page.locator("#account-messages-conversation-title")).toContainText(/Alice/);
   await expect(page.locator("#player-profile-modal")).not.toHaveClass(/active/);
+
+
+  // Return to Social Hub using back button
+  await page.locator("#account-messages-back-btn").click();
+  await expect(page.locator("#social-center-modal")).toHaveClass(/active/);
+  await expect(page.locator("#social-center-modal-title")).toContainText(/Messages|Mesajlar|Сообщения/);
+  await expect(page.locator("#social-center-tabs [data-social-tab='inbox']")).toHaveClass(/is-active/);
+  await expect(page.locator("#social-center-tabs [data-social-tab='friends']")).toBeVisible();
+
+  // In the redesigned two-tab system, Poçt list is immediately visible
+  await expect(page.locator("#social-inbox-panel")).not.toHaveClass(/is-hidden/);
+  await expect(page.locator("#social-inbox-list .inbox-card")).toHaveCount(1);
+  await expect(page.locator("#social-inbox-list .inbox-card")).toContainText(/Alice|Hello from Alice/);
+
+  // Re-open chat from the inbox list
+  await page.locator("#social-inbox-list .inbox-card .btn").first().click();
+  await expect(page.locator("#social-chats-panel")).not.toHaveClass(/is-hidden/);
+  await expect(page.locator("#account-messages-conversation-title")).toContainText(/Alice/);
+
+  // Return to Social Hub
+  await page.locator("#account-messages-back-btn").click();
+  await expect(page.locator("#social-center-modal")).toHaveClass(/active/);
+
+  // Close and reopen the Social Hub to verify persistence
   await page.evaluate(() => document.getElementById("social-center-modal-close")?.click());
   await expect(page.locator("#social-center-modal")).not.toHaveClass(/active/);
   await page.evaluate(() => document.getElementById("open-social-btn")?.click());
   await expect(page.locator("#social-center-modal")).toHaveClass(/active/);
   await expect(page.locator("#social-inbox-list .inbox-card")).toHaveCount(1);
-  await page.locator("#social-center-tabs [data-social-tab='invites']").click();
+
+  // Invites lists are integrated under Poçt tab and visible
   await expect(page.locator("#social-invites-incoming-list .friend-card")).toHaveCount(1);
   await expect(page.locator("#social-invites-sent-list .friend-card")).toHaveCount(1);
   await expect(page.locator("#social-center-modal")).not.toContainText(/Expired|Declined|Cancelled|Истекло|Отклонено|Отменено/);
   await expect(page.locator("#social-invites-sent-list")).toContainText(/Cancel|Ləğv et|Отменить/);
+
+  // Cancel outgoing invite
   await page.locator("#social-invites-sent-list .friend-card .btn").click();
   await expect.poll(() => cancelInviteCalled).toBeTruthy();
-  await page.locator("#social-center-tabs [data-social-tab='inbox']").click();
+
+  // Delete/claim inbox item
   await expect(page.locator("#social-inbox-panel")).not.toHaveClass(/is-hidden/);
   await page.locator("#social-inbox-list .inbox-card .btn").nth(1).click();
   await expect(page.locator("#social-inbox-list .inbox-card")).toHaveCount(0);
