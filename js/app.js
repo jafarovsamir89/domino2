@@ -755,6 +755,7 @@ class DominoGame {
                 void this.loadSocialSummary();
                 void this.loadDailyBonusStatus();
                 this.setAccountStatus(this.t('account-online'));
+                this.initSocialSse();
                 return details;
             }
         } catch (err) {
@@ -896,7 +897,7 @@ class DominoGame {
             const activeId = String(this.accountMessagesState?.activePlayerId || '').trim();
             if (activeId) {
                 await this.loadMessageThreads();
-                await this.loadConversationWithPlayer(activeId);
+                await this.loadConversationWithPlayer(activeId, true);
             }
         }
 
@@ -981,6 +982,14 @@ class DominoGame {
     }
 
     resetSocialCenterState() {
+        if (this._socialSse) {
+            try {
+                this._socialSse.close();
+            } catch (err) {
+                console.error("Error closing social SSE stream:", err);
+            }
+            this._socialSse = null;
+        }
         this.socialSummary = {
             inboxUnreadCount: 0,
             chatUnreadCount: 0,
@@ -994,6 +1003,72 @@ class DominoGame {
             unreadCount: 0,
             loading: false,
             error: ''
+        };
+    }
+
+    initSocialSse() {
+        if (this._socialSse) return;
+        if (!this.hasAuthenticatedAccount()) return;
+
+        const url = this.account.getSocialSseUrl();
+        console.log("Initializing social SSE stream connection to:", url);
+        const sse = new EventSource(url, { withCredentials: true });
+        this._socialSse = sse;
+
+        sse.addEventListener('message', async (event) => {
+            try {
+                const data = event.data ? JSON.parse(event.data) : null;
+                if (!data) return;
+                
+                const activeId = String(this.accountMessagesState?.activePlayerId || '').trim();
+                if (this.socialCenterView === 'conversation' && activeId === String(data.senderPlayerId || '').trim()) {
+                    await this.loadConversationWithPlayer(activeId, true);
+                }
+                
+                await this.loadMessageThreads().catch(() => {});
+                await this.loadSocialSummary().catch(() => {});
+                this.updateSocialCenterBadge();
+            } catch (err) {
+                console.error("SSE message handler error:", err);
+            }
+        });
+
+        sse.addEventListener('invite_update', async (event) => {
+            try {
+                await this.refreshGameInviteState({ forceRerender: true }).catch(() => {});
+                
+                const modal = document.getElementById('social-center-modal');
+                if (modal?.classList.contains('active') && this.socialCenterTab === 'inbox') {
+                    await this.loadInboxPage(true).catch(() => {});
+                    await this.loadSocialInvitesPage(true).catch(() => {});
+                }
+                
+                await this.loadSocialSummary().catch(() => {});
+                this.updateSocialCenterBadge();
+            } catch (err) {
+                console.error("SSE invite_update handler error:", err);
+            }
+        });
+
+        sse.addEventListener('friend_update', async (event) => {
+            try {
+                const modal = document.getElementById('social-center-modal');
+                if (modal?.classList.contains('active') && this.socialCenterTab === 'friends') {
+                    await this.loadFriendsPage(true).catch(() => {});
+                }
+                await this.loadSocialSummary().catch(() => {});
+                this.updateSocialCenterBadge();
+            } catch (err) {
+                console.error("SSE friend_update handler error:", err);
+            }
+        });
+
+        sse.onerror = (e) => {
+            console.warn("SSE connection error:", e);
+            if (!this.hasAuthenticatedAccount()) {
+                sse.close();
+                if (this._socialSse === sse) this._socialSse = null;
+            }
         };
     }
 
@@ -1185,7 +1260,7 @@ class DominoGame {
 
                 const openBtn = document.createElement('button');
                 openBtn.className = 'btn btn-action btn-strong open-chat-action';
-                openBtn.textContent = this.t('messages-open');
+                openBtn.textContent = this.t('inbox-open-message');
                 openBtn.type = 'button';
                 openBtn.addEventListener('click', async (e) => {
                     e.stopPropagation();
@@ -1224,9 +1299,7 @@ class DominoGame {
             });
         }
 
-        const filteredItems = threads.length
-            ? items.filter((item) => item.type !== 'direct_message' && item.type !== 'direct_message_thread_hidden')
-            : items;
+        const filteredItems = items.filter((item) => item.type !== 'direct_message' && item.type !== 'direct_message_thread_hidden');
         if (!threads.length && !filteredItems.length) {
             this.setSummaryMessage(list, this.t('inbox-empty'));
             return;
@@ -1464,11 +1537,18 @@ class DominoGame {
         }
 
         try {
-            await this.account.markMessageThreadRead?.(playerId).catch(() => {});
-            const [profile, messages] = await Promise.all([
-                this.account.getPlayerProfile(playerId).catch(() => null),
-                this.account.getDirectMessages(playerId)
+            const readPromise = this.account.markMessageThreadRead?.(playerId).catch(() => {});
+            const profilePromise = (this.accountMessagesState?.activePlayerId === playerId && this.accountMessagesState?.activePlayerProfile)
+                ? Promise.resolve(this.accountMessagesState.activePlayerProfile)
+                : this.account.getPlayerProfile(playerId).catch(() => null);
+            const messagesPromise = this.account.getDirectMessages(playerId);
+
+            const [_, profile, messages] = await Promise.all([
+                readPromise,
+                profilePromise,
+                messagesPromise
             ]);
+
             this.accountMessagesState = {
                 ...(this.accountMessagesState || {}),
                 activePlayerId: playerId,
@@ -1478,9 +1558,15 @@ class DominoGame {
                 error: ''
             };
             this.renderAccountMessagesPanel();
-            await this.loadMessageThreads().catch(() => {});
-            await this.loadSocialSummary();
-            this.updateSocialCenterBadge();
+
+            // Run subsequent updates asynchronously in the background
+            void Promise.all([
+                this.loadMessageThreads().catch(() => {}),
+                this.loadSocialSummary().catch(() => {})
+            ]).then(() => {
+                this.updateSocialCenterBadge();
+            });
+
             return this.accountMessagesState.messages;
         } catch (err) {
             this.accountMessagesState = {
@@ -1490,8 +1576,7 @@ class DominoGame {
                 error: err?.message || this.t('messages-load-failed') || this.t('chats-load-failed')
             };
             this.renderAccountMessagesPanel();
-            await this.loadSocialSummary();
-            this.updateSocialCenterBadge();
+            void this.loadSocialSummary().then(() => this.updateSocialCenterBadge()).catch(() => {});
             return [];
         }
     }
@@ -1735,12 +1820,13 @@ class DominoGame {
                 ? this.t('account-profile-loading')
                 : this.format('messages-thread-count', { count: String(threads.length) }));
 
-        threadList.innerHTML = '';
+        // Render threads list atomically using replaceChildren
+        const threadNodes = [];
         if (!threads.length) {
             const empty = document.createElement('div');
             empty.className = 'room-summary';
             empty.textContent = state.threadsLoading ? this.t('account-profile-loading') : (this.t('messages-empty') || this.t('chats-empty'));
-            threadList.appendChild(empty);
+            threadNodes.push(empty);
         } else {
             threads.forEach((thread) => {
                 const partner = thread?.player || {};
@@ -1799,85 +1885,105 @@ class DominoGame {
                 }
 
                 card.appendChild(meta);
-                threadList.appendChild(card);
+                threadNodes.push(card);
             });
         }
+        threadList.replaceChildren(...threadNodes);
 
         conversationTitle.textContent = activePlayer?.displayName || this.t('messages-conversation-title');
-        conversationList.innerHTML = '';
-        if (state.conversationLoading) {
-            const loading = document.createElement('div');
-            loading.className = 'room-summary';
-            loading.textContent = this.t('account-profile-loading');
-            conversationList.appendChild(loading);
-        } else if (!activePlayerId) {
-            const empty = document.createElement('div');
-            empty.className = 'room-summary';
-            empty.textContent = this.t('messages-empty') || this.t('chats-empty');
-            conversationList.appendChild(empty);
-        } else if (!activeMessages.length) {
-            const empty = document.createElement('div');
-            empty.className = 'room-summary';
-            empty.textContent = this.t('messages-empty') || this.t('chats-empty');
-            conversationList.appendChild(empty);
-        } else {
-            let lastDateStr = '';
-            activeMessages.forEach((message) => {
-                const msgDate = new Date(message.createdAt);
-                const dateOptions = { month: 'long', day: 'numeric' };
-                const dateStr = msgDate.toLocaleDateString(this.currentLang || 'az', dateOptions);
-                
-                if (dateStr !== lastDateStr) {
-                    lastDateStr = dateStr;
-                    const separator = document.createElement('div');
-                    separator.className = 'chat-date-separator';
-                    const label = document.createElement('span');
-                    label.textContent = dateStr;
-                    separator.appendChild(label);
-                    conversationList.appendChild(separator);
-                }
 
-                const mine = String(message.senderPlayerId || '') === currentPlayerId;
-                const row = document.createElement('div');
-                row.className = `message-row ${mine ? 'is-self' : 'is-other'}`;
+        // Check if messages have actually changed to avoid clearing and layout thrashing (flicker)
+        const lastPlayerId = this._lastConversationPlayerId;
+        const lastMessagesLength = this._lastConversationMessagesLength;
+        const lastMsgId = this._lastConversationLastMsgId;
+        
+        const currentLastMsg = activeMessages[activeMessages.length - 1];
+        const currentLastMsgId = currentLastMsg?.id || currentLastMsg?.createdAt || '';
 
-                const bubbleContainer = document.createElement('div');
-                bubbleContainer.className = 'message-bubble-container';
+        const playerChanged = lastPlayerId !== activePlayerId;
+        const messagesChanged = lastMessagesLength !== activeMessages.length || lastMsgId !== currentLastMsgId;
 
-                if (!mine) {
-                    const partnerRating = this.friendRatingMap?.get(String(activePlayerId)) || 1000;
-                    const avatar = this.createPremiumAvatar(activePlayer, partnerRating);
-                    row.appendChild(avatar);
-                }
+        if (playerChanged || messagesChanged) {
+            this._lastConversationPlayerId = activePlayerId;
+            this._lastConversationMessagesLength = activeMessages.length;
+            this._lastConversationLastMsgId = currentLastMsgId;
 
-                const bubble = document.createElement('div');
-                bubble.className = 'message-bubble';
+            const conversationNodes = [];
+            if (state.conversationLoading) {
+                const loading = document.createElement('div');
+                loading.className = 'room-summary';
+                loading.textContent = this.t('account-profile-loading');
+                conversationNodes.push(loading);
+            } else if (!activePlayerId) {
+                const empty = document.createElement('div');
+                empty.className = 'room-summary';
+                empty.textContent = this.t('messages-empty') || this.t('chats-empty');
+                conversationNodes.push(empty);
+            } else if (!activeMessages.length) {
+                const empty = document.createElement('div');
+                empty.className = 'room-summary';
+                empty.textContent = this.t('messages-empty') || this.t('chats-empty');
+                conversationNodes.push(empty);
+            } else {
+                let lastDateStr = '';
+                activeMessages.forEach((message) => {
+                    const msgDate = new Date(message.createdAt);
+                    const dateOptions = { month: 'long', day: 'numeric' };
+                    const dateStr = msgDate.toLocaleDateString(this.currentLang || 'az', dateOptions);
+                    
+                    if (dateStr !== lastDateStr) {
+                        lastDateStr = dateStr;
+                        const separator = document.createElement('div');
+                        separator.className = 'chat-date-separator';
+                        const label = document.createElement('span');
+                        label.textContent = dateStr;
+                        separator.appendChild(label);
+                        conversationNodes.push(separator);
+                    }
 
-                const text = document.createElement('div');
-                text.className = 'message-text';
-                text.textContent = message.text || message.body || '';
-                bubble.appendChild(text);
+                    const mine = String(message.senderPlayerId || '') === currentPlayerId;
+                    const row = document.createElement('div');
+                    row.className = `message-row ${mine ? 'is-self' : 'is-other'}`;
 
-                const footer = document.createElement('div');
-                footer.className = 'message-bubble-footer';
-                const timeEl = document.createElement('span');
-                timeEl.className = 'message-time';
-                const timeStr = msgDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
-                timeEl.textContent = timeStr;
-                footer.appendChild(timeEl);
+                    const bubbleContainer = document.createElement('div');
+                    bubbleContainer.className = 'message-bubble-container';
 
-                if (mine) {
-                    const checks = document.createElement('span');
-                    checks.className = 'message-checks';
-                    checks.innerHTML = `<svg viewBox="0 0 16 16" fill="currentColor"><path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0zM10.354 3.646a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L3.5 9.293l5.646-5.647a.5.5 0 0 1 .708 0z"/></svg>`;
-                    footer.appendChild(checks);
-                }
+                    if (!mine) {
+                        const partnerRating = this.friendRatingMap?.get(String(activePlayerId)) || 1000;
+                        const avatar = this.createPremiumAvatar(activePlayer, partnerRating);
+                        row.appendChild(avatar);
+                    }
 
-                bubble.appendChild(footer);
-                bubbleContainer.appendChild(bubble);
-                row.appendChild(bubbleContainer);
-                conversationList.appendChild(row);
-            });
+                    const bubble = document.createElement('div');
+                    bubble.className = 'message-bubble';
+
+                    const text = document.createElement('div');
+                    text.className = 'message-text';
+                    text.textContent = message.text || message.body || '';
+                    bubble.appendChild(text);
+
+                    const footer = document.createElement('div');
+                    footer.className = 'message-bubble-footer';
+                    const timeEl = document.createElement('span');
+                    timeEl.className = 'message-time';
+                    const timeStr = msgDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+                    timeEl.textContent = timeStr;
+                    footer.appendChild(timeEl);
+
+                    if (mine) {
+                        const checks = document.createElement('span');
+                        checks.className = 'message-checks';
+                        checks.innerHTML = `<svg viewBox="0 0 16 16" fill="currentColor"><path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0zM10.354 3.646a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L3.5 9.293l5.646-5.647a.5.5 0 0 1 .708 0z"/></svg>`;
+                        footer.appendChild(checks);
+                    }
+
+                    bubble.appendChild(footer);
+                    bubbleContainer.appendChild(bubble);
+                    row.appendChild(bubbleContainer);
+                    conversationNodes.push(row);
+                });
+            }
+            conversationList.replaceChildren(...conversationNodes);
             const scrollContainer = document.getElementById('chat-messages-container-scroll');
             if (scrollContainer) {
                 scrollContainer.scrollTop = scrollContainer.scrollHeight;
@@ -1897,6 +2003,21 @@ class DominoGame {
         
         openBtn.hidden = !activePlayerId;
         backBtn.hidden = !activePlayerId;
+
+        const chatGiftBtn = document.getElementById('chat-gift-btn');
+        if (chatGiftBtn) {
+            chatGiftBtn.hidden = !activePlayerId;
+            if (!chatGiftBtn.dataset.bound) {
+                chatGiftBtn.dataset.bound = '1';
+                chatGiftBtn.addEventListener('click', () => {
+                    const targetId = String(this.accountMessagesState?.activePlayerId || '').trim();
+                    if (!targetId) return;
+                    this.selectedGiftRecipientId = targetId;
+                    this.renderGiftPicker();
+                    this.toggleGiftPicker(true);
+                });
+            }
+        }
 
         if (!backBtn.dataset.bound) {
             backBtn.dataset.bound = '1';
@@ -1918,7 +2039,7 @@ class DominoGame {
             openBtn.dataset.bound = '1';
             openBtn.addEventListener('click', async () => {
                 if (!activePlayerId) return;
-                await this.loadConversationWithPlayer(activePlayerId);
+                await this.loadConversationWithPlayer(activePlayerId, true);
             });
         }
 
@@ -1938,7 +2059,7 @@ class DominoGame {
                     await this.account.sendDirectMessage(targetId, text);
                     messageInput.value = '';
                     this.renderer.showMessage(this.t('messages-sent') || this.t('chats-sent'), 1400);
-                    await this.loadConversationWithPlayer(targetId);
+                    await this.loadConversationWithPlayer(targetId, true);
                     await this.loadMessageThreads();
                 } catch (err) {
                     this.accountMessagesState = {
@@ -4946,7 +5067,7 @@ class DominoGame {
             } catch (e) {
                 console.error("Social hub refresh error:", e);
             }
-        }, 4000);
+        }, 30000);
     }
 
     stopSocialHubAutoRefresh() {
@@ -4957,17 +5078,11 @@ class DominoGame {
     }
 
     startGameInviteRefresh() {
-        if (this._gameInviteRefreshId) return;
-        this._gameInviteRefreshId = window.setInterval(() => {
-            void this.refreshGameInviteState().catch(() => {});
-        }, 1500);
+        // No-op. Invitations are pushed instantly via SSE.
     }
 
     stopGameInviteRefresh() {
-        if (this._gameInviteRefreshId) {
-            clearInterval(this._gameInviteRefreshId);
-            this._gameInviteRefreshId = null;
-        }
+        // No-op.
     }
 
     async sendGameInviteToPlayer(playerRef, context = {}) {
@@ -5509,7 +5624,7 @@ class DominoGame {
                     <div class="chat-header-actions">
                         <button type="button" class="chat-action-btn gift-action" id="chat-gift-btn" aria-label="Gift">🎁</button>
                         <button type="button" class="chat-action-btn phone-action" id="chat-phone-btn" aria-label="Call">📞</button>
-                        <button type="button" class="btn btn-action chat-header-profile-action" id="account-messages-open-btn" data-i18n="profile-title">Profil</button>
+                        <button type="button" class="btn btn-action chat-header-profile-action" id="account-messages-open-btn" data-i18n="account-profile">Profil</button>
                     </div>
                 </header>
 
@@ -7936,20 +8051,25 @@ class DominoGame {
     setupGiftUI() {
         this.giftBtn = document.getElementById('gift-btn');
         this.giftPicker = document.getElementById('gift-picker');
-        if (!this.giftBtn || !this.giftPicker) return;
+        if (!this.giftPicker) return;
 
-        this.giftBtn.innerHTML = this.buildGiftButtonMarkup(48);
+        if (this.giftBtn) {
+            this.giftBtn.innerHTML = this.buildGiftButtonMarkup(48);
+            this.giftBtn.addEventListener('click', (event) => {
+                event.stopPropagation();
+                this.toggleGiftPicker();
+            });
+        }
         this.renderGiftPicker();
-
-        this.giftBtn.addEventListener('click', (event) => {
-            event.stopPropagation();
-            this.toggleGiftPicker();
-        });
 
         this._giftOutsideHandler = (event) => {
             if (!this.giftPicker.classList.contains('open')) return;
             const target = event.target;
-            if (this.giftPicker.contains(target) || this.giftBtn.contains(target)) return;
+            const chatGiftBtn = document.getElementById('chat-gift-btn');
+            if (this.giftPicker.contains(target) 
+                || (this.giftBtn && this.giftBtn.contains(target))
+                || (chatGiftBtn && chatGiftBtn.contains(target))
+            ) return;
             this.closeGiftPicker();
         };
         document.addEventListener('pointerdown', this._giftOutsideHandler, true);
@@ -8000,6 +8120,19 @@ class DominoGame {
         const recipientRow = document.createElement('div');
         recipientRow.className = 'gift-recipient-row';
         const recipients = this.getGiftRecipients();
+        
+        const activePlayerId = String(this.accountMessagesState?.activePlayerId || '').trim();
+        const threads = Array.isArray(this.accountMessagesState?.threads) ? this.accountMessagesState.threads : [];
+        const activeThread = threads.find((t) => String(t?.player?.id || t?.playerId || t?.id || '').trim() === activePlayerId) || null;
+        const activePlayer = this.accountMessagesState?.activePlayerProfile || activeThread?.player || null;
+        if (activePlayerId && !recipients.some((item) => item.id === activePlayerId)) {
+            recipients.push({
+                id: activePlayerId,
+                displayName: activePlayer?.displayName || this.getRecipientNameById(activePlayerId) || 'Player',
+                avatarUrl: activePlayer?.avatarUrl || null
+            });
+        }
+        
         if (!recipients.length) {
             const empty = document.createElement('div');
             empty.className = 'modal-desc';
@@ -8089,12 +8222,17 @@ class DominoGame {
         this.giftPicker.appendChild(grid);
     }
     toggleGiftPicker(force = null) {
-        if (!this.giftPicker || !this.giftBtn) return;
+        if (!this.giftPicker) return;
         const open = force === null ? !this.giftPicker.classList.contains('open') : !!force;
         this.giftPicker.classList.toggle('open', open);
         this.giftPicker.setAttribute('aria-hidden', String(!open));
-        this.giftBtn.setAttribute('aria-expanded', String(open));
-        if (open) this.renderGiftPicker();
+        if (this.giftBtn) {
+            this.giftBtn.setAttribute('aria-expanded', String(open));
+        }
+        if (open) {
+            this.renderGiftPicker();
+            void this.loadGiftHub();
+        }
     }
     closeGiftPicker() {
         this.toggleGiftPicker(false);

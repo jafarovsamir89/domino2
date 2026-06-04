@@ -587,7 +587,6 @@ test("sendDirectMessage creates a message between two players", async () => {
   const currentPlayer = makePlayer("player-a", "Alpha");
   const targetPlayer = makePlayer("player-b", "Beta");
   let capturedCreate: any = null;
-  let capturedInboxCreate: any = null;
 
   const prismaMock = {
     player: {
@@ -596,42 +595,21 @@ test("sendDirectMessage creates a message between two players", async () => {
         return null;
       }
     },
-    $transaction: async (fn: any) => fn({
-      directMessage: {
-        create: async (query: any) => {
-          capturedCreate = query;
-          return {
-            id: "message-1",
-            senderPlayerId: currentPlayer.id,
-            receiverPlayerId: targetPlayer.id,
-            text: "Hello from Alpha",
-            createdAt: new Date("2024-03-01T10:00:00.000Z"),
-            readAt: null,
-            sender: currentPlayer,
-            receiver: targetPlayer
-          };
-        }
-      },
-      inboxMessage: {
-        create: async (query: any) => {
-          capturedInboxCreate = query;
-          return makeInboxRow({
-            id: "inbox-1",
-            playerId: targetPlayer.id,
-            type: "direct_message",
-            title: `Message from ${currentPlayer.displayName}`,
-            body: "Hello from Alpha",
-            payloadJson: {
-              messageId: "message-1",
-              senderPlayerId: currentPlayer.id,
-              senderDisplayName: currentPlayer.displayName,
-              receiverPlayerId: targetPlayer.id
-            },
-            rewardJson: null
-          });
-        }
+    directMessage: {
+      create: async (query: any) => {
+        capturedCreate = query;
+        return {
+          id: "message-1",
+          senderPlayerId: currentPlayer.id,
+          receiverPlayerId: targetPlayer.id,
+          text: "Hello from Alpha",
+          createdAt: new Date("2024-03-01T10:00:00.000Z"),
+          readAt: null,
+          sender: currentPlayer,
+          receiver: targetPlayer
+        };
       }
-    })
+    }
   } as any;
 
   const service = new SocialService(prismaMock, {} as any);
@@ -645,25 +623,10 @@ test("sendDirectMessage creates a message between two players", async () => {
     receiverPlayerId: targetPlayer.id,
     text: "Hello from Alpha"
   });
-  assert.deepEqual(capturedInboxCreate.data, {
-    playerId: targetPlayer.id,
-    type: "direct_message",
-    title: "Message from Alpha",
-    body: "Hello from Alpha",
-    status: "unread",
-    payloadJson: {
-      messageId: "message-1",
-      senderPlayerId: currentPlayer.id,
-      senderDisplayName: currentPlayer.displayName,
-      receiverPlayerId: targetPlayer.id
-    }
-  });
   assert.equal(result.item.id, "message-1");
   assert.equal(result.item.text, "Hello from Alpha");
   assert.equal(result.item.sender.displayName, "Alpha");
   assert.equal(result.item.receiver.displayName, "Beta");
-  assert.equal(result.inbox.id, "inbox-1");
-  assert.equal(result.inbox.type, "direct_message");
 });
 
 test("getDirectMessages returns the conversation history between two players", async () => {
@@ -922,6 +885,7 @@ test("getInbox returns inbox items and unread count", async () => {
 
   assert.deepEqual(capturedWhere, {
     playerId: currentPlayer.id,
+    type: { not: "direct_message" },
     status: { not: "deleted" }
   });
   assert.equal(result.unreadCount, 2);
@@ -934,47 +898,11 @@ test("markDirectMessageThreadRead marks the matching direct message rows as read
   const currentPlayer = makePlayer("player-a", "Alpha");
   const targetPlayer = makePlayer("player-b", "Beta");
   const updates: any[] = [];
-  const inboxRows = [
-    makeInboxRow({
-      id: "inbox-dm-1",
-      playerId: currentPlayer.id,
-      type: "direct_message",
-      status: "unread",
-      payloadJson: {
-        senderPlayerId: targetPlayer.id,
-        receiverPlayerId: currentPlayer.id,
-        messageId: "message-1"
-      }
-    }),
-    makeInboxRow({
-      id: "inbox-dm-2",
-      playerId: currentPlayer.id,
-      type: "direct_message",
-      status: "unread",
-      payloadJson: {
-        senderPlayerId: "player-other",
-        receiverPlayerId: currentPlayer.id,
-        messageId: "message-other"
-      }
-    })
-  ];
   const prismaMock = {
     directMessage: {
       updateMany: async (query: any) => {
         updates.push({ kind: "direct", query });
         return { count: 2 };
-      }
-    },
-    inboxMessage: {
-      findMany: async ({ where }: any) => {
-        assert.equal(where.playerId, currentPlayer.id);
-        assert.equal(where.type, "direct_message");
-        assert.equal(where.status, "unread");
-        return inboxRows;
-      },
-      updateMany: async (query: any) => {
-        updates.push({ kind: "inbox", query });
-        return { count: 1 };
       }
     }
   } as any;
@@ -984,13 +912,11 @@ test("markDirectMessageThreadRead marks the matching direct message rows as read
 
   const result = await service.markDirectMessageThreadRead({} as any, targetPlayer.id);
   assert.equal(result.ok, true);
-  assert.equal(updates.length, 2);
+  assert.equal(updates.length, 1);
   assert.deepEqual(updates[0].query.where.OR[0], {
     senderPlayerId: targetPlayer.id,
     receiverPlayerId: currentPlayer.id
   });
-  // Inbox update should use filtered IDs, not JSON path queries
-  assert.deepEqual(updates[1].query.where.id, { in: ["inbox-dm-1"] });
 });
 
 test("markInboxRead claimInboxMessage and deleteInboxMessage update inbox state", async () => {
@@ -1062,58 +988,13 @@ test("markInboxRead claimInboxMessage and deleteInboxMessage update inbox state"
 test("deleteMessageThread hides a conversation and clears inbox rows for that thread", async () => {
   const currentPlayer = makePlayer("player-a", "Alpha");
   const targetPlayer = makePlayer("player-b", "Beta");
-  const hiddenMarkerRows = [
-    makeInboxRow({
-      id: "hidden-1",
-      playerId: currentPlayer.id,
-      type: "direct_message_thread_hidden",
-      status: "deleted",
-      payloadJson: {
-        relatedPlayerId: targetPlayer.id
-      }
-    })
-  ];
-  const inboxRows = [
-    makeInboxRow({
-      id: "inbox-dm-1",
-      playerId: currentPlayer.id,
-      type: "direct_message",
-      status: "unread",
-      payloadJson: {
-        senderPlayerId: targetPlayer.id,
-        receiverPlayerId: currentPlayer.id,
-        messageId: "message-1"
-      }
-    }),
-    makeInboxRow({
-      id: "inbox-dm-2",
-      playerId: currentPlayer.id,
-      type: "direct_message",
-      status: "read",
-      payloadJson: {
-        senderPlayerId: targetPlayer.id,
-        receiverPlayerId: currentPlayer.id,
-        messageId: "message-2"
-      }
-    })
-  ];
-  const updatedRows: any[] = [];
   const createdRows: any[] = [];
-  const tx = {
+
+  const prismaMock = {
+    player: {
+      findUnique: async ({ where }: any) => (where.id === targetPlayer.id ? targetPlayer : null)
+    },
     inboxMessage: {
-      findMany: async ({ where }: any) => {
-        if (where?.type === "direct_message_thread_hidden") {
-          return hiddenMarkerRows;
-        }
-        if (where?.type === "direct_message") {
-          return inboxRows;
-        }
-        return [];
-      },
-      updateMany: async ({ where, data }: any) => {
-        updatedRows.push({ where, data });
-        return { count: 2 };
-      },
       create: async ({ data }: any) => {
         createdRows.push(data);
         return makeInboxRow({
@@ -1128,26 +1009,12 @@ test("deleteMessageThread hides a conversation and clears inbox rows for that th
       }
     }
   } as any;
-  const prismaMock = {
-    player: {
-      findUnique: async ({ where }: any) => (where.id === targetPlayer.id ? targetPlayer : null)
-    },
-    inboxMessage: tx.inboxMessage,
-    $transaction: async (fn: any) => fn(tx)
-  } as any;
 
   const service = new SocialService(prismaMock, {} as any);
   (service as any).getCurrentPlayer = async () => currentPlayer;
 
   const result = await service.deleteMessageThread({} as any, targetPlayer.id);
   assert.equal(result.ok, true);
-  assert.equal(updatedRows.length, 1);
-  assert.deepEqual(updatedRows[0].where, {
-    id: { in: ["inbox-dm-1", "inbox-dm-2"] },
-    playerId: currentPlayer.id
-  });
-  assert.equal(updatedRows[0].data.status, "deleted");
-  assert.ok(updatedRows[0].data.readAt instanceof Date);
   assert.equal(createdRows.length, 1);
   assert.equal(createdRows[0].type, "direct_message_thread_hidden");
   assert.deepEqual(createdRows[0].payloadJson, { relatedPlayerId: targetPlayer.id });

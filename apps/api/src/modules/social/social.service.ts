@@ -1,6 +1,9 @@
 import type { IncomingHttpHeaders } from "node:http";
+import { EventEmitter } from "node:events";
+import { Observable, Subject } from "rxjs";
 
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException, UnauthorizedException } from "@nestjs/common";
+import type { MessageEvent } from "@nestjs/common";
 import { Prisma, type CoinLedgerType } from "@prisma/client";
 
 import { AuthService } from "../auth/auth.service.js";
@@ -154,10 +157,99 @@ const DEFAULT_GIFT_CATALOG = [
 
 @Injectable()
 export class SocialService {
+  private readonly sseEmitter = new EventEmitter();
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly authService: AuthService
-  ) {}
+  ) {
+    // Run initial sweep
+    this.purgeExpiredSocialData().catch((err) => {
+      console.error("[SocialService] Initial purge sweep error:", err);
+    });
+
+    // Schedule hourly sweep
+    const intervalId = setInterval(() => {
+      this.purgeExpiredSocialData().catch((err) => {
+        console.error("[SocialService] Scheduled purge sweep error:", err);
+      });
+    }, 1000 * 60 * 60);
+
+    // Call unref so Node event loop doesn't hang in tests or during shutdown
+    if (typeof intervalId.unref === "function") {
+      intervalId.unref();
+    }
+  }
+
+  private emitSseEvent(playerId: string, type: string, data: any) {
+    this.sseEmitter.emit(`player:${playerId}`, { type, data });
+  }
+
+  subscribeToSocialEvents(headers: IncomingHttpHeaders): Observable<MessageEvent> {
+    return new Observable<MessageEvent>((subscriber) => {
+      let active = true;
+      let listener: ((event: { type: string; data: any }) => void) | null = null;
+      let eventName = "";
+
+      this.getCurrentPlayer(headers)
+        .then((player) => {
+          if (!active) return;
+          const playerId = player.id;
+          eventName = `player:${playerId}`;
+
+          listener = (event: { type: string; data: any }) => {
+            subscriber.next({
+              data: event.data,
+              type: event.type
+            });
+          };
+
+          this.sseEmitter.on(eventName, listener);
+
+          // Send initial connection event
+          subscriber.next({ data: { status: "connected" }, type: "connection" });
+        })
+        .catch((err) => {
+          subscriber.error(err);
+        });
+
+      return () => {
+        active = false;
+        if (listener && eventName) {
+          this.sseEmitter.off(eventName, listener);
+        }
+      };
+    });
+  }
+
+  async purgeExpiredSocialData() {
+    try {
+      if (!this.prisma?.roomInvitation?.deleteMany || !this.prisma?.inboxMessage?.deleteMany) {
+        return;
+      }
+      const now = new Date();
+      const threeDaysAgo = new Date(now.getTime() - 1000 * 60 * 60 * 24 * 3);
+      const sevenDaysAgo = new Date(now.getTime() - 1000 * 60 * 60 * 24 * 7);
+
+      const invitePurgeResult = await this.prisma.roomInvitation.deleteMany({
+        where: {
+          status: { in: ["expired", "declined", "revoked"] },
+          updatedAt: { lt: threeDaysAgo }
+        }
+      });
+
+      const inboxPurgeResult = await this.prisma.inboxMessage.deleteMany({
+        where: {
+          status: { in: ["read", "claimed", "deleted"] },
+          createdAt: { lt: sevenDaysAgo }
+        }
+      });
+
+      console.log(`[SocialService Purge] Purged ${invitePurgeResult.count} room invitations and ${inboxPurgeResult.count} inbox notifications.`);
+    } catch (error) {
+      console.error("[SocialService Purge] Error running hourly sweep:", error);
+    }
+  }
 
   private async getCurrentPlayer(headers: IncomingHttpHeaders) {
     const profile = await this.authService.getCurrentProfile(headers);
@@ -677,7 +769,10 @@ export class SocialService {
     const status = String(query?.status || "").trim().toLowerCase();
     const limit = Math.max(1, Math.min(100, Math.trunc(Number(query?.limit ?? 30)) || 30));
     const where: Prisma.InboxMessageWhereInput = {
-      playerId: currentPlayer.id
+      playerId: currentPlayer.id,
+      type: {
+        not: "direct_message"
+      }
     };
     if (status && status !== "all") {
       where.status = status;
@@ -756,61 +851,25 @@ export class SocialService {
     }
 
     const now = new Date();
-    const unreadInboxMsgs = await this.prisma.inboxMessage.findMany({
+    await this.prisma.directMessage.updateMany({
       where: {
-        playerId: currentPlayer.id,
-        type: "direct_message",
-        status: "unread"
+        OR: [
+          {
+            senderPlayerId: targetPlayerId,
+            receiverPlayerId: currentPlayer.id
+          },
+          {
+            senderPlayerId: currentPlayer.id,
+            receiverPlayerId: targetPlayerId
+          }
+        ],
+        readAt: null
+      },
+      data: {
+        readAt: now
       }
     });
 
-    const inboxIdsToUpdate = unreadInboxMsgs
-      .filter((row) => {
-        const payload = row.payloadJson && typeof row.payloadJson === "object" && !Array.isArray(row.payloadJson)
-          ? row.payloadJson as Record<string, unknown>
-          : null;
-        const senderId = String(payload?.senderPlayerId || "").trim();
-        const receiverId = String(payload?.receiverPlayerId || "").trim();
-        return senderId === targetPlayerId || receiverId === targetPlayerId;
-      })
-      .map((row) => row.id);
-
-    const updatePromises: Promise<any>[] = [
-      this.prisma.directMessage.updateMany({
-        where: {
-          OR: [
-            {
-              senderPlayerId: targetPlayerId,
-              receiverPlayerId: currentPlayer.id
-            },
-            {
-              senderPlayerId: currentPlayer.id,
-              receiverPlayerId: targetPlayerId
-            }
-          ],
-          readAt: null
-        },
-        data: {
-          readAt: now
-        }
-      })
-    ];
-
-    if (inboxIdsToUpdate.length > 0) {
-      updatePromises.push(
-        this.prisma.inboxMessage.updateMany({
-          where: {
-            id: { in: inboxIdsToUpdate }
-          },
-          data: {
-            status: "read",
-            readAt: now
-          }
-        })
-      );
-    }
-
-    await Promise.all(updatePromises);
     return { ok: true };
   }
 
@@ -1050,58 +1109,18 @@ export class SocialService {
     }
 
     const now = new Date();
-    await this.prisma.$transaction(async (tx) => {
-      const inboxRows = await tx.inboxMessage.findMany({
-        where: {
-          playerId: currentPlayer.id,
-          type: "direct_message",
-          status: {
-            not: "deleted"
-          }
+    await this.prisma.inboxMessage.create({
+      data: {
+        playerId: currentPlayer.id,
+        type: "direct_message_thread_hidden",
+        title: `Thread hidden with ${targetPlayer.displayName}`,
+        body: null,
+        status: "deleted",
+        payloadJson: {
+          relatedPlayerId: targetPlayerId
         },
-        select: {
-          id: true,
-          payloadJson: true
-        }
-      });
-
-      const relatedIds = new Set<string>();
-      inboxRows.forEach((row) => {
-        const payload = row.payloadJson && typeof row.payloadJson === "object" && !Array.isArray(row.payloadJson)
-          ? row.payloadJson as Record<string, unknown>
-          : null;
-        const relatedPlayerId = String(payload?.senderPlayerId || payload?.receiverPlayerId || payload?.relatedPlayerId || "").trim();
-        if (relatedPlayerId === targetPlayerId) {
-          relatedIds.add(row.id);
-        }
-      });
-
-      if (relatedIds.size) {
-        await tx.inboxMessage.updateMany({
-          where: {
-            id: { in: Array.from(relatedIds) },
-            playerId: currentPlayer.id
-          },
-          data: {
-            status: "deleted",
-            readAt: now
-          }
-        });
+        readAt: now
       }
-
-      await tx.inboxMessage.create({
-        data: {
-          playerId: currentPlayer.id,
-          type: "direct_message_thread_hidden",
-          title: `Thread hidden with ${targetPlayer.displayName}`,
-          body: null,
-          status: "deleted",
-          payloadJson: {
-            relatedPlayerId: targetPlayerId
-          },
-          readAt: now
-        }
-      });
     });
 
     return { ok: true };
@@ -1172,6 +1191,8 @@ export class SocialService {
           addressee: { select: this.playerSelect() }
         }
       });
+      this.emitSseEvent(targetPlayerId, "friend_update", { type: "friend_accepted", id: accepted.id });
+      this.emitSseEvent(currentPlayer.id, "friend_update", { type: "friend_accepted", id: accepted.id });
       return {
         item: this.summarizeFriend(currentPlayer.id, accepted)
       };
@@ -1199,6 +1220,8 @@ export class SocialService {
         addressee: { select: this.playerSelect() }
       }
     });
+
+    this.emitSseEvent(targetPlayerId, "friend_update", { type: "friend_request", id: pending.id });
 
     return {
       item: this.summarizeFriend(currentPlayer.id, pending)
@@ -1261,41 +1284,25 @@ export class SocialService {
       throw new BadRequestException("Message is too long");
     }
 
-    const row = await this.prisma.$transaction(async (tx) => {
-      const messageRow = await tx.directMessage.create({
-        data: {
-          senderPlayerId: currentPlayer.id,
-          receiverPlayerId: targetPlayerId,
-          text
-        },
-        include: {
-          sender: { select: this.playerSelect() },
-          receiver: { select: this.playerSelect() }
-        }
-      });
+    const messageRow = await this.prisma.directMessage.create({
+      data: {
+        senderPlayerId: currentPlayer.id,
+        receiverPlayerId: targetPlayerId,
+        text
+      },
+      include: {
+        sender: { select: this.playerSelect() },
+        receiver: { select: this.playerSelect() }
+      }
+    });
 
-      const inboxRow = await tx.inboxMessage.create({
-        data: {
-          playerId: targetPlayerId,
-          type: "direct_message",
-          title: `Message from ${currentPlayer.displayName}`,
-          body: text.slice(0, 160),
-          status: "unread",
-          payloadJson: {
-            messageId: messageRow.id,
-            senderPlayerId: currentPlayer.id,
-            senderDisplayName: currentPlayer.displayName,
-            receiverPlayerId: targetPlayerId
-          }
-        }
-      });
-
-      return { messageRow, inboxRow };
+    this.emitSseEvent(targetPlayerId, "message", {
+      senderPlayerId: currentPlayer.id,
+      text: text.slice(0, 160)
     });
 
     return {
-      item: this.summarizeDirectMessage(row.messageRow as unknown as DirectMessageRow),
-      inbox: this.summarizeInboxMessage(row.inboxRow as unknown as InboxMessageRow)
+      item: this.summarizeDirectMessage(messageRow as unknown as DirectMessageRow)
     };
   }
 
@@ -1327,6 +1334,9 @@ export class SocialService {
       }
     });
 
+    this.emitSseEvent(accepted.requesterPlayerId, "friend_update", { type: "friend_accepted", id: accepted.id });
+    this.emitSseEvent(accepted.addresseePlayerId, "friend_update", { type: "friend_accepted", id: accepted.id });
+
     return { item: this.summarizeFriend(currentPlayer.id, accepted) };
   }
 
@@ -1352,6 +1362,9 @@ export class SocialService {
       }
     });
 
+    this.emitSseEvent(declined.requesterPlayerId, "friend_update", { type: "friend_declined", id: declined.id });
+    this.emitSseEvent(declined.addresseePlayerId, "friend_update", { type: "friend_declined", id: declined.id });
+
     return { item: this.summarizeFriend(currentPlayer.id, declined) };
   }
 
@@ -1365,7 +1378,13 @@ export class SocialService {
       throw new ForbiddenException("Friend relationship not found");
     }
 
+    const partnerId = row.requesterPlayerId === currentPlayer.id ? row.addresseePlayerId : row.requesterPlayerId;
+
     await this.prisma.friendConnection.delete({ where: { id } });
+
+    this.emitSseEvent(partnerId, "friend_update", { type: "friend_removed", id });
+    this.emitSseEvent(currentPlayer.id, "friend_update", { type: "friend_removed", id });
+
     return { ok: true };
   }
 
@@ -1919,6 +1938,8 @@ export class SocialService {
         });
       });
 
+    this.emitSseEvent(inviteePlayerId, "invite_update", { type: "invite_updated", inviteId: row.id });
+
     return { item: this.summarizeInvite(row as any) };
   }
 
@@ -1973,6 +1994,9 @@ export class SocialService {
       }
     });
 
+    this.emitSseEvent(accepted.inviterPlayerId, "invite_update", { type: "invite_accepted", inviteId: accepted.id });
+    this.emitSseEvent(accepted.inviteePlayerId, "invite_update", { type: "invite_accepted", inviteId: accepted.id });
+
     return { item: this.summarizeInvite(accepted) };
   }
 
@@ -2021,6 +2045,9 @@ export class SocialService {
       }
     });
 
+    this.emitSseEvent(declined.inviterPlayerId, "invite_update", { type: "invite_declined", inviteId: declined.id });
+    this.emitSseEvent(declined.inviteePlayerId, "invite_update", { type: "invite_declined", inviteId: declined.id });
+
     return { item: this.summarizeInvite(declined) };
   }
 
@@ -2060,6 +2087,9 @@ export class SocialService {
         invitee: { select: this.playerSelect() }
       }
     });
+
+    this.emitSseEvent(cancelled.inviteePlayerId, "invite_update", { type: "invite_cancelled", inviteId: cancelled.id });
+    this.emitSseEvent(cancelled.inviterPlayerId, "invite_update", { type: "invite_cancelled", inviteId: cancelled.id });
 
     return { item: this.summarizeInvite(cancelled) };
   }

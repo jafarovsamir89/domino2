@@ -563,6 +563,10 @@ export class AccountClient {
         });
     }
 
+    getSocialSseUrl() {
+        return `${this.platformApiBase}/social/sse`;
+    }
+
     async getSocialSummary() {
         const data = await this.platformRequest("/social/summary");
         return {

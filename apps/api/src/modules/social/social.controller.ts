@@ -1,5 +1,7 @@
-import { Body, Controller, Get, Param, Post, Query, Req } from "@nestjs/common";
+import { Body, Controller, Get, Param, Post, Query, Req, Sse } from "@nestjs/common";
+import type { MessageEvent } from "@nestjs/common";
 import type { Request } from "express";
+import type { Observable } from "rxjs";
 
 import { SocialService } from "./social.service.js";
 import {
@@ -13,6 +15,11 @@ import {
 @Controller("social")
 export class SocialController {
   constructor(private readonly socialService: SocialService) {}
+
+  @Sse("sse")
+  sse(@Req() req: Request): Observable<MessageEvent> {
+    return this.socialService.subscribeToSocialEvents(req.headers);
+  }
 
   @Get("friends")
   async getFriends(@Req() req: Request) {
