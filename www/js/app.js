@@ -2414,8 +2414,15 @@ class DominoGame {
         if (streakRow) {
             streakRow.innerHTML = '';
             const maxDays = status.maxStreak || 7;
-            const inferredStreakBonus = Math.abs(status.tomorrowAmount - status.todayAmount) || 5;
-            const inferredBase = status.todayAmount - (status.streakDay - 1) * inferredStreakBonus;
+            const staticAmounts = {
+                1: 200,
+                2: 300,
+                3: 350,
+                4: 400,
+                5: 800,
+                6: 1000,
+                7: 2000
+            };
 
             for (let day = 1; day <= maxDays; day++) {
                 const box = document.createElement('div');
@@ -2439,7 +2446,7 @@ class DominoGame {
                 if (isClaimed) box.classList.add('is-claimed');
                 if (isActive) box.classList.add('is-active');
 
-                const dayReward = inferredBase + (day - 1) * inferredStreakBonus;
+                const dayReward = staticAmounts[day] || staticAmounts[7] || 2000;
 
                 const dayNumSpan = document.createElement('span');
                 dayNumSpan.className = 'day-num';

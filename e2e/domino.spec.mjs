@@ -902,8 +902,8 @@ test("daily bonus flow: visible only when authed, handles status loading and cla
           claimedToday: false,
           claimDate: "2026-06-04",
           streakDay: 3,
-          todayAmount: 35,
-          tomorrowAmount: 40,
+          todayAmount: 350,
+          tomorrowAmount: 400,
           maxStreak: 7,
           nextClaimAt: null,
           lastClaimAt: "2026-06-03T10:00:00.000Z"
@@ -914,7 +914,7 @@ test("daily bonus flow: visible only when authed, handles status loading and cla
 
   await page.route("**/economy/daily-bonus/claim", async (route) => {
     claimCalled = true;
-    mockBalance = 812;
+    mockBalance = 1127;
     const origin = route.request().headers().origin ?? "http://127.0.0.1:4173";
     const headers = {
       "Access-Control-Allow-Origin": origin,
@@ -927,14 +927,14 @@ test("daily bonus flow: visible only when authed, handles status loading and cla
       body: JSON.stringify({
         ok: true,
         claimed: true,
-        claim: { id: "claim-1", claimDate: "2026-06-04", streakDay: 3, amount: 35 },
-        wallet: { balance: 812, availableBalance: 812, reservedBalance: 0 },
+        claim: { id: "claim-1", claimDate: "2026-06-04", streakDay: 3, amount: 350 },
+        wallet: { balance: 1127, availableBalance: 1127, reservedBalance: 0 },
         dailyBonus: {
           claimable: false,
           claimedToday: true,
           streakDay: 3,
-          todayAmount: 35,
-          tomorrowAmount: 40,
+          todayAmount: 350,
+          tomorrowAmount: 400,
           maxStreak: 7,
           nextClaimAt: "2026-06-05T00:00:00.000Z",
           lastClaimAt: "2026-06-04T10:00:00.000Z"
@@ -1000,7 +1000,7 @@ test("daily bonus flow: visible only when authed, handles status loading and cla
   await page.goto("/index.html");
   const card = page.locator("#daily-bonus-card");
   await expect(card).not.toHaveClass(/is-hidden/);
-  await expect(page.locator("#daily-bonus-amount")).toContainText("35 coins");
+  await expect(page.locator("#daily-bonus-amount")).toContainText("350 coins");
   await expect(page.locator("#daily-bonus-streak")).toContainText(/3/);
 
   const claimBtn = page.locator("#daily-bonus-claim-btn");
@@ -1012,7 +1012,7 @@ test("daily bonus flow: visible only when authed, handles status loading and cla
   await expect(claimBtn).toBeDisabled();
   
   await page.locator("#account-btn").click();
-  await expect(page.locator("#account-stats-grid")).toContainText(/812/);
+  await expect(page.locator("#account-stats-grid")).toContainText(/1127/);
   await page.locator("#account-modal-close").click();
 
   await expect(page.locator("#open-solo-modal-btn")).toBeEnabled();

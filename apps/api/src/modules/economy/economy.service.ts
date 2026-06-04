@@ -1183,10 +1183,24 @@ export class EconomyService {
       }
     });
 
+    const getRewardForStreak = (day: number): number => {
+      const clamped = Math.min(config.dailyMaxStreak, Math.max(1, day));
+      const amounts: Record<number, number> = {
+        1: 200,
+        2: 300,
+        3: 350,
+        4: 400,
+        5: 800,
+        6: 1000,
+        7: 2000
+      };
+      return amounts[clamped] ?? amounts[7] ?? 2000;
+    };
+
     let claimable = false;
     let claimedToday = false;
     let streakDay = 1;
-    let todayAmount = config.dailyBaseAmount;
+    let todayAmount = 200;
     let lastClaimAt: Date | null = null;
 
     if (existingClaim) {
@@ -1199,12 +1213,12 @@ export class EconomyService {
       claimedToday = false;
       claimable = true;
       streakDay = previousClaim ? Math.min(config.dailyMaxStreak, previousClaim.streakDay + 1) : 1;
-      todayAmount = config.dailyBaseAmount + Math.max(0, streakDay - 1) * config.dailyStreakBonus;
+      todayAmount = getRewardForStreak(streakDay);
       lastClaimAt = previousClaim ? previousClaim.createdAt : null;
     }
 
     const tomorrowStreakDay = Math.min(config.dailyMaxStreak, streakDay + 1);
-    const tomorrowAmount = config.dailyBaseAmount + Math.max(0, tomorrowStreakDay - 1) * config.dailyStreakBonus;
+    const tomorrowAmount = getRewardForStreak(tomorrowStreakDay);
 
     const tomorrow = new Date(now);
     tomorrow.setUTCDate(tomorrow.getUTCDate() + 1);

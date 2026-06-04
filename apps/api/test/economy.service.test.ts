@@ -226,8 +226,8 @@ test("Daily Bonus - Authenticated status returns claimable true if no claim toda
   assert.equal(status.dailyBonus.claimable, true);
   assert.equal(status.dailyBonus.claimedToday, false);
   assert.equal(status.dailyBonus.streakDay, 1);
-  assert.equal(status.dailyBonus.todayAmount, 25);
-  assert.equal(status.dailyBonus.tomorrowAmount, 30);
+  assert.equal(status.dailyBonus.todayAmount, 200);
+  assert.equal(status.dailyBonus.tomorrowAmount, 300);
 });
 
 test("Daily Bonus - Claim credits wallet and advances quest", async () => {
@@ -240,16 +240,16 @@ test("Daily Bonus - Claim credits wallet and advances quest", async () => {
   // Claim first time
   const claimRes = await service.claimDailyBonus({});
   assert.equal(claimRes.claimed, true);
-  assert.equal(claimRes.claim.amount, 25);
+  assert.equal(claimRes.claim.amount, 200);
   assert.equal(claimRes.claim.streakDay, 1);
-  assert.equal(claimRes.wallet.balance, 25);
+  assert.equal(claimRes.wallet.balance, 200);
   assert.equal(claimRes.dailyBonus.claimedToday, true);
   assert.equal(claimRes.dailyBonus.claimable, false);
 
   // Check ledger entry
   assert.equal(mockDb.ledger.length, 1);
   assert.equal(mockDb.ledger[0].type, "daily_bonus");
-  assert.equal(mockDb.ledger[0].amount, 25);
+  assert.equal(mockDb.ledger[0].amount, 200);
 
   // Check quest progress
   assert.equal(mockDb.questProgress.length, 1);
@@ -292,20 +292,20 @@ test("Daily Bonus - Previous day claim increases streak", async () => {
     playerId: "player_1",
     claimDate: yesterdayKey,
     streakDay: 2,
-    amount: 30,
+    amount: 300,
     createdAt: yesterday
   });
 
   const status = await service.getDailyBonusStatus({});
   assert.equal(status.dailyBonus.streakDay, 3);
-  assert.equal(status.dailyBonus.todayAmount, 35); // 25 + 2 * 5
-  assert.equal(status.dailyBonus.tomorrowAmount, 40);
+  assert.equal(status.dailyBonus.todayAmount, 350);
+  assert.equal(status.dailyBonus.tomorrowAmount, 400);
 
   // Execute claim
   const claimRes = await service.claimDailyBonus({});
   assert.equal(claimRes.claimed, true);
   assert.equal(claimRes.claim.streakDay, 3);
-  assert.equal(claimRes.claim.amount, 35);
+  assert.equal(claimRes.claim.amount, 350);
 });
 
 test("Daily Bonus - Missing previous day resets streak to 1", async () => {
@@ -326,13 +326,13 @@ test("Daily Bonus - Missing previous day resets streak to 1", async () => {
     playerId: "player_1",
     claimDate: twoDaysAgoKey,
     streakDay: 2,
-    amount: 30,
+    amount: 300,
     createdAt: twoDaysAgo
   });
 
   const status = await service.getDailyBonusStatus({});
   assert.equal(status.dailyBonus.streakDay, 1);
-  assert.equal(status.dailyBonus.todayAmount, 25);
+  assert.equal(status.dailyBonus.todayAmount, 200);
 });
 
 test("Daily Bonus - Streak capped at dailyMaxStreak", async () => {
@@ -353,12 +353,12 @@ test("Daily Bonus - Streak capped at dailyMaxStreak", async () => {
     playerId: "player_1",
     claimDate: yesterdayKey,
     streakDay: 7,
-    amount: 55,
+    amount: 2000,
     createdAt: yesterday
   });
 
   const status = await service.getDailyBonusStatus({});
   assert.equal(status.dailyBonus.streakDay, 7); // capped at 7
-  assert.equal(status.dailyBonus.todayAmount, 55); // 25 + 6 * 5
-  assert.equal(status.dailyBonus.tomorrowAmount, 55);
+  assert.equal(status.dailyBonus.todayAmount, 2000);
+  assert.equal(status.dailyBonus.tomorrowAmount, 2000);
 });
