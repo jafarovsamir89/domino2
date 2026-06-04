@@ -3214,12 +3214,34 @@ class DominoGame {
         }
     }
 
+    getFriendsUiElements() {
+        const socialRoot = document.querySelector('#social-center-modal #social-friends-panel');
+        const legacyRoot = document.querySelector('#friends-modal .friends-page');
+        const root = socialRoot || legacyRoot || document;
+        const query = (selector) => root?.querySelector(selector) || document.querySelector(selector);
+        return {
+            root,
+            friendsList: query('#friends-list'),
+            requestsList: query('#friends-requests-list'),
+            searchResults: query('#friends-search-results'),
+            searchInput: query('#friends-search-input'),
+            searchBtn: query('#friends-search-btn'),
+            incomingInvitesList: document.querySelector('#social-center-modal #social-invites-incoming-list')
+                || document.querySelector('#social-invites-incoming-list'),
+            sentInvitesList: document.querySelector('#social-center-modal #social-invites-sent-list')
+                || document.querySelector('#social-invites-sent-list'),
+            legacyInvitesList: query('#social-invites-list')
+        };
+    }
+
     async loadFriendsPage() {
-        const friendsList = document.getElementById('friends-list');
-        const requestsList = document.getElementById('friends-requests-list');
-        const searchResults = document.getElementById('friends-search-results');
-        const searchInput = document.getElementById('friends-search-input');
-        const searchBtn = document.getElementById('friends-search-btn');
+        const {
+            friendsList,
+            requestsList,
+            searchResults,
+            searchInput,
+            searchBtn
+        } = this.getFriendsUiElements();
         if (!friendsList || !requestsList || !searchResults || !searchInput || !searchBtn) return;
 
         const loggedIn = this.hasAuthenticatedAccount();
@@ -3240,14 +3262,17 @@ class DominoGame {
         this.setSummaryMessage(searchResults, loading);
 
         try {
-            const [friends, leaderboardRows] = await Promise.all([
+            const [friends, leaderboardRows, presenceMap] = await Promise.all([
                 this.account.getFriends(),
                 this.account.getLeaderboard(100).catch(() => []),
                 this.loadFriendPresenceMap().catch(() => new Map())
             ]);
             this.friendHub = friends || { accepted: [], incoming: [], outgoing: [], items: [] };
             this.friendRatingMap = new Map((Array.isArray(leaderboardRows) ? leaderboardRows : []).map((row) => [String(row.id || ''), Number(row.rating ?? 0)]));
-            const presenceMap = this.friendPresenceMap instanceof Map ? this.friendPresenceMap : new Map();
+            if (presenceMap instanceof Map) {
+                this.friendPresenceMap = presenceMap;
+            }
+            const resolvedPresenceMap = this.friendPresenceMap instanceof Map ? this.friendPresenceMap : new Map();
 
             friendsList.innerHTML = '';
             if (!this.friendHub.accepted.length) {
@@ -3259,7 +3284,7 @@ class DominoGame {
                     const copy = document.createElement('div');
                     copy.className = 'friend-card-copy';
                     const name = this.createPlayerNameButton(item.friend.displayName, item.friend, 'friend-card-name');
-                    const status = this.createFriendStatusBadge(this.isFriendOnline(item.friend, presenceMap));
+                    const status = this.createFriendStatusBadge(this.isFriendOnline(item.friend, resolvedPresenceMap));
                     const meta = document.createElement('span');
                     const rating = this.friendRatingMap.get(String(item.friend.id || ''));
                     meta.textContent = Number.isFinite(rating) && rating > 0
@@ -3320,7 +3345,7 @@ class DominoGame {
                     const copy = document.createElement('div');
                     copy.className = 'friend-card-copy';
                     const name = this.createPlayerNameButton(item.friend.displayName, item.friend, 'friend-card-name');
-                    const status = this.createFriendStatusBadge(this.isFriendOnline(item.friend, presenceMap));
+                    const status = this.createFriendStatusBadge(this.isFriendOnline(item.friend, resolvedPresenceMap));
                     const meta = document.createElement('span');
                     const rating = this.friendRatingMap.get(String(item.friend.id || ''));
                     meta.textContent = Number.isFinite(rating) && rating > 0
@@ -3569,8 +3594,7 @@ class DominoGame {
     }
 
     async searchFriendsPage(skipLoading = false) {
-        const searchInput = document.getElementById('friends-search-input');
-        const resultsList = document.getElementById('friends-search-results');
+        const { searchInput, searchResults: resultsList } = this.getFriendsUiElements();
         if (!searchInput || !resultsList) return;
 
         const query = String(searchInput.value || '').trim();
@@ -6093,25 +6117,41 @@ class DominoGame {
     }
 
     async loadFriendsHub() {
-        const friendsList = document.getElementById('friends-list') || document.getElementById('friend-list');
-        const requestsList = document.getElementById('friends-requests-list') || document.getElementById('friend-requests-list');
-        const invitesList = document.getElementById('social-invites-list') || document.getElementById('room-invites-list');
-        const searchResults = document.getElementById('friends-search-results') || document.getElementById('friend-search-results');
+        const {
+            friendsList,
+            requestsList,
+            incomingInvitesList,
+            sentInvitesList,
+            legacyInvitesList,
+            searchResults
+        } = this.getFriendsUiElements();
         const loggedIn = this.hasAuthenticatedAccount();
         const emptyText = this.t('friends-sign-in');
+        const invitesTargets = [incomingInvitesList, sentInvitesList, legacyInvitesList].filter(Boolean);
+        const setInvitesMessage = (message) => {
+            if (!invitesTargets.length) return;
+            invitesTargets.forEach((target, index) => {
+                if (!target) return;
+                if (index === 0) {
+                    this.setSummaryMessage(target, message);
+                } else {
+                    target.innerHTML = '';
+                }
+            });
+        };
 
-        if (!friendsList || !requestsList || !invitesList || !searchResults) return;
+        if (!friendsList || !requestsList || !searchResults || !invitesTargets.length) return;
         if (!loggedIn) {
             this.setSummaryMessage(friendsList, emptyText);
             this.setSummaryMessage(requestsList, emptyText);
-            this.setSummaryMessage(invitesList, emptyText);
+            setInvitesMessage(emptyText);
             this.setSummaryMessage(searchResults, emptyText);
             return;
         }
 
         this.setSummaryMessage(friendsList, this.t('account-profile-loading'));
         this.setSummaryMessage(requestsList, this.t('account-profile-loading'));
-        this.setSummaryMessage(invitesList, this.t('account-profile-loading'));
+        setInvitesMessage(this.t('account-profile-loading'));
         try {
             const [friendsResult, invitationsResult, presenceResult] = await Promise.allSettled([
                 this.account.getFriends(),
@@ -6258,41 +6298,41 @@ class DominoGame {
             }
 
             try {
-                invitesList.innerHTML = '';
+                invitesTargets.forEach((target) => {
+                    target.innerHTML = '';
+                });
                 if (invitationsResult.status !== 'fulfilled') {
-                    this.setSummaryMessage(invitesList, invitationsResult.reason?.message || this.t('friends-load-failed'));
+                    setInvitesMessage(invitationsResult.reason?.message || this.t('friends-load-failed'));
                 } else {
                     const { incoming: incomingInvites, sent: sentInvites } = this.getActiveRoomInvitations(this.roomInvitations);
                     if (!incomingInvites.length && !sentInvites.length) {
-                        this.setSummaryMessage(invitesList, this.t('no-room-invites'));
+                        setInvitesMessage(this.t('no-room-invites'));
                     } else {
-                        if (incomingInvites.length) {
-                            const incomingTitle = document.createElement('div');
-                            incomingTitle.className = 'section-kicker';
-                            incomingTitle.textContent = this.t('invites-incoming-title');
-                            invitesList.appendChild(incomingTitle);
-                            incomingInvites.forEach((invite) => {
-                                invitesList.appendChild(this.createRoomInvitationCard(invite, 'incoming'));
+                        const appendInviteSection = (target, titleKey, items, direction) => {
+                            if (!target || !items.length) return;
+                            const title = document.createElement('div');
+                            title.className = 'section-kicker';
+                            title.textContent = this.t(titleKey);
+                            target.appendChild(title);
+                            items.forEach((invite) => {
+                                target.appendChild(this.createRoomInvitationCard(invite, direction));
                             });
+                        };
+                        if (incomingInvites.length) {
+                            appendInviteSection(incomingInvitesList || legacyInvitesList, 'invites-incoming-title', incomingInvites, 'incoming');
                         }
                         if (sentInvites.length) {
-                            const sentTitle = document.createElement('div');
-                            sentTitle.className = 'section-kicker';
-                            sentTitle.textContent = this.t('invites-sent-title');
-                            invitesList.appendChild(sentTitle);
-                            sentInvites.forEach((invite) => {
-                                invitesList.appendChild(this.createRoomInvitationCard(invite, 'sent'));
-                            });
+                            appendInviteSection(sentInvitesList || legacyInvitesList, 'invites-sent-title', sentInvites, 'sent');
                         }
                     }
                 }
             } catch (invitesErr) {
-                this.setSummaryMessage(invitesList, invitesErr?.message || this.t('friends-load-failed'));
+                setInvitesMessage(invitesErr?.message || this.t('friends-load-failed'));
             }
         } catch (err) {
             this.setSummaryMessage(friendsList, err.message || this.t('account-server-unavailable'));
             this.setSummaryMessage(requestsList, err.message || this.t('account-server-unavailable'));
-            this.setSummaryMessage(invitesList, err.message || this.t('account-server-unavailable'));
+            setInvitesMessage(err.message || this.t('account-server-unavailable'));
         }
         await this.loadSocialSummary();
         this.renderGiftPicker();
