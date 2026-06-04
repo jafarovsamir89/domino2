@@ -5993,3 +5993,15 @@ body.is-reconnecting .hand-container {
         transform: translateY(0);
     }
 }
+
+.invite-action-btn.is-invited,
+.btn.is-invited {
+    background: rgba(39, 174, 96, 0.15) !important;
+    border: 1.5px solid rgba(39, 174, 96, 0.45) !important;
+    color: #2ecc71 !important;
+    pointer-events: none !important;
+    opacity: 1 !important;
+    box-shadow: none !important;
+    transform: none !important;
+}
+

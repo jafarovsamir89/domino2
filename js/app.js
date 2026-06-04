@@ -3867,24 +3867,38 @@ class DominoGame {
                     const action = document.createElement('div');
                     action.className = 'friend-card-actions';
 
-                    const canInvite = Boolean(item.friend?.id);
+                    const friendId = String(item.friend?.id || '').trim();
+                    const hasPendingInvite = friendId && (this.roomInvitations?.sent || []).some(inv => 
+                        String(inv.invitee?.id || '').trim() === friendId && 
+                        this.isRoomInvitationPending(inv)
+                    );
+                    const canInvite = Boolean(item.friend?.id) && !hasPendingInvite;
+
                     const inviteBtn = document.createElement('button');
                     inviteBtn.className = 'btn btn-action btn-strong invite-action-btn';
-                    inviteBtn.textContent = this.t('friend-invite');
-                    inviteBtn.disabled = !canInvite;
-                    inviteBtn.addEventListener('click', async (e) => {
-                        e.stopPropagation();
+                    if (hasPendingInvite) {
+                        inviteBtn.classList.add('is-invited');
+                        inviteBtn.textContent = this.t('invite-status-invited');
                         inviteBtn.disabled = true;
-                        try {
-                            await this.sendGameInviteToPlayer(item.friend, { source: 'friends-page' });
-                            this.renderer.showMessage(this.t('invite-sent'), 1400);
-                            await this.loadFriendsPage();
-                        } catch (err) {
-                            this.renderer.showMessage(err.message || this.t('friends-load-failed'), 1800);
-                        } finally {
-                            inviteBtn.disabled = !canInvite;
-                        }
-                    });
+                    } else {
+                        inviteBtn.textContent = this.t('friend-invite');
+                        inviteBtn.disabled = !canInvite;
+                        inviteBtn.addEventListener('click', async (e) => {
+                            e.stopPropagation();
+                            inviteBtn.disabled = true;
+                            const originalText = inviteBtn.textContent;
+                            inviteBtn.textContent = '...';
+                            try {
+                                await this.sendGameInviteToPlayer(item.friend, { source: 'friends-page' });
+                                this.renderer.showMessage(this.t('invite-sent'), 1400);
+                                await this.loadFriendsPage();
+                            } catch (err) {
+                                this.renderer.showMessage(err.message || this.t('friends-load-failed'), 1800);
+                                inviteBtn.textContent = originalText;
+                                inviteBtn.disabled = !canInvite;
+                            }
+                        });
+                    }
 
                     const removeBtn = document.createElement('button');
                     removeBtn.className = 'btn btn-menu remove-action-btn';
@@ -4012,6 +4026,9 @@ class DominoGame {
     isRoomInvitationActive(invite) {
         const status = String(invite?.status || '').trim().toLowerCase();
         if (!status) return false;
+        const expiresAtStr = invite?.expiresAt ? String(invite.expiresAt).trim() : '';
+        const isExpired = expiresAtStr && new Date(expiresAtStr).getTime() <= Date.now();
+        if (isExpired) return false;
         if (this.isRoomInvitationPending(invite)) return true;
         if (status === 'accepted' && !this.isValidRoomCode(invite?.roomCode)) return true;
         return false;
@@ -4272,26 +4289,37 @@ class DominoGame {
                     statusBtn.textContent = this.t('friends-request-accepted');
                     action.appendChild(statusBtn);
                     
-                    const canInvite = Boolean(player.id);
+                    const targetPlayerId = String(player.id || '').trim();
+                    const hasPendingInvite = targetPlayerId && (this.roomInvitations?.sent || []).some(inv => 
+                        String(inv.invitee?.id || '').trim() === targetPlayerId && 
+                        this.isRoomInvitationPending(inv)
+                    );
+                    const canInvite = Boolean(player.id) && !hasPendingInvite;
+
                     const inviteBtn = document.createElement('button');
                     inviteBtn.className = 'btn btn-action btn-strong invite-action-btn';
-                    inviteBtn.textContent = this.t('friend-invite');
-                    inviteBtn.disabled = !canInvite;
-                    inviteBtn.addEventListener('click', async () => {
+                    if (hasPendingInvite) {
+                        inviteBtn.classList.add('is-invited');
+                        inviteBtn.textContent = this.t('invite-status-invited');
                         inviteBtn.disabled = true;
-                        const originalText = inviteBtn.textContent;
-                        inviteBtn.textContent = '...';
-                        try {
-                            await this.sendGameInviteToPlayer(player, { source: 'friends-search' });
-                            this.renderer.showMessage(this.t('invite-sent'), 1400);
-                            await this.loadFriendsPage();
-                        } catch (err) {
-                            this.renderer.showMessage(err.message || this.t('friends-load-failed'), 1800);
-                        } finally {
-                            inviteBtn.textContent = originalText;
-                            inviteBtn.disabled = !canInvite;
-                        }
-                    });
+                    } else {
+                        inviteBtn.textContent = this.t('friend-invite');
+                        inviteBtn.disabled = !canInvite;
+                        inviteBtn.addEventListener('click', async () => {
+                            inviteBtn.disabled = true;
+                            const originalText = inviteBtn.textContent;
+                            inviteBtn.textContent = '...';
+                            try {
+                                await this.sendGameInviteToPlayer(player, { source: 'friends-search' });
+                                this.renderer.showMessage(this.t('invite-sent'), 1400);
+                                await this.loadFriendsPage();
+                            } catch (err) {
+                                this.renderer.showMessage(err.message || this.t('friends-load-failed'), 1800);
+                                inviteBtn.textContent = originalText;
+                                inviteBtn.disabled = !canInvite;
+                            }
+                        });
+                    }
                     action.appendChild(inviteBtn);
                 } else if (outgoingIds.has(playerId) || incomingIds.has(playerId)) {
                     const pendingBtn = document.createElement('button');
@@ -4417,30 +4445,45 @@ class DominoGame {
         }
 
         if (inviteBtn) {
+            const profileId = String(profile?.id || '').trim();
+            const hasPendingInvite = profileId && (this.roomInvitations?.sent || []).some(inv => 
+                String(inv.invitee?.id || '').trim() === profileId && 
+                this.isRoomInvitationPending(inv)
+            );
+            const canInviteReal = canInvite && !hasPendingInvite;
+
             inviteBtn.hidden = isSelf || !isAuthed;
-            inviteBtn.disabled = !canInvite || loading;
-            inviteBtn.title = canInvite
-                ? this.t('friend-invite')
-                : this.t('player-profile-invite-unavailable');
-            inviteBtn.onclick = async () => {
-                if (!isAuthed || isSelf || !profile?.id) return;
-                if (!canInvite) {
-                    this.renderer.showMessage(this.t('player-profile-invite-unavailable'), 1600);
-                    return;
-                }
+            inviteBtn.classList.toggle('is-invited', Boolean(hasPendingInvite));
+            if (hasPendingInvite) {
+                inviteBtn.textContent = this.t('invite-status-invited');
                 inviteBtn.disabled = true;
-                const originalText = inviteBtn.textContent;
-                inviteBtn.textContent = '...';
-                try {
-                    await this.sendGameInviteToPlayer(profile, { source: 'profile' });
-                    this.renderer.showMessage(this.t('invite-sent'), 1400);
-                } catch (err) {
-                    this.renderer.showMessage(err?.message || this.t('friends-load-failed'), 1800);
-                } finally {
-                    inviteBtn.textContent = originalText;
-                    inviteBtn.disabled = !canInvite;
-                }
-            };
+                inviteBtn.title = this.t('invite-status-invited');
+            } else {
+                inviteBtn.textContent = this.t('friend-invite');
+                inviteBtn.disabled = !canInviteReal || loading;
+                inviteBtn.title = canInviteReal
+                    ? this.t('friend-invite')
+                    : this.t('player-profile-invite-unavailable');
+                inviteBtn.onclick = async () => {
+                    if (!isAuthed || isSelf || !profileId) return;
+                    if (!canInviteReal) {
+                        this.renderer.showMessage(this.t('player-profile-invite-unavailable'), 1600);
+                        return;
+                    }
+                    inviteBtn.disabled = true;
+                    const originalText = inviteBtn.textContent;
+                    inviteBtn.textContent = '...';
+                    try {
+                        await this.sendGameInviteToPlayer(profile, { source: 'profile' });
+                        this.renderer.showMessage(this.t('invite-sent'), 1400);
+                        this.openPlayerProfileModal(profile);
+                    } catch (err) {
+                        this.renderer.showMessage(err?.message || this.t('friends-load-failed'), 1800);
+                        inviteBtn.textContent = originalText;
+                        inviteBtn.disabled = !canInviteReal;
+                    }
+                };
+            }
         }
 
         if (messageBtn) {
@@ -4917,7 +4960,7 @@ class DominoGame {
         if (this._gameInviteRefreshId) return;
         this._gameInviteRefreshId = window.setInterval(() => {
             void this.refreshGameInviteState().catch(() => {});
-        }, 4000);
+        }, 1500);
     }
 
     stopGameInviteRefresh() {
@@ -7088,23 +7131,37 @@ class DominoGame {
                     copy.appendChild(id);
                     const action = document.createElement('div');
                     action.className = 'friend-card-actions';
+                    const friendId = String(item.friend?.id || '').trim();
+                    const hasPendingInvite = friendId && (this.roomInvitations?.sent || []).some(inv => 
+                        String(inv.invitee?.id || '').trim() === friendId && 
+                        this.isRoomInvitationPending(inv)
+                    );
+                    const canInvite = Boolean(item.friend?.id) && !hasPendingInvite;
+
                     const inviteBtn = document.createElement('button');
-                    inviteBtn.className = 'btn btn-action btn-strong';
-                    inviteBtn.textContent = this.t('friend-invite');
-                    const canInvite = Boolean(item.friend?.id);
-                    inviteBtn.disabled = !canInvite;
-                    inviteBtn.addEventListener('click', async () => {
+                    inviteBtn.className = 'btn btn-action btn-strong invite-action-btn';
+                    if (hasPendingInvite) {
+                        inviteBtn.classList.add('is-invited');
+                        inviteBtn.textContent = this.t('invite-status-invited');
                         inviteBtn.disabled = true;
-                        try {
-                            await this.sendGameInviteToPlayer(item.friend, { source: 'friends-hub' });
-                            await this.loadFriendsHub();
-                            this.renderer.showMessage(this.t('invite-sent'), 1400);
-                        } catch (err) {
-                            this.renderer.showMessage(err.message || this.t('account-server-unavailable'), 1800);
-                        } finally {
-                            inviteBtn.disabled = !canInvite;
-                        }
-                    });
+                    } else {
+                        inviteBtn.textContent = this.t('friend-invite');
+                        inviteBtn.disabled = !canInvite;
+                        inviteBtn.addEventListener('click', async () => {
+                            inviteBtn.disabled = true;
+                            const originalText = inviteBtn.textContent;
+                            inviteBtn.textContent = '...';
+                            try {
+                                await this.sendGameInviteToPlayer(item.friend, { source: 'friends-hub' });
+                                await this.loadFriendsHub();
+                                this.renderer.showMessage(this.t('invite-sent'), 1400);
+                            } catch (err) {
+                                this.renderer.showMessage(err.message || this.t('account-server-unavailable'), 1800);
+                                inviteBtn.textContent = originalText;
+                                inviteBtn.disabled = !canInvite;
+                            }
+                        });
+                    }
                     const removeBtn = document.createElement('button');
                     removeBtn.className = 'btn btn-menu';
                     removeBtn.textContent = this.t('friend-remove');
