@@ -9,15 +9,22 @@ const prisma = new PrismaClient({
 });
 
 async function main() {
-  const user = await prisma.user.findFirst({
-    where: { email: "loadtest_009@domino.local" }
-  });
-  console.log("User loadtest_009:", JSON.stringify(user, null, 2));
-
   const player = await prisma.player.findFirst({
     where: { displayName: "loadtest_009" }
   });
   console.log("Player loadtest_009:", JSON.stringify(player, null, 2));
+
+  if (player) {
+    const stats = await prisma.playerStats.findUnique({
+      where: { playerId: player.id }
+    });
+    console.log("Stats loadtest_009:", JSON.stringify(stats, null, 2));
+
+    const wallet = await prisma.coinWallet.findUnique({
+      where: { playerId: player.id }
+    });
+    console.log("Wallet loadtest_009:", JSON.stringify(wallet, null, 2));
+  }
 }
 
 main()
