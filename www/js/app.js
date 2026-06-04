@@ -1126,37 +1126,67 @@ class DominoGame {
                 const playerId = String(partner?.id || thread?.playerId || thread?.id || '').trim();
                 if (!playerId || renderedThreadIds.has(playerId)) return;
                 renderedThreadIds.add(playerId);
+                
                 const card = document.createElement('div');
-                card.className = `inbox-card friend-card${Number(thread?.unreadCount || 0) > 0 ? ' is-unread' : ''}`.trim();
+                card.className = `inbox-card friend-card premium-social-card${Number(thread?.unreadCount || 0) > 0 ? ' is-unread' : ''}`.trim();
+                
+                const threadRating = this.friendRatingMap?.get(playerId) || 1000;
+                const avatar = this.createPremiumAvatar(partner, threadRating);
+                card.appendChild(avatar);
+
                 const copy = document.createElement('div');
                 copy.className = 'friend-card-copy';
+                
+                copy.addEventListener('click', () => {
+                    void this.openConversationWithPlayer(partner);
+                });
+
                 const top = document.createElement('div');
                 top.className = 'inbox-card-top';
-                const type = document.createElement('strong');
-                type.textContent = this.t('messages-conversation-title') || this.t('inbox-message');
-                top.appendChild(type);
-                const status = document.createElement('span');
-                status.className = `inbox-status is-${Number(thread?.unreadCount || 0) > 0 ? 'unread' : 'read'}`;
-                status.textContent = Number(thread?.unreadCount || 0) > 0 ? this.t('inbox-unread') : this.t('inbox-read');
-                top.appendChild(status);
-                const body = document.createElement('span');
-                body.className = 'inbox-card-body';
+                const name = document.createElement('strong');
+                name.className = 'friend-card-name';
+                name.textContent = partner?.displayName || this.t('messages-conversation-title');
+                top.appendChild(name);
+                
+                const preview = document.createElement('div');
+                preview.className = 'friend-card-desc';
                 const lastText = String(thread?.lastMessage?.text || thread?.lastMessage?.body || '').trim();
-                body.textContent = lastText ? `${partner?.displayName || this.t('inbox-message')}: ${lastText}` : (partner?.displayName || this.t('inbox-message'));
-                const meta = document.createElement('span');
-                meta.className = 'inbox-card-meta';
-                meta.textContent = thread?.lastMessage?.createdAt ? new Date(thread.lastMessage.createdAt).toLocaleString() : '';
+                preview.textContent = lastText || this.t('messages-empty');
+
                 copy.appendChild(top);
-                copy.appendChild(body);
-                copy.appendChild(meta);
+                copy.appendChild(preview);
+                card.appendChild(copy);
+
+                const meta = document.createElement('div');
+                meta.className = 'friend-card-meta-col';
+
+                const time = document.createElement('span');
+                time.className = 'friend-card-time';
+                if (thread?.lastMessage?.createdAt) {
+                    const msgDate = new Date(thread.lastMessage.createdAt);
+                    time.textContent = msgDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+                } else {
+                    time.textContent = '';
+                }
+                meta.appendChild(time);
+
+                const unreadBadgeCount = Number(thread?.unreadCount || 0);
+                if (unreadBadgeCount > 0) {
+                    const badge = document.createElement('span');
+                    badge.className = 'friend-card-unread-badge';
+                    badge.textContent = String(unreadBadgeCount);
+                    meta.appendChild(badge);
+                }
 
                 const actions = document.createElement('div');
-                actions.className = 'friend-card-actions inbox-card-actions';
+                actions.className = 'friend-card-actions';
+
                 const openBtn = document.createElement('button');
-                openBtn.className = 'btn btn-action btn-strong';
-                openBtn.type = 'button';
+                openBtn.className = 'btn btn-action btn-strong open-chat-action';
                 openBtn.textContent = this.t('messages-open');
-                openBtn.addEventListener('click', async () => {
+                openBtn.type = 'button';
+                openBtn.addEventListener('click', async (e) => {
+                    e.stopPropagation();
                     openBtn.disabled = true;
                     try {
                         await this.openConversationWithPlayer(partner);
@@ -1166,11 +1196,13 @@ class DominoGame {
                         openBtn.disabled = false;
                     }
                 });
+
                 const deleteBtn = document.createElement('button');
-                deleteBtn.className = 'btn btn-menu';
-                deleteBtn.type = 'button';
+                deleteBtn.className = 'btn btn-menu delete-chat-action';
                 deleteBtn.textContent = this.t('inbox-delete');
-                deleteBtn.addEventListener('click', async () => {
+                deleteBtn.type = 'button';
+                deleteBtn.addEventListener('click', async (e) => {
+                    e.stopPropagation();
                     deleteBtn.disabled = true;
                     try {
                         await this.account.deleteMessageThread(playerId);
@@ -1181,10 +1213,11 @@ class DominoGame {
                         deleteBtn.disabled = false;
                     }
                 });
+
                 actions.appendChild(openBtn);
                 actions.appendChild(deleteBtn);
-                card.appendChild(copy);
                 card.appendChild(actions);
+                card.appendChild(meta);
                 list.appendChild(card);
             });
         }
@@ -1219,36 +1252,57 @@ class DominoGame {
 
         filteredItems.forEach((item) => {
             const card = document.createElement('div');
-            card.className = `inbox-card friend-card${item.status === 'unread' ? ' is-unread' : ''}`.trim();
+            card.className = `inbox-card friend-card premium-social-card${item.status === 'unread' ? ' is-unread' : ''}`.trim();
+
+            const iconWrapper = document.createElement('div');
+            iconWrapper.className = 'premium-avatar-wrapper system-inbox-icon';
+            const frame = document.createElement('div');
+            frame.className = 'premium-avatar-frame';
+            
+            let iconText = '🎁';
+            if (item.type === 'reward' || item.type === 'daily_bonus') iconText = '💎';
+            else if (item.type === 'compensation') iconText = '🪙';
+            else if (item.type === 'system_news') iconText = '📢';
+            else if (item.type === 'friend_request') iconText = '👥';
+            else if (item.type === 'room_invite') iconText = '🀄';
+            
+            frame.innerHTML = `<span class="system-icon-glyph">${iconText}</span>`;
+            iconWrapper.appendChild(frame);
+            card.appendChild(iconWrapper);
 
             const copy = document.createElement('div');
             copy.className = 'friend-card-copy';
 
             const top = document.createElement('div');
             top.className = 'inbox-card-top';
-            const type = document.createElement('strong');
-            type.textContent = typeLabelMap[item.type] || String(item.title || item.type || this.t('inbox-system'));
-            top.appendChild(type);
+            const name = document.createElement('strong');
+            name.className = 'friend-card-name';
+            name.textContent = typeLabelMap[item.type] || String(item.title || item.type || this.t('inbox-system'));
+            top.appendChild(name);
 
-            const status = document.createElement('span');
-            status.className = `inbox-status is-${String(item.status || 'unread').toLowerCase()}`;
-            status.textContent = statusLabelMap[item.status] || String(item.status || this.t('inbox-read'));
-            top.appendChild(status);
-
-            const body = document.createElement('span');
-            body.className = 'inbox-card-body';
-            body.textContent = String(item.body || item.title || '');
-
-            const meta = document.createElement('span');
-            meta.className = 'inbox-card-meta';
-            meta.textContent = item.createdAt ? new Date(item.createdAt).toLocaleString() : '';
+            const preview = document.createElement('div');
+            preview.className = 'friend-card-desc';
+            preview.textContent = String(item.body || item.title || '');
 
             copy.appendChild(top);
-            copy.appendChild(body);
-            copy.appendChild(meta);
+            copy.appendChild(preview);
+            card.appendChild(copy);
+
+            const meta = document.createElement('div');
+            meta.className = 'friend-card-meta-col';
+
+            const time = document.createElement('span');
+            time.className = 'friend-card-time';
+            if (item.createdAt) {
+                const itemDate = new Date(item.createdAt);
+                time.textContent = itemDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+            } else {
+                time.textContent = '';
+            }
+            meta.appendChild(time);
 
             const actions = document.createElement('div');
-            actions.className = 'friend-card-actions inbox-card-actions';
+            actions.className = 'friend-card-actions';
 
             if (item.status === 'unread') {
                 const readBtn = document.createElement('button');
@@ -1256,7 +1310,8 @@ class DominoGame {
                 readBtn.type = 'button';
                 if (item.type === 'direct_message') {
                     readBtn.textContent = this.t('inbox-open-message');
-                    readBtn.addEventListener('click', async () => {
+                    readBtn.addEventListener('click', async (e) => {
+                        e.stopPropagation();
                         readBtn.disabled = true;
                         try {
                             await this.account.markInboxRead(item.id);
@@ -1274,7 +1329,8 @@ class DominoGame {
                     });
                 } else {
                     readBtn.textContent = this.t('inbox-read');
-                    readBtn.addEventListener('click', async () => {
+                    readBtn.addEventListener('click', async (e) => {
+                        e.stopPropagation();
                         readBtn.disabled = true;
                         try {
                             await this.account.markInboxRead(item.id);
@@ -1294,7 +1350,8 @@ class DominoGame {
                 claimBtn.className = 'btn btn-menu';
                 claimBtn.type = 'button';
                 claimBtn.textContent = item.type === 'gift_received' ? this.t('inbox-open-gifts') : this.t('inbox-claim');
-                claimBtn.addEventListener('click', async () => {
+                claimBtn.addEventListener('click', async (e) => {
+                    e.stopPropagation();
                     claimBtn.disabled = true;
                     try {
                         const result = await this.account.claimInboxMessage(item.id);
@@ -1316,7 +1373,8 @@ class DominoGame {
             deleteBtn.className = 'btn btn-menu';
             deleteBtn.type = 'button';
             deleteBtn.textContent = this.t('inbox-delete');
-            deleteBtn.addEventListener('click', async () => {
+            deleteBtn.addEventListener('click', async (e) => {
+                e.stopPropagation();
                 deleteBtn.disabled = true;
                 try {
                     await this.account.deleteInboxMessage(item.id);
@@ -1329,8 +1387,8 @@ class DominoGame {
             });
             actions.appendChild(deleteBtn);
 
-            card.appendChild(copy);
             card.appendChild(actions);
+            card.appendChild(meta);
             list.appendChild(card);
         });
     }
@@ -1485,13 +1543,45 @@ class DominoGame {
     renderSocialCenter() {
         const modal = document.getElementById('social-center-modal');
         if (!modal) return;
-        const title = document.getElementById('social-center-modal-title');
-        const desc = document.getElementById('social-center-modal-desc');
-        if (title) title.textContent = this.t('social-title');
-        if (desc) desc.textContent = this.socialCenterView === 'conversation'
-            ? (this.t('messages-conversation-title') || this.t('social-subtitle'))
-            : this.t('social-subtitle');
+
+        // Update header currency chips
+        const coinsEl = document.getElementById('social-header-coins');
+        const ratingEl = document.getElementById('social-header-rating');
+        if (coinsEl) {
+            const coinsVal = Number(this.coinShopStatus?.wallet?.balance ?? this.accountProfile?.coins ?? 0);
+            coinsEl.textContent = coinsVal.toLocaleString();
+        }
+        if (ratingEl) {
+            const ratingVal = Number(this.accountProfile?.rating ?? 1000);
+            ratingEl.textContent = ratingVal.toLocaleString();
+        }
+
+        // Update tab unread badges
+        const mailBadge = document.getElementById('social-mail-unread-badge');
+        const friendsBadge = document.getElementById('social-friends-unread-badge');
         
+        const mailUnread = Math.max(0, Number(this.socialInboxState?.unreadCount || 0)) + Math.max(0, Number(this.roomInvitations?.incoming?.length || 0));
+        const friendsUnread = Math.max(0, Number(this.friendHub?.incoming?.length || 0));
+
+        if (mailBadge) {
+            if (mailUnread > 0) {
+                mailBadge.textContent = String(mailUnread);
+                mailBadge.classList.remove('is-hidden');
+            } else {
+                mailBadge.textContent = '';
+                mailBadge.classList.add('is-hidden');
+            }
+        }
+        if (friendsBadge) {
+            if (friendsUnread > 0) {
+                friendsBadge.textContent = String(friendsUnread);
+                friendsBadge.classList.remove('is-hidden');
+            } else {
+                friendsBadge.textContent = '';
+                friendsBadge.classList.add('is-hidden');
+            }
+        }
+
         if (this.socialCenterView === 'conversation') {
             this.renderChatHeaderDetails();
         }
@@ -1513,16 +1603,10 @@ class DominoGame {
 
         if (avatarEl) {
             avatarEl.innerHTML = '';
-            if (activePlayer?.avatarUrl) {
-                const img = document.createElement('img');
-                img.src = activePlayer.avatarUrl;
-                img.alt = activePlayer.displayName || 'Avatar';
-                img.referrerPolicy = 'no-referrer';
-                avatarEl.appendChild(img);
-            } else {
-                const fallback = document.createElement('span');
-                fallback.textContent = this.getTurnAvatarText?.(activePlayer?.displayName || 'P') || 'P';
-                avatarEl.appendChild(fallback);
+            if (activePlayer) {
+                const partnerRating = this.friendRatingMap?.get(activePlayerId) || 1000;
+                const premAvatar = this.createPremiumAvatar(activePlayer, partnerRating);
+                avatarEl.appendChild(premAvatar);
             }
         }
 
@@ -1530,7 +1614,7 @@ class DominoGame {
             const resolvedPresenceMap = this.friendPresenceMap instanceof Map ? this.friendPresenceMap : new Map();
             const isOnline = activePlayer ? this.isFriendOnline(activePlayer, resolvedPresenceMap) : false;
             statusEl.className = `chat-header-status ${isOnline ? 'is-online' : 'is-offline'}`;
-            statusEl.textContent = isOnline ? this.t('friend-online') : this.t('friend-offline');
+            statusEl.innerHTML = `<span class="presence-dot"></span>${isOnline ? this.t('friend-online') : this.t('friend-offline')}`;
         }
 
         if (viewProfileBtn) {
@@ -1652,51 +1736,60 @@ class DominoGame {
                 const partner = thread?.player || {};
                 const partnerId = String(partner?.id || thread?.playerId || thread?.id || '').trim();
                 const isActive = partnerId && partnerId === activePlayerId;
-                const row = document.createElement('button');
-                row.type = 'button';
-                row.className = `message-thread-card${isActive ? ' is-active' : ''}`;
-                const avatar = document.createElement('div');
-                avatar.className = 'message-thread-avatar';
-                if (partner?.avatarUrl) {
-                    const img = document.createElement('img');
-                    img.alt = partner?.displayName || 'Player avatar';
-                    img.src = partner.avatarUrl;
-                    img.referrerPolicy = 'no-referrer';
-                    avatar.appendChild(img);
-                } else {
-                    const fallback = document.createElement('span');
-                    fallback.textContent = this.getTurnAvatarText?.(partner?.displayName || 'P') || 'P';
-                    avatar.appendChild(fallback);
-                }
+                
+                const card = document.createElement('div');
+                card.className = `message-thread-card premium-social-card${isActive ? ' is-active' : ''}`;
+                
+                const rating = this.friendRatingMap?.get(partnerId) || 1000;
+                const avatar = this.createPremiumAvatar(partner, rating);
+                card.appendChild(avatar);
+
                 const copy = document.createElement('div');
-                copy.className = 'message-thread-copy';
-                const top = document.createElement('div');
-                top.className = 'message-thread-top';
-                const name = document.createElement('strong');
-                name.textContent = partner?.displayName || this.t('messages-empty');
-                const time = document.createElement('span');
-                const lastMessage = thread?.lastMessage || null;
-                time.textContent = lastMessage?.createdAt ? new Date(lastMessage.createdAt).toLocaleString() : '';
-                top.appendChild(name);
-                top.appendChild(time);
-                const preview = document.createElement('div');
-                preview.className = 'message-thread-preview';
-                preview.textContent = lastMessage?.text || this.t('messages-empty');
-                copy.appendChild(top);
-                copy.appendChild(preview);
-                row.appendChild(avatar);
-                row.appendChild(copy);
-                const unreadCount = Number(thread?.unreadCount || 0);
-                if (unreadCount > 0) {
-                    const badge = document.createElement('div');
-                    badge.className = 'message-thread-badge';
-                    badge.textContent = unreadCount > 9 ? '9+' : String(unreadCount);
-                    row.appendChild(badge);
-                }
-                row.addEventListener('click', () => {
+                copy.className = 'friend-card-copy';
+                
+                copy.addEventListener('click', () => {
                     void this.loadConversationWithPlayer(partnerId);
                 });
-                threadList.appendChild(row);
+
+                const top = document.createElement('div');
+                top.className = 'inbox-card-top';
+                const name = document.createElement('strong');
+                name.className = 'friend-card-name';
+                name.textContent = partner?.displayName || this.t('messages-empty');
+                top.appendChild(name);
+                
+                const preview = document.createElement('div');
+                preview.className = 'friend-card-desc';
+                const lastMessage = thread?.lastMessage || null;
+                preview.textContent = lastMessage?.text || this.t('messages-empty');
+
+                copy.appendChild(top);
+                copy.appendChild(preview);
+                card.appendChild(copy);
+
+                const meta = document.createElement('div');
+                meta.className = 'friend-card-meta-col';
+
+                const time = document.createElement('span');
+                time.className = 'friend-card-time';
+                if (lastMessage?.createdAt) {
+                    const msgDate = new Date(lastMessage.createdAt);
+                    time.textContent = msgDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+                } else {
+                    time.textContent = '';
+                }
+                meta.appendChild(time);
+
+                const unreadCount = Number(thread?.unreadCount || 0);
+                if (unreadCount > 0) {
+                    const badge = document.createElement('span');
+                    badge.className = 'friend-card-unread-badge';
+                    badge.textContent = String(unreadCount);
+                    meta.appendChild(badge);
+                }
+
+                card.appendChild(meta);
+                threadList.appendChild(card);
             });
         }
 
@@ -1718,19 +1811,61 @@ class DominoGame {
             empty.textContent = this.t('messages-empty') || this.t('chats-empty');
             conversationList.appendChild(empty);
         } else {
+            let lastDateStr = '';
             activeMessages.forEach((message) => {
-                const row = document.createElement('div');
-                row.className = 'message-row';
+                const msgDate = new Date(message.createdAt);
+                const dateOptions = { month: 'long', day: 'numeric' };
+                const dateStr = msgDate.toLocaleDateString(this.currentLang || 'az', dateOptions);
+                
+                if (dateStr !== lastDateStr) {
+                    lastDateStr = dateStr;
+                    const separator = document.createElement('div');
+                    separator.className = 'chat-date-separator';
+                    const label = document.createElement('span');
+                    label.textContent = dateStr;
+                    separator.appendChild(label);
+                    conversationList.appendChild(separator);
+                }
+
                 const mine = String(message.senderPlayerId || '') === currentPlayerId;
-                if (mine) row.classList.add('is-self');
-                const author = document.createElement('div');
-                author.className = 'message-row-author';
-                author.textContent = mine ? this.t('online-you') : (message.sender?.displayName || activePlayer?.displayName || 'Player');
+                const row = document.createElement('div');
+                row.className = `message-row ${mine ? 'is-self' : 'is-other'}`;
+
+                const bubbleContainer = document.createElement('div');
+                bubbleContainer.className = 'message-bubble-container';
+
+                if (!mine) {
+                    const partnerRating = this.friendRatingMap?.get(String(activePlayerId)) || 1000;
+                    const avatar = this.createPremiumAvatar(activePlayer, partnerRating);
+                    row.appendChild(avatar);
+                }
+
+                const bubble = document.createElement('div');
+                bubble.className = 'message-bubble';
+
                 const text = document.createElement('div');
-                text.className = 'message-row-text';
-                text.textContent = message.text || '';
-                row.appendChild(author);
-                row.appendChild(text);
+                text.className = 'message-text';
+                text.textContent = message.text || message.body || '';
+                bubble.appendChild(text);
+
+                const footer = document.createElement('div');
+                footer.className = 'message-bubble-footer';
+                const timeEl = document.createElement('span');
+                timeEl.className = 'message-time';
+                const timeStr = msgDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+                timeEl.textContent = timeStr;
+                footer.appendChild(timeEl);
+
+                if (mine) {
+                    const checks = document.createElement('span');
+                    checks.className = 'message-checks';
+                    checks.innerHTML = `<svg viewBox="0 0 16 16" fill="currentColor"><path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0zM10.354 3.646a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L3.5 9.293l5.646-5.647a.5.5 0 0 1 .708 0z"/></svg>`;
+                    footer.appendChild(checks);
+                }
+
+                bubble.appendChild(footer);
+                bubbleContainer.appendChild(bubble);
+                row.appendChild(bubbleContainer);
                 conversationList.appendChild(row);
             });
             const scrollContainer = document.getElementById('chat-messages-container-scroll');
@@ -1743,7 +1878,13 @@ class DominoGame {
         messageInput.placeholder = activePlayerId ? (this.t('messages-placeholder') || this.t('chats-placeholder')) : (this.t('messages-empty') || this.t('chats-empty'));
         messageInput.value = messageInput.value || '';
         sendBtn.disabled = !activePlayerId || state.conversationLoading || state.sendLoading;
-        sendBtn.textContent = state.sendLoading ? this.t('account-profile-loading') : (this.t('messages-send') || this.t('chats-send'));
+        
+        if (state.sendLoading) {
+            sendBtn.innerHTML = `<span>...</span>`;
+        } else {
+            sendBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>`;
+        }
+        
         openBtn.hidden = !activePlayerId;
         backBtn.hidden = !activePlayerId;
 
@@ -3667,33 +3808,55 @@ class DominoGame {
             }
             const resolvedPresenceMap = this.friendPresenceMap instanceof Map ? this.friendPresenceMap : new Map();
 
+            // Update friends count header kicker
+            const countTitle = document.getElementById('friends-count-title');
+            if (countTitle) {
+                countTitle.textContent = `${this.t('friends-list-title').toUpperCase()} (${this.friendHub.accepted.length})`;
+            }
+
             friendsList.innerHTML = '';
             if (!this.friendHub.accepted.length) {
                 this.setSummaryMessage(friendsList, this.t('friends-empty'));
             } else {
                 this.friendHub.accepted.forEach((item) => {
                     const card = document.createElement('div');
-                    card.className = 'friend-card';
+                    card.className = 'friend-card premium-social-card';
+                    
+                    const rating = this.friendRatingMap.get(String(item.friend.id || '')) || 1000;
+                    const avatar = this.createPremiumAvatar(item.friend, rating);
+                    card.appendChild(avatar);
+
                     const copy = document.createElement('div');
                     copy.className = 'friend-card-copy';
-                    const name = this.createPlayerNameButton(item.friend.displayName, item.friend, 'friend-card-name');
-                    const status = this.createFriendStatusBadge(this.isFriendOnline(item.friend, resolvedPresenceMap));
-                    const meta = document.createElement('span');
-                    const rating = this.friendRatingMap.get(String(item.friend.id || ''));
-                    meta.textContent = Number.isFinite(rating) && rating > 0
-                        ? `${this.t('leaderboard-rating')}: ${rating}`
-                        : '';
+                    
+                    // Clicking on name/info block opens conversation
+                    copy.addEventListener('click', () => {
+                        void this.openConversationWithPlayer(item.friend);
+                    });
+
+                    const name = document.createElement('strong');
+                    name.className = 'friend-card-name';
+                    name.textContent = item.friend.displayName || 'Player';
+
+                    const isOnline = this.isFriendOnline(item.friend, resolvedPresenceMap);
+                    const status = document.createElement('div');
+                    status.className = `friend-card-status ${isOnline ? 'is-online' : 'is-offline'}`;
+                    status.innerHTML = `<span class="presence-dot"></span>${isOnline ? this.t('friend-online') : this.t('friend-offline')}`;
+
                     copy.appendChild(name);
                     copy.appendChild(status);
-                    if (meta.textContent) copy.appendChild(meta);
+                    card.appendChild(copy);
+
                     const action = document.createElement('div');
                     action.className = 'friend-card-actions';
+
                     const canInvite = Boolean(item.friend?.id);
                     const inviteBtn = document.createElement('button');
-                    inviteBtn.className = 'btn btn-action btn-strong';
+                    inviteBtn.className = 'btn btn-action btn-strong invite-action-btn';
                     inviteBtn.textContent = this.t('friend-invite');
                     inviteBtn.disabled = !canInvite;
-                    inviteBtn.addEventListener('click', async () => {
+                    inviteBtn.addEventListener('click', async (e) => {
+                        e.stopPropagation();
                         inviteBtn.disabled = true;
                         try {
                             await this.sendGameInviteToPlayer(item.friend, { source: 'friends-page' });
@@ -3705,10 +3868,12 @@ class DominoGame {
                             inviteBtn.disabled = !canInvite;
                         }
                     });
+
                     const removeBtn = document.createElement('button');
-                    removeBtn.className = 'btn btn-menu';
+                    removeBtn.className = 'btn btn-menu remove-action-btn';
                     removeBtn.textContent = this.t('friend-remove');
-                    removeBtn.addEventListener('click', async () => {
+                    removeBtn.addEventListener('click', async (e) => {
+                        e.stopPropagation();
                         removeBtn.disabled = true;
                         try {
                             await this.account.removeFriend(item.id);
@@ -3720,9 +3885,9 @@ class DominoGame {
                             removeBtn.disabled = false;
                         }
                     });
+
                     action.appendChild(inviteBtn);
                     action.appendChild(removeBtn);
-                    card.appendChild(copy);
                     card.appendChild(action);
                     friendsList.appendChild(card);
                 });
@@ -3734,23 +3899,32 @@ class DominoGame {
             } else {
                 this.friendHub.incoming.forEach((item) => {
                     const card = document.createElement('div');
-                    card.className = 'friend-card';
+                    card.className = 'friend-card premium-social-card request-card';
+                    
+                    const rating = this.friendRatingMap.get(String(item.friend.id || '')) || 1000;
+                    const avatar = this.createPremiumAvatar(item.friend, rating);
+                    card.appendChild(avatar);
+
                     const copy = document.createElement('div');
                     copy.className = 'friend-card-copy';
-                    const name = this.createPlayerNameButton(item.friend.displayName, item.friend, 'friend-card-name');
-                    const status = this.createFriendStatusBadge(this.isFriendOnline(item.friend, resolvedPresenceMap));
-                    const meta = document.createElement('span');
-                    const rating = this.friendRatingMap.get(String(item.friend.id || ''));
-                    meta.textContent = Number.isFinite(rating) && rating > 0
-                        ? `${this.t('leaderboard-rating')}: ${rating}`
-                        : '';
+                    
+                    const name = document.createElement('strong');
+                    name.className = 'friend-card-name';
+                    name.textContent = item.friend.displayName || 'Player';
+
+                    const desc = document.createElement('span');
+                    desc.className = 'friend-card-desc';
+                    desc.textContent = this.t('friend-incoming') || 'Incoming request';
+
                     copy.appendChild(name);
-                    copy.appendChild(status);
-                    if (meta.textContent) copy.appendChild(meta);
+                    copy.appendChild(desc);
+                    card.appendChild(copy);
+
                     const action = document.createElement('div');
                     action.className = 'friend-card-actions';
+
                     const acceptBtn = document.createElement('button');
-                    acceptBtn.className = 'btn btn-action btn-strong';
+                    acceptBtn.className = 'btn btn-action btn-strong accept-btn';
                     acceptBtn.textContent = this.t('friend-accept');
                     acceptBtn.addEventListener('click', async () => {
                         acceptBtn.disabled = true;
@@ -3764,8 +3938,9 @@ class DominoGame {
                             acceptBtn.disabled = false;
                         }
                     });
+
                     const declineBtn = document.createElement('button');
-                    declineBtn.className = 'btn btn-menu';
+                    declineBtn.className = 'btn btn-menu decline-btn';
                     declineBtn.textContent = this.t('friend-decline');
                     declineBtn.addEventListener('click', async () => {
                         declineBtn.disabled = true;
@@ -3779,9 +3954,9 @@ class DominoGame {
                             declineBtn.disabled = false;
                         }
                     });
+
                     action.appendChild(acceptBtn);
                     action.appendChild(declineBtn);
-                    card.appendChild(copy);
                     card.appendChild(action);
                     requestsList.appendChild(card);
                 });
@@ -3838,33 +4013,40 @@ class DominoGame {
 
     createRoomInvitationCard(invite, kind = 'incoming') {
         const card = document.createElement('div');
-        card.className = 'friend-card';
+        card.className = 'friend-card premium-social-card invite-card';
         const pending = this.isRoomInvitationPending(invite);
+
+        const otherParty = kind === 'incoming' ? invite?.inviter : invite?.invitee;
+        const rating = this.friendRatingMap?.get(String(otherParty?.id || '')) || 1000;
+        const avatar = this.createPremiumAvatar(otherParty, rating);
+        card.appendChild(avatar);
 
         const copy = document.createElement('div');
         copy.className = 'friend-card-copy';
         const name = document.createElement('strong');
-        const otherParty = kind === 'incoming' ? invite?.inviter : invite?.invitee;
+        name.className = 'friend-card-name';
         name.textContent = otherParty?.displayName || this.t('no-room-invites');
         const meta = document.createElement('span');
+        meta.className = 'friend-card-desc';
         meta.textContent = `${invite?.roomCode || invite?.roomId || ''}${invite?.roomMode ? ` · ${invite.roomMode}` : ''}`;
         copy.appendChild(name);
         copy.appendChild(meta);
 
         const statusLabel = document.createElement('span');
-        statusLabel.className = 'room-summary';
+        statusLabel.className = 'room-summary invite-status-label';
         statusLabel.textContent = this.getRoomInvitationStatusLabel(invite);
         const showStatusLabel = kind === 'sent' || !pending;
         if (showStatusLabel) {
             copy.appendChild(statusLabel);
         }
+        card.appendChild(copy);
 
         const action = document.createElement('div');
         action.className = 'friend-card-actions';
 
         if (kind === 'incoming') {
             const acceptBtn = document.createElement('button');
-            acceptBtn.className = 'btn btn-action btn-strong';
+            acceptBtn.className = 'btn btn-action btn-strong accept-invite-btn';
             const isAcceptedWaiting = String(invite?.status || '').trim() === 'accepted' && !String(invite?.roomCode || '').trim();
             acceptBtn.textContent = isAcceptedWaiting
                 ? this.t('invite-waiting-room')
@@ -3902,8 +4084,9 @@ class DominoGame {
                     acceptBtn.disabled = false;
                 }
             });
+
             const declineBtn = document.createElement('button');
-            declineBtn.className = 'btn btn-menu';
+            declineBtn.className = 'btn btn-menu decline-invite-btn';
             declineBtn.textContent = this.t('invites-decline');
             declineBtn.disabled = !pending;
             declineBtn.addEventListener('click', async () => {
@@ -3935,7 +4118,7 @@ class DominoGame {
             const isAcceptedWaiting = String(invite?.status || '').trim() === 'accepted' && !String(invite?.roomCode || '').trim();
             if (pending) {
                 const cancelBtn = document.createElement('button');
-                cancelBtn.className = 'btn btn-menu';
+                cancelBtn.className = 'btn btn-menu cancel-invite-btn';
                 cancelBtn.textContent = this.t('invite-cancel');
                 cancelBtn.addEventListener('click', async () => {
                     cancelBtn.disabled = true;
@@ -4015,31 +4198,39 @@ class DominoGame {
             }
             this.friendSearchResults.forEach((player) => {
                 const card = document.createElement('div');
-                card.className = 'friend-card';
+                card.className = 'friend-card premium-social-card';
+                
+                const rating = this.friendRatingMap?.get?.(String(player.id || '')) || 1000;
+                const avatar = this.createPremiumAvatar(player, rating);
+                card.appendChild(avatar);
+
                 const copy = document.createElement('div');
                 copy.className = 'friend-card-copy';
-                const name = this.createPlayerNameButton(player.displayName, player, 'friend-card-name');
-                const status = this.createFriendStatusBadge(this.isFriendOnline(player, presenceMap));
-                const meta = document.createElement('span');
-                const rating = this.friendRatingMap?.get?.(String(player.id || ''));
-                meta.textContent = Number.isFinite(rating) && rating > 0
-                    ? `${this.t('leaderboard-rating')}: ${rating}`
-                    : '';
+                const name = document.createElement('strong');
+                name.className = 'friend-card-name';
+                name.textContent = player.displayName || 'Player';
+                const status = document.createElement('div');
+                const isOnline = this.isFriendOnline(player, presenceMap);
+                status.className = `friend-card-status ${isOnline ? 'is-online' : 'is-offline'}`;
+                status.innerHTML = `<span class="presence-dot"></span>${isOnline ? this.t('friend-online') : this.t('friend-offline')}`;
+                
                 copy.appendChild(name);
                 copy.appendChild(status);
-                if (meta.textContent) copy.appendChild(meta);
+                card.appendChild(copy);
+
                 const action = document.createElement('div');
                 action.className = 'friend-card-actions';
                 const playerId = String(player.id || '');
                 if (acceptedIds.has(playerId)) {
                     const statusBtn = document.createElement('button');
-                    statusBtn.className = 'btn btn-menu';
+                    statusBtn.className = 'btn btn-menu status-btn';
                     statusBtn.disabled = true;
                     statusBtn.textContent = this.t('friends-request-accepted');
                     action.appendChild(statusBtn);
+                    
                     const canInvite = Boolean(player.id);
                     const inviteBtn = document.createElement('button');
-                    inviteBtn.className = 'btn btn-action btn-strong';
+                    inviteBtn.className = 'btn btn-action btn-strong invite-action-btn';
                     inviteBtn.textContent = this.t('friend-invite');
                     inviteBtn.disabled = !canInvite;
                     inviteBtn.addEventListener('click', async () => {
@@ -4057,13 +4248,13 @@ class DominoGame {
                     action.appendChild(inviteBtn);
                 } else if (outgoingIds.has(playerId) || incomingIds.has(playerId)) {
                     const pendingBtn = document.createElement('button');
-                    pendingBtn.className = 'btn btn-menu';
+                    pendingBtn.className = 'btn btn-menu pending-btn';
                     pendingBtn.disabled = true;
                     pendingBtn.textContent = this.t('friends-pending');
                     action.appendChild(pendingBtn);
                 } else {
                     const addBtn = document.createElement('button');
-                    addBtn.className = 'btn btn-action btn-strong';
+                    addBtn.className = 'btn btn-action btn-strong add-btn';
                     addBtn.textContent = this.t('friends-add');
                     addBtn.addEventListener('click', async () => {
                         addBtn.disabled = true;
@@ -4079,7 +4270,6 @@ class DominoGame {
                     });
                     action.appendChild(addBtn);
                 }
-                card.appendChild(copy);
                 card.appendChild(action);
                 resultsList.appendChild(card);
             });
@@ -4984,6 +5174,39 @@ class DominoGame {
 
     }
 
+    createPremiumAvatar(player, ratingValue) {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'premium-avatar-wrapper';
+
+        const frame = document.createElement('div');
+        frame.className = 'premium-avatar-frame';
+
+        if (player?.avatarUrl) {
+            const img = document.createElement('img');
+            img.src = player.avatarUrl;
+            img.alt = player.displayName || 'Avatar';
+            img.referrerPolicy = 'no-referrer';
+            frame.appendChild(img);
+        } else {
+            const fallback = document.createElement('span');
+            fallback.textContent = this.getTurnAvatarText?.(player?.displayName || 'P') || 'P';
+            frame.appendChild(fallback);
+        }
+
+        wrapper.appendChild(frame);
+
+        // Add rating/level overlay badge
+        const rating = typeof ratingValue === 'number' ? ratingValue : 1000;
+        const level = Math.max(1, Math.floor((rating - 1000) / 25) + 30);
+        
+        const badge = document.createElement('div');
+        badge.className = 'premium-avatar-level';
+        badge.textContent = level;
+        wrapper.appendChild(badge);
+
+        return wrapper;
+    }
+
     ensureSocialCenterUi() {
         if (document.getElementById('social-center-modal')) return;
         if (typeof document === 'undefined' || !document.body) return;
@@ -4994,25 +5217,48 @@ class DominoGame {
         hub.className = 'social-hub-screen';
         hub.innerHTML = `
             <header class="social-hub-header">
-                <button class="icon-btn social-hub-back-btn" id="social-center-modal-close" type="button" aria-label="Back"></button>
-                <h1 id="social-center-modal-title" data-i18n="social-title">Mesajlar</h1>
-                <div style="width: 38px;"></div> <!-- spacer -->
+                <div class="social-hub-header-left">
+                    <h1 id="social-center-modal-title" data-i18n="social-title">Mesajlar</h1>
+                </div>
+                <div class="social-hub-header-right">
+                    <div class="header-currency-chip coins-chip">
+                        <span class="currency-icon coin-icon"></span>
+                        <span class="currency-value" id="social-header-coins">0</span>
+                        <span class="currency-plus">+</span>
+                    </div>
+                    <div class="header-currency-chip rating-chip">
+                        <span class="currency-icon rating-icon"></span>
+                        <span class="currency-value" id="social-header-rating">1,000</span>
+                        <span class="currency-plus">+</span>
+                    </div>
+                    <button class="social-close-btn" id="social-center-modal-close" type="button" aria-label="Close">×</button>
+                </div>
             </header>
 
-            <div class="social-hub-tabs" id="social-center-tabs">
-                <button type="button" class="social-hub-tab social-center-tab is-active" data-social-tab="inbox" id="social-tab-mail-btn" data-i18n="social-tab-mail">Poçt</button>
-                <button type="button" class="social-hub-tab social-center-tab" data-social-tab="friends" id="social-tab-friends-btn" data-i18n="social-tab-friends">Dostlar</button>
+            <div class="social-hub-tabs-container">
+                <div class="social-hub-tabs" id="social-center-tabs">
+                    <button type="button" class="social-hub-tab social-center-tab is-active" data-social-tab="inbox" id="social-tab-mail-btn">
+                        <span class="tab-icon mail-icon"></span>
+                        <span class="tab-label" data-i18n="social-tab-mail">Poçt</span>
+                        <span class="tab-badge" id="social-mail-unread-badge"></span>
+                    </button>
+                    <button type="button" class="social-hub-tab social-center-tab" data-social-tab="friends" id="social-tab-friends-btn">
+                        <span class="tab-icon friends-icon"></span>
+                        <span class="tab-label" data-i18n="social-tab-friends">Dostlar</span>
+                        <span class="tab-badge" id="social-friends-unread-badge"></span>
+                    </button>
+                </div>
             </div>
 
             <div class="social-hub-content">
                 <div id="social-mail-wrapper" class="social-hub-panel-group">
                     <section class="social-center-panel" id="social-invites-panel">
                         <div class="friends-page social-invites-page">
-                            <section class="friends-section">
+                            <section class="friends-section" id="social-invites-incoming-section">
                                 <div class="section-kicker" data-i18n="invites-incoming-title">Incoming invites</div>
                                 <div id="social-invites-incoming-list" class="friends-list"></div>
                             </section>
-                            <section class="friends-section">
+                            <section class="friends-section" id="social-invites-sent-section">
                                 <div class="section-kicker" data-i18n="invites-sent-title">Sent invites</div>
                                 <div id="social-invites-sent-list" class="friends-list"></div>
                             </section>
@@ -5022,7 +5268,7 @@ class DominoGame {
                     <section class="social-center-panel" id="social-inbox-panel">
                         <div class="social-inbox-head">
                             <div class="section-kicker" data-i18n="inbox-title">Inbox</div>
-                            <div class="room-summary social-inbox-summary" id="social-inbox-summary" data-i18n="inbox-empty">No inbox items yet.</div>
+                            <div class="room-summary social-inbox-summary is-hidden" id="social-inbox-summary" data-i18n="inbox-empty">No inbox items yet.</div>
                         </div>
                         <div class="social-inbox-list" id="social-inbox-list"></div>
                     </section>
@@ -5030,15 +5276,30 @@ class DominoGame {
 
                 <section class="social-center-panel is-hidden" id="social-friends-panel">
                     <div class="friends-page">
-                        <section class="friends-section">
-                            <div class="friends-search-bar">
+                        <div class="friends-search-row">
+                            <div class="search-input-wrapper">
+                                <span class="search-icon"></span>
                                 <input type="search" id="friends-search-input" data-i18n="friends-search-placeholder" placeholder="Oyunçu axtar" minlength="2">
-                                <button type="button" class="btn btn-action btn-strong" id="friends-search-btn" data-i18n="friends-search">Axtar</button>
                             </div>
+                            <button type="button" class="friends-filter-btn" id="friends-search-btn">
+                                <span class="filter-icon"></span>
+                                <span data-i18n="friend-search-button">Axtar</span>
+                            </button>
+                        </div>
+
+                        <div class="friends-sort-row">
+                            <span class="friends-count-kicker" id="friends-count-title">DOSTLAR (0)</span>
+                            <div class="friends-sort-selector">
+                                <span data-i18n="sort-recent">Sıralama: Son aktivlik</span>
+                                <span class="sort-chevron">▼</span>
+                            </div>
+                        </div>
+
+                        <section class="friends-section" id="social-search-results-section">
                             <div id="friends-search-results" class="friends-list"></div>
                         </section>
 
-                        <section class="friends-section">
+                        <section class="friends-section" id="social-requests-section">
                             <div class="section-kicker" data-i18n="friend-requests-title">Sorğular</div>
                             <div id="friends-requests-list" class="friends-list"></div>
                         </section>
@@ -5051,7 +5312,7 @@ class DominoGame {
                             <div id="account-messages-thread-list" class="friends-list"></div>
                         </section>
 
-                        <section class="friends-section">
+                        <section class="friends-section" id="social-friends-list-section">
                             <div class="section-kicker" data-i18n="friends-list-title">Dostlar</div>
                             <div id="friends-list" class="friends-list"></div>
                         </section>
@@ -5067,15 +5328,19 @@ class DominoGame {
         chat.innerHTML = `
             <div class="chat-screen-layout" id="account-messages-panel">
                 <header class="chat-header">
-                    <button type="button" class="icon-btn chat-back-btn" id="account-messages-back-btn" aria-label="Back"></button>
+                    <button type="button" class="chat-back-btn" id="account-messages-back-btn" aria-label="Back"></button>
                     <div class="chat-header-profile" id="chat-header-profile-btn">
-                        <div class="chat-header-avatar" id="chat-header-avatar"></div>
+                        <div id="chat-header-avatar"></div>
                         <div class="chat-header-info">
                             <strong class="chat-header-name" id="account-messages-conversation-title"></strong>
                             <span class="chat-header-status" id="chat-header-status"></span>
                         </div>
                     </div>
-                    <button type="button" class="btn btn-action chat-header-profile-action" id="account-messages-open-btn" data-i18n="profile-title">Profil</button>
+                    <div class="chat-header-actions">
+                        <button type="button" class="chat-action-btn gift-action" id="chat-gift-btn" aria-label="Gift">🎁</button>
+                        <button type="button" class="chat-action-btn phone-action" id="chat-phone-btn" aria-label="Call">📞</button>
+                        <button type="button" class="btn btn-action chat-header-profile-action" id="account-messages-open-btn" data-i18n="profile-title">Profil</button>
+                    </div>
                 </header>
 
                 <div class="chat-messages-container" id="chat-messages-container-scroll">
@@ -5083,8 +5348,16 @@ class DominoGame {
                 </div>
 
                 <div class="chat-compose-area">
-                    <textarea id="account-message-input" class="chat-message-input" rows="1" maxlength="500" data-i18n="messages-placeholder" placeholder="Write a message"></textarea>
-                    <button type="button" class="btn btn-action btn-strong chat-send-btn" id="account-message-send-btn" data-i18n="messages-send">Send</button>
+                    <button type="button" class="composer-attach-btn" aria-label="Attach">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+                    </button>
+                    <div class="chat-compose-input-wrapper">
+                        <input type="text" id="account-message-input" class="chat-message-input" maxlength="500" data-i18n="messages-placeholder" placeholder="Write a message">
+                        <button type="button" class="composer-emoji-btn" aria-label="Emoji">😊</button>
+                    </div>
+                    <button type="button" class="chat-send-btn" id="account-message-send-btn">
+                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+                    </button>
                 </div>
             </div>
         `;

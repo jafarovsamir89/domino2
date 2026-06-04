@@ -647,6 +647,30 @@ test("authenticated profile shows four stats cards without Xal and leaderboard u
   await page.locator("#social-inbox-list .inbox-card .btn").nth(1).click();
   await expect(page.locator("#social-inbox-list .inbox-card")).toHaveCount(0);
 
+  // Redesigned visual checks:
+  // 1. Verify tab buttons are visible and Dostlar tab can be clicked
+  await expect(page.locator("#social-tab-friends-btn")).toBeVisible();
+  await page.locator("#social-tab-friends-btn").click();
+  await expect(page.locator("#social-friends-panel")).toBeVisible();
+
+  // 2. Friends list renders as premium-social-card cards
+  await expect(page.locator("#friends-list .friend-card")).toHaveCount(1);
+  await expect(page.locator("#friends-list .friend-card")).toContainText(/Alice/);
+
+  // 3. Chat opens as a separate screen when clicking on a friend card copy
+  await page.locator("#friends-list .friend-card .friend-card-copy").first().click();
+  await expect(page.locator("#social-chats-panel")).not.toHaveClass(/is-hidden/);
+
+  // 4. Send message input is visible and touch friendly
+  await expect(page.locator("#account-message-input")).toBeVisible();
+
+  // 5. Ensure NO horizontal scroll overflow at mobile viewport width
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 2)).toBeTruthy();
+
+  // Return to Social Hub using back button
+  await page.locator("#account-messages-back-btn").click();
+  await expect(page.locator("#social-center-modal")).toHaveClass(/active/);
+
 });
 
 test("open rooms modal uses a standard title bar and close button", async ({ page }) => {
@@ -1038,6 +1062,187 @@ test("daily bonus flow: visible only when authed, handles status loading and cla
   await expect(page.locator("#open-online-modal-btn")).toBeEnabled();
   await expect(page.locator("#open-rooms-btn")).toBeEnabled();
   await expect(page.locator("#open-leaderboard-btn")).toBeEnabled();
+});
+
+test("capture screenshots for review", async ({ page }) => {
+  await page.route("**/platform/game-token", async (route) => {
+    const origin = route.request().headers().origin ?? "http://127.0.0.1:4173";
+    const headers = {
+      "Access-Control-Allow-Origin": origin,
+      "Access-Control-Allow-Methods": "GET,POST,PUT,PATCH,DELETE,OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With",
+      "Access-Control-Allow-Credentials": "true"
+    };
+    return route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      headers,
+      body: JSON.stringify({
+        token: "test-token",
+        user: { id: "u-1", name: "Samir", email: "samir@example.com", role: "player" },
+        player: { id: "p-1", displayName: "Samir", avatarUrl: "", isGuest: false },
+        stats: { rating: 1234, points: 88, wins: 11, losses: 4, draws: 0, matchesPlayed: 15, currentStreak: 2, bestStreak: 5, titleCode: "rookie" },
+        wallet: { balance: 777, availableBalance: 777, spendableBalance: 777, reservedBalance: 0 },
+        recentMatches: []
+      })
+    });
+  });
+
+  await page.route("**/social/friends", async (route) => {
+    const origin = route.request().headers().origin ?? "http://127.0.0.1:4173";
+    const headers = { "Access-Control-Allow-Origin": origin, "Access-Control-Allow-Credentials": "true" };
+    return route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      headers,
+      body: JSON.stringify({
+        accepted: [
+          { id: "f-1", status: "accepted", friend: { id: "p-2", displayName: "Aleksey", avatarUrl: null, isGuest: false } },
+          { id: "f-2", status: "accepted", friend: { id: "p-3", displayName: "Katerina", avatarUrl: null, isGuest: false } }
+        ],
+        incoming: [
+          { id: "f-3", status: "pending", friend: { id: "p-4", displayName: "Dmitriy", avatarUrl: null, isGuest: false } }
+        ],
+        outgoing: []
+      })
+    });
+  });
+
+  await page.route("**/social/messages", async (route) => {
+    const origin = route.request().headers().origin ?? "http://127.0.0.1:4173";
+    const headers = { "Access-Control-Allow-Origin": origin, "Access-Control-Allow-Credentials": "true" };
+    return route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      headers,
+      body: JSON.stringify({
+        items: [
+          {
+            player: { id: "p-2", displayName: "Aleksey", avatarUrl: null, isGuest: false },
+            lastMessage: { id: "m-1", senderPlayerId: "p-2", receiverPlayerId: "p-1", text: "Привет! Отличная победа! 🏆", createdAt: "2026-06-04T10:20:00.000Z" },
+            unreadCount: 2
+          }
+        ]
+      })
+    });
+  });
+
+  await page.route("**/social/messages/p-2", async (route) => {
+    const origin = route.request().headers().origin ?? "http://127.0.0.1:4173";
+    const headers = { "Access-Control-Allow-Origin": origin, "Access-Control-Allow-Credentials": "true" };
+    return route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      headers,
+      body: JSON.stringify({
+        items: [
+          { id: "m-1", senderPlayerId: "p-2", receiverPlayerId: "p-1", text: "Привет! 👋 Как прошёл турнир?", createdAt: "2026-06-04T10:20:00.000Z" },
+          { id: "m-2", senderPlayerId: "p-1", receiverPlayerId: "p-2", text: "Привет! Отлично! 💪 Удалось занять 3 место!", createdAt: "2026-06-04T10:21:00.000Z" },
+          { id: "m-3", senderPlayerId: "p-2", receiverPlayerId: "p-1", text: "Вау, поздравляю! 🏆 Это было непросто!", createdAt: "2026-06-04T10:22:00.000Z" }
+        ]
+      })
+    });
+  });
+
+  await page.route("**/social/inbox*", async (route) => {
+    const origin = route.request().headers().origin ?? "http://127.0.0.1:4173";
+    const headers = { "Access-Control-Allow-Origin": origin, "Access-Control-Allow-Credentials": "true" };
+    return route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      headers,
+      body: JSON.stringify({
+        unreadCount: 1,
+        items: [
+          {
+            id: "i-1",
+            playerId: "p-1",
+            type: "reward",
+            title: "Эпический сундук",
+            body: "Держи подарок за победу! Нажми, чтобы забрать",
+            status: "unread",
+            createdAt: "2026-06-04T10:23:00.000Z",
+            isClaimable: true
+          }
+        ]
+      })
+    });
+  });
+
+  await page.route("**/social/invitations**", async (route) => {
+    const origin = route.request().headers().origin ?? "http://127.0.0.1:4173";
+    const headers = { "Access-Control-Allow-Origin": origin, "Access-Control-Allow-Credentials": "true" };
+    return route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      headers,
+      body: JSON.stringify({
+        incoming: [
+          {
+            id: "inv-1",
+            status: "pending",
+            roomId: "room-11",
+            roomCode: "ABCD",
+            roomMode: "ffa",
+            inviter: { id: "p-2", displayName: "Aleksey", isGuest: false }
+          }
+        ],
+        sent: []
+      })
+    });
+  });
+
+  await page.route("**/social/summary", async (route) => {
+    const origin = route.request().headers().origin ?? "http://127.0.0.1:4173";
+    const headers = { "Access-Control-Allow-Origin": origin, "Access-Control-Allow-Credentials": "true" };
+    return route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      headers,
+      body: JSON.stringify({ inboxUnreadCount: 1, chatUnreadCount: 2, inviteUnreadCount: 1, friendRequestCount: 1, totalUnreadCount: 5 })
+    });
+  });
+
+  await page.addInitScript(() => {
+    window.localStorage.setItem("dominoPlatformGameToken", "test-token");
+    window.localStorage.setItem("dominoPlatformProfile", JSON.stringify({ id: "p-1", displayName: "Samir", rating: 1234, coins: 777 }));
+    window.localStorage.setItem("dominoAuthProfile", JSON.stringify({ id: "p-1", name: "Samir", displayName: "Samir" }));
+  });
+
+  await page.goto("/index.html");
+  await page.evaluate(() => {
+    const game = window.game;
+    if (game) {
+      game.friendRatingMap = new Map([["p-2", 1625], ["p-3", 1450], ["p-4", 1180]]);
+    }
+  });
+
+  // 1. Open Social Hub and Dostlar tab
+  await page.evaluate(() => window.game?.openSocialCenterModal('friends'));
+  await page.waitForTimeout(500);
+  
+  // Take social-hub-mobile.png
+  await page.screenshot({ path: "social-hub-mobile.png" });
+  await page.screenshot({ path: "C:/Users/user/.gemini/antigravity/brain/090a8b99-b4c6-47b6-b145-6867d8609239/social-hub-mobile.png" });
+
+  // 2. Open search results or request view
+  await page.locator("#social-center-modal #friends-search-input").fill("Dmitriy");
+  await page.locator("#social-center-modal #friends-search-btn").click();
+  await page.waitForTimeout(500);
+  await page.screenshot({ path: "social-friends-mobile.png" });
+  await page.screenshot({ path: "C:/Users/user/.gemini/antigravity/brain/090a8b99-b4c6-47b6-b145-6867d8609239/social-friends-mobile.png" });
+
+  // 3. Switch to Poçt tab
+  await page.locator("#social-tab-mail-btn").click();
+  await page.waitForTimeout(500);
+  await page.screenshot({ path: "social-mail-mobile.png" });
+  await page.screenshot({ path: "C:/Users/user/.gemini/antigravity/brain/090a8b99-b4c6-47b6-b145-6867d8609239/social-mail-mobile.png" });
+
+  // 4. Open Chat Screen
+  await page.locator("#social-inbox-list .inbox-card .open-chat-action").first().click();
+  await page.waitForTimeout(500);
+  await page.screenshot({ path: "chat-screen-mobile.png" });
+  await page.screenshot({ path: "C:/Users/user/.gemini/antigravity/brain/090a8b99-b4c6-47b6-b145-6867d8609239/chat-screen-mobile.png" });
 });
 
 
