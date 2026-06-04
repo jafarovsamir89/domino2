@@ -338,7 +338,8 @@ export class LoadTestClient {
     }
 
     async init() {
-        const mode = this.config.authHelperEnabled || (process.env.NODE_ENV !== "production" && process.env.BETTER_AUTH_SECRET)
+        const isLocalHost = this.config.baseUrl.includes("localhost") || this.config.baseUrl.includes("127.0.0.1");
+        const mode = (this.config.authHelperEnabled || (process.env.NODE_ENV !== "production" && process.env.BETTER_AUTH_SECRET)) && isLocalHost
             ? "local"
             : "http";
 
