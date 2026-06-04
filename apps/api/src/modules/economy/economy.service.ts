@@ -1152,6 +1152,107 @@ export class EconomyService {
     });
   }
 
+  private async buildDailyBonusStatus(
+    tx: EconomyTx,
+    playerId: string,
+    config: { dailyMaxStreak: number; dailyBaseAmount: number; dailyStreakBonus: number },
+    now: Date
+  ) {
+    const claimDate = toUtcDateKey(now);
+    const prevDay = new Date(now);
+    prevDay.setUTCDate(prevDay.getUTCDate() - 1);
+    const previousDateKey = toUtcDateKey(prevDay);
+
+    // Check if claimed today
+    const existingClaim = await tx.coinDailyBonusClaim.findUnique({
+      where: {
+        playerId_claimDate: {
+          playerId,
+          claimDate
+        }
+      }
+    });
+
+    const previousClaim = await tx.coinDailyBonusClaim.findFirst({
+      where: {
+        playerId,
+        claimDate: previousDateKey
+      },
+      orderBy: {
+        createdAt: "desc"
+      }
+    });
+
+    let claimable = false;
+    let claimedToday = false;
+    let streakDay = 1;
+    let todayAmount = config.dailyBaseAmount;
+    let lastClaimAt: Date | null = null;
+
+    if (existingClaim) {
+      claimedToday = true;
+      claimable = false;
+      streakDay = existingClaim.streakDay;
+      todayAmount = existingClaim.amount;
+      lastClaimAt = existingClaim.createdAt;
+    } else {
+      claimedToday = false;
+      claimable = true;
+      streakDay = previousClaim ? Math.min(config.dailyMaxStreak, previousClaim.streakDay + 1) : 1;
+      todayAmount = config.dailyBaseAmount + Math.max(0, streakDay - 1) * config.dailyStreakBonus;
+      lastClaimAt = previousClaim ? previousClaim.createdAt : null;
+    }
+
+    const tomorrowStreakDay = Math.min(config.dailyMaxStreak, streakDay + 1);
+    const tomorrowAmount = config.dailyBaseAmount + Math.max(0, tomorrowStreakDay - 1) * config.dailyStreakBonus;
+
+    const tomorrow = new Date(now);
+    tomorrow.setUTCDate(tomorrow.getUTCDate() + 1);
+    const nextClaimAt = claimedToday
+      ? startOfUtcDay(tomorrow)
+      : null;
+
+    return {
+      claimable,
+      claimedToday,
+      claimDate: existingClaim?.claimDate ?? claimDate,
+      streakDay,
+      todayAmount,
+      tomorrowAmount,
+      maxStreak: config.dailyMaxStreak,
+      nextClaimAt: nextClaimAt ? nextClaimAt.toISOString() : null,
+      lastClaimAt: lastClaimAt ? lastClaimAt.toISOString() : null
+    };
+  }
+
+  async getDailyBonusStatus(headers: IncomingHttpHeaders) {
+    const profile = await this.authService.getCurrentProfile(headers);
+    if (!profile?.player) {
+      throw new UnauthorizedException("Login required");
+    }
+
+    const config = await this.getConfig();
+    if (!config) {
+      throw new BadRequestException("Economy config missing");
+    }
+
+    const wallet = await this.prisma.coinWallet.findUnique({
+      where: { playerId: profile.player.id }
+    });
+
+    const now = new Date();
+    const status = await this.buildDailyBonusStatus(this.prisma, profile.player.id, config, now);
+
+    return {
+      wallet: {
+        balance: wallet?.balance ?? 0,
+        availableBalance: wallet?.balance ?? 0,
+        reservedBalance: wallet?.reserved ?? 0
+      },
+      dailyBonus: status
+    };
+  }
+
   async claimDailyBonus(headers: IncomingHttpHeaders) {
     const profile = await this.authService.getCurrentProfile(headers);
     if (!profile?.player) {
@@ -1165,9 +1266,6 @@ export class EconomyService {
 
     const now = new Date();
     const claimDate = toUtcDateKey(now);
-    const prevDay = new Date(now);
-    prevDay.setUTCDate(prevDay.getUTCDate() - 1);
-    const previousDateKey = toUtcDateKey(prevDay);
 
     return this.prisma.$transaction(async (tx) => {
       const existing = await tx.coinDailyBonusClaim.findUnique({
@@ -1179,24 +1277,19 @@ export class EconomyService {
         }
       });
       if (existing) {
+        const status = await this.buildDailyBonusStatus(tx, profile.player.id, config, now);
+        const wallet = await this.ensureWallet(tx, profile.player.id);
         return {
           claimed: false,
           claim: existing,
-          wallet: await this.ensureWallet(tx, profile.player.id)
+          wallet,
+          dailyBonus: status
         };
       }
 
-      const previousClaim = await tx.coinDailyBonusClaim.findFirst({
-        where: {
-          playerId: profile.player.id,
-          claimDate: previousDateKey
-        },
-        orderBy: {
-          createdAt: "desc"
-        }
-      });
-      const streakDay = previousClaim ? Math.min(config.dailyMaxStreak, previousClaim.streakDay + 1) : 1;
-      const amount = config.dailyBaseAmount + Math.max(0, streakDay - 1) * config.dailyStreakBonus;
+      const statusBefore = await this.buildDailyBonusStatus(tx, profile.player.id, config, now);
+      const streakDay = statusBefore.streakDay;
+      const amount = statusBefore.todayAmount;
 
       const wallet = await this.creditWallet(
         tx,
@@ -1228,10 +1321,13 @@ export class EconomyService {
         referenceId: claim.id
       });
 
+      const statusAfter = await this.buildDailyBonusStatus(tx, profile.player.id, config, now);
+
       return {
         claimed: true,
         claim,
-        wallet
+        wallet,
+        dailyBonus: statusAfter
       };
     });
   }

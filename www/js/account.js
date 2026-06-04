@@ -925,4 +925,15 @@ export class AccountClient {
     getRoomAuthToken() {
         return this.platformGameToken || "";
     }
+
+    async getDailyBonusStatus() {
+        return this.platformRequest("/economy/daily-bonus/status");
+    }
+
+    async claimDailyBonus() {
+        return this.platformRequest("/economy/daily-bonus/claim", {
+            method: "POST"
+        });
+    }
 }
+

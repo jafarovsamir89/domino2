@@ -1,4 +1,4 @@
-﻿import { test, expect } from "@playwright/test";
+import { test, expect } from "@playwright/test";
 
 async function stubApi(page) {
   await page.route("**/api/**", async (route) => {
@@ -880,4 +880,145 @@ test("game invite attaches the resolved room code instead of the room id", async
   expect(payload).toBeTruthy();
   expect(payload.roomCode).toBe("ABCD");
 });
+
+test("daily bonus flow: visible only when authed, handles status loading and claim successfully", async ({ page }) => {
+  let claimCalled = false;
+  let mockBalance = 777;
+  
+  await page.route("**/economy/daily-bonus/status", async (route) => {
+    const origin = route.request().headers().origin ?? "http://127.0.0.1:4173";
+    const headers = {
+      "Access-Control-Allow-Origin": origin,
+      "Access-Control-Allow-Credentials": "true"
+    };
+    return route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      headers,
+      body: JSON.stringify({
+        wallet: { balance: mockBalance, availableBalance: mockBalance, reservedBalance: 0 },
+        dailyBonus: {
+          claimable: true,
+          claimedToday: false,
+          claimDate: "2026-06-04",
+          streakDay: 3,
+          todayAmount: 35,
+          tomorrowAmount: 40,
+          maxStreak: 7,
+          nextClaimAt: null,
+          lastClaimAt: "2026-06-03T10:00:00.000Z"
+        }
+      })
+    });
+  });
+
+  await page.route("**/economy/daily-bonus/claim", async (route) => {
+    claimCalled = true;
+    mockBalance = 812;
+    const origin = route.request().headers().origin ?? "http://127.0.0.1:4173";
+    const headers = {
+      "Access-Control-Allow-Origin": origin,
+      "Access-Control-Allow-Credentials": "true"
+    };
+    return route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      headers,
+      body: JSON.stringify({
+        ok: true,
+        claimed: true,
+        claim: { id: "claim-1", claimDate: "2026-06-04", streakDay: 3, amount: 35 },
+        wallet: { balance: 812, availableBalance: 812, reservedBalance: 0 },
+        dailyBonus: {
+          claimable: false,
+          claimedToday: true,
+          streakDay: 3,
+          todayAmount: 35,
+          tomorrowAmount: 40,
+          maxStreak: 7,
+          nextClaimAt: "2026-06-05T00:00:00.000Z",
+          lastClaimAt: "2026-06-04T10:00:00.000Z"
+        }
+      })
+    });
+  });
+
+  let isAuthedMock = false;
+  await page.route("**/platform/game-token", async (route) => {
+    const origin = route.request().headers().origin ?? "http://127.0.0.1:4173";
+    const headers = {
+      "Access-Control-Allow-Origin": origin,
+      "Access-Control-Allow-Methods": "GET,POST,PUT,PATCH,DELETE,OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With",
+      "Access-Control-Allow-Credentials": "true",
+      "Vary": "Origin"
+    };
+    if (!isAuthedMock) {
+      return route.fulfill({
+        status: 401,
+        contentType: "application/json",
+        headers,
+        body: JSON.stringify({ message: "Unauthorized" })
+      });
+    }
+    return route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      headers,
+      body: JSON.stringify({
+        token: "test-token",
+        user: { id: "u-1", name: "Samir", email: "samir@example.com", role: "player" },
+        player: { id: "p-1", displayName: "Samir", avatarUrl: "", isGuest: false },
+        stats: { rating: 1234, points: 88, wins: 11, losses: 4, draws: 0, matchesPlayed: 15, currentStreak: 2, bestStreak: 5, titleCode: "rookie" },
+        wallet: { balance: mockBalance, availableBalance: mockBalance, spendableBalance: mockBalance, reservedBalance: 0 },
+        recentMatches: []
+      })
+    });
+  });
+
+  await page.addInitScript(() => {
+    window.localStorage.removeItem("dominoPlatformGameToken");
+    window.localStorage.removeItem("dominoPlatformProfile");
+    window.localStorage.removeItem("dominoAuthProfile");
+  });
+  
+  await page.goto("/index.html");
+  const unauthedCard = page.locator("#daily-bonus-card");
+  await expect(unauthedCard).toHaveClass(/is-hidden/);
+
+  isAuthedMock = true;
+  await page.evaluate(() => {
+    window.localStorage.setItem("dominoPlatformGameToken", "test-token");
+    window.localStorage.setItem("dominoPlatformProfile", JSON.stringify({
+      id: "p-1", displayName: "Samir", isGuest: false, coins: 777
+    }));
+    window.localStorage.setItem("dominoAuthProfile", JSON.stringify({
+      id: "p-1", name: "Samir", displayName: "Samir", isGuest: false
+    }));
+  });
+
+  await page.goto("/index.html");
+  const card = page.locator("#daily-bonus-card");
+  await expect(card).not.toHaveClass(/is-hidden/);
+  await expect(page.locator("#daily-bonus-amount")).toContainText("35 coins");
+  await expect(page.locator("#daily-bonus-streak")).toContainText(/3/);
+
+  const claimBtn = page.locator("#daily-bonus-claim-btn");
+  await expect(claimBtn).toBeVisible();
+  await expect(claimBtn).toBeEnabled();
+
+  await claimBtn.click();
+  await expect.poll(() => claimCalled).toBeTruthy();
+  await expect(claimBtn).toBeDisabled();
+  
+  await page.locator("#account-btn").click();
+  await expect(page.locator("#account-stats-grid")).toContainText(/812/);
+  await page.locator("#account-modal-close").click();
+
+  await expect(page.locator("#open-solo-modal-btn")).toBeEnabled();
+  await expect(page.locator("#open-online-modal-btn")).toBeEnabled();
+  await expect(page.locator("#open-rooms-btn")).toBeEnabled();
+  await expect(page.locator("#open-leaderboard-btn")).toBeEnabled();
+});
+
 

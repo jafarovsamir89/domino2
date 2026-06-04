@@ -1,4 +1,4 @@
-﻿export const translations = {
+export const translations = {
     az: {
         "game-title": "Domino (Telefon)",
         "game-subtitle": "Azərbaycan Dominosu",
@@ -488,6 +488,20 @@
         ,"msg-player-passed": "{player} pas verdi"
         ,"msg-player-gosha": "{player} Goşa oynadı"
         ,"msg-bank-reserved": "{players} oyunçu üçün {amount} coin bankda saxlanıldı"
+        ,"daily-bonus-title": "Gündəlik bonus"
+        ,"daily-bonus-subtitle": "Hər gün daxil ol və daha çox coin qazan"
+        ,"daily-bonus-streak": "Seriya"
+        ,"daily-bonus-today": "Bugünkü bonus"
+        ,"daily-bonus-tomorrow": "Sabah"
+        ,"daily-bonus-claim": "Götür"
+        ,"daily-bonus-claimed": "Götürüldü"
+        ,"daily-bonus-next": "Növbəti bonus"
+        ,"daily-bonus-loading": "Yüklənir..."
+        ,"daily-bonus-error": "Bonus yüklənmədi"
+        ,"daily-bonus-login-required": "Bonusu götürmək üçün hesaba daxil olun"
+        ,"daily-bonus-toast": "+{amount} coin qazandın"
+        ,"daily-bonus-day": "Gün {day}"
+        ,"daily-bonus-max-streak": "Maksimum seriya"
     },
     en: {
         "game-title": "Domino (Telephone)",
@@ -978,6 +992,20 @@
         ,"msg-player-passed": "{player} passed"
         ,"msg-player-gosha": "{player} played Gosha"
         ,"msg-bank-reserved": "Bank {amount} coins reserved for {players} players"
+        ,"daily-bonus-title": "Daily bonus"
+        ,"daily-bonus-subtitle": "Come back every day and earn more coins"
+        ,"daily-bonus-streak": "Streak"
+        ,"daily-bonus-today": "Today"
+        ,"daily-bonus-tomorrow": "Tomorrow"
+        ,"daily-bonus-claim": "Claim"
+        ,"daily-bonus-claimed": "Claimed"
+        ,"daily-bonus-next": "Next bonus"
+        ,"daily-bonus-loading": "Loading..."
+        ,"daily-bonus-error": "Could not load bonus"
+        ,"daily-bonus-login-required": "Sign in to claim your bonus"
+        ,"daily-bonus-toast": "You earned +{amount} coins"
+        ,"daily-bonus-day": "Day {day}"
+        ,"daily-bonus-max-streak": "Max streak"
     },
     ru: {
         "game-title": "Домино (Телефон)",
@@ -1459,5 +1487,19 @@
         ,"msg-player-passed": "{player} пасовал"
         ,"msg-player-gosha": "{player} сыграл Гошу"
         ,"msg-bank-reserved": "Банк {amount} монет зарезервирован для {players} игроков"
+        ,"daily-bonus-title": "Ежедневный бонус"
+        ,"daily-bonus-subtitle": "Заходи каждый день и получай больше монет"
+        ,"daily-bonus-streak": "Серия"
+        ,"daily-bonus-today": "Бонус сегодня"
+        ,"daily-bonus-tomorrow": "Завтра"
+        ,"daily-bonus-claim": "Забрать"
+        ,"daily-bonus-claimed": "Получено"
+        ,"daily-bonus-next": "Следующий бонус"
+        ,"daily-bonus-loading": "Загрузка..."
+        ,"daily-bonus-error": "Не удалось загрузить бонус"
+        ,"daily-bonus-login-required": "Войдите в аккаунт, чтобы получить бонус"
+        ,"daily-bonus-toast": "Ты получил +{amount} монет"
+        ,"daily-bonus-day": "День {day}"
+        ,"daily-bonus-max-streak": "Максимальная серия"
     }
 };

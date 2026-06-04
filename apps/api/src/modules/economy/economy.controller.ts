@@ -60,6 +60,28 @@ export class EconomyController {
     return this.economyService.getWallet(req.headers);
   }
 
+  @Get("economy/daily-bonus/status")
+  async getDailyBonusStatus(@Req() req: Request) {
+    return this.economyService.getDailyBonusStatus(req.headers);
+  }
+
+  @Post("economy/daily-bonus/claim")
+  async claimDailyBonus(@Req() req: Request) {
+    const result = await this.economyService.claimDailyBonus(req.headers);
+    return {
+      ok: true,
+      claimed: result.claimed,
+      reason: result.claimed ? undefined : "already_claimed",
+      claim: result.claim,
+      wallet: {
+        balance: result.wallet.balance,
+        availableBalance: result.wallet.balance,
+        reservedBalance: result.wallet.reserved
+      },
+      dailyBonus: result.dailyBonus
+    };
+  }
+
   @Post("economy/matches/reserve")
   async reserveMatchStake(
     @Headers("authorization") authorization: string | undefined,

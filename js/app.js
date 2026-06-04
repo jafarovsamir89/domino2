@@ -1,4 +1,4 @@
-﻿import { Tile, createFullSet, shuffle, getHandSize, determineFirstPlayer, handPoints, getOpeningPlayScore, hasInvalidOpeningHand, roundTo5 } from './model.js';
+import { Tile, createFullSet, shuffle, getHandSize, determineFirstPlayer, handPoints, getOpeningPlayScore, hasInvalidOpeningHand, roundTo5 } from './model.js';
 import { Board, reconstructBoard } from './board.js';
 import { AIPlayer } from './ai.js';
 import { Renderer } from './renderer.js';
@@ -243,6 +243,13 @@ class DominoGame {
         this.leaderboardScope = 'overall';
         this.playerProfileState = null;
         this.socialCenterUnreadCount = 0;
+        this.dailyBonusState = {
+            loading: false,
+            status: null,
+            claiming: false,
+            error: ''
+        };
+        this.dailyBonusTickerId = null;
         this._coinShopTickId = null;
         this.lastReactionSentAt = 0;
         this.lastReactionSentType = '';
@@ -617,6 +624,10 @@ class DominoGame {
             this.syncStartAuthButton();
             this.syncStartAuthGate();
             this.updateSocialCenterBadge();
+            this.dailyBonusState.status = null;
+            this.dailyBonusState.loading = false;
+            this.stopDailyBonusTicker();
+            this.renderDailyBonusCard();
         });
         if (nameModalCloseBtn) nameModalCloseBtn.addEventListener('click', () => this.closeNameEditModal());
         if (nameModalCancelBtn) nameModalCancelBtn.addEventListener('click', () => this.closeNameEditModal());
@@ -645,6 +656,13 @@ class DominoGame {
         this.syncStartAuthButton();
         this.syncStartAuthGate();
         this.ensureShopIconMarkup();
+
+        const dailyBonusClaimBtn = document.getElementById('daily-bonus-claim-btn');
+        if (dailyBonusClaimBtn) {
+            dailyBonusClaimBtn.addEventListener('click', () => {
+                this.claimDailyBonus();
+            });
+        }
     }
 
     readPlayerName(preferred = 'any') {
@@ -669,6 +687,7 @@ class DominoGame {
         if (this.accountOnline) {
             void this.loadTableSkinShop();
             void this.loadGiftHub();
+            void this.loadDailyBonusStatus();
         } else {
             this.tableSkinShop = null;
         }
@@ -733,6 +752,7 @@ class DominoGame {
                 this.syncStartAuthButton();
                 void this.loadGiftHub();
                 void this.loadSocialSummary();
+                void this.loadDailyBonusStatus();
                 this.setAccountStatus(this.t('account-online'));
                 return details;
             }
@@ -2212,6 +2232,281 @@ class DominoGame {
         }
     }
 
+    async loadDailyBonusStatus() {
+        if (!this.hasAuthenticatedAccount()) {
+            this.dailyBonusState.status = null;
+            this.dailyBonusState.loading = false;
+            this.renderDailyBonusCard();
+            return;
+        }
+
+        this.dailyBonusState.loading = true;
+        this.dailyBonusState.error = '';
+        this.renderDailyBonusCard();
+
+        try {
+            const status = await this.account.getDailyBonusStatus();
+            this.dailyBonusState.status = status?.dailyBonus || null;
+            if (status?.wallet) {
+                const balance = status.wallet.balance;
+                this.accountDetails = {
+                    ...(this.accountDetails || {}),
+                    wallet: status.wallet
+                };
+                this.accountProfile = {
+                    ...(this.accountProfile || {}),
+                    coins: balance,
+                    wallet: status.wallet
+                };
+                this.syncStartAuthButton();
+                this.renderAccountModal();
+            }
+            if (this.dailyBonusState.status?.claimedToday) {
+                this.startDailyBonusTicker();
+            } else {
+                this.stopDailyBonusTicker();
+            }
+        } catch (err) {
+            this.dailyBonusState.error = err.message || this.t('daily-bonus-error');
+        } finally {
+            this.dailyBonusState.loading = false;
+            this.renderDailyBonusCard();
+        }
+    }
+
+    async claimDailyBonus() {
+        if (this.dailyBonusState.claiming) return;
+        this.dailyBonusState.claiming = true;
+        this.dailyBonusState.error = '';
+        this.renderDailyBonusCard();
+
+        try {
+            const result = await this.account.claimDailyBonus();
+            if (result?.ok) {
+                this.dailyBonusState.status = result.dailyBonus || null;
+                if (result.wallet) {
+                    const balance = result.wallet.balance;
+                    this.accountDetails = {
+                        ...(this.accountDetails || {}),
+                        wallet: result.wallet
+                    };
+                    this.accountProfile = {
+                        ...(this.accountProfile || {}),
+                        coins: balance,
+                        wallet: result.wallet
+                    };
+                    this.syncStartAuthButton();
+                    this.renderAccountModal();
+                    this.renderCoinShopModal();
+                    this.renderTableSkinInventory();
+                }
+                
+                if (result.claimed) {
+                    const earnedAmount = result.claim?.amount || 0;
+                    this.renderer.showMessage(this.t('daily-bonus-toast').replace('{amount}', earnedAmount), 3000);
+                }
+                
+                if (this.dailyBonusState.status?.claimedToday) {
+                    this.startDailyBonusTicker();
+                }
+            } else {
+                this.dailyBonusState.error = result.reason || 'Could not claim daily bonus';
+            }
+        } catch (err) {
+            this.dailyBonusState.error = err.message || this.t('daily-bonus-error');
+        } finally {
+            this.dailyBonusState.claiming = false;
+            this.renderDailyBonusCard();
+        }
+    }
+
+    renderDailyBonusCard() {
+        const card = document.getElementById('daily-bonus-card');
+        if (!card) return;
+
+        const isAuthed = this.hasAuthenticatedAccount();
+        if (!isAuthed) {
+            card.classList.add('is-hidden');
+            this.stopDailyBonusTicker();
+            return;
+        }
+
+        card.classList.remove('is-hidden');
+
+        const titleEl = card.querySelector('.daily-bonus-title');
+        const metaEl = document.getElementById('daily-bonus-meta');
+        const amountEl = document.getElementById('daily-bonus-amount');
+        const streakEl = document.getElementById('daily-bonus-streak');
+        const btn = document.getElementById('daily-bonus-claim-btn');
+        const streakRow = document.getElementById('daily-bonus-streak-row');
+
+        if (titleEl) titleEl.textContent = this.t('daily-bonus-title');
+
+        if (this.dailyBonusState.loading) {
+            if (metaEl) metaEl.textContent = this.t('daily-bonus-loading');
+            if (amountEl) amountEl.textContent = '';
+            if (streakEl) streakEl.textContent = '';
+            if (btn) {
+                btn.disabled = true;
+                btn.textContent = this.t('daily-bonus-loading');
+            }
+            if (streakRow) streakRow.innerHTML = '';
+            return;
+        }
+
+        if (this.dailyBonusState.error) {
+            if (metaEl) metaEl.textContent = this.dailyBonusState.error;
+            if (amountEl) amountEl.textContent = '';
+            if (streakEl) streakEl.textContent = '';
+            if (btn) {
+                btn.disabled = true;
+                btn.textContent = this.t('daily-bonus-error');
+            }
+            if (streakRow) streakRow.innerHTML = '';
+            return;
+        }
+
+        const status = this.dailyBonusState.status;
+        if (!status) {
+            if (metaEl) metaEl.textContent = this.t('daily-bonus-error');
+            if (amountEl) amountEl.textContent = '';
+            if (streakEl) streakEl.textContent = '';
+            if (btn) {
+                btn.disabled = true;
+                btn.textContent = this.t('daily-bonus-error');
+            }
+            if (streakRow) streakRow.innerHTML = '';
+            return;
+        }
+
+        if (amountEl) {
+            amountEl.textContent = `${status.todayAmount} coins`;
+        }
+
+        if (streakEl) {
+            streakEl.textContent = `${this.t('daily-bonus-streak')}: ${status.streakDay}/${status.maxStreak}`;
+        }
+
+        if (btn) {
+            if (this.dailyBonusState.claiming) {
+                btn.disabled = true;
+                btn.textContent = this.t('daily-bonus-loading');
+            } else if (status.claimedToday) {
+                btn.disabled = true;
+                btn.textContent = this.t('daily-bonus-claimed');
+            } else {
+                btn.disabled = false;
+                btn.textContent = this.t('daily-bonus-claim');
+            }
+        }
+
+        if (metaEl) {
+            if (status.claimedToday) {
+                if (!this.dailyBonusTickerId) {
+                    this.startDailyBonusTicker();
+                }
+            } else {
+                this.stopDailyBonusTicker();
+                metaEl.textContent = this.t('daily-bonus-subtitle');
+            }
+        }
+
+        if (streakRow) {
+            streakRow.innerHTML = '';
+            const maxDays = status.maxStreak || 7;
+            const inferredStreakBonus = Math.abs(status.tomorrowAmount - status.todayAmount) || 5;
+            const inferredBase = status.todayAmount - (status.streakDay - 1) * inferredStreakBonus;
+
+            for (let day = 1; day <= maxDays; day++) {
+                const box = document.createElement('div');
+                box.className = 'daily-bonus-day-box';
+
+                let isClaimed = false;
+                let isActive = false;
+
+                if (status.claimedToday) {
+                    if (day <= status.streakDay) {
+                        isClaimed = true;
+                    }
+                } else {
+                    if (day < status.streakDay) {
+                        isClaimed = true;
+                    } else if (day === status.streakDay) {
+                        isActive = true;
+                    }
+                }
+
+                if (isClaimed) box.classList.add('is-claimed');
+                if (isActive) box.classList.add('is-active');
+
+                const dayReward = inferredBase + (day - 1) * inferredStreakBonus;
+
+                const dayNumSpan = document.createElement('span');
+                dayNumSpan.className = 'day-num';
+                dayNumSpan.textContent = this.t('daily-bonus-day').replace('{day}', day);
+
+                const dayRewardSpan = document.createElement('span');
+                dayRewardSpan.className = 'day-reward';
+                dayRewardSpan.textContent = `+${dayReward}`;
+
+                box.appendChild(dayNumSpan);
+                box.appendChild(dayRewardSpan);
+                streakRow.appendChild(box);
+            }
+        }
+    }
+
+    startDailyBonusTicker() {
+        this.stopDailyBonusTicker();
+        this.updateDailyBonusTimeRemaining();
+        this.dailyBonusTickerId = setInterval(() => {
+            this.updateDailyBonusTimeRemaining();
+        }, 1000);
+    }
+
+    stopDailyBonusTicker() {
+        if (this.dailyBonusTickerId) {
+            clearInterval(this.dailyBonusTickerId);
+            this.dailyBonusTickerId = null;
+        }
+    }
+
+    updateDailyBonusTimeRemaining() {
+        const status = this.dailyBonusState.status;
+        if (!status || !status.nextClaimAt) {
+            this.stopDailyBonusTicker();
+            return;
+        }
+
+        const nextClaim = new Date(status.nextClaimAt).getTime();
+        const now = Date.now();
+        const diff = nextClaim - now;
+
+        if (diff <= 0) {
+            this.stopDailyBonusTicker();
+            this.loadDailyBonusStatus();
+            return;
+        }
+
+        const metaEl = document.getElementById('daily-bonus-meta');
+        if (metaEl) {
+            const hours = Math.floor(diff / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+            
+            let timeStr = '';
+            if (this.currentLang === 'az') {
+                timeStr = `${hours}s ${minutes}d ${seconds}sn`;
+            } else if (this.currentLang === 'ru') {
+                timeStr = `${hours}ч ${minutes}м ${seconds}с`;
+            } else {
+                timeStr = `${hours}h ${minutes}m ${seconds}s`;
+            }
+            
+            metaEl.textContent = `${this.t('daily-bonus-next')}: ${timeStr}`;
+        }
+    }
+
     async buyTableSkin(key) {
         if (this.tableSkinBusy) return;
         const skinKey = String(key || '').trim();
@@ -2367,6 +2662,7 @@ class DominoGame {
             startScreen.classList.add('active');
             startScreen.classList.remove('auth-required');
         }
+        this.loadDailyBonusStatus();
     }
 
     syncAccountUiChrome() {
@@ -8002,6 +8298,7 @@ class DominoGame {
         }
         this.refreshResumeBanner();
         document.documentElement.lang = nextLang;
+        this.renderDailyBonusCard();
     }
 
     t(key) {
