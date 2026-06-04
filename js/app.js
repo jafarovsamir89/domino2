@@ -1049,9 +1049,6 @@ class DominoGame {
         if (!isBackground) {
             this.socialInboxState = {
                 ...(this.socialInboxState || {}),
-                items: [],
-                threads: [],
-                unreadCount: 0,
                 loading: true,
                 error: ''
             };
@@ -1111,7 +1108,7 @@ class DominoGame {
             return;
         }
 
-        if (state.loading) {
+        if (state.loading && (!state.items || !state.items.length) && (!threads || !threads.length)) {
             summary.textContent = this.t('account-profile-loading');
             this.setSummaryMessage(list, this.t('account-profile-loading'));
             return;
@@ -1567,7 +1564,8 @@ class DominoGame {
         const friendsBadge = document.getElementById('social-friends-unread-badge');
         
         const actualInboxUnread = (this.socialInboxState?.items || []).filter(item => item.status === 'unread' && item.type !== 'direct_message' && item.type !== 'direct_message_thread_hidden').length;
-        const mailUnread = actualInboxUnread + Math.max(0, Number(this.roomInvitations?.incoming?.length || 0));
+        const incomingInvitesPending = (this.roomInvitations?.incoming || []).filter(inv => this.isRoomInvitationPending(inv)).length;
+        const mailUnread = actualInboxUnread + incomingInvitesPending;
 
         const chatThreadsUnread = (this.socialInboxState?.threads || []).reduce((sum, t) => sum + Math.max(0, Number(t?.unreadCount || 0)), 0);
         const friendsUnread = Math.max(0, Number(this.friendHub?.incoming?.length || 0)) + chatThreadsUnread;
@@ -1647,7 +1645,7 @@ class DominoGame {
             return [];
         }
 
-        if (!isBackground) {
+        if (!isBackground && !invitesList.children.length) {
             this.setSummaryMessage(invitesList, this.t('account-profile-loading'));
         }
         try {
@@ -3808,9 +3806,9 @@ class DominoGame {
         searchInput.disabled = false;
         searchBtn.disabled = false;
         if (!isBackground) {
-            this.setSummaryMessage(friendsList, loading);
-            this.setSummaryMessage(requestsList, loading);
-            this.setSummaryMessage(searchResults, loading);
+            if (!friendsList.children.length) this.setSummaryMessage(friendsList, loading);
+            if (!requestsList.children.length) this.setSummaryMessage(requestsList, loading);
+            if (!searchResults.children.length) this.setSummaryMessage(searchResults, loading);
         }
 
         try {
@@ -4074,9 +4072,16 @@ class DominoGame {
                 try {
                     const accepted = await this.account.acceptRoomInvitation(invite.id);
                     const row = accepted?.item || invite;
-                    const resolvedRoomCode = String(row.roomCode || '').trim()
-                        || await this.network.resolveRoomCode(String(row.roomId || '').trim()).catch(() => null)
-                        || '';
+                    let resolvedRoomCode = String(row.roomCode || '').trim();
+                    if (resolvedRoomCode.toLowerCase().startsWith('game_invite_')) {
+                        resolvedRoomCode = '';
+                    }
+                    if (!resolvedRoomCode) {
+                        const resolved = await this.network.resolveRoomCode(String(row.roomId || '').trim()).catch(() => null);
+                        if (resolved && !resolved.toLowerCase().startsWith('game_invite_')) {
+                            resolvedRoomCode = resolved;
+                        }
+                    }
                     if (resolvedRoomCode) {
                         await this.joinOnlineRoom(resolvedRoomCode);
                     } else {
@@ -5021,15 +5026,16 @@ class DominoGame {
 
         const roomCode = String(target.roomCode || '').trim();
         const status = String(target.status || '').trim();
+        const cleanRoomCode = (roomCode && !roomCode.toLowerCase().startsWith('game_invite_')) ? roomCode : '';
 
         if (state.role === 'invitee') {
-            if (status === 'accepted' && roomCode) {
+            if (status === 'accepted' && cleanRoomCode) {
                 this.stopGameInviteRefresh();
                 this.gameInviteState = null;
-                await this.joinOnlineRoom(roomCode);
+                await this.joinOnlineRoom(cleanRoomCode);
                 return target;
             }
-            if (status === 'accepted' && !roomCode) {
+            if (status === 'accepted' && !cleanRoomCode) {
                 if (!state.waitingPromptShown) {
                     this.renderer.showMessage(this.t('invite-waiting-room'), 1800);
                     state.waitingPromptShown = true;
@@ -5049,19 +5055,33 @@ class DominoGame {
         }
 
         if (state.role === 'inviter') {
-            if (status === 'accepted' && roomCode) {
+            if (status === 'accepted' && cleanRoomCode) {
                 this.stopGameInviteRefresh();
                 this.gameInviteState = null;
                 return target;
             }
-            if (status === 'accepted' && !roomCode) {
+            if (status === 'accepted' && !cleanRoomCode) {
                 if (!state.createPromptShown) {
                     this.closePlayerProfileModal();
                     this.closeSocialCenterModal();
                     this.showStartModal('online');
                     this.showOnlineCreateFlow('closed');
                     this.prefillOnlineNameIfPossible();
-                    this.setHostStatus(this.t('invite-create-room'));
+                    const inviteeName = state.inviteeDisplayName || target.invitee?.displayName || 'Игрок';
+                    let statusMsg = this.t('invitee-accepted-waiting') || '{name} qəbul etdi, otaq gözləyir';
+                    if (statusMsg.includes('{name}')) {
+                        statusMsg = statusMsg.replace('{name}', inviteeName);
+                    } else {
+                        const lang = this.currentLang || 'ru';
+                        if (lang === 'ru') {
+                            statusMsg = `${inviteeName} принял приглашение и ожидает создания комнаты`;
+                        } else if (lang === 'az') {
+                            statusMsg = `${inviteeName} dəvəti qəbul etdi və otaq qurulmasını gözləyir`;
+                        } else {
+                            statusMsg = `${inviteeName} accepted the invite and is waiting for room creation`;
+                        }
+                    }
+                    this.setHostStatus(statusMsg);
                     state.createPromptShown = true;
                 }
                 if (forceRerender) {
@@ -6956,9 +6976,15 @@ class DominoGame {
             return;
         }
 
-        this.setSummaryMessage(friendsList, this.t('account-profile-loading'));
-        this.setSummaryMessage(requestsList, this.t('account-profile-loading'));
-        setInvitesMessage(this.t('account-profile-loading'));
+        if (!friendsList.children.length) {
+            this.setSummaryMessage(friendsList, this.t('account-profile-loading'));
+        }
+        if (!requestsList.children.length) {
+            this.setSummaryMessage(requestsList, this.t('account-profile-loading'));
+        }
+        if (!invitesTargets.some(t => t.children.length)) {
+            setInvitesMessage(this.t('account-profile-loading'));
+        }
         try {
             const [friendsResult, invitationsResult, presenceResult] = await Promise.allSettled([
                 this.account.getFriends(),
