@@ -775,44 +775,17 @@ class DominoGame {
         return null;
     }
 
-    getPrimaryScreenIds() {
-        return ['menu-screen', 'game-screen', 'start-screen'];
-    }
-
-    getCurrentPrimaryScreenId() {
-        for (const screenId of this.getPrimaryScreenIds()) {
-            if (document.getElementById(screenId)?.classList.contains('active')) {
-                return screenId;
-            }
-        }
-        return 'start-screen';
-    }
-
-    hidePrimaryScreens() {
-        for (const screenId of this.getPrimaryScreenIds()) {
-            document.getElementById(screenId)?.classList.remove('active');
-        }
-    }
-
-    activatePrimaryScreen(screenId) {
-        const targetScreenId = this.getPrimaryScreenIds().includes(screenId) ? screenId : 'start-screen';
-        for (const currentScreenId of this.getPrimaryScreenIds()) {
-            document.getElementById(currentScreenId)?.classList.toggle('active', currentScreenId === targetScreenId);
-        }
-        return targetScreenId;
-    }
-
-    async openAccountModal(options = {}) {
+    async openAccountModal() {
         if (!this.hasAuthenticatedAccount()) {
             this.syncStartAuthGate();
             return;
         }
         this.closePlayerProfileModal();
         this.closeStartModals();
+        this.ensureAccountModalPortal();
         const modal = document.getElementById('account-modal');
-        if (!modal) return;
-        this.accountReturnScreenId = String(options?.returnTo || '').trim() || this.getCurrentPrimaryScreenId();
-        this.hidePrimaryScreens();
+        if (modal) if (modal.parentElement !== document.body) document.body.appendChild(modal);
+        modal.style.zIndex = '24000';
         modal.classList.add('active');
         this.accountMode = this.accountProfile ? 'profile' : 'login';
         this.renderAccountModal();
@@ -2152,11 +2125,6 @@ class DominoGame {
     closeAccountModal() {
         const modal = document.getElementById('account-modal');
         if (modal) modal.classList.remove('active');
-        const returnScreenId = String(this.accountReturnScreenId || '').trim();
-        this.accountReturnScreenId = '';
-        if (returnScreenId) {
-            this.activatePrimaryScreen(returnScreenId);
-        }
         this.closeGiftPicker();
     }
 
@@ -6314,6 +6282,13 @@ class DominoGame {
         this.ensureShopIconMarkup();
     }
 
+    ensureAccountModalPortal() {
+        const accountModal = document.getElementById('account-modal');
+        if (!accountModal) return;
+        if (accountModal.parentElement === document.body) return;
+        document.body.appendChild(accountModal);
+    }
+
     ensureCoinShopModalPortal() {
         const coinShopModal = document.getElementById('coin-shop-modal');
         if (!coinShopModal) return;
@@ -8516,7 +8491,8 @@ class DominoGame {
                 if (!target) return;
                 event.preventDefault();
                 event.stopPropagation();
-                await this.openAccountModal({ returnTo: 'menu-screen' });
+                document.getElementById('menu-screen').classList.remove('active');
+                await this.openAccountModal();
             });
         }
         document.getElementById('menu-resume')?.addEventListener('click', () => document.getElementById('menu-screen').classList.remove('active'));

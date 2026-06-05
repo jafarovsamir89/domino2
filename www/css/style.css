@@ -581,14 +581,7 @@ input, button { font: inherit; }
 
 #account-modal {
     z-index: 30;
-    align-items: flex-start;
-    justify-content: center;
-    overflow: auto;
-    padding: 24px;
-    background:
-        radial-gradient(circle at top left, rgba(240, 192, 64, 0.14), transparent 28%),
-        radial-gradient(circle at top right, rgba(71, 154, 255, 0.12), transparent 24%),
-        linear-gradient(160deg, rgba(9, 16, 26, 0.98), rgba(13, 23, 36, 0.96));
+    padding: 12px;
 }
 
 #account-name-modal {
@@ -642,45 +635,6 @@ input, button { font: inherit; }
 
 #account-modal .modal-card-wide {
     width: min(760px, calc(100vw - 24px));
-}
-
-.account-page-shell {
-    width: min(1120px, 100%);
-    margin: auto;
-    padding: 22px;
-    border-radius: 30px;
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    background:
-        linear-gradient(180deg, rgba(13, 22, 34, 0.98), rgba(11, 18, 28, 0.96)),
-        rgba(10, 16, 25, 0.9);
-    box-shadow: 0 30px 90px rgba(0, 0, 0, 0.45);
-}
-
-.account-page-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-    margin-bottom: 20px;
-}
-
-.account-page-title-wrap {
-    min-width: 0;
-    flex: 1 1 auto;
-}
-
-.account-page-title-wrap h2 {
-    margin: 0;
-    font-size: clamp(1.7rem, 2.4vw, 2.6rem);
-    line-height: 1.1;
-}
-
-.account-page-shell .account-cabinet {
-    margin-top: 0;
-}
-
-.account-page-shell .account-history {
-    margin-top: 14px;
 }
 
 .modal-header {
@@ -4386,8 +4340,7 @@ body.seat-selection-active #game-screen {
     }
 
     #account-modal .modal-header,
-    .account-modal-header,
-    .account-page-header {
+    .account-modal-header {
         flex-direction: row;
         align-items: center;
     }
@@ -4533,21 +4486,7 @@ body.seat-selection-active #game-screen {
     }
 
     #account-modal {
-        padding: 12px;
-    }
-
-    .account-page-shell {
-        padding: 18px;
-        border-radius: 24px;
-    }
-
-    .account-page-header {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-
-    .account-page-header .account-modal-close-btn {
-        align-self: flex-end;
+        padding: 10px;
     }
 
     .account-cabinet {
