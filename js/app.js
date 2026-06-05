@@ -15,18 +15,12 @@ const DEAL_END_MODAL_MS = 5000;
 const DEFAULT_TABLE_SKIN_KEY = 'table_skin_default';
 const DEFAULT_TABLE_SKIN = {
     key: DEFAULT_TABLE_SKIN_KEY,
-    name: 'Standard Felt',
-    description: 'Classic Domino table surface.',
-    assetUrl: null
+    name: 'Aurora Felt',
+    description: 'Blue-green premium felt with a warm gold edge.',
+    assetUrl: 'assets/cosmetics/table/table_skin_01.webp'
 };
 
 const DEFAULT_TABLE_SKINS = [
-    {
-        key: 'table_skin_01',
-        name: 'Aurora Felt',
-        description: 'Blue-green premium felt with a warm gold edge.',
-        assetUrl: 'assets/cosmetics/table/table_skin_01.webp'
-    },
     {
         key: 'table_skin_02',
         name: 'Midnight Carbon',
@@ -2128,9 +2122,27 @@ class DominoGame {
         this.closeStartModals();
         this.closeAccountModal();
         this.ensureCoinShopModalPortal();
+
+        // Track and deactivate current screen
+        const startScreen = document.getElementById('start-screen');
+        const gameScreen = document.getElementById('game-screen');
+        const accountModal = document.getElementById('account-modal');
+        if (startScreen && startScreen.classList.contains('active')) {
+            this.coinShopPrevScreen = 'start-screen';
+            startScreen.classList.remove('active');
+        } else if (gameScreen && gameScreen.classList.contains('active')) {
+            this.coinShopPrevScreen = 'game-screen';
+            gameScreen.classList.remove('active');
+        } else if (accountModal && accountModal.classList.contains('active')) {
+            this.coinShopPrevScreen = 'account-modal';
+            accountModal.classList.remove('active');
+        } else if (!this.coinShopPrevScreen) {
+            this.coinShopPrevScreen = 'start-screen';
+        }
+
         const modal = document.getElementById('coin-shop-modal');
         if (modal) if (modal.parentElement !== document.body) document.body.appendChild(modal);
-        modal.style.zIndex = '24000';
+        modal.style.zIndex = '';
         modal.classList.add('active');
         this.ensureShopIconMarkup();
         await this.loadCoinShopStatus();
@@ -2148,9 +2160,27 @@ class DominoGame {
         this.closeAccountModal();
         this.closeCoinShopModal();
         this.ensureCosmeticsShopModalPortal();
+
+        // Track and deactivate current screen
+        const startScreen = document.getElementById('start-screen');
+        const gameScreen = document.getElementById('game-screen');
+        const accountModal = document.getElementById('account-modal');
+        if (startScreen && startScreen.classList.contains('active')) {
+            this.cosmeticsShopPrevScreen = 'start-screen';
+            startScreen.classList.remove('active');
+        } else if (gameScreen && gameScreen.classList.contains('active')) {
+            this.cosmeticsShopPrevScreen = 'game-screen';
+            gameScreen.classList.remove('active');
+        } else if (accountModal && accountModal.classList.contains('active')) {
+            this.cosmeticsShopPrevScreen = 'account-modal';
+            accountModal.classList.remove('active');
+        } else if (!this.cosmeticsShopPrevScreen) {
+            this.cosmeticsShopPrevScreen = 'start-screen';
+        }
+
         const modal = document.getElementById('cosmetics-shop-modal');
         if (modal) if (modal.parentElement !== document.body) document.body.appendChild(modal);
-        modal.style.zIndex = '24000';
+        modal.style.zIndex = '';
         modal.classList.add('active');
         await Promise.all([this.loadCoinShopStatus(), this.loadTableSkinShop()]);
         this.renderCosmeticsShopModal();
@@ -2174,11 +2204,37 @@ class DominoGame {
         const modal = document.getElementById('coin-shop-modal');
         if (modal) modal.classList.remove('active');
         this.stopCoinShopTicker();
+
+        const prevScreenId = this.coinShopPrevScreen || 'start-screen';
+        const gameActive = document.getElementById('game-screen')?.classList.contains('active');
+        if (!gameActive) {
+            const prevScreen = document.getElementById(prevScreenId);
+            if (prevScreen) {
+                prevScreen.classList.add('active');
+                if (prevScreenId === 'account-modal') {
+                    this.renderAccountModal();
+                }
+            }
+        }
+        this.coinShopPrevScreen = null;
     }
 
     closeCosmeticsShopModal() {
         const modal = document.getElementById('cosmetics-shop-modal');
         if (modal) modal.classList.remove('active');
+
+        const prevScreenId = this.cosmeticsShopPrevScreen || 'start-screen';
+        const gameActive = document.getElementById('game-screen')?.classList.contains('active');
+        if (!gameActive) {
+            const prevScreen = document.getElementById(prevScreenId);
+            if (prevScreen) {
+                prevScreen.classList.add('active');
+                if (prevScreenId === 'account-modal') {
+                    this.renderAccountModal();
+                }
+            }
+        }
+        this.cosmeticsShopPrevScreen = null;
     }
 
     closeStartModals() {

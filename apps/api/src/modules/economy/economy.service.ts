@@ -110,12 +110,6 @@ const DEFAULT_STAKES: EconomyStakeTablePayload[] = [
 
 const DEFAULT_TABLE_SKINS = [
   {
-    key: "table_skin_01",
-    name: "Aurora Felt",
-    description: "Blue-green premium felt with a warm gold edge.",
-    sortOrder: 1
-  },
-  {
     key: "table_skin_02",
     name: "Midnight Carbon",
     description: "Dark carbon weave with a subtle studio shine.",
@@ -147,20 +141,20 @@ const DEFAULT_TABLE_SKINS = [
   },
   {
     key: "table_skin_07",
-    name: "Custom Felt 07",
-    description: "Custom table surface.",
+    name: "Royal Crimson",
+    description: "Luxury crimson felt for high stakes players.",
     sortOrder: 7
   },
   {
     key: "table_skin_08",
-    name: "Custom Felt 08",
-    description: "Custom table surface.",
+    name: "Obsidian Glass",
+    description: "Sleek volcanic glass with a neon glow.",
     sortOrder: 8
   },
   {
     key: "table_skin_09",
-    name: "Custom Felt 09",
-    description: "Custom table surface.",
+    name: "Golden Oasis",
+    description: "Shimmering desert sand under premium polished glass.",
     sortOrder: 9
   }
 ] as const;
@@ -2592,9 +2586,9 @@ export class EconomyService {
     const tableSkins = [
       {
         key: DEFAULT_TABLE_SKIN_KEY,
-        name: "Standard Felt",
-        description: "Classic table surface.",
-        assetUrl: null,
+        name: "Aurora Felt",
+        description: "Blue-green premium felt with a warm gold edge.",
+        assetUrl: "/assets/cosmetics/table/table_skin_01.webp",
         price: 0,
         owned: true,
         equipped: !player?.tableSkinKey,

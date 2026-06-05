@@ -579,7 +579,9 @@ input, button { font: inherit; }
     z-index: 8000;
 }
 
-#account-modal.screen {
+#account-modal.screen,
+#coin-shop-modal.screen,
+#cosmetics-shop-modal.screen {
     position: relative;
     width: 100%;
     height: 100dvh;
@@ -596,7 +598,9 @@ input, button { font: inherit; }
     box-sizing: border-box;
 }
 
-#account-modal.screen.active {
+#account-modal.screen.active,
+#coin-shop-modal.screen.active,
+#cosmetics-shop-modal.screen.active {
     display: flex;
 }
 
@@ -649,7 +653,9 @@ input, button { font: inherit; }
     width: min(760px, 100%);
 }
 
-#account-modal .modal-card-wide {
+#account-modal .modal-card-wide,
+#coin-shop-modal .modal-card-wide,
+#cosmetics-shop-modal .modal-card-wide {
     width: 100%;
     max-width: 1200px;
     height: 100%;
@@ -665,7 +671,9 @@ input, button { font: inherit; }
     overflow-y: auto;
 }
 
-#account-modal .modal-card {
+#account-modal .modal-card,
+#coin-shop-modal .modal-card,
+#cosmetics-shop-modal .modal-card {
     max-height: none;
 }
 
@@ -5967,9 +5975,9 @@ body.is-reconnecting .hand-container {
     width: 38px;
     height: 38px;
     border-radius: 50% !important;
-    background: linear-gradient(135deg, #103b73 0%, #1c5ba6 100%);
-    border: 1px solid rgba(88, 162, 255, 0.25);
-    color: #ffffff;
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 100%);
+    border: 1px solid rgba(240, 192, 64, 0.35);
+    color: #1a1a1a;
     display: grid;
     place-items: center;
     cursor: pointer;
@@ -5979,7 +5987,7 @@ body.is-reconnecting .hand-container {
 }
 
 .chat-send-btn:hover {
-    box-shadow: 0 0 10px rgba(88, 162, 255, 0.3);
+    box-shadow: 0 0 10px rgba(240, 192, 64, 0.45);
     transform: scale(1.03);
 }
 
@@ -6047,11 +6055,15 @@ body.is-reconnecting .hand-container {
 }
 
 /* Custom Profile Screen Overrides to match Social Hub/Messages design */
-#account-modal.screen {
+#account-modal.screen,
+#coin-shop-modal.screen,
+#cosmetics-shop-modal.screen {
     background: radial-gradient(circle at top, #0f1c2e 0%, #060a10 100%);
 }
 
-#account-modal #account-modal-close {
+#account-modal #account-modal-close,
+#coin-shop-modal #coin-shop-modal-close,
+#cosmetics-shop-modal #cosmetics-shop-modal-close {
     width: 32px;
     height: 32px;
     min-width: 32px;
@@ -6069,13 +6081,17 @@ body.is-reconnecting .hand-container {
     padding: 0;
 }
 
-#account-modal #account-modal-close:hover {
+#account-modal #account-modal-close:hover,
+#coin-shop-modal #coin-shop-modal-close:hover,
+#cosmetics-shop-modal #cosmetics-shop-modal-close:hover {
     background: rgba(255, 0, 0, 0.2);
     border-color: rgba(255, 0, 0, 0.4);
     color: #ffffff;
 }
 
-#account-modal .account-modal-header {
+#account-modal .account-modal-header,
+#coin-shop-modal .account-modal-header,
+#cosmetics-shop-modal .account-modal-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -6089,7 +6105,9 @@ body.is-reconnecting .hand-container {
     margin-bottom: 0;
 }
 
-#account-modal .account-modal-title-wrap h2 {
+#account-modal .account-modal-title-wrap h2,
+#coin-shop-modal .account-modal-title-wrap h2,
+#cosmetics-shop-modal .account-modal-title-wrap h2 {
     margin: 0;
     font-size: 1.25rem;
     font-weight: 800;
@@ -6097,7 +6115,9 @@ body.is-reconnecting .hand-container {
     letter-spacing: -0.01em;
 }
 
-#account-modal .modal-card-wide {
+#account-modal .modal-card-wide,
+#coin-shop-modal .modal-card-wide,
+#cosmetics-shop-modal .modal-card-wide {
     width: 100%;
     max-width: 960px;
     flex: 1;
