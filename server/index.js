@@ -203,6 +203,14 @@ app.use(express.static(wwwRoot, {
             res.setHeader("Content-Type", "text/css; charset=UTF-8");
         } else if (ext === ".json" || ext === ".webmanifest") {
             res.setHeader("Content-Type", "application/json; charset=UTF-8");
+        } else if (ext === ".webp") {
+            res.setHeader("Content-Type", "image/webp");
+        } else if (ext === ".svg") {
+            res.setHeader("Content-Type", "image/svg+xml");
+        } else if (ext === ".png") {
+            res.setHeader("Content-Type", "image/png");
+        } else if (ext === ".jpg" || ext === ".jpeg") {
+            res.setHeader("Content-Type", "image/jpeg");
         }
     }
 }));

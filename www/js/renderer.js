@@ -20,6 +20,7 @@ export class Renderer {
     }
 
     setTableSkin(assetUrl) {
+        console.log('[Renderer] setTableSkin called with:', assetUrl);
         const skinValue = assetUrl ? `url("${assetUrl}")` : 'none';
         const target = document.getElementById('game-screen') || document.documentElement;
         target.style.setProperty('--table-skin-image', skinValue);
@@ -28,6 +29,7 @@ export class Renderer {
         } else {
             target.style.setProperty('--table-skin-overlay', 'linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0))');
         }
+        console.log('[Renderer] --table-skin-image set to:', target.style.getPropertyValue('--table-skin-image'));
     }
 
     pipLayout(v, orient = 'horizontal') {
