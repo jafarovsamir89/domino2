@@ -2334,6 +2334,8 @@ class DominoGame {
 
     getTableSkinEntry(key) {
         const normalizedKey = String(key || '').trim();
+        const catalogSkin = this.getTableSkinCatalogEntries().find((skin) => skin.key === normalizedKey);
+        if (catalogSkin) return catalogSkin;
         if (normalizedKey === DEFAULT_TABLE_SKIN_KEY) {
             return {
                 ...DEFAULT_TABLE_SKIN,
@@ -2343,7 +2345,7 @@ class DominoGame {
                 isActive: true
             };
         }
-        return this.getTableSkinCatalogEntries().find((skin) => skin.key === normalizedKey) || null;
+        return null;
     }
 
     applyActiveTableSkin() {
