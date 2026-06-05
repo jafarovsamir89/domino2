@@ -1,4 +1,4 @@
-﻿const gsap = window.gsap;
+const gsap = window.gsap;
 
 export class Renderer {
     constructor(app) {
@@ -21,8 +21,13 @@ export class Renderer {
 
     setTableSkin(assetUrl) {
         const skinValue = assetUrl ? `url("${assetUrl}")` : 'none';
-        const target = this.boardContainerEl || document.documentElement;
+        const target = document.getElementById('game-screen') || document.documentElement;
         target.style.setProperty('--table-skin-image', skinValue);
+        if (assetUrl) {
+            target.style.setProperty('--table-skin-overlay', 'radial-gradient(circle, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.65) 100%)');
+        } else {
+            target.style.setProperty('--table-skin-overlay', 'linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0))');
+        }
     }
 
     pipLayout(v, orient = 'horizontal') {

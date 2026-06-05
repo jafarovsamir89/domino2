@@ -25,55 +25,55 @@ const DEFAULT_TABLE_SKINS = [
         key: 'table_skin_01',
         name: 'Aurora Felt',
         description: 'Blue-green premium felt with a warm gold edge.',
-        assetUrl: 'assets/cosmetics/table/table_skin_01.png'
+        assetUrl: 'assets/cosmetics/table/table_skin_01.webp'
     },
     {
         key: 'table_skin_02',
         name: 'Midnight Carbon',
         description: 'Dark carbon weave with a subtle studio shine.',
-        assetUrl: 'assets/cosmetics/table/table_skin_02.png'
+        assetUrl: 'assets/cosmetics/table/table_skin_02.webp'
     },
     {
         key: 'table_skin_03',
         name: 'Emerald Classic',
         description: 'Rich green felt with clean tournament contrast.',
-        assetUrl: 'assets/cosmetics/table/table_skin_03.png'
+        assetUrl: 'assets/cosmetics/table/table_skin_03.webp'
     },
     {
         key: 'table_skin_04',
         name: 'Ocean Drift',
         description: 'Deep blue surface with soft motion lines.',
-        assetUrl: 'assets/cosmetics/table/table_skin_04.png'
+        assetUrl: 'assets/cosmetics/table/table_skin_04.webp'
     },
     {
         key: 'table_skin_05',
         name: 'Walnut Table',
         description: 'Warm wood grain for a premium club feel.',
-        assetUrl: 'assets/cosmetics/table/table_skin_05.png'
+        assetUrl: 'assets/cosmetics/table/table_skin_05.webp'
     },
     {
         key: 'table_skin_06',
         name: 'Ivory Marble',
         description: 'Light marble with elegant veins and depth.',
-        assetUrl: 'assets/cosmetics/table/table_skin_06.jpg'
+        assetUrl: 'assets/cosmetics/table/table_skin_06.webp'
     },
     {
         key: 'table_skin_07',
-        name: 'Custom Felt 07',
-        description: 'Custom table surface.',
-        assetUrl: 'assets/cosmetics/table/table_skin_07.jpg'
+        name: 'Royal Crimson',
+        description: 'Luxury crimson felt for high stakes players.',
+        assetUrl: 'assets/cosmetics/table/table_skin_07.webp'
     },
     {
         key: 'table_skin_08',
-        name: 'Custom Felt 08',
-        description: 'Custom table surface.',
-        assetUrl: 'assets/cosmetics/table/table_skin_08.jpg'
+        name: 'Obsidian Glass',
+        description: 'Sleek volcanic glass with a neon glow.',
+        assetUrl: 'assets/cosmetics/table/table_skin_08.webp'
     },
     {
         key: 'table_skin_09',
-        name: 'Custom Felt 09',
-        description: 'Custom table surface.',
-        assetUrl: 'assets/cosmetics/table/table_skin_09.jpg'
+        name: 'Golden Oasis',
+        description: 'Shimmering desert sand under premium polished glass.',
+        assetUrl: 'assets/cosmetics/table/table_skin_09.webp'
     }
 ];
 

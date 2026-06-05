@@ -3117,7 +3117,16 @@ body.seat-selection-active #game-screen {
     min-height: 100dvh;
     position: relative;
     overflow: hidden;
-    background: radial-gradient(ellipse at 50% 45%, var(--felt-light) 0%, var(--felt) 50%, var(--felt-dark) 100%);
+    --table-skin-image: none;
+    --table-skin-overlay: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0));
+    background-color: var(--felt-dark);
+    background-image:
+        var(--table-skin-overlay),
+        var(--table-skin-image),
+        radial-gradient(ellipse at 50% 45%, var(--felt-light) 0%, var(--felt) 50%, var(--felt-dark) 100%);
+    background-size: cover, cover, cover;
+    background-position: center, center, center;
+    background-repeat: no-repeat, no-repeat, no-repeat;
 }
 
 .game-header {
@@ -3352,15 +3361,7 @@ body.seat-selection-active #game-screen {
     overflow: hidden;
     position: relative;
     min-height: 0;
-    --table-skin-image: none;
-    background-color: #1c5d3a;
-    background-image:
-        var(--table-skin-image),
-        radial-gradient(circle at top, rgba(255, 255, 255, 0.06), transparent 42%),
-        linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(0, 0, 0, 0.12));
-    background-size: cover, cover, cover;
-    background-position: center, center, center;
-    background-repeat: no-repeat, no-repeat, no-repeat;
+    background: transparent;
 }
 
 .reaction-stage {

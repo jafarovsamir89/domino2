@@ -166,15 +166,15 @@ const DEFAULT_TABLE_SKINS = [
 ] as const;
 const DEFAULT_TABLE_SKIN_KEY = "table_skin_default";
 const TABLE_SKIN_ASSET_EXTENSIONS: Record<string, string> = {
-  table_skin_01: "png",
-  table_skin_02: "png",
-  table_skin_03: "png",
-  table_skin_04: "png",
-  table_skin_05: "png",
-  table_skin_06: "jpg",
-  table_skin_07: "jpg",
-  table_skin_08: "jpg",
-  table_skin_09: "jpg"
+  table_skin_01: "webp",
+  table_skin_02: "webp",
+  table_skin_03: "webp",
+  table_skin_04: "webp",
+  table_skin_05: "webp",
+  table_skin_06: "webp",
+  table_skin_07: "webp",
+  table_skin_08: "webp",
+  table_skin_09: "webp"
 };
 
 const SOLO_MAX_STAKE = 200;
