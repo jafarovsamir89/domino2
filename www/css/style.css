@@ -667,7 +667,7 @@ input, button { font: inherit; }
     box-shadow: none;
     display: flex;
     flex-direction: column;
-    padding: 24px;
+    padding: 0 0 24px 0;
     overflow-y: auto;
 }
 
@@ -1944,8 +1944,9 @@ input, button { font: inherit; }
 
 .coin-shop-intro,
 .cosmetics-shop-intro {
-    text-align: center;
-    margin: 0 0 16px;
+    text-align: left;
+    padding: 0 16px;
+    margin: 8px 0 16px;
 }
 
 .cosmetics-shop-modal {
@@ -5136,10 +5137,10 @@ body.is-reconnecting .hand-container {
 }
 
 .social-hub-tab.is-active {
-    background: linear-gradient(90deg, #102e52, #184c85);
-    color: #ffffff;
-    box-shadow: 0 4px 15px rgba(24, 76, 133, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(88, 162, 255, 0.25);
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #1a1a1a;
+    box-shadow: 0 4px 15px rgba(240, 192, 64, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(240, 192, 64, 0.4);
 }
 
 /* Tab Icon glyphs inside segmented control */
@@ -5160,8 +5161,16 @@ body.is-reconnecting .hand-container {
     background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>');
 }
 
+.social-hub-tab.is-active .mail-icon {
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%231a1a1a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>');
+}
+
 .friends-icon {
     background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>');
+}
+
+.social-hub-tab.is-active .friends-icon {
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%231a1a1a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>');
 }
 
 /* Red Unread Badges on Tabs */
@@ -5544,9 +5553,9 @@ body.is-reconnecting .hand-container {
     border-radius: 14px;
     font-size: 0.72rem;
     font-weight: 700;
-    background: linear-gradient(135deg, #102e52 0%, #184c85 100%);
-    color: #ffffff;
-    border: 1px solid rgba(88, 162, 255, 0.2);
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 100%);
+    color: #1a1a1a;
+    border: 1px solid rgba(240, 192, 64, 0.4);
 }
 
 /* System rewards / news inbox special emoji representation */
@@ -6095,7 +6104,7 @@ body.is-reconnecting .hand-container {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    height: 64px;
+    height: 56px;
     padding: 0 16px;
     background: transparent;
     border-bottom: 1px solid rgba(88, 162, 255, 0.15);
@@ -6129,7 +6138,7 @@ body.is-reconnecting .hand-container {
     box-shadow: none;
     display: flex;
     flex-direction: column;
-    padding: 16px;
+    padding: 0 0 16px 0;
     overflow-y: auto;
     box-sizing: border-box;
 }
@@ -6175,4 +6184,33 @@ body.is-reconnecting .hand-container {
     box-shadow: 0 4px 15px rgba(240, 192, 64, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.2);
     border: 1px solid rgba(240, 192, 64, 0.4);
 }
+
+/* Adjust paddings for content inside screen pages because the outer card wrapper padding is removed */
+#account-modal .account-cabinet,
+#account-modal .account-history,
+#coin-shop-modal .coin-shop-hero,
+#coin-shop-modal .coin-shop-grid,
+#coin-shop-modal #coin-shop-footnote,
+#cosmetics-shop-modal .cosmetics-shop-hero,
+#cosmetics-shop-modal .cosmetics-shop-panel,
+#cosmetics-shop-modal #cosmetics-shop-footnote {
+    padding-left: 24px;
+    padding-right: 24px;
+    box-sizing: border-box;
+}
+
+@media (max-width: 768px) {
+    #account-modal .account-cabinet,
+    #account-modal .account-history,
+    #coin-shop-modal .coin-shop-hero,
+    #coin-shop-modal .coin-shop-grid,
+    #coin-shop-modal #coin-shop-footnote,
+    #cosmetics-shop-modal .cosmetics-shop-hero,
+    #cosmetics-shop-modal .cosmetics-shop-panel,
+    #cosmetics-shop-modal #cosmetics-shop-footnote {
+        padding-left: 16px;
+        padding-right: 16px;
+    }
+}
+
 
