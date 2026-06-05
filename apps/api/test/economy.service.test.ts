@@ -56,7 +56,7 @@ test("getPublicConfig hides the free table from the public stake list", async ()
   assert.equal(config.stakes[0].key, "stake_50");
 });
 
-test("getPublicConfig exposes the new coin shop reward and Google Play packs", async () => {
+test("getPublicConfig exposes the new coin shop reward and packs", async () => {
   const prismaMock = {
     coinEconomyConfig: {
       upsert: async () => ({ key: "default" }),
@@ -105,20 +105,19 @@ test("getPublicConfig exposes the new coin shop reward and Google Play packs", a
   assert.equal(config.coinShop.videoReward.amount, 1000);
   assert.equal(config.coinShop.videoReward.cooldownMinutes, 30);
   assert.equal(config.coinShop.packs.length, 5);
-  assert.deepEqual(
+    assert.deepEqual(
     config.coinShop.packs.map((pack: any) => ({
       key: pack.key,
       coins: pack.coins,
       bonusCoins: pack.bonusCoins,
-      priceLabel: pack.priceLabel,
-      purchaseChannel: pack.purchaseChannel
+      priceLabel: pack.priceLabel
     })),
     [
-      { key: "coin_pack_5000", coins: 5000, bonusCoins: 1000, priceLabel: "$0.99", purchaseChannel: "Google Play" },
-      { key: "coin_pack_12000", coins: 12000, bonusCoins: 2000, priceLabel: "$1.99", purchaseChannel: "Google Play" },
-      { key: "coin_pack_32000", coins: 32000, bonusCoins: 4000, priceLabel: "$4.99", purchaseChannel: "Google Play" },
-      { key: "coin_pack_70000", coins: 70000, bonusCoins: 8000, priceLabel: "$9.99", purchaseChannel: "Google Play" },
-      { key: "coin_pack_200000", coins: 200000, bonusCoins: 20000, priceLabel: "$19.99", purchaseChannel: "Google Play" }
+      { key: "coin_pack_5000", coins: 5000, bonusCoins: 1000, priceLabel: "$0.99" },
+      { key: "coin_pack_12000", coins: 12000, bonusCoins: 2000, priceLabel: "$1.99" },
+      { key: "coin_pack_32000", coins: 32000, bonusCoins: 4000, priceLabel: "$4.99" },
+      { key: "coin_pack_70000", coins: 70000, bonusCoins: 8000, priceLabel: "$9.99" },
+      { key: "coin_pack_200000", coins: 200000, bonusCoins: 20000, priceLabel: "$19.99" }
     ]
   );
 });

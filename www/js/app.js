@@ -2401,18 +2401,14 @@ class DominoGame {
                 body.textContent = this.format('coin-shop-pack-bonus', {
                     bonus: Number(pack.bonusCoins || 0).toLocaleString('en-US')
                 });
-                const meta = document.createElement('div');
-                meta.className = 'coin-pack-meta';
-                meta.textContent = String(pack.purchaseChannel || 'Google Play');
                 const action = document.createElement('button');
                 action.type = 'button';
                 action.className = 'btn btn-menu coin-pack-action';
                 action.disabled = true;
-                action.textContent = String(pack.purchaseChannel || 'Google Play');
+                action.textContent = this.t('coin-shop-pack-buy');
                 card.appendChild(badge);
                 card.appendChild(top);
                 card.appendChild(body);
-                card.appendChild(meta);
                 card.appendChild(action);
                 packsGrid.appendChild(card);
             }
