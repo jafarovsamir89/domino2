@@ -2347,9 +2347,9 @@ class DominoGame {
     }
 
     applyActiveTableSkin() {
-        const selectedKey = this.tableSkinShop?.equippedKey || this.accountProfile?.tableSkinKey || null;
-        const skin = selectedKey === DEFAULT_TABLE_SKIN_KEY ? null : (selectedKey ? this.getTableSkinEntry(selectedKey) : null);
-        this.renderer.setTableSkin(skin?.assetUrl || null);
+        const selectedKey = this.tableSkinShop?.equippedKey || this.accountProfile?.tableSkinKey || DEFAULT_TABLE_SKIN_KEY;
+        const skin = this.getTableSkinEntry(selectedKey) || DEFAULT_TABLE_SKIN;
+        this.renderer.setTableSkin(skin.assetUrl);
     }
 
     async loadTableSkinShop() {
@@ -2600,10 +2600,6 @@ class DominoGame {
         topRow.appendChild(title);
         topRow.appendChild(badge);
 
-        const desc = document.createElement('p');
-        desc.className = 'table-skin-desc';
-        desc.textContent = skin.description;
-
         const footer = document.createElement('div');
         footer.className = 'table-skin-footer';
         const price = document.createElement('div');
@@ -2648,7 +2644,6 @@ class DominoGame {
         footer.appendChild(price);
         footer.appendChild(action);
         body.appendChild(topRow);
-        body.appendChild(desc);
         body.appendChild(footer);
         card.appendChild(preview);
         card.appendChild(body);
