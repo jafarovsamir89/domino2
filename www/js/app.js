@@ -2347,9 +2347,16 @@ class DominoGame {
     }
 
     applyActiveTableSkin() {
-        const selectedKey = this.tableSkinShop?.equippedKey || this.accountProfile?.tableSkinKey || DEFAULT_TABLE_SKIN_KEY;
+        let selectedKey = this.tableSkinShop?.equippedKey || this.accountProfile?.tableSkinKey || DEFAULT_TABLE_SKIN_KEY;
+        if (selectedKey === 'standard' || selectedKey === 'null' || !selectedKey) {
+            selectedKey = DEFAULT_TABLE_SKIN_KEY;
+        }
         const skin = this.getTableSkinEntry(selectedKey) || DEFAULT_TABLE_SKIN;
-        this.renderer.setTableSkin(skin.assetUrl);
+        let url = skin.assetUrl || 'assets/cosmetics/table/table_skin_01.webp';
+        if (url.startsWith('/')) {
+            url = url.substring(1);
+        }
+        this.renderer.setTableSkin(url);
     }
 
     async loadTableSkinShop() {
