@@ -55,7 +55,25 @@ const DEFAULT_TABLE_SKINS = [
         key: 'table_skin_06',
         name: 'Ivory Marble',
         description: 'Light marble with elegant veins and depth.',
-        assetUrl: 'assets/cosmetics/table/table_skin_06.png'
+        assetUrl: 'assets/cosmetics/table/table_skin_06.jpg'
+    },
+    {
+        key: 'table_skin_07',
+        name: 'Custom Felt 07',
+        description: 'Custom table surface.',
+        assetUrl: 'assets/cosmetics/table/table_skin_07.jpg'
+    },
+    {
+        key: 'table_skin_08',
+        name: 'Custom Felt 08',
+        description: 'Custom table surface.',
+        assetUrl: 'assets/cosmetics/table/table_skin_08.jpg'
+    },
+    {
+        key: 'table_skin_09',
+        name: 'Custom Felt 09',
+        description: 'Custom table surface.',
+        assetUrl: 'assets/cosmetics/table/table_skin_09.jpg'
     }
 ];
 

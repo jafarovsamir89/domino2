@@ -144,9 +144,38 @@ const DEFAULT_TABLE_SKINS = [
     name: "Ivory Marble",
     description: "Light marble with elegant veins and depth.",
     sortOrder: 6
+  },
+  {
+    key: "table_skin_07",
+    name: "Custom Felt 07",
+    description: "Custom table surface.",
+    sortOrder: 7
+  },
+  {
+    key: "table_skin_08",
+    name: "Custom Felt 08",
+    description: "Custom table surface.",
+    sortOrder: 8
+  },
+  {
+    key: "table_skin_09",
+    name: "Custom Felt 09",
+    description: "Custom table surface.",
+    sortOrder: 9
   }
 ] as const;
 const DEFAULT_TABLE_SKIN_KEY = "table_skin_default";
+const TABLE_SKIN_ASSET_EXTENSIONS: Record<string, string> = {
+  table_skin_01: "png",
+  table_skin_02: "png",
+  table_skin_03: "png",
+  table_skin_04: "png",
+  table_skin_05: "png",
+  table_skin_06: "jpg",
+  table_skin_07: "jpg",
+  table_skin_08: "jpg",
+  table_skin_09: "jpg"
+};
 
 const SOLO_MAX_STAKE = 200;
 
@@ -197,7 +226,9 @@ function isTableSkinProductKey(productKey: string) {
 }
 
 function getTableSkinAssetUrl(productKey: string) {
-  return `/assets/cosmetics/table/${productKey}.png`;
+  const key = String(productKey || "").trim();
+  const ext = TABLE_SKIN_ASSET_EXTENSIONS[key] || "png";
+  return `/assets/cosmetics/table/${key}.${ext}`;
 }
 
 function startOfUtcDay(date: Date) {

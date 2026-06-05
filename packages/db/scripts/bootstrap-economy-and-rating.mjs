@@ -47,6 +47,21 @@ const DEFAULT_TABLE_SKINS = [
     key: "table_skin_06",
     name: "Ivory Marble",
     description: "Light marble with elegant veins and depth."
+  },
+  {
+    key: "table_skin_07",
+    name: "Custom Felt 07",
+    description: "Custom table surface."
+  },
+  {
+    key: "table_skin_08",
+    name: "Custom Felt 08",
+    description: "Custom table surface."
+  },
+  {
+    key: "table_skin_09",
+    name: "Custom Felt 09",
+    description: "Custom table surface."
   }
 ];
 
