@@ -979,7 +979,7 @@ test("daily bonus flow: visible only when authed, handles status loading and cla
           todayAmount: 350,
           tomorrowAmount: 400,
           maxStreak: 7,
-          nextClaimAt: "2026-06-05T00:00:00.000Z",
+          nextClaimAt: "2026-06-07T10:00:00.000Z",
           lastClaimAt: "2026-06-04T10:00:00.000Z"
         }
       })
