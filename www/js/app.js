@@ -2185,7 +2185,7 @@ class DominoGame {
             this.coinShopStatus = {
                 wallet: this.accountProfile?.wallet || null,
                 coinShop: {
-                    videoReward: { amount: 25, cooldownMinutes: 30, dailyLimit: 6 },
+                    videoReward: { amount: 1000, cooldownMinutes: 30, dailyLimit: 6 },
                     packs: []
                 },
                 error: err?.message || ''
@@ -2314,17 +2314,17 @@ class DominoGame {
         const packsGrid = document.getElementById('coin-shop-packs-grid');
         const note = document.getElementById('coin-shop-footnote');
         const shop = this.coinShopStatus?.coinShop || {
-            videoReward: { amount: 25, cooldownMinutes: 30, dailyLimit: 6 },
+            videoReward: { amount: 1000, cooldownMinutes: 30, dailyLimit: 6 },
             packs: []
         };
         const wallet = this.coinShopStatus?.wallet || this.accountDetails?.wallet || this.accountProfile?.wallet || null;
         const balance = Number(wallet?.balance ?? this.accountProfile?.coins ?? 0);
-        const reward = shop.videoReward || { amount: 25, cooldownMinutes: 30, dailyLimit: 6 };
+        const reward = shop.videoReward || { amount: 1000, cooldownMinutes: 30, dailyLimit: 6 };
         const canClaim = Boolean(this.coinShopStatus?.canClaim);
         const remainingSeconds = Number(this.coinShopStatus?.remainingSeconds || 0);
         const claimsToday = Number(this.coinShopStatus?.claimsToday || 0);
         const dailyLimit = Number(reward.dailyLimit || 6);
-        const amount = Number(reward.amount || 25);
+        const amount = Number(reward.amount || 1000);
         const minutes = Math.max(0, Math.floor(remainingSeconds / 60));
         const seconds = Math.max(0, remainingSeconds % 60);
         const waitText = remainingSeconds > 0
@@ -2401,14 +2401,18 @@ class DominoGame {
                 body.textContent = this.format('coin-shop-pack-bonus', {
                     bonus: Number(pack.bonusCoins || 0).toLocaleString('en-US')
                 });
+                const meta = document.createElement('div');
+                meta.className = 'coin-pack-meta';
+                meta.textContent = String(pack.purchaseChannel || 'Google Play');
                 const action = document.createElement('button');
                 action.type = 'button';
                 action.className = 'btn btn-menu coin-pack-action';
                 action.disabled = true;
-                action.textContent = this.t('coin-shop-pack-soon');
+                action.textContent = String(pack.purchaseChannel || 'Google Play');
                 card.appendChild(badge);
                 card.appendChild(top);
                 card.appendChild(body);
+                card.appendChild(meta);
                 card.appendChild(action);
                 packsGrid.appendChild(card);
             }
@@ -2578,7 +2582,7 @@ class DominoGame {
                 ...(this.coinShopStatus || {}),
                 wallet: result?.wallet || this.coinShopStatus?.wallet || null,
                 coinShop: this.coinShopStatus?.coinShop || result?.coinShop || {
-                    videoReward: { amount: 25, cooldownMinutes: 30, dailyLimit: 6 },
+                    videoReward: { amount: 1000, cooldownMinutes: 30, dailyLimit: 6 },
                     packs: []
                 },
                 claimsToday: Number(result?.claimsToday || 0),

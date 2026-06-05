@@ -94,7 +94,7 @@ function normalizeReserveFailureReason(error: unknown): string {
 }
 
 const DEFAULT_CONFIG_KEY = "default";
-const COIN_SHOP_VIDEO_REWARD_AMOUNT = 25;
+const COIN_SHOP_VIDEO_REWARD_AMOUNT = 1000;
 const COIN_SHOP_VIDEO_COOLDOWN_MINUTES = 30;
 const COIN_SHOP_VIDEO_DAILY_LIMIT = 6;
 
@@ -789,11 +789,11 @@ export class EconomyService {
         dailyLimit: COIN_SHOP_VIDEO_DAILY_LIMIT
       },
       packs: [
-        { key: "coin_pack_100", coins: 100, priceLabel: "0.99 AZN", bonusCoins: 0, isRecommended: false },
-        { key: "coin_pack_250", coins: 250, priceLabel: "1.99 AZN", bonusCoins: 25, isRecommended: true },
-        { key: "coin_pack_600", coins: 600, priceLabel: "4.99 AZN", bonusCoins: 75, isRecommended: false },
-        { key: "coin_pack_1500", coins: 1500, priceLabel: "9.99 AZN", bonusCoins: 250, isRecommended: false },
-        { key: "coin_pack_3500", coins: 3500, priceLabel: "19.99 AZN", bonusCoins: 700, isRecommended: false }
+        { key: "coin_pack_5000", coins: 5000, priceLabel: "$0.99", bonusCoins: 1000, isRecommended: false, purchaseChannel: "Google Play" },
+        { key: "coin_pack_12000", coins: 12000, priceLabel: "$1.99", bonusCoins: 2000, isRecommended: true, purchaseChannel: "Google Play" },
+        { key: "coin_pack_32000", coins: 32000, priceLabel: "$4.99", bonusCoins: 4000, isRecommended: false, purchaseChannel: "Google Play" },
+        { key: "coin_pack_70000", coins: 70000, priceLabel: "$9.99", bonusCoins: 8000, isRecommended: false, purchaseChannel: "Google Play" },
+        { key: "coin_pack_200000", coins: 200000, priceLabel: "$19.99", bonusCoins: 20000, isRecommended: false, purchaseChannel: "Google Play" }
       ]
     };
   }

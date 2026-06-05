@@ -581,9 +581,10 @@ export class AccountClient {
     async getCoinShopStatus() {
         const data = await this.platformRequest("/economy/coin-shop/status");
         return {
+            ...(data || {}),
             wallet: data?.wallet || null,
             coinShop: data?.coinShop || {
-                videoReward: { amount: 25, cooldownMinutes: 30, dailyLimit: 6 },
+                videoReward: { amount: 1000, cooldownMinutes: 30, dailyLimit: 6 },
                 packs: []
             }
         };
@@ -940,4 +941,3 @@ export class AccountClient {
         });
     }
 }
-
