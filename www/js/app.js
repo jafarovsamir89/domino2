@@ -783,10 +783,26 @@ class DominoGame {
         this.closePlayerProfileModal();
         this.closeStartModals();
         this.ensureAccountModalPortal();
+
+        // Track and deactivate current screen
+        const startScreen = document.getElementById('start-screen');
+        const gameScreen = document.getElementById('game-screen');
+        if (startScreen && startScreen.classList.contains('active')) {
+            this.profilePrevScreen = 'start-screen';
+            startScreen.classList.remove('active');
+        } else if (gameScreen && gameScreen.classList.contains('active')) {
+            this.profilePrevScreen = 'game-screen';
+            gameScreen.classList.remove('active');
+        } else if (!this.profilePrevScreen) {
+            this.profilePrevScreen = 'start-screen';
+        }
+
         const modal = document.getElementById('account-modal');
-        if (modal) if (modal.parentElement !== document.body) document.body.appendChild(modal);
-        modal.style.zIndex = '24000';
-        modal.classList.add('active');
+        if (modal) {
+            if (modal.parentElement !== document.body) document.body.appendChild(modal);
+            modal.style.zIndex = '';
+            modal.classList.add('active');
+        }
         this.accountMode = this.accountProfile ? 'profile' : 'login';
         this.renderAccountModal();
         this.syncStartAuthButton();
@@ -2126,6 +2142,14 @@ class DominoGame {
         const modal = document.getElementById('account-modal');
         if (modal) modal.classList.remove('active');
         this.closeGiftPicker();
+
+        // Restore previous screen
+        const prevScreenId = this.profilePrevScreen || 'start-screen';
+        const prevScreen = document.getElementById(prevScreenId);
+        if (prevScreen) {
+            prevScreen.classList.add('active');
+        }
+        this.profilePrevScreen = null;
     }
 
     closeCoinShopModal() {

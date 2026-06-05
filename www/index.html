@@ -305,94 +305,6 @@
             </section>
         </div>
 
-        <div id="account-modal" class="modal-backdrop">
-            <section class="modal-card modal-card-wide">
-                <div class="modal-header account-modal-header">
-                    <div class="account-modal-title-wrap">
-                        <h2 id="account-modal-title" data-i18n="account-profile-title">Hesab</h2>
-                    </div>
-                    <button class="btn btn-menu modal-close-btn account-modal-close-btn" id="account-modal-close" type="button" aria-label="Close">×</button>
-                </div>
-
-                <div class="account-cabinet">
-                    <section class="account-panel account-profile-panel" id="account-profile-panel">
-                        <div class="account-profile-card">
-                            <div class="account-avatar-shell">
-                                <div class="account-avatar" id="account-avatar">D</div>
-                                <button class="icon-btn account-avatar-edit-btn" id="account-edit-avatar-btn" type="button" aria-label="Edit avatar">
-                                    <span class="auth-icon auth-icon-camera" data-auth-icon="camera" aria-hidden="true"></span>
-                                </button>
-                            </div>
-                            <div class="account-profile-copy">
-                                <div class="account-profile-name" id="account-profile-name">Domino Player</div>
-                                <div class="account-profile-meta" id="account-profile-meta" data-i18n="account-guest-profile">Qonaq profil</div>
-                            </div>
-                        </div>
-                        <div class="account-profile-tabs" id="account-profile-tabs">
-                            <button type="button" class="account-profile-tab" data-profile-tab="skins" data-i18n="account-skins-vault">Table skins</button>
-                            <button type="button" class="account-profile-tab" data-profile-tab="gifts" data-i18n="account-gift-vault">Gift vault</button>
-                        </div>
-                        <div class="account-stats-grid" id="account-stats-grid">
-                            <div class="account-stat-card">
-                                <span data-i18n="account-rating">Reyting</span>
-                                <strong id="account-rating-value">1000</strong>
-                            </div>
-                            <div class="account-stat-card">
-                                <span data-i18n="account-coins">Coin</span>
-                                <strong id="account-coins-value">0</strong>
-                            </div>
-                            <div class="account-stat-card">
-                                <span data-i18n="account-matches">Oyunlar</span>
-                                <strong id="account-matches-value">0</strong>
-                            </div>
-                            <div class="account-stat-card">
-                                <span data-i18n="account-wins">Qələbələr</span>
-                                <strong id="account-wins-value">0</strong>
-                            </div>
-                        </div>
-                        <div class="account-gifts is-hidden" id="account-gifts-panel">
-                            <div class="section-kicker" data-i18n="account-gift-vault">Gift vault</div>
-                            <div id="account-gifts-list" class="gift-inventory-grid"></div>
-                        </div>
-                        <div class="account-skins is-hidden" id="account-skins-panel">
-                            <div class="section-kicker" data-i18n="account-skins-vault">Table skins</div>
-                            <p class="modal-desc" data-i18n="account-skins-desc">Owned table skins appear here. Pick one to apply it to the table.</p>
-                            <div id="account-skins-list" class="table-skin-grid account-skins-grid"></div>
-                        </div>
-                        <div class="settings-grid compact-grid">
-                            <div class="settings-group field-span-2">
-                                <label data-i18n="account-name">Ad</label>
-                                <input type="text" id="account-display-name-input" data-i18n="placeholder-player-name" maxlength="24" placeholder="Player">
-                            </div>
-                        </div>
-                    </section>
-
-                    <section class="account-panel account-auth-panel" id="account-auth-panel">
-                        <div class="account-auth-hero">
-                            <p class="section-kicker" data-i18n="account-auth-kicker">Giriş</p>
-                            <h3 data-i18n="account-auth-title">Hesaba daxil ol</h3>
-                            <p class="account-auth-copy" data-i18n="account-auth-desc">Reytinqin, oyun tarixçən və Google girişi üçün hesabına daxil ol.</p>
-                        </div>
-
-                        <div class="account-auth-actions">
-                            <button class="btn btn-social" id="google-login-btn" type="button" data-i18n="account-google">Google ilə giriş</button>
-                            <button class="btn btn-social" id="apple-login-btn" type="button" data-i18n="account-apple">Apple ID ilə giriş</button>
-                            <div id="account-status" class="room-summary"></div>
-                        </div>
-                        <p class="account-legal-copy">
-                            <span data-i18n="account-legal-prefix">Davam etməklə siz</span>
-                            <a href="terms.html" target="_blank" rel="noopener noreferrer" data-i18n="account-legal-link">İstifadəçi razılaşmasını</a>
-                            <span data-i18n="account-legal-suffix">qəbul edirsiniz.</span>
-                        </p>
-                    </section>
-                </div>
-
-                <div class="account-history is-hidden" id="account-history-panel">
-                    <div class="section-kicker" data-i18n="account-history">Son oyunlar</div>
-                    <div id="account-history-list" class="room-player-list"></div>
-                </div>
-            </section>
-        </div>
 
         <div id="leaderboard-modal" class="modal-backdrop">
             <section class="modal-card modal-card-wide leaderboard-modal">
@@ -547,6 +459,95 @@
                 <p id="cosmetics-shop-footnote" class="account-legal-copy" data-i18n="cosmetics-shop-footnote">Cosmetics are bought with coins, but stay separate from coin packs.</p>
             </section>
         </div>
+    </div>
+
+    <div id="account-modal" class="screen">
+        <section class="modal-card modal-card-wide">
+            <div class="modal-header account-modal-header">
+                <div class="account-modal-title-wrap">
+                    <h2 id="account-modal-title" data-i18n="account-profile-title">Hesab</h2>
+                </div>
+                <button class="btn btn-menu modal-close-btn account-modal-close-btn" id="account-modal-close" type="button" aria-label="Close">×</button>
+            </div>
+
+            <div class="account-cabinet">
+                <section class="account-panel account-profile-panel" id="account-profile-panel">
+                    <div class="account-profile-card">
+                        <div class="account-avatar-shell">
+                            <div class="account-avatar" id="account-avatar">D</div>
+                            <button class="icon-btn account-avatar-edit-btn" id="account-edit-avatar-btn" type="button" aria-label="Edit avatar">
+                                <span class="auth-icon auth-icon-camera" data-auth-icon="camera" aria-hidden="true"></span>
+                            </button>
+                        </div>
+                        <div class="account-profile-copy">
+                            <div class="account-profile-name" id="account-profile-name">Domino Player</div>
+                            <div class="account-profile-meta" id="account-profile-meta" data-i18n="account-guest-profile">Qonaq profil</div>
+                        </div>
+                    </div>
+                    <div class="account-profile-tabs" id="account-profile-tabs">
+                        <button type="button" class="account-profile-tab" data-profile-tab="skins" data-i18n="account-skins-vault">Table skins</button>
+                        <button type="button" class="account-profile-tab" data-profile-tab="gifts" data-i18n="account-gift-vault">Gift vault</button>
+                    </div>
+                    <div class="account-stats-grid" id="account-stats-grid">
+                        <div class="account-stat-card">
+                            <span data-i18n="account-rating">Reyting</span>
+                            <strong id="account-rating-value">1000</strong>
+                        </div>
+                        <div class="account-stat-card">
+                            <span data-i18n="account-coins">Coin</span>
+                            <strong id="account-coins-value">0</strong>
+                        </div>
+                        <div class="account-stat-card">
+                            <span data-i18n="account-matches">Oyunlar</span>
+                            <strong id="account-matches-value">0</strong>
+                        </div>
+                        <div class="account-stat-card">
+                            <span data-i18n="account-wins">Qələbələr</span>
+                            <strong id="account-wins-value">0</strong>
+                        </div>
+                    </div>
+                    <div class="account-gifts is-hidden" id="account-gifts-panel">
+                        <div class="section-kicker" data-i18n="account-gift-vault">Gift vault</div>
+                        <div id="account-gifts-list" class="gift-inventory-grid"></div>
+                    </div>
+                    <div class="account-skins is-hidden" id="account-skins-panel">
+                        <div class="section-kicker" data-i18n="account-skins-vault">Table skins</div>
+                        <p class="modal-desc" data-i18n="account-skins-desc">Owned table skins appear here. Pick one to apply it to the table.</p>
+                        <div id="account-skins-list" class="table-skin-grid account-skins-grid"></div>
+                    </div>
+                    <div class="settings-grid compact-grid">
+                        <div class="settings-group field-span-2">
+                            <label data-i18n="account-name">Ad</label>
+                            <input type="text" id="account-display-name-input" data-i18n="placeholder-player-name" maxlength="24" placeholder="Player">
+                        </div>
+                    </div>
+                </section>
+
+                <section class="account-panel account-auth-panel" id="account-auth-panel">
+                    <div class="account-auth-hero">
+                        <p class="section-kicker" data-i18n="account-auth-kicker">Giriş</p>
+                        <h3 data-i18n="account-auth-title">Hesaba daxil ol</h3>
+                        <p class="account-auth-copy" data-i18n="account-auth-desc">Reytinqin, oyun tarixçən və Google girişi üçün hesabına daxil ol.</p>
+                    </div>
+
+                    <div class="account-auth-actions">
+                        <button class="btn btn-social" id="google-login-btn" type="button" data-i18n="account-google">Google ilə giriş</button>
+                        <button class="btn btn-social" id="apple-login-btn" type="button" data-i18n="account-apple">Apple ID ilə giriş</button>
+                        <div id="account-status" class="room-summary"></div>
+                    </div>
+                    <p class="account-legal-copy">
+                        <span data-i18n="account-legal-prefix">Davam etməklə siz</span>
+                        <a href="terms.html" target="_blank" rel="noopener noreferrer" data-i18n="account-legal-link">İstifadəçi razılaşmasını</a>
+                        <span data-i18n="account-legal-suffix">qəbul edirsiniz.</span>
+                    </p>
+                </section>
+            </div>
+
+            <div class="account-history is-hidden" id="account-history-panel">
+                <div class="section-kicker" data-i18n="account-history">Son oyunlar</div>
+                <div id="account-history-list" class="room-player-list"></div>
+            </div>
+        </section>
     </div>
 
     <div id="game-screen" class="screen">
