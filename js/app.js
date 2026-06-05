@@ -803,6 +803,10 @@ class DominoGame {
     }
 
     async openAccountModal(options = {}) {
+        if (!this.hasAuthenticatedAccount()) {
+            this.syncStartAuthGate();
+            return;
+        }
         this.closePlayerProfileModal();
         this.closeStartModals();
         const modal = document.getElementById('account-modal');
@@ -810,7 +814,7 @@ class DominoGame {
         this.accountReturnScreenId = String(options?.returnTo || '').trim() || this.getCurrentPrimaryScreenId();
         this.hidePrimaryScreens();
         modal.classList.add('active');
-        this.accountMode = this.hasAuthenticatedAccount() ? 'profile' : 'login';
+        this.accountMode = this.accountProfile ? 'profile' : 'login';
         this.renderAccountModal();
         this.syncStartAuthButton();
         await this.loadAccountProfile();
@@ -4656,7 +4660,6 @@ class DominoGame {
         const profilePanel = document.getElementById('account-profile-panel');
         const authPanel = document.getElementById('account-auth-panel');
         const title = document.getElementById('account-modal-title');
-        const pageStatus = document.getElementById('account-page-status');
         const historyPanel = document.getElementById('account-history-panel');
         const avatar = document.getElementById('account-avatar');
         const avatarEditButton = document.getElementById('account-edit-avatar-btn');
@@ -4813,11 +4816,6 @@ class DominoGame {
             ? this.t('account-guest-profile')
             : this.t('account-guest-profile');
         if (title) title.textContent = this.t('account-profile-title');
-        if (pageStatus) {
-            pageStatus.textContent = isAuthenticated
-                ? this.t('account-profile-loading')
-                : this.t('account-login-required');
-        }
         if (ratingValue) ratingValue.textContent = String(profile?.rating ?? 1000);
         if (winsValue) winsValue.textContent = String(profile?.wins ?? 0);
         if (matchesValue) matchesValue.textContent = String(profile?.matchesPlayed ?? 0);

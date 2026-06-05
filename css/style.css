@@ -679,11 +679,6 @@ input, button { font: inherit; }
     line-height: 1.1;
 }
 
-.account-page-status {
-    margin: 8px 0 0;
-    max-width: 42rem;
-}
-
 .account-page-shell .account-cabinet {
     margin-top: 0;
 }
