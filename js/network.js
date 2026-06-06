@@ -1,4 +1,4 @@
-﻿// js/network.js
+// js/network.js
 // Networking using Colyseus 0.17
 
 function isDebugLoggingEnabled() {
@@ -159,8 +159,8 @@ class NetworkManager {
         } catch {}
     }
 
-    hostGame(onReady, onError) {
-        this.connect("create", onReady, onError);
+    hostGame(onReady, onError, extraOptions = {}) {
+        this.connect("create", onReady, onError, null, extraOptions);
     }
 
     joinGame(code, onReady, onError) {
@@ -243,7 +243,7 @@ class NetworkManager {
         }
     }
 
-    async connect(mode, onReady, onError, roomId = null) {
+    async connect(mode, onReady, onError, roomId = null, extraOptions = {}) {
         const initialized = await this.initClient();
         if (!initialized) {
             if (onError) onError('Colyseus not loaded');
@@ -252,7 +252,7 @@ class NetworkManager {
         try {
             this.manualLeaveRequested = false;
             this.clearReconnectTimer();
-            const options = this.buildJoinOptions();
+            const options = this.buildJoinOptions(extraOptions);
 
             debugLog("[CLIENT_DEBUG] network:connect", {
                 mode,

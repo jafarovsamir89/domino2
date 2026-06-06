@@ -54,6 +54,10 @@ input, button { font: inherit; }
     justify-content: center;
 }
 
+#menu-screen {
+    z-index: 80000;
+}
+
 #start-screen {
     position: relative;
     align-items: center;
@@ -576,7 +580,7 @@ input, button { font: inherit; }
     padding: 18px;
     background: rgba(4, 8, 13, 0.72);
     backdrop-filter: blur(10px);
-    z-index: 8000;
+    z-index: 90000;
 }
 
 #account-modal.screen,
@@ -620,14 +624,14 @@ input, button { font: inherit; }
 #friends-modal,
 #social-center-modal,
 #leaderboard-modal {
-    z-index: 9000;
+    z-index: 90000;
 }
 
 #player-profile-modal.active,
 #friends-modal.active,
 #social-center-modal.active,
 #leaderboard-modal.active {
-    z-index: 24000;
+    z-index: 90000;
 }
 
 #player-profile-modal .modal-card,
@@ -4758,7 +4762,7 @@ body.seat-selection-active #game-screen {
     letter-spacing: 0.02em;
     box-shadow: 0 14px 34px rgba(0, 0, 0, 0.28);
     border: 1px solid rgba(255, 255, 255, 0.12);
-    z-index: 3000;
+    z-index: 99999;
     pointer-events: none;
     opacity: 0;
     transition: opacity 180ms ease, transform 180ms ease;
@@ -6210,6 +6214,19 @@ body.is-reconnecting .hand-container {
     #cosmetics-shop-modal #cosmetics-shop-footnote {
         padding-left: 16px;
         padding-right: 16px;
+    }
+}
+
+/* Mobile vertical overflow and z-index fixes */
+@media (max-height: 680px) {
+    .modal-backdrop {
+        align-items: flex-start;
+        overflow-y: auto;
+    }
+    .modal-card {
+        max-height: none;
+        margin-top: 20px;
+        margin-bottom: 20px;
     }
 }
 

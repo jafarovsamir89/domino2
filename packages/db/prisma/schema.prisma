@@ -544,6 +544,8 @@ model PlayerBan {
   player          Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
   createdByUser   User?    @relation("BanCreatedBy", fields: [createdByUserId], references: [id], onDelete: SetNull)
   revokedByUser   User?    @relation("BanRevokedBy", fields: [revokedByUserId], references: [id], onDelete: SetNull)
+
+  @@index([playerId])
 }
 
 model PlayerReport {
@@ -560,6 +562,10 @@ model PlayerReport {
   target           Player       @relation("ReportTarget", fields: [targetPlayerId], references: [id], onDelete: Cascade)
   match            Match?       @relation(fields: [matchId], references: [id], onDelete: SetNull)
   resolvedByUser   User?        @relation("ReportResolvedBy", fields: [resolvedByUserId], references: [id], onDelete: SetNull)
+
+  @@index([targetPlayerId, status])
+  @@index([reporterPlayerId])
+  @@index([matchId])
 }
 
 model AdminAuditLog {
@@ -628,6 +634,10 @@ model Order {
   product     CatalogProduct @relation(fields: [productId], references: [id], onDelete: Cascade)
   price       CatalogPrice  @relation(fields: [priceId], references: [id], onDelete: Cascade)
   payments    Payment[]
+
+  @@index([playerId, status])
+  @@index([productId])
+  @@index([priceId])
 }
 
 model Payment {
@@ -641,6 +651,8 @@ model Payment {
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @updatedAt
   order             Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId, status])
 }
 
 model PaymentEvent {

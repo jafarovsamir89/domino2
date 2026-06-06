@@ -626,15 +626,15 @@
         </div>
     </div>
 
-    <script src="js/vendor/colyseus.js"></script>
-    <script src="js/vendor/gsap.min.js"></script>
-    <script src="shared/domino-model-core.cjs"></script>
-    <script src="shared/domino-board-core.cjs"></script>
-    <script src="js/network.js"></script>
-    <script type="module" src="js/app.js?v=authfix-7"></script>
+    <script src="js/vendor/colyseus.js" defer></script>
+    <script src="js/vendor/gsap.min.js" defer></script>
+    <script src="shared/domino-model-core.cjs" defer></script>
+    <script src="shared/domino-board-core.cjs" defer></script>
+    <script src="js/network.js" defer></script>
+    <script type="module" src="js/app.js?v=authfix-7" defer></script>
     <script>
         if ("serviceWorker" in navigator) {
-            navigator.serviceWorker.register("sw.js", { updateViaCache: "none" }).then((registration) => {
+            navigator.serviceWorker.register("sw.js").then((registration) => {
                 registration.update?.();
             }).catch(() => {});
         }
