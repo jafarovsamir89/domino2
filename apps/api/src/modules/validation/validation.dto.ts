@@ -25,7 +25,8 @@ export class UpdateProfileNameDto {
 export class UpdateProfileAvatarDto {
   @IsOptional()
   @Transform(({ value }: { value: unknown }) => (value === null ? undefined : value))
-  @IsUrl({ require_tld: false }, { message: "avatarUrl must be a valid URL" })
+  @IsString()
+  @MaxLength(150000)
   avatarUrl?: string | null;
 }
 

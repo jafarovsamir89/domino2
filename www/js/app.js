@@ -3623,12 +3623,6 @@ class DominoGame {
                     <div class="settings-group field-span-2">
                         <input type="file" id="account-avatar-modal-input" accept="image/*" class="is-hidden">
                         <button class="btn btn-menu" id="account-avatar-modal-pick" type="button" data-i18n="account-avatar-pick"></button>
-                        <button class="btn btn-icon btn-menu" id="account-avatar-modal-reset" type="button">
-                            <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none">
-                                <path d="M12 5a7 7 0 1 1-6.06 10.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-                                <path d="M8 5H5v3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                            </svg>
-                        </button>
                     </div>
                     <div class="modal-footer modal-footer-split field-span-2">
                         <button class="btn btn-primary btn-large modal-primary-btn" id="account-avatar-modal-save" type="button" data-i18n="account-avatar-save"></button>
@@ -3638,19 +3632,8 @@ class DominoGame {
             </section>`;
         document.body.appendChild(modal);
         this.setLanguage(this.currentLang);
-        const resetBtn = document.getElementById('account-avatar-modal-reset');
-        if (resetBtn) {
-            const resetLabel = this.t('account-avatar-reset');
-            resetBtn.setAttribute('aria-label', resetLabel);
-            resetBtn.setAttribute('title', resetLabel);
-        }
         document.getElementById('account-avatar-modal-pick')?.addEventListener('click', () => {
             document.getElementById('account-avatar-modal-input')?.click();
-        });
-        document.getElementById('account-avatar-modal-reset')?.addEventListener('click', () => {
-            this.pendingAvatarMode = 'clear';
-            this.pendingAvatarDataUrl = null;
-            this.syncAvatarModalPreview();
         });
         document.getElementById('account-avatar-modal-save')?.addEventListener('click', () => {
             void this.saveAccountAvatar();
