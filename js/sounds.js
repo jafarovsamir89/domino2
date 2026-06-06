@@ -155,3 +155,105 @@ export function sndGosha() {
     sndScore();
     setTimeout(() => playClack(200, 0.7, 0.4, 0.12), 80);
 }
+
+// Background Music Controller
+let currentAudio = null;
+let currentPlaylist = [];
+let currentPlaylistIndex = -1;
+let isMusicMuted = false;
+let currentMusicMode = null; // 'menu' or 'game'
+
+// Load state from localStorage if available
+try {
+    isMusicMuted = localStorage.getItem('domino_music_muted') === 'true';
+} catch (e) {}
+
+export function isMuted() {
+    return isMusicMuted;
+}
+
+export function startMenuMusic() {
+    if (currentMusicMode === 'menu' && currentAudio && !currentAudio.paused) {
+        return;
+    }
+    stopMusic();
+    currentMusicMode = 'menu';
+    
+    currentAudio = new Audio('assets/sounds/menu music/Majestic Menu Lounge.mp3');
+    currentAudio.loop = true;
+    currentAudio.volume = isMusicMuted ? 0 : 0.15;
+    
+    currentAudio.play().catch(err => {
+        console.warn('Menu music autoplay prevented, waiting for interaction', err);
+    });
+}
+
+function playGameTrack() {
+    if (currentPlaylistIndex < 0 || currentPlaylistIndex >= currentPlaylist.length) {
+        currentPlaylistIndex = 0;
+    }
+    const src = currentPlaylist[currentPlaylistIndex];
+    if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.src = src;
+    } else {
+        currentAudio = new Audio(src);
+    }
+    currentAudio.loop = false;
+    currentAudio.volume = isMusicMuted ? 0 : 0.15;
+    
+    currentAudio.onended = () => {
+        if (currentMusicMode === 'game') {
+            currentPlaylistIndex = (currentPlaylistIndex + 1) % currentPlaylist.length;
+            playGameTrack();
+        }
+    };
+    
+    currentAudio.play().catch(err => {
+        console.warn('Game music autoplay prevented, waiting for interaction', err);
+    });
+}
+
+export function startGameMusic() {
+    if (currentMusicMode === 'game' && currentAudio && !currentAudio.paused) {
+        return;
+    }
+    stopMusic();
+    currentMusicMode = 'game';
+    
+    currentPlaylist = [
+        'assets/sounds/playlist game/Baku Breeze Lounge.mp3',
+        'assets/sounds/playlist game/Legacy of the Tiles.mp3'
+    ];
+    currentPlaylistIndex = 0;
+    
+    playGameTrack();
+}
+
+export function nextTrack() {
+    if (currentMusicMode !== 'game' || currentPlaylist.length === 0) return;
+    currentPlaylistIndex = (currentPlaylistIndex + 1) % currentPlaylist.length;
+    playGameTrack();
+}
+
+export function stopMusic() {
+    if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.onended = null;
+        currentAudio = null;
+    }
+    currentMusicMode = null;
+}
+
+export function toggleMute() {
+    isMusicMuted = !isMusicMuted;
+    try {
+        localStorage.setItem('domino_music_muted', String(isMusicMuted));
+    } catch (e) {}
+    
+    if (currentAudio) {
+        currentAudio.volume = isMusicMuted ? 0 : 0.15;
+    }
+    return isMusicMuted;
+}
+

@@ -5,7 +5,7 @@ import { Renderer } from './renderer.js';
 import { translations } from './translations.js';
 import { AccountClient } from './account.js';
 import { VoiceChatManager } from './voice.js';
-import { sndPlace, sndScore, sndDraw, sndPass, sndWin, sndGosha } from './sounds.js';
+import { sndPlace, sndScore, sndDraw, sndPass, sndWin, sndGosha, startMenuMusic, startGameMusic, nextTrack, toggleMute, stopMusic } from './sounds.js';
 // NetworkManager is loaded as global script
 
 const TARGET=365, MAX_R=3, DLOSS=255, IWIN=35;
@@ -627,6 +627,7 @@ class DominoGame {
         if (editAvatarBtn) editAvatarBtn.addEventListener('click', () => this.openAvatarEditModal());
         if (logoutAccountBtn) logoutAccountBtn.addEventListener('click', async () => {
             await this.account.logout();
+            stopMusic();
             this.accountProfile = null;
             this.accountDetails = null;
             this.accountOnline = false;
@@ -701,6 +702,7 @@ class DominoGame {
             void this.loadTableSkinShop();
             void this.loadGiftHub();
             void this.loadDailyBonusStatus();
+            startMenuMusic();
         } else {
             this.tableSkinShop = null;
         }
@@ -3136,6 +3138,7 @@ class DominoGame {
             startScreen.classList.remove('auth-required');
         }
         this.loadDailyBonusStatus();
+        startMenuMusic();
     }
 
     syncAccountUiChrome() {
@@ -6710,6 +6713,7 @@ class DominoGame {
                 this.showStartModal(null);
                 document.getElementById('start-screen')?.classList.remove('active');
                 document.getElementById('game-screen')?.classList.add('active');
+                startGameMusic();
                 this.syncMultiplayerOptions();
                 this.refreshResumeBanner(snapshot);
                 return true;
@@ -6772,6 +6776,7 @@ class DominoGame {
             this.myHand = this.hands[this.humanPlayerIndex] || null;
             document.getElementById('start-screen')?.classList.remove('active');
             document.getElementById('game-screen')?.classList.add('active');
+            startGameMusic();
             this.syncSoloOptions();
             this.renderState();
             if (this.gameActive && this.turnDeadlineAt > 0) {
@@ -8578,6 +8583,12 @@ class DominoGame {
             });
         }
         document.getElementById('menu-resume')?.addEventListener('click', () => document.getElementById('menu-screen').classList.remove('active'));
+        document.getElementById('menu-next-track')?.addEventListener('click', () => {
+            nextTrack();
+        });
+        document.getElementById('menu-toggle-mute')?.addEventListener('click', () => {
+            toggleMute();
+        });
         document.getElementById('menu-quit')?.addEventListener('click', async () => {
             document.getElementById('menu-screen').classList.remove('active');
             const shouldQuit = await this.confirmQuitCurrentMatch();
@@ -8639,6 +8650,11 @@ class DominoGame {
         this.disconnectEconomyApplied = false;
         document.getElementById('game-screen').classList.remove('active');
         document.getElementById('start-screen').classList.add('active');
+        if (this.hasAuthenticatedAccount()) {
+            startMenuMusic();
+        } else {
+            stopMusic();
+        }
         this.showStartModal(null);
         this.resetMultiplayerPanels(false);
     }
@@ -8648,6 +8664,7 @@ class DominoGame {
         this.clearNextDealAdvanceTimeout();
         document.getElementById('start-screen').classList.remove('active');
         document.getElementById('game-screen').classList.add('active');
+        startGameMusic();
         this.playerName = this.sanitizeName(this.playerName);
 
         // In multiplayer, server controls the game - just wait for state updates
