@@ -205,7 +205,7 @@ test("maybeAutoStartGame does not rely on clients length when humans are already
     assert.equal(room.countReadyHumanPlayers(), 2);
 });
 
-test("updateSchemaState does not mutate player handCount fields", async () => {
+test("updateSchemaState syncs player handCount fields from live hands", async () => {
     const room = createRoom({ totalPlayers: 2, aiCount: 0, isTeamMode: false });
     await joinHuman(room, "host", "Host");
     const guest = await joinHuman(room, "guest", "Guest");
@@ -217,13 +217,10 @@ test("updateSchemaState does not mutate player handCount fields", async () => {
     room.boneyard = [{ id: 4, a: 3, b: 3 }];
     room.internalBoard = { toJSON: () => ({ nodes: [] }) };
 
-    const beforeHost = room.state.players.get("host").handCount;
-    const beforeGuest = room.state.players.get("guest").handCount;
-
     room.updateSchemaState({ includeBoardJson: true });
 
-    assert.equal(room.state.players.get("host").handCount, beforeHost);
-    assert.equal(room.state.players.get("guest").handCount, beforeGuest);
+    assert.equal(room.state.players.get("host").handCount, 1);
+    assert.equal(room.state.players.get("guest").handCount, 2);
     assert.equal(guest.messages.length, 0);
 });
 

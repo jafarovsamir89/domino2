@@ -221,8 +221,7 @@ export class KonvaBoardRenderer {
             height,
             pixelRatio
         });
-        const LayerCtor = Konva.FastLayer || Konva.Layer;
-        this.layer = new LayerCtor({ listening: false });
+        this.layer = new Konva.Layer({ listening: false });
         this.stage.add(this.layer);
 
         if (window.ResizeObserver) {
@@ -890,21 +889,13 @@ export class KonvaBoardRenderer {
         const sourceHeight = Math.max(1, fallbackSourceRect.height || targetRect.height);
         const scaleX = sourceWidth / Math.max(1, targetRect.width);
         const scaleY = sourceHeight / Math.max(1, targetRect.height);
-        const ghost = entry.group.clone({
-            listening: false,
-            opacity: 1
-        });
-        ghost.visible(true);
-        ghost.setAttrs({
-            x: sourceLocal.x,
-            y: sourceLocal.y,
-            scaleX,
-            scaleY,
-            rotation: 0,
-            opacity: 1
-        });
-        this.overlayGroup.add(ghost);
-        entry.group.visible(false);
+        const finalX = targetLocal.x;
+        const finalY = targetLocal.y;
+        entry.group.visible(true);
+        entry.group.position({ x: sourceLocal.x, y: sourceLocal.y });
+        entry.group.opacity(0.18);
+        entry.group.scale({ x: scaleX, y: scaleY });
+        this.layer.batchDraw();
 
         const distance = Math.hypot(targetLocal.x - sourceLocal.x, targetLocal.y - sourceLocal.y);
         const duration = Math.min(0.42, Math.max(0.26, distance / 900));
@@ -914,33 +905,36 @@ export class KonvaBoardRenderer {
 
         return new Promise((resolve) => {
             const finish = () => {
-                try { ghost.destroy(); } catch {}
                 this.revealTile(tileId);
                 resolve();
             };
-            const tween = ghost.to({
-                x: targetLocal.x,
-                y: targetLocal.y - lift,
+            const tween = new Konva.Tween({
+                node: entry.group,
+                x: finalX,
+                y: finalY - lift,
                 scaleX: 1,
                 scaleY: 1,
                 rotation: Math.max(-4, Math.min(4, -direction * 2.2)),
                 duration: duration * 0.6,
-                easing: Konva.Easings?.EaseInOut || undefined,
+                easing: Konva.Easings?.EaseInOut || Konva.Easings?.EaseOut,
                 onFinish: () => {
-                    ghost.to({
-                        x: targetLocal.x,
-                        y: targetLocal.y,
+                    new Konva.Tween({
+                        node: entry.group,
+                        x: finalX,
+                        y: finalY,
                         scaleX: 1,
                         scaleY: 1,
                         rotation: targetRotation,
                         duration: duration * 0.4,
-                        easing: Konva.Easings?.EaseOut || undefined,
+                        easing: Konva.Easings?.EaseOut || Konva.Easings?.EaseInOut,
                         onFinish: finish
-                    });
+                    }).play();
                 }
             });
             if (!tween) {
                 finish();
+            } else {
+                tween.play();
             }
         });
     }

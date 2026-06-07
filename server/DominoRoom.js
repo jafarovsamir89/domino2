@@ -1281,6 +1281,7 @@ class DominoRoom extends Room {
     }
 
     updateSchemaState({ includeBoardJson = false } = {}) {
+        this.syncPublicPlayerStatsToState();
         this.state.boneyardCount = this.boneyard.length;
         if (includeBoardJson) {
             this.state.boardJson = JSON.stringify(this.internalBoard);
@@ -1319,9 +1320,6 @@ class DominoRoom extends Room {
     buildPlayerSyncRows() {
         return Array.from(this.state.playerOrder || []).map((sessionId, index) => {
             const player = this.state.players.get(sessionId) || {};
-            const handCount = Array.isArray(this.hands?.[index])
-                ? this.hands[index].length
-                : Number(player.handCount || 0);
             return {
                 sessionId,
                 index,
@@ -1330,7 +1328,7 @@ class DominoRoom extends Room {
                 avatarUrl: player.avatarUrl || "",
                 score: Number(player.score || 0),
                 roundWins: Number(player.roundWins || 0),
-                handCount,
+                handCount: Number(player.handCount || 0),
                 isConnected: Boolean(player.isConnected),
                 isBot: Boolean(player.isBot),
                 seatIndex: Number.isInteger(Number(player.seatIndex)) ? Number(player.seatIndex) : -1
@@ -1341,15 +1339,24 @@ class DominoRoom extends Room {
     buildPublicPlayerStats() {
         return Array.from(this.state.playerOrder || []).map((sessionId, index) => {
             const player = this.state.players.get(sessionId) || {};
-            const handCount = Array.isArray(this.hands?.[index])
-                ? this.hands[index].length
-                : Number(player.handCount || 0);
             return {
                 score: Number(player.score || 0),
                 roundWins: Number(player.roundWins || 0),
-                handCount
+                handCount: Number(player.handCount || 0)
             };
         });
+    }
+
+    syncPublicPlayerStatsToState() {
+        const order = Array.isArray(this.state.playerOrder) ? this.state.playerOrder : [];
+        for (let i = 0; i < order.length; i++) {
+            const sessionId = order[i];
+            const player = this.state.players.get(sessionId);
+            if (!player) continue;
+            player.score = Number(player.score || 0);
+            player.roundWins = Number(player.roundWins || 0);
+            player.handCount = Array.isArray(this.hands?.[i]) ? this.hands[i].length : Number(player.handCount || 0);
+        }
     }
 
     buildFullStatePayloadForClient(client) {
@@ -1431,6 +1438,8 @@ class DominoRoom extends Room {
             action: String(base.action || "").trim(),
             actorIndex: Number.isInteger(Number(base.actorIndex)) ? Number(base.actorIndex) : -1,
             boardDelta: base.boardDelta || null,
+            scoreDelta: Number(base.scoreDelta || 0),
+            scorePlayerIndex: Number.isInteger(Number(base.scorePlayerIndex)) ? Number(base.scorePlayerIndex) : -1,
             isTeamMode: Boolean(this.state.isTeamMode),
             currentPlayerIndex: Number(this.state.currentPlayerIndex || 0),
             boneyardCount: this.boneyard.length,
@@ -1478,6 +1487,7 @@ class DominoRoom extends Room {
     }
 
     broadcastRoomState() {
+        this.syncPublicPlayerStatsToState();
         setRoomGameActive(this.roomId, this.state.gameActive);
         const players = buildRoomStatePlayers({
             playerOrder: this.state.playerOrder,
@@ -1874,14 +1884,32 @@ class DominoRoom extends Room {
 
         const wasEmpty = this.internalBoard.isEmpty;
         let score = 0;
+        let boardDelta = null;
         if (wasEmpty) {
             this.internalBoard.placeFirst(tile);
             score = getOpeningPlayScore(tile, this.getOpeningScoreContext(pi));
+            boardDelta = {
+                kind: "first",
+                tile: { a: tile.a, b: tile.b, id: tile.id }
+            };
         } else {
             score = this.internalBoard.placeTile(tile, openEndIndex);
+            boardDelta = {
+                kind: "play",
+                tile: { a: tile.a, b: tile.b, id: tile.id },
+                openEndIndex
+            };
         }
 
-        if (score > 0) this.addScore(pi, score);
+        const scoreDelta = score > 0 ? this.addScore(pi, score, { broadcast: false }) : 0;
+        this.bumpTurnVersion();
+        this.broadcastGameDelta({
+            action: "play",
+            actorIndex: pi,
+            boardDelta,
+            scoreDelta,
+            scorePlayerIndex: scoreDelta > 0 ? pi : -1
+        });
 
         if (this.instantWinEnabled && score >= IWIN) {
             this.endRound(pi, true);
@@ -1924,6 +1952,10 @@ class DominoRoom extends Room {
             this.broadcast("msg", { text: `${actorName} drew a tile`, time: 1500 });
         }
         this.bumpTurnVersion();
+        this.broadcastGameDelta({
+            action: "draw",
+            actorIndex: pi
+        });
         if (meta.client) {
             this.sendActionAck(meta.client, {
                 accepted: true,
@@ -1955,6 +1987,10 @@ class DominoRoom extends Room {
         this.clearTurnTimer();
         this.clearTurnAdvanceTimer();
         this.bumpTurnVersion();
+        this.broadcastGameDelta({
+            action: "pass",
+            actorIndex: pi
+        });
         this.pendingActionContext = {
             client: meta.client || null,
             action: "pass",
@@ -1990,13 +2026,24 @@ class DominoRoom extends Room {
         }
 
         const score = combo.score || this.internalBoard.calculateScore();
-        if (score > 0) this.addScore(pi, score);
+        const scoreDelta = score > 0 ? this.addScore(pi, score, { broadcast: false }) : 0;
         this.clearTurnTimer();
         const actor = this.state.players.get(this.state.playerOrder[pi]);
         const actorName = actor ? actor.name : "Player";
         if (!isBot) {
             this.broadcast("msg", { key: "msg-player-gosha", values: { player: actorName }, time: 2000 });
         }
+        this.bumpTurnVersion();
+        this.broadcastGameDelta({
+            action: "gosha",
+            actorIndex: pi,
+            boardDelta: {
+                kind: "gosha",
+                placements
+            },
+            scoreDelta,
+            scorePlayerIndex: scoreDelta > 0 ? pi : -1
+        });
 
         if (this.instantWinEnabled && score >= IWIN) {
             this.endRound(pi, true);
@@ -2012,7 +2059,6 @@ class DominoRoom extends Room {
             return true;
         }
 
-        this.bumpTurnVersion();
         this.pendingActionContext = {
             client: meta.client || null,
             action: "gosha",
@@ -2108,25 +2154,40 @@ class DominoRoom extends Room {
         this.scheduleTurnTimer();
     }
 
-    addScore(pi, score) {
+    applyScore(pi, score) {
         const sessionId = this.state.playerOrder[pi];
         const player = this.state.players.get(sessionId);
         if (!player) return 0;
 
         player.score += score;
-        
+
         if (this.state.isTeamMode) {
             const team = pi % 2;
             this.state.teamScores[team] += score;
         }
-        this.broadcast("sound", "score");
-        this.broadcast("score_popup", score);
-        this.broadcast("msg", { text: `${player.name} +${score}!`, time: 2000 });
-        this.broadcastGameDelta({
-            action: "score",
-            actorIndex: pi
-        });
         return score;
+    }
+
+    addScore(pi, score, { broadcast = true } = {}) {
+        const applied = this.applyScore(pi, score);
+        if (!applied) return 0;
+
+        if (broadcast) {
+            const sessionId = this.state.playerOrder[pi];
+            const player = this.state.players.get(sessionId);
+            const playerName = player ? player.name : "Player";
+            this.broadcast("sound", "score");
+            this.broadcast("score_popup", score);
+            this.broadcast("msg", { text: `${playerName} +${score}!`, time: 2000 });
+            this.broadcastGameDelta({
+                action: "score",
+                actorIndex: pi,
+                scoreDelta: score,
+                scorePlayerIndex: pi
+            });
+        }
+
+        return applied;
     }
 
     findFishWinner() {

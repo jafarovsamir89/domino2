@@ -226,6 +226,11 @@ class DominoGame {
             hand: '',
             board: ''
         };
+        this.pendingScorePopupAfterBoardAnimation = [];
+        this._boardAnimationPromise = Promise.resolve();
+        this._boardAnimationActive = null;
+        this._pendingOptimisticPlayTileId = '';
+        this._pendingOptimisticPlayActionId = '';
         this.reactionPalette = [
             { code: '1F923', label: 'ROFL' },
             { code: '1F609', label: 'Wink' },
@@ -7989,10 +7994,15 @@ class DominoGame {
         if (pending.snapshot.humanPlayerIndex >= 0) {
             this.hands[pending.snapshot.humanPlayerIndex] = pending.snapshot.myHand;
         }
+        this._pendingOptimisticPlayTileId = '';
+        this._pendingOptimisticPlayActionId = '';
+        this._boardAnimationActive = null;
         this.selectedTileIndex = pending.snapshot.selectedTileIndex;
         this.validMoves = pending.snapshot.validMoves;
         this.goshaCombo = pending.snapshot.goshaCombo;
-        this.turnInProgress = false;
+        if (!isOwnOptimisticPlay) {
+            this.turnInProgress = false;
+        }
         this.renderState();
     }
 
@@ -8025,10 +8035,8 @@ class DominoGame {
         const tile = this.myHand[tileIndex];
         if (!tile) return false;
 
-        const sourceEl = this.renderer.handEl?.children?.[tileIndex] || null;
-        const sourceRect = sourceEl?.getBoundingClientRect?.() || null;
-        const sourceNode = sourceEl?.cloneNode?.(true) || null;
-        this.renderer._pendingBoardTileTravel = sourceRect && sourceNode ? { tileId: tile.id, sourceRect, sourceNode } : null;
+        const source = this.getBoardAnimationSource(this.humanPlayerIndex, tile.id);
+        this.renderer._pendingBoardTileTravel = source?.sourceRect ? { tileId: tile.id, sourceRect: source.sourceRect, sourceNode: source.sourceNode } : null;
 
         const snapshot = {
             board: this.cloneBoardForSnapshot(),
@@ -8059,13 +8067,21 @@ class DominoGame {
         this.goshaCombo = null;
         this.turnInProgress = true;
         this.renderState();
-
-        if (sourceRect) {
-            requestAnimationFrame(() => {
-                requestAnimationFrame(() => {
-                    this.renderer.animateTileTravel(tile.id).catch(() => {});
+        if (this.renderer._pendingBoardTileTravel) {
+            this._pendingOptimisticPlayTileId = String(tile.id || '');
+            this._pendingOptimisticPlayActionId = String(actionId || '').trim();
+            this._boardAnimationActive = {
+                tileId: tile.id,
+                action: 'play',
+                source: 'optimistic'
+            };
+            this._boardAnimationPromise = this.renderer.animateTileTravel(tile.id)
+                .catch(() => {})
+                .finally(() => {
+                    if (String(this._boardAnimationActive?.tileId || '') === String(tile.id)) {
+                        this._boardAnimationActive = null;
+                    }
                 });
-            });
         }
 
         this.queuePendingOnlineAction({
@@ -9203,7 +9219,7 @@ class DominoGame {
         const myTurn = this.currentPlayer === this.humanPlayerIndex;
         this.renderer.renderHand(myHand, this.validMoves, this.selectedTileIndex, myTurn);
 
-        const canPlay = this.board.canPlayAny(myHand);
+        const canPlay = this.board.canPlayAny(this.normalizeHandForBoard(myHand));
         const emptyBoneyard = this.boneyard.length === 0;
         this.renderer.drawBtn.disabled = waitingOpenRoom || !myTurn || canPlay || emptyBoneyard || this.postMoveWindowActive || this.turnInProgress;
         this.renderer.passBtn.disabled = waitingOpenRoom || !myTurn || canPlay || !emptyBoneyard || this.postMoveWindowActive || this.turnInProgress;
@@ -9476,6 +9492,78 @@ class DominoGame {
         this.network?.sendSyncRequest?.();
     }
 
+    getBoardAnimationSource(actorIndex, tileId = '') {
+        const boardContainer = document.getElementById('board-container');
+        const fallbackRect = () => {
+            const rect = boardContainer?.getBoundingClientRect?.() || null;
+            if (!rect) return null;
+            return {
+                left: rect.left + rect.width / 2 - 33,
+                top: rect.top + 10,
+                width: 66,
+                height: 34
+            };
+        };
+
+        if (Number(actorIndex) === Number(this.humanPlayerIndex)) {
+            const pendingRect = this.renderer?._pendingBoardTileTravel?.sourceRect || null;
+            const pendingNode = this.renderer?._pendingBoardTileTravel?.sourceNode || null;
+            if (pendingRect) {
+                return { sourceRect: pendingRect, sourceNode: pendingNode };
+            }
+            const sourceEl = this.renderer?.handEl?.querySelector?.(`[data-tile-id="${String(tileId || '')}"]`)
+                || this.renderer?.handEl?.children?.[this.selectedTileIndex] || null;
+            const sourceRect = sourceEl?.getBoundingClientRect?.() || null;
+            return {
+                sourceRect,
+                sourceNode: sourceEl?.cloneNode?.(true) || null
+            };
+        }
+
+        const playerCount = Math.max(2, Number(this.playerCount || this.playerNames.length || 2));
+        const relativeSeat = playerCount > 0
+            ? (Number(actorIndex) - Number(this.humanPlayerIndex) + playerCount) % playerCount
+            : 0;
+        let container = null;
+        if (playerCount === 2) {
+            container = document.getElementById('opp-top');
+        } else if (relativeSeat === 1) {
+            container = document.getElementById('opp-left');
+        } else if (relativeSeat === 2) {
+            container = document.getElementById('opp-top');
+        } else if (relativeSeat === 3) {
+            container = document.getElementById('opp-right');
+        } else {
+            container = document.getElementById('opp-top');
+        }
+
+        const sourceEl = container?.querySelector?.('.opp-hand-group') || container || null;
+        const sourceRect = sourceEl?.getBoundingClientRect?.() || fallbackRect();
+        return {
+            sourceRect,
+            sourceNode: sourceEl?.cloneNode?.(true) || container?.cloneNode?.(true) || null
+        };
+    }
+
+    getPlayerSourceRectForBoardAnimation(actorIndex, tileId = '') {
+        return this.getBoardAnimationSource(actorIndex, tileId).sourceRect;
+    }
+
+    enqueueScorePopupAfterBoardAnimation(score) {
+        const value = Number(score || 0);
+        if (value > 0) {
+            this.pendingScorePopupAfterBoardAnimation.push(value);
+        }
+    }
+
+    flushPendingScorePopupAfterBoardAnimation() {
+        if (!this.pendingScorePopupAfterBoardAnimation.length) return;
+        const queue = this.pendingScorePopupAfterBoardAnimation.splice(0);
+        for (const score of queue) {
+            this.renderer.showScorePopup(score);
+        }
+    }
+
     scheduleRealtimeRender(flags = {}) {
         const nextFlags = {
             boardChanged: false,
@@ -9614,6 +9702,16 @@ class DominoGame {
         }
     }
 
+    normalizeHandForBoard(hand = []) {
+        const tiles = Array.isArray(hand) ? hand : [];
+        return tiles
+            .map((tile) => {
+                if (!tile || typeof tile.a !== 'number' || typeof tile.b !== 'number') return null;
+                return (tile instanceof Tile) ? tile : new Tile(tile.a, tile.b);
+            })
+            .filter(Boolean);
+    }
+
     applyBoardDelta(delta = null) {
         if (!delta) return true;
         const kind = String(delta.kind || '').trim();
@@ -9709,7 +9807,7 @@ class DominoGame {
         const waitingOpenRoom = this.network.isMultiplayer
             && !this.gameActive
             && this.currentRoomState?.roomVisibility === 'open';
-        const canPlay = this.board.canPlayAny(myHand);
+        const canPlay = this.board.canPlayAny(this.normalizeHandForBoard(myHand));
         const emptyBoneyard = this.boneyard.length === 0;
         this.renderer.drawBtn.disabled = waitingOpenRoom || !myTurn || canPlay || emptyBoneyard || this.postMoveWindowActive || this.turnInProgress;
         this.renderer.passBtn.disabled = waitingOpenRoom || !myTurn || canPlay || !emptyBoneyard || this.postMoveWindowActive || this.turnInProgress;
@@ -9777,6 +9875,13 @@ class DominoGame {
             if (this.humanPlayerIndex >= 0) {
                 this.hands[this.humanPlayerIndex] = this.myHand;
             }
+            this.scheduleRealtimeRender({
+                boardChanged: false,
+                handChanged: true,
+                opponentHandsChanged: false,
+                scoresChanged: false,
+                infoChanged: false
+            });
         }
         if (payload?.turnInfo) {
             this.validMoves = payload.turnInfo.validMoves || [];
@@ -9787,11 +9892,26 @@ class DominoGame {
 
     onNetworkGameDelta(payload = {}) {
         if (!this.network?.isMultiplayer) return;
-        const boardChanged = Boolean(payload?.boardDelta);
-        
-        const previousTileIds = new Set(this.board.nodes.map(n => n.tile.id));
-        
-        if (boardChanged && !this.applyBoardDelta(payload.boardDelta)) {
+        const action = String(payload?.action || '').trim();
+        let boardChanged = Boolean(payload?.boardDelta);
+        const scoreDelta = Math.max(0, Number(payload?.scoreDelta || 0));
+        const scorePlayerIndex = Number.isInteger(Number(payload?.scorePlayerIndex))
+            ? Number(payload.scorePlayerIndex)
+            : Number.isInteger(Number(payload?.actorIndex))
+                ? Number(payload.actorIndex)
+                : -1;
+        const payloadTileId = String(payload?.boardDelta?.tile?.id || '');
+        const isOwnOptimisticPlay = action === 'play'
+            && payloadTileId
+            && String(this._pendingOptimisticPlayTileId || '') === payloadTileId;
+        if (isOwnOptimisticPlay) {
+            boardChanged = false;
+        }
+        const isBoardAnimationAction = boardChanged && (action === 'play' || action === 'gosha') && !isOwnOptimisticPlay;
+
+        const previousTileIds = new Set(this.board.nodes.map((n) => n.tile.id));
+
+        if (boardChanged && !isOwnOptimisticPlay && !this.applyBoardDelta(payload.boardDelta)) {
             this.requestRealtimeSync('board_delta_failed');
             return;
         }
@@ -9822,40 +9942,52 @@ class DominoGame {
         }
         this.turnInProgress = false;
 
-        if (boardChanged) {
-            const newTiles = this.board.nodes.filter(n => !previousTileIds.has(n.tile.id));
+        if (boardChanged && !isOwnOptimisticPlay) {
+            const newTiles = this.board.nodes.filter((n) => !previousTileIds.has(n.tile.id));
             if (newTiles.length > 0) {
-                const bc = document.getElementById('board-container');
-                if (bc) {
-                    const bcRect = bc.getBoundingClientRect();
-                    const lastNewTile = newTiles[newTiles.length - 1];
-                    const dummySourceRect = {
-                        left: bcRect.left + bcRect.width / 2 - 33,
-                        top: bcRect.top + 10,
-                        width: 66,
-                        height: 34
-                    };
-                    const dummySourceNode = this.renderer.createTileEl(lastNewTile.displayA, lastNewTile.displayB, lastNewTile.orientation, false, lastNewTile.tile.id);
-                    this.renderer._pendingBoardTileTravel = { tileId: lastNewTile.tile.id, sourceRect: dummySourceRect, sourceNode: dummySourceNode };
+                const lastNewTile = newTiles[newTiles.length - 1];
+                const tileId = String(lastNewTile?.tile?.id || '');
+                if (tileId) {
+                    const currentPendingId = String(this.renderer?._pendingBoardTileTravel?.tileId || '');
+                    if (currentPendingId !== tileId) {
+                        const source = this.getBoardAnimationSource(payload?.actorIndex, tileId);
+                        this.renderer._pendingBoardTileTravel = source?.sourceRect
+                            ? { tileId, sourceRect: source.sourceRect, sourceNode: source.sourceNode }
+                            : null;
+                    }
                 }
             }
         }
 
-        this.scheduleRealtimeRender({
+        const renderFlags = {
             boardChanged,
-            handChanged: true,
-            opponentHandsChanged: true,
-            scoresChanged: true,
-            infoChanged: true
-        });
+            handChanged: action === 'draw' || (action === 'play' && Number(payload?.actorIndex) === Number(this.humanPlayerIndex)) || (action === 'gosha' && Number(payload?.actorIndex) === Number(this.humanPlayerIndex)),
+            opponentHandsChanged: ['play', 'draw', 'gosha'].includes(action),
+            scoresChanged: scoreDelta > 0 || action === 'score',
+            infoChanged: ['play', 'draw', 'pass', 'gosha', 'score'].includes(action) || boardChanged
+        };
+        this.renderRealtimeGameDeltaView(renderFlags);
 
-        if (boardChanged && this.renderer._pendingBoardTileTravel) {
-            const tileId = this.renderer._pendingBoardTileTravel.tileId;
-            requestAnimationFrame(() => {
-                requestAnimationFrame(() => {
-                    this.renderer.animateTileTravel(tileId);
-                });
-            });
+        const animationPromise = isBoardAnimationAction
+            ? (this.renderer?._pendingBoardTileTravel?.tileId
+                ? this.renderer.animateTileTravel(this.renderer._pendingBoardTileTravel.tileId).catch((error) => {
+                    console.warn('[CLIENT_DEBUG] board animation failed', error);
+                })
+                : this._boardAnimationPromise || Promise.resolve())
+            : (isOwnOptimisticPlay ? (this._boardAnimationPromise || Promise.resolve()) : Promise.resolve());
+
+        const shouldDelayScorePopup = scoreDelta > 0 && (action === 'play' || action === 'gosha') && (isBoardAnimationAction || isOwnOptimisticPlay);
+
+        if (shouldDelayScorePopup) {
+            this.enqueueScorePopupAfterBoardAnimation(scoreDelta);
+            animationPromise.finally(() => this.flushPendingScorePopupAfterBoardAnimation());
+        } else if (scoreDelta > 0) {
+            this.renderer.showScorePopup(scoreDelta);
+        }
+
+        if (isOwnOptimisticPlay) {
+            this._pendingOptimisticPlayTileId = '';
+            this._pendingOptimisticPlayActionId = '';
         }
     }
 
@@ -10240,7 +10372,7 @@ class DominoGame {
         if (!isHuman && !isAI) return;
 
         const pi = this.currentPlayer;
-        if(this.board.canPlayAny(this.hands[pi])){
+        if(this.board.canPlayAny(this.normalizeHandForBoard(this.hands[pi]))){
             if (isHuman) this.renderer.showMessage(this.t('msg-has-move'), 1500);
             return;
         }
@@ -10268,7 +10400,7 @@ class DominoGame {
         if (!isHuman && !isAI) return;
 
         const pi = this.currentPlayer;
-        if(this.board.canPlayAny(this.hands[pi])){
+        if(this.board.canPlayAny(this.normalizeHandForBoard(this.hands[pi]))){
             if (isHuman) this.renderer.showMessage(this.t('msg-has-move'), 1500);
             return;
         }
@@ -10377,7 +10509,7 @@ class DominoGame {
         this.startTurnTimer();
         if(this.currentPlayer===this.humanPlayerIndex){
             const h=this.hands[this.currentPlayer];
-            if(!this.board.canPlayAny(h)&&!this.boneyard.length){
+            if(!this.board.canPlayAny(this.normalizeHandForBoard(h))&&!this.boneyard.length){
                 this.broadcastMsg(this.t('msg-no-moves'), 1000);
                 this.turnInProgress=true;
                 setTimeout(()=>{this.turnInProgress=false;this.advanceTurn();},1000);

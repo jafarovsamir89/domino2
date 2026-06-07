@@ -569,8 +569,133 @@ test("addScore updates team totals and emits a game delta", () => {
     assert.equal(result, 10);
     assert.equal(room.state.players.get("host").score, 10);
     assert.equal(room.state.teamScores[0], 10);
-    assert.deepEqual(deltas, [{ action: "score", actorIndex: 0 }]);
+    assert.deepEqual(deltas, [{ action: "score", actorIndex: 0, scoreDelta: 10, scorePlayerIndex: 0 }]);
     assert.ok(broadcasts.some(([kind]) => kind === "score_popup"));
+});
+
+test("performPlay broadcasts the board delta before any score popup and includes score data in the play delta", () => {
+    const room = Object.create(DominoRoom.prototype);
+    const events = [];
+    room.state = {
+        gameActive: true,
+        currentPlayerIndex: 0,
+        turnVersion: 7,
+        isTeamMode: false,
+        playerOrder: ["session-1"],
+        players: new Map([["session-1", { name: "Alice", score: 0, roundWins: 0, handCount: 2 }]])
+    };
+    room.internalBoard = {
+        isEmpty: false,
+        openEnds: [{ value: 6 }],
+        placeTile: () => 10,
+        isBlocked: () => false
+    };
+    room.hands = [[new Tile(6, 1), new Tile(2, 3)]];
+    room.boneyard = [];
+    room.playerMissingSuits = [new Set()];
+    room.clearTurnTimer = () => {};
+    room.clearTurnAdvanceTimer = () => {};
+    room.broadcast = (event, payload) => events.push([event, payload]);
+    room.saveCustomStateToRedis = () => {};
+    room.endRound = () => {};
+    room.endDeal = () => {};
+    room.findFishWinner = () => 0;
+    room.scheduleTurnAdvance = () => {};
+    room.bumpTurnVersion = () => {};
+    room.getValidMovesForPlayer = () => [{ tileIndex: 0, openEndIndex: 0 }];
+
+    const accepted = room.performPlay(0, 0, 0, false);
+
+    assert.equal(accepted, true);
+    assert.equal(room.state.players.get("session-1").score, 10);
+    assert.equal(room.state.players.get("session-1").handCount, 1);
+    assert.equal(room.hands[0].length, 1);
+    assert.deepEqual(events.map(([kind]) => kind).slice(0, 2), ["sound", "game_delta"]);
+    assert.equal(events.some(([kind]) => kind === "score_popup"), false);
+    const delta = events.find(([kind]) => kind === "game_delta")?.[1];
+    assert.deepEqual(
+        {
+            action: delta?.action,
+            actorIndex: delta?.actorIndex,
+            boardDelta: delta?.boardDelta,
+            scoreDelta: delta?.scoreDelta,
+            scorePlayerIndex: delta?.scorePlayerIndex
+        },
+        {
+        action: "play",
+        actorIndex: 0,
+        boardDelta: {
+            kind: "play",
+            tile: { a: 6, b: 1, id: "6-1" },
+            openEndIndex: 0
+        },
+        scoreDelta: 10,
+        scorePlayerIndex: 0
+        }
+    );
+});
+
+test("performDraw broadcasts a draw delta and keeps public hand counts in sync", () => {
+    const room = Object.create(DominoRoom.prototype);
+    const events = [];
+    room.state = {
+        gameActive: true,
+        currentPlayerIndex: 0,
+        turnVersion: 7,
+        isTeamMode: false,
+        playerOrder: ["session-1", "session-2"],
+        players: new Map([
+            ["session-1", { name: "Alice", score: 0, roundWins: 0, handCount: 1 }],
+            ["session-2", { name: "Bob", score: 0, roundWins: 0, handCount: 2 }]
+        ])
+    };
+    room.internalBoard = {
+        canPlayAny: () => false,
+        openEnds: [{ value: 6 }],
+        isBlocked: () => false
+    };
+    room.hands = [[new Tile(1, 2)], [new Tile(3, 4)]];
+    room.boneyard = [new Tile(6, 6)];
+    room.playerMissingSuits = [new Set(), new Set()];
+    room.clearTurnTimer = () => {};
+    room.broadcast = (event, payload) => events.push([event, payload]);
+    room.saveCustomStateToRedis = () => {};
+    room.endRound = () => {};
+    room.endDeal = () => {};
+    room.findFishWinner = () => 0;
+    room.scheduleTurnAdvance = () => {};
+    room.bumpTurnVersion = () => {};
+    room.sendActionAck = () => {};
+    room.syncState = () => {};
+
+    const accepted = room.performDraw(0, false, { client: null, actionId: "draw-1" });
+
+    assert.equal(accepted, true);
+    assert.equal(room.hands[0].length, 2);
+    assert.equal(room.state.players.get("session-1").handCount, 2);
+    const delta = events.find(([kind]) => kind === "game_delta")?.[1];
+    assert.equal(delta?.action, "draw");
+    assert.equal(delta?.actorIndex, 0);
+    assert.equal(delta?.playerStats?.[0]?.handCount, 2);
+});
+
+test("syncPublicPlayerStatsToState copies live hand lengths into schema players", () => {
+    const room = Object.create(DominoRoom.prototype);
+    room.state = {
+        playerOrder: ["session-1", "session-2"],
+        players: new Map([
+            ["session-1", { name: "Alice", score: 1, roundWins: 2, handCount: 0 }],
+            ["session-2", { name: "Bob", score: 3, roundWins: 4, handCount: 1 }]
+        ])
+    };
+    room.hands = [[new Tile(0, 0), new Tile(1, 1), new Tile(2, 2)], [new Tile(3, 3)]];
+
+    room.syncPublicPlayerStatsToState();
+
+    assert.equal(room.state.players.get("session-1").handCount, 3);
+    assert.equal(room.state.players.get("session-2").handCount, 1);
+    assert.equal(room.state.players.get("session-1").score, 1);
+    assert.equal(room.state.players.get("session-2").roundWins, 4);
 });
 
 test("performPlay rejects a tile that does not match the selected open end and keeps the board unchanged", () => {

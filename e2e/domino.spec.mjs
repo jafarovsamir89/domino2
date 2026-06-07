@@ -185,6 +185,7 @@ test("Konva is enabled by default, mounts a canvas board, and clears the placeho
 
   await expect(page.locator("#board-container .konva-board-root")).toHaveCount(1);
   await expect(page.locator("#board-container canvas")).toHaveCount(1);
+  expect(await page.evaluate(() => window.game?.renderer?._konvaBoardRenderer?.layer?.getClassName?.())).toBe("Layer");
   await expect(page.locator("#board .board-empty-placeholder")).toHaveCount(0);
 
   await page.evaluate(() => {
@@ -417,6 +418,153 @@ test("Konva realtime scheduler batches duplicate delta renders and keeps signatu
   expect(batchResult.counters.opponents).toBe(1);
   expect(batchResult.counters.hand).toBe(1);
   expect(batchResult.counters.board).toBe(0);
+  expect(pageErrors).toEqual([]);
+  expect(consoleErrors).toEqual([]);
+});
+
+test("Konva game_delta play renders the board before the score popup", async ({ page }) => {
+  const pageErrors = [];
+  const consoleErrors = [];
+  page.on("pageerror", (error) => pageErrors.push(error.message));
+  page.on("console", (msg) => {
+    if (msg.type() === "error") consoleErrors.push(msg.text());
+  });
+
+  await setupSoloSmoke(page, { konvaEnabled: null });
+  await page.goto("/index.html");
+  await startSoloGame(page);
+
+  const result = await page.evaluate(async () => {
+    const game = window.game;
+    if (!game?.renderer || !game?.board) throw new Error("missing_game");
+    game.network.isMultiplayer = true;
+    game.playerCount = 2;
+    game.humanPlayerIndex = 0;
+    game.currentPlayer = 1;
+    game.playerNames = ["Alice", "Bob"];
+    game.roomPlayerRefs = [
+      { sessionId: "s-1", name: "Alice", playerId: "p-1", isBot: false },
+      { sessionId: "s-2", name: "Bob", playerId: "p-2", isBot: false }
+    ];
+    game.hands = [
+      [{ id: "a-1", a: 1, b: 1 }],
+      [{ id: "b-1", a: 6, b: 6 }]
+    ];
+    game.myHand = game.hands[0];
+    game.validMoves = [];
+    game.goshaCombo = null;
+    game.board = new game.board.constructor();
+
+    const events = [];
+    const originalRenderBoard = game.renderer.renderBoard.bind(game.renderer);
+    const originalShowScore = game.renderer.showScorePopup.bind(game.renderer);
+    game.renderer.renderBoard = (...args) => {
+      events.push("board");
+      return originalRenderBoard(...args);
+    };
+    game.renderer.animateTileTravel = async (tileId) => {
+      events.push(`animate:${tileId}`);
+      await new Promise((resolve) => setTimeout(resolve, 25));
+    };
+    game.renderer.showScorePopup = (score) => {
+      events.push(`score:${score}`);
+      return originalShowScore(score);
+    };
+
+    game.onNetworkGameDelta({
+      action: "play",
+      actorIndex: 1,
+      boardDelta: { kind: "first", tile: { a: 6, b: 6, id: "6-6" } },
+      scoreDelta: 10,
+      scorePlayerIndex: 1,
+      currentPlayerIndex: 1,
+      boneyardCount: 14,
+      gameActive: true,
+      matchRound: 1,
+      deal: 1,
+      turnVersion: 2,
+      playerStats: [
+        { score: 0, roundWins: 0, handCount: 1 },
+        { score: 10, roundWins: 0, handCount: 0 }
+      ],
+      teamScores: [0, 0],
+      teamRoundWins: [0, 0]
+    });
+
+    await new Promise((resolve) => setTimeout(resolve, 90));
+    return {
+      events,
+      tileCount: game.board.nodes.length,
+      opponentCount: game.hands[1].length
+    };
+  });
+
+  expect(result.events[0]).toBe("board");
+  expect(result.events.some((item) => item.startsWith("animate:"))).toBe(true);
+  expect(result.events.findIndex((item) => item.startsWith("score:"))).toBeGreaterThan(result.events.findIndex((item) => item.startsWith("animate:")));
+  expect(result.tileCount).toBe(1);
+  expect(result.opponentCount).toBe(0);
+  expect(pageErrors).toEqual([]);
+  expect(consoleErrors).toEqual([]);
+});
+
+test("Konva game_delta draw updates opponent hand count without redrawing the board", async ({ page }) => {
+  const pageErrors = [];
+  const consoleErrors = [];
+  page.on("pageerror", (error) => pageErrors.push(error.message));
+  page.on("console", (msg) => {
+    if (msg.type() === "error") consoleErrors.push(msg.text());
+  });
+
+  await setupSoloSmoke(page, { konvaEnabled: null });
+  await page.goto("/index.html");
+  await startSoloGame(page);
+
+  const result = await page.evaluate(() => {
+    const game = window.game;
+    if (!game?.renderer || !game?.board) throw new Error("missing_game");
+    game.network.isMultiplayer = true;
+    game.playerCount = 2;
+    game.humanPlayerIndex = 0;
+    game.currentPlayer = 1;
+    game.playerNames = ["Alice", "Bob"];
+    game.roomPlayerRefs = [
+      { sessionId: "s-1", name: "Alice", playerId: "p-1", isBot: false },
+      { sessionId: "s-2", name: "Bob", playerId: "p-2", isBot: false }
+    ];
+    game.hands = [
+      [{ id: "a-1", a: 1, b: 1 }],
+      [{ id: "b-1", a: 6, b: 6 }]
+    ];
+    game.myHand = game.hands[0];
+
+    game.onNetworkGameDelta({
+      action: "draw",
+      actorIndex: 1,
+      currentPlayerIndex: 1,
+      boneyardCount: 13,
+      gameActive: true,
+      matchRound: 1,
+      deal: 1,
+      turnVersion: 3,
+      playerStats: [
+        { score: 0, roundWins: 0, handCount: 1 },
+        { score: 0, roundWins: 0, handCount: 3 }
+      ],
+      teamScores: [0, 0],
+      teamRoundWins: [0, 0]
+    });
+
+    return {
+      opponentCount: game.hands[1].length,
+      renderedOppTiles: document.querySelectorAll("#opp-top .opp-tile").length,
+      boardTileCount: game.board.nodes.length
+    };
+  });
+
+  expect(result.opponentCount).toBe(3);
+  expect(result.renderedOppTiles).toBe(3);
+  expect(result.boardTileCount).toBe(0);
   expect(pageErrors).toEqual([]);
   expect(consoleErrors).toEqual([]);
 });
