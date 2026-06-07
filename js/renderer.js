@@ -1,6 +1,9 @@
 import { KonvaBoardRenderer } from './konvaBoardRenderer.js';
 
 const gsap = window.gsap;
+const ARROW_BUTTON_SIZE = 42;
+const ARROW_BUTTON_SIZE_SMALL = 38;
+const ARROW_BUTTON_GAP = 8;
 
 function isKonvaBoardEnabled() {
     try {
@@ -219,6 +222,123 @@ export class Renderer {
         result.centerX = result.left + result.width / 2;
         result.centerY = result.top + result.height / 2;
         return result;
+    }
+
+    getArrowButtonSize() {
+        return window.matchMedia?.('(max-width: 390px)')?.matches ? ARROW_BUTTON_SIZE_SMALL : ARROW_BUTTON_SIZE;
+    }
+
+    getBoardOpenEndChoicePoint(openEnd, options = {}) {
+        if (!openEnd) return null;
+        if (this.shouldUseKonvaBoard()) {
+            return this._konvaBoardRenderer?.getOpenEndChoicePoint?.(openEnd, options) || null;
+        }
+        const rect = this.getBoardOpenEndChoiceRect(openEnd);
+        if (!rect) return null;
+        const buttonSize = Math.max(32, Number(options.buttonSize || this.getArrowButtonSize()));
+        const radius = buttonSize / 2;
+        const gap = Math.max(6, Number(options.gap || ARROW_BUTTON_GAP));
+        const side = String(openEnd.side || '').trim();
+        let x = rect.left + rect.width / 2;
+        let y = rect.top + rect.height / 2;
+        if (side === 'left') {
+            x = rect.left - radius - gap;
+        } else if (side === 'right') {
+            x = rect.right + radius + gap;
+        } else if (side === 'top') {
+            y = rect.top - radius - gap;
+        } else {
+            y = rect.bottom + radius + gap;
+        }
+        const gameRect = document.getElementById('game-screen')?.getBoundingClientRect?.() || null;
+        const width = gameRect?.width || window.innerWidth || 0;
+        const height = gameRect?.height || window.innerHeight || 0;
+        const padding = radius + 8;
+        return {
+            x: Math.min(Math.max(x, padding), Math.max(padding, width - padding)),
+            y: Math.min(Math.max(y, padding), Math.max(padding, height - padding)),
+            buttonSize,
+            radius,
+            side,
+            rect
+        };
+    }
+
+    collectBoardTileRects() {
+        if (this.shouldUseKonvaBoard()) {
+            return Array.from(this._konvaBoardRenderer?.getBoardTileRects?.() || []);
+        }
+        return Array.from(this.boardEl.querySelectorAll('.board-layout [data-tile-id]'))
+            .map((el) => el.getBoundingClientRect?.())
+            .filter(Boolean);
+    }
+
+    rectIntersectsRect(a, b) {
+        return Boolean(a && b
+            && a.left < b.right
+            && a.right > b.left
+            && a.top < b.bottom
+            && a.bottom > b.top);
+    }
+
+    countArrowCollisions(point, buttonSize, tileRects = []) {
+        const radius = buttonSize / 2;
+        const arrowRect = {
+            left: point.x - radius,
+            top: point.y - radius,
+            right: point.x + radius,
+            bottom: point.y + radius
+        };
+        return (Array.isArray(tileRects) ? tileRects : []).reduce((count, rect) => count + (this.rectIntersectsRect(arrowRect, rect) ? 1 : 0), 0);
+    }
+
+    adjustArrowPointForCollision(point, buttonSize, tileRects = [], side = '') {
+        const radius = buttonSize / 2;
+        const gameRect = document.getElementById('game-screen')?.getBoundingClientRect?.() || null;
+        const width = gameRect?.width || window.innerWidth || 0;
+        const height = gameRect?.height || window.innerHeight || 0;
+        const clampPoint = (value, min, max) => Math.min(Math.max(value, min), max);
+        const bounds = {
+            minX: radius + 8,
+            maxX: Math.max(radius + 8, width - radius - 8),
+            minY: radius + 8,
+            maxY: Math.max(radius + 8, height - radius - 8)
+        };
+        const nudges = [];
+        const step = 8;
+        if (side === 'left') nudges.push([-step, 0], [-step * 2, 0], [-step * 3, 0], [-step * 4, 0]);
+        if (side === 'right') nudges.push([step, 0], [step * 2, 0], [step * 3, 0], [step * 4, 0]);
+        if (side === 'top') nudges.push([0, -step], [0, -step * 2], [0, -step * 3], [0, -step * 4]);
+        if (side === 'bottom' || !side) nudges.push([0, step], [0, step * 2], [0, step * 3], [0, step * 4]);
+
+        let best = { ...point, collisions: this.countArrowCollisions(point, buttonSize, tileRects) };
+        for (const [dx, dy] of nudges) {
+            const candidate = {
+                x: clampPoint(point.x + dx, bounds.minX, bounds.maxX),
+                y: clampPoint(point.y + dy, bounds.minY, bounds.maxY)
+            };
+            const collisions = this.countArrowCollisions(candidate, buttonSize, tileRects);
+            if (collisions === 0) return candidate;
+            if (collisions < best.collisions) {
+                best = { ...candidate, collisions };
+            }
+        }
+
+        const perpendicular = side === 'left' || side === 'right'
+            ? [[0, -18], [0, 18]]
+            : [[-18, 0], [18, 0]];
+        for (const [dx, dy] of perpendicular) {
+            const candidate = {
+                x: clampPoint(best.x + dx, bounds.minX, bounds.maxX),
+                y: clampPoint(best.y + dy, bounds.minY, bounds.maxY)
+            };
+            const collisions = this.countArrowCollisions(candidate, buttonSize, tileRects);
+            if (collisions === 0) return candidate;
+            if (collisions < best.collisions) {
+                best = { ...candidate, collisions };
+            }
+        }
+        return best;
     }
 
     renderBoneyard(count) {
@@ -624,6 +744,8 @@ export class Renderer {
         const gs = document.getElementById('game-screen');
         const arrowSymbols = { left: '\u2190', right: '\u2192', top: '\u2191', bottom: '\u2193' };
         const tapEvent = window.PointerEvent ? 'pointerup' : 'click';
+        const buttonSize = this.getArrowButtonSize();
+        const tileRects = this.collectBoardTileRects();
         const overlay = document.createElement('div');
         overlay.id = 'arrow-overlay';
         overlay.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;z-index:100;background:rgba(0,0,0,0.1);';
@@ -641,13 +763,14 @@ export class Renderer {
             btn.className = 'arrow-btn';
             btn.textContent = arrowSymbols[oe.side] || '?';
             btn.title = this.app.format('arrow-place-to', { value: oe.value });
-            const rect = this.getBoardOpenEndChoiceRect(oe);
-            if (!rect) continue;
+            const point = this.getBoardOpenEndChoicePoint(oe, { buttonSize });
+            if (!point) continue;
+            const adjusted = this.adjustArrowPointForCollision(point, buttonSize, tileRects, oe.side);
             const gsRect = gs.getBoundingClientRect();
-            let ax = rect.left + rect.width / 2 - gsRect.left;
-            let ay = rect.top + rect.height / 2 - gsRect.top;
+            const ax = adjusted.x - gsRect.left;
+            const ay = adjusted.y - gsRect.top;
             if (!Number.isFinite(ax) || !Number.isFinite(ay)) continue;
-            btn.style.cssText += `position:absolute;left:${ax}px;top:${ay}px;transform:translate(-50%,-50%);`;
+            btn.style.cssText += `position:absolute;left:${ax}px;top:${ay}px;width:${buttonSize}px;height:${buttonSize}px;transform:translate(-50%,-50%);`;
 
             btn.addEventListener(tapEvent, (e) => {
                 e.stopPropagation();

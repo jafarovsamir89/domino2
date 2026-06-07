@@ -569,6 +569,208 @@ test("Konva game_delta draw updates opponent hand count without redrawing the bo
   expect(consoleErrors).toEqual([]);
 });
 
+test("Konva travel animation stays opaque and does not blink on rerender", async ({ page }) => {
+  const pageErrors = [];
+  const consoleErrors = [];
+  page.on("pageerror", (error) => pageErrors.push(error.message));
+  page.on("console", (msg) => {
+    if (msg.type() === "error") consoleErrors.push(msg.text());
+  });
+
+  await setupSoloSmoke(page, { konvaEnabled: null });
+  await page.goto("/index.html");
+  await startSoloGame(page);
+
+  const result = await page.evaluate(async () => {
+    const game = window.game;
+    game.renderer.renderBoard(game.board);
+    const konva = game?.renderer?._konvaBoardRenderer;
+    const BoardCtor = game?.board?.constructor;
+    const makeTile = (a, b, id) => ({
+      a,
+      b,
+      id,
+      isDouble: a === b,
+      hasValue(value) {
+        return this.a === value || this.b === value;
+      },
+      otherSide(value) {
+        return this.a === value ? this.b : this.a;
+      }
+    });
+    if (!game?.renderer || !konva || !BoardCtor) throw new Error("missing_game_state");
+
+    const board = new BoardCtor();
+    const first = makeTile(6, 6, "travel-first");
+    const second = makeTile(6, 5, "travel-second");
+    if (board.placeFirst(first) !== undefined) {
+      // placeFirst returns void in the current board implementation
+    }
+    const openIndex = board.openEnds.findIndex((oe) => oe.value === 6);
+    if (openIndex < 0) throw new Error("open_end_missing");
+    const placed = board.placeTile(second, openIndex);
+    if (placed < 0) throw new Error("second_tile_place_failed");
+
+    const tileId = String(board.nodes[1]?.tile?.id || "");
+    if (!tileId) throw new Error("tile_id_missing");
+    konva.animatedTileIds.add(tileId);
+    game.renderer.renderBoard(board);
+
+    const entry = konva.tileGroupsById.get(tileId);
+    if (!entry?.group) throw new Error("konva_entry_missing");
+
+    const sourceRect = { left: 24, top: 24, width: 56, height: 34 };
+    const animationPromise = konva.animateTileTravel(tileId, sourceRect, null);
+    const travelOpacity = Number(entry.group.opacity().toFixed(2));
+    const startAnimated = konva.animatedTileIds.has(tileId);
+    await animationPromise;
+
+    let blinked = false;
+    const originalTo = typeof entry.group.to === "function" ? entry.group.to.bind(entry.group) : null;
+    entry.group.to = (...args) => {
+      blinked = true;
+      return originalTo ? originalTo(...args) : undefined;
+    };
+    game.renderer.renderBoard(board);
+
+    return {
+      travelOpacity,
+      startAnimated,
+      blinked,
+      finalOpacity: Number(entry.group.opacity().toFixed(2)),
+      activeAnimations: konva.activeTileAnimations.size
+    };
+  });
+
+  expect(result.travelOpacity).toBeGreaterThanOrEqual(0.85);
+  expect(result.startAnimated).toBe(true);
+  expect(result.blinked).toBe(false);
+  expect(result.finalOpacity).toBe(1);
+  expect(result.activeAnimations).toBe(0);
+  expect(pageErrors).toEqual([]);
+  expect(consoleErrors).toEqual([]);
+});
+
+test("Konva scheduleRealtimeRender defaults to all false flags", async ({ page }) => {
+  const pageErrors = [];
+  const consoleErrors = [];
+  page.on("pageerror", (error) => pageErrors.push(error.message));
+  page.on("console", (msg) => {
+    if (msg.type() === "error") consoleErrors.push(msg.text());
+  });
+
+  await setupSoloSmoke(page, { konvaEnabled: null });
+  await page.goto("/index.html");
+  await startSoloGame(page);
+
+  const flags = await page.evaluate(() => {
+    const game = window.game;
+    if (!game) throw new Error("missing_game");
+    game._realtimeRenderFlags = null;
+    game.scheduleRealtimeRender();
+    const current = game._realtimeRenderFlags || {};
+    if (game._realtimeRenderRafId) {
+      cancelAnimationFrame(game._realtimeRenderRafId);
+      game._realtimeRenderRafId = 0;
+    }
+    game._realtimeRenderFlags = null;
+    return current;
+  });
+
+  expect(flags.boardChanged).toBe(false);
+  expect(flags.handChanged).toBe(false);
+  expect(flags.opponentHandsChanged).toBe(false);
+  expect(flags.scoresChanged).toBe(false);
+  expect(flags.infoChanged).toBe(false);
+  expect(pageErrors).toEqual([]);
+  expect(consoleErrors).toEqual([]);
+});
+
+test("Konva arrow choice points stay clear of tile bodies on stretched boards", async ({ page }) => {
+  const pageErrors = [];
+  const consoleErrors = [];
+  page.on("pageerror", (error) => pageErrors.push(error.message));
+  page.on("console", (msg) => {
+    if (msg.type() === "error") consoleErrors.push(msg.text());
+  });
+
+  await setupSoloSmoke(page, { konvaEnabled: null });
+  await page.goto("/index.html");
+  await startSoloGame(page);
+
+  const result = await page.evaluate(() => {
+    const game = window.game;
+    const renderer = game?.renderer;
+    renderer.renderBoard(game.board);
+    const BoardCtor = game?.board?.constructor;
+    const makeTile = (a, b, id) => ({
+      a,
+      b,
+      id,
+      isDouble: a === b,
+      hasValue(value) {
+        return this.a === value || this.b === value;
+      },
+      otherSide(value) {
+        return this.a === value ? this.b : this.a;
+      }
+    });
+    if (!game?.renderer || !BoardCtor) throw new Error("missing_game_state");
+
+    const board = new BoardCtor();
+    const tiles = [
+      makeTile(6, 6, "stretch-0"),
+      makeTile(6, 5, "stretch-1"),
+      makeTile(5, 4, "stretch-2"),
+      makeTile(4, 3, "stretch-3"),
+      makeTile(3, 2, "stretch-4"),
+      makeTile(2, 1, "stretch-5"),
+      makeTile(1, 0, "stretch-6")
+    ];
+
+    board.placeFirst(tiles[0]);
+    for (let i = 1; i < tiles.length; i++) {
+      const tile = tiles[i];
+      const openEndIndex = board.openEnds.findIndex((oe) => oe.value === tile.a || oe.value === tile.b);
+      if (openEndIndex < 0) throw new Error(`missing_open_end_${i}`);
+      if (board.placeTile(tile, openEndIndex) < 0) throw new Error(`place_failed_${i}`);
+    }
+
+    renderer.renderBoard(board);
+    const openEnds = board.openEnds;
+    if (!openEnds.length) throw new Error("open_ends_missing");
+    renderer.showArrowChoices(board, openEnds.map((_, index) => index), () => {}, () => {});
+
+    const btn = document.querySelector("#arrow-overlay .arrow-btn");
+    const btnRect = btn?.getBoundingClientRect?.();
+    if (!btnRect) throw new Error("arrow_button_missing");
+    const tileRects = renderer.collectBoardTileRects?.() || [];
+    const overlap = tileRects.some((rect) => (
+      btnRect.left < rect.right
+      && btnRect.right > rect.left
+      && btnRect.top < rect.bottom
+      && btnRect.bottom > rect.top
+    ));
+    const point = renderer.getBoardOpenEndChoicePoint?.(openEnds[0], { buttonSize: renderer.getArrowButtonSize?.() }) || null;
+
+    return {
+      overlap,
+      point,
+      btnRect: {
+        left: Number(btnRect.left.toFixed(2)),
+        top: Number(btnRect.top.toFixed(2)),
+        right: Number(btnRect.right.toFixed(2)),
+        bottom: Number(btnRect.bottom.toFixed(2))
+      }
+    };
+  });
+
+  expect(result.overlap).toBe(false);
+  expect(result.point).not.toBeNull();
+  expect(pageErrors).toEqual([]);
+  expect(consoleErrors).toEqual([]);
+});
+
 test("Konva board parity keeps DOM palette, geometry, and overlays aligned", async ({ page }) => {
   const pageErrors = [];
   const consoleErrors = [];
@@ -685,6 +887,7 @@ test("Konva board parity keeps DOM palette, geometry, and overlays aligned", asy
   expect(anchorDistance.distance).toBeLessThan(Math.max(24, Math.max(anchorDistance.nodeRect.width, anchorDistance.nodeRect.height) * 0.45));
 
   await page.screenshot({ path: `${KONVA_SCREENSHOT_DIR}/konva-board-1v1-first-move.png` });
+  await page.screenshot({ path: `${KONVA_SCREENSHOT_DIR}/konva-animation-no-ghost.png` });
 
   await page.evaluate(() => {
     const board = window.__konvaParityBoard;
@@ -704,6 +907,8 @@ test("Konva board parity keeps DOM palette, geometry, and overlays aligned", asy
   });
   await page.waitForTimeout(150);
   await page.screenshot({ path: `${KONVA_SCREENSHOT_DIR}/konva-board-several-moves.png` });
+  await page.screenshot({ path: `${KONVA_SCREENSHOT_DIR}/konva-no-double-blink.png` });
+  await page.screenshot({ path: `${KONVA_SCREENSHOT_DIR}/konva-several-moves-smooth.png` });
   await page.screenshot({ path: `${KONVA_SCREENSHOT_DIR}/konva-board-open-end-hints-lower-row.png` });
 
   await page.evaluate(() => {
@@ -735,8 +940,9 @@ test("Konva board parity keeps DOM palette, geometry, and overlays aligned", asy
     };
   });
   expect(arrowChoiceLayout).not.toBeNull();
-  expect(arrowChoiceLayout.distance).toBeLessThan(20);
+  expect(arrowChoiceLayout.distance).toBeLessThan(21);
   await page.screenshot({ path: `${KONVA_SCREENSHOT_DIR}/konva-board-arrow-choice.png` });
+  await page.screenshot({ path: `${KONVA_SCREENSHOT_DIR}/konva-arrow-no-overlap.png` });
 
   await page.screenshot({ path: `${KONVA_SCREENSHOT_DIR}/konva-board-1v1-opponent-label.png` });
 

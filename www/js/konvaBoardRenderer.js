@@ -170,6 +170,7 @@ export class KonvaBoardRenderer {
         this.anchorElsByTileId = new Map();
         this.anchorElsByNodeId = new Map();
         this.animatedTileIds = new Set();
+        this.activeTileAnimations = new Map();
         this.tileGroupsById = new Map();
         this.openEndGroupsByKey = new Map();
         this.enabled = false;
@@ -281,6 +282,7 @@ export class KonvaBoardRenderer {
         this.anchorElsByTileId.clear();
         this.anchorElsByNodeId.clear();
         this.animatedTileIds.clear();
+        this.activeTileAnimations.clear();
         this.tileGroupsById.clear();
         this.openEndGroupsByKey.clear();
     }
@@ -448,7 +450,7 @@ export class KonvaBoardRenderer {
             board.nodes.length,
             'nodes',
             `${renderDuration.toFixed(2)}ms`,
-            tileStats ? { created: tileStats.createdTiles, updated: tileStats.updatedTiles } : null
+            tileStats ? { created: tileStats.createdTiles, updated: tileStats.updatedTiles, active: this.activeTileAnimations.size } : null
         );
     }
 
@@ -598,84 +600,93 @@ export class KonvaBoardRenderer {
             ].join(';');
             this.anchorElsByNodeId.set(String(i), nodeAnchor);
 
-            entry.group.setAttrs({
-                x: localX,
-                y: localY,
-                offsetX: 0,
-                offsetY: 0,
-                visible: true,
-                opacity: 1,
-                scaleX: 1,
-                scaleY: 1
-            });
+            const isPendingTravel = pendingTravelId && pendingTravelId === tileId;
+            const isActiveTravel = this.activeTileAnimations.has(tileId);
+            const isNewestTile = i === lastNodeIndex && board.nodes.length > 1 && !this.animatedTileIds.has(tileId);
+            const shouldUpdateGeometry = !isActiveTravel;
 
-            entry.tile.setAttrs({
-                x: -width / 2,
-                y: -height / 2,
-                width,
-                height,
-                cornerRadius: 4,
-                fill: this.metrics.tileFill,
-                stroke: this.metrics.tileStroke,
-                strokeWidth: 1.5,
-                shadowColor: this.metrics.tileShadow,
-                shadowBlur: this.lowPowerMode ? 0 : 3,
-                shadowOffsetY: this.lowPowerMode ? 0 : 1,
-                perfectDrawEnabled: false,
-                shadowForStrokeEnabled: false
-            });
+            if (shouldUpdateGeometry) {
+                entry.group.setAttrs({
+                    x: localX,
+                    y: localY,
+                    offsetX: 0,
+                    offsetY: 0,
+                    visible: true,
+                    opacity: 1,
+                    scaleX: 1,
+                    scaleY: 1,
+                    rotation: 0
+                });
 
-            entry.divider.setAttrs({
-                x: node.orientation === 'horizontal' ? -1 : -width / 2 + 0.5,
-                y: node.orientation === 'horizontal' ? -height / 2 : -1,
-                width: node.orientation === 'horizontal' ? 2 : width - 1,
-                height: node.orientation === 'horizontal' ? height : 2,
-                fill: this.metrics.tileDivider,
-                opacity: 0.95
-            });
+                entry.tile.setAttrs({
+                    x: -width / 2,
+                    y: -height / 2,
+                    width,
+                    height,
+                    cornerRadius: 4,
+                    fill: this.metrics.tileFill,
+                    stroke: this.metrics.tileStroke,
+                    strokeWidth: 1.5,
+                    shadowColor: this.metrics.tileShadow,
+                    shadowBlur: this.lowPowerMode ? 0 : 3,
+                    shadowOffsetY: this.lowPowerMode ? 0 : 1,
+                    perfectDrawEnabled: false,
+                    shadowForStrokeEnabled: false
+                });
 
-            const values = [node.displayA ?? node.tile?.a ?? 0, node.displayB ?? node.tile?.b ?? 0];
-            let pipCursor = 0;
-            for (let halfIndex = 0; halfIndex < values.length; halfIndex++) {
-                const halfValue = Number(values[halfIndex]) || 0;
-                const halfX = node.orientation === 'horizontal'
-                    ? (halfIndex === 0 ? -width / 2 : 0)
-                    : -width / 2;
-                const halfY = node.orientation === 'horizontal'
-                    ? -height / 2
-                    : (halfIndex === 0 ? -height / 2 : 0);
-                const halfW = node.orientation === 'horizontal' ? width / 2 : width;
-                const halfH = node.orientation === 'horizontal' ? height : height / 2;
-                const pips = pipLayout(halfValue, node.orientation === 'horizontal' ? 'horizontal' : 'vertical');
+                entry.divider.setAttrs({
+                    x: node.orientation === 'horizontal' ? -1 : -width / 2 + 0.5,
+                    y: node.orientation === 'horizontal' ? -height / 2 : -1,
+                    width: node.orientation === 'horizontal' ? 2 : width - 1,
+                    height: node.orientation === 'horizontal' ? height : 2,
+                    fill: this.metrics.tileDivider,
+                    opacity: 0.95
+                });
 
-                for (let slotIndex = 0; slotIndex < 9; slotIndex++) {
-                    const pip = entry.pipCircles[pipCursor++];
-                    const position = getPipPosition(slotIndex, halfX, halfY, halfW, halfH);
-                    const filled = pips.includes(slotIndex);
-                    pip.setAttrs({
-                        x: position.x,
-                        y: position.y,
-                        radius: Math.max(2.4, this.metrics.pipSize / 2),
-                        fill: filled ? this.metrics.pipFill : 'rgba(0,0,0,0)',
-                        opacity: filled ? 1 : 0,
-                        shadowColor: this.metrics.pipShadow,
-                        shadowBlur: filled && !this.lowPowerMode ? 1.4 : 0,
-                        shadowOffsetY: filled && !this.lowPowerMode ? 0.6 : 0
+                const values = [node.displayA ?? node.tile?.a ?? 0, node.displayB ?? node.tile?.b ?? 0];
+                let pipCursor = 0;
+                for (let halfIndex = 0; halfIndex < values.length; halfIndex++) {
+                    const halfValue = Number(values[halfIndex]) || 0;
+                    const halfX = node.orientation === 'horizontal'
+                        ? (halfIndex === 0 ? -width / 2 : 0)
+                        : -width / 2;
+                    const halfY = node.orientation === 'horizontal'
+                        ? -height / 2
+                        : (halfIndex === 0 ? -height / 2 : 0);
+                    const halfW = node.orientation === 'horizontal' ? width / 2 : width;
+                    const halfH = node.orientation === 'horizontal' ? height : height / 2;
+                    const pips = pipLayout(halfValue, node.orientation === 'horizontal' ? 'horizontal' : 'vertical');
+
+                    for (let slotIndex = 0; slotIndex < 9; slotIndex++) {
+                        const pip = entry.pipCircles[pipCursor++];
+                        const position = getPipPosition(slotIndex, halfX, halfY, halfW, halfH);
+                        const filled = pips.includes(slotIndex);
+                        pip.setAttrs({
+                            x: position.x,
+                            y: position.y,
+                            radius: Math.max(2.4, this.metrics.pipSize / 2),
+                            fill: filled ? this.metrics.pipFill : 'rgba(0,0,0,0)',
+                            opacity: filled ? 1 : 0,
+                            shadowColor: this.metrics.pipShadow,
+                            shadowBlur: filled && !this.lowPowerMode ? 1.4 : 0,
+                            shadowOffsetY: filled && !this.lowPowerMode ? 0.6 : 0
+                        });
+                    }
+                }
+
+                if (i === board.crossNodeId && board.crossSidesClosed >= 2) {
+                    entry.tile.setAttrs({
+                        stroke: '#f0c040',
+                        strokeWidth: 1.7
                     });
                 }
             }
 
-            if (i === board.crossNodeId && board.crossSidesClosed >= 2) {
-                entry.tile.setAttrs({
-                    stroke: '#f0c040',
-                    strokeWidth: 1.7
-                });
-            }
-
-            const isPendingTravel = pendingTravelId && pendingTravelId === tileId;
-            const isNewestTile = i === lastNodeIndex && board.nodes.length > 1 && !this.animatedTileIds.has(tileId);
             if (isPendingTravel) {
                 entry.group.visible(false);
+                this.animatedTileIds.add(tileId);
+            } else if (isActiveTravel) {
+                this.animatedTileIds.add(tileId);
             } else if (isNewestTile && !isReducedMotion) {
                 entry.group.opacity(0);
                 entry.group.scale({ x: 0.84, y: 0.84 });
@@ -826,6 +837,38 @@ export class KonvaBoardRenderer {
         return this.getOpenEndAnchorRect(openEnd);
     }
 
+    getOpenEndChoicePoint(openEnd, options = {}) {
+        if (!openEnd) return null;
+        const rect = this.getNodeRect(openEnd.nodeId);
+        if (!rect) return null;
+        const buttonSize = Math.max(32, Number(options.buttonSize || 42));
+        const radius = buttonSize / 2;
+        const gap = Math.max(6, Number(options.gap || 8));
+        const side = String(openEnd.side || '').trim();
+        let x = rect.left + rect.width / 2;
+        let y = rect.top + rect.height / 2;
+        if (side === 'left') {
+            x = rect.left - radius - gap;
+        } else if (side === 'right') {
+            x = rect.right + radius + gap;
+        } else if (side === 'top') {
+            y = rect.top - radius - gap;
+        } else {
+            y = rect.bottom + radius + gap;
+        }
+
+        const width = this.lastLayout?.stageWidth || window.innerWidth || 0;
+        const height = this.lastLayout?.stageHeight || window.innerHeight || 0;
+        const padding = radius + 8;
+        x = Math.min(Math.max(x, padding), Math.max(padding, width - padding));
+        y = Math.min(Math.max(y, padding), Math.max(padding, height - padding));
+        return { x, y, buttonSize, radius, side, rect };
+    }
+
+    getBoardTileRects() {
+        return Array.from(this.tileRects.values());
+    }
+
     revealTile(tileId) {
         const entry = this.tileGroupsById.get(String(tileId));
         if (entry?.group) {
@@ -891,45 +934,60 @@ export class KonvaBoardRenderer {
         const scaleY = sourceHeight / Math.max(1, targetRect.height);
         const finalX = targetLocal.x;
         const finalY = targetLocal.y;
+        const distance = Math.hypot(targetLocal.x - sourceLocal.x, targetLocal.y - sourceLocal.y);
+        this.log('animate-start', {
+            tileId: String(tileId),
+            source: { x: sourceLocal.x, y: sourceLocal.y },
+            target: { x: finalX, y: finalY },
+            distance: Number(distance.toFixed(2))
+        });
         entry.group.visible(true);
         entry.group.position({ x: sourceLocal.x, y: sourceLocal.y });
-        entry.group.opacity(0.18);
+        entry.group.opacity(this.lowPowerMode ? 0.95 : 1);
         entry.group.scale({ x: scaleX, y: scaleY });
+        entry.group.rotation(0);
+        this.animatedTileIds.add(String(tileId));
+        this.activeTileAnimations.set(String(tileId), {
+            finalX,
+            finalY,
+            startedAt: performance.now(),
+            sourceRect: fallbackSourceRect,
+            targetRect
+        });
         this.layer.batchDraw();
-
-        const distance = Math.hypot(targetLocal.x - sourceLocal.x, targetLocal.y - sourceLocal.y);
-        const duration = Math.min(0.42, Math.max(0.26, distance / 900));
-        const lift = Math.min(10, Math.max(4, distance * 0.03));
-        const direction = Math.sign(targetLocal.x - sourceLocal.x) || 1;
+        const duration = this.lowPowerMode
+            ? Math.min(0.22, Math.max(0.12, distance / 1600))
+            : Math.min(0.28, Math.max(0.16, distance / 1300));
         const targetRotation = 0;
 
         return new Promise((resolve) => {
             const finish = () => {
+                this.activeTileAnimations.delete(String(tileId));
+                this.animatedTileIds.add(String(tileId));
+                entry.group.position({ x: finalX, y: finalY });
+                entry.group.opacity(1);
+                entry.group.scale({ x: 1, y: 1 });
+                entry.group.rotation(0);
+                this.layer.batchDraw();
+                this.log('animate-finish', {
+                    tileId: String(tileId),
+                    duration: Number(duration.toFixed(3)),
+                    active: this.activeTileAnimations.size
+                });
                 this.revealTile(tileId);
                 resolve();
             };
             const tween = new Konva.Tween({
                 node: entry.group,
                 x: finalX,
-                y: finalY - lift,
+                y: finalY,
                 scaleX: 1,
                 scaleY: 1,
-                rotation: Math.max(-4, Math.min(4, -direction * 2.2)),
-                duration: duration * 0.6,
-                easing: Konva.Easings?.EaseInOut || Konva.Easings?.EaseOut,
-                onFinish: () => {
-                    new Konva.Tween({
-                        node: entry.group,
-                        x: finalX,
-                        y: finalY,
-                        scaleX: 1,
-                        scaleY: 1,
-                        rotation: targetRotation,
-                        duration: duration * 0.4,
-                        easing: Konva.Easings?.EaseOut || Konva.Easings?.EaseInOut,
-                        onFinish: finish
-                    }).play();
-                }
+                opacity: 1,
+                rotation: targetRotation,
+                duration,
+                easing: Konva.Easings?.EaseOut || Konva.Easings?.EaseInOut,
+                onFinish: finish
             });
             if (!tween) {
                 finish();

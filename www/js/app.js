@@ -9567,10 +9567,10 @@ class DominoGame {
     scheduleRealtimeRender(flags = {}) {
         const nextFlags = {
             boardChanged: false,
-            handChanged: true,
-            opponentHandsChanged: true,
-            scoresChanged: true,
-            infoChanged: true,
+            handChanged: false,
+            opponentHandsChanged: false,
+            scoresChanged: false,
+            infoChanged: false,
             ...flags
         };
         this._realtimeRenderFlags = this._realtimeRenderFlags
@@ -9593,7 +9593,17 @@ class DominoGame {
         const flags = this._realtimeRenderFlags;
         this._realtimeRenderFlags = null;
         if (!flags) return;
+        const debugBoardRenderer = Boolean(window.DOMINO_DEBUG_BOARD_RENDERER);
+        const startedAt = debugBoardRenderer ? performance.now() : 0;
         this.renderRealtimeGameDeltaView(flags);
+        if (debugBoardRenderer) {
+            console.debug('[RealtimeRender]', {
+                flags,
+                action: this._lastRealtimeRenderAction || '',
+                boardFirst: Boolean(flags.boardChanged),
+                ms: Number((performance.now() - startedAt).toFixed(2))
+            });
+        }
     }
 
     getScoresRenderSignature(displayEntities = [], currentPlayer = -1) {
@@ -9781,14 +9791,6 @@ class DominoGame {
             hand: this.getHandRenderSignature(this.myHand || this.hands[this.humanPlayerIndex] || [], this.validMoves, this.selectedTileIndex, this.currentPlayer === this.humanPlayerIndex)
         };
 
-        if (scoresChanged && (force || nextSignatures.scores !== this._realtimeRenderSignatures.scores)) {
-            this.renderer.renderScores(displayEntities, this.currentPlayer);
-            this._realtimeRenderSignatures.scores = nextSignatures.scores;
-        }
-        if (infoChanged && (force || nextSignatures.info !== this._realtimeRenderSignatures.info)) {
-            this.renderer.renderInfo(this.matchRound, this.deal, this.boneyard.length, this.board.getOpenEndsScore(), this.getCurrentStakeLabel());
-            this._realtimeRenderSignatures.info = nextSignatures.info;
-        }
         if (boardChanged) {
             this.renderer.renderBoard(this.board);
         }
@@ -9796,12 +9798,19 @@ class DominoGame {
             this.renderer.renderOpponentHands(this.hands, this.humanPlayerIndex, roomPlayers.length ? roomPlayers : this.playerNames, this.currentPlayer);
             this._realtimeRenderSignatures.opponents = nextSignatures.opponents;
         }
-
         const myHand = this.myHand || this.hands[this.humanPlayerIndex] || [];
         const myTurn = this.currentPlayer === this.humanPlayerIndex;
         if (handChanged && (force || nextSignatures.hand !== this._realtimeRenderSignatures.hand)) {
             this.renderer.renderHand(myHand, this.validMoves, this.selectedTileIndex, myTurn);
             this._realtimeRenderSignatures.hand = nextSignatures.hand;
+        }
+        if (scoresChanged && (force || nextSignatures.scores !== this._realtimeRenderSignatures.scores)) {
+            this.renderer.renderScores(displayEntities, this.currentPlayer);
+            this._realtimeRenderSignatures.scores = nextSignatures.scores;
+        }
+        if (infoChanged && (force || nextSignatures.info !== this._realtimeRenderSignatures.info)) {
+            this.renderer.renderInfo(this.matchRound, this.deal, this.boneyard.length, this.board.getOpenEndsScore(), this.getCurrentStakeLabel());
+            this._realtimeRenderSignatures.info = nextSignatures.info;
         }
 
         const waitingOpenRoom = this.network.isMultiplayer
@@ -9893,6 +9902,7 @@ class DominoGame {
     onNetworkGameDelta(payload = {}) {
         if (!this.network?.isMultiplayer) return;
         const action = String(payload?.action || '').trim();
+        this._lastRealtimeRenderAction = action;
         let boardChanged = Boolean(payload?.boardDelta);
         const scoreDelta = Math.max(0, Number(payload?.scoreDelta || 0));
         const scorePlayerIndex = Number.isInteger(Number(payload?.scorePlayerIndex))
@@ -9908,6 +9918,7 @@ class DominoGame {
             boardChanged = false;
         }
         const isBoardAnimationAction = boardChanged && (action === 'play' || action === 'gosha') && !isOwnOptimisticPlay;
+        const deferScoreUi = scoreDelta > 0 && (action === 'play' || action === 'gosha');
 
         const previousTileIds = new Set(this.board.nodes.map((n) => n.tile.id));
 
@@ -9963,8 +9974,8 @@ class DominoGame {
             boardChanged,
             handChanged: action === 'draw' || (action === 'play' && Number(payload?.actorIndex) === Number(this.humanPlayerIndex)) || (action === 'gosha' && Number(payload?.actorIndex) === Number(this.humanPlayerIndex)),
             opponentHandsChanged: ['play', 'draw', 'gosha'].includes(action),
-            scoresChanged: scoreDelta > 0 || action === 'score',
-            infoChanged: ['play', 'draw', 'pass', 'gosha', 'score'].includes(action) || boardChanged
+            scoresChanged: !deferScoreUi && (scoreDelta > 0 || action === 'score'),
+            infoChanged: !deferScoreUi && (['play', 'draw', 'pass', 'gosha', 'score'].includes(action) || boardChanged)
         };
         this.renderRealtimeGameDeltaView(renderFlags);
 
@@ -9980,7 +9991,16 @@ class DominoGame {
 
         if (shouldDelayScorePopup) {
             this.enqueueScorePopupAfterBoardAnimation(scoreDelta);
-            animationPromise.finally(() => this.flushPendingScorePopupAfterBoardAnimation());
+            animationPromise.finally(() => {
+                this.flushPendingScorePopupAfterBoardAnimation();
+                this.scheduleRealtimeRender({
+                    boardChanged: false,
+                    handChanged: false,
+                    opponentHandsChanged: false,
+                    scoresChanged: true,
+                    infoChanged: true
+                });
+            });
         } else if (scoreDelta > 0) {
             this.renderer.showScorePopup(scoreDelta);
         }
