@@ -271,7 +271,7 @@ export class Renderer {
                 wrapper.dataset.nodeId = String(i);
                 const el = wrapper.querySelector('.board-tile');
                 if (el) {
-                    el.className = 'board-tile';
+                    el.className = `tile ${n.orientation} board-tile`;
                     if (i === board.crossNodeId && board.crossSidesClosed >= 2) {
                         el.classList.add('telephone-highlight');
                     }
