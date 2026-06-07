@@ -9451,11 +9451,8 @@ class DominoGame {
     }
 
     shouldProcessSchemaState(state) {
-        if (!this.network?.isMultiplayer) return true;
-        if (this.pendingReconnectResolution) return true;
-        if (state?.matchOver || String(state?.gameOverReason || '').trim()) return true;
-        if (!this.gameActive) return true;
-        return false;
+        void state;
+        return true;
     }
 
     requestRealtimeSync(reason = 'delta_desync') {

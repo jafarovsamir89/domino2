@@ -923,7 +923,8 @@ class DominoRoom extends Room {
             this.lastReservedMatchRound = this.state.matchRound;
         }
         this.state.gameActive = true;
-        this.scheduleTurnTimer({ fullState: true, includeRoomState: false });
+        this.syncState();
+        this.scheduleTurnTimer();
     }
 
     async startRound() {
@@ -1029,7 +1030,7 @@ class DominoRoom extends Room {
         return Boolean(nextCombo);
     }
 
-    scheduleTurnTimer(options = {}) {
+    scheduleTurnTimer() {
         if (!this.state.gameActive) {
             this.clearTurnTimer();
             return;
@@ -1037,9 +1038,7 @@ class DominoRoom extends Room {
         if (this.turnTimer) clearTimeout(this.turnTimer);
         this.turnDeadlineAt = Date.now() + this.turnTimeoutMs;
         this.state.turnDeadlineAt = this.turnDeadlineAt;
-        if (options.fullState) {
-            this.broadcastFullState({ includeRoomState: Boolean(options.includeRoomState) });
-        } else if (this.pendingActionContext) {
+        if (this.pendingActionContext) {
             const pending = this.pendingActionContext;
             this.pendingActionContext = null;
             if (pending.client) {
@@ -1049,14 +1048,8 @@ class DominoRoom extends Room {
                     actionId: pending.actionId
                 });
             }
-            this.broadcastGameDelta(pending.delta || {});
-            this.sendTurnInfoToPlayerIndex(this.state.currentPlayerIndex);
-            this.scheduleBotTurn();
-        } else {
-            this.broadcastGameDelta({ action: "turn_start", actorIndex: -1, boardDelta: null });
-            this.sendTurnInfoToPlayerIndex(this.state.currentPlayerIndex);
-            this.scheduleBotTurn();
         }
+        this.syncState();
         this.turnTimer = setTimeout(() => {
             this.turnTimer = null;
             this.handleTurnTimeout();
@@ -1391,7 +1384,13 @@ class DominoRoom extends Room {
     }
 
     syncState() {
-        this.broadcastFullState();
+        this.updateSchemaState({ includeBoardJson: true });
+        for (const client of this.clients) {
+            this.sendHandToClient(client);
+        }
+        this.sendTurnInfoToPlayerIndex(this.state.currentPlayerIndex);
+        this.broadcastRoomState();
+        this.scheduleBotTurn();
     }
 
     broadcastRoomState() {
@@ -1818,16 +1817,7 @@ class DominoRoom extends Room {
         this.pendingActionContext = {
             client: meta.client || null,
             action: "play",
-            actionId: meta.actionId || "",
-            delta: {
-                action: "play",
-                actorIndex: pi,
-                boardDelta: {
-                    kind: wasEmpty ? "first" : "play",
-                    tile: { a: tile.a, b: tile.b },
-                    openEndIndex: Number(openEndIndex)
-                }
-            }
+            actionId: meta.actionId || ""
         };
         this.scheduleTurnAdvance(0);
         return true;
@@ -1850,7 +1840,6 @@ class DominoRoom extends Room {
             this.broadcast("msg", { text: `${actorName} drew a tile`, time: 1500 });
         }
         this.bumpTurnVersion();
-        this.updateSchemaState({ includeBoardJson: false });
         if (meta.client) {
             this.sendActionAck(meta.client, {
                 accepted: true,
@@ -1860,13 +1849,7 @@ class DominoRoom extends Room {
                 turnInfo: this.buildTurnInfoForPlayer(pi)
             });
         }
-        this.broadcastGameDelta({
-            action: "draw",
-            actorIndex: pi,
-            boardDelta: null
-        });
-        this.sendTurnInfoToPlayerIndex(pi);
-        this.scheduleBotTurn();
+        this.syncState();
         return true;
     }
 
@@ -1891,12 +1874,7 @@ class DominoRoom extends Room {
         this.pendingActionContext = {
             client: meta.client || null,
             action: "pass",
-            actionId: meta.actionId || "",
-            delta: {
-                action: "pass",
-                actorIndex: pi,
-                boardDelta: null
-            }
+            actionId: meta.actionId || ""
         };
         this.advanceTurn();
         return true;
@@ -1954,15 +1932,7 @@ class DominoRoom extends Room {
         this.pendingActionContext = {
             client: meta.client || null,
             action: "gosha",
-            actionId: meta.actionId || "",
-            delta: {
-                action: "gosha",
-                actorIndex: pi,
-                boardDelta: {
-                    kind: "gosha",
-                    placements
-                }
-            }
+            actionId: meta.actionId || ""
         };
         const advanceDelay = isBot ? 0 : (this.shouldOpenGoshaChainWindow(pi) ? this.turnAdvanceMs : 0);
         this.scheduleTurnAdvance(advanceDelay);
