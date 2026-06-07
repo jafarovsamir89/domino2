@@ -30,6 +30,7 @@ class NetworkManager {
         this.reconnectInProgress = false;
         this.voiceConfig = null;
         this.voiceConfigPromise = null;
+        this.actionCounter = 0;
 
         if (typeof window !== 'undefined') {
             window.addEventListener('online', () => {
@@ -328,10 +329,24 @@ class NetworkManager {
 
         // Listen for state changes (the schema)
         this.room.onStateChange((state) => {
-            this.game.onNetworkStateUpdate(state);
+            if (this.game?.shouldProcessSchemaState?.(state) !== false) {
+                this.game.onNetworkStateUpdate(state);
+            }
         });
 
         // Listen for discrete messages
+        this.room.onMessage("full_state", (payload) => {
+            this.game.onNetworkFullState?.(payload);
+        });
+
+        this.room.onMessage("game_delta", (payload) => {
+            this.game.onNetworkGameDelta?.(payload);
+        });
+
+        this.room.onMessage("action_ack", (payload) => {
+            this.game.onNetworkActionAck?.(payload);
+        });
+
         this.room.onMessage("hand", (handData) => {
             this.game.onNetworkHandUpdate(handData);
         });
@@ -522,24 +537,43 @@ class NetworkManager {
         }
     }
 
-    sendPlay(tileIndex, openEndIndex) {
+    nextActionId(prefix = "act") {
+        this.actionCounter += 1;
+        return `${prefix}-${Date.now().toString(36)}-${this.actionCounter.toString(36)}`;
+    }
+
+    sendPlay(tileIndex, openEndIndex, actionId = this.nextActionId("play")) {
         if (this.room) this.room.send("play", {
             tileIndex,
             openEndIndex,
-            turnVersion: Number(this.room?.state?.turnVersion || 0)
+            turnVersion: Number(this.room?.state?.turnVersion || 0),
+            actionId
         });
+        return actionId;
     }
 
-    sendDraw() {
-        if (this.room) this.room.send("draw", { turnVersion: Number(this.room?.state?.turnVersion || 0) });
+    sendDraw(actionId = this.nextActionId("draw")) {
+        if (this.room) this.room.send("draw", {
+            turnVersion: Number(this.room?.state?.turnVersion || 0),
+            actionId
+        });
+        return actionId;
     }
 
-    sendPass() {
-        if (this.room) this.room.send("pass", { turnVersion: Number(this.room?.state?.turnVersion || 0) });
+    sendPass(actionId = this.nextActionId("pass")) {
+        if (this.room) this.room.send("pass", {
+            turnVersion: Number(this.room?.state?.turnVersion || 0),
+            actionId
+        });
+        return actionId;
     }
 
-    sendGosha() {
-        if (this.room) this.room.send("gosha", { turnVersion: Number(this.room?.state?.turnVersion || 0) });
+    sendGosha(actionId = this.nextActionId("gosha")) {
+        if (this.room) this.room.send("gosha", {
+            turnVersion: Number(this.room?.state?.turnVersion || 0),
+            actionId
+        });
+        return actionId;
     }
 
     sendNextDeal() {
@@ -565,6 +599,10 @@ class NetworkManager {
 
     sendVoiceSignal(payload) {
         if (this.room) this.room.send("voice_signal", payload || {});
+    }
+
+    sendSyncRequest() {
+        if (this.room) this.room.send("sync_request", {});
     }
 
     async getVoiceConfig() {

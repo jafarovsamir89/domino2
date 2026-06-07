@@ -1,5 +1,5 @@
 import { Tile, createFullSet, shuffle, getHandSize, determineFirstPlayer, handPoints, getOpeningPlayScore, hasInvalidOpeningHand, roundTo5 } from './model.js';
-import { Board, reconstructBoard } from './board.js';
+import { Board, cloneBoard, reconstructBoard } from './board.js';
 import { AIPlayer } from './ai.js';
 import { Renderer } from './renderer.js';
 import { translations } from './translations.js';
@@ -261,6 +261,8 @@ class DominoGame {
             claiming: false,
             error: ''
         };
+        this.pendingOnlineAction = null;
+        this.pendingOnlineActionTimer = null;
         this.dailyBonusTickerId = null;
         this._coinShopTickId = null;
         this.lastReactionSentAt = 0;
@@ -285,6 +287,7 @@ class DominoGame {
     destroy() {
         clearInterval(this._watchdogId);
         this._watchdogId = null;
+        this.clearPendingOnlineAction({ rollback: false });
         if (this._reactionOutsideHandler) {
             document.removeEventListener('pointerdown', this._reactionOutsideHandler, true);
             this._reactionOutsideHandler = null;
@@ -7917,6 +7920,7 @@ class DominoGame {
             console.trace("[CLIENT_DEBUG] onRoomClosed", payload || {});
         }
         const reason = this.resolveUiReason(payload) || this.t('online-room-closed');
+        this.clearPendingOnlineAction({ rollback: false });
         this.clearNextDealAdvanceTimeout();
         this.clearTurnTimers();
         this.network.leaveRoom();
@@ -7938,6 +7942,125 @@ class DominoGame {
         this.setJoinStatus(reason);
         this.setHostStatus(reason);
         this.clearGameResumeSnapshot();
+    }
+
+    cloneTilesForSnapshot(tiles = []) {
+        return (Array.isArray(tiles) ? tiles : [])
+            .map((tile) => (tile ? new Tile(tile.a, tile.b) : null))
+            .filter(Boolean);
+    }
+
+    cloneBoardForSnapshot(board = this.board) {
+        if (!board) return new Board();
+        return cloneBoard(board);
+    }
+
+    clearPendingOnlineAction({ rollback = false } = {}) {
+        if (this.pendingOnlineActionTimer) {
+            clearTimeout(this.pendingOnlineActionTimer);
+            this.pendingOnlineActionTimer = null;
+        }
+        const pending = this.pendingOnlineAction;
+        this.pendingOnlineAction = null;
+        if (!rollback || !pending?.snapshot) return;
+
+        this.board = pending.snapshot.board;
+        this.myHand = pending.snapshot.myHand;
+        if (pending.snapshot.humanPlayerIndex >= 0) {
+            this.hands[pending.snapshot.humanPlayerIndex] = pending.snapshot.myHand;
+        }
+        this.selectedTileIndex = pending.snapshot.selectedTileIndex;
+        this.validMoves = pending.snapshot.validMoves;
+        this.goshaCombo = pending.snapshot.goshaCombo;
+        this.turnInProgress = false;
+        this.renderState();
+    }
+
+    queuePendingOnlineAction(action) {
+        this.clearPendingOnlineAction({ rollback: false });
+        this.pendingOnlineAction = action;
+        this.pendingOnlineActionTimer = setTimeout(() => {
+            this.clearPendingOnlineAction({ rollback: true });
+        }, 4000);
+    }
+
+    hasPendingOnlinePlayAck(state, playerOrder, getPlayer) {
+        void playerOrder;
+        const pending = this.pendingOnlineAction;
+        if (!pending || pending.type !== 'play') return false;
+
+        const turnVersion = Number(state?.turnVersion || 0);
+        if (turnVersion > Number(pending.turnVersion || 0)) return true;
+
+        const mySessionId = this.network?.room?.sessionId || '';
+        if (!mySessionId) return false;
+        const myPlayer = getPlayer(mySessionId);
+        if (!myPlayer) return false;
+        return Number(myPlayer.handCount || -1) === Number(pending.expectedHandCount);
+    }
+
+    applyOptimisticOnlinePlay(tileIndex, openEndIndex, actionId = '') {
+        if (!this.network.isMultiplayer || this.currentPlayer !== this.humanPlayerIndex || !this.myHand) {
+            return false;
+        }
+
+        const validMove = this.validMoves.find((move) => move.tileIndex === tileIndex && move.openEndIndex === openEndIndex);
+        if (!validMove) return false;
+
+        const tile = this.myHand[tileIndex];
+        if (!tile) return false;
+
+        const sourceEl = this.renderer.handEl?.children?.[tileIndex] || null;
+        const sourceRect = sourceEl?.getBoundingClientRect?.() || null;
+        const sourceNode = sourceEl?.cloneNode?.(true) || null;
+        this.renderer._pendingBoardTileTravel = sourceRect && sourceNode ? { tileId: tile.id, sourceRect, sourceNode } : null;
+
+        const snapshot = {
+            board: this.cloneBoardForSnapshot(),
+            myHand: this.cloneTilesForSnapshot(this.myHand),
+            humanPlayerIndex: this.humanPlayerIndex,
+            selectedTileIndex: this.selectedTileIndex,
+            validMoves: Array.isArray(this.validMoves) ? this.validMoves.map((move) => ({ ...move })) : [],
+            goshaCombo: this.goshaCombo ? JSON.parse(JSON.stringify(this.goshaCombo)) : null
+        };
+
+        const nextBoard = this.cloneBoardForSnapshot();
+        const nextHand = this.cloneTilesForSnapshot(this.myHand);
+        nextHand.splice(tileIndex, 1);
+
+        if (nextBoard.isEmpty) {
+            nextBoard.placeFirst(tile);
+        } else {
+            nextBoard.placeTile(tile, openEndIndex);
+        }
+
+        this.board = nextBoard;
+        this.myHand = nextHand;
+        if (this.humanPlayerIndex >= 0) {
+            this.hands[this.humanPlayerIndex] = nextHand;
+        }
+        this.selectedTileIndex = -1;
+        this.validMoves = [];
+        this.goshaCombo = null;
+        this.turnInProgress = true;
+        this.renderState();
+
+        if (sourceRect) {
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    this.renderer.animateTileTravel(tile.id).catch(() => {});
+                });
+            });
+        }
+
+        this.queuePendingOnlineAction({
+            type: 'play',
+            actionId: String(actionId || '').trim(),
+            turnVersion: Number(this.network?.room?.state?.turnVersion || 0),
+            expectedHandCount: nextHand.length,
+            snapshot
+        });
+        return true;
     }
 
     onNetworkDisconnected(payload = {}) {
@@ -8690,6 +8813,7 @@ class DominoGame {
     }
 
     async returnToMainMenu({ settleForfeit = false } = {}) {
+        this.clearPendingOnlineAction({ rollback: false });
         this.clearNextDealAdvanceTimeout();
         this.clearTurnTimers();
         if (!this.network.isMultiplayer && this.currentRoundStakeSessionId) {
@@ -8733,6 +8857,7 @@ class DominoGame {
 
     async startNewGame() {
         debugLog('[startNewGame] Starting...', 'isMultiplayer:', this.network.isMultiplayer);
+        this.clearPendingOnlineAction({ rollback: false });
         this.clearNextDealAdvanceTimeout();
         document.getElementById('start-screen').classList.remove('active');
         document.getElementById('game-screen').classList.add('active');
@@ -9325,8 +9450,276 @@ class DominoGame {
         return String(payload.reason || '');
     }
 
+    shouldProcessSchemaState(state) {
+        if (!this.network?.isMultiplayer) return true;
+        if (this.pendingReconnectResolution) return true;
+        if (state?.matchOver || String(state?.gameOverReason || '').trim()) return true;
+        if (!this.gameActive) return true;
+        return false;
+    }
+
+    requestRealtimeSync(reason = 'delta_desync') {
+        debugLog('[CLIENT_DEBUG] realtime sync request', { reason });
+        this.clearPendingOnlineAction({ rollback: false });
+        this.network?.sendSyncRequest?.();
+    }
+
+    applyPlayerRows(playerOrder = [], playerRows = []) {
+        const rows = Array.isArray(playerRows) ? playerRows : [];
+        const getPlayer = (sid, index) => rows.find((player) => {
+            const sessionId = String(player?.sessionId || '').trim();
+            if (sessionId && sessionId === String(sid || '').trim()) return true;
+            if (Number.isInteger(Number(player?.index)) && Number(player.index) === index) return true;
+            return false;
+        }) || null;
+        const roomPlayers = Array.isArray(this.currentRoomState?.players) ? this.currentRoomState.players : [];
+        this.roomPlayerRefs = playerOrder.map((sid, index) => {
+            const playerRow = getPlayer(sid, index) || {};
+            const roomPlayer = roomPlayers.find((player) => {
+                const sessionId = String(player?.sessionId || '').trim();
+                if (sessionId && sessionId === String(sid || '').trim()) return true;
+                if (Number.isInteger(Number(player?.index)) && Number(player.index) === index) return true;
+                if (Number.isInteger(Number(player?.seatNumber)) && Number(player.seatNumber) - 1 === index) return true;
+                return false;
+            }) || null;
+            return {
+                ...playerRow,
+                ...(roomPlayer || {}),
+                sessionId: sid
+            };
+        });
+        for (const sid of playerOrder) {
+            if (!sid) continue;
+            const player = getPlayer(sid, playerOrder.indexOf(sid));
+            const avatarUrl = player?.avatarUrl || '';
+            this.roomAvatarBySessionId.set(sid, avatarUrl || this.roomAvatarBySessionId.get(sid) || '');
+        }
+        this.playerNames = playerOrder.map((sid, index) => getFirstNameDisplayName(getPlayer(sid, index)?.name || '', `Player ${index + 1}`));
+        this.scores = playerOrder.map((sid, index) => Number(getPlayer(sid, index)?.score || 0));
+        this.roundWins = playerOrder.map((sid, index) => Number(getPlayer(sid, index)?.roundWins || 0));
+        this.hands = playerOrder.map((sid, index) => new Array(Number(getPlayer(sid, index)?.handCount || 0)).fill(null));
+        this.playerCount = playerOrder.length;
+        return getPlayer;
+    }
+
+    updateHandsFromPlayerStats(playerStats = []) {
+        const stats = Array.isArray(playerStats) ? playerStats : [];
+        for (let i = 0; i < stats.length; i++) {
+            const item = stats[i] || {};
+            this.scores[i] = Number(item.score || 0);
+            this.roundWins[i] = Number(item.roundWins || 0);
+            const count = Math.max(0, Number(item.handCount || 0));
+            if (i === this.humanPlayerIndex && Array.isArray(this.myHand)) {
+                this.hands[i] = this.myHand;
+                continue;
+            }
+            this.hands[i] = new Array(count).fill(null);
+        }
+    }
+
+    applyBoardDelta(delta = null) {
+        if (!delta) return true;
+        const kind = String(delta.kind || '').trim();
+        if (!kind) return true;
+        try {
+            if (kind === 'first') {
+                const tile = delta.tile ? new Tile(delta.tile.a, delta.tile.b) : null;
+                if (!tile) return false;
+                this.board.placeFirst(tile);
+                return true;
+            }
+            if (kind === 'play') {
+                const tile = delta.tile ? new Tile(delta.tile.a, delta.tile.b) : null;
+                const openEndIndex = Number(delta.openEndIndex);
+                if (!tile || !Number.isInteger(openEndIndex)) return false;
+                return this.board.placeTile(tile, openEndIndex) >= 0;
+            }
+            if (kind === 'gosha') {
+                const placements = Array.isArray(delta.placements) ? delta.placements : [];
+                for (const placement of placements) {
+                    const tile = placement?.tile ? new Tile(placement.tile.a, placement.tile.b) : null;
+                    const nodeId = Number(placement?.nodeId);
+                    const side = String(placement?.side || '');
+                    if (!tile || !Number.isInteger(nodeId) || !side) return false;
+                    const openEndIndex = this.board.findOpenEndIndex(nodeId, side);
+                    if (openEndIndex === -1) return false;
+                    this.board.placeTile(tile, openEndIndex);
+                }
+                return true;
+            }
+        } catch (error) {
+            console.warn('[CLIENT_DEBUG] Failed to apply board delta', error);
+            return false;
+        }
+        return false;
+    }
+
+    renderRealtimeGameDeltaView({ boardChanged = false, handChanged = true, opponentHandsChanged = true, scoresChanged = true, infoChanged = true } = {}) {
+        let displayEntities;
+        if (this.isTeamMode) {
+            const teamA = this.getTeamMembers(0);
+            const teamB = this.getTeamMembers(1);
+            const resolveTeamProfile = (members) => members.map((index) => this.roomPlayerRefs?.[index] || null).find((player) => Boolean(String(player?.playerId || player?.userId || player?.id || '').trim()) && !player?.isBot) || members.map((index) => this.roomPlayerRefs?.[index] || null).find((player) => Boolean(String(player?.playerId || player?.userId || player?.id || '').trim())) || null;
+            const teamAProfile = resolveTeamProfile(teamA);
+            const teamBProfile = resolveTeamProfile(teamB);
+            displayEntities = [
+                { name: this.getTeamDisplayName(0), score: this.teamScores[0], roundWins: this.teamRoundWins[0], isCurrent: this.isPlayerInTeam(0, this.currentPlayer), index: teamA.includes(this.currentPlayer) ? this.currentPlayer : -1, playerId: String(teamAProfile?.playerId || teamAProfile?.userId || teamAProfile?.id || '').trim(), isBot: Boolean(teamAProfile?.isBot) },
+                { name: this.getTeamDisplayName(1), score: this.teamScores[1], roundWins: this.teamRoundWins[1], isCurrent: this.isPlayerInTeam(1, this.currentPlayer), index: teamB.includes(this.currentPlayer) ? this.currentPlayer : -1, playerId: String(teamBProfile?.playerId || teamBProfile?.userId || teamBProfile?.id || '').trim(), isBot: Boolean(teamBProfile?.isBot) }
+            ];
+        } else {
+            displayEntities = this.playerNames.map((n, i) => ({
+                name: n,
+                score: this.scores[i],
+                roundWins: this.roundWins[i],
+                isCurrent: this.currentPlayer === i,
+                index: i,
+                playerId: String(this.roomPlayerRefs?.[i]?.playerId || this.roomPlayerRefs?.[i]?.userId || this.roomPlayerRefs?.[i]?.id || '').trim(),
+                isBot: Boolean(this.roomPlayerRefs?.[i]?.isBot)
+            }));
+        }
+
+        if (scoresChanged) {
+            this.renderer.renderScores(displayEntities, this.currentPlayer);
+        }
+        if (infoChanged) {
+            this.renderer.renderInfo(this.matchRound, this.deal, this.boneyard.length, this.board.getOpenEndsScore(), this.getCurrentStakeLabel());
+        }
+        if (boardChanged) {
+            this.renderer.renderBoard(this.board);
+        }
+
+        const roomPlayers = Array.isArray(this.currentRoomState?.players) ? this.currentRoomState.players : [];
+        if (opponentHandsChanged) {
+            this.renderer.renderOpponentHands(this.hands, this.humanPlayerIndex, roomPlayers.length ? roomPlayers : this.playerNames, this.currentPlayer);
+        }
+
+        const myHand = this.myHand || this.hands[this.humanPlayerIndex] || [];
+        const myTurn = this.currentPlayer === this.humanPlayerIndex;
+        if (handChanged) {
+            this.renderer.renderHand(myHand, this.validMoves, this.selectedTileIndex, myTurn);
+        }
+
+        const waitingOpenRoom = this.network.isMultiplayer
+            && !this.gameActive
+            && this.currentRoomState?.roomVisibility === 'open';
+        const canPlay = this.board.canPlayAny(myHand);
+        const emptyBoneyard = this.boneyard.length === 0;
+        this.renderer.drawBtn.disabled = waitingOpenRoom || !myTurn || canPlay || emptyBoneyard || this.postMoveWindowActive || this.turnInProgress;
+        this.renderer.passBtn.disabled = waitingOpenRoom || !myTurn || canPlay || !emptyBoneyard || this.postMoveWindowActive || this.turnInProgress;
+
+        this.goshaCombo = (this.gameActive && myTurn) ? this.goshaCombo : null;
+        this.renderer.showGoshaBtn(this.goshaCombo, () => this.playGoshaCombo());
+        this.updateTurnTimerHud();
+        this.persistGameResumeSnapshot();
+    }
+
+    onNetworkFullState(payload = {}) {
+        const playerOrder = Array.from(payload?.playerOrder || []);
+        const getPlayer = this.applyPlayerRows(playerOrder, payload?.players || []);
+        this.currentPlayer = Number(payload?.currentPlayerIndex ?? 0);
+        this.boneyard = Array.from({ length: Number(payload?.boneyardCount || 0) });
+        this.isTeamMode = Boolean(payload?.isTeamMode);
+        this.teamScores = Array.from(payload?.teamScores || [0, 0]);
+        this.teamRoundWins = Array.from(payload?.teamRoundWins || [0, 0]);
+        this.matchRound = Number(payload?.matchRound || 1);
+        this.deal = Number(payload?.deal || 1);
+        this.gameActive = Boolean(payload?.gameActive);
+        this.matchOver = Boolean(payload?.matchOver);
+        this.onlineStakeKey = payload?.stakeKey || this.onlineStakeKey;
+        this.onlineRoundBankAmount = Math.max(0, Number(payload?.bankAmount || 0));
+        this.board = reconstructBoard(payload?.board || {});
+        this.myHand = Array.isArray(payload?.selfHand) ? payload.selfHand.map((t) => new Tile(t.a, t.b)) : [];
+        const mySid = this.network?.room?.sessionId || '';
+        const myIdx = playerOrder.indexOf(mySid);
+        if (myIdx !== -1) {
+            this.humanPlayerIndex = myIdx;
+            this.hands[myIdx] = this.myHand;
+        }
+        this.validMoves = Array.isArray(payload?.turnInfo?.validMoves) ? payload.turnInfo.validMoves : [];
+        this.goshaCombo = payload?.turnInfo?.goshaCombo || null;
+        if (this.gameActive && Number(payload?.turnDeadlineAt || 0) > 0) {
+            this.startTurnTimer(Number(payload.turnDeadlineAt));
+        } else {
+            this.clearTurnTimers();
+        }
+        this.clearPendingOnlineAction({ rollback: false });
+        this.turnInProgress = false;
+        this.renderState();
+    }
+
+    onNetworkActionAck(payload = {}) {
+        const pending = this.pendingOnlineAction;
+        const actionId = String(payload?.actionId || '').trim();
+        if (!pending) return;
+        if (actionId && pending.actionId && actionId !== pending.actionId) return;
+
+        if (!payload?.accepted) {
+            this.clearPendingOnlineAction({ rollback: true });
+            const reason = String(payload?.reason || '').trim();
+            if (reason && reason !== 'stale_turn') {
+                this.renderer.showMessage(reason.replace(/_/g, ' '), 1200);
+            }
+            return;
+        }
+
+        if (Array.isArray(payload?.selfHand)) {
+            this.myHand = payload.selfHand.map((t) => new Tile(t.a, t.b));
+            if (this.humanPlayerIndex >= 0) {
+                this.hands[this.humanPlayerIndex] = this.myHand;
+            }
+        }
+        if (payload?.turnInfo) {
+            this.validMoves = payload.turnInfo.validMoves || [];
+            this.goshaCombo = payload.turnInfo.goshaCombo || null;
+        }
+        this.clearPendingOnlineAction({ rollback: false });
+    }
+
+    onNetworkGameDelta(payload = {}) {
+        if (!this.network?.isMultiplayer) return;
+        const boardChanged = Boolean(payload?.boardDelta);
+        if (boardChanged && !this.applyBoardDelta(payload.boardDelta)) {
+            this.requestRealtimeSync('board_delta_failed');
+            return;
+        }
+
+        this.currentPlayer = Number(payload?.currentPlayerIndex ?? this.currentPlayer ?? 0);
+        this.boneyard = Array.from({ length: Number(payload?.boneyardCount || 0) });
+        this.gameActive = Boolean(payload?.gameActive ?? this.gameActive);
+        this.matchRound = Number(payload?.matchRound || this.matchRound || 1);
+        this.deal = Number(payload?.deal || this.deal || 1);
+        this.onlineStakeKey = payload?.stakeKey || this.onlineStakeKey;
+        this.onlineRoundBankAmount = Math.max(0, Number(payload?.bankAmount || this.onlineRoundBankAmount || 0));
+        this.teamScores = Array.from(payload?.teamScores || this.teamScores || [0, 0]);
+        this.teamRoundWins = Array.from(payload?.teamRoundWins || this.teamRoundWins || [0, 0]);
+        this.updateHandsFromPlayerStats(payload?.playerStats || []);
+
+        const turnDeadlineAt = Number(payload?.turnDeadlineAt || 0);
+        if (this.gameActive && turnDeadlineAt > 0) {
+            this.startTurnTimer(turnDeadlineAt);
+        } else {
+            this.clearTurnTimers();
+        }
+
+        if (this.currentPlayer !== this.humanPlayerIndex) {
+            this.validMoves = [];
+            this.goshaCombo = null;
+        }
+        this.turnInProgress = false;
+        this.renderRealtimeGameDeltaView({
+            boardChanged,
+            handChanged: true,
+            opponentHandsChanged: true,
+            scoresChanged: true,
+            infoChanged: true
+        });
+    }
+
     // --- Network Handlers (Thin Client Mode) ---
     onNetworkStateUpdate(state) {
+        if (this.shouldProcessSchemaState(state) === false) {
+            return;
+        }
         const playerOrder = Array.from(state?.playerOrder || []);
         const players = state?.players;
         const getPlayer = (sid) => (players && sid !== undefined && sid !== null) ? players.get(sid) : null;
@@ -9375,6 +9768,10 @@ class DominoGame {
         this.matchOver = !!state?.matchOver;
         this.onlineStakeKey = state?.stakeKey || this.onlineStakeKey;
         this.onlineRoundBankAmount = Math.max(0, Number(state?.bankAmount || 0));
+        if (this.hasPendingOnlinePlayAck(state, playerOrder, getPlayer)) {
+            this.clearPendingOnlineAction({ rollback: false });
+            this.turnInProgress = false;
+        }
         const shouldKeepTurnHints = this.gameActive && this.currentPlayer === this.humanPlayerIndex;
         if (!shouldKeepTurnHints) {
             this.validMoves = [];
@@ -9483,12 +9880,21 @@ class DominoGame {
             this.humanPlayerIndex = myIdx;
             this.hands[myIdx] = this.myHand;
         }
+        if (this.network.isMultiplayer) {
+            this.renderRealtimeGameDeltaView({ boardChanged: false, handChanged: true, opponentHandsChanged: false, scoresChanged: false, infoChanged: false });
+            return;
+        }
         this.renderState();
     }
 
     onNetworkTurnInfo(info) {
         this.validMoves = info.validMoves || [];
         this.goshaCombo = info.goshaCombo || null;
+        if (this.network.isMultiplayer) {
+            this.turnInProgress = false;
+            this.renderRealtimeGameDeltaView({ boardChanged: false, handChanged: true, opponentHandsChanged: false, scoresChanged: false, infoChanged: false });
+            return;
+        }
         this.renderState();
     }
 
@@ -9586,16 +9992,33 @@ class DominoGame {
             if (!this.myHand) return;
             const tile = this.myHand[ti];
             if (!tile) return;
-            if (this.board.isEmpty) { this.network.sendPlay(ti, -1); return; }
+            if (this.board.isEmpty) {
+                const actionId = this.network.nextActionId('play');
+                if (!this.applyOptimisticOnlinePlay(ti, -1, actionId)) return;
+                this.network.sendPlay(ti, -1, actionId);
+                return;
+            }
             const ends = [];
             for (let j=0; j<this.board.openEnds.length; j++) if (tile.hasValue(this.board.openEnds[j].value)) ends.push(j);
             if (ends.length > 1 && this.board.nodes.length === 1 && this.board.nodes[0].tile.isDouble) ends.length = 1;
-            if (ends.length === 1) this.network.sendPlay(ti, ends[0]);
+            if (ends.length === 1) {
+                const actionId = this.network.nextActionId('play');
+                if (!this.applyOptimisticOnlinePlay(ti, ends[0], actionId)) return;
+                this.network.sendPlay(ti, ends[0], actionId);
+            }
             else if (ends.length > 1) {
                 this.selectedTileIndex = ti;
                 this.renderer.renderHand(this.myHand, this.validMoves, this.selectedTileIndex);
                 this.renderer.showArrowChoices(this.board, ends,
-                    (ei) => { this.selectedTileIndex = -1; this.network.sendPlay(ti, ei); },
+                    (ei) => {
+                        const actionId = this.network.nextActionId('play');
+                        if (!this.applyOptimisticOnlinePlay(ti, ei, actionId)) {
+                            this.selectedTileIndex = -1;
+                            this.renderer.renderHand(this.myHand, this.validMoves, -1);
+                            return;
+                        }
+                        this.network.sendPlay(ti, ei, actionId);
+                    },
                     () => { this.selectedTileIndex = -1; this.renderer.renderHand(this.myHand, this.validMoves, -1); }
                 );
             }
@@ -9627,7 +10050,10 @@ class DominoGame {
 
     playGoshaCombo(fromRemote=false) {
         if (this.network.isMultiplayer) {
-            this.network.sendGosha();
+            if (this.turnInProgress) return;
+            this.turnInProgress = true;
+            const actionId = this.network.sendGosha();
+            this.queuePendingOnlineAction({ type: 'gosha', actionId });
             return;
         }
         if(!this.goshaCombo||!this.gameActive||this.turnInProgress) return;
@@ -9666,7 +10092,10 @@ class DominoGame {
 
     drawFromBoneyard(fromRemote=false) {
         if (this.network.isMultiplayer) {
-            this.network.sendDraw();
+            if (this.turnInProgress) return;
+            this.turnInProgress = true;
+            const actionId = this.network.sendDraw();
+            this.queuePendingOnlineAction({ type: 'draw', actionId });
             return;
         }
         if(!this.gameActive||this.postMoveWindowActive) return;
@@ -9691,7 +10120,10 @@ class DominoGame {
     }
     passTurn(fromRemote=false) {
         if (this.network.isMultiplayer) {
-            this.network.sendPass();
+            if (this.turnInProgress) return;
+            this.turnInProgress = true;
+            const actionId = this.network.sendPass();
+            this.queuePendingOnlineAction({ type: 'pass', actionId });
             return;
         }
         if(!this.gameActive||this.turnInProgress||this.postMoveWindowActive) return;

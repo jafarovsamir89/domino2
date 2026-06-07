@@ -128,6 +128,7 @@ class DominoRoom extends Room {
         this.turnAdvancePending = false;
         this.turnAdvanceTimer = null;
         this.nextDealTimer = null;
+        this.pendingActionContext = null;
         this.botIds = [];
         this.aiPlayers = new Map();
         this.matchRecorded = false;
@@ -164,6 +165,7 @@ class DominoRoom extends Room {
         this.onMessage("reaction", (client, message) => this.handleReaction(client, message));
         this.onMessage("gift", (client, message) => this.handleGift(client, message));
         this.onMessage("voice_signal", (client, message) => this.handleVoiceSignal(client, message));
+        this.onMessage("sync_request", (client) => this.sendFullState(client));
 
         if (this.pendingMatchRecording && !this.matchRecorded) {
             void this.retryPendingMatchRecording();
@@ -921,8 +923,7 @@ class DominoRoom extends Room {
             this.lastReservedMatchRound = this.state.matchRound;
         }
         this.state.gameActive = true;
-        this.syncState();
-        this.scheduleTurnTimer();
+        this.scheduleTurnTimer({ fullState: true, includeRoomState: false });
     }
 
     async startRound() {
@@ -1028,7 +1029,7 @@ class DominoRoom extends Room {
         return Boolean(nextCombo);
     }
 
-    scheduleTurnTimer() {
+    scheduleTurnTimer(options = {}) {
         if (!this.state.gameActive) {
             this.clearTurnTimer();
             return;
@@ -1036,7 +1037,26 @@ class DominoRoom extends Room {
         if (this.turnTimer) clearTimeout(this.turnTimer);
         this.turnDeadlineAt = Date.now() + this.turnTimeoutMs;
         this.state.turnDeadlineAt = this.turnDeadlineAt;
-        this.syncState();
+        if (options.fullState) {
+            this.broadcastFullState({ includeRoomState: Boolean(options.includeRoomState) });
+        } else if (this.pendingActionContext) {
+            const pending = this.pendingActionContext;
+            this.pendingActionContext = null;
+            if (pending.client) {
+                this.sendActionAck(pending.client, {
+                    accepted: true,
+                    action: pending.action,
+                    actionId: pending.actionId
+                });
+            }
+            this.broadcastGameDelta(pending.delta || {});
+            this.sendTurnInfoToPlayerIndex(this.state.currentPlayerIndex);
+            this.scheduleBotTurn();
+        } else {
+            this.broadcastGameDelta({ action: "turn_start", actorIndex: -1, boardDelta: null });
+            this.sendTurnInfoToPlayerIndex(this.state.currentPlayerIndex);
+            this.scheduleBotTurn();
+        }
         this.turnTimer = setTimeout(() => {
             this.turnTimer = null;
             this.handleTurnTimeout();
@@ -1201,19 +1221,10 @@ class DominoRoom extends Room {
         return (Array.isArray(hands) ? hands : []).some((hand) => hasInvalidOpeningHand(hand));
     }
 
-    syncState() {
+    updateSchemaState({ includeBoardJson = false } = {}) {
         this.state.boneyardCount = this.boneyard.length;
-        this.state.boardJson = JSON.stringify(this.internalBoard);
-        
-        // Send private hand data to each client
-        for (let i = 0; i < this.clients.length; i++) {
-            const client = this.clients[i];
-            const pIdx = this.getPlayerIndex(client);
-            if (pIdx !== -1 && this.hands[pIdx]) {
-                const player = this.state.players.get(client.sessionId);
-                if (player) player.handCount = this.hands[pIdx].length;
-                client.send("hand", this.hands[pIdx]);
-            }
+        if (includeBoardJson) {
+            this.state.boardJson = JSON.stringify(this.internalBoard);
         }
 
         for (let i = 0; i < this.state.playerOrder.length; i++) {
@@ -1223,19 +1234,164 @@ class DominoRoom extends Room {
                 player.handCount = this.hands[i].length;
             }
         }
-        
-        // Broadcast valid moves to the current player
-        const currentPlayerIndex = Number(this.state.currentPlayerIndex || 0);
-        const cpSession = this.state.playerOrder[currentPlayerIndex];
-        const cpClient = this.clients.find(c => c.sessionId === cpSession);
-        if (cpClient && this.hands[currentPlayerIndex]) {
-            const validMoves = this.getValidMovesForPlayer(currentPlayerIndex);
-            const goshaCombo = this.internalBoard.getGoshaCombo(this.hands[currentPlayerIndex]);
-            cpClient.send("turn_info", { validMoves, goshaCombo });
-        }
+    }
 
-        this.broadcastRoomState();
+    buildTurnInfoForPlayer(playerIndex) {
+        if (!Number.isInteger(playerIndex) || playerIndex < 0) {
+            return { validMoves: [], goshaCombo: null };
+        }
+        if (!this.hands[playerIndex]) {
+            return { validMoves: [], goshaCombo: null };
+        }
+        const validMoves = this.getValidMovesForPlayer(playerIndex);
+        const goshaCombo = this.internalBoard.getGoshaCombo(this.hands[playerIndex]);
+        return { validMoves, goshaCombo };
+    }
+
+    sendTurnInfoToPlayerIndex(playerIndex) {
+        const currentPlayerIndex = Number(this.state.currentPlayerIndex || 0);
+        const targetIndex = Number.isInteger(playerIndex) ? playerIndex : currentPlayerIndex;
+        const cpSession = this.state.playerOrder[targetIndex];
+        const cpClient = this.clients.find(c => c.sessionId === cpSession);
+        if (cpClient && this.hands[targetIndex]) {
+            cpClient.send("turn_info", this.buildTurnInfoForPlayer(targetIndex));
+        }
+    }
+
+    sendHandToClient(client, playerIndex = this.getPlayerIndex(client)) {
+        if (!client) return;
+        const pIdx = Number(playerIndex);
+        if (!Number.isInteger(pIdx) || pIdx < 0 || !this.hands[pIdx]) return;
+        client.send("hand", this.hands[pIdx]);
+    }
+
+    buildPlayerSyncRows() {
+        return Array.from(this.state.playerOrder || []).map((sessionId, index) => {
+            const player = this.state.players.get(sessionId) || {};
+            return {
+                sessionId,
+                index,
+                name: player.name || `Player ${index + 1}`,
+                userId: player.userId || "",
+                avatarUrl: player.avatarUrl || "",
+                score: Number(player.score || 0),
+                roundWins: Number(player.roundWins || 0),
+                handCount: Number(player.handCount || 0),
+                isConnected: Boolean(player.isConnected),
+                isBot: Boolean(player.isBot),
+                seatIndex: Number.isInteger(Number(player.seatIndex)) ? Number(player.seatIndex) : -1
+            };
+        });
+    }
+
+    buildPublicPlayerStats() {
+        return Array.from(this.state.playerOrder || []).map((sessionId) => {
+            const player = this.state.players.get(sessionId) || {};
+            return {
+                score: Number(player.score || 0),
+                roundWins: Number(player.roundWins || 0),
+                handCount: Number(player.handCount || 0)
+            };
+        });
+    }
+
+    buildFullStatePayloadForClient(client) {
+        const playerIndex = this.getPlayerIndex(client);
+        const turnInfo = playerIndex === Number(this.state.currentPlayerIndex || 0)
+            ? this.buildTurnInfoForPlayer(playerIndex)
+            : { validMoves: [], goshaCombo: null };
+        return {
+            roomId: getSafeRoomId(this),
+            roomCode: String(this.roomCode || ""),
+            roomVisibility: this.roomVisibility,
+            playerOrder: Array.from(this.state.playerOrder || []),
+            players: this.buildPlayerSyncRows(),
+            currentPlayerIndex: Number(this.state.currentPlayerIndex || 0),
+            boneyardCount: this.boneyard.length,
+            gameActive: Boolean(this.state.gameActive),
+            matchRound: Number(this.state.matchRound || 1),
+            deal: Number(this.state.deal || 1),
+            board: this.internalBoard.toJSON ? this.internalBoard.toJSON() : this.internalBoard,
+            isTeamMode: Boolean(this.state.isTeamMode),
+            playerCount: Number(this.state.playerCount || this.totalPlayers || 2),
+            turnDeadlineAt: Number(this.state.turnDeadlineAt || 0),
+            turnVersion: Number(this.state.turnVersion || 1),
+            matchOver: Boolean(this.state.matchOver),
+            gameOverReason: String(this.state.gameOverReason || ""),
+            gameOverPlayerName: String(this.state.gameOverPlayerName || ""),
+            gameOverWinnerIndex: Number(this.state.gameOverWinnerIndex ?? -1),
+            gameOverSummaryJson: String(this.state.gameOverSummaryJson || ""),
+            teamScores: Array.from(this.state.teamScores || [0, 0]),
+            teamRoundWins: Array.from(this.state.teamRoundWins || [0, 0]),
+            stakeKey: this.currentDealStakeKey || this.currentStakeKey,
+            bankAmount: Number(this.currentDealBankAmount || 0),
+            selfHand: playerIndex >= 0 && this.hands[playerIndex] ? this.hands[playerIndex] : [],
+            turnInfo
+        };
+    }
+
+    sendFullState(client) {
+        if (!client || typeof client.send !== "function") return;
+        this.updateSchemaState({ includeBoardJson: true });
+        client.send("full_state", this.buildFullStatePayloadForClient(client));
+    }
+
+    broadcastFullState({ includeRoomState = false } = {}) {
+        this.updateSchemaState({ includeBoardJson: true });
+        for (const client of this.clients) {
+            this.sendFullState(client);
+        }
+        this.sendTurnInfoToPlayerIndex(this.state.currentPlayerIndex);
+        if (includeRoomState) {
+            this.broadcastRoomState();
+        } else {
+            void this.saveCustomStateToRedis();
+        }
         this.scheduleBotTurn();
+    }
+
+    buildGameDeltaPayload(base = {}) {
+        return {
+            action: String(base.action || "").trim(),
+            actorIndex: Number.isInteger(Number(base.actorIndex)) ? Number(base.actorIndex) : -1,
+            boardDelta: base.boardDelta || null,
+            currentPlayerIndex: Number(this.state.currentPlayerIndex || 0),
+            boneyardCount: this.boneyard.length,
+            gameActive: Boolean(this.state.gameActive),
+            matchRound: Number(this.state.matchRound || 1),
+            deal: Number(this.state.deal || 1),
+            turnDeadlineAt: Number(this.state.turnDeadlineAt || 0),
+            turnVersion: Number(this.state.turnVersion || 1),
+            playerStats: this.buildPublicPlayerStats(),
+            teamScores: Array.from(this.state.teamScores || [0, 0]),
+            teamRoundWins: Array.from(this.state.teamRoundWins || [0, 0]),
+            stakeKey: this.currentDealStakeKey || this.currentStakeKey,
+            bankAmount: Number(this.currentDealBankAmount || 0)
+        };
+    }
+
+    broadcastGameDelta(base = {}) {
+        this.updateSchemaState({ includeBoardJson: false });
+        this.broadcast("game_delta", this.buildGameDeltaPayload(base));
+        void this.saveCustomStateToRedis();
+    }
+
+    sendActionAck(client, payload = {}) {
+        if (!client || typeof client.send !== "function") return;
+        client.send("action_ack", {
+            accepted: Boolean(payload.accepted),
+            action: String(payload.action || "").trim(),
+            actionId: String(payload.actionId || "").trim(),
+            reason: String(payload.reason || "").trim(),
+            turnVersion: Number(this.state.turnVersion || 1),
+            currentPlayerIndex: Number(this.state.currentPlayerIndex || 0),
+            selfHand: Array.isArray(payload.selfHand) ? payload.selfHand : undefined,
+            turnInfo: payload.turnInfo || undefined
+        });
+    }
+
+    syncState() {
+        this.broadcastFullState();
     }
 
     broadcastRoomState() {
@@ -1493,59 +1649,141 @@ class DominoRoom extends Room {
         }
     }
 
-    handlePlay(client, message) {
-        if (!this.state.gameActive) return;
+    validateClientAction(client, message = {}, { allowTurnAdvancePending = false } = {}) {
+        if (!this.state.gameActive) return { ok: false, reason: "game_inactive", pi: -1 };
         const pi = this.getPlayerIndex(client);
-        if (pi !== this.state.currentPlayerIndex) return;
-        if (this.turnAdvancePending) return;
-        if (Number(message?.turnVersion || 0) !== Number(this.state.turnVersion || 0)) return;
+        if (pi !== this.state.currentPlayerIndex) return { ok: false, reason: "not_your_turn", pi };
+        if (!allowTurnAdvancePending && this.turnAdvancePending) return { ok: false, reason: "turn_advancing", pi };
+        if (Number(message?.turnVersion || 0) !== Number(this.state.turnVersion || 0)) return { ok: false, reason: "stale_turn", pi };
+        return { ok: true, pi };
+    }
+
+    handlePlay(client, message = {}) {
+        const validation = this.validateClientAction(client, message);
+        if (!validation.ok) {
+            this.sendActionAck(client, {
+                accepted: false,
+                action: "play",
+                actionId: message?.actionId,
+                reason: validation.reason
+            });
+            return;
+        }
         const { tileIndex, openEndIndex } = message;
-        this.performPlay(pi, tileIndex, openEndIndex, false);
+        const accepted = this.performPlay(validation.pi, tileIndex, openEndIndex, false, {
+            client,
+            actionId: message?.actionId
+        });
+        if (!accepted) {
+            this.sendActionAck(client, {
+                accepted: false,
+                action: "play",
+                actionId: message?.actionId,
+                reason: "invalid_move"
+            });
+        }
     }
 
     handleDraw(client, message = {}) {
-        if (!this.state.gameActive) return;
-        const pi = this.getPlayerIndex(client);
-        if (pi !== this.state.currentPlayerIndex) return;
-        if (this.turnAdvancePending) return;
-        if (Number(message?.turnVersion || 0) !== Number(this.state.turnVersion || 0)) return;
-        this.performDraw(pi, false);
+        const validation = this.validateClientAction(client, message);
+        if (!validation.ok) {
+            this.sendActionAck(client, {
+                accepted: false,
+                action: "draw",
+                actionId: message?.actionId,
+                reason: validation.reason
+            });
+            return;
+        }
+        const accepted = this.performDraw(validation.pi, false, {
+            client,
+            actionId: message?.actionId
+        });
+        if (!accepted) {
+            this.sendActionAck(client, {
+                accepted: false,
+                action: "draw",
+                actionId: message?.actionId,
+                reason: "invalid_draw"
+            });
+        }
     }
 
     handlePass(client, message = {}) {
-        if (!this.state.gameActive) return;
-        const pi = this.getPlayerIndex(client);
-        if (pi !== this.state.currentPlayerIndex) return;
-        if (this.turnAdvancePending) return;
-        if (Number(message?.turnVersion || 0) !== Number(this.state.turnVersion || 0)) return;
-        this.performPass(pi, false);
+        const validation = this.validateClientAction(client, message);
+        if (!validation.ok) {
+            this.sendActionAck(client, {
+                accepted: false,
+                action: "pass",
+                actionId: message?.actionId,
+                reason: validation.reason
+            });
+            return;
+        }
+        const accepted = this.performPass(validation.pi, false, {
+            client,
+            actionId: message?.actionId
+        });
+        if (!accepted) {
+            this.sendActionAck(client, {
+                accepted: false,
+                action: "pass",
+                actionId: message?.actionId,
+                reason: "invalid_pass"
+            });
+        }
     }
 
     handleGosha(client, message = {}) {
-        if (!this.state.gameActive) return;
-        const pi = this.getPlayerIndex(client);
-        if (pi !== this.state.currentPlayerIndex) return;
-        if (Number(message?.turnVersion || 0) !== Number(this.state.turnVersion || 0)) return;
+        const validation = this.validateClientAction(client, message, { allowTurnAdvancePending: true });
+        if (!validation.ok) {
+            this.sendActionAck(client, {
+                accepted: false,
+                action: "gosha",
+                actionId: message?.actionId,
+                reason: validation.reason
+            });
+            return;
+        }
 
-        const combo = this.internalBoard.getGoshaCombo(this.hands[pi]);
-        if (!combo) return;
+        const combo = this.internalBoard.getGoshaCombo(this.hands[validation.pi]);
+        if (!combo) {
+            this.sendActionAck(client, {
+                accepted: false,
+                action: "gosha",
+                actionId: message?.actionId,
+                reason: "invalid_gosha"
+            });
+            return;
+        }
 
-        this.performGosha(pi, combo, false);
+        const accepted = this.performGosha(validation.pi, combo, false, {
+            client,
+            actionId: message?.actionId
+        });
+        if (!accepted) {
+            this.sendActionAck(client, {
+                accepted: false,
+                action: "gosha",
+                actionId: message?.actionId,
+                reason: "invalid_gosha"
+            });
+        }
     }
 
-    performPlay(pi, tileIndex, openEndIndex, isBot = false) {
+    performPlay(pi, tileIndex, openEndIndex, isBot = false, meta = {}) {
         const hand = this.hands[pi];
         const tile = hand && hand[tileIndex];
-        if (!tile) return;
+        if (!tile) return false;
 
         if (!this.internalBoard.isEmpty) {
             const currentOpenEnd = this.internalBoard.openEnds?.[openEndIndex];
-            if (!currentOpenEnd || !tile.hasValue(currentOpenEnd.value)) return;
+            if (!currentOpenEnd || !tile.hasValue(currentOpenEnd.value)) return false;
         }
 
         const moves = this.getValidMovesForPlayer(pi);
         const isValid = moves.some((m) => m.tileIndex === tileIndex && m.openEndIndex === openEndIndex);
-        if (!isValid) return;
+        if (!isValid) return false;
 
         hand.splice(tileIndex, 1);
         this.clearTurnTimer();
@@ -1573,14 +1811,29 @@ class DominoRoom extends Room {
         }
         if (this.internalBoard.isBlocked(this.hands, this.boneyard)) {
             this.endDeal(this.findFishWinner(), true);
-            return;
+            return true;
         }
 
         this.bumpTurnVersion();
+        this.pendingActionContext = {
+            client: meta.client || null,
+            action: "play",
+            actionId: meta.actionId || "",
+            delta: {
+                action: "play",
+                actorIndex: pi,
+                boardDelta: {
+                    kind: wasEmpty ? "first" : "play",
+                    tile: { a: tile.a, b: tile.b },
+                    openEndIndex: Number(openEndIndex)
+                }
+            }
+        };
         this.scheduleTurnAdvance(0);
+        return true;
     }
 
-    performDraw(pi, isBot = false) {
+    performDraw(pi, isBot = false, meta = {}) {
         if (this.internalBoard.canPlayAny(this.hands[pi])) return false;
         if (!this.boneyard.length) return false;
 
@@ -1596,12 +1849,28 @@ class DominoRoom extends Room {
         if (!isBot) {
             this.broadcast("msg", { text: `${actorName} drew a tile`, time: 1500 });
         }
-        this.syncState();
         this.bumpTurnVersion();
+        this.updateSchemaState({ includeBoardJson: false });
+        if (meta.client) {
+            this.sendActionAck(meta.client, {
+                accepted: true,
+                action: "draw",
+                actionId: meta.actionId || "",
+                selfHand: this.hands[pi],
+                turnInfo: this.buildTurnInfoForPlayer(pi)
+            });
+        }
+        this.broadcastGameDelta({
+            action: "draw",
+            actorIndex: pi,
+            boardDelta: null
+        });
+        this.sendTurnInfoToPlayerIndex(pi);
+        this.scheduleBotTurn();
         return true;
     }
 
-    performPass(pi, isBot = false) {
+    performPass(pi, isBot = false, meta = {}) {
         if (this.internalBoard.canPlayAny(this.hands[pi])) return false;
         if (this.boneyard.length > 0) return false;
 
@@ -1619,23 +1888,41 @@ class DominoRoom extends Room {
         this.clearTurnTimer();
         this.clearTurnAdvanceTimer();
         this.bumpTurnVersion();
+        this.pendingActionContext = {
+            client: meta.client || null,
+            action: "pass",
+            actionId: meta.actionId || "",
+            delta: {
+                action: "pass",
+                actorIndex: pi,
+                boardDelta: null
+            }
+        };
         this.advanceTurn();
         return true;
     }
 
-    performGosha(pi, combo, isBot = false) {
+    performGosha(pi, combo, isBot = false, meta = {}) {
         this.broadcast("sound", "gosha");
         const hand = this.hands[pi];
         const matches = combo.matches;
         const sorted = [...matches].sort((a, b) => b.tileIndex - a.tileIndex);
         const tilesByIndex = new Map(matches.map((m) => [m.tileIndex, hand[m.tileIndex]]));
+        const placements = matches.map((m) => {
+            const tile = tilesByIndex.get(m.tileIndex);
+            return {
+                nodeId: Number(m.nodeId),
+                side: String(m.side || ""),
+                tile: tile ? { a: tile.a, b: tile.b } : null
+            };
+        });
         for (const m of sorted) hand.splice(m.tileIndex, 1);
 
         for (const m of matches) {
             const openEndIndex = this.internalBoard.findOpenEndIndex(m.nodeId, m.side);
             const tile = tilesByIndex.get(m.tileIndex);
             if (openEndIndex === -1 || !tile) {
-                return;
+                return false;
             }
             this.internalBoard.placeTile(tile, openEndIndex);
         }
@@ -1660,12 +1947,26 @@ class DominoRoom extends Room {
         }
         if (this.internalBoard.isBlocked(this.hands, this.boneyard)) {
             this.endDeal(this.findFishWinner(), true);
-            return;
+            return true;
         }
 
         this.bumpTurnVersion();
+        this.pendingActionContext = {
+            client: meta.client || null,
+            action: "gosha",
+            actionId: meta.actionId || "",
+            delta: {
+                action: "gosha",
+                actorIndex: pi,
+                boardDelta: {
+                    kind: "gosha",
+                    placements
+                }
+            }
+        };
         const advanceDelay = isBot ? 0 : (this.shouldOpenGoshaChainWindow(pi) ? this.turnAdvanceMs : 0);
         this.scheduleTurnAdvance(advanceDelay);
+        return true;
     }
 
     handleNextDeal(client) {
@@ -2092,16 +2393,17 @@ class DominoRoom extends Room {
     }
 
     async saveCustomStateToRedis() {
-        if (!this.roomId || !redis) return;
+        const roomId = getSafeRoomId(this);
+        if (!roomId || !redis) return;
         try {
             if (redis.status !== "ready") {
                 await redis.connect();
             }
             const snapshot = JSON.stringify(this.buildCustomStateSnapshot());
-            await redis.setex(`domino:custom:${this.roomId}`, CUSTOM_STATE_TTL, snapshot);
+            await redis.setex(`domino:custom:${roomId}`, CUSTOM_STATE_TTL, snapshot);
             if (this.roomCode) {
                 await redis.setex(`domino:custom:code:${this.roomCode}`, CUSTOM_STATE_TTL, snapshot);
-                await rememberRoom(this.roomCode, this.roomId);
+                await rememberRoom(this.roomCode, roomId);
             }
         } catch (e) {
             console.error("Redis error", e);
