@@ -9720,8 +9720,8 @@ class DominoGame {
                         width: 66,
                         height: 34
                     };
-                    const dummySourceNode = this.renderer.createTileEl(lastNewTile.displayA, lastNewTile.displayB, lastNewTile.orientation, false, lastNewTile.id);
-                    this.renderer._pendingBoardTileTravel = { tileId: lastNewTile.id, sourceRect: dummySourceRect, sourceNode: dummySourceNode };
+                    const dummySourceNode = this.renderer.createTileEl(lastNewTile.displayA, lastNewTile.displayB, lastNewTile.orientation, false, lastNewTile.tile.id);
+                    this.renderer._pendingBoardTileTravel = { tileId: lastNewTile.tile.id, sourceRect: dummySourceRect, sourceNode: dummySourceNode };
                 }
             }
         }

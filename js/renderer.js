@@ -243,7 +243,6 @@ export class Renderer {
             if (!wrapper) {
                 wrapper = document.createElement('div');
                 wrapper.dataset.nodeId = String(i);
-                wrapper.dataset.tileId = tileId;
                 wrapper.style.cssText = `position:absolute;left:${n.x - ox}px;top:${n.y - oy}px;`;
                 
                 const el = this.createTileEl(n.displayA, n.displayB, n.orientation, false, n.tile.id);
