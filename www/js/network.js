@@ -208,10 +208,19 @@ class NetworkManager {
         }
         this.setupListeners();
         void this.game?.voice?.prefetchIceConfig?.();
+        setTimeout(() => {
+            this.game?.requestRealtimeSync?.('room-activated');
+        }, 0);
         if (notifyReconnect) {
             this.game.onNetworkReconnected?.();
         }
         return this.room.roomId || this.room.id;
+    }
+
+    getLocalTurnVersion() {
+        const gameTurnVersion = Number(this.game?.turnVersion || 0);
+        if (gameTurnVersion > 0) return gameTurnVersion;
+        return Number(this.room?.state?.turnVersion || 0);
     }
 
     async resolveRoomId(code) {
@@ -546,7 +555,7 @@ class NetworkManager {
         if (this.room) this.room.send("play", {
             tileIndex,
             openEndIndex,
-            turnVersion: Number(this.room?.state?.turnVersion || 0),
+            turnVersion: this.getLocalTurnVersion(),
             actionId
         });
         return actionId;
@@ -554,7 +563,7 @@ class NetworkManager {
 
     sendDraw(actionId = this.nextActionId("draw")) {
         if (this.room) this.room.send("draw", {
-            turnVersion: Number(this.room?.state?.turnVersion || 0),
+            turnVersion: this.getLocalTurnVersion(),
             actionId
         });
         return actionId;
@@ -562,7 +571,7 @@ class NetworkManager {
 
     sendPass(actionId = this.nextActionId("pass")) {
         if (this.room) this.room.send("pass", {
-            turnVersion: Number(this.room?.state?.turnVersion || 0),
+            turnVersion: this.getLocalTurnVersion(),
             actionId
         });
         return actionId;
@@ -570,14 +579,14 @@ class NetworkManager {
 
     sendGosha(actionId = this.nextActionId("gosha")) {
         if (this.room) this.room.send("gosha", {
-            turnVersion: Number(this.room?.state?.turnVersion || 0),
+            turnVersion: this.getLocalTurnVersion(),
             actionId
         });
         return actionId;
     }
 
     sendNextDeal() {
-        if (this.room) this.room.send("next_deal", { turnVersion: Number(this.room?.state?.turnVersion || 0) });
+        if (this.room) this.room.send("next_deal", { turnVersion: this.getLocalTurnVersion() });
     }
 
     sendChooseSeat(seatIndex) {

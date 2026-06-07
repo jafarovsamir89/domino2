@@ -46,6 +46,7 @@ function buildRoomStatePayload({ room, players } = {}) {
         stakeKey: room.currentDealStakeKey || room.currentStakeKey,
         stakeAmount: room.currentDealStakeAmount,
         bankAmount: room.currentDealBankAmount,
+        turnVersion: Number(room.state?.turnVersion || 1),
         currentPlayers: room.state.gameActive ? room.totalPlayers : connectedHumanPlayers,
         humanPlayers: connectedHumanPlayers,
         humanSeats: room.maxClients,

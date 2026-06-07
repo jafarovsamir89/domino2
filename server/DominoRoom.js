@@ -168,7 +168,7 @@ class DominoRoom extends Room {
         this.onMessage("reaction", (client, message) => this.handleReaction(client, message));
         this.onMessage("gift", (client, message) => this.handleGift(client, message));
         this.onMessage("voice_signal", (client, message) => this.handleVoiceSignal(client, message));
-        this.onMessage("sync_request", (client) => this.sendFullState(client));
+        this.onMessage("sync_request", (client) => this.handleSyncRequest(client));
 
         if (this.pendingMatchRecording && !this.matchRecorded) {
             void this.retryPendingMatchRecording();
@@ -1391,6 +1391,25 @@ class DominoRoom extends Room {
         if (!client || typeof client.send !== "function") return;
         this.updateSchemaState({ includeBoardJson: true });
         client.send("full_state", this.buildFullStatePayloadForClient(client));
+    }
+
+    sendRoomStateToClient(client) {
+        if (!client || typeof client.send !== "function") return;
+        const players = buildRoomStatePlayers({
+            playerOrder: this.state.playerOrder,
+            players: this.state.players,
+            identityBySessionId: this.identityBySessionId,
+            voiceEnabledBySessionId: this.voiceEnabledBySessionId
+        });
+        client.send("room_state", buildRoomStatePayload({
+            room: this,
+            players
+        }));
+    }
+
+    handleSyncRequest(client) {
+        this.sendRoomStateToClient(client);
+        this.sendFullState(client);
     }
 
     broadcastFullState({ includeRoomState = false } = {}) {

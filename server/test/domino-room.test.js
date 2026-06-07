@@ -536,6 +536,21 @@ test("turnVersion rejects stale replayed turn actions", () => {
     assert.equal(plays, 1);
 });
 
+test("sync requests return both room state and full state to the same client", () => {
+    const room = Object.create(DominoRoom.prototype);
+    const calls = [];
+    room.sendRoomStateToClient = (client) => calls.push(["room_state", client]);
+    room.sendFullState = (client) => calls.push(["full_state", client]);
+
+    const client = { sessionId: "session-1" };
+    room.handleSyncRequest(client);
+
+    assert.deepEqual(calls, [
+        ["room_state", client],
+        ["full_state", client]
+    ]);
+});
+
 test("performPlay rejects a tile that does not match the selected open end and keeps the board unchanged", () => {
     const room = Object.create(DominoRoom.prototype);
     let advanced = 0;

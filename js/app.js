@@ -136,6 +136,7 @@ class DominoGame {
         this.humanPlayerIndex=0; this.matchOver=false; this.roundOver=false; this.lastDealWinner=null;
         this.isTeamMode=false; this.teamScores=[0,0]; this.teamRoundWins=[0,0];
         this.turnInProgress=false; // Guard against double-turn bug
+        this.turnVersion=1;
         this.lastTurnStartTime=0;
         this.aiTurnQueued=false;
         this._turnCycleId = 0;
@@ -7740,6 +7741,7 @@ class DominoGame {
     onRoomStateUpdate(roomState) {
         if (!roomState) return;
         this.currentRoomState = roomState;
+        this.turnVersion = Number(roomState?.turnVersion || this.turnVersion || 1);
         const topRightHud = this.getTopRightHudState();
         debugLog("[CLIENT_DEBUG] onRoomStateUpdate", {
             roomId: roomState?.roomId,
@@ -8047,7 +8049,7 @@ class DominoGame {
         this.queuePendingOnlineAction({
             type: 'play',
             actionId: String(actionId || '').trim(),
-            turnVersion: Number(this.network?.room?.state?.turnVersion || 0),
+            turnVersion: Number(this.turnVersion || this.network?.room?.state?.turnVersion || 0),
             expectedHandCount: nextHand.length,
             snapshot
         });
@@ -9615,6 +9617,7 @@ class DominoGame {
         this.matchOver = Boolean(payload?.matchOver);
         this.onlineStakeKey = payload?.stakeKey || this.onlineStakeKey;
         this.onlineRoundBankAmount = Math.max(0, Number(payload?.bankAmount || 0));
+        this.turnVersion = Number(payload?.turnVersion || this.turnVersion || 1);
         this.board = reconstructBoard(payload?.board || {});
         this.myHand = Array.isArray(payload?.selfHand) ? payload.selfHand.map((t) => new Tile(t.a, t.b)) : [];
         const mySid = this.network?.room?.sessionId || '';
@@ -9640,6 +9643,8 @@ class DominoGame {
         const actionId = String(payload?.actionId || '').trim();
         if (!pending) return;
         if (actionId && pending.actionId && actionId !== pending.actionId) return;
+
+        this.turnVersion = Number(payload?.turnVersion || this.turnVersion || 1);
 
         if (!payload?.accepted) {
             this.clearPendingOnlineAction({ rollback: true });
@@ -9676,6 +9681,7 @@ class DominoGame {
         this.gameActive = Boolean(payload?.gameActive ?? this.gameActive);
         this.matchRound = Number(payload?.matchRound || this.matchRound || 1);
         this.deal = Number(payload?.deal || this.deal || 1);
+        this.turnVersion = Number(payload?.turnVersion || this.turnVersion || 1);
         this.onlineStakeKey = payload?.stakeKey || this.onlineStakeKey;
         this.onlineRoundBankAmount = Math.max(0, Number(payload?.bankAmount || this.onlineRoundBankAmount || 0));
         this.teamScores = Array.from(payload?.teamScores || this.teamScores || [0, 0]);
@@ -9753,6 +9759,7 @@ class DominoGame {
         this.matchOver = !!state?.matchOver;
         this.onlineStakeKey = state?.stakeKey || this.onlineStakeKey;
         this.onlineRoundBankAmount = Math.max(0, Number(state?.bankAmount || 0));
+        this.turnVersion = Number(state?.turnVersion || this.turnVersion || 1);
         if (this.hasPendingOnlinePlayAck(state, playerOrder, null)) {
             this.clearPendingOnlineAction({ rollback: false });
             this.turnInProgress = false;

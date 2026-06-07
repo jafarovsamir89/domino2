@@ -86,6 +86,7 @@ test("buildRoomStatePayload preserves room_state fields and currentPlayers logic
         stakeKey: "stake_500",
         stakeAmount: 500,
         bankAmount: 1000,
+        turnVersion: 1,
         currentPlayers: 4,
         humanPlayers: 2,
         humanSeats: 2,
