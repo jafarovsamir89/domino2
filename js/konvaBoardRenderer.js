@@ -1,19 +1,43 @@
 const TILE_W = 66;
 const TILE_H = 34;
-const TILE_GAP = 2;
 const MAX_PIXEL_RATIO = 2;
 const SIDE_RESERVE = 50;
 const PILL_BG = 'rgba(8, 18, 13, 0.82)';
 const PILL_STROKE = 'rgba(240, 192, 64, 0.28)';
 const PILL_TEXT = '#e9e2c2';
-const TILE_FILL = '#24392c';
-const TILE_STROKE = '#7fb48b';
-const TILE_DIVIDER = '#112016';
-const PIP_FILL = '#f2eedf';
-const PIP_SHADOW = 'rgba(0, 0, 0, 0.16)';
+const FALLBACK_TILE_FILL = '#faf6eb';
+const FALLBACK_TILE_STROKE = '#b8a07a';
+const FALLBACK_TILE_SHADOW = 'rgba(0, 0, 0, 0.5)';
+const FALLBACK_TILE_DIVIDER = '#b8a07a';
+const FALLBACK_PIP_FILL = '#1a1a1a';
+const FALLBACK_PIP_SHADOW = 'rgba(0, 0, 0, 0.16)';
+const LOW_POWER_USER_AGENT_RE = /Android|iPhone|iPad|iPod/i;
 
 function getKonva() {
     return window.Konva || globalThis.Konva || null;
+}
+
+function getCssVar(name, fallback) {
+    const value = window.getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+    return value || fallback;
+}
+
+function readBoardMetrics() {
+    return {
+        tileW: Number.parseFloat(getCssVar('--tile-w', String(TILE_W))) || TILE_W,
+        tileH: Number.parseFloat(getCssVar('--tile-h', String(TILE_H))) || TILE_H,
+        pipSize: Number.parseFloat(getCssVar('--pip-size', '6')) || 6,
+        tileFill: getCssVar('--tile-bg', FALLBACK_TILE_FILL),
+        tileStroke: getCssVar('--tile-border', FALLBACK_TILE_STROKE),
+        tileShadow: getCssVar('--tile-shadow', FALLBACK_TILE_SHADOW),
+        tileDivider: getCssVar('--tile-border', FALLBACK_TILE_DIVIDER),
+        pipFill: getCssVar('--pip', FALLBACK_PIP_FILL),
+        pipShadow: getCssVar('--tile-shadow', FALLBACK_PIP_SHADOW)
+    };
+}
+
+function isLowPowerMode() {
+    return LOW_POWER_USER_AGENT_RE.test(navigator.userAgent || '');
 }
 
 function pipLayout(value, orient = 'horizontal') {
@@ -29,20 +53,33 @@ function pipLayout(value, orient = 'horizontal') {
     return layouts[value] || [];
 }
 
-function nodeBox(node) {
-    const width = node.orientation === 'horizontal' ? TILE_W : 34;
-    const height = node.orientation === 'horizontal' ? 34 : TILE_W;
+function getPipPosition(slotIndex, halfX, halfY, halfW, halfH) {
+    const col = slotIndex % 3;
+    const row = Math.floor(slotIndex / 3);
+    const innerPadX = Math.max(1.5, halfW * 0.08);
+    const innerPadY = Math.max(1.5, halfH * 0.08);
+    const usableW = Math.max(1, halfW - innerPadX * 2);
+    const usableH = Math.max(1, halfH - innerPadY * 2);
+    return {
+        x: halfX + innerPadX + (col + 0.5) * (usableW / 3),
+        y: halfY + innerPadY + (row + 0.5) * (usableH / 3)
+    };
+}
+
+function nodeBox(node, metrics = readBoardMetrics()) {
+    const width = node.orientation === 'horizontal' ? metrics.tileW : metrics.tileH;
+    const height = node.orientation === 'horizontal' ? metrics.tileH : metrics.tileW;
     return { width, height };
 }
 
-function measureBoard(board) {
+function measureBoard(board, metrics = readBoardMetrics()) {
     let minX = Infinity;
     let maxX = -Infinity;
     let minY = Infinity;
     let maxY = -Infinity;
 
     for (const node of Array.isArray(board?.nodes) ? board.nodes : []) {
-        const { width, height } = nodeBox(node);
+        const { width, height } = nodeBox(node, metrics);
         const halfW = width / 2;
         const halfH = height / 2;
         minX = Math.min(minX, node.x - halfW);
@@ -57,8 +94,8 @@ function measureBoard(board) {
             maxX: 0,
             minY: 0,
             maxY: 0,
-            width: TILE_W,
-            height: TILE_H,
+            width: metrics.tileW,
+            height: metrics.tileH,
             originX: 0,
             originY: 0
         };
@@ -112,34 +149,6 @@ function buildSignature(board, layout, context = {}) {
     ].join('::');
 }
 
-function circleSlots(orient = 'horizontal') {
-    if (orient === 'horizontal') {
-        return [
-            { x: 8, y: 8 },
-            { x: 16.5, y: 8 },
-            { x: 25, y: 8 },
-            { x: 8, y: 17 },
-            { x: 16.5, y: 17 },
-            { x: 25, y: 17 },
-            { x: 8, y: 26 },
-            { x: 16.5, y: 26 },
-            { x: 25, y: 26 }
-        ];
-    }
-
-    return [
-        { x: 8, y: 8 },
-        { x: 8, y: 21.5 },
-        { x: 8, y: 35 },
-        { x: 16.5, y: 8 },
-        { x: 16.5, y: 21.5 },
-        { x: 16.5, y: 35 },
-        { x: 25, y: 8 },
-        { x: 25, y: 21.5 },
-        { x: 25, y: 35 }
-    ];
-}
-
 export class KonvaBoardRenderer {
     constructor({ app, containerEl = null, boardEl = null, debug = false } = {}) {
         this.app = app;
@@ -155,10 +164,19 @@ export class KonvaBoardRenderer {
         this.lastSignature = '';
         this.lastBoard = null;
         this.lastLayout = null;
+        this.lastContext = null;
         this.nodeRects = new Map();
         this.tileRects = new Map();
         this.animatedTileIds = new Set();
+        this.tileGroupsById = new Map();
+        this.openEndGroupsByKey = new Map();
         this.enabled = false;
+        this.sceneRoot = null;
+        this.boardGroup = null;
+        this.overlayGroup = null;
+        this.emptyTextNode = null;
+        this.metrics = readBoardMetrics();
+        this.lowPowerMode = isLowPowerMode();
         this._resizeTimer = null;
     }
 
@@ -193,7 +211,7 @@ export class KonvaBoardRenderer {
 
         const width = Math.max(1, this.containerEl.clientWidth || 1);
         const height = Math.max(1, this.containerEl.clientHeight || 1);
-        const pixelRatio = Math.min(window.devicePixelRatio || 1, MAX_PIXEL_RATIO);
+        const pixelRatio = Math.min(window.devicePixelRatio || 1, this.lowPowerMode ? 1.25 : MAX_PIXEL_RATIO);
 
         this.stage = new Konva.Stage({
             container: this.stageHostEl,
@@ -201,7 +219,8 @@ export class KonvaBoardRenderer {
             height,
             pixelRatio
         });
-        this.layer = new Konva.Layer({ listening: false });
+        const LayerCtor = Konva.FastLayer || Konva.Layer;
+        this.layer = new LayerCtor({ listening: false });
         this.stage.add(this.layer);
 
         if (window.ResizeObserver) {
@@ -247,13 +266,20 @@ export class KonvaBoardRenderer {
         this.stageHostEl = null;
         this.anchorEl = null;
         this.layer = null;
+        this.sceneRoot = null;
+        this.boardGroup = null;
+        this.overlayGroup = null;
+        this.emptyTextNode = null;
         this.enabled = false;
         this.lastSignature = '';
         this.lastBoard = null;
         this.lastLayout = null;
+        this.lastContext = null;
         this.nodeRects.clear();
         this.tileRects.clear();
         this.animatedTileIds.clear();
+        this.tileGroupsById.clear();
+        this.openEndGroupsByKey.clear();
     }
 
     syncStageSize() {
@@ -267,11 +293,13 @@ export class KonvaBoardRenderer {
     }
 
     buildLayout(board) {
+        this.metrics = readBoardMetrics();
+        this.lowPowerMode = isLowPowerMode();
         const { width: stageWidth, height: stageHeight } = this.syncStageSize();
-        const bounds = measureBoard(board);
+        const bounds = measureBoard(board, this.metrics);
         const pad = 20;
-        const boardWidth = (bounds.width || TILE_W) + pad * 2;
-        const boardHeight = (bounds.height || TILE_H) + pad * 2;
+        const boardWidth = (bounds.width || this.metrics.tileW) + pad * 2;
+        const boardHeight = (bounds.height || this.metrics.tileH) + pad * 2;
         const viewWidth = Math.max(stageWidth - (Array.isArray(board?.nodes) && board.nodes.length > 5 ? SIDE_RESERVE * 2 : 0), 100);
         const viewHeight = Math.max(stageHeight - 20, 100);
         const scale = Math.min(viewWidth / boardWidth, viewHeight / boardHeight, 1.1);
@@ -287,6 +315,36 @@ export class KonvaBoardRenderer {
             viewWidth,
             viewHeight
         };
+    }
+
+    ensureSceneGraph(Konva, layout) {
+        if (!this.sceneRoot) {
+            this.sceneRoot = new Konva.Group({ listening: false });
+            this.boardGroup = new Konva.Group({ listening: false });
+            this.sceneRoot.add(this.boardGroup);
+            this.layer.add(this.sceneRoot);
+        }
+        if (!this.overlayGroup) {
+            this.overlayGroup = new Konva.Group({ listening: false });
+            this.layer.add(this.overlayGroup);
+        }
+        if (!this.emptyTextNode) {
+            this.emptyTextNode = new Konva.Text({
+                x: layout.stageWidth / 2,
+                y: layout.stageHeight / 2,
+                offsetX: 110,
+                offsetY: 12,
+                width: 220,
+                align: 'center',
+                text: this.app?.t?.('board-empty') || 'Сделайте первый ход',
+                fontSize: 15,
+                fontFamily: 'system-ui, sans-serif',
+                fill: getCssVar('--text-dim', '#d3d9d1'),
+                opacity: 0.9,
+                listening: false
+            });
+            this.overlayGroup.add(this.emptyTextNode);
+        }
     }
 
     render(board, context = {}) {
@@ -311,52 +369,139 @@ export class KonvaBoardRenderer {
             throw new Error('Konva is not available');
         }
 
-        this.layer.destroyChildren();
-        this.nodeRects.clear();
-        this.tileRects.clear();
-        this.anchorEl.innerHTML = '';
-
-        const boardGroup = new Konva.Group({
+        this.ensureSceneGraph(Konva, layout);
+        this.sceneRoot.setAttrs({
             x: layout.stageWidth / 2,
             y: layout.stageHeight / 2,
             scaleX: layout.scale,
             scaleY: layout.scale
         });
-        this.layer.add(boardGroup);
+        this.anchorEl.innerHTML = '';
+        this.nodeRects.clear();
+        this.tileRects.clear();
 
         const hasNodes = Array.isArray(board.nodes) && board.nodes.length > 0;
-        if (!hasNodes) {
-            this.animatedTileIds.clear();
-            const empty = new Konva.Text({
+        this.boardGroup.visible(hasNodes);
+        this.emptyTextNode?.visible(!hasNodes);
+        if (this.emptyTextNode) {
+            this.emptyTextNode.position({
                 x: layout.stageWidth / 2,
-                y: layout.stageHeight / 2,
-                offsetX: 110,
-                offsetY: 12,
-                width: 220,
-                align: 'center',
-                text: this.app?.t?.('board-empty') || 'Сделайте первый ход',
-                fontSize: 15,
-                fontFamily: 'system-ui, sans-serif',
-                fill: '#d3d9d1',
-                opacity: 0.9
+                y: layout.stageHeight / 2
             });
-            this.layer.add(empty);
-            this.layer.draw();
-            this.stage.draw();
+        }
+
+        if (!hasNodes) {
+            for (const entry of this.tileGroupsById.values()) {
+                try { entry.group.destroy(); } catch {}
+            }
+            this.tileGroupsById.clear();
+            this.openEndGroupsByKey.forEach((entry) => {
+                try { entry.group.destroy(); } catch {}
+            });
+            this.openEndGroupsByKey.clear();
+            this.animatedTileIds.clear();
+            this.layer.batchDraw();
             return;
         }
 
-        const { originX, originY } = layout.bounds;
+        this.syncBoardTiles(Konva, board, layout, context);
+        this.syncOpenEnds(Konva, board, layout);
+        this.layer.batchDraw();
+        this.log('rendered', board.nodes.length, 'nodes');
+    }
+
+    createTileEntry(Konva, node) {
+        const { width, height } = nodeBox(node, this.metrics);
+        const tile = new Konva.Rect({
+            x: -width / 2,
+            y: -height / 2,
+            width,
+            height,
+            cornerRadius: 4,
+            fill: this.metrics.tileFill,
+            stroke: this.metrics.tileStroke,
+            strokeWidth: 1.5,
+            shadowColor: this.metrics.tileShadow,
+            shadowBlur: this.lowPowerMode ? 0 : 3,
+            shadowOffsetY: this.lowPowerMode ? 0 : 1,
+            perfectDrawEnabled: false,
+            shadowForStrokeEnabled: false,
+            listening: false
+        });
+        const divider = new Konva.Rect({
+            x: node.orientation === 'horizontal' ? -1 : -width / 2 + 0.5,
+            y: node.orientation === 'horizontal' ? -height / 2 : -1,
+            width: node.orientation === 'horizontal' ? 2 : width - 1,
+            height: node.orientation === 'horizontal' ? height : 2,
+            fill: this.metrics.tileDivider,
+            opacity: 0.95,
+            listening: false
+        });
+        const group = new Konva.Group({ listening: false });
+        group.add(tile);
+        group.add(divider);
+
+        const pipCircles = [];
+        const values = [node.displayA ?? node.tile?.a ?? 0, node.displayB ?? node.tile?.b ?? 0];
+        for (let halfIndex = 0; halfIndex < values.length; halfIndex++) {
+            const halfValue = Number(values[halfIndex]) || 0;
+            const halfX = node.orientation === 'horizontal'
+                ? (halfIndex === 0 ? -width / 2 : 0)
+                : -width / 2;
+            const halfY = node.orientation === 'horizontal'
+                ? -height / 2
+                : (halfIndex === 0 ? -height / 2 : 0);
+            const halfW = node.orientation === 'horizontal' ? width / 2 : width;
+            const halfH = node.orientation === 'horizontal' ? height : height / 2;
+            const pips = pipLayout(halfValue, node.orientation === 'horizontal' ? 'horizontal' : 'vertical');
+
+            for (let slotIndex = 0; slotIndex < 9; slotIndex++) {
+                const position = getPipPosition(slotIndex, halfX, halfY, halfW, halfH);
+                const filled = pips.includes(slotIndex);
+                const circle = new Konva.Circle({
+                    x: position.x,
+                    y: position.y,
+                    radius: Math.max(2.4, this.metrics.pipSize / 2),
+                    fill: filled ? this.metrics.pipFill : 'rgba(0,0,0,0)',
+                    opacity: filled ? 1 : 0,
+                    listening: false
+                });
+                if (filled) {
+                    circle.setAttrs({
+                        shadowColor: this.metrics.pipShadow,
+                        shadowBlur: this.lowPowerMode ? 0 : 1.4,
+                        shadowOffsetY: this.lowPowerMode ? 0 : 0.6
+                    });
+                }
+                pipCircles.push(circle);
+                group.add(circle);
+            }
+        }
+
+        return { group, tile, divider, pipCircles, width, height };
+    }
+
+    syncBoardTiles(Konva, board, layout, context) {
         const pendingTravelId = context?.pendingTravel?.tileId ? String(context.pendingTravel.tileId) : '';
         const lastNodeIndex = board.nodes.length - 1;
         const isReducedMotion = Boolean(window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches);
+        const nextTileIds = new Set();
 
         for (let i = 0; i < board.nodes.length; i++) {
             const node = board.nodes[i];
-            const { width, height } = nodeBox(node);
-            const localX = node.x - originX;
-            const localY = node.y - originY;
             const tileId = String(node.tile?.id ?? `${i}`);
+            nextTileIds.add(tileId);
+
+            let entry = this.tileGroupsById.get(tileId);
+            if (!entry) {
+                entry = this.createTileEntry(Konva, node);
+                this.tileGroupsById.set(tileId, entry);
+                this.boardGroup.add(entry.group);
+            }
+
+            const { width, height } = nodeBox(node, this.metrics);
+            const localX = node.x - layout.originX;
+            const localY = node.y - layout.originY;
             const rect = {
                 left: ((localX - width / 2) * layout.scale) + layout.stageWidth / 2,
                 top: ((localY - height / 2) * layout.scale) + layout.stageHeight / 2,
@@ -389,52 +534,46 @@ export class KonvaBoardRenderer {
             ].join(';');
             this.anchorEl.appendChild(anchor);
 
-            const group = new Konva.Group({
+            entry.group.setAttrs({
                 x: localX,
                 y: localY,
-                offsetX: width / 2,
-                offsetY: height / 2
+                offsetX: 0,
+                offsetY: 0,
+                visible: true,
+                opacity: 1,
+                scaleX: 1,
+                scaleY: 1
             });
 
-            const isPendingTravel = pendingTravelId && pendingTravelId === tileId;
-            const isNewestTile = i === lastNodeIndex && board.nodes.length > 1 && !this.animatedTileIds.has(tileId);
-
-            if (isPendingTravel) {
-                group.visible(false);
-            } else if (isNewestTile) {
-                group.opacity(0);
-                group.scale({ x: 0.84, y: 0.84 });
-            }
-
-            const tile = new Konva.Rect({
+            entry.tile.setAttrs({
                 x: -width / 2,
                 y: -height / 2,
                 width,
                 height,
-                cornerRadius: 5,
-                fill: TILE_FILL,
-                stroke: TILE_STROKE,
-                strokeWidth: 1.2,
-                shadowColor: 'rgba(0, 0, 0, 0.18)',
-                shadowBlur: 3,
-                shadowOffsetY: 1
+                cornerRadius: 4,
+                fill: this.metrics.tileFill,
+                stroke: this.metrics.tileStroke,
+                strokeWidth: 1.5,
+                shadowColor: this.metrics.tileShadow,
+                shadowBlur: this.lowPowerMode ? 0 : 3,
+                shadowOffsetY: this.lowPowerMode ? 0 : 1,
+                perfectDrawEnabled: false,
+                shadowForStrokeEnabled: false
             });
-            group.add(tile);
 
-            const divider = new Konva.Rect({
+            entry.divider.setAttrs({
                 x: node.orientation === 'horizontal' ? -1 : -width / 2 + 0.5,
                 y: node.orientation === 'horizontal' ? -height / 2 : -1,
                 width: node.orientation === 'horizontal' ? 2 : width - 1,
                 height: node.orientation === 'horizontal' ? height : 2,
-                fill: TILE_DIVIDER,
+                fill: this.metrics.tileDivider,
                 opacity: 0.95
             });
-            group.add(divider);
 
             const values = [node.displayA ?? node.tile?.a ?? 0, node.displayB ?? node.tile?.b ?? 0];
-            const halfOrientations = [node.orientation, node.orientation];
+            let pipCursor = 0;
             for (let halfIndex = 0; halfIndex < values.length; halfIndex++) {
-                const halfValue = values[halfIndex];
+                const halfValue = Number(values[halfIndex]) || 0;
                 const halfX = node.orientation === 'horizontal'
                     ? (halfIndex === 0 ? -width / 2 : 0)
                     : -width / 2;
@@ -443,78 +582,90 @@ export class KonvaBoardRenderer {
                     : (halfIndex === 0 ? -height / 2 : 0);
                 const halfW = node.orientation === 'horizontal' ? width / 2 : width;
                 const halfH = node.orientation === 'horizontal' ? height : height / 2;
-                const slots = circleSlots(node.orientation === 'horizontal' ? 'horizontal' : 'vertical');
-                const pips = pipLayout(Number(halfValue) || 0, halfOrientations[halfIndex]);
+                const pips = pipLayout(halfValue, node.orientation === 'horizontal' ? 'horizontal' : 'vertical');
 
-                for (let slotIndex = 0; slotIndex < slots.length; slotIndex++) {
-                    const slot = slots[slotIndex];
-                    const pip = new Konva.Circle({
-                        x: halfX + slot.x,
-                        y: halfY + slot.y,
-                        radius: 2.35,
-                        fill: pips.includes(slotIndex) ? PIP_FILL : 'rgba(0,0,0,0)',
-                        opacity: pips.includes(slotIndex) ? 1 : 0
+                for (let slotIndex = 0; slotIndex < 9; slotIndex++) {
+                    const pip = entry.pipCircles[pipCursor++];
+                    const position = getPipPosition(slotIndex, halfX, halfY, halfW, halfH);
+                    const filled = pips.includes(slotIndex);
+                    pip.setAttrs({
+                        x: position.x,
+                        y: position.y,
+                        radius: Math.max(2.4, this.metrics.pipSize / 2),
+                        fill: filled ? this.metrics.pipFill : 'rgba(0,0,0,0)',
+                        opacity: filled ? 1 : 0,
+                        shadowColor: this.metrics.pipShadow,
+                        shadowBlur: filled && !this.lowPowerMode ? 1.4 : 0,
+                        shadowOffsetY: filled && !this.lowPowerMode ? 0.6 : 0
                     });
-                    if (pips.includes(slotIndex)) {
-                        pip.setAttrs({
-                            shadowColor: PIP_SHADOW,
-                            shadowBlur: 1.4,
-                            shadowOffsetY: 0.6
-                        });
-                    }
-                    group.add(pip);
                 }
-
-                void halfW;
-                void halfH;
             }
 
             if (i === board.crossNodeId && board.crossSidesClosed >= 2) {
-                tile.stroke('#f0c040');
-                tile.strokeWidth(1.7);
+                entry.tile.setAttrs({
+                    stroke: '#f0c040',
+                    strokeWidth: 1.7
+                });
             }
 
-            boardGroup.add(group);
-
+            const isPendingTravel = pendingTravelId && pendingTravelId === tileId;
+            const isNewestTile = i === lastNodeIndex && board.nodes.length > 1 && !this.animatedTileIds.has(tileId);
             if (isPendingTravel) {
-                continue;
-            }
-            if (isNewestTile && !isReducedMotion) {
-                this.animatedTileIds.add(tileId);
-                group.to({
+                entry.group.visible(false);
+            } else if (isNewestTile && !isReducedMotion) {
+                entry.group.opacity(0);
+                entry.group.scale({ x: 0.84, y: 0.84 });
+                entry.group.to({
                     opacity: 1,
                     scaleX: 1,
                     scaleY: 1,
                     duration: 0.24
                 });
+                this.animatedTileIds.add(tileId);
             } else {
                 this.animatedTileIds.add(tileId);
             }
+
+            entry.group.zIndex(i);
         }
 
-        if (Array.isArray(board.openEnds) && board.openEnds.length) {
-            const pills = new Konva.Group({
-                x: layout.stageWidth / 2,
-                y: layout.stageHeight / 2 + ((layout.bounds.height + 32) * layout.scale) / 2
-            });
-            for (let i = 0; i < board.openEnds.length; i++) {
-                const oe = board.openEnds[i];
-                const label = String(oe.value ?? '');
-                const pillWidth = Math.max(18, 11 + label.length * 7);
-                const pillHeight = 18;
-                const pillX = (i - (board.openEnds.length - 1) / 2) * (pillWidth + 6);
+        for (const [tileId, entry] of this.tileGroupsById.entries()) {
+            if (nextTileIds.has(tileId)) continue;
+            try { entry.group.destroy(); } catch {}
+            this.tileGroupsById.delete(tileId);
+            this.animatedTileIds.delete(tileId);
+        }
+    }
+
+    syncOpenEnds(Konva, board, layout) {
+        const openEnds = Array.isArray(board.openEnds) ? board.openEnds : [];
+        const nextKeys = new Set();
+        const baseY = layout.stageHeight / 2 + ((layout.bounds.height + 32) * layout.scale) / 2;
+
+        for (let i = 0; i < openEnds.length; i++) {
+            const oe = openEnds[i];
+            const key = `${oe.nodeId ?? ''}:${oe.side ?? ''}:${oe.value ?? ''}:${oe.growthDir ?? ''}`;
+            nextKeys.add(key);
+            const label = String(oe.value ?? '');
+            const pillWidth = Math.max(18, 11 + label.length * 7);
+            const pillHeight = 18;
+            const pillX = layout.stageWidth / 2 + (i - (openEnds.length - 1) / 2) * (pillWidth + 6);
+            let entry = this.openEndGroupsByKey.get(key);
+            if (!entry) {
+                const group = new Konva.Group({ listening: false });
                 const bg = new Konva.Rect({
-                    x: pillX - pillWidth / 2,
+                    x: -pillWidth / 2,
                     y: -pillHeight / 2,
                     width: pillWidth,
                     height: pillHeight,
                     cornerRadius: 9,
                     fill: PILL_BG,
                     stroke: PILL_STROKE,
-                    strokeWidth: 1
+                    strokeWidth: 1,
+                    listening: false
                 });
                 const text = new Konva.Text({
-                    x: pillX - pillWidth / 2,
+                    x: -pillWidth / 2,
                     y: -7,
                     width: pillWidth,
                     height: 14,
@@ -522,17 +673,39 @@ export class KonvaBoardRenderer {
                     text: label,
                     fontSize: 11,
                     fontFamily: 'system-ui, sans-serif',
-                    fill: PILL_TEXT
+                    fill: PILL_TEXT,
+                    listening: false
                 });
-                pills.add(bg);
-                pills.add(text);
+                group.add(bg);
+                group.add(text);
+                this.overlayGroup.add(group);
+                entry = { group, bg, text };
+                this.openEndGroupsByKey.set(key, entry);
             }
-            this.layer.add(pills);
+            entry.group.setAttrs({ x: pillX, y: baseY, visible: true });
+            entry.bg.setAttrs({
+                x: -pillWidth / 2,
+                y: -pillHeight / 2,
+                width: pillWidth,
+                height: pillHeight
+            });
+            entry.text.setAttrs({
+                x: -pillWidth / 2,
+                y: -7,
+                width: pillWidth,
+                text: label
+            });
         }
 
-        this.layer.draw();
-        this.stage.draw();
-        this.log('rendered', board.nodes.length, 'nodes');
+        for (const [key, entry] of this.openEndGroupsByKey.entries()) {
+            if (nextKeys.has(key)) continue;
+            try { entry.group.destroy(); } catch {}
+            this.openEndGroupsByKey.delete(key);
+        }
+
+        if (!openEnds.length) {
+            this.openEndGroupsByKey.clear();
+        }
     }
 
     getTileRect(tileId) {
@@ -552,7 +725,7 @@ export class KonvaBoardRenderer {
         const rect = this.getNodeRect(openEnd.nodeId);
         if (!rect) return null;
         const side = String(openEnd.side || '').trim();
-        const offset = 26;
+        const offset = Math.max(10, Math.min(24, Math.max(rect.width, rect.height) * 0.38));
         const result = {
             left: rect.left,
             top: rect.top,

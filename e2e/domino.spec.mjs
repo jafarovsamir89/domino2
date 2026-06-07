@@ -1,4 +1,7 @@
+import fs from "node:fs";
 import { test, expect } from "@playwright/test";
+
+const KONVA_SCREENSHOT_DIR = "C:/Users/user/.codex/attachments/konva-parity";
 
 async function stubApi(page) {
   await page.route("**/api/**", async (route) => {
@@ -283,6 +286,14 @@ test("Konva query flag 1 forces Konva board and stores true", async ({ page }) =
     const board = window.game?.board;
     if (!board) throw new Error("board_missing");
     if (window.game?.renderer?._konvaBoardRenderer) {
+      window.game.renderer._konvaBoardRenderer.tileGroupsById.forEach((entry) => {
+        try { entry.group.destroy(); } catch {}
+      });
+      window.game.renderer._konvaBoardRenderer.tileGroupsById.clear();
+      window.game.renderer._konvaBoardRenderer.openEndGroupsByKey.forEach((entry) => {
+        try { entry.group.destroy(); } catch {}
+      });
+      window.game.renderer._konvaBoardRenderer.openEndGroupsByKey.clear();
       window.game.renderer._konvaBoardRenderer.lastSignature = "";
     }
     window.game.renderer.renderBoard(board);
@@ -290,6 +301,165 @@ test("Konva query flag 1 forces Konva board and stores true", async ({ page }) =
 
   await expect(page.locator("#board-container .konva-board-root")).toHaveCount(0);
   await expect(page.locator("#board .board-layout")).toHaveCount(1);
+  expect(pageErrors).toEqual([]);
+  expect(consoleErrors).toEqual([]);
+  expect(consoleWarnings).toEqual(expect.arrayContaining([expect.stringContaining("Menu music autoplay prevented")]));
+});
+
+test("Konva board parity keeps DOM palette, geometry, and overlays aligned", async ({ page }) => {
+  const pageErrors = [];
+  const consoleErrors = [];
+  const consoleWarnings = [];
+  page.on("pageerror", (error) => pageErrors.push(error.message));
+  page.on("console", (msg) => {
+    if (msg.type() === "error") consoleErrors.push(msg.text());
+    if (msg.type() === "warning") consoleWarnings.push(msg.text());
+  });
+
+  await setupSoloSmoke(page, { konvaEnabled: null });
+  await page.goto("/index.html");
+  await startSoloGame(page);
+  const overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1);
+  expect(overflow).toBe(false);
+
+  fs.mkdirSync(KONVA_SCREENSHOT_DIR, { recursive: true });
+  await page.screenshot({ path: `${KONVA_SCREENSHOT_DIR}/konva-solo-empty.png` });
+
+  const firstState = await page.evaluate(() => {
+    const game = window.game;
+    const renderer = game?.renderer;
+    const board = game?.board;
+    if (!game?.renderer || !board) throw new Error("missing_game_state");
+    const BoardCtor = board.constructor;
+    const makeTile = (a, b, id) => ({
+      a,
+      b,
+      id,
+      isDouble: a === b,
+      hasValue(value) {
+        return this.a === value || this.b === value;
+      },
+      otherSide(value) {
+        return this.a === value ? this.b : this.a;
+      }
+    });
+    const clone = BoardCtor.fromJSON(board.toJSON());
+    const tiles = [
+      makeTile(3, 2, "konva-q-1"),
+      makeTile(6, 3, "konva-q-2"),
+      makeTile(6, 6, "konva-q-3"),
+      makeTile(1, 6, "konva-q-4"),
+      makeTile(1, 1, "konva-q-5")
+    ];
+    clone.placeFirst(tiles[0]);
+    renderer.renderBoard(clone);
+    window.__konvaParityBoard = clone;
+    window.__konvaParityTiles = tiles;
+    const konva = renderer._konvaBoardRenderer;
+    const entry = Array.from(konva?.tileGroupsById?.values?.() || [])[0];
+    const firstOpenEnd = clone.openEnds[0];
+    const nodeRect = konva?.getNodeRect?.(firstOpenEnd?.nodeId);
+    const anchorRect = konva?.getOpenEndAnchorRect?.(firstOpenEnd);
+    const header = document.querySelector(".game-header");
+    const opp = document.querySelector(".opp-container");
+    const boardContainer = document.querySelector("#board-container");
+    return {
+      tileFill: entry?.tile?.fill?.() ?? null,
+      tileStroke: entry?.tile?.stroke?.() ?? null,
+      pipFill: entry?.pipCircles?.find((pip) => pip.opacity() > 0)?.fill?.() ?? null,
+      groupOffsetX: entry?.group?.getAttr?.("offsetX") ?? 0,
+      groupOffsetY: entry?.group?.getAttr?.("offsetY") ?? 0,
+      width: entry?.tile?.width?.() ?? 0,
+      height: entry?.tile?.height?.() ?? 0,
+      horizontal: (entry?.tile?.width?.() ?? 0) > (entry?.tile?.height?.() ?? 0),
+      pipPositions: entry?.pipCircles?.map((pip) => ({ x: pip.x(), y: pip.y(), opacity: pip.opacity() })) ?? [],
+      openSide: firstOpenEnd?.side ?? null,
+      nodeRect,
+      anchorRect,
+      headerZ: Number(getComputedStyle(header).zIndex || "0"),
+      oppZ: Number(getComputedStyle(opp).zIndex || "0"),
+      boardZ: Number(getComputedStyle(boardContainer).zIndex || "0"),
+      tileBg: getComputedStyle(document.documentElement).getPropertyValue("--tile-bg").trim(),
+      tileBorder: getComputedStyle(document.documentElement).getPropertyValue("--tile-border").trim(),
+      pipCss: getComputedStyle(document.documentElement).getPropertyValue("--pip").trim()
+    };
+  });
+
+  expect(firstState.tileFill).toBe(firstState.tileBg);
+  expect(firstState.tileStroke).toBe(firstState.tileBorder);
+  expect(firstState.pipFill).toBe(firstState.pipCss);
+  expect(firstState.groupOffsetX).toBe(0);
+  expect(firstState.groupOffsetY).toBe(0);
+  expect(firstState.width).toBeGreaterThan(firstState.height);
+  expect(firstState.pipPositions.length).toBe(18);
+  expect(firstState.pipPositions.slice(0, 9).every((pip) => pip.x < 0)).toBe(true);
+  expect(firstState.pipPositions.slice(9).every((pip) => pip.x > 0)).toBe(true);
+  expect(firstState.headerZ).toBeGreaterThan(firstState.boardZ);
+  expect(firstState.oppZ).toBeGreaterThan(firstState.boardZ);
+  expect(firstState.anchorRect).not.toBeNull();
+  expect(firstState.nodeRect).not.toBeNull();
+
+  const anchorDistance = await page.evaluate(() => {
+    const game = window.game;
+    const renderer = game?.renderer?._konvaBoardRenderer;
+    const board = window.__konvaParityBoard;
+    const openEnd = board?.openEnds?.[0];
+    const nodeRect = renderer?.getNodeRect?.(openEnd?.nodeId);
+    const anchorRect = renderer?.getOpenEndAnchorRect?.(openEnd);
+    if (!nodeRect || !anchorRect || !openEnd) return null;
+    const distance = openEnd.side === "left"
+      ? nodeRect.left - anchorRect.right
+      : openEnd.side === "right"
+        ? anchorRect.left - nodeRect.right
+        : openEnd.side === "top"
+          ? nodeRect.top - anchorRect.bottom
+          : anchorRect.top - nodeRect.bottom;
+    return { distance, nodeRect, anchorRect, side: openEnd.side };
+  });
+
+  expect(anchorDistance).not.toBeNull();
+  expect(anchorDistance.distance).toBeGreaterThanOrEqual(0);
+  expect(anchorDistance.distance).toBeLessThan(Math.max(24, Math.max(anchorDistance.nodeRect.width, anchorDistance.nodeRect.height) * 0.45));
+
+  await page.screenshot({ path: `${KONVA_SCREENSHOT_DIR}/konva-first-move.png` });
+
+  await page.evaluate(() => {
+    const board = window.__konvaParityBoard;
+    const tiles = window.__konvaParityTiles;
+    const renderer = window.game?.renderer;
+    if (!board || !tiles || !renderer) throw new Error("konva_parity_state_missing");
+    const remaining1 = tiles.slice(1);
+    const move1 = board.getValidMoves(remaining1)[0];
+    if (!move1) throw new Error("konva_first_followup_move_missing");
+    board.placeTile(remaining1[move1.tileIndex], move1.openEndIndex);
+    const remaining2 = tiles.slice(2);
+    const move2 = board.getValidMoves(remaining2)[0];
+    if (move2) {
+      board.placeTile(remaining2[move2.tileIndex], move2.openEndIndex);
+    }
+    renderer.renderBoard(board);
+  });
+  await page.waitForTimeout(150);
+  await page.screenshot({ path: `${KONVA_SCREENSHOT_DIR}/konva-several-moves.png` });
+
+  await page.evaluate(() => {
+    const board = window.__konvaParityBoard;
+    const renderer = window.game?.renderer;
+    if (!board || !renderer) throw new Error("konva_parity_state_missing");
+    const ends = board.openEnds.map((_, index) => index).slice(0, Math.min(2, board.openEnds.length));
+    renderer.showArrowChoices(board, ends, () => {}, () => {});
+  });
+  await page.waitForTimeout(120);
+  await page.screenshot({ path: `${KONVA_SCREENSHOT_DIR}/konva-open-end-markers.png` });
+
+  await page.screenshot({ path: `${KONVA_SCREENSHOT_DIR}/konva-header-opponent-visible.png` });
+
+  await page.evaluate(() => {
+    window.game?.renderer?.removeArrows?.();
+    delete window.__konvaParityBoard;
+    delete window.__konvaParityTiles;
+  });
+
   expect(pageErrors).toEqual([]);
   expect(consoleErrors).toEqual([]);
   expect(consoleWarnings).toEqual(expect.arrayContaining([expect.stringContaining("Menu music autoplay prevented")]));

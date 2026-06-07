@@ -598,7 +598,7 @@ export class Renderer {
             const rect = this.getBoardOpenEndRect(oe) || wrapper?.getBoundingClientRect?.();
             if (!rect) continue;
             const gsRect = gs.getBoundingClientRect();
-            const offset = 45 * (this._lastScale || 1);
+            const offset = Math.max(12, Math.min(26, Math.max(rect.width, rect.height) * 0.38));
             let ax = rect.left + rect.width / 2 - gsRect.left;
             let ay = rect.top + rect.height / 2 - gsRect.top;
             if (oe.side === 'right') ax += offset;
