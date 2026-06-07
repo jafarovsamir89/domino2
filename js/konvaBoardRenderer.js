@@ -939,8 +939,11 @@ export class KonvaBoardRenderer {
         });
         entry.group.visible(true);
         entry.group.position({ x: sourceLocal.x, y: sourceLocal.y });
-        entry.group.opacity(this.lowPowerMode ? 0.95 : 1);
-        entry.group.scale({ x: scaleX, y: scaleY });
+        entry.group.opacity(1);
+        entry.group.scale({
+            x: Math.max(0.96, scaleX * 0.98),
+            y: Math.max(0.96, scaleY * 0.98)
+        });
         entry.group.rotation(0);
         this.animatedTileIds.add(String(tileId));
         this.activeTileAnimations.set(String(tileId), {
@@ -952,8 +955,8 @@ export class KonvaBoardRenderer {
         });
         this.layer.batchDraw();
         const duration = this.lowPowerMode
-            ? Math.min(0.22, Math.max(0.12, distance / 1600))
-            : Math.min(0.28, Math.max(0.16, distance / 1300));
+            ? Math.min(0.30, Math.max(0.20, distance / 1450))
+            : Math.min(0.36, Math.max(0.24, distance / 1150));
         const targetRotation = 0;
 
         return new Promise((resolve) => {
@@ -982,7 +985,7 @@ export class KonvaBoardRenderer {
                 opacity: 1,
                 rotation: targetRotation,
                 duration,
-                easing: Konva.Easings?.EaseOut || Konva.Easings?.EaseInOut,
+                easing: Konva.Easings?.EaseInOut || Konva.Easings?.EaseOut,
                 onFinish: finish
             });
             if (!tween) {

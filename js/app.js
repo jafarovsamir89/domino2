@@ -7997,12 +7997,11 @@ class DominoGame {
         this._pendingOptimisticPlayTileId = '';
         this._pendingOptimisticPlayActionId = '';
         this._boardAnimationActive = null;
+        this._boardAnimationPromise = Promise.resolve();
         this.selectedTileIndex = pending.snapshot.selectedTileIndex;
         this.validMoves = pending.snapshot.validMoves;
         this.goshaCombo = pending.snapshot.goshaCombo;
-        if (!isOwnOptimisticPlay) {
-            this.turnInProgress = false;
-        }
+        this.turnInProgress = false;
         this.renderState();
     }
 
@@ -9560,8 +9559,17 @@ class DominoGame {
         if (!this.pendingScorePopupAfterBoardAnimation.length) return;
         const queue = this.pendingScorePopupAfterBoardAnimation.splice(0);
         for (const score of queue) {
-            this.renderer.showScorePopup(score);
+            this.showScoreFeedback(score);
         }
+    }
+
+    showScoreFeedback(score, options = {}) {
+        const value = Number(score || 0);
+        if (!(value > 0)) return;
+        if (options.sound !== false) {
+            this.playSound('score');
+        }
+        this.renderer.showScorePopup(value);
     }
 
     scheduleRealtimeRender(flags = {}) {
@@ -10002,7 +10010,7 @@ class DominoGame {
                 });
             });
         } else if (scoreDelta > 0) {
-            this.renderer.showScorePopup(scoreDelta);
+            this.showScoreFeedback(scoreDelta);
         }
 
         if (isOwnOptimisticPlay) {
@@ -10448,7 +10456,7 @@ class DominoGame {
 
     addScore(pi,score){
         this.scores[pi]+=score; if(this.isTeamMode)this.teamScores[this.getTeam(pi)]+=score;
-        this.playSound('score'); this.renderer.showScorePopup(score);
+        this.showScoreFeedback(score);
         this.broadcastMsg(`${this.playerNames[pi]} +${score}!`,2000);
         return score;
     }

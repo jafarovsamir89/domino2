@@ -291,55 +291,83 @@ export class Renderer {
         return (Array.isArray(tileRects) ? tileRects : []).reduce((count, rect) => count + (this.rectIntersectsRect(arrowRect, rect) ? 1 : 0), 0);
     }
 
-    adjustArrowPointForCollision(point, buttonSize, tileRects = [], side = '') {
+    getArrowViewportBounds(buttonSize) {
         const radius = buttonSize / 2;
         const gameRect = document.getElementById('game-screen')?.getBoundingClientRect?.() || null;
-        const clampPoint = (value, min, max) => Math.min(Math.max(value, min), max);
         const minX = gameRect ? gameRect.left + radius + 8 : radius + 8;
         const maxX = gameRect ? gameRect.right - radius - 8 : window.innerWidth - radius - 8;
         const minY = gameRect ? gameRect.top + radius + 8 : radius + 8;
         const maxY = gameRect ? gameRect.bottom - radius - 8 : window.innerHeight - radius - 8;
-        const bounds = {
+        return {
             minX,
             maxX: Math.max(minX, maxX),
             minY,
             maxY: Math.max(minY, maxY)
         };
-        const nudges = [];
-        const step = 8;
-        if (side === 'left') nudges.push([-step, 0], [-step * 2, 0], [-step * 3, 0], [-step * 4, 0]);
-        if (side === 'right') nudges.push([step, 0], [step * 2, 0], [step * 3, 0], [step * 4, 0]);
-        if (side === 'top') nudges.push([0, -step], [0, -step * 2], [0, -step * 3], [0, -step * 4]);
-        if (side === 'bottom' || !side) nudges.push([0, step], [0, step * 2], [0, step * 3], [0, step * 4]);
+    }
 
-        let best = { ...point, collisions: this.countArrowCollisions(point, buttonSize, tileRects) };
-        for (const [dx, dy] of nudges) {
-            const candidate = {
-                x: clampPoint(point.x + dx, bounds.minX, bounds.maxX),
-                y: clampPoint(point.y + dy, bounds.minY, bounds.maxY)
-            };
-            const collisions = this.countArrowCollisions(candidate, buttonSize, tileRects);
-            if (collisions === 0) return candidate;
-            if (collisions < best.collisions) {
-                best = { ...candidate, collisions };
+    clampArrowPointToBounds(point, bounds) {
+        return {
+            x: Math.min(Math.max(point.x, bounds.minX), bounds.maxX),
+            y: Math.min(Math.max(point.y, bounds.minY), bounds.maxY)
+        };
+    }
+
+    scoreArrowCandidate(candidate, rawPoint, buttonSize, tileRects = [], side = '', bounds = null) {
+        const safeBounds = bounds || this.getArrowViewportBounds(buttonSize);
+        const clamped = this.clampArrowPointToBounds(candidate, safeBounds);
+        const collisions = this.countArrowCollisions(clamped, buttonSize, tileRects);
+        const horizontalSide = side === 'left' || side === 'right';
+        const normalDelta = horizontalSide ? Math.abs(clamped.x - rawPoint.x) : Math.abs(clamped.y - rawPoint.y);
+        const perpendicularDelta = horizontalSide ? Math.abs(clamped.y - rawPoint.y) : Math.abs(clamped.x - rawPoint.x);
+        const outOfBoundsPenalty = (candidate.x !== clamped.x || candidate.y !== clamped.y) ? 250 : 0;
+        return {
+            point: clamped,
+            collisions,
+            score: (collisions * 1000) + (perpendicularDelta * 20) + (normalDelta * 2) + outOfBoundsPenalty,
+            normalDelta,
+            perpendicularDelta,
+            outOfBoundsPenalty
+        };
+    }
+
+    adjustArrowPointForCollision(point, buttonSize, tileRects = [], side = '') {
+        const rawPoint = {
+            x: Number(point?.x || 0),
+            y: Number(point?.y || 0)
+        };
+        const rawRect = point?.rect || null;
+        const bounds = this.getArrowViewportBounds(buttonSize);
+        const horizontalSide = side === 'left' || side === 'right';
+        const normalSign = side === 'left' || side === 'top' ? -1 : 1;
+        const normalSteps = [0, 8, 16, 24, 32];
+        const perpendicularSteps = [0, -12, 12, -24, 24];
+        let best = null;
+
+        for (const normalStep of normalSteps) {
+            for (const perpendicularStep of perpendicularSteps) {
+                const candidate = horizontalSide
+                    ? { x: rawPoint.x + (normalStep * normalSign), y: rawPoint.y + perpendicularStep }
+                    : { x: rawPoint.x + perpendicularStep, y: rawPoint.y + (normalStep * normalSign) };
+                const scored = this.scoreArrowCandidate(candidate, rawPoint, buttonSize, tileRects, side, bounds);
+                if (!best || scored.score < best.score) {
+                    best = scored;
+                }
             }
         }
 
-        const perpendicular = side === 'left' || side === 'right'
-            ? [[0, -18], [0, 18]]
-            : [[-18, 0], [18, 0]];
-        for (const [dx, dy] of perpendicular) {
-            const candidate = {
-                x: clampPoint(best.x + dx, bounds.minX, bounds.maxX),
-                y: clampPoint(best.y + dy, bounds.minY, bounds.maxY)
-            };
-            const collisions = this.countArrowCollisions(candidate, buttonSize, tileRects);
-            if (collisions === 0) return candidate;
-            if (collisions < best.collisions) {
-                best = { ...candidate, collisions };
-            }
+        const adjustedPoint = best?.point || this.clampArrowPointToBounds(rawPoint, bounds);
+        if (window.DOMINO_DEBUG_BOARD_RENDERER === true) {
+            console.debug('[ArrowChoice]', {
+                side,
+                rawPoint,
+                adjustedPoint,
+                sourceRect: rawRect,
+                collisionsBefore: this.countArrowCollisions(rawPoint, buttonSize, tileRects),
+                collisionsAfter: this.countArrowCollisions(adjustedPoint, buttonSize, tileRects)
+            });
         }
-        return best;
+        return adjustedPoint;
     }
 
     renderBoneyard(count) {
@@ -763,9 +791,9 @@ export class Renderer {
             const btn = document.createElement('button');
             btn.className = 'arrow-btn';
             btn.textContent = arrowSymbols[oe.side] || '?';
+            btn.classList.add(`arrow-${oe.side || 'bottom'}`);
             btn.title = this.app.format('arrow-place-to', { value: oe.value });
             const rawPoint = this.getBoardOpenEndChoicePoint(oe, { buttonSize });
-            const collisionsBefore = rawPoint ? this.countArrowCollisions(rawPoint, buttonSize, tileRects) : 0;
             const point = rawPoint ? this.adjustArrowPointForCollision(rawPoint, buttonSize, tileRects, oe.side) : null;
             if (!point) continue;
             const gsRect = gs.getBoundingClientRect();
@@ -773,16 +801,6 @@ export class Renderer {
             const ay = point.y - gsRect.top;
             if (!Number.isFinite(ax) || !Number.isFinite(ay)) continue;
             btn.style.cssText += `position:absolute;left:${ax}px;top:${ay}px;width:${buttonSize}px;height:${buttonSize}px;transform:translate(-50%,-50%);`;
-            if (window.DOMINO_DEBUG_BOARD_RENDERER === true) {
-                console.debug('[ArrowChoice]', {
-                    side: oe.side,
-                    rawPoint,
-                    adjustedPoint: point,
-                    sourceRect: rawPoint?.rect || null,
-                    collisionsBefore,
-                    collisionsAfter: this.countArrowCollisions(point, buttonSize, tileRects)
-                });
-            }
 
             btn.addEventListener(tapEvent, (e) => {
                 e.stopPropagation();

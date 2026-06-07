@@ -4346,6 +4346,46 @@ body.seat-selection-active #game-screen {
     pointer-events: auto;
     transform: translate(-50%, -50%);
     will-change: transform;
+    position: absolute;
+    overflow: visible;
+}
+
+.arrow-btn::after {
+    content: "";
+    position: absolute;
+    width: 0;
+    height: 0;
+    border: 6px solid transparent;
+    pointer-events: none;
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.35));
+}
+
+.arrow-btn.arrow-top::after {
+    left: 50%;
+    bottom: -12px;
+    transform: translateX(-50%);
+    border-top-color: rgba(240, 192, 64, 0.95);
+}
+
+.arrow-btn.arrow-bottom::after {
+    left: 50%;
+    top: -12px;
+    transform: translateX(-50%);
+    border-bottom-color: rgba(240, 192, 64, 0.95);
+}
+
+.arrow-btn.arrow-left::after {
+    right: -12px;
+    top: 50%;
+    transform: translateY(-50%);
+    border-left-color: rgba(240, 192, 64, 0.95);
+}
+
+.arrow-btn.arrow-right::after {
+    left: -12px;
+    top: 50%;
+    transform: translateY(-50%);
+    border-right-color: rgba(240, 192, 64, 0.95);
 }
 
 .arrow-btn:hover {

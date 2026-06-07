@@ -93,6 +93,7 @@ export function sndScore() {
     try {
         const c = getCtx();
         if (!c) return;
+        if (c.state === 'suspended') c.resume();
         const now = c.currentTime;
         const notes = [660, 880, 1100];
         notes.forEach((f, i) => {
@@ -256,4 +257,3 @@ export function toggleMute() {
     }
     return isMusicMuted;
 }
-

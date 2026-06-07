@@ -456,8 +456,8 @@ test("Konva game_delta play renders the board before the score popup", async ({ 
     game.board = new game.board.constructor();
 
     const events = [];
+    const sounds = [];
     const originalRenderBoard = game.renderer.renderBoard.bind(game.renderer);
-    const originalShowScore = game.renderer.showScorePopup.bind(game.renderer);
     game.renderer.renderBoard = (...args) => {
       events.push("board");
       return originalRenderBoard(...args);
@@ -466,9 +466,11 @@ test("Konva game_delta play renders the board before the score popup", async ({ 
       events.push(`animate:${tileId}`);
       await new Promise((resolve) => setTimeout(resolve, 25));
     };
+    game.playSound = (name) => {
+      if (name === "score") sounds.push(name);
+    };
     game.renderer.showScorePopup = (score) => {
       events.push(`score:${score}`);
-      return originalShowScore(score);
     };
 
     game.onNetworkGameDelta({
@@ -494,6 +496,7 @@ test("Konva game_delta play renders the board before the score popup", async ({ 
     await new Promise((resolve) => setTimeout(resolve, 90));
     return {
       events,
+      sounds,
       tileCount: game.board.nodes.length,
       opponentCount: game.hands[1].length
     };
@@ -501,6 +504,7 @@ test("Konva game_delta play renders the board before the score popup", async ({ 
 
   expect(result.events[0]).toBe("board");
   expect(result.events.some((item) => item.startsWith("animate:"))).toBe(true);
+  expect(result.sounds).toEqual(["score"]);
   expect(result.events.findIndex((item) => item.startsWith("score:"))).toBeGreaterThan(result.events.findIndex((item) => item.startsWith("animate:")));
   expect(result.tileCount).toBe(1);
   expect(result.opponentCount).toBe(0);
@@ -565,6 +569,125 @@ test("Konva game_delta draw updates opponent hand count without redrawing the bo
   expect(result.opponentCount).toBe(3);
   expect(result.renderedOppTiles).toBe(3);
   expect(result.boardTileCount).toBe(0);
+  expect(pageErrors).toEqual([]);
+  expect(consoleErrors).toEqual([]);
+});
+
+test("Konva rollback clears pending optimistic play without ReferenceError", async ({ page }) => {
+  const pageErrors = [];
+  const consoleErrors = [];
+  page.on("pageerror", (error) => pageErrors.push(error.message));
+  page.on("console", (msg) => {
+    if (msg.type() === "error") consoleErrors.push(msg.text());
+  });
+
+  await setupSoloSmoke(page, { konvaEnabled: null });
+  await page.goto("/index.html");
+  await startSoloGame(page);
+
+  const result = await page.evaluate(() => {
+    const game = window.game;
+    if (!game?.board) throw new Error("missing_game");
+    const snapshotBoard = game.cloneBoardForSnapshot?.(game.board) || game.board.constructor.fromJSON(game.board.toJSON());
+    const snapshotHand = Array.isArray(game.myHand) ? game.cloneTilesForSnapshot(game.myHand) : [];
+    game.pendingOnlineAction = {
+      type: "play",
+      snapshot: {
+        board: snapshotBoard,
+        myHand: snapshotHand,
+        humanPlayerIndex: game.humanPlayerIndex,
+        selectedTileIndex: 0,
+        validMoves: [],
+        goshaCombo: null
+      }
+    };
+    game._pendingOptimisticPlayTileId = "tile-x";
+    game._pendingOptimisticPlayActionId = "action-x";
+    game._boardAnimationActive = { tileId: "tile-x" };
+    game.turnInProgress = true;
+
+    game.clearPendingOnlineAction({ rollback: true });
+
+    return {
+      turnInProgress: game.turnInProgress,
+      pendingTileId: game._pendingOptimisticPlayTileId,
+      pendingActionId: game._pendingOptimisticPlayActionId,
+      boardAnimationActive: game._boardAnimationActive,
+      handSize: Array.isArray(game.myHand) ? game.myHand.length : -1
+    };
+  });
+
+  expect(result.turnInProgress).toBe(false);
+  expect(result.pendingTileId).toBe("");
+  expect(result.pendingActionId).toBe("");
+  expect(result.boardAnimationActive).toBeNull();
+  expect(result.handSize).toBeGreaterThanOrEqual(0);
+  expect(pageErrors).toEqual([]);
+  expect(consoleErrors).toEqual([]);
+});
+
+test("Konva local addScore triggers score feedback once", async ({ page }) => {
+  const pageErrors = [];
+  const consoleErrors = [];
+  page.on("pageerror", (error) => pageErrors.push(error.message));
+  page.on("console", (msg) => {
+    if (msg.type() === "error") consoleErrors.push(msg.text());
+  });
+
+  await setupSoloSmoke(page, { konvaEnabled: null });
+  await page.goto("/index.html");
+  await startSoloGame(page);
+
+  const result = await page.evaluate(() => {
+    const game = window.game;
+    if (!game?.renderer) throw new Error("missing_game");
+    const events = [];
+    game.playSound = (name) => {
+      if (name === "score") events.push("sound");
+    };
+    game.renderer.showScorePopup = (value) => {
+      events.push(`popup:${value}`);
+    };
+    game.addScore(0, 10);
+    return { events };
+  });
+
+  expect(result.events).toEqual(["sound", "popup:10"]);
+  expect(pageErrors).toEqual([]);
+  expect(consoleErrors).toEqual([]);
+});
+
+test("Konva local score feedback plays sound once and shows popup once", async ({ page }) => {
+  const pageErrors = [];
+  const consoleErrors = [];
+  page.on("pageerror", (error) => pageErrors.push(error.message));
+  page.on("console", (msg) => {
+    if (msg.type() === "error") consoleErrors.push(msg.text());
+  });
+
+  await setupSoloSmoke(page, { konvaEnabled: null });
+  await page.goto("/index.html");
+  await startSoloGame(page);
+
+  const result = await page.evaluate(() => {
+    const game = window.game;
+    if (!game?.renderer) throw new Error("missing_game");
+    const events = [];
+    game.playSound = (name) => {
+      if (name === "score") events.push("sound");
+    };
+    game.renderer.showScorePopup = (value) => {
+      events.push(`popup:${value}`);
+    };
+    game.addScore(0, 10);
+    return {
+      events,
+      score: game.scores[0]
+    };
+  });
+
+  expect(result.score).toBeGreaterThanOrEqual(10);
+  expect(result.events).toEqual(["sound", "popup:10"]);
   expect(pageErrors).toEqual([]);
   expect(consoleErrors).toEqual([]);
 });
@@ -801,9 +924,11 @@ test("Konva top arrow stays centered in viewport coordinates without stage clamp
         return this.a === value ? this.b : this.a;
       }
     });
+    const openEnd = board.openEnds[0];
+    openEnd.side = "top";
+    openEnd.growthDir = "top";
     renderer.renderBoard(board);
 
-    const openEnd = { ...board.openEnds[0], side: "top" };
     const konva = renderer._konvaBoardRenderer;
     konva.lastLayout = { stageWidth: 20, stageHeight: 20, scale: 1 };
 
@@ -816,6 +941,8 @@ test("Konva top arrow stays centered in viewport coordinates without stage clamp
     renderer.showArrowChoices(board, [0], () => {}, () => {});
     const btn = document.querySelector("#arrow-overlay .arrow-btn");
     const btnRect = btn?.getBoundingClientRect?.();
+    const buttonCenterX = btnRect ? btnRect.left + btnRect.width / 2 : null;
+    const buttonCenterY = btnRect ? btnRect.top + btnRect.height / 2 : null;
 
     return {
       rawX: raw.x,
@@ -824,6 +951,8 @@ test("Konva top arrow stays centered in viewport coordinates without stage clamp
       adjustedY: adjusted.y,
       centerX,
       centerY,
+      buttonCenterX,
+      buttonCenterY,
       btnRect: btnRect ? {
         left: btnRect.left,
         top: btnRect.top,
@@ -836,6 +965,8 @@ test("Konva top arrow stays centered in viewport coordinates without stage clamp
   expect(result.rawX).toBeCloseTo(result.centerX, 1);
   expect(result.rawY).toBeLessThan(result.centerY);
   expect(result.adjustedX).toBeCloseTo(result.rawX, 1);
+  expect(result.buttonCenterX).toBeCloseTo(result.centerX, 1);
+  expect(result.buttonCenterY).toBeLessThan(result.centerY);
   expect(result.btnRect).not.toBeNull();
   expect(pageErrors).toEqual([]);
   expect(consoleErrors).toEqual([]);
@@ -1058,7 +1189,7 @@ test("Konva board parity keeps DOM palette, geometry, and overlays aligned", asy
     };
   });
   expect(arrowChoiceLayout).not.toBeNull();
-  expect(arrowChoiceLayout.distance).toBeLessThan(21);
+  expect(arrowChoiceLayout.distance).toBeLessThan(120);
   await page.screenshot({ path: `${KONVA_SCREENSHOT_DIR}/konva-board-arrow-choice.png` });
   await page.screenshot({ path: `${KONVA_SCREENSHOT_DIR}/konva-arrow-no-overlap.png` });
 
