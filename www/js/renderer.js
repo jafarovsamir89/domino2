@@ -123,9 +123,10 @@ export class Renderer {
         for (let i = 0; i < hands.length; i++) {
             if (i === hi) continue;
             const playerRef = Array.isArray(playersOrNames) ? (playersOrNames[i] || {}) : {};
+            const fallbackName = this.app?.playerNames?.[i] || `Player ${i + 1}`;
             const labelText = typeof playerRef === 'string'
                 ? playerRef
-                : (playerRef?.name || playerRef?.displayName || `Player ${i + 1}`);
+                : (playerRef?.name || playerRef?.displayName || fallbackName);
             const playerId = typeof playerRef === 'object'
                 ? String(playerRef?.playerId || playerRef?.userId || playerRef?.id || '')
                 : '';
@@ -180,6 +181,44 @@ export class Renderer {
                 if (i === cur) cont.classList.add('active-turn');
             }
         }
+    }
+
+    getBoardOpenEndChoiceRect(openEnd) {
+        if (!openEnd) return null;
+        if (this.shouldUseKonvaBoard()) {
+            return this._konvaBoardRenderer?.getOpenEndChoiceRect?.(openEnd)
+                || this._konvaBoardRenderer?.getOpenEndAnchorRect?.(openEnd)
+                || null;
+        }
+        const wrapper = this.boardEl.querySelector(`.board-layout [data-node-id="${openEnd.nodeId}"]`);
+        const rect = wrapper?.getBoundingClientRect?.() || null;
+        if (!rect) return null;
+        const side = String(openEnd.side || '').trim();
+        const offset = Math.max(12, Math.min(26, Math.max(rect.width, rect.height) * 0.38));
+        const result = {
+            left: rect.left,
+            top: rect.top,
+            width: 18,
+            height: 18
+        };
+        if (side === 'left') {
+            result.left = rect.left - offset;
+            result.top = rect.top + rect.height / 2 - 9;
+        } else if (side === 'right') {
+            result.left = rect.right + offset - 18;
+            result.top = rect.top + rect.height / 2 - 9;
+        } else if (side === 'top') {
+            result.left = rect.left + rect.width / 2 - 9;
+            result.top = rect.top - offset;
+        } else {
+            result.left = rect.left + rect.width / 2 - 9;
+            result.top = rect.bottom + offset - 18;
+        }
+        result.right = result.left + result.width;
+        result.bottom = result.top + result.height;
+        result.centerX = result.left + result.width / 2;
+        result.centerY = result.top + result.height / 2;
+        return result;
     }
 
     renderBoneyard(count) {
@@ -433,6 +472,16 @@ export class Renderer {
         const pending = this._pendingBoardTileTravel;
         if (!pending || pending.tileId !== tileId) return Promise.resolve();
 
+        if (this.shouldUseKonvaBoard()) {
+            this._pendingBoardTileTravel = null;
+            const konvaRenderer = this._konvaBoardRenderer;
+            if (konvaRenderer?.animateTileTravel) {
+                return konvaRenderer.animateTileTravel(tileId, pending.sourceRect, pending.sourceNode);
+            }
+            this.revealBoardTile(tileId);
+            return Promise.resolve();
+        }
+
         this._pendingBoardTileTravel = null;
         const { sourceRect, sourceNode } = pending;
 
@@ -539,9 +588,7 @@ export class Renderer {
     revealBoardTile(tileId) {
         if (this.shouldUseKonvaBoard()) {
             this._pendingBoardTileTravel = null;
-            if (this.app?.board) {
-                this.renderBoard(this.app.board);
-            }
+            this._konvaBoardRenderer?.revealTile?.(tileId);
             return;
         }
         const tileEl = this.boardEl.querySelector(`[data-tile-id="${tileId}"]`);
@@ -594,17 +641,11 @@ export class Renderer {
             btn.className = 'arrow-btn';
             btn.textContent = arrowSymbols[oe.side] || '?';
             btn.title = this.app.format('arrow-place-to', { value: oe.value });
-            const wrapper = this.boardEl.querySelector(`.board-layout [data-node-id="${oe.nodeId}"]`);
-            const rect = this.getBoardOpenEndRect(oe) || wrapper?.getBoundingClientRect?.();
+            const rect = this.getBoardOpenEndChoiceRect(oe);
             if (!rect) continue;
             const gsRect = gs.getBoundingClientRect();
-            const offset = Math.max(12, Math.min(26, Math.max(rect.width, rect.height) * 0.38));
             let ax = rect.left + rect.width / 2 - gsRect.left;
             let ay = rect.top + rect.height / 2 - gsRect.top;
-            if (oe.side === 'right') ax += offset;
-            else if (oe.side === 'left') ax -= offset;
-            else if (oe.side === 'top') ay -= offset;
-            else ay += offset;
             if (!Number.isFinite(ax) || !Number.isFinite(ay)) continue;
             btn.style.cssText += `position:absolute;left:${ax}px;top:${ay}px;transform:translate(-50%,-50%);`;
 

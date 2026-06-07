@@ -217,6 +217,15 @@ class DominoGame {
             error: ''
         };
         this.pendingSoloSettlement = Promise.resolve();
+        this._realtimeRenderRafId = 0;
+        this._realtimeRenderFlags = null;
+        this._realtimeRenderSignatures = {
+            scores: '',
+            info: '',
+            opponents: '',
+            hand: '',
+            board: ''
+        };
         this.reactionPalette = [
             { code: '1F923', label: 'ROFL' },
             { code: '1F609', label: 'Wink' },
@@ -7912,6 +7921,17 @@ class DominoGame {
         this.matchOver = false;
         this.gameActive = false;
         this.renderSeatSelectionUi(roomState);
+        if (this.network.isMultiplayer) {
+            this.scheduleRealtimeRender({
+                boardChanged: Boolean(state?.boardJson),
+                handChanged: true,
+                opponentHandsChanged: true,
+                scoresChanged: true,
+                infoChanged: true
+            });
+            return;
+        }
+
         this.renderState();
     }
 
@@ -9456,6 +9476,91 @@ class DominoGame {
         this.network?.sendSyncRequest?.();
     }
 
+    scheduleRealtimeRender(flags = {}) {
+        const nextFlags = {
+            boardChanged: false,
+            handChanged: true,
+            opponentHandsChanged: true,
+            scoresChanged: true,
+            infoChanged: true,
+            ...flags
+        };
+        this._realtimeRenderFlags = this._realtimeRenderFlags
+            ? {
+                boardChanged: this._realtimeRenderFlags.boardChanged || nextFlags.boardChanged,
+                handChanged: this._realtimeRenderFlags.handChanged || nextFlags.handChanged,
+                opponentHandsChanged: this._realtimeRenderFlags.opponentHandsChanged || nextFlags.opponentHandsChanged,
+                scoresChanged: this._realtimeRenderFlags.scoresChanged || nextFlags.scoresChanged,
+                infoChanged: this._realtimeRenderFlags.infoChanged || nextFlags.infoChanged
+            }
+            : nextFlags;
+        if (this._realtimeRenderRafId) return;
+        this._realtimeRenderRafId = requestAnimationFrame(() => {
+            this._realtimeRenderRafId = 0;
+            this.flushRealtimeRender();
+        });
+    }
+
+    flushRealtimeRender() {
+        const flags = this._realtimeRenderFlags;
+        this._realtimeRenderFlags = null;
+        if (!flags) return;
+        this.renderRealtimeGameDeltaView(flags);
+    }
+
+    getScoresRenderSignature(displayEntities = [], currentPlayer = -1) {
+        return `${currentPlayer}::${(Array.isArray(displayEntities) ? displayEntities : []).map((player) => [
+            String(player?.team ?? ''),
+            String(player?.name ?? ''),
+            Number(player?.score || 0),
+            Number(player?.roundWins || 0),
+            Number(Boolean(player?.isCurrent) ? 1 : 0),
+            String(player?.playerId ?? ''),
+            Number(Boolean(player?.isBot) ? 1 : 0)
+        ].join(':')).join('|')}`;
+    }
+
+    getInfoRenderSignature(matchRound, deal, boneyardCount, openEndsScore, stakeLabel = '') {
+        return [
+            Number(matchRound || 0),
+            Number(deal || 0),
+            Number(boneyardCount || 0),
+            Number(openEndsScore || 0),
+            String(stakeLabel || ''),
+            String(this.network?.isMultiplayer ? 1 : 0),
+            String(this.onlineRoundBankAmount || 0)
+        ].join('::');
+    }
+
+    getOpponentHandsRenderSignature(hands = [], hi = -1, playersOrNames = [], cur = -1) {
+        const players = Array.isArray(playersOrNames) ? playersOrNames : [];
+        return `${hi}:${cur}::${(Array.isArray(hands) ? hands : []).map((hand, index) => {
+            const playerRef = players[index] || {};
+            const label = typeof playerRef === 'string'
+                ? playerRef
+                : (playerRef?.name || playerRef?.displayName || this.playerNames?.[index] || `Player ${index + 1}`);
+            return [
+                index,
+                index === hi ? 'self' : 'opp',
+                String(label || ''),
+                Number((hand || []).length || 0),
+                String(playerRef?.playerId || playerRef?.userId || playerRef?.id || ''),
+                Number(Boolean(playerRef?.isBot) ? 1 : 0)
+            ].join(':');
+        }).join('|')}`;
+    }
+
+    getHandRenderSignature(hand = [], validMoves = [], selectedTileIndex = -1, isCurrent = false) {
+        const tiles = Array.isArray(hand) ? hand : [];
+        const moves = Array.isArray(validMoves) ? validMoves : [];
+        return [
+            Number(selectedTileIndex || -1),
+            Number(Boolean(isCurrent) ? 1 : 0),
+            tiles.map((tile, index) => `${index}:${tile?.id ?? ''}:${tile?.a ?? ''}:${tile?.b ?? ''}`).join('|'),
+            moves.map((move) => `${move?.tileIndex ?? ''}:${move?.openEndIndex ?? ''}`).join('|')
+        ].join('::');
+    }
+
     applyPlayerRows(playerOrder = [], playerRows = []) {
         const rows = Array.isArray(playerRows) ? playerRows : [];
         const getPlayer = (sid, index) => rows.find((player) => {
@@ -9546,7 +9651,8 @@ class DominoGame {
         return false;
     }
 
-    renderRealtimeGameDeltaView({ boardChanged = false, handChanged = true, opponentHandsChanged = true, scoresChanged = true, infoChanged = true } = {}) {
+    renderRealtimeGameDeltaView({ boardChanged = false, handChanged = true, opponentHandsChanged = true, scoresChanged = true, infoChanged = true, force = false } = {}) {
+        const roomPlayers = Array.isArray(this.currentRoomState?.players) ? this.currentRoomState.players : [];
         let displayEntities;
         if (this.isTeamMode) {
             const teamA = this.getTeamMembers(0);
@@ -9570,25 +9676,34 @@ class DominoGame {
             }));
         }
 
-        if (scoresChanged) {
+        const nextSignatures = {
+            scores: this.getScoresRenderSignature(displayEntities, this.currentPlayer),
+            info: this.getInfoRenderSignature(this.matchRound, this.deal, this.boneyard.length, this.board.getOpenEndsScore(), this.getCurrentStakeLabel()),
+            opponents: this.getOpponentHandsRenderSignature(this.hands, this.humanPlayerIndex, roomPlayers.length ? roomPlayers : this.playerNames, this.currentPlayer),
+            hand: this.getHandRenderSignature(this.myHand || this.hands[this.humanPlayerIndex] || [], this.validMoves, this.selectedTileIndex, this.currentPlayer === this.humanPlayerIndex)
+        };
+
+        if (scoresChanged && (force || nextSignatures.scores !== this._realtimeRenderSignatures.scores)) {
             this.renderer.renderScores(displayEntities, this.currentPlayer);
+            this._realtimeRenderSignatures.scores = nextSignatures.scores;
         }
-        if (infoChanged) {
+        if (infoChanged && (force || nextSignatures.info !== this._realtimeRenderSignatures.info)) {
             this.renderer.renderInfo(this.matchRound, this.deal, this.boneyard.length, this.board.getOpenEndsScore(), this.getCurrentStakeLabel());
+            this._realtimeRenderSignatures.info = nextSignatures.info;
         }
         if (boardChanged) {
             this.renderer.renderBoard(this.board);
         }
-
-        const roomPlayers = Array.isArray(this.currentRoomState?.players) ? this.currentRoomState.players : [];
-        if (opponentHandsChanged) {
+        if (opponentHandsChanged && (force || nextSignatures.opponents !== this._realtimeRenderSignatures.opponents)) {
             this.renderer.renderOpponentHands(this.hands, this.humanPlayerIndex, roomPlayers.length ? roomPlayers : this.playerNames, this.currentPlayer);
+            this._realtimeRenderSignatures.opponents = nextSignatures.opponents;
         }
 
         const myHand = this.myHand || this.hands[this.humanPlayerIndex] || [];
         const myTurn = this.currentPlayer === this.humanPlayerIndex;
-        if (handChanged) {
+        if (handChanged && (force || nextSignatures.hand !== this._realtimeRenderSignatures.hand)) {
             this.renderer.renderHand(myHand, this.validMoves, this.selectedTileIndex, myTurn);
+            this._realtimeRenderSignatures.hand = nextSignatures.hand;
         }
 
         const waitingOpenRoom = this.network.isMultiplayer
@@ -9726,7 +9841,7 @@ class DominoGame {
             }
         }
 
-        this.renderRealtimeGameDeltaView({
+        this.scheduleRealtimeRender({
             boardChanged,
             handChanged: true,
             opponentHandsChanged: true,
@@ -9902,7 +10017,7 @@ class DominoGame {
             this.hands[myIdx] = this.myHand;
         }
         if (this.network.isMultiplayer) {
-            this.renderRealtimeGameDeltaView({ boardChanged: false, handChanged: true, opponentHandsChanged: false, scoresChanged: false, infoChanged: false });
+            this.scheduleRealtimeRender({ boardChanged: false, handChanged: true, opponentHandsChanged: false, scoresChanged: false, infoChanged: false });
             return;
         }
         this.renderState();
@@ -9913,7 +10028,7 @@ class DominoGame {
         this.goshaCombo = info.goshaCombo || null;
         if (this.network.isMultiplayer) {
             this.turnInProgress = false;
-            this.renderRealtimeGameDeltaView({ boardChanged: false, handChanged: true, opponentHandsChanged: false, scoresChanged: false, infoChanged: false });
+            this.scheduleRealtimeRender({ boardChanged: false, handChanged: true, opponentHandsChanged: false, scoresChanged: false, infoChanged: false });
             return;
         }
         this.renderState();

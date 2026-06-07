@@ -306,6 +306,121 @@ test("Konva query flag 1 forces Konva board and stores true", async ({ page }) =
   expect(consoleWarnings).toEqual(expect.arrayContaining([expect.stringContaining("Menu music autoplay prevented")]));
 });
 
+test("Konva realtime scheduler batches duplicate delta renders and keeps signatures stable", async ({ page }) => {
+  const pageErrors = [];
+  const consoleErrors = [];
+  page.on("pageerror", (error) => pageErrors.push(error.message));
+  page.on("console", (msg) => {
+    if (msg.type() === "error") consoleErrors.push(msg.text());
+  });
+
+  await setupSoloSmoke(page, { konvaEnabled: null });
+  await page.goto("/index.html");
+  await startSoloGame(page);
+  await page.waitForTimeout(50);
+
+  const batchResult = await page.evaluate(async () => {
+    const game = window.game;
+    const renderer = game?.renderer;
+    if (!game || !renderer) throw new Error("missing_game_or_renderer");
+
+    const counters = { scores: 0, info: 0, board: 0, opponents: 0, hand: 0 };
+    const originals = {
+      renderScores: renderer.renderScores.bind(renderer),
+      renderInfo: renderer.renderInfo.bind(renderer),
+      renderBoard: renderer.renderBoard.bind(renderer),
+      renderOpponentHands: renderer.renderOpponentHands.bind(renderer),
+      renderHand: renderer.renderHand.bind(renderer)
+    };
+
+    renderer.renderScores = (...args) => { counters.scores += 1; return originals.renderScores(...args); };
+    renderer.renderInfo = (...args) => { counters.info += 1; return originals.renderInfo(...args); };
+    renderer.renderBoard = (...args) => { counters.board += 1; return originals.renderBoard(...args); };
+    renderer.renderOpponentHands = (...args) => { counters.opponents += 1; return originals.renderOpponentHands(...args); };
+    renderer.renderHand = (...args) => { counters.hand += 1; return originals.renderHand(...args); };
+
+    const handSigA = game.getHandRenderSignature(game.myHand || [], game.validMoves || [], game.selectedTileIndex, game.currentPlayer === game.humanPlayerIndex);
+    const handSigB = game.getHandRenderSignature(game.myHand || [], game.validMoves || [], game.selectedTileIndex, game.currentPlayer === game.humanPlayerIndex);
+    const scoreSigA = game.getScoresRenderSignature(
+      game.isTeamMode
+        ? [
+            { name: game.getTeamDisplayName(0), score: game.teamScores[0], roundWins: game.teamRoundWins[0], isCurrent: false, playerId: "", isBot: false },
+            { name: game.getTeamDisplayName(1), score: game.teamScores[1], roundWins: game.teamRoundWins[1], isCurrent: false, playerId: "", isBot: false }
+          ]
+        : game.playerNames.map((name, index) => ({
+            name,
+            score: game.scores[index] || 0,
+            roundWins: game.roundWins[index] || 0,
+            isCurrent: game.currentPlayer === index,
+            playerId: String(game.roomPlayerRefs?.[index]?.playerId || ""),
+            isBot: Boolean(game.roomPlayerRefs?.[index]?.isBot)
+          })),
+      game.currentPlayer
+    );
+    const scoreSigB = game.getScoresRenderSignature(
+      game.isTeamMode
+        ? [
+            { name: game.getTeamDisplayName(0), score: game.teamScores[0], roundWins: game.teamRoundWins[0], isCurrent: false, playerId: "", isBot: false },
+            { name: game.getTeamDisplayName(1), score: game.teamScores[1], roundWins: game.teamRoundWins[1], isCurrent: false, playerId: "", isBot: false }
+          ]
+        : game.playerNames.map((name, index) => ({
+            name,
+            score: game.scores[index] || 0,
+            roundWins: game.roundWins[index] || 0,
+            isCurrent: game.currentPlayer === index,
+            playerId: String(game.roomPlayerRefs?.[index]?.playerId || ""),
+            isBot: Boolean(game.roomPlayerRefs?.[index]?.isBot)
+          })),
+      game.currentPlayer
+    );
+
+    game.renderRealtimeGameDeltaView({
+      boardChanged: false,
+      handChanged: true,
+      opponentHandsChanged: true,
+      scoresChanged: true,
+      infoChanged: true
+    });
+    game.renderRealtimeGameDeltaView({
+      boardChanged: false,
+      handChanged: true,
+      opponentHandsChanged: true,
+      scoresChanged: true,
+      infoChanged: true
+    });
+
+    game.scheduleRealtimeRender({
+      boardChanged: false,
+      handChanged: true,
+      opponentHandsChanged: true,
+      scoresChanged: true,
+      infoChanged: true
+    });
+    game.scheduleRealtimeRender({
+      boardChanged: false,
+      handChanged: true,
+      opponentHandsChanged: true,
+      scoresChanged: true,
+      infoChanged: true
+    });
+
+    await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+    await new Promise((resolve) => setTimeout(resolve, 20));
+
+    return { counters, handSigA, handSigB, scoreSigA, scoreSigB };
+  });
+
+  expect(batchResult.handSigA).toBe(batchResult.handSigB);
+  expect(batchResult.scoreSigA).toBe(batchResult.scoreSigB);
+  expect(batchResult.counters.scores).toBe(1);
+  expect(batchResult.counters.info).toBe(1);
+  expect(batchResult.counters.opponents).toBe(1);
+  expect(batchResult.counters.hand).toBe(1);
+  expect(batchResult.counters.board).toBe(0);
+  expect(pageErrors).toEqual([]);
+  expect(consoleErrors).toEqual([]);
+});
+
 test("Konva board parity keeps DOM palette, geometry, and overlays aligned", async ({ page }) => {
   const pageErrors = [];
   const consoleErrors = [];
@@ -323,7 +438,7 @@ test("Konva board parity keeps DOM palette, geometry, and overlays aligned", asy
   expect(overflow).toBe(false);
 
   fs.mkdirSync(KONVA_SCREENSHOT_DIR, { recursive: true });
-  await page.screenshot({ path: `${KONVA_SCREENSHOT_DIR}/konva-solo-empty.png` });
+  await page.screenshot({ path: `${KONVA_SCREENSHOT_DIR}/konva-board-1v1-empty.png` });
 
   const firstState = await page.evaluate(() => {
     const game = window.game;
@@ -421,7 +536,7 @@ test("Konva board parity keeps DOM palette, geometry, and overlays aligned", asy
   expect(anchorDistance.distance).toBeGreaterThanOrEqual(0);
   expect(anchorDistance.distance).toBeLessThan(Math.max(24, Math.max(anchorDistance.nodeRect.width, anchorDistance.nodeRect.height) * 0.45));
 
-  await page.screenshot({ path: `${KONVA_SCREENSHOT_DIR}/konva-first-move.png` });
+  await page.screenshot({ path: `${KONVA_SCREENSHOT_DIR}/konva-board-1v1-first-move.png` });
 
   await page.evaluate(() => {
     const board = window.__konvaParityBoard;
@@ -440,7 +555,8 @@ test("Konva board parity keeps DOM palette, geometry, and overlays aligned", asy
     renderer.renderBoard(board);
   });
   await page.waitForTimeout(150);
-  await page.screenshot({ path: `${KONVA_SCREENSHOT_DIR}/konva-several-moves.png` });
+  await page.screenshot({ path: `${KONVA_SCREENSHOT_DIR}/konva-board-several-moves.png` });
+  await page.screenshot({ path: `${KONVA_SCREENSHOT_DIR}/konva-board-open-end-hints-lower-row.png` });
 
   await page.evaluate(() => {
     const board = window.__konvaParityBoard;
@@ -450,9 +566,31 @@ test("Konva board parity keeps DOM palette, geometry, and overlays aligned", asy
     renderer.showArrowChoices(board, ends, () => {}, () => {});
   });
   await page.waitForTimeout(120);
-  await page.screenshot({ path: `${KONVA_SCREENSHOT_DIR}/konva-open-end-markers.png` });
+  const arrowChoiceLayout = await page.evaluate(() => {
+    const board = window.__konvaParityBoard;
+    const renderer = window.game?.renderer;
+    const btn = document.querySelector(".arrow-btn");
+    const btnRect = btn?.getBoundingClientRect?.();
+    if (!btnRect || !Array.isArray(board?.openEnds) || !board.openEnds.length) return null;
+    const btnCenterX = btnRect.left + btnRect.width / 2;
+    const btnCenterY = btnRect.top + btnRect.height / 2;
+    const distances = board.openEnds.map((openEnd) => {
+      const choiceRect = renderer?.getBoardOpenEndChoiceRect?.(openEnd);
+      if (!choiceRect) return Number.POSITIVE_INFINITY;
+      const choiceCenterX = choiceRect.left + choiceRect.width / 2;
+      const choiceCenterY = choiceRect.top + choiceRect.height / 2;
+      return Math.hypot(btnCenterX - choiceCenterX, btnCenterY - choiceCenterY);
+    });
+    return {
+      distance: Math.min(...distances),
+      btnRect
+    };
+  });
+  expect(arrowChoiceLayout).not.toBeNull();
+  expect(arrowChoiceLayout.distance).toBeLessThan(20);
+  await page.screenshot({ path: `${KONVA_SCREENSHOT_DIR}/konva-board-arrow-choice.png` });
 
-  await page.screenshot({ path: `${KONVA_SCREENSHOT_DIR}/konva-header-opponent-visible.png` });
+  await page.screenshot({ path: `${KONVA_SCREENSHOT_DIR}/konva-board-1v1-opponent-label.png` });
 
   await page.evaluate(() => {
     window.game?.renderer?.removeArrows?.();

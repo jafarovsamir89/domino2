@@ -167,6 +167,8 @@ export class KonvaBoardRenderer {
         this.lastContext = null;
         this.nodeRects = new Map();
         this.tileRects = new Map();
+        this.anchorElsByTileId = new Map();
+        this.anchorElsByNodeId = new Map();
         this.animatedTileIds = new Set();
         this.tileGroupsById = new Map();
         this.openEndGroupsByKey = new Map();
@@ -277,6 +279,8 @@ export class KonvaBoardRenderer {
         this.lastContext = null;
         this.nodeRects.clear();
         this.tileRects.clear();
+        this.anchorElsByTileId.clear();
+        this.anchorElsByNodeId.clear();
         this.animatedTileIds.clear();
         this.tileGroupsById.clear();
         this.openEndGroupsByKey.clear();
@@ -347,12 +351,44 @@ export class KonvaBoardRenderer {
         }
     }
 
+    getOrCreateAnchorEl(kind, key) {
+        const map = kind === 'node' ? this.anchorElsByNodeId : this.anchorElsByTileId;
+        let anchor = map.get(String(key));
+        if (!anchor) {
+            anchor = document.createElement('div');
+            anchor.className = kind === 'node' ? 'board-node-anchor' : 'board-tile-anchor';
+            anchor.style.cssText = [
+                'position:absolute',
+                'opacity:0',
+                'pointer-events:none',
+                'z-index:2'
+            ].join(';');
+            map.set(String(key), anchor);
+            this.anchorEl.appendChild(anchor);
+        }
+        return anchor;
+    }
+
+    pruneAnchors(activeTileIds, activeNodeIds) {
+        for (const [tileId, anchor] of this.anchorElsByTileId.entries()) {
+            if (activeTileIds.has(tileId)) continue;
+            try { anchor.remove(); } catch {}
+            this.anchorElsByTileId.delete(tileId);
+        }
+        for (const [nodeId, anchor] of this.anchorElsByNodeId.entries()) {
+            if (activeNodeIds.has(nodeId)) continue;
+            try { anchor.remove(); } catch {}
+            this.anchorElsByNodeId.delete(nodeId);
+        }
+    }
+
     render(board, context = {}) {
         if (!board) return;
         if (!this.stage || !this.layer || !this.rootEl) {
             this.mount(this.containerEl);
         }
 
+        const renderStartedAt = performance.now();
         const layout = this.buildLayout(board);
         const signature = buildSignature(board, layout, context);
         if (!context.force && signature === this.lastSignature) {
@@ -376,7 +412,6 @@ export class KonvaBoardRenderer {
             scaleX: layout.scale,
             scaleY: layout.scale
         });
-        this.anchorEl.innerHTML = '';
         this.nodeRects.clear();
         this.tileRects.clear();
 
@@ -400,14 +435,22 @@ export class KonvaBoardRenderer {
             });
             this.openEndGroupsByKey.clear();
             this.animatedTileIds.clear();
+            this.pruneAnchors(new Set(), new Set());
             this.layer.batchDraw();
             return;
         }
 
-        this.syncBoardTiles(Konva, board, layout, context);
+        const tileStats = this.syncBoardTiles(Konva, board, layout, context);
         this.syncOpenEnds(Konva, board, layout);
         this.layer.batchDraw();
-        this.log('rendered', board.nodes.length, 'nodes');
+        const renderDuration = performance.now() - renderStartedAt;
+        this.log(
+            'rendered',
+            board.nodes.length,
+            'nodes',
+            `${renderDuration.toFixed(2)}ms`,
+            tileStats ? { created: tileStats.createdTiles, updated: tileStats.updatedTiles } : null
+        );
     }
 
     createTileEntry(Konva, node) {
@@ -486,17 +529,24 @@ export class KonvaBoardRenderer {
         const lastNodeIndex = board.nodes.length - 1;
         const isReducedMotion = Boolean(window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches);
         const nextTileIds = new Set();
+        const nextNodeIds = new Set();
+        let createdTiles = 0;
+        let updatedTiles = 0;
 
         for (let i = 0; i < board.nodes.length; i++) {
             const node = board.nodes[i];
             const tileId = String(node.tile?.id ?? `${i}`);
             nextTileIds.add(tileId);
+            nextNodeIds.add(String(i));
 
             let entry = this.tileGroupsById.get(tileId);
             if (!entry) {
                 entry = this.createTileEntry(Konva, node);
                 this.tileGroupsById.set(tileId, entry);
                 this.boardGroup.add(entry.group);
+                createdTiles += 1;
+            } else {
+                updatedTiles += 1;
             }
 
             const { width, height } = nodeBox(node, this.metrics);
@@ -515,7 +565,7 @@ export class KonvaBoardRenderer {
             this.nodeRects.set(String(i), rect);
             this.tileRects.set(tileId, rect);
 
-            const anchor = document.createElement('div');
+            const anchor = this.getOrCreateAnchorEl('tile', tileId);
             anchor.className = `tile ${node.orientation} board-tile`;
             anchor.dataset.nodeId = String(i);
             anchor.dataset.tileId = tileId;
@@ -532,7 +582,22 @@ export class KonvaBoardRenderer {
                 'pointer-events:none',
                 'z-index:2'
             ].join(';');
-            this.anchorEl.appendChild(anchor);
+            this.anchorElsByTileId.set(tileId, anchor);
+
+            const nodeAnchor = this.getOrCreateAnchorEl('node', i);
+            nodeAnchor.dataset.nodeId = String(i);
+            nodeAnchor.dataset.tileId = tileId;
+            nodeAnchor.style.cssText = [
+                'position:absolute',
+                `left:${rect.left}px`,
+                `top:${rect.top}px`,
+                `width:${rect.width}px`,
+                `height:${rect.height}px`,
+                'opacity:0',
+                'pointer-events:none',
+                'z-index:2'
+            ].join(';');
+            this.anchorElsByNodeId.set(String(i), nodeAnchor);
 
             entry.group.setAttrs({
                 x: localX,
@@ -635,12 +700,18 @@ export class KonvaBoardRenderer {
             this.tileGroupsById.delete(tileId);
             this.animatedTileIds.delete(tileId);
         }
+
+        this.pruneAnchors(nextTileIds, nextNodeIds);
+
+        return { createdTiles, updatedTiles, totalTiles: board.nodes.length };
     }
 
     syncOpenEnds(Konva, board, layout) {
         const openEnds = Array.isArray(board.openEnds) ? board.openEnds : [];
         const nextKeys = new Set();
-        const baseY = layout.stageHeight / 2 + ((layout.bounds.height + 32) * layout.scale) / 2;
+        const boardBottomY = layout.stageHeight / 2 + ((layout.bounds.height + 32) * layout.scale) / 2;
+        const lowerBandY = Math.min(layout.stageHeight - 34, Math.max(layout.stageHeight * 0.78, boardBottomY + 18));
+        const baseY = lowerBandY;
 
         for (let i = 0; i < openEnds.length; i++) {
             const oe = openEnds[i];
@@ -710,13 +781,13 @@ export class KonvaBoardRenderer {
 
     getTileRect(tileId) {
         if (!tileId) return null;
-        const anchor = this.anchorEl?.querySelector(`[data-tile-id="${String(tileId)}"]`);
+        const anchor = this.anchorElsByTileId.get(String(tileId)) || this.anchorEl?.querySelector?.(`[data-tile-id="${String(tileId)}"]`);
         return anchor?.getBoundingClientRect?.() || null;
     }
 
     getNodeRect(nodeId) {
         if (!Number.isInteger(Number(nodeId))) return null;
-        const anchor = this.anchorEl?.querySelector(`[data-node-id="${String(nodeId)}"]`);
+        const anchor = this.anchorElsByNodeId.get(String(nodeId)) || this.anchorEl?.querySelector?.(`[data-node-id="${String(nodeId)}"]`);
         return anchor?.getBoundingClientRect?.() || null;
     }
 
@@ -750,5 +821,127 @@ export class KonvaBoardRenderer {
         result.centerX = result.left + result.width / 2;
         result.centerY = result.top + result.height / 2;
         return result;
+    }
+
+    getOpenEndChoiceRect(openEnd) {
+        return this.getOpenEndAnchorRect(openEnd);
+    }
+
+    revealTile(tileId) {
+        const entry = this.tileGroupsById.get(String(tileId));
+        if (entry?.group) {
+            entry.group.visible(true);
+            entry.group.opacity(1);
+            entry.group.scale({ x: 1, y: 1 });
+        }
+    }
+
+    screenRectToLocalPoint(layout, rect) {
+        if (!layout || !rect) return null;
+        return {
+            x: ((rect.left + rect.width / 2) - (layout.stageWidth / 2)) / layout.scale,
+            y: ((rect.top + rect.height / 2) - (layout.stageHeight / 2)) / layout.scale
+        };
+    }
+
+    async animateTileTravel(tileId, sourceRect = null, sourceNode = null) {
+        const entry = this.tileGroupsById.get(String(tileId));
+        if (!entry || !this.lastLayout) {
+            this.revealTile(tileId);
+            return Promise.resolve();
+        }
+
+        const targetRect = this.getTileRect(tileId);
+        if (!targetRect) {
+            this.revealTile(tileId);
+            return Promise.resolve();
+        }
+
+        const Konva = getKonva();
+        if (!Konva) {
+            this.revealTile(tileId);
+            return Promise.resolve();
+        }
+
+        const reduceMotion = Boolean(window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches);
+        if (reduceMotion) {
+            this.revealTile(tileId);
+            return Promise.resolve();
+        }
+
+        const layout = this.lastLayout;
+        const targetLocal = {
+            x: entry.group.x(),
+            y: entry.group.y()
+        };
+        const fallbackSourceRect = sourceRect || {
+            left: targetRect.left,
+            top: Math.max(8, targetRect.top - Math.max(42, targetRect.height * 1.25)),
+            width: targetRect.width,
+            height: targetRect.height
+        };
+        const sourceLocal = this.screenRectToLocalPoint(layout, fallbackSourceRect);
+        if (!sourceLocal) {
+            this.revealTile(tileId);
+            return Promise.resolve();
+        }
+
+        const sourceWidth = Math.max(1, fallbackSourceRect.width || targetRect.width);
+        const sourceHeight = Math.max(1, fallbackSourceRect.height || targetRect.height);
+        const scaleX = sourceWidth / Math.max(1, targetRect.width);
+        const scaleY = sourceHeight / Math.max(1, targetRect.height);
+        const ghost = entry.group.clone({
+            listening: false,
+            opacity: 1
+        });
+        ghost.visible(true);
+        ghost.setAttrs({
+            x: sourceLocal.x,
+            y: sourceLocal.y,
+            scaleX,
+            scaleY,
+            rotation: 0,
+            opacity: 1
+        });
+        this.overlayGroup.add(ghost);
+        entry.group.visible(false);
+
+        const distance = Math.hypot(targetLocal.x - sourceLocal.x, targetLocal.y - sourceLocal.y);
+        const duration = Math.min(0.42, Math.max(0.26, distance / 900));
+        const lift = Math.min(10, Math.max(4, distance * 0.03));
+        const direction = Math.sign(targetLocal.x - sourceLocal.x) || 1;
+        const targetRotation = 0;
+
+        return new Promise((resolve) => {
+            const finish = () => {
+                try { ghost.destroy(); } catch {}
+                this.revealTile(tileId);
+                resolve();
+            };
+            const tween = ghost.to({
+                x: targetLocal.x,
+                y: targetLocal.y - lift,
+                scaleX: 1,
+                scaleY: 1,
+                rotation: Math.max(-4, Math.min(4, -direction * 2.2)),
+                duration: duration * 0.6,
+                easing: Konva.Easings?.EaseInOut || undefined,
+                onFinish: () => {
+                    ghost.to({
+                        x: targetLocal.x,
+                        y: targetLocal.y,
+                        scaleX: 1,
+                        scaleY: 1,
+                        rotation: targetRotation,
+                        duration: duration * 0.4,
+                        easing: Konva.Easings?.EaseOut || undefined,
+                        onFinish: finish
+                    });
+                }
+            });
+            if (!tween) {
+                finish();
+            }
+        });
     }
 }

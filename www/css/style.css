@@ -3385,6 +3385,7 @@ body.seat-selection-active #game-screen {
     width: 100%;
     height: 100%;
     z-index: 0;
+    pointer-events: none;
 }
 
 .konva-board-stage-host {
@@ -3393,6 +3394,7 @@ body.seat-selection-active #game-screen {
     width: 100%;
     height: 100%;
     z-index: 0;
+    pointer-events: none;
 }
 
 .konva-board-anchors {
