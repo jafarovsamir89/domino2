@@ -6298,18 +6298,15 @@ class DominoGame {
 
     getResolvedAvatarUrl(playerIndex = -1) {
         const idx = Number(playerIndex);
-        const playerOrder = Array.isArray(this.network?.room?.state?.playerOrder)
-            ? this.network.room.state.playerOrder
-            : Array.isArray(this.currentRoomState?.players)
-                ? this.currentRoomState.players.map((player) => player.sessionId)
+        const playerOrder = Array.isArray(this.currentRoomState?.players)
+            ? this.currentRoomState.players.map((player) => player.sessionId)
+            : Array.isArray(this.roomPlayerRefs)
+                ? this.roomPlayerRefs.map((player) => player.sessionId)
                 : [];
         const sessionId = playerOrder[idx];
         const cachedAvatarUrl = sessionId && this.roomAvatarBySessionId instanceof Map
             ? this.roomAvatarBySessionId.get(sessionId)
             : '';
-        const schemaPlayer = sessionId && this.network?.room?.state?.players
-            ? this.network.room.state.players.get(sessionId)
-            : null;
         const roomPlayer = Array.isArray(this.currentRoomState?.players)
             ? (this.currentRoomState.players[idx]
                 || this.currentRoomState.players.find((player) => player?.sessionId === sessionId)
@@ -6319,7 +6316,6 @@ class DominoGame {
 
         return String(
             cachedAvatarUrl
-            || schemaPlayer?.avatarUrl
             || roomPlayer?.avatarUrl
             || (idx === this.humanPlayerIndex ? (selfProfile.avatarUrl || selfProfile.image || selfProfile.providerImage || '') : '')
             || ''
@@ -7789,7 +7785,7 @@ class DominoGame {
             }
             const avatar = document.createElement('span');
             avatar.className = 'room-player-avatar';
-            const avatarUrl = player.avatarUrl || this.network?.room?.state?.players?.get?.(player.sessionId)?.avatarUrl || '';
+            const avatarUrl = player.avatarUrl || this.roomAvatarBySessionId.get(player.sessionId) || '';
             if (player.sessionId) {
                 this.roomAvatarBySessionId.set(player.sessionId, avatarUrl || this.roomAvatarBySessionId.get(player.sessionId) || '');
             }
@@ -7986,17 +7982,12 @@ class DominoGame {
 
     hasPendingOnlinePlayAck(state, playerOrder, getPlayer) {
         void playerOrder;
+        void getPlayer;
         const pending = this.pendingOnlineAction;
         if (!pending || pending.type !== 'play') return false;
 
         const turnVersion = Number(state?.turnVersion || 0);
-        if (turnVersion > Number(pending.turnVersion || 0)) return true;
-
-        const mySessionId = this.network?.room?.sessionId || '';
-        if (!mySessionId) return false;
-        const myPlayer = getPlayer(mySessionId);
-        if (!myPlayer) return false;
-        return Number(myPlayer.handCount || -1) === Number(pending.expectedHandCount);
+        return turnVersion > Number(pending.turnVersion || 0);
     }
 
     applyOptimisticOnlinePlay(tileIndex, openEndIndex, actionId = '') {
@@ -9717,36 +9708,35 @@ class DominoGame {
         if (this.shouldProcessSchemaState(state) === false) {
             return;
         }
-        const playerOrder = Array.from(state?.playerOrder || []);
-        const players = state?.players;
-        const getPlayer = (sid) => (players && sid !== undefined && sid !== null) ? players.get(sid) : null;
         const roomPlayers = Array.isArray(this.currentRoomState?.players) ? this.currentRoomState.players : [];
-        this.roomPlayerRefs = playerOrder.map((sid, index) => {
-            const schemaPlayer = getPlayer(sid) || null;
-            const roomPlayer = roomPlayers.find((player) => {
-                const sessionId = String(player?.sessionId || '').trim();
-                if (sessionId && sessionId === String(sid || '').trim()) return true;
-                if (Number.isInteger(Number(player?.index)) && Number(player.index) === index) return true;
-                if (Number.isInteger(Number(player?.seatNumber)) && Number(player.seatNumber) - 1 === index) return true;
-                return false;
-            }) || null;
-            return {
-                ...(schemaPlayer || {}),
-                ...(roomPlayer || {}),
-                sessionId: sid
-            };
+        const playerOrder = roomPlayers.map((player, index) => {
+            const sid = String(player?.sessionId || '').trim();
+            return sid || `player-${index}`;
         });
+        this.roomPlayerRefs = roomPlayers.map((roomPlayer, index) => ({
+            ...(roomPlayer || {}),
+            sessionId: String(roomPlayer?.sessionId || playerOrder[index] || '').trim()
+        }));
         for (const sid of playerOrder) {
             if (!sid) continue;
-            const avatarUrl = getPlayer(sid)?.avatarUrl || '';
+            const avatarUrl = roomPlayers.find((player, index) => {
+                const sessionId = String(player?.sessionId || '').trim();
+                if (sessionId && sessionId === sid) return true;
+                if (Number.isInteger(Number(player?.index)) && Number(player.index) === playerOrder.indexOf(sid)) return true;
+                return false;
+            })?.avatarUrl || '';
             this.roomAvatarBySessionId.set(sid, avatarUrl || this.roomAvatarBySessionId.get(sid) || '');
         }
 
-        this.playerNames = playerOrder.map((sid, index) => getFirstNameDisplayName(getPlayer(sid)?.name || '', `Player ${index + 1}`));
-        this.scores = playerOrder.map(sid => getPlayer(sid)?.score || 0);
-        this.roundWins = playerOrder.map(sid => getPlayer(sid)?.roundWins || 0);
-        this.playerCount = state?.playerCount || playerOrder.length;
-        
+        const preserveGameStats = Boolean(state?.gameActive);
+        if (!preserveGameStats) {
+            this.playerNames = roomPlayers.map((player, index) => getFirstNameDisplayName(player?.name || '', `Player ${index + 1}`));
+            this.scores = roomPlayers.map((player) => Number(player?.score || 0));
+            this.roundWins = roomPlayers.map((player) => Number(player?.roundWins || 0));
+            this.hands = roomPlayers.map((player) => new Array(Number(player?.handCount || 0)).fill(null));
+        }
+        this.playerCount = Number(state?.playerCount || playerOrder.length || this.playerCount || 0);
+
         if (state.boardJson) {
             try {
                 const parsed = JSON.parse(state.boardJson);
@@ -9757,15 +9747,13 @@ class DominoGame {
         this.currentPlayer = state?.currentPlayerIndex ?? 0;
         this.boneyard = Array.from({ length: state?.boneyardCount || 0 });
         this.isTeamMode = !!state?.isTeamMode;
-        this.teamScores = Array.from(state?.teamScores || [0, 0]);
-        this.teamRoundWins = Array.from(state?.teamRoundWins || [0, 0]);
         this.matchRound = state?.matchRound || 1;
         this.deal = state?.deal || 1;
         this.gameActive = !!state?.gameActive;
         this.matchOver = !!state?.matchOver;
         this.onlineStakeKey = state?.stakeKey || this.onlineStakeKey;
         this.onlineRoundBankAmount = Math.max(0, Number(state?.bankAmount || 0));
-        if (this.hasPendingOnlinePlayAck(state, playerOrder, getPlayer)) {
+        if (this.hasPendingOnlinePlayAck(state, playerOrder, null)) {
             this.clearPendingOnlineAction({ rollback: false });
             this.turnInProgress = false;
         }
@@ -9843,24 +9831,8 @@ class DominoGame {
             return;
         }
 
-        // Create dummy opponent hands based on handCount from state
-        this.hands = [];
-        for (let i = 0; i < this.playerNames.length; i++) {
-            const sid = playerOrder[i];
-            const count = getPlayer(sid)?.handCount || 0;
-            this.hands.push(new Array(count).fill(null));
-        }
-
-        // Restore our actual hand if we already received it
-        if (this.network && this.network.room) {
-            const mySid = this.network.room.sessionId;
-            const myIdx = playerOrder.indexOf(mySid);
-            if (myIdx !== -1) {
-                this.humanPlayerIndex = myIdx;
-                if (this.myHand) {
-                    this.hands[myIdx] = this.myHand;
-                }
-            }
+        if (this.gameActive && Array.isArray(this.hands) && this.hands.length < this.playerNames.length) {
+            this.hands = Array.from({ length: this.playerNames.length }, (_, index) => this.hands[index] || []);
         }
 
         this.renderState();
@@ -9869,10 +9841,10 @@ class DominoGame {
     onNetworkHandUpdate(handData) {
         this.myHand = handData.map(t => new Tile(t.a, t.b));
         // We find our index
-        if (!this.network?.room) return;
-        const mySid = this.network.room.sessionId;
-        const playerOrder = this.network.room.state?.playerOrder || [];
-        const myIdx = playerOrder.indexOf(mySid);
+        const mySid = this.network?.room?.sessionId || '';
+        const myIdx = Array.isArray(this.roomPlayerRefs)
+            ? this.roomPlayerRefs.findIndex((player) => String(player?.sessionId || '') === mySid)
+            : -1;
         if (myIdx !== -1) {
             this.humanPlayerIndex = myIdx;
             this.hands[myIdx] = this.myHand;

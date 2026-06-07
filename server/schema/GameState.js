@@ -1,4 +1,4 @@
-const { Schema, type, MapSchema, ArraySchema } = require("@colyseus/schema");
+const { Schema, type } = require("@colyseus/schema");
 
 class Player extends Schema {
     constructor() {
@@ -27,8 +27,6 @@ type("number")(Player.prototype, "seatIndex");
 class GameState extends Schema {
     constructor() {
         super();
-        this.players = new MapSchema();
-        this.playerOrder = new ArraySchema();
         this.currentPlayerIndex = 0;
         this.boneyardCount = 0;
         this.gameActive = false;
@@ -44,12 +42,8 @@ class GameState extends Schema {
         this.gameOverPlayerName = "";
         this.gameOverWinnerIndex = -1;
         this.gameOverSummaryJson = "";
-        this.teamScores = new ArraySchema(0, 0);
-        this.teamRoundWins = new ArraySchema(0, 0);
     }
 }
-type({ map: Player })(GameState.prototype, "players");
-type(["string"])(GameState.prototype, "playerOrder");
 type("number")(GameState.prototype, "currentPlayerIndex");
 type("number")(GameState.prototype, "boneyardCount");
 type("boolean")(GameState.prototype, "gameActive");
@@ -65,7 +59,5 @@ type("string")(GameState.prototype, "gameOverReason");
 type("string")(GameState.prototype, "gameOverPlayerName");
 type("number")(GameState.prototype, "gameOverWinnerIndex");
 type("string")(GameState.prototype, "gameOverSummaryJson");
-type(["number"])(GameState.prototype, "teamScores");
-type(["number"])(GameState.prototype, "teamRoundWins");
 
 module.exports = { GameState, Player };

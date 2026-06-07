@@ -122,6 +122,7 @@ test("1v1 online auto-starts without seat selection", async () => {
 
     await joinHuman(room, "host", "Host");
     const guest = await joinHumanWithoutClientList(room, "guest", "Guest");
+    await new Promise((resolve) => setTimeout(resolve, 650));
 
     assert.equal(room.getPlayerSeatIndex("host"), 0);
     assert.equal(room.getPlayerSeatIndex("guest"), 1);
@@ -181,6 +182,7 @@ test("startGame is called only once after the final seat is selected", async () 
     assert.equal(startCalls, 0);
 
     room.handleChooseSeat(guestC, { seatIndex: 3 });
+    await new Promise((resolve) => setTimeout(resolve, 650));
     assert.equal(startCalls, 1);
 
     assert.deepEqual(room.state.playerOrder, ["host", "guest-a", "guest-b", "guest-c"]);
@@ -196,10 +198,33 @@ test("maybeAutoStartGame does not rely on clients length when humans are already
 
     await joinHuman(room, "host", "Host");
     await joinHumanWithoutClientList(room, "guest", "Guest");
+    await new Promise((resolve) => setTimeout(resolve, 650));
 
     assert.equal(startCalls, 1);
     assert.equal(room.countConnectedHumanPlayers(), 2);
     assert.equal(room.countReadyHumanPlayers(), 2);
+});
+
+test("updateSchemaState does not mutate player handCount fields", async () => {
+    const room = createRoom({ totalPlayers: 2, aiCount: 0, isTeamMode: false });
+    await joinHuman(room, "host", "Host");
+    const guest = await joinHuman(room, "guest", "Guest");
+
+    room.hands = [
+        [{ id: 1, a: 6, b: 6 }],
+        [{ id: 2, a: 1, b: 1 }, { id: 3, a: 2, b: 2 }]
+    ];
+    room.boneyard = [{ id: 4, a: 3, b: 3 }];
+    room.internalBoard = { toJSON: () => ({ nodes: [] }) };
+
+    const beforeHost = room.state.players.get("host").handCount;
+    const beforeGuest = room.state.players.get("guest").handCount;
+
+    room.updateSchemaState({ includeBoardJson: true });
+
+    assert.equal(room.state.players.get("host").handCount, beforeHost);
+    assert.equal(room.state.players.get("guest").handCount, beforeGuest);
+    assert.equal(guest.messages.length, 0);
 });
 
 test("seat cannot be changed after the game starts", async () => {

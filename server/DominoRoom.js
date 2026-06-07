@@ -24,6 +24,7 @@ const TURN_TIMEOUT_MS = 30000;
 const BOT_THINK_DELAY_MS = 1500;
 const DEAL_END_MODAL_MS = 5000;
 const RECONNECT_GRACE_MS = 10000;
+const AUTO_START_DELAY_MS = 500;
 const CUSTOM_STATE_TTL = 86400;
 const redisUrl = process.env.REDIS_URI || "";
 const redis = redisUrl
@@ -90,6 +91,7 @@ class DominoRoom extends Room {
         void rememberRoom(this.roomCode, this.roomId);
 
         this.setState(new GameState());
+        this.attachStateCollections();
         this.voiceEnabledBySessionId = new Set();
         this.state.isTeamMode = options.isTeamMode === true;
         this.totalPlayers = normalizePlayerCount(options.playerCount, this.state.isTeamMode);
@@ -128,6 +130,7 @@ class DominoRoom extends Room {
         this.turnAdvancePending = false;
         this.turnAdvanceTimer = null;
         this.nextDealTimer = null;
+        this.autoStartTimer = null;
         this.pendingActionContext = null;
         this.botIds = [];
         this.aiPlayers = new Map();
@@ -172,6 +175,36 @@ class DominoRoom extends Room {
         }
 
         debugLog(`[ROOM] Created room ${this.roomId} (code ${this.roomCode}), humanSeats=${this.humanSeats}, totalPlayers=${this.totalPlayers}, aiCount=${this.aiCount}, teamMode=${this.state.isTeamMode}`);
+    }
+
+    attachStateCollections() {
+        this._players = this._players instanceof Map ? this._players : new Map();
+        this._playerOrder = Array.isArray(this._playerOrder) ? this._playerOrder : [];
+        this._teamScores = Array.isArray(this._teamScores) ? this._teamScores : [0, 0];
+        this._teamRoundWins = Array.isArray(this._teamRoundWins) ? this._teamRoundWins : [0, 0];
+
+        const defineCollectionAccessor = (name, key) => {
+            const descriptor = Object.getOwnPropertyDescriptor(this.state, name);
+            if (descriptor?.get || descriptor?.set) return;
+            Object.defineProperty(this.state, name, {
+                configurable: true,
+                enumerable: false,
+                get: () => this[key],
+                set: (value) => {
+                    this[key] = value;
+                }
+            });
+        };
+
+        defineCollectionAccessor("players", "_players");
+        defineCollectionAccessor("playerOrder", "_playerOrder");
+        defineCollectionAccessor("teamScores", "_teamScores");
+        defineCollectionAccessor("teamRoundWins", "_teamRoundWins");
+
+        this.state.players = this._players;
+        this.state.playerOrder = this._playerOrder;
+        this.state.teamScores = this._teamScores;
+        this.state.teamRoundWins = this._teamRoundWins;
     }
 
     onAuth(client, options, context) {
@@ -348,7 +381,12 @@ class DominoRoom extends Room {
             reason
         });
         if (decision !== "start") return false;
-        void this.startGame();
+        if (this.gameStarting || this.autoStartTimer) return true;
+        this.gameStarting = true;
+        this.autoStartTimer = setTimeout(() => {
+            this.autoStartTimer = null;
+            void this.startGame({ allowAlreadyStarting: true });
+        }, AUTO_START_DELAY_MS);
         return true;
     }
 
@@ -391,6 +429,7 @@ class DominoRoom extends Room {
         const humanPlayers = this.state.playerOrder.filter((sessionId) => !this.state.players.get(sessionId)?.isBot).length;
         let player;
         let restoredJoin = false;
+        let isFreshJoin = false;
 
         if (reusableSessionId) {
             restoredJoin = reusableSessionId !== client.sessionId || this.restoredFromSnapshot;
@@ -419,26 +458,35 @@ class DominoRoom extends Room {
                 return;
             }
 
-            player = new Player();
-            player.name = getFirstNameDisplayName(identity.displayName || options.name, options.name || "Player");
-            player.userId = String(identity.userId || "");
-            player.avatarUrl = String(identity.avatarUrl || options.avatarUrl || "").trim();
-            player.seatIndex = this.state.playerOrder.length === 0 ? 0 : (this.totalPlayers <= 2 ? 1 : -1);
+            player = {
+                name: getFirstNameDisplayName(identity.displayName || options.name, options.name || "Player"),
+                userId: String(identity.userId || ""),
+                score: 0,
+                roundWins: 0,
+                handCount: 0,
+                isConnected: true,
+                isBot: false,
+                avatarUrl: String(identity.avatarUrl || options.avatarUrl || "").trim(),
+                seatIndex: this.state.playerOrder.length === 0 ? 0 : (this.totalPlayers <= 2 ? 1 : -1)
+            };
             this.state.players.set(client.sessionId, player);
             this.state.playerOrder.push(client.sessionId);
             if (player.seatIndex >= 0) {
                 this.rebuildPlayerOrderBySeats();
             }
+            isFreshJoin = true;
         }
 
         if (!player) return;
 
-        player.name = getFirstNameDisplayName(identity.displayName || player.name || options.name, player.name || options.name || "Player");
-        player.userId = String(identity.userId || player.userId || "");
-        player.avatarUrl = String(identity.avatarUrl || player.avatarUrl || options.avatarUrl || "").trim();
-        player.isConnected = true;
-        if (!Number.isInteger(Number(player.seatIndex))) {
-            player.seatIndex = -1;
+        if (!isFreshJoin) {
+            player.name = getFirstNameDisplayName(identity.displayName || player.name || options.name, player.name || options.name || "Player");
+            player.userId = String(identity.userId || player.userId || "");
+            player.avatarUrl = String(identity.avatarUrl || player.avatarUrl || options.avatarUrl || "").trim();
+            player.isConnected = true;
+            if (!Number.isInteger(Number(player.seatIndex))) {
+                player.seatIndex = -1;
+            }
         }
 
         const existingIdentity = this.identityBySessionId.get(client.sessionId) || {};
@@ -493,6 +541,7 @@ class DominoRoom extends Room {
         }
         removeRoomPlayers(this.roomId);
         this.botTimer && clearTimeout(this.botTimer);
+        this.autoStartTimer && clearTimeout(this.autoStartTimer);
         this.clearNextDealTimer();
         this.clearTurnTimer();
         this.clearMatchRecordingRetryTimer();
@@ -538,11 +587,17 @@ class DominoRoom extends Room {
                 continue;
             }
 
-            const bot = new Player();
-            bot.name = `AI ${i + 1}`;
-            bot.isBot = true;
-            bot.isConnected = true;
-            bot.seatIndex = botSeatIndex;
+            const bot = {
+                name: `AI ${i + 1}`,
+                userId: "",
+                score: 0,
+                roundWins: 0,
+                handCount: 0,
+                isConnected: true,
+                isBot: true,
+                avatarUrl: "",
+                seatIndex: botSeatIndex
+            };
             this.state.players.set(botId, bot);
             nextBotIds.push(botId);
             debugLog("[ROOM_DEBUG] bots:added", {
@@ -700,7 +755,11 @@ class DominoRoom extends Room {
         }
     }
 
-    async startGame() {
+    async startGame({ allowAlreadyStarting = false } = {}) {
+        if (this.autoStartTimer) {
+            clearTimeout(this.autoStartTimer);
+            this.autoStartTimer = null;
+        }
         debugLog("[ROOM_DEBUG] startGame:enter", {
             roomId: this.roomId,
             roomCode: this.roomCode,
@@ -710,7 +769,7 @@ class DominoRoom extends Room {
             playerOrder: Array.from(this.state.playerOrder || []),
             players: debugPlayerSummary(this)
         });
-        if (this.state.gameActive || this.gameStarting || this.matchFinished) {
+        if (this.state.gameActive || (!allowAlreadyStarting && this.gameStarting) || this.matchFinished) {
             debugLog("[ROOM_DEBUG] startGame:blocked", {
                 roomId: this.roomId,
                 roomCode: this.roomCode,
@@ -1226,14 +1285,6 @@ class DominoRoom extends Room {
         if (includeBoardJson) {
             this.state.boardJson = JSON.stringify(this.internalBoard);
         }
-
-        for (let i = 0; i < this.state.playerOrder.length; i++) {
-            const sessionId = this.state.playerOrder[i];
-            const player = this.state.players.get(sessionId);
-            if (player && this.hands[i]) {
-                player.handCount = this.hands[i].length;
-            }
-        }
     }
 
     buildTurnInfoForPlayer(playerIndex) {
@@ -1268,6 +1319,9 @@ class DominoRoom extends Room {
     buildPlayerSyncRows() {
         return Array.from(this.state.playerOrder || []).map((sessionId, index) => {
             const player = this.state.players.get(sessionId) || {};
+            const handCount = Array.isArray(this.hands?.[index])
+                ? this.hands[index].length
+                : Number(player.handCount || 0);
             return {
                 sessionId,
                 index,
@@ -1276,7 +1330,7 @@ class DominoRoom extends Room {
                 avatarUrl: player.avatarUrl || "",
                 score: Number(player.score || 0),
                 roundWins: Number(player.roundWins || 0),
-                handCount: Number(player.handCount || 0),
+                handCount,
                 isConnected: Boolean(player.isConnected),
                 isBot: Boolean(player.isBot),
                 seatIndex: Number.isInteger(Number(player.seatIndex)) ? Number(player.seatIndex) : -1
@@ -1285,12 +1339,15 @@ class DominoRoom extends Room {
     }
 
     buildPublicPlayerStats() {
-        return Array.from(this.state.playerOrder || []).map((sessionId) => {
+        return Array.from(this.state.playerOrder || []).map((sessionId, index) => {
             const player = this.state.players.get(sessionId) || {};
+            const handCount = Array.isArray(this.hands?.[index])
+                ? this.hands[index].length
+                : Number(player.handCount || 0);
             return {
                 score: Number(player.score || 0),
                 roundWins: Number(player.roundWins || 0),
-                handCount: Number(player.handCount || 0)
+                handCount
             };
         });
     }
@@ -2225,16 +2282,17 @@ class DominoRoom extends Room {
         });
 
         for (const entry of restored.players) {
-            const player = new Player();
-            player.name = getFirstNameDisplayName(entry.name, entry.name || "Player");
-            player.userId = entry.userId;
-            player.score = entry.score;
-            player.roundWins = entry.roundWins;
-            player.handCount = entry.handCount;
-            player.avatarUrl = entry.avatarUrl;
-            player.isBot = entry.isBot;
-            player.isConnected = entry.isConnected;
-            player.seatIndex = entry.seatIndex;
+            const player = {
+                name: getFirstNameDisplayName(entry.name, entry.name || "Player"),
+                userId: entry.userId,
+                score: entry.score,
+                roundWins: entry.roundWins,
+                handCount: entry.handCount,
+                avatarUrl: entry.avatarUrl,
+                isBot: entry.isBot,
+                isConnected: entry.isConnected,
+                seatIndex: entry.seatIndex
+            };
             this.state.players.set(entry.sessionId, player);
         }
 
