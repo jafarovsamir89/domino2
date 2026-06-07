@@ -196,6 +196,13 @@ class DominoRoom extends Room {
             return requestedSessionId;
         }
 
+        const hasExplicitRestoreRequest = Boolean(
+            String(options.restoreReconnectionToken || "").trim()
+            || String(options.restoreRoomId || "").trim()
+            || String(options.restoreRoomCode || "").trim()
+        );
+        if (!hasExplicitRestoreRequest) return "";
+
         const userId = String(identity.userId || "").trim();
         if (!userId) return "";
 

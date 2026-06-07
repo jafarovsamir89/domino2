@@ -132,7 +132,7 @@ test("loadCustomStateForRestore returns null when no restore keys are provided",
     });
 });
 
-test("findReusableSessionId keeps the current restoreSessionId fallback behavior", async () => {
+test("findReusableSessionId only falls back to userId during an explicit restore request", async () => {
     await withDominoRoomStub({}, async (DominoRoom) => {
         const room = Object.create(DominoRoom.prototype);
         room.state = {
@@ -144,7 +144,8 @@ test("findReusableSessionId keeps the current restoreSessionId fallback behavior
         };
 
         assert.equal(room.findReusableSessionId({ restoreSessionId: "session-2" }, { userId: "u1" }), "session-2");
-        assert.equal(room.findReusableSessionId({ restoreSessionId: "missing" }, { userId: "u2" }), "session-2");
+        assert.equal(room.findReusableSessionId({ restoreSessionId: "missing" }, { userId: "u2" }), "");
+        assert.equal(room.findReusableSessionId({ restoreRoomCode: "ROOM-2" }, { userId: "u2" }), "session-2");
         assert.equal(room.findReusableSessionId({ restoreSessionId: "missing" }, { userId: "" }), "");
     });
 });
