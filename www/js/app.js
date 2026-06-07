@@ -9673,6 +9673,9 @@ class DominoGame {
     onNetworkGameDelta(payload = {}) {
         if (!this.network?.isMultiplayer) return;
         const boardChanged = Boolean(payload?.boardDelta);
+        
+        const previousTileIds = new Set(this.board.nodes.map(n => n.tile.id));
+        
         if (boardChanged && !this.applyBoardDelta(payload.boardDelta)) {
             this.requestRealtimeSync('board_delta_failed');
             return;
@@ -9703,6 +9706,26 @@ class DominoGame {
             this.goshaCombo = null;
         }
         this.turnInProgress = false;
+
+        if (boardChanged) {
+            const newTiles = this.board.nodes.filter(n => !previousTileIds.has(n.tile.id));
+            if (newTiles.length > 0) {
+                const bc = document.getElementById('board-container');
+                if (bc) {
+                    const bcRect = bc.getBoundingClientRect();
+                    const lastNewTile = newTiles[newTiles.length - 1];
+                    const dummySourceRect = {
+                        left: bcRect.left + bcRect.width / 2 - 33,
+                        top: bcRect.top + 10,
+                        width: 66,
+                        height: 34
+                    };
+                    const dummySourceNode = this.renderer.createTileEl(lastNewTile.displayA, lastNewTile.displayB, lastNewTile.orientation, false, lastNewTile.id);
+                    this.renderer._pendingBoardTileTravel = { tileId: lastNewTile.id, sourceRect: dummySourceRect, sourceNode: dummySourceNode };
+                }
+            }
+        }
+
         this.renderRealtimeGameDeltaView({
             boardChanged,
             handChanged: true,
@@ -9710,6 +9733,78 @@ class DominoGame {
             scoresChanged: true,
             infoChanged: true
         });
+
+        if (boardChanged && this.renderer._pendingBoardTileTravel) {
+            const tileId = this.renderer._pendingBoardTileTravel.tileId;
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    this.renderer.animateTileTravel(tileId);
+                });
+            });
+        }
+    }
+
+        this.currentPlayer = Number(payload?.currentPlayerIndex ?? this.currentPlayer ?? 0);
+        this.boneyard = Array.from({ length: Number(payload?.boneyardCount || 0) });
+        this.isTeamMode = Boolean(payload?.isTeamMode ?? this.isTeamMode);
+        this.gameActive = Boolean(payload?.gameActive ?? this.gameActive);
+        this.matchRound = Number(payload?.matchRound || this.matchRound || 1);
+        this.deal = Number(payload?.deal || this.deal || 1);
+        this.turnVersion = Number(payload?.turnVersion || this.turnVersion || 1);
+        this.onlineStakeKey = payload?.stakeKey || this.onlineStakeKey;
+        this.onlineRoundBankAmount = Math.max(0, Number(payload?.bankAmount || this.onlineRoundBankAmount || 0));
+        this.teamScores = Array.from(payload?.teamScores || this.teamScores || [0, 0]);
+        this.teamRoundWins = Array.from(payload?.teamRoundWins || this.teamRoundWins || [0, 0]);
+        this.updateHandsFromPlayerStats(payload?.playerStats || []);
+
+        const turnDeadlineAt = Number(payload?.turnDeadlineAt || 0);
+        if (this.gameActive && turnDeadlineAt > 0) {
+            this.startTurnTimer(turnDeadlineAt);
+        } else {
+            this.clearTurnTimers();
+        }
+
+        if (this.currentPlayer !== this.humanPlayerIndex) {
+            this.validMoves = [];
+            this.goshaCombo = null;
+        }
+        this.turnInProgress = false;
+
+        if (boardChanged) {
+            const newTiles = this.board.nodes.filter(n => !previousTileIds.has(n.tile.id));
+            if (newTiles.length > 0) {
+                const bc = document.getElementById('board-container');
+                if (bc) {
+                    const bcRect = bc.getBoundingClientRect();
+                    const lastNewTile = newTiles[newTiles.length - 1];
+                    const dummySourceRect = {
+                        left: bcRect.left + bcRect.width / 2 - 33,
+                        top: bcRect.top + 10,
+                        width: 66,
+                        height: 34
+                    };
+                    const dummySourceNode = this.renderer.createTileEl(lastNewTile.displayA, lastNewTile.displayB, lastNewTile.orientation, false, lastNewTile.id);
+                    this.renderer._pendingBoardTileTravel = { tileId: lastNewTile.id, sourceRect: dummySourceRect, sourceNode: dummySourceNode };
+                }
+            }
+        }
+
+        this.renderRealtimeGameDeltaView({
+            boardChanged,
+            handChanged: true,
+            opponentHandsChanged: true,
+            scoresChanged: true,
+            infoChanged: true
+        });
+
+        if (boardChanged && this.renderer._pendingBoardTileTravel) {
+            const tileId = this.renderer._pendingBoardTileTravel.tileId;
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    this.renderer.animateTileTravel(tileId);
+                });
+            });
+        }
     }
 
     // --- Network Handlers (Thin Client Mode) ---

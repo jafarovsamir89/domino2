@@ -171,18 +171,25 @@ export class Renderer {
     }
 
     renderBoard(board) {
-        this.boardEl.innerHTML = '';
         const bc = document.getElementById('board-container');
         if (!board.nodes.length) {
             this.cancelActiveTileTravel();
             this._lastAnimatedBoardTileId = null;
             this._pendingBoardTileTravel = null;
             this._animatedBoardTileIds.clear();
+            this.boardEl.innerHTML = '';
             const ph = document.createElement('div');
             ph.style.cssText = 'color:var(--text-dim);font-size:0.85rem;text-align:center;padding:40px;width:100%;height:100%;display:flex;align-items:center;justify-content:center;';
             ph.textContent = this.app.t('board-empty');
             this.boardEl.appendChild(ph);
             return;
+        }
+
+        let container = this.boardEl.querySelector('.board-layout');
+        if (!container) {
+            container = document.createElement('div');
+            container.className = 'board-layout';
+            this.boardEl.appendChild(container);
         }
 
         let mnX = Infinity;
@@ -209,9 +216,6 @@ export class Renderer {
         const scale = Math.min(vw / lw, vh / lh, 1.1);
 
         this._lastScale = scale;
-
-        const container = document.createElement('div');
-        container.className = 'board-layout';
         container.style.cssText = `position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) scale(${scale});transform-origin:center center;`;
 
         const ox = (mxX + mnX) / 2;
@@ -222,48 +226,206 @@ export class Renderer {
         const useGsap = !!gsap && !reduceMotion;
         const pendingTravel = this._pendingBoardTileTravel;
 
+        const existingWrappers = new Map();
+        for (const wrapper of container.children) {
+            const tileId = wrapper.querySelector('[data-tile-id]')?.dataset.tileId;
+            if (tileId) {
+                existingWrappers.set(tileId, wrapper);
+            }
+        }
+
         const last = board.nodes.length - 1;
         for (let i = 0; i < board.nodes.length; i++) {
             const n = board.nodes[i];
-            const wrapper = document.createElement('div');
-            wrapper.dataset.nodeId = String(i);
-            wrapper.style.cssText = `position:absolute;left:${n.x - ox}px;top:${n.y - oy}px;`;
-
-            const el = this.createTileEl(n.displayA, n.displayB, n.orientation, false, n.tile.id);
-            el.classList.add('board-tile');
-            const alreadyAnimated = this._animatedBoardTileIds.has(n.tile.id);
-            if (pendingTravel?.tileId === n.tile.id) {
-                el.style.visibility = 'hidden';
-            } else if (i === last && board.nodes.length > 1 && !alreadyAnimated) {
-                if (useGsap && this._lastAnimatedBoardTileId !== n.tile.id) {
-                    this.animateBoardTileEntry(wrapper);
-                    this._lastAnimatedBoardTileId = n.tile.id;
-                } else {
-                    el.classList.add('just-played');
+            const tileId = String(n.tile.id);
+            let wrapper = existingWrappers.get(tileId);
+            
+            if (!wrapper) {
+                wrapper = document.createElement('div');
+                wrapper.dataset.nodeId = String(i);
+                wrapper.dataset.tileId = tileId;
+                wrapper.style.cssText = `position:absolute;left:${n.x - ox}px;top:${n.y - oy}px;`;
+                
+                const el = this.createTileEl(n.displayA, n.displayB, n.orientation, false, n.tile.id);
+                el.classList.add('board-tile');
+                
+                const alreadyAnimated = this._animatedBoardTileIds.has(n.tile.id);
+                if (pendingTravel?.tileId === n.tile.id) {
+                    el.style.visibility = 'hidden';
+                } else if (i === last && board.nodes.length > 1 && !alreadyAnimated) {
+                    if (useGsap && this._lastAnimatedBoardTileId !== n.tile.id) {
+                        this.animateBoardTileEntry(wrapper);
+                        this._lastAnimatedBoardTileId = n.tile.id;
+                    } else {
+                        el.classList.add('just-played');
+                    }
+                    this._animatedBoardTileIds.add(n.tile.id);
                 }
-                this._animatedBoardTileIds.add(n.tile.id);
+                
+                if (i === board.crossNodeId && board.crossSidesClosed >= 2) {
+                    el.classList.add('telephone-highlight');
+                }
+                wrapper.appendChild(el);
+                container.appendChild(wrapper);
+            } else {
+                wrapper.style.cssText = `position:absolute;left:${n.x - ox}px;top:${n.y - oy}px;`;
+                wrapper.dataset.nodeId = String(i);
+                const el = wrapper.querySelector('.board-tile');
+                if (el) {
+                    el.className = 'board-tile';
+                    if (i === board.crossNodeId && board.crossSidesClosed >= 2) {
+                        el.classList.add('telephone-highlight');
+                    }
+                }
             }
-            if (i === board.crossNodeId && board.crossSidesClosed >= 2) {
-                el.classList.add('telephone-highlight');
-            }
-
-            wrapper.appendChild(el);
-            container.appendChild(wrapper);
         }
 
-        this.boardEl.appendChild(container);
+        for (const [tileId, wrapper] of existingWrappers) {
+            if (!board.nodes.some(n => String(n.tile.id) === tileId)) {
+                wrapper.remove();
+            }
+        }
 
+        let info = this.boardEl.querySelector('.board-open-ends-info');
         if (board.openEnds.length) {
-            const info = document.createElement('div');
-            info.style.cssText = 'position:absolute;bottom:4px;left:50%;transform:translateX(-50%);display:flex;gap:5px;font-size:0.68rem;color:var(--text-dim);z-index:5;';
+            if (!info) {
+                info = document.createElement('div');
+                info.className = 'board-open-ends-info';
+                info.style.cssText = 'position:absolute;bottom:4px;left:50%;transform:translateX(-50%);display:flex;gap:5px;font-size:0.68rem;color:var(--text-dim);z-index:5;';
+                this.boardEl.style.position = 'relative';
+                this.boardEl.appendChild(info);
+            }
+            info.innerHTML = '';
             for (const oe of board.openEnds) {
                 const c = document.createElement('span');
                 c.style.cssText = 'background:rgba(240,192,64,0.15);border:1px solid rgba(240,192,64,0.3);border-radius:8px;padding:1px 6px;';
                 c.textContent = oe.value;
                 info.appendChild(c);
             }
-            this.boardEl.style.position = 'relative';
-            this.boardEl.appendChild(info);
+        } else if (info) {
+            info.remove();
+        }
+    }
+
+        let container = this.boardEl.querySelector('.board-layout');
+        if (!container) {
+            container = document.createElement('div');
+            container.className = 'board-layout';
+            this.boardEl.appendChild(container);
+        }
+
+        let mnX = Infinity;
+        let mxX = -Infinity;
+        let mnY = Infinity;
+        let mxY = -Infinity;
+
+        for (const n of board.nodes) {
+            const hw = (n.orientation === 'horizontal' ? 66 : 34) / 2;
+            const hh = (n.orientation === 'horizontal' ? 34 : 66) / 2;
+            mnX = Math.min(mnX, n.x - hw);
+            mxX = Math.max(mxX, n.x + hw);
+            mnY = Math.min(mnY, n.y - hh);
+            mxY = Math.max(mxY, n.y + hh);
+        }
+
+        const pad = 20;
+        const lw = (mxX - mnX) + pad * 2;
+        const lh = (mxY - mnY) + pad * 2;
+        const bcRect = bc.getBoundingClientRect();
+        const sideReserve = 50;
+        const vw = Math.max(bcRect.width - (board.nodes.length > 5 ? sideReserve * 2 : 0), 100);
+        const vh = Math.max(bcRect.height - 20, 100);
+        const scale = Math.min(vw / lw, vh / lh, 1.1);
+
+        this._lastScale = scale;
+        container.style.cssText = `position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) scale(${scale});transform-origin:center center;`;
+
+        const ox = (mxX + mnX) / 2;
+        const oy = (mxY + mnY) / 2;
+        this._lastOx = ox;
+        this._lastOy = oy;
+        const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
+        const useGsap = !!gsap && !reduceMotion;
+        const pendingTravel = this._pendingBoardTileTravel;
+
+        const existingWrappers = new Map();
+        for (const wrapper of container.children) {
+            const tileId = wrapper.querySelector('[data-tile-id]')?.dataset.tileId;
+            if (tileId) {
+                existingWrappers.set(tileId, wrapper);
+            }
+        }
+
+        const last = board.nodes.length - 1;
+        for (let i = 0; i < board.nodes.length; i++) {
+            const n = board.nodes[i];
+            const tileId = String(n.tile.id);
+            let wrapper = existingWrappers.get(tileId);
+            
+            if (!wrapper) {
+                wrapper = document.createElement('div');
+                wrapper.dataset.nodeId = String(i);
+                wrapper.dataset.tileId = tileId;
+                wrapper.style.cssText = `position:absolute;left:${n.x - ox}px;top:${n.y - oy}px;`;
+                
+                const el = this.createTileEl(n.displayA, n.displayB, n.orientation, false, n.tile.id);
+                el.classList.add('board-tile');
+                
+                const alreadyAnimated = this._animatedBoardTileIds.has(n.tile.id);
+                if (pendingTravel?.tileId === n.tile.id) {
+                    el.style.visibility = 'hidden';
+                } else if (i === last && board.nodes.length > 1 && !alreadyAnimated) {
+                    if (useGsap && this._lastAnimatedBoardTileId !== n.tile.id) {
+                        this.animateBoardTileEntry(wrapper);
+                        this._lastAnimatedBoardTileId = n.tile.id;
+                    } else {
+                        el.classList.add('just-played');
+                    }
+                    this._animatedBoardTileIds.add(n.tile.id);
+                }
+                
+                if (i === board.crossNodeId && board.crossSidesClosed >= 2) {
+                    el.classList.add('telephone-highlight');
+                }
+                wrapper.appendChild(el);
+                container.appendChild(wrapper);
+            } else {
+                wrapper.style.cssText = `position:absolute;left:${n.x - ox}px;top:${n.y - oy}px;`;
+                wrapper.dataset.nodeId = String(i);
+                const el = wrapper.querySelector('.board-tile');
+                if (el) {
+                    el.className = 'board-tile';
+                    if (i === board.crossNodeId && board.crossSidesClosed >= 2) {
+                        el.classList.add('telephone-highlight');
+                    }
+                }
+            }
+        }
+
+        for (const [tileId, wrapper] of existingWrappers) {
+            if (!board.nodes.some(n => String(n.tile.id) === tileId)) {
+                wrapper.remove();
+            }
+        }
+
+        let info = this.boardEl.querySelector('.board-open-ends-info');
+        if (board.openEnds.length) {
+            if (!info) {
+                info = document.createElement('div');
+                info.className = 'board-open-ends-info';
+                info.style.cssText = 'position:absolute;bottom:4px;left:50%;transform:translateX(-50%);display:flex;gap:5px;font-size:0.68rem;color:var(--text-dim);z-index:5;';
+                this.boardEl.style.position = 'relative';
+                this.boardEl.appendChild(info);
+            }
+            info.innerHTML = '';
+            for (const oe of board.openEnds) {
+                const c = document.createElement('span');
+                c.style.cssText = 'background:rgba(240,192,64,0.15);border:1px solid rgba(240,192,64,0.3);border-radius:8px;padding:1px 6px;';
+                c.textContent = oe.value;
+                info.appendChild(c);
+            }
+        } else if (info) {
+            info.remove();
         }
     }
 
