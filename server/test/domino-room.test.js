@@ -551,6 +551,28 @@ test("sync requests return both room state and full state to the same client", (
     ]);
 });
 
+test("addScore updates team totals and emits a game delta", () => {
+    const room = Object.create(DominoRoom.prototype);
+    const deltas = [];
+    const broadcasts = [];
+    room.state = {
+        isTeamMode: true,
+        playerOrder: ["host"],
+        players: new Map([["host", { name: "Host", score: 0 }]]),
+        teamScores: [0, 0]
+    };
+    room.broadcast = (...args) => broadcasts.push(args);
+    room.broadcastGameDelta = (payload) => deltas.push(payload);
+
+    const result = room.addScore(0, 10);
+
+    assert.equal(result, 10);
+    assert.equal(room.state.players.get("host").score, 10);
+    assert.equal(room.state.teamScores[0], 10);
+    assert.deepEqual(deltas, [{ action: "score", actorIndex: 0 }]);
+    assert.ok(broadcasts.some(([kind]) => kind === "score_popup"));
+});
+
 test("performPlay rejects a tile that does not match the selected open end and keeps the board unchanged", () => {
     const room = Object.create(DominoRoom.prototype);
     let advanced = 0;

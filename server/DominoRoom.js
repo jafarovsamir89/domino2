@@ -1431,6 +1431,7 @@ class DominoRoom extends Room {
             action: String(base.action || "").trim(),
             actorIndex: Number.isInteger(Number(base.actorIndex)) ? Number(base.actorIndex) : -1,
             boardDelta: base.boardDelta || null,
+            isTeamMode: Boolean(this.state.isTeamMode),
             currentPlayerIndex: Number(this.state.currentPlayerIndex || 0),
             boneyardCount: this.boneyard.length,
             gameActive: Boolean(this.state.gameActive),
@@ -2121,6 +2122,10 @@ class DominoRoom extends Room {
         this.broadcast("sound", "score");
         this.broadcast("score_popup", score);
         this.broadcast("msg", { text: `${player.name} +${score}!`, time: 2000 });
+        this.broadcastGameDelta({
+            action: "score",
+            actorIndex: pi
+        });
         return score;
     }
 

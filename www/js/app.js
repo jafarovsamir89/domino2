@@ -7741,6 +7741,7 @@ class DominoGame {
     onRoomStateUpdate(roomState) {
         if (!roomState) return;
         this.currentRoomState = roomState;
+        this.isTeamMode = Boolean(roomState?.isTeamMode ?? this.isTeamMode);
         this.turnVersion = Number(roomState?.turnVersion || this.turnVersion || 1);
         const topRightHud = this.getTopRightHudState();
         debugLog("[CLIENT_DEBUG] onRoomStateUpdate", {
@@ -7886,6 +7887,7 @@ class DominoGame {
 
         const roomPlayers = Array.isArray(roomState.players) ? roomState.players : [];
         const totalPlayers = Math.max(2, Number(roomState.totalPlayers || roomState.humanSeats || roomPlayers.length || 2));
+        this.isTeamMode = Boolean(roomState?.isTeamMode ?? this.isTeamMode);
         const mySessionId = this.network?.room?.sessionId || '';
         const myIndex = roomPlayers.findIndex((player) => player.sessionId === mySessionId);
 
@@ -9678,6 +9680,7 @@ class DominoGame {
 
         this.currentPlayer = Number(payload?.currentPlayerIndex ?? this.currentPlayer ?? 0);
         this.boneyard = Array.from({ length: Number(payload?.boneyardCount || 0) });
+        this.isTeamMode = Boolean(payload?.isTeamMode ?? this.isTeamMode);
         this.gameActive = Boolean(payload?.gameActive ?? this.gameActive);
         this.matchRound = Number(payload?.matchRound || this.matchRound || 1);
         this.deal = Number(payload?.deal || this.deal || 1);
@@ -9735,11 +9738,21 @@ class DominoGame {
         }
 
         const preserveGameStats = Boolean(state?.gameActive);
+        const schemaPlayerOrder = Array.isArray(state?.playerOrder) ? Array.from(state.playerOrder) : playerOrder;
+        const schemaPlayers = state?.players;
+        const hasSchemaPlayerMap = Boolean(schemaPlayers && typeof schemaPlayers.get === 'function' && schemaPlayerOrder.length);
         if (!preserveGameStats) {
             this.playerNames = roomPlayers.map((player, index) => getFirstNameDisplayName(player?.name || '', `Player ${index + 1}`));
             this.scores = roomPlayers.map((player) => Number(player?.score || 0));
             this.roundWins = roomPlayers.map((player) => Number(player?.roundWins || 0));
             this.hands = roomPlayers.map((player) => new Array(Number(player?.handCount || 0)).fill(null));
+        } else if (hasSchemaPlayerMap) {
+            this.scores = schemaPlayerOrder.map((sid, index) => Number(schemaPlayers.get(sid)?.score || roomPlayers[index]?.score || 0));
+            this.roundWins = schemaPlayerOrder.map((sid, index) => Number(schemaPlayers.get(sid)?.roundWins || roomPlayers[index]?.roundWins || 0));
+            this.hands = schemaPlayerOrder.map((sid, index) => new Array(Number(schemaPlayers.get(sid)?.handCount || roomPlayers[index]?.handCount || 0)).fill(null));
+            if (this.humanPlayerIndex >= 0 && Array.isArray(this.myHand)) {
+                this.hands[this.humanPlayerIndex] = this.myHand;
+            }
         }
         this.playerCount = Number(state?.playerCount || playerOrder.length || this.playerCount || 0);
 
