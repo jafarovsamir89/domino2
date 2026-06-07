@@ -3377,6 +3377,47 @@ body.seat-selection-active #game-screen {
     background: transparent;
 }
 
+.konva-board-root {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.konva-board-stage-host {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.konva-board-anchors {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    pointer-events: none;
+    overflow: visible;
+    z-index: 2;
+}
+
+.konva-board-anchors .board-tile {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.board-empty-placeholder {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-dim);
+    font-size: 0.85rem;
+    text-align: center;
+    padding: 40px;
+}
+
 .reaction-stage {
     position: absolute;
     inset: 0;

@@ -1,4 +1,15 @@
+import { KonvaBoardRenderer } from './konvaBoardRenderer.js';
+
 const gsap = window.gsap;
+
+function isKonvaBoardEnabled() {
+    try {
+        return window.DOMINO_KONVA_BOARD_ENABLED === true
+            || window.localStorage?.getItem('dominoKonvaBoard') === 'true';
+    } catch {
+        return false;
+    }
+}
 
 export class Renderer {
     constructor(app) {
@@ -17,6 +28,10 @@ export class Renderer {
         this._pendingBoardTileTravel = null;
         this._activeTileTravel = null;
         this._animatedBoardTileIds = new Set();
+        this._lastAnimatedBoardTileId = null;
+        this._konvaBoardRenderer = null;
+        this._konvaBoardDisabled = false;
+        this._konvaBoardMounted = false;
     }
 
     setTableSkin(assetUrl) {
@@ -170,7 +185,78 @@ export class Renderer {
         this.boneyardVisual.appendChild(lbl);
     }
 
+    shouldUseKonvaBoard() {
+        return !this._konvaBoardDisabled && isKonvaBoardEnabled() && Boolean(window.Konva);
+    }
+
+    ensureKonvaBoardRenderer() {
+        if (!this.shouldUseKonvaBoard()) {
+            return null;
+        }
+        if (!this._konvaBoardRenderer) {
+            this._konvaBoardRenderer = new KonvaBoardRenderer({
+                app: this.app,
+                containerEl: this.boardEl,
+                boardEl: this.boardEl,
+                debug: Boolean(window.DOMINO_DEBUG_BOARD_RENDERER)
+            });
+        }
+        if (!this._konvaBoardMounted) {
+            this._konvaBoardRenderer.mount(this.boardEl);
+            this._konvaBoardMounted = true;
+        }
+        return this._konvaBoardRenderer;
+    }
+
+    disableKonvaBoardForSession(error) {
+        if (this._konvaBoardDisabled) return;
+        this._konvaBoardDisabled = true;
+        this._konvaBoardMounted = false;
+        try {
+            this._konvaBoardRenderer?.destroy?.();
+        } catch {}
+        this._konvaBoardRenderer = null;
+        console.warn('[KonvaBoard] Falling back to DOM renderer', error);
+    }
+
+    getBoardTileElement(tileId) {
+        if (this.shouldUseKonvaBoard()) {
+            return this.boardEl.querySelector(`[data-tile-id="${String(tileId)}"]`);
+        }
+        return this.boardEl.querySelector(`[data-tile-id="${String(tileId)}"]`);
+    }
+
+    getBoardOpenEndRect(openEnd) {
+        if (this.shouldUseKonvaBoard()) {
+            return this._konvaBoardRenderer?.getOpenEndAnchorRect?.(openEnd) || null;
+        }
+        const wrapper = this.boardEl.querySelector(`.board-layout [data-node-id="${openEnd.nodeId}"]`);
+        return wrapper?.getBoundingClientRect?.() || null;
+    }
+
     renderBoard(board) {
+        if (this.shouldUseKonvaBoard()) {
+            try {
+                const renderer = this.ensureKonvaBoardRenderer();
+                if (renderer) {
+                    renderer.render(board, {
+                        pendingTravel: this._pendingBoardTileTravel,
+                        animatedBoardTileIds: this._animatedBoardTileIds,
+                        lastAnimatedBoardTileId: this._lastAnimatedBoardTileId
+                    });
+                    this._lastScale = renderer.lastLayout?.scale || this._lastScale;
+                    this._lastOx = renderer.lastLayout?.bounds?.originX ?? this._lastOx;
+                    this._lastOy = renderer.lastLayout?.bounds?.originY ?? this._lastOy;
+                    return;
+                }
+            } catch (error) {
+                this.disableKonvaBoardForSession(error);
+            }
+        }
+        this.renderBoardDom(board);
+    }
+
+    renderBoardDom(board) {
         const bc = document.getElementById('board-container');
         if (!board.nodes.length) {
             this.cancelActiveTileTravel();
@@ -179,11 +265,14 @@ export class Renderer {
             this._animatedBoardTileIds.clear();
             this.boardEl.innerHTML = '';
             const ph = document.createElement('div');
+            ph.className = 'board-empty-placeholder';
             ph.style.cssText = 'color:var(--text-dim);font-size:0.85rem;text-align:center;padding:40px;width:100%;height:100%;display:flex;align-items:center;justify-content:center;';
             ph.textContent = this.app.t('board-empty');
             this.boardEl.appendChild(ph);
             return;
         }
+
+        this.boardEl.querySelector('.board-empty-placeholder')?.remove();
 
         let container = this.boardEl.querySelector('.board-layout');
         if (!container) {
@@ -330,7 +419,7 @@ export class Renderer {
         this._pendingBoardTileTravel = null;
         const { sourceRect, sourceNode } = pending;
 
-        const targetEl = this.boardEl.querySelector(`[data-tile-id="${tileId}"]`);
+        const targetEl = this.getBoardTileElement(tileId);
         if (!targetEl || !sourceRect) {
             this.revealBoardTile(tileId);
             return Promise.resolve();
@@ -431,6 +520,13 @@ export class Renderer {
     }
 
     revealBoardTile(tileId) {
+        if (this.shouldUseKonvaBoard()) {
+            this._pendingBoardTileTravel = null;
+            if (this.app?.board) {
+                this.renderBoard(this.app.board);
+            }
+            return;
+        }
         const tileEl = this.boardEl.querySelector(`[data-tile-id="${tileId}"]`);
         if (!tileEl) return;
         tileEl.style.removeProperty('visibility');
@@ -442,6 +538,17 @@ export class Renderer {
             const fallback = document.createElement('div');
             fallback.className = 'tile vertical';
             return fallback;
+        }
+        if (nodeEl.dataset?.displayA !== undefined && nodeEl.dataset?.displayB !== undefined) {
+            const clone = this.createTileEl(
+                Number(nodeEl.dataset.displayA || 0),
+                Number(nodeEl.dataset.displayB || 0),
+                nodeEl.dataset.orientation || 'horizontal',
+                false,
+                nodeEl.dataset.tileId || null
+            );
+            clone.classList.add('board-tile');
+            return clone;
         }
         const clone = nodeEl.cloneNode(true);
         clone.classList.remove('board-tile', 'just-played', 'telephone-highlight', 'playable', 'selected');
@@ -471,8 +578,8 @@ export class Renderer {
             btn.textContent = arrowSymbols[oe.side] || '?';
             btn.title = this.app.format('arrow-place-to', { value: oe.value });
             const wrapper = this.boardEl.querySelector(`.board-layout [data-node-id="${oe.nodeId}"]`);
-            if (!wrapper) continue;
-            const rect = wrapper.getBoundingClientRect();
+            const rect = this.getBoardOpenEndRect(oe) || wrapper?.getBoundingClientRect?.();
+            if (!rect) continue;
             const gsRect = gs.getBoundingClientRect();
             const offset = 45 * (this._lastScale || 1);
             let ax = rect.left + rect.width / 2 - gsRect.left;

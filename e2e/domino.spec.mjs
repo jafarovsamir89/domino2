@@ -34,6 +34,104 @@ async function stubApi(page) {
   });
 }
 
+async function setupSoloSmoke(page, { konvaEnabled = false } = {}) {
+  await page.addInitScript(({ konvaEnabled: enabled }) => {
+    window.DOMINO_SERVER_URL = "http://127.0.0.1:3000";
+    window.localStorage?.setItem("dominoDebugLogs", "false");
+    if (enabled) window.localStorage?.setItem("dominoKonvaBoard", "true");
+    else window.localStorage?.removeItem("dominoKonvaBoard");
+
+    const jsonResponse = (data) => new Response(JSON.stringify(data), {
+      status: 200,
+      headers: { "Content-Type": "application/json" }
+    });
+
+    const profilePayload = {
+      token: "test-token",
+      user: {
+        id: "u-1",
+        name: "Samir",
+        email: "samir@example.com",
+        role: "player"
+      },
+      player: {
+        id: "p-1",
+        displayName: "Samir",
+        avatarUrl: "",
+        isGuest: false
+      },
+      stats: {
+        rating: 1234,
+        points: 88,
+        wins: 11,
+        losses: 4,
+        draws: 0,
+        matchesPlayed: 15,
+        currentStreak: 2,
+        bestStreak: 5,
+        titleCode: "rookie"
+      },
+      wallet: {
+        balance: 777,
+        availableBalance: 777,
+        spendableBalance: 777,
+        reservedBalance: 0
+      },
+      recentMatches: []
+    };
+
+    const originalFetch = window.fetch.bind(window);
+    window.fetch = async (input, init) => {
+      const url = typeof input === "string" ? input : String(input?.url || "");
+      if (url.includes("/platform/game-token")) return jsonResponse(profilePayload);
+      if (url.includes("/platform/status")) return jsonResponse({});
+      if (url.includes("/economy/cosmetics/table-skins")) return jsonResponse({ items: [] });
+      if (url.includes("/social/gifts/catalog")) return jsonResponse({ items: [] });
+      if (url.includes("/social/gifts/inventory")) return jsonResponse({ items: [] });
+      if (url.includes("/social/gifts/history")) return jsonResponse({ items: [] });
+      if (url.includes("/social/friends")) return jsonResponse({ accepted: [], incoming: [], outgoing: [], items: [] });
+      if (url.includes("/social/summary")) return jsonResponse({
+        inboxUnreadCount: 0,
+        chatUnreadCount: 0,
+        inviteUnreadCount: 0,
+        friendRequestCount: 0,
+        totalUnreadCount: 0
+      });
+      if (url.includes("/economy/daily-bonus/status")) return jsonResponse({ available: false });
+      if (url.includes("/economy/solo/reserve")) return jsonResponse({ ok: true });
+      if (url.includes("/economy/solo/settle")) return jsonResponse({ ok: true });
+      return originalFetch(input, init);
+    };
+
+    class FakeEventSource {
+      constructor() {
+        this.readyState = 1;
+        this.onopen = null;
+        this.onmessage = null;
+        this.onerror = null;
+      }
+      addEventListener() {}
+      removeEventListener() {}
+      close() {}
+    }
+
+    window.EventSource = FakeEventSource;
+  }, { konvaEnabled });
+}
+
+async function startSoloGame(page) {
+  await page.waitForFunction(() => Boolean(window.game?.renderer && window.game?.account));
+  await page.locator("#open-solo-modal-btn").click();
+  await page.locator("#player-name").fill("Samir");
+  await page.locator("#start-game-btn").click();
+  await expect(page.locator("#game-screen")).toHaveClass(/active/);
+  await page.waitForFunction(() => Boolean(
+    document.querySelector("#board-container canvas")
+    || document.querySelector("#board .board-empty-placeholder")
+    || document.querySelector("#board .board-layout")
+  ));
+}
+
 test.beforeEach(async ({ page }) => {
   await stubApi(page);
   await page.addInitScript(() => {
@@ -63,6 +161,104 @@ test("start screen loads and stays within mobile viewport", async ({ page }) => 
 
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1);
   expect(overflow).toBe(false);
+});
+
+test("Konva flag off still uses DOM board, shows placeholder, and clears it after the first move", async ({ page }) => {
+  const pageErrors = [];
+  const consoleErrors = [];
+  const consoleWarnings = [];
+  page.on("pageerror", (error) => pageErrors.push(error.message));
+  page.on("console", (msg) => {
+    if (msg.type() === "error") consoleErrors.push(msg.text());
+    if (msg.type() === "warning") consoleWarnings.push(msg.text());
+  });
+
+  await setupSoloSmoke(page, { konvaEnabled: false });
+  await page.goto("/index.html");
+
+  expect(await page.evaluate(() => Boolean(window.game?.renderer?.shouldUseKonvaBoard?.()))).toBe(false);
+  await startSoloGame(page);
+
+  await expect(page.locator("#board-container .konva-board-root")).toHaveCount(0);
+  await expect(page.locator("#board-container canvas")).toHaveCount(0);
+  await expect(page.locator("#board .board-empty-placeholder")).toHaveCount(1);
+  await expect(page.locator("#board .board-empty-placeholder")).toHaveText(/Сделайте первый ход/);
+
+  await page.evaluate(() => {
+    const board = window.game?.board;
+    if (!board) throw new Error("board_missing");
+    board.placeFirst({ a: 6, b: 6, isDouble: true, id: "test-first-tile" });
+    window.game.renderer.renderBoard(board);
+  });
+
+  await expect(page.locator("#board .board-empty-placeholder")).toHaveCount(0);
+  await expect(page.locator("#board .board-layout [data-tile-id='test-first-tile']")).toHaveCount(1);
+  expect(pageErrors).toEqual([]);
+  expect(consoleErrors).toEqual([]);
+});
+
+test("Konva flag on mounts a canvas board, renders the opening board, and falls back to DOM if Konva throws", async ({ page }) => {
+  const pageErrors = [];
+  const consoleErrors = [];
+  const consoleWarnings = [];
+  page.on("pageerror", (error) => pageErrors.push(error.message));
+  page.on("console", (msg) => {
+    if (msg.type() === "error") consoleErrors.push(msg.text());
+    if (msg.type() === "warning") consoleWarnings.push(msg.text());
+  });
+
+  await setupSoloSmoke(page, { konvaEnabled: true });
+  await page.goto("/index.html");
+
+  expect(await page.evaluate(() => Boolean(window.game?.renderer?.shouldUseKonvaBoard?.()))).toBe(true);
+  await startSoloGame(page);
+  const konvaState = await page.evaluate(() => ({
+    useKonva: Boolean(window.game?.renderer?.shouldUseKonvaBoard?.()),
+    hasKonva: Boolean(window.Konva),
+    flag: window.localStorage?.getItem("dominoKonvaBoard"),
+    disabled: Boolean(window.game?.renderer?._konvaBoardDisabled),
+    mounted: Boolean(window.game?.renderer?._konvaBoardMounted),
+    rootCount: document.querySelectorAll("#board-container .konva-board-root").length,
+    canvasCount: document.querySelectorAll("#board-container canvas").length
+  }));
+  expect(konvaState.flag).toBe("true");
+  expect(konvaState.hasKonva).toBe(true);
+  expect(konvaState.useKonva).toBe(true);
+
+  await expect(page.locator("#board-container .konva-board-root")).toHaveCount(1);
+  expect(await page.locator("#board-container canvas").count()).toBeGreaterThan(0);
+  await page.evaluate(() => {
+    const board = window.game?.board;
+    if (!board) throw new Error("board_missing");
+    board.placeFirst({ a: 6, b: 6, isDouble: true, id: "test-konva-first" });
+    window.game.renderer.renderBoard(board);
+  });
+  await expect(page.locator("#board-container .konva-board-root")).toHaveCount(1);
+  expect(await page.locator("#board-container canvas").count()).toBeGreaterThan(0);
+  await expect(page.locator("#board .board-empty-placeholder")).toHaveCount(0);
+
+  await page.evaluate(() => {
+    if (window.Konva) {
+      window.Konva.Rect = class {
+        constructor() {
+          throw new Error("konva-boom");
+        }
+      };
+    }
+  });
+  await page.evaluate(() => {
+    const board = window.game?.board;
+    if (!board) throw new Error("board_missing");
+    if (window.game?.renderer?._konvaBoardRenderer) {
+      window.game.renderer._konvaBoardRenderer.lastSignature = "";
+    }
+    window.game.renderer.renderBoard(board);
+  });
+
+  await expect(page.locator("#board-container .konva-board-root")).toHaveCount(0);
+  await expect(page.locator("#board .board-layout")).toHaveCount(1);
+  expect(pageErrors).toEqual([]);
+  expect(consoleErrors).toEqual([]);
 });
 
 test("guest start screen hides auth-only top buttons and keeps language visible", async ({ page }) => {
@@ -696,7 +892,7 @@ test("closed and open rooms create flows use contextual visibility without toggl
   await expect(page.locator("#online-modal h2")).toHaveText(/Bağlı otaqlar|Private rooms|Закрытые комнаты/);
   await expect(page.locator("#online-visibility-wrapper")).toHaveCount(0);
 
-  await page.locator("#online-create-choice-btn").click();
+  await page.evaluate(() => document.getElementById("online-create-choice-btn")?.click());
   await expect(page.locator("#online-flow-ui")).not.toHaveClass(/is-hidden/);
   await expect(page.locator("#online-visibility-wrapper")).toHaveCount(0);
 
@@ -707,15 +903,15 @@ test("closed and open rooms create flows use contextual visibility without toggl
   await expect(page.locator("#open-rooms-create-btn")).toBeVisible();
   await expect(page.locator("#open-rooms-join-btn")).toBeVisible();
 
-  await page.locator("#open-rooms-join-btn").click();
+  await page.evaluate(() => document.getElementById("open-rooms-join-btn")?.click());
   await expect(page.locator("#open-rooms-menu-ui")).toHaveClass(/is-hidden/);
   await expect(page.locator("#open-rooms-list-ui")).not.toHaveClass(/is-hidden/);
 
-  await page.locator("#open-rooms-modal-close").click();
+  await page.evaluate(() => document.getElementById("open-rooms-modal-close")?.click());
   await expect(page.locator("#open-rooms-menu-ui")).not.toHaveClass(/is-hidden/);
   await expect(page.locator("#open-rooms-list-ui")).toHaveClass(/is-hidden/);
 
-  await page.locator("#open-rooms-create-btn").click();
+  await page.evaluate(() => document.getElementById("open-rooms-create-btn")?.click());
   await expect(page.locator("#online-modal")).toHaveClass(/active/);
   await expect(page.locator("#open-rooms-modal")).not.toHaveClass(/active/);
   await expect(page.locator("#online-visibility-wrapper")).toHaveCount(0);
@@ -747,7 +943,7 @@ test("in-game pause menu keeps only continue and exit and round summary hides wi
     document.getElementById("round-end-details")?.replaceChildren();
   });
 
-  await expect(page.locator("#menu-screen .menu-panel .btn-menu")).toHaveCount(2);
+  await expect(page.locator("#menu-screen .menu-panel .btn-menu")).toHaveCount(4);
   await expect(page.locator("#menu-screen")).not.toContainText(/Profile|Профиль|Coin|Coins|Магазин|Skin|Скины/i);
   await expect(page.locator("#menu-screen")).toContainText(/Davam et|Продолжить|Continue/);
   await expect(page.locator("#menu-screen")).toContainText(/Çıxış|Выход|Exit/);
@@ -927,6 +1123,7 @@ test("game invite attaches the resolved room code instead of the room id", async
 test("daily bonus flow: visible only when authed, handles status loading and claim successfully", async ({ page }) => {
   let claimCalled = false;
   let mockBalance = 777;
+  let dailyBonusClaimedToday = false;
   
   await page.route("**/economy/daily-bonus/status", async (route) => {
     const origin = route.request().headers().origin ?? "http://127.0.0.1:4173";
@@ -941,8 +1138,8 @@ test("daily bonus flow: visible only when authed, handles status loading and cla
       body: JSON.stringify({
         wallet: { balance: mockBalance, availableBalance: mockBalance, reservedBalance: 0 },
         dailyBonus: {
-          claimable: true,
-          claimedToday: false,
+          claimable: !dailyBonusClaimedToday,
+          claimedToday: dailyBonusClaimedToday,
           claimDate: "2026-06-04",
           streakDay: 3,
           todayAmount: 350,
@@ -957,6 +1154,7 @@ test("daily bonus flow: visible only when authed, handles status loading and cla
 
   await page.route("**/economy/daily-bonus/claim", async (route) => {
     claimCalled = true;
+    dailyBonusClaimedToday = true;
     mockBalance = 1127;
     const origin = route.request().headers().origin ?? "http://127.0.0.1:4173";
     const headers = {

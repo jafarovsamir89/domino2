@@ -23,7 +23,7 @@
     "deploy:gcloud:legacy": "powershell -ExecutionPolicy Bypass -File ./scripts/gcloud/update-server.ps1 -LegacyOnly",
     "deploy:gcloud:git": "powershell -ExecutionPolicy Bypass -File ./scripts/gcloud/deploy-from-ide.ps1",
     "deploy:gcloud:google": "powershell -ExecutionPolicy Bypass -File ./scripts/gcloud/import-google-oauth.ps1",
-    "check": "node scripts/check-mojibake.mjs && node --check js/account.js && node --check js/app.js && node --check js/network.js && node --check js/voice.js && node --check shared/domino-model-core.cjs && node --check shared/domino-board-core.cjs && node --check www/js/app.js && node --check www/js/renderer.js && node --check www/js/board.js && node --check www/js/ai.js && node --check www/js/model.js && node --check www/js/sounds.js && node --check www/js/network.js && node --check www/js/voice.js",
+    "check": "node scripts/check-mojibake.mjs && node --check js/account.js && node --check js/app.js && node --check js/network.js && node --check js/voice.js && node --check js/konvaBoardRenderer.js && node --check shared/domino-model-core.cjs && node --check shared/domino-board-core.cjs && node --check www/js/app.js && node --check www/js/renderer.js && node --check www/js/board.js && node --check www/js/ai.js && node --check www/js/model.js && node --check www/js/sounds.js && node --check www/js/network.js && node --check www/js/voice.js && node --check www/js/konvaBoardRenderer.js",
     "test": "npm run check && npm --prefix server test && npm --prefix apps/api test",
     "test:e2e": "playwright test"
   },
