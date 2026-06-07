@@ -34,11 +34,12 @@ async function stubApi(page) {
   });
 }
 
-async function setupSoloSmoke(page, { konvaEnabled = false } = {}) {
+async function setupSoloSmoke(page, { konvaEnabled = null } = {}) {
   await page.addInitScript(({ konvaEnabled: enabled }) => {
     window.DOMINO_SERVER_URL = "http://127.0.0.1:3000";
     window.localStorage?.setItem("dominoDebugLogs", "false");
-    if (enabled) window.localStorage?.setItem("dominoKonvaBoard", "true");
+    if (enabled === true) window.localStorage?.setItem("dominoKonvaBoard", "true");
+    else if (enabled === false) window.localStorage?.setItem("dominoKonvaBoard", "false");
     else window.localStorage?.removeItem("dominoKonvaBoard");
 
     const jsonResponse = (data) => new Response(JSON.stringify(data), {
@@ -163,7 +164,7 @@ test("start screen loads and stays within mobile viewport", async ({ page }) => 
   expect(overflow).toBe(false);
 });
 
-test("Konva flag off still uses DOM board, shows placeholder, and clears it after the first move", async ({ page }) => {
+test("Konva is enabled by default, mounts a canvas board, and clears the placeholder after the first move", async ({ page }) => {
   const pageErrors = [];
   const consoleErrors = [];
   const consoleWarnings = [];
@@ -173,16 +174,15 @@ test("Konva flag off still uses DOM board, shows placeholder, and clears it afte
     if (msg.type() === "warning") consoleWarnings.push(msg.text());
   });
 
-  await setupSoloSmoke(page, { konvaEnabled: false });
+  await setupSoloSmoke(page, { konvaEnabled: null });
   await page.goto("/index.html");
 
-  expect(await page.evaluate(() => Boolean(window.game?.renderer?.shouldUseKonvaBoard?.()))).toBe(false);
+  expect(await page.evaluate(() => Boolean(window.game?.renderer?.shouldUseKonvaBoard?.()))).toBe(true);
   await startSoloGame(page);
 
-  await expect(page.locator("#board-container .konva-board-root")).toHaveCount(0);
-  await expect(page.locator("#board-container canvas")).toHaveCount(0);
-  await expect(page.locator("#board .board-empty-placeholder")).toHaveCount(1);
-  await expect(page.locator("#board .board-empty-placeholder")).toHaveText(/Сделайте первый ход/);
+  await expect(page.locator("#board-container .konva-board-root")).toHaveCount(1);
+  await expect(page.locator("#board-container canvas")).toHaveCount(1);
+  await expect(page.locator("#board .board-empty-placeholder")).toHaveCount(0);
 
   await page.evaluate(() => {
     const board = window.game?.board;
@@ -192,12 +192,13 @@ test("Konva flag off still uses DOM board, shows placeholder, and clears it afte
   });
 
   await expect(page.locator("#board .board-empty-placeholder")).toHaveCount(0);
-  await expect(page.locator("#board .board-layout [data-tile-id='test-first-tile']")).toHaveCount(1);
+  await expect(page.locator("#board-container .konva-board-root")).toHaveCount(1);
+  await expect(page.locator("#board-container canvas")).toHaveCount(1);
   expect(pageErrors).toEqual([]);
   expect(consoleErrors).toEqual([]);
 });
 
-test("Konva flag on mounts a canvas board, renders the opening board, and falls back to DOM if Konva throws", async ({ page }) => {
+test("Konva query flag 0 forces DOM board and stores false", async ({ page }) => {
   const pageErrors = [];
   const consoleErrors = [];
   const consoleWarnings = [];
@@ -207,11 +208,43 @@ test("Konva flag on mounts a canvas board, renders the opening board, and falls 
     if (msg.type() === "warning") consoleWarnings.push(msg.text());
   });
 
-  await setupSoloSmoke(page, { konvaEnabled: true });
-  await page.goto("/index.html");
+  await setupSoloSmoke(page, { konvaEnabled: null });
+  await page.goto("/index.html?konvaBoard=0");
 
-  expect(await page.evaluate(() => Boolean(window.game?.renderer?.shouldUseKonvaBoard?.()))).toBe(true);
   await startSoloGame(page);
+  expect(await page.evaluate(() => Boolean(window.game?.renderer?.shouldUseKonvaBoard?.()))).toBe(false);
+  expect(await page.evaluate(() => window.localStorage?.getItem("dominoKonvaBoard"))).toBe("false");
+  await expect(page.locator("#board-container .konva-board-root")).toHaveCount(0);
+  await expect(page.locator("#board-container canvas")).toHaveCount(0);
+  await expect(page.locator("#board .board-empty-placeholder")).toHaveCount(1);
+  await page.evaluate(() => {
+    const board = window.game?.board;
+    if (!board) throw new Error("board_missing");
+    board.placeFirst({ a: 6, b: 6, isDouble: true, id: "test-dom-first" });
+    window.game.renderer.renderBoard(board);
+  });
+  await expect(page.locator("#board .board-empty-placeholder")).toHaveCount(0);
+  await expect(page.locator("#board .board-layout [data-tile-id='test-dom-first']")).toHaveCount(1);
+  expect(pageErrors).toEqual([]);
+  expect(consoleErrors).toEqual([]);
+});
+
+test("Konva query flag 1 forces Konva board and stores true", async ({ page }) => {
+  const pageErrors = [];
+  const consoleErrors = [];
+  const consoleWarnings = [];
+  page.on("pageerror", (error) => pageErrors.push(error.message));
+  page.on("console", (msg) => {
+    if (msg.type() === "error") consoleErrors.push(msg.text());
+    if (msg.type() === "warning") consoleWarnings.push(msg.text());
+  });
+
+  await setupSoloSmoke(page, { konvaEnabled: null });
+  await page.goto("/index.html?konvaBoard=1");
+
+  await startSoloGame(page);
+  expect(await page.evaluate(() => Boolean(window.game?.renderer?.shouldUseKonvaBoard?.()))).toBe(true);
+  expect(await page.evaluate(() => window.localStorage?.getItem("dominoKonvaBoard"))).toBe("true");
   const konvaState = await page.evaluate(() => ({
     useKonva: Boolean(window.game?.renderer?.shouldUseKonvaBoard?.()),
     hasKonva: Boolean(window.Konva),
@@ -259,6 +292,7 @@ test("Konva flag on mounts a canvas board, renders the opening board, and falls 
   await expect(page.locator("#board .board-layout")).toHaveCount(1);
   expect(pageErrors).toEqual([]);
   expect(consoleErrors).toEqual([]);
+  expect(consoleWarnings).toEqual(expect.arrayContaining([expect.stringContaining("Menu music autoplay prevented")]));
 });
 
 test("guest start screen hides auth-only top buttons and keeps language visible", async ({ page }) => {

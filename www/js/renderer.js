@@ -4,10 +4,27 @@ const gsap = window.gsap;
 
 function isKonvaBoardEnabled() {
     try {
-        return window.DOMINO_KONVA_BOARD_ENABLED === true
-            || window.localStorage?.getItem('dominoKonvaBoard') === 'true';
+        const url = new URL(window.location.href);
+        const queryFlag = url.searchParams.get('konvaBoard');
+
+        if (queryFlag === '1') {
+            window.localStorage?.setItem('dominoKonvaBoard', 'true');
+            return true;
+        }
+
+        if (queryFlag === '0') {
+            window.localStorage?.setItem('dominoKonvaBoard', 'false');
+            return false;
+        }
+
+        const stored = window.localStorage?.getItem('dominoKonvaBoard');
+        if (stored === 'false') return false;
+        if (stored === 'true') return true;
+
+        if (window.DOMINO_KONVA_BOARD_ENABLED === false) return false;
+        return true;
     } catch {
-        return false;
+        return true;
     }
 }
 
