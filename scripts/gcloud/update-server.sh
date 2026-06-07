@@ -152,7 +152,8 @@ sync_www_assets() {
   cp -a "$ROOT_DIR/js" "$ROOT_DIR/www/js"
   cp -a "$ROOT_DIR/css" "$ROOT_DIR/www/css"
   if [[ -d "$ROOT_DIR/assets" ]]; then
-    cp -a "$ROOT_DIR/assets" "$ROOT_DIR/www/assets"
+    mkdir -p "$ROOT_DIR/www/assets"
+    cp -r "$ROOT_DIR/assets/." "$ROOT_DIR/www/assets/"
   fi
   if [[ -d "$ROOT_DIR/shared" ]]; then
     mkdir -p "$ROOT_DIR/www/shared"
