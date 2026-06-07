@@ -908,8 +908,11 @@ class DominoRoom extends Room {
         this.state.gameActive = false;
         this.currentDealMatchId = `${this.roomId}:round:${this.state.matchRound}`;
         this.currentDealStakeKey = this.currentStakeKey;
-        this.currentDealStakeAmount = 0;
-        this.currentDealBankAmount = 0;
+        const isNewRoundReservation = this.currentStakeKey !== "free" && this.lastReservedMatchRound !== this.state.matchRound;
+        if (this.currentStakeKey === "free" || isNewRoundReservation) {
+            this.currentDealStakeAmount = 0;
+            this.currentDealBankAmount = 0;
+        }
         this.state.turnVersion = 1;
 
         const hs = getHandSize(this.totalPlayers);

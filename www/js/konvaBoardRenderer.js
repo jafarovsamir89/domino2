@@ -852,17 +852,13 @@ export class KonvaBoardRenderer {
         } else if (side === 'right') {
             x = rect.right + radius + gap;
         } else if (side === 'top') {
+            x = rect.left + rect.width / 2;
             y = rect.top - radius - gap;
         } else {
+            x = rect.left + rect.width / 2;
             y = rect.bottom + radius + gap;
         }
-
-        const width = this.lastLayout?.stageWidth || window.innerWidth || 0;
-        const height = this.lastLayout?.stageHeight || window.innerHeight || 0;
-        const padding = radius + 8;
-        x = Math.min(Math.max(x, padding), Math.max(padding, width - padding));
-        y = Math.min(Math.max(y, padding), Math.max(padding, height - padding));
-        return { x, y, buttonSize, radius, side, rect };
+        return { x, y, buttonSize, radius, side, rect, nodeId: openEnd.nodeId };
     }
 
     getBoardTileRects() {

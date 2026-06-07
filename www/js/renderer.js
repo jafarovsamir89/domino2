@@ -246,21 +246,20 @@ export class Renderer {
         } else if (side === 'right') {
             x = rect.right + radius + gap;
         } else if (side === 'top') {
+            x = rect.left + rect.width / 2;
             y = rect.top - radius - gap;
         } else {
+            x = rect.left + rect.width / 2;
             y = rect.bottom + radius + gap;
         }
-        const gameRect = document.getElementById('game-screen')?.getBoundingClientRect?.() || null;
-        const width = gameRect?.width || window.innerWidth || 0;
-        const height = gameRect?.height || window.innerHeight || 0;
-        const padding = radius + 8;
         return {
-            x: Math.min(Math.max(x, padding), Math.max(padding, width - padding)),
-            y: Math.min(Math.max(y, padding), Math.max(padding, height - padding)),
+            x,
+            y,
             buttonSize,
             radius,
             side,
-            rect
+            rect,
+            nodeId: openEnd.nodeId
         };
     }
 
@@ -295,14 +294,16 @@ export class Renderer {
     adjustArrowPointForCollision(point, buttonSize, tileRects = [], side = '') {
         const radius = buttonSize / 2;
         const gameRect = document.getElementById('game-screen')?.getBoundingClientRect?.() || null;
-        const width = gameRect?.width || window.innerWidth || 0;
-        const height = gameRect?.height || window.innerHeight || 0;
         const clampPoint = (value, min, max) => Math.min(Math.max(value, min), max);
+        const minX = gameRect ? gameRect.left + radius + 8 : radius + 8;
+        const maxX = gameRect ? gameRect.right - radius - 8 : window.innerWidth - radius - 8;
+        const minY = gameRect ? gameRect.top + radius + 8 : radius + 8;
+        const maxY = gameRect ? gameRect.bottom - radius - 8 : window.innerHeight - radius - 8;
         const bounds = {
-            minX: radius + 8,
-            maxX: Math.max(radius + 8, width - radius - 8),
-            minY: radius + 8,
-            maxY: Math.max(radius + 8, height - radius - 8)
+            minX,
+            maxX: Math.max(minX, maxX),
+            minY,
+            maxY: Math.max(minY, maxY)
         };
         const nudges = [];
         const step = 8;
@@ -763,14 +764,25 @@ export class Renderer {
             btn.className = 'arrow-btn';
             btn.textContent = arrowSymbols[oe.side] || '?';
             btn.title = this.app.format('arrow-place-to', { value: oe.value });
-            const point = this.getBoardOpenEndChoicePoint(oe, { buttonSize });
+            const rawPoint = this.getBoardOpenEndChoicePoint(oe, { buttonSize });
+            const collisionsBefore = rawPoint ? this.countArrowCollisions(rawPoint, buttonSize, tileRects) : 0;
+            const point = rawPoint ? this.adjustArrowPointForCollision(rawPoint, buttonSize, tileRects, oe.side) : null;
             if (!point) continue;
-            const adjusted = this.adjustArrowPointForCollision(point, buttonSize, tileRects, oe.side);
             const gsRect = gs.getBoundingClientRect();
-            const ax = adjusted.x - gsRect.left;
-            const ay = adjusted.y - gsRect.top;
+            const ax = point.x - gsRect.left;
+            const ay = point.y - gsRect.top;
             if (!Number.isFinite(ax) || !Number.isFinite(ay)) continue;
             btn.style.cssText += `position:absolute;left:${ax}px;top:${ay}px;width:${buttonSize}px;height:${buttonSize}px;transform:translate(-50%,-50%);`;
+            if (window.DOMINO_DEBUG_BOARD_RENDERER === true) {
+                console.debug('[ArrowChoice]', {
+                    side: oe.side,
+                    rawPoint,
+                    adjustedPoint: point,
+                    sourceRect: rawPoint?.rect || null,
+                    collisionsBefore,
+                    collisionsAfter: this.countArrowCollisions(point, buttonSize, tileRects)
+                });
+            }
 
             btn.addEventListener(tapEvent, (e) => {
                 e.stopPropagation();

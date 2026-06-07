@@ -771,6 +771,124 @@ test("Konva arrow choice points stay clear of tile bodies on stretched boards", 
   expect(consoleErrors).toEqual([]);
 });
 
+test("Konva top arrow stays centered in viewport coordinates without stage clamping", async ({ page }) => {
+  const pageErrors = [];
+  const consoleErrors = [];
+  page.on("pageerror", (error) => pageErrors.push(error.message));
+  page.on("console", (msg) => {
+    if (msg.type() === "error") consoleErrors.push(msg.text());
+  });
+
+  await setupSoloSmoke(page, { konvaEnabled: true });
+  await page.goto("/index.html");
+  await startSoloGame(page);
+
+  const result = await page.evaluate(() => {
+    const game = window.game;
+    const renderer = game?.renderer;
+    const board = game?.board;
+    if (!game?.renderer || !board) throw new Error("missing_game_state");
+
+    board.placeFirst({
+      a: 6,
+      b: 6,
+      id: "top-arrow-tile",
+      isDouble: true,
+      hasValue(value) {
+        return this.a === value || this.b === value;
+      },
+      otherSide(value) {
+        return this.a === value ? this.b : this.a;
+      }
+    });
+    renderer.renderBoard(board);
+
+    const openEnd = { ...board.openEnds[0], side: "top" };
+    const konva = renderer._konvaBoardRenderer;
+    konva.lastLayout = { stageWidth: 20, stageHeight: 20, scale: 1 };
+
+    const raw = konva.getOpenEndChoicePoint(openEnd, { buttonSize: 42 });
+    const adjusted = renderer.adjustArrowPointForCollision(raw, 42, renderer.collectBoardTileRects(), openEnd.side);
+    const nodeRect = konva.getNodeRect(openEnd.nodeId);
+    const centerX = nodeRect.left + nodeRect.width / 2;
+    const centerY = nodeRect.top + nodeRect.height / 2;
+
+    renderer.showArrowChoices(board, [0], () => {}, () => {});
+    const btn = document.querySelector("#arrow-overlay .arrow-btn");
+    const btnRect = btn?.getBoundingClientRect?.();
+
+    return {
+      rawX: raw.x,
+      rawY: raw.y,
+      adjustedX: adjusted.x,
+      adjustedY: adjusted.y,
+      centerX,
+      centerY,
+      btnRect: btnRect ? {
+        left: btnRect.left,
+        top: btnRect.top,
+        right: btnRect.right,
+        bottom: btnRect.bottom
+      } : null
+    };
+  });
+
+  expect(result.rawX).toBeCloseTo(result.centerX, 1);
+  expect(result.rawY).toBeLessThan(result.centerY);
+  expect(result.adjustedX).toBeCloseTo(result.rawX, 1);
+  expect(result.btnRect).not.toBeNull();
+  expect(pageErrors).toEqual([]);
+  expect(consoleErrors).toEqual([]);
+});
+
+test("bank HUD stays visible across consecutive deals in the same round", async ({ page }) => {
+  const pageErrors = [];
+  const consoleErrors = [];
+  page.on("pageerror", (error) => pageErrors.push(error.message));
+  page.on("console", (msg) => {
+    if (msg.type() === "error") consoleErrors.push(msg.text());
+  });
+
+  await setupSoloSmoke(page, { konvaEnabled: true });
+  await page.goto("/index.html");
+  await startSoloGame(page);
+
+  fs.mkdirSync(KONVA_SCREENSHOT_DIR, { recursive: true });
+
+  await page.evaluate(() => {
+    const game = window.game;
+    if (!game?.renderer) throw new Error("missing_game_state");
+    game.network.isMultiplayer = true;
+    game.gameActive = true;
+    game.currentRoomState = {
+      gameActive: true,
+      bankAmount: 400
+    };
+    game.onlineStakeKey = "stake_200";
+    game.renderer.renderInfo(1, 1, 0, 0, "stake_200");
+  });
+  await page.screenshot({ path: `${KONVA_SCREENSHOT_DIR}/stake-bank-after-deal-1.png` });
+
+  await page.evaluate(() => {
+    const game = window.game;
+    if (!game?.renderer) throw new Error("missing_game_state");
+    game.currentRoomState = {
+      gameActive: true,
+      bankAmount: 400
+    };
+    game.renderer.renderInfo(1, 2, 0, 0, "stake_200");
+  });
+  await page.screenshot({ path: `${KONVA_SCREENSHOT_DIR}/stake-bank-after-deal-2.png` });
+
+  const bankVisible = await page.evaluate(() => {
+    const el = document.querySelector("#stake-info");
+    return Boolean(el && !el.classList.contains("is-hidden") && /400/.test(el.textContent || ""));
+  });
+  expect(bankVisible).toBe(true);
+  expect(pageErrors).toEqual([]);
+  expect(consoleErrors).toEqual([]);
+});
+
 test("Konva board parity keeps DOM palette, geometry, and overlays aligned", async ({ page }) => {
   const pageErrors = [];
   const consoleErrors = [];

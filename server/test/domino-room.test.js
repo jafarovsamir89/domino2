@@ -283,6 +283,57 @@ test("startDeal maps low balance reserve failures to the insufficient-coins room
     assert.equal(lastRoomClosed?.reasonKey, "room-closed-insufficient-coins");
 });
 
+test("startDeal keeps the reserved bank across deals inside the same round", async () => {
+    const room = Object.create(DominoRoom.prototype);
+    Object.defineProperty(room, "roomId", { value: "room-bank", writable: true, configurable: true });
+    room.totalPlayers = 2;
+    room.currentStakeKey = "stake_200";
+    room.currentDealStakeKey = "stake_200";
+    room.currentDealStakeAmount = 150;
+    room.currentDealBankAmount = 300;
+    room.lastReservedMatchRound = 1;
+    room.lastDealWinner = null;
+    room.pendingEconomySettlement = Promise.resolve();
+    room.hands = [];
+    room.boneyard = [];
+    room.board = { getGoshaCombo: () => null };
+    room.state = {
+        matchRound: 1,
+        gameActive: false,
+        matchOver: false,
+        gameOverReason: "",
+        gameOverPlayerName: "",
+        gameOverWinnerIndex: -1,
+        gameOverSummaryJson: "",
+        turnVersion: 1,
+        currentPlayerIndex: 0,
+        playerOrder: [],
+        players: new Map(),
+        isTeamMode: false
+    };
+
+    let reserveCalls = 0;
+    room.clearNextDealTimer = () => {};
+    room.clearTurnTimer = () => {};
+    room.scheduleTurnTimer = () => {};
+    room.broadcast = () => {};
+    room.broadcastRoomState = () => {};
+    room.shouldRedealOpeningHands = () => false;
+    room.reserveEconomyStake = async () => {
+        reserveCalls += 1;
+        return { ok: true, reserved: 300, stakeKey: "stake_200", bankAmount: 300 };
+    };
+    room.syncState = () => {};
+
+    await room.startDeal();
+
+    assert.equal(reserveCalls, 0);
+    assert.equal(room.currentDealStakeAmount, 150);
+    assert.equal(room.currentDealBankAmount, 300);
+    assert.equal(room.lastReservedMatchRound, 1);
+    assert.equal(room.state.gameActive, true);
+});
+
 test("applyCustomStateSnapshot tolerates empty and partial snapshots and keeps fallbacks", () => {
     const room = Object.create(DominoRoom.prototype);
     Object.defineProperty(room, "roomId", { value: "room-partial", writable: true, configurable: true });
