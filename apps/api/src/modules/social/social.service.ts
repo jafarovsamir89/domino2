@@ -1406,17 +1406,18 @@ export class SocialService {
         sender: { select: this.playerSelect() },
         receiver: { select: this.playerSelect() }
       },
-      orderBy: { createdAt: "asc" },
+      orderBy: { createdAt: "desc" },
       take: cleanLimit + 1
     });
 
     const hasMore = rows.length > cleanLimit;
     const sliced = hasMore ? rows.slice(0, cleanLimit) : rows;
-    const nextCursorRow = sliced[0] || null;
+    const ordered = [...sliced].reverse();
+    const nextCursorRow = hasMore ? sliced[sliced.length - 1] || null : null;
     const nextCursor = hasMore && nextCursorRow?.createdAt ? nextCursorRow.createdAt.toISOString() : null;
 
     return {
-      items: sliced.map((row) => this.summarizeDirectMessage(row as unknown as DirectMessageRow)),
+      items: ordered.map((row) => this.summarizeDirectMessage(row as unknown as DirectMessageRow)),
       nextCursor,
       hasMore
     };
@@ -1451,7 +1452,8 @@ export class SocialService {
     this.enforceRateLimit(this.socialRateLimits.directMessage, `${currentPlayer.id}:1s`, 1, 1000);
     this.enforceRateLimit(this.socialRateLimits.directMessage, `${currentPlayer.id}:1m`, 30, 60_000);
 
-    await this.clearHiddenDirectMessageThreadMarkers([currentPlayer.id, targetPlayerId], targetPlayerId);
+    await this.clearHiddenDirectMessageThreadMarkers([currentPlayer.id], targetPlayerId);
+    await this.clearHiddenDirectMessageThreadMarkers([targetPlayerId], currentPlayer.id);
 
     const messageRow = await this.prisma.directMessage.create({
       data: {

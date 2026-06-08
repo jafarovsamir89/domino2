@@ -816,6 +816,10 @@ test("sendDirectMessage clears hidden thread markers and emits full SSE payload"
   const currentPlayer = makePlayer("player-a", "Alpha");
   const targetPlayer = makePlayer("player-b", "Beta");
   const deletedIds: string[] = [];
+  let hiddenRows = [
+    { id: "hidden-outgoing", payloadJson: { relatedPlayerId: targetPlayer.id } },
+    { id: "hidden-incoming", payloadJson: { relatedPlayerId: currentPlayer.id } }
+  ];
   const events: Array<{ playerId: string; type: string; data: any }> = [];
 
   const prismaMock = {
@@ -828,18 +832,16 @@ test("sendDirectMessage clears hidden thread markers and emits full SSE payload"
     inboxMessage: {
       findMany: async ({ where }: any) => {
         if (where?.type === "direct_message_thread_hidden") {
-          return [
-            {
-              id: "hidden-1",
-              payloadJson: { relatedPlayerId: targetPlayer.id }
-            }
-          ];
+          const playerIds = Array.isArray(where?.playerId?.in) ? where.playerId.in : [];
+          return hiddenRows.filter((row) => playerIds.includes("player-a") || playerIds.includes("player-b")).map((row) => ({ ...row }));
         }
         return [];
       },
       deleteMany: async ({ where }: any) => {
-        deletedIds.push(...(where?.id?.in || []));
-        return { count: deletedIds.length };
+        const ids = Array.isArray(where?.id?.in) ? where.id.in : [];
+        deletedIds.push(...ids);
+        hiddenRows = hiddenRows.filter((row) => !ids.includes(row.id));
+        return { count: where?.id?.in?.length || 0 };
       }
     },
     directMessage: {
@@ -863,7 +865,8 @@ test("sendDirectMessage clears hidden thread markers and emits full SSE payload"
   };
 
   const result = await service.sendDirectMessage({} as any, targetPlayer.id, { text: "Hello again" });
-  assert.equal(deletedIds.includes("hidden-1"), true);
+  assert.equal(deletedIds.includes("hidden-outgoing"), true);
+  assert.equal(deletedIds.includes("hidden-incoming"), true);
   assert.equal(events.length, 2);
   assert.equal(events[0].type, "message");
   assert.equal(events[0].data.type, "direct_message_created");
@@ -872,11 +875,80 @@ test("sendDirectMessage clears hidden thread markers and emits full SSE payload"
   assert.equal(result.item.id, "message-9");
 });
 
-test("getDirectMessages returns the conversation history between two players", async () => {
+test("sendDirectMessage restores hidden/deleted threads after a new incoming message", async () => {
+  const currentPlayer = makePlayer("player-a", "Alpha");
+  const targetPlayer = makePlayer("player-b", "Beta");
+  let hidden = true;
+  const prismaMock = {
+    player: {
+      findUnique: async ({ where }: any) => {
+        if (where.id === targetPlayer.id) return targetPlayer;
+        return null;
+      }
+    },
+    inboxMessage: {
+      findMany: async ({ where }: any) => {
+        if (where?.type === "direct_message_thread_hidden" && hidden) {
+          const playerIds = Array.isArray(where?.playerId?.in) ? where.playerId.in : [];
+          return playerIds.map((playerId: string) => ({
+            id: `hidden-${playerId}`,
+            payloadJson: { relatedPlayerId: playerId === currentPlayer.id ? targetPlayer.id : currentPlayer.id }
+          }));
+        }
+        return [];
+      },
+      deleteMany: async () => {
+        hidden = false;
+        return { count: 2 };
+      }
+    },
+    directMessage: {
+      create: async () => ({
+        id: "message-10",
+        senderPlayerId: currentPlayer.id,
+        receiverPlayerId: targetPlayer.id,
+        text: "Ping after hidden",
+        createdAt: new Date("2024-03-01T10:10:00.000Z"),
+        readAt: null,
+        sender: currentPlayer,
+        receiver: targetPlayer
+      })
+    }
+  } as any;
+
+  const service = new SocialService(prismaMock, {} as any);
+  (service as any).getCurrentPlayer = async () => currentPlayer;
+
+  const result = await service.sendDirectMessage({} as any, targetPlayer.id, { text: "Ping after hidden" });
+  assert.equal(result.item.id, "message-10");
+  assert.equal(hidden, false);
+});
+
+test("getDirectMessages returns the newest page of messages first", async () => {
   const currentPlayer = makePlayer("player-a", "Alpha");
   const targetPlayer = makePlayer("player-b", "Beta");
   let capturedQuery: any = null;
   const rows = [
+    {
+      id: "message-3",
+      senderPlayerId: targetPlayer.id,
+      receiverPlayerId: currentPlayer.id,
+      text: "Third",
+      createdAt: new Date("2024-03-01T10:10:00.000Z"),
+      readAt: null,
+      sender: targetPlayer,
+      receiver: currentPlayer
+    },
+    {
+      id: "message-2",
+      senderPlayerId: currentPlayer.id,
+      receiverPlayerId: targetPlayer.id,
+      text: "Second",
+      createdAt: new Date("2024-03-01T10:05:00.000Z"),
+      readAt: null,
+      sender: currentPlayer,
+      receiver: targetPlayer
+    },
     {
       id: "message-1",
       senderPlayerId: currentPlayer.id,
@@ -917,7 +989,7 @@ test("getDirectMessages returns the conversation history between two players", a
   const service = new SocialService(prismaMock, {} as any);
   (service as any).getCurrentPlayer = async () => currentPlayer;
 
-  const result = await service.getDirectMessages({} as any, targetPlayer.id);
+  const result = await service.getDirectMessages({} as any, targetPlayer.id, { limit: 2 });
 
   assert.ok(capturedQuery);
   assert.deepEqual(capturedQuery.where.OR, [
@@ -928,13 +1000,13 @@ test("getDirectMessages returns the conversation history between two players", a
     sender: { select: { id: true, displayName: true, avatarSeed: true, avatarUrl: true, isGuest: true, createdAt: true } },
     receiver: { select: { id: true, displayName: true, avatarSeed: true, avatarUrl: true, isGuest: true, createdAt: true } }
   });
-  assert.deepEqual(capturedQuery.orderBy, { createdAt: "asc" });
-  assert.equal(capturedQuery.take, 51);
+  assert.deepEqual(capturedQuery.orderBy, { createdAt: "desc" });
+  assert.equal(capturedQuery.take, 3);
   assert.equal(result.items.length, 2);
-  assert.equal(result.items[0].id, "message-1");
-  assert.equal(result.items[1].id, "message-2");
-  assert.equal(result.hasMore, false);
-  assert.equal(result.nextCursor, null);
+  assert.equal(result.items[0].id, "message-2");
+  assert.equal(result.items[1].id, "message-3");
+  assert.equal(result.hasMore, true);
+  assert.equal(result.nextCursor, "2024-03-01T10:05:00.000Z");
 });
 
 test("getMessageThreads returns only the current player's conversations with unread counts", async () => {

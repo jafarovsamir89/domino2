@@ -2040,6 +2040,7 @@ test("authenticated profile shows four stats cards without Xal and leaderboard u
         })
       });
     }
+    await new Promise((resolve) => setTimeout(resolve, 700));
     return route.fulfill({
       status: 200,
       contentType: "application/json",
@@ -2165,8 +2166,10 @@ test("authenticated profile shows four stats cards without Xal and leaderboard u
 
   // Re-open chat from the inbox list
   await page.locator("#social-inbox-list .inbox-card .btn").first().click();
+  await expect(page.locator("#account-messages-conversation-list")).toContainText(/Loading profile|Profil yüklənir|Загрузка профиля/);
   await expect(page.locator("#social-chats-panel")).not.toHaveClass(/is-hidden/);
   await expect(page.locator("#account-messages-conversation-title")).toContainText(/Alice/);
+  await expect(page.locator("#account-messages-conversation-list")).toContainText(/Hello/);
 
   // Return to Social Hub
   await page.locator("#account-messages-back-btn").click();
@@ -2218,6 +2221,156 @@ test("authenticated profile shows four stats cards without Xal and leaderboard u
   await page.locator("#account-messages-back-btn").click();
   await expect(page.locator("#social-center-modal")).toHaveClass(/active/);
 
+});
+
+test("invite polling catches incoming room invitations without SSE", async ({ page }) => {
+  let inviteRequestCount = 0;
+  const headersFor = (route) => ({
+    "Access-Control-Allow-Origin": route.request().headers().origin ?? "http://127.0.0.1:4173",
+    "Access-Control-Allow-Methods": "GET,POST,PUT,PATCH,DELETE,OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With",
+    "Access-Control-Allow-Credentials": "true",
+    "Vary": "Origin"
+  });
+
+  await page.addInitScript(() => {
+    window.DOMINO_SERVER_URL = "http://127.0.0.1:3000";
+    window.localStorage?.setItem("dominoDebugLogs", "false");
+    window.localStorage?.setItem("dominoPlatformGameToken", "test-token");
+    window.localStorage?.setItem("dominoPlatformProfile", JSON.stringify({
+      id: "p-1",
+      displayName: "Samir",
+      isGuest: false,
+      rating: 1234,
+      wins: 11,
+      losses: 4,
+      draws: 0,
+      matchesPlayed: 15,
+      points: 88,
+      coins: 777
+    }));
+    window.localStorage?.setItem("dominoAuthProfile", JSON.stringify({
+      id: "p-1",
+      name: "Samir",
+      displayName: "Samir",
+      isGuest: false
+    }));
+
+    class FakeEventSource {
+      constructor() {
+        this.readyState = 1;
+        this.onopen = null;
+        this.onmessage = null;
+        this.onerror = null;
+      }
+      addEventListener() {}
+      removeEventListener() {}
+      close() {}
+    }
+
+    window.EventSource = FakeEventSource;
+  });
+
+  await page.route("**/platform/game-token", async (route) => {
+    return route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      headers: headersFor(route),
+      body: JSON.stringify({
+        token: "test-token",
+        user: {
+          id: "u-1",
+          name: "Samir",
+          email: "samir@example.com",
+          role: "player"
+        },
+        player: {
+          id: "p-1",
+          displayName: "Samir",
+          avatarUrl: "",
+          isGuest: false
+        }
+      })
+    });
+  });
+
+  await page.route("**/social/summary", async (route) => route.fulfill({
+    status: 200,
+    contentType: "application/json",
+    headers: headersFor(route),
+    body: JSON.stringify({
+      inboxUnreadCount: 0,
+      chatUnreadCount: 0,
+      inviteUnreadCount: 0,
+      friendRequestCount: 0,
+      totalUnreadCount: 0
+    })
+  }));
+
+  await page.route("**/social/friends", async (route) => route.fulfill({
+    status: 200,
+    contentType: "application/json",
+    headers: headersFor(route),
+    body: JSON.stringify({ accepted: [], incoming: [], outgoing: [], items: [] })
+  }));
+
+  await page.route("**/social/inbox*", async (route) => route.fulfill({
+    status: 200,
+    contentType: "application/json",
+    headers: headersFor(route),
+    body: JSON.stringify({ unreadCount: 0, items: [] })
+  }));
+
+  await page.route("**/social/messages*", async (route) => route.fulfill({
+    status: 200,
+    contentType: "application/json",
+    headers: headersFor(route),
+    body: JSON.stringify({ items: [] })
+  }));
+
+  await page.route("**/social/invitations**", async (route) => {
+    inviteRequestCount += 1;
+    const payload = inviteRequestCount < 2
+      ? { incoming: [], sent: [], items: [] }
+      : {
+          incoming: [
+            {
+              id: "inv-poll",
+              status: "pending",
+              roomId: "room-poll",
+              roomCode: "POLL",
+              roomMode: "ffa",
+              stakeKey: "stake_50",
+              stakeAmount: 50,
+              humanSeats: 2,
+              totalPlayers: 2,
+              isTeamMode: false,
+              inviter: { id: "p-2", displayName: "Alice", avatarSeed: null, avatarUrl: null, isGuest: false },
+              invitee: { id: "p-1", displayName: "Samir", avatarSeed: null, avatarUrl: null, isGuest: false }
+            }
+          ],
+          sent: [],
+          items: []
+        };
+    return route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      headers: headersFor(route),
+      body: JSON.stringify(payload)
+    });
+  });
+
+  await page.goto("/index.html");
+  await page.waitForFunction(() => Boolean(window.game?.startGameInviteRefresh));
+  await page.evaluate(() => {
+    window.game?.stopGameInviteRefresh?.();
+    window.game?.startGameInviteRefresh?.({ intervalMs: 250, durationMs: 3000 });
+  });
+
+  await expect.poll(() => inviteRequestCount, { timeout: 5000 }).toBeGreaterThanOrEqual(2);
+  await expect(page.locator("#open-social-btn .start-social-badge")).toHaveText("1");
+  await page.locator("#open-social-btn").click();
+  await expect(page.locator("#social-invites-incoming-list .friend-card")).toHaveCount(1);
 });
 
 test("open rooms modal uses a standard title bar and close button", async ({ page }) => {

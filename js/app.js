@@ -210,6 +210,8 @@ class DominoGame {
             waitingPromptShown: false
         };
         this._gameInviteRefreshId = null;
+        this._gameInviteRefreshUntil = 0;
+        this._lastIncomingInviteSignature = '';
         this.socialSummary = null;
         this.socialSummaryLoaded = false;
         this._socialSse = null;
@@ -1038,6 +1040,7 @@ class DominoGame {
     resetSocialCenterState() {
         this.closeSocialSse();
         this.clearSocialSoftRefreshTimer();
+        this.stopGameInviteRefresh();
         this.socialSummary = {
             inboxUnreadCount: 0,
             chatUnreadCount: 0,
@@ -1176,6 +1179,9 @@ class DominoGame {
             }
         }
         this.updateSocialCenterBadge();
+        if (this.hasAuthenticatedAccount()) {
+            this.startGameInviteRefresh();
+        }
         return this.socialSummary;
     }
 
@@ -1614,16 +1620,13 @@ class DominoGame {
             return [];
         }
         this.socialCenterView = 'conversation';
-
-        if (!isBackground) {
-            this.accountMessagesState = {
-                ...(this.accountMessagesState || {}),
-                activePlayerId: playerId,
-                conversationLoading: true,
-                error: ''
-            };
-            this.renderAccountMessagesPanel();
-        }
+        this.accountMessagesState = {
+            ...(this.accountMessagesState || {}),
+            activePlayerId: playerId,
+            conversationLoading: true,
+            error: ''
+        };
+        this.renderAccountMessagesPanel();
 
         try {
             const readPromise = this.account.markMessageThreadRead?.(playerId).catch(() => {});
@@ -1982,18 +1985,20 @@ class DominoGame {
 
         conversationTitle.textContent = activePlayer?.displayName || this.t('messages-conversation-title');
 
-        // Check if messages have actually changed to avoid clearing and layout thrashing (flicker)
-        const lastPlayerId = this._lastConversationPlayerId;
-        const lastMessagesLength = this._lastConversationMessagesLength;
-        const lastMsgId = this._lastConversationLastMsgId;
-        
         const currentLastMsg = activeMessages[activeMessages.length - 1];
         const currentLastMsgId = currentLastMsg?.id || currentLastMsg?.createdAt || '';
 
-        const playerChanged = lastPlayerId !== activePlayerId;
-        const messagesChanged = lastMessagesLength !== activeMessages.length || lastMsgId !== currentLastMsgId;
+        const conversationSignature = [
+            activePlayerId,
+            String(activePlayer?.id || ''),
+            state.conversationLoading ? 'loading' : 'ready',
+            String(state.error || ''),
+            String(activeMessages.length || 0),
+            String(currentLastMsgId || '')
+        ].join('|');
 
-        if (playerChanged || messagesChanged) {
+        if (this._lastConversationRenderSignature !== conversationSignature) {
+            this._lastConversationRenderSignature = conversationSignature;
             this._lastConversationPlayerId = activePlayerId;
             this._lastConversationMessagesLength = activeMessages.length;
             this._lastConversationLastMsgId = currentLastMsgId;
@@ -4453,34 +4458,29 @@ class DominoGame {
                 acceptBtn.textContent = '...';
                 try {
                     const accepted = await this.account.acceptRoomInvitation(invite.id);
-                    const row = accepted?.item || invite;
-                    let resolvedRoomCode = String(accepted?.join?.roomCode || row.roomCode || '').trim();
-                    if (!this.isValidRoomCode(resolvedRoomCode)) {
-                        resolvedRoomCode = '';
-                    }
-                    if (!resolvedRoomCode) {
-                        const resolved = await this.network.resolveRoomCode(String(row.roomId || '').trim()).catch(() => null);
-                        if (this.isValidRoomCode(resolved)) {
-                            resolvedRoomCode = resolved;
-                        }
-                    }
-                    if (resolvedRoomCode) {
-                        await this.joinOnlineRoom(resolvedRoomCode);
+                    if (accepted?.ok === false || String(accepted?.reason || '').trim() === 'room_not_available') {
+                        this.renderer.showMessage(this.t('invite-status-expired') || 'Invite expired or room unavailable', 1800);
                     } else {
-                        this.gameInviteState = {
-                            inviteId: String(row.id || invite.id || '').trim(),
-                            inviteePlayerId: String(row.invitee?.id || this.accountProfile?.playerId || this.accountProfile?.id || '').trim(),
-                            inviteeDisplayName: String(row.invitee?.displayName || this.accountProfile?.displayName || '').trim(),
-                            sessionId: String(row.roomId || invite.roomId || '').trim(),
-                            role: 'invitee',
-                            roomLinked: false,
-                            createPromptShown: false,
-                            waitingPromptShown: true,
-                            createdAt: Date.now()
-                        };
-                        this.startGameInviteRefresh();
-                        this.renderer.showMessage(this.t('invite-waiting-room'), 1800);
-                        await this.loadSocialInvitesPage();
+                        const joinRoomCode = String(accepted?.join?.roomCode || '').trim();
+                        if (this.isValidRoomCode(joinRoomCode)) {
+                            await this.joinOnlineRoom(joinRoomCode);
+                        } else {
+                            const row = accepted?.item || invite;
+                            this.gameInviteState = {
+                                inviteId: String(row.id || invite.id || '').trim(),
+                                inviteePlayerId: String(row.invitee?.id || this.accountProfile?.playerId || this.accountProfile?.id || '').trim(),
+                                inviteeDisplayName: String(row.invitee?.displayName || this.accountProfile?.displayName || '').trim(),
+                                sessionId: String(row.roomId || invite.roomId || '').trim(),
+                                role: 'invitee',
+                                roomLinked: false,
+                                createPromptShown: false,
+                                waitingPromptShown: true,
+                                createdAt: Date.now()
+                            };
+                            this.startGameInviteRefresh();
+                            this.renderer.showMessage(this.t('invite-waiting-room'), 1800);
+                            await this.loadSocialInvitesPage();
+                        }
                     }
                 } catch (err) {
                     this.renderer.showMessage(err?.message || this.t('friends-load-failed'), 1800);
@@ -5509,6 +5509,7 @@ class DominoGame {
         if (!invite) return null;
         const currentPlayerId = this.getCurrentAccountPlayerId();
         const normalizedInvite = { ...invite };
+        const inviteStatus = String(normalizedInvite.status || '').trim().toLowerCase();
         const roomInvitations = this.roomInvitations || { incoming: [], sent: [] };
         const incoming = Array.isArray(roomInvitations.incoming) ? [...roomInvitations.incoming] : [];
         const sent = Array.isArray(roomInvitations.sent) ? [...roomInvitations.sent] : [];
@@ -5533,6 +5534,32 @@ class DominoGame {
             sent: upsertInto(sent, 'sent'),
             items: Array.from(new Map([...(incoming || []), ...(sent || [])].map((item) => [String(item?.id || ''), item]))).map(([, item]) => item)
         };
+        if (inviteStatus === 'pending' && String(normalizedInvite.invitee?.id || '').trim() === currentPlayerId) {
+            this.gameInviteState = {
+                ...(this.gameInviteState || {}),
+                inviteId: String(normalizedInvite.id || this.gameInviteState?.inviteId || '').trim(),
+                inviteePlayerId: currentPlayerId,
+                inviteeDisplayName: String(normalizedInvite.invitee?.displayName || this.accountProfile?.displayName || '').trim(),
+                sessionId: String(normalizedInvite.roomId || this.gameInviteState?.sessionId || '').trim(),
+                role: 'invitee',
+                roomLinked: Boolean(String(normalizedInvite.roomCode || '').trim()),
+                createPromptShown: Boolean(this.gameInviteState?.createPromptShown),
+                waitingPromptShown: Boolean(this.gameInviteState?.waitingPromptShown),
+                createdAt: this.gameInviteState?.createdAt || Date.now()
+            };
+            this.startGameInviteRefresh();
+            const inviteSignature = `${String(normalizedInvite.id || '').trim()}:${inviteStatus}:${String(normalizedInvite.updatedAt || normalizedInvite.createdAt || '').trim()}`;
+            if (inviteSignature && inviteSignature !== this._lastIncomingInviteSignature) {
+                this._lastIncomingInviteSignature = inviteSignature;
+                const inviterName = String(normalizedInvite.inviter?.displayName || '').trim();
+                const message = this.currentLang === 'ru'
+                    ? (inviterName ? `Новое приглашение от ${inviterName}` : 'Новое приглашение в игру')
+                    : this.currentLang === 'az'
+                        ? (inviterName ? `${inviterName} tərəfindən yeni dəvət` : 'Yeni oyun dəvəti')
+                        : (inviterName ? `New invite from ${inviterName}` : 'New game invite');
+                this.renderer.showMessage(message, 1800);
+            }
+        }
         if (this.gameInviteState?.inviteId && String(this.gameInviteState.inviteId).trim() === String(normalizedInvite.id || '').trim()) {
             this.gameInviteState = {
                 ...(this.gameInviteState || {}),
@@ -5675,12 +5702,87 @@ class DominoGame {
         }
     }
 
-    startGameInviteRefresh() {
-        // No-op. Invitations are pushed instantly via SSE.
+    startGameInviteRefresh({ intervalMs = 4500, durationMs = 120000 } = {}) {
+        if (!this.hasAuthenticatedAccount()) return;
+        const now = Date.now();
+        const nextUntil = now + Math.max(30000, Number(durationMs || 0) || 120000);
+        this._gameInviteRefreshUntil = Math.max(Number(this._gameInviteRefreshUntil || 0), nextUntil);
+        if (this._gameInviteRefreshId) return;
+
+        const tick = async () => {
+            if (!this.hasAuthenticatedAccount()) {
+                this.stopGameInviteRefresh();
+                return;
+            }
+            if (!this.gameInviteState && this._gameInviteRefreshUntil && Date.now() > this._gameInviteRefreshUntil) {
+                this.stopGameInviteRefresh();
+                return;
+            }
+            try {
+                const invitations = await this.account.getRoomInvitations();
+                if (!invitations) return;
+                const incoming = Array.isArray(invitations.incoming) ? invitations.incoming : [];
+                const activeIncoming = incoming.filter((invite) => this.isRoomInvitationActive(invite));
+                const activePendingIncoming = activeIncoming.filter((invite) => this.isRoomInvitationPending(invite));
+                const incomingSignature = activePendingIncoming
+                    .map((invite) => `${String(invite.id || '').trim()}:${String(invite.status || '').trim()}:${String(invite.updatedAt || invite.createdAt || '').trim()}`)
+                    .join('|');
+                const signatureChanged = incomingSignature !== this._lastIncomingInviteSignature;
+                this._lastIncomingInviteSignature = incomingSignature;
+                this.roomInvitations = invitations;
+
+                const hasModalOpen = Boolean(document.getElementById('social-center-modal')?.classList.contains('active'));
+                const hasPendingInvite = activePendingIncoming.length > 0;
+                if (hasPendingInvite && (!this.gameInviteState?.sessionId || this.gameInviteState.role !== 'invitee')) {
+                    const firstInvite = activePendingIncoming[0];
+                    this.gameInviteState = {
+                        inviteId: String(firstInvite.id || '').trim(),
+                        inviteePlayerId: String(firstInvite.invitee?.id || this.getCurrentAccountPlayerId() || '').trim(),
+                        inviteeDisplayName: String(firstInvite.invitee?.displayName || this.accountProfile?.displayName || '').trim(),
+                        sessionId: String(firstInvite.roomId || '').trim(),
+                        role: 'invitee',
+                        roomLinked: Boolean(String(firstInvite.roomCode || '').trim()),
+                        createPromptShown: false,
+                        waitingPromptShown: false,
+                        createdAt: Date.now()
+                    };
+                }
+
+                this.restoreGameInviteStateFromInvitations();
+                void this.refreshGameInviteState().catch(() => {});
+
+                if (signatureChanged && hasPendingInvite && !hasModalOpen) {
+                    const inviterName = String(activePendingIncoming[0]?.inviter?.displayName || '').trim();
+                    const message = this.currentLang === 'ru'
+                        ? (inviterName ? `Новое приглашение от ${inviterName}` : 'Новое приглашение в игру')
+                        : this.currentLang === 'az'
+                            ? (inviterName ? `${inviterName} tərəfindən yeni dəvət` : 'Yeni oyun dəvəti')
+                            : (inviterName ? `New invite from ${inviterName}` : 'New game invite');
+                    this.renderer.showMessage(message, 1800);
+                }
+
+                if (hasModalOpen && (this.socialCenterTab === 'inbox' || this.socialCenterTab === 'invites')) {
+                    await this.loadSocialInvitesPage(true).catch(() => {});
+                }
+                this.updateSocialCenterBadge();
+            } catch (err) {
+                debugLog("[GameInviteRefresh] poll failed", err);
+            }
+        };
+
+        void tick();
+        this._gameInviteRefreshId = window.setInterval(() => {
+            void tick();
+        }, Math.max(3000, Number(intervalMs || 0) || 4500));
     }
 
     stopGameInviteRefresh() {
-        // No-op.
+        if (this._gameInviteRefreshId) {
+            clearInterval(this._gameInviteRefreshId);
+            this._gameInviteRefreshId = null;
+        }
+        this._gameInviteRefreshUntil = 0;
+        this._lastIncomingInviteSignature = '';
     }
 
     async sendGameInviteToPlayer(playerRef, context = {}) {
@@ -5707,8 +5809,7 @@ class DominoGame {
                 payloadJson: {
                     source: String(context.source || 'social').trim() || 'social',
                     inviteeDisplayName: String(playerRef?.displayName || '').trim() || null
-                },
-                expiresAt: new Date(Date.now() + 60000).toISOString()
+                }
             };
             const result = await this.account.inviteFriendToRoom(activeRoomId, payload);
             const item = result?.item || null;
@@ -5765,8 +5866,7 @@ class DominoGame {
                         payloadJson: {
                             source: String(context.source || 'social').trim() || 'social',
                             inviteeDisplayName: inviteeName
-                        },
-                        expiresAt: new Date(Date.now() + 60000).toISOString()
+                        }
                     };
 
                     const result = await this.account.inviteFriendToRoom(roomId, payload);
@@ -5831,8 +5931,7 @@ class DominoGame {
             payloadJson: {
                 source: 'game-invite-room-linked',
                 roomCode: nextRoomCode
-            },
-            expiresAt: new Date(Date.now() + 60000).toISOString()
+            }
         };
         const result = await this.account.inviteFriendToRoom(sessionId, payload);
         if (this.gameInviteState) {
