@@ -66,6 +66,11 @@ export class SocialController {
     return this.socialService.declineFriend(req.headers, id);
   }
 
+  @Post("friends/:id/cancel")
+  async cancelFriendRequest(@Req() req: Request, @Param("id") id: string) {
+    return this.socialService.cancelFriendRequest(req.headers, id);
+  }
+
   @Post("friends/:id/remove")
   async removeFriend(@Req() req: Request, @Param("id") id: string) {
     return this.socialService.removeFriend(req.headers, id);
@@ -115,8 +120,13 @@ export class SocialController {
   }
 
   @Get("messages/:playerId")
-  async getMessages(@Req() req: Request, @Param("playerId") playerId: string) {
-    return this.socialService.getDirectMessages(req.headers, playerId);
+  async getMessages(
+    @Req() req: Request,
+    @Param("playerId") playerId: string,
+    @Query("limit") limit?: string,
+    @Query("before") before?: string
+  ) {
+    return this.socialService.getDirectMessages(req.headers, playerId, { limit, before });
   }
 
   @Post("messages/:playerId/read")

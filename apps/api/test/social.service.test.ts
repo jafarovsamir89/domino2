@@ -152,6 +152,90 @@ test("getPlayerProfile resolves profiles by userId when playerId is not provided
   assert.equal(result.item.stats.rating, 1111);
 });
 
+test("searchPlayers returns friendship status and friendship id", async () => {
+  const currentPlayer = makePlayer("player-current", "Current");
+  const friend = makePlayer("player-friend", "Friend");
+  const pending = makePlayer("player-pending", "Pending");
+  const prismaMock = {
+    player: {
+      findMany: async () => [currentPlayer, friend, pending]
+    },
+    friendConnection: {
+      findMany: async () => ([
+        {
+          id: "friend-1",
+          requesterPlayerId: currentPlayer.id,
+          addresseePlayerId: friend.id,
+          status: "accepted"
+        },
+        {
+          id: "friend-2",
+          requesterPlayerId: pending.id,
+          addresseePlayerId: currentPlayer.id,
+          status: "pending"
+        }
+      ])
+    }
+  } as any;
+
+  const service = new SocialService(prismaMock, {} as any);
+  (service as any).getCurrentPlayer = async () => currentPlayer;
+
+  const result = await service.searchPlayers({} as any, "a");
+  assert.equal(result.items.length, 3);
+  const friendRow = result.items.find((item: any) => item.id === friend.id) as any;
+  const pendingRow = result.items.find((item: any) => item.id === pending.id) as any;
+  const selfRow = result.items.find((item: any) => item.id === currentPlayer.id) as any;
+  assert.ok(friendRow);
+  assert.ok(pendingRow);
+  assert.ok(selfRow);
+  assert.equal(friendRow.friendshipStatus, "accepted");
+  assert.equal(friendRow.friendshipId, "friend-1");
+  assert.equal(pendingRow.friendshipStatus, "pending_incoming");
+  assert.equal(pendingRow.friendshipId, "friend-2");
+  assert.equal(selfRow.friendshipStatus, "self");
+});
+
+test("cancelFriendRequest allows the requester to cancel a pending request", async () => {
+  const currentPlayer = makePlayer("player-current", "Current");
+  const otherPlayer = makePlayer("player-other", "Other");
+  const request = {
+    id: "friend-req-1",
+    requesterPlayerId: currentPlayer.id,
+    addresseePlayerId: otherPlayer.id,
+    status: "pending",
+    note: null,
+    createdAt: new Date("2024-03-01T00:00:00.000Z"),
+    updatedAt: new Date("2024-03-01T00:00:00.000Z"),
+    respondedAt: null,
+    requester: currentPlayer,
+    addressee: otherPlayer
+  };
+  const events: Array<{ playerId: string; type: string; data: any }> = [];
+  const prismaMock = {
+    friendConnection: {
+      findUnique: async () => request,
+      update: async ({ data }: any) => ({
+        ...request,
+        ...data,
+        status: data.status
+      })
+    }
+  } as any;
+
+  const service = new SocialService(prismaMock, {} as any);
+  (service as any).getCurrentPlayer = async () => currentPlayer;
+  (service as any).emitSseEvent = (playerId: string, type: string, data: any) => {
+    events.push({ playerId, type, data });
+  };
+
+  const result = await service.cancelFriendRequest({} as any, request.id);
+  assert.equal(result.item.status, "rejected");
+  assert.equal(events.length, 2);
+  assert.equal(events[0].type, "friend_update");
+  assert.equal(events[0].data.type, "friend_cancelled");
+});
+
 test("inviteFriendToRoom refreshes an existing pending invite after a unique constraint race", async () => {
   const inviter = makePlayer("player-a", "Alpha");
   const invitee = makePlayer("player-b", "Beta");
@@ -320,7 +404,7 @@ test("inviteFriendToRoom updates an accepted invite when the room is linked late
   assert.equal(result.item.note, "room linked");
 });
 
-test("inviteFriendToRoom defaults invite expiration to about 60 seconds", async () => {
+test("inviteFriendToRoom defaults invite expiration to about 5 minutes", async () => {
   const inviter = makePlayer("player-a", "Alpha");
   const invitee = makePlayer("player-b", "Beta");
   let capturedCreateData: any = null;
@@ -378,10 +462,10 @@ test("inviteFriendToRoom defaults invite expiration to about 60 seconds", async 
 
   assert.ok(capturedCreateData?.expiresAt instanceof Date);
   const deltaMs = Math.abs(capturedCreateData.expiresAt.getTime() - now.getTime());
-  assert.ok(deltaMs >= 59000 && deltaMs <= 61000);
+  assert.ok(deltaMs >= 299000 && deltaMs <= 301000);
 });
 
-test("acceptRoomInvitation rejects expired invites and marks them expired", async () => {
+test("acceptRoomInvitation returns room_not_available for expired invites and marks them expired", async () => {
   const invitee = makePlayer("player-b", "Beta");
   const inviter = makePlayer("player-a", "Alpha");
   const invite = {
@@ -421,12 +505,59 @@ test("acceptRoomInvitation rejects expired invites and marks them expired", asyn
   const service = new SocialService(prismaMock, {} as any);
   (service as any).getCurrentPlayer = async () => invitee;
 
-  await assert.rejects(
-    () => service.acceptRoomInvitation({} as any, invite.id),
-    /Invitation expired/
-  );
+  const result = await service.acceptRoomInvitation({} as any, invite.id);
   assert.equal(expiredMarked, true);
   assert.equal(invite.status, "expired");
+  assert.equal(result.ok, false);
+  assert.equal(result.reason, "room_not_available");
+});
+
+test("acceptRoomInvitation returns join payload when roomCode is available", async () => {
+  const invitee = makePlayer("player-b", "Beta");
+  const inviter = makePlayer("player-a", "Alpha");
+  const invite = {
+    id: "invite-join",
+    roomId: "room-join-1",
+    roomCode: "ABCD",
+    roomMode: "team",
+    stakeKey: "stake_100",
+    stakeAmount: 100,
+    humanSeats: 4,
+    totalPlayers: 4,
+    isTeamMode: true,
+    status: "pending",
+    note: null,
+    createdAt: new Date("2024-01-01T00:00:00.000Z"),
+    updatedAt: new Date("2024-01-01T00:00:00.000Z"),
+    respondedAt: null,
+    expiresAt: new Date(Date.now() + 60_000),
+    inviterPlayerId: inviter.id,
+    inviteePlayerId: invitee.id,
+    inviter,
+    invitee
+  };
+
+  const prismaMock = {
+    roomInvitation: {
+      findUnique: async () => invite,
+      update: async ({ data }: any) => ({
+        ...invite,
+        ...data,
+        status: data.status
+      })
+    }
+  } as any;
+
+  const service = new SocialService(prismaMock, {} as any);
+  (service as any).getCurrentPlayer = async () => invitee;
+
+  const result = await service.acceptRoomInvitation({} as any, invite.id);
+  assert.equal(result.ok, true);
+  const join = result.join as any;
+  assert.ok(join);
+  assert.equal(join.roomCode, "ABCD");
+  assert.equal(join.roomId, "room-join-1");
+  assert.equal(join.roomMode, "team");
 });
 
 test("getRoomInvitations returns incoming and sent invites separately", async () => {
@@ -643,6 +774,10 @@ test("sendDirectMessage creates a message between two players", async () => {
         return null;
       }
     },
+    inboxMessage: {
+      findMany: async () => [],
+      deleteMany: async () => ({ count: 0 })
+    },
     directMessage: {
       create: async (query: any) => {
         capturedCreate = query;
@@ -675,6 +810,66 @@ test("sendDirectMessage creates a message between two players", async () => {
   assert.equal(result.item.text, "Hello from Alpha");
   assert.equal(result.item.sender.displayName, "Alpha");
   assert.equal(result.item.receiver.displayName, "Beta");
+});
+
+test("sendDirectMessage clears hidden thread markers and emits full SSE payload", async () => {
+  const currentPlayer = makePlayer("player-a", "Alpha");
+  const targetPlayer = makePlayer("player-b", "Beta");
+  const deletedIds: string[] = [];
+  const events: Array<{ playerId: string; type: string; data: any }> = [];
+
+  const prismaMock = {
+    player: {
+      findUnique: async ({ where }: any) => {
+        if (where.id === targetPlayer.id) return targetPlayer;
+        return null;
+      }
+    },
+    inboxMessage: {
+      findMany: async ({ where }: any) => {
+        if (where?.type === "direct_message_thread_hidden") {
+          return [
+            {
+              id: "hidden-1",
+              payloadJson: { relatedPlayerId: targetPlayer.id }
+            }
+          ];
+        }
+        return [];
+      },
+      deleteMany: async ({ where }: any) => {
+        deletedIds.push(...(where?.id?.in || []));
+        return { count: deletedIds.length };
+      }
+    },
+    directMessage: {
+      create: async () => ({
+        id: "message-9",
+        senderPlayerId: currentPlayer.id,
+        receiverPlayerId: targetPlayer.id,
+        text: "Hello again",
+        createdAt: new Date("2024-03-01T10:00:00.000Z"),
+        readAt: null,
+        sender: currentPlayer,
+        receiver: targetPlayer
+      })
+    }
+  } as any;
+
+  const service = new SocialService(prismaMock, {} as any);
+  (service as any).getCurrentPlayer = async () => currentPlayer;
+  (service as any).emitSseEvent = (playerId: string, type: string, data: any) => {
+    events.push({ playerId, type, data });
+  };
+
+  const result = await service.sendDirectMessage({} as any, targetPlayer.id, { text: "Hello again" });
+  assert.equal(deletedIds.includes("hidden-1"), true);
+  assert.equal(events.length, 2);
+  assert.equal(events[0].type, "message");
+  assert.equal(events[0].data.type, "direct_message_created");
+  assert.equal(events[0].data.message.id, "message-9");
+  assert.equal(events[1].type, "message_sent");
+  assert.equal(result.item.id, "message-9");
 });
 
 test("getDirectMessages returns the conversation history between two players", async () => {
@@ -734,10 +929,12 @@ test("getDirectMessages returns the conversation history between two players", a
     receiver: { select: { id: true, displayName: true, avatarSeed: true, avatarUrl: true, isGuest: true, createdAt: true } }
   });
   assert.deepEqual(capturedQuery.orderBy, { createdAt: "asc" });
-  assert.equal(capturedQuery.take, 50);
+  assert.equal(capturedQuery.take, 51);
   assert.equal(result.items.length, 2);
   assert.equal(result.items[0].id, "message-1");
   assert.equal(result.items[1].id, "message-2");
+  assert.equal(result.hasMore, false);
+  assert.equal(result.nextCursor, null);
 });
 
 test("getMessageThreads returns only the current player's conversations with unread counts", async () => {
@@ -1043,6 +1240,21 @@ test("deleteMessageThread hides a conversation and clears inbox rows for that th
       findUnique: async ({ where }: any) => (where.id === targetPlayer.id ? targetPlayer : null)
     },
     inboxMessage: {
+      findMany: async ({ where }: any) => {
+        if (where?.type === "direct_message_thread_hidden") {
+          return [
+            makeInboxRow({
+              id: "hidden-existing",
+              playerId: currentPlayer.id,
+              type: "direct_message_thread_hidden",
+              status: "deleted",
+              payloadJson: { relatedPlayerId: targetPlayer.id }
+            })
+          ];
+        }
+        return [];
+      },
+      deleteMany: async () => ({ count: 1 }),
       create: async ({ data }: any) => {
         createdRows.push(data);
         return makeInboxRow({

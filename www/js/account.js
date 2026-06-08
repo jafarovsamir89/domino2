@@ -505,6 +505,12 @@ export class AccountClient {
         });
     }
 
+    async cancelFriendRequest(id) {
+        return this.platformRequest(`/social/friends/${encodeURIComponent(id)}/cancel`, {
+            method: "POST"
+        });
+    }
+
     async removeFriend(id) {
         return this.platformRequest(`/social/friends/${encodeURIComponent(id)}/remove`, {
             method: "POST"
@@ -833,10 +839,20 @@ export class AccountClient {
         return data?.item || null;
     }
 
-    async getDirectMessages(playerId) {
+    async getDirectMessages(playerId, options = {}) {
         const id = String(playerId || "").trim();
         if (!id) return [];
-        const data = await this.platformRequest(`/social/messages/${encodeURIComponent(id)}`);
+        const params = new URLSearchParams();
+        const limit = Number(options?.limit);
+        const before = String(options?.before || "").trim();
+        if (Number.isFinite(limit) && limit > 0) {
+            params.set("limit", String(Math.trunc(limit)));
+        }
+        if (before) {
+            params.set("before", before);
+        }
+        const query = params.toString();
+        const data = await this.platformRequest(`/social/messages/${encodeURIComponent(id)}${query ? `?${query}` : ""}`);
         return Array.isArray(data?.items) ? data.items : [];
     }
 

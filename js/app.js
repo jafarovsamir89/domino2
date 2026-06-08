@@ -1037,6 +1037,7 @@ class DominoGame {
 
     resetSocialCenterState() {
         this.closeSocialSse();
+        this.clearSocialSoftRefreshTimer();
         this.socialSummary = {
             inboxUnreadCount: 0,
             chatUnreadCount: 0,
@@ -1051,6 +1052,7 @@ class DominoGame {
             loading: false,
             error: ''
         };
+        this._socialSoftRefreshTimer = null;
     }
 
     initSocialSse() {
@@ -1085,15 +1087,9 @@ class DominoGame {
                 resetReconnectState();
                 const data = event.data ? JSON.parse(event.data) : null;
                 if (!data) return;
-                
-                const activeId = String(this.accountMessagesState?.activePlayerId || '').trim();
-                if (this.socialCenterView === 'conversation' && activeId === String(data.senderPlayerId || '').trim()) {
-                    await this.loadConversationWithPlayer(activeId, true);
-                }
-                
-                await this.loadMessageThreads().catch(() => {});
-                await this.loadSocialSummary().catch(() => {});
-                this.updateSocialCenterBadge();
+
+                this.applyRealtimeDirectMessage(data);
+                this.scheduleSocialSoftRefresh('message');
             } catch (err) {
                 console.error("SSE message handler error:", err);
             }
@@ -1105,11 +1101,12 @@ class DominoGame {
 
         sse.addEventListener('invite_update', async (event) => {
             try {
-                await this.refreshGameInviteState({ forceRerender: true }).catch(() => {});
-                
+                const data = event.data ? JSON.parse(event.data) : null;
+                if (data) {
+                    this.applyRealtimeRoomInvitation(data);
+                }
                 const modal = document.getElementById('social-center-modal');
                 if (modal?.classList.contains('active') && this.socialCenterTab === 'inbox') {
-                    await this.loadInboxPage(true).catch(() => {});
                     await this.loadSocialInvitesPage(true).catch(() => {});
                 }
                 
@@ -1275,7 +1272,15 @@ class DominoGame {
         const items = Array.isArray(state.items) ? state.items : [];
         list.innerHTML = '';
         const renderedThreadIds = new Set();
+        const appendSectionTitle = (text) => {
+            const title = document.createElement('div');
+            title.className = 'section-kicker social-mail-section-kicker';
+            title.textContent = text;
+            list.appendChild(title);
+        };
+        const filteredItems = items.filter((item) => item.type !== 'direct_message' && item.type !== 'direct_message_thread_hidden');
         if (threads.length) {
+            appendSectionTitle('Messages / Chat threads');
             threads.forEach((thread) => {
                 const partner = thread?.player || {};
                 const playerId = String(partner?.id || thread?.playerId || thread?.id || '').trim();
@@ -1377,7 +1382,9 @@ class DominoGame {
             });
         }
 
-        const filteredItems = items.filter((item) => item.type !== 'direct_message' && item.type !== 'direct_message_thread_hidden');
+        if (filteredItems.length) {
+            appendSectionTitle('System mail / rewards / gifts');
+        }
         if (!threads.length && !filteredItems.length) {
             this.setSummaryMessage(list, this.t('inbox-empty'));
             return;
@@ -2025,8 +2032,9 @@ class DominoGame {
                     }
 
                     const mine = String(message.senderPlayerId || '') === currentPlayerId;
+                    const optimistic = Boolean(message.isOptimistic || message.localStatus === 'sending');
                     const row = document.createElement('div');
-                    row.className = `message-row ${mine ? 'is-self' : 'is-other'}`;
+                    row.className = `message-row ${mine ? 'is-self' : 'is-other'}${optimistic ? ' is-pending' : ''}`;
 
                     const bubbleContainer = document.createElement('div');
                     bubbleContainer.className = 'message-bubble-container';
@@ -2038,7 +2046,7 @@ class DominoGame {
                     }
 
                     const bubble = document.createElement('div');
-                    bubble.className = 'message-bubble';
+                    bubble.className = `message-bubble${optimistic ? ' is-pending' : ''}`;
 
                     const text = document.createElement('div');
                     text.className = 'message-text';
@@ -2073,7 +2081,7 @@ class DominoGame {
             }
         }
 
-        messageInput.disabled = !activePlayerId || state.conversationLoading || state.sendLoading;
+        messageInput.disabled = !activePlayerId || state.conversationLoading;
         messageInput.placeholder = activePlayerId ? (this.t('messages-placeholder') || this.t('chats-placeholder')) : (this.t('messages-empty') || this.t('chats-empty'));
         messageInput.value = messageInput.value || '';
         sendBtn.disabled = !activePlayerId || state.conversationLoading || state.sendLoading;
@@ -2132,21 +2140,75 @@ class DominoGame {
                 const targetId = String(this.accountMessagesState?.activePlayerId || '').trim();
                 const text = String(messageInput.value || '').trim();
                 if (!targetId || !text) return;
+                const currentPlayerId = this.getCurrentAccountPlayerId();
+                const tempId = `temp-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+                const tempMessage = {
+                    id: tempId,
+                    senderPlayerId: currentPlayerId,
+                    receiverPlayerId: targetId,
+                    text,
+                    createdAt: new Date().toISOString(),
+                    readAt: null,
+                    sender: this.accountProfile ? {
+                        id: this.accountProfile.playerId || this.accountProfile.id || currentPlayerId,
+                        displayName: this.accountProfile.displayName || this.accountProfile.name || '',
+                        avatarSeed: this.accountProfile.avatarSeed || null,
+                        avatarUrl: this.accountProfile.avatarUrl || null,
+                        isGuest: Boolean(this.accountProfile.isGuest)
+                    } : null,
+                    receiver: this.accountMessagesState?.activePlayerProfile || null,
+                    isOptimistic: true,
+                    localStatus: 'sending'
+                };
+                const messagesBeforeSend = Array.isArray(this.accountMessagesState?.messages) ? [...this.accountMessagesState.messages] : [];
+                messagesBeforeSend.push(tempMessage);
                 this.accountMessagesState = {
                     ...(this.accountMessagesState || {}),
+                    messages: messagesBeforeSend,
                     sendLoading: true,
                     error: ''
                 };
+                this.upsertMessageThreadFromMessage(tempMessage, targetId);
                 this.renderAccountMessagesPanel();
+                messageInput.value = '';
                 try {
-                    await this.account.sendDirectMessage(targetId, text);
-                    messageInput.value = '';
-                    this.renderer.showMessage(this.t('messages-sent') || this.t('chats-sent'), 1400);
-                    await this.loadConversationWithPlayer(targetId, true);
-                    await this.loadMessageThreads();
-                } catch (err) {
+                    const result = await this.account.sendDirectMessage(targetId, text);
+                    const sentMessage = result?.item || tempMessage;
+                    const messages = Array.isArray(this.accountMessagesState?.messages) ? [...this.accountMessagesState.messages] : [];
+                    const tempIndex = messages.findIndex((row) => String(row?.id || '').trim() === tempId);
+                    if (tempIndex >= 0) {
+                        messages[tempIndex] = {
+                            ...sentMessage,
+                            isOptimistic: false,
+                            localStatus: 'sent'
+                        };
+                    } else {
+                        messages.push({
+                            ...sentMessage,
+                            isOptimistic: false,
+                            localStatus: 'sent'
+                        });
+                    }
                     this.accountMessagesState = {
                         ...(this.accountMessagesState || {}),
+                        messages,
+                        sendLoading: false,
+                        error: ''
+                    };
+                    this.applyRealtimeDirectMessage({
+                        type: 'message_sent',
+                        message: sentMessage,
+                        threadPlayerId: targetId
+                    });
+                    this.renderer.showMessage(this.t('messages-sent') || this.t('chats-sent'), 1400);
+                    this.scheduleSocialSoftRefresh('send-direct-message', 4000);
+                } catch (err) {
+                    const messages = Array.isArray(this.accountMessagesState?.messages)
+                        ? this.accountMessagesState.messages.filter((row) => String(row?.id || '').trim() !== tempId)
+                        : [];
+                    this.accountMessagesState = {
+                        ...(this.accountMessagesState || {}),
+                        messages,
                         sendLoading: false,
                         error: err?.message || this.t('messages-send-failed') || this.t('chats-send-failed')
                     };
@@ -4133,6 +4195,14 @@ class DominoGame {
                     );
                     const canInvite = Boolean(item.friend?.id) && !hasPendingInvite;
 
+                    const messageBtn = document.createElement('button');
+                    messageBtn.className = 'btn btn-menu message-action-btn';
+                    messageBtn.textContent = 'Message';
+                    messageBtn.addEventListener('click', async (e) => {
+                        e.stopPropagation();
+                        await this.openConversationWithPlayer(item.friend);
+                    });
+
                     const inviteBtn = document.createElement('button');
                     inviteBtn.className = 'btn btn-action btn-strong invite-action-btn';
                     if (hasPendingInvite) {
@@ -4176,6 +4246,7 @@ class DominoGame {
                         }
                     });
 
+                    action.appendChild(messageBtn);
                     action.appendChild(inviteBtn);
                     action.appendChild(removeBtn);
                     card.appendChild(action);
@@ -4184,10 +4255,12 @@ class DominoGame {
             }
 
             requestsList.innerHTML = '';
-            if (!this.friendHub.incoming.length) {
+            const incomingRequests = Array.isArray(this.friendHub.incoming) ? this.friendHub.incoming : [];
+            const outgoingRequests = Array.isArray(this.friendHub.outgoing) ? this.friendHub.outgoing : [];
+            if (!incomingRequests.length && !outgoingRequests.length) {
                 this.setSummaryMessage(requestsList, this.t('no-friend-requests'));
             } else {
-                this.friendHub.incoming.forEach((item) => {
+                const renderRequest = (item, label, acceptable) => {
                     const card = document.createElement('div');
                     card.className = 'friend-card premium-social-card request-card';
                     
@@ -4204,7 +4277,7 @@ class DominoGame {
 
                     const desc = document.createElement('span');
                     desc.className = 'friend-card-desc';
-                    desc.textContent = this.t('friend-incoming') || 'Incoming request';
+                    desc.textContent = label || 'Request';
 
                     copy.appendChild(name);
                     copy.appendChild(desc);
@@ -4213,43 +4286,66 @@ class DominoGame {
                     const action = document.createElement('div');
                     action.className = 'friend-card-actions';
 
-                    const acceptBtn = document.createElement('button');
-                    acceptBtn.className = 'btn btn-action btn-strong accept-btn';
-                    acceptBtn.textContent = this.t('friend-accept');
-                    acceptBtn.addEventListener('click', async () => {
-                        acceptBtn.disabled = true;
-                        try {
-                            await this.account.acceptFriendRequest(item.id);
-                            await this.loadFriendsPage();
-                            this.renderer.showMessage(this.t('friends-request-accepted'), 1400);
-                        } catch (err) {
-                            this.renderer.showMessage(err.message || this.t('friends-load-failed'), 1800);
-                        } finally {
-                            acceptBtn.disabled = false;
-                        }
-                    });
+                    if (acceptable) {
+                        const acceptBtn = document.createElement('button');
+                        acceptBtn.className = 'btn btn-action btn-strong accept-btn';
+                        acceptBtn.textContent = this.t('friend-accept');
+                        acceptBtn.addEventListener('click', async () => {
+                            acceptBtn.disabled = true;
+                            try {
+                                await this.account.acceptFriendRequest(item.id);
+                                await this.loadFriendsPage();
+                                this.renderer.showMessage(this.t('friends-request-accepted'), 1400);
+                            } catch (err) {
+                                this.renderer.showMessage(err.message || this.t('friends-load-failed'), 1800);
+                            } finally {
+                                acceptBtn.disabled = false;
+                            }
+                        });
 
-                    const declineBtn = document.createElement('button');
-                    declineBtn.className = 'btn btn-menu decline-btn';
-                    declineBtn.textContent = this.t('friend-decline');
-                    declineBtn.addEventListener('click', async () => {
-                        declineBtn.disabled = true;
-                        try {
-                            await this.account.declineFriendRequest(item.id);
-                            await this.loadFriendsPage();
-                            this.renderer.showMessage(this.t('friends-request-declined'), 1400);
-                        } catch (err) {
-                            this.renderer.showMessage(err.message || this.t('friends-load-failed'), 1800);
-                        } finally {
-                            declineBtn.disabled = false;
-                        }
-                    });
+                        const declineBtn = document.createElement('button');
+                        declineBtn.className = 'btn btn-menu decline-btn';
+                        declineBtn.textContent = this.t('friend-decline');
+                        declineBtn.addEventListener('click', async () => {
+                            declineBtn.disabled = true;
+                            try {
+                                await this.account.declineFriendRequest(item.id);
+                                await this.loadFriendsPage();
+                                this.renderer.showMessage(this.t('friends-request-declined'), 1400);
+                            } catch (err) {
+                                this.renderer.showMessage(err.message || this.t('friends-load-failed'), 1800);
+                            } finally {
+                                declineBtn.disabled = false;
+                            }
+                        });
 
-                    action.appendChild(acceptBtn);
-                    action.appendChild(declineBtn);
+                        action.appendChild(acceptBtn);
+                        action.appendChild(declineBtn);
+                    } else {
+                        const cancelBtn = document.createElement('button');
+                        cancelBtn.className = 'btn btn-menu cancel-btn';
+                        cancelBtn.textContent = 'Cancel';
+                        cancelBtn.addEventListener('click', async () => {
+                            cancelBtn.disabled = true;
+                            try {
+                                await this.account.cancelFriendRequest(item.id);
+                                await this.loadFriendsPage();
+                                this.renderer.showMessage(this.t('friends-request-cancelled') || 'Request cancelled', 1400);
+                            } catch (err) {
+                                this.renderer.showMessage(err.message || this.t('friends-load-failed'), 1800);
+                            } finally {
+                                cancelBtn.disabled = false;
+                            }
+                        });
+                        action.appendChild(cancelBtn);
+                    }
+
                     card.appendChild(action);
                     requestsList.appendChild(card);
-                });
+                };
+
+                incomingRequests.forEach((item) => renderRequest(item, this.t('friend-incoming') || 'Incoming request', true));
+                outgoingRequests.forEach((item) => renderRequest(item, this.t('friend-outgoing') || 'Outgoing request', false));
             }
 
             await this.searchFriendsPage(true);
@@ -4350,7 +4446,7 @@ class DominoGame {
                 ? this.t('invite-waiting-room')
                 : this.t('invites-accept');
             acceptBtn.disabled = isAcceptedWaiting || !pending;
-            acceptBtn.addEventListener('click', async () => {
+                acceptBtn.addEventListener('click', async () => {
                 if (isAcceptedWaiting || !pending) return;
                 acceptBtn.disabled = true;
                 const originalText = acceptBtn.textContent;
@@ -4358,7 +4454,7 @@ class DominoGame {
                 try {
                     const accepted = await this.account.acceptRoomInvitation(invite.id);
                     const row = accepted?.item || invite;
-                    let resolvedRoomCode = String(row.roomCode || '').trim();
+                    let resolvedRoomCode = String(accepted?.join?.roomCode || row.roomCode || '').trim();
                     if (!this.isValidRoomCode(resolvedRoomCode)) {
                         resolvedRoomCode = '';
                     }
@@ -4504,10 +4600,6 @@ class DominoGame {
         }
         try {
             const items = await this.account.searchPlayers(query);
-            const hub = this.friendHub || { accepted: [], incoming: [], outgoing: [] };
-            const acceptedIds = new Set((hub.accepted || []).map((item) => String(item.friend?.id || '')));
-            const incomingIds = new Set((hub.incoming || []).map((item) => String(item.friend?.id || '')));
-            const outgoingIds = new Set((hub.outgoing || []).map((item) => String(item.friend?.id || '')));
             const presenceMap = this.friendPresenceMap instanceof Map ? this.friendPresenceMap : await this.loadFriendPresenceMap().catch(() => new Map());
 
             this.friendSearchResults = Array.isArray(items) ? items : [];
@@ -4541,7 +4633,14 @@ class DominoGame {
                 const action = document.createElement('div');
                 action.className = 'friend-card-actions';
                 const playerId = String(player.id || '');
-                if (acceptedIds.has(playerId)) {
+                const statusKey = String(player.friendshipStatus || (playerId && this.friendHub?.accepted?.some((item) => String(item.friend?.id || '') === playerId) ? 'accepted' : '') || 'none').trim();
+                if (statusKey === 'self') {
+                    const selfBtn = document.createElement('button');
+                    selfBtn.className = 'btn btn-menu';
+                    selfBtn.disabled = true;
+                    selfBtn.textContent = this.t('player-profile-self') || 'You';
+                    action.appendChild(selfBtn);
+                } else if (statusKey === 'accepted') {
                     const statusBtn = document.createElement('button');
                     statusBtn.className = 'btn btn-menu status-btn';
                     statusBtn.disabled = true;
@@ -4579,13 +4678,72 @@ class DominoGame {
                             }
                         });
                     }
+                    const messageBtn = document.createElement('button');
+                    messageBtn.className = 'btn btn-menu message-btn';
+                    messageBtn.textContent = 'Message';
+                    messageBtn.addEventListener('click', async () => {
+                        await this.openConversationWithPlayer(player);
+                    });
+
+                    action.appendChild(messageBtn);
                     action.appendChild(inviteBtn);
-                } else if (outgoingIds.has(playerId) || incomingIds.has(playerId)) {
-                    const pendingBtn = document.createElement('button');
-                    pendingBtn.className = 'btn btn-menu pending-btn';
-                    pendingBtn.disabled = true;
-                    pendingBtn.textContent = this.t('friends-pending');
-                    action.appendChild(pendingBtn);
+                } else if (statusKey === 'pending_outgoing') {
+                    const cancelBtn = document.createElement('button');
+                    cancelBtn.className = 'btn btn-menu pending-btn';
+                    cancelBtn.textContent = 'Cancel';
+                    cancelBtn.addEventListener('click', async () => {
+                        cancelBtn.disabled = true;
+                        try {
+                            const friendshipId = String(player.friendshipId || '').trim();
+                            if (!friendshipId) throw new Error(this.t('friends-load-failed'));
+                            await this.account.cancelFriendRequest(friendshipId);
+                            await this.searchFriendsPage(true);
+                            this.renderer.showMessage(this.t('friends-request-cancelled') || 'Request cancelled', 1400);
+                        } catch (err) {
+                            this.renderer.showMessage(err.message || this.t('friends-load-failed'), 1800);
+                        } finally {
+                            cancelBtn.disabled = false;
+                        }
+                    });
+                    action.appendChild(cancelBtn);
+                } else if (statusKey === 'pending_incoming') {
+                    const acceptBtn = document.createElement('button');
+                    acceptBtn.className = 'btn btn-action btn-strong';
+                    acceptBtn.textContent = this.t('friend-accept');
+                    acceptBtn.addEventListener('click', async () => {
+                        acceptBtn.disabled = true;
+                        try {
+                            const friendshipId = String(player.friendshipId || '').trim();
+                            if (!friendshipId) throw new Error(this.t('friends-load-failed'));
+                            await this.account.acceptFriendRequest(friendshipId);
+                            await this.searchFriendsPage(true);
+                            this.renderer.showMessage(this.t('friends-request-accepted'), 1400);
+                        } catch (err) {
+                            this.renderer.showMessage(err.message || this.t('friends-load-failed'), 1800);
+                        } finally {
+                            acceptBtn.disabled = false;
+                        }
+                    });
+
+                    const declineBtn = document.createElement('button');
+                    declineBtn.className = 'btn btn-menu';
+                    declineBtn.textContent = this.t('friend-decline');
+                    declineBtn.addEventListener('click', async () => {
+                        declineBtn.disabled = true;
+                        try {
+                            const friendshipId = String(player.friendshipId || '').trim();
+                            if (!friendshipId) throw new Error(this.t('friends-load-failed'));
+                            await this.account.declineFriendRequest(friendshipId);
+                            await this.searchFriendsPage(true);
+                            this.renderer.showMessage(this.t('friends-request-declined'), 1400);
+                        } catch (err) {
+                            this.renderer.showMessage(err.message || this.t('friends-load-failed'), 1800);
+                        } finally {
+                            declineBtn.disabled = false;
+                        }
+                    });
+                    action.appendChild(acceptBtn);
+                    action.appendChild(declineBtn);
                 } else {
                     const addBtn = document.createElement('button');
                     addBtn.className = 'btn btn-action btn-strong add-btn';
@@ -4680,21 +4838,38 @@ class DominoGame {
                 self: this.t('player-profile-self'),
                 none: this.t('friend-add'),
                 pending_incoming: this.t('friend-accept'),
-                pending_outgoing: this.t('friends-pending'),
+                pending_outgoing: 'Cancel',
                 accepted: this.t('friends-request-accepted')
             };
             friendBtn.textContent = labels[statusKey] || this.t('friend-add');
-            const allowAction = isAuthed && !isSelf && (statusKey === 'none' || statusKey === 'pending_incoming');
-            friendBtn.hidden = isSelf || !isAuthed || statusKey === 'accepted' || statusKey === 'pending_outgoing';
+            const allowAction = isAuthed && !isSelf && (statusKey === 'none' || statusKey === 'pending_incoming' || statusKey === 'pending_outgoing');
+            friendBtn.hidden = isSelf || !isAuthed || statusKey === 'accepted';
             friendBtn.disabled = !allowAction;
             friendBtn.onclick = async () => {
                 if (!allowAction || !profile?.id) return;
                 friendBtn.disabled = true;
                 try {
-                    await this.account.sendFriendRequest(profile.id);
+                    if (statusKey === 'pending_incoming') {
+                        const friendshipId = String(profile?.friendshipId || '').trim();
+                        if (!friendshipId) throw new Error(this.t('friends-load-failed'));
+                        await this.account.acceptFriendRequest(friendshipId);
+                    } else if (statusKey === 'pending_outgoing') {
+                        const friendshipId = String(profile?.friendshipId || '').trim();
+                        if (!friendshipId) throw new Error(this.t('friends-load-failed'));
+                        await this.account.cancelFriendRequest(friendshipId);
+                    } else {
+                        await this.account.sendFriendRequest(profile.id);
+                    }
                     await this.openPlayerProfileModal(profile.id);
                     await this.loadFriendsPage().catch(() => {});
-                    this.renderer.showMessage(this.t('friends-request-sent'), 1400);
+                    this.renderer.showMessage(
+                        statusKey === 'pending_incoming'
+                            ? (this.t('friends-request-accepted') || 'Accepted')
+                            : statusKey === 'pending_outgoing'
+                                ? (this.t('friends-request-cancelled') || 'Request cancelled')
+                                : (this.t('friends-request-sent') || 'Request sent'),
+                        1400
+                    );
                 } catch (err) {
                     this.renderer.showMessage(err?.message || this.t('friends-load-failed'), 1800);
                 } finally {
@@ -5139,6 +5314,238 @@ class DominoGame {
         return Date.now() + Number(this.serverTimeOffsetMs || 0);
     }
 
+    getCurrentAccountPlayerId() {
+        return String(this.accountProfile?.playerId || this.accountProfile?.id || '').trim();
+    }
+
+    clearSocialSoftRefreshTimer() {
+        if (this._socialSoftRefreshTimer) {
+            clearTimeout(this._socialSoftRefreshTimer);
+            this._socialSoftRefreshTimer = null;
+        }
+    }
+
+    scheduleSocialSoftRefresh(reason = 'social', delayMs = 6500) {
+        if (!this.hasAuthenticatedAccount()) return;
+        this.clearSocialSoftRefreshTimer();
+        const delay = Math.max(1200, Math.min(15000, Number(delayMs) || 6500));
+        this._socialSoftRefreshTimer = setTimeout(() => {
+            this._socialSoftRefreshTimer = null;
+            if (!this.hasAuthenticatedAccount()) return;
+            void Promise.all([
+                this.loadMessageThreads().catch(() => {}),
+                this.loadSocialSummary().catch(() => {})
+            ]).then(() => {
+                this.updateSocialCenterBadge();
+                if (window.DOMINO_DEBUG_SOCIAL === true) {
+                    console.debug('[SocialSoftRefresh]', { reason, delay });
+                }
+            });
+        }, delay);
+    }
+
+    upsertMessageThreadFromMessage(message, threadPlayerId) {
+        const payload = message && typeof message === 'object' ? message : null;
+        if (!payload) return null;
+        const currentPlayerId = this.getCurrentAccountPlayerId();
+        const partnerId = String(
+            threadPlayerId ||
+            payload.threadPlayerId ||
+            (String(payload.senderPlayerId || '') === currentPlayerId ? payload.receiverPlayerId : payload.senderPlayerId) ||
+            ''
+        ).trim();
+        if (!partnerId) return null;
+
+        const normalizedMessage = {
+            ...payload,
+            senderPlayerId: String(payload.senderPlayerId || '').trim(),
+            receiverPlayerId: String(payload.receiverPlayerId || '').trim(),
+            createdAt: String(payload.createdAt || new Date().toISOString()),
+            readAt: payload.readAt || null,
+            isOptimistic: Boolean(payload.isOptimistic),
+            localStatus: payload.localStatus || payload.status || ''
+        };
+
+        const state = this.accountMessagesState || {};
+        const threads = Array.isArray(state.threads) ? [...state.threads] : [];
+        const activePlayerId = String(state.activePlayerId || '').trim();
+        const threadIndex = threads.findIndex((thread) => String(thread?.player?.id || thread?.playerId || thread?.id || '').trim() === partnerId);
+        const existingThread = threadIndex >= 0 ? threads[threadIndex] : null;
+        const incoming = normalizedMessage.senderPlayerId !== currentPlayerId;
+        const activeConversation = this.socialCenterView === 'conversation' && activePlayerId === partnerId;
+        const nextThread = existingThread ? { ...existingThread } : {
+            id: partnerId,
+            playerId: partnerId,
+            player: payload.senderPlayerId === partnerId ? payload.sender || payload.player || null : payload.receiver || payload.player || null,
+            lastMessage: null,
+            unreadCount: 0,
+            messageCount: 0
+        };
+
+        if (!nextThread.player) {
+            const activeProfile = this.accountMessagesState?.activePlayerProfile || null;
+            if (String(activeProfile?.id || '').trim() === partnerId) {
+                nextThread.player = activeProfile;
+            } else if (String(payload.sender?.id || '').trim() === partnerId) {
+                nextThread.player = payload.sender;
+            } else if (String(payload.receiver?.id || '').trim() === partnerId) {
+                nextThread.player = payload.receiver;
+            }
+        }
+
+        const lastMessageAt = new Date(existingThread?.lastMessage?.createdAt || 0).getTime();
+        const messageAt = new Date(normalizedMessage.createdAt || Date.now()).getTime();
+        if (!existingThread || !existingThread.lastMessage || messageAt >= lastMessageAt) {
+            nextThread.lastMessage = normalizedMessage;
+        }
+        nextThread.messageCount = Math.max(0, Number(existingThread?.messageCount || 0)) + (existingThread ? 0 : 1);
+        if (incoming) {
+            nextThread.unreadCount = activeConversation ? 0 : Math.max(0, Number(existingThread?.unreadCount || 0)) + 1;
+        } else {
+            nextThread.unreadCount = Math.max(0, Number(existingThread?.unreadCount || 0));
+        }
+
+        if (threadIndex >= 0) {
+            threads[threadIndex] = nextThread;
+        } else {
+            threads.unshift(nextThread);
+        }
+        threads.sort((left, right) => new Date(right?.lastMessage?.createdAt || 0).getTime() - new Date(left?.lastMessage?.createdAt || 0).getTime());
+
+        this.accountMessagesState = {
+            ...(this.accountMessagesState || {}),
+            threads
+        };
+        this.socialInboxState = {
+            ...(this.socialInboxState || {}),
+            threads
+        };
+
+        if (activeConversation) {
+            const existingMessages = Array.isArray(state.messages) ? [...state.messages] : [];
+            const existingIndex = existingMessages.findIndex((row) => String(row?.id || '').trim() === String(normalizedMessage.id || '').trim());
+            const optimisticIndex = existingMessages.findIndex((row) => {
+                if (!row?.isOptimistic) return false;
+                const sameSender = String(row?.senderPlayerId || '').trim() === String(normalizedMessage.senderPlayerId || '').trim();
+                const sameReceiver = String(row?.receiverPlayerId || '').trim() === String(normalizedMessage.receiverPlayerId || '').trim();
+                const sameText = String(row?.text || row?.body || '').trim() === String(normalizedMessage.text || normalizedMessage.body || '').trim();
+                return sameSender && sameReceiver && sameText;
+            });
+            if (existingIndex >= 0) {
+                existingMessages[existingIndex] = { ...existingMessages[existingIndex], ...normalizedMessage };
+            } else if (optimisticIndex >= 0) {
+                existingMessages[optimisticIndex] = {
+                    ...existingMessages[optimisticIndex],
+                    ...normalizedMessage,
+                    isOptimistic: false,
+                    localStatus: 'sent'
+                };
+            } else {
+                existingMessages.push(normalizedMessage);
+            }
+            existingMessages.sort((left, right) => new Date(left?.createdAt || 0).getTime() - new Date(right?.createdAt || 0).getTime());
+            this.accountMessagesState = {
+                ...(this.accountMessagesState || {}),
+                messages: existingMessages
+            };
+            this.renderAccountMessagesPanel();
+        }
+
+        return normalizedMessage;
+    }
+
+    applyRealtimeDirectMessage(payload) {
+        const eventType = String(payload?.type || '').trim();
+        const message = payload?.message && typeof payload.message === 'object'
+            ? payload.message
+            : (payload?.senderPlayerId || payload?.text ? {
+                senderPlayerId: payload.senderPlayerId,
+                receiverPlayerId: payload.receiverPlayerId,
+                text: payload.text,
+                createdAt: payload.createdAt || new Date().toISOString(),
+                sender: payload.sender || null,
+                receiver: payload.receiver || null
+            } : null);
+        if (!message) return null;
+        const threadPlayerId = String(
+            payload?.threadPlayerId ||
+            message.threadPlayerId ||
+            (String(message.senderPlayerId || '') === this.getCurrentAccountPlayerId() ? message.receiverPlayerId : message.senderPlayerId) ||
+            ''
+        ).trim();
+        const normalized = this.upsertMessageThreadFromMessage({
+            ...message,
+            type: eventType,
+            isOptimistic: false
+        }, threadPlayerId);
+        if (!normalized) return null;
+
+        const state = this.accountMessagesState || {};
+        const activePlayerId = String(state.activePlayerId || '').trim();
+        const currentPlayerId = this.getCurrentAccountPlayerId();
+        const isMine = String(normalized.senderPlayerId || '') === currentPlayerId;
+        const isActiveConversation = this.socialCenterView === 'conversation' && activePlayerId === threadPlayerId;
+        if (isActiveConversation) {
+            const messages = Array.isArray(state.messages) ? [...state.messages] : [];
+            const existingIndex = messages.findIndex((row) => String(row?.id || '').trim() === String(normalized.id || '').trim());
+            if (existingIndex >= 0) {
+                messages[existingIndex] = { ...messages[existingIndex], ...normalized, isOptimistic: false, localStatus: 'sent' };
+            } else if (!isMine || eventType === 'message_sent') {
+                messages.push({ ...normalized, isOptimistic: false, localStatus: 'sent' });
+            }
+            messages.sort((left, right) => new Date(left?.createdAt || 0).getTime() - new Date(right?.createdAt || 0).getTime());
+            this.accountMessagesState = {
+                ...(this.accountMessagesState || {}),
+                messages
+            };
+            this.renderAccountMessagesPanel();
+        }
+        this.updateSocialCenterBadge();
+        return normalized;
+    }
+
+    applyRealtimeRoomInvitation(payload) {
+        const invite = payload?.invite && typeof payload.invite === 'object' ? payload.invite : null;
+        if (!invite) return null;
+        const currentPlayerId = this.getCurrentAccountPlayerId();
+        const normalizedInvite = { ...invite };
+        const roomInvitations = this.roomInvitations || { incoming: [], sent: [] };
+        const incoming = Array.isArray(roomInvitations.incoming) ? [...roomInvitations.incoming] : [];
+        const sent = Array.isArray(roomInvitations.sent) ? [...roomInvitations.sent] : [];
+        const upsertInto = (list, direction) => {
+            if (!Array.isArray(list)) return list;
+            const inviteId = String(normalizedInvite.id || '').trim();
+            if (!inviteId) return list;
+            const idx = list.findIndex((item) => String(item?.id || '').trim() === inviteId);
+            const currentSideMatches = direction === 'incoming'
+                ? String(normalizedInvite.invitee?.id || '').trim() === currentPlayerId
+                : String(normalizedInvite.inviter?.id || '').trim() === currentPlayerId;
+            if (!currentSideMatches) return list;
+            if (idx >= 0) {
+                list[idx] = { ...list[idx], ...normalizedInvite };
+            } else {
+                list.unshift(normalizedInvite);
+            }
+            return list;
+        };
+        this.roomInvitations = {
+            incoming: upsertInto(incoming, 'incoming'),
+            sent: upsertInto(sent, 'sent'),
+            items: Array.from(new Map([...(incoming || []), ...(sent || [])].map((item) => [String(item?.id || ''), item]))).map(([, item]) => item)
+        };
+        if (this.gameInviteState?.inviteId && String(this.gameInviteState.inviteId).trim() === String(normalizedInvite.id || '').trim()) {
+            this.gameInviteState = {
+                ...(this.gameInviteState || {}),
+                inviteePlayerId: String(normalizedInvite.invitee?.id || this.gameInviteState.inviteePlayerId || '').trim(),
+                inviteeDisplayName: String(normalizedInvite.invitee?.displayName || this.gameInviteState.inviteeDisplayName || '').trim(),
+                sessionId: String(normalizedInvite.roomId || this.gameInviteState.sessionId || '').trim(),
+                roomLinked: Boolean(String(normalizedInvite.roomCode || '').trim()),
+                createdAt: this.gameInviteState.createdAt || Date.now()
+            };
+        }
+        return normalizedInvite;
+    }
+
     clearSocialSseReconnectTimer() {
         if (this._socialSseReconnectTimer) {
             clearTimeout(this._socialSseReconnectTimer);
@@ -5148,6 +5555,7 @@ class DominoGame {
 
     closeSocialSse() {
         this.clearSocialSseReconnectTimer();
+        this.clearSocialSoftRefreshTimer();
         this._socialSseRetryCount = 0;
         if (this._socialSse) {
             try {
@@ -7422,21 +7830,72 @@ class DominoGame {
                 copy.appendChild(id);
                 const action = document.createElement('div');
                 action.className = 'friend-card-actions';
-                const addBtn = document.createElement('button');
-                addBtn.className = 'btn btn-action';
-                addBtn.textContent = this.t('friend-add');
-                addBtn.addEventListener('click', async () => {
-                    addBtn.disabled = true;
-                    try {
-                        await this.account.sendFriendRequest(player.id);
-                        await this.loadFriendsHub();
-                    } catch (err) {
-                        this.renderer.showMessage(err.message || this.t('account-server-unavailable'), 1800);
-                    } finally {
-                        addBtn.disabled = false;
-                    }
-                });
-                action.appendChild(addBtn);
+                const statusKey = String(player.friendshipStatus || 'none').trim();
+                if (statusKey === 'self') {
+                    const selfBtn = document.createElement('button');
+                    selfBtn.className = 'btn btn-menu';
+                    selfBtn.disabled = true;
+                    selfBtn.textContent = this.t('player-profile-self') || 'You';
+                    action.appendChild(selfBtn);
+                } else if (statusKey === 'accepted') {
+                    const messageBtn = document.createElement('button');
+                    messageBtn.className = 'btn btn-menu';
+                    messageBtn.textContent = 'Message';
+                    messageBtn.addEventListener('click', async () => {
+                        await this.openConversationWithPlayer(player);
+                    });
+                    action.appendChild(messageBtn);
+                } else if (statusKey === 'pending_outgoing') {
+                    const cancelBtn = document.createElement('button');
+                    cancelBtn.className = 'btn btn-menu';
+                    cancelBtn.textContent = 'Cancel';
+                    cancelBtn.addEventListener('click', async () => {
+                        cancelBtn.disabled = true;
+                        try {
+                            await this.account.cancelFriendRequest(player.friendshipId);
+                            await this.searchFriends();
+                            this.renderer.showMessage(this.t('friends-request-cancelled') || 'Request cancelled', 1400);
+                        } catch (err) {
+                            this.renderer.showMessage(err.message || this.t('account-server-unavailable'), 1800);
+                        } finally {
+                            cancelBtn.disabled = false;
+                        }
+                    });
+                    action.appendChild(cancelBtn);
+                } else if (statusKey === 'pending_incoming') {
+                    const acceptBtn = document.createElement('button');
+                    acceptBtn.className = 'btn btn-action';
+                    acceptBtn.textContent = this.t('friend-accept');
+                    acceptBtn.addEventListener('click', async () => {
+                        acceptBtn.disabled = true;
+                        try {
+                            await this.account.acceptFriendRequest(player.friendshipId);
+                            await this.searchFriends();
+                            this.renderer.showMessage(this.t('friends-request-accepted'), 1400);
+                        } catch (err) {
+                            this.renderer.showMessage(err.message || this.t('account-server-unavailable'), 1800);
+                        } finally {
+                            acceptBtn.disabled = false;
+                        }
+                    });
+                    action.appendChild(acceptBtn);
+                } else {
+                    const addBtn = document.createElement('button');
+                    addBtn.className = 'btn btn-action';
+                    addBtn.textContent = this.t('friend-add');
+                    addBtn.addEventListener('click', async () => {
+                        addBtn.disabled = true;
+                        try {
+                            await this.account.sendFriendRequest(player.id);
+                            await this.loadFriendsHub();
+                        } catch (err) {
+                            this.renderer.showMessage(err.message || this.t('account-server-unavailable'), 1800);
+                        } finally {
+                            addBtn.disabled = false;
+                        }
+                    });
+                    action.appendChild(addBtn);
+                }
                 card.appendChild(copy);
                 card.appendChild(action);
                 resultsList.appendChild(card);
@@ -7532,6 +7991,13 @@ class DominoGame {
                     );
                     const canInvite = Boolean(item.friend?.id) && !hasPendingInvite;
 
+                    const messageBtn = document.createElement('button');
+                    messageBtn.className = 'btn btn-menu message-action-btn';
+                    messageBtn.textContent = 'Message';
+                    messageBtn.addEventListener('click', () => {
+                        void this.openConversationWithPlayer(item.friend);
+                    });
+
                     const inviteBtn = document.createElement('button');
                     inviteBtn.className = 'btn btn-action btn-strong invite-action-btn';
                     if (hasPendingInvite) {
@@ -7578,6 +8044,7 @@ class DominoGame {
                             removeBtn.disabled = false;
                         }
                     });
+                    action.appendChild(messageBtn);
                     action.appendChild(inviteBtn);
                     action.appendChild(giftBtn);
                     action.appendChild(removeBtn);
@@ -7624,21 +8091,39 @@ class DominoGame {
                         });
                         action.appendChild(acceptBtn);
                     }
-                    const declineBtn = document.createElement('button');
-                    declineBtn.className = 'btn btn-menu';
-                    declineBtn.textContent = this.t('friend-decline');
-                    declineBtn.addEventListener('click', async () => {
-                        declineBtn.disabled = true;
-                        try {
-                            await this.account.declineFriendRequest(item.id);
-                            await this.loadFriendsHub();
-                        } catch (err) {
-                            this.renderer.showMessage(err.message || this.t('account-server-unavailable'), 1800);
-                        } finally {
-                            declineBtn.disabled = false;
-                        }
-                    });
-                    action.appendChild(declineBtn);
+                    if (acceptable) {
+                        const declineBtn = document.createElement('button');
+                        declineBtn.className = 'btn btn-menu';
+                        declineBtn.textContent = this.t('friend-decline');
+                        declineBtn.addEventListener('click', async () => {
+                            declineBtn.disabled = true;
+                            try {
+                                await this.account.declineFriendRequest(item.id);
+                                await this.loadFriendsHub();
+                            } catch (err) {
+                                this.renderer.showMessage(err.message || this.t('account-server-unavailable'), 1800);
+                            } finally {
+                                declineBtn.disabled = false;
+                            }
+                        });
+                        action.appendChild(declineBtn);
+                    } else {
+                        const cancelBtn = document.createElement('button');
+                        cancelBtn.className = 'btn btn-menu';
+                        cancelBtn.textContent = 'Cancel';
+                        cancelBtn.addEventListener('click', async () => {
+                            cancelBtn.disabled = true;
+                            try {
+                                await this.account.cancelFriendRequest(item.id);
+                                await this.loadFriendsHub();
+                            } catch (err) {
+                                this.renderer.showMessage(err.message || this.t('account-server-unavailable'), 1800);
+                            } finally {
+                                cancelBtn.disabled = false;
+                            }
+                        });
+                        action.appendChild(cancelBtn);
+                    }
                     card.appendChild(copy);
                     card.appendChild(action);
                     requestsList.appendChild(card);
@@ -8033,7 +8518,7 @@ class DominoGame {
         this.renderSeatSelectionUi(roomState);
         if (this.network.isMultiplayer) {
             this.scheduleRealtimeRender({
-                boardChanged: Boolean(state?.boardJson),
+                boardChanged: false,
                 handChanged: true,
                 opponentHandsChanged: true,
                 scoresChanged: true,
