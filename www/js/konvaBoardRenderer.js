@@ -719,9 +719,10 @@ export class KonvaBoardRenderer {
     syncOpenEnds(Konva, board, layout) {
         const openEnds = Array.isArray(board.openEnds) ? board.openEnds : [];
         const nextKeys = new Set();
-        const boardBottomY = layout.stageHeight / 2 + ((layout.bounds.height + 32) * layout.scale) / 2;
-        const lowerBandY = Math.min(layout.stageHeight - 34, Math.max(layout.stageHeight * 0.78, boardBottomY + 18));
-        const baseY = lowerBandY;
+        const pillHeight = 18;
+        const bottomPadding = 22;
+        const preferredY = layout.stageHeight - bottomPadding - (pillHeight / 2);
+        const baseY = Math.max(layout.stageHeight * 0.82, preferredY);
 
         for (let i = 0; i < openEnds.length; i++) {
             const oe = openEnds[i];

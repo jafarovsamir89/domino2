@@ -934,8 +934,9 @@ test("Konva top arrow stays centered in viewport coordinates without stage clamp
     const konva = renderer._konvaBoardRenderer;
     konva.lastLayout = { stageWidth: 20, stageHeight: 20, scale: 1 };
 
-    const raw = konva.getOpenEndChoicePoint(openEnd, { buttonSize: 42 });
-    const adjusted = renderer.adjustArrowPointForCollision(raw, 42, renderer.collectBoardTileRects(), openEnd.side);
+    const buttonSize = renderer.getArrowButtonSize();
+    const raw = konva.getOpenEndChoicePoint(openEnd, { buttonSize });
+    const adjusted = renderer.adjustArrowPointForCollision(raw, buttonSize, renderer.collectBoardTileRects(), openEnd.side);
     const nodeRect = konva.getNodeRect(openEnd.nodeId);
     const centerX = nodeRect.left + nodeRect.width / 2;
     const centerY = nodeRect.top + nodeRect.height / 2;
@@ -970,6 +971,306 @@ test("Konva top arrow stays centered in viewport coordinates without stage clamp
   expect(result.buttonCenterX).toBeCloseTo(result.centerX, 1);
   expect(result.buttonCenterY).toBeLessThan(result.centerY);
   expect(result.btnRect).not.toBeNull();
+  expect(pageErrors).toEqual([]);
+  expect(consoleErrors).toEqual([]);
+});
+
+test("Konva arrow axes stay locked and emergency fallback only shifts when normal candidates fail", async ({ page }) => {
+  const pageErrors = [];
+  const consoleErrors = [];
+  page.on("pageerror", (error) => pageErrors.push(error.message));
+  page.on("console", (msg) => {
+    if (msg.type() === "error") consoleErrors.push(msg.text());
+  });
+
+  await setupSoloSmoke(page, { konvaEnabled: true });
+  await page.goto("/index.html");
+  await startSoloGame(page);
+
+  const result = await page.evaluate(() => {
+    const game = window.game;
+    const renderer = game?.renderer;
+    const board = game?.board;
+    if (!renderer || !board) throw new Error("missing_game_state");
+
+    const BoardCtor = board.constructor;
+    const makeTile = (a, b, id) => ({
+      a,
+      b,
+      id,
+      isDouble: a === b,
+      hasValue(value) {
+        return this.a === value || this.b === value;
+      },
+      otherSide(value) {
+        return this.a === value ? this.b : this.a;
+      }
+    });
+
+    const soloBoard = new BoardCtor();
+    soloBoard.placeFirst(makeTile(6, 6, "arrow-axis-tile"));
+    renderer.renderBoard(soloBoard);
+    const openEnd = soloBoard.openEnds[0];
+    const konva = renderer._konvaBoardRenderer;
+    const nodeRect = konva.getNodeRect(openEnd.nodeId);
+    const centerX = nodeRect.left + nodeRect.width / 2;
+    const centerY = nodeRect.top + nodeRect.height / 2;
+    const buttonSize = renderer.getArrowButtonSize();
+    const tileRects = renderer.collectBoardTileRects();
+
+    const runSide = (side, obstacleRects = []) => {
+      openEnd.side = side;
+      openEnd.growthDir = side;
+      const raw = konva.getOpenEndChoicePoint(openEnd, { buttonSize });
+      const adjusted = renderer.adjustArrowPointForCollision(raw, buttonSize, obstacleRects.length ? obstacleRects : tileRects, side);
+      return {
+        side,
+        raw,
+        adjusted,
+        centerX,
+        centerY,
+        buttonSize
+      };
+    };
+
+    const top = runSide("top");
+    const bottom = runSide("bottom");
+    const left = runSide("left");
+    const right = runSide("right");
+
+    const fakePoint = {
+      x: 250,
+      y: 400,
+      rect: {
+        left: 232,
+        top: 382,
+        right: 268,
+        bottom: 418,
+        width: 36,
+        height: 36
+      }
+    };
+    const topShifted = renderer.adjustArrowPointForCollision(fakePoint, buttonSize, [{
+      left: 230,
+      right: 270,
+      top: 390,
+      bottom: 430,
+      width: 40,
+      height: 40
+    }], "top");
+    const topEmergency = renderer.adjustArrowPointForCollision(fakePoint, buttonSize, [{
+      left: 230,
+      right: 250,
+      top: 330,
+      bottom: 430,
+      width: 20,
+      height: 100
+    }], "top");
+
+    return {
+      top,
+      bottom,
+      left,
+      right,
+      topShifted,
+      topEmergency
+    };
+  });
+
+  expect(result.top.raw.x).toBeCloseTo(result.top.centerX, 1);
+  expect(result.top.raw.y).toBeLessThan(result.top.centerY);
+  expect(result.top.adjusted.x).toBeCloseTo(result.top.raw.x, 1);
+
+  expect(result.bottom.raw.x).toBeCloseTo(result.bottom.centerX, 1);
+  expect(result.bottom.raw.y).toBeGreaterThan(result.bottom.centerY);
+  expect(result.bottom.adjusted.x).toBeCloseTo(result.bottom.raw.x, 1);
+
+  expect(result.left.raw.y).toBeCloseTo(result.left.centerY, 1);
+  expect(result.left.adjusted.y).toBeCloseTo(result.left.raw.y, 1);
+
+  expect(result.right.raw.y).toBeCloseTo(result.right.centerY, 1);
+  expect(result.right.adjusted.y).toBeCloseTo(result.right.raw.y, 1);
+
+  expect(result.topShifted.x).toBeCloseTo(250, 1);
+  expect(result.topShifted.y).not.toBeCloseTo(400, 1);
+
+  expect(result.topEmergency.x).not.toBeCloseTo(250, 1);
+  expect(pageErrors).toEqual([]);
+  expect(consoleErrors).toEqual([]);
+});
+
+test("Konva open-end hints sit lower and arrow buttons match the CSS size", async ({ page }) => {
+  const pageErrors = [];
+  const consoleErrors = [];
+  page.on("pageerror", (error) => pageErrors.push(error.message));
+  page.on("console", (msg) => {
+    if (msg.type() === "error") consoleErrors.push(msg.text());
+  });
+
+  await setupSoloSmoke(page, { konvaEnabled: true });
+  await page.goto("/index.html");
+  await startSoloGame(page);
+  fs.mkdirSync(KONVA_SCREENSHOT_DIR, { recursive: true });
+
+  const firstShot = await page.evaluate(() => {
+    const game = window.game;
+    const renderer = game?.renderer;
+    const board = game?.board;
+    if (!renderer || !board) throw new Error("missing_game_state");
+
+    const BoardCtor = board.constructor;
+    const makeTile = (a, b, id) => ({
+      a,
+      b,
+      id,
+      isDouble: a === b,
+      hasValue(value) {
+        return this.a === value || this.b === value;
+      },
+      otherSide(value) {
+        return this.a === value ? this.b : this.a;
+      }
+    });
+
+    const soloBoard = new BoardCtor();
+    soloBoard.placeFirst(makeTile(6, 6, "hint-rail-tile"));
+    renderer.renderBoard(soloBoard);
+    window.__konvaAxisBoard = soloBoard;
+    const konva = renderer._konvaBoardRenderer;
+    const openEnds = soloBoard.openEnds.slice();
+    const entries = Array.from(konva?.openEndGroupsByKey?.values?.() || []);
+    const stageWidth = Number(konva?.lastLayout?.stageWidth || 0);
+    const stageHeight = Number(konva?.lastLayout?.stageHeight || 0);
+    const avgX = entries.length ? entries.reduce((sum, entry) => sum + Number(entry?.group?.x?.() || 0), 0) / entries.length : 0;
+    const minY = entries.length ? Math.min(...entries.map((entry) => Number(entry?.group?.y?.() || 0))) : 0;
+    return {
+      stageWidth,
+      stageHeight,
+      avgX,
+      minY,
+      openEnds: openEnds.map((oe) => ({ ...oe }))
+    };
+  });
+
+  expect(firstShot.minY).toBeGreaterThan(firstShot.stageHeight * 0.8);
+  expect(Math.abs(firstShot.avgX - firstShot.stageWidth / 2)).toBeLessThan(firstShot.stageWidth * 0.08);
+  await page.screenshot({ path: `${KONVA_SCREENSHOT_DIR}/open-end-hints-lower-final.png` });
+
+  const arrowSize = await page.evaluate(() => {
+    const game = window.game;
+    const renderer = game?.renderer;
+    const board = window.__konvaAxisBoard || game?.board;
+    if (!renderer || !board) throw new Error("missing_game_state");
+    const buttonSize = renderer.getArrowButtonSize();
+    const openEnd = board.openEnds[0];
+    openEnd.side = "top";
+    openEnd.growthDir = "top";
+    renderer.showArrowChoices(board, [0], () => {}, () => {});
+    const btn = document.querySelector("#arrow-overlay .arrow-btn");
+    const rect = btn?.getBoundingClientRect?.() || null;
+    const styleWidth = btn ? Number.parseFloat(getComputedStyle(btn).width || "0") : 0;
+    return {
+      buttonSize,
+      styleWidth,
+      rectWidth: rect ? rect.width : 0
+    };
+  });
+  expect(arrowSize.styleWidth).toBeCloseTo(arrowSize.buttonSize, 1);
+  expect(arrowSize.rectWidth).toBeCloseTo(arrowSize.buttonSize, 1);
+  await page.screenshot({ path: `${KONVA_SCREENSHOT_DIR}/arrow-top-perfect-axis.png` });
+
+  await page.evaluate(() => {
+    const game = window.game;
+    const renderer = game?.renderer;
+    const board = window.__konvaAxisBoard || game?.board;
+    if (!renderer || !board) throw new Error("missing_game_state");
+    const openEnd = board.openEnds[0];
+    openEnd.side = "bottom";
+    openEnd.growthDir = "bottom";
+    renderer.showArrowChoices(board, [0], () => {}, () => {});
+  });
+  await page.screenshot({ path: `${KONVA_SCREENSHOT_DIR}/arrow-bottom-perfect-axis.png` });
+
+  await page.evaluate(() => {
+    const game = window.game;
+    const renderer = game?.renderer;
+    const board = window.__konvaAxisBoard || game?.board;
+    if (!renderer || !board) throw new Error("missing_game_state");
+    const openEnds = board.openEnds;
+    if (openEnds[0]) {
+      openEnds[0].side = "left";
+      openEnds[0].growthDir = "left";
+    }
+    if (openEnds[1]) {
+      openEnds[1].side = "right";
+      openEnds[1].growthDir = "right";
+    }
+    renderer.showArrowChoices(board, openEnds.map((_, index) => index), () => {}, () => {});
+  });
+  await page.screenshot({ path: `${KONVA_SCREENSHOT_DIR}/arrow-left-right-perfect-axis.png` });
+
+  await page.evaluate(() => {
+    const game = window.game;
+    const renderer = game?.renderer;
+    const board = window.__konvaAxisBoard || game?.board;
+    if (!renderer || !board) throw new Error("missing_game_state");
+    const BoardCtor = board.constructor;
+    const makeTile = (a, b, id) => ({
+      a,
+      b,
+      id,
+      isDouble: a === b,
+      hasValue(value) {
+        return this.a === value || this.b === value;
+      },
+      otherSide(value) {
+        return this.a === value ? this.b : this.a;
+      }
+    });
+    const stretch = new BoardCtor();
+    const tiles = [
+      makeTile(6, 6, "stretch-0"),
+      makeTile(6, 5, "stretch-1"),
+      makeTile(5, 4, "stretch-2"),
+      makeTile(4, 3, "stretch-3"),
+      makeTile(3, 2, "stretch-4"),
+      makeTile(2, 1, "stretch-5"),
+      makeTile(1, 0, "stretch-6")
+    ];
+    stretch.placeFirst(tiles[0]);
+    for (let i = 1; i < tiles.length; i++) {
+      const tile = tiles[i];
+      const openEndIndex = stretch.openEnds.findIndex((oe) => oe.value === tile.a || oe.value === tile.b);
+      if (openEndIndex >= 0) {
+        stretch.placeTile(tile, openEndIndex);
+      }
+    }
+    renderer.renderBoard(stretch);
+    const ends = stretch.openEnds.map((_, index) => index);
+    renderer.showArrowChoices(stretch, ends, () => {}, () => {});
+  });
+  await page.screenshot({ path: `${KONVA_SCREENSHOT_DIR}/arrow-many-tiles-no-overlap.png` });
+
+  const overlapCheck = await page.evaluate(() => {
+    const btn = document.querySelector("#arrow-overlay .arrow-btn");
+    const btnRect = btn?.getBoundingClientRect?.() || null;
+    const tiles = window.game?.renderer?.collectBoardTileRects?.() || [];
+    if (!btnRect) return null;
+    const overlap = tiles.some((rect) => (
+      btnRect.left < rect.right
+      && btnRect.right > rect.left
+      && btnRect.top < rect.bottom
+      && btnRect.bottom > rect.top
+    ));
+    return {
+      overlap,
+      btnWidth: btnRect.width,
+      cssWidth: Number.parseFloat(getComputedStyle(btn).width || "0")
+    };
+  });
+  expect(overlapCheck).not.toBeNull();
+  expect(overlapCheck.overlap).toBe(false);
+  expect(overlapCheck.cssWidth).toBeCloseTo(overlapCheck.btnWidth, 1);
   expect(pageErrors).toEqual([]);
   expect(consoleErrors).toEqual([]);
 });
@@ -1115,6 +1416,26 @@ test("Konva board parity keeps DOM palette, geometry, and overlays aligned", asy
   expect(firstState.anchorRect).not.toBeNull();
   expect(firstState.nodeRect).not.toBeNull();
 
+  const hintRail = await page.evaluate(() => {
+    const konva = window.game?.renderer?._konvaBoardRenderer;
+    const entries = Array.from(konva?.openEndGroupsByKey?.values?.() || []);
+    if (!konva || !entries.length) return null;
+    const stageWidth = Number(konva.lastLayout?.stageWidth || 0);
+    const stageHeight = Number(konva.lastLayout?.stageHeight || 0);
+    const xs = entries.map((entry) => Number(entry?.group?.x?.() || 0));
+    const ys = entries.map((entry) => Number(entry?.group?.y?.() || 0));
+    return {
+      stageWidth,
+      stageHeight,
+      avgX: xs.reduce((sum, value) => sum + value, 0) / xs.length,
+      minY: Math.min(...ys),
+      maxY: Math.max(...ys)
+    };
+  });
+  expect(hintRail).not.toBeNull();
+  expect(hintRail.minY).toBeGreaterThan(hintRail.stageHeight * 0.8);
+  expect(Math.abs(hintRail.avgX - hintRail.stageWidth / 2)).toBeLessThan(hintRail.stageWidth * 0.08);
+
   const anchorDistance = await page.evaluate(() => {
     const game = window.game;
     const renderer = game?.renderer?._konvaBoardRenderer;
@@ -1137,6 +1458,7 @@ test("Konva board parity keeps DOM palette, geometry, and overlays aligned", asy
   expect(anchorDistance.distance).toBeGreaterThanOrEqual(0);
   expect(anchorDistance.distance).toBeLessThan(Math.max(24, Math.max(anchorDistance.nodeRect.width, anchorDistance.nodeRect.height) * 0.45));
 
+  await page.screenshot({ path: `${KONVA_SCREENSHOT_DIR}/open-end-hints-lower-final.png` });
   await page.screenshot({ path: `${KONVA_SCREENSHOT_DIR}/konva-board-1v1-first-move.png` });
   await page.screenshot({ path: `${KONVA_SCREENSHOT_DIR}/konva-animation-no-ghost.png` });
 

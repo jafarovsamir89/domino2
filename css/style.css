@@ -4332,8 +4332,8 @@ body.seat-selection-active #game-screen {
     color: #fff;
     font-size: 1.1rem;
     font-weight: 700;
-    width: 42px;
-    height: 42px;
+    width: 38px;
+    height: 38px;
     padding: 0;
     border-radius: 999px;
     display: grid;
@@ -4395,8 +4395,8 @@ body.seat-selection-active #game-screen {
 
 @media (max-width: 390px) {
     .arrow-btn {
-        width: 38px;
-        height: 38px;
+        width: 36px;
+        height: 36px;
     }
 }
 
