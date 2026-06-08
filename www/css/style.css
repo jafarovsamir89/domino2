@@ -3345,6 +3345,11 @@ body.seat-selection-active #game-screen {
     color: #ffd56a;
 }
 
+.friend-status-badge.is-in-game {
+    background: rgba(255, 153, 51, 0.18);
+    color: #ffb066;
+}
+
 .score-name-button {
     appearance: none;
     border: 0;
@@ -5535,6 +5540,11 @@ body.is-reconnecting .hand-container {
     box-shadow: 0 0 5px rgba(79, 207, 151, 0.5);
 }
 
+.is-in-game .presence-dot {
+    background: #ffb066;
+    box-shadow: 0 0 5px rgba(255, 176, 102, 0.5);
+}
+
 /* Card Info Copy Layout */
 .friend-card-copy {
     flex: 1;
@@ -5568,6 +5578,10 @@ body.is-reconnecting .hand-container {
 
 .friend-card-status.is-online {
     color: #4fcf97;
+}
+
+.friend-card-status.is-in-game {
+    color: #ffb066;
 }
 
 /* Card Metadata column (Right element) */
@@ -5788,6 +5802,10 @@ body.is-reconnecting .hand-container {
 
 .chat-header-status.is-online {
     color: #4fcf97;
+}
+
+.chat-header-status.is-in-game {
+    color: #ffb066;
 }
 
 .chat-header-status.is-offline {

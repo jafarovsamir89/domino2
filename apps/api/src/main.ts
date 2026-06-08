@@ -2,6 +2,7 @@ import "reflect-metadata";
 
 import { ValidationPipe } from "@nestjs/common";
 import { NestFactory } from "@nestjs/core";
+import { IoAdapter } from "@nestjs/platform-socket.io";
 import { toNodeHandler } from "better-auth/node";
 import { json, urlencoded, type NextFunction, type Request, type Response } from "express";
 import RedisImport from "ioredis";
@@ -109,6 +110,7 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     bodyParser: false
   });
+  app.useWebSocketAdapter(new IoAdapter(app));
   app.useGlobalPipes(new ValidationPipe({
     transform: true,
     whitelist: true,

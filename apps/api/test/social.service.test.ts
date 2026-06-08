@@ -1535,3 +1535,47 @@ test("sendGift creates an inbox notification for the recipient", async () => {
   assert.equal(result.ok, true);
   assert.equal(result.inbox.id, "inbox-100");
 });
+
+test("sendDirectMessage emits live events for socket subscribers", async () => {
+  const currentPlayer = makePlayer("player-a", "Alpha");
+  const targetPlayer = makePlayer("player-b", "Beta");
+  const prismaMock = {
+    player: {
+      findUnique: async ({ where }: any) => {
+        if (where?.id === targetPlayer.id) return targetPlayer;
+        if (where?.id === currentPlayer.id) return currentPlayer;
+        return null;
+      }
+    },
+    directMessage: {
+      create: async ({ data }: any) => ({
+        id: "message-1",
+        senderPlayerId: data.senderPlayerId,
+        receiverPlayerId: data.receiverPlayerId,
+        text: data.text,
+        createdAt: new Date("2024-03-01T10:00:00.000Z"),
+        readAt: null,
+        sender: currentPlayer,
+        receiver: targetPlayer
+      })
+    }
+  } as any;
+
+  const service = new SocialService(prismaMock, {} as any);
+  (service as any).getCurrentPlayer = async () => currentPlayer;
+  (service as any).clearHiddenDirectMessageThreadMarkers = async () => {};
+
+  const liveEvents: Array<{ playerId: string; type: string; data: any }> = [];
+  const unsubscribe = service.subscribeToLiveEvents((event) => {
+    liveEvents.push(event);
+  });
+
+  try {
+    const result = await service.sendDirectMessageForPlayer(currentPlayer, targetPlayer.id, { text: "Hello" });
+    assert.equal(result.item.text, "Hello");
+    assert.ok(liveEvents.some((event) => event.playerId === targetPlayer.id && event.type === "message"));
+    assert.ok(liveEvents.some((event) => event.playerId === currentPlayer.id && event.type === "message_sent"));
+  } finally {
+    unsubscribe();
+  }
+});

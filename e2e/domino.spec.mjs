@@ -147,8 +147,8 @@ test.beforeEach(async ({ page }) => {
 test("start screen loads and stays within mobile viewport", async ({ page }) => {
   await page.goto("/index.html");
 
-  await expect(page.locator('script[src*="js/app.js?v=board-realtime-2"]')).toHaveCount(1);
-  await expect(page.locator('script[src*="js/network.js?v=board-realtime-2"]')).toHaveCount(1);
+  await expect(page.locator('script[src*="js/app.js?v=social-live-1"]')).toHaveCount(1);
+  await expect(page.locator('script[src*="js/network.js?v=social-live-1"]')).toHaveCount(1);
   await expect(page.locator("#start-screen")).toHaveClass(/active/);
   await expect(page.locator("#account-btn")).toHaveClass(/start-profile-btn/);
   await expect(page.locator("#account-btn")).toHaveClass(/icon-btn/);

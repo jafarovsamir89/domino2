@@ -140,6 +140,16 @@ type SocialSummaryRow = {
   totalUnreadCount: number;
 };
 
+type SocialLiveEvent = {
+  playerId: string;
+  type: string;
+  data: any;
+};
+
+type SocialRealtimeEmitOptions = {
+  emitEvents?: boolean;
+};
+
 const DEFAULT_GIFT_CATALOG = [
   { key: "gift_001", name: "Gift 001", assetKey: "gift_001", rarity: "common", sortOrder: 1 },
   { key: "gift_002", name: "Gift 002", assetKey: "gift_002", rarity: "common", sortOrder: 2 },
@@ -158,6 +168,7 @@ const DEFAULT_GIFT_CATALOG = [
 @Injectable()
 export class SocialService {
   private readonly sseEmitter = new EventEmitter();
+  private readonly liveEmitter = new EventEmitter();
   private readonly socialRateLimits = {
     directMessage: new Map<string, number[]>(),
     friendRequest: new Map<string, number[]>(),
@@ -186,8 +197,21 @@ export class SocialService {
     }
   }
 
+  subscribeToLiveEvents(listener: (event: SocialLiveEvent) => void) {
+    this.liveEmitter.on("event", listener);
+    return () => {
+      this.liveEmitter.off("event", listener);
+    };
+  }
+
   private emitSseEvent(playerId: string, type: string, data: any) {
+    const payload: SocialLiveEvent = {
+      playerId: String(playerId || "").trim(),
+      type,
+      data
+    };
     this.sseEmitter.emit(`player:${playerId}`, { type, data });
+    this.liveEmitter.emit("event", payload);
   }
 
   subscribeToSocialEvents(headers: IncomingHttpHeaders): Observable<MessageEvent> {
@@ -931,6 +955,13 @@ export class SocialService {
 
   async markDirectMessageThreadRead(headers: IncomingHttpHeaders, playerId: string) {
     const currentPlayer = await this.getCurrentPlayer(headers);
+    return this.markDirectMessageThreadReadForPlayer(currentPlayer, playerId);
+  }
+
+  async markDirectMessageThreadReadForPlayer(
+    currentPlayer: { id: string; displayName?: string },
+    playerId: string
+  ) {
     const targetPlayerId = String(playerId || "").trim();
     if (!targetPlayerId || targetPlayerId === currentPlayer.id) {
       return { ok: true };
@@ -1425,6 +1456,15 @@ export class SocialService {
 
   async sendDirectMessage(headers: IncomingHttpHeaders, playerId: string, body: { text?: string }) {
     const currentPlayer = await this.getCurrentPlayer(headers);
+    return this.sendDirectMessageForPlayer(currentPlayer, playerId, body);
+  }
+
+  async sendDirectMessageForPlayer(
+    currentPlayer: { id: string; displayName?: string },
+    playerId: string,
+    body: { text?: string },
+    options: SocialRealtimeEmitOptions = {}
+  ) {
     const targetPlayerId = String(playerId || "").trim();
     if (!targetPlayerId) {
       throw new NotFoundException("Player not found");
@@ -1468,16 +1508,18 @@ export class SocialService {
     });
 
     const message = this.summarizeDirectMessage(messageRow as unknown as DirectMessageRow);
-    this.emitSseEvent(targetPlayerId, "message", {
-      type: "direct_message_created",
-      message,
-      threadPlayerId: currentPlayer.id
-    });
-    this.emitSseEvent(currentPlayer.id, "message_sent", {
-      type: "direct_message_created",
-      message,
-      threadPlayerId: targetPlayerId
-    });
+    if (options.emitEvents !== false) {
+      this.emitSseEvent(targetPlayerId, "message", {
+        type: "direct_message_created",
+        message,
+        threadPlayerId: currentPlayer.id
+      });
+      this.emitSseEvent(currentPlayer.id, "message_sent", {
+        type: "direct_message_created",
+        message,
+        threadPlayerId: targetPlayerId
+      });
+    }
 
     return {
       item: message
@@ -2019,6 +2061,27 @@ export class SocialService {
     }
   ) {
     const currentPlayer = await this.getCurrentPlayer(headers);
+    return this.inviteFriendToRoomForPlayer(currentPlayer, roomId, body);
+  }
+
+  async inviteFriendToRoomForPlayer(
+    currentPlayer: { id: string; displayName?: string },
+    roomId: string,
+    body: {
+      inviteePlayerId?: string;
+      roomCode?: string | null;
+      roomMode?: string;
+      stakeKey?: string;
+      stakeAmount?: number;
+      humanSeats?: number;
+      totalPlayers?: number;
+      isTeamMode?: boolean;
+      note?: string;
+      payloadJson?: unknown;
+      expiresAt?: string | null;
+    },
+    options: SocialRealtimeEmitOptions = {}
+  ) {
     const cleanRoomId = String(roomId || "").trim();
     if (!cleanRoomId) {
       throw new NotFoundException("Room not found");
@@ -2160,14 +2223,24 @@ export class SocialService {
       });
 
     const invite = this.summarizeInvite(row as any);
-    this.emitSseEvent(inviteePlayerId, "invite_update", { type: "invite_updated", invite });
-    this.emitSseEvent(currentPlayer.id, "invite_update", { type: "invite_updated", invite });
+    if (options.emitEvents !== false) {
+      this.emitSseEvent(inviteePlayerId, "invite_update", { type: "invite_created", invite });
+      this.emitSseEvent(currentPlayer.id, "invite_update", { type: "invite_created", invite });
+    }
 
     return { item: invite };
   }
 
   async acceptRoomInvitation(headers: IncomingHttpHeaders, id: string) {
     const currentPlayer = await this.getCurrentPlayer(headers);
+    return this.acceptRoomInvitationForPlayer(currentPlayer, id);
+  }
+
+  async acceptRoomInvitationForPlayer(
+    currentPlayer: { id: string; displayName?: string },
+    id: string,
+    options: SocialRealtimeEmitOptions = {}
+  ) {
     const row = await this.prisma.roomInvitation.findUnique({
       where: { id },
       include: {
@@ -2241,8 +2314,10 @@ export class SocialService {
     });
 
     const invite = this.summarizeInvite(accepted);
-    this.emitSseEvent(accepted.inviterPlayerId, "invite_update", { type: "invite_accepted", invite });
-    this.emitSseEvent(accepted.inviteePlayerId, "invite_update", { type: "invite_accepted", invite });
+    if (options.emitEvents !== false) {
+      this.emitSseEvent(accepted.inviterPlayerId, "invite_update", { type: "invite_accepted", invite });
+      this.emitSseEvent(accepted.inviteePlayerId, "invite_update", { type: "invite_accepted", invite });
+    }
 
     const roomCode = String(invite.roomCode || "").trim();
     if (!roomCode) {
@@ -2268,6 +2343,14 @@ export class SocialService {
 
   async declineRoomInvitation(headers: IncomingHttpHeaders, id: string) {
     const currentPlayer = await this.getCurrentPlayer(headers);
+    return this.declineRoomInvitationForPlayer(currentPlayer, id);
+  }
+
+  async declineRoomInvitationForPlayer(
+    currentPlayer: { id: string; displayName?: string },
+    id: string,
+    options: SocialRealtimeEmitOptions = {}
+  ) {
     const row = await this.prisma.roomInvitation.findUnique({ where: { id } });
     if (!row) {
       throw new NotFoundException("Invitation not found");
@@ -2312,14 +2395,24 @@ export class SocialService {
     });
 
     const invite = this.summarizeInvite(declined);
-    this.emitSseEvent(declined.inviterPlayerId, "invite_update", { type: "invite_declined", invite });
-    this.emitSseEvent(declined.inviteePlayerId, "invite_update", { type: "invite_declined", invite });
+    if (options.emitEvents !== false) {
+      this.emitSseEvent(declined.inviterPlayerId, "invite_update", { type: "invite_declined", invite });
+      this.emitSseEvent(declined.inviteePlayerId, "invite_update", { type: "invite_declined", invite });
+    }
 
     return { item: invite };
   }
 
   async cancelRoomInvitation(headers: IncomingHttpHeaders, id: string) {
     const currentPlayer = await this.getCurrentPlayer(headers);
+    return this.cancelRoomInvitationForPlayer(currentPlayer, id);
+  }
+
+  async cancelRoomInvitationForPlayer(
+    currentPlayer: { id: string; displayName?: string },
+    id: string,
+    options: SocialRealtimeEmitOptions = {}
+  ) {
     const row = await this.prisma.roomInvitation.findUnique({
       where: { id },
       include: {
@@ -2356,8 +2449,10 @@ export class SocialService {
     });
 
     const invite = this.summarizeInvite(cancelled);
-    this.emitSseEvent(cancelled.inviteePlayerId, "invite_update", { type: "invite_cancelled", invite });
-    this.emitSseEvent(cancelled.inviterPlayerId, "invite_update", { type: "invite_cancelled", invite });
+    if (options.emitEvents !== false) {
+      this.emitSseEvent(cancelled.inviteePlayerId, "invite_update", { type: "invite_cancelled", invite });
+      this.emitSseEvent(cancelled.inviterPlayerId, "invite_update", { type: "invite_cancelled", invite });
+    }
 
     return { item: invite };
   }

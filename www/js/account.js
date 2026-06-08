@@ -573,6 +573,19 @@ export class AccountClient {
         return `${this.platformApiBase}/social/sse`;
     }
 
+    getSocialSocketBaseUrl() {
+        const base = String(this.platformApiBase || "").replace(/\/api\/?$/, "");
+        return base || String(this.platformApiBase || "").replace(/\/api$/, "");
+    }
+
+    getSocialSocketUrl() {
+        return `${this.getSocialSocketBaseUrl()}/social`;
+    }
+
+    getSocialSocketAuthToken() {
+        return this.platformGameToken || "";
+    }
+
     async getSocialSummary() {
         const data = await this.platformRequest("/social/summary");
         return {

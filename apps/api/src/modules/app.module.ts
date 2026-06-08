@@ -8,6 +8,7 @@ import { HealthModule } from "./health/health.module.js";
 import { LeaderboardModule } from "./leaderboard/leaderboard.module.js";
 import { MatchesModule } from "./matches/matches.module.js";
 import { RealtimeModule } from "./realtime/realtime.module.js";
+import { SocialRealtimeModule } from "./social-realtime/social-realtime.module.js";
 import { PlayersModule } from "./players/players.module.js";
 import { PrismaModule } from "./prisma/prisma.module.js";
 import { SocialModule } from "./social/social.module.js";
@@ -23,6 +24,7 @@ import { SocialModule } from "./social/social.module.js";
     LeaderboardModule,
     MatchesModule,
     RealtimeModule,
+    SocialRealtimeModule,
     SocialModule,
     AdminModule
   ]
