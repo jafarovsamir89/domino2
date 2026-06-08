@@ -974,6 +974,7 @@ export class KonvaBoardRenderer {
         const openEndList = Array.isArray(openEnds) ? openEnds : [];
         const nextKeys = new Set();
         const buttonSize = window.matchMedia?.('(max-width: 390px)')?.matches ? 36 : 38;
+        const buttonThickness = Math.max(16, Math.round(buttonSize / 2));
         const tapEvent = window.PointerEvent ? 'pointerup' : 'click';
         const rootRect = this.rootEl?.getBoundingClientRect?.() || { left: 0, top: 0 };
         const safeLeft = Number(rootRect.left || 0);
@@ -990,28 +991,50 @@ export class KonvaBoardRenderer {
             if (!anchorRect) continue;
             const centerX = anchorRect.left + anchorRect.width / 2;
             const centerY = anchorRect.top + anchorRect.height / 2;
-            const x = centerX - safeLeft;
-            const y = centerY - safeTop;
+            const side = String(openEnd.side || '').trim();
+            const isVertical = side === 'top' || side === 'bottom';
+            const width = isVertical ? buttonSize : buttonThickness;
+            const height = isVertical ? buttonThickness : buttonSize;
+            let x = centerX - safeLeft;
+            let y = centerY - safeTop;
+            if (side === 'top') {
+                y = anchorRect.bottom - safeTop - (height / 2);
+            } else if (side === 'bottom') {
+                y = anchorRect.top - safeTop + (height / 2);
+            } else if (side === 'left') {
+                x = anchorRect.right - safeLeft - (width / 2);
+            } else if (side === 'right') {
+                x = anchorRect.left - safeLeft + (width / 2);
+            }
             let entry = this.playableOpenEndHighlightsByKey.get(key);
             if (!entry) {
                 const button = document.createElement('button');
                 button.type = 'button';
                 button.className = 'konva-open-end-highlight';
+                button.classList.add(`arrow-${side || 'bottom'}`);
                 button.dataset.openEndIndex = String(validIndex);
                 button.dataset.side = String(openEnd.side || '');
                 button.dataset.value = String(openEnd.value ?? '');
                 button.style.position = 'absolute';
                 button.style.left = '0';
                 button.style.top = '0';
-                button.style.width = `${buttonSize}px`;
-                button.style.height = `${buttonSize}px`;
+                button.style.width = `${width}px`;
+                button.style.height = `${height}px`;
                 button.style.transform = 'translate(-50%, -50%)';
                 button.style.border = '0';
                 button.style.padding = '0';
-                button.style.borderRadius = '999px';
+                button.style.borderRadius = side === 'top'
+                    ? '999px 999px 0 0'
+                    : side === 'bottom'
+                        ? '0 0 999px 999px'
+                        : side === 'left'
+                            ? '999px 0 0 999px'
+                            : side === 'right'
+                                ? '0 999px 999px 0'
+                                : '999px';
                 button.style.pointerEvents = 'auto';
                 button.style.cursor = 'pointer';
-                button.style.background = 'radial-gradient(circle, rgba(240,192,64,0.42) 0%, rgba(240,192,64,0.18) 48%, rgba(240,192,64,0.02) 72%, rgba(240,192,64,0) 100%)';
+                button.style.background = 'radial-gradient(circle at center, rgba(240,192,64,0.42) 0%, rgba(240,192,64,0.18) 48%, rgba(240,192,64,0.02) 72%, rgba(240,192,64,0) 100%)';
                 button.style.boxShadow = '0 0 0 1px rgba(240,192,64,0.38), 0 0 16px rgba(240,192,64,0.32)';
                 button.style.opacity = '1';
                 button.style.zIndex = '5';
@@ -1021,6 +1044,7 @@ export class KonvaBoardRenderer {
                 button.addEventListener(tapEvent, (event) => {
                     event.preventDefault();
                     event.stopPropagation();
+                    this.clearPlayableOpenEndHighlights();
                     onChoose?.(validIndex);
                 });
                 overlay.appendChild(button);
@@ -1032,9 +1056,20 @@ export class KonvaBoardRenderer {
             entry.button.dataset.openEndIndex = String(validIndex);
             entry.button.dataset.side = String(openEnd.side || '');
             entry.button.dataset.value = String(openEnd.value ?? '');
+            entry.button.classList.remove('arrow-top', 'arrow-bottom', 'arrow-left', 'arrow-right');
+            entry.button.classList.add(`arrow-${side || 'bottom'}`);
             entry.button.classList.toggle('is-selected', Boolean(selectedTile && String(selectedTile?.id || '') === String(openEnd?.nodeId || '')));
-            entry.button.style.width = `${buttonSize}px`;
-            entry.button.style.height = `${buttonSize}px`;
+            entry.button.style.width = `${width}px`;
+            entry.button.style.height = `${height}px`;
+            entry.button.style.borderRadius = side === 'top'
+                ? '999px 999px 0 0'
+                : side === 'bottom'
+                    ? '0 0 999px 999px'
+                    : side === 'left'
+                        ? '999px 0 0 999px'
+                        : side === 'right'
+                            ? '0 999px 999px 0'
+                            : '999px';
             index += 1;
         }
 

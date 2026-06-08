@@ -3425,10 +3425,30 @@ body.seat-selection-active #game-screen {
 }
 
 .konva-open-end-highlight {
+    display: block;
+    position: absolute;
+    overflow: hidden;
+    box-sizing: border-box;
     background: radial-gradient(circle, rgba(240, 192, 64, 0.44) 0%, rgba(240, 192, 64, 0.22) 48%, rgba(240, 192, 64, 0.06) 72%, rgba(240, 192, 64, 0) 100%);
     border: 1px solid rgba(240, 192, 64, 0.55);
     box-shadow: 0 0 0 1px rgba(240, 192, 64, 0.18), 0 0 18px rgba(240, 192, 64, 0.34);
     animation: openEndHighlightPulse 1.1s ease-in-out infinite alternate;
+}
+
+.konva-open-end-highlight.arrow-top {
+    border-radius: 999px 999px 0 0;
+}
+
+.konva-open-end-highlight.arrow-bottom {
+    border-radius: 0 0 999px 999px;
+}
+
+.konva-open-end-highlight.arrow-left {
+    border-radius: 999px 0 0 999px;
+}
+
+.konva-open-end-highlight.arrow-right {
+    border-radius: 0 999px 999px 0;
 }
 
 .konva-open-end-highlight::after {

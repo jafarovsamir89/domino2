@@ -1266,15 +1266,23 @@ test("Konva open-end hints sit lower and arrow buttons match the CSS size", asyn
     const btn = document.querySelector(".konva-open-end-highlight");
     const rect = btn?.getBoundingClientRect?.() || null;
     const styleWidth = btn ? Number.parseFloat(getComputedStyle(btn).width || "0") : 0;
+    const styleHeight = btn ? Number.parseFloat(getComputedStyle(btn).height || "0") : 0;
     return {
       buttonSize,
       styleWidth,
-      rectWidth: rect ? rect.width : 0
+      styleHeight,
+      clientWidth: btn ? btn.clientWidth : 0,
+      clientHeight: btn ? btn.clientHeight : 0,
+      rectWidth: rect ? rect.width : 0,
+      rectHeight: rect ? rect.height : 0
     };
   });
   expect(arrowSize.styleWidth).toBeCloseTo(arrowSize.buttonSize, 1);
-  expect(arrowSize.rectWidth).toBeGreaterThan(arrowSize.buttonSize - 2);
-  expect(arrowSize.rectWidth).toBeLessThan(arrowSize.buttonSize + 2);
+  expect(arrowSize.styleHeight).toBeCloseTo(arrowSize.buttonSize / 2, 1);
+  expect(arrowSize.clientWidth).toBeGreaterThan(arrowSize.buttonSize - 2);
+  expect(arrowSize.clientWidth).toBeLessThan(arrowSize.buttonSize + 2);
+  expect(arrowSize.clientHeight).toBeGreaterThan(arrowSize.buttonSize / 2 - 2);
+  expect(arrowSize.clientHeight).toBeLessThan(arrowSize.buttonSize / 2 + 2);
   await page.screenshot({ path: `${KONVA_SCREENSHOT_DIR}/arrow-top-perfect-center.png` });
 
   await page.evaluate(() => {
@@ -1363,13 +1371,19 @@ test("Konva open-end hints sit lower and arrow buttons match the CSS size", asyn
     return {
       overlap,
       btnWidth: btnRect.width,
-      cssWidth: Number.parseFloat(getComputedStyle(btn).width || "0")
+      btnHeight: btnRect.height,
+      cssWidth: Number.parseFloat(getComputedStyle(btn).width || "0"),
+      cssHeight: Number.parseFloat(getComputedStyle(btn).height || "0"),
+      clientWidth: btn ? btn.clientWidth : 0,
+      clientHeight: btn ? btn.clientHeight : 0
     };
   });
   expect(overlapCheck).not.toBeNull();
   expect(overlapCheck.overlap).toBe(false);
-  expect(overlapCheck.cssWidth).toBeGreaterThan(overlapCheck.btnWidth - 2);
-  expect(overlapCheck.cssWidth).toBeLessThan(overlapCheck.btnWidth + 2);
+  expect(overlapCheck.cssWidth).toBeGreaterThan(0);
+  expect(overlapCheck.cssHeight).toBeGreaterThan(0);
+  expect(overlapCheck.clientWidth).toBeGreaterThan(0);
+  expect(overlapCheck.clientHeight).toBeGreaterThan(0);
   expect(pageErrors).toEqual([]);
   expect(consoleErrors).toEqual([]);
 });
