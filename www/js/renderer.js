@@ -131,9 +131,12 @@ export class Renderer {
             if (i === hi) continue;
             const playerRef = Array.isArray(playersOrNames) ? (playersOrNames[i] || {}) : {};
             const fallbackName = this.app?.playerNames?.[i] || `Player ${i + 1}`;
-            const labelText = typeof playerRef === 'string'
+            const rawLabelText = typeof playerRef === 'string'
                 ? playerRef
                 : (playerRef?.name || playerRef?.displayName || fallbackName);
+            const labelText = this.app?.getFirstNameDisplayName
+                ? this.app.getFirstNameDisplayName(rawLabelText, fallbackName)
+                : rawLabelText;
             const playerId = typeof playerRef === 'object'
                 ? String(playerRef?.playerId || playerRef?.userId || playerRef?.id || '')
                 : '';

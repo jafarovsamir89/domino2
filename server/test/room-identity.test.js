@@ -81,3 +81,9 @@ test("buildRoomIdentity sanitizes, trims, preserves existing fields, and does no
     assert.deepEqual(player, playerClone);
     assert.deepEqual(options, optionsClone);
 });
+
+test("getFirstNameDisplayName falls back for undefined-like tokens", () => {
+    assert.equal(getFirstNameDisplayName("undefined undefined", "Fallback"), "Fallback");
+    assert.equal(getFirstNameDisplayName("null null", "Fallback"), "Fallback");
+    assert.equal(getFirstNameDisplayName("nan nan", "Fallback"), "Fallback");
+});

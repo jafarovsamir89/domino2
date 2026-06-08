@@ -93,7 +93,12 @@ function getFirstNameDisplayName(value, fallback = 'Player') {
     const normalized = sanitize(value || '', '').trim();
     if (!normalized) return sanitize(fallback, 'Player');
     const firstToken = normalized.split(/\s+/).find(Boolean);
-    return sanitize(firstToken || fallback, 'Player');
+    const candidate = sanitize(firstToken || fallback, 'Player');
+    const lowered = candidate.toLowerCase();
+    if (!candidate || lowered === 'undefined' || lowered === 'null' || lowered === 'nan') {
+        return sanitize(fallback, 'Player');
+    }
+    return candidate;
 }
 
 const AUTH_ICON_SVGS = {
@@ -7345,7 +7350,8 @@ class DominoGame {
         if (!overlay || !table || !status) return;
 
         const totalSeats = Number(roomState?.totalPlayers || roomState?.humanSeats || 0);
-        const shouldShow = Boolean(this.network?.isMultiplayer && !roomState?.gameActive && totalSeats > 2 && roomState?.seatSelectionRequired !== false);
+        const roomIsActive = Boolean(roomState?.gameActive || this.gameActive);
+        const shouldShow = Boolean(this.network?.isMultiplayer && !roomIsActive && totalSeats > 2 && roomState?.seatSelectionRequired !== false);
         debugLog("[CLIENT_DEBUG] renderSeatSelectionUi", {
             roomId: roomState?.roomId,
             roomCode: roomState?.roomCode,
@@ -9066,6 +9072,19 @@ class DominoGame {
 
     onRoomStateUpdate(roomState) {
         if (!roomState) return;
+        const previousRoomState = this.currentRoomState || {};
+        const incomingActive = Boolean(roomState?.gameActive);
+        const localActive = Boolean(this.gameActive);
+        const staleInactiveRoomState = localActive && !incomingActive && String(roomState?.roomId || '') === String(previousRoomState?.roomId || '');
+        if (staleInactiveRoomState) {
+            debugLog("[CLIENT_DEBUG] ignoring stale inactive room_state", {
+                roomId: roomState?.roomId,
+                roomCode: roomState?.roomCode,
+                localGameActive: this.gameActive,
+                incomingGameActive: incomingActive
+            });
+            return;
+        }
         this.currentRoomState = roomState;
         this.isTeamMode = Boolean(roomState?.isTeamMode ?? this.isTeamMode);
         this.turnVersion = Number(roomState?.turnVersion || this.turnVersion || 1);
@@ -9176,7 +9195,7 @@ class DominoGame {
             this.setJoinStatus(statusText);
         }
 
-        if (this.network?.isMultiplayer && roomState.roomVisibility === 'open' && !roomState.gameActive && roomState.seatSelectionRequired === true && !roomState.gameOverReason && !roomState.matchOver) {
+        if (this.network?.isMultiplayer && roomState.roomVisibility === 'open' && !this.gameActive && !roomState.gameActive && roomState.seatSelectionRequired === true && !roomState.gameOverReason && !roomState.matchOver) {
             this.enterOpenRoomWaitingScreen(roomState);
         }
 
@@ -9487,11 +9506,15 @@ class DominoGame {
     sanitizeName(name, fallback = 'Player') {
         return String(name || '').replace(/[<>&"']/g, '').trim().slice(0, 12) || fallback;
     }
+    getFirstNameDisplayName(value, fallback = 'Player') {
+        return getFirstNameDisplayName(value, fallback);
+    }
     getOnlineDisplayName(fallback = '') {
-        const current = this.sanitizeName(fallback || this.playerName || this.accountProfile?.name || 'Player', 'Player');
-        const accountName = this.sanitizeName(this.accountProfile?.name || '', '');
+        const current = getFirstNameDisplayName(fallback || this.playerName || this.accountProfile?.name || 'Player', 'Player');
+        const accountName = getFirstNameDisplayName(this.accountProfile?.name || '', '');
         if (accountName && current === accountName) {
-            return this.accountProfile?.gameDisplayName || current.split(/\s+/).find(Boolean) || current;
+            const gameDisplayName = getFirstNameDisplayName(this.accountProfile?.gameDisplayName || '', current);
+            return gameDisplayName || current.split(/\s+/).find(Boolean) || current;
         }
         return current;
     }

@@ -32,7 +32,12 @@ function getFirstNameDisplayName(value, fallback = "Player") {
     const normalized = sanitizeName(value, "").trim();
     if (!normalized) return sanitizeName(fallback, "Player");
     const firstToken = normalized.split(/\s+/).find(Boolean);
-    return sanitizeName(firstToken || fallback, "Player");
+    const candidate = sanitizeName(firstToken || fallback, "Player");
+    const lowered = candidate.toLowerCase();
+    if (!candidate || lowered === "undefined" || lowered === "null" || lowered === "nan") {
+        return sanitizeName(fallback, "Player");
+    }
+    return candidate;
 }
 
 function createLocalSessionId() {

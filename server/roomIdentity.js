@@ -7,7 +7,12 @@ function normalizeAuthToken(identity = {}, options = {}) {
 function getFirstNameDisplayName(value, fallback = "Player") {
     const normalized = sanitizeName(value || fallback);
     const firstToken = String(normalized || "").trim().split(/\s+/).find(Boolean);
-    return sanitizeName(firstToken || fallback);
+    const candidate = sanitizeName(firstToken || fallback);
+    const lowered = candidate.toLowerCase();
+    if (!candidate || lowered === "undefined" || lowered === "null" || lowered === "nan") {
+        return sanitizeName(fallback);
+    }
+    return candidate;
 }
 
 function normalizePlayerUserId(identity = {}, player = {}) {

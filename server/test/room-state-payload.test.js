@@ -53,6 +53,30 @@ test("buildRoomStatePlayers keeps fallback values for missing players", () => {
     }]);
 });
 
+test("buildRoomStatePlayers falls back when identity name is undefined-like", () => {
+    const rows = buildRoomStatePlayers({
+        playerOrder: ["s1"],
+        players: new Map([
+            ["s1", { name: "undefined undefined", userId: "u1", isConnected: true, isBot: false, seatIndex: 0 }]
+        ]),
+        identityBySessionId: new Map()
+    });
+
+    assert.deepEqual(rows, [{
+        sessionId: "s1",
+        index: 0,
+        name: "Player",
+        userId: "u1",
+        playerId: "u1",
+        avatarUrl: "",
+        isConnected: true,
+        isBot: false,
+        seatIndex: 0,
+        seatNumber: 1,
+        voiceEnabled: false
+    }]);
+});
+
 test("buildRoomStatePayload preserves room_state fields and currentPlayers logic", () => {
     const room = {
         roomId: "room-1",
