@@ -1105,6 +1105,8 @@ class DominoRoom extends Room {
             return;
         }
         if (this.turnTimer) clearTimeout(this.turnTimer);
+        this.state.turnDurationMs = this.turnTimeoutMs;
+        this.state.serverNow = Date.now();
         this.turnDeadlineAt = Date.now() + this.turnTimeoutMs;
         this.state.turnDeadlineAt = this.turnDeadlineAt;
         if (this.pendingActionContext) {
@@ -1284,6 +1286,8 @@ class DominoRoom extends Room {
     }
 
     updateSchemaState({ includeBoardJson = false } = {}) {
+        this.state.turnDurationMs = this.turnTimeoutMs;
+        this.state.serverNow = Date.now();
         this.syncPublicPlayerStatsToState();
         this.state.boneyardCount = this.boneyard.length;
         if (includeBoardJson) {
@@ -1392,6 +1396,8 @@ class DominoRoom extends Room {
             teamRoundWins: Array.from(this.state.teamRoundWins || [0, 0]),
             stakeKey: this.currentDealStakeKey || this.currentStakeKey,
             bankAmount: Number(this.currentDealBankAmount || 0),
+            turnDurationMs: Number(this.state.turnDurationMs || this.turnTimeoutMs || TURN_TIMEOUT_MS),
+            serverNow: Number(this.state.serverNow || Date.now()),
             selfHand: playerIndex >= 0 && this.hands[playerIndex] ? this.hands[playerIndex] : [],
             turnInfo
         };
@@ -1405,6 +1411,7 @@ class DominoRoom extends Room {
 
     sendRoomStateToClient(client) {
         if (!client || typeof client.send !== "function") return;
+        this.updateSchemaState({ includeBoardJson: false });
         const players = buildRoomStatePlayers({
             playerOrder: this.state.playerOrder,
             players: this.state.players,
@@ -1455,7 +1462,9 @@ class DominoRoom extends Room {
             teamScores: Array.from(this.state.teamScores || [0, 0]),
             teamRoundWins: Array.from(this.state.teamRoundWins || [0, 0]),
             stakeKey: this.currentDealStakeKey || this.currentStakeKey,
-            bankAmount: Number(this.currentDealBankAmount || 0)
+            bankAmount: Number(this.currentDealBankAmount || 0),
+            turnDurationMs: Number(this.state.turnDurationMs || this.turnTimeoutMs || TURN_TIMEOUT_MS),
+            serverNow: Number(this.state.serverNow || Date.now())
         };
     }
 
@@ -1474,6 +1483,8 @@ class DominoRoom extends Room {
             reason: String(payload.reason || "").trim(),
             turnVersion: Number(this.state.turnVersion || 1),
             currentPlayerIndex: Number(this.state.currentPlayerIndex || 0),
+            turnDurationMs: Number(this.state.turnDurationMs || this.turnTimeoutMs || TURN_TIMEOUT_MS),
+            serverNow: Number(this.state.serverNow || Date.now()),
             selfHand: Array.isArray(payload.selfHand) ? payload.selfHand : undefined,
             turnInfo: payload.turnInfo || undefined
         });
@@ -1490,6 +1501,7 @@ class DominoRoom extends Room {
     }
 
     broadcastRoomState() {
+        this.updateSchemaState({ includeBoardJson: false });
         this.syncPublicPlayerStatsToState();
         setRoomGameActive(this.roomId, this.state.gameActive);
         const players = buildRoomStatePlayers({

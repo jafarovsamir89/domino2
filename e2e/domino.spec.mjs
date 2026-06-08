@@ -147,6 +147,8 @@ test.beforeEach(async ({ page }) => {
 test("start screen loads and stays within mobile viewport", async ({ page }) => {
   await page.goto("/index.html");
 
+  await expect(page.locator('script[src*="js/app.js?v=board-realtime-2"]')).toHaveCount(1);
+  await expect(page.locator('script[src*="js/network.js?v=board-realtime-2"]')).toHaveCount(1);
   await expect(page.locator("#start-screen")).toHaveClass(/active/);
   await expect(page.locator("#account-btn")).toHaveClass(/start-profile-btn/);
   await expect(page.locator("#account-btn")).toHaveClass(/icon-btn/);
@@ -1968,6 +1970,150 @@ test("reconnect banner appears during network reconnect and clears on recovery",
 
   await expect(page.locator("#connection-banner")).toHaveAttribute("hidden", "");
   await expect(page.locator("body")).not.toHaveClass(/is-reconnecting/);
+});
+
+test("renderer setTableSkin stays silent unless debug logging is enabled", async ({ page }) => {
+  const consoleLogs = [];
+  page.on("console", (msg) => {
+    consoleLogs.push(msg.text());
+  });
+
+  await page.goto("/index.html");
+  await page.waitForFunction(() => Boolean(window.game?.renderer));
+  await page.evaluate(() => {
+    window.localStorage?.setItem("dominoDebugLogs", "false");
+    window.DOMINO_DEBUG_RENDERER = false;
+    window.game?.renderer?.setTableSkin?.("/assets/cosmetics/table/table_skin_02.webp");
+  });
+
+  expect(consoleLogs.some((text) => text.includes("setTableSkin"))).toBe(false);
+});
+
+test("turn timer uses synced server clock and does not restart on the same deadline", async ({ page }) => {
+  await page.goto("/index.html");
+  await page.waitForFunction(() => Boolean(window.game?.renderer));
+  const result = await page.evaluate(() => {
+    const game = window.game;
+    if (!game) throw new Error("missing_game");
+
+    const originalNow = Date.now;
+    const originalSetTimeout = window.setTimeout;
+    const originalClearTimeout = window.clearTimeout;
+    const originalSetInterval = window.setInterval;
+    const originalClearInterval = window.clearInterval;
+
+    Date.now = () => 1000000;
+    const timers = [];
+    window.setTimeout = (fn, delay) => {
+      const handle = { fn, delay };
+      timers.push(handle);
+      return handle;
+    };
+    window.clearTimeout = () => {};
+    window.setInterval = (fn, delay) => {
+      const handle = { fn, delay };
+      timers.push(handle);
+      return handle;
+    };
+    window.clearInterval = () => {};
+
+    try {
+      game.serverTimeOffsetMs = 5000;
+      game.lastServerTimeSyncAt = Date.now();
+      game.turnTimeoutMs = 30000;
+      game.activeTurnDeadlineAt = 0;
+      game.activeTurnVersionForTimer = 0;
+      game.activeTurnPlayerIndexForTimer = -1;
+
+      game.startTurnTimer(1035000, 2, 1);
+      const initialRemaining = game.turnDeadlineAt - game.getSyncedNow();
+      const firstHandle = game._turnTimeoutId;
+
+      game.startTurnTimer(1035000, 2, 1);
+      const sameHandle = firstHandle === game._turnTimeoutId;
+
+      game.startTurnTimer(1040000, 3, 1);
+      const restarted = firstHandle !== game._turnTimeoutId;
+
+      return {
+        initialRemaining,
+        sameHandle,
+        restarted
+      };
+    } finally {
+      Date.now = originalNow;
+      window.setTimeout = originalSetTimeout;
+      window.clearTimeout = originalClearTimeout;
+      window.setInterval = originalSetInterval;
+      window.clearInterval = originalClearInterval;
+    }
+  });
+
+  expect(Math.abs(result.initialRemaining - 30000)).toBeLessThanOrEqual(250);
+  expect(result.sameHandle).toBe(true);
+  expect(result.restarted).toBe(true);
+});
+
+test("expired seat reservation reconnect falls back to snapshot restore without retry spam", async ({ page }) => {
+  await page.goto("/index.html");
+  const result = await page.evaluate(async () => {
+    const NetworkManagerCtor = window.NetworkManager;
+    if (!NetworkManagerCtor) throw new Error("missing_network_manager");
+
+    const calls = [];
+    const network = new NetworkManagerCtor({
+      account: window.game?.account || null,
+      onNetworkReconnectFailed: () => calls.push("failed"),
+      voice: {},
+      playerName: "Alice",
+      isTeamMode: false,
+      onlinePlayerCount: 2,
+      onlineAiCount: 0
+    });
+
+    network.initClient = async () => true;
+    network.client = {
+      reconnect: async () => {
+        const error = new Error("524 seat reservation expired");
+        error.code = 524;
+        throw error;
+      }
+    };
+    network.clearReconnectTimer = () => {};
+    network.clearReconnectState = () => {
+      calls.push("clear-state");
+      network.reconnectAttempt = 0;
+      network.reconnectInProgress = false;
+    };
+    network.setStoredReconnectionToken = (token) => {
+      calls.push(token ? "store" : "clear-token");
+    };
+    network.restoreRoomFromSnapshot = async (_snapshot, reconnectionToken) => {
+      calls.push(reconnectionToken === "" ? "restore-empty" : "restore-token");
+      return { roomId: "restored-room" };
+    };
+    network.activateRoom = (room) => room;
+
+    const room = await network.resumeRoom("expired-token", {
+      roomCode: "ABCD",
+      roomId: "room-1",
+      sessionId: "session-1",
+      playerName: "Alice"
+    });
+
+    return {
+      calls,
+      roomId: room?.roomId || "",
+      reconnectAttempt: network.reconnectAttempt,
+      storedToken: network.getStoredReconnectionToken?.() || ""
+    };
+  });
+
+  expect(result.roomId).toBe("restored-room");
+  expect(result.calls).toEqual(expect.arrayContaining(["clear-token", "clear-state", "restore-empty"]));
+  expect(result.calls).not.toContain("failed");
+  expect(result.reconnectAttempt).toBe(0);
+  expect(result.storedToken).toBe("");
 });
 
 test("resume banner renders stored session state", async ({ page }) => {

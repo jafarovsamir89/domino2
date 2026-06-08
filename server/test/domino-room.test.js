@@ -23,6 +23,80 @@ test("sanitizeName strips unsafe characters and trims length", () => {
     assert.equal(DominoRoom.sanitizeName("    "), "Player");
 });
 
+test("room payloads include server clock metadata and turn timer state", () => {
+    const originalNow = Date.now;
+    const originalSetTimeout = global.setTimeout;
+    const originalClearTimeout = global.clearTimeout;
+    const fixedNow = 1700000000000;
+    Date.now = () => fixedNow;
+    global.setTimeout = (fn, delay) => ({ fn, delay });
+    global.clearTimeout = () => {};
+
+    try {
+        const room = Object.create(DominoRoom.prototype);
+        Object.defineProperty(room, "roomId", { value: "room-1", writable: true, configurable: true });
+        room.roomCode = "ABCD";
+        room.roomVisibility = "open";
+        room.turnTimeoutMs = 45000;
+        room.currentStakeKey = "stake_200";
+        room.currentDealStakeKey = "stake_200";
+        room.currentDealBankAmount = 400;
+        room.currentDealStakeAmount = 200;
+        room.hands = [[new Tile(6, 6)]];
+        room.boneyard = [];
+        room.internalBoard = new Board();
+        room.state = {
+            playerOrder: ["session-1"],
+            players: new Map([
+                ["session-1", { name: "Alice", userId: "u1", score: 12, roundWins: 1, handCount: 1, isConnected: true, isBot: false, seatIndex: 0 }]
+            ]),
+            currentPlayerIndex: 0,
+            boneyardCount: 0,
+            gameActive: true,
+            matchRound: 2,
+            deal: 3,
+            boardJson: "{}",
+            isTeamMode: false,
+            playerCount: 2,
+            turnDeadlineAt: 0,
+            turnDurationMs: 0,
+            serverNow: 0,
+            turnVersion: 5,
+            matchOver: false,
+            gameOverReason: "",
+            gameOverPlayerName: "",
+            gameOverWinnerIndex: -1,
+            gameOverSummaryJson: "",
+            teamScores: [0, 0],
+            teamRoundWins: [0, 0]
+        };
+        room.getPlayerIndex = () => 0;
+        room.buildTurnInfoForPlayer = () => ({ validMoves: [], goshaCombo: null });
+        room.buildPlayerSyncRows = () => [{ sessionId: "session-1" }];
+        room.buildPublicPlayerStats = () => [{ score: 12, roundWins: 1, handCount: 1 }];
+        room.clearTurnTimer = () => {};
+        room.syncState = () => {};
+        room.pendingActionContext = null;
+
+        room.scheduleTurnTimer();
+
+        const full = room.buildFullStatePayloadForClient({ sessionId: "session-1" });
+        const delta = room.buildGameDeltaPayload({ action: "draw", actorIndex: 0 });
+
+        assert.equal(room.state.serverNow, fixedNow);
+        assert.equal(room.state.turnDurationMs, 45000);
+        assert.equal(room.state.turnDeadlineAt, fixedNow + 45000);
+        assert.equal(full.turnDurationMs, 45000);
+        assert.equal(full.serverNow, fixedNow);
+        assert.equal(delta.turnDurationMs, 45000);
+        assert.equal(delta.serverNow, fixedNow);
+    } finally {
+        Date.now = originalNow;
+        global.setTimeout = originalSetTimeout;
+        global.clearTimeout = originalClearTimeout;
+    }
+});
+
 test("handleNextDeal only advances for the host during pending transitions", () => {
     const room = Object.create(DominoRoom.prototype);
     let cleared = 0;

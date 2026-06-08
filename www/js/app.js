@@ -1,11 +1,11 @@
 import { Tile, createFullSet, shuffle, getHandSize, determineFirstPlayer, handPoints, getOpeningPlayScore, hasInvalidOpeningHand, roundTo5 } from './model.js';
 import { Board, cloneBoard, reconstructBoard } from './board.js';
 import { AIPlayer } from './ai.js';
-import { Renderer } from './renderer.js';
+import { Renderer } from './renderer.js?v=board-realtime-2';
 import { translations } from './translations.js';
 import { AccountClient } from './account.js';
 import { VoiceChatManager } from './voice.js';
-import { sndPlace, sndScore, sndDraw, sndPass, sndWin, sndGosha, startMenuMusic, startGameMusic, nextTrack, toggleMute, stopMusic } from './sounds.js';
+import { sndPlace, sndScore, sndDraw, sndPass, sndWin, sndGosha, startMenuMusic, startGameMusic, nextTrack, toggleMute, stopMusic } from './sounds.js?v=board-realtime-2';
 // NetworkManager is loaded as global script
 
 const TARGET=365, MAX_R=3, DLOSS=255, IWIN=35;
@@ -147,11 +147,14 @@ class DominoGame {
         this._turnTimeoutId = null;
         this._turnTimerTickId = null;
         this._nextDealAdvanceTimeout = null;
+        this.turnDurationMs = TURN_TIMEOUT_MS;
         this.turnDeadlineAt = 0;
         this.turnTimeoutMs = TURN_TIMEOUT_MS;
         this.postMoveAdvanceMs = 2000;
         this.postMoveWindowActive = false;
         this.postMoveWindowEndsAt = 0;
+        this.serverTimeOffsetMs = 0;
+        this.lastServerTimeSyncAt = 0;
         this.roomAvatarBySessionId = new Map();
         this.lastDisconnectEconomySummary = null;
         this.disconnectEconomyApplied = false;
@@ -209,6 +212,9 @@ class DominoGame {
         this._gameInviteRefreshId = null;
         this.socialSummary = null;
         this.socialSummaryLoaded = false;
+        this._socialSse = null;
+        this._socialSseReconnectTimer = null;
+        this._socialSseRetryCount = 0;
         this.socialInboxState = {
             items: [],
             threads: [],
@@ -1030,14 +1036,7 @@ class DominoGame {
     }
 
     resetSocialCenterState() {
-        if (this._socialSse) {
-            try {
-                this._socialSse.close();
-            } catch (err) {
-                console.error("Error closing social SSE stream:", err);
-            }
-            this._socialSse = null;
-        }
+        this.closeSocialSse();
         this.socialSummary = {
             inboxUnreadCount: 0,
             chatUnreadCount: 0,
@@ -1055,16 +1054,35 @@ class DominoGame {
     }
 
     initSocialSse() {
-        if (this._socialSse) return;
-        if (!this.hasAuthenticatedAccount()) return;
+        if (!this.hasAuthenticatedAccount()) {
+            this.closeSocialSse();
+            return;
+        }
+
+        if (this._socialSse && this._socialSse.readyState === 1) return;
+        if (this._socialSse && this._socialSse.readyState !== 1) {
+            this.closeSocialSse();
+        }
+        this.clearSocialSseReconnectTimer();
 
         const url = this.account.getSocialSseUrl();
-        console.log("Initializing social SSE stream connection to:", url);
+        if (window.DOMINO_DEBUG_SOCIAL === true) {
+            console.debug("Initializing social SSE stream connection to:", url);
+        }
         const sse = new EventSource(url, { withCredentials: true });
         this._socialSse = sse;
+        const resetReconnectState = () => {
+            this._socialSseRetryCount = 0;
+            this.clearSocialSseReconnectTimer();
+        };
+
+        sse.onopen = () => {
+            resetReconnectState();
+        };
 
         sse.addEventListener('message', async (event) => {
             try {
+                resetReconnectState();
                 const data = event.data ? JSON.parse(event.data) : null;
                 if (!data) return;
                 
@@ -1079,6 +1097,10 @@ class DominoGame {
             } catch (err) {
                 console.error("SSE message handler error:", err);
             }
+        });
+
+        sse.addEventListener('heartbeat', () => {
+            resetReconnectState();
         });
 
         sse.addEventListener('invite_update', async (event) => {
@@ -1112,11 +1134,19 @@ class DominoGame {
         });
 
         sse.onerror = (e) => {
-            console.warn("SSE connection error:", e);
+            if (this._socialSse !== sse) return;
             if (!this.hasAuthenticatedAccount()) {
-                sse.close();
-                if (this._socialSse === sse) this._socialSse = null;
+                this.closeSocialSse();
+                return;
             }
+            debugLog("[SocialSSE] connection dropped", {
+                readyState: sse.readyState
+            });
+            try {
+                sse.close();
+            } catch {}
+            if (this._socialSse === sse) this._socialSse = null;
+            this.scheduleSocialSseReconnect();
         };
     }
 
@@ -5084,10 +5114,62 @@ class DominoGame {
         this._dealEndTimeout = null;
         this._turnTimeoutId = null;
         this._turnTimerTickId = null;
+        this.activeTurnDeadlineAt = 0;
+        this.activeTurnVersionForTimer = 0;
+        this.activeTurnPlayerIndexForTimer = -1;
         this.postMoveWindowActive = false;
         this.postMoveWindowEndsAt = 0;
         this.turnDeadlineAt = 0;
         this.updateTurnTimerHud();
+    }
+
+    syncServerClock(serverNow) {
+        const value = Number(serverNow || 0);
+        if (!(value > 0)) return;
+        const offset = value - Date.now();
+        if (!this.lastServerTimeSyncAt) {
+            this.serverTimeOffsetMs = offset;
+        } else {
+            this.serverTimeOffsetMs = Math.round((this.serverTimeOffsetMs * 0.85) + (offset * 0.15));
+        }
+        this.lastServerTimeSyncAt = Date.now();
+    }
+
+    getSyncedNow() {
+        return Date.now() + Number(this.serverTimeOffsetMs || 0);
+    }
+
+    clearSocialSseReconnectTimer() {
+        if (this._socialSseReconnectTimer) {
+            clearTimeout(this._socialSseReconnectTimer);
+            this._socialSseReconnectTimer = null;
+        }
+    }
+
+    closeSocialSse() {
+        this.clearSocialSseReconnectTimer();
+        this._socialSseRetryCount = 0;
+        if (this._socialSse) {
+            try {
+                this._socialSse.close();
+            } catch (err) {
+                debugLog("[SocialSSE] close failed", err);
+            }
+            this._socialSse = null;
+        }
+    }
+
+    scheduleSocialSseReconnect() {
+        if (!this.hasAuthenticatedAccount()) return;
+        if (this._socialSseReconnectTimer) return;
+        const delays = [2000, 5000, 10000, 30000];
+        const delay = delays[Math.min(this._socialSseRetryCount, delays.length - 1)];
+        this._socialSseRetryCount += 1;
+        this._socialSseReconnectTimer = setTimeout(() => {
+            this._socialSseReconnectTimer = null;
+            if (!this.hasAuthenticatedAccount()) return;
+            this.initSocialSse();
+        }, delay);
     }
 
     clearNextDealAdvanceTimeout() {
@@ -6337,13 +6419,31 @@ class DominoGame {
         ).trim();
     }
 
-    startTurnTimer(deadlineAt = null) {
-        const endAt = Number(deadlineAt || (Date.now() + this.turnTimeoutMs));
+    startTurnTimer(deadlineAt = null, turnVersion = null, currentPlayerIndex = null) {
+        const endAt = Number(deadlineAt || (this.getSyncedNow() + this.turnTimeoutMs));
+        const nextTurnVersion = Number(turnVersion ?? this.turnVersion ?? 0);
+        const nextPlayerIndex = Number.isInteger(Number(currentPlayerIndex))
+            ? Number(currentPlayerIndex)
+            : Number(this.currentPlayer ?? 0);
+        const deadlineDelta = Math.abs(Number(this.activeTurnDeadlineAt || 0) - endAt);
+        const sameDeadline = Number(this.activeTurnDeadlineAt || 0) > 0 && deadlineDelta <= 250;
+        const sameVersion = Number(this.activeTurnVersionForTimer || 0) === nextTurnVersion;
+        const samePlayer = Number(this.activeTurnPlayerIndexForTimer ?? -1) === nextPlayerIndex;
+        this.turnDurationMs = Number(this.turnTimeoutMs || TURN_TIMEOUT_MS);
+        if (sameDeadline && sameVersion && samePlayer) {
+            this.turnDeadlineAt = endAt;
+            this.updateTurnTimerHud();
+            this.persistGameResumeSnapshot();
+            return;
+        }
         this.turnDeadlineAt = endAt;
+        this.activeTurnDeadlineAt = endAt;
+        this.activeTurnVersionForTimer = nextTurnVersion;
+        this.activeTurnPlayerIndexForTimer = nextPlayerIndex;
         clearTimeout(this._turnTimeoutId);
         clearInterval(this._turnTimerTickId);
         this._turnTimerTickId = setInterval(() => this.updateTurnTimerHud(), 200);
-        const delay = Math.max(0, endAt - Date.now());
+        const delay = Math.max(0, endAt - this.getSyncedNow());
         this._turnTimeoutId = setTimeout(() => {
             this._turnTimeoutId = null;
             if (this.network.isMultiplayer) {
@@ -6431,8 +6531,9 @@ class DominoGame {
             avatar.removeAttribute('data-avatar-src');
             avatar.textContent = this.getTurnAvatarText(currentName);
         }
-        const remaining = Math.max(0, this.turnDeadlineAt - Date.now());
-        const progress = Math.min(1, Math.max(0, 1 - (remaining / this.turnTimeoutMs)));
+        const remaining = Math.max(0, this.turnDeadlineAt - this.getSyncedNow());
+        const duration = Math.max(1, Number(this.turnDurationMs || this.turnTimeoutMs || TURN_TIMEOUT_MS));
+        const progress = Math.min(1, Math.max(0, 1 - (remaining / duration)));
         const angle = Math.max(0, Math.min(360, progress * 360));
         ring.style.setProperty('--turn-angle', `${angle}deg`);
         ring.classList.toggle('is-urgent', remaining <= 10000);
@@ -7757,6 +7858,8 @@ class DominoGame {
         this.currentRoomState = roomState;
         this.isTeamMode = Boolean(roomState?.isTeamMode ?? this.isTeamMode);
         this.turnVersion = Number(roomState?.turnVersion || this.turnVersion || 1);
+        this.turnTimeoutMs = Number(roomState?.turnDurationMs || this.turnTimeoutMs || TURN_TIMEOUT_MS);
+        this.syncServerClock(roomState?.serverNow || roomState?.serverTime || 0);
         const topRightHud = this.getTopRightHudState();
         debugLog("[CLIENT_DEBUG] onRoomStateUpdate", {
             roomId: roomState?.roomId,
@@ -7770,6 +7873,8 @@ class DominoGame {
             aiCount: roomState?.aiCount,
             totalPlayers: roomState?.totalPlayers,
             bankAmount: Number(roomState?.bankAmount || 0),
+            serverNow: Number(roomState?.serverNow || 0),
+            turnDurationMs: Number(roomState?.turnDurationMs || 0),
             stakeAmount: Number(roomState?.stakeAmount || 0),
             currentDealBankAmount: Number(roomState?.bankAmount || 0),
             playerScores: Array.isArray(this.scores) ? this.scores.slice() : [],
@@ -9838,6 +9943,8 @@ class DominoGame {
     onNetworkFullState(payload = {}) {
         const playerOrder = Array.from(payload?.playerOrder || []);
         const getPlayer = this.applyPlayerRows(playerOrder, payload?.players || []);
+        this.turnTimeoutMs = Number(payload?.turnDurationMs || this.turnTimeoutMs || TURN_TIMEOUT_MS);
+        this.syncServerClock(payload?.serverNow || 0);
         this.currentPlayer = Number(payload?.currentPlayerIndex ?? 0);
         this.boneyard = Array.from({ length: Number(payload?.boneyardCount || 0) });
         this.isTeamMode = Boolean(payload?.isTeamMode);
@@ -9861,7 +9968,7 @@ class DominoGame {
         this.validMoves = Array.isArray(payload?.turnInfo?.validMoves) ? payload.turnInfo.validMoves : [];
         this.goshaCombo = payload?.turnInfo?.goshaCombo || null;
         if (this.gameActive && Number(payload?.turnDeadlineAt || 0) > 0) {
-            this.startTurnTimer(Number(payload.turnDeadlineAt));
+            this.startTurnTimer(Number(payload.turnDeadlineAt), Number(payload?.turnVersion || this.turnVersion || 1), this.currentPlayer);
         } else {
             this.clearTurnTimers();
         }
@@ -9877,6 +9984,8 @@ class DominoGame {
         if (actionId && pending.actionId && actionId !== pending.actionId) return;
 
         this.turnVersion = Number(payload?.turnVersion || this.turnVersion || 1);
+        this.turnTimeoutMs = Number(payload?.turnDurationMs || this.turnTimeoutMs || TURN_TIMEOUT_MS);
+        this.syncServerClock(payload?.serverNow || 0);
 
         if (!payload?.accepted) {
             this.clearPendingOnlineAction({ rollback: true });
@@ -9911,6 +10020,8 @@ class DominoGame {
         if (!this.network?.isMultiplayer) return;
         const action = String(payload?.action || '').trim();
         this._lastRealtimeRenderAction = action;
+        this.turnTimeoutMs = Number(payload?.turnDurationMs || this.turnTimeoutMs || TURN_TIMEOUT_MS);
+        this.syncServerClock(payload?.serverNow || 0);
         let boardChanged = Boolean(payload?.boardDelta);
         const scoreDelta = Math.max(0, Number(payload?.scoreDelta || 0));
         const scorePlayerIndex = Number.isInteger(Number(payload?.scorePlayerIndex))
@@ -9950,7 +10061,7 @@ class DominoGame {
 
         const turnDeadlineAt = Number(payload?.turnDeadlineAt || 0);
         if (this.gameActive && turnDeadlineAt > 0) {
-            this.startTurnTimer(turnDeadlineAt);
+            this.startTurnTimer(turnDeadlineAt, Number(payload?.turnVersion || this.turnVersion || 1), this.currentPlayer);
         } else {
             this.clearTurnTimers();
         }
@@ -10024,6 +10135,8 @@ class DominoGame {
         if (this.shouldProcessSchemaState(state) === false) {
             return;
         }
+        this.turnTimeoutMs = Number(state?.turnDurationMs || this.turnTimeoutMs || TURN_TIMEOUT_MS);
+        this.syncServerClock(state?.serverNow || 0);
         const roomPlayers = Array.isArray(this.currentRoomState?.players) ? this.currentRoomState.players : [];
         const playerOrder = roomPlayers.map((player, index) => {
             const sid = String(player?.sessionId || '').trim();
@@ -10090,7 +10203,7 @@ class DominoGame {
             this.goshaCombo = null;
         }
         if (this.gameActive && Number(state?.turnDeadlineAt || 0) > 0) {
-            this.startTurnTimer(Number(state.turnDeadlineAt));
+            this.startTurnTimer(Number(state.turnDeadlineAt), Number(state?.turnVersion || this.turnVersion || 1), this.currentPlayer);
         } else {
             this.clearTurnTimers();
         }

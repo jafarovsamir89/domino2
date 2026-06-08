@@ -36,6 +36,8 @@ class GameState extends Schema {
         this.isTeamMode = false;
         this.playerCount = 2;
         this.turnDeadlineAt = 0;
+        this.turnDurationMs = 0;
+        this.serverNow = 0;
         this.turnVersion = 1;
         this.matchOver = false;
         this.gameOverReason = "";
@@ -53,6 +55,8 @@ type("string")(GameState.prototype, "boardJson");
 type("boolean")(GameState.prototype, "isTeamMode");
 type("number")(GameState.prototype, "playerCount");
 type("number")(GameState.prototype, "turnDeadlineAt");
+type("number")(GameState.prototype, "turnDurationMs");
+type("number")(GameState.prototype, "serverNow");
 type("number")(GameState.prototype, "turnVersion");
 type("boolean")(GameState.prototype, "matchOver");
 type("string")(GameState.prototype, "gameOverReason");

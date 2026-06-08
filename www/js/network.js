@@ -160,6 +160,18 @@ class NetworkManager {
         } catch {}
     }
 
+    isSeatReservationExpired(error) {
+        const text = String(error?.message || error || '').toLowerCase();
+        const code = Number(error?.code || error?.status || 0);
+        return code === 524 || text.includes('seat reservation expired');
+    }
+
+    clearReconnectState() {
+        this.clearReconnectTimer();
+        this.reconnectAttempt = 0;
+        this.reconnectInProgress = false;
+    }
+
     hostGame(onReady, onError, extraOptions = {}) {
         this.connect("create", onReady, onError, null, extraOptions);
     }
@@ -427,6 +439,12 @@ class NetworkManager {
         });
 
         this.room.onError((code, message) => {
+            if (this.isSeatReservationExpired({ code, message })) {
+                debugLog("[CLIENT_DEBUG] room_error_seat_reservation_expired", { code, message });
+                this.setStoredReconnectionToken('');
+                this.clearReconnectState();
+                return;
+            }
             console.error("Room error:", code, message);
         });
     }
@@ -439,6 +457,7 @@ class NetworkManager {
         });
         this.manualLeaveRequested = true;
         this.clearReconnectTimer();
+        this.clearReconnectState();
         if (this.room) {
             this.room.leave();
         }
@@ -470,6 +489,13 @@ class NetworkManager {
             this.activateRoom(room, { isHost: false, isGuest: true, notifyReconnect: true });
             return this.room;
         } catch (reconnectError) {
+            if (this.isSeatReservationExpired(reconnectError)) {
+                this.setStoredReconnectionToken('');
+                this.clearReconnectState();
+                const restoredRoom = await this.restoreRoomFromSnapshot(snapshot, '').catch(() => null);
+                if (restoredRoom) return restoredRoom;
+                throw reconnectError;
+            }
             const restoredRoom = await this.restoreRoomFromSnapshot(snapshot, token).catch(() => null);
             if (restoredRoom) return restoredRoom;
             throw reconnectError;
@@ -532,8 +558,19 @@ class NetworkManager {
         try {
             await this.resumeRoom(token, snapshot || this.game.account?.getStoredGameResumeState?.());
         } catch (error) {
-            console.warn("Reconnect failed:", error);
             this.reconnectInProgress = false;
+            if (this.isSeatReservationExpired(error)) {
+                this.setStoredReconnectionToken('');
+                this.clearReconnectTimer();
+                this.clearReconnectState();
+                this.isMultiplayer = false;
+                this.isHost = false;
+                this.isGuest = false;
+                this.room = null;
+                this.game.onNetworkReconnectFailed?.(error);
+                return;
+            }
+            console.warn("Reconnect failed:", error);
             if (this.reconnectAttempt < this.maxReconnectAttempts) {
                 this.scheduleReconnect(token, snapshot);
             } else {

@@ -190,6 +190,19 @@ export class SocialService {
       let active = true;
       let listener: ((event: { type: string; data: any }) => void) | null = null;
       let eventName = "";
+      let heartbeat: NodeJS.Timeout | null = null;
+
+      const cleanup = () => {
+        if (listener && eventName) {
+          this.sseEmitter.off(eventName, listener);
+        }
+        listener = null;
+        eventName = "";
+        if (heartbeat) {
+          clearInterval(heartbeat);
+          heartbeat = null;
+        }
+      };
 
       this.getCurrentPlayer(headers)
         .then((player) => {
@@ -208,16 +221,28 @@ export class SocialService {
 
           // Send initial connection event
           subscriber.next({ data: { status: "connected" }, type: "connection" });
+
+          heartbeat = setInterval(() => {
+            if (!active) return;
+            subscriber.next({
+              data: { ts: Date.now() },
+              type: "heartbeat"
+            });
+          }, 20000);
+
+          if (typeof heartbeat.unref === "function") {
+            heartbeat.unref();
+          }
         })
         .catch((err) => {
+          active = false;
+          cleanup();
           subscriber.error(err);
         });
 
       return () => {
         active = false;
-        if (listener && eventName) {
-          this.sseEmitter.off(eventName, listener);
-        }
+        cleanup();
       };
     });
   }

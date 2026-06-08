@@ -64,6 +64,54 @@ test("acceptFriend only allows the addressee to accept a request", async () => {
   );
 });
 
+test("subscribeToSocialEvents emits heartbeat and clears the interval on cleanup", async () => {
+  const originalSetInterval = global.setInterval;
+  const originalClearInterval = global.clearInterval;
+  const intervals: Array<{ fn: () => void; ms: number; cleared: boolean; unref: () => void }> = [];
+
+  global.setInterval = ((fn: (...args: any[]) => void, ms?: number) => {
+    const handle = {
+      fn: () => fn(),
+      ms: Number(ms || 0),
+      cleared: false,
+      unref() {}
+    };
+    intervals.push(handle);
+    return handle as any;
+  }) as any;
+
+  global.clearInterval = ((handle: any) => {
+    if (handle && typeof handle === "object") {
+      handle.cleared = true;
+    }
+  }) as any;
+
+  try {
+    const prismaMock = {} as any;
+    const service = new SocialService(prismaMock, {} as any);
+    (service as any).getCurrentPlayer = async () => ({ id: "player-1" });
+
+    const events: Array<{ type?: string; data?: any }> = [];
+    const subscription = service.subscribeToSocialEvents({ authorization: "Bearer token" } as any).subscribe({
+      next: (event) => events.push(event)
+    });
+
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    assert.equal(events[0]?.type, "connection");
+    const heartbeat = intervals.find((item) => item.ms === 20000);
+    assert.ok(heartbeat);
+    heartbeat?.fn();
+    assert.equal(events.some((event) => event.type === "heartbeat"), true);
+
+    subscription.unsubscribe();
+    assert.equal(heartbeat?.cleared, true);
+  } finally {
+    global.setInterval = originalSetInterval;
+    global.clearInterval = originalClearInterval;
+  }
+});
+
 test("getPlayerProfile resolves profiles by userId when playerId is not provided", async () => {
   const currentPlayer = makePlayer("player-current", "Current");
   const targetPlayer = {

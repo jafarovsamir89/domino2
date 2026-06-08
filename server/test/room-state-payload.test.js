@@ -65,6 +65,10 @@ test("buildRoomStatePayload preserves room_state fields and currentPlayers logic
         state: {
             gameActive: true,
             isTeamMode: true,
+            turnDeadlineAt: 1234567890,
+            turnDurationMs: 30000,
+            serverNow: 1111111111111,
+            turnVersion: 7,
             players: new Map([
                 ["s1", { name: "Host Alpha", isConnected: true, isBot: false, seatIndex: 0 }],
                 ["s2", { name: "Guest Beta", isConnected: true, isBot: false, seatIndex: 1 }]
@@ -86,7 +90,10 @@ test("buildRoomStatePayload preserves room_state fields and currentPlayers logic
         stakeKey: "stake_500",
         stakeAmount: 500,
         bankAmount: 1000,
-        turnVersion: 1,
+        turnDeadlineAt: 1234567890,
+        turnDurationMs: 30000,
+        serverNow: 1111111111111,
+        turnVersion: 7,
         currentPlayers: 4,
         humanPlayers: 2,
         humanSeats: 2,
@@ -112,6 +119,10 @@ test("buildRoomStatePayload uses connected human count when the game is inactive
         state: {
             gameActive: false,
             isTeamMode: false,
+            turnDeadlineAt: 0,
+            turnDurationMs: 30000,
+            serverNow: 1111111111112,
+            turnVersion: 4,
             players: new Map([
                 ["s1", { name: "Host", isConnected: true, isBot: false, seatIndex: 0 }],
                 ["s2", { name: "Guest", isConnected: true, isBot: false, seatIndex: 1 }],
