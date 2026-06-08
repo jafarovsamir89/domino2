@@ -3429,10 +3429,11 @@ body.seat-selection-active #game-screen {
     position: absolute;
     overflow: hidden;
     box-sizing: border-box;
-    background: radial-gradient(circle, rgba(240, 192, 64, 0.44) 0%, rgba(240, 192, 64, 0.22) 48%, rgba(240, 192, 64, 0.06) 72%, rgba(240, 192, 64, 0) 100%);
-    border: 1px solid rgba(240, 192, 64, 0.55);
-    box-shadow: 0 0 0 1px rgba(240, 192, 64, 0.18), 0 0 18px rgba(240, 192, 64, 0.34);
-    animation: openEndHighlightPulse 1.1s ease-in-out infinite alternate;
+    background: radial-gradient(circle at center, rgba(255, 235, 120, 0.96) 0%, rgba(255, 214, 78, 0.78) 30%, rgba(255, 181, 0, 0.34) 62%, rgba(255, 181, 0, 0) 100%);
+    border: 1px solid rgba(255, 239, 183, 0.88);
+    box-shadow: 0 0 0 1px rgba(255, 244, 214, 0.44), 0 0 24px rgba(255, 212, 73, 0.78), 0 0 42px rgba(255, 166, 0, 0.42);
+    filter: saturate(1.2) brightness(1.08);
+    animation: openEndHighlightPulse 0.95s ease-in-out infinite alternate;
 }
 
 .konva-open-end-highlight.arrow-top {
@@ -3454,14 +3455,14 @@ body.seat-selection-active #game-screen {
 .konva-open-end-highlight::after {
     content: "";
     position: absolute;
-    inset: 25%;
+    inset: 18%;
     border-radius: inherit;
-    background: rgba(255, 255, 255, 0.22);
-    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.38);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18);
 }
 
 .konva-open-end-highlight.is-selected {
-    box-shadow: 0 0 0 1px rgba(240, 192, 64, 0.34), 0 0 24px rgba(240, 192, 64, 0.46);
+    box-shadow: 0 0 0 1px rgba(255, 244, 214, 0.62), 0 0 30px rgba(255, 218, 94, 0.96), 0 0 54px rgba(255, 171, 0, 0.62);
 }
 
 @keyframes openEndHighlightPulse {

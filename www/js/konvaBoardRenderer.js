@@ -1034,8 +1034,9 @@ export class KonvaBoardRenderer {
                                 : '999px';
                 button.style.pointerEvents = 'auto';
                 button.style.cursor = 'pointer';
-                button.style.background = 'radial-gradient(circle at center, rgba(240,192,64,0.42) 0%, rgba(240,192,64,0.18) 48%, rgba(240,192,64,0.02) 72%, rgba(240,192,64,0) 100%)';
-                button.style.boxShadow = '0 0 0 1px rgba(240,192,64,0.38), 0 0 16px rgba(240,192,64,0.32)';
+                button.style.background = 'radial-gradient(circle at center, rgba(255,235,120,0.98) 0%, rgba(255,214,78,0.78) 30%, rgba(255,181,0,0.34) 62%, rgba(255,181,0,0) 100%)';
+                button.style.boxShadow = '0 0 0 1px rgba(255,244,214,0.5), 0 0 24px rgba(255,218,94,0.9), 0 0 44px rgba(255,171,0,0.6)';
+                button.style.filter = 'saturate(1.2) brightness(1.1)';
                 button.style.opacity = '1';
                 button.style.zIndex = '5';
                 const ariaLabel = this.app?.format?.('arrow-place-to', { value: openEnd.value }) || `Play to ${openEnd.value}`;
