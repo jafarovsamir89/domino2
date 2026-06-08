@@ -867,6 +867,21 @@ export class Renderer {
 
     showArrowChoices(board, matchingEnds, onChoose, onCancel) {
         this.removeArrows();
+        if (this.shouldUseKonvaBoard()) {
+            const validIndexes = Array.isArray(matchingEnds) ? matchingEnds.map((value) => Number(value)).filter(Number.isFinite) : [];
+            if (!validIndexes.length) {
+                onCancel?.();
+                return;
+            }
+            this._konvaBoardRenderer?.syncPlayableOpenEndHighlights?.(
+                board?.openEnds || [],
+                validIndexes,
+                null,
+                (openEndIndex) => onChoose?.(openEndIndex),
+                () => onCancel?.()
+            );
+            return;
+        }
         const gs = document.getElementById('game-screen');
         const arrowSymbols = { left: '\u2190', right: '\u2192', top: '\u2191', bottom: '\u2193' };
         const tapEvent = window.PointerEvent ? 'pointerup' : 'click';
@@ -914,6 +929,7 @@ export class Renderer {
     }
 
     removeArrows() {
+        this._konvaBoardRenderer?.clearPlayableOpenEndHighlights?.();
         const ov = document.getElementById('arrow-overlay');
         if (ov) ov.remove();
     }

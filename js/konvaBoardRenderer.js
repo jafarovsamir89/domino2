@@ -173,6 +173,8 @@ export class KonvaBoardRenderer {
         this.activeTileAnimations = new Map();
         this.tileGroupsById = new Map();
         this.openEndGroupsByKey = new Map();
+        this.playableOpenEndHighlightsByKey = new Map();
+        this.playableOpenEndOverlayEl = null;
         this.enabled = false;
         this.sceneRoot = null;
         this.boardGroup = null;
@@ -201,14 +203,32 @@ export class KonvaBoardRenderer {
         this.containerEl = containerEl;
         this.rootEl = document.createElement('div');
         this.rootEl.className = 'konva-board-root';
+        this.rootEl.style.position = 'absolute';
+        this.rootEl.style.inset = '0';
+        this.rootEl.style.width = '100%';
+        this.rootEl.style.height = '100%';
+        this.rootEl.style.overflow = 'hidden';
         this.stageHostEl = document.createElement('div');
         this.stageHostEl.className = 'konva-board-stage-host';
+        this.stageHostEl.style.position = 'absolute';
+        this.stageHostEl.style.inset = '0';
+        this.stageHostEl.style.zIndex = '1';
+        this.stageHostEl.style.pointerEvents = 'none';
         this.anchorEl = document.createElement('div');
         this.anchorEl.className = 'board-layout konva-board-anchors';
         this.anchorEl.setAttribute('aria-hidden', 'true');
+        this.anchorEl.style.zIndex = '2';
+        this.anchorEl.style.pointerEvents = 'none';
+        this.playableOpenEndOverlayEl = document.createElement('div');
+        this.playableOpenEndOverlayEl.className = 'konva-open-end-overlay';
+        this.playableOpenEndOverlayEl.style.position = 'absolute';
+        this.playableOpenEndOverlayEl.style.inset = '0';
+        this.playableOpenEndOverlayEl.style.zIndex = '4';
+        this.playableOpenEndOverlayEl.style.pointerEvents = 'none';
 
         this.rootEl.appendChild(this.stageHostEl);
         this.rootEl.appendChild(this.anchorEl);
+        this.rootEl.appendChild(this.playableOpenEndOverlayEl);
         this.containerEl.innerHTML = '';
         this.containerEl.appendChild(this.rootEl);
 
@@ -285,6 +305,10 @@ export class KonvaBoardRenderer {
         this.activeTileAnimations.clear();
         this.tileGroupsById.clear();
         this.openEndGroupsByKey.clear();
+        this.clearPlayableOpenEndHighlights();
+        this.playableOpenEndHighlightsByKey.clear();
+        this.playableOpenEndOverlayEl?.remove?.();
+        this.playableOpenEndOverlayEl = null;
     }
 
     syncStageSize() {
@@ -435,6 +459,7 @@ export class KonvaBoardRenderer {
                 try { entry.group.destroy(); } catch {}
             });
             this.openEndGroupsByKey.clear();
+            this.clearPlayableOpenEndHighlights();
             this.animatedTileIds.clear();
             this.pruneAnchors(new Set(), new Set());
             this.layer.batchDraw();
@@ -750,10 +775,11 @@ export class KonvaBoardRenderer {
                 });
                 const text = new Konva.Text({
                     x: -pillWidth / 2,
-                    y: -7,
+                    y: -(pillHeight / 2),
                     width: pillWidth,
-                    height: 14,
+                    height: pillHeight,
                     align: 'center',
+                    verticalAlign: 'middle',
                     text: label,
                     fontSize: 11,
                     fontFamily: 'system-ui, sans-serif',
@@ -775,8 +801,10 @@ export class KonvaBoardRenderer {
             });
             entry.text.setAttrs({
                 x: -pillWidth / 2,
-                y: -7,
+                y: -(pillHeight / 2),
                 width: pillWidth,
+                height: pillHeight,
+                verticalAlign: 'middle',
                 text: label
             });
         }
@@ -913,6 +941,119 @@ export class KonvaBoardRenderer {
             centerX: rect.centerX,
             centerY: rect.centerY
         }));
+    }
+
+    ensurePlayableOpenEndOverlay() {
+        if (!this.rootEl) return null;
+        if (!this.playableOpenEndOverlayEl) {
+            this.playableOpenEndOverlayEl = document.createElement('div');
+            this.playableOpenEndOverlayEl.className = 'konva-open-end-overlay';
+            this.playableOpenEndOverlayEl.style.position = 'absolute';
+            this.playableOpenEndOverlayEl.style.inset = '0';
+            this.playableOpenEndOverlayEl.style.zIndex = '4';
+            this.playableOpenEndOverlayEl.style.pointerEvents = 'none';
+            this.rootEl.appendChild(this.playableOpenEndOverlayEl);
+        }
+        return this.playableOpenEndOverlayEl;
+    }
+
+    clearPlayableOpenEndHighlights() {
+        this.playableOpenEndHighlightsByKey.forEach((entry) => {
+            try { entry.button.remove(); } catch {}
+        });
+        this.playableOpenEndHighlightsByKey.clear();
+        if (this.playableOpenEndOverlayEl) {
+            this.playableOpenEndOverlayEl.innerHTML = '';
+        }
+    }
+
+    syncPlayableOpenEndHighlights(openEnds, validOpenEndIndexes, selectedTile = null, onChoose = null, onCancel = null) {
+        const overlay = this.ensurePlayableOpenEndOverlay();
+        if (!overlay) return;
+        const indexSet = new Set(Array.isArray(validOpenEndIndexes) ? validOpenEndIndexes.map((value) => Number(value)).filter(Number.isFinite) : []);
+        const openEndList = Array.isArray(openEnds) ? openEnds : [];
+        const nextKeys = new Set();
+        const buttonSize = window.matchMedia?.('(max-width: 390px)')?.matches ? 36 : 38;
+        const tapEvent = window.PointerEvent ? 'pointerup' : 'click';
+        const rootRect = this.rootEl?.getBoundingClientRect?.() || { left: 0, top: 0 };
+        const safeLeft = Number(rootRect.left || 0);
+        const safeTop = Number(rootRect.top || 0);
+        const shouldLog = window.DOMINO_DEBUG_BOARD_RENDERER === true;
+        let index = 0;
+
+        for (const validIndex of indexSet) {
+            const openEnd = openEndList[validIndex];
+            if (!openEnd) continue;
+            const key = `${String(openEnd.nodeId ?? '')}:${String(openEnd.side ?? '')}:${String(openEnd.value ?? '')}:${validIndex}`;
+            nextKeys.add(key);
+            const anchorRect = this.getOpenEndAnchorRect(openEnd);
+            if (!anchorRect) continue;
+            const centerX = anchorRect.left + anchorRect.width / 2;
+            const centerY = anchorRect.top + anchorRect.height / 2;
+            const x = centerX - safeLeft;
+            const y = centerY - safeTop;
+            let entry = this.playableOpenEndHighlightsByKey.get(key);
+            if (!entry) {
+                const button = document.createElement('button');
+                button.type = 'button';
+                button.className = 'konva-open-end-highlight';
+                button.dataset.openEndIndex = String(validIndex);
+                button.dataset.side = String(openEnd.side || '');
+                button.dataset.value = String(openEnd.value ?? '');
+                button.style.position = 'absolute';
+                button.style.left = '0';
+                button.style.top = '0';
+                button.style.width = `${buttonSize}px`;
+                button.style.height = `${buttonSize}px`;
+                button.style.transform = 'translate(-50%, -50%)';
+                button.style.border = '0';
+                button.style.padding = '0';
+                button.style.borderRadius = '999px';
+                button.style.pointerEvents = 'auto';
+                button.style.cursor = 'pointer';
+                button.style.background = 'radial-gradient(circle, rgba(240,192,64,0.42) 0%, rgba(240,192,64,0.18) 48%, rgba(240,192,64,0.02) 72%, rgba(240,192,64,0) 100%)';
+                button.style.boxShadow = '0 0 0 1px rgba(240,192,64,0.38), 0 0 16px rgba(240,192,64,0.32)';
+                button.style.opacity = '1';
+                button.style.zIndex = '5';
+                const ariaLabel = this.app?.format?.('arrow-place-to', { value: openEnd.value }) || `Play to ${openEnd.value}`;
+                button.setAttribute('aria-label', ariaLabel);
+                button.title = ariaLabel;
+                button.addEventListener(tapEvent, (event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    onChoose?.(validIndex);
+                });
+                overlay.appendChild(button);
+                entry = { button, key };
+                this.playableOpenEndHighlightsByKey.set(key, entry);
+            }
+            entry.button.style.left = `${x}px`;
+            entry.button.style.top = `${y}px`;
+            entry.button.dataset.openEndIndex = String(validIndex);
+            entry.button.dataset.side = String(openEnd.side || '');
+            entry.button.dataset.value = String(openEnd.value ?? '');
+            entry.button.classList.toggle('is-selected', Boolean(selectedTile && String(selectedTile?.id || '') === String(openEnd?.nodeId || '')));
+            entry.button.style.width = `${buttonSize}px`;
+            entry.button.style.height = `${buttonSize}px`;
+            index += 1;
+        }
+
+        for (const [key, entry] of this.playableOpenEndHighlightsByKey.entries()) {
+            if (nextKeys.has(key)) continue;
+            try { entry.button.remove(); } catch {}
+            this.playableOpenEndHighlightsByKey.delete(key);
+        }
+
+        if (this.playableOpenEndOverlayEl) {
+            this.playableOpenEndOverlayEl.style.pointerEvents = 'none';
+            if (shouldLog) {
+                console.debug('[KonvaPlayableOpenEnds]', {
+                    count: index,
+                    selectedTileId: String(selectedTile?.id || ''),
+                    validIndexes: Array.from(indexSet)
+                });
+            }
+        }
     }
 
     revealTile(tileId) {

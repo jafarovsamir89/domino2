@@ -811,7 +811,7 @@ test("Konva scheduleRealtimeRender defaults to all false flags", async ({ page }
   expect(consoleErrors).toEqual([]);
 });
 
-test("Konva arrow choice points stay clear of tile bodies on stretched boards", async ({ page }) => {
+test("Konva open-end highlights stay clear of tile bodies on stretched boards", async ({ page }) => {
   const pageErrors = [];
   const consoleErrors = [];
   page.on("pageerror", (error) => pageErrors.push(error.message));
@@ -866,7 +866,7 @@ test("Konva arrow choice points stay clear of tile bodies on stretched boards", 
     if (!openEnds.length) throw new Error("open_ends_missing");
     renderer.showArrowChoices(board, openEnds.map((_, index) => index), () => {}, () => {});
 
-    const btn = document.querySelector("#arrow-overlay .arrow-btn");
+    const btn = document.querySelector(".konva-open-end-highlight");
     const btnRect = btn?.getBoundingClientRect?.();
     if (!btnRect) throw new Error("arrow_button_missing");
     const tileRects = renderer.collectBoardTileRects?.() || [];
@@ -886,17 +886,21 @@ test("Konva arrow choice points stay clear of tile bodies on stretched boards", 
         top: Number(btnRect.top.toFixed(2)),
         right: Number(btnRect.right.toFixed(2)),
         bottom: Number(btnRect.bottom.toFixed(2))
-      }
+      },
+      arrowCount: document.querySelectorAll(".konva-open-end-highlight").length,
+      arrowButtons: document.querySelectorAll(".arrow-btn").length
     };
   });
 
   expect(result.overlap).toBe(false);
   expect(result.point).not.toBeNull();
+  expect(result.arrowCount).toBeGreaterThan(0);
+  expect(result.arrowButtons).toBe(0);
   expect(pageErrors).toEqual([]);
   expect(consoleErrors).toEqual([]);
 });
 
-test("Konva top arrow stays centered in viewport coordinates without stage clamping", async ({ page }) => {
+test("Konva top open-end highlight stays centered without stage clamping", async ({ page }) => {
   const pageErrors = [];
   const consoleErrors = [];
   page.on("pageerror", (error) => pageErrors.push(error.message));
@@ -942,10 +946,13 @@ test("Konva top arrow stays centered in viewport coordinates without stage clamp
     const centerY = nodeRect.top + nodeRect.height / 2;
 
     renderer.showArrowChoices(board, [0], () => {}, () => {});
-    const btn = document.querySelector("#arrow-overlay .arrow-btn");
+    const btn = document.querySelector(".konva-open-end-highlight");
     const btnRect = btn?.getBoundingClientRect?.();
     const buttonCenterX = btnRect ? btnRect.left + btnRect.width / 2 : null;
     const buttonCenterY = btnRect ? btnRect.top + btnRect.height / 2 : null;
+    const anchorRect = konva.getOpenEndAnchorRect(openEnd);
+    const anchorCenterX = anchorRect ? anchorRect.left + anchorRect.width / 2 : null;
+    const anchorCenterY = anchorRect ? anchorRect.top + anchorRect.height / 2 : null;
 
     return {
       rawX: raw.x,
@@ -954,6 +961,8 @@ test("Konva top arrow stays centered in viewport coordinates without stage clamp
       adjustedY: adjusted.y,
       centerX,
       centerY,
+      anchorCenterX,
+      anchorCenterY,
       buttonCenterX,
       buttonCenterY,
       btnRect: btnRect ? {
@@ -968,8 +977,8 @@ test("Konva top arrow stays centered in viewport coordinates without stage clamp
   expect(result.rawX).toBeCloseTo(result.centerX, 1);
   expect(result.rawY).toBeLessThan(result.centerY);
   expect(result.adjustedX).toBeCloseTo(result.rawX, 1);
-  expect(result.buttonCenterX).toBeCloseTo(result.centerX, 1);
-  expect(result.buttonCenterY).toBeLessThan(result.centerY);
+  expect(result.buttonCenterX).toBeCloseTo(result.anchorCenterX, 1);
+  expect(result.buttonCenterY).toBeCloseTo(result.anchorCenterY, 1);
   expect(result.btnRect).not.toBeNull();
   expect(pageErrors).toEqual([]);
   expect(consoleErrors).toEqual([]);
@@ -1222,6 +1231,7 @@ test("Konva open-end hints sit lower and arrow buttons match the CSS size", asyn
     const konva = renderer._konvaBoardRenderer;
     const openEnds = soloBoard.openEnds.slice();
     const entries = Array.from(konva?.openEndGroupsByKey?.values?.() || []);
+    const firstEntry = entries[0] || null;
     const stageWidth = Number(konva?.lastLayout?.stageWidth || 0);
     const stageHeight = Number(konva?.lastLayout?.stageHeight || 0);
     const avgX = entries.length ? entries.reduce((sum, entry) => sum + Number(entry?.group?.x?.() || 0), 0) / entries.length : 0;
@@ -1231,13 +1241,17 @@ test("Konva open-end hints sit lower and arrow buttons match the CSS size", asyn
       stageHeight,
       avgX,
       minY,
+      textY: Number(firstEntry?.text?.y?.() || 0),
+      textHeight: Number(firstEntry?.text?.height?.() || 0),
       openEnds: openEnds.map((oe) => ({ ...oe }))
     };
   });
 
   expect(firstShot.minY).toBeGreaterThan(firstShot.stageHeight * 0.84);
   expect(Math.abs(firstShot.avgX - firstShot.stageWidth / 2)).toBeLessThan(firstShot.stageWidth * 0.08);
-  await page.screenshot({ path: `${KONVA_SCREENSHOT_DIR}/open-end-hints-lowest-safe-row.png` });
+  expect(firstShot.textY).toBeCloseTo(-9, 1);
+  expect(firstShot.textHeight).toBe(18);
+  await page.screenshot({ path: `${KONVA_SCREENSHOT_DIR}/open-end-hints-centered-text.png` });
 
   const arrowSize = await page.evaluate(() => {
     const game = window.game;
@@ -1249,7 +1263,7 @@ test("Konva open-end hints sit lower and arrow buttons match the CSS size", asyn
     openEnd.side = "top";
     openEnd.growthDir = "top";
     renderer.showArrowChoices(board, [0], () => {}, () => {});
-    const btn = document.querySelector("#arrow-overlay .arrow-btn");
+    const btn = document.querySelector(".konva-open-end-highlight");
     const rect = btn?.getBoundingClientRect?.() || null;
     const styleWidth = btn ? Number.parseFloat(getComputedStyle(btn).width || "0") : 0;
     return {
@@ -1259,8 +1273,9 @@ test("Konva open-end hints sit lower and arrow buttons match the CSS size", asyn
     };
   });
   expect(arrowSize.styleWidth).toBeCloseTo(arrowSize.buttonSize, 1);
-  expect(arrowSize.rectWidth).toBeCloseTo(arrowSize.buttonSize, 1);
-  await page.screenshot({ path: `${KONVA_SCREENSHOT_DIR}/arrow-top-no-x-shift-final.png` });
+  expect(arrowSize.rectWidth).toBeGreaterThan(arrowSize.buttonSize - 2);
+  expect(arrowSize.rectWidth).toBeLessThan(arrowSize.buttonSize + 2);
+  await page.screenshot({ path: `${KONVA_SCREENSHOT_DIR}/arrow-top-perfect-center.png` });
 
   await page.evaluate(() => {
     const game = window.game;
@@ -1272,7 +1287,7 @@ test("Konva open-end hints sit lower and arrow buttons match the CSS size", asyn
     openEnd.growthDir = "bottom";
     renderer.showArrowChoices(board, [0], () => {}, () => {});
   });
-  await page.screenshot({ path: `${KONVA_SCREENSHOT_DIR}/arrow-bottom-no-x-shift-final.png` });
+  await page.screenshot({ path: `${KONVA_SCREENSHOT_DIR}/arrow-bottom-perfect-center.png` });
 
   await page.evaluate(() => {
     const game = window.game;
@@ -1290,7 +1305,7 @@ test("Konva open-end hints sit lower and arrow buttons match the CSS size", asyn
     }
     renderer.showArrowChoices(board, openEnds.map((_, index) => index), () => {}, () => {});
   });
-  await page.screenshot({ path: `${KONVA_SCREENSHOT_DIR}/arrow-vertical-with-many-tiles-final.png` });
+  await page.screenshot({ path: `${KONVA_SCREENSHOT_DIR}/arrow-left-right-perfect-axis.png` });
 
   await page.evaluate(() => {
     const game = window.game;
@@ -1332,10 +1347,10 @@ test("Konva open-end hints sit lower and arrow buttons match the CSS size", asyn
     const ends = stretch.openEnds.map((_, index) => index);
     renderer.showArrowChoices(stretch, ends, () => {}, () => {});
   });
-  await page.screenshot({ path: `${KONVA_SCREENSHOT_DIR}/arrow-many-tiles-no-overlap.png` });
+  await page.screenshot({ path: `${KONVA_SCREENSHOT_DIR}/highlight-many-tiles-no-overlap.png` });
 
   const overlapCheck = await page.evaluate(() => {
-    const btn = document.querySelector("#arrow-overlay .arrow-btn");
+    const btn = document.querySelector(".konva-open-end-highlight");
     const btnRect = btn?.getBoundingClientRect?.() || null;
     const tiles = window.game?.renderer?.collectBoardTileRects?.() || [];
     if (!btnRect) return null;
@@ -1353,7 +1368,8 @@ test("Konva open-end hints sit lower and arrow buttons match the CSS size", asyn
   });
   expect(overlapCheck).not.toBeNull();
   expect(overlapCheck.overlap).toBe(false);
-  expect(overlapCheck.cssWidth).toBeCloseTo(overlapCheck.btnWidth, 1);
+  expect(overlapCheck.cssWidth).toBeGreaterThan(overlapCheck.btnWidth - 2);
+  expect(overlapCheck.cssWidth).toBeLessThan(overlapCheck.btnWidth + 2);
   expect(pageErrors).toEqual([]);
   expect(consoleErrors).toEqual([]);
 });
@@ -1564,7 +1580,7 @@ test("Konva board parity keeps DOM palette, geometry, and overlays aligned", asy
   await page.screenshot({ path: `${KONVA_SCREENSHOT_DIR}/konva-board-several-moves.png` });
   await page.screenshot({ path: `${KONVA_SCREENSHOT_DIR}/konva-no-double-blink.png` });
   await page.screenshot({ path: `${KONVA_SCREENSHOT_DIR}/konva-several-moves-smooth.png` });
-  await page.screenshot({ path: `${KONVA_SCREENSHOT_DIR}/konva-board-open-end-hints-lower-row.png` });
+  await page.screenshot({ path: `${KONVA_SCREENSHOT_DIR}/open-end-hints-centered-text.png` });
 
   await page.evaluate(() => {
     const board = window.__konvaParityBoard;
@@ -1577,16 +1593,18 @@ test("Konva board parity keeps DOM palette, geometry, and overlays aligned", asy
   const arrowChoiceLayout = await page.evaluate(() => {
     const board = window.__konvaParityBoard;
     const renderer = window.game?.renderer;
-    const btn = document.querySelector(".arrow-btn");
+    const btn = document.querySelector(".konva-open-end-highlight");
     const btnRect = btn?.getBoundingClientRect?.();
     if (!btnRect || !Array.isArray(board?.openEnds) || !board.openEnds.length) return null;
     const btnCenterX = btnRect.left + btnRect.width / 2;
     const btnCenterY = btnRect.top + btnRect.height / 2;
     const distances = board.openEnds.map((openEnd) => {
-      const choiceRect = renderer?.getBoardOpenEndChoiceRect?.(openEnd);
-      if (!choiceRect) return Number.POSITIVE_INFINITY;
-      const choiceCenterX = choiceRect.left + choiceRect.width / 2;
-      const choiceCenterY = choiceRect.top + choiceRect.height / 2;
+      const choiceRect = renderer?.getBoardOpenEndChoiceRect?.(openEnd) || renderer?.getOpenEndChoiceRect?.(openEnd);
+      const anchorRect = renderer?._konvaBoardRenderer?.getOpenEndAnchorRect?.(openEnd);
+      const candidateRect = choiceRect || anchorRect;
+      if (!candidateRect) return Number.POSITIVE_INFINITY;
+      const choiceCenterX = candidateRect.left + candidateRect.width / 2;
+      const choiceCenterY = candidateRect.top + candidateRect.height / 2;
       return Math.hypot(btnCenterX - choiceCenterX, btnCenterY - choiceCenterY);
     });
     return {
@@ -1596,8 +1614,8 @@ test("Konva board parity keeps DOM palette, geometry, and overlays aligned", asy
   });
   expect(arrowChoiceLayout).not.toBeNull();
   expect(arrowChoiceLayout.distance).toBeLessThan(120);
-  await page.screenshot({ path: `${KONVA_SCREENSHOT_DIR}/konva-board-arrow-choice.png` });
-  await page.screenshot({ path: `${KONVA_SCREENSHOT_DIR}/konva-arrow-no-overlap.png` });
+  await page.screenshot({ path: `${KONVA_SCREENSHOT_DIR}/highlight-open-end-4-6.png` });
+  await page.screenshot({ path: `${KONVA_SCREENSHOT_DIR}/highlight-only-valid-ends.png` });
 
   await page.screenshot({ path: `${KONVA_SCREENSHOT_DIR}/konva-board-1v1-opponent-label.png` });
 

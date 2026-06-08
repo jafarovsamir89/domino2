@@ -10,6 +10,7 @@ type SocialAck<T = any> = (response: T) => void;
 
 @WebSocketGateway({
   namespace: "/social",
+  path: "/api/socket.io",
   cors: {
     origin: true,
     credentials: true

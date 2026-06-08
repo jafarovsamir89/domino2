@@ -582,6 +582,10 @@ export class AccountClient {
         return `${this.getSocialSocketBaseUrl()}/social`;
     }
 
+    getSocialSocketPath() {
+        return "/api/socket.io";
+    }
+
     getSocialSocketAuthToken() {
         return this.platformGameToken || "";
     }
