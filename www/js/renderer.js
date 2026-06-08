@@ -285,11 +285,12 @@ export class Renderer {
     }
 
     isSameRectApprox(a, b, epsilon = 2) {
-        return Boolean(a && b
-            && Math.abs(Number(a.left || 0) - Number(b.left || 0)) <= epsilon
-            && Math.abs(Number(a.top || 0) - Number(b.top || 0)) <= epsilon
-            && Math.abs(Number(a.right || (a.left || 0) + (a.width || 0)) - Number(b.right || (b.left || 0) + (b.width || 0))) <= epsilon
-            && Math.abs(Number(a.bottom || (a.top || 0) + (a.height || 0)) - Number(b.bottom || (b.top || 0) + (b.height || 0))) <= epsilon);
+        if (!a || !b) return false;
+        const acx = Number(a.centerX ?? (Number(a.left || 0) + Number(a.width || 0) / 2));
+        const acy = Number(a.centerY ?? (Number(a.top || 0) + Number(a.height || 0) / 2));
+        const bcx = Number(b.centerX ?? (Number(b.left || 0) + Number(b.width || 0) / 2));
+        const bcy = Number(b.centerY ?? (Number(b.top || 0) + Number(b.height || 0) / 2));
+        return Math.abs(acx - bcx) <= epsilon && Math.abs(acy - bcy) <= epsilon;
     }
 
     filterArrowCollisionRects(tileRects, sourceRect = null) {
@@ -355,38 +356,62 @@ export class Renderer {
             y: Number(point?.y || 0)
         };
         const rawRect = point?.rect || null;
-        const sourceRect = rawRect;
+        const sourceRect = rawRect ? {
+            left: Number(rawRect.left || 0),
+            top: Number(rawRect.top || 0),
+            right: Number(rawRect.right ?? (Number(rawRect.left || 0) + Number(rawRect.width || 0))),
+            bottom: Number(rawRect.bottom ?? (Number(rawRect.top || 0) + Number(rawRect.height || 0))),
+            width: Number(rawRect.width || Math.max(0, Number(rawRect.right || 0) - Number(rawRect.left || 0))),
+            height: Number(rawRect.height || Math.max(0, Number(rawRect.bottom || 0) - Number(rawRect.top || 0))),
+            centerX: Number(rawRect.centerX ?? (Number(rawRect.left || 0) + Number(rawRect.width || 0) / 2)),
+            centerY: Number(rawRect.centerY ?? (Number(rawRect.top || 0) + Number(rawRect.height || 0) / 2))
+        } : null;
         const relevantTileRects = this.filterArrowCollisionRects(tileRects, sourceRect);
         const bounds = this.getArrowViewportBounds(buttonSize);
-        const horizontalSide = side === 'left' || side === 'right';
+        const verticalSide = side === 'top' || side === 'bottom';
         const normalSign = side === 'left' || side === 'top' ? -1 : 1;
-        const normalSteps = [0, 8, 16, 24, 32, 40];
-        const emergencySteps = [0, -10, 10, -20, 20];
+        const normalSteps = [0, 8, 16, 24, 32, 40, 52];
+        const emergencySteps = [-10, 10, -20, 20];
         const rawClamped = this.clampArrowPointToBounds(rawPoint, bounds);
         const rawCollisions = this.countArrowCollisions(rawClamped, buttonSize, relevantTileRects);
         if (rawCollisions === 0 && rawClamped.x === rawPoint.x && rawClamped.y === rawPoint.y) {
             if (window.DOMINO_DEBUG_BOARD_RENDERER === true) {
-                console.debug('[ArrowChoiceFinal]', {
+                console.debug('[ArrowChoiceCoords]', {
                     side,
                     rawPoint,
                     adjustedPoint: rawClamped,
                     sourceRect,
+                    relevantTileRectsCount: relevantTileRects.length,
                     rawCollisions,
-                    finalCollisions: rawCollisions
+                    finalCollisions: rawCollisions,
+                    usedEmergencyPerpendicular: false,
+                    coordinateSpace: 'viewport'
                 });
             }
             return rawClamped;
         }
 
+        const clampNormalOnly = (candidate) => {
+            const clamped = { x: candidate.x, y: candidate.y };
+            if (verticalSide) {
+                clamped.y = Math.min(Math.max(clamped.y, bounds.minY), bounds.maxY);
+            } else {
+                clamped.x = Math.min(Math.max(clamped.x, bounds.minX), bounds.maxX);
+            }
+            return clamped;
+        };
+
         const tryNormalAxis = () => {
             for (const normalStep of normalSteps) {
-                const candidate = horizontalSide
-                    ? { x: rawPoint.x + (normalStep * normalSign), y: rawPoint.y }
-                    : { x: rawPoint.x, y: rawPoint.y + (normalStep * normalSign) };
-                const clamped = this.clampArrowPointToBounds(candidate, bounds);
+                const candidate = verticalSide
+                    ? { x: rawPoint.x, y: rawPoint.y + (normalStep * normalSign) }
+                    : { x: rawPoint.x + (normalStep * normalSign), y: rawPoint.y };
+                const clamped = clampNormalOnly(candidate);
                 const collisions = this.countArrowCollisions(clamped, buttonSize, relevantTileRects);
-                const perpendicularDelta = horizontalSide ? Math.abs(clamped.y - rawPoint.y) : Math.abs(clamped.x - rawPoint.x);
-                if (collisions === 0 && perpendicularDelta <= 1) {
+                const axisStable = verticalSide
+                    ? Math.abs(clamped.x - rawPoint.x) <= 1
+                    : Math.abs(clamped.y - rawPoint.y) <= 1;
+                if (collisions === 0 && axisStable) {
                     return clamped;
                 }
             }
@@ -396,24 +421,28 @@ export class Renderer {
         const normalAxisPoint = tryNormalAxis();
         if (normalAxisPoint) {
             if (window.DOMINO_DEBUG_BOARD_RENDERER === true) {
-                console.debug('[ArrowChoiceFinal]', {
+                console.debug('[ArrowChoiceCoords]', {
                     side,
                     rawPoint,
                     adjustedPoint: normalAxisPoint,
                     sourceRect,
+                    relevantTileRectsCount: relevantTileRects.length,
                     rawCollisions,
-                    finalCollisions: this.countArrowCollisions(normalAxisPoint, buttonSize, relevantTileRects)
+                    finalCollisions: this.countArrowCollisions(normalAxisPoint, buttonSize, relevantTileRects),
+                    usedEmergencyPerpendicular: false,
+                    coordinateSpace: 'viewport'
                 });
             }
             return normalAxisPoint;
         }
 
         let best = null;
+        let usedEmergencyPerpendicular = true;
         for (const perpendicularStep of emergencySteps) {
             for (const normalStep of normalSteps) {
-                const candidate = horizontalSide
-                    ? { x: rawPoint.x + (normalStep * normalSign), y: rawPoint.y + perpendicularStep }
-                    : { x: rawPoint.x + perpendicularStep, y: rawPoint.y + (normalStep * normalSign) };
+                const candidate = verticalSide
+                    ? { x: rawPoint.x + perpendicularStep, y: rawPoint.y + (normalStep * normalSign) }
+                    : { x: rawPoint.x + (normalStep * normalSign), y: rawPoint.y + perpendicularStep };
                 const scored = this.scoreArrowCandidate(candidate, rawPoint, buttonSize, relevantTileRects, side, bounds);
                 if (!best || scored.score < best.score) {
                     best = scored;
@@ -423,13 +452,16 @@ export class Renderer {
 
         const adjustedPoint = best?.point || rawClamped;
         if (window.DOMINO_DEBUG_BOARD_RENDERER === true) {
-            console.debug('[ArrowChoice]', {
+            console.debug('[ArrowChoiceCoords]', {
                 side,
                 rawPoint,
                 adjustedPoint,
                 sourceRect,
+                relevantTileRectsCount: relevantTileRects.length,
                 rawCollisions,
-                finalCollisions: this.countArrowCollisions(adjustedPoint, buttonSize, relevantTileRects)
+                finalCollisions: this.countArrowCollisions(adjustedPoint, buttonSize, relevantTileRects),
+                usedEmergencyPerpendicular,
+                coordinateSpace: 'viewport'
             });
         }
         return adjustedPoint;
@@ -842,7 +874,7 @@ export class Renderer {
         const tileRects = this.collectBoardTileRects();
         const overlay = document.createElement('div');
         overlay.id = 'arrow-overlay';
-        overlay.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;z-index:100;background:rgba(0,0,0,0.1);';
+        overlay.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;z-index:100;background:rgba(0,0,0,0.04);';
 
         overlay.addEventListener(tapEvent, (e) => {
             if (e.target === overlay) {

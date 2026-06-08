@@ -720,9 +720,11 @@ export class KonvaBoardRenderer {
         const openEnds = Array.isArray(board.openEnds) ? board.openEnds : [];
         const nextKeys = new Set();
         const pillHeight = 18;
-        const bottomPadding = 22;
+        const bottomPadding = Math.max(8, Math.min(14, layout.stageHeight * 0.025));
+        const minY = layout.stageHeight * 0.84;
+        const maxY = layout.stageHeight - 8 - (pillHeight / 2);
         const preferredY = layout.stageHeight - bottomPadding - (pillHeight / 2);
-        const baseY = Math.max(layout.stageHeight * 0.82, preferredY);
+        const baseY = Math.min(maxY, Math.max(minY, preferredY));
 
         for (let i = 0; i < openEnds.length; i++) {
             const oe = openEnds[i];
@@ -859,11 +861,58 @@ export class KonvaBoardRenderer {
             x = rect.left + rect.width / 2;
             y = rect.bottom + radius + gap;
         }
-        return { x, y, buttonSize, radius, side, rect, nodeId: openEnd.nodeId };
+        return {
+            x,
+            y,
+            buttonSize,
+            radius,
+            side,
+            rect: {
+                left: rect.left,
+                top: rect.top,
+                right: rect.right,
+                bottom: rect.bottom,
+                width: rect.width,
+                height: rect.height,
+                centerX: rect.left + rect.width / 2,
+                centerY: rect.top + rect.height / 2
+            },
+            nodeId: openEnd.nodeId
+        };
     }
 
     getBoardTileRects() {
-        return Array.from(this.tileRects.values());
+        const rects = [];
+        for (const [tileId, anchor] of this.anchorElsByTileId.entries()) {
+            const rect = anchor?.getBoundingClientRect?.();
+            if (!rect) continue;
+            rects.push({
+                tileId,
+                left: rect.left,
+                top: rect.top,
+                right: rect.right,
+                bottom: rect.bottom,
+                width: rect.width,
+                height: rect.height,
+                centerX: rect.left + rect.width / 2,
+                centerY: rect.top + rect.height / 2
+            });
+        }
+        return rects;
+    }
+
+    getBoardTileLocalRects() {
+        return Array.from(this.tileRects.entries()).map(([tileId, rect]) => ({
+            tileId,
+            left: rect.left,
+            top: rect.top,
+            right: rect.right,
+            bottom: rect.bottom,
+            width: rect.width,
+            height: rect.height,
+            centerX: rect.centerX,
+            centerY: rect.centerY
+        }));
     }
 
     revealTile(tileId) {

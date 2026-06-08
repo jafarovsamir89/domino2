@@ -975,6 +975,89 @@ test("Konva top arrow stays centered in viewport coordinates without stage clamp
   expect(consoleErrors).toEqual([]);
 });
 
+test("Konva tile rects stay in viewport coordinates and source rect is excluded from collision", async ({ page }) => {
+  const pageErrors = [];
+  const consoleErrors = [];
+  page.on("pageerror", (error) => pageErrors.push(error.message));
+  page.on("console", (msg) => {
+    if (msg.type() === "error") consoleErrors.push(msg.text());
+  });
+
+  await setupSoloSmoke(page, { konvaEnabled: true });
+  await page.goto("/index.html");
+  await startSoloGame(page);
+
+  const result = await page.evaluate(() => {
+    const game = window.game;
+    const renderer = game?.renderer;
+    const board = game?.board;
+    if (!renderer || !board) throw new Error("missing_game_state");
+
+    board.placeFirst({
+      a: 6,
+      b: 6,
+      id: "viewport-rect-tile",
+      isDouble: true,
+      hasValue(value) {
+        return this.a === value || this.b === value;
+      },
+      otherSide(value) {
+        return this.a === value ? this.b : this.a;
+      }
+    });
+    renderer.renderBoard(board);
+
+    const konva = renderer._konvaBoardRenderer;
+    const buttonSize = renderer.getArrowButtonSize();
+    const tileRects = konva.getBoardTileRects();
+    const tileRect = tileRects[0];
+    const tileEl = document.querySelector(`#board .board-layout [data-tile-id="${tileRect.tileId}"]`);
+    const tileElRect = tileEl?.getBoundingClientRect?.() || null;
+    const sourceRect = {
+      left: tileRect.left,
+      top: tileRect.top,
+      right: tileRect.right,
+      bottom: tileRect.bottom,
+      width: tileRect.width,
+      height: tileRect.height,
+      centerX: tileRect.centerX,
+      centerY: tileRect.centerY
+    };
+    const raw = {
+      x: sourceRect.centerX,
+      y: sourceRect.centerY,
+      rect: sourceRect
+    };
+    const adjusted = renderer.adjustArrowPointForCollision(raw, buttonSize, tileRects, "top");
+
+    return {
+      tileRect,
+      tileElRect: tileElRect ? {
+        left: tileElRect.left,
+        top: tileElRect.top,
+        right: tileElRect.right,
+        bottom: tileElRect.bottom,
+        width: tileElRect.width,
+        height: tileElRect.height
+      } : null,
+      raw,
+      adjusted
+    };
+  });
+
+  expect(result.tileRect).not.toBeNull();
+  expect(result.tileElRect).not.toBeNull();
+  expect(result.tileRect.left).toBeCloseTo(result.tileElRect.left, 1);
+  expect(result.tileRect.top).toBeCloseTo(result.tileElRect.top, 1);
+  expect(result.tileRect.centerX).toBeCloseTo(result.tileElRect.left + result.tileElRect.width / 2, 1);
+  expect(result.tileRect.centerY).toBeCloseTo(result.tileElRect.top + result.tileElRect.height / 2, 1);
+  expect(result.adjusted.x).toBeCloseTo(result.raw.x, 1);
+  expect(result.adjusted.y).toBeCloseTo(result.raw.y, 1);
+  await page.screenshot({ path: `${KONVA_SCREENSHOT_DIR}/arrow-source-rect-excluded.png` });
+  expect(pageErrors).toEqual([]);
+  expect(consoleErrors).toEqual([]);
+});
+
 test("Konva arrow axes stay locked and emergency fallback only shifts when normal candidates fail", async ({ page }) => {
   const pageErrors = [];
   const consoleErrors = [];
@@ -1152,9 +1235,9 @@ test("Konva open-end hints sit lower and arrow buttons match the CSS size", asyn
     };
   });
 
-  expect(firstShot.minY).toBeGreaterThan(firstShot.stageHeight * 0.8);
+  expect(firstShot.minY).toBeGreaterThan(firstShot.stageHeight * 0.84);
   expect(Math.abs(firstShot.avgX - firstShot.stageWidth / 2)).toBeLessThan(firstShot.stageWidth * 0.08);
-  await page.screenshot({ path: `${KONVA_SCREENSHOT_DIR}/open-end-hints-lower-final.png` });
+  await page.screenshot({ path: `${KONVA_SCREENSHOT_DIR}/open-end-hints-lowest-safe-row.png` });
 
   const arrowSize = await page.evaluate(() => {
     const game = window.game;
@@ -1177,7 +1260,7 @@ test("Konva open-end hints sit lower and arrow buttons match the CSS size", asyn
   });
   expect(arrowSize.styleWidth).toBeCloseTo(arrowSize.buttonSize, 1);
   expect(arrowSize.rectWidth).toBeCloseTo(arrowSize.buttonSize, 1);
-  await page.screenshot({ path: `${KONVA_SCREENSHOT_DIR}/arrow-top-perfect-axis.png` });
+  await page.screenshot({ path: `${KONVA_SCREENSHOT_DIR}/arrow-top-no-x-shift-final.png` });
 
   await page.evaluate(() => {
     const game = window.game;
@@ -1189,7 +1272,7 @@ test("Konva open-end hints sit lower and arrow buttons match the CSS size", asyn
     openEnd.growthDir = "bottom";
     renderer.showArrowChoices(board, [0], () => {}, () => {});
   });
-  await page.screenshot({ path: `${KONVA_SCREENSHOT_DIR}/arrow-bottom-perfect-axis.png` });
+  await page.screenshot({ path: `${KONVA_SCREENSHOT_DIR}/arrow-bottom-no-x-shift-final.png` });
 
   await page.evaluate(() => {
     const game = window.game;
@@ -1207,7 +1290,7 @@ test("Konva open-end hints sit lower and arrow buttons match the CSS size", asyn
     }
     renderer.showArrowChoices(board, openEnds.map((_, index) => index), () => {}, () => {});
   });
-  await page.screenshot({ path: `${KONVA_SCREENSHOT_DIR}/arrow-left-right-perfect-axis.png` });
+  await page.screenshot({ path: `${KONVA_SCREENSHOT_DIR}/arrow-vertical-with-many-tiles-final.png` });
 
   await page.evaluate(() => {
     const game = window.game;
@@ -1433,7 +1516,7 @@ test("Konva board parity keeps DOM palette, geometry, and overlays aligned", asy
     };
   });
   expect(hintRail).not.toBeNull();
-  expect(hintRail.minY).toBeGreaterThan(hintRail.stageHeight * 0.8);
+  expect(hintRail.minY).toBeGreaterThan(hintRail.stageHeight * 0.84);
   expect(Math.abs(hintRail.avgX - hintRail.stageWidth / 2)).toBeLessThan(hintRail.stageWidth * 0.08);
 
   const anchorDistance = await page.evaluate(() => {
@@ -1458,7 +1541,6 @@ test("Konva board parity keeps DOM palette, geometry, and overlays aligned", asy
   expect(anchorDistance.distance).toBeGreaterThanOrEqual(0);
   expect(anchorDistance.distance).toBeLessThan(Math.max(24, Math.max(anchorDistance.nodeRect.width, anchorDistance.nodeRect.height) * 0.45));
 
-  await page.screenshot({ path: `${KONVA_SCREENSHOT_DIR}/open-end-hints-lower-final.png` });
   await page.screenshot({ path: `${KONVA_SCREENSHOT_DIR}/konva-board-1v1-first-move.png` });
   await page.screenshot({ path: `${KONVA_SCREENSHOT_DIR}/konva-animation-no-ghost.png` });
 
