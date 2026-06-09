@@ -4670,10 +4670,6 @@ body.seat-selection-active #game-screen {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
-    .leaderboard-tabs {
-        grid-template-columns: 1fr;
-    }
-
     .start-lang-select-wrap {
         flex: 0 0 58px;
     }
