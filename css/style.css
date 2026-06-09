@@ -1107,7 +1107,7 @@ input, button { font: inherit; }
 
 .leaderboard-modal .modal-desc,
 .friends-modal .modal-desc.page-description {
-    margin-bottom: 4px;
+    margin-bottom: 2px;
 }
 
 .leaderboard-list {
@@ -1116,13 +1116,15 @@ input, button { font: inherit; }
 }
 
 .leaderboard-tabs {
-    display: flex;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 8px;
     margin-bottom: 4px;
+    width: 100%;
 }
 
 .leaderboard-tab {
+    width: 100%;
     min-height: 36px;
     padding: 0 12px;
     border-radius: 999px;
@@ -4666,6 +4668,10 @@ body.seat-selection-active #game-screen {
 
     .social-center-tabs {
         grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .leaderboard-tabs {
+        grid-template-columns: 1fr;
     }
 
     .start-lang-select-wrap {
