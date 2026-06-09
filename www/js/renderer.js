@@ -959,6 +959,11 @@ export class Renderer {
     renderScores(players, cur) {
         this.scoresEl.innerHTML = '';
         for (const p of players) {
+            const safeName = this.app?.getFirstNameDisplayName
+                ? this.app.getFirstNameDisplayName(p?.name || '', this.app?.playerNames?.[p?.index] || 'Player')
+                : String(p?.name || this.app?.playerNames?.[p?.index] || 'Player');
+            const safeScore = Number.isFinite(Number(p?.score)) ? Number(p.score) : 0;
+            const safeRoundWins = Number.isFinite(Number(p?.roundWins)) ? Number(p.roundWins) : 0;
             const it = document.createElement('div');
             it.className = 'score-item';
             if (p.index === cur) it.classList.add('current-player');
@@ -973,20 +978,20 @@ export class Renderer {
             const canOpenProfile = Boolean(playerId && !p?.isBot);
             const name = document.createElement(canOpenProfile ? 'button' : 'span');
             name.className = canOpenProfile ? 'score-name score-name-button' : 'score-name';
-            name.textContent = `${p.name}:`;
+            name.textContent = `${safeName}:`;
             if (canOpenProfile) {
                 name.type = 'button';
-                name.title = p.name || 'Player';
+                name.title = safeName || 'Player';
                 name.addEventListener('click', () => {
-                    this.app.openPlayerProfileModal({ id: playerId, displayName: p.name, playerId });
+                    this.app.openPlayerProfileModal({ id: playerId, displayName: safeName, playerId });
                 });
             }
             const value = document.createElement('span');
             value.className = 'score-value';
-            value.textContent = String(p.score);
+            value.textContent = String(safeScore);
             const wins = document.createElement('span');
             wins.className = 'score-wins';
-            wins.textContent = ` ${p.roundWins}`;
+            wins.textContent = ` ${safeRoundWins}`;
             it.appendChild(name);
             it.appendChild(document.createTextNode(' '));
             it.appendChild(value);
