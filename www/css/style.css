@@ -2031,6 +2031,7 @@ input, button { font: inherit; }
 
 .cosmetics-shop-panel {
     grid-column: 1 / -1;
+    margin: 0 24px 16px;
     background: linear-gradient(180deg, rgba(88, 162, 255, 0.08), rgba(255, 255, 255, 0.04));
 }
 
@@ -4727,6 +4728,10 @@ body.seat-selection-active #game-screen {
 
     .coin-shop-hero {
         flex-direction: column;
+        margin: 0 16px 16px;
+    }
+
+    .cosmetics-shop-panel {
         margin: 0 16px 16px;
     }
 
