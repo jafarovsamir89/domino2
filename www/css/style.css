@@ -1977,7 +1977,7 @@ input, button { font: inherit; }
     justify-content: space-between;
     gap: 14px;
     padding: 16px 24px;
-    margin-bottom: 16px;
+    margin: 0 24px 16px;
     border-radius: 20px;
     border: 1px solid rgba(255, 255, 255, 0.08);
     background: linear-gradient(135deg, rgba(240, 192, 64, 0.14), rgba(255, 255, 255, 0.03));
@@ -4727,6 +4727,7 @@ body.seat-selection-active #game-screen {
 
     .coin-shop-hero {
         flex-direction: column;
+        margin: 0 16px 16px;
     }
 
     .coin-shop-grid {
