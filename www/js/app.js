@@ -191,7 +191,7 @@ class DominoGame {
         this.seatSelectionUi = null;
         this.pendingReconnectResolution = false;
         this.openRooms = [];
-        this.socialCenterTab = 'inbox';
+        this.socialCenterTab = 'friends';
         this.socialCenterView = 'list';
         this.onlineSocialPanel = 'rooms';
         this.onlineRoomFilters = {
@@ -414,7 +414,7 @@ class DominoGame {
             await this.openFriendsModal();
         });
         if (openSocialBtn) openSocialBtn.addEventListener('click', async () => {
-            await this.openSocialCenterModal('inbox');
+            await this.openSocialCenterModal('friends');
         });
         const socialCenterTabs = document.getElementById('social-center-tabs');
         if (socialCenterTabs && !socialCenterTabs.dataset.bound) {
@@ -464,12 +464,9 @@ class DominoGame {
         if (coinShopVideoBtn) coinShopVideoBtn.addEventListener('click', async () => {
             await this.claimCoinShopVideoReward();
         });
-        const friendsSearchBtn = document.getElementById('friends-search-btn');
-        const friendsSearchInput = document.getElementById('friends-search-input');
-        if (friendsSearchBtn) friendsSearchBtn.addEventListener('click', () => void this.searchFriendsPage());
-        if (friendsSearchInput) {
+        document.querySelectorAll('#friends-search-input').forEach((friendsSearchInput) => {
             friendsSearchInput.addEventListener('input', () => this.scheduleFriendsSearch());
-        }
+        });
 
         const soloNameInput = document.getElementById('player-name');
         const onlineNameInput = document.getElementById('player-name-online');
@@ -627,15 +624,36 @@ class DominoGame {
             this.onlineRoomFilters.stakeKey = document.getElementById('open-room-stake-filter').value || 'all';
             void this.loadOpenRooms();
         });
-        document.getElementById('friend-search-input')?.addEventListener('keydown', (event) => {
-            if (event.key === 'Enter') {
-                event.preventDefault();
-                document.getElementById('friend-search-btn')?.click();
-            }
+        document.querySelectorAll('#friends-search-input').forEach((friendsSearchInput) => {
+            friendsSearchInput.addEventListener('keydown', (event) => {
+                if (event.key === 'Enter') {
+                    event.preventDefault();
+                    void this.searchFriendsPage();
+                }
+            });
         });
-        document.getElementById('friend-search-btn')?.addEventListener('click', () => {
-            void this.searchFriends();
-        });
+        const friendSearchInput = document.getElementById('friend-search-input');
+        if (friendSearchInput) {
+            friendSearchInput.addEventListener('input', () => {
+                if (this._friendSearchTimer) {
+                    clearTimeout(this._friendSearchTimer);
+                }
+                this._friendSearchTimer = window.setTimeout(() => {
+                    this._friendSearchTimer = null;
+                    void this.searchFriends();
+                }, 300);
+            });
+            friendSearchInput.addEventListener('keydown', (event) => {
+                if (event.key === 'Enter') {
+                    event.preventDefault();
+                    if (this._friendSearchTimer) {
+                        clearTimeout(this._friendSearchTimer);
+                        this._friendSearchTimer = null;
+                    }
+                    void this.searchFriends();
+                }
+            });
+        }
         document.getElementById('copy-room-code-btn')?.addEventListener('click', async () => {
             await this.shareCurrentRoomCode();
         });
@@ -898,7 +916,7 @@ class DominoGame {
         this.closeSocialCenterModal();
     }
 
-    async openSocialCenterModal(tab = 'inbox', playerRef = null) {
+    async openSocialCenterModal(tab = 'friends', playerRef = null) {
         this.closeStartModals();
         this.closePlayerProfileModal();
         this.closeAccountModal();
@@ -925,7 +943,7 @@ class DominoGame {
         modal?.classList.remove('active');
         document.getElementById('social-chats-panel')?.classList.add('is-hidden');
         document.getElementById('start-screen')?.classList.add('active');
-        this.socialCenterTab = 'inbox';
+        this.socialCenterTab = 'friends';
         this.socialCenterView = 'list';
         this.accountMessagesState = {
             ...(this.accountMessagesState || {}),
@@ -934,10 +952,10 @@ class DominoGame {
         };
     }
 
-    async loadSocialCenterTab(tab = 'inbox', playerRef = null) {
+    async loadSocialCenterTab(tab = 'friends', playerRef = null) {
         const nextTab = tab === 'friends' || tab === 'invites' || tab === 'inbox'
             ? tab
-            : 'inbox';
+            : 'friends';
         if (playerRef) {
             const playerId = String(playerRef?.playerId || playerRef?.userId || playerRef?.id || playerRef || '').trim();
             if (playerId) {
@@ -1906,8 +1924,12 @@ class DominoGame {
                 const lastText = String(thread?.lastMessage?.text || thread?.lastMessage?.body || '').trim();
                 preview.textContent = lastText || this.t('messages-empty');
 
+                const previewRow = document.createElement('div');
+                previewRow.className = 'inbox-card-preview-row';
+                previewRow.appendChild(preview);
+
                 copy.appendChild(top);
-                copy.appendChild(preview);
+                copy.appendChild(previewRow);
                 card.appendChild(copy);
 
                 const meta = document.createElement('div');
@@ -1921,7 +1943,7 @@ class DominoGame {
                 } else {
                     time.textContent = '';
                 }
-                meta.appendChild(time);
+                previewRow.appendChild(time);
 
                 const unreadBadgeCount = Number(thread?.unreadCount || 0);
                 if (unreadBadgeCount > 0) {
@@ -1934,26 +1956,16 @@ class DominoGame {
                 const actions = document.createElement('div');
                 actions.className = 'friend-card-actions';
 
-                const openBtn = document.createElement('button');
-                openBtn.className = 'btn btn-action btn-strong open-chat-action';
-                openBtn.textContent = this.t('inbox-open-message');
-                openBtn.type = 'button';
-                openBtn.addEventListener('click', async (e) => {
-                    e.stopPropagation();
-                    openBtn.disabled = true;
-                    try {
-                        await this.openConversationWithPlayer(partner);
-                    } catch (err) {
-                        this.renderer.showMessage(err?.message || this.t('messages-load-failed'), 1800);
-                    } finally {
-                        openBtn.disabled = false;
-                    }
-                });
-
                 const deleteBtn = document.createElement('button');
-                deleteBtn.className = 'btn btn-menu delete-chat-action';
-                deleteBtn.textContent = this.t('inbox-delete');
+                deleteBtn.className = 'btn btn-menu action-icon-btn delete-chat-action';
                 deleteBtn.type = 'button';
+                deleteBtn.title = this.t('inbox-delete') || 'Delete';
+                deleteBtn.setAttribute('aria-label', this.t('inbox-delete') || 'Delete');
+                deleteBtn.innerHTML = `
+                    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                        <path d="M3.5 6h17M9 6V4.8A1.8 1.8 0 0 1 10.8 3h2.4A1.8 1.8 0 0 1 15 4.8V6m-5 0h4m-9 0 .6 12.2A2.8 2.8 0 0 0 8.4 21h7.2a2.8 2.8 0 0 0 2.8-2.8L19 6M10 10v6M14 10v6" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                `;
                 deleteBtn.addEventListener('click', async (e) => {
                     e.stopPropagation();
                     deleteBtn.disabled = true;
@@ -1967,7 +1979,6 @@ class DominoGame {
                     }
                 });
 
-                actions.appendChild(openBtn);
                 actions.appendChild(deleteBtn);
                 card.appendChild(actions);
                 card.appendChild(meta);
@@ -2262,8 +2273,8 @@ class DominoGame {
 
     syncSocialCenterTabs() {
         const activeTab = this.hasAuthenticatedAccount()
-            ? (this.socialCenterTab || 'inbox')
-            : 'inbox';
+            ? (this.socialCenterTab || 'friends')
+            : 'friends';
         const activeView = this.socialCenterView || 'list';
         const isConversation = activeView === 'conversation';
 
@@ -3144,11 +3155,9 @@ class DominoGame {
 
         if (balanceValue) balanceValue.textContent = String(balance);
         if (statusEl) {
-            statusEl.textContent = this.coinShopStatus?.error
-                ? this.coinShopStatus.error
-                : this.format('coin-shop-status-balance', {
-                    amount: balance.toLocaleString('en-US')
-                });
+            const errorText = String(this.coinShopStatus?.error || '').trim();
+            statusEl.textContent = errorText;
+            statusEl.classList.toggle('is-hidden', !errorText);
         }
         if (rewardTitle) {
             rewardTitle.textContent = this.format('coin-shop-video-title', {
@@ -3234,9 +3243,9 @@ class DominoGame {
 
         if (balanceValue) balanceValue.textContent = String(balance);
         if (statusEl) {
-            statusEl.textContent = this.format('cosmetics-shop-status-balance', {
-                amount: balance.toLocaleString('en-US')
-            });
+            const errorText = String(this.coinShopStatus?.error || '').trim();
+            statusEl.textContent = errorText;
+            statusEl.classList.toggle('is-hidden', !errorText);
         }
         if (note) note.textContent = this.t('cosmetics-shop-footnote');
         if (skinsGrid) this.renderTableSkinCards(skinsGrid, 'shop');
@@ -4722,7 +4731,8 @@ class DominoGame {
     getFriendsUiElements() {
         const socialRoot = document.querySelector('#social-center-modal #social-friends-panel');
         const legacyRoot = document.querySelector('#friends-modal .friends-page');
-        const root = socialRoot || legacyRoot || document;
+        const socialCenterActive = document.getElementById('social-center-modal')?.classList.contains('active');
+        const root = socialCenterActive ? (socialRoot || legacyRoot || document) : (legacyRoot || socialRoot || document);
         const query = (selector) => root?.querySelector(selector) || document.querySelector(selector);
         return {
             root,
@@ -4730,7 +4740,6 @@ class DominoGame {
             requestsList: query('#friends-requests-list'),
             searchResults: query('#friends-search-results'),
             searchInput: query('#friends-search-input'),
-            searchBtn: query('#friends-search-btn'),
             incomingInvitesList: document.querySelector('#social-center-modal #social-invites-incoming-list')
                 || document.querySelector('#social-invites-incoming-list'),
             sentInvitesList: document.querySelector('#social-center-modal #social-invites-sent-list')
@@ -4744,10 +4753,9 @@ class DominoGame {
             friendsList,
             requestsList,
             searchResults,
-            searchInput,
-            searchBtn
+            searchInput
         } = this.getFriendsUiElements();
-        if (!friendsList || !requestsList || !searchResults || !searchInput || !searchBtn) return;
+        if (!friendsList || !requestsList || !searchResults || !searchInput) return;
 
         const loggedIn = this.hasAuthenticatedAccount();
         const loading = this.t('account-profile-loading');
@@ -4756,12 +4764,10 @@ class DominoGame {
             this.setSummaryMessage(requestsList, this.t('friends-login-required'));
             this.setSummaryMessage(searchResults, this.t('friends-login-required'));
             searchInput.disabled = true;
-            searchBtn.disabled = true;
             return;
         }
 
         searchInput.disabled = false;
-        searchBtn.disabled = false;
         if (!isBackground) {
             if (!friendsList.children.length) this.setSummaryMessage(friendsList, loading);
             if (!requestsList.children.length) this.setSummaryMessage(requestsList, loading);
@@ -4830,16 +4836,11 @@ class DominoGame {
                     );
                     const canInvite = Boolean(item.friend?.id) && !hasPendingInvite;
 
-                    const messageBtn = document.createElement('button');
-                    messageBtn.className = 'btn btn-menu message-action-btn';
-                    messageBtn.textContent = 'Message';
-                    messageBtn.addEventListener('click', async (e) => {
-                        e.stopPropagation();
-                        await this.openConversationWithPlayer(item.friend);
-                    });
-
                     const inviteBtn = document.createElement('button');
-                    inviteBtn.className = 'btn btn-action btn-strong invite-action-btn';
+                    inviteBtn.className = 'btn btn-action btn-strong invite-action-btn action-text-btn';
+                    inviteBtn.type = 'button';
+                    inviteBtn.title = this.t('friend-invite');
+                    inviteBtn.setAttribute('aria-label', this.t('friend-invite'));
                     if (hasPendingInvite) {
                         inviteBtn.classList.add('is-invited');
                         inviteBtn.textContent = this.t('invite-status-invited');
@@ -4864,9 +4865,31 @@ class DominoGame {
                         });
                     }
 
+                    const messageBtn = document.createElement('button');
+                    messageBtn.className = 'btn btn-menu action-icon-btn message-action-btn';
+                    messageBtn.type = 'button';
+                    messageBtn.title = this.t('messages-open') || 'Message';
+                    messageBtn.setAttribute('aria-label', this.t('messages-open') || 'Message');
+                    messageBtn.innerHTML = `
+                        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                            <path d="M4 5.5h16a1.5 1.5 0 0 1 1.5 1.5v8a1.5 1.5 0 0 1-1.5 1.5H10l-4.6 3.8c-.7.6-1.4 0-1.4-.8V17H4a1.5 1.5 0 0 1-1.5-1.5V7A1.5 1.5 0 0 1 4 5.5Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+                        </svg>
+                    `;
+                    messageBtn.addEventListener('click', async (e) => {
+                        e.stopPropagation();
+                        await this.openConversationWithPlayer(item.friend);
+                    });
+
                     const removeBtn = document.createElement('button');
-                    removeBtn.className = 'btn btn-menu remove-action-btn';
-                    removeBtn.textContent = this.t('friend-remove');
+                    removeBtn.className = 'btn btn-menu action-icon-btn remove-action-btn';
+                    removeBtn.type = 'button';
+                    removeBtn.title = this.t('friend-remove') || 'Remove';
+                    removeBtn.setAttribute('aria-label', this.t('friend-remove') || 'Remove');
+                    removeBtn.innerHTML = `
+                        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                            <path d="M3.5 6h17M9 6V4.8A1.8 1.8 0 0 1 10.8 3h2.4A1.8 1.8 0 0 1 15 4.8V6m-5 0h4m-9 0 .6 12.2A2.8 2.8 0 0 0 8.4 21h7.2a2.8 2.8 0 0 0 2.8-2.8L19 6M10 10v6M14 10v6" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    `;
                     removeBtn.addEventListener('click', async (e) => {
                         e.stopPropagation();
                         removeBtn.disabled = true;
@@ -4881,8 +4904,8 @@ class DominoGame {
                         }
                     });
 
-                    action.appendChild(messageBtn);
                     action.appendChild(inviteBtn);
+                    action.appendChild(messageBtn);
                     action.appendChild(removeBtn);
                     card.appendChild(action);
                     friendsList.appendChild(card);
@@ -5271,12 +5294,6 @@ class DominoGame {
                     selfBtn.textContent = this.t('player-profile-self') || 'You';
                     action.appendChild(selfBtn);
                 } else if (statusKey === 'accepted') {
-                    const statusBtn = document.createElement('button');
-                    statusBtn.className = 'btn btn-menu status-btn';
-                    statusBtn.disabled = true;
-                    statusBtn.textContent = this.t('friends-request-accepted');
-                    action.appendChild(statusBtn);
-                    
                     const targetPlayerId = String(player.id || '').trim();
                     const hasPendingInvite = targetPlayerId && (this.roomInvitations?.sent || []).some(inv => 
                         String(inv.invitee?.id || '').trim() === targetPlayerId && 
@@ -5285,7 +5302,10 @@ class DominoGame {
                     const canInvite = Boolean(player.id) && !hasPendingInvite;
 
                     const inviteBtn = document.createElement('button');
-                    inviteBtn.className = 'btn btn-action btn-strong invite-action-btn';
+                    inviteBtn.className = 'btn btn-action btn-strong invite-action-btn action-text-btn';
+                    inviteBtn.type = 'button';
+                    inviteBtn.title = this.t('friend-invite');
+                    inviteBtn.setAttribute('aria-label', this.t('friend-invite'));
                     if (hasPendingInvite) {
                         inviteBtn.classList.add('is-invited');
                         inviteBtn.textContent = this.t('invite-status-invited');
@@ -5309,14 +5329,45 @@ class DominoGame {
                         });
                     }
                     const messageBtn = document.createElement('button');
-                    messageBtn.className = 'btn btn-menu message-btn';
-                    messageBtn.textContent = 'Message';
+                    messageBtn.className = 'btn btn-menu action-icon-btn message-btn';
+                    messageBtn.type = 'button';
+                    messageBtn.title = this.t('messages-open') || 'Message';
+                    messageBtn.setAttribute('aria-label', this.t('messages-open') || 'Message');
+                    messageBtn.innerHTML = `
+                        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                            <path d="M4 5.5h16a1.5 1.5 0 0 1 1.5 1.5v8a1.5 1.5 0 0 1-1.5 1.5H10l-4.6 3.8c-.7.6-1.4 0-1.4-.8V17H4a1.5 1.5 0 0 1-1.5-1.5V7A1.5 1.5 0 0 1 4 5.5Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+                        </svg>
+                    `;
                     messageBtn.addEventListener('click', async () => {
                         await this.openConversationWithPlayer(player);
                     });
 
-                    action.appendChild(messageBtn);
+                    const removeBtn = document.createElement('button');
+                    removeBtn.className = 'btn btn-menu action-icon-btn remove-action-btn';
+                    removeBtn.type = 'button';
+                    removeBtn.title = this.t('friend-remove') || 'Remove';
+                    removeBtn.setAttribute('aria-label', this.t('friend-remove') || 'Remove');
+                    removeBtn.innerHTML = `
+                        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                            <path d="M3.5 6h17M9 6V4.8A1.8 1.8 0 0 1 10.8 3h2.4A1.8 1.8 0 0 1 15 4.8V6m-5 0h4m-9 0 .6 12.2A2.8 2.8 0 0 0 8.4 21h7.2a2.8 2.8 0 0 0 2.8-2.8L19 6M10 10v6M14 10v6" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    `;
+                    removeBtn.addEventListener('click', async () => {
+                        removeBtn.disabled = true;
+                        try {
+                            await this.account.removeFriend(player.friendshipId);
+                            await this.loadFriendsPage();
+                            this.renderer.showMessage(this.t('friends-removed'), 1400);
+                        } catch (err) {
+                            this.renderer.showMessage(err.message || this.t('friends-load-failed'), 1800);
+                        } finally {
+                            removeBtn.disabled = false;
+                        }
+                    });
+
                     action.appendChild(inviteBtn);
+                    action.appendChild(messageBtn);
+                    action.appendChild(removeBtn);
                 } else if (statusKey === 'pending_outgoing') {
                     const cancelBtn = document.createElement('button');
                     cancelBtn.className = 'btn btn-menu pending-btn';
@@ -6921,15 +6972,15 @@ class DominoGame {
             
             <div class="social-hub-tabs-container">
                 <div class="social-hub-tabs" id="social-center-tabs">
-                    <button type="button" class="social-hub-tab social-center-tab is-active" data-social-tab="inbox" id="social-tab-mail-btn">
-                        <span class="tab-icon mail-icon"></span>
-                        <span class="tab-label" data-i18n="social-tab-mail">Poçt</span>
-                        <span class="tab-badge" id="social-mail-unread-badge"></span>
-                    </button>
-                    <button type="button" class="social-hub-tab social-center-tab" data-social-tab="friends" id="social-tab-friends-btn">
+                    <button type="button" class="social-hub-tab social-center-tab is-active" data-social-tab="friends" id="social-tab-friends-btn">
                         <span class="tab-icon friends-icon"></span>
                         <span class="tab-label" data-i18n="social-tab-friends">Dostlar</span>
                         <span class="tab-badge" id="social-friends-unread-badge"></span>
+                    </button>
+                    <button type="button" class="social-hub-tab social-center-tab" data-social-tab="inbox" id="social-tab-mail-btn">
+                        <span class="tab-icon mail-icon"></span>
+                        <span class="tab-label" data-i18n="social-tab-mail">Poçt</span>
+                        <span class="tab-badge" id="social-mail-unread-badge"></span>
                     </button>
                 </div>
             </div>
@@ -6965,10 +7016,6 @@ class DominoGame {
                                 <span class="search-icon"></span>
                                 <input type="search" id="friends-search-input" data-i18n="friends-search-placeholder" placeholder="Oyunçu axtar" minlength="2">
                             </div>
-                            <button type="button" class="friends-filter-btn" id="friends-search-btn">
-                                <span class="filter-icon"></span>
-                                <span data-i18n="friend-search-button">Axtar</span>
-                            </button>
                         </div>
 
                         <div class="friends-sort-row">
@@ -7168,13 +7215,7 @@ class DominoGame {
         searchInput.type = 'search';
         searchInput.id = 'friend-search-input';
         searchInput.placeholder = this.t('search-name-hint');
-        const searchBtn = document.createElement('button');
-        searchBtn.className = 'btn btn-action btn-strong';
-        searchBtn.id = 'friend-search-btn';
-        searchBtn.type = 'button';
-        searchBtn.textContent = this.t('friend-search-button');
         filters.appendChild(searchInput);
-        filters.appendChild(searchBtn);
         const sections = [
             [this.t('friend-search-results-title'), 'friend-search-results'],
             [this.t('friend-requests-title'), 'friend-requests-list'],
@@ -10791,8 +10832,6 @@ class DominoGame {
             const saved = localStorage.getItem('domino-lang');
             if (translations[saved]) return saved;
         } catch {}
-        const browserLang = (navigator.language || '').slice(0, 2).toLowerCase();
-        if (translations[browserLang]) return browserLang;
         return 'az';
     }
     format(key, values = {}) {

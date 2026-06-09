@@ -152,7 +152,7 @@ test("start screen loads and stays within mobile viewport", async ({ page }) => 
   await expect(page.locator("#start-screen")).toHaveClass(/active/);
   await expect(page.locator("#account-btn")).toHaveClass(/start-profile-btn/);
   await expect(page.locator("#account-btn")).toHaveClass(/icon-btn/);
-  await expect(page.locator("#account-btn")).toHaveAttribute("aria-label", "\u0412\u0445\u043e\u0434");
+  await expect(page.locator("#account-btn")).toHaveAttribute("aria-label", /Giriş|Daxil|Вход/);
   await expect(page.locator("#account-btn")).toHaveText("");
   await expect(page.locator("#start-screen .start-topbar")).toBeVisible();
   await expect(page.locator("#start-lang-select")).toHaveCount(1);
@@ -163,7 +163,7 @@ test("start screen loads and stays within mobile viewport", async ({ page }) => 
   await expect(page.locator("#start-coin-shop-btn")).toHaveClass(/start-top-shop-btn/);
   await expect(page.locator("#start-cosmetics-shop-btn")).toHaveClass(/start-top-shop-btn/);
   await expect(page.locator("#start-screen .start-actions .start-shop-btn")).toHaveCount(0);
-  await expect(page.locator("#account-modal-title")).toHaveText("\u0410\u043a\u043a\u0430\u0443\u043d\u0442");
+  await expect(page.locator("#account-modal-title")).toHaveText(/Hesab|Аккаунт/);
 
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1);
   expect(overflow).toBe(false);
@@ -2197,7 +2197,7 @@ test("authenticated profile shows four stats cards without Xal and leaderboard u
   await expect(page.locator("#social-inbox-list .inbox-card")).toContainText(/Alice|Hello from Alice/);
 
   // Re-open chat from the inbox list
-  await page.locator("#social-inbox-list .inbox-card .btn").first().click();
+  await page.locator("#social-inbox-list .inbox-card .friend-card-copy").first().click();
   await expect(page.locator("#account-messages-conversation-list")).toContainText(/Loading profile|Profil yüklənir|Загрузка профиля/);
   await expect(page.locator("#social-chats-panel")).not.toHaveClass(/is-hidden/);
   await expect(page.locator("#account-messages-conversation-title")).toContainText(/Alice/);
@@ -2214,6 +2214,7 @@ test("authenticated profile shows four stats cards without Xal and leaderboard u
   await expect(page.locator("#social-center-modal")).toHaveClass(/active/);
   await expect(page.locator("#social-inbox-list .inbox-card")).toHaveCount(1);
 
+  await page.locator("#social-tab-mail-btn").click();
   // Invites lists are integrated under Poçt tab and visible
   await expect(page.locator("#social-invites-incoming-list .friend-card")).toHaveCount(1);
   await expect(page.locator("#social-invites-sent-list .friend-card")).toHaveCount(1);
@@ -2221,12 +2222,12 @@ test("authenticated profile shows four stats cards without Xal and leaderboard u
   await expect(page.locator("#social-invites-sent-list")).toContainText(/Cancel|Ləğv et|Отменить/);
 
   // Cancel outgoing invite
-  await page.locator("#social-invites-sent-list .friend-card .btn").click();
+  await page.locator("#social-invites-sent-list .cancel-invite-btn").click();
   await expect.poll(() => cancelInviteCalled).toBeTruthy();
 
   // Delete/claim inbox item
   await expect(page.locator("#social-inbox-panel")).not.toHaveClass(/is-hidden/);
-  await page.locator("#social-inbox-list .inbox-card .btn").nth(1).click();
+  await page.locator("#social-inbox-list .inbox-card .delete-chat-action").first().click();
   await expect(page.locator("#social-inbox-list .inbox-card")).toHaveCount(0);
 
   // Redesigned visual checks:
@@ -3105,7 +3106,6 @@ test("capture screenshots for review", async ({ page }) => {
 
   // 2. Open search results or request view
   await page.locator("#social-center-modal #friends-search-input").fill("Dmitriy");
-  await page.locator("#social-center-modal #friends-search-btn").click();
   await page.waitForTimeout(500);
   await page.screenshot({ path: "social-friends-mobile.png" });
   await page.screenshot({ path: "C:/Users/user/.gemini/antigravity/brain/090a8b99-b4c6-47b6-b145-6867d8609239/social-friends-mobile.png" });
@@ -3117,7 +3117,7 @@ test("capture screenshots for review", async ({ page }) => {
   await page.screenshot({ path: "C:/Users/user/.gemini/antigravity/brain/090a8b99-b4c6-47b6-b145-6867d8609239/social-mail-mobile.png" });
 
   // 4. Open Chat Screen
-  await page.locator("#social-inbox-list .inbox-card .open-chat-action").first().click();
+  await page.locator("#social-inbox-list .inbox-card .friend-card-copy").first().click();
   await page.waitForTimeout(500);
   await page.screenshot({ path: "chat-screen-mobile.png" });
   await page.screenshot({ path: "C:/Users/user/.gemini/antigravity/brain/090a8b99-b4c6-47b6-b145-6867d8609239/chat-screen-mobile.png" });

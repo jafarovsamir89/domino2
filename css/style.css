@@ -1129,7 +1129,7 @@ input, button { font: inherit; }
 
 .social-center-tabs {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 8px;
     margin-bottom: 4px;
 }
@@ -1399,7 +1399,7 @@ input, button { font: inherit; }
 
 .friends-search-bar {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-columns: minmax(0, 1fr);
     gap: 8px;
 }
 
@@ -1953,6 +1953,15 @@ input, button { font: inherit; }
     margin: 8px 0 16px;
 }
 
+.coin-shop-section-copy {
+    padding: 0 16px;
+}
+
+.coin-shop-section-copy .modal-desc,
+.table-skin-desc {
+    text-align: left;
+}
+
 .cosmetics-shop-modal {
     width: min(920px, 100%);
 }
@@ -1967,7 +1976,7 @@ input, button { font: inherit; }
     align-items: stretch;
     justify-content: space-between;
     gap: 14px;
-    padding: 14px 16px;
+    padding: 16px;
     margin-bottom: 16px;
     border-radius: 20px;
     border: 1px solid rgba(255, 255, 255, 0.08);
@@ -4541,7 +4550,7 @@ body.seat-selection-active #game-screen {
 
     .coin-shop-intro,
     .cosmetics-shop-intro {
-        text-align: center;
+        text-align: left;
     }
 
     #account-modal .modal-header,
@@ -5398,7 +5407,7 @@ body.is-reconnecting .hand-container {
 
 /* Dostlar Tab Search & Filter Row */
 .friends-search-row {
-    display: flex;
+    display: grid;
     gap: 10px;
     margin-bottom: 12px;
 }
@@ -5674,6 +5683,39 @@ body.is-reconnecting .hand-container {
     gap: 6px;
     flex-shrink: 0;
     align-items: center;
+}
+
+.friend-card-actions .btn.action-text-btn {
+    flex: 1 1 0;
+    min-width: 0;
+}
+
+.friend-card-actions .btn.action-icon-btn {
+    flex: 0 0 40px;
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    padding: 0;
+    display: grid;
+    place-items: center;
+}
+
+.friend-card-actions .btn.action-icon-btn svg {
+    width: 16px;
+    height: 16px;
+}
+
+.inbox-card-preview-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    min-width: 0;
+}
+
+.inbox-card-preview-row .friend-card-desc {
+    flex: 1 1 auto;
+    min-width: 0;
 }
 
 /* Custom styles for action buttons inside social lists to keep them tiny/clean */
@@ -6363,7 +6405,6 @@ body.is-reconnecting .hand-container {
 
 /* Adjust paddings for content inside screen pages because the outer card wrapper padding is removed */
 #account-modal .account-cabinet,
-#account-modal .account-history,
 #coin-shop-modal .coin-shop-hero,
 #coin-shop-modal .coin-shop-grid,
 #coin-shop-modal #coin-shop-footnote,
@@ -6375,9 +6416,19 @@ body.is-reconnecting .hand-container {
     box-sizing: border-box;
 }
 
+#account-modal .account-cabinet {
+    padding-left: 5px;
+    padding-right: 9px;
+}
+
+#account-modal .account-history {
+    padding-left: 24px;
+    padding-right: 24px;
+    box-sizing: border-box;
+}
+
 @media (max-width: 768px) {
     #account-modal .account-cabinet,
-    #account-modal .account-history,
     #coin-shop-modal .coin-shop-hero,
     #coin-shop-modal .coin-shop-grid,
     #coin-shop-modal #coin-shop-footnote,
@@ -6386,6 +6437,17 @@ body.is-reconnecting .hand-container {
     #cosmetics-shop-modal #cosmetics-shop-footnote {
         padding-left: 16px;
         padding-right: 16px;
+    }
+
+    #account-modal .account-cabinet {
+        padding-left: 5px;
+        padding-right: 9px;
+    }
+
+    #account-modal .account-history {
+        padding-left: 16px;
+        padding-right: 16px;
+        box-sizing: border-box;
     }
 }
 
