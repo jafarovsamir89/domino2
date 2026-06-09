@@ -624,22 +624,19 @@ input, button { font: inherit; }
 
 #player-profile-modal,
 #friends-modal,
-#social-center-modal,
-#leaderboard-modal {
+#social-center-modal {
     z-index: 90000;
 }
 
 #player-profile-modal.active,
 #friends-modal.active,
-#social-center-modal.active,
-#leaderboard-modal.active {
+#social-center-modal.active {
     z-index: 90000;
 }
 
 #player-profile-modal .modal-card,
 #friends-modal .modal-card,
-#social-center-modal .modal-card,
-#leaderboard-modal .modal-card {
+#social-center-modal .modal-card {
     position: relative;
     z-index: 1;
 }
@@ -681,27 +678,6 @@ input, button { font: inherit; }
 #account-modal .modal-card,
 #coin-shop-modal .modal-card,
 #cosmetics-shop-modal .modal-card,
-#leaderboard-modal .modal-card {
-    max-height: none;
-}
-
-#leaderboard-modal .modal-card-wide {
-    width: 100%;
-    max-width: 1200px;
-    height: 100%;
-    max-height: 100%;
-    margin: 0 auto;
-    border-radius: 0;
-    border: none;
-    background: transparent;
-    box-shadow: none;
-    display: flex;
-    flex-direction: column;
-    padding: 0 0 24px 0;
-    overflow-y: auto;
-    box-sizing: border-box;
-}
-
 #leaderboard-modal .modal-card {
     max-height: none;
 }

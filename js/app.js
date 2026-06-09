@@ -896,16 +896,34 @@ class DominoGame {
         this.closeAccountModal();
         this.closeCoinShopModal();
         this.closeCosmeticsShopModal();
+        const startScreen = document.getElementById('start-screen');
+        const gameScreen = document.getElementById('game-screen');
+        if (startScreen && startScreen.classList.contains('active')) {
+            this.leaderboardPrevScreen = 'start-screen';
+            startScreen.classList.remove('active');
+        } else if (gameScreen && gameScreen.classList.contains('active')) {
+            this.leaderboardPrevScreen = 'game-screen';
+            gameScreen.classList.remove('active');
+        } else if (!this.leaderboardPrevScreen) {
+            this.leaderboardPrevScreen = 'start-screen';
+        }
         const modal = document.getElementById('leaderboard-modal');
         if (!modal) return;
         if (modal.parentElement !== document.body) document.body.appendChild(modal);
-        modal.style.zIndex = '30';
+        modal.style.zIndex = '';
         modal.classList.add('active');
         await this.loadLeaderboard(this.leaderboardScope || 'overall');
     }
 
     closeLeaderboardModal() {
         document.getElementById('leaderboard-modal')?.classList.remove('active');
+        const prevScreenId = this.leaderboardPrevScreen || 'start-screen';
+        const gameActive = document.getElementById('game-screen')?.classList.contains('active');
+        if (!gameActive) {
+            const prevScreen = document.getElementById(prevScreenId);
+            if (prevScreen) prevScreen.classList.add('active');
+        }
+        this.leaderboardPrevScreen = null;
     }
 
     async openFriendsModal() {
