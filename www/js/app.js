@@ -899,7 +899,7 @@ class DominoGame {
         const modal = document.getElementById('leaderboard-modal');
         if (!modal) return;
         if (modal.parentElement !== document.body) document.body.appendChild(modal);
-        modal.style.zIndex = '24000';
+        modal.style.zIndex = '30';
         modal.classList.add('active');
         await this.loadLeaderboard(this.leaderboardScope || 'overall');
     }

@@ -585,7 +585,8 @@ input, button { font: inherit; }
 
 #account-modal.screen,
 #coin-shop-modal.screen,
-#cosmetics-shop-modal.screen {
+#cosmetics-shop-modal.screen,
+#leaderboard-modal.screen {
     position: relative;
     width: 100%;
     height: 100dvh;
@@ -604,7 +605,8 @@ input, button { font: inherit; }
 
 #account-modal.screen.active,
 #coin-shop-modal.screen.active,
-#cosmetics-shop-modal.screen.active {
+#cosmetics-shop-modal.screen.active,
+#leaderboard-modal.screen.active {
     display: flex;
 }
 
@@ -659,7 +661,8 @@ input, button { font: inherit; }
 
 #account-modal .modal-card-wide,
 #coin-shop-modal .modal-card-wide,
-#cosmetics-shop-modal .modal-card-wide {
+#cosmetics-shop-modal .modal-card-wide,
+#leaderboard-modal .modal-card-wide {
     width: 100%;
     max-width: 1200px;
     height: 100%;
@@ -677,8 +680,37 @@ input, button { font: inherit; }
 
 #account-modal .modal-card,
 #coin-shop-modal .modal-card,
-#cosmetics-shop-modal .modal-card {
+#cosmetics-shop-modal .modal-card,
+#leaderboard-modal .modal-card {
     max-height: none;
+}
+
+#leaderboard-modal .modal-card-wide {
+    width: 100%;
+    max-width: 1200px;
+    height: 100%;
+    max-height: 100%;
+    margin: 0 auto;
+    border-radius: 0;
+    border: none;
+    background: transparent;
+    box-shadow: none;
+    display: flex;
+    flex-direction: column;
+    padding: 0 0 24px 0;
+    overflow-y: auto;
+    box-sizing: border-box;
+}
+
+#leaderboard-modal .modal-card {
+    max-height: none;
+}
+
+#leaderboard-modal .leaderboard-list {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    padding-bottom: 4px;
 }
 
 .modal-header {
