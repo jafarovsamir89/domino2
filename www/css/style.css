@@ -1954,7 +1954,7 @@ input, button { font: inherit; }
 }
 
 .coin-shop-section-copy {
-    padding: 0 16px;
+    padding: 0;
 }
 
 .coin-shop-section-copy .modal-desc,
@@ -1976,7 +1976,7 @@ input, button { font: inherit; }
     align-items: stretch;
     justify-content: space-between;
     gap: 14px;
-    padding: 16px;
+    padding: 16px 24px;
     margin-bottom: 16px;
     border-radius: 20px;
     border: 1px solid rgba(255, 255, 255, 0.08);
