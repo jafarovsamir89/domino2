@@ -610,6 +610,10 @@ input, button { font: inherit; }
     display: flex;
 }
 
+#leaderboard-modal.screen {
+    padding: 16px;
+}
+
 #account-name-modal {
     z-index: 40;
 }
@@ -4710,6 +4714,10 @@ body.seat-selection-active #game-screen {
 
     #account-modal.screen {
         padding: 0;
+    }
+
+    #leaderboard-modal.screen {
+        padding: 12px;
     }
 
     #account-modal .modal-card-wide {
