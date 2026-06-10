@@ -87,7 +87,8 @@ function debugLog(...args) {
 const DOMINO_CLIENT_BUILD = {
     gitCommit: '669bbdc',
     builtAt: new Date().toISOString(),
-    socialRealtimeDebugVersion: 'browser-production-trace-v1'
+    socialRealtimeDebugVersion: 'browser-production-trace-v1',
+    cacheFixVersion: 'domino-v35'
 };
 
 if (typeof window !== 'undefined') {
@@ -1193,7 +1194,9 @@ class DominoGame {
             sseConnectedApprox: Boolean(this._socialSse && this._socialSse.readyState === 1),
             invitePollingActive: Boolean(this._gameInviteRefreshId),
             hasServiceWorkerController: Boolean(serviceWorkerController),
-            serviceWorkerControllerUrl: String(serviceWorkerController?.scriptURL || '').trim()
+            serviceWorkerControllerUrl: String(serviceWorkerController?.scriptURL || '').trim(),
+            serviceWorkerExpectedVersion: DOMINO_CLIENT_BUILD.socialRealtimeDebugVersion,
+            cacheFixVersion: DOMINO_CLIENT_BUILD.cacheFixVersion
         };
     }
 
@@ -12438,6 +12441,27 @@ let game = null;
 game = new DominoGame();
 window.game = game;
 window.__dominoSocialRealtimeStatus = () => window.game?.getSocialRealtimeStatus?.() || null;
+window.__dominoClearAppCacheAndReload = async () => {
+    try {
+        const keys = await caches.keys();
+        await Promise.all(keys.filter((key) => String(key).startsWith('domino-')).map((key) => caches.delete(key)));
+    } catch (error) {
+        console.warn('[SW] cache clear failed', error);
+    }
+
+    try {
+        const registrations = await navigator.serviceWorker?.getRegistrations?.() || [];
+        await Promise.all(registrations.map((registration) => registration.unregister()));
+    } catch (error) {
+        console.warn('[SW] unregister failed', error);
+    }
+
+    try {
+        localStorage.removeItem('dominoSwReloadedForVersion');
+    } catch {}
+
+    location.reload();
+};
 
 // Re-render board on resize for correct scaling (debounced)
 let _resizeTimer = null;
