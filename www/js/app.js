@@ -235,6 +235,10 @@ class DominoGame {
         this._socialSocketLastConnectError = '';
         this._socialSocketLastEventAt = 0;
         this._socialSocketAuthToken = "";
+        this._socialSocketAuthRefreshAttempted = false;
+        this._socialRefreshTimers = new Map();
+        this._socialRefreshInFlight = new Set();
+        this._socialRefreshQueued = new Set();
         this.socialInboxState = {
             items: [],
             threads: [],
@@ -328,6 +332,7 @@ class DominoGame {
     destroy() {
         clearInterval(this._watchdogId);
         this._watchdogId = null;
+        this.closeSocialRealtime();
         this.clearPendingOnlineAction({ rollback: false });
         if (this._reactionOutsideHandler) {
             document.removeEventListener('pointerdown', this._reactionOutsideHandler, true);
@@ -1095,9 +1100,7 @@ class DominoGame {
     }
 
     resetSocialCenterState() {
-        this.closeSocialSse();
-        this.clearSocialSoftRefreshTimer();
-        this.stopGameInviteRefresh();
+        this.closeSocialRealtime();
         this.socialSummary = {
             inboxUnreadCount: 0,
             chatUnreadCount: 0,
@@ -1162,12 +1165,15 @@ class DominoGame {
         return {
             socketAvailable,
             socketConnected,
+            socketReady: Boolean(this._socialSocketReady),
             socketUrl,
             socketPath,
             tokenExists: Boolean(token),
             fallbackMode,
             lastConnectError: String(this._socialSocketLastConnectError || "").trim(),
-            lastEventAt: Number(this._socialSocketLastEventAt || 0) || 0
+            lastEventAt: Number(this._socialSocketLastEventAt || 0) || 0,
+            sseConnectedApprox: Boolean(this._socialSse && this._socialSse.readyState === 1),
+            invitePollingActive: Boolean(this._gameInviteRefreshId)
         };
     }
 
@@ -1193,6 +1199,62 @@ class DominoGame {
     closeSocialRealtime() {
         this.closeSocialSocket();
         this.closeSocialSse();
+        this.clearSocialSoftRefreshTimer();
+        this.clearSocialRefreshTimers();
+        this.stopGameInviteRefresh();
+        this.stopSocialHubAutoRefresh();
+        this._socialSocketFallbackActive = false;
+        this._socialSocketLastConnectError = '';
+        this._socialSocketLastEventAt = 0;
+        this._socialSocketAuthToken = '';
+        this._socialSocketAuthRefreshPending = false;
+        this._socialSocketAuthRefreshAttempted = false;
+    }
+
+    isSocialUnauthorizedError(value) {
+        const text = String(value?.message || value?.error || value || '').trim().toLowerCase();
+        const code = String(value?.code || value?.status || '').trim().toLowerCase();
+        return code === 'unauthorized' || text.includes('unauthorized');
+    }
+
+    async attemptSocialSocketAuthRefresh(reason = 'connect_error', payload = {}) {
+        if (!this.hasAuthenticatedAccount()) return false;
+        if (this._socialSocketAuthRefreshPending || this._socialSocketAuthRefreshAttempted) {
+            return false;
+        }
+
+        this._socialSocketAuthRefreshPending = true;
+        this._socialSocketAuthRefreshAttempted = true;
+        this.logSocialSocket('token-refresh-requested', {
+            reason,
+            code: String(payload?.code || '').trim(),
+            message: String(payload?.message || payload?.error || '').trim()
+        });
+
+        try {
+            this.closeSocialSocket();
+            await this.account?.syncPlatformSession?.();
+            if (!this.hasAuthenticatedAccount()) {
+                throw new Error('auth_lost');
+            }
+            const initialized = this.initSocialSocket();
+            if (!initialized) {
+                throw new Error('socket_reinit_failed');
+            }
+            return true;
+        } catch (error) {
+            this.logSocialSocket('token-refresh-failed', {
+                reason,
+                error: String(error?.message || error || 'token_refresh_failed')
+            });
+            this._socialSocketFallbackActive = true;
+            if (!this._socialSse) {
+                this.initSocialSse();
+            }
+            return false;
+        } finally {
+            this._socialSocketAuthRefreshPending = false;
+        }
     }
 
     isSocialRealtimeSocketReady() {
@@ -1325,6 +1387,7 @@ class DominoGame {
             this._socialSocketProbePending = false;
             this._socialSocketLastConnectError = '';
             this._socialSocketFallbackActive = false;
+            this._socialSocketAuthRefreshAttempted = false;
             this.clearSocialSocketReconnectTimer();
             this.clearSocialSocketFallbackTimer();
             this.sendSocialPresenceUpdate(this._socialPresenceStatus || 'online').catch(() => {});
@@ -1338,6 +1401,10 @@ class DominoGame {
             markTouch('connect_error', { message });
             this._socialSocketProbePending = false;
             this.clearSocialSocketFallbackTimer();
+            if (this.isSocialUnauthorizedError(error) && !this._socialSocketAuthRefreshAttempted) {
+                void this.attemptSocialSocketAuthRefresh('connect_error', { message }).catch(() => {});
+                return;
+            }
             if (this._socialSocket !== socket) return;
             this._socialSocketFallbackTimer = setTimeout(() => {
                 if (this._socialSocket !== socket || socket.connected) return;
@@ -1378,26 +1445,52 @@ class DominoGame {
         socket.on('presence:update', (payload) => {
             markTouch('presence:update', payload);
             this.applySocialPresenceUpdate(payload);
-            this.refreshSocialPresenceUi();
-            this.updateSocialCenterBadge();
+            this.scheduleSocialRefresh('presence', { delayMs: 1200, reason: 'socket-presence-update' });
         });
 
         socket.on('dm:new', (payload) => {
             markTouch('dm:new', payload);
             this.applyRealtimeDirectMessage(payload);
-            this.scheduleSocialSoftRefresh('socket-dm-new', 4000);
+            const threadPlayerId = String(payload?.threadPlayerId || '').trim();
+            const activePlayerId = String(this.accountMessagesState?.activePlayerId || '').trim();
+            if (threadPlayerId && activePlayerId && threadPlayerId === activePlayerId) {
+                this.scheduleSocialRefresh('conversation', {
+                    delayMs: 1200,
+                    reason: 'socket-dm-new',
+                    playerId: threadPlayerId
+                });
+            }
+            this.scheduleSocialRefresh('messages', { delayMs: 1400, reason: 'socket-dm-new' });
         });
 
         socket.on('dm:ack', (payload) => {
             markTouch('dm:ack', payload);
             this.applyRealtimeDirectMessage(payload);
-            this.scheduleSocialSoftRefresh('socket-dm-ack', 4000);
+            const threadPlayerId = String(payload?.threadPlayerId || '').trim();
+            const activePlayerId = String(this.accountMessagesState?.activePlayerId || '').trim();
+            if (threadPlayerId && activePlayerId && threadPlayerId === activePlayerId) {
+                this.scheduleSocialRefresh('conversation', {
+                    delayMs: 1200,
+                    reason: 'socket-dm-ack',
+                    playerId: threadPlayerId
+                });
+            }
+            this.scheduleSocialRefresh('messages', { delayMs: 1400, reason: 'socket-dm-ack' });
         });
 
         socket.on('dm:read', (payload) => {
             markTouch('dm:read', payload);
             const threadPlayerId = String(payload?.threadPlayerId || '').trim();
             if (!threadPlayerId) return;
+            const activePlayerId = String(this.accountMessagesState?.activePlayerId || '').trim();
+            if (activePlayerId && activePlayerId === threadPlayerId) {
+                this.scheduleSocialRefresh('conversation', {
+                    delayMs: 1200,
+                    reason: 'socket-dm-read',
+                    playerId: threadPlayerId
+                });
+            }
+            this.scheduleSocialRefresh('messages', { delayMs: 1400, reason: 'socket-dm-read' });
             const state = this.accountMessagesState || {};
             const messages = Array.isArray(state.messages) ? state.messages.map((message) => {
                 const isRelevant = String(message?.senderPlayerId || '').trim() === threadPlayerId
@@ -1419,32 +1512,26 @@ class DominoGame {
         socket.on('invite:new', (payload) => {
             markTouch('invite:new', payload);
             this.applyRealtimeRoomInvitation(payload);
-            void this.loadSocialInvitesPage(true).catch(() => {});
-            this.updateSocialCenterBadge();
+            this.scheduleSocialRefresh('invites', { delayMs: 1200, reason: 'socket-invite-new' });
         });
 
         socket.on('invite:update', (payload) => {
             markTouch('invite:update', payload);
             this.applyRealtimeRoomInvitation(payload);
-            void this.loadSocialInvitesPage(true).catch(() => {});
-            this.updateSocialCenterBadge();
+            this.scheduleSocialRefresh('invites', { delayMs: 1200, reason: 'socket-invite-update' });
         });
 
-        socket.on('friend:update', async (payload) => {
+        socket.on('friend:update', (payload) => {
             markTouch('friend:update', payload);
-            const modal = document.getElementById('social-center-modal');
-            if (modal?.classList.contains('active') && this.socialCenterTab === 'friends') {
-                await this.loadFriendsPage(true).catch(() => {});
-            }
-            await this.loadSocialSummary().catch(() => {});
-            this.updateSocialCenterBadge();
+            this.scheduleSocialRefresh('friends', { delayMs: 1400, reason: 'socket-friend-update' });
         });
 
         socket.on('social:error', (payload) => {
             markTouch('social:error', payload);
             this._socialSocketLastConnectError = String(payload?.message || payload?.error || payload?.code || 'social_error');
-            if (String(payload?.code || '').trim().toLowerCase() === 'unauthorized') {
-                this.closeSocialSocket();
+            if (this.isSocialUnauthorizedError(payload)) {
+                void this.attemptSocialSocketAuthRefresh('social:error', payload).catch(() => {});
+                return;
             }
         });
 
@@ -1715,7 +1802,16 @@ class DominoGame {
                 if (!data) return;
 
                 this.applyRealtimeDirectMessage(data);
-                this.scheduleSocialSoftRefresh('message');
+                const threadPlayerId = String(data?.threadPlayerId || '').trim();
+                const activePlayerId = String(this.accountMessagesState?.activePlayerId || '').trim();
+                if (threadPlayerId && activePlayerId && threadPlayerId === activePlayerId) {
+                    this.scheduleSocialRefresh('conversation', {
+                        delayMs: 1200,
+                        reason: 'sse-message',
+                        playerId: threadPlayerId
+                    });
+                }
+                this.scheduleSocialRefresh('messages', { delayMs: 1400, reason: 'sse-message' });
             } catch (err) {
                 console.error("SSE message handler error:", err);
             }
@@ -1731,13 +1827,7 @@ class DominoGame {
                 if (data) {
                     this.applyRealtimeRoomInvitation(data);
                 }
-                const modal = document.getElementById('social-center-modal');
-                if (modal?.classList.contains('active') && this.socialCenterTab === 'inbox') {
-                    await this.loadSocialInvitesPage(true).catch(() => {});
-                }
-                
-                await this.loadSocialSummary().catch(() => {});
-                this.updateSocialCenterBadge();
+                this.scheduleSocialRefresh('invites', { delayMs: 1200, reason: 'sse-invite-update' });
             } catch (err) {
                 console.error("SSE invite_update handler error:", err);
             }
@@ -1745,12 +1835,7 @@ class DominoGame {
 
         sse.addEventListener('friend_update', async (event) => {
             try {
-                const modal = document.getElementById('social-center-modal');
-                if (modal?.classList.contains('active') && this.socialCenterTab === 'friends') {
-                    await this.loadFriendsPage(true).catch(() => {});
-                }
-                await this.loadSocialSummary().catch(() => {});
-                this.updateSocialCenterBadge();
+                this.scheduleSocialRefresh('friends', { delayMs: 1400, reason: 'sse-friend-update' });
             } catch (err) {
                 console.error("SSE friend_update handler error:", err);
             }
@@ -4244,18 +4329,27 @@ class DominoGame {
             badge.removeAttribute('title');
             return;
         }
-        const summaryCount = this.socialSummaryLoaded
-            ? Math.max(0, Number(this.socialSummary?.totalUnreadCount || 0))
-            : null;
-        const unreadMessages = Math.max(0, Number(this.socialInboxState?.unreadCount || 0));
-        const incomingFriends = Math.max(0, Number(this.friendHub?.incoming?.length || 0));
-        const incomingInvites = Array.isArray(this.roomInvitations?.incoming)
-            ? this.roomInvitations.incoming.filter(inv => this.isRoomInvitationPending(inv)).length
+        const toNonNegativeInt = (value) => {
+            const parsed = Number(value);
+            return Number.isFinite(parsed) && parsed > 0 ? Math.trunc(parsed) : 0;
+        };
+        const serverCount = toNonNegativeInt(this.socialSummary?.totalUnreadCount || 0);
+        const unreadInboxItems = Array.isArray(this.socialInboxState?.items)
+            ? this.socialInboxState.items.filter((item) => {
+                const status = String(item?.status || '').trim().toLowerCase();
+                const type = String(item?.type || '').trim().toLowerCase();
+                return status === 'unread' && type !== 'direct_message' && type !== 'direct_message_thread_hidden';
+            }).length
             : 0;
-        const localCount = unreadMessages + incomingFriends + incomingInvites;
-        const count = (this.friendHub || this.roomInvitations || this.socialInboxState)
-            ? localCount
-            : (Number.isFinite(summaryCount) ? summaryCount : 0);
+        const unreadThreads = Array.isArray(this.socialInboxState?.threads)
+            ? this.socialInboxState.threads.reduce((sum, thread) => sum + toNonNegativeInt(thread?.unreadCount || 0), 0)
+            : 0;
+        const incomingFriends = Array.isArray(this.friendHub?.incoming) ? this.friendHub.incoming.length : 0;
+        const incomingInvites = Array.isArray(this.roomInvitations?.incoming)
+            ? this.roomInvitations.incoming.filter((inv) => this.isRoomInvitationPending(inv)).length
+            : 0;
+        const localCount = Math.max(0, unreadInboxItems + unreadThreads + incomingFriends + incomingInvites);
+        const count = Math.max(serverCount, localCount);
         if (count > 0) {
             badge.textContent = count > 9 ? '9+' : String(count);
             badge.classList.remove('is-hidden');
@@ -5725,6 +5819,7 @@ class DominoGame {
             logoutBtn.title = logoutLabel;
             logoutBtn.innerHTML = `<span class="auth-icon auth-icon-logout" data-auth-icon="logout" aria-hidden="true">${AUTH_ICON_SVGS.logout || ''}</span>`;
             logoutBtn.addEventListener('click', async () => {
+                this.closeSocialRealtime();
                 await this.account.logout();
                 this.accountProfile = null;
                 this.accountDetails = null;
@@ -6024,6 +6119,117 @@ class DominoGame {
         }
     }
 
+    clearSocialRefreshTimers(kind = null) {
+        const timers = this._socialRefreshTimers instanceof Map ? this._socialRefreshTimers : new Map();
+        if (kind) {
+            const key = String(kind || '').trim().toLowerCase();
+            const timer = timers.get(key);
+            if (timer) clearTimeout(timer);
+            timers.delete(key);
+            this._socialRefreshInFlight?.delete?.(key);
+            this._socialRefreshQueued?.delete?.(key);
+            return;
+        }
+        for (const timer of timers.values()) {
+            clearTimeout(timer);
+        }
+        timers.clear();
+        this._socialRefreshInFlight?.clear?.();
+        this._socialRefreshQueued?.clear?.();
+    }
+
+    getSocialRefreshDelay(kind = 'summary') {
+        const key = String(kind || 'summary').trim().toLowerCase();
+        const delays = {
+            summary: 1200,
+            messages: 1400,
+            conversation: 1200,
+            friends: 1500,
+            invites: 1200,
+            presence: 1200
+        };
+        return delays[key] || 1400;
+    }
+
+    scheduleSocialRefresh(kind = 'summary', options = {}) {
+        if (!this.hasAuthenticatedAccount()) return null;
+        const key = String(kind || 'summary').trim().toLowerCase();
+        const delay = Math.max(
+            0,
+            Math.min(15000, Number.isFinite(Number(options?.delayMs)) ? Number(options.delayMs) : this.getSocialRefreshDelay(key))
+        );
+
+        this.clearSocialRefreshTimers(key);
+        const timer = setTimeout(() => {
+            const timers = this._socialRefreshTimers instanceof Map ? this._socialRefreshTimers : new Map();
+            timers.delete(key);
+            void this.runSocialRefresh(key, options);
+        }, delay);
+        this._socialRefreshTimers.set(key, timer);
+        if (window.DOMINO_DEBUG_SOCIAL === true && options?.reason) {
+            debugLog('[SocialRefresh] scheduled', { kind: key, delay, reason: options.reason });
+        }
+        return timer;
+    }
+
+    async runSocialRefresh(kind = 'summary', options = {}) {
+        if (!this.hasAuthenticatedAccount()) return false;
+        const key = String(kind || 'summary').trim().toLowerCase();
+        if (this._socialRefreshInFlight.has(key)) {
+            this._socialRefreshQueued.add(key);
+            return false;
+        }
+
+        this._socialRefreshInFlight.add(key);
+        try {
+            if (key === 'summary') {
+                await this.loadSocialSummary();
+            } else if (key === 'messages') {
+                await this.loadMessageThreads();
+                await this.loadSocialSummary();
+                this.updateSocialCenterBadge();
+            } else if (key === 'conversation') {
+                const activePlayerId = String(options?.playerId || this.accountMessagesState?.activePlayerId || '').trim();
+                if (activePlayerId) {
+                    await this.loadConversationWithPlayer(activePlayerId, true);
+                } else {
+                    await this.loadMessageThreads();
+                }
+            } else if (key === 'friends') {
+                await this.loadFriendsPage(true);
+                await this.loadSocialSummary();
+                this.updateSocialCenterBadge();
+            } else if (key === 'invites') {
+                await this.loadSocialInvitesPage(true);
+                this.updateSocialCenterBadge();
+            } else if (key === 'presence') {
+                await this.refreshSocialPresenceUi();
+                this.updateSocialCenterBadge();
+            }
+        } catch (error) {
+            if (window.DOMINO_DEBUG_SOCIAL === true) {
+                debugLog('[SocialRefresh] failed', {
+                    kind: key,
+                    error: String(error?.message || error || 'refresh_failed')
+                });
+            }
+            if (key !== 'summary') {
+                this.updateSocialCenterBadge();
+            }
+        } finally {
+            this._socialRefreshInFlight.delete(key);
+            if (this._socialRefreshQueued.has(key)) {
+                this._socialRefreshQueued.delete(key);
+                this.scheduleSocialRefresh(key, {
+                    delayMs: this.getSocialRefreshDelay(key),
+                    reason: `queued:${key}`
+                });
+            }
+        }
+
+        return true;
+    }
+
     scheduleSocialSoftRefresh(reason = 'social', delayMs = 6500) {
         if (!this.hasAuthenticatedAccount()) return;
         this.clearSocialSoftRefreshTimer();
@@ -6031,15 +6237,7 @@ class DominoGame {
         this._socialSoftRefreshTimer = setTimeout(() => {
             this._socialSoftRefreshTimer = null;
             if (!this.hasAuthenticatedAccount()) return;
-            void Promise.all([
-                this.loadMessageThreads().catch(() => {}),
-                this.loadSocialSummary().catch(() => {})
-            ]).then(() => {
-                this.updateSocialCenterBadge();
-                if (window.DOMINO_DEBUG_SOCIAL === true) {
-                    console.debug('[SocialSoftRefresh]', { reason, delay });
-                }
-            });
+            this.scheduleSocialRefresh('messages', { delayMs: 0, reason });
         }, delay);
     }
 
@@ -6378,14 +6576,32 @@ class DominoGame {
                 if (this.socialCenterView === 'conversation') {
                     const activeId = String(this.accountMessagesState?.activePlayerId || '').trim();
                     if (activeId) {
-                        await this.loadConversationWithPlayer(activeId, true);
+                        this.scheduleSocialRefresh('conversation', {
+                            delayMs: 0,
+                            reason: 'hub-refresh-conversation',
+                            playerId: activeId
+                        });
                     }
                 } else {
                     if (this.socialCenterTab === 'inbox') {
-                        await this.loadInboxPage(true);
-                        await this.loadSocialInvitesPage(true).catch(() => {});
+                        this.scheduleSocialRefresh('messages', {
+                            delayMs: 0,
+                            reason: 'hub-refresh-messages'
+                        });
+                        this.scheduleSocialRefresh('invites', {
+                            delayMs: 0,
+                            reason: 'hub-refresh-invites'
+                        });
+                    } else if (this.socialCenterTab === 'invites') {
+                        this.scheduleSocialRefresh('invites', {
+                            delayMs: 0,
+                            reason: 'hub-refresh-invites-only'
+                        });
                     } else if (this.socialCenterTab === 'friends') {
-                        await this.loadFriendsPage(true);
+                        this.scheduleSocialRefresh('friends', {
+                            delayMs: 0,
+                            reason: 'hub-refresh-friends'
+                        });
                     }
                 }
             } catch (e) {
@@ -12201,6 +12417,7 @@ class DominoGame {
 let game = null;
 game = new DominoGame();
 window.game = game;
+window.__dominoSocialRealtimeStatus = () => window.game?.getSocialRealtimeStatus?.() || null;
 
 // Re-render board on resize for correct scaling (debounced)
 let _resizeTimer = null;
