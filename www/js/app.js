@@ -215,6 +215,7 @@ class DominoGame {
         this.friendHub = { accepted: [], incoming: [], outgoing: [] };
         this.friendPresenceMap = new Map();
         this.roomInvitations = { incoming: [], sent: [] };
+        this.roomInvitationsLoading = false;
         this.gameInviteState = {
             inviteId: '',
             inviteePlayerId: '',
@@ -228,6 +229,9 @@ class DominoGame {
         this._gameInviteRefreshId = null;
         this._gameInviteRefreshUntil = 0;
         this._lastIncomingInviteSignature = '';
+        this._lastDmEventAt = 0;
+        this._lastInviteEventAt = 0;
+        this._lastFriendEventAt = 0;
         this.socialSummary = null;
         this.socialSummaryLoaded = false;
         this._socialSse = null;
@@ -256,6 +260,9 @@ class DominoGame {
         this._socialSocketAuthRefreshAttempted = false;
         this._socialRealtimeClosedAt = 0;
         this._socialRealtimeDestroyedAt = 0;
+        this._conversationLoadInFlightByPlayer = new Map();
+        this._messageThreadsLoadInFlight = null;
+        this._roomInvitationsLoadInFlight = null;
         this._socialRefreshTimers = new Map();
         this._socialRefreshInFlight = new Set();
         this._socialRefreshQueued = new Set();
@@ -1145,6 +1152,14 @@ class DominoGame {
             loading: false,
             error: ''
         };
+        this.roomInvitations = { incoming: [], sent: [] };
+        this.roomInvitationsLoading = false;
+        this._lastDmEventAt = 0;
+        this._lastInviteEventAt = 0;
+        this._lastFriendEventAt = 0;
+        this._conversationLoadInFlightByPlayer?.clear?.();
+        this._messageThreadsLoadInFlight = null;
+        this._roomInvitationsLoadInFlight = null;
         this._socialSoftRefreshTimer = null;
     }
 
@@ -2071,6 +2086,140 @@ class DominoGame {
         }
     }
 
+    mergeConversationMessages(existingMessages = [], freshMessages = []) {
+        const merged = new Map();
+        const addMessage = (message, preferFresh = false) => {
+            const id = String(message?.id || '').trim();
+            if (!id) return;
+            const current = merged.get(id) || null;
+            if (!current) {
+                merged.set(id, { ...message });
+                return;
+            }
+            merged.set(id, preferFresh ? { ...current, ...message } : { ...message, ...current });
+        };
+
+        (Array.isArray(existingMessages) ? existingMessages : []).forEach((message) => addMessage(message, false));
+        (Array.isArray(freshMessages) ? freshMessages : []).forEach((message) => addMessage(message, true));
+
+        return Array.from(merged.values()).sort((left, right) => new Date(left?.createdAt || 0).getTime() - new Date(right?.createdAt || 0).getTime());
+    }
+
+    mergeConversationThreads(existingThreads = [], freshThreads = [], activePlayerId = '') {
+        const keyForThread = (thread) => String(thread?.player?.id || thread?.playerId || thread?.id || '').trim();
+        const merged = new Map();
+        const addThread = (thread) => {
+            const key = keyForThread(thread);
+            if (!key) return;
+            const current = merged.get(key) || null;
+            if (!current) {
+                merged.set(key, { ...thread });
+                return;
+            }
+
+            const currentStamp = new Date(current?.lastMessage?.createdAt || current?.updatedAt || 0).getTime();
+            const freshStamp = new Date(thread?.lastMessage?.createdAt || thread?.updatedAt || 0).getTime();
+            const preferFresh = freshStamp > currentStamp;
+            const mergedThread = preferFresh ? { ...current, ...thread } : { ...thread, ...current };
+            mergedThread.messageCount = Math.max(0, Number(current?.messageCount || 0), Number(thread?.messageCount || 0));
+            mergedThread.unreadCount = String(key) === String(activePlayerId || '').trim()
+                ? 0
+                : (preferFresh ? Math.max(0, Number(thread?.unreadCount || 0)) : Math.max(0, Number(current?.unreadCount || 0)));
+            merged.set(key, mergedThread);
+        };
+
+        (Array.isArray(existingThreads) ? existingThreads : []).forEach((thread) => addThread(thread));
+        (Array.isArray(freshThreads) ? freshThreads : []).forEach((thread) => addThread(thread));
+
+        return Array.from(merged.values()).sort((left, right) => new Date(right?.lastMessage?.createdAt || 0).getTime() - new Date(left?.lastMessage?.createdAt || 0).getTime());
+    }
+
+    mergeRoomInvitations(existingInvitations = {}, freshInvitations = {}, currentPlayerId = this.getCurrentAccountPlayerId()) {
+        const merged = new Map();
+        const freshIds = new Set();
+        // Give recent realtime invite events a short grace window so polling does not flicker them away.
+        const preserveMissingLocalInvites = (Date.now() - Number(this._lastInviteEventAt || 0)) < 10000;
+        const addInvite = (invite) => {
+            const id = String(invite?.id || '').trim();
+            if (!id) return;
+            const current = merged.get(id) || null;
+            if (!current) {
+                merged.set(id, { ...invite });
+                return;
+            }
+            const currentStamp = new Date(current?.updatedAt || current?.createdAt || 0).getTime();
+            const freshStamp = new Date(invite?.updatedAt || invite?.createdAt || 0).getTime();
+            merged.set(id, freshStamp >= currentStamp ? { ...current, ...invite } : { ...invite, ...current });
+        };
+
+        const existingRows = [
+            ...(Array.isArray(existingInvitations?.incoming) ? existingInvitations.incoming : []),
+            ...(Array.isArray(existingInvitations?.sent) ? existingInvitations.sent : [])
+        ];
+        const freshRows = [
+            ...(Array.isArray(freshInvitations?.incoming) ? freshInvitations.incoming : []),
+            ...(Array.isArray(freshInvitations?.sent) ? freshInvitations.sent : [])
+        ];
+        freshRows.forEach((invite) => {
+            const id = String(invite?.id || '').trim();
+            if (id) freshIds.add(id);
+            addInvite(invite);
+        });
+        existingRows.forEach((invite) => {
+            const id = String(invite?.id || '').trim();
+            if (!id) return;
+            if (!freshIds.has(id) && !preserveMissingLocalInvites) return;
+            addInvite(invite);
+        });
+
+        const all = Array.from(merged.values()).sort((left, right) => new Date(right?.updatedAt || right?.createdAt || 0).getTime() - new Date(left?.updatedAt || left?.createdAt || 0).getTime());
+        const resolvedPlayerId = String(currentPlayerId || '').trim();
+        const incoming = all.filter((invite) => String(invite?.invitee?.id || '').trim() === resolvedPlayerId);
+        const sent = all.filter((invite) => String(invite?.inviter?.id || '').trim() === resolvedPlayerId);
+        return { incoming, sent, items: all };
+    }
+
+    renderRoomInvitationsPanel() {
+        const incomingList = document.getElementById('social-invites-incoming-list');
+        const sentList = document.getElementById('social-invites-sent-list');
+        const fallbackList = document.getElementById('social-invites-list');
+        const hasSplitLayout = Boolean(incomingList && sentList);
+        const invitesList = fallbackList || incomingList || sentList;
+        if (!invitesList) return false;
+
+        const invitations = this.roomInvitations || { incoming: [], sent: [] };
+        const { incoming, sent } = this.getActiveRoomInvitations(invitations);
+        const renderList = (container, items, kind, emptyKey) => {
+            if (!container) return;
+            container.innerHTML = '';
+            const activeItems = Array.isArray(items) ? items : [];
+            if (!activeItems.length) {
+                this.setSummaryMessage(container, this.roomInvitationsLoading ? this.t('account-profile-loading') : this.t(emptyKey));
+                return;
+            }
+            activeItems.forEach((invite) => {
+                container.appendChild(this.createRoomInvitationCard(invite, kind));
+            });
+        };
+
+        if (hasSplitLayout) {
+            renderList(incomingList, incoming, 'incoming', 'no-room-invites');
+            renderList(sentList, sent, 'sent', 'invite-sent-empty');
+        } else {
+            invitesList.innerHTML = '';
+            const combined = [...incoming, ...sent].filter((invite) => this.isRoomInvitationActive(invite));
+            if (!combined.length) {
+                this.setSummaryMessage(invitesList, this.roomInvitationsLoading ? this.t('account-profile-loading') : this.t('no-room-invites'));
+            } else {
+                combined.forEach((invite) => {
+                    invitesList.appendChild(this.createRoomInvitationCard(invite, incoming.some((item) => item?.id === invite?.id) ? 'incoming' : 'sent'));
+                });
+            }
+        }
+
+        return true;
+    }
+
     renderSocialInboxPanel() {
         const list = document.getElementById('social-inbox-list');
         const summary = document.getElementById('social-inbox-summary');
@@ -2388,51 +2537,72 @@ class DominoGame {
         if (!this.hasAuthenticatedAccount()) {
             return [];
         }
-        if (!this.account?.getMessageThreads || this.accountMessagesState?.threadsLoading) {
+        if (!this.account?.getMessageThreads) {
             return Array.isArray(this.accountMessagesState?.threads) ? this.accountMessagesState.threads : [];
         }
 
-        this.accountMessagesState = {
-            ...(this.accountMessagesState || {}),
-            threadsLoading: true,
-            error: ''
-        };
-        this.renderAccountMessagesPanel();
-
-        try {
-            const items = await this.account.getMessageThreads();
-            const threads = Array.isArray(items) ? items : [];
-            const currentActiveId = String(this.accountMessagesState?.activePlayerId || '').trim();
-            const activeThread = threads.find((thread) => String(thread?.player?.id || thread?.playerId || thread?.id || '').trim() === currentActiveId) || null;
-            const nextActiveId = activeThread
-                ? currentActiveId
-                : String(threads[0]?.player?.id || threads[0]?.playerId || threads[0]?.id || '').trim();
-            this.accountMessagesState = {
-                ...(this.accountMessagesState || {}),
-                threads,
-                threadsLoading: false,
-                error: '',
-                activePlayerId: nextActiveId || currentActiveId
-            };
-            this.renderAccountMessagesPanel();
-            await this.loadSocialSummary();
-            this.updateSocialCenterBadge();
-            if (nextActiveId && nextActiveId !== currentActiveId) {
-                await this.loadConversationWithPlayer(nextActiveId);
-            }
-            return threads;
-        } catch (err) {
-            this.accountMessagesState = {
-                ...(this.accountMessagesState || {}),
-                threads: [],
-                threadsLoading: false,
-                error: err?.message || this.t('messages-load-failed') || this.t('chats-load-failed')
-            };
-            this.renderAccountMessagesPanel();
-            await this.loadSocialSummary();
-            this.updateSocialCenterBadge();
-            return [];
+        if (this._messageThreadsLoadInFlight) {
+            return this._messageThreadsLoadInFlight;
         }
+
+        const currentState = this.accountMessagesState || {};
+        const currentThreads = Array.isArray(currentState.threads) ? currentState.threads : [];
+        const shouldShowLoading = !currentThreads.length;
+        if (shouldShowLoading) {
+            this.accountMessagesState = {
+                ...currentState,
+                threadsLoading: true,
+                error: ''
+            };
+            this.renderAccountMessagesPanel();
+        }
+
+        this._messageThreadsLoadInFlight = (async () => {
+            try {
+                const items = await this.account.getMessageThreads();
+                const threads = Array.isArray(items) ? items : [];
+                const currentActiveId = String(this.accountMessagesState?.activePlayerId || '').trim();
+                const mergedThreads = this.mergeConversationThreads(currentThreads, threads, currentActiveId);
+                const activeThread = mergedThreads.find((thread) => String(thread?.player?.id || thread?.playerId || thread?.id || '').trim() === currentActiveId) || null;
+                const nextActiveId = activeThread
+                    ? currentActiveId
+                    : String(mergedThreads[0]?.player?.id || mergedThreads[0]?.playerId || mergedThreads[0]?.id || '').trim();
+                this.accountMessagesState = {
+                    ...(this.accountMessagesState || {}),
+                    threads: mergedThreads,
+                    threadsLoading: false,
+                    error: '',
+                    activePlayerId: nextActiveId || currentActiveId
+                };
+                this.socialInboxState = {
+                    ...(this.socialInboxState || {}),
+                    threads: mergedThreads
+                };
+                this.renderAccountMessagesPanel();
+                await this.loadSocialSummary();
+                this.updateSocialCenterBadge();
+                if (nextActiveId && nextActiveId !== currentActiveId) {
+                    await this.loadConversationWithPlayer(nextActiveId);
+                }
+                return mergedThreads;
+            } catch (err) {
+                const message = err?.message || this.t('messages-load-failed') || this.t('chats-load-failed');
+                this.accountMessagesState = {
+                    ...(this.accountMessagesState || {}),
+                    threads: currentThreads,
+                    threadsLoading: false,
+                    error: message
+                };
+                this.renderAccountMessagesPanel();
+                await this.loadSocialSummary();
+                this.updateSocialCenterBadge();
+                return currentThreads;
+            } finally {
+                this._messageThreadsLoadInFlight = null;
+            }
+        })();
+
+        return this._messageThreadsLoadInFlight;
     }
 
     async loadConversationWithPlayer(playerRef, isBackground = false) {
@@ -2440,58 +2610,102 @@ class DominoGame {
         if (!playerId || !this.hasAuthenticatedAccount()) {
             return [];
         }
+        const existingLoad = this._conversationLoadInFlightByPlayer.get(playerId);
+        if (existingLoad) {
+            return existingLoad;
+        }
+
+        const currentState = this.accountMessagesState || {};
+        const currentActiveId = String(currentState.activePlayerId || '').trim();
+        const hasCachedConversation = currentActiveId === playerId && (
+            (Array.isArray(currentState.messages) && currentState.messages.length > 0) ||
+            Boolean(currentState.activePlayerProfile)
+        );
+        const shouldShowLoading = !hasCachedConversation;
         this.socialCenterView = 'conversation';
         this.accountMessagesState = {
-            ...(this.accountMessagesState || {}),
+            ...currentState,
             activePlayerId: playerId,
-            conversationLoading: true,
+            conversationLoading: shouldShowLoading,
             error: ''
         };
         this.renderAccountMessagesPanel();
 
-        try {
-            const readPromise = this.markDirectMessageThreadReadWithFallback(playerId).catch(() => {});
-            const profilePromise = (this.accountMessagesState?.activePlayerId === playerId && this.accountMessagesState?.activePlayerProfile)
-                ? Promise.resolve(this.accountMessagesState.activePlayerProfile)
-                : this.account.getPlayerProfile(playerId).catch(() => null);
-            const messagesPromise = this.account.getDirectMessages(playerId);
+        const loadPromise = (async () => {
+            try {
+                const readPromise = this.markDirectMessageThreadReadWithFallback(playerId).catch(() => {});
+                const profilePromise = (currentActiveId === playerId && currentState.activePlayerProfile)
+                    ? Promise.resolve(currentState.activePlayerProfile)
+                    : this.account.getPlayerProfile(playerId).catch(() => null);
+                const messagesPromise = this.account.getDirectMessages(playerId);
 
-            const [_, profile, messages] = await Promise.all([
-                readPromise,
-                profilePromise,
-                messagesPromise
-            ]);
+                const [_, profile, messages] = await Promise.all([
+                    readPromise,
+                    profilePromise,
+                    messagesPromise
+                ]);
 
-            this.accountMessagesState = {
-                ...(this.accountMessagesState || {}),
-                activePlayerId: playerId,
-                activePlayerProfile: profile || this.accountMessagesState?.activePlayerProfile || null,
-                messages: Array.isArray(messages) ? messages : [],
-                conversationLoading: false,
-                error: ''
-            };
-            this.renderAccountMessagesPanel();
+                if (String(this.accountMessagesState?.activePlayerId || '').trim() !== playerId) {
+                    return Array.isArray(this.accountMessagesState?.messages) ? this.accountMessagesState.messages : [];
+                }
 
-            // Run subsequent updates asynchronously in the background
-            void Promise.all([
-                this.loadMessageThreads().catch(() => {}),
-                this.loadSocialSummary().catch(() => {})
-            ]).then(() => {
-                this.updateSocialCenterBadge();
-            });
+                const freshMessages = Array.isArray(messages) ? messages : [];
+                const mergedMessages = hasCachedConversation
+                    ? this.mergeConversationMessages(currentState.messages || [], freshMessages)
+                    : freshMessages;
 
-            return this.accountMessagesState.messages;
-        } catch (err) {
-            this.accountMessagesState = {
-                ...(this.accountMessagesState || {}),
-                activePlayerId: playerId,
-                conversationLoading: false,
-                error: err?.message || this.t('messages-load-failed') || this.t('chats-load-failed')
-            };
-            this.renderAccountMessagesPanel();
-            void this.loadSocialSummary().then(() => this.updateSocialCenterBadge()).catch(() => {});
-            return [];
-        }
+                this._lastDmError = '';
+                this.accountMessagesState = {
+                    ...(this.accountMessagesState || {}),
+                    activePlayerId: playerId,
+                    activePlayerProfile: profile || (hasCachedConversation ? currentState.activePlayerProfile || null : null),
+                    messages: mergedMessages,
+                    conversationLoading: false,
+                    error: ''
+                };
+                this.renderAccountMessagesPanel();
+
+                // Run subsequent updates asynchronously in the background
+                void Promise.all([
+                    this.loadMessageThreads().catch(() => {}),
+                    this.loadSocialSummary().catch(() => {})
+                ]).then(() => {
+                    this.updateSocialCenterBadge();
+                });
+
+                return mergedMessages;
+            } catch (err) {
+                const message = err?.message || this.t('messages-load-failed') || this.t('chats-load-failed');
+                this._lastDmError = message;
+                if (String(this.accountMessagesState?.activePlayerId || '').trim() !== playerId) {
+                    return Array.isArray(this.accountMessagesState?.messages) ? this.accountMessagesState.messages : [];
+                }
+                const hasVisibleMessages = Array.isArray(this.accountMessagesState?.messages) && this.accountMessagesState.messages.length > 0;
+                if (hasVisibleMessages) {
+                    this.accountMessagesState = {
+                        ...(this.accountMessagesState || {}),
+                        conversationLoading: false
+                    };
+                } else {
+                    this.accountMessagesState = {
+                        ...(this.accountMessagesState || {}),
+                        activePlayerId: playerId,
+                        conversationLoading: false,
+                        error: message
+                    };
+                }
+                this.renderAccountMessagesPanel();
+                void this.loadSocialSummary().then(() => this.updateSocialCenterBadge()).catch(() => {});
+                return Array.isArray(this.accountMessagesState?.messages) ? this.accountMessagesState.messages : [];
+            } finally {
+                if (this._conversationLoadInFlightByPlayer.get(playerId) === loadPromise) {
+                    this._conversationLoadInFlightByPlayer.delete(playerId);
+                }
+            }
+        })();
+
+        this._conversationLoadInFlightByPlayer.set(playerId, loadPromise);
+        return loadPromise;
     }
 
     syncSocialCenterTabs() {
@@ -2637,7 +2851,6 @@ class DominoGame {
         const incomingList = document.getElementById('social-invites-incoming-list');
         const sentList = document.getElementById('social-invites-sent-list');
         const fallbackList = document.getElementById('social-invites-list');
-        const hasSplitLayout = Boolean(incomingList && sentList);
         const invitesList = fallbackList || incomingList || sentList;
         if (!invitesList) return [];
         if (!this.hasAuthenticatedAccount()) {
@@ -2645,54 +2858,56 @@ class DominoGame {
             return [];
         }
 
-        if (!isBackground && !invitesList.children.length) {
+        if (this._roomInvitationsLoadInFlight) {
+            return this._roomInvitationsLoadInFlight;
+        }
+
+        const hasVisibleInvites = Boolean((this.roomInvitations?.incoming || []).length || (this.roomInvitations?.sent || []).length);
+        if (!isBackground && !hasVisibleInvites) {
+            this.roomInvitationsLoading = true;
             this.setSummaryMessage(invitesList, this.t('account-profile-loading'));
-        }
-        try {
-            const invitations = await this.account.getRoomInvitations();
-            this.roomInvitations = invitations || { incoming: [], sent: [] };
-            this.restoreGameInviteStateFromInvitations();
-            void this.refreshGameInviteState().catch(() => {});
-            const { incoming, sent } = this.getActiveRoomInvitations(this.roomInvitations);
-
-            const renderList = (container, items, kind, emptyKey) => {
-                if (!container) return;
-                container.innerHTML = '';
-                const activeItems = Array.isArray(items) ? items : [];
-                if (!activeItems.length) {
-                    this.setSummaryMessage(container, this.t(emptyKey));
-                    return;
-                }
-                activeItems.forEach((invite) => {
-                    container.appendChild(this.createRoomInvitationCard(invite, kind));
-                });
-            };
-
-            if (hasSplitLayout) {
-                renderList(incomingList, incoming, 'incoming', 'no-room-invites');
-                renderList(sentList, sent, 'sent', 'invite-sent-empty');
-            } else {
-                invitesList.innerHTML = '';
-                const combined = [...incoming, ...sent].filter((invite) => this.isRoomInvitationActive(invite));
-                if (!combined.length) {
-                    this.setSummaryMessage(invitesList, this.t('no-room-invites'));
-                } else {
-                    combined.forEach((invite) => {
-                        invitesList.appendChild(this.createRoomInvitationCard(invite, incoming.some((item) => item?.id === invite?.id) ? 'incoming' : 'sent'));
-                    });
-                }
-            }
-        } catch (err) {
-            const message = err?.message || this.t('friends-load-failed');
-            this.setSummaryMessage(invitesList, message);
             if (incomingList && sentList) {
-                this.setSummaryMessage(incomingList, message);
-                this.setSummaryMessage(sentList, message);
+                this.setSummaryMessage(incomingList, this.t('account-profile-loading'));
+                this.setSummaryMessage(sentList, this.t('account-profile-loading'));
             }
         }
-        await this.loadSocialSummary();
-        this.updateSocialCenterBadge();
-        return [];
+
+        this._roomInvitationsLoadInFlight = (async () => {
+            try {
+                const invitations = await this.account.getRoomInvitations();
+                const merged = this.mergeRoomInvitations(this.roomInvitations || { incoming: [], sent: [] }, invitations || { incoming: [], sent: [] });
+                this.roomInvitations = merged;
+                this.roomInvitationsLoading = false;
+                this._lastInviteError = '';
+                this.restoreGameInviteStateFromInvitations();
+                void this.refreshGameInviteState().catch(() => {});
+                this.renderRoomInvitationsPanel();
+                await this.loadSocialSummary();
+                this.updateSocialCenterBadge();
+                return merged;
+            } catch (err) {
+                const message = err?.message || this.t('friends-load-failed');
+                this._lastInviteError = message;
+                this.roomInvitationsLoading = false;
+                const stillHasInvites = Boolean((this.roomInvitations?.incoming || []).length || (this.roomInvitations?.sent || []).length);
+                if (isBackground && stillHasInvites) {
+                    this.updateSocialCenterBadge();
+                    return this.roomInvitations;
+                }
+                this.setSummaryMessage(invitesList, message);
+                if (incomingList && sentList) {
+                    this.setSummaryMessage(incomingList, message);
+                    this.setSummaryMessage(sentList, message);
+                }
+                this.updateSocialCenterBadge();
+                return this.roomInvitations || { incoming: [], sent: [] };
+            } finally {
+                this.roomInvitationsLoading = false;
+                this._roomInvitationsLoadInFlight = null;
+            }
+        })();
+
+        return this._roomInvitationsLoadInFlight;
     }
 
     renderAccountMessagesPanel() {
@@ -2715,6 +2930,7 @@ class DominoGame {
         const activePlayer = state.activePlayerProfile || activeThread?.player || null;
         const activeMessages = Array.isArray(state.messages) ? state.messages : [];
         const currentPlayerId = String(this.accountProfile?.playerId || this.accountProfile?.id || '').trim();
+        const threadsLoading = Boolean(state.threadsLoading || (state.conversationLoading && !threads.length));
 
         if (!isAuthed) {
             summary.textContent = this.t('friends-login-required');
@@ -2730,7 +2946,7 @@ class DominoGame {
         }
 
         summary.textContent = state.error
-            || (state.threadsLoading
+            || (threadsLoading
                 ? this.t('account-profile-loading')
                 : this.format('messages-thread-count', { count: String(threads.length) }));
 
@@ -2739,7 +2955,7 @@ class DominoGame {
         if (!threads.length) {
             const empty = document.createElement('div');
             empty.className = 'room-summary';
-            empty.textContent = state.threadsLoading ? this.t('account-profile-loading') : (this.t('messages-empty') || this.t('chats-empty'));
+            empty.textContent = threadsLoading ? this.t('account-profile-loading') : (this.t('messages-empty') || this.t('chats-empty'));
             threadNodes.push(empty);
         } else {
             threads.forEach((thread) => {
@@ -6472,6 +6688,7 @@ class DominoGame {
     }
 
     applyRealtimeDirectMessage(payload) {
+        this._lastDmEventAt = Date.now();
         const eventType = String(payload?.type || '').trim();
         const message = payload?.message && typeof payload.message === 'object'
             ? payload.message
@@ -6517,40 +6734,24 @@ class DominoGame {
             };
             this.renderAccountMessagesPanel();
         }
+        this._lastDmError = '';
         this.updateSocialCenterBadge();
         return normalized;
     }
 
     applyRealtimeRoomInvitation(payload) {
+        this._lastInviteEventAt = Date.now();
         const invite = payload?.invite && typeof payload.invite === 'object' ? payload.invite : null;
         if (!invite) return null;
         const currentPlayerId = this.getCurrentAccountPlayerId();
         const normalizedInvite = { ...invite };
         const inviteStatus = String(normalizedInvite.status || '').trim().toLowerCase();
-        const roomInvitations = this.roomInvitations || { incoming: [], sent: [] };
-        const incoming = Array.isArray(roomInvitations.incoming) ? [...roomInvitations.incoming] : [];
-        const sent = Array.isArray(roomInvitations.sent) ? [...roomInvitations.sent] : [];
-        const upsertInto = (list, direction) => {
-            if (!Array.isArray(list)) return list;
-            const inviteId = String(normalizedInvite.id || '').trim();
-            if (!inviteId) return list;
-            const idx = list.findIndex((item) => String(item?.id || '').trim() === inviteId);
-            const currentSideMatches = direction === 'incoming'
-                ? String(normalizedInvite.invitee?.id || '').trim() === currentPlayerId
-                : String(normalizedInvite.inviter?.id || '').trim() === currentPlayerId;
-            if (!currentSideMatches) return list;
-            if (idx >= 0) {
-                list[idx] = { ...list[idx], ...normalizedInvite };
-            } else {
-                list.unshift(normalizedInvite);
-            }
-            return list;
-        };
-        this.roomInvitations = {
-            incoming: upsertInto(incoming, 'incoming'),
-            sent: upsertInto(sent, 'sent'),
-            items: Array.from(new Map([...(incoming || []), ...(sent || [])].map((item) => [String(item?.id || ''), item]))).map(([, item]) => item)
-        };
+        this.roomInvitations = this.mergeRoomInvitations(this.roomInvitations || { incoming: [], sent: [] }, {
+            incoming: String(normalizedInvite.invitee?.id || '').trim() === currentPlayerId ? [normalizedInvite] : [],
+            sent: String(normalizedInvite.inviter?.id || '').trim() === currentPlayerId ? [normalizedInvite] : []
+        }, currentPlayerId);
+        this.roomInvitationsLoading = false;
+        this._lastInviteError = '';
         if (inviteStatus === 'pending' && String(normalizedInvite.invitee?.id || '').trim() === currentPlayerId) {
             this.gameInviteState = {
                 ...(this.gameInviteState || {}),
@@ -6587,6 +6788,11 @@ class DominoGame {
                 createdAt: this.gameInviteState.createdAt || Date.now()
             };
         }
+        if (inviteStatus === 'accepted' || inviteStatus === 'declined' || inviteStatus === 'expired') {
+            this._lastInviteError = '';
+        }
+        this.renderRoomInvitationsPanel();
+        this.updateSocialCenterBadge();
         return normalizedInvite;
     }
 
@@ -6986,11 +7192,14 @@ class DominoGame {
 
         const invitations = await this.account.getRoomInvitations().catch(() => null);
         if (!invitations) return null;
-        this.roomInvitations = invitations;
+        const mergedInvitations = this.mergeRoomInvitations(this.roomInvitations || { incoming: [], sent: [] }, invitations || { incoming: [], sent: [] });
+        this.roomInvitations = mergedInvitations;
+        this._lastInviteError = '';
+        this.renderRoomInvitationsPanel();
 
-        const allItems = [
-            ...(Array.isArray(invitations.incoming) ? invitations.incoming : []),
-            ...(Array.isArray(invitations.sent) ? invitations.sent : [])
+        const allItems = Array.isArray(mergedInvitations?.items) ? mergedInvitations.items : [
+            ...(Array.isArray(mergedInvitations?.incoming) ? mergedInvitations.incoming : []),
+            ...(Array.isArray(mergedInvitations?.sent) ? mergedInvitations.sent : [])
         ];
         const target = allItems.find((item) => {
             const itemId = String(item?.id || '').trim();
@@ -9084,7 +9293,8 @@ class DominoGame {
                 this.friendPresenceMap = presenceResult.value;
             }
             this.friendHub = friends || { accepted: [], incoming: [], outgoing: [], items: [] };
-            this.roomInvitations = invitations || { incoming: [], sent: [] };
+            this.roomInvitations = this.mergeRoomInvitations(this.roomInvitations || { incoming: [], sent: [] }, invitations || { incoming: [], sent: [] });
+            this._lastInviteError = '';
             this.restoreGameInviteStateFromInvitations();
             void this.refreshGameInviteState().catch(() => {});
             const presenceMap = this.friendPresenceMap instanceof Map ? this.friendPresenceMap : new Map();
@@ -12573,6 +12783,54 @@ window.__dominoSocialSocketDebugOn = () => {
     } catch {}
     window.DOMINO_DEBUG_SOCIAL = true;
     return window.__dominoSocialRealtimeStatus?.() || null;
+};
+window.__dominoSocialDebugState = () => {
+    const app = window.game;
+    if (!app) {
+        return { error: 'app_unavailable' };
+    }
+
+    const realtime = window.__dominoSocialRealtimeStatus?.() || null;
+    const messagesState = app.accountMessagesState || {};
+    const roomInvitations = app.roomInvitations || { incoming: [], sent: [] };
+    const incomingInvites = Array.isArray(roomInvitations.incoming) ? roomInvitations.incoming : [];
+    const sentInvites = Array.isArray(roomInvitations.sent) ? roomInvitations.sent : [];
+    const threads = Array.isArray(messagesState.threads) ? messagesState.threads : [];
+    const messages = Array.isArray(messagesState.messages) ? messagesState.messages : [];
+
+    return {
+        realtime,
+        authenticated: Boolean(app.hasAuthenticatedAccount?.()),
+        socialCenterTab: String(app.socialCenterTab || '').trim(),
+        socialCenterView: String(app.socialCenterView || '').trim(),
+        socialSummaryLoaded: Boolean(app.socialSummaryLoaded),
+        socialSummary: {
+            inboxUnreadCount: Math.max(0, Number(app.socialSummary?.inboxUnreadCount || 0)),
+            chatUnreadCount: Math.max(0, Number(app.socialSummary?.chatUnreadCount || 0)),
+            inviteUnreadCount: Math.max(0, Number(app.socialSummary?.inviteUnreadCount || 0)),
+            friendRequestCount: Math.max(0, Number(app.socialSummary?.friendRequestCount || 0)),
+            totalUnreadCount: Math.max(0, Number(app.socialSummary?.totalUnreadCount || 0))
+        },
+        messageState: {
+            activePlayerId: String(messagesState.activePlayerId || '').trim(),
+            threadsCount: threads.length,
+            messagesCount: messages.length,
+            threadsLoading: Boolean(messagesState.threadsLoading),
+            conversationLoading: Boolean(messagesState.conversationLoading),
+            error: String(messagesState.error || '').trim()
+        },
+        invitesState: {
+            incomingCount: incomingInvites.length,
+            sentCount: sentInvites.length,
+            loading: Boolean(app.roomInvitationsLoading),
+            lastError: String(app._lastInviteError || '').trim()
+        },
+        eventTimestamps: {
+            dm: Number(app._lastDmEventAt || 0) || 0,
+            invite: Number(app._lastInviteEventAt || 0) || 0,
+            friend: Number(app._lastFriendEventAt || 0) || 0
+        }
+    };
 };
 window.__dominoCheckSocialSocketPrerequisites = async () => {
     const app = window.game;
