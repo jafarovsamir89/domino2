@@ -302,3 +302,9 @@
 1. Проверить, не теряются ли events между SSE, socket и polling при реальном login/logout цикле.
 2. Добавить минимальный `socket.io-client` integration test для namespace/path/auth.
 3. Затем отдельно закрыть multi-instance риск, если production действительно использует больше одного процесса.
+
+## Stage 2 notes
+
+- `socket.io-client` integration test is deferred for now because this fix stayed intentionally small and did not add a new frontend/server harness.
+- Production Redis adapter plan stays documented-only until we confirm whether Google production runs one process or multiple instances.
+- If production is multi-process, the safest follow-up is an env-guarded Redis adapter rollout, not an always-on default change.

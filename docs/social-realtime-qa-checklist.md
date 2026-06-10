@@ -110,3 +110,14 @@ Debug helper:
 - [ ] DM, invites, friends, presence обновляются без ручного refresh
 - [ ] Logout/login не создает duplicate listeners
 - [ ] Никаких секретов, токенов, cookie, email или полного текста приватных сообщений в console logs
+
+## Stage 2 verification
+
+- [ ] `window.__dominoSocialRealtimeStatus()` shows `socketConnected false` after logout
+- [ ] repeat login does not create duplicate `dm:new` listeners
+- [ ] badge does not fall to 0 when server summary already reports unread counts
+- [ ] `invite:new` updates badge and invites list
+- [ ] `dm:new` updates badge and thread list
+- [ ] `friend:update` updates friends list
+- [ ] `presence:update` does not spam `loadFriendsPage` every few seconds
+- [ ] on `connect_error unauthorized`, only one token refresh attempt happens before fallback
