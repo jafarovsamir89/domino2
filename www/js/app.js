@@ -234,14 +234,27 @@ class DominoGame {
         this._lastFriendEventAt = 0;
         this._lastInviteSendAttemptAt = 0;
         this._lastInviteSendPayloadSafe = null;
+        this._lastInviteSendTransport = 'unknown';
+        this._lastInviteSendEndpoint = '';
+        this._lastInviteSendHttpStatus = null;
         this._lastInviteSendResultSafe = null;
         this._lastInviteSendError = '';
         this._lastInviteReceivedAt = 0;
         this._lastInviteReceivedPayloadSafe = null;
         this._lastInviteUpdateAt = 0;
         this._lastInviteUpdatePayloadSafe = null;
+        this._lastIncomingInvitesSafe = [];
+        this._roomInvitationsRenderState = null;
+        this._socialInviteTrace = null;
         this._roomInvitationsLastLoadedAt = 0;
         this._roomInvitationsLastError = '';
+        this._mainSocialBadgeCount = 0;
+        this._mainSocialBadgeVisible = false;
+        this._socialCenterBadgeCount = 0;
+        this._activeHeaderPlayerId = '';
+        this._activeHeaderName = '';
+        this._headerProfileMatchesConversation = true;
+        this._socialDebugPanelRefreshTimer = null;
         this.socialSummary = null;
         this.socialSummaryLoaded = false;
         this._socialSse = null;
@@ -380,6 +393,7 @@ class DominoGame {
             document.removeEventListener('pointerdown', this._giftOutsideHandler, true);
             this._giftOutsideHandler = null;
         }
+        this.stopSocialDebugPanelAutoRefresh();
         this.stopOpenRoomsAutoRefresh();
         this.stopCoinShopTicker();
         this.voice?.destroy?.();
@@ -392,6 +406,7 @@ class DominoGame {
         this.ensureAuthIconMarkup();
         this.ensureSocialIconMarkup();
         this.ensureSocialCenterUi();
+        this.ensureSocialDebugPanel();
         this.ensureNameEditModal();
         this.ensureSeatSelectionUi();
         this.setLanguage(this.currentLang);
@@ -1169,14 +1184,26 @@ class DominoGame {
         this._lastFriendEventAt = 0;
         this._lastInviteSendAttemptAt = 0;
         this._lastInviteSendPayloadSafe = null;
+        this._lastInviteSendTransport = 'unknown';
+        this._lastInviteSendEndpoint = '';
+        this._lastInviteSendHttpStatus = null;
         this._lastInviteSendResultSafe = null;
         this._lastInviteSendError = '';
         this._lastInviteReceivedAt = 0;
         this._lastInviteReceivedPayloadSafe = null;
         this._lastInviteUpdateAt = 0;
         this._lastInviteUpdatePayloadSafe = null;
+        this._lastIncomingInvitesSafe = [];
+        this._roomInvitationsRenderState = null;
+        this._socialInviteTrace = null;
         this._roomInvitationsLastLoadedAt = 0;
         this._roomInvitationsLastError = '';
+        this._mainSocialBadgeCount = 0;
+        this._mainSocialBadgeVisible = false;
+        this._socialCenterBadgeCount = 0;
+        this._activeHeaderPlayerId = '';
+        this._activeHeaderName = '';
+        this._headerProfileMatchesConversation = true;
         this._conversationLoadInFlightByPlayer?.clear?.();
         this._messageThreadsLoadInFlight = null;
         this._roomInvitationsLoadInFlight = null;
@@ -1215,6 +1242,201 @@ class DominoGame {
         console.debug(`[SocialInvite] ${eventName}`, payload);
     }
 
+    isSocialDebugPanelEnabled() {
+        try {
+            const params = new URLSearchParams(window.location?.search || '');
+            return params.get('socialDebug') === '1' || window.localStorage?.getItem('dominoDebugSocial') === 'true';
+        } catch {
+            return window.DOMINO_DEBUG_SOCIAL === true;
+        }
+    }
+
+    safeInviteDebugRecord(invite = {}) {
+        return {
+            id: String(invite?.id || '').trim() || null,
+            roomId: String(invite?.roomId || '').trim() || null,
+            inviterPlayerId: String(invite?.inviterPlayerId || invite?.inviter?.id || '').trim() || null,
+            inviteePlayerId: String(invite?.inviteePlayerId || invite?.invitee?.id || '').trim() || null,
+            status: String(invite?.status || '').trim() || null,
+            createdAt: String(invite?.createdAt || '').trim() || null
+        };
+    }
+
+    getSocialDebugState() {
+        const realtime = this.getSocialRealtimeStatus?.() || {};
+        const messagesState = this.accountMessagesState || {};
+        const roomInvitations = this.roomInvitations || { incoming: [], sent: [] };
+        const incomingInvites = Array.isArray(roomInvitations.incoming) ? roomInvitations.incoming : [];
+        const outgoingInvites = Array.isArray(roomInvitations.sent) ? roomInvitations.sent : [];
+        const messages = Array.isArray(messagesState.messages) ? messagesState.messages : [];
+        const threads = Array.isArray(messagesState.threads) ? messagesState.threads : [];
+        const activeRoom = this.getActiveInviteRoomContext?.() || {};
+        const serverSummaryUnread = Math.max(0, Number(this.socialSummary?.totalUnreadCount || 0) || 0);
+        const activePlayerId = String(messagesState.activePlayerId || '').trim();
+        const activeHeaderPlayerId = String(this._activeHeaderPlayerId || '').trim();
+        const headerProfileMatchesConversation = !activePlayerId || !activeHeaderPlayerId || activeHeaderPlayerId === activePlayerId;
+
+        return {
+            socket: {
+                socketConnected: Boolean(realtime?.socketConnected),
+                socketReady: Boolean(realtime?.socketReady),
+                fallbackMode: String(realtime?.fallbackMode || '').trim() || null,
+                ioEngineTransport: String(realtime?.ioEngineTransport || '').trim() || null,
+                socketObjectExists: Boolean(realtime?.socketObjectExists),
+                lastConnectError: String(realtime?.lastConnectError || '').trim()
+            },
+            currentUser: {
+                currentPlayerId: String(this.getCurrentAccountPlayerId?.() || this.accountProfile?.playerId || this.accountProfile?.id || '').trim() || null,
+                displayName: String(this.accountProfile?.displayName || this.accountProfile?.name || '').trim() || null,
+                authenticated: Boolean(this.hasAuthenticatedAccount?.()),
+                socialSummaryLoaded: Boolean(this.socialSummaryLoaded)
+            },
+            chat: {
+                currentConversationPlayerId: activePlayerId || null,
+                activeHeaderPlayerId: activeHeaderPlayerId || null,
+                activeHeaderName: String(this._activeHeaderName || '').trim() || null,
+                headerProfileMatchesConversation,
+                conversationLoading: Boolean(messagesState.conversationLoading),
+                conversationMessageCount: messages.length,
+                messageThreadsCount: threads.length,
+                lastDmEventAt: Number(this._lastDmEventAt || 0) || 0,
+                lastDmError: String(this._lastDmError || '').trim(),
+                globalUnreadCount: serverSummaryUnread,
+                mainSocialBadgeCount: Number(this._mainSocialBadgeCount || 0) || 0
+            },
+            invites: {
+                activeRoomId: String(activeRoom?.roomId || '').trim() || null,
+                activeRoomCode: String(activeRoom?.roomCode || '').trim() || null,
+                activeRoomContextSource: String(activeRoom?.source || '').trim() || null,
+                lastInviteSendAttemptAt: Number(this._lastInviteSendAttemptAt || 0) || 0,
+                lastInviteSendPayloadSafe: this._lastInviteSendPayloadSafe || null,
+                lastInviteSendTransport: String(this._lastInviteSendTransport || 'unknown').trim() || 'unknown',
+                lastInviteSendEndpoint: String(this._lastInviteSendEndpoint || '').trim() || null,
+                lastInviteSendHttpStatus: this._lastInviteSendHttpStatus ?? null,
+                lastInviteSendResultSafe: this._lastInviteSendResultSafe || null,
+                lastInviteSendError: String(this._lastInviteSendError || '').trim(),
+                lastInviteReceivedAt: Number(this._lastInviteReceivedAt || 0) || 0,
+                lastInviteReceivedPayloadSafe: this._lastInviteReceivedPayloadSafe || null,
+                lastInviteUpdateAt: Number(this._lastInviteUpdateAt || 0) || 0,
+                lastInviteUpdatePayloadSafe: this._lastInviteUpdatePayloadSafe || null,
+                incomingInviteCount: incomingInvites.length,
+                outgoingInviteCount: outgoingInvites.length,
+                roomInvitationsLoading: Boolean(this.roomInvitationsLoading),
+                roomInvitationsLastLoadedAt: Number(this._roomInvitationsLastLoadedAt || 0) || 0,
+                roomInvitationsLastError: String(this._roomInvitationsLastError || '').trim(),
+                lastIncomingInvitesSafe: (this._lastIncomingInvitesSafe?.length ? this._lastIncomingInvitesSafe : incomingInvites.map((invite) => this.safeInviteDebugRecord(invite))).slice(0, 5),
+                renderState: this._roomInvitationsRenderState || null,
+                socialInviteTrace: this._socialInviteTrace || null
+            },
+            badge: {
+                serverSummaryUnread,
+                mainSocialBadgeCount: Number(this._mainSocialBadgeCount || 0) || 0,
+                mainSocialBadgeVisible: Boolean(this._mainSocialBadgeVisible),
+                socialCenterBadgeCount: Number(this._socialCenterBadgeCount || 0) || 0
+            }
+        };
+    }
+
+    stopSocialDebugPanelAutoRefresh() {
+        if (this._socialDebugPanelRefreshTimer) {
+            clearInterval(this._socialDebugPanelRefreshTimer);
+            this._socialDebugPanelRefreshTimer = null;
+        }
+    }
+
+    ensureSocialDebugPanel() {
+        if (!this.isSocialDebugPanelEnabled()) return;
+        window.DOMINO_DEBUG_SOCIAL = true;
+        try {
+            window.localStorage?.setItem('dominoDebugSocial', 'true');
+        } catch {}
+        if (document.getElementById('domino-social-debug-panel')) {
+            this.renderSocialDebugPanel();
+            return;
+        }
+
+        const panel = document.createElement('aside');
+        panel.id = 'domino-social-debug-panel';
+        panel.style.cssText = [
+            'position:fixed',
+            'right:10px',
+            'bottom:10px',
+            'z-index:99999',
+            'width:min(420px,calc(100vw - 20px))',
+            'max-height:min(680px,85vh)',
+            'overflow:auto',
+            'border:1px solid rgba(255,255,255,.22)',
+            'border-radius:14px',
+            'background:rgba(12,18,28,.94)',
+            'color:#eef6ff',
+            'box-shadow:0 18px 60px rgba(0,0,0,.38)',
+            'font:12px/1.35 ui-monospace,SFMono-Regular,Consolas,monospace',
+            'padding:10px'
+        ].join(';');
+        panel.innerHTML = `
+            <div style="display:flex;align-items:center;gap:8px;justify-content:space-between;margin-bottom:8px">
+                <strong style="font:700 13px/1.2 sans-serif">Social Debug</strong>
+                <button type="button" data-social-debug-toggle style="border:0;border-radius:8px;padding:5px 8px">hide</button>
+            </div>
+            <div data-social-debug-actions style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px"></div>
+            <pre data-social-debug-output style="white-space:pre-wrap;word-break:break-word;margin:0;max-height:520px;overflow:auto"></pre>
+        `;
+        document.body.appendChild(panel);
+
+        const actions = panel.querySelector('[data-social-debug-actions]');
+        const makeButton = (label, handler) => {
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.textContent = label;
+            button.style.cssText = 'border:0;border-radius:8px;padding:6px 8px;background:#d8ecff;color:#071521;font:700 11px/1 sans-serif';
+            button.addEventListener('click', handler);
+            actions?.appendChild(button);
+        };
+
+        makeButton('Refresh debug state', () => this.renderSocialDebugPanel());
+        makeButton('Copy debug state', async () => {
+            const text = JSON.stringify(this.getSocialDebugState(), null, 2);
+            try {
+                await navigator.clipboard?.writeText(text);
+            } catch {
+                window.prompt('Copy debug state', text);
+            }
+        });
+        makeButton('Force load incoming invites', async () => {
+            await this.loadSocialInvitesPage(true).catch(() => {});
+            this.renderSocialDebugPanel();
+        });
+        makeButton('Force social summary refresh', async () => {
+            await this.loadSocialSummary().catch(() => {});
+            this.updateGlobalSocialBadge();
+            this.renderSocialDebugPanel();
+        });
+        makeButton('Force socket status refresh', async () => {
+            await this.ensureSocialRealtimeStarted?.('debug-panel-force').catch?.(() => {});
+            this.renderSocialDebugPanel();
+        });
+
+        panel.querySelector('[data-social-debug-toggle]')?.addEventListener('click', () => {
+            const output = panel.querySelector('[data-social-debug-output]');
+            const actionsEl = panel.querySelector('[data-social-debug-actions]');
+            const hidden = output?.hasAttribute('hidden');
+            output?.toggleAttribute('hidden', !hidden);
+            actionsEl?.toggleAttribute('hidden', !hidden);
+        });
+
+        this.stopSocialDebugPanelAutoRefresh();
+        this._socialDebugPanelRefreshTimer = setInterval(() => this.renderSocialDebugPanel(), 2500);
+        this.renderSocialDebugPanel();
+    }
+
+    renderSocialDebugPanel() {
+        if (!this.isSocialDebugPanelEnabled()) return;
+        const panel = document.getElementById('domino-social-debug-panel');
+        const output = panel?.querySelector('[data-social-debug-output]');
+        if (!output) return;
+        output.textContent = JSON.stringify(this.getSocialDebugState(), null, 2);
+    }
+
     getFriendPlayerId(friendRef) {
         const directPlayerId = String(
             friendRef?.playerId
@@ -1250,32 +1472,45 @@ class DominoGame {
     recordInviteSendAttempt(payload = {}) {
         this._lastInviteSendAttemptAt = Date.now();
         this._lastInviteSendPayloadSafe = this.buildInviteDebugPayloadSafe(payload);
+        this._lastInviteSendTransport = 'unknown';
+        this._lastInviteSendEndpoint = '';
+        this._lastInviteSendHttpStatus = null;
         this._lastInviteSendResultSafe = null;
         this._lastInviteSendError = '';
         this.logSocialInvite('send attempt', this._lastInviteSendPayloadSafe);
+        this.renderSocialDebugPanel();
     }
 
-    recordInviteSendResult(result = {}) {
+    recordInviteSendResult(result = {}, meta = {}) {
         const source = result?.invite || result?.item || result || {};
         this._lastInviteSendResultSafe = {
             ok: result?.ok === false ? false : true,
+            transport: String(meta?.transport || this._lastInviteSendTransport || 'unknown').trim(),
             live: Boolean(result?.live),
             ...this.buildInviteDebugPayloadSafe(source)
         };
+        this._lastInviteSendTransport = String(meta?.transport || this._lastInviteSendTransport || 'unknown').trim() || 'unknown';
+        this._lastInviteSendEndpoint = String(meta?.endpoint || this._lastInviteSendEndpoint || '').trim();
+        this._lastInviteSendHttpStatus = Number.isFinite(Number(meta?.httpStatus)) ? Number(meta.httpStatus) : this._lastInviteSendHttpStatus;
         this._lastInviteSendError = '';
         this.logSocialInvite('send result', this._lastInviteSendResultSafe);
+        this.renderSocialDebugPanel();
     }
 
-    recordInviteSendError(error, payload = {}) {
+    recordInviteSendError(error, payload = {}, meta = {}) {
         const message = String(error?.message || error || this.t('friends-load-failed')).trim();
         this._lastInviteSendAttemptAt = this._lastInviteSendAttemptAt || Date.now();
         this._lastInviteSendPayloadSafe = this._lastInviteSendPayloadSafe || this.buildInviteDebugPayloadSafe(payload);
+        this._lastInviteSendTransport = String(meta?.transport || this._lastInviteSendTransport || 'unknown').trim() || 'unknown';
+        this._lastInviteSendEndpoint = String(meta?.endpoint || this._lastInviteSendEndpoint || '').trim();
+        this._lastInviteSendHttpStatus = Number.isFinite(Number(meta?.httpStatus)) ? Number(meta.httpStatus) : this._lastInviteSendHttpStatus;
         this._lastInviteSendResultSafe = null;
         this._lastInviteSendError = message;
         this.logSocialInvite('send error', {
             ...this._lastInviteSendPayloadSafe,
             error: message
         });
+        this.renderSocialDebugPanel();
     }
 
     getActiveInviteRoomContext() {
@@ -1298,7 +1533,10 @@ class DominoGame {
             roomId,
             roomCode,
             roomMode: String(snapshot?.roomMode || '').trim(),
-            roomVisibility: String(snapshot?.roomVisibility || '').trim()
+            roomVisibility: String(snapshot?.roomVisibility || '').trim(),
+            source: roomId
+                ? (snapshot?.roomId ? 'snapshot' : this.currentRoomState?.roomId ? 'currentRoomState' : this.network?.room ? 'networkRoom' : 'unknown')
+                : (roomCode ? 'roomCode-only' : 'none')
         };
     }
 
@@ -1949,10 +2187,16 @@ class DominoGame {
         const requestPayload = { roomId, ...(payload || {}) };
         this.recordInviteSendAttempt(requestPayload);
         try {
+            this._lastInviteSendTransport = this._socialSocket?.connected ? 'socket' : 'rest';
+            this._lastInviteSendEndpoint = this._socialSocket?.connected ? 'socket:invite:create' : `/social/rooms/${encodeURIComponent(String(roomId || ''))}/invites`;
+            this.renderSocialDebugPanel();
             const socketResponse = await this.sendSocialInviteCreate(requestPayload).catch(() => null);
             if (socketResponse?.ok === false) {
                 const error = new Error(socketResponse.error || this.t('friends-load-failed'));
-                this.recordInviteSendError(error, requestPayload);
+                this.recordInviteSendError(error, requestPayload, {
+                    transport: 'socket',
+                    endpoint: 'socket:invite:create'
+                });
                 throw error;
             }
             if (socketResponse?.invite || socketResponse?.item) {
@@ -1961,14 +2205,26 @@ class DominoGame {
                     item: socketResponse.invite || socketResponse.item,
                     live: true
                 };
-                this.recordInviteSendResult(result);
+                this.recordInviteSendResult(result, {
+                    transport: 'socket',
+                    endpoint: 'socket:invite:create'
+                });
                 return result;
             }
+            this._lastInviteSendTransport = this._socialSocket?.connected ? 'fallback' : 'rest';
+            this._lastInviteSendEndpoint = `/social/rooms/${encodeURIComponent(String(roomId || ''))}/invites`;
+            this.renderSocialDebugPanel();
             const result = await this.account.inviteFriendToRoom(roomId, payload);
-            this.recordInviteSendResult(result);
+            this.recordInviteSendResult(result, {
+                transport: this._socialSocket?.connected ? 'fallback' : 'rest',
+                endpoint: this._lastInviteSendEndpoint
+            });
             return result;
         } catch (error) {
-            this.recordInviteSendError(error, requestPayload);
+            this.recordInviteSendError(error, requestPayload, {
+                transport: this._lastInviteSendTransport,
+                endpoint: this._lastInviteSendEndpoint
+            });
             throw error;
         }
     }
@@ -2314,13 +2570,28 @@ class DominoGame {
 
         const invitations = this.roomInvitations || { incoming: [], sent: [] };
         const { incoming, sent } = this.getActiveRoomInvitations(invitations);
+        const renderState = {
+            incomingBeforeRender: Array.isArray(incoming) ? incoming.length : 0,
+            sentBeforeRender: Array.isArray(sent) ? sent.length : 0,
+            renderedIncomingCount: 0,
+            renderedSentCount: 0,
+            emptyStateShown: false,
+            emptyStateReason: ''
+        };
         const renderList = (container, items, kind, emptyKey) => {
             if (!container) return;
             container.innerHTML = '';
             const activeItems = Array.isArray(items) ? items : [];
             if (!activeItems.length) {
+                renderState.emptyStateShown = true;
+                renderState.emptyStateReason = this.roomInvitationsLoading ? 'loading' : `${kind}:empty`;
                 this.setSummaryMessage(container, this.roomInvitationsLoading ? this.t('account-profile-loading') : this.t(emptyKey));
                 return;
+            }
+            if (kind === 'incoming') {
+                renderState.renderedIncomingCount = activeItems.length;
+            } else {
+                renderState.renderedSentCount = activeItems.length;
             }
             activeItems.forEach((invite) => {
                 container.appendChild(this.createRoomInvitationCard(invite, kind));
@@ -2334,14 +2605,20 @@ class DominoGame {
             invitesList.innerHTML = '';
             const combined = [...incoming, ...sent].filter((invite) => this.isRoomInvitationActive(invite));
             if (!combined.length) {
+                renderState.emptyStateShown = true;
+                renderState.emptyStateReason = this.roomInvitationsLoading ? 'loading' : 'combined:empty';
                 this.setSummaryMessage(invitesList, this.roomInvitationsLoading ? this.t('account-profile-loading') : this.t('no-room-invites'));
             } else {
+                renderState.renderedIncomingCount = incoming.filter((invite) => this.isRoomInvitationActive(invite)).length;
+                renderState.renderedSentCount = sent.filter((invite) => this.isRoomInvitationActive(invite)).length;
                 combined.forEach((invite) => {
                     invitesList.appendChild(this.createRoomInvitationCard(invite, incoming.some((item) => item?.id === invite?.id) ? 'incoming' : 'sent'));
                 });
             }
         }
 
+        this._roomInvitationsRenderState = renderState;
+        this.renderSocialDebugPanel();
         return true;
     }
 
@@ -2782,12 +3059,25 @@ class DominoGame {
                 }
 
                 const freshMessages = Array.isArray(messages) ? messages : [];
-                const mergedMessages = hasCachedConversation
-                    ? this.mergeConversationMessages(currentState.messages || [], freshMessages)
+                const currentVisibleMessages = Array.isArray(this.accountMessagesState?.messages)
+                    ? this.accountMessagesState.messages
+                    : [];
+                const mergeBaseMessages = currentVisibleMessages.length
+                    ? currentVisibleMessages
+                    : (Array.isArray(currentState.messages) ? currentState.messages : []);
+                const mergedMessages = mergeBaseMessages.length
+                    ? this.mergeConversationMessages(mergeBaseMessages, freshMessages)
                     : freshMessages;
 
                 this._lastDmError = '';
-                const resolvedProfile = profile || cachedPeerForNewPlayerId || null;
+                const profileBelongsToPlayer = (candidate) => {
+                    if (!candidate) return false;
+                    const candidateId = String(candidate?.playerId || candidate?.id || '').trim();
+                    return Boolean(candidateId && candidateId === playerId);
+                };
+                const resolvedProfile = profileBelongsToPlayer(profile)
+                    ? profile
+                    : (profileBelongsToPlayer(cachedPeerForNewPlayerId) ? cachedPeerForNewPlayerId : null);
                 this.accountMessagesState = {
                     ...(this.accountMessagesState || {}),
                     activePlayerId: playerId,
@@ -3014,6 +3304,9 @@ class DominoGame {
                 this._lastInviteError = '';
                 this._roomInvitationsLastLoadedAt = Date.now();
                 this._roomInvitationsLastError = '';
+                this._lastIncomingInvitesSafe = (Array.isArray(merged?.incoming) ? merged.incoming : [])
+                    .map((invite) => this.safeInviteDebugRecord(invite))
+                    .slice(0, 5);
                 this.restoreGameInviteStateFromInvitations();
                 void this.refreshGameInviteState().catch(() => {});
                 this.renderRoomInvitationsPanel();
@@ -3067,7 +3360,17 @@ class DominoGame {
         const threads = Array.isArray(state.threads) ? state.threads : [];
         const activePlayerId = String(state.activePlayerId || '').trim();
         const activeThread = threads.find((thread) => String(thread?.player?.id || thread?.playerId || thread?.id || '').trim() === activePlayerId) || null;
-        const activePlayer = state.activePlayerProfile || activeThread?.player || null;
+        const profileMatchesActive = (profile) => {
+            if (!profile || !activePlayerId) return false;
+            const profileId = String(profile?.playerId || profile?.id || '').trim();
+            return Boolean(profileId && profileId === activePlayerId);
+        };
+        const activeProfile = profileMatchesActive(state.activePlayerProfile) ? state.activePlayerProfile : null;
+        const activeThreadPlayer = profileMatchesActive(activeThread?.player) ? activeThread.player : null;
+        const activePlayer = activeProfile || activeThreadPlayer || null;
+        this._activeHeaderPlayerId = activePlayer ? String(activePlayer?.playerId || activePlayer?.id || '').trim() : '';
+        this._activeHeaderName = activePlayer ? String(activePlayer?.displayName || activePlayer?.name || '').trim() : '';
+        this._headerProfileMatchesConversation = !activePlayerId || !this._activeHeaderPlayerId || this._activeHeaderPlayerId === activePlayerId;
         const activeMessages = Array.isArray(state.messages) ? state.messages : [];
         const currentPlayerId = String(this.accountProfile?.playerId || this.accountProfile?.id || '').trim();
         const threadsLoading = Boolean(state.threadsLoading || (state.conversationLoading && !threads.length));
@@ -4795,22 +5098,32 @@ class DominoGame {
         }
     }
 
-    updateSocialCenterBadge() {
+    updateGlobalSocialBadge() {
         const button = document.getElementById('open-social-btn');
-        if (!button) return;
-        const badge = button.querySelector('.start-social-badge');
-        if (!badge) return;
-        if (!this.hasAuthenticatedAccount()) {
-            badge.textContent = '';
-            badge.classList.add('is-hidden');
-            badge.removeAttribute('title');
-            return;
-        }
+        const badge = button?.querySelector('.start-social-badge') || null;
+        const mailBadge = document.getElementById('social-mail-unread-badge');
+        const friendsBadge = document.getElementById('social-friends-unread-badge');
         const toNonNegativeInt = (value) => {
             const parsed = Number(value);
             return Number.isFinite(parsed) && parsed > 0 ? Math.trunc(parsed) : 0;
         };
+        if (!this.hasAuthenticatedAccount()) {
+            this._mainSocialBadgeCount = 0;
+            this._mainSocialBadgeVisible = false;
+            this._socialCenterBadgeCount = 0;
+            [badge, mailBadge, friendsBadge].forEach((target) => {
+                if (!target) return;
+                target.textContent = '';
+                target.classList.add('is-hidden');
+                target.removeAttribute('title');
+            });
+            this.renderSocialDebugPanel();
+            return;
+        }
         const serverCount = toNonNegativeInt(this.socialSummary?.totalUnreadCount || 0);
+        const serverChatCount = toNonNegativeInt(this.socialSummary?.chatUnreadCount || 0);
+        const serverFriendCount = toNonNegativeInt(this.socialSummary?.friendRequestCount || 0);
+        const serverInviteCount = toNonNegativeInt(this.socialSummary?.inviteUnreadCount || 0);
         const unreadInboxItems = Array.isArray(this.socialInboxState?.items)
             ? this.socialInboxState.items.filter((item) => {
                 const status = String(item?.status || '').trim().toLowerCase();
@@ -4825,17 +5138,35 @@ class DominoGame {
         const incomingInvites = Array.isArray(this.roomInvitations?.incoming)
             ? this.roomInvitations.incoming.filter((inv) => this.isRoomInvitationPending(inv)).length
             : 0;
-        const localCount = Math.max(0, unreadInboxItems + unreadThreads + incomingFriends + incomingInvites);
-        const count = Math.max(serverCount, localCount);
-        if (count > 0) {
-            badge.textContent = count > 9 ? '9+' : String(count);
-            badge.classList.remove('is-hidden');
-            badge.title = `${this.t('social-badge-label')}: ${count}`;
-        } else {
-            badge.textContent = '';
-            badge.classList.add('is-hidden');
-            badge.removeAttribute('title');
-        }
+        const localUnread = Math.max(0, unreadInboxItems + unreadThreads);
+        const pendingInvitesCount = Math.max(0, incomingFriends + incomingInvites);
+        const count = Math.max(serverCount, localUnread, pendingInvitesCount);
+        const centerMailCount = Math.max(serverChatCount + serverInviteCount, unreadInboxItems + unreadThreads + incomingInvites);
+        const centerFriendsCount = Math.max(serverFriendCount, incomingFriends);
+        this._mainSocialBadgeCount = count;
+        this._mainSocialBadgeVisible = count > 0;
+        this._socialCenterBadgeCount = Math.max(centerMailCount, centerFriendsCount);
+        const applyBadge = (target, value, titleKey = 'social-badge-label') => {
+            if (!target) return;
+            const safeValue = toNonNegativeInt(value);
+            if (safeValue > 0) {
+                target.textContent = safeValue > 9 ? '9+' : String(safeValue);
+                target.classList.remove('is-hidden');
+                target.title = `${this.t(titleKey)}: ${safeValue}`;
+            } else {
+                target.textContent = '';
+                target.classList.add('is-hidden');
+                target.removeAttribute('title');
+            }
+        };
+        applyBadge(badge, count);
+        applyBadge(mailBadge, centerMailCount);
+        applyBadge(friendsBadge, centerFriendsCount);
+        this.renderSocialDebugPanel();
+    }
+
+    updateSocialCenterBadge() {
+        this.updateGlobalSocialBadge();
     }
 
     removeLegacyNameControls() {
@@ -6944,6 +7275,9 @@ class DominoGame {
         if (inviteStatus === 'accepted' || inviteStatus === 'declined' || inviteStatus === 'expired') {
             this._lastInviteError = '';
         }
+        this._lastIncomingInvitesSafe = (Array.isArray(this.roomInvitations?.incoming) ? this.roomInvitations.incoming : [])
+            .map((item) => this.safeInviteDebugRecord(item))
+            .slice(0, 5);
         this.renderRoomInvitationsPanel();
         this.updateSocialCenterBadge();
         return normalizedInvite;
@@ -7181,6 +7515,25 @@ class DominoGame {
 
     async sendGameInviteToPlayer(playerRef, context = {}) {
         const inviteePlayerId = this.getFriendPlayerId(playerRef);
+        const clickedFriendSafe = {
+            playerId: inviteePlayerId || null,
+            displayName: String(playerRef?.displayName || playerRef?.friend?.displayName || playerRef?.name || '').trim() || null,
+            source: String(context?.source || 'social').trim() || 'social'
+        };
+        const beforeRoom = this.getActiveInviteRoomContext();
+        this._socialInviteTrace = {
+            clickedAt: Date.now(),
+            clickedFriendSafe,
+            selectedFriendPlayerId: inviteePlayerId || null,
+            currentRoomId: String(beforeRoom?.roomId || '').trim() || null,
+            currentRoomCode: String(beforeRoom?.roomCode || '').trim() || null,
+            activeRoomContext: beforeRoom,
+            chosenTransport: this._socialSocket?.connected ? 'socket' : 'rest',
+            payload: null,
+            beforeSocketStatus: this.getSocialRealtimeStatus?.() || null,
+            beforeIncomingCount: Array.isArray(this.roomInvitations?.incoming) ? this.roomInvitations.incoming.length : 0
+        };
+        this.renderSocialDebugPanel();
         if (!inviteePlayerId) {
             const error = new Error(this.t('friends-load-failed'));
             this.recordInviteSendError(error, {
@@ -7221,6 +7574,15 @@ class DominoGame {
                     inviteeDisplayName: String(playerRef?.displayName || '').trim() || null
                 }
             };
+            this._socialInviteTrace = {
+                ...(this._socialInviteTrace || {}),
+                currentRoomId: activeRoomId,
+                currentRoomCode: activeRoomCode,
+                activeRoomContext: activeRoom,
+                chosenTransport: this._socialSocket?.connected ? 'socket' : 'rest',
+                payload: this.buildInviteDebugPayloadSafe({ roomId: activeRoomId, ...payload })
+            };
+            this.renderSocialDebugPanel();
             const result = await this.sendRoomInviteWithFallback(activeRoomId, payload);
             const item = result?.item || null;
             this.gameInviteState = {
@@ -12951,6 +13313,7 @@ window.__dominoSocialSocketDebugOn = () => {
         localStorage.setItem('dominoDebugSocial', 'true');
     } catch {}
     window.DOMINO_DEBUG_SOCIAL = true;
+    window.game?.ensureSocialDebugPanel?.();
     return window.__dominoSocialRealtimeStatus?.() || null;
 };
 window.__dominoSocialDebugState = () => {
@@ -12958,48 +13321,7 @@ window.__dominoSocialDebugState = () => {
     if (!app) {
         return { error: 'app_unavailable' };
     }
-
-    const realtime = window.__dominoSocialRealtimeStatus?.() || null;
-    const messagesState = app.accountMessagesState || {};
-    const roomInvitations = app.roomInvitations || { incoming: [], sent: [] };
-    const incomingInvites = Array.isArray(roomInvitations.incoming) ? roomInvitations.incoming : [];
-    const sentInvites = Array.isArray(roomInvitations.sent) ? roomInvitations.sent : [];
-    const threads = Array.isArray(messagesState.threads) ? messagesState.threads : [];
-    const messages = Array.isArray(messagesState.messages) ? messagesState.messages : [];
-
-    return {
-        realtime,
-        authenticated: Boolean(app.hasAuthenticatedAccount?.()),
-        socialCenterTab: String(app.socialCenterTab || '').trim(),
-        socialCenterView: String(app.socialCenterView || '').trim(),
-        socialSummaryLoaded: Boolean(app.socialSummaryLoaded),
-        socialSummary: {
-            inboxUnreadCount: Math.max(0, Number(app.socialSummary?.inboxUnreadCount || 0)),
-            chatUnreadCount: Math.max(0, Number(app.socialSummary?.chatUnreadCount || 0)),
-            inviteUnreadCount: Math.max(0, Number(app.socialSummary?.inviteUnreadCount || 0)),
-            friendRequestCount: Math.max(0, Number(app.socialSummary?.friendRequestCount || 0)),
-            totalUnreadCount: Math.max(0, Number(app.socialSummary?.totalUnreadCount || 0))
-        },
-        messageState: {
-            activePlayerId: String(messagesState.activePlayerId || '').trim(),
-            threadsCount: threads.length,
-            messagesCount: messages.length,
-            threadsLoading: Boolean(messagesState.threadsLoading),
-            conversationLoading: Boolean(messagesState.conversationLoading),
-            error: String(messagesState.error || '').trim()
-        },
-        invitesState: {
-            incomingCount: incomingInvites.length,
-            sentCount: sentInvites.length,
-            loading: Boolean(app.roomInvitationsLoading),
-            lastError: String(app._lastInviteError || '').trim()
-        },
-        eventTimestamps: {
-            dm: Number(app._lastDmEventAt || 0) || 0,
-            invite: Number(app._lastInviteEventAt || 0) || 0,
-            friend: Number(app._lastFriendEventAt || 0) || 0
-        }
-    };
+    return app.getSocialDebugState?.() || { error: 'debug_state_unavailable' };
 };
 window.__dominoInviteDebugState = () => {
     const app = window.game;
@@ -13007,32 +13329,14 @@ window.__dominoInviteDebugState = () => {
         return { error: 'app_unavailable' };
     }
 
-    const realtime = window.__dominoSocialRealtimeStatus?.() || {};
-    const activeRoom = app.getActiveInviteRoomContext?.() || app.getCurrentRoomSnapshot?.() || {};
-    const roomInvitations = app.roomInvitations || { incoming: [], sent: [] };
-    const incomingInvites = Array.isArray(roomInvitations?.incoming) ? roomInvitations.incoming : [];
-    const outgoingInvites = Array.isArray(roomInvitations?.sent) ? roomInvitations.sent : [];
+    const debugState = app.getSocialDebugState?.() || {};
+    const invites = debugState.invites || {};
     const socialCenterOpen = Boolean(document.getElementById('social-center-modal')?.classList.contains('active'));
 
     return {
-        socketConnected: Boolean(realtime?.socketConnected),
-        socketReady: Boolean(realtime?.socketReady),
-        activeRoomId: String(activeRoom?.roomId || '').trim() || null,
-        activeRoomName: String(activeRoom?.roomCode || activeRoom?.hostName || '').trim() || null,
-        currentPlayerId: String(app.getCurrentAccountPlayerId?.() || '').trim() || null,
-        lastInviteSendAttemptAt: Number(app._lastInviteSendAttemptAt || 0) || 0,
-        lastInviteSendPayloadSafe: app._lastInviteSendPayloadSafe || null,
-        lastInviteSendResultSafe: app._lastInviteSendResultSafe || null,
-        lastInviteSendError: String(app._lastInviteSendError || '').trim(),
-        lastInviteReceivedAt: Number(app._lastInviteReceivedAt || 0) || 0,
-        lastInviteReceivedPayloadSafe: app._lastInviteReceivedPayloadSafe || null,
-        lastInviteUpdateAt: Number(app._lastInviteUpdateAt || 0) || 0,
-        lastInviteUpdatePayloadSafe: app._lastInviteUpdatePayloadSafe || null,
-        incomingInviteCount: incomingInvites.length,
-        outgoingInviteCount: outgoingInvites.length,
-        roomInvitationsLoading: Boolean(app.roomInvitationsLoading),
-        roomInvitationsLastLoadedAt: Number(app._roomInvitationsLastLoadedAt || 0) || 0,
-        roomInvitationsLastError: String(app._roomInvitationsLastError || '').trim(),
+        socketConnected: Boolean(debugState.socket?.socketConnected),
+        socketReady: Boolean(debugState.socket?.socketReady),
+        ...invites,
         socialCenterOpen,
         currentSocialTab: String(app.socialCenterTab || '').trim() || null
     };
