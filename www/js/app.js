@@ -1162,12 +1162,15 @@ class DominoGame {
         return {
             socketAvailable,
             socketConnected,
+            socketReady: Boolean(this._socialSocketReady),
             socketUrl,
             socketPath,
             tokenExists: Boolean(token),
             fallbackMode,
             lastConnectError: String(this._socialSocketLastConnectError || "").trim(),
-            lastEventAt: Number(this._socialSocketLastEventAt || 0) || 0
+            lastEventAt: Number(this._socialSocketLastEventAt || 0) || 0,
+            sseConnectedApprox: Boolean(this._socialSse && this._socialSse.readyState === 1),
+            invitePollingActive: Boolean(this._gameInviteRefreshId)
         };
     }
 
@@ -12201,6 +12204,7 @@ class DominoGame {
 let game = null;
 game = new DominoGame();
 window.game = game;
+window.__dominoSocialRealtimeStatus = () => window.game?.getSocialRealtimeStatus?.() || null;
 
 // Re-render board on resize for correct scaling (debounced)
 let _resizeTimer = null;
