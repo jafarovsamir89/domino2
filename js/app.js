@@ -84,6 +84,16 @@ function debugLog(...args) {
     if (isDebugLoggingEnabled()) console.log(...args);
 }
 
+const DOMINO_CLIENT_BUILD = {
+    gitCommit: '669bbdc',
+    builtAt: new Date().toISOString(),
+    socialRealtimeDebugVersion: 'browser-production-trace-v1'
+};
+
+if (typeof window !== 'undefined') {
+    window.DOMINO_CLIENT_BUILD = DOMINO_CLIENT_BUILD;
+}
+
 function getFirstNameDisplayName(value, fallback = 'Player') {
     const sanitize = (input, nextFallback = 'Player') => String(input || nextFallback)
         .replace(/<[^>]*>/g, ' ')
@@ -261,6 +271,7 @@ class DominoGame {
         this._boardAnimationActive = null;
         this._pendingOptimisticPlayTileId = '';
         this._pendingOptimisticPlayActionId = '';
+        this._appJsLoadedAt = DOMINO_CLIENT_BUILD.builtAt;
         this.reactionPalette = [
             { code: '1F923', label: 'ROFL' },
             { code: '1F609', label: 'Wink' },
@@ -1157,23 +1168,32 @@ class DominoGame {
         const socketConnected = Boolean(socket?.connected);
         const socketPath = String(this.account?.getSocialSocketPath?.() || "/api/socket.io").trim();
         const socketUrl = String(this.account?.getSocialSocketUrl?.() || "").trim();
+        const serviceWorkerController = typeof navigator !== 'undefined' ? navigator.serviceWorker?.controller || null : null;
         const fallbackMode = socketConnected || this._socialSocketReady || this._socialSocketProbePending
             ? "socket"
             : (this._socialSocketFallbackActive || (this._socialSse && this._socialSse.readyState === 1)
                 ? "sse"
                 : "polling");
         return {
+            clientBuild: DOMINO_CLIENT_BUILD,
+            appJsLoadedAt: String(this._appJsLoadedAt || '').trim(),
+            pageUrl: String(window.location?.href || '').trim(),
+            userAgent: String(window.navigator?.userAgent || '').trim(),
+            platformApiBase: String(this.account?.platformApiBase || '').trim(),
             socketAvailable,
             socketConnected,
             socketReady: Boolean(this._socialSocketReady),
             socketUrl,
             socketPath,
             tokenExists: Boolean(token),
+            localStorageGameTokenExists: Boolean(window.localStorage?.getItem('dominoPlatformGameToken')),
             fallbackMode,
             lastConnectError: String(this._socialSocketLastConnectError || "").trim(),
             lastEventAt: Number(this._socialSocketLastEventAt || 0) || 0,
             sseConnectedApprox: Boolean(this._socialSse && this._socialSse.readyState === 1),
-            invitePollingActive: Boolean(this._gameInviteRefreshId)
+            invitePollingActive: Boolean(this._gameInviteRefreshId),
+            hasServiceWorkerController: Boolean(serviceWorkerController),
+            serviceWorkerControllerUrl: String(serviceWorkerController?.scriptURL || '').trim()
         };
     }
 
