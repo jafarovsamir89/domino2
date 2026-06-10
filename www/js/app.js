@@ -238,6 +238,13 @@ class DominoGame {
         this._socialSocketReconnectTimer = null;
         this._socialSocketRetryCount = 0;
         this._socialSocketProbePending = false;
+        this._socialSocketInitAttemptCount = 0;
+        this._socialSocketLastInitReason = '';
+        this._socialSocketLastInitAt = 0;
+        this._socialSocketConnectRequestedAt = 0;
+        this._socialSocketHealthProbeStartedAt = 0;
+        this._socialSocketHealthProbeFinishedAt = 0;
+        this._socialSocketLastHealthStatus = '';
         this._socialSocketAuthRefreshPending = false;
         this._socialSocketFallbackTimer = null;
         this._socialSocketFallbackActive = false;
@@ -247,6 +254,8 @@ class DominoGame {
         this._socialSocketLastEventAt = 0;
         this._socialSocketAuthToken = "";
         this._socialSocketAuthRefreshAttempted = false;
+        this._socialRealtimeClosedAt = 0;
+        this._socialRealtimeDestroyedAt = 0;
         this._socialRefreshTimers = new Map();
         this._socialRefreshInFlight = new Set();
         this._socialRefreshQueued = new Set();
@@ -783,6 +792,7 @@ class DominoGame {
             void this.loadTableSkinShop();
             void this.loadGiftHub();
             void this.loadDailyBonusStatus();
+            void this.ensureSocialRealtimeStarted('account-ready');
             startMenuMusic();
         } else {
             this.tableSkinShop = null;
@@ -792,6 +802,9 @@ class DominoGame {
         this.refreshResumeBanner(null);
         await this.validateStoredResumeSnapshot();
         void this.loadSocialSummary();
+        if (this.hasAuthenticatedAccount()) {
+            void this.ensureSocialRealtimeStarted('session-restored');
+        }
         if (!this.hasAuthenticatedAccount()) this.setAccountStatus(this.t('account-login-required'));
         this.syncStartAuthGate();
     }
@@ -851,6 +864,7 @@ class DominoGame {
                 void this.loadDailyBonusStatus();
                 this.setAccountStatus(this.t('account-online'));
                 this._socialSocketFallbackActive = false;
+                void this.ensureSocialRealtimeStarted('account-ready');
                 this.initSocialSse();
                 return details;
             }
@@ -967,6 +981,7 @@ class DominoGame {
         modal.classList.add('active');
         document.getElementById('start-screen')?.classList.remove('active');
         document.getElementById('social-chats-panel')?.classList.add('is-hidden');
+        void this.ensureSocialRealtimeStarted('social-center-open');
         this.startSocialHubAutoRefresh();
         await this.loadSocialCenterTab(tab, playerRef);
     }
@@ -1009,6 +1024,8 @@ class DominoGame {
             this.updateSocialCenterBadge();
             return;
         }
+
+        void this.ensureSocialRealtimeStarted('social-tab-load');
 
         if (nextTab === 'inbox') {
             await this.loadInboxPage();
@@ -1103,6 +1120,7 @@ class DominoGame {
             activePlayerId: playerId,
             error: ''
         };
+        void this.ensureSocialRealtimeStarted('conversation-open');
         const modal = document.getElementById('social-center-modal');
         if (modal?.classList.contains('active')) {
             await this.loadSocialCenterTab('inbox', playerId);
@@ -1181,6 +1199,21 @@ class DominoGame {
             pageUrl: String(window.location?.href || '').trim(),
             userAgent: String(window.navigator?.userAgent || '').trim(),
             platformApiBase: String(this.account?.platformApiBase || '').trim(),
+            socketObjectExists: Boolean(socket),
+            socketInitAttemptCount: Number(this._socialSocketInitAttemptCount || 0) || 0,
+            socketLastInitReason: String(this._socialSocketLastInitReason || '').trim(),
+            socketLastInitAt: Number(this._socialSocketLastInitAt || 0) || 0,
+            socketProbePending: Boolean(this._socialSocketProbePending),
+            socketConnectRequestedAt: Number(this._socialSocketConnectRequestedAt || 0) || 0,
+            lastHealthProbeStatus: String(this._socialSocketLastHealthStatus || '').trim(),
+            socketLastHealthStatus: String(this._socialSocketLastHealthStatus || '').trim(),
+            socketHealthProbeStartedAt: Number(this._socialSocketHealthProbeStartedAt || 0) || 0,
+            socketHealthProbeFinishedAt: Number(this._socialSocketHealthProbeFinishedAt || 0) || 0,
+            socketAuthRefreshPending: Boolean(this._socialSocketAuthRefreshPending),
+            socketFallbackActive: Boolean(this._socialSocketFallbackActive),
+            sseObjectExists: Boolean(this._socialSse),
+            socialRealtimeDestroyedOrClosedApprox: Number(this._socialRealtimeDestroyedAt || this._socialRealtimeClosedAt || 0) || 0,
+            ioEngineTransport: String(socket?.io?.engine?.transport?.name || '').trim(),
             socketAvailable,
             socketConnected,
             socketReady: Boolean(this._socialSocketReady),
@@ -1226,12 +1259,43 @@ class DominoGame {
         this.clearSocialRefreshTimers();
         this.stopGameInviteRefresh();
         this.stopSocialHubAutoRefresh();
+        this._socialRealtimeClosedAt = Date.now();
         this._socialSocketFallbackActive = false;
         this._socialSocketLastConnectError = '';
         this._socialSocketLastEventAt = 0;
         this._socialSocketAuthToken = '';
         this._socialSocketAuthRefreshPending = false;
         this._socialSocketAuthRefreshAttempted = false;
+    }
+
+    async ensureSocialRealtimeStarted(reason = 'unknown') {
+        if (!this.hasAuthenticatedAccount()) return false;
+        if (this._socialSocket?.connected || this._socialSocketProbePending) return true;
+
+        const nextReason = String(reason || 'unknown').trim() || 'unknown';
+        const token = String(this.account?.getSocialSocketAuthToken?.() || this.account?.platformGameToken || '').trim();
+        if (!token && this.account?.syncPlatformSession) {
+            try {
+                await this.account.syncPlatformSession();
+            } catch {}
+        }
+
+        this._socialSocketInitAttemptCount = (this._socialSocketInitAttemptCount || 0) + 1;
+        this._socialSocketLastInitReason = nextReason;
+        this._socialSocketLastInitAt = Date.now();
+
+        const initialized = this.initSocialSocket(nextReason);
+        if (!initialized) {
+            this._socialSocketFallbackActive = true;
+            if (!this._socialSse) {
+                this.initSocialSse();
+            }
+        }
+        return initialized;
+    }
+
+    initSocialRealtime(reason = 'unknown') {
+        return this.ensureSocialRealtimeStarted(reason);
     }
 
     isSocialUnauthorizedError(value) {
@@ -1319,7 +1383,7 @@ class DominoGame {
         }
     }
 
-    initSocialSocket() {
+    initSocialSocket(reason = 'unknown') {
         if (!this.hasAuthenticatedAccount()) {
             this.closeSocialSocket();
             return false;
@@ -1344,7 +1408,7 @@ class DominoGame {
                 void this.account.syncPlatformSession().then(() => {
                     this._socialSocketAuthRefreshPending = false;
                     if (!this.hasAuthenticatedAccount()) return;
-                    this.initSocialSocket();
+                    this.initSocialSocket('token-refresh-retry');
                 }).catch((error) => {
                     this._socialSocketAuthRefreshPending = false;
                     this.logSocialSocket('token-refresh-failed', { error: String(error?.message || error || 'token_refresh_failed') });
@@ -1370,16 +1434,39 @@ class DominoGame {
         if (this._socialSocket) {
             const sameEndpoint = this._socialSocketAuthToken === token && this._socialSocketPath === socketPath && this._socialSocketUrl === socketUrl;
             if (sameEndpoint) {
+                if (!this._socialSocket.connected && !this._socialSocketProbePending && !this._socialSocketReady) {
+                    this._socialSocketConnectRequestedAt = Date.now();
+                    this._socialSocketLastInitReason = String(reason || 'unknown').trim() || 'unknown';
+                    this._socialSocketLastInitAt = Date.now();
+                    this.logSocialSocket('connect-request', {
+                        reason: this._socialSocketLastInitReason,
+                        reuse: true
+                    });
+                    try {
+                        this._socialSocket.connect?.();
+                    } catch (error) {
+                        this._socialSocketLastConnectError = String(error?.message || error || 'socket_connect_failed');
+                        this._socialSocketFallbackActive = true;
+                        this.closeSocialSocket();
+                        if (!this._socialSse) {
+                            this.initSocialSse();
+                        }
+                    }
+                }
                 return true;
             }
             this.closeSocialSocket();
         }
 
+        this._socialSocketInitAttemptCount = (this._socialSocketInitAttemptCount || 0) + 1;
+        this._socialSocketLastInitReason = String(reason || 'unknown').trim() || 'unknown';
+        this._socialSocketLastInitAt = Date.now();
         this.clearSocialSocketFallbackTimer();
         this._socialSocketLastConnectError = '';
         this._socialSocketUrl = socketUrl;
         this._socialSocketPath = socketPath;
         this.logSocialSocket('init', {
+            reason: this._socialSocketLastInitReason,
             url: socketUrl,
             path: socketPath,
             tokenExists: Boolean(token)
@@ -1400,6 +1487,9 @@ class DominoGame {
         this._socialSocketAuthToken = token;
         this._socialSocketReady = false;
         this._socialSocketProbePending = true;
+        this._socialSocketConnectRequestedAt = Date.now();
+        this._socialSocketHealthProbeStartedAt = Date.now();
+        this._socialSocketLastHealthStatus = 'pending';
 
         const markTouch = (eventName, payload) => this.touchSocialSocketEvent(eventName, payload);
 
@@ -1558,37 +1648,41 @@ class DominoGame {
             }
         });
 
+        try {
+            this.logSocialSocket('connect-request', {
+                reason: this._socialSocketLastInitReason,
+                healthProbeStartedAt: this._socialSocketHealthProbeStartedAt
+            });
+            socket.connect?.();
+        } catch (error) {
+            this._socialSocketLastConnectError = String(error?.message || error || 'socket_connect_failed');
+            this._socialSocketFallbackActive = true;
+            this.closeSocialSocket();
+            if (!this._socialSse) {
+                this.initSocialSse();
+            }
+            return true;
+        }
+
         const healthUrl = `${String(this.account?.platformApiBase || '').replace(/\/$/, '')}/health`;
         void fetch(healthUrl, {
             method: 'GET',
             credentials: 'include',
             cache: 'no-store'
         }).then((response) => {
-            if (!response?.ok) {
-                throw new Error(`health_${response?.status || 0}`);
-            }
-            if (this._socialSocket !== socket || this._socialSocketReady) return;
-            this.logSocialSocket('connect-request', { healthOk: true });
-            try {
-                socket.connect?.();
-            } catch (error) {
-                this._socialSocketLastConnectError = String(error?.message || error || 'socket_connect_failed');
-                this._socialSocketFallbackActive = true;
-                this.closeSocialSocket();
-                if (!this._socialSse) {
-                    this.initSocialSse();
-                }
-            }
+            this._socialSocketHealthProbeFinishedAt = Date.now();
+            this._socialSocketLastHealthStatus = response?.ok ? 'ok' : `error_${response?.status || 0}`;
+            this.logSocialSocket('health-probe', {
+                reason: this._socialSocketLastInitReason,
+                status: this._socialSocketLastHealthStatus
+            });
         }).catch((error) => {
-            this._socialSocketLastConnectError = String(error?.message || error || 'health_check_failed');
-            this.logSocialSocket('health-failed', { error: this._socialSocketLastConnectError });
-            if (this._socialSocket === socket && !socket.connected) {
-                this._socialSocketFallbackActive = true;
-                this.closeSocialSocket();
-                if (!this._socialSse) {
-                    this.initSocialSse();
-                }
-            }
+            this._socialSocketHealthProbeFinishedAt = Date.now();
+            this._socialSocketLastHealthStatus = String(error?.message || error || 'health_check_failed');
+            this.logSocialSocket('health-probe', {
+                reason: this._socialSocketLastInitReason,
+                status: this._socialSocketLastHealthStatus
+            });
         });
 
         return true;
@@ -1910,6 +2004,9 @@ class DominoGame {
             }
         }
         this.updateSocialCenterBadge();
+        if (this.hasAuthenticatedAccount()) {
+            void this.ensureSocialRealtimeStarted('summary-loaded');
+        }
         if (this.hasAuthenticatedAccount()) {
             this.startGameInviteRefresh();
         }
@@ -12461,6 +12558,58 @@ window.__dominoClearAppCacheAndReload = async () => {
     } catch {}
 
     location.reload();
+};
+window.__dominoForceSocialSocketConnect = async () => {
+    const app = window.game;
+    if (!app) {
+        return { error: 'app_unavailable' };
+    }
+    await app.ensureSocialRealtimeStarted?.('manual-force');
+    return window.__dominoSocialRealtimeStatus?.() || null;
+};
+window.__dominoSocialSocketDebugOn = () => {
+    try {
+        localStorage.setItem('dominoDebugSocial', 'true');
+    } catch {}
+    window.DOMINO_DEBUG_SOCIAL = true;
+    return window.__dominoSocialRealtimeStatus?.() || null;
+};
+window.__dominoCheckSocialSocketPrerequisites = async () => {
+    const app = window.game;
+    if (!app) {
+        return { error: 'app_unavailable' };
+    }
+    const platformApiBase = String(app.account?.platformApiBase || '').trim();
+    const token = String(app.account?.getSocialSocketAuthToken?.() || app.account?.platformGameToken || '').trim();
+    const socketUrl = String(app.account?.getSocialSocketUrl?.() || '').trim();
+    const socketPath = String(app.account?.getSocialSocketPath?.() || '/api/socket.io').trim();
+    const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
+
+    const probe = async (url) => {
+        try {
+            const response = await fetch(url, {
+                method: 'GET',
+                credentials: 'include',
+                cache: 'no-store',
+                headers
+            });
+            return { ok: response.ok, status: response.status };
+        } catch (error) {
+            return { ok: false, status: 0, error: String(error?.message || error || 'fetch_failed') };
+        }
+    };
+
+    const health = await probe(`${platformApiBase}/health`);
+    const summary = await probe(`${platformApiBase}/social/summary`);
+    return {
+        healthOk: Boolean(health.ok),
+        healthStatus: Number(health.status || 0) || 0,
+        summaryOk: Boolean(summary.ok),
+        summaryStatus: Number(summary.status || 0) || 0,
+        tokenExists: Boolean(token),
+        socketUrl,
+        socketPath
+    };
 };
 
 // Re-render board on resize for correct scaling (debounced)
