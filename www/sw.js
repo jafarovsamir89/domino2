@@ -1,5 +1,5 @@
-const CACHE_NAME = 'domino-v35';
-const SW_VERSION = 'browser-production-trace-v1';
+const CACHE_NAME = 'domino-v36';
+const SW_VERSION = 'sw-dynamic-bypass-v1';
 const ASSETS = [
     '/',
     '/index.html',
@@ -46,7 +46,26 @@ function shouldNetworkFirst(requestUrl) {
 }
 
 function shouldCacheFallback(requestUrl) {
-    return requestUrl.pathname.startsWith('/assets/') || requestUrl.pathname.startsWith('/shared/');
+    return (
+        requestUrl.pathname.startsWith('/assets/') && !requestUrl.pathname.startsWith('/assets/sounds/')
+    ) || requestUrl.pathname.startsWith('/shared/');
+}
+
+function shouldBypassServiceWorker(requestUrl) {
+    const pathname = requestUrl.pathname;
+    return (
+        pathname.startsWith('/api/') ||
+        pathname.startsWith('/api/socket.io') ||
+        pathname.startsWith('/socket.io') ||
+        pathname.startsWith('/matchmake/') ||
+        pathname.startsWith('/join/') ||
+        pathname.startsWith('/room/') ||
+        pathname.startsWith('/rooms/') ||
+        pathname.startsWith('/colyseus') ||
+        pathname.startsWith('/ws') ||
+        pathname.startsWith('/admin/api') ||
+        pathname.startsWith('/assets/sounds/')
+    );
 }
 
 async function networkFirst(request, cache) {
@@ -105,35 +124,37 @@ self.addEventListener('message', (event) => {
 });
 
 self.addEventListener('fetch', e => {
-    const requestUrl = new URL(e.request.url);
+    const request = e.request;
+    if (request.method !== 'GET') {
+        return;
+    }
+
+    const requestUrl = new URL(request.url);
     if (!isSameOriginRequest(requestUrl)) {
         return;
     }
 
-    const request = e.request;
+    if (shouldBypassServiceWorker(requestUrl)) {
+        return;
+    }
+
     const cache = caches.open(CACHE_NAME);
 
-    e.respondWith((async () => {
-        const activeCache = await cache;
-        if (shouldNetworkFirst(requestUrl)) {
+    if (shouldNetworkFirst(requestUrl)) {
+        e.respondWith((async () => {
+            const activeCache = await cache;
             return networkFirst(request, activeCache);
-        }
+        })());
+        return;
+    }
 
-        if (shouldCacheFallback(requestUrl)) {
+    if (shouldCacheFallback(requestUrl)) {
+        e.respondWith((async () => {
+            const activeCache = await cache;
             return cacheFirst(request, activeCache);
-        }
-
-        try {
-            const response = await fetch(request);
-            if (response && response.ok) {
-                await activeCache.put(request, response.clone());
-            }
-            return response;
-        } catch {
-            const cached = await activeCache.match(request);
-            return cached || Response.error();
-        }
-    })());
+        })());
+        return;
+    }
 });
 
 self.addEventListener('activate', e => {
