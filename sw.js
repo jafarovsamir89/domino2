@@ -1,4 +1,5 @@
-const CACHE_NAME = 'domino-v34';
+const CACHE_NAME = 'domino-v35';
+const SW_VERSION = 'browser-production-trace-v1';
 const ASSETS = [
     '/',
     '/index.html',
@@ -27,6 +28,55 @@ const ASSETS = [
     '/assets/reactions/1F48B.svg',
 ];
 
+const NETWORK_FIRST_PATHS = [
+    /^\/$/,
+    /^\/index\.html$/,
+    /^\/sw\.js$/,
+    /^\/manifest\.json$/,
+    /^\/js\/.+\.js$/,
+    /^\/css\/.+\.css$/
+];
+
+function isSameOriginRequest(requestUrl) {
+    return requestUrl.origin === self.location.origin;
+}
+
+function shouldNetworkFirst(requestUrl) {
+    return NETWORK_FIRST_PATHS.some((pattern) => pattern.test(requestUrl.pathname));
+}
+
+function shouldCacheFallback(requestUrl) {
+    return requestUrl.pathname.startsWith('/assets/') || requestUrl.pathname.startsWith('/shared/');
+}
+
+async function networkFirst(request, cache) {
+    try {
+        const freshRequest = new Request(request, { cache: 'no-store' });
+        const freshResponse = await fetch(freshRequest);
+        if (freshResponse && freshResponse.ok) {
+            await cache.put(request, freshResponse.clone());
+        }
+        return freshResponse;
+    } catch {
+        const cached = await caches.match(request);
+        return cached || Response.error();
+    }
+}
+
+async function cacheFirst(request, cache) {
+    const cached = await cache.match(request);
+    if (cached) return cached;
+    try {
+        const response = await fetch(request);
+        if (response && response.ok) {
+            await cache.put(request, response.clone());
+        }
+        return response;
+    } catch {
+        return Response.error();
+    }
+}
+
 self.addEventListener('install', e => {
     self.skipWaiting();
     e.waitUntil(
@@ -48,16 +98,39 @@ self.addEventListener('install', e => {
     );
 });
 
+self.addEventListener('message', (event) => {
+    if (event.data && event.data.type === 'SKIP_WAITING') {
+        self.skipWaiting();
+    }
+});
+
 self.addEventListener('fetch', e => {
     const requestUrl = new URL(e.request.url);
-    if (requestUrl.origin !== self.location.origin) {
+    if (!isSameOriginRequest(requestUrl)) {
         return;
     }
+
+    const request = e.request;
+    const cache = caches.open(CACHE_NAME);
+
     e.respondWith((async () => {
+        const activeCache = await cache;
+        if (shouldNetworkFirst(requestUrl)) {
+            return networkFirst(request, activeCache);
+        }
+
+        if (shouldCacheFallback(requestUrl)) {
+            return cacheFirst(request, activeCache);
+        }
+
         try {
-            return await fetch(e.request);
+            const response = await fetch(request);
+            if (response && response.ok) {
+                await activeCache.put(request, response.clone());
+            }
+            return response;
         } catch {
-            const cached = await caches.match(e.request);
+            const cached = await activeCache.match(request);
             return cached || Response.error();
         }
     })());
@@ -65,8 +138,12 @@ self.addEventListener('fetch', e => {
 
 self.addEventListener('activate', e => {
     e.waitUntil(
-        caches.keys().then(keys => 
-            Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
+        caches.keys().then(keys =>
+            Promise.all(
+                keys
+                    .filter(k => String(k).startsWith('domino-') && k !== CACHE_NAME)
+                    .map(k => caches.delete(k))
+            )
         ).then(() => self.clients.claim())
     );
 });
