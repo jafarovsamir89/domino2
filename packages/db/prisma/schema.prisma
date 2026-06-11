@@ -72,6 +72,14 @@ enum RoomInvitationStatus {
   revoked
 }
 
+enum PlayInviteStatus {
+  pending
+  accepted
+  declined
+  cancelled
+  expired
+}
+
 model User {
   id              String          @id
   name            String
@@ -175,6 +183,8 @@ model Player {
   inboxMessages InboxMessage[]
   roomInvitesSent RoomInvitation[] @relation("RoomInviteSender")
   roomInvitesReceived RoomInvitation[] @relation("RoomInviteRecipient")
+  playInvitesSent PlayInvite[] @relation("PlayInviteSender")
+  playInvitesReceived PlayInvite[] @relation("PlayInviteRecipient")
   giftsSent GiftTransaction[] @relation("GiftSender")
   giftsReceived GiftTransaction[] @relation("GiftRecipient")
   giftInventory PlayerGiftInventory[]
@@ -434,6 +444,26 @@ model RoomInvitation {
   @@index([inviterPlayerId, status, createdAt])
   @@index([roomId, status])
   @@index([roomCode, status])
+}
+
+model PlayInvite {
+  id               String           @id @default(cuid())
+  roomId           String?
+  inviterPlayerId  String
+  inviteePlayerId  String
+  status           PlayInviteStatus @default(pending)
+  note             String?
+  payloadJson      Json?
+  expiresAt        DateTime?
+  respondedAt      DateTime?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  inviter          Player           @relation("PlayInviteSender", fields: [inviterPlayerId], references: [id], onDelete: Cascade)
+  invitee          Player           @relation("PlayInviteRecipient", fields: [inviteePlayerId], references: [id], onDelete: Cascade)
+
+  @@index([inviteePlayerId, status, createdAt])
+  @@index([inviterPlayerId, status, createdAt])
+  @@index([roomId, status])
 }
 
 model DirectMessage {

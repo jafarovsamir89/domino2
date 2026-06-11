@@ -222,6 +222,25 @@ export class RoomInviteDto {
   expiresAt?: string | null;
 }
 
+export class PlayInviteDto {
+  @IsString()
+  @MaxLength(64)
+  inviteePlayerId!: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(256)
+  note?: string;
+
+  @IsOptional()
+  @IsObject()
+  payloadJson?: unknown;
+
+  @IsOptional()
+  @IsString()
+  expiresAt?: string | null;
+}
+
 export class PurchaseTableSkinDto {
   @IsString()
   @MaxLength(64)

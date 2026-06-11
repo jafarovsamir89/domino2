@@ -711,6 +711,187 @@ test("cancelRoomInvitation rejects an invitee trying to cancel someone else's in
   );
 });
 
+test("createPlayInvite creates a play invite without roomId", async () => {
+  const inviter = makePlayer("player-a", "Alpha");
+  const invitee = makePlayer("player-b", "Beta");
+  let capturedCreateData: any = null;
+
+  const prismaMock = {
+    player: {
+      findUnique: async ({ where }: any) => {
+        if (where.id === invitee.id) return invitee;
+        if (where.id === inviter.id) return inviter;
+        return null;
+      }
+    },
+    friendConnection: {
+      findFirst: async () => ({
+        id: "friend-1",
+        requesterPlayerId: inviter.id,
+        addresseePlayerId: invitee.id,
+        status: "accepted"
+      })
+    },
+    playInvite: {
+      findFirst: async () => null,
+      create: async ({ data }: any) => {
+        capturedCreateData = data;
+        return {
+          ...data,
+          id: "play-invite-1",
+          inviter,
+          invitee,
+          createdAt: new Date("2024-01-01T00:00:00.000Z"),
+          updatedAt: new Date("2024-01-01T00:00:00.000Z"),
+          respondedAt: null
+        };
+      }
+    },
+    $transaction: async (fn: any) => fn({ ...prismaMock })
+  } as any;
+
+  const service = new SocialService(prismaMock, {} as any);
+  (service as any).getCurrentPlayer = async () => inviter;
+
+  const result = await service.createPlayInvite({} as any, {
+    inviteePlayerId: invitee.id,
+    note: "play now"
+  });
+
+  assert.equal(capturedCreateData?.roomId, null);
+  assert.equal(capturedCreateData?.inviteePlayerId, invitee.id);
+  assert.equal(result.item.status, "pending");
+  assert.equal(result.item.note, "play now");
+});
+
+test("getPlayInvites returns incoming, outgoing and waiting invites", async () => {
+  const currentPlayer = makePlayer("player-a", "Alpha");
+  const friend = makePlayer("player-b", "Beta");
+  const incomingInvite = {
+    id: "play-invite-incoming",
+    roomId: null,
+    status: "pending",
+    note: null,
+    createdAt: new Date("2024-01-01T00:00:00.000Z"),
+    updatedAt: new Date("2024-01-01T00:00:00.000Z"),
+    respondedAt: null,
+    expiresAt: new Date("2024-01-01T00:01:00.000Z"),
+    inviterPlayerId: friend.id,
+    inviteePlayerId: currentPlayer.id,
+    inviter: friend,
+    invitee: currentPlayer
+  };
+  const outgoingWaitingInvite = {
+    id: "play-invite-outgoing",
+    roomId: null,
+    status: "accepted",
+    note: null,
+    createdAt: new Date("2024-01-02T00:00:00.000Z"),
+    updatedAt: new Date("2024-01-02T00:00:00.000Z"),
+    respondedAt: new Date("2024-01-02T00:00:01.000Z"),
+    expiresAt: new Date("2024-01-02T00:01:00.000Z"),
+    inviterPlayerId: currentPlayer.id,
+    inviteePlayerId: friend.id,
+    inviter: currentPlayer,
+    invitee: friend
+  };
+
+  const prismaMock = {
+    playInvite: {
+      updateMany: async () => ({ count: 0 }),
+      findMany: async () => [incomingInvite, outgoingWaitingInvite]
+    }
+  } as any;
+
+  const service = new SocialService(prismaMock, {} as any);
+  (service as any).getCurrentPlayer = async () => currentPlayer;
+
+  const result = await service.getPlayInvites({} as any);
+  assert.equal(result.incoming.length, 1);
+  assert.equal(result.outgoing.length, 1);
+  assert.equal(result.waiting.length, 1);
+  assert.equal(result.incoming[0].id, incomingInvite.id);
+  assert.equal(result.outgoing[0].id, outgoingWaitingInvite.id);
+  assert.equal(result.waiting[0].id, outgoingWaitingInvite.id);
+});
+
+test("acceptPlayInvite changes status to accepted", async () => {
+  const inviter = makePlayer("player-a", "Alpha");
+  const invitee = makePlayer("player-b", "Beta");
+  const invite = {
+    id: "play-invite-accept",
+    roomId: null,
+    status: "pending",
+    note: null,
+    createdAt: new Date("2024-01-03T00:00:00.000Z"),
+    updatedAt: new Date("2024-01-03T00:00:00.000Z"),
+    respondedAt: null,
+    expiresAt: new Date(Date.now() + 60_000),
+    inviterPlayerId: inviter.id,
+    inviteePlayerId: invitee.id,
+    inviter,
+    invitee
+  };
+  const updates: any[] = [];
+
+  const prismaMock = {
+    playInvite: {
+      findUnique: async () => invite,
+      update: async ({ data }: any) => {
+        updates.push(data);
+        Object.assign(invite, data);
+        return invite;
+      }
+    }
+  } as any;
+
+  const service = new SocialService(prismaMock, {} as any);
+  (service as any).getCurrentPlayer = async () => invitee;
+
+  const accepted = await service.acceptPlayInvite({} as any, invite.id);
+  assert.ok(accepted.item);
+  assert.equal(accepted.item!.status, "accepted");
+  assert.equal(updates[0].status, "accepted");
+});
+
+test("declinePlayInvite changes status to declined", async () => {
+  const inviter = makePlayer("player-a", "Alpha");
+  const invitee = makePlayer("player-b", "Beta");
+  const invite = {
+    id: "play-invite-decline",
+    roomId: null,
+    status: "pending",
+    note: null,
+    createdAt: new Date("2024-01-04T00:00:00.000Z"),
+    updatedAt: new Date("2024-01-04T00:00:00.000Z"),
+    respondedAt: null,
+    expiresAt: new Date(Date.now() + 60_000),
+    inviterPlayerId: inviter.id,
+    inviteePlayerId: invitee.id,
+    inviter,
+    invitee
+  };
+  const updates: any[] = [];
+
+  const prismaMock = {
+    playInvite: {
+      findUnique: async () => invite,
+      update: async ({ data }: any) => {
+        updates.push(data);
+        Object.assign(invite, data);
+        return invite;
+      }
+    }
+  } as any;
+
+  const service = new SocialService(prismaMock, {} as any);
+  (service as any).getCurrentPlayer = async () => invitee;
+
+  const declined = await service.declinePlayInvite({} as any, invite.id);
+  assert.equal(declined.item.status, "declined");
+  assert.equal(updates[0].status, "declined");
+});
+
 test("sendDirectMessage rejects messaging yourself", async () => {
   const currentPlayer = makePlayer("player-a", "Alpha");
   const prismaMock = {
@@ -1381,6 +1562,12 @@ test("getSocialSummary counts inbox chats invites and friend requests", async ()
         return 4;
       }
     },
+    playInvite: {
+      count: async ({ where }: any) => {
+        assert.deepEqual(where, { inviteePlayerId: currentPlayer.id, status: "pending" });
+        return 6;
+      }
+    },
     friendConnection: {
       count: async ({ where }: any) => {
         assert.deepEqual(where, { addresseePlayerId: currentPlayer.id, status: "pending" });
@@ -1395,9 +1582,9 @@ test("getSocialSummary counts inbox chats invites and friend requests", async ()
   const result = await service.getSocialSummary({} as any);
   assert.equal(result.inboxUnreadCount, 2);
   assert.equal(result.chatUnreadCount, 3);
-  assert.equal(result.inviteUnreadCount, 4);
+  assert.equal(result.inviteUnreadCount, 10);
   assert.equal(result.friendRequestCount, 5);
-  assert.equal(result.totalUnreadCount, 14);
+  assert.equal(result.totalUnreadCount, 20);
 });
 
 test("sendGift creates an inbox notification for the recipient", async () => {

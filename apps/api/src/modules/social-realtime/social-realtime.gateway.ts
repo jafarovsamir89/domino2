@@ -184,6 +184,103 @@ export class SocialRealtimeGateway implements OnModuleInit, OnModuleDestroy {
       }
     });
 
+    socket.on("play-invite:create", async (payload: any, ack?: SocialAck) => {
+      try {
+        const inviteePlayerId = String(payload?.inviteePlayerId || "").trim();
+        if (!inviteePlayerId) {
+          ack?.({ ok: false, error: "inviteePlayerId is required" });
+          return;
+        }
+        const result = await this.socialService.createPlayInviteForPlayer(
+          player,
+          payload || {},
+          { emitEvents: false }
+        );
+        const invite = result.item;
+        this.realtimeService.emitSocketEventToPlayer(inviteePlayerId, "play-invite:new", { invite });
+        ack?.({ ok: true, invite });
+      } catch (error: any) {
+        ack?.({ ok: false, error: String(error?.message || "play_invite_create_failed") });
+      }
+    });
+
+    socket.on("play-invite:accept", async (payload: any, ack?: SocialAck) => {
+      try {
+        const inviteId = String(payload?.inviteId || payload?.id || "").trim();
+        if (!inviteId) {
+          ack?.({ ok: false, error: "inviteId is required" });
+          return;
+        }
+        const result = await this.socialService.acceptPlayInviteForPlayer(player, inviteId, { emitEvents: false });
+        if (!result.ok && result.reason) {
+          ack?.(result);
+          return;
+        }
+        const invite = result.item;
+        if (!invite) {
+          ack?.({ ok: false, error: "play_invite_missing" });
+          return;
+        }
+        const inviteePlayerId = String(invite.invitee?.id || claims.playerId || "").trim();
+        const inviterPlayerId = String(invite.inviter?.id || "").trim();
+        if (inviteePlayerId) {
+          this.realtimeService.emitSocketEventToPlayer(inviteePlayerId, "play-invite:accepted", { invite });
+        }
+        if (inviterPlayerId) {
+          this.realtimeService.emitSocketEventToPlayer(inviterPlayerId, "play-invite:accepted", { invite });
+        }
+        ack?.({ ok: true, invite });
+      } catch (error: any) {
+        ack?.({ ok: false, error: String(error?.message || "play_invite_accept_failed") });
+      }
+    });
+
+    socket.on("play-invite:decline", async (payload: any, ack?: SocialAck) => {
+      try {
+        const inviteId = String(payload?.inviteId || payload?.id || "").trim();
+        if (!inviteId) {
+          ack?.({ ok: false, error: "inviteId is required" });
+          return;
+        }
+        const result = await this.socialService.declinePlayInviteForPlayer(player, inviteId, { emitEvents: false });
+        const invite = result.item;
+        const inviteePlayerId = String(invite.invitee?.id || claims.playerId || "").trim();
+        const inviterPlayerId = String(invite.inviter?.id || "").trim();
+        if (inviteePlayerId) {
+          this.realtimeService.emitSocketEventToPlayer(inviteePlayerId, "play-invite:declined", { invite });
+        }
+        if (inviterPlayerId) {
+          this.realtimeService.emitSocketEventToPlayer(inviterPlayerId, "play-invite:declined", { invite });
+        }
+        ack?.({ ok: true, invite });
+      } catch (error: any) {
+        ack?.({ ok: false, error: String(error?.message || "play_invite_decline_failed") });
+      }
+    });
+
+    socket.on("play-invite:cancel", async (payload: any, ack?: SocialAck) => {
+      try {
+        const inviteId = String(payload?.inviteId || payload?.id || "").trim();
+        if (!inviteId) {
+          ack?.({ ok: false, error: "inviteId is required" });
+          return;
+        }
+        const result = await this.socialService.cancelPlayInviteForPlayer(player, inviteId, { emitEvents: false });
+        const invite = result.item;
+        const inviteePlayerId = String(invite.invitee?.id || "").trim();
+        const inviterPlayerId = String(invite.inviter?.id || claims.playerId || "").trim();
+        if (inviteePlayerId) {
+          this.realtimeService.emitSocketEventToPlayer(inviteePlayerId, "play-invite:cancelled", { invite });
+        }
+        if (inviterPlayerId) {
+          this.realtimeService.emitSocketEventToPlayer(inviterPlayerId, "play-invite:cancelled", { invite });
+        }
+        ack?.({ ok: true, invite });
+      } catch (error: any) {
+        ack?.({ ok: false, error: String(error?.message || "play_invite_cancel_failed") });
+      }
+    });
+
     socket.on("invite:accept", async (payload: any, ack?: SocialAck) => {
       try {
         const inviteId = String(payload?.inviteId || payload?.id || "").trim();
@@ -342,6 +439,22 @@ export class SocialRealtimeGateway implements OnModuleInit, OnModuleDestroy {
       this.server.to(`player:${key}`).emit(eventName, {
         invite: data?.invite || data,
         type: inviteType || "invite_updated"
+      });
+      return;
+    }
+
+    if (type === "play_invite_update") {
+      const inviteType = String(data?.type || "").trim();
+      const eventNameMap: Record<string, string> = {
+        play_invite_created: "play-invite:new",
+        play_invite_accepted: "play-invite:accepted",
+        play_invite_declined: "play-invite:declined",
+        play_invite_cancelled: "play-invite:cancelled"
+      };
+      const eventName = eventNameMap[inviteType] || "play-invite:update";
+      this.server.to(`player:${key}`).emit(eventName, {
+        invite: data?.invite || data,
+        type: inviteType || "play_invite_updated"
       });
       return;
     }

@@ -531,6 +531,18 @@ export class AccountClient {
         };
     }
 
+    async getPlayInvites() {
+        const data = await this.platformRequest("/social/play-invites");
+        const outgoing = Array.isArray(data?.outgoing) ? data.outgoing : [];
+        return {
+            incoming: Array.isArray(data?.incoming) ? data.incoming : [],
+            outgoing,
+            sent: outgoing,
+            waiting: Array.isArray(data?.waiting) ? data.waiting : [],
+            items: Array.isArray(data?.items) ? data.items : []
+        };
+    }
+
     async getRealtimeSummary() {
         const data = await this.platformRequest("/realtime/summary");
         return data || null;
@@ -667,6 +679,32 @@ export class AccountClient {
         return this.platformRequest(`/social/rooms/${encodeURIComponent(roomId)}/invite`, {
             method: "POST",
             body
+        });
+    }
+
+    async inviteFriendToPlay(payload = {}) {
+        const body = payload && typeof payload === "object" ? payload : {};
+        return this.platformRequest("/social/play-invites", {
+            method: "POST",
+            body
+        });
+    }
+
+    async acceptPlayInvite(id) {
+        return this.platformRequest(`/social/play-invites/${encodeURIComponent(id)}/accept`, {
+            method: "POST"
+        });
+    }
+
+    async declinePlayInvite(id) {
+        return this.platformRequest(`/social/play-invites/${encodeURIComponent(id)}/decline`, {
+            method: "POST"
+        });
+    }
+
+    async cancelPlayInvite(id) {
+        return this.platformRequest(`/social/play-invites/${encodeURIComponent(id)}/cancel`, {
+            method: "POST"
         });
     }
 
