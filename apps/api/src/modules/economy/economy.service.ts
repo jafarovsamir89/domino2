@@ -97,6 +97,7 @@ const DEFAULT_CONFIG_KEY = "default";
 const COIN_SHOP_VIDEO_REWARD_AMOUNT = 1000;
 const COIN_SHOP_VIDEO_COOLDOWN_MINUTES = 30;
 const COIN_SHOP_VIDEO_DAILY_LIMIT = 6;
+const BAKU_TIME_ZONE = "Asia/Baku";
 
 const DEFAULT_STAKES: EconomyStakeTablePayload[] = [
   { key: "free", title: "Free table", stakeAmount: 0, commissionBps: 0, isFree: true, isActive: false, sortOrder: 0 },
@@ -182,8 +183,115 @@ function toCleanString(value: unknown, fallback = "") {
   return String(value ?? fallback).trim();
 }
 
+function formatDateKey(year: number, month: number, day: number) {
+  const y = String(year).padStart(4, "0");
+  const m = String(month).padStart(2, "0");
+  const d = String(day).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
+
+function getTimeZoneDateParts(date: Date, timeZone: string) {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit"
+  }).formatToParts(date);
+  const getPart = (type: string) => Number(parts.find((part) => part.type === type)?.value || 0);
+  return {
+    year: getPart("year"),
+    month: getPart("month"),
+    day: getPart("day")
+  };
+}
+
+function parseTimeZoneOffsetMinutes(label: string) {
+  const match = String(label || "").match(/(?:GMT|UTC)([+-])(\d{1,2})(?::?(\d{2}))?/i);
+  if (!match) return 0;
+  const sign = match[1] === "-" ? -1 : 1;
+  const hours = Number(match[2] || 0);
+  const minutes = Number(match[3] || 0);
+  return sign * ((hours * 60) + minutes);
+}
+
+function getTimeZoneOffsetMinutes(date: Date, timeZone: string) {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone,
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour12: false,
+    timeZoneName: "shortOffset"
+  }).formatToParts(date);
+  const timeZoneName = parts.find((part) => part.type === "timeZoneName")?.value || "GMT+0";
+  return parseTimeZoneOffsetMinutes(timeZoneName);
+}
+
+function getUtcInstantForTimeZoneDateTime(
+  dateTime: { year: number; month: number; day: number; hour?: number; minute?: number; second?: number },
+  timeZone: string
+) {
+  const baseUtc = Date.UTC(
+    dateTime.year,
+    dateTime.month - 1,
+    dateTime.day,
+    dateTime.hour || 0,
+    dateTime.minute || 0,
+    dateTime.second || 0,
+    0
+  );
+  let utcMs = baseUtc;
+  for (let i = 0; i < 2; i += 1) {
+    const offsetMinutes = getTimeZoneOffsetMinutes(new Date(utcMs), timeZone);
+    const correctedUtcMs = baseUtc - (offsetMinutes * 60_000);
+    if (correctedUtcMs === utcMs) break;
+    utcMs = correctedUtcMs;
+  }
+  return new Date(utcMs);
+}
+
 function toUtcDateKey(date = new Date()) {
   return date.toISOString().slice(0, 10);
+}
+
+export function getBakuDateKey(date = new Date()) {
+  const parts = getTimeZoneDateParts(date, BAKU_TIME_ZONE);
+  return formatDateKey(parts.year, parts.month, parts.day);
+}
+
+export function getPreviousBakuDateKey(date = new Date()) {
+  const parts = getTimeZoneDateParts(date, BAKU_TIME_ZONE);
+  return getBakuDateKey(new Date(Date.UTC(parts.year, parts.month - 1, parts.day - 1)));
+}
+
+export function getNextBakuMidnight(date = new Date()) {
+  const parts = getTimeZoneDateParts(date, BAKU_TIME_ZONE);
+  return getUtcInstantForTimeZoneDateTime({
+    year: parts.year,
+    month: parts.month,
+    day: parts.day + 1,
+    hour: 0,
+    minute: 0,
+    second: 0
+  }, BAKU_TIME_ZONE);
+}
+
+function buildDailyRewardSchedule(config: { dailyMaxStreak: number; dailyBaseAmount: number; dailyStreakBonus: number }) {
+  const maxStreak = Math.max(1, toInt(config.dailyMaxStreak, 7));
+  const baseAmount = Math.max(0, toInt(config.dailyBaseAmount, 25));
+  const streakBonus = Math.max(0, toInt(config.dailyStreakBonus, 5));
+  return Array.from({ length: maxStreak }, (_, index) => ({
+    day: index + 1,
+    amount: baseAmount + (index * streakBonus)
+  }));
+}
+
+function getRewardAmountForDay(rewardSchedule: Array<{ day: number; amount: number }>, day: number) {
+  const clampedDay = Math.min(Math.max(1, Math.floor(Number(day) || 1)), rewardSchedule.length || 1);
+  return rewardSchedule[clampedDay - 1]?.amount ?? 0;
 }
 
 function stripProof<T extends Record<string, unknown>>(payload: T) {
@@ -1183,10 +1291,9 @@ export class EconomyService {
     config: { dailyMaxStreak: number; dailyBaseAmount: number; dailyStreakBonus: number },
     now: Date
   ) {
-    const claimDate = toUtcDateKey(now);
-    const prevDay = new Date(now);
-    prevDay.setUTCDate(prevDay.getUTCDate() - 1);
-    const previousDateKey = toUtcDateKey(prevDay);
+    const rewardSchedule = buildDailyRewardSchedule(config);
+    const claimDate = getBakuDateKey(now);
+    const previousDateKey = getPreviousBakuDateKey(now);
 
     // Check if claimed today
     const existingClaim = await tx.coinDailyBonusClaim.findUnique({
@@ -1208,19 +1315,7 @@ export class EconomyService {
       }
     });
 
-    const getRewardForStreak = (day: number): number => {
-      const clamped = Math.min(config.dailyMaxStreak, Math.max(1, day));
-      const amounts: Record<number, number> = {
-        1: 200,
-        2: 300,
-        3: 350,
-        4: 400,
-        5: 800,
-        6: 1000,
-        7: 2000
-      };
-      return amounts[clamped] ?? amounts[7] ?? 2000;
-    };
+    const getRewardForStreak = (day: number): number => getRewardAmountForDay(rewardSchedule, day);
 
     let claimable = false;
     let claimedToday = false;
@@ -1244,27 +1339,36 @@ export class EconomyService {
 
     const tomorrowStreakDay = Math.min(config.dailyMaxStreak, streakDay + 1);
     const tomorrowAmount = getRewardForStreak(tomorrowStreakDay);
-
-    const tomorrow = new Date(now);
-    tomorrow.setUTCDate(tomorrow.getUTCDate() + 1);
-    const nextClaimAt = claimedToday
-      ? startOfUtcDay(tomorrow)
-      : null;
+    const nextClaimAt = getNextBakuMidnight(now);
 
     return {
       claimable,
+      canClaim: claimable,
       claimedToday,
       claimDate: existingClaim?.claimDate ?? claimDate,
+      dailyBonusDateKey: claimDate,
+      timezone: BAKU_TIME_ZONE,
       streakDay,
       todayAmount,
+      todayReward: {
+        day: streakDay,
+        amount: todayAmount
+      },
       tomorrowAmount,
+      tomorrowReward: {
+        day: tomorrowStreakDay,
+        amount: tomorrowAmount
+      },
       maxStreak: config.dailyMaxStreak,
-      nextClaimAt: nextClaimAt ? nextClaimAt.toISOString() : null,
-      lastClaimAt: lastClaimAt ? lastClaimAt.toISOString() : null
+      rewardSchedule,
+      nextClaimAt: nextClaimAt.toISOString(),
+      dailyBonusNextClaimAt: nextClaimAt.toISOString(),
+      lastClaimAt: lastClaimAt ? lastClaimAt.toISOString() : null,
+      lastClaimDateKey: existingClaim?.claimDate ?? previousClaim?.claimDate ?? null
     };
   }
 
-  async getDailyBonusStatus(headers: IncomingHttpHeaders) {
+  async getDailyBonusStatus(headers: IncomingHttpHeaders, now = new Date()) {
     const profile = await this.authService.getCurrentProfile(headers);
     if (!profile?.player) {
       throw new UnauthorizedException("Login required");
@@ -1279,7 +1383,6 @@ export class EconomyService {
       where: { playerId: profile.player.id }
     });
 
-    const now = new Date();
     const status = await this.buildDailyBonusStatus(this.prisma, profile.player.id, config, now);
 
     return {
@@ -1292,7 +1395,7 @@ export class EconomyService {
     };
   }
 
-  async claimDailyBonus(headers: IncomingHttpHeaders) {
+  async claimDailyBonus(headers: IncomingHttpHeaders, now = new Date()) {
     const profile = await this.authService.getCurrentProfile(headers);
     if (!profile?.player) {
       throw new UnauthorizedException("Login required");
@@ -1303,8 +1406,7 @@ export class EconomyService {
       throw new BadRequestException("Economy config missing");
     }
 
-    const now = new Date();
-    const claimDate = toUtcDateKey(now);
+    const claimDate = getBakuDateKey(now);
 
     return this.prisma.$transaction(async (tx) => {
       const existing = await tx.coinDailyBonusClaim.findUnique({
