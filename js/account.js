@@ -1036,9 +1036,12 @@ export class AccountClient {
         return this.platformRequest("/economy/daily-bonus/status");
     }
 
-    async claimDailyBonus() {
+    async claimDailyBonus(payload = {}) {
         return this.platformRequest("/economy/daily-bonus/claim", {
-            method: "POST"
+            method: "POST",
+            body: {
+                claimMode: payload?.claimMode === "rewarded_x2" ? "rewarded_x2" : "normal"
+            }
         });
     }
 }

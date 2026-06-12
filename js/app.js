@@ -389,6 +389,14 @@ class DominoGame {
             loading: false,
             status: null,
             claiming: false,
+            claimingMode: '',
+            rewardedAdAvailable: null,
+            rewardedAdStartedAt: 0,
+            rewardedAdCompletedAt: 0,
+            rewardedAdCancelledAt: 0,
+            rewardedAdError: '',
+            lastDailyBonusClaimMode: '',
+            lastDailyBonusClaimReward: 0,
             error: ''
         };
         this.pendingOnlineAction = null;
@@ -796,6 +804,16 @@ class DominoGame {
             this.updateSocialCenterBadge();
             this.dailyBonusState.status = null;
             this.dailyBonusState.loading = false;
+            this.dailyBonusState.claiming = false;
+            this.dailyBonusState.claimingMode = '';
+            this.dailyBonusState.rewardedAdAvailable = null;
+            this.dailyBonusState.rewardedAdStartedAt = 0;
+            this.dailyBonusState.rewardedAdCompletedAt = 0;
+            this.dailyBonusState.rewardedAdCancelledAt = 0;
+            this.dailyBonusState.rewardedAdError = '';
+            this.dailyBonusState.lastDailyBonusClaimMode = '';
+            this.dailyBonusState.lastDailyBonusClaimReward = 0;
+            this.dailyBonusState.error = '';
             this.stopDailyBonusTicker();
             this.renderDailyBonusCard();
         });
@@ -828,9 +846,15 @@ class DominoGame {
         this.ensureShopIconMarkup();
 
         const dailyBonusClaimBtn = document.getElementById('daily-bonus-claim-btn');
+        const dailyBonusRewardedBtn = document.getElementById('daily-bonus-rewarded-btn');
         if (dailyBonusClaimBtn) {
             dailyBonusClaimBtn.addEventListener('click', () => {
-                this.claimDailyBonus();
+                this.claimDailyBonus('normal');
+            });
+        }
+        if (dailyBonusRewardedBtn) {
+            dailyBonusRewardedBtn.addEventListener('click', () => {
+                this.claimDailyBonus('rewarded_x2');
             });
         }
     }
@@ -1445,7 +1469,19 @@ class DominoGame {
 
     getDailyBonusDebugState() {
         const status = this.dailyBonusState.status || {};
+        const claimMode = String(this.dailyBonusState.claimingMode || this.dailyBonusState.lastDailyBonusClaimMode || '').trim() || null;
         return {
+            claimMode,
+            baseReward: Number(status.todayReward?.amount ?? status.todayAmount ?? 0) || 0,
+            multiplier: claimMode === 'rewarded_x2' ? 2 : 1,
+            reward: Number(this.dailyBonusState.lastDailyBonusClaimReward || status.todayReward?.amount || 0) || 0,
+            rewardedAdAvailable: this.dailyBonusState.rewardedAdAvailable === null ? null : Boolean(this.dailyBonusState.rewardedAdAvailable),
+            rewardedAdStartedAt: Number(this.dailyBonusState.rewardedAdStartedAt || 0) || 0,
+            rewardedAdCompletedAt: Number(this.dailyBonusState.rewardedAdCompletedAt || 0) || 0,
+            rewardedAdCancelledAt: Number(this.dailyBonusState.rewardedAdCancelledAt || 0) || 0,
+            rewardedAdError: String(this.dailyBonusState.rewardedAdError || '').trim() || null,
+            lastDailyBonusClaimMode: String(this.dailyBonusState.lastDailyBonusClaimMode || '').trim() || null,
+            lastDailyBonusClaimReward: Number(this.dailyBonusState.lastDailyBonusClaimReward || 0) || 0,
             dailyBonusTimezone: String(status.timezone || '').trim() || null,
             dailyBonusDateKey: String(status.dailyBonusDateKey || status.claimDate || '').trim() || null,
             dailyBonusNextClaimAt: String(status.dailyBonusNextClaimAt || status.nextClaimAt || '').trim() || null,
@@ -5012,16 +5048,93 @@ class DominoGame {
         }
     }
 
-    async claimDailyBonus() {
-        if (this.dailyBonusState.claiming) return;
-        this.dailyBonusState.claiming = true;
-        this.dailyBonusState.error = '';
+    getDailyBonusRewardedAdProvider() {
+        return window.__dominoRewardedAdProvider
+            || window.dominoRewardedAdProvider
+            || window.rewardedAdProvider
+            || window.rewardedAds
+            || null;
+    }
+
+    refreshDailyBonusRewardedAdAvailability() {
+        const provider = this.getDailyBonusRewardedAdProvider();
+        const available = Boolean(provider && (typeof provider.showRewardedAd === 'function' || typeof provider.show === 'function' || typeof provider.present === 'function'));
+        this.dailyBonusState.rewardedAdAvailable = available;
+        return available;
+    }
+
+    async showRewardedAdForDailyBonus() {
+        const provider = this.getDailyBonusRewardedAdProvider();
+        const hasProvider = Boolean(provider && (typeof provider.showRewardedAd === 'function' || typeof provider.show === 'function' || typeof provider.present === 'function'));
+        this.dailyBonusState.rewardedAdAvailable = hasProvider;
+        this.dailyBonusState.rewardedAdError = '';
+        if (!hasProvider) {
+            this.dailyBonusState.rewardedAdCancelledAt = Date.now();
+            this.dailyBonusState.rewardedAdError = this.t('daily-bonus-ad-unavailable');
+            return { available: false, started: false, completed: false, cancelled: false, error: this.dailyBonusState.rewardedAdError };
+        }
+
+        this.dailyBonusState.rewardedAdStartedAt = Date.now();
+        this.dailyBonusState.rewardedAdCompletedAt = 0;
+        this.dailyBonusState.rewardedAdCancelledAt = 0;
         this.renderDailyBonusCard();
 
         try {
-            const result = await this.account.claimDailyBonus();
+            const showFn = typeof provider.showRewardedAd === 'function'
+                ? provider.showRewardedAd.bind(provider)
+                : typeof provider.show === 'function'
+                    ? provider.show.bind(provider)
+                    : provider.present.bind(provider);
+            const result = await Promise.resolve(showFn({
+                placement: 'daily_bonus',
+                claimMode: 'rewarded_x2'
+            }));
+            const cancelled = result === false || result?.cancelled === true || result?.dismissed === true || result?.error === 'cancelled';
+            if (cancelled) {
+                this.dailyBonusState.rewardedAdCancelledAt = Date.now();
+                this.dailyBonusState.rewardedAdError = '';
+                return { available: true, started: true, completed: false, cancelled: true, error: '' };
+            }
+
+            this.dailyBonusState.rewardedAdCompletedAt = Date.now();
+            this.dailyBonusState.rewardedAdError = '';
+            return { available: true, started: true, completed: true, cancelled: false, error: '' };
+        } catch (err) {
+            this.dailyBonusState.rewardedAdError = err?.message || this.t('daily-bonus-error');
+            return { available: true, started: true, completed: false, cancelled: false, error: this.dailyBonusState.rewardedAdError };
+        } finally {
+            this.renderDailyBonusCard();
+        }
+    }
+
+    async claimDailyBonus(claimMode = 'normal') {
+        if (this.dailyBonusState.claiming) return;
+        const normalizedMode = claimMode === 'rewarded_x2' ? 'rewarded_x2' : 'normal';
+        if (normalizedMode === 'rewarded_x2' && !this.refreshDailyBonusRewardedAdAvailability()) {
+            this.dailyBonusState.rewardedAdError = this.t('daily-bonus-ad-unavailable');
+            this.renderDailyBonusCard();
+            return;
+        }
+
+        this.dailyBonusState.claiming = true;
+        this.dailyBonusState.claimingMode = normalizedMode;
+        this.dailyBonusState.error = '';
+        this.dailyBonusState.rewardedAdError = '';
+        this.renderDailyBonusCard();
+
+        try {
+            if (normalizedMode === 'rewarded_x2') {
+                const adResult = await this.showRewardedAdForDailyBonus();
+                if (!adResult?.completed) {
+                    return;
+                }
+            }
+
+            const result = await this.account.claimDailyBonus({ claimMode: normalizedMode });
             if (result?.ok) {
                 this.dailyBonusState.status = result.dailyBonus || null;
+                this.dailyBonusState.lastDailyBonusClaimMode = String(result.claimMode || normalizedMode);
+                this.dailyBonusState.lastDailyBonusClaimReward = Number(result.reward ?? result.claim?.amount ?? 0) || 0;
                 if (result.wallet) {
                     const balance = result.wallet.balance;
                     this.accountDetails = {
@@ -5038,24 +5151,30 @@ class DominoGame {
                     this.renderCoinShopModal();
                     this.renderTableSkinInventory();
                 }
-                
+
                 if (result.claimed) {
-                    const earnedAmount = result.claim?.amount || 0;
+                    const earnedAmount = Number(result.reward ?? result.claim?.amount ?? 0) || 0;
                     this.renderer.showMessage(this.t('daily-bonus-toast').replace('{amount}', earnedAmount), 3000);
                 }
-                
+
                 if (this.dailyBonusState.status?.nextClaimAt) {
                     this.startDailyBonusTicker();
                 } else {
                     this.stopDailyBonusTicker();
                 }
             } else {
-                this.dailyBonusState.error = result.reason || 'Could not claim daily bonus';
+                if (result?.reason && result.reason !== 'already_claimed') {
+                    this.dailyBonusState.error = result.reason || 'Could not claim daily bonus';
+                } else {
+                    this.dailyBonusState.error = '';
+                    this.dailyBonusState.status = result.dailyBonus || this.dailyBonusState.status;
+                }
             }
         } catch (err) {
             this.dailyBonusState.error = err.message || this.t('daily-bonus-error');
         } finally {
             this.dailyBonusState.claiming = false;
+            this.dailyBonusState.claimingMode = '';
             this.renderDailyBonusCard();
         }
     }
@@ -5077,19 +5196,44 @@ class DominoGame {
         const metaEl = document.getElementById('daily-bonus-meta');
         const amountEl = document.getElementById('daily-bonus-amount');
         const streakEl = document.getElementById('daily-bonus-streak');
-        const btn = document.getElementById('daily-bonus-claim-btn');
+        const normalBtn = document.getElementById('daily-bonus-claim-btn');
+        const rewardedBtn = document.getElementById('daily-bonus-rewarded-btn');
+        const normalAmountEl = document.getElementById('daily-bonus-claim-amount');
+        const rewardedAmountEl = document.getElementById('daily-bonus-rewarded-amount');
+        const actionsHintEl = document.getElementById('daily-bonus-actions-hint');
         const streakRow = document.getElementById('daily-bonus-streak-row');
 
         if (titleEl) titleEl.textContent = this.t('daily-bonus-title');
+
+        const status = this.dailyBonusState.status;
+        const baseRewardAmount = Number(status?.todayReward?.amount ?? status?.todayAmount ?? 0) || 0;
+        const doubledRewardAmount = baseRewardAmount * 2;
+        const canClaim = Boolean(status && (status.canClaim ?? status.claimable) && !status.claimedToday && !this.dailyBonusState.error);
+        const rewardedAdAvailable = this.refreshDailyBonusRewardedAdAvailability();
+        const isClaimingNormal = this.dailyBonusState.claiming && this.dailyBonusState.claimingMode === 'normal';
+        const isClaimingRewarded = this.dailyBonusState.claiming && this.dailyBonusState.claimingMode === 'rewarded_x2';
+        const rewardedAdInFlight = Boolean(this.dailyBonusState.rewardedAdStartedAt && !this.dailyBonusState.rewardedAdCompletedAt && !this.dailyBonusState.rewardedAdCancelledAt && isClaimingRewarded);
 
         if (this.dailyBonusState.loading) {
             this.stopDailyBonusTicker();
             if (metaEl) metaEl.textContent = this.t('daily-bonus-loading');
             if (amountEl) amountEl.textContent = '';
             if (streakEl) streakEl.textContent = '';
-            if (btn) {
-                btn.disabled = true;
-                btn.textContent = this.t('daily-bonus-loading');
+            if (normalBtn) {
+                normalBtn.disabled = true;
+                normalBtn.textContent = this.t('daily-bonus-loading');
+            }
+            if (rewardedBtn) {
+                rewardedBtn.disabled = true;
+                rewardedBtn.textContent = this.t('daily-bonus-loading');
+            }
+            if (normalAmountEl) normalAmountEl.textContent = '';
+            if (rewardedAmountEl) rewardedAmountEl.textContent = '';
+            if (actionsHintEl) actionsHintEl.textContent = '';
+            if (this.dailyBonusState.rewardedAdStartedAt || this.dailyBonusState.rewardedAdCompletedAt || this.dailyBonusState.rewardedAdCancelledAt) {
+                this.dailyBonusState.rewardedAdStartedAt = 0;
+                this.dailyBonusState.rewardedAdCompletedAt = 0;
+                this.dailyBonusState.rewardedAdCancelledAt = 0;
             }
             if (streakRow) streakRow.innerHTML = '';
             return;
@@ -5100,47 +5244,95 @@ class DominoGame {
             if (metaEl) metaEl.textContent = this.dailyBonusState.error;
             if (amountEl) amountEl.textContent = '';
             if (streakEl) streakEl.textContent = '';
-            if (btn) {
-                btn.disabled = true;
-                btn.textContent = this.t('daily-bonus-error');
+            if (normalBtn) {
+                normalBtn.disabled = true;
+                normalBtn.textContent = this.t('daily-bonus-error');
+            }
+            if (rewardedBtn) {
+                rewardedBtn.disabled = true;
+                rewardedBtn.textContent = this.t('daily-bonus-error');
+            }
+            if (normalAmountEl) normalAmountEl.textContent = '';
+            if (rewardedAmountEl) rewardedAmountEl.textContent = '';
+            if (actionsHintEl) actionsHintEl.textContent = '';
+            if (status && (status.canClaim ?? status.claimable)) {
+                if (rewardedBtn) rewardedBtn.textContent = this.t('daily-bonus-claim-rewarded');
             }
             if (streakRow) streakRow.innerHTML = '';
             return;
         }
 
-        const status = this.dailyBonusState.status;
         if (!status) {
             this.stopDailyBonusTicker();
             if (metaEl) metaEl.textContent = this.t('daily-bonus-error');
             if (amountEl) amountEl.textContent = '';
             if (streakEl) streakEl.textContent = '';
-            if (btn) {
-                btn.disabled = true;
-                btn.textContent = this.t('daily-bonus-error');
+            if (normalBtn) {
+                normalBtn.disabled = true;
+                normalBtn.textContent = this.t('daily-bonus-error');
+            }
+            if (rewardedBtn) {
+                rewardedBtn.disabled = true;
+                rewardedBtn.textContent = this.t('daily-bonus-error');
+            }
+            if (normalAmountEl) normalAmountEl.textContent = '';
+            if (rewardedAmountEl) rewardedAmountEl.textContent = '';
+            if (actionsHintEl) actionsHintEl.textContent = '';
+            if (this.dailyBonusState.rewardedAdError) {
+                this.dailyBonusState.rewardedAdError = '';
             }
             if (streakRow) streakRow.innerHTML = '';
             return;
         }
 
         if (amountEl) {
-            const todayRewardAmount = Number(status.todayReward?.amount ?? status.todayAmount ?? 0);
-            amountEl.textContent = `${todayRewardAmount} coins`;
+            amountEl.textContent = `+${baseRewardAmount}`;
         }
 
         if (streakEl) {
             streakEl.textContent = `${this.t('daily-bonus-streak')}: ${status.streakDay}/${status.maxStreak}`;
         }
 
-        if (btn) {
-            if (this.dailyBonusState.claiming) {
-                btn.disabled = true;
-                btn.textContent = this.t('daily-bonus-loading');
-            } else if (status.canClaim === false || status.claimedToday) {
-                btn.disabled = true;
-                btn.textContent = this.t('daily-bonus-claimed');
+        if (normalAmountEl) {
+            normalAmountEl.textContent = `+${baseRewardAmount}`;
+        }
+
+        if (rewardedAmountEl) {
+            rewardedAmountEl.textContent = `+${doubledRewardAmount}`;
+        }
+
+        if (normalBtn) {
+            if (isClaimingNormal) {
+                normalBtn.disabled = true;
+                normalBtn.textContent = '...';
+            } else if (!canClaim) {
+                normalBtn.disabled = true;
+                normalBtn.textContent = this.t('daily-bonus-claimed');
             } else {
-                btn.disabled = false;
-                btn.textContent = this.t('daily-bonus-claim');
+                normalBtn.disabled = false;
+                normalBtn.textContent = this.t('daily-bonus-claim-normal');
+            }
+        }
+
+        if (rewardedBtn) {
+            if (isClaimingRewarded && this.dailyBonusState.rewardedAdCancelledAt) {
+                rewardedBtn.disabled = true;
+                rewardedBtn.textContent = this.t('daily-bonus-claim-rewarded');
+            } else if (isClaimingRewarded && !rewardedAdInFlight) {
+                rewardedBtn.disabled = true;
+                rewardedBtn.textContent = this.t('daily-bonus-claim-loading');
+            } else if (rewardedAdInFlight) {
+                rewardedBtn.disabled = true;
+                rewardedBtn.textContent = this.t('daily-bonus-ad-loading');
+            } else if (!canClaim) {
+                rewardedBtn.disabled = true;
+                rewardedBtn.textContent = this.t('daily-bonus-claimed');
+            } else if (!rewardedAdAvailable) {
+                rewardedBtn.disabled = true;
+                rewardedBtn.textContent = this.t('daily-bonus-ad-unavailable');
+            } else {
+                rewardedBtn.disabled = false;
+                rewardedBtn.textContent = this.t('daily-bonus-claim-rewarded');
             }
         }
 
@@ -5150,6 +5342,18 @@ class DominoGame {
                 metaEl.textContent = this.t('daily-bonus-subtitle');
             } else if (!this.dailyBonusTickerId) {
                 this.startDailyBonusTicker();
+            }
+        }
+
+        if (actionsHintEl) {
+            if (!canClaim) {
+                actionsHintEl.textContent = this.t('daily-bonus-claimed');
+            } else if (!rewardedAdAvailable) {
+                actionsHintEl.textContent = this.t('daily-bonus-ad-unavailable');
+            } else if (this.dailyBonusState.rewardedAdError) {
+                actionsHintEl.textContent = this.dailyBonusState.rewardedAdError;
+            } else {
+                actionsHintEl.textContent = '';
             }
         }
 
