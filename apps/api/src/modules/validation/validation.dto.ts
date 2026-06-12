@@ -512,3 +512,41 @@ export class PlatformMatchDto {
   @IsString({ each: true })
   forfeitPlayerIds?: string[];
 }
+
+export class PlayInviteAttachRoomDto {
+  @IsString()
+  @MaxLength(64)
+  roomId!: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(64)
+  roomCode?: string | null;
+
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(3)
+  @IsString({ each: true })
+  inviteIds?: string[];
+
+  @IsOptional()
+  @IsObject()
+  roomSettings?: Record<string, unknown> | null;
+}
+
+export class PlayInviteJoinDto {
+  @IsOptional()
+  @IsString()
+  @MaxLength(64)
+  roomId?: string | null;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(64)
+  roomCode?: string | null;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(128)
+  reason?: string | null;
+}

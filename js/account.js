@@ -539,6 +539,7 @@ export class AccountClient {
             outgoing,
             sent: outgoing,
             waiting: Array.isArray(data?.waiting) ? data.waiting : [],
+            acceptedWaiting: Array.isArray(data?.acceptedWaiting) ? data.acceptedWaiting : Array.isArray(data?.waiting) ? data.waiting : [],
             items: Array.isArray(data?.items) ? data.items : []
         };
     }
@@ -705,6 +706,30 @@ export class AccountClient {
     async cancelPlayInvite(id) {
         return this.platformRequest(`/social/play-invites/${encodeURIComponent(id)}/cancel`, {
             method: "POST"
+        });
+    }
+
+    async attachPlayInviteRoom(payload = {}) {
+        const body = payload && typeof payload === "object" ? payload : {};
+        return this.platformRequest("/social/play-invites/attach-room", {
+            method: "POST",
+            body
+        });
+    }
+
+    async markPlayInviteJoined(id, payload = {}) {
+        const body = payload && typeof payload === "object" ? payload : {};
+        return this.platformRequest(`/social/play-invites/${encodeURIComponent(id)}/joined`, {
+            method: "POST",
+            body
+        });
+    }
+
+    async markPlayInviteFailedToJoin(id, payload = {}) {
+        const body = payload && typeof payload === "object" ? payload : {};
+        return this.platformRequest(`/social/play-invites/${encodeURIComponent(id)}/failed-to-join`, {
+            method: "POST",
+            body
         });
     }
 

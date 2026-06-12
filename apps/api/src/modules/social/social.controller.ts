@@ -6,6 +6,8 @@ import type { Observable } from "rxjs";
 import { SocialService } from "./social.service.js";
 import {
   SocialExchangeGiftDto,
+  PlayInviteAttachRoomDto,
+  PlayInviteJoinDto,
   PlayInviteDto,
   SocialSendGiftDto,
   SocialSendMessageDto,
@@ -192,6 +194,21 @@ export class SocialController {
   @Post("play-invites/:id/cancel")
   async cancelPlayInvite(@Req() req: Request, @Param("id") id: string) {
     return this.socialService.cancelPlayInvite(req.headers, id);
+  }
+
+  @Post("play-invites/attach-room")
+  async attachPlayInviteRoom(@Req() req: Request, @Body() body: PlayInviteAttachRoomDto) {
+    return this.socialService.attachPlayInviteRoom(req.headers, body);
+  }
+
+  @Post("play-invites/:id/joined")
+  async markPlayInviteJoined(@Req() req: Request, @Param("id") id: string, @Body() body: PlayInviteJoinDto) {
+    return this.socialService.markPlayInviteJoined(req.headers, id, body);
+  }
+
+  @Post("play-invites/:id/failed-to-join")
+  async markPlayInviteFailedToJoin(@Req() req: Request, @Param("id") id: string, @Body() body: PlayInviteJoinDto) {
+    return this.socialService.markPlayInviteFailedToJoin(req.headers, id, body);
   }
 
   @Post("invitations/:id/accept")

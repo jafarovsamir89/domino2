@@ -75,6 +75,9 @@ enum RoomInvitationStatus {
 enum PlayInviteStatus {
   pending
   accepted
+  room_created
+  joined
+  failed_to_join
   declined
   cancelled
   expired
@@ -449,6 +452,7 @@ model RoomInvitation {
 model PlayInvite {
   id               String           @id @default(cuid())
   roomId           String?
+  roomCode         String?
   inviterPlayerId  String
   inviteePlayerId  String
   status           PlayInviteStatus @default(pending)
@@ -464,6 +468,7 @@ model PlayInvite {
   @@index([inviteePlayerId, status, createdAt])
   @@index([inviterPlayerId, status, createdAt])
   @@index([roomId, status])
+  @@index([roomCode, status])
 }
 
 model DirectMessage {
