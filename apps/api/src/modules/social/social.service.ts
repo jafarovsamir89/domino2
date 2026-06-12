@@ -49,6 +49,19 @@ type RoomInviteRow = {
   invitee: PlayerSummary;
 };
 
+type PlayInviteRow = {
+  id: string;
+  roomId: string | null;
+  status: string;
+  note: string | null;
+  createdAt: string;
+  updatedAt: string;
+  respondedAt: string | null;
+  expiresAt: string | null;
+  inviter: PlayerSummary;
+  invitee: PlayerSummary;
+};
+
 type GiftCatalogRow = {
   id: string;
   key: string;
@@ -172,7 +185,8 @@ export class SocialService {
   private readonly socialRateLimits = {
     directMessage: new Map<string, number[]>(),
     friendRequest: new Map<string, number[]>(),
-    roomInvite: new Map<string, number[]>()
+    roomInvite: new Map<string, number[]>(),
+    playInvite: new Map<string, number[]>()
   };
 
   constructor(
@@ -278,7 +292,7 @@ export class SocialService {
 
   async purgeExpiredSocialData() {
     try {
-      if (!this.prisma?.roomInvitation?.deleteMany || !this.prisma?.inboxMessage?.deleteMany) {
+      if (!this.prisma?.roomInvitation?.deleteMany || !this.prisma?.playInvite?.deleteMany || !this.prisma?.inboxMessage?.deleteMany) {
         return;
       }
       const now = new Date();
@@ -288,6 +302,13 @@ export class SocialService {
       const invitePurgeResult = await this.prisma.roomInvitation.deleteMany({
         where: {
           status: { in: ["expired", "declined", "revoked"] },
+          updatedAt: { lt: threeDaysAgo }
+        }
+      });
+
+      const playInvitePurgeResult = await this.prisma.playInvite.deleteMany({
+        where: {
+          status: { in: ["expired", "declined", "cancelled"] },
           updatedAt: { lt: threeDaysAgo }
         }
       });
@@ -306,7 +327,7 @@ export class SocialService {
         }
       });
 
-      console.log(`[SocialService Purge] Purged ${invitePurgeResult.count} room invitations, ${inboxPurgeResult.count} inbox notifications and ${hiddenThreadPurgeResult.count} hidden chat markers.`);
+      console.log(`[SocialService Purge] Purged ${invitePurgeResult.count} room invitations, ${playInvitePurgeResult.count} play invites, ${inboxPurgeResult.count} inbox notifications and ${hiddenThreadPurgeResult.count} hidden chat markers.`);
     } catch (error) {
       console.error("[SocialService Purge] Error running hourly sweep:", error);
     }
@@ -833,6 +854,34 @@ export class SocialService {
     };
   }
 
+  private summarizePlayInvite(
+    row: {
+      id: string;
+      roomId: string | null;
+      status: string;
+      note: string | null;
+      createdAt: Date;
+      updatedAt: Date;
+      respondedAt: Date | null;
+      expiresAt: Date | null;
+      inviter: { id: string; displayName: string; avatarSeed: string | null; isGuest: boolean };
+      invitee: { id: string; displayName: string; avatarSeed: string | null; isGuest: boolean };
+    }
+  ): PlayInviteRow {
+    return {
+      id: row.id,
+      roomId: row.roomId ? String(row.roomId).trim() : null,
+      status: row.status,
+      note: row.note ?? null,
+      createdAt: row.createdAt.toISOString(),
+      updatedAt: row.updatedAt.toISOString(),
+      respondedAt: row.respondedAt ? row.respondedAt.toISOString() : null,
+      expiresAt: row.expiresAt ? row.expiresAt.toISOString() : null,
+      inviter: this.summarizePlayer(row.inviter),
+      invitee: this.summarizePlayer(row.invitee)
+    };
+  }
+
   async getFriends(headers: IncomingHttpHeaders) {
     const currentPlayer = await this.getCurrentPlayer(headers);
     const currentPlayerId = currentPlayer.id;
@@ -1033,7 +1082,7 @@ export class SocialService {
 
   async getSocialSummary(headers: IncomingHttpHeaders) {
     const { currentPlayer, hiddenPlayerIds } = await this.getHiddenDirectMessageThreadPlayerIds(headers);
-    const [inboxUnreadCount, directMessageUnreadCount, inviteUnreadCount, friendRequestCount] = await Promise.all([
+    const [inboxUnreadCount, directMessageUnreadCount, roomInviteUnreadCount, playInviteUnreadCount, friendRequestCount] = await Promise.all([
       this.prisma.inboxMessage.count({
         where: {
           playerId: currentPlayer.id,
@@ -1062,6 +1111,12 @@ export class SocialService {
           status: "pending"
         }
       }),
+      this.prisma.playInvite.count({
+        where: {
+          inviteePlayerId: currentPlayer.id,
+          status: "pending"
+        }
+      }),
       this.prisma.friendConnection.count({
         where: {
           addresseePlayerId: currentPlayer.id,
@@ -1073,9 +1128,9 @@ export class SocialService {
     return {
       inboxUnreadCount,
       chatUnreadCount: directMessageUnreadCount,
-      inviteUnreadCount,
+      inviteUnreadCount: roomInviteUnreadCount + playInviteUnreadCount,
       friendRequestCount,
-      totalUnreadCount: inboxUnreadCount + directMessageUnreadCount + inviteUnreadCount + friendRequestCount
+      totalUnreadCount: inboxUnreadCount + directMessageUnreadCount + roomInviteUnreadCount + playInviteUnreadCount + friendRequestCount
     } satisfies SocialSummaryRow;
   }
 
@@ -1689,6 +1744,50 @@ export class SocialService {
     return { incoming, sent, items: rows.map((row) => this.summarizeInvite(row)) };
   }
 
+  async getPlayInvites(headers: IncomingHttpHeaders) {
+    const currentPlayer = await this.getCurrentPlayer(headers);
+    const now = new Date();
+    await this.prisma.playInvite.updateMany({
+      where: {
+        status: "pending",
+        expiresAt: { lt: now }
+      },
+      data: {
+        status: "expired",
+        respondedAt: now
+      }
+    });
+
+    const rows = await this.prisma.playInvite.findMany({
+      where: {
+        OR: [
+          { inviterPlayerId: currentPlayer.id },
+          { inviteePlayerId: currentPlayer.id }
+        ]
+      },
+      include: {
+        inviter: { select: this.playerSelect() },
+        invitee: { select: this.playerSelect() }
+      },
+      orderBy: [
+        { updatedAt: "desc" },
+        { createdAt: "desc" }
+      ]
+    });
+
+    const incoming = rows
+      .filter((row) => row.inviteePlayerId === currentPlayer.id)
+      .map((row) => this.summarizePlayInvite(row as any));
+    const outgoing = rows
+      .filter((row) => row.inviterPlayerId === currentPlayer.id)
+      .map((row) => this.summarizePlayInvite(row as any));
+    const waiting = rows
+      .filter((row) => row.status === "accepted" && !String(row.roomId || "").trim())
+      .map((row) => this.summarizePlayInvite(row as any));
+
+    return { incoming, outgoing, waiting, items: rows.map((row) => this.summarizePlayInvite(row as any)) };
+  }
+
   async getGiftCatalog(headers: IncomingHttpHeaders) {
     await this.getCurrentPlayer(headers);
     await this.ensureGiftCatalog();
@@ -2041,6 +2140,349 @@ export class SocialService {
       ok: true,
       ...result
     };
+  }
+
+  async createPlayInvite(
+    headers: IncomingHttpHeaders,
+    body: {
+      inviteePlayerId?: string;
+      note?: string;
+      payloadJson?: unknown;
+      expiresAt?: string | null;
+    }
+  ) {
+    const currentPlayer = await this.getCurrentPlayer(headers);
+    return this.createPlayInviteForPlayer(currentPlayer, body);
+  }
+
+  async createPlayInviteForPlayer(
+    currentPlayer: { id: string; displayName?: string },
+    body: {
+      inviteePlayerId?: string;
+      note?: string;
+      payloadJson?: unknown;
+      expiresAt?: string | null;
+    },
+    options: SocialRealtimeEmitOptions = {}
+  ) {
+    const inviteePlayerId = String(body?.inviteePlayerId || "").trim();
+    if (!inviteePlayerId) {
+      throw new NotFoundException("Invitee not found");
+    }
+    if (inviteePlayerId === currentPlayer.id) {
+      throw new ForbiddenException("You cannot invite yourself");
+    }
+
+    const invitee = await this.prisma.player.findUnique({
+      where: { id: inviteePlayerId },
+      select: this.playerSelect()
+    });
+    if (!invitee) {
+      throw new NotFoundException("Invitee not found");
+    }
+    if (invitee.isGuest) {
+      throw new ForbiddenException("Guest players cannot receive play invitations");
+    }
+
+    const isFriend = await this.prisma.friendConnection.findFirst({
+      where: {
+        status: "accepted",
+        OR: [
+          { requesterPlayerId: currentPlayer.id, addresseePlayerId: inviteePlayerId },
+          { requesterPlayerId: inviteePlayerId, addresseePlayerId: currentPlayer.id }
+        ]
+      }
+    });
+    if (!isFriend) {
+      throw new ForbiddenException("Invitee must be your friend");
+    }
+
+    this.enforceRateLimit(this.socialRateLimits.playInvite, `${currentPlayer.id}:${inviteePlayerId}:15s`, 1, 15_000);
+    this.enforceRateLimit(this.socialRateLimits.playInvite, `${currentPlayer.id}:1h`, 20, 60 * 60_000);
+
+    const expiresAt = body?.expiresAt ? new Date(body.expiresAt) : new Date(Date.now() + 1000 * 60 * 5);
+    const note = String(body?.note || "").trim() || null;
+    const payloadJson = body?.payloadJson === undefined ? null : body.payloadJson;
+    const invitationInclude = {
+      inviter: { select: this.playerSelect() },
+      invitee: { select: this.playerSelect() }
+    } as const;
+
+    const row = await this.prisma
+      .$transaction(async (tx) => {
+        const data = {
+          roomId: null,
+          inviteePlayerId,
+          inviterPlayerId: currentPlayer.id,
+          status: "pending",
+          note,
+          expiresAt,
+          ...(payloadJson === null ? {} : { payloadJson: payloadJson as Prisma.InputJsonValue })
+        } satisfies Prisma.PlayInviteUncheckedCreateInput;
+
+        const existing = await tx.playInvite.findFirst({
+          where: {
+            roomId: null,
+            inviterPlayerId: currentPlayer.id,
+            inviteePlayerId,
+            status: {
+              in: ["pending", "accepted"]
+            }
+          },
+          orderBy: { updatedAt: "desc" }
+        });
+
+        if (existing) {
+          const nextExpiresAt = body?.expiresAt ? expiresAt : existing.expiresAt || expiresAt;
+          return tx.playInvite.update({
+            where: { id: existing.id },
+            data: {
+              ...data,
+              status: existing.status,
+              expiresAt: nextExpiresAt,
+              note: note ?? existing.note ?? null,
+              ...(payloadJson === null ? {} : { payloadJson: payloadJson as Prisma.InputJsonValue })
+            },
+            include: invitationInclude
+          });
+        }
+
+        return tx.playInvite.create({
+          data,
+          include: invitationInclude
+        });
+      })
+      .catch(async (error) => {
+        if (!this.isUniqueConstraintError(error)) {
+          throw error;
+        }
+
+        const fallback = await this.prisma.playInvite.findFirst({
+          where: {
+            roomId: null,
+            inviterPlayerId: currentPlayer.id,
+            inviteePlayerId,
+            status: {
+              in: ["pending", "accepted"]
+            }
+          },
+          orderBy: { updatedAt: "desc" }
+        });
+
+        if (!fallback) {
+          throw error;
+        }
+
+        return this.prisma.playInvite.update({
+          where: { id: fallback.id },
+          data: {
+            roomId: null,
+            inviteePlayerId,
+            inviterPlayerId: currentPlayer.id,
+            status: "pending",
+            note,
+            expiresAt,
+            ...(payloadJson === null ? {} : { payloadJson: payloadJson as Prisma.InputJsonValue })
+          },
+          include: invitationInclude
+        });
+      });
+
+    const invite = this.summarizePlayInvite(row as any);
+    if (options.emitEvents !== false) {
+      this.emitSseEvent(inviteePlayerId, "play_invite_update", { type: "play_invite_created", invite });
+    }
+    return { item: invite };
+  }
+
+  async acceptPlayInvite(headers: IncomingHttpHeaders, id: string) {
+    const currentPlayer = await this.getCurrentPlayer(headers);
+    return this.acceptPlayInviteForPlayer(currentPlayer, id);
+  }
+
+  async acceptPlayInviteForPlayer(
+    currentPlayer: { id: string; displayName?: string },
+    id: string,
+    options: SocialRealtimeEmitOptions = {}
+  ) {
+    const row = await this.prisma.playInvite.findUnique({
+      where: { id },
+      include: {
+        inviter: { select: this.playerSelect() },
+        invitee: { select: this.playerSelect() }
+      }
+    });
+    if (!row) {
+      throw new NotFoundException("Invitation not found");
+    }
+    if (row.inviteePlayerId !== currentPlayer.id) {
+      throw new ForbiddenException("Invitation not found");
+    }
+    if (row.status === "expired") {
+      return { ok: false, reason: "invite_not_available" };
+    }
+    if (row.expiresAt && row.expiresAt.getTime() <= Date.now()) {
+      await this.prisma.playInvite.update({
+        where: { id },
+        data: {
+          status: "expired",
+          respondedAt: new Date()
+        },
+        include: {
+          inviter: { select: this.playerSelect() },
+          invitee: { select: this.playerSelect() }
+        }
+      });
+      return { ok: false, reason: "invite_not_available" };
+    }
+    if (row.status === "accepted") {
+      return { item: this.summarizePlayInvite(row as any) };
+    }
+    if (row.status !== "pending") {
+      throw new BadRequestException("Invitation already responded");
+    }
+
+    const accepted = await this.prisma.playInvite.update({
+      where: { id },
+      data: {
+        status: "accepted",
+        respondedAt: new Date()
+      },
+      include: {
+        inviter: { select: this.playerSelect() },
+        invitee: { select: this.playerSelect() }
+      }
+    });
+
+    const invite = this.summarizePlayInvite(accepted as any);
+    if (options.emitEvents !== false) {
+      this.emitSseEvent(accepted.inviterPlayerId, "play_invite_update", { type: "play_invite_accepted", invite });
+      this.emitSseEvent(accepted.inviteePlayerId, "play_invite_update", { type: "play_invite_accepted", invite });
+    }
+
+    return { item: invite };
+  }
+
+  async declinePlayInvite(headers: IncomingHttpHeaders, id: string) {
+    const currentPlayer = await this.getCurrentPlayer(headers);
+    return this.declinePlayInviteForPlayer(currentPlayer, id);
+  }
+
+  async declinePlayInviteForPlayer(
+    currentPlayer: { id: string; displayName?: string },
+    id: string,
+    options: SocialRealtimeEmitOptions = {}
+  ) {
+    const row = await this.prisma.playInvite.findUnique({
+      where: { id },
+      include: {
+        inviter: { select: this.playerSelect() },
+        invitee: { select: this.playerSelect() }
+      }
+    });
+    if (!row) {
+      throw new NotFoundException("Invitation not found");
+    }
+    if (row.inviteePlayerId !== currentPlayer.id) {
+      throw new ForbiddenException("Invitation not found");
+    }
+    if (row.status === "expired") {
+      throw new BadRequestException("Invitation expired");
+    }
+    if (row.expiresAt && row.expiresAt.getTime() <= Date.now()) {
+      await this.prisma.playInvite.update({
+        where: { id },
+        data: {
+          status: "expired",
+          respondedAt: new Date()
+        },
+        include: {
+          inviter: { select: this.playerSelect() },
+          invitee: { select: this.playerSelect() }
+        }
+      });
+      throw new BadRequestException(`Invitation expired`);
+    }
+    if (row.status === "declined") {
+      return { item: this.summarizePlayInvite(row as any) };
+    }
+    if (row.status !== "pending") {
+      throw new BadRequestException("Invitation already responded");
+    }
+
+    const declined = await this.prisma.playInvite.update({
+      where: { id },
+      data: {
+        status: "declined",
+        respondedAt: new Date()
+      },
+      include: {
+        inviter: { select: this.playerSelect() },
+        invitee: { select: this.playerSelect() }
+      }
+    });
+
+    const invite = this.summarizePlayInvite(declined as any);
+    if (options.emitEvents !== false) {
+      this.emitSseEvent(declined.inviterPlayerId, "play_invite_update", { type: "play_invite_declined", invite });
+      this.emitSseEvent(declined.inviteePlayerId, "play_invite_update", { type: "play_invite_declined", invite });
+    }
+
+    return { item: invite };
+  }
+
+  async cancelPlayInvite(headers: IncomingHttpHeaders, id: string) {
+    const currentPlayer = await this.getCurrentPlayer(headers);
+    return this.cancelPlayInviteForPlayer(currentPlayer, id);
+  }
+
+  async cancelPlayInviteForPlayer(
+    currentPlayer: { id: string; displayName?: string },
+    id: string,
+    options: SocialRealtimeEmitOptions = {}
+  ) {
+    const row = await this.prisma.playInvite.findUnique({
+      where: { id },
+      include: {
+        inviter: { select: this.playerSelect() },
+        invitee: { select: this.playerSelect() }
+      }
+    });
+    if (!row) {
+      throw new NotFoundException("Invitation not found");
+    }
+    if (row.inviterPlayerId !== currentPlayer.id) {
+      throw new ForbiddenException("Invitation not found");
+    }
+    if (row.status === "cancelled") {
+      return { item: this.summarizePlayInvite(row as any) };
+    }
+    if (row.status === "expired") {
+      throw new BadRequestException("Invitation expired");
+    }
+    if (row.status !== "pending") {
+      throw new BadRequestException("Invitation already responded");
+    }
+
+    const cancelled = await this.prisma.playInvite.update({
+      where: { id },
+      data: {
+        status: "cancelled",
+        respondedAt: new Date()
+      },
+      include: {
+        inviter: { select: this.playerSelect() },
+        invitee: { select: this.playerSelect() }
+      }
+    });
+
+    const invite = this.summarizePlayInvite(cancelled as any);
+    if (options.emitEvents !== false) {
+      this.emitSseEvent(cancelled.inviteePlayerId, "play_invite_update", { type: "play_invite_cancelled", invite });
+      this.emitSseEvent(cancelled.inviterPlayerId, "play_invite_update", { type: "play_invite_cancelled", invite });
+    }
+
+    return { item: invite };
   }
 
   async inviteFriendToRoom(

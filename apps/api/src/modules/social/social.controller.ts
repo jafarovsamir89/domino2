@@ -6,6 +6,7 @@ import type { Observable } from "rxjs";
 import { SocialService } from "./social.service.js";
 import {
   SocialExchangeGiftDto,
+  PlayInviteDto,
   SocialSendGiftDto,
   SocialSendMessageDto,
   RoomInviteDto,
@@ -79,6 +80,11 @@ export class SocialController {
   @Get("invitations")
   async getInvitations(@Req() req: Request) {
     return this.socialService.getRoomInvitations(req.headers);
+  }
+
+  @Get("play-invites")
+  async getPlayInvites(@Req() req: Request) {
+    return this.socialService.getPlayInvites(req.headers);
   }
 
   @Get("gifts/catalog")
@@ -163,6 +169,29 @@ export class SocialController {
     @Body() body: RoomInviteDto
   ) {
     return this.socialService.inviteFriendToRoom(req.headers, roomId, body);
+  }
+
+  @Post("play-invites")
+  async inviteToPlay(
+    @Req() req: Request,
+    @Body() body: PlayInviteDto
+  ) {
+    return this.socialService.createPlayInvite(req.headers, body);
+  }
+
+  @Post("play-invites/:id/accept")
+  async acceptPlayInvite(@Req() req: Request, @Param("id") id: string) {
+    return this.socialService.acceptPlayInvite(req.headers, id);
+  }
+
+  @Post("play-invites/:id/decline")
+  async declinePlayInvite(@Req() req: Request, @Param("id") id: string) {
+    return this.socialService.declinePlayInvite(req.headers, id);
+  }
+
+  @Post("play-invites/:id/cancel")
+  async cancelPlayInvite(@Req() req: Request, @Param("id") id: string) {
+    return this.socialService.cancelPlayInvite(req.headers, id);
   }
 
   @Post("invitations/:id/accept")

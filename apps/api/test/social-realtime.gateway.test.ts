@@ -204,6 +204,69 @@ test("dm:send uses live socket delivery and invite:create pushes invite updates"
   assert.ok(broadcasts.some((row) => row.room === "player:player-1" && row.event === "invite:update"));
 });
 
+test("play-invite:create and play-invite:accept emit play invite socket events", async () => {
+  const createdInvites: any[] = [];
+  const acceptedInvites: any[] = [];
+  const { gateway, broadcasts } = createGatewayHarness({
+    socialServiceOverrides: {
+      createPlayInviteForPlayer: async (claims: any, body: any, options: any) => {
+        createdInvites.push({ claims, body, options });
+        return {
+          item: {
+            id: "play-invite-1",
+            status: "pending",
+            roomId: null,
+            inviter: { id: claims.playerId, displayName: claims.displayName },
+            invitee: { id: body.inviteePlayerId, displayName: "Beta" }
+          }
+        };
+      },
+      acceptPlayInviteForPlayer: async (claims: any, inviteId: string, options: any) => {
+        acceptedInvites.push({ claims, inviteId, options });
+        return {
+          item: {
+            id: inviteId,
+            status: "accepted",
+            roomId: null,
+            inviter: { id: "player-1", displayName: "Alpha" },
+            invitee: { id: claims.playerId, displayName: claims.displayName }
+          }
+        };
+      }
+    }
+  });
+
+  const socket = new FakeSocket(makeToken("player-1", "Alpha"));
+  gateway.handleConnection(socket as any);
+  await new Promise((resolve) => setImmediate(resolve));
+  broadcasts.length = 0;
+
+  let createAck: any = null;
+  socket.trigger("play-invite:create", { inviteePlayerId: "player-2" }, (response) => {
+    createAck = response;
+  });
+  await new Promise((resolve) => setImmediate(resolve));
+
+  assert.equal(createAck?.ok, true);
+  assert.equal(createdInvites.length, 1);
+  assert.ok(broadcasts.some((row) => row.room === "player:player-2" && row.event === "play-invite:new"));
+
+  const inviteeSocket = new FakeSocket(makeToken("player-2", "Beta"));
+  gateway.handleConnection(inviteeSocket as any);
+  await new Promise((resolve) => setImmediate(resolve));
+  broadcasts.length = 0;
+  let acceptAck: any = null;
+  inviteeSocket.trigger("play-invite:accept", { inviteId: "play-invite-1" }, (response) => {
+    acceptAck = response;
+  });
+  await new Promise((resolve) => setImmediate(resolve));
+
+  assert.equal(acceptAck?.ok, true);
+  assert.equal(acceptedInvites.length, 1);
+  assert.ok(broadcasts.some((row) => row.room === "player:player-1" && row.event === "play-invite:accepted"));
+  assert.ok(broadcasts.some((row) => row.room === "player:player-2" && row.event === "play-invite:accepted"));
+});
+
 test("presence:update toggles in_game and offline states", async () => {
   const { gateway, realtimeService } = createGatewayHarness();
   const socket = new FakeSocket(makeToken("player-1", "Alpha"));
