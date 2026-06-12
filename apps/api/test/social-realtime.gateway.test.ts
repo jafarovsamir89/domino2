@@ -267,6 +267,42 @@ test("play-invite:create and play-invite:accept emit play invite socket events",
   assert.ok(broadcasts.some((row) => row.room === "player:player-2" && row.event === "play-invite:accepted"));
 });
 
+test("play-invite:cancel emits play invite socket events", async () => {
+  const cancelledInvites: any[] = [];
+  const { gateway, broadcasts } = createGatewayHarness({
+    socialServiceOverrides: {
+      cancelPlayInviteForPlayer: async (claims: any, inviteId: string, options: any) => {
+        cancelledInvites.push({ claims, inviteId, options });
+        return {
+          item: {
+            id: inviteId,
+            status: "cancelled",
+            roomId: null,
+            inviter: { id: "player-1", displayName: "Alpha" },
+            invitee: { id: "player-2", displayName: "Beta" }
+          }
+        };
+      }
+    }
+  });
+
+  const socket = new FakeSocket(makeToken("player-1", "Alpha"));
+  gateway.handleConnection(socket as any);
+  await new Promise((resolve) => setImmediate(resolve));
+  broadcasts.length = 0;
+
+  let cancelAck: any = null;
+  socket.trigger("play-invite:cancel", { inviteId: "play-invite-1" }, (response) => {
+    cancelAck = response;
+  });
+  await new Promise((resolve) => setImmediate(resolve));
+
+  assert.equal(cancelAck?.ok, true);
+  assert.equal(cancelledInvites.length, 1);
+  assert.ok(broadcasts.some((row) => row.room === "player:player-1" && row.event === "play-invite:cancelled"));
+  assert.ok(broadcasts.some((row) => row.room === "player:player-2" && row.event === "play-invite:cancelled"));
+});
+
 test("play-invite room-ready and joined live events map to socket events", async () => {
   const { gateway, broadcasts } = createGatewayHarness();
   (gateway as any).forwardLiveEvent("player-2", "play_invite_update", {

@@ -972,6 +972,7 @@ test("acceptPlayInvite changes status to accepted", async () => {
   assert.ok(accepted.item);
   assert.equal(accepted.item!.status, "accepted");
   assert.equal(updates[0].status, "accepted");
+  assert.equal(updates[0].expiresAt, null);
 });
 
 test("declinePlayInvite changes status to declined", async () => {
@@ -1010,6 +1011,126 @@ test("declinePlayInvite changes status to declined", async () => {
   const declined = await service.declinePlayInvite({} as any, invite.id);
   assert.equal(declined.item.status, "declined");
   assert.equal(updates[0].status, "declined");
+});
+
+test("cancelPlayInvite allows inviter to cancel a pending play invite", async () => {
+  const inviter = makePlayer("player-a", "Alpha");
+  const invitee = makePlayer("player-b", "Beta");
+  const invite = {
+    id: "play-invite-cancel-pending",
+    roomId: null,
+    status: "pending",
+    note: null,
+    createdAt: new Date("2024-01-06T00:00:00.000Z"),
+    updatedAt: new Date("2024-01-06T00:00:00.000Z"),
+    respondedAt: null,
+    expiresAt: new Date(Date.now() + 60_000),
+    inviterPlayerId: inviter.id,
+    inviteePlayerId: invitee.id,
+    inviter,
+    invitee
+  };
+  const updates: any[] = [];
+  const emitted: any[] = [];
+
+  const prismaMock = {
+    playInvite: {
+      findUnique: async () => invite,
+      update: async ({ data }: any) => {
+        updates.push(data);
+        Object.assign(invite, data);
+        return invite;
+      }
+    }
+  } as any;
+
+  const service = new SocialService(prismaMock, {} as any);
+  (service as any).getCurrentPlayer = async () => inviter;
+  (service as any).emitSseEvent = (playerId: string, type: string, data: any) => {
+    emitted.push({ playerId, type, data });
+  };
+
+  const cancelled = await service.cancelPlayInvite({} as any, invite.id);
+  assert.equal(cancelled.item.status, "cancelled");
+  assert.equal(updates[0].status, "cancelled");
+  assert.ok(emitted.some((row) => row.playerId === inviter.id && row.data?.type === "play_invite_cancelled"));
+  assert.ok(emitted.some((row) => row.playerId === invitee.id && row.data?.type === "play_invite_cancelled"));
+});
+
+test("cancelPlayInvite allows invitee to leave an accepted waiting play invite", async () => {
+  const inviter = makePlayer("player-a", "Alpha");
+  const invitee = makePlayer("player-b", "Beta");
+  const invite = {
+    id: "play-invite-cancel-waiting",
+    roomId: null,
+    status: "accepted",
+    note: null,
+    createdAt: new Date("2024-01-07T00:00:00.000Z"),
+    updatedAt: new Date("2024-01-07T00:00:00.000Z"),
+    respondedAt: new Date("2024-01-07T00:00:01.000Z"),
+    expiresAt: null,
+    inviterPlayerId: inviter.id,
+    inviteePlayerId: invitee.id,
+    inviter,
+    invitee
+  };
+  const updates: any[] = [];
+
+  const prismaMock = {
+    playInvite: {
+      findUnique: async () => invite,
+      update: async ({ data }: any) => {
+        updates.push(data);
+        Object.assign(invite, data);
+        return invite;
+      }
+    }
+  } as any;
+
+  const service = new SocialService(prismaMock, {} as any);
+  (service as any).getCurrentPlayer = async () => invitee;
+
+  const cancelled = await service.cancelPlayInvite({} as any, invite.id);
+  assert.equal(cancelled.item.status, "cancelled");
+  assert.equal(updates[0].status, "cancelled");
+});
+
+test("cancelPlayInvite allows inviter to cancel an accepted waiting play invite", async () => {
+  const inviter = makePlayer("player-a", "Alpha");
+  const invitee = makePlayer("player-b", "Beta");
+  const invite = {
+    id: "play-invite-cancel-waiting-inviter",
+    roomId: null,
+    status: "accepted",
+    note: null,
+    createdAt: new Date("2024-01-08T00:00:00.000Z"),
+    updatedAt: new Date("2024-01-08T00:00:00.000Z"),
+    respondedAt: new Date("2024-01-08T00:00:01.000Z"),
+    expiresAt: null,
+    inviterPlayerId: inviter.id,
+    inviteePlayerId: invitee.id,
+    inviter,
+    invitee
+  };
+  const updates: any[] = [];
+
+  const prismaMock = {
+    playInvite: {
+      findUnique: async () => invite,
+      update: async ({ data }: any) => {
+        updates.push(data);
+        Object.assign(invite, data);
+        return invite;
+      }
+    }
+  } as any;
+
+  const service = new SocialService(prismaMock, {} as any);
+  (service as any).getCurrentPlayer = async () => inviter;
+
+  const cancelled = await service.cancelPlayInvite({} as any, invite.id);
+  assert.equal(cancelled.item.status, "cancelled");
+  assert.equal(updates[0].status, "cancelled");
 });
 
 test("sendDirectMessage rejects messaging yourself", async () => {

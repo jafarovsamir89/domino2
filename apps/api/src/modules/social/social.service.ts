@@ -2631,7 +2631,19 @@ export class SocialService {
       return { ok: false, reason: "invite_not_available" };
     }
     if (row.status === "accepted") {
-      return { item: this.summarizePlayInvite(row as any) };
+      const normalized = row.expiresAt
+        ? await this.prisma.playInvite.update({
+            where: { id },
+            data: {
+              expiresAt: null
+            },
+            include: {
+              inviter: { select: this.playerSelect() },
+              invitee: { select: this.playerSelect() }
+            }
+          })
+        : row;
+      return { item: this.summarizePlayInvite(normalized as any) };
     }
     if (row.status !== "pending") {
       throw new BadRequestException("Invitation already responded");
@@ -2641,7 +2653,8 @@ export class SocialService {
       where: { id },
       data: {
         status: "accepted",
-        respondedAt: new Date()
+        respondedAt: new Date(),
+        expiresAt: null
       },
       include: {
         inviter: { select: this.playerSelect() },
@@ -2746,7 +2759,9 @@ export class SocialService {
     if (!row) {
       throw new NotFoundException("Invitation not found");
     }
-    if (row.inviterPlayerId !== currentPlayer.id) {
+    const isInviter = row.inviterPlayerId === currentPlayer.id;
+    const isInvitee = row.inviteePlayerId === currentPlayer.id;
+    if (!isInviter && !isInvitee) {
       throw new ForbiddenException("Invitation not found");
     }
     if (row.status === "cancelled") {
@@ -2755,7 +2770,13 @@ export class SocialService {
     if (row.status === "expired") {
       throw new BadRequestException("Invitation expired");
     }
-    if (row.status !== "pending") {
+    const currentStatus = String(row.status || "").trim().toLowerCase();
+    const canInviterCancel = isInviter && ["pending", "accepted", "room_created"].includes(currentStatus);
+    const canInviteeCancel = isInvitee && ["accepted", "room_created"].includes(currentStatus);
+    if (!canInviterCancel && !canInviteeCancel) {
+      if (currentStatus === "declined" || currentStatus === "joined" || currentStatus === "failed_to_join") {
+        throw new BadRequestException("Invitation already responded");
+      }
       throw new BadRequestException("Invitation already responded");
     }
 
