@@ -1443,6 +1443,19 @@ class DominoGame {
         };
     }
 
+    getDailyBonusDebugState() {
+        const status = this.dailyBonusState.status || {};
+        return {
+            dailyBonusTimezone: String(status.timezone || '').trim() || null,
+            dailyBonusDateKey: String(status.dailyBonusDateKey || status.claimDate || '').trim() || null,
+            dailyBonusNextClaimAt: String(status.dailyBonusNextClaimAt || status.nextClaimAt || '').trim() || null,
+            dailyBonusClaimedToday: Boolean(status.claimedToday),
+            dailyBonusCanClaim: Boolean(status.canClaim ?? status.claimable),
+            dailyBonusStreakDay: Number(status.streakDay || 0) || 0,
+            dailyBonusLastError: String(this.dailyBonusState.error || '').trim() || null
+        };
+    }
+
     stopSocialDebugPanelAutoRefresh() {
         if (this._socialDebugPanelRefreshTimer) {
             clearInterval(this._socialDebugPanelRefreshTimer);
@@ -4986,7 +4999,7 @@ class DominoGame {
                 this.syncStartAuthButton();
                 this.renderAccountModal();
             }
-            if (this.dailyBonusState.status?.claimedToday) {
+            if (this.dailyBonusState.status?.nextClaimAt) {
                 this.startDailyBonusTicker();
             } else {
                 this.stopDailyBonusTicker();
@@ -5031,8 +5044,10 @@ class DominoGame {
                     this.renderer.showMessage(this.t('daily-bonus-toast').replace('{amount}', earnedAmount), 3000);
                 }
                 
-                if (this.dailyBonusState.status?.claimedToday) {
+                if (this.dailyBonusState.status?.nextClaimAt) {
                     this.startDailyBonusTicker();
+                } else {
+                    this.stopDailyBonusTicker();
                 }
             } else {
                 this.dailyBonusState.error = result.reason || 'Could not claim daily bonus';
@@ -5068,6 +5083,7 @@ class DominoGame {
         if (titleEl) titleEl.textContent = this.t('daily-bonus-title');
 
         if (this.dailyBonusState.loading) {
+            this.stopDailyBonusTicker();
             if (metaEl) metaEl.textContent = this.t('daily-bonus-loading');
             if (amountEl) amountEl.textContent = '';
             if (streakEl) streakEl.textContent = '';
@@ -5080,6 +5096,7 @@ class DominoGame {
         }
 
         if (this.dailyBonusState.error) {
+            this.stopDailyBonusTicker();
             if (metaEl) metaEl.textContent = this.dailyBonusState.error;
             if (amountEl) amountEl.textContent = '';
             if (streakEl) streakEl.textContent = '';
@@ -5093,6 +5110,7 @@ class DominoGame {
 
         const status = this.dailyBonusState.status;
         if (!status) {
+            this.stopDailyBonusTicker();
             if (metaEl) metaEl.textContent = this.t('daily-bonus-error');
             if (amountEl) amountEl.textContent = '';
             if (streakEl) streakEl.textContent = '';
@@ -5105,7 +5123,8 @@ class DominoGame {
         }
 
         if (amountEl) {
-            amountEl.textContent = `${status.todayAmount} coins`;
+            const todayRewardAmount = Number(status.todayReward?.amount ?? status.todayAmount ?? 0);
+            amountEl.textContent = `${todayRewardAmount} coins`;
         }
 
         if (streakEl) {
@@ -5116,7 +5135,7 @@ class DominoGame {
             if (this.dailyBonusState.claiming) {
                 btn.disabled = true;
                 btn.textContent = this.t('daily-bonus-loading');
-            } else if (status.claimedToday) {
+            } else if (status.canClaim === false || status.claimedToday) {
                 btn.disabled = true;
                 btn.textContent = this.t('daily-bonus-claimed');
             } else {
@@ -5126,28 +5145,19 @@ class DominoGame {
         }
 
         if (metaEl) {
-            if (status.claimedToday) {
-                if (!this.dailyBonusTickerId) {
-                    this.startDailyBonusTicker();
-                }
-            } else {
+            if (!status.nextClaimAt) {
                 this.stopDailyBonusTicker();
                 metaEl.textContent = this.t('daily-bonus-subtitle');
+            } else if (!this.dailyBonusTickerId) {
+                this.startDailyBonusTicker();
             }
         }
 
         if (streakRow) {
             streakRow.innerHTML = '';
-            const maxDays = status.maxStreak || 7;
-            const staticAmounts = {
-                1: 200,
-                2: 300,
-                3: 350,
-                4: 400,
-                5: 800,
-                6: 1000,
-                7: 2000
-            };
+            const rewardSchedule = Array.isArray(status.rewardSchedule) ? status.rewardSchedule : [];
+            const rewardByDay = new Map(rewardSchedule.map((reward) => [Number(reward?.day || 0), Number(reward?.amount || 0)]));
+            const maxDays = Math.max(1, Number(status.maxStreak || rewardSchedule.length || 7));
 
             for (let day = 1; day <= maxDays; day++) {
                 const box = document.createElement('div');
@@ -5171,7 +5181,10 @@ class DominoGame {
                 if (isClaimed) box.classList.add('is-claimed');
                 if (isActive) box.classList.add('is-active');
 
-                const dayReward = staticAmounts[day] || staticAmounts[7] || 2000;
+                const scheduleReward = rewardByDay.get(day);
+                const dayReward = Number.isFinite(scheduleReward)
+                    ? scheduleReward
+                    : Number(status.todayReward?.amount ?? status.todayAmount ?? 0);
 
                 const dayNumSpan = document.createElement('span');
                 dayNumSpan.className = 'day-num';
@@ -12692,6 +12705,7 @@ class DominoGame {
         return this.getTeamMembers(teamIndex).includes(playerIndex);
     }
     renderState() {
+        this.renderer.removeArrows();
         if (this.gameActive) {
             document.getElementById('round-end-screen')?.classList.remove('active');
         }
@@ -13830,6 +13844,8 @@ class DominoGame {
 
     // Override actions to send to network
     onHandTileClick(ti, fromRemote=false) {
+        this.selectedTileIndex = -1;
+        this.renderer.removeArrows();
         if (this.network.isMultiplayer) {
             // In server multiplayer, client only sends its own moves
             if (this.currentPlayer !== this.humanPlayerIndex) return;
@@ -14402,6 +14418,13 @@ window.__dominoInviteDebugState = () => {
         socialCenterOpen,
         currentSocialTab: String(app.socialCenterTab || '').trim() || null
     };
+};
+window.__dominoDailyBonusDebugState = () => {
+    const app = window.game;
+    if (!app) {
+        return { error: 'app_unavailable' };
+    }
+    return app.getDailyBonusDebugState?.() || { error: 'debug_state_unavailable' };
 };
 window.__dominoCheckSocialSocketPrerequisites = async () => {
     const app = window.game;

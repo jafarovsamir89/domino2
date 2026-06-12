@@ -3,7 +3,12 @@ import assert from "node:assert/strict";
 
 process.env.BETTER_AUTH_SECRET ||= "b7f4c2d9a1e8f6c3b5a7d0e9f1c4b8a6d2e7f9c1";
 
-const { EconomyService } = await import("../src/modules/economy/economy.service.js");
+const {
+  EconomyService,
+  getBakuDateKey,
+  getNextBakuMidnight,
+  getPreviousBakuDateKey
+} = await import("../src/modules/economy/economy.service.js");
 
 test("getPublicConfig hides the free table from the public stake list", async () => {
   const prismaMock = {
@@ -288,12 +293,19 @@ test("Daily Bonus - Authenticated status returns claimable true if no claim toda
   } as any;
   const service = new EconomyService(mockDb, authMock);
 
-  const status = await service.getDailyBonusStatus({});
+  const now = new Date("2024-03-01T18:30:00.000Z");
+  const status = await service.getDailyBonusStatus({}, now);
   assert.equal(status.dailyBonus.claimable, true);
+  assert.equal(status.dailyBonus.canClaim, true);
   assert.equal(status.dailyBonus.claimedToday, false);
   assert.equal(status.dailyBonus.streakDay, 1);
-  assert.equal(status.dailyBonus.todayAmount, 200);
-  assert.equal(status.dailyBonus.tomorrowAmount, 300);
+  assert.equal(status.dailyBonus.todayAmount, 25);
+  assert.equal(status.dailyBonus.todayReward.amount, 25);
+  assert.equal(status.dailyBonus.tomorrowAmount, 30);
+  assert.equal(status.dailyBonus.timezone, "Asia/Baku");
+  assert.equal(status.dailyBonus.dailyBonusDateKey, "2024-03-01");
+  assert.equal(status.dailyBonus.nextClaimAt, "2024-03-01T20:00:00.000Z");
+  assert.equal(status.dailyBonus.dailyBonusNextClaimAt, "2024-03-01T20:00:00.000Z");
 });
 
 test("Daily Bonus - Claim credits wallet and advances quest", async () => {
@@ -304,18 +316,20 @@ test("Daily Bonus - Claim credits wallet and advances quest", async () => {
   const service = new EconomyService(mockDb, authMock);
 
   // Claim first time
-  const claimRes = await service.claimDailyBonus({});
+  const now = new Date("2024-03-01T18:30:00.000Z");
+  const claimRes = await service.claimDailyBonus({}, now);
   assert.equal(claimRes.claimed, true);
-  assert.equal(claimRes.claim.amount, 200);
+  assert.equal(claimRes.claim.amount, 25);
   assert.equal(claimRes.claim.streakDay, 1);
-  assert.equal(claimRes.wallet.balance, 200);
+  assert.equal(claimRes.wallet.balance, 25);
   assert.equal(claimRes.dailyBonus.claimedToday, true);
   assert.equal(claimRes.dailyBonus.claimable, false);
+  assert.equal(claimRes.dailyBonus.nextClaimAt, "2024-03-01T20:00:00.000Z");
 
   // Check ledger entry
   assert.equal(mockDb.ledger.length, 1);
   assert.equal(mockDb.ledger[0].type, "daily_bonus");
-  assert.equal(mockDb.ledger[0].amount, 200);
+  assert.equal(mockDb.ledger[0].amount, 25);
 
   // Check quest progress
   assert.equal(mockDb.questProgress.length, 1);
@@ -331,11 +345,12 @@ test("Daily Bonus - Second claim same day returns claimed false", async () => {
   const service = new EconomyService(mockDb, authMock);
 
   // Claim first time
-  await service.claimDailyBonus({});
+  const now = new Date("2024-03-01T18:30:00.000Z");
+  await service.claimDailyBonus({}, now);
   const initialBalance = mockDb.wallets["player_1"].balance;
 
   // Claim second time
-  const secondRes = await service.claimDailyBonus({});
+  const secondRes = await service.claimDailyBonus({}, now);
   assert.equal(secondRes.claimed, false);
   assert.equal(secondRes.wallet.balance, initialBalance);
 });
@@ -348,30 +363,47 @@ test("Daily Bonus - Previous day claim increases streak", async () => {
   const service = new EconomyService(mockDb, authMock);
 
   // Seed previous day claim
-  const now = new Date();
-  const yesterday = new Date(now);
-  yesterday.setUTCDate(yesterday.getUTCDate() - 1);
-  const yesterdayKey = yesterday.toISOString().slice(0, 10);
+  const now = new Date("2024-03-01T18:30:00.000Z");
+  const yesterdayKey = getPreviousBakuDateKey(now);
 
   mockDb.claims.push({
     id: "prev_claim",
     playerId: "player_1",
     claimDate: yesterdayKey,
     streakDay: 2,
-    amount: 300,
-    createdAt: yesterday
+    amount: 30,
+    createdAt: new Date("2024-02-29T19:30:00.000Z")
   });
 
-  const status = await service.getDailyBonusStatus({});
+  const status = await service.getDailyBonusStatus({}, now);
   assert.equal(status.dailyBonus.streakDay, 3);
-  assert.equal(status.dailyBonus.todayAmount, 350);
-  assert.equal(status.dailyBonus.tomorrowAmount, 400);
+  assert.equal(status.dailyBonus.todayAmount, 35);
+  assert.equal(status.dailyBonus.tomorrowAmount, 40);
 
   // Execute claim
-  const claimRes = await service.claimDailyBonus({});
+  const claimRes = await service.claimDailyBonus({}, now);
   assert.equal(claimRes.claimed, true);
   assert.equal(claimRes.claim.streakDay, 3);
-  assert.equal(claimRes.claim.amount, 350);
+  assert.equal(claimRes.claim.amount, 35);
+});
+
+test("Daily Bonus - After next Baku midnight claim is allowed", async () => {
+  const mockDb = new MockDb() as any;
+  const authMock = {
+    getCurrentProfile: async () => ({ player: { id: "player_1" } })
+  } as any;
+  const service = new EconomyService(mockDb, authMock);
+
+  const firstNow = new Date("2024-03-01T18:30:00.000Z");
+  const secondNow = new Date("2024-03-01T20:01:00.000Z");
+
+  const firstClaim = await service.claimDailyBonus({}, firstNow);
+  const secondClaim = await service.claimDailyBonus({}, secondNow);
+
+  assert.equal(firstClaim.claim.amount, 25);
+  assert.equal(secondClaim.claimed, true);
+  assert.equal(secondClaim.claim.streakDay, 2);
+  assert.equal(secondClaim.claim.amount, 30);
 });
 
 test("Daily Bonus - Missing previous day resets streak to 1", async () => {
@@ -382,23 +414,21 @@ test("Daily Bonus - Missing previous day resets streak to 1", async () => {
   const service = new EconomyService(mockDb, authMock);
 
   // Seed claim from 2 days ago
-  const now = new Date();
-  const twoDaysAgo = new Date(now);
-  twoDaysAgo.setUTCDate(twoDaysAgo.getUTCDate() - 2);
-  const twoDaysAgoKey = twoDaysAgo.toISOString().slice(0, 10);
+  const now = new Date("2024-03-01T18:30:00.000Z");
+  const twoDaysAgoKey = getBakuDateKey(new Date("2024-02-28T18:30:00.000Z"));
 
   mockDb.claims.push({
     id: "old_claim",
     playerId: "player_1",
     claimDate: twoDaysAgoKey,
     streakDay: 2,
-    amount: 300,
-    createdAt: twoDaysAgo
+    amount: 30,
+    createdAt: new Date("2024-02-28T19:30:00.000Z")
   });
 
-  const status = await service.getDailyBonusStatus({});
+  const status = await service.getDailyBonusStatus({}, now);
   assert.equal(status.dailyBonus.streakDay, 1);
-  assert.equal(status.dailyBonus.todayAmount, 200);
+  assert.equal(status.dailyBonus.todayAmount, 25);
 });
 
 test("Daily Bonus - Streak capped at dailyMaxStreak", async () => {
@@ -409,22 +439,27 @@ test("Daily Bonus - Streak capped at dailyMaxStreak", async () => {
   const service = new EconomyService(mockDb, authMock);
 
   // Seed previous day claim with max streak (7)
-  const now = new Date();
-  const yesterday = new Date(now);
-  yesterday.setUTCDate(yesterday.getUTCDate() - 1);
-  const yesterdayKey = yesterday.toISOString().slice(0, 10);
+  const now = new Date("2024-03-01T18:30:00.000Z");
+  const yesterdayKey = getPreviousBakuDateKey(now);
 
   mockDb.claims.push({
     id: "prev_claim",
     playerId: "player_1",
     claimDate: yesterdayKey,
     streakDay: 7,
-    amount: 2000,
-    createdAt: yesterday
+    amount: 55,
+    createdAt: new Date("2024-02-29T19:30:00.000Z")
   });
 
-  const status = await service.getDailyBonusStatus({});
+  const status = await service.getDailyBonusStatus({}, now);
   assert.equal(status.dailyBonus.streakDay, 7); // capped at 7
-  assert.equal(status.dailyBonus.todayAmount, 2000);
-  assert.equal(status.dailyBonus.tomorrowAmount, 2000);
+  assert.equal(status.dailyBonus.todayAmount, 55);
+  assert.equal(status.dailyBonus.tomorrowAmount, 55);
+});
+
+test("Daily Bonus - Baku helpers resolve date keys and next midnight", async () => {
+  const now = new Date("2024-03-01T18:30:00.000Z");
+  assert.equal(getBakuDateKey(now), "2024-03-01");
+  assert.equal(getPreviousBakuDateKey(now), "2024-02-29");
+  assert.equal(getNextBakuMidnight(now).toISOString(), "2024-03-01T20:00:00.000Z");
 });
