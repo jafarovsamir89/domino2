@@ -220,6 +220,22 @@ class DominoGame {
         this.friendSearchResults = [];
         this.friendHub = { accepted: [], incoming: [], outgoing: [] };
         this.friendPresenceMap = new Map();
+        this.contextualRoomInviteState = null;
+        this.contextualRoomInviteCandidates = [];
+        this._lastContextualInviteOpenSource = '';
+        this._lastContextualInviteRoomId = '';
+        this._lastContextualInviteRoomCode = '';
+        this._lastContextualInviteRoomMode = '';
+        this._lastContextualInviteTargetSlotIndex = null;
+        this._lastContextualInviteSelectedFriendId = '';
+        this._lastContextualInviteSendAt = 0;
+        this._lastContextualInviteSendResultSafe = null;
+        this._lastContextualInviteSendError = '';
+        this.friendPickerOpen = false;
+        this.friendPickerSource = '';
+        this.friendPickerOnlineCount = 0;
+        this.friendPickerOfflineCount = 0;
+        this.friendPickerExcludedAlreadyInRoomCount = 0;
         this.roomInvitations = { incoming: [], sent: [] };
         this.roomInvitationsLoading = false;
         this.gameInviteState = {
@@ -1435,7 +1451,25 @@ class DominoGame {
                 lastPlayInviteError: String(this._lastPlayInviteSendError || '').trim(),
                 lastPlayInviteEventAt: Number(this._lastPlayInviteEventAt || 0) || 0,
                 renderState: this._roomInvitationsRenderState || null,
-                socialInviteTrace: this._socialInviteTrace || null
+                socialInviteTrace: this._socialInviteTrace || null,
+                contextualRoomInvite: {
+                    openSource: String(this._lastContextualInviteOpenSource || '').trim() || null,
+                    roomId: String(this._lastContextualInviteRoomId || '').trim() || null,
+                    roomCode: String(this._lastContextualInviteRoomCode || '').trim() || null,
+                    roomMode: String(this._lastContextualInviteRoomMode || '').trim() || null,
+                    targetSlotIndex: Number.isInteger(Number(this._lastContextualInviteTargetSlotIndex)) ? Number(this._lastContextualInviteTargetSlotIndex) : null,
+                    selectedFriendId: String(this._lastContextualInviteSelectedFriendId || '').trim() || null,
+                    sendAt: Number(this._lastContextualInviteSendAt || 0) || 0,
+                    sendResultSafe: this._lastContextualInviteSendResultSafe || null,
+                    sendError: String(this._lastContextualInviteSendError || '').trim() || null
+                },
+                friendPicker: {
+                    open: Boolean(this.friendPickerOpen),
+                    source: String(this.friendPickerSource || '').trim() || null,
+                    onlineCount: Number(this.friendPickerOnlineCount || 0) || 0,
+                    offlineCount: Number(this.friendPickerOfflineCount || 0) || 0,
+                    excludedAlreadyInRoomCount: Number(this.friendPickerExcludedAlreadyInRoomCount || 0) || 0
+                }
             },
             seatPicker: {
                 lastRoomCreateVisibility: String(this._lastRoomCreateVisibility || '').trim() || null,
@@ -1804,6 +1838,9 @@ class DominoGame {
         const roomSettings = sourcePayload?.roomSettings && typeof sourcePayload.roomSettings === 'object' && !Array.isArray(sourcePayload.roomSettings)
             ? sourcePayload.roomSettings
             : null;
+        const roomContext = payloadJson?.roomContext && typeof payloadJson.roomContext === 'object' && !Array.isArray(payloadJson.roomContext)
+            ? payloadJson.roomContext
+            : null;
         const inviteIds = Array.isArray(sourcePayload?.inviteIds) ? sourcePayload.inviteIds : [];
         return {
             inviteId: String(sourcePayload?.id || '').trim() || null,
@@ -1822,6 +1859,19 @@ class DominoGame {
                 totalPlayers: Number.isFinite(Number(roomSettings.totalPlayers)) ? Number(roomSettings.totalPlayers) : null,
                 maxPlayers: Number.isFinite(Number(roomSettings.maxPlayers)) ? Number(roomSettings.maxPlayers) : null,
                 isTeamMode: typeof roomSettings.isTeamMode === 'boolean' ? roomSettings.isTeamMode : null
+            } : null,
+            targetSlotIndex: Number.isInteger(Number(payloadJson?.targetSlotIndex)) ? Number(payloadJson.targetSlotIndex) : null,
+            openSeatPickerOnJoin: typeof payloadJson?.openSeatPickerOnJoin === 'boolean' ? payloadJson.openSeatPickerOnJoin : null,
+            roomContext: roomContext ? {
+                roomId: String(roomContext.roomId || '').trim() || null,
+                roomCode: String(roomContext.roomCode || '').trim() || null,
+                roomMode: String(roomContext.roomMode || '').trim() || null,
+                roomVisibility: String(roomContext.roomVisibility || '').trim() || null,
+                targetSlotIndex: Number.isInteger(Number(roomContext.targetSlotIndex)) ? Number(roomContext.targetSlotIndex) : null,
+                openSeatPickerOnJoin: typeof roomContext.openSeatPickerOnJoin === 'boolean' ? roomContext.openSeatPickerOnJoin : null,
+                inviterPlayerId: String(roomContext.inviterPlayerId || '').trim() || null,
+                inviteePlayerId: String(roomContext.inviteePlayerId || '').trim() || null,
+                source: String(roomContext.source || '').trim() || null
             } : null,
             source: String(sourcePayload?.source || payloadJson?.source || sourcePayload?.note || '').trim() || null,
             socketConnected: Boolean(this._socialSocket?.connected),
@@ -1970,6 +2020,116 @@ class DominoGame {
             source: roomId
                 ? (snapshot?.roomId ? 'snapshot' : this.currentRoomState?.roomId ? 'currentRoomState' : this.network?.room ? 'networkRoom' : 'unknown')
                 : (roomCode ? 'roomCode-only' : 'none')
+        };
+    }
+
+    getCurrentRoomInviteContext({ source = 'room-context', targetSlotIndex = null, openSeatPickerOnJoin = null } = {}) {
+        const snapshot = this.getCurrentRoomSnapshot();
+        if (!snapshot) return null;
+        const inviterPlayerId = String(this.getCurrentAccountPlayerId?.() || this.accountProfile?.playerId || this.accountProfile?.id || '').trim();
+        const roomMode = String(snapshot.roomMode || (snapshot.isTeamMode ? 'team' : 'ffa')).trim() || 'ffa';
+        const normalizedTargetSlotIndex = Number.isInteger(Number(targetSlotIndex)) ? Number(targetSlotIndex) : null;
+        const normalizedOpenSeatPicker = typeof openSeatPickerOnJoin === 'boolean'
+            ? openSeatPickerOnJoin
+            : roomMode === 'team';
+        return {
+            roomId: String(snapshot.roomId || '').trim() || null,
+            roomCode: String(snapshot.roomCode || '').trim() || null,
+            roomMode,
+            roomVisibility: String(snapshot.roomVisibility || '').trim() || null,
+            targetSlotIndex: normalizedTargetSlotIndex,
+            openSeatPickerOnJoin: normalizedOpenSeatPicker,
+            inviterPlayerId: inviterPlayerId || null,
+            inviteePlayerId: null,
+            source: String(source || 'room-context').trim() || 'room-context'
+        };
+    }
+
+    getCurrentRoomPlayerIds() {
+        const players = Array.isArray(this.currentRoomState?.players) ? this.currentRoomState.players : [];
+        const ids = new Set();
+        players.forEach((player) => {
+            const playerId = String(player?.playerId || player?.userId || player?.id || player?.sessionId || '').trim();
+            if (playerId) ids.add(playerId);
+        });
+        return ids;
+    }
+
+    isPlayerAlreadyInCurrentRoom(playerId) {
+        const targetId = String(playerId || '').trim();
+        if (!targetId) return false;
+        return this.getCurrentRoomPlayerIds().has(targetId);
+    }
+
+    findOutgoingPlayInviteForRoomContext(playerId, roomContext = null) {
+        const targetId = String(playerId || '').trim();
+        if (!targetId) return null;
+        const outgoing = Array.isArray(this.roomInvitations?.sent) ? this.roomInvitations.sent : [];
+        const normalizedRoomId = String(roomContext?.roomId || '').trim();
+        const normalizedRoomCode = String(roomContext?.roomCode || '').trim().toUpperCase();
+        const normalizedRoomMode = String(roomContext?.roomMode || '').trim().toLowerCase();
+        const normalizedSlotIndex = Number.isInteger(Number(roomContext?.targetSlotIndex)) ? Number(roomContext.targetSlotIndex) : null;
+        return outgoing.find((invite) => {
+            if (!this.isPlayInviteActive(invite)) return false;
+            if (String(invite?.invitee?.id || '').trim() !== targetId) return false;
+            const payload = invite?.payloadJson && typeof invite.payloadJson === 'object' && !Array.isArray(invite.payloadJson)
+                ? invite.payloadJson
+                : null;
+            const payloadRoom = payload?.roomContext && typeof payload.roomContext === 'object' && !Array.isArray(payload.roomContext)
+                ? payload.roomContext
+                : null;
+            const inviteRoomId = String(invite?.roomId || payloadRoom?.roomId || payload?.roomId || '').trim();
+            const inviteRoomCode = String(invite?.roomCode || payloadRoom?.roomCode || payload?.roomCode || '').trim().toUpperCase();
+            const inviteRoomMode = String(payloadRoom?.roomMode || payload?.roomMode || '').trim().toLowerCase();
+            const inviteSlotIndex = Number.isInteger(Number(payloadRoom?.targetSlotIndex))
+                ? Number(payloadRoom.targetSlotIndex)
+                : Number.isInteger(Number(payload?.targetSlotIndex))
+                    ? Number(payload.targetSlotIndex)
+                    : null;
+            if (normalizedRoomId && inviteRoomId && inviteRoomId !== normalizedRoomId) return false;
+            if (normalizedRoomCode && inviteRoomCode && inviteRoomCode !== normalizedRoomCode) return false;
+            if (normalizedRoomMode && inviteRoomMode && inviteRoomMode !== normalizedRoomMode) return false;
+            if (normalizedSlotIndex !== null && inviteSlotIndex !== null && inviteSlotIndex !== normalizedSlotIndex) return false;
+            return true;
+        }) || null;
+    }
+
+    getContextualRoomInviteCandidates(context = {}) {
+        const roomContext = this.getCurrentRoomInviteContext(context) || null;
+        const accepted = Array.isArray(this.friendHub?.accepted) ? this.friendHub.accepted : [];
+        const currentPlayerId = String(this.getCurrentAccountPlayerId?.() || this.accountProfile?.playerId || this.accountProfile?.id || '').trim();
+        const roomPlayerIds = this.getCurrentRoomPlayerIds();
+        const pendingInviteIds = new Set(
+            (Array.isArray(this.roomInvitations?.sent) ? this.roomInvitations.sent : [])
+                .filter((invite) => this.isPlayInviteActive(invite))
+                .map((invite) => String(invite?.invitee?.id || '').trim())
+                .filter(Boolean)
+        );
+        const candidates = accepted
+            .map((item) => item?.friend || item)
+            .filter((friend) => Boolean(String(friend?.id || '').trim()))
+            .filter((friend) => String(friend?.id || '').trim() !== currentPlayerId)
+            .filter((friend) => !roomPlayerIds.has(String(friend?.id || '').trim()))
+            .map((friend) => ({
+                ...friend,
+                _status: this.getFriendPresenceStatus(friend, this.friendPresenceMap),
+                _pendingInvite: pendingInviteIds.has(String(friend?.id || '').trim()) ? this.findOutgoingPlayInviteForRoomContext(friend?.id, roomContext) : null
+            }))
+            .sort((a, b) => {
+                const aOnline = this.isFriendOnline(a, this.friendPresenceMap) ? 0 : 1;
+                const bOnline = this.isFriendOnline(b, this.friendPresenceMap) ? 0 : 1;
+                if (aOnline !== bOnline) return aOnline - bOnline;
+                return String(a.displayName || '').localeCompare(String(b.displayName || ''));
+            });
+        const onlineCount = candidates.filter((friend) => this.isFriendOnline(friend, this.friendPresenceMap)).length;
+        const offlineCount = candidates.length - onlineCount;
+        const excludedAlreadyInRoomCount = accepted.length - candidates.length;
+        return {
+            roomContext,
+            friends: candidates,
+            onlineCount,
+            offlineCount,
+            excludedAlreadyInRoomCount
         };
     }
 
@@ -6683,43 +6843,6 @@ class DominoGame {
                     const action = document.createElement('div');
                     action.className = 'friend-card-actions';
 
-                    const friendId = String(item.friend?.id || '').trim();
-                    const outgoingInvite = this.findOutgoingPlayInviteForPlayer(friendId);
-                    const hasPendingInvite = Boolean(outgoingInvite);
-                    const isWaitingInvite = Boolean(outgoingInvite && this.isPlayInviteWaiting(outgoingInvite));
-                    const canInvite = Boolean(item.friend?.id) && !hasPendingInvite;
-
-                    const inviteBtn = document.createElement('button');
-                    inviteBtn.className = 'btn btn-action btn-strong invite-action-btn action-text-btn';
-                    inviteBtn.type = 'button';
-                    inviteBtn.title = this.t('friend-invite');
-                    inviteBtn.setAttribute('aria-label', this.t('friend-invite'));
-                    if (hasPendingInvite) {
-                        inviteBtn.classList.add('is-invited');
-                        inviteBtn.textContent = isWaitingInvite
-                            ? (this.t('invite-waiting-room') || 'Waiting')
-                            : this.t('invite-status-invited');
-                        inviteBtn.disabled = true;
-                    } else {
-                        inviteBtn.textContent = this.t('friend-invite');
-                        inviteBtn.disabled = !canInvite;
-                        inviteBtn.addEventListener('click', async (e) => {
-                            e.stopPropagation();
-                            inviteBtn.disabled = true;
-                            const originalText = inviteBtn.textContent;
-                            inviteBtn.textContent = '...';
-                            try {
-                                await this.sendGameInviteToPlayer(item.friend, { source: 'friends-page' });
-                                this.renderer.showMessage(this.t('invite-sent'), 1400);
-                                await this.loadFriendsPage();
-                            } catch (err) {
-                                this.renderer.showMessage(err.message || this.t('friends-load-failed'), 1800);
-                                inviteBtn.textContent = originalText;
-                                inviteBtn.disabled = !canInvite;
-                            }
-                        });
-                    }
-
                     const messageBtn = document.createElement('button');
                     messageBtn.className = 'btn btn-menu action-icon-btn message-action-btn';
                     messageBtn.type = 'button';
@@ -7377,41 +7500,6 @@ class DominoGame {
                     selfBtn.textContent = this.t('player-profile-self') || 'You';
                     action.appendChild(selfBtn);
                 } else if (statusKey === 'accepted') {
-                    const targetPlayerId = String(player.id || '').trim();
-                    const outgoingInvite = this.findOutgoingPlayInviteForPlayer(targetPlayerId);
-                    const hasPendingInvite = Boolean(outgoingInvite);
-                    const isWaitingInvite = Boolean(outgoingInvite && this.isPlayInviteWaiting(outgoingInvite));
-                    const canInvite = Boolean(player.id) && !hasPendingInvite;
-
-                    const inviteBtn = document.createElement('button');
-                    inviteBtn.className = 'btn btn-action btn-strong invite-action-btn action-text-btn';
-                    inviteBtn.type = 'button';
-                    inviteBtn.title = this.t('friend-invite');
-                    inviteBtn.setAttribute('aria-label', this.t('friend-invite'));
-                    if (hasPendingInvite) {
-                        inviteBtn.classList.add('is-invited');
-                        inviteBtn.textContent = isWaitingInvite
-                            ? (this.t('invite-waiting-room') || 'Waiting')
-                            : this.t('invite-status-invited');
-                        inviteBtn.disabled = true;
-                    } else {
-                        inviteBtn.textContent = this.t('friend-invite');
-                        inviteBtn.disabled = !canInvite;
-                        inviteBtn.addEventListener('click', async () => {
-                            inviteBtn.disabled = true;
-                            const originalText = inviteBtn.textContent;
-                            inviteBtn.textContent = '...';
-                            try {
-                                await this.sendGameInviteToPlayer(player, { source: 'friends-search' });
-                                this.renderer.showMessage(this.t('invite-sent'), 1400);
-                                await this.loadFriendsPage();
-                            } catch (err) {
-                                this.renderer.showMessage(err.message || this.t('friends-load-failed'), 1800);
-                                inviteBtn.textContent = originalText;
-                                inviteBtn.disabled = !canInvite;
-                            }
-                        });
-                    }
                     const messageBtn = document.createElement('button');
                     messageBtn.className = 'btn btn-menu action-icon-btn message-btn';
                     messageBtn.type = 'button';
@@ -7449,7 +7537,6 @@ class DominoGame {
                         }
                     });
 
-                    action.appendChild(inviteBtn);
                     action.appendChild(messageBtn);
                     action.appendChild(removeBtn);
                 } else if (statusKey === 'pending_outgoing') {
@@ -7646,46 +7733,10 @@ class DominoGame {
         if (inviteBtn) {
             const profileId = String(profile?.id || '').trim();
             const outgoingInvite = this.findOutgoingPlayInviteForPlayer(profileId);
-            const hasPendingInvite = Boolean(outgoingInvite);
-            const isWaitingInvite = Boolean(outgoingInvite && this.isPlayInviteWaiting(outgoingInvite));
-            const canInviteReal = canInvite && !hasPendingInvite;
-
-            inviteBtn.hidden = isSelf || !isAuthed;
-            inviteBtn.classList.toggle('is-invited', Boolean(hasPendingInvite));
-            if (hasPendingInvite) {
-                inviteBtn.textContent = isWaitingInvite
-                    ? (this.t('invite-waiting-room') || 'Waiting')
-                    : this.t('invite-status-invited');
-                inviteBtn.disabled = true;
-                inviteBtn.title = isWaitingInvite
-                    ? (this.t('invite-waiting-room') || 'Waiting')
-                    : this.t('invite-status-invited');
-            } else {
-                inviteBtn.textContent = this.t('friend-invite');
-                inviteBtn.disabled = !canInviteReal || loading;
-                inviteBtn.title = canInviteReal
-                    ? this.t('friend-invite')
-                    : this.t('player-profile-invite-unavailable');
-                inviteBtn.onclick = async () => {
-                    if (!isAuthed || isSelf || !profileId) return;
-                    if (!canInviteReal) {
-                        this.renderer.showMessage(this.t('player-profile-invite-unavailable'), 1600);
-                        return;
-                    }
-                    inviteBtn.disabled = true;
-                    const originalText = inviteBtn.textContent;
-                    inviteBtn.textContent = '...';
-                    try {
-                        await this.sendGameInviteToPlayer(profile, { source: 'profile' });
-                        this.renderer.showMessage(this.t('invite-sent'), 1400);
-                        this.openPlayerProfileModal(profile);
-                    } catch (err) {
-                        this.renderer.showMessage(err?.message || this.t('friends-load-failed'), 1800);
-                        inviteBtn.textContent = originalText;
-                        inviteBtn.disabled = !canInviteReal;
-                    }
-                };
-            }
+            inviteBtn.hidden = true;
+            inviteBtn.disabled = true;
+            inviteBtn.title = this.t('friend-invite');
+            inviteBtn.textContent = this.t('friend-invite');
         }
 
         if (messageBtn) {
@@ -8813,6 +8864,9 @@ class DominoGame {
 
     async sendGameInviteToPlayer(playerRef, context = {}) {
         const inviteePlayerId = this.getFriendPlayerId(playerRef);
+        const roomInviteContext = context?.roomInviteContext && typeof context.roomInviteContext === 'object' && !Array.isArray(context.roomInviteContext)
+            ? context.roomInviteContext
+            : this.getCurrentRoomInviteContext(context);
         const clickedFriendSafe = {
             playerId: inviteePlayerId || null,
             displayName: String(playerRef?.displayName || playerRef?.friend?.displayName || playerRef?.name || '').trim() || null,
@@ -8837,12 +8891,36 @@ class DominoGame {
             });
             throw error;
         }
+        const normalizedRoomInviteContext = roomInviteContext
+            ? {
+                roomId: String(roomInviteContext.roomId || '').trim() || null,
+                roomCode: String(roomInviteContext.roomCode || '').trim() || null,
+                roomMode: String(roomInviteContext.roomMode || (this.isTeamMode ? 'team' : 'ffa')).trim() || null,
+                roomVisibility: String(roomInviteContext.roomVisibility || this.onlineRoomVisibility || '').trim() || null,
+                targetSlotIndex: Number.isInteger(Number(roomInviteContext.targetSlotIndex)) ? Number(roomInviteContext.targetSlotIndex) : null,
+                openSeatPickerOnJoin: typeof roomInviteContext.openSeatPickerOnJoin === 'boolean' ? roomInviteContext.openSeatPickerOnJoin : null,
+                inviterPlayerId: String(roomInviteContext.inviterPlayerId || this.getCurrentAccountPlayerId?.() || '').trim() || null,
+                inviteePlayerId,
+                source: String(roomInviteContext.source || context?.source || 'social').trim() || 'social'
+            }
+            : null;
         const payload = {
             inviteePlayerId,
             note: String(context.note || context.source || 'play-invite').trim() || 'play-invite',
             payloadJson: {
                 source: String(context.source || 'social').trim() || 'social',
-                inviteeDisplayName: String(playerRef?.displayName || '').trim() || null
+                inviteeDisplayName: String(playerRef?.displayName || '').trim() || null,
+                ...(normalizedRoomInviteContext ? {
+                    roomContext: normalizedRoomInviteContext,
+                    roomId: normalizedRoomInviteContext.roomId,
+                    roomCode: normalizedRoomInviteContext.roomCode,
+                    roomMode: normalizedRoomInviteContext.roomMode,
+                    roomVisibility: normalizedRoomInviteContext.roomVisibility,
+                    targetSlotIndex: normalizedRoomInviteContext.targetSlotIndex,
+                    openSeatPickerOnJoin: normalizedRoomInviteContext.openSeatPickerOnJoin,
+                    inviterPlayerId: normalizedRoomInviteContext.inviterPlayerId,
+                    inviteePlayerId
+                } : {})
             }
         };
         this._socialInviteTrace = {
@@ -9647,6 +9725,9 @@ class DominoGame {
                 title: document.getElementById('seat-selection-overlay')?.querySelector('.seat-selection-title'),
                 desc: document.getElementById('seat-selection-overlay')?.querySelector('.seat-selection-desc'),
                 footerText: document.getElementById('seat-selection-overlay')?.querySelector('.seat-selection-footer-text'),
+                footerActions: document.getElementById('seat-selection-overlay')?.querySelector('.seat-selection-footer-actions'),
+                inviteBtn: document.getElementById('seat-selection-overlay')?.querySelector('.seat-selection-invite-btn'),
+                closeBtn: document.getElementById('seat-selection-overlay')?.querySelector('.seat-selection-close-btn'),
                 centerTitle: document.getElementById('seat-selection-overlay')?.querySelector('.seat-selection-center-title'),
                 centerNote: document.getElementById('seat-selection-overlay')?.querySelector('.seat-selection-center-note')
             };
@@ -9665,6 +9746,10 @@ class DominoGame {
 
         const head = document.createElement('div');
         head.className = 'seat-selection-head';
+        const headTop = document.createElement('div');
+        headTop.className = 'seat-selection-head-top';
+        const headCopy = document.createElement('div');
+        headCopy.className = 'seat-selection-head-copy';
         const kicker = document.createElement('div');
         kicker.className = 'section-kicker';
         kicker.dataset.i18n = 'seat-selection-title';
@@ -9680,9 +9765,18 @@ class DominoGame {
         const status = document.createElement('div');
         status.className = 'seat-selection-status';
         status.id = 'seat-selection-status';
-        head.appendChild(kicker);
-        head.appendChild(title);
-        head.appendChild(desc);
+        const closeBtn = document.createElement('button');
+        closeBtn.type = 'button';
+        closeBtn.className = 'social-close-btn seat-selection-close-btn';
+        closeBtn.setAttribute('aria-label', this.t('modal-close'));
+        closeBtn.textContent = '×';
+        closeBtn.addEventListener('click', () => this.hideSeatSelectionUi());
+        headCopy.appendChild(kicker);
+        headCopy.appendChild(title);
+        headCopy.appendChild(desc);
+        headTop.appendChild(headCopy);
+        headTop.appendChild(closeBtn);
+        head.appendChild(headTop);
         head.appendChild(status);
 
         const tableWrap = document.createElement('div');
@@ -9708,14 +9802,28 @@ class DominoGame {
         const footerText = document.createElement('div');
         footerText.className = 'seat-selection-footer-text';
         footerText.textContent = this.t('seat-selection-required');
+        const footerActions = document.createElement('div');
+        footerActions.className = 'seat-selection-footer-actions';
+        const inviteBtn = document.createElement('button');
+        inviteBtn.type = 'button';
+        inviteBtn.className = 'btn btn-action btn-strong seat-selection-invite-btn';
+        inviteBtn.textContent = this.t('friend-invite');
+        inviteBtn.addEventListener('click', async () => {
+            await this.openContextualRoomInvitePicker({
+                source: 'seat-picker',
+                openSeatPickerOnJoin: true
+            });
+        });
+        footerActions.appendChild(inviteBtn);
         footer.appendChild(footerText);
+        footer.appendChild(footerActions);
 
         panel.appendChild(head);
         panel.appendChild(tableWrap);
         panel.appendChild(footer);
         overlay.appendChild(panel);
         document.body.appendChild(overlay);
-        this.seatSelectionUi = { overlay, table, status, title, desc, footerText, centerTitle, centerNote };
+        this.seatSelectionUi = { overlay, table, status, title, desc, footerText, footerActions, inviteBtn, closeBtn, centerTitle, centerNote };
     }
 
     hideSeatSelectionUi() {
@@ -9852,14 +9960,19 @@ class DominoGame {
         const table = document.getElementById('seat-selection-table');
         const status = document.getElementById('seat-selection-status');
         const footerText = this.seatSelectionUi?.footerText || overlay?.querySelector('.seat-selection-footer-text');
+        const footerActions = this.seatSelectionUi?.footerActions || overlay?.querySelector('.seat-selection-footer-actions');
+        const inviteBtn = this.seatSelectionUi?.inviteBtn || overlay?.querySelector('.seat-selection-invite-btn');
+        const closeBtn = this.seatSelectionUi?.closeBtn || overlay?.querySelector('.seat-selection-close-btn');
         if (!overlay || !table || !status) return;
 
         const totalSeats = Number(roomState?.totalPlayers || roomState?.humanSeats || 0);
+        const roomMode = String(roomState?.roomMode || (roomState?.isTeamMode ? 'team' : 'ffa')).trim().toLowerCase();
         const roomIsActive = Boolean(roomState?.gameActive || this.gameActive);
         const shouldShow = Boolean(this.network?.isMultiplayer && !roomIsActive && totalSeats > 2 && roomState?.seatSelectionRequired !== false);
         debugLog("[CLIENT_DEBUG] renderSeatSelectionUi", {
             roomId: roomState?.roomId,
             roomCode: roomState?.roomCode,
+            roomMode,
             totalSeats,
             shouldShow,
             gameActive: roomState?.gameActive,
@@ -9894,6 +10007,17 @@ class DominoGame {
                 ? this.t('seat-selection-title')
                 : this.t('seat-selection-required');
         }
+        if (footerActions) {
+            footerActions.classList.remove('is-hidden');
+        }
+        if (inviteBtn) {
+            inviteBtn.hidden = false;
+            inviteBtn.disabled = false;
+            inviteBtn.textContent = this.t('friend-invite');
+        }
+        if (closeBtn) {
+            closeBtn.disabled = false;
+        }
         table.innerHTML = '';
         table.dataset.totalSeats = String(totalSeats || 0);
         table.dataset.teamMode = roomState?.isTeamMode ? 'true' : 'false';
@@ -9902,9 +10026,7 @@ class DominoGame {
         table.appendChild(center);
         const centerTitle = document.createElement('div');
         centerTitle.className = 'seat-selection-center-title';
-        centerTitle.textContent = roomState?.isTeamMode && totalSeats >= 4
-            ? `${this.t('seat-team-a')} / ${this.t('seat-team-b')}`
-            : this.t('seat-selection-title');
+        centerTitle.textContent = '';
         const centerNote = document.createElement('div');
         centerNote.className = 'seat-selection-center-note';
         centerNote.textContent = roomState?.isTeamMode && totalSeats >= 4
@@ -11229,11 +11351,6 @@ class DominoGame {
                     copy.appendChild(id);
                     const action = document.createElement('div');
                     action.className = 'friend-card-actions';
-                    const friendId = String(item.friend?.id || '').trim();
-                    const outgoingInvite = this.findOutgoingPlayInviteForPlayer(friendId);
-                    const hasPendingInvite = Boolean(outgoingInvite);
-                    const isWaitingInvite = Boolean(outgoingInvite && this.isPlayInviteWaiting(outgoingInvite));
-                    const canInvite = Boolean(item.friend?.id) && !hasPendingInvite;
 
                     const messageBtn = document.createElement('button');
                     messageBtn.className = 'btn btn-menu message-action-btn';
@@ -11241,55 +11358,6 @@ class DominoGame {
                     messageBtn.addEventListener('click', () => {
                         void this.openConversationWithPlayer(item.friend);
                     });
-
-                    const inviteBtn = document.createElement('button');
-                    inviteBtn.className = 'btn btn-action btn-strong invite-action-btn';
-                    if (hasPendingInvite) {
-                        inviteBtn.classList.add('is-invited');
-                        inviteBtn.textContent = isWaitingInvite
-                            ? (this.t('invite-waiting-room') || 'Waiting')
-                            : this.t('invite-status-invited');
-                        inviteBtn.disabled = true;
-                        const cancelBtn = document.createElement('button');
-                        cancelBtn.className = 'btn btn-menu cancel-invite-btn';
-                        cancelBtn.textContent = this.t('invite-cancel') || 'Cancel';
-                        cancelBtn.addEventListener('click', async () => {
-                            cancelBtn.disabled = true;
-                            const originalText = cancelBtn.textContent;
-                            cancelBtn.textContent = '...';
-                            try {
-                                const cancelled = await this.cancelPlayInviteWithFallback(outgoingInvite?.id || '', 'inviter-cancel-button');
-                                if (cancelled?.ok === false) {
-                                    throw new Error(cancelled?.error || cancelled?.reason || this.t('account-server-unavailable'));
-                                }
-                                await this.loadFriendsHub();
-                                this.renderer.showMessage(this.t('invite-cancelled') || 'Invite cancelled', 1400);
-                            } catch (err) {
-                                this.renderer.showMessage(err.message || this.t('account-server-unavailable'), 1800);
-                            } finally {
-                                cancelBtn.disabled = false;
-                                cancelBtn.textContent = originalText;
-                            }
-                        });
-                        action.appendChild(cancelBtn);
-                    } else {
-                        inviteBtn.textContent = this.t('friend-invite');
-                        inviteBtn.disabled = !canInvite;
-                        inviteBtn.addEventListener('click', async () => {
-                            inviteBtn.disabled = true;
-                            const originalText = inviteBtn.textContent;
-                            inviteBtn.textContent = '...';
-                            try {
-                                await this.sendGameInviteToPlayer(item.friend, { source: 'friends-hub' });
-                                await this.loadFriendsHub();
-                                this.renderer.showMessage(this.t('invite-sent'), 1400);
-                            } catch (err) {
-                                this.renderer.showMessage(err.message || this.t('account-server-unavailable'), 1800);
-                                inviteBtn.textContent = originalText;
-                                inviteBtn.disabled = !canInvite;
-                            }
-                        });
-                    }
                     const removeBtn = document.createElement('button');
                     removeBtn.className = 'btn btn-menu';
                     removeBtn.textContent = this.t('friend-remove');
@@ -11313,9 +11381,8 @@ class DominoGame {
                         }
                     });
                     action.appendChild(messageBtn);
-                    action.appendChild(inviteBtn);
-                    action.appendChild(giftBtn);
                     action.appendChild(removeBtn);
+                    action.appendChild(giftBtn);
                     card.appendChild(copy);
                     card.appendChild(action);
                     friendsList.appendChild(card);
@@ -11441,6 +11508,257 @@ class DominoGame {
         }
         await this.loadSocialSummary();
         this.renderGiftPicker();
+    }
+
+    ensureContextualRoomInvitePickerUi() {
+        if (document.getElementById('contextual-room-invite-overlay')) {
+            this.contextualRoomInviteUi = this.contextualRoomInviteUi || {
+                overlay: document.getElementById('contextual-room-invite-overlay'),
+                list: document.getElementById('contextual-room-invite-list'),
+                searchInput: document.getElementById('contextual-room-invite-search'),
+                status: document.getElementById('contextual-room-invite-status'),
+                title: document.getElementById('contextual-room-invite-title'),
+                subtitle: document.getElementById('contextual-room-invite-subtitle'),
+                closeBtn: document.getElementById('contextual-room-invite-close')
+            };
+            return;
+        }
+
+        if (typeof document === 'undefined' || !document.body) return;
+
+        const overlay = document.createElement('div');
+        overlay.id = 'contextual-room-invite-overlay';
+        overlay.className = 'modal-backdrop contextual-room-invite-overlay';
+        overlay.setAttribute('aria-hidden', 'true');
+
+        const card = document.createElement('div');
+        card.className = 'modal-card modal-card-wide contextual-room-invite-card';
+
+        const header = document.createElement('div');
+        header.className = 'modal-header contextual-room-invite-header';
+        const titleWrap = document.createElement('div');
+        const title = document.createElement('h2');
+        title.id = 'contextual-room-invite-title';
+        title.textContent = this.t('friend-invite');
+        const subtitle = document.createElement('div');
+        subtitle.id = 'contextual-room-invite-subtitle';
+        subtitle.className = 'modal-desc';
+        subtitle.textContent = this.t('invite-sent');
+        titleWrap.appendChild(title);
+        titleWrap.appendChild(subtitle);
+        const closeBtn = document.createElement('button');
+        closeBtn.type = 'button';
+        closeBtn.id = 'contextual-room-invite-close';
+        closeBtn.className = 'social-close-btn contextual-room-invite-close';
+        closeBtn.textContent = '×';
+        closeBtn.setAttribute('aria-label', this.t('modal-close'));
+        closeBtn.addEventListener('click', () => this.hideContextualRoomInvitePicker());
+        header.appendChild(titleWrap);
+        header.appendChild(closeBtn);
+
+        const body = document.createElement('div');
+        body.className = 'contextual-room-invite-body';
+        const search = document.createElement('input');
+        search.type = 'search';
+        search.id = 'contextual-room-invite-search';
+        search.className = 'contextual-room-invite-search';
+        search.placeholder = this.t('search-name-hint');
+        search.addEventListener('input', () => this.renderContextualRoomInvitePicker());
+        const status = document.createElement('div');
+        status.id = 'contextual-room-invite-status';
+        status.className = 'contextual-room-invite-status';
+        const list = document.createElement('div');
+        list.id = 'contextual-room-invite-list';
+        list.className = 'room-player-list contextual-room-invite-list';
+        body.appendChild(search);
+        body.appendChild(status);
+        body.appendChild(list);
+
+        card.appendChild(header);
+        card.appendChild(body);
+        overlay.appendChild(card);
+        document.body.appendChild(overlay);
+        this.contextualRoomInviteUi = { overlay, list, searchInput: search, status, title, subtitle, closeBtn };
+    }
+
+    hideContextualRoomInvitePicker() {
+        const overlay = document.getElementById('contextual-room-invite-overlay');
+        if (overlay) {
+            overlay.classList.remove('active');
+            overlay.setAttribute('aria-hidden', 'true');
+        }
+        this.friendPickerOpen = false;
+        this.friendPickerSource = '';
+        this.contextualRoomInviteState = null;
+        document.body.classList.remove('contextual-room-invite-active');
+    }
+
+    async openContextualRoomInvitePicker(options = {}) {
+        const context = this.getCurrentRoomInviteContext(options) || null;
+        if (!context) {
+            this.renderer.showMessage(this.t('online-room-status-error') || 'Room is not ready', 1400);
+            return null;
+        }
+        this.ensureContextualRoomInvitePickerUi();
+        this.contextualRoomInviteState = {
+            ...(context || {}),
+            source: String(options?.source || context?.source || 'room-context').trim() || 'room-context'
+        };
+        this.friendPickerOpen = true;
+        this.friendPickerSource = String(this.contextualRoomInviteState.source || '').trim() || 'room-context';
+        this._lastContextualInviteOpenSource = this.friendPickerSource;
+        this._lastContextualInviteRoomId = String(context.roomId || '').trim();
+        this._lastContextualInviteRoomCode = String(context.roomCode || '').trim();
+        this._lastContextualInviteRoomMode = String(context.roomMode || '').trim();
+        this._lastContextualInviteTargetSlotIndex = Number.isInteger(Number(context.targetSlotIndex)) ? Number(context.targetSlotIndex) : null;
+        this._lastContextualInviteSelectedFriendId = '';
+        this._lastContextualInviteSendAt = 0;
+        this._lastContextualInviteSendResultSafe = null;
+        this._lastContextualInviteSendError = '';
+        const overlay = document.getElementById('contextual-room-invite-overlay');
+        overlay?.classList.add('active');
+        overlay?.setAttribute('aria-hidden', 'false');
+        document.body.classList.add('contextual-room-invite-active');
+        const searchInput = document.getElementById('contextual-room-invite-search');
+        if (searchInput) {
+            searchInput.value = '';
+        }
+        await this.loadFriendHubDataForInvitePicker().catch(() => {});
+        this.renderContextualRoomInvitePicker();
+        return this.contextualRoomInviteState;
+    }
+
+    async loadFriendHubDataForInvitePicker() {
+        const [friendsResult, presenceResult] = await Promise.allSettled([
+            this.account.getFriends(),
+            this.loadFriendPresenceMap()
+        ]);
+        if (friendsResult.status === 'fulfilled' && friendsResult.value) {
+            this.friendHub = friendsResult.value || { accepted: [], incoming: [], outgoing: [], items: [] };
+        }
+        if (presenceResult.status === 'fulfilled' && presenceResult.value instanceof Map) {
+            this.friendPresenceMap = presenceResult.value;
+        }
+        return this.friendHub;
+    }
+
+    async sendContextualRoomInvite(friendRef, context = {}) {
+        const inviteePlayerId = this.getFriendPlayerId(friendRef);
+        const roomContext = this.getCurrentRoomInviteContext({
+            source: context.source || this.contextualRoomInviteState?.source || 'room-context',
+            targetSlotIndex: context.targetSlotIndex ?? this.contextualRoomInviteState?.targetSlotIndex ?? null,
+            openSeatPickerOnJoin: context.openSeatPickerOnJoin ?? this.contextualRoomInviteState?.openSeatPickerOnJoin ?? null
+        });
+        if (!inviteePlayerId || !roomContext?.roomId) {
+            throw new Error(this.t('friends-load-failed'));
+        }
+        const payload = {
+            inviteePlayerId,
+            note: String(context.note || 'play-invite').trim() || 'play-invite',
+            payloadJson: {
+                source: String(context.source || roomContext.source || 'room-context').trim() || 'room-context',
+                inviteeDisplayName: String(friendRef?.displayName || '').trim() || null,
+                roomContext: {
+                    ...roomContext,
+                    inviteePlayerId
+                },
+                roomId: roomContext.roomId,
+                roomCode: roomContext.roomCode,
+                roomMode: roomContext.roomMode,
+                targetSlotIndex: roomContext.targetSlotIndex,
+                openSeatPickerOnJoin: roomContext.openSeatPickerOnJoin,
+                inviterPlayerId: roomContext.inviterPlayerId,
+                inviteePlayerId
+            }
+        };
+        this._lastContextualInviteSelectedFriendId = inviteePlayerId;
+        this._lastContextualInviteSendAt = Date.now();
+        this._lastContextualInviteSendResultSafe = null;
+        this._lastContextualInviteSendError = '';
+        const result = await this.sendPlayInviteWithFallback(payload);
+        this._lastContextualInviteSendResultSafe = this.buildInviteDebugPayloadSafe(result?.item || result || {});
+        return result;
+    }
+
+    renderContextualRoomInvitePicker() {
+        const overlay = document.getElementById('contextual-room-invite-overlay');
+        const list = document.getElementById('contextual-room-invite-list');
+        const status = document.getElementById('contextual-room-invite-status');
+        const searchInput = document.getElementById('contextual-room-invite-search');
+        if (!overlay || !list || !status) return;
+        const state = this.contextualRoomInviteState || this.getCurrentRoomInviteContext() || null;
+        const query = String(searchInput?.value || '').trim().toLowerCase();
+        const data = this.getContextualRoomInviteCandidates(state || {});
+        this.friendPickerOpen = overlay.classList.contains('active');
+        this.friendPickerSource = String(state?.source || '').trim() || 'room-context';
+        this.friendPickerOnlineCount = data.onlineCount;
+        this.friendPickerOfflineCount = data.offlineCount;
+        this.friendPickerExcludedAlreadyInRoomCount = data.excludedAlreadyInRoomCount;
+        this._lastContextualInviteOpenSource = this.friendPickerSource;
+        this._lastContextualInviteRoomId = String(state?.roomId || '').trim();
+        this._lastContextualInviteRoomCode = String(state?.roomCode || '').trim();
+        this._lastContextualInviteRoomMode = String(state?.roomMode || '').trim();
+        this._lastContextualInviteTargetSlotIndex = Number.isInteger(Number(state?.targetSlotIndex)) ? Number(state.targetSlotIndex) : null;
+        const friends = data.friends.filter((friend) => {
+            if (!query) return true;
+            const name = String(friend?.displayName || friend?.name || '').toLowerCase();
+            return name.includes(query);
+        });
+        list.innerHTML = '';
+        if (!friends.length) {
+            this.setSummaryMessage(list, this.t('search-no-results'));
+        } else {
+            friends.forEach((friend) => {
+                const card = document.createElement('div');
+                card.className = 'friend-card contextual-room-invite-card-row';
+                const copy = document.createElement('div');
+                copy.className = 'friend-card-copy';
+                const name = this.createPlayerNameButton(friend.displayName, friend, 'friend-card-name');
+                const statusBadge = this.createFriendStatusBadge(this.getFriendPresenceStatus(friend, this.friendPresenceMap));
+                const meta = document.createElement('span');
+                meta.className = 'friend-card-desc';
+                const pendingInvite = this.findOutgoingPlayInviteForRoomContext(friend.id, state || null);
+                meta.textContent = pendingInvite
+                    ? (this.t('invite-status-invited') || 'Invited')
+                    : (state?.roomMode === 'team' ? this.t('seat-selection-title') : this.t('friend-invite'));
+                copy.appendChild(name);
+                copy.appendChild(statusBadge);
+                copy.appendChild(meta);
+                const action = document.createElement('div');
+                action.className = 'friend-card-actions';
+                const inviteBtn = document.createElement('button');
+                inviteBtn.className = 'btn btn-action btn-strong invite-action-btn contextual-room-invite-btn';
+                inviteBtn.textContent = pendingInvite
+                    ? (this.t('invite-status-invited') || 'Invited')
+                    : this.t('friend-invite');
+                inviteBtn.disabled = Boolean(pendingInvite);
+                inviteBtn.addEventListener('click', async () => {
+                    inviteBtn.disabled = true;
+                    const originalText = inviteBtn.textContent;
+                    inviteBtn.textContent = '...';
+                    try {
+                        await this.sendContextualRoomInvite(friend, state || {});
+                        this.renderer.showMessage(this.t('invite-sent'), 1400);
+                        this.hideContextualRoomInvitePicker();
+                        await this.loadFriendsHub().catch(() => {});
+                        this.renderSeatSelectionUi(this.currentRoomState || state || undefined);
+                    } catch (error) {
+                        this._lastContextualInviteSendError = String(error?.message || error || '').trim();
+                        this.renderer.showMessage(error.message || this.t('account-server-unavailable'), 1800);
+                        inviteBtn.textContent = originalText;
+                        inviteBtn.disabled = false;
+                    }
+                });
+                action.appendChild(inviteBtn);
+                card.appendChild(copy);
+                card.appendChild(action);
+                list.appendChild(card);
+            });
+        }
+        status.textContent = this.format('seat-selection-status', {
+            seated: friends.length,
+            total: Math.max(friends.length, 0)
+        });
     }
 
     async joinOnlineRoom(code) {
@@ -11663,6 +11981,11 @@ class DominoGame {
         const mySessionId = this.network?.room?.sessionId;
         const list = document.getElementById('room-player-list');
         list.innerHTML = '';
+        const roomMode = String(roomState?.roomMode || (roomState?.isTeamMode ? 'team' : 'ffa')).trim().toLowerCase();
+        const roomInviteContext = this.getCurrentRoomInviteContext({
+            source: 'room-player-slot',
+            openSeatPickerOnJoin: roomMode === 'team'
+        });
 
         for (const [index, player] of (roomState.players || []).entries()) {
             const displayName = getFirstNameDisplayName(player.name || '', `Player ${index + 1}`);
@@ -11710,7 +12033,25 @@ class DominoGame {
         for (let i = humanPlayerCount; i < humanSeats; i++) {
             const chip = document.createElement('div');
             chip.className = 'room-player-chip empty';
-            chip.textContent = this.format('online-waiting-slot', { index: i + 1 });
+            const label = document.createElement('span');
+            label.className = 'room-player-empty-label';
+            label.textContent = this.format('online-waiting-slot', { index: i + 1 });
+            chip.appendChild(label);
+            if (roomMode === 'ffa') {
+                const inviteBtn = document.createElement('button');
+                inviteBtn.type = 'button';
+                inviteBtn.className = 'btn btn-menu room-slot-invite-btn';
+                inviteBtn.textContent = this.t('friend-invite');
+                inviteBtn.addEventListener('click', async () => {
+                    await this.openContextualRoomInvitePicker({
+                        source: 'ffa-slot',
+                        targetSlotIndex: i,
+                        openSeatPickerOnJoin: false,
+                        roomInviteContext
+                    });
+                });
+                chip.appendChild(inviteBtn);
+            }
             list.appendChild(chip);
         }
 

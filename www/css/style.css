@@ -2907,6 +2907,19 @@ input, button { font: inherit; }
     margin-bottom: 12px;
 }
 
+.seat-selection-head-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.seat-selection-head-copy {
+    display: grid;
+    gap: 4px;
+    min-width: 0;
+}
+
 .seat-selection-title {
     font-size: 1.15rem;
     font-weight: 800;
@@ -2922,6 +2935,27 @@ input, button { font: inherit; }
     color: var(--accent);
     font-size: 0.82rem;
     font-weight: 800;
+}
+
+.seat-selection-center-title:empty {
+    display: none;
+}
+
+.seat-selection-footer {
+    margin-top: 12px;
+    display: grid;
+    gap: 10px;
+}
+
+.seat-selection-footer-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+}
+
+.seat-selection-invite-btn {
+    min-width: 132px;
 }
 
 .seat-selection-table-wrap {
@@ -3110,6 +3144,24 @@ body.seat-selection-active #game-screen {
 .room-player-chip.empty {
     color: var(--text-dim);
     font-style: italic;
+    display: grid;
+    gap: 8px;
+    align-items: start;
+    justify-items: stretch;
+    font-style: normal;
+}
+
+.room-player-empty-label {
+    color: var(--text-dim);
+    font-size: 0.78rem;
+    line-height: 1.3;
+}
+
+.room-slot-invite-btn {
+    width: 100%;
+    padding: 8px 10px;
+    border-radius: 12px;
+    font-size: 0.76rem;
 }
 
 .room-player-chip.you {
@@ -5772,6 +5824,41 @@ body.is-reconnecting .hand-container {
 .friend-card-actions .btn.action-icon-btn svg {
     width: 16px;
     height: 16px;
+}
+
+.contextual-room-invite-overlay {
+    align-items: center;
+}
+
+.contextual-room-invite-card {
+    width: min(94vw, 680px);
+    max-height: min(88vh, 760px);
+    display: grid;
+    gap: 14px;
+}
+
+.contextual-room-invite-header {
+    align-items: flex-start;
+}
+
+.contextual-room-invite-body {
+    display: grid;
+    gap: 10px;
+    min-height: 0;
+}
+
+.contextual-room-invite-search {
+    width: 100%;
+}
+
+.contextual-room-invite-list {
+    max-height: min(56vh, 420px);
+    overflow: auto;
+    padding-right: 2px;
+}
+
+.contextual-room-invite-btn {
+    min-width: 120px;
 }
 
 .inbox-card-preview-row {
