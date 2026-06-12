@@ -399,6 +399,9 @@ class DominoGame {
             lastDailyBonusClaimReward: 0,
             error: ''
         };
+        this._lastDailyBonusRenderAt = 0;
+        this._lastDailyBonusRenderSource = '';
+        this._dailyBonusUiRendered = false;
         this.pendingOnlineAction = null;
         this.pendingOnlineActionTimer = null;
         this.dailyBonusTickerId = null;
@@ -1470,7 +1473,18 @@ class DominoGame {
     getDailyBonusDebugState() {
         const status = this.dailyBonusState.status || {};
         const claimMode = String(this.dailyBonusState.claimingMode || this.dailyBonusState.lastDailyBonusClaimMode || '').trim() || null;
+        const card = document.getElementById('daily-bonus-card');
+        const rewardedBtn = document.getElementById('daily-bonus-rewarded-btn');
+        const rewardedVisible = this.isElementVisible(rewardedBtn);
+        const x2Reward = Number(status.todayReward?.amount ?? status.todayAmount ?? 0) * 2 || 0;
         return {
+            clientBuildBuiltAt: String(window.DOMINO_CLIENT_BUILD?.builtAt || '').trim() || null,
+            dailyBonusUiRendered: Boolean(this._dailyBonusUiRendered && card && !card.classList.contains('is-hidden')),
+            dailyBonusX2ButtonExists: Boolean(rewardedBtn),
+            dailyBonusX2ButtonVisible: rewardedVisible,
+            dailyBonusX2ButtonDisabled: Boolean(rewardedBtn?.disabled),
+            todayReward: Number(status.todayReward?.amount ?? status.todayAmount ?? 0) || 0,
+            x2Reward,
             claimMode,
             baseReward: Number(status.todayReward?.amount ?? status.todayAmount ?? 0) || 0,
             multiplier: claimMode === 'rewarded_x2' ? 2 : 1,
@@ -1488,8 +1502,30 @@ class DominoGame {
             dailyBonusClaimedToday: Boolean(status.claimedToday),
             dailyBonusCanClaim: Boolean(status.canClaim ?? status.claimable),
             dailyBonusStreakDay: Number(status.streakDay || 0) || 0,
-            dailyBonusLastError: String(this.dailyBonusState.error || '').trim() || null
+            dailyBonusLastError: String(this.dailyBonusState.error || '').trim() || null,
+            lastDailyBonusRenderAt: Number(this._lastDailyBonusRenderAt || 0) || 0,
+            dailyBonusRenderSource: String(this._lastDailyBonusRenderSource || '').trim() || null
         };
+    }
+
+    isElementVisible(element) {
+        if (!element) return false;
+        const style = window.getComputedStyle?.(element);
+        if (!style) return Boolean(element.offsetParent || element.getClientRects?.().length);
+        return style.display !== 'none'
+            && style.visibility !== 'hidden'
+            && style.opacity !== '0'
+            && Boolean(element.getClientRects?.().length);
+    }
+
+    getDailyBonusButtonsSnapshot() {
+        const buttons = Array.from(document.querySelectorAll('#daily-bonus-card button'));
+        return buttons.map((button) => ({
+            text: String(button.textContent || '').trim(),
+            disabled: Boolean(button.disabled),
+            visible: this.isElementVisible(button),
+            className: String(button.className || '').trim()
+        }));
     }
 
     stopSocialDebugPanelAutoRefresh() {
@@ -5179,18 +5215,22 @@ class DominoGame {
         }
     }
 
-    renderDailyBonusCard() {
+    renderDailyBonusCard(source = 'renderDailyBonusCard') {
+        this._lastDailyBonusRenderAt = Date.now();
+        this._lastDailyBonusRenderSource = String(source || 'renderDailyBonusCard');
         const card = document.getElementById('daily-bonus-card');
         if (!card) return;
 
         const isAuthed = this.hasAuthenticatedAccount();
         if (!isAuthed) {
             card.classList.add('is-hidden');
+            this._dailyBonusUiRendered = false;
             this.stopDailyBonusTicker();
             return;
         }
 
         card.classList.remove('is-hidden');
+        this._dailyBonusUiRendered = true;
 
         const titleEl = card.querySelector('.daily-bonus-title');
         const metaEl = document.getElementById('daily-bonus-meta');
@@ -14629,6 +14669,13 @@ window.__dominoDailyBonusDebugState = () => {
         return { error: 'app_unavailable' };
     }
     return app.getDailyBonusDebugState?.() || { error: 'debug_state_unavailable' };
+};
+window.__dominoFindDailyBonusButtons = () => {
+    const app = window.game;
+    if (!app) {
+        return { error: 'app_unavailable' };
+    }
+    return app.getDailyBonusButtonsSnapshot?.() || { error: 'debug_state_unavailable' };
 };
 window.__dominoCheckSocialSocketPrerequisites = async () => {
     const app = window.game;
