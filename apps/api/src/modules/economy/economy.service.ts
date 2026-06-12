@@ -85,6 +85,12 @@ type EconomyTournamentPayload = {
   isActive?: boolean;
 };
 
+type DailyBonusClaimMode = "normal" | "rewarded_x2";
+
+type DailyBonusClaimPayload = {
+  claimMode?: DailyBonusClaimMode;
+};
+
 function normalizeReserveFailureReason(error: unknown): string {
   const message = error instanceof Error ? error.message : String(error ?? "");
   if (/insufficient (coins|balance)/i.test(message)) {
@@ -292,6 +298,10 @@ function buildDailyRewardSchedule(config: { dailyMaxStreak: number; dailyBaseAmo
 function getRewardAmountForDay(rewardSchedule: Array<{ day: number; amount: number }>, day: number) {
   const clampedDay = Math.min(Math.max(1, Math.floor(Number(day) || 1)), rewardSchedule.length || 1);
   return rewardSchedule[clampedDay - 1]?.amount ?? 0;
+}
+
+function normalizeDailyBonusClaimMode(value: unknown): DailyBonusClaimMode {
+  return value === "rewarded_x2" ? "rewarded_x2" : "normal";
 }
 
 function stripProof<T extends Record<string, unknown>>(payload: T) {
@@ -1395,7 +1405,16 @@ export class EconomyService {
     };
   }
 
-  async claimDailyBonus(headers: IncomingHttpHeaders, now = new Date()) {
+  async claimDailyBonus(
+    headers: IncomingHttpHeaders,
+    bodyOrNow: DailyBonusClaimPayload | Date = new Date(),
+    maybeNow?: Date
+  ) {
+    const hasDateArg = bodyOrNow instanceof Date;
+    const body = hasDateArg ? {} : (bodyOrNow || {});
+    const now = hasDateArg ? bodyOrNow : (maybeNow || new Date());
+    const claimMode = normalizeDailyBonusClaimMode((body as DailyBonusClaimPayload)?.claimMode);
+    const multiplier = claimMode === "rewarded_x2" ? 2 : 1;
     const profile = await this.authService.getCurrentProfile(headers);
     if (!profile?.player) {
       throw new UnauthorizedException("Login required");
@@ -1420,8 +1439,13 @@ export class EconomyService {
       if (existing) {
         const status = await this.buildDailyBonusStatus(tx, profile.player.id, config, now);
         const wallet = await this.ensureWallet(tx, profile.player.id);
+        const rewardSchedule = buildDailyRewardSchedule(config);
         return {
           claimed: false,
+          claimMode,
+          baseReward: getRewardAmountForDay(rewardSchedule, existing.streakDay),
+          multiplier,
+          reward: existing.amount,
           claim: existing,
           wallet,
           dailyBonus: status
@@ -1430,18 +1454,23 @@ export class EconomyService {
 
       const statusBefore = await this.buildDailyBonusStatus(tx, profile.player.id, config, now);
       const streakDay = statusBefore.streakDay;
-      const amount = statusBefore.todayAmount;
+      const baseReward = statusBefore.todayReward.amount;
+      const reward = baseReward * multiplier;
 
       const wallet = await this.creditWallet(
         tx,
         profile.player.id,
-        amount,
+        reward,
         "daily_bonus",
         "daily_bonus",
         claimDate,
         {
-          note: `Daily claim for ${claimDate}`,
+          note: `Daily claim for ${claimDate}${claimMode === "rewarded_x2" ? " (rewarded x2)" : ""}`,
           payloadJson: {
+            claimMode,
+            baseReward,
+            multiplier,
+            reward,
             streakDay,
             claimDate
           }
@@ -1453,7 +1482,7 @@ export class EconomyService {
           playerId: profile.player.id,
           claimDate,
           streakDay,
-          amount
+          amount: reward
         }
       });
 
@@ -1466,6 +1495,10 @@ export class EconomyService {
 
       return {
         claimed: true,
+        claimMode,
+        baseReward,
+        multiplier,
+        reward,
         claim,
         wallet,
         dailyBonus: statusAfter

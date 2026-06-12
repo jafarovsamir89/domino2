@@ -4,6 +4,7 @@ import type { Request } from "express";
 import { EconomyService } from "./economy.service.js";
 import {
   AdminWalletAdjustDto,
+  EconomyDailyBonusClaimDto,
   EconomyReserveMatchDto,
   EconomySettleMatchDto,
   EconomySoloReserveDto,
@@ -66,11 +67,19 @@ export class EconomyController {
   }
 
   @Post("economy/daily-bonus/claim")
-  async claimDailyBonus(@Req() req: Request) {
-    const result = await this.economyService.claimDailyBonus(req.headers);
+  async claimDailyBonus(@Req() req: Request, @Body() body: EconomyDailyBonusClaimDto) {
+    const result = await this.economyService.claimDailyBonus(req.headers, body);
     return {
       ok: true,
       claimed: result.claimed,
+      claimedToday: result.dailyBonus?.claimedToday ?? false,
+      canClaim: result.dailyBonus?.canClaim ?? false,
+      claimMode: result.claimMode,
+      reward: result.reward,
+      baseReward: result.baseReward,
+      multiplier: result.multiplier,
+      nextClaimAt: result.dailyBonus?.nextClaimAt ?? null,
+      timezone: result.dailyBonus?.timezone ?? "Asia/Baku",
       reason: result.claimed ? undefined : "already_claimed",
       claim: result.claim,
       wallet: {

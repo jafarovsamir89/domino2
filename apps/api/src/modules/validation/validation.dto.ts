@@ -247,6 +247,12 @@ export class PurchaseTableSkinDto {
   key!: string;
 }
 
+export class EconomyDailyBonusClaimDto {
+  @IsOptional()
+  @IsIn(["normal", "rewarded_x2"])
+  claimMode?: "normal" | "rewarded_x2";
+}
+
 export class EconomyMatchParticipantDto {
   @IsOptional()
   @IsString()
