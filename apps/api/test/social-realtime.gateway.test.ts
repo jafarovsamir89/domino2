@@ -267,6 +267,35 @@ test("play-invite:create and play-invite:accept emit play invite socket events",
   assert.ok(broadcasts.some((row) => row.room === "player:player-2" && row.event === "play-invite:accepted"));
 });
 
+test("play-invite room-ready and joined live events map to socket events", async () => {
+  const { gateway, broadcasts } = createGatewayHarness();
+  (gateway as any).forwardLiveEvent("player-2", "play_invite_update", {
+    type: "play_invite_room_ready",
+    invite: {
+      id: "play-invite-1",
+      status: "room_created",
+      roomId: "room-1",
+      roomCode: "ABCD",
+      inviter: { id: "player-1", displayName: "Alpha" },
+      invitee: { id: "player-2", displayName: "Beta" }
+    }
+  });
+  (gateway as any).forwardLiveEvent("player-1", "play_invite_update", {
+    type: "play_invite_joined",
+    invite: {
+      id: "play-invite-1",
+      status: "joined",
+      roomId: "room-1",
+      roomCode: "ABCD",
+      inviter: { id: "player-1", displayName: "Alpha" },
+      invitee: { id: "player-2", displayName: "Beta" }
+    }
+  });
+
+  assert.ok(broadcasts.some((row) => row.room === "player:player-2" && row.event === "play-invite:room-ready"));
+  assert.ok(broadcasts.some((row) => row.room === "player:player-1" && row.event === "play-invite:joined"));
+});
+
 test("presence:update toggles in_game and offline states", async () => {
   const { gateway, realtimeService } = createGatewayHarness();
   const socket = new FakeSocket(makeToken("player-1", "Alpha"));

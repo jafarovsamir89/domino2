@@ -449,7 +449,11 @@ export class SocialRealtimeGateway implements OnModuleInit, OnModuleDestroy {
         play_invite_created: "play-invite:new",
         play_invite_accepted: "play-invite:accepted",
         play_invite_declined: "play-invite:declined",
-        play_invite_cancelled: "play-invite:cancelled"
+        play_invite_cancelled: "play-invite:cancelled",
+        play_invite_room_ready: "play-invite:room-ready",
+        play_invite_room_created: "play-invite:room-created",
+        play_invite_joined: "play-invite:joined",
+        play_invite_failed_to_join: "play-invite:failed-to-join"
       };
       const eventName = eventNameMap[inviteType] || "play-invite:update";
       this.server.to(`player:${key}`).emit(eventName, {

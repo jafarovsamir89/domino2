@@ -52,7 +52,9 @@ type RoomInviteRow = {
 type PlayInviteRow = {
   id: string;
   roomId: string | null;
+  roomCode: string | null;
   status: string;
+  kind: "play";
   note: string | null;
   createdAt: string;
   updatedAt: string;
@@ -858,6 +860,7 @@ export class SocialService {
     row: {
       id: string;
       roomId: string | null;
+      roomCode: string | null;
       status: string;
       note: string | null;
       createdAt: Date;
@@ -871,7 +874,9 @@ export class SocialService {
     return {
       id: row.id,
       roomId: row.roomId ? String(row.roomId).trim() : null,
+      roomCode: row.roomCode ? String(row.roomCode).trim() : null,
       status: row.status,
+      kind: "play",
       note: row.note ?? null,
       createdAt: row.createdAt.toISOString(),
       updatedAt: row.updatedAt.toISOString(),
@@ -1784,8 +1789,298 @@ export class SocialService {
     const waiting = rows
       .filter((row) => row.status === "accepted" && !String(row.roomId || "").trim())
       .map((row) => this.summarizePlayInvite(row as any));
+    const acceptedWaiting = waiting;
 
-    return { incoming, outgoing, waiting, items: rows.map((row) => this.summarizePlayInvite(row as any)) };
+    return { incoming, outgoing, waiting, acceptedWaiting, items: rows.map((row) => this.summarizePlayInvite(row as any)) };
+  }
+
+  async attachPlayInviteRoom(headers: IncomingHttpHeaders, body: {
+    roomId?: string;
+    roomCode?: string | null;
+    inviteIds?: string[];
+    roomSettings?: Record<string, unknown> | null;
+  }) {
+    const currentPlayer = await this.getCurrentPlayer(headers);
+    return this.attachPlayInviteRoomForPlayer(currentPlayer, body);
+  }
+
+  async attachPlayInviteRoomForPlayer(
+    currentPlayer: { id: string; displayName?: string },
+    body: {
+      roomId?: string;
+      roomCode?: string | null;
+      inviteIds?: string[];
+      roomSettings?: Record<string, unknown> | null;
+    },
+    options: SocialRealtimeEmitOptions = {}
+  ) {
+    const roomId = String(body?.roomId || "").trim();
+    const roomCode = String(body?.roomCode || "").trim().toUpperCase() || null;
+    const inviteIds = Array.from(new Set((Array.isArray(body?.inviteIds) ? body.inviteIds : [])
+      .map((value) => String(value || "").trim())
+      .filter(Boolean)));
+    const roomSettings = body?.roomSettings && typeof body.roomSettings === "object" && !Array.isArray(body.roomSettings)
+      ? body.roomSettings
+      : null;
+
+    if (!roomId) {
+      throw new BadRequestException("roomId is required");
+    }
+
+    const include = {
+      inviter: { select: this.playerSelect() },
+      invitee: { select: this.playerSelect() }
+    } as const;
+
+    const candidateRows = await this.prisma.playInvite.findMany({
+      where: inviteIds.length > 0
+        ? {
+            id: { in: inviteIds },
+            inviterPlayerId: currentPlayer.id
+          }
+        : {
+            inviterPlayerId: currentPlayer.id,
+            status: { in: ["accepted", "room_created"] }
+          },
+      include,
+      orderBy: [{ updatedAt: "desc" }, { createdAt: "desc" }]
+    });
+
+    if (!candidateRows.length) {
+      return { items: [], item: null, count: 0 };
+    }
+
+    const now = new Date();
+    const roomCreatedRows = candidateRows.filter((row) => String(row.status || "").trim().toLowerCase() === "room_created");
+    const readyRows = candidateRows.filter((row) => {
+      const status = String(row.status || "").trim().toLowerCase();
+      const currentRoomId = String(row.roomId || "").trim();
+      if (status !== "accepted") {
+        return false;
+      }
+      if (currentRoomId && currentRoomId !== roomId) {
+        throw new BadRequestException("Invite already attached to another room");
+      }
+      return true;
+    });
+
+    const parsedMaxPlayers = Number(roomSettings?.maxPlayers || 0);
+    const maxPlayers = Number.isFinite(parsedMaxPlayers) && parsedMaxPlayers > 0 ? Math.trunc(parsedMaxPlayers) : 4;
+    const inviterSeats = 1;
+    if (readyRows.length + inviterSeats > maxPlayers) {
+      throw new BadRequestException("Room capacity is too small for accepted invites");
+    }
+
+    const updatedRows = await this.prisma.$transaction(async (tx) => {
+      const rows: any[] = [];
+      for (const row of readyRows) {
+        const nextPayload = {
+          ...(row.payloadJson && typeof row.payloadJson === "object" && !Array.isArray(row.payloadJson) ? row.payloadJson : {}),
+          roomAttach: {
+            roomId,
+            roomCode,
+            attachedAt: now.toISOString(),
+            roomSettings
+          }
+        } as Prisma.InputJsonValue;
+        const updated = await tx.playInvite.update({
+          where: { id: row.id },
+          data: {
+            roomId,
+            roomCode,
+            status: "room_created",
+            payloadJson: nextPayload
+          },
+          include
+        });
+        rows.push(updated);
+      }
+      return rows;
+    });
+
+    const roomReadyItems = updatedRows.map((row) => this.summarizePlayInvite(row as any));
+    const existingRoomCreatedItems = roomCreatedRows.map((row) => this.summarizePlayInvite(row as any));
+    const items = [...roomReadyItems, ...existingRoomCreatedItems];
+
+    if (options.emitEvents !== false) {
+      roomReadyItems.forEach((invite) => {
+        const inviteePlayerId = String(invite.invitee?.id || "").trim();
+        if (inviteePlayerId) {
+          this.emitSseEvent(inviteePlayerId, "play_invite_update", {
+            type: "play_invite_room_ready",
+            invite,
+            roomId,
+            roomCode
+          });
+        }
+      });
+      this.emitSseEvent(currentPlayer.id, "play_invite_update", {
+        type: "play_invite_room_created",
+        invite: roomReadyItems[0] || existingRoomCreatedItems[0] || null,
+        items,
+        roomId,
+        roomCode
+      });
+    }
+
+    return {
+      item: roomReadyItems[0] || existingRoomCreatedItems[0] || null,
+      items,
+      count: items.length
+    };
+  }
+
+  async markPlayInviteJoined(headers: IncomingHttpHeaders, id: string, body: {
+    roomId?: string | null;
+    roomCode?: string | null;
+    reason?: string | null;
+  }) {
+    const currentPlayer = await this.getCurrentPlayer(headers);
+    return this.markPlayInviteJoinedForPlayer(currentPlayer, id, body);
+  }
+
+  async markPlayInviteJoinedForPlayer(
+    currentPlayer: { id: string; displayName?: string },
+    id: string,
+    body: {
+      roomId?: string | null;
+      roomCode?: string | null;
+      reason?: string | null;
+    },
+    options: SocialRealtimeEmitOptions = {}
+  ) {
+    const row = await this.prisma.playInvite.findUnique({
+      where: { id },
+      include: {
+        inviter: { select: this.playerSelect() },
+        invitee: { select: this.playerSelect() }
+      }
+    });
+    if (!row) {
+      throw new NotFoundException("Invitation not found");
+    }
+    if (row.inviteePlayerId !== currentPlayer.id) {
+      throw new ForbiddenException("Invitation not found");
+    }
+    const currentStatus = String(row.status || "").trim().toLowerCase();
+    if (!["accepted", "room_created", "joined"].includes(currentStatus)) {
+      throw new BadRequestException("Invitation already responded");
+    }
+    const roomId = String(body?.roomId || row.roomId || "").trim() || null;
+    const roomCode = String(body?.roomCode || row.roomCode || "").trim().toUpperCase() || null;
+    if (!roomId && !roomCode) {
+      throw new BadRequestException("roomId or roomCode is required");
+    }
+
+    const joined = currentStatus === "joined"
+      ? row
+      : await this.prisma.playInvite.update({
+          where: { id },
+          data: {
+            roomId,
+            roomCode,
+            status: "joined"
+          },
+          include: {
+            inviter: { select: this.playerSelect() },
+            invitee: { select: this.playerSelect() }
+          }
+        });
+
+    const invite = this.summarizePlayInvite(joined as any);
+    if (options.emitEvents !== false) {
+      this.emitSseEvent(joined.inviterPlayerId, "play_invite_update", {
+        type: "play_invite_joined",
+        invite,
+        roomId,
+        roomCode,
+        reason: String(body?.reason || "").trim() || null
+      });
+      this.emitSseEvent(joined.inviteePlayerId, "play_invite_update", {
+        type: "play_invite_joined",
+        invite,
+        roomId,
+        roomCode,
+        reason: String(body?.reason || "").trim() || null
+      });
+    }
+
+    return { item: invite };
+  }
+
+  async markPlayInviteFailedToJoin(headers: IncomingHttpHeaders, id: string, body: {
+    roomId?: string | null;
+    roomCode?: string | null;
+    reason?: string | null;
+  }) {
+    const currentPlayer = await this.getCurrentPlayer(headers);
+    return this.markPlayInviteFailedToJoinForPlayer(currentPlayer, id, body);
+  }
+
+  async markPlayInviteFailedToJoinForPlayer(
+    currentPlayer: { id: string; displayName?: string },
+    id: string,
+    body: {
+      roomId?: string | null;
+      roomCode?: string | null;
+      reason?: string | null;
+    },
+    options: SocialRealtimeEmitOptions = {}
+  ) {
+    const row = await this.prisma.playInvite.findUnique({
+      where: { id },
+      include: {
+        inviter: { select: this.playerSelect() },
+        invitee: { select: this.playerSelect() }
+      }
+    });
+    if (!row) {
+      throw new NotFoundException("Invitation not found");
+    }
+    if (row.inviteePlayerId !== currentPlayer.id) {
+      throw new ForbiddenException("Invitation not found");
+    }
+    const currentStatus = String(row.status || "").trim().toLowerCase();
+    if (!["accepted", "room_created", "failed_to_join"].includes(currentStatus)) {
+      throw new BadRequestException("Invitation already responded");
+    }
+    const roomId = String(body?.roomId || row.roomId || "").trim() || null;
+    const roomCode = String(body?.roomCode || row.roomCode || "").trim().toUpperCase() || null;
+
+    const failed = currentStatus === "failed_to_join"
+      ? row
+      : await this.prisma.playInvite.update({
+          where: { id },
+          data: {
+            roomId,
+            roomCode,
+            status: "failed_to_join"
+          },
+          include: {
+            inviter: { select: this.playerSelect() },
+            invitee: { select: this.playerSelect() }
+          }
+        });
+
+    const invite = this.summarizePlayInvite(failed as any);
+    if (options.emitEvents !== false) {
+      this.emitSseEvent(failed.inviterPlayerId, "play_invite_update", {
+        type: "play_invite_failed_to_join",
+        invite,
+        roomId,
+        roomCode,
+        reason: String(body?.reason || "").trim() || null
+      });
+      this.emitSseEvent(failed.inviteePlayerId, "play_invite_update", {
+        type: "play_invite_failed_to_join",
+        invite,
+        roomId,
+        roomCode,
+        reason: String(body?.reason || "").trim() || null
+      });
+    }
+
+    return { item: invite };
   }
 
   async getGiftCatalog(headers: IncomingHttpHeaders) {

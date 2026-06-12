@@ -256,6 +256,23 @@ class DominoGame {
         this._lastPlayInviteReceivedPayloadSafe = null;
         this._lastPlayInviteUpdateAt = 0;
         this._lastPlayInviteUpdatePayloadSafe = null;
+        this._lastPlayInviteAcceptedAt = 0;
+        this._lastPlayInviteAcceptedPayloadSafe = null;
+        this._lastPlayInviteRoomAttachAttemptAt = 0;
+        this._lastPlayInviteRoomAttachPayloadSafe = null;
+        this._lastPlayInviteRoomAttachResultSafe = null;
+        this._lastPlayInviteRoomAttachError = '';
+        this._lastPlayInviteRoomReadyAt = 0;
+        this._lastPlayInviteRoomReadyPayloadSafe = null;
+        this._lastPlayInviteAutoJoinAttemptAt = 0;
+        this._lastPlayInviteAutoJoinError = '';
+        this._duplicateLegacyInviteSuppressedCount = 0;
+        this.acceptingInviteIds = new Set();
+        this.decliningInviteIds = new Set();
+        this.acceptedWaitingInviteIds = new Set();
+        this.playInviteRoomReadyIds = new Set();
+        this.playInviteJoiningIds = new Set();
+        this.playInviteAutoJoinAttemptedIds = new Set();
         this._roomInvitationsRenderState = null;
         this._socialInviteTrace = null;
         this._roomInvitationsLastLoadedAt = 0;
@@ -1279,9 +1296,11 @@ class DominoGame {
         return {
             id: String(invite?.id || '').trim() || null,
             roomId: String(invite?.roomId || '').trim() || null,
+            roomCode: String(invite?.roomCode || '').trim() || null,
             inviterPlayerId: String(invite?.inviterPlayerId || invite?.inviter?.id || '').trim() || null,
             inviteePlayerId: String(invite?.inviteePlayerId || invite?.invitee?.id || '').trim() || null,
             status: String(invite?.status || '').trim() || null,
+            kind: String(invite?.kind || '').trim() || null,
             createdAt: String(invite?.createdAt || '').trim() || null
         };
     }
@@ -1297,6 +1316,12 @@ class DominoGame {
         const activeRoom = this.getActiveInviteRoomContext?.() || {};
         const serverSummaryUnread = Math.max(0, Number(this.socialSummary?.totalUnreadCount || 0) || 0);
         const playInviteCounts = this.getPlayInviteCounts();
+        const acceptedWaitingInvites = this.getAcceptedWaitingPlayInvites();
+        const waitingPlayersSafe = acceptedWaitingInvites.slice(0, 3).map((invite) => ({
+            id: String(invite?.invitee?.id || invite?.inviteePlayerId || '').trim() || null,
+            displayName: String(invite?.invitee?.displayName || '').trim() || null,
+            status: String(invite?.status || '').trim() || null
+        }));
         const activePlayerId = String(messagesState.activePlayerId || '').trim();
         const activeHeaderPlayerId = String(this._activeHeaderPlayerId || '').trim();
         const headerProfileMatchesConversation = !activePlayerId || !activeHeaderPlayerId || activeHeaderPlayerId === activePlayerId;
@@ -1358,6 +1383,24 @@ class DominoGame {
                 lastPlayInviteEventAt: Number(this._lastPlayInviteEventAt || 0) || 0,
                 renderState: this._roomInvitationsRenderState || null,
                 socialInviteTrace: this._socialInviteTrace || null
+            },
+            playInvite: {
+                incomingCount: playInviteCounts.incoming,
+                outgoingCount: playInviteCounts.outgoing,
+                acceptedWaitingCount: playInviteCounts.waiting,
+                waitingPlayersSafe,
+                lastPlayInviteEventAt: Number(this._lastPlayInviteEventAt || 0) || 0,
+                lastPlayInviteAcceptedAt: Number(this._lastPlayInviteAcceptedAt || 0) || 0,
+                lastPlayInviteAcceptedPayloadSafe: this._lastPlayInviteAcceptedPayloadSafe || null,
+                lastPlayInviteRoomAttachAttemptAt: Number(this._lastPlayInviteRoomAttachAttemptAt || 0) || 0,
+                lastPlayInviteRoomAttachPayloadSafe: this._lastPlayInviteRoomAttachPayloadSafe || null,
+                lastPlayInviteRoomAttachResultSafe: this._lastPlayInviteRoomAttachResultSafe || null,
+                lastPlayInviteRoomAttachError: String(this._lastPlayInviteRoomAttachError || '').trim(),
+                lastPlayInviteRoomReadyAt: Number(this._lastPlayInviteRoomReadyAt || 0) || 0,
+                lastPlayInviteRoomReadyPayloadSafe: this._lastPlayInviteRoomReadyPayloadSafe || null,
+                lastPlayInviteAutoJoinAttemptAt: Number(this._lastPlayInviteAutoJoinAttemptAt || 0) || 0,
+                lastPlayInviteAutoJoinError: String(this._lastPlayInviteAutoJoinError || '').trim(),
+                duplicateLegacyInviteSuppressedCount: Number(this._duplicateLegacyInviteSuppressedCount || 0) || 0
             },
             badge: {
                 serverSummaryUnread,
@@ -1483,7 +1526,13 @@ class DominoGame {
 
     isPlayInviteWaiting(invite) {
         const status = String(invite?.status || '').trim().toLowerCase();
-        return status === 'accepted' && !String(invite?.roomId || '').trim();
+        return this.isPlayInviteRecord(invite) && status === 'accepted' && !String(invite?.roomId || '').trim();
+    }
+
+    isPlayInviteRecord(invite) {
+        const kind = String(invite?.kind || '').trim().toLowerCase();
+        if (kind === 'play') return true;
+        return !String(invite?.roomId || '').trim();
     }
 
     isPlayInviteActive(invite) {
@@ -1492,7 +1541,8 @@ class DominoGame {
         const expiresAtStr = invite?.expiresAt ? String(invite.expiresAt).trim() : '';
         const isExpired = expiresAtStr && new Date(expiresAtStr).getTime() <= Date.now();
         if (isExpired) return false;
-        return status === 'pending' || this.isPlayInviteWaiting(invite);
+        if (!this.isPlayInviteRecord(invite)) return false;
+        return status === 'pending' || status === 'room_created' || status === 'failed_to_join' || this.isPlayInviteWaiting(invite);
     }
 
     findOutgoingPlayInviteForPlayer(playerId) {
@@ -1519,11 +1569,85 @@ class DominoGame {
         };
     }
 
+    getAcceptedWaitingPlayInvites() {
+        const invitations = this.roomInvitations || { incoming: [], sent: [] };
+        const outgoing = Array.isArray(invitations.sent) ? invitations.sent : [];
+        return outgoing.filter((invite) => this.isPlayInviteWaiting(invite));
+    }
+
+    getPlayInviteStatusLabel(invite) {
+        const status = String(invite?.status || '').trim().toLowerCase();
+        const currentPlayerId = this.getCurrentAccountPlayerId();
+        const inviterPlayerId = String(invite?.inviter?.id || invite?.inviterPlayerId || '').trim();
+        const inviteePlayerId = String(invite?.invitee?.id || invite?.inviteePlayerId || '').trim();
+        if (status === 'accepted' && !String(invite?.roomId || '').trim()) {
+            if (inviteePlayerId === currentPlayerId) {
+                return this.currentLang === 'az'
+                    ? 'Qəbul edildi. Oyun otağının yaradılmasını gözləyirsiniz.'
+                    : 'Accepted. Waiting for inviter to create room.';
+            }
+            if (inviterPlayerId === currentPlayerId) {
+                return this.currentLang === 'az'
+                    ? 'Dost qəbul etdi və gözləyir'
+                    : 'Friend accepted and is waiting.';
+            }
+        }
+        if (status === 'room_created') {
+            if (inviteePlayerId === currentPlayerId) {
+                return this.currentLang === 'az'
+                    ? 'Otaq hazırdır. Qoşulursunuz...'
+                    : 'Room is ready. Joining...';
+            }
+            if (inviterPlayerId === currentPlayerId) {
+                return this.currentLang === 'az'
+                    ? 'Otaq yaradıldı. Dostun qoşulmasını gözləyirsiniz.'
+                    : 'Room created. Waiting for friend to join.';
+            }
+        }
+        if (status === 'joined') {
+            if (inviteePlayerId === currentPlayerId) {
+                return this.currentLang === 'az'
+                    ? 'Qoşuldunuz.'
+                    : 'Joined.';
+            }
+            if (inviterPlayerId === currentPlayerId) {
+                return this.currentLang === 'az'
+                    ? 'Dost otağa qoşuldu.'
+                    : 'Friend joined the room.';
+            }
+        }
+        if (status === 'failed_to_join') {
+            return this.currentLang === 'az'
+                ? 'Qoşulma uğursuz oldu.'
+                : 'Failed to join.';
+        }
+        if (status === 'declined') {
+            return this.currentLang === 'az'
+                ? 'Rədd edildi'
+                : 'Declined';
+        }
+        if (status === 'cancelled') {
+            return this.currentLang === 'az'
+                ? 'Ləğv edildi'
+                : 'Cancelled';
+        }
+        if (status === 'expired') {
+            return this.currentLang === 'az'
+                ? 'Müddəti bitdi'
+                : 'Expired';
+        }
+        return this.getRoomInvitationStatusLabel(invite);
+    }
+
     buildInviteDebugPayloadSafe(payload = {}) {
         const sourcePayload = payload && typeof payload === 'object' ? payload : {};
         const payloadJson = sourcePayload?.payloadJson && typeof sourcePayload.payloadJson === 'object' && !Array.isArray(sourcePayload.payloadJson)
             ? sourcePayload.payloadJson
             : null;
+        const roomSettings = sourcePayload?.roomSettings && typeof sourcePayload.roomSettings === 'object' && !Array.isArray(sourcePayload.roomSettings)
+            ? sourcePayload.roomSettings
+            : null;
+        const inviteIds = Array.isArray(sourcePayload?.inviteIds) ? sourcePayload.inviteIds : [];
         return {
             inviteId: String(sourcePayload?.id || '').trim() || null,
             roomId: String(sourcePayload?.roomId || '').trim() || null,
@@ -1532,6 +1656,16 @@ class DominoGame {
             inviterPlayerId: String(sourcePayload?.inviter?.id || '').trim() || null,
             status: String(sourcePayload?.status || sourcePayload?.type || '').trim() || null,
             roomMode: String(sourcePayload?.roomMode || '').trim() || null,
+            inviteIdsCount: inviteIds.length,
+            roomSettings: roomSettings ? {
+                roomMode: String(roomSettings.roomMode || '').trim() || null,
+                stakeKey: String(roomSettings.stakeKey || '').trim() || null,
+                stakeAmount: Number.isFinite(Number(roomSettings.stakeAmount)) ? Number(roomSettings.stakeAmount) : null,
+                humanSeats: Number.isFinite(Number(roomSettings.humanSeats)) ? Number(roomSettings.humanSeats) : null,
+                totalPlayers: Number.isFinite(Number(roomSettings.totalPlayers)) ? Number(roomSettings.totalPlayers) : null,
+                maxPlayers: Number.isFinite(Number(roomSettings.maxPlayers)) ? Number(roomSettings.maxPlayers) : null,
+                isTeamMode: typeof roomSettings.isTeamMode === 'boolean' ? roomSettings.isTeamMode : null
+            } : null,
             source: String(sourcePayload?.source || payloadJson?.source || sourcePayload?.note || '').trim() || null,
             socketConnected: Boolean(this._socialSocket?.connected),
             socketReady: Boolean(this._socialSocketReady)
@@ -2125,6 +2259,30 @@ class DominoGame {
             this.scheduleSocialRefresh('invites', { delayMs: 1200, reason: 'socket-play-invite-accepted' });
         });
 
+        socket.on('play-invite:room-ready', (payload) => {
+            markTouch('play-invite:room-ready', payload);
+            this.applyRealtimeRoomInvitation({ ...(payload || {}), __eventName: 'play-invite:room-ready' });
+            this.scheduleSocialRefresh('invites', { delayMs: 1200, reason: 'socket-play-invite-room-ready' });
+        });
+
+        socket.on('play-invite:room-created', (payload) => {
+            markTouch('play-invite:room-created', payload);
+            this.applyRealtimeRoomInvitation({ ...(payload || {}), __eventName: 'play-invite:room-created' });
+            this.scheduleSocialRefresh('invites', { delayMs: 1200, reason: 'socket-play-invite-room-created' });
+        });
+
+        socket.on('play-invite:joined', (payload) => {
+            markTouch('play-invite:joined', payload);
+            this.applyRealtimeRoomInvitation({ ...(payload || {}), __eventName: 'play-invite:joined' });
+            this.scheduleSocialRefresh('invites', { delayMs: 1200, reason: 'socket-play-invite-joined' });
+        });
+
+        socket.on('play-invite:failed-to-join', (payload) => {
+            markTouch('play-invite:failed-to-join', payload);
+            this.applyRealtimeRoomInvitation({ ...(payload || {}), __eventName: 'play-invite:failed-to-join' });
+            this.scheduleSocialRefresh('invites', { delayMs: 1200, reason: 'socket-play-invite-failed-to-join' });
+        });
+
         socket.on('play-invite:declined', (payload) => {
             markTouch('play-invite:declined', payload);
             this.applyRealtimeRoomInvitation({ ...(payload || {}), __eventName: 'play-invite:declined' });
@@ -2453,6 +2611,155 @@ class DominoGame {
                 endpoint: this._lastPlayInviteSendEndpoint
             });
             throw error;
+        }
+    }
+
+    async acceptPlayInviteWithFallback(inviteId) {
+        const cleanId = String(inviteId || '').trim();
+        if (!cleanId) return null;
+        const socketResponse = await this.sendSocialPlayInviteAccept(cleanId).catch(() => null);
+        if (socketResponse?.ok === false) {
+            return socketResponse;
+        }
+        if (socketResponse?.item || socketResponse?.invite) {
+            return {
+                ok: true,
+                item: socketResponse.item || socketResponse.invite,
+                live: true
+            };
+        }
+        return this.account.acceptPlayInvite(cleanId);
+    }
+
+    async declinePlayInviteWithFallback(inviteId) {
+        const cleanId = String(inviteId || '').trim();
+        if (!cleanId) return null;
+        const socketResponse = await this.sendSocialPlayInviteDecline(cleanId).catch(() => null);
+        if (socketResponse?.ok === false) {
+            return socketResponse;
+        }
+        if (socketResponse?.item || socketResponse?.invite) {
+            return {
+                ok: true,
+                item: socketResponse.item || socketResponse.invite,
+                live: true
+            };
+        }
+        return this.account.declinePlayInvite(cleanId);
+    }
+
+    async cancelPlayInviteWithFallback(inviteId) {
+        const cleanId = String(inviteId || '').trim();
+        if (!cleanId) return null;
+        const socketResponse = await this.sendSocialPlayInviteCancel(cleanId).catch(() => null);
+        if (socketResponse?.ok === false) {
+            return socketResponse;
+        }
+        if (socketResponse?.item || socketResponse?.invite) {
+            return {
+                ok: true,
+                item: socketResponse.item || socketResponse.invite,
+                live: true
+            };
+        }
+        return this.account.cancelPlayInvite(cleanId);
+    }
+
+    async attachPlayInviteRoomWithFallback(payload = {}) {
+        const requestPayload = payload && typeof payload === 'object' ? { ...payload } : {};
+        this._lastPlayInviteRoomAttachAttemptAt = Date.now();
+        this._lastPlayInviteRoomAttachPayloadSafe = this.buildInviteDebugPayloadSafe(requestPayload);
+        try {
+            const result = await this.account.attachPlayInviteRoom(requestPayload);
+            const safeResult = {
+                ok: true,
+                count: Number(result?.count || 0) || 0,
+                item: this.buildInviteDebugPayloadSafe(result?.item || {}),
+                items: Array.isArray(result?.items) ? result.items.map((item) => this.buildInviteDebugPayloadSafe(item)).slice(0, 5) : []
+            };
+            this._lastPlayInviteRoomAttachResultSafe = safeResult;
+            this._lastPlayInviteRoomAttachError = '';
+            return result;
+        } catch (error) {
+            this._lastPlayInviteRoomAttachError = String(error?.message || error || '').trim();
+            this._lastPlayInviteRoomAttachResultSafe = null;
+            throw error;
+        }
+    }
+
+    async markPlayInviteJoinedWithFallback(inviteId, payload = {}) {
+        const cleanId = String(inviteId || '').trim();
+        if (!cleanId) return null;
+        try {
+            return await this.account.markPlayInviteJoined(cleanId, payload || {});
+        } catch (error) {
+            this._lastPlayInviteAutoJoinError = String(error?.message || error || '').trim();
+            throw error;
+        }
+    }
+
+    async markPlayInviteFailedToJoinWithFallback(inviteId, payload = {}) {
+        const cleanId = String(inviteId || '').trim();
+        if (!cleanId) return null;
+        try {
+            return await this.account.markPlayInviteFailedToJoin(cleanId, payload || {});
+        } catch (error) {
+            this._lastPlayInviteAutoJoinError = String(error?.message || error || '').trim();
+            throw error;
+        }
+    }
+
+    async joinPlayInviteRoom(invite, { manual = false } = {}) {
+        const inviteId = String(invite?.id || '').trim();
+        const roomCode = String(invite?.roomCode || invite?.roomId || '').trim().toUpperCase();
+        if (!inviteId || !this.isValidRoomCode(roomCode)) return false;
+        if (this.playInviteJoiningIds.has(inviteId)) return false;
+        if (!manual && this.playInviteAutoJoinAttemptedIds.has(inviteId)) return false;
+        if (!manual && this.playInviteRoomReadyIds.has(inviteId) && this.network?.room) {
+            return false;
+        }
+
+        this.playInviteJoiningIds.add(inviteId);
+        if (!manual) {
+            this.playInviteAutoJoinAttemptedIds.add(inviteId);
+        }
+        this._lastPlayInviteAutoJoinAttemptAt = Date.now();
+        this._lastPlayInviteAutoJoinError = '';
+        this.renderer.showMessage(
+            this.currentLang === 'az'
+                ? 'Otaq hazırdır. Qoşulursunuz...'
+                : 'Room is ready. Joining...',
+            1400
+        );
+
+        try {
+            const joined = await this.joinOnlineRoom(roomCode);
+            if (joined) {
+                await this.markPlayInviteJoinedWithFallback(inviteId, {
+                    roomId: String(invite?.roomId || '').trim() || null,
+                    roomCode,
+                    reason: manual ? 'manual_join' : 'auto_join'
+                }).catch(() => {});
+                this.playInviteRoomReadyIds.delete(inviteId);
+                this.acceptedWaitingInviteIds.delete(inviteId);
+                return true;
+            }
+            throw new Error('join_failed');
+        } catch (error) {
+            const message = String(error?.message || error || '').trim();
+            this._lastPlayInviteAutoJoinError = message;
+            if (!manual && this.network?.room) {
+                try {
+                    await this.markPlayInviteFailedToJoinWithFallback(inviteId, {
+                        roomId: String(invite?.roomId || '').trim() || null,
+                        roomCode,
+                        reason: message || 'auto_join_failed'
+                    });
+                } catch {}
+            }
+            return false;
+        } finally {
+            this.playInviteJoiningIds.delete(inviteId);
         }
     }
 
@@ -2842,14 +3149,14 @@ class DominoGame {
             renderList(sentList, sent, 'sent', 'invite-sent-empty');
         } else {
             invitesList.innerHTML = '';
-            const combined = [...incoming, ...sent].filter((invite) => this.isRoomInvitationActive(invite));
+            const combined = [...incoming, ...sent].filter((invite) => this.isRoomInvitationActive(invite) || this.isPlayInviteActive(invite));
             if (!combined.length) {
                 renderState.emptyStateShown = true;
                 renderState.emptyStateReason = this.roomInvitationsLoading ? 'loading' : 'combined:empty';
                 this.setSummaryMessage(invitesList, this.roomInvitationsLoading ? this.t('account-profile-loading') : this.t('no-room-invites'));
             } else {
-                renderState.renderedIncomingCount = incoming.filter((invite) => this.isRoomInvitationActive(invite)).length;
-                renderState.renderedSentCount = sent.filter((invite) => this.isRoomInvitationActive(invite)).length;
+                renderState.renderedIncomingCount = incoming.filter((invite) => this.isRoomInvitationActive(invite) || this.isPlayInviteActive(invite)).length;
+                renderState.renderedSentCount = sent.filter((invite) => this.isRoomInvitationActive(invite) || this.isPlayInviteActive(invite)).length;
                 combined.forEach((invite) => {
                     invitesList.appendChild(this.createRoomInvitationCard(invite, incoming.some((item) => item?.id === invite?.id) ? 'incoming' : 'sent'));
                 });
@@ -6233,15 +6540,24 @@ class DominoGame {
         const incoming = Array.isArray(invitations?.incoming) ? invitations.incoming : [];
         const sent = Array.isArray(invitations?.sent) ? invitations.sent : [];
         return {
-            incoming: incoming.filter((invite) => this.isRoomInvitationActive(invite)),
-            sent: sent.filter((invite) => this.isRoomInvitationActive(invite))
+            incoming: incoming.filter((invite) => this.isRoomInvitationActive(invite) || this.isPlayInviteActive(invite)),
+            sent: sent.filter((invite) => this.isRoomInvitationActive(invite) || this.isPlayInviteActive(invite))
         };
     }
 
     createRoomInvitationCard(invite, kind = 'incoming') {
         const card = document.createElement('div');
         card.className = 'friend-card premium-social-card invite-card';
-        const pending = this.isRoomInvitationPending(invite);
+        const isPlayInvite = this.isPlayInviteRecord(invite);
+        const status = String(invite?.status || '').trim().toLowerCase();
+        const inviteId = String(invite?.id || invite?.invitationId || invite?.roomInvitationId || '').trim();
+        const pending = isPlayInvite ? status === 'pending' : this.isRoomInvitationPending(invite);
+        const isAcceptedWaiting = isPlayInvite
+            ? status === 'accepted' && !String(invite?.roomId || '').trim()
+            : status === 'accepted' && !String(invite?.roomCode || '').trim();
+        const isRoomReady = isPlayInvite && status === 'room_created';
+        const isJoined = isPlayInvite && status === 'joined';
+        const isFailedJoin = isPlayInvite && status === 'failed_to_join';
 
         const otherParty = kind === 'incoming' ? invite?.inviter : invite?.invitee;
         const rating = this.friendRatingMap?.get(String(otherParty?.id || '')) || 1000;
@@ -6255,14 +6571,32 @@ class DominoGame {
         name.textContent = otherParty?.displayName || this.t('no-room-invites');
         const meta = document.createElement('span');
         meta.className = 'friend-card-desc';
-        meta.textContent = `${invite?.roomCode || ''}${invite?.roomMode ? ` · ${invite.roomMode}` : ''}`.trim();
+        const metaParts = [];
+        if (isPlayInvite) {
+            if (String(invite?.roomCode || '').trim()) metaParts.push(String(invite.roomCode).trim());
+            if (status === 'accepted' && !String(invite?.roomId || '').trim()) {
+                metaParts.push(this.currentLang === 'az' ? 'Qəbul edildi' : 'Accepted');
+            } else if (isRoomReady) {
+                metaParts.push(this.currentLang === 'az' ? 'Otaq hazırdır' : 'Room ready');
+            } else if (isJoined) {
+                metaParts.push(this.currentLang === 'az' ? 'Qoşuldu' : 'Joined');
+            } else if (isFailedJoin) {
+                metaParts.push(this.currentLang === 'az' ? 'Qoşulma alınmadı' : 'Join failed');
+            } else {
+                metaParts.push(this.currentLang === 'az' ? 'Oyun dəvəti' : 'Play invite');
+            }
+        } else {
+            if (String(invite?.roomCode || '').trim()) metaParts.push(String(invite.roomCode).trim());
+            if (invite?.roomMode) metaParts.push(String(invite.roomMode).trim());
+        }
+        meta.textContent = metaParts.filter(Boolean).join(' · ').trim();
         copy.appendChild(name);
         copy.appendChild(meta);
 
         const statusLabel = document.createElement('span');
         statusLabel.className = 'room-summary invite-status-label';
-        statusLabel.textContent = this.getRoomInvitationStatusLabel(invite);
-        const showStatusLabel = kind === 'sent' || !pending;
+        statusLabel.textContent = isPlayInvite ? this.getPlayInviteStatusLabel(invite) : this.getRoomInvitationStatusLabel(invite);
+        const showStatusLabel = kind === 'sent' || !pending || isRoomReady || isJoined || isFailedJoin;
         if (showStatusLabel) {
             copy.appendChild(statusLabel);
         }
@@ -6270,6 +6604,155 @@ class DominoGame {
 
         const action = document.createElement('div');
         action.className = 'friend-card-actions';
+
+        if (isPlayInvite) {
+            if (kind === 'incoming') {
+                if (pending) {
+                    const acceptBtn = document.createElement('button');
+                    acceptBtn.className = 'btn btn-action btn-strong accept-invite-btn';
+                    acceptBtn.textContent = this.currentLang === 'az' ? 'Qəbul et' : 'Accept';
+                    acceptBtn.disabled = this.acceptingInviteIds.has(inviteId) || this.decliningInviteIds.has(inviteId);
+                    acceptBtn.addEventListener('click', async () => {
+                        if (!inviteId || acceptBtn.disabled) return;
+                        this.acceptingInviteIds.add(inviteId);
+                        this.decliningInviteIds.delete(inviteId);
+                        acceptBtn.disabled = true;
+                        const originalText = acceptBtn.textContent;
+                        acceptBtn.textContent = this.currentLang === 'az' ? 'Qəbul edilir...' : 'Accepting...';
+                        try {
+                            const accepted = await this.acceptPlayInviteWithFallback(inviteId);
+                            if (accepted?.ok === false) {
+                                throw new Error(accepted?.error || accepted?.reason || this.t('friends-load-failed'));
+                            }
+                            const acceptedInvite = accepted?.item || accepted?.invite || invite;
+                            this._lastPlayInviteAcceptedAt = Date.now();
+                            this._lastPlayInviteAcceptedPayloadSafe = this.buildInviteDebugPayloadSafe(acceptedInvite || invite);
+                            this.acceptedWaitingInviteIds.add(inviteId);
+                            this.renderer.showMessage(
+                                this.currentLang === 'az'
+                                    ? 'Qəbul edildi. Oyun otağının yaradılmasını gözləyirsiniz.'
+                                    : 'Accepted. Waiting for inviter to create room.',
+                                1800
+                            );
+                            await this.loadSocialInvitesPage();
+                        } catch (err) {
+                            this._lastPlayInviteError = String(err?.message || err || '').trim();
+                            this.renderer.showMessage(this._lastPlayInviteError || this.t('friends-load-failed'), 1800);
+                        } finally {
+                            this.acceptingInviteIds.delete(inviteId);
+                            acceptBtn.disabled = false;
+                            acceptBtn.textContent = originalText;
+                        }
+                    });
+
+                    const declineBtn = document.createElement('button');
+                    declineBtn.className = 'btn btn-menu decline-invite-btn';
+                    declineBtn.textContent = this.currentLang === 'az' ? 'Rədd et' : 'Decline';
+                    declineBtn.disabled = this.acceptingInviteIds.has(inviteId) || this.decliningInviteIds.has(inviteId);
+                    declineBtn.addEventListener('click', async () => {
+                        if (!inviteId || declineBtn.disabled) return;
+                        this.decliningInviteIds.add(inviteId);
+                        this.acceptingInviteIds.delete(inviteId);
+                        declineBtn.disabled = true;
+                        const originalText = declineBtn.textContent;
+                        declineBtn.textContent = this.currentLang === 'az' ? 'Rədd edilir...' : 'Declining...';
+                        try {
+                            const declined = await this.declinePlayInviteWithFallback(inviteId);
+                            if (declined?.ok === false) {
+                                throw new Error(declined?.error || declined?.reason || this.t('friends-load-failed'));
+                            }
+                            await this.loadSocialInvitesPage();
+                        } catch (err) {
+                            this._lastPlayInviteError = String(err?.message || err || '').trim();
+                            this.renderer.showMessage(this._lastPlayInviteError || this.t('friends-load-failed'), 1800);
+                        } finally {
+                            this.decliningInviteIds.delete(inviteId);
+                            declineBtn.disabled = false;
+                            declineBtn.textContent = originalText;
+                        }
+                    });
+                    action.appendChild(acceptBtn);
+                    action.appendChild(declineBtn);
+                } else if (isAcceptedWaiting) {
+                    const waitingBtn = document.createElement('button');
+                    waitingBtn.className = 'btn btn-menu';
+                    waitingBtn.disabled = true;
+                    waitingBtn.textContent = this.currentLang === 'az'
+                        ? 'Qəbul edildi. Gözləyirsiniz.'
+                        : 'Accepted. Waiting for inviter to create room.';
+                    action.appendChild(waitingBtn);
+                } else if (isRoomReady) {
+                    const joining = this.playInviteJoiningIds.has(inviteId);
+                    const joinBtn = document.createElement('button');
+                    joinBtn.className = 'btn btn-action btn-strong';
+                    joinBtn.disabled = joining || !this.isValidRoomCode(invite?.roomCode || invite?.roomId || '');
+                    joinBtn.textContent = joining
+                        ? (this.currentLang === 'az' ? 'Qoşulursunuz...' : 'Joining...')
+                        : (this.currentLang === 'az' ? 'Qoşul' : 'Join room');
+                    joinBtn.addEventListener('click', async () => {
+                        if (!inviteId || joinBtn.disabled) return;
+                        await this.joinPlayInviteRoom(invite, { manual: true });
+                    });
+                    action.appendChild(joinBtn);
+                } else if (isJoined) {
+                    const joinedBtn = document.createElement('button');
+                    joinedBtn.className = 'btn btn-menu';
+                    joinedBtn.disabled = true;
+                    joinedBtn.textContent = this.currentLang === 'az' ? 'Qoşuldunuz' : 'Joined';
+                    action.appendChild(joinedBtn);
+                } else if (isFailedJoin) {
+                    const failedBtn = document.createElement('button');
+                    failedBtn.className = 'btn btn-menu';
+                    failedBtn.disabled = true;
+                    failedBtn.textContent = this.currentLang === 'az' ? 'Qoşulma alınmadı' : 'Failed to join';
+                    action.appendChild(failedBtn);
+                } else {
+                    const statusBtn = document.createElement('button');
+                    statusBtn.className = 'btn btn-menu';
+                    statusBtn.disabled = true;
+                    statusBtn.textContent = this.getPlayInviteStatusLabel(invite);
+                    action.appendChild(statusBtn);
+                }
+            } else {
+                if (pending) {
+                    const cancelBtn = document.createElement('button');
+                    cancelBtn.className = 'btn btn-menu cancel-invite-btn';
+                    cancelBtn.textContent = this.t('invite-cancel');
+                    cancelBtn.addEventListener('click', async () => {
+                        cancelBtn.disabled = true;
+                        const originalText = cancelBtn.textContent;
+                        cancelBtn.textContent = '...';
+                        try {
+                            await this.cancelPlayInviteWithFallback(inviteId);
+                            await this.loadSocialInvitesPage();
+                            this.renderer.showMessage(this.t('invite-cancelled'), 1400);
+                        } catch (err) {
+                            this._lastPlayInviteError = String(err?.message || err || '').trim();
+                            this.renderer.showMessage(this._lastPlayInviteError || this.t('friends-load-failed'), 1800);
+                        } finally {
+                            cancelBtn.disabled = false;
+                            cancelBtn.textContent = originalText;
+                        }
+                    });
+                    action.appendChild(cancelBtn);
+                } else if (isAcceptedWaiting || isRoomReady || isJoined || isFailedJoin) {
+                    const statusBtn = document.createElement('button');
+                    statusBtn.className = 'btn btn-menu';
+                    statusBtn.disabled = true;
+                    statusBtn.textContent = this.getPlayInviteStatusLabel(invite);
+                    action.appendChild(statusBtn);
+                } else {
+                    const statusBtn = document.createElement('button');
+                    statusBtn.className = 'btn btn-menu';
+                    statusBtn.disabled = true;
+                    statusBtn.textContent = this.getPlayInviteStatusLabel(invite);
+                    action.appendChild(statusBtn);
+                }
+            }
+
+            card.appendChild(action);
+            return card;
+        }
 
         if (kind === 'incoming') {
             const acceptBtn = document.createElement('button');
@@ -7478,12 +7961,16 @@ class DominoGame {
         const normalizedInvite = { ...invite };
         const inviteStatus = String(normalizedInvite.status || '').trim().toLowerCase();
         const eventName = String(payload?.__eventName || payload?.type || '').trim().toLowerCase();
-        if (eventName.startsWith('play-invite') || eventName.startsWith('play_invite')) {
+        const eventType = String(payload?.type || '').trim().toLowerCase();
+        const isPlayEvent = eventName.startsWith('play-invite')
+            || eventName.startsWith('play_invite')
+            || eventType.startsWith('play_invite');
+        if (isPlayEvent) {
             this._lastPlayInviteEventAt = Date.now();
         }
         const safePayload = this.buildInviteDebugPayloadSafe({
             ...normalizedInvite,
-            type: eventName || inviteStatus
+            type: eventType || eventName || inviteStatus
         });
         if (eventName === 'invite:new' || eventName === 'invite_created' || eventName === 'play-invite:new' || eventName === 'play_invite_created' || inviteStatus === 'pending') {
             this._lastInviteReceivedAt = Date.now();
@@ -7492,7 +7979,7 @@ class DominoGame {
         }
         this._lastInviteUpdateAt = Date.now();
         this._lastInviteUpdatePayloadSafe = safePayload;
-        if (eventName === 'play-invite:new' || eventName === 'play_invite_created') {
+        if (eventName === 'play-invite:new' || eventName === 'play_invite_created' || eventType === 'play_invite_created') {
             this._lastPlayInviteReceivedAt = Date.now();
             this._lastPlayInviteReceivedPayloadSafe = safePayload;
             this.logSocialInvite('play-invite:new received', safePayload);
@@ -7505,6 +7992,110 @@ class DominoGame {
         }, currentPlayerId);
         this.roomInvitationsLoading = false;
         this._lastInviteError = '';
+        if (isPlayEvent && (eventName === 'play-invite:accepted' || eventName === 'play_invite_accepted' || eventType === 'play_invite_accepted' || inviteStatus === 'accepted')) {
+            this._lastPlayInviteAcceptedAt = Date.now();
+            this._lastPlayInviteAcceptedPayloadSafe = safePayload;
+            const acceptedInviteId = String(normalizedInvite.id || '').trim();
+            if (acceptedInviteId) {
+                this.acceptedWaitingInviteIds.add(acceptedInviteId);
+            }
+            const inviterPlayerId = String(normalizedInvite.inviter?.id || '').trim();
+            const inviteePlayerId = String(normalizedInvite.invitee?.id || '').trim();
+            if (inviterPlayerId === currentPlayerId) {
+                const inviteeName = String(normalizedInvite.invitee?.displayName || 'Player').trim();
+                const message = this.currentLang === 'az'
+                    ? `${inviteeName} dəvəti qəbul etdi və gözləyir`
+                    : `${inviteeName} accepted your invite and is waiting.`;
+                this.renderer.showMessage(message, 1800);
+                this.acceptedWaitingInviteIds.add(acceptedInviteId);
+                void this.loadFriendsHub().catch(() => {});
+            }
+            if (inviteePlayerId === currentPlayerId) {
+                this.acceptedWaitingInviteIds.add(acceptedInviteId);
+                this.gameInviteState = {
+                    ...(this.gameInviteState || {}),
+                    inviteId: acceptedInviteId || this.gameInviteState?.inviteId || '',
+                    inviteePlayerId: currentPlayerId,
+                    inviteeDisplayName: String(normalizedInvite.invitee?.displayName || this.accountProfile?.displayName || '').trim(),
+                    sessionId: String(normalizedInvite.id || normalizedInvite.roomId || this.gameInviteState?.sessionId || '').trim(),
+                    role: 'invitee',
+                    roomLinked: Boolean(String(normalizedInvite.roomId || '').trim()),
+                    createPromptShown: Boolean(this.gameInviteState?.createPromptShown),
+                    waitingPromptShown: true,
+                    createdAt: this.gameInviteState?.createdAt || Date.now()
+                };
+                this.startGameInviteRefresh();
+                this.renderer.showMessage(
+                    this.currentLang === 'az'
+                        ? 'Qəbul edildi. Oyun otağının yaradılmasını gözləyirsiniz.'
+                        : 'Accepted. Waiting for inviter to create room.',
+                    1800
+                );
+            }
+        }
+        if (isPlayEvent && (eventName === 'play-invite:room-ready' || eventName === 'play_invite_room_ready' || eventType === 'play_invite_room_ready' || inviteStatus === 'room_created')) {
+            this._lastPlayInviteRoomReadyAt = Date.now();
+            this._lastPlayInviteRoomReadyPayloadSafe = safePayload;
+            const inviteId = String(normalizedInvite.id || '').trim();
+            if (inviteId) {
+                this.playInviteRoomReadyIds.add(inviteId);
+            }
+            const inviteePlayerId = String(normalizedInvite.invitee?.id || '').trim();
+            const inviterPlayerId = String(normalizedInvite.inviter?.id || '').trim();
+            if (inviteePlayerId === currentPlayerId) {
+                this.gameInviteState = {
+                    ...(this.gameInviteState || {}),
+                    inviteId: inviteId || this.gameInviteState?.inviteId || '',
+                    inviteePlayerId: currentPlayerId,
+                    inviteeDisplayName: String(normalizedInvite.invitee?.displayName || this.accountProfile?.displayName || '').trim(),
+                    sessionId: String(normalizedInvite.roomId || normalizedInvite.id || this.gameInviteState?.sessionId || '').trim(),
+                    role: 'invitee',
+                    roomLinked: Boolean(String(normalizedInvite.roomId || '').trim()),
+                    createPromptShown: Boolean(this.gameInviteState?.createPromptShown),
+                    waitingPromptShown: true,
+                    createdAt: this.gameInviteState?.createdAt || Date.now()
+                };
+                this.startGameInviteRefresh();
+                void this.joinPlayInviteRoom(normalizedInvite, { manual: false }).catch(() => {});
+            }
+            if (inviterPlayerId === currentPlayerId) {
+                const inviteeName = String(normalizedInvite.invitee?.displayName || 'Player').trim();
+                const message = this.currentLang === 'az'
+                    ? `${inviteeName} üçün otaq hazırdır`
+                    : `${inviteeName}'s room is ready`;
+                this.renderer.showMessage(message, 1800);
+                void this.loadFriendsHub().catch(() => {});
+            }
+        }
+        if (isPlayEvent && (eventName === 'play-invite:joined' || eventName === 'play_invite_joined' || eventType === 'play_invite_joined' || inviteStatus === 'joined')) {
+            const inviteId = String(normalizedInvite.id || '').trim();
+            if (inviteId) {
+                this.playInviteRoomReadyIds.delete(inviteId);
+                this.playInviteJoiningIds.delete(inviteId);
+                this.acceptedWaitingInviteIds.delete(inviteId);
+            }
+            this._lastPlayInviteUpdatePayloadSafe = safePayload;
+            if (String(normalizedInvite.invitee?.id || '').trim() === currentPlayerId) {
+                this.stopGameInviteRefresh();
+                this.gameInviteState = null;
+                this.renderer.showMessage(
+                    this.currentLang === 'az'
+                        ? 'Qoşuldunuz.'
+                        : 'Joined.',
+                    1400
+                );
+            }
+            if (String(normalizedInvite.inviter?.id || '').trim() === currentPlayerId) {
+                this.renderer.showMessage(
+                    this.currentLang === 'az'
+                        ? `${String(normalizedInvite.invitee?.displayName || 'Oyunçu').trim()} otağa qoşuldu`
+                        : `${String(normalizedInvite.invitee?.displayName || 'Player').trim()} joined the room`,
+                    1400
+                );
+                this.stopGameInviteRefresh();
+                this.gameInviteState = null;
+            }
+        }
         if (inviteStatus === 'pending' && String(normalizedInvite.invitee?.id || '').trim() === currentPlayerId) {
             this.gameInviteState = {
                 ...(this.gameInviteState || {}),
@@ -7842,39 +8433,42 @@ class DominoGame {
     }
 
     async attachGameInviteRoom(roomCode) {
-        const invite = this.gameInviteState || {};
-        const inviteePlayerId = String(invite.inviteePlayerId || '').trim();
-        const sessionId = String(invite.sessionId || '').trim();
         const room = this.getCurrentRoomSnapshot();
-        const rawRoomCode = String(roomCode || room?.roomCode || '').trim();
-        let nextRoomCode = rawRoomCode.toUpperCase();
-        if (!sessionId || !inviteePlayerId || !nextRoomCode) return null;
-        const looksLikeRoomCode = /^[A-Z0-9]{4,8}$/.test(nextRoomCode);
-        if (!looksLikeRoomCode || nextRoomCode.length > 8) {
-            const resolvedRoomCode = await this.network.resolveRoomCode(rawRoomCode).catch(() => null);
-            const normalizedResolvedCode = String(resolvedRoomCode || '').trim().toUpperCase();
-            if (normalizedResolvedCode) {
-                nextRoomCode = normalizedResolvedCode;
-            } else if (!looksLikeRoomCode) {
-                return null;
+        const roomId = String(roomCode || room?.roomId || this.network?.room?.id || '').trim();
+        const rawRoomCode = String(room?.roomCode || roomCode || '').trim().toUpperCase();
+        let currentAcceptedWaiting = this.getAcceptedWaitingPlayInvites();
+        if (!currentAcceptedWaiting.length) {
+            const invitations = await this.account.getPlayInvites().catch(() => null);
+            if (invitations) {
+                this.roomInvitations = this.mergeRoomInvitations(this.roomInvitations || { incoming: [], sent: [] }, invitations || { incoming: [], sent: [] });
+                currentAcceptedWaiting = this.getAcceptedWaitingPlayInvites();
             }
         }
+        if (!roomId || !currentAcceptedWaiting.length) {
+            return null;
+        }
+        const candidateRoomCode = /^[A-Z0-9]{4,12}$/.test(rawRoomCode)
+            ? rawRoomCode
+            : String(await this.network.resolveRoomCode(roomId).catch(() => '')).trim().toUpperCase();
+        const resolvedRoomCode = candidateRoomCode || '';
+        if (!roomId) return null;
+
+        this._duplicateLegacyInviteSuppressedCount += currentAcceptedWaiting.length;
         const payload = {
-            inviteePlayerId,
-            roomCode: nextRoomCode,
-            roomMode: String(room?.roomMode || (this.isTeamMode ? 'team' : 'ffa')).trim(),
-            stakeKey: String(room?.stakeKey || this.onlineStakeKey || 'stake_200').trim(),
-            stakeAmount: Number(room?.stakeAmount || this.onlineRoundBankAmount || 0),
-            humanSeats: Number(room?.humanSeats || this.onlinePlayerCount || 0),
-            totalPlayers: Number(room?.totalPlayers || this.onlinePlayerCount || 0),
-            isTeamMode: Boolean(room?.isTeamMode ?? this.isTeamMode),
-            note: 'invite-room-linked',
-            payloadJson: {
-                source: 'game-invite-room-linked',
-                roomCode: nextRoomCode
+            roomId,
+            roomCode: resolvedRoomCode || null,
+            inviteIds: currentAcceptedWaiting.map((item) => String(item?.id || '').trim()).filter(Boolean),
+            roomSettings: {
+                roomMode: String(room?.roomMode || (this.isTeamMode ? 'team' : 'ffa')).trim(),
+                stakeKey: String(room?.stakeKey || this.onlineStakeKey || 'stake_200').trim(),
+                stakeAmount: Number(room?.stakeAmount || this.onlineRoundBankAmount || 0),
+                humanSeats: Number(room?.humanSeats || this.onlinePlayerCount || 0),
+                totalPlayers: Number(room?.totalPlayers || this.onlinePlayerCount || 0),
+                maxPlayers: Number(room?.totalPlayers || this.onlinePlayerCount || 0),
+                isTeamMode: Boolean(room?.isTeamMode ?? this.isTeamMode)
             }
         };
-        const result = await this.sendRoomInviteWithFallback(sessionId, payload);
+        const result = await this.attachPlayInviteRoomWithFallback(payload);
         if (this.gameInviteState) {
             this.gameInviteState.roomLinked = true;
             this.gameInviteState.inviteId = String(result?.item?.id || this.gameInviteState.inviteId || '').trim();
@@ -7940,6 +8534,39 @@ class DominoGame {
                 }
                 return target;
             }
+            if (status === 'room_created') {
+                if (targetInviteId) {
+                    this.playInviteRoomReadyIds.add(targetInviteId);
+                }
+                if (!state.waitingPromptShown) {
+                    this.renderer.showMessage(
+                        this.currentLang === 'az'
+                            ? 'Otaq hazırdır. Qoşulursunuz...'
+                            : 'Room is ready. Joining...',
+                        1800
+                    );
+                    state.waitingPromptShown = true;
+                }
+                if (forceRerender) {
+                    void this.loadSocialInvitesPage().catch(() => {});
+                }
+                void this.joinPlayInviteRoom(target, { manual: false }).catch(() => {});
+                return target;
+            }
+            if (status === 'joined') {
+                if (targetInviteId) {
+                    this.playInviteRoomReadyIds.delete(targetInviteId);
+                    this.playInviteJoiningIds.delete(targetInviteId);
+                    this.acceptedWaitingInviteIds.delete(targetInviteId);
+                    this.playInviteAutoJoinAttemptedIds.delete(targetInviteId);
+                }
+                this.stopGameInviteRefresh();
+                this.gameInviteState = null;
+                if (forceRerender) {
+                    void this.loadSocialInvitesPage().catch(() => {});
+                }
+                return target;
+            }
             if (status === 'declined' || status === 'expired' || status === 'cancelled') {
                 this.stopGameInviteRefresh();
                 this.gameInviteState = null;
@@ -7965,6 +8592,57 @@ class DominoGame {
                     banner.textContent = statusMsg;
                     banner.classList.remove('is-hidden');
                 }
+                if (forceRerender) {
+                    void this.loadFriendsHub().catch(() => {});
+                }
+                return target;
+            }
+            if (status === 'room_created') {
+                const inviteeName = state.inviteeDisplayName || target.invitee?.displayName || 'Player';
+                const statusMsg = this.currentLang === 'az'
+                    ? `${inviteeName} üçün otaq hazırdır`
+                    : `${inviteeName}'s room is ready`;
+                if (!state.createPromptShown) {
+                    this.closePlayerProfileModal();
+                    this.closeSocialCenterModal();
+                    this.showStartModal('online');
+                    this.showOnlineCreateFlow('closed');
+                    this.prefillOnlineNameIfPossible();
+                    this.setHostStatus(statusMsg);
+                    state.createPromptShown = true;
+                }
+                const banner = document.getElementById('online-invite-status-banner');
+                if (banner) {
+                    banner.textContent = statusMsg;
+                    banner.classList.remove('is-hidden');
+                }
+                if (targetInviteId) {
+                    this.playInviteRoomReadyIds.delete(targetInviteId);
+                    this.acceptedWaitingInviteIds.delete(targetInviteId);
+                }
+                if (forceRerender) {
+                    void this.loadFriendsHub().catch(() => {});
+                }
+                return target;
+            }
+            if (status === 'joined') {
+                const inviteeName = state.inviteeDisplayName || target.invitee?.displayName || 'Player';
+                const statusMsg = this.currentLang === 'az'
+                    ? `${inviteeName} otağa qoşuldu`
+                    : `${inviteeName} joined the room`;
+                const banner = document.getElementById('online-invite-status-banner');
+                if (banner) {
+                    banner.textContent = statusMsg;
+                    banner.classList.remove('is-hidden');
+                }
+                if (targetInviteId) {
+                    this.playInviteRoomReadyIds.delete(targetInviteId);
+                    this.playInviteJoiningIds.delete(targetInviteId);
+                    this.acceptedWaitingInviteIds.delete(targetInviteId);
+                    this.playInviteAutoJoinAttemptedIds.delete(targetInviteId);
+                }
+                this.stopGameInviteRefresh();
+                this.gameInviteState = null;
                 if (forceRerender) {
                     void this.loadFriendsHub().catch(() => {});
                 }
@@ -8030,7 +8708,10 @@ class DominoGame {
         if (this.gameInviteState?.sessionId) return this.gameInviteState;
         const invitations = this.roomInvitations || { incoming: [], sent: [] };
         const sent = (Array.isArray(invitations.sent) ? invitations.sent : [])
-            .filter((item) => String(item?.status || '').trim() === 'accepted' && !String(item?.roomCode || '').trim())
+            .filter((item) => {
+                const status = String(item?.status || '').trim().toLowerCase();
+                return (status === 'accepted' && !String(item?.roomCode || '').trim()) || status === 'room_created';
+            })
             .sort((a, b) => new Date(b?.updatedAt || 0).getTime() - new Date(a?.updatedAt || 0).getTime())[0] || null;
         if (sent) {
             this.gameInviteState = {
@@ -8049,7 +8730,10 @@ class DominoGame {
         }
 
         const incoming = (Array.isArray(invitations.incoming) ? invitations.incoming : [])
-            .filter((item) => String(item?.status || '').trim() === 'accepted' && !String(item?.roomCode || '').trim())
+            .filter((item) => {
+                const status = String(item?.status || '').trim().toLowerCase();
+                return (status === 'accepted' && !String(item?.roomCode || '').trim()) || status === 'room_created';
+            })
             .sort((a, b) => new Date(b?.updatedAt || 0).getTime() - new Date(a?.updatedAt || 0).getTime())[0] || null;
         if (incoming) {
             this.gameInviteState = {
@@ -10315,8 +10999,14 @@ class DominoGame {
         document.getElementById('online-invite-status-banner')?.classList.add('is-hidden');
         if (this.gameInviteState) {
             const inviteId = this.gameInviteState.inviteId;
+            const inviteRecord = (Array.isArray(this.roomInvitations?.items) ? this.roomInvitations.items : [])
+                .find((item) => String(item?.id || '').trim() === String(inviteId || '').trim()) || null;
             if (inviteId && this.gameInviteState.role === 'inviter') {
-                void this.cancelRoomInviteWithFallback(inviteId).catch(() => {});
+                if (inviteRecord && this.isPlayInviteRecord(inviteRecord)) {
+                    void this.cancelPlayInviteWithFallback(inviteId).catch(() => {});
+                } else {
+                    void this.cancelRoomInviteWithFallback(inviteId).catch(() => {});
+                }
             }
             this.stopGameInviteRefresh();
             this.gameInviteState = null;
