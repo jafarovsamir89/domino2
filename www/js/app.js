@@ -200,6 +200,12 @@ class DominoGame {
         this.onlineCoinSummary = { spent: 0, won: 0 };
         this.currentRoomState = null;
         this.seatSelectionUi = null;
+        this._lastRoomCreateVisibility = null;
+        this._lastRoomCreateMode = null;
+        this._lastRoomCreateRequiresSeatPicker = false;
+        this._lastSeatPickerOpenAttemptAt = 0;
+        this._lastSeatPickerOpenSource = '';
+        this._lastSeatPickerOpenSkippedReason = '';
         this.pendingReconnectResolution = false;
         this.openRooms = [];
         this.socialCenterTab = 'friends';
@@ -1430,6 +1436,14 @@ class DominoGame {
                 lastPlayInviteEventAt: Number(this._lastPlayInviteEventAt || 0) || 0,
                 renderState: this._roomInvitationsRenderState || null,
                 socialInviteTrace: this._socialInviteTrace || null
+            },
+            seatPicker: {
+                lastRoomCreateVisibility: String(this._lastRoomCreateVisibility || '').trim() || null,
+                lastRoomCreateMode: String(this._lastRoomCreateMode || '').trim() || null,
+                lastRoomCreateRequiresSeatPicker: Boolean(this._lastRoomCreateRequiresSeatPicker),
+                lastSeatPickerOpenAttemptAt: Number(this._lastSeatPickerOpenAttemptAt || 0) || 0,
+                lastSeatPickerOpenSource: String(this._lastSeatPickerOpenSource || '').trim() || null,
+                lastSeatPickerOpenSkippedReason: String(this._lastSeatPickerOpenSkippedReason || '').trim() || null
             },
             playInvite: {
                 rawPlayInviteIncomingCount: playInviteCounts.rawIncoming,
@@ -9713,6 +9727,73 @@ class DominoGame {
         document.body.classList.remove('seat-selection-active');
     }
 
+    isSeatSelectionUiVisible() {
+        const overlay = document.getElementById('seat-selection-overlay');
+        return Boolean(
+            (overlay && !overlay.classList.contains('is-hidden'))
+            || document.body?.classList.contains('seat-selection-active')
+        );
+    }
+
+    getSeatPickerDecision(roomSettings = {}, roomState = {}, { includeOpenCheck = true } = {}) {
+        const state = roomState || {};
+        const settings = roomSettings || {};
+        const roomVisibility = String(settings.roomVisibility || state.roomVisibility || this.onlineRoomVisibility || '').trim().toLowerCase();
+        const roomMode = String(settings.roomMode || state.roomMode || '').trim().toLowerCase();
+        const isTeamMode = Boolean(settings.isTeamMode ?? state.isTeamMode ?? this.isTeamMode);
+        const totalPlayers = Number(
+            settings.totalPlayers
+            || state.totalPlayers
+            || settings.humanSeats
+            || state.humanSeats
+            || this.onlinePlayerCount
+            || this.playerCount
+            || 0
+        );
+        const requiresSeatPicker = Boolean(
+            (state.seatSelectionRequired ?? (totalPlayers > 2))
+            && (isTeamMode || roomMode === 'team' || roomMode === 'partnership')
+        );
+        const roomReady = Boolean(state && !state.gameActive && !state.gameOverReason && !state.matchOver);
+        const seatPickerOpen = includeOpenCheck ? this.isSeatSelectionUiVisible() : false;
+        let skippedReason = '';
+        if (!this.network?.isMultiplayer) {
+            skippedReason = 'not-multiplayer';
+        } else if (!state || (!state.roomId && !state.roomCode && !settings.roomId && !settings.roomCode)) {
+            skippedReason = 'missing-room-state';
+        } else if (!roomReady) {
+            skippedReason = 'room-not-ready';
+        } else if (!requiresSeatPicker) {
+            skippedReason = 'not-2v2';
+        } else if (includeOpenCheck && seatPickerOpen) {
+            skippedReason = 'already-open';
+        }
+        return {
+            roomVisibility,
+            roomMode: roomMode || (isTeamMode ? 'team' : 'ffa'),
+            requiresSeatPicker,
+            roomReady,
+            seatPickerOpen,
+            shouldOpen: Boolean(this.network?.isMultiplayer && roomReady && requiresSeatPicker && (!includeOpenCheck || !seatPickerOpen)),
+            skippedReason
+        };
+    }
+
+    shouldOpenSeatPickerAfterRoomCreate(roomSettings = {}, roomState = {}) {
+        const decision = this.getSeatPickerDecision(roomSettings, roomState, { includeOpenCheck: true });
+        this._lastRoomCreateVisibility = decision.roomVisibility || null;
+        this._lastRoomCreateMode = decision.roomMode || null;
+        this._lastRoomCreateRequiresSeatPicker = Boolean(decision.requiresSeatPicker);
+        this._lastSeatPickerOpenAttemptAt = Date.now();
+        this._lastSeatPickerOpenSource = 'room-create';
+        this._lastSeatPickerOpenSkippedReason = decision.shouldOpen ? '' : decision.skippedReason;
+        return decision.shouldOpen;
+    }
+
+    roomRequiresSeatPicker(roomSettings = {}, roomState = {}) {
+        return this.getSeatPickerDecision(roomSettings, roomState, { includeOpenCheck: false }).requiresSeatPicker;
+    }
+
     getSeatOppositeNumber(seatNumber, totalSeats) {
         const normalizedSeat = Number(seatNumber);
         const normalizedTotal = Number(totalSeats || 0);
@@ -11650,7 +11731,15 @@ class DominoGame {
             this.setJoinStatus(statusText);
         }
 
-        if (this.network?.isMultiplayer && roomState.roomVisibility === 'open' && !this.gameActive && !roomState.gameActive && roomState.seatSelectionRequired === true && !roomState.gameOverReason && !roomState.matchOver) {
+        if (this.shouldOpenSeatPickerAfterRoomCreate({
+            roomVisibility: roomState?.roomVisibility || this.onlineRoomVisibility,
+            roomMode: roomState?.roomMode || (roomState?.isTeamMode ? 'team' : 'ffa'),
+            totalPlayers: roomState?.totalPlayers || roomState?.humanSeats || this.onlinePlayerCount,
+            humanSeats: roomState?.humanSeats || this.onlinePlayerCount,
+            isTeamMode: Boolean(roomState?.isTeamMode ?? this.isTeamMode),
+            roomId: roomState?.roomId,
+            roomCode: roomState?.roomCode
+        }, roomState)) {
             this.enterOpenRoomWaitingScreen(roomState);
         }
 
@@ -12979,7 +13068,8 @@ class DominoGame {
         this.renderer.renderInfo(this.matchRound, this.deal, this.boneyard.length, this.board.getOpenEndsScore(), this.getCurrentStakeLabel());
         const waitingOpenRoom = this.network.isMultiplayer
             && !this.gameActive
-            && this.currentRoomState?.roomVisibility === 'open';
+            && !this.currentRoomState?.gameActive
+            && this.roomRequiresSeatPicker(this.currentRoomState, this.currentRoomState);
         const roundInfo = document.getElementById('round-info');
         const boneyardInfo = document.getElementById('boneyard-info');
         if (roundInfo) {
@@ -13616,7 +13706,8 @@ class DominoGame {
 
         const waitingOpenRoom = this.network.isMultiplayer
             && !this.gameActive
-            && this.currentRoomState?.roomVisibility === 'open';
+            && !this.currentRoomState?.gameActive
+            && this.roomRequiresSeatPicker(this.currentRoomState, this.currentRoomState);
         const canPlay = this.board.canPlayAny(this.normalizeHandForBoard(myHand));
         const emptyBoneyard = this.boneyard.length === 0;
         this.renderer.drawBtn.disabled = waitingOpenRoom || !myTurn || canPlay || emptyBoneyard || this.postMoveWindowActive || this.turnInProgress;
