@@ -266,6 +266,11 @@ class DominoGame {
         this._lastPlayInviteRoomReadyPayloadSafe = null;
         this._lastPlayInviteAutoJoinAttemptAt = 0;
         this._lastPlayInviteAutoJoinError = '';
+        this._lastPlayInviteCancelAttemptAt = 0;
+        this._lastPlayInviteCancelSource = 'unknown';
+        this._lastPlayInviteCancelPayloadSafe = null;
+        this._lastPlayInviteCancelResultSafe = null;
+        this._lastPlayInviteCancelError = '';
         this._duplicateLegacyInviteSuppressedCount = 0;
         this.acceptingInviteIds = new Set();
         this.decliningInviteIds = new Set();
@@ -1235,6 +1240,21 @@ class DominoGame {
         this._lastPlayInviteReceivedPayloadSafe = null;
         this._lastPlayInviteUpdateAt = 0;
         this._lastPlayInviteUpdatePayloadSafe = null;
+        this._lastPlayInviteAcceptedAt = 0;
+        this._lastPlayInviteAcceptedPayloadSafe = null;
+        this._lastPlayInviteRoomAttachAttemptAt = 0;
+        this._lastPlayInviteRoomAttachPayloadSafe = null;
+        this._lastPlayInviteRoomAttachResultSafe = null;
+        this._lastPlayInviteRoomAttachError = '';
+        this._lastPlayInviteRoomReadyAt = 0;
+        this._lastPlayInviteRoomReadyPayloadSafe = null;
+        this._lastPlayInviteAutoJoinAttemptAt = 0;
+        this._lastPlayInviteAutoJoinError = '';
+        this._lastPlayInviteCancelAttemptAt = 0;
+        this._lastPlayInviteCancelSource = 'unknown';
+        this._lastPlayInviteCancelPayloadSafe = null;
+        this._lastPlayInviteCancelResultSafe = null;
+        this._lastPlayInviteCancelError = '';
         this._roomInvitationsRenderState = null;
         this._socialInviteTrace = null;
         this._roomInvitationsLastLoadedAt = 0;
@@ -1404,6 +1424,11 @@ class DominoGame {
                 lastPlayInviteRoomReadyPayloadSafe: this._lastPlayInviteRoomReadyPayloadSafe || null,
                 lastPlayInviteAutoJoinAttemptAt: Number(this._lastPlayInviteAutoJoinAttemptAt || 0) || 0,
                 lastPlayInviteAutoJoinError: String(this._lastPlayInviteAutoJoinError || '').trim(),
+                lastPlayInviteCancelAttemptAt: Number(this._lastPlayInviteCancelAttemptAt || 0) || 0,
+                lastPlayInviteCancelSource: String(this._lastPlayInviteCancelSource || 'unknown').trim() || 'unknown',
+                lastPlayInviteCancelPayloadSafe: this._lastPlayInviteCancelPayloadSafe || null,
+                lastPlayInviteCancelResultSafe: this._lastPlayInviteCancelResultSafe || null,
+                lastPlayInviteCancelError: String(this._lastPlayInviteCancelError || '').trim(),
                 expiredHiddenCount: Number(playInviteCounts.expiredHiddenCount || 0) || 0,
                 cancelledHiddenCount: Number(playInviteCounts.cancelledHiddenCount || 0) || 0,
                 declinedHiddenCount: Number(playInviteCounts.declinedHiddenCount || 0) || 0,
@@ -1791,6 +1816,34 @@ class DominoGame {
             ...this._lastPlayInviteSendPayloadSafe,
             error: message
         });
+        this.renderSocialDebugPanel();
+    }
+
+    recordPlayInviteCancelAttempt(payload = {}, source = 'unknown') {
+        this._lastPlayInviteCancelAttemptAt = Date.now();
+        this._lastPlayInviteCancelSource = String(source || 'unknown').trim() || 'unknown';
+        this._lastPlayInviteCancelPayloadSafe = this.buildInviteDebugPayloadSafe(payload);
+        this._lastPlayInviteCancelResultSafe = null;
+        this._lastPlayInviteCancelError = '';
+        this.renderSocialDebugPanel();
+    }
+
+    recordPlayInviteCancelResult(result = {}) {
+        this._lastPlayInviteCancelResultSafe = {
+            ok: result?.ok === false ? false : true,
+            ...this.buildInviteDebugPayloadSafe(result?.item || result?.invite || result || {})
+        };
+        this._lastPlayInviteCancelError = '';
+        this.renderSocialDebugPanel();
+    }
+
+    recordPlayInviteCancelError(error, payload = {}, source = 'unknown') {
+        const message = String(error?.message || error || this.t('friends-load-failed')).trim();
+        this._lastPlayInviteCancelAttemptAt = this._lastPlayInviteCancelAttemptAt || Date.now();
+        this._lastPlayInviteCancelSource = String(source || 'unknown').trim() || 'unknown';
+        this._lastPlayInviteCancelPayloadSafe = this._lastPlayInviteCancelPayloadSafe || this.buildInviteDebugPayloadSafe(payload);
+        this._lastPlayInviteCancelResultSafe = null;
+        this._lastPlayInviteCancelError = message;
         this.renderSocialDebugPanel();
     }
 
@@ -2681,21 +2734,33 @@ class DominoGame {
         return this.account.declinePlayInvite(cleanId);
     }
 
-    async cancelPlayInviteWithFallback(inviteId) {
+    async cancelPlayInviteWithFallback(inviteId, source = 'unknown') {
         const cleanId = String(inviteId || '').trim();
         if (!cleanId) return null;
+        const requestPayload = { inviteId: cleanId, source: String(source || 'unknown').trim() || 'unknown' };
+        this.recordPlayInviteCancelAttempt(requestPayload, source);
         const socketResponse = await this.sendSocialPlayInviteCancel(cleanId).catch(() => null);
         if (socketResponse?.ok === false) {
+            this.recordPlayInviteCancelError(new Error(socketResponse.error || this.t('friends-load-failed')), requestPayload, source);
             return socketResponse;
         }
         if (socketResponse?.item || socketResponse?.invite) {
-            return {
+            const result = {
                 ok: true,
                 item: socketResponse.item || socketResponse.invite,
                 live: true
             };
+            this.recordPlayInviteCancelResult(result);
+            return result;
         }
-        return this.account.cancelPlayInvite(cleanId);
+        try {
+            const result = await this.account.cancelPlayInvite(cleanId);
+            this.recordPlayInviteCancelResult(result || {});
+            return result;
+        } catch (error) {
+            this.recordPlayInviteCancelError(error, requestPayload, source);
+            throw error;
+        }
     }
 
     async attachPlayInviteRoomWithFallback(payload = {}) {
@@ -6687,13 +6752,20 @@ class DominoGame {
                         const originalText = declineBtn.textContent;
                         declineBtn.textContent = this.currentLang === 'az' ? 'Rədd edilir...' : 'Declining...';
                         try {
+                            this.recordPlayInviteCancelAttempt({ inviteId, source: 'invitee-decline-button' }, 'invitee-decline-button');
                             const declined = await this.declinePlayInviteWithFallback(inviteId);
                             if (declined?.ok === false) {
                                 throw new Error(declined?.error || declined?.reason || this.t('friends-load-failed'));
                             }
+                            this.recordPlayInviteCancelResult({
+                                ok: true,
+                                item: declined?.item || declined?.invite || invite,
+                                live: Boolean(declined?.live)
+                            });
                             await this.loadSocialInvitesPage();
                         } catch (err) {
                             this._lastPlayInviteError = String(err?.message || err || '').trim();
+                            this.recordPlayInviteCancelError(err, { inviteId, source: 'invitee-decline-button' }, 'invitee-decline-button');
                             this.renderer.showMessage(this._lastPlayInviteError || this.t('friends-load-failed'), 1800);
                         } finally {
                             this.decliningInviteIds.delete(inviteId);
@@ -6713,7 +6785,7 @@ class DominoGame {
                         const originalText = cancelBtn.textContent;
                         cancelBtn.textContent = this.currentLang === 'az' ? 'Ləğv edilir...' : 'Canceling...';
                         try {
-                            const cancelled = await this.cancelPlayInviteWithFallback(inviteId);
+                            const cancelled = await this.cancelPlayInviteWithFallback(inviteId, 'invitee-leave-waiting-button');
                             if (cancelled?.ok === false) {
                                 throw new Error(cancelled?.error || cancelled?.reason || this.t('friends-load-failed'));
                             }
@@ -6775,7 +6847,7 @@ class DominoGame {
                         const originalText = cancelBtn.textContent;
                         cancelBtn.textContent = '...';
                         try {
-                            await this.cancelPlayInviteWithFallback(inviteId);
+                            await this.cancelPlayInviteWithFallback(inviteId, 'inviter-cancel-button');
                             await this.loadSocialInvitesPage();
                             this.renderer.showMessage(this.t('invite-cancelled'), 1400);
                         } catch (err) {
@@ -6797,7 +6869,7 @@ class DominoGame {
                         const originalText = cancelBtn.textContent;
                         cancelBtn.textContent = this.currentLang === 'az' ? 'Ləğv edilir...' : 'Canceling...';
                         try {
-                            const cancelled = await this.cancelPlayInviteWithFallback(inviteId);
+                            const cancelled = await this.cancelPlayInviteWithFallback(inviteId, 'inviter-cancel-button');
                             if (cancelled?.ok === false) {
                                 throw new Error(cancelled?.error || cancelled?.reason || this.t('friends-load-failed'));
                             }
@@ -10848,7 +10920,7 @@ class DominoGame {
                             const originalText = cancelBtn.textContent;
                             cancelBtn.textContent = '...';
                             try {
-                                const cancelled = await this.cancelPlayInviteWithFallback(outgoingInvite?.id || '');
+                                const cancelled = await this.cancelPlayInviteWithFallback(outgoingInvite?.id || '', 'inviter-cancel-button');
                                 if (cancelled?.ok === false) {
                                     throw new Error(cancelled?.error || cancelled?.reason || this.t('account-server-unavailable'));
                                 }
@@ -11115,16 +11187,6 @@ class DominoGame {
 
         document.getElementById('online-invite-status-banner')?.classList.add('is-hidden');
         if (this.gameInviteState) {
-            const inviteId = this.gameInviteState.inviteId;
-            const inviteRecord = (Array.isArray(this.roomInvitations?.items) ? this.roomInvitations.items : [])
-                .find((item) => String(item?.id || '').trim() === String(inviteId || '').trim()) || null;
-            if (inviteId && this.gameInviteState.role === 'inviter') {
-                if (inviteRecord && this.isPlayInviteRecord(inviteRecord)) {
-                    void this.cancelPlayInviteWithFallback(inviteId).catch(() => {});
-                } else {
-                    void this.cancelRoomInviteWithFallback(inviteId).catch(() => {});
-                }
-            }
             this.stopGameInviteRefresh();
             this.gameInviteState = null;
         }
