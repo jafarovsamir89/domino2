@@ -10515,6 +10515,7 @@ class DominoGame {
         closeBtn.addEventListener('click', (event) => {
             event.preventDefault();
             event.stopPropagation();
+            event.stopImmediatePropagation();
             void this.handleSeatSelectionClose('seat-picker-close');
         });
         headCopy.appendChild(kicker);
