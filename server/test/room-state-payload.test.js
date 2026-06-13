@@ -133,6 +133,21 @@ test("buildRoomStatePayload preserves room_state fields and currentPlayers logic
             { sessionId: "s1", index: 0, name: "Host", userId: "", playerId: "", avatarUrl: "", isConnected: true, isBot: false, seatIndex: 0, seatNumber: 1, team: 0, voiceEnabled: false },
             { sessionId: "s2", index: 1, name: "Guest", userId: "", playerId: "", avatarUrl: "", isConnected: true, isBot: false, seatIndex: 1, seatNumber: 2, team: 1, voiceEnabled: false }
         ],
+        roomStart: {
+            roomMode: "team",
+            isTeamMode: true,
+            maxPlayers: 4,
+            occupiedSeats: 2,
+            humanCount: 2,
+            botCount: 0,
+            readyPlayersCount: 2,
+            botsReadyCount: 0,
+            pendingInvitesCount: 0,
+            joinedInviteCount: 0,
+            lastAutoStartCheckAt: 0,
+            lastAutoStartBlockedReason: null,
+            lastAutoStartTriggeredAt: 0
+        },
         teamScores: [0, 0],
         teamRoundWins: [0, 0],
         teams: [
