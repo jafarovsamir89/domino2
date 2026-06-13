@@ -505,7 +505,7 @@ test("acceptRoomInvitation returns room_not_available for expired invites and ma
   const service = new SocialService(prismaMock, {} as any);
   (service as any).getCurrentPlayer = async () => invitee;
 
-  const result = await service.acceptRoomInvitation({} as any, invite.id);
+  const result: any = await service.acceptRoomInvitation({} as any, invite.id);
   assert.equal(expiredMarked, true);
   assert.equal(invite.status, "expired");
   assert.equal(result.ok, false);
@@ -545,19 +545,72 @@ test("acceptRoomInvitation returns join payload when roomCode is available", asy
         ...data,
         status: data.status
       })
+    },
+    coinWallet: {
+      findUnique: async () => ({ balance: 1_000 })
     }
   } as any;
 
   const service = new SocialService(prismaMock, {} as any);
   (service as any).getCurrentPlayer = async () => invitee;
 
-  const result = await service.acceptRoomInvitation({} as any, invite.id);
+  const result: any = await service.acceptRoomInvitation({} as any, invite.id);
   assert.equal(result.ok, true);
   const join = result.join as any;
   assert.ok(join);
   assert.equal(join.roomCode, "ABCD");
   assert.equal(join.roomId, "room-join-1");
   assert.equal(join.roomMode, "team");
+  assert.equal(join.stakeAmount, 100);
+});
+
+test("acceptRoomInvitation blocks invitees without enough coins", async () => {
+  const invitee = makePlayer("player-b", "Beta");
+  const inviter = makePlayer("player-a", "Alpha");
+  let updateCalled = false;
+  const invite = {
+    id: "invite-join-insufficient",
+    roomId: "room-join-2",
+    roomCode: "WXYZ",
+    roomMode: "team",
+    stakeKey: "stake_500",
+    stakeAmount: 500,
+    humanSeats: 4,
+    totalPlayers: 4,
+    isTeamMode: true,
+    status: "pending",
+    note: null,
+    createdAt: new Date("2024-01-01T00:00:00.000Z"),
+    updatedAt: new Date("2024-01-01T00:00:00.000Z"),
+    respondedAt: null,
+    expiresAt: new Date(Date.now() + 60_000),
+    inviterPlayerId: inviter.id,
+    inviteePlayerId: invitee.id,
+    inviter,
+    invitee
+  };
+
+  const prismaMock = {
+    roomInvitation: {
+      findUnique: async () => invite,
+      update: async () => {
+        updateCalled = true;
+        return invite;
+      }
+    },
+    coinWallet: {
+      findUnique: async () => ({ balance: 100 })
+    }
+  } as any;
+
+  const service = new SocialService(prismaMock, {} as any);
+  (service as any).getCurrentPlayer = async () => invitee;
+
+  const result: any = await service.acceptRoomInvitation({} as any, invite.id);
+  assert.equal(result.ok, false);
+  assert.equal(result.reason, "insufficient_coins");
+  assert.equal(result.requiredStake, 500);
+  assert.equal(updateCalled, false);
 });
 
 test("getRoomInvitations returns incoming and sent invites separately", async () => {
@@ -1027,7 +1080,7 @@ test("acceptPlayInvite changes status to accepted", async () => {
   const service = new SocialService(prismaMock, {} as any);
   (service as any).getCurrentPlayer = async () => invitee;
 
-  const accepted = await service.acceptPlayInvite({} as any, invite.id);
+  const accepted: any = await service.acceptPlayInvite({} as any, invite.id);
   assert.ok(accepted.item);
   assert.equal(accepted.item!.status, "accepted");
   assert.equal(updates[0].status, "accepted");
@@ -1074,13 +1127,64 @@ test("acceptPlayInvite preserves room context for room-bound invites", async () 
   const service = new SocialService(prismaMock, {} as any);
   (service as any).getCurrentPlayer = async () => invitee;
 
-  const accepted = await service.acceptPlayInvite({} as any, invite.id);
+  const accepted: any = await service.acceptPlayInvite({} as any, invite.id);
   assert.ok(accepted.item);
   assert.equal(accepted.item!.status, "accepted");
   assert.equal(accepted.item!.roomId, "room-456");
   assert.equal(accepted.item!.roomCode, "WXYZ");
   assert.equal(updates[0].roomId, "room-456");
   assert.equal(updates[0].roomCode, "WXYZ");
+});
+
+test("acceptPlayInvite blocks invitees without enough coins for room-bound play invites", async () => {
+  const inviter = makePlayer("player-a", "Alpha");
+  const invitee = makePlayer("player-b", "Beta");
+  let updateCalled = false;
+  const invite = {
+    id: "play-invite-insufficient",
+    roomId: "room-123",
+    roomCode: "ABCD",
+    status: "pending",
+    note: null,
+    payloadJson: {
+      roomContext: {
+        roomId: "room-123",
+        roomCode: "abcd",
+        stakeKey: "stake_500",
+        stakeAmount: 500
+      }
+    },
+    createdAt: new Date("2024-01-03T00:00:00.000Z"),
+    updatedAt: new Date("2024-01-03T00:00:00.000Z"),
+    respondedAt: null,
+    expiresAt: new Date(Date.now() + 60_000),
+    inviterPlayerId: inviter.id,
+    inviteePlayerId: invitee.id,
+    inviter,
+    invitee
+  };
+
+  const prismaMock = {
+    playInvite: {
+      findUnique: async () => invite,
+      update: async () => {
+        updateCalled = true;
+        return invite;
+      }
+    },
+    coinWallet: {
+      findUnique: async () => ({ balance: 100 })
+    }
+  } as any;
+
+  const service = new SocialService(prismaMock, {} as any);
+  (service as any).getCurrentPlayer = async () => invitee;
+
+  const accepted: any = await service.acceptPlayInvite({} as any, invite.id);
+  assert.equal(accepted.ok, false);
+  assert.equal(accepted.reason, "insufficient_coins");
+  assert.equal(accepted.requiredStake, 500);
+  assert.equal(updateCalled, false);
 });
 
 test("declinePlayInvite changes status to declined", async () => {

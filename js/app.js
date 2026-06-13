@@ -231,8 +231,26 @@ class DominoGame {
         this._lastHintClickAt = 0;
         this._lastHintClickSide = '';
         this._lastHintClickStoppedPropagation = false;
+        this._lastProfileOpenAt = 0;
+        this._lastProfileCloseAt = 0;
+        this._lastProfileCloseAction = '';
+        this._lastProfileCloseTouchedGameState = false;
+        this._lastProfileCloseError = '';
         this._lastProfileOpenAttemptAt = 0;
         this._lastProfileOpenBlockedByMoveHint = false;
+        this._lastTeamHudRenderAt = 0;
+        this._lastTeamHudRenderSource = '';
+        this._lastTeamHudTeamsSafe = [];
+        this._lastTeamAHudNames = [];
+        this._lastTeamBHudNames = [];
+        this._lastJoinStakeRequired = 0;
+        this._lastJoinBalance = 0;
+        this._lastJoinBlockedByCoins = false;
+        this._lastJoinBlockedAt = 0;
+        this._lastJoinBlockedRoomId = '';
+        this._lastJoinBlockedInviteId = '';
+        this._lastInsufficientCoinsModalShownAt = 0;
+        this.insufficientCoinsPrevScreen = '';
         this._resolvedRoomModeFromState = '';
         this._resolvedScoreMode = '';
         this._resolvedTopHudMode = '';
@@ -617,7 +635,17 @@ class DominoGame {
         if (leaderboardModalClose) leaderboardModalClose.addEventListener('click', () => this.closeLeaderboardModal());
         if (friendsModalClose) friendsModalClose.addEventListener('click', () => this.closeFriendsModal());
         const playerProfileModalClose = document.getElementById('player-profile-modal-close');
-        if (playerProfileModalClose) playerProfileModalClose.addEventListener('click', () => this.closePlayerProfileModal());
+        const playerProfileModal = document.getElementById('player-profile-modal');
+        if (playerProfileModal && playerProfileModal.dataset.bound !== '1') {
+            playerProfileModal.dataset.bound = '1';
+            playerProfileModal.addEventListener('click', (event) => event.stopPropagation());
+            playerProfileModal.querySelector('.modal-card')?.addEventListener('click', (event) => event.stopPropagation());
+        }
+        if (playerProfileModalClose) playerProfileModalClose.addEventListener('click', (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            this.closePlayerProfileModal();
+        });
         if (landingGoogleBtn) landingGoogleBtn.addEventListener('click', () => this.startGoogleAccountSignIn());
         if (landingAppleBtn) landingAppleBtn.addEventListener('click', () => this.startAppleAccountSignIn());
         if (resumeSessionBtn) resumeSessionBtn.addEventListener('click', async () => {
@@ -1223,8 +1251,17 @@ class DominoGame {
     }
 
     closePlayerProfileModal() {
-        document.getElementById('player-profile-modal')?.classList.remove('active');
-        this.playerProfileState = null;
+        this._lastProfileCloseAt = Date.now();
+        this._lastProfileCloseAction = 'close-button';
+        this._lastProfileCloseTouchedGameState = false;
+        this._lastProfileCloseError = '';
+        try {
+            document.getElementById('player-profile-modal')?.classList.remove('active');
+            this.playerProfileState = null;
+        } catch (error) {
+            this._lastProfileCloseError = String(error?.message || error || '').trim();
+            throw error;
+        }
     }
 
     async openPlayerProfileModal(playerRef) {
@@ -1238,6 +1275,7 @@ class DominoGame {
         const playerId = this.resolvePlayerProfileId(playerRef);
         const modal = document.getElementById('player-profile-modal');
         if (!modal || !playerId) return;
+        this._lastProfileOpenAt = Date.now();
 
         this.closeSocialCenterModal();
         this.closeStartModals();
@@ -1570,11 +1608,11 @@ class DominoGame {
                 lastSeatPickerCloseStartedGame: Boolean(this._lastSeatPickerCloseStartedGame),
                 lastSeatPickerCloseError: String(this._lastSeatPickerCloseError || '').trim() || null
             },
-            moveHints: {
-                active: this.isMoveHintSelectionActive(),
-                lastShownAt: Number(this._lastMoveHintShownAt || 0) || 0,
-                lastClearedAt: Number(this._lastMoveHintClearedAt || 0) || 0,
-                lastLeftHintRectSafe: this._lastLeftHintRectSafe || null,
+                moveHints: {
+                    active: this.isMoveHintSelectionActive(),
+                    lastShownAt: Number(this._lastMoveHintShownAt || 0) || 0,
+                    lastClearedAt: Number(this._lastMoveHintClearedAt || 0) || 0,
+                    lastLeftHintRectSafe: this._lastLeftHintRectSafe || null,
                 lastRightHintRectSafe: this._lastRightHintRectSafe || null,
                 lastProfileClickBlockedAt: Number(this._lastProfileClickBlockedAt || 0) || 0,
                 lastProfileClickBlockedReason: String(this._lastProfileClickBlockedReason || '').trim() || null,
@@ -1583,8 +1621,23 @@ class DominoGame {
                 lastHintClickStoppedPropagation: Boolean(this._lastHintClickStoppedPropagation)
             },
             profile: {
+                lastProfileOpenAt: Number(this._lastProfileOpenAt || 0) || 0,
+                lastProfileCloseAt: Number(this._lastProfileCloseAt || 0) || 0,
+                lastProfileCloseAction: String(this._lastProfileCloseAction || '').trim() || null,
+                lastProfileCloseTouchedGameState: Boolean(this._lastProfileCloseTouchedGameState),
+                lastProfileCloseError: String(this._lastProfileCloseError || '').trim() || null,
                 lastProfileOpenAttemptAt: Number(this._lastProfileOpenAttemptAt || 0) || 0,
                 lastProfileOpenBlockedByMoveHint: Boolean(this._lastProfileOpenBlockedByMoveHint)
+            },
+            teamHud: {
+                topHudMode: String(this._resolvedTopHudMode || resolvedRoomMode.topHudMode || (this.isTeamMode ? 'team' : 'solo')).trim() || null,
+                teamHudTeamsSafe: this._lastTeamHudTeamsSafe || [],
+                teamAHudNames: Array.isArray(this._lastTeamAHudNames) ? this._lastTeamAHudNames.slice(0, 6) : [],
+                teamBHudNames: Array.isArray(this._lastTeamBHudNames) ? this._lastTeamBHudNames.slice(0, 6) : [],
+                isTeamModeFromState: typeof this._lastRoomStateIsTeamMode === 'boolean' ? this._lastRoomStateIsTeamMode : null,
+                roomModeFromState: String(this._lastRoomStateRoomMode || resolvedRoomMode.roomModeFromState || '').trim() || null,
+                lastTeamHudRenderAt: Number(this._lastTeamHudRenderAt || 0) || 0,
+                lastTeamHudRenderSource: String(this._lastTeamHudRenderSource || '').trim() || null
             },
             seatPicker: {
                 lastRoomCreateVisibility: String(this._lastRoomCreateVisibility || '').trim() || null,
@@ -1636,6 +1689,15 @@ class DominoGame {
                 cancelledHiddenCount: Number(playInviteCounts.cancelledHiddenCount || 0) || 0,
                 declinedHiddenCount: Number(playInviteCounts.declinedHiddenCount || 0) || 0,
                 duplicateLegacyInviteSuppressedCount: Number(this._duplicateLegacyInviteSuppressedCount || 0) || 0
+            },
+            walletGate: {
+                lastJoinStakeRequired: Number(this._lastJoinStakeRequired || 0) || 0,
+                lastJoinBalance: Number(this._lastJoinBalance || 0) || 0,
+                lastJoinBlockedByCoins: Boolean(this._lastJoinBlockedByCoins),
+                lastJoinBlockedAt: Number(this._lastJoinBlockedAt || 0) || 0,
+                lastJoinBlockedRoomId: String(this._lastJoinBlockedRoomId || '').trim() || null,
+                lastJoinBlockedInviteId: String(this._lastJoinBlockedInviteId || '').trim() || null,
+                lastInsufficientCoinsModalShownAt: Number(this._lastInsufficientCoinsModalShownAt || 0) || 0
             },
             badge: {
                 serverSummaryUnread,
@@ -2033,6 +2095,7 @@ class DominoGame {
             inviterPlayerId: String(sourcePayload?.inviter?.id || '').trim() || null,
             status: String(sourcePayload?.status || sourcePayload?.type || '').trim() || null,
             roomMode: String(sourcePayload?.roomMode || '').trim() || null,
+            stakeAmount: Number.isFinite(Number(sourcePayload?.stakeAmount)) ? Number(sourcePayload.stakeAmount) : null,
             inviteIdsCount: inviteIds.length,
             roomSettings: roomSettings ? {
                 roomMode: String(roomSettings.roomMode || '').trim() || null,
@@ -2050,6 +2113,7 @@ class DominoGame {
                 roomCode: String(roomContext.roomCode || '').trim() || null,
                 roomMode: String(roomContext.roomMode || '').trim() || null,
                 roomVisibility: String(roomContext.roomVisibility || '').trim() || null,
+                stakeAmount: Number.isFinite(Number(roomContext.stakeAmount)) ? Number(roomContext.stakeAmount) : null,
                 targetSlotIndex: Number.isInteger(Number(roomContext.targetSlotIndex)) ? Number(roomContext.targetSlotIndex) : null,
                 openSeatPickerOnJoin: typeof roomContext.openSeatPickerOnJoin === 'boolean' ? roomContext.openSeatPickerOnJoin : null,
                 inviterPlayerId: String(roomContext.inviterPlayerId || '').trim() || null,
@@ -2332,12 +2396,250 @@ class DominoGame {
             roomCode: String(snapshot.roomCode || '').trim() || null,
             roomMode,
             roomVisibility: String(snapshot.roomVisibility || '').trim() || null,
+            stakeKey: String(snapshot.stakeKey || this.onlineStakeKey || '').trim() || null,
+            stakeAmount: Number.isFinite(Number(snapshot.stakeAmount)) ? Math.max(0, Number(snapshot.stakeAmount)) : 0,
+            humanSeats: Number(snapshot.humanSeats || this.onlinePlayerCount || 0),
+            totalPlayers: Number(snapshot.totalPlayers || this.onlinePlayerCount || 0),
             targetSlotIndex: normalizedTargetSlotIndex,
             openSeatPickerOnJoin: normalizedOpenSeatPicker,
             inviterPlayerId: inviterPlayerId || null,
             inviteePlayerId: null,
             source: String(source || 'room-context').trim() || 'room-context'
         };
+    }
+
+    getRoomTeamHudState(roomState = this.currentRoomState) {
+        const state = roomState || {};
+        const players = Array.isArray(state.players) ? state.players : [];
+        const teamSources = Array.isArray(state.teams) && state.teams.length ? state.teams : [
+            { index: 0, name: 'Team A', memberSessionIds: [], memberPlayerIds: [] },
+            { index: 1, name: 'Team B', memberSessionIds: [], memberPlayerIds: [] }
+        ];
+        const readName = (player, fallback = '') => {
+            const raw = String(player?.displayName || player?.name || player?.title || '').trim();
+            if (raw) return raw;
+            if (player?.isBot) return this.t('seat-bot') || 'Bot';
+            return fallback || this.t('seat-free') || 'Empty';
+        };
+        const buildTeam = (teamIndex) => {
+            const declared = teamSources[teamIndex] || {};
+            const seatSlots = teamIndex === 0 ? [0, 2] : [1, 3];
+            const declaredMemberIds = new Set([
+                ...(Array.isArray(declared?.memberSessionIds) ? declared.memberSessionIds : []),
+                ...(Array.isArray(declared?.memberPlayerIds) ? declared.memberPlayerIds : [])
+            ].map((value) => String(value || '').trim()).filter(Boolean));
+            const members = seatSlots.map((seatIndex, index) => {
+                const player = players.find((row) => Number(row?.seatIndex) === seatIndex)
+                    || players.find((row) => Number(row?.team) === teamIndex && Number(row?.seatIndex) === seatIndex)
+                    || players.find((row) => declaredMemberIds.has(String(row?.sessionId || '').trim()) || declaredMemberIds.has(String(row?.playerId || row?.userId || row?.id || '').trim()))
+                    || null;
+                return {
+                    sessionId: String(player?.sessionId || '').trim() || null,
+                    playerId: String(player?.playerId || player?.userId || player?.id || '').trim() || null,
+                    name: readName(player, player ? `Player ${index + 1}` : 'Empty'),
+                    isBot: Boolean(player?.isBot),
+                    isEmpty: !player,
+                    seatIndex
+                };
+            });
+            const names = members.map((player, index) => readName(player, player?.isEmpty ? 'Empty' : `Player ${index + 1}`)).filter(Boolean);
+            return {
+                index: teamIndex,
+                name: String(declared?.name || (teamIndex === 0 ? 'Team A' : 'Team B')).trim() || (teamIndex === 0 ? 'Team A' : 'Team B'),
+                names,
+                members,
+                score: Number.isFinite(Number(declared?.score)) ? Number(declared.score) : Number(Array.isArray(state.teamScores) ? state.teamScores[teamIndex] : 0),
+                roundWins: Number.isFinite(Number(declared?.roundWins)) ? Number(declared.roundWins) : Number(Array.isArray(state.teamRoundWins) ? state.teamRoundWins[teamIndex] : 0)
+            };
+        };
+        const teams = [buildTeam(0), buildTeam(1)];
+        return {
+            isTeamMode: Boolean(state?.isTeamMode),
+            roomMode: String(state?.roomMode || (state?.isTeamMode ? 'team' : 'ffa')).trim() || (state?.isTeamMode ? 'team' : 'ffa'),
+            teams,
+            teamAHudNames: teams[0]?.names || [],
+            teamBHudNames: teams[1]?.names || []
+        };
+    }
+
+    setTeamHudDebugState(roomState = this.currentRoomState, source = 'render') {
+        const teamHud = this.getRoomTeamHudState(roomState);
+        this._lastTeamHudRenderAt = Date.now();
+        this._lastTeamHudRenderSource = String(source || 'render').trim() || 'render';
+        this._lastTeamHudTeamsSafe = Array.isArray(teamHud.teams)
+            ? teamHud.teams.map((team) => ({
+                index: Number(team?.index ?? 0),
+                name: String(team?.name || '').trim() || null,
+                score: Number(team?.score || 0),
+                roundWins: Number(team?.roundWins || 0),
+                names: Array.isArray(team?.names) ? team.names.slice(0, 4) : [],
+                members: Array.isArray(team?.members) ? team.members.slice(0, 4) : []
+            }))
+            : [];
+        this._lastTeamAHudNames = Array.isArray(teamHud.teamAHudNames) ? teamHud.teamAHudNames.slice(0, 4) : [];
+        this._lastTeamBHudNames = Array.isArray(teamHud.teamBHudNames) ? teamHud.teamBHudNames.slice(0, 4) : [];
+        return teamHud;
+    }
+
+    getCurrentWalletBalance() {
+        const wallet = this.coinShopStatus?.wallet || this.accountDetails?.wallet || this.accountProfile?.wallet || null;
+        const balance = Number(wallet?.balance ?? this.accountProfile?.coins ?? 0);
+        return Number.isFinite(balance) ? Math.max(0, balance) : 0;
+    }
+
+    getRoomJoinStakeRequirements(roomContext = null, fallbackRoom = null) {
+        const source = roomContext || fallbackRoom || this.getCurrentRoomSnapshot() || {};
+        const stakeAmount = Number(
+            source?.stakeAmount
+            ?? source?.roomContext?.stakeAmount
+            ?? source?.join?.stakeAmount
+            ?? source?.roomSettings?.stakeAmount
+            ?? source?.requiredStake
+            ?? 0
+        );
+        const stakeKey = String(
+            source?.stakeKey
+            || source?.roomContext?.stakeKey
+            || source?.join?.stakeKey
+            || source?.roomSettings?.stakeKey
+            || ''
+        ).trim() || null;
+        return {
+            stakeAmount: Number.isFinite(stakeAmount) ? Math.max(0, Math.trunc(stakeAmount)) : 0,
+            stakeKey
+        };
+    }
+
+    canJoinRoomWithWalletGate(roomContext = null, fallbackRoom = null, context = {}) {
+        const requirements = this.getRoomJoinStakeRequirements(roomContext, fallbackRoom);
+        const requiredStake = Number(requirements.stakeAmount || 0) || 0;
+        const currentBalance = this.getCurrentWalletBalance();
+        this._lastJoinStakeRequired = requiredStake;
+        this._lastJoinBalance = currentBalance;
+        this._lastJoinBlockedRoomId = String(context?.roomId || roomContext?.roomId || fallbackRoom?.roomId || '').trim();
+        this._lastJoinBlockedInviteId = String(context?.inviteId || roomContext?.inviteId || fallbackRoom?.inviteId || '').trim();
+        this._lastJoinBlockedByCoins = false;
+        if (!requiredStake || currentBalance >= requiredStake) {
+            return true;
+        }
+        this.showInsufficientCoinsModal(requiredStake, currentBalance, {
+            roomId: this._lastJoinBlockedRoomId,
+            inviteId: this._lastJoinBlockedInviteId
+        });
+        return false;
+    }
+
+    showInsufficientCoinsModal(requiredStake = 0, currentBalance = 0, context = {}) {
+        this._lastJoinStakeRequired = Number(requiredStake || 0) || 0;
+        this._lastJoinBalance = Number(currentBalance || 0) || 0;
+        this._lastJoinBlockedByCoins = true;
+        this._lastJoinBlockedAt = Date.now();
+        this._lastJoinBlockedRoomId = String(context?.roomId || '').trim();
+        this._lastJoinBlockedInviteId = String(context?.inviteId || '').trim();
+        this._lastInsufficientCoinsModalShownAt = this._lastJoinBlockedAt;
+        this.ensureInsufficientCoinsModal();
+        const modal = document.getElementById('insufficient-coins-modal');
+        const title = document.getElementById('insufficient-coins-modal-title');
+        const message = document.getElementById('insufficient-coins-modal-message');
+        const balanceEl = document.getElementById('insufficient-coins-modal-balance');
+        const requiredEl = document.getElementById('insufficient-coins-modal-required');
+        if (title) {
+            title.textContent = this.currentLang === 'az'
+                ? 'Bu oyun üçün kifayət qədər coin yoxdur'
+                : 'Not enough coins for this game';
+        }
+        if (message) {
+            message.textContent = this.currentLang === 'az'
+                ? 'Bu oyuna qoşulmaq üçün balansınızı artırın.'
+                : 'Please top up your coins before joining this room.';
+        }
+        if (balanceEl) balanceEl.textContent = String(Math.max(0, Math.trunc(Number(currentBalance || 0) || 0)));
+        if (requiredEl) requiredEl.textContent = String(Math.max(0, Math.trunc(Number(requiredStake || 0) || 0)));
+        if (modal && modal.parentElement !== document.body) {
+            document.body.appendChild(modal);
+        }
+        if (modal) {
+            modal.style.zIndex = '33000';
+            modal.classList.add('active');
+            modal.setAttribute('aria-hidden', 'false');
+        }
+        return modal;
+    }
+
+    ensureInsufficientCoinsModal() {
+        if (document.getElementById('insufficient-coins-modal')) return;
+        const modal = document.createElement('div');
+        modal.id = 'insufficient-coins-modal';
+        modal.className = 'modal-backdrop insufficient-coins-modal';
+        modal.innerHTML = `
+            <section class="modal-card modal-card-wide insufficient-coins-card">
+                <div class="modal-header">
+                    <div>
+                        <div class="section-kicker">${this.currentLang === 'az' ? 'Coin yoxlanışı' : 'Coin check'}</div>
+                        <h2 id="insufficient-coins-modal-title"></h2>
+                    </div>
+                    <button class="btn btn-menu modal-close-btn insufficient-coins-close-btn" id="insufficient-coins-modal-close" type="button">${this.t('modal-close')}</button>
+                </div>
+                <div class="modal-body insufficient-coins-body">
+                    <p id="insufficient-coins-modal-message"></p>
+                    <div class="insufficient-coins-summary">
+                        <div class="insufficient-coins-stat">
+                            <span>${this.currentLang === 'az' ? 'Lazım olan' : 'Required'}</span>
+                            <strong id="insufficient-coins-modal-required">0</strong>
+                        </div>
+                        <div class="insufficient-coins-stat">
+                            <span>${this.currentLang === 'az' ? 'Balans' : 'Balance'}</span>
+                            <strong id="insufficient-coins-modal-balance">0</strong>
+                        </div>
+                    </div>
+                    <div class="modal-actions insufficient-coins-actions">
+                        <button class="btn btn-action btn-strong" id="insufficient-coins-modal-shop-btn" type="button">${this.currentLang === 'az' ? 'Coin mağazası' : 'Coin shop'}</button>
+                    </div>
+                </div>
+            </section>
+        `;
+        modal.addEventListener('click', (event) => {
+            if (event.target === modal) {
+                event.preventDefault();
+                event.stopPropagation();
+                this.closeInsufficientCoinsModal();
+            }
+        });
+        modal.querySelector('.modal-card')?.addEventListener('click', (event) => event.stopPropagation());
+        document.body.appendChild(modal);
+        const closeBtn = modal.querySelector('#insufficient-coins-modal-close');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', (event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                this.closeInsufficientCoinsModal();
+            });
+        }
+        const shopBtn = modal.querySelector('#insufficient-coins-modal-shop-btn');
+        if (shopBtn) {
+            shopBtn.addEventListener('click', async (event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                this.closeInsufficientCoinsModal();
+                await this.openCoinShopModal();
+            });
+        }
+        if (!this._insufficientCoinsModalEscapeHandler) {
+            this._insufficientCoinsModalEscapeHandler = (event) => {
+                if (event.key !== 'Escape') return;
+                if (!document.getElementById('insufficient-coins-modal')?.classList.contains('active')) return;
+                this.closeInsufficientCoinsModal();
+            };
+            document.addEventListener('keydown', this._insufficientCoinsModalEscapeHandler);
+        }
+    }
+
+    closeInsufficientCoinsModal() {
+        const modal = document.getElementById('insufficient-coins-modal');
+        if (modal) {
+            modal.classList.remove('active');
+            modal.setAttribute('aria-hidden', 'true');
+        }
     }
 
     getCurrentRoomPlayerIds() {
@@ -3370,6 +3672,9 @@ class DominoGame {
         if (!manual && this.playInviteRoomReadyIds.has(inviteId) && this.network?.room) {
             return false;
         }
+        if (!this.canJoinRoomWithWalletGate(invite, null, { inviteId, roomId: String(invite?.roomId || '').trim(), roomCode })) {
+            return false;
+        }
 
         this.playInviteJoiningIds.add(inviteId);
         if (!manual) {
@@ -3389,7 +3694,14 @@ class DominoGame {
         );
 
         try {
-            const joined = await this.joinOnlineRoom(roomCode);
+            const joined = await this.joinOnlineRoom({
+                roomCode,
+                roomId: String(invite?.roomId || '').trim() || null,
+                stakeKey: String(invite?.stakeKey || invite?.join?.stakeKey || '').trim() || null,
+                stakeAmount: Number(invite?.stakeAmount || invite?.join?.stakeAmount || 0) || 0,
+                roomContext: invite?.roomContext || null,
+                inviteId
+            });
             if (joined) {
                 await this.markPlayInviteJoinedWithFallback(inviteId, {
                     roomId: String(invite?.roomId || '').trim() || null,
@@ -7410,6 +7722,13 @@ class DominoGame {
                         try {
                             const accepted = await this.acceptPlayInviteWithFallback(inviteId);
                             if (accepted?.ok === false) {
+                                if (accepted?.reason === 'insufficient_coins') {
+                                    this.showInsufficientCoinsModal(
+                                        Number(accepted?.requiredStake || accepted?.stakeAmount || 0) || 0,
+                                        Number(accepted?.balance ?? accepted?.wallet?.balance ?? this.getCurrentWalletBalance()) || 0,
+                                        { inviteId }
+                                    );
+                                }
                                 throw new Error(accepted?.error || accepted?.reason || this.t('friends-load-failed'));
                             }
                             const acceptedInvite = accepted?.item || accepted?.invite || invite;
@@ -7627,12 +7946,18 @@ class DominoGame {
                 acceptBtn.textContent = '...';
                 try {
                     const accepted = await this.acceptRoomInviteWithFallback(invite.id);
-                    if (accepted?.ok === false || String(accepted?.reason || '').trim() === 'room_not_available') {
+                    if (String(accepted?.reason || '').trim() === 'insufficient_coins') {
+                        this.showInsufficientCoinsModal(
+                            Number(accepted?.requiredStake || accepted?.stakeAmount || 0) || 0,
+                            Number(accepted?.balance ?? accepted?.wallet?.balance ?? this.getCurrentWalletBalance()) || 0,
+                            { inviteId: invite.id }
+                        );
+                    } else if (accepted?.ok === false || String(accepted?.reason || '').trim() === 'room_not_available') {
                         this.renderer.showMessage(this.t('invite-status-expired') || 'Invite expired or room unavailable', 1800);
                     } else {
                         const joinRoomCode = String(accepted?.join?.roomCode || '').trim();
                         if (this.isValidRoomCode(joinRoomCode)) {
-                            await this.joinOnlineRoom(joinRoomCode);
+                            await this.joinOnlineRoom(accepted?.join || accepted?.item || invite);
                         } else {
                             const row = accepted?.item || invite;
                             this.gameInviteState = {
@@ -9224,6 +9549,10 @@ class DominoGame {
                 roomCode: String(roomInviteContext.roomCode || '').trim() || null,
                 roomMode: String(roomInviteContext.roomMode || (this.isTeamMode ? 'team' : 'ffa')).trim() || null,
                 roomVisibility: String(roomInviteContext.roomVisibility || this.onlineRoomVisibility || '').trim() || null,
+                stakeKey: String(roomInviteContext.stakeKey || this.onlineStakeKey || '').trim() || null,
+                stakeAmount: Number.isFinite(Number(roomInviteContext.stakeAmount)) ? Math.max(0, Number(roomInviteContext.stakeAmount)) : 0,
+                humanSeats: Number.isFinite(Number(roomInviteContext.humanSeats)) ? Number(roomInviteContext.humanSeats) : null,
+                totalPlayers: Number.isFinite(Number(roomInviteContext.totalPlayers)) ? Number(roomInviteContext.totalPlayers) : null,
                 targetSlotIndex: Number.isInteger(Number(roomInviteContext.targetSlotIndex)) ? Number(roomInviteContext.targetSlotIndex) : null,
                 openSeatPickerOnJoin: typeof roomInviteContext.openSeatPickerOnJoin === 'boolean' ? roomInviteContext.openSeatPickerOnJoin : null,
                 inviterPlayerId: String(roomInviteContext.inviterPlayerId || this.getCurrentAccountPlayerId?.() || '').trim() || null,
@@ -9243,6 +9572,10 @@ class DominoGame {
                     roomCode: normalizedRoomInviteContext.roomCode,
                     roomMode: normalizedRoomInviteContext.roomMode,
                     roomVisibility: normalizedRoomInviteContext.roomVisibility,
+                    stakeKey: normalizedRoomInviteContext.stakeKey,
+                    stakeAmount: normalizedRoomInviteContext.stakeAmount,
+                    humanSeats: normalizedRoomInviteContext.humanSeats,
+                    totalPlayers: normalizedRoomInviteContext.totalPlayers,
                     targetSlotIndex: normalizedRoomInviteContext.targetSlotIndex,
                     openSeatPickerOnJoin: normalizedRoomInviteContext.openSeatPickerOnJoin,
                     inviterPlayerId: normalizedRoomInviteContext.inviterPlayerId,
@@ -11513,7 +11846,7 @@ class DominoGame {
                 joinBtn.className = 'btn btn-action btn-strong';
                 joinBtn.textContent = this.t('room-join');
                 joinBtn.addEventListener('click', async () => {
-                    const joined = await this.joinOnlineRoom(room.roomCode || room.roomId);
+                    const joined = await this.joinOnlineRoom(room);
                     if (joined) this.hideOpenRoomsModal();
                 });
                 footer.appendChild(joinBtn);
@@ -12167,9 +12500,18 @@ class DominoGame {
         });
     }
 
-    async joinOnlineRoom(code) {
-        const nextCode = String(code || '').trim().toUpperCase();
+    async joinOnlineRoom(codeOrContext) {
+        const context = typeof codeOrContext === 'object' && codeOrContext !== null
+            ? codeOrContext
+            : { roomCode: codeOrContext };
+        const nextCode = String(context?.roomCode || context?.roomId || codeOrContext || '').trim().toUpperCase();
         if (!nextCode) return false;
+        const matchingOpenRoom = Array.isArray(this.openRooms)
+            ? this.openRooms.find((room) => String(room?.roomCode || '').trim().toUpperCase() === nextCode) || null
+            : null;
+        if (!this.canJoinRoomWithWalletGate(context, matchingOpenRoom, { roomId: String(context?.roomId || '').trim(), inviteId: String(context?.inviteId || '').trim() })) {
+            return false;
+        }
         this.showStartModal('online');
         this.showOnlineJoinFlow();
         this.prefillOnlineNameIfPossible();
@@ -13757,9 +14099,13 @@ class DominoGame {
         return members;
     }
     getTeamDisplayName(teamIndex) {
+        const teamHud = this.getRoomTeamHudState(this.currentRoomState);
+        const team = Array.isArray(teamHud?.teams) ? teamHud.teams[teamIndex] : null;
+        const names = Array.isArray(team?.names) ? team.names.filter(Boolean) : [];
+        if (names.length) return names.join('\n');
         const members = this.getTeamMembers(teamIndex);
-        const names = members.map((i) => this.playerNames[i] || `Player ${i + 1}`);
-        if (names.length) return names.join(' & ');
+        const fallbackNames = members.map((i) => this.playerNames[i] || `Player ${i + 1}`);
+        if (fallbackNames.length) return fallbackNames.join(' & ');
         return teamIndex === 0 ? this.t('team-a') : this.t('team-b');
     }
     getTeamHandPoints(teamIndex) {
@@ -13806,19 +14152,15 @@ class DominoGame {
         this._resolvedScoreMode = resolvedRoomMode.scoreMode || '';
         this._resolvedTopHudMode = resolvedRoomMode.topHudMode || '';
         const isTeamMode = resolvedRoomMode.isTeamMode;
+        const teamHud = this.setTeamHudDebugState(this.currentRoomState, 'renderState');
         if (this.gameActive) {
             document.getElementById('round-end-screen')?.classList.remove('active');
         }
         let displayEntities;
         if (isTeamMode) {
-            const teamA = this.getTeamMembers(0);
-            const teamB = this.getTeamMembers(1);
-            const resolveTeamProfile = (members) => members.map((index) => this.roomPlayerRefs?.[index] || null).find((player) => Boolean(String(player?.playerId || player?.userId || player?.id || '').trim()) && !player?.isBot) || members.map((index) => this.roomPlayerRefs?.[index] || null).find((player) => Boolean(String(player?.playerId || player?.userId || player?.id || '').trim())) || null;
-            const teamAProfile = resolveTeamProfile(teamA);
-            const teamBProfile = resolveTeamProfile(teamB);
             displayEntities = [
-                { name: this.getTeamDisplayName(0), score: this.teamScores[0], roundWins: this.teamRoundWins[0], isCurrent: this.isPlayerInTeam(0, this.currentPlayer), index: teamA.includes(this.currentPlayer) ? this.currentPlayer : -1, playerId: String(teamAProfile?.playerId || teamAProfile?.userId || teamAProfile?.id || '').trim(), isBot: Boolean(teamAProfile?.isBot) },
-                { name: this.getTeamDisplayName(1), score: this.teamScores[1], roundWins: this.teamRoundWins[1], isCurrent: this.isPlayerInTeam(1, this.currentPlayer), index: teamB.includes(this.currentPlayer) ? this.currentPlayer : -1, playerId: String(teamBProfile?.playerId || teamBProfile?.userId || teamBProfile?.id || '').trim(), isBot: Boolean(teamBProfile?.isBot) }
+                { name: this.getTeamDisplayName(0), score: this.teamScores[0], roundWins: this.teamRoundWins[0], isCurrent: this.isPlayerInTeam(0, this.currentPlayer), index: this.getTeamMembers(0).includes(this.currentPlayer) ? this.currentPlayer : -1, playerId: String(teamHud?.teams?.[0]?.members?.find((member) => Boolean(member?.playerId) && !member?.isEmpty)?.playerId || '').trim(), isBot: Boolean(teamHud?.teams?.[0]?.members?.find((member) => Boolean(member?.isBot))) },
+                { name: this.getTeamDisplayName(1), score: this.teamScores[1], roundWins: this.teamRoundWins[1], isCurrent: this.isPlayerInTeam(1, this.currentPlayer), index: this.getTeamMembers(1).includes(this.currentPlayer) ? this.currentPlayer : -1, playerId: String(teamHud?.teams?.[1]?.members?.find((member) => Boolean(member?.playerId) && !member?.isEmpty)?.playerId || '').trim(), isBot: Boolean(teamHud?.teams?.[1]?.members?.find((member) => Boolean(member?.isBot))) }
             ];
         } else {
             displayEntities = this.playerNames.map((n,i) => ({
@@ -14426,16 +14768,12 @@ class DominoGame {
         this._resolvedScoreMode = resolvedRoomMode.scoreMode || '';
         this._resolvedTopHudMode = resolvedRoomMode.topHudMode || '';
         const isTeamMode = resolvedRoomMode.isTeamMode;
+        const teamHud = this.setTeamHudDebugState(this.currentRoomState, 'realtime');
         let displayEntities;
         if (isTeamMode) {
-            const teamA = this.getTeamMembers(0);
-            const teamB = this.getTeamMembers(1);
-            const resolveTeamProfile = (members) => members.map((index) => this.roomPlayerRefs?.[index] || null).find((player) => Boolean(String(player?.playerId || player?.userId || player?.id || '').trim()) && !player?.isBot) || members.map((index) => this.roomPlayerRefs?.[index] || null).find((player) => Boolean(String(player?.playerId || player?.userId || player?.id || '').trim())) || null;
-            const teamAProfile = resolveTeamProfile(teamA);
-            const teamBProfile = resolveTeamProfile(teamB);
             displayEntities = [
-                { name: this.getTeamDisplayName(0), score: this.teamScores[0], roundWins: this.teamRoundWins[0], isCurrent: this.isPlayerInTeam(0, this.currentPlayer), index: teamA.includes(this.currentPlayer) ? this.currentPlayer : -1, playerId: String(teamAProfile?.playerId || teamAProfile?.userId || teamAProfile?.id || '').trim(), isBot: Boolean(teamAProfile?.isBot) },
-                { name: this.getTeamDisplayName(1), score: this.teamScores[1], roundWins: this.teamRoundWins[1], isCurrent: this.isPlayerInTeam(1, this.currentPlayer), index: teamB.includes(this.currentPlayer) ? this.currentPlayer : -1, playerId: String(teamBProfile?.playerId || teamBProfile?.userId || teamBProfile?.id || '').trim(), isBot: Boolean(teamBProfile?.isBot) }
+                { name: this.getTeamDisplayName(0), score: this.teamScores[0], roundWins: this.teamRoundWins[0], isCurrent: this.isPlayerInTeam(0, this.currentPlayer), index: this.getTeamMembers(0).includes(this.currentPlayer) ? this.currentPlayer : -1, playerId: String(teamHud?.teams?.[0]?.members?.find((member) => Boolean(member?.playerId) && !member?.isEmpty)?.playerId || '').trim(), isBot: Boolean(teamHud?.teams?.[0]?.members?.find((member) => Boolean(member?.isBot))) },
+                { name: this.getTeamDisplayName(1), score: this.teamScores[1], roundWins: this.teamRoundWins[1], isCurrent: this.isPlayerInTeam(1, this.currentPlayer), index: this.getTeamMembers(1).includes(this.currentPlayer) ? this.currentPlayer : -1, playerId: String(teamHud?.teams?.[1]?.members?.find((member) => Boolean(member?.playerId) && !member?.isEmpty)?.playerId || '').trim(), isBot: Boolean(teamHud?.teams?.[1]?.members?.find((member) => Boolean(member?.isBot))) }
             ];
         } else {
             displayEntities = this.playerNames.map((n, i) => ({

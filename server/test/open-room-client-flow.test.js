@@ -138,6 +138,29 @@ test("client moves play invite entry points into room context", () => {
     }
 });
 
+test("client exposes team hud wallet gate and profile close debug hooks", () => {
+    const appSource = read("js/app.js");
+    const webAppSource = read("www/js/app.js");
+    const requiredTokens = [
+        "getRoomTeamHudState(",
+        "teamAHudNames",
+        "teamBHudNames",
+        "canJoinRoomWithWalletGate(",
+        "_lastJoinBlockedByCoins",
+        "insufficient-coins-modal",
+        "closePlayerProfileModal()",
+        "_lastProfileCloseAction",
+        "_lastProfileCloseTouchedGameState",
+        "lastProfileOpenBlockedByMoveHint"
+    ];
+
+    for (const source of [appSource, webAppSource]) {
+        for (const token of requiredTokens) {
+            assert.equal(source.includes(token), true);
+        }
+    }
+});
+
 test("client friends page no longer appends an undefined invite button", () => {
     const appSource = read("js/app.js");
     const webAppSource = read("www/js/app.js");

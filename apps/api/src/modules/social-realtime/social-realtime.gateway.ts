@@ -211,7 +211,7 @@ export class SocialRealtimeGateway implements OnModuleInit, OnModuleDestroy {
           ack?.({ ok: false, error: "inviteId is required" });
           return;
         }
-        const result = await this.socialService.acceptPlayInviteForPlayer(player, inviteId, { emitEvents: false });
+        const result: any = await this.socialService.acceptPlayInviteForPlayer(player, inviteId, { emitEvents: false });
         if (!result.ok && result.reason) {
           ack?.(result);
           return;
@@ -288,7 +288,7 @@ export class SocialRealtimeGateway implements OnModuleInit, OnModuleDestroy {
           ack?.({ ok: false, error: "inviteId is required" });
           return;
         }
-        const result = await this.socialService.acceptRoomInvitationForPlayer(player, inviteId, { emitEvents: false });
+        const result: any = await this.socialService.acceptRoomInvitationForPlayer(player, inviteId, { emitEvents: false });
         if (!result.ok) {
           ack?.(result);
           return;
