@@ -2893,9 +2893,9 @@ input, button { font: inherit; }
 }
 
 .seat-selection-panel {
-    width: min(94vw, 560px);
+    width: min(96vw, 560px);
     border-radius: 22px;
-    padding: 14px;
+    padding: 10px;
     background: linear-gradient(180deg, rgba(11, 18, 28, 0.98), rgba(7, 12, 19, 0.98));
     border: 1px solid rgba(255, 255, 255, 0.08);
     box-shadow: 0 24px 80px rgba(0, 0, 0, 0.45);
@@ -2966,7 +2966,7 @@ input, button { font: inherit; }
 
 .seat-selection-table {
     position: relative;
-    width: min(90vw, 460px);
+    width: min(100%, 500px);
     aspect-ratio: 1;
     border-radius: 999px;
     background:
@@ -3069,8 +3069,8 @@ input, button { font: inherit; }
     }
 
     .seat-selection-panel {
-        width: min(94vw, 560px);
-        padding: 10px;
+        width: min(96vw, 560px);
+        padding: 8px;
         border-radius: 18px;
     }
 
@@ -3083,7 +3083,7 @@ input, button { font: inherit; }
     }
 
     .seat-selection-table {
-        width: min(94vw, 390px);
+        width: min(100%, 460px);
         gap: 8px;
         padding: 8px;
     }
@@ -3115,9 +3115,9 @@ body.move-hint-selection-active #game-screen .player-name-btn {
 
 .room-player-chip {
     display: grid;
-    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-columns: auto auto minmax(0, 1fr) auto;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
     padding: 10px 12px;
     border-radius: 12px;
     background: rgba(255, 255, 255, 0.05);
@@ -3197,10 +3197,10 @@ body.move-hint-selection-active #game-screen .player-name-btn {
 
 .room-slot-invite-btn {
     width: auto;
-    min-width: 108px;
-    padding: 8px 10px;
+    min-width: 0;
+    padding: 6px 8px;
     border-radius: 12px;
-    font-size: 0.76rem;
+    font-size: 0.72rem;
     white-space: nowrap;
 }
 
@@ -3236,21 +3236,21 @@ body.move-hint-selection-active #game-screen .player-name-btn {
 
 @media (max-width: 640px) {
     .room-player-chip {
-        grid-template-columns: auto minmax(0, 1fr) auto;
-        align-items: start;
+        grid-template-columns: auto auto minmax(0, 1fr) auto;
+        align-items: center;
         gap: 8px;
-        padding: 9px 10px;
+        padding: 8px 8px;
     }
 
     .room-player-chip-actions {
-        justify-content: flex-start;
+        justify-content: flex-end;
     }
 
     .room-slot-invite-btn {
         width: auto;
         min-width: 0;
         padding: 6px 8px;
-        font-size: 0.72rem;
+        font-size: 0.7rem;
     }
 }
 

@@ -54,21 +54,53 @@ test("client keeps team runtime and seat picker close flow explicit", () => {
         "lastAutoStartCheckAt"
     ];
     const closeHandlerTokens = [
-        "closeBtn.addEventListener('click', (event) => {",
         "event.preventDefault();",
         "event.stopPropagation();",
         "void this.handleSeatSelectionClose('seat-picker-close');"
     ];
+    const debugTokens = [
+        "lastCloseAttemptAt",
+        "lastCloseAction",
+        "lastCloseStartedGame",
+        "lastCloseCalledStartGame",
+        "lastCloseCalledSelectSeat",
+        "lastCloseCalledReady",
+        "lastCloseError"
+    ];
+
+    const extractCloseHandlerSnippet = (source) => {
+        const start = source.indexOf("    async handleSeatSelectionClose(action = 'seat-picker-close') {");
+        const end = source.indexOf("    isSeatSelectionUiVisible()", start);
+        return start >= 0 && end > start ? source.slice(start, end) : '';
+    };
+    const extractCloseButtonSnippet = (source) => {
+        const start = source.indexOf("        const closeBtn = document.createElement('button');");
+        const end = source.indexOf("        headCopy.appendChild(kicker);", start);
+        return start >= 0 && end > start ? source.slice(start, end) : '';
+    };
 
     for (const source of [appSource, webAppSource]) {
+        const closeSnippet = extractCloseHandlerSnippet(source);
+        const buttonSnippet = extractCloseButtonSnippet(source);
+        assert.equal(closeSnippet.length > 0, true);
+        assert.equal(buttonSnippet.length > 0, true);
+
         for (const token of requiredTokens) {
             assert.equal(source.includes(token), true);
         }
         for (const token of closeHandlerTokens) {
+            assert.equal(buttonSnippet.includes(token), true);
+        }
+        for (const token of debugTokens) {
             assert.equal(source.includes(token), true);
         }
+
+        assert.equal(buttonSnippet.includes("closeBtn.addEventListener('click', (event) => {"), true);
         assert.equal(source.includes("closeBtn.addEventListener('click', () => this.hideSeatSelectionUi());"), false);
         assert.equal(source.includes("this.isTeamMode = Boolean(payload?.isTeamMode);"), false);
+        assert.equal(closeSnippet.includes("this.startGame();"), false);
+        assert.equal(closeSnippet.includes("this.selectSeat("), false);
+        assert.equal(closeSnippet.includes("this.ready("), false);
     }
 });
 
@@ -76,28 +108,52 @@ test("client renders waiting room rows in a strict single-line format", () => {
     const appSource = read("js/app.js");
     const webAppSource = read("www/js/app.js");
     const cssSource = read("css/style.css");
-    const jsTokens = [
+    const sourceTokens = [
         "chip.classList.add(kind);",
-        "chip.classList.add(`is-${kind}`);",
-        "displayName: this.t('seat-free')",
+        "chip.classList.add(`is-${kind}`);"
+    ];
+    const snippetTokens = [
+        "displayName: 'Bo\u015F'",
         "displayName: 'AI Bot'",
-        "subtitle: this.t('online-ready')",
-        "iconText: '○'"
+        "subtitle: 'Haz\u0131r'",
+        "subtitle: 'D\u0259v\u0259t et'",
+        "iconText: '\uD83E\uDD16'",
+        "iconText: '\u25CB'",
+        "seatNumber: humanSeats + i + 1",
+        "inviteBtn.textContent = 'D\u0259v\u0259t et';"
     ];
     const cssTokens = [
-        "room-player-chip.empty",
-        "room-player-chip.bot",
-        "room-player-chip-title-row",
-        "room-player-chip-actions",
-        "room-player-state",
-        "room-slot-invite-btn",
+        "grid-template-columns: auto auto minmax(0, 1fr) auto;",
+        ".room-player-chip.empty",
+        ".room-player-chip.bot",
+        ".room-player-chip-title-row",
+        ".room-player-chip-actions",
+        ".room-player-state",
+        ".room-slot-invite-btn",
         "white-space: nowrap"
     ];
 
+    const extractWaitingRoomSnippet = (source) => {
+        const start = source.indexOf("        const humanPlayerCount = (roomState.players || []).filter(player => !player.isBot).length;");
+        const end = source.indexOf("        if (!roomState.gameActive) {", start);
+        return start >= 0 && end > start ? source.slice(start, end) : '';
+    };
+
     for (const source of [appSource, webAppSource]) {
-        for (const token of jsTokens) {
+        for (const token of sourceTokens) {
             assert.equal(source.includes(token), true);
         }
+        const snippet = extractWaitingRoomSnippet(source);
+        assert.equal(snippet.length > 0, true);
+        for (const token of snippetTokens) {
+            assert.equal(snippet.includes(token), true);
+        }
+        assert.equal(snippet.includes("Haz\u0131rd\u0131r"), false);
+        assert.equal(snippet.includes("Oyuncu g\u00F6zl\u0259nilir"), false);
+        assert.equal(snippet.includes("3. AI"), false);
+        assert.equal(snippet.includes("this.t('friend-invite')"), false);
+        assert.equal(snippet.includes("width: min(94vw, 560px)"), false);
+        assert.equal(snippet.includes("padding: 14px"), false);
     }
     for (const token of cssTokens) {
         assert.equal(cssSource.includes(token), true);
