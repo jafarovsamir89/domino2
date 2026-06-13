@@ -97,6 +97,37 @@ test("room payloads include server clock metadata and turn timer state", () => {
     }
 });
 
+test("onCreate treats roomMode team as team mode even when isTeamMode is omitted", async () => {
+    const room = Object.create(DominoRoom.prototype);
+    Object.defineProperty(room, "roomId", { value: "room-team", writable: true, configurable: true });
+    room.loadCustomStateForRestore = async () => null;
+    room.setState = (state) => {
+        room.state = state;
+        room.state.players = new Map();
+        room.state.playerOrder = [];
+        room.state.teamScores = [];
+        room.state.teamRoundWins = [];
+    };
+    room.onMessage = () => {};
+    room.broadcast = () => {};
+    room.clearTurnTimer = () => {};
+    room.clearNextDealTimer = () => {};
+    room.syncState = () => {};
+
+    await room.onCreate({
+        roomMode: "2v2",
+        playerCount: 4,
+        aiCount: 2,
+        roomVisibility: "open"
+    });
+
+    assert.equal(room.roomMode, "team");
+    assert.equal(room.state.isTeamMode, true);
+    assert.equal(room.totalPlayers, 4);
+    assert.equal(room.humanSeats, 2);
+    assert.equal(room.maxClients, 2);
+});
+
 test("handleNextDeal only advances for the host during pending transitions", () => {
     const room = Object.create(DominoRoom.prototype);
     let cleared = 0;

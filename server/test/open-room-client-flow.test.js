@@ -50,6 +50,11 @@ test("client moves play invite entry points into room context", () => {
         "const seatPickerRoomInviteContext = (() => {",
         "inviteContextSafe"
     ];
+    const roomCreateFreezeStrings = [
+        "const roomCreateMode = this.isTeamMode ? 'team' : 'ffa';",
+        "roomMode: roomCreateMode",
+        "isTeamMode: roomCreateMode === 'team'"
+    ];
 
     for (const source of [appSource, webAppSource]) {
         for (const callSite of socialInviteCallSites) {
@@ -59,6 +64,9 @@ test("client moves play invite entry points into room context", () => {
             assert.equal(source.includes(hook), true);
         }
         for (const token of seatPickerRoomBoundInviteStrings) {
+            assert.equal(source.includes(token), true);
+        }
+        for (const token of roomCreateFreezeStrings) {
             assert.equal(source.includes(token), true);
         }
     }

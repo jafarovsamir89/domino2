@@ -43,6 +43,7 @@ function buildRoomStatePayload({ room, players } = {}) {
         roomId: room.roomId,
         roomCode: room.roomCode,
         roomVisibility: room.roomVisibility,
+        roomMode: room.roomMode || (room.state.isTeamMode ? "team" : "ffa"),
         stakeKey: room.currentDealStakeKey || room.currentStakeKey,
         stakeAmount: room.currentDealStakeAmount,
         bankAmount: room.currentDealBankAmount,
