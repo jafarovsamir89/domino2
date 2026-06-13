@@ -206,10 +206,24 @@ class DominoGame {
         this._lastSeatPickerOpenAttemptAt = 0;
         this._lastSeatPickerOpenSource = '';
         this._lastSeatPickerOpenSkippedReason = '';
+        this._lastSeatPickerCloseAttemptAt = 0;
+        this._lastSeatPickerCloseAction = '';
+        this._lastSeatPickerCloseStartedGame = false;
+        this._lastSeatPickerCloseError = '';
         this._lastSeatPickerInviteButtonRendered = false;
         this._lastSeatPickerInviteButtonDisabledReason = '';
         this._lastSeatPickerInviteContextSafe = null;
         this._lastSeatPickerOpenedAfterRoomBoundInvite = false;
+        this._lastStartGamePayloadSafe = null;
+        this._lastRoomStateAt = 0;
+        this._lastRoomStateIsTeamMode = null;
+        this._lastRoomStateRoomMode = '';
+        this._lastRoomStatePlayersSafe = [];
+        this._lastRoomStateTeamAssignmentsSafe = [];
+        this._lastRoomStateSeatAssignmentsSafe = [];
+        this._resolvedRoomModeFromState = '';
+        this._resolvedScoreMode = '';
+        this._resolvedTopHudMode = '';
         this.pendingReconnectResolution = false;
         this.openRooms = [];
         this.socialCenterTab = 'friends';
@@ -728,6 +742,7 @@ class DominoGame {
                 instantWinEnabled: document.getElementById('instant-win-setting')?.checked,
                 dlossThreshold: parseInt(document.getElementById('dloss-setting')?.value || '255', 10)
             };
+            this._lastStartGamePayloadSafe = this.buildStartGamePayloadSafe(roomCreateOptions);
             const profile = await this.requireRegisteredAccount('account-registration-required-online');
             if (!profile) {
                 this.setHostStatus(this.t('account-registration-required-online'));
@@ -1419,6 +1434,17 @@ class DominoGame {
             displayName: String(invite?.invitee?.displayName || '').trim() || null,
             status: String(invite?.status || '').trim() || null
         }));
+        const currentRoomState = this.currentRoomState || {};
+        const resolvedRoomMode = this.resolveRoomModeState(currentRoomState, null);
+        const lastRoomStatePlayersSafe = Array.isArray(this._lastRoomStatePlayersSafe) && this._lastRoomStatePlayersSafe.length
+            ? this._lastRoomStatePlayersSafe
+            : this.buildRoomStatePlayersSafe(currentRoomState);
+        const lastRoomStateTeamAssignmentsSafe = Array.isArray(this._lastRoomStateTeamAssignmentsSafe) && this._lastRoomStateTeamAssignmentsSafe.length
+            ? this._lastRoomStateTeamAssignmentsSafe
+            : this.buildTeamAssignmentsSafe(currentRoomState);
+        const lastRoomStateSeatAssignmentsSafe = Array.isArray(this._lastRoomStateSeatAssignmentsSafe) && this._lastRoomStateSeatAssignmentsSafe.length
+            ? this._lastRoomStateSeatAssignmentsSafe
+            : this.buildSeatAssignmentsSafe(currentRoomState);
         const activePlayerId = String(messagesState.activePlayerId || '').trim();
         const activeHeaderPlayerId = String(this._activeHeaderPlayerId || '').trim();
         const headerProfileMatchesConversation = !activePlayerId || !activeHeaderPlayerId || activeHeaderPlayerId === activePlayerId;
@@ -1503,6 +1529,27 @@ class DominoGame {
                     offlineCount: Number(this.friendPickerOfflineCount || 0) || 0,
                     excludedAlreadyInRoomCount: Number(this.friendPickerExcludedAlreadyInRoomCount || 0) || 0
                 }
+            },
+            roomRuntime: {
+                activeRoomId: String(currentRoomState?.roomId || activeRoom?.roomId || '').trim() || null,
+                activeRoomCode: String(currentRoomState?.roomCode || activeRoom?.roomCode || '').trim() || null,
+                roomModeFromState: String(this._lastRoomStateRoomMode || resolvedRoomMode.roomModeFromState || '').trim() || null,
+                isTeamModeFromState: typeof this._lastRoomStateIsTeamMode === 'boolean'
+                    ? this._lastRoomStateIsTeamMode
+                    : (typeof resolvedRoomMode.isTeamModeFromState === 'boolean' ? resolvedRoomMode.isTeamModeFromState : null),
+                localIsTeamMode: Boolean(this.isTeamMode),
+                scoreMode: String(this._resolvedScoreMode || resolvedRoomMode.scoreMode || (this.isTeamMode ? 'team' : 'solo')).trim() || null,
+                topHudMode: String(this._resolvedTopHudMode || resolvedRoomMode.topHudMode || (this.isTeamMode ? 'team' : 'solo')).trim() || null,
+                startGamePayloadSafe: this._lastStartGamePayloadSafe || null,
+                lastRoomStateIsTeamMode: typeof this._lastRoomStateIsTeamMode === 'boolean' ? this._lastRoomStateIsTeamMode : null,
+                lastRoomStateRoomMode: String(this._lastRoomStateRoomMode || '').trim() || null,
+                lastRoomStatePlayersSafe,
+                teamAssignmentsSafe: lastRoomStateTeamAssignmentsSafe,
+                seatAssignmentsSafe: lastRoomStateSeatAssignmentsSafe,
+                lastSeatPickerCloseAttemptAt: Number(this._lastSeatPickerCloseAttemptAt || 0) || 0,
+                lastSeatPickerCloseAction: String(this._lastSeatPickerCloseAction || '').trim() || null,
+                lastSeatPickerCloseStartedGame: Boolean(this._lastSeatPickerCloseStartedGame),
+                lastSeatPickerCloseError: String(this._lastSeatPickerCloseError || '').trim() || null
             },
             seatPicker: {
                 lastRoomCreateVisibility: String(this._lastRoomCreateVisibility || '').trim() || null,
@@ -1935,6 +1982,118 @@ class DominoGame {
             socketConnected: Boolean(this._socialSocket?.connected),
             socketReady: Boolean(this._socialSocketReady)
         };
+    }
+
+    buildStartGamePayloadSafe(payload = {}) {
+        const sourcePayload = payload && typeof payload === 'object' ? payload : {};
+        return {
+            roomMode: String(sourcePayload?.roomMode || '').trim() || null,
+            isTeamMode: typeof sourcePayload?.isTeamMode === 'boolean' ? sourcePayload.isTeamMode : null,
+            roomVisibility: String(sourcePayload?.roomVisibility || '').trim() || null,
+            playerCount: Number.isFinite(Number(sourcePayload?.playerCount)) ? Number(sourcePayload.playerCount) : null,
+            aiCount: Number.isFinite(Number(sourcePayload?.aiCount)) ? Number(sourcePayload.aiCount) : null,
+            stakeKey: String(sourcePayload?.stakeKey || '').trim() || null,
+            instantWinEnabled: typeof sourcePayload?.instantWinEnabled === 'boolean' ? sourcePayload.instantWinEnabled : null,
+            dlossThreshold: Number.isFinite(Number(sourcePayload?.dlossThreshold)) ? Number(sourcePayload.dlossThreshold) : null
+        };
+    }
+
+    resolveRoomModeState(roomState = this.currentRoomState, schemaState = null) {
+        const sourceRoomState = roomState && typeof roomState === 'object' ? roomState : {};
+        const sourceSchemaState = schemaState && typeof schemaState === 'object' ? schemaState : {};
+        const roomModeFromState = String(
+            sourceRoomState.roomMode
+            || sourceRoomState.scoreMode
+            || sourceSchemaState.roomMode
+            || sourceSchemaState.scoreMode
+            || ''
+        ).trim().toLowerCase();
+        const isTeamModeFromState = typeof sourceRoomState.isTeamMode === 'boolean'
+            ? sourceRoomState.isTeamMode
+            : typeof sourceSchemaState.isTeamMode === 'boolean'
+                ? sourceSchemaState.isTeamMode
+                : null;
+        const isTeamMode = isTeamModeFromState !== null
+            ? isTeamModeFromState
+            : roomModeFromState === 'team' || roomModeFromState === '2v2' || roomModeFromState === 'partnership'
+                ? true
+                : roomModeFromState === 'ffa' || roomModeFromState === 'solo'
+                    ? false
+                    : Boolean(this.isTeamMode);
+        const roomMode = roomModeFromState === 'team' || roomModeFromState === '2v2' || roomModeFromState === 'partnership'
+            ? 'team'
+            : roomModeFromState === 'ffa' || roomModeFromState === 'solo'
+                ? 'ffa'
+                : (isTeamMode ? 'team' : 'ffa');
+        const scoreMode = String(sourceRoomState.scoreMode || sourceSchemaState.scoreMode || (isTeamMode ? 'team' : 'solo')).trim().toLowerCase() || (isTeamMode ? 'team' : 'solo');
+        return {
+            roomMode,
+            roomModeFromState: roomModeFromState || null,
+            isTeamMode,
+            isTeamModeFromState,
+            scoreMode,
+            topHudMode: isTeamMode ? 'team' : 'solo'
+        };
+    }
+
+    buildRoomStatePlayersSafe(roomState = this.currentRoomState) {
+        const players = Array.isArray(roomState?.players) ? roomState.players : [];
+        return players.slice(0, 6).map((player) => ({
+            sessionId: String(player?.sessionId || '').trim() || null,
+            playerId: String(player?.playerId || '').trim() || null,
+            displayName: String(player?.name || '').trim() || null,
+            seatIndex: Number.isInteger(Number(player?.seatIndex)) ? Number(player.seatIndex) : -1,
+            seatNumber: Number.isInteger(Number(player?.seatNumber)) ? Number(player.seatNumber) : (Number.isInteger(Number(player?.seatIndex)) && Number(player.seatIndex) >= 0 ? Number(player.seatIndex) + 1 : 0),
+            team: Number.isInteger(Number(player?.team)) ? Number(player.team) : null,
+            isBot: Boolean(player?.isBot),
+            isConnected: Boolean(player?.isConnected)
+        }));
+    }
+
+    buildTeamAssignmentsSafe(roomState = this.currentRoomState) {
+        const players = Array.isArray(roomState?.players) ? roomState.players : [];
+        const declaredTeams = Array.isArray(roomState?.teams) ? roomState.teams : [];
+        return [0, 1].map((teamIndex) => {
+            const declaredTeam = declaredTeams[teamIndex] || {};
+            const members = players.filter((player) => Number(player?.team) === teamIndex);
+            return {
+                index: teamIndex,
+                name: String(declaredTeam?.name || (teamIndex === 0 ? 'Team A' : 'Team B')).trim() || null,
+                score: Number.isFinite(Number(declaredTeam?.score)) ? Number(declaredTeam.score) : Number(Array.isArray(roomState?.teamScores) ? roomState.teamScores[teamIndex] : 0),
+                roundWins: Number.isFinite(Number(declaredTeam?.roundWins)) ? Number(declaredTeam.roundWins) : Number(Array.isArray(roomState?.teamRoundWins) ? roomState.teamRoundWins[teamIndex] : 0),
+                memberSessionIds: Array.isArray(declaredTeam?.memberSessionIds) && declaredTeam.memberSessionIds.length
+                    ? declaredTeam.memberSessionIds.slice(0, 4).map((value) => String(value || '').trim()).filter(Boolean)
+                    : members.map((player) => String(player?.sessionId || '').trim()).filter(Boolean),
+                memberPlayerIds: Array.isArray(declaredTeam?.memberPlayerIds) && declaredTeam.memberPlayerIds.length
+                    ? declaredTeam.memberPlayerIds.slice(0, 4).map((value) => String(value || '').trim()).filter(Boolean)
+                    : members.map((player) => String(player?.playerId || '').trim()).filter(Boolean)
+            };
+        });
+    }
+
+    buildSeatAssignmentsSafe(roomState = this.currentRoomState) {
+        const totalSeats = Number(roomState?.totalPlayers || roomState?.humanSeats || this.playerCount || 0);
+        const players = Array.isArray(roomState?.players) ? roomState.players : [];
+        const bySeat = new Map();
+        players.forEach((player) => {
+            const seatIndex = Number(player?.seatIndex);
+            if (Number.isInteger(seatIndex) && seatIndex >= 0) {
+                bySeat.set(seatIndex, player);
+            }
+        });
+        return Array.from({ length: Math.max(0, totalSeats) }, (_, seatIndex) => {
+            const player = bySeat.get(seatIndex) || null;
+            return {
+                seatIndex,
+                seatNumber: seatIndex + 1,
+                playerId: String(player?.playerId || '').trim() || null,
+                sessionId: String(player?.sessionId || '').trim() || null,
+                displayName: String(player?.name || '').trim() || null,
+                team: Number.isInteger(Number(player?.team)) ? Number(player.team) : null,
+                isBot: Boolean(player?.isBot),
+                isConnected: Boolean(player?.isConnected)
+            };
+        });
     }
 
     recordInviteSendAttempt(payload = {}) {
@@ -9870,7 +10029,11 @@ class DominoGame {
         closeBtn.className = 'social-close-btn seat-selection-close-btn';
         closeBtn.setAttribute('aria-label', this.t('modal-close'));
         closeBtn.textContent = '×';
-        closeBtn.addEventListener('click', () => this.hideSeatSelectionUi());
+        closeBtn.addEventListener('click', (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            void this.handleSeatSelectionClose('seat-picker-close');
+        });
         headCopy.appendChild(kicker);
         headCopy.appendChild(title);
         headCopy.appendChild(desc);
@@ -9933,6 +10096,20 @@ class DominoGame {
             overlay.setAttribute('aria-hidden', 'true');
         }
         document.body.classList.remove('seat-selection-active');
+    }
+
+    async handleSeatSelectionClose(action = 'seat-picker-close') {
+        this._lastSeatPickerCloseAttemptAt = Date.now();
+        this._lastSeatPickerCloseAction = String(action || '').trim() || 'seat-picker-close';
+        this._lastSeatPickerCloseStartedGame = false;
+        this._lastSeatPickerCloseError = '';
+        try {
+            this.hideSeatSelectionUi();
+            this.renderSocialDebugPanel();
+        } catch (error) {
+            this._lastSeatPickerCloseError = String(error?.message || error || 'seat-picker-close-failed');
+            throw error;
+        }
     }
 
     isSeatSelectionUiVisible() {
@@ -12082,14 +12259,17 @@ class DominoGame {
             return;
         }
         this.currentRoomState = roomState;
-        const normalizedRoomStateMode = String(roomState?.roomMode || '').trim().toLowerCase();
-        this.isTeamMode = typeof roomState?.isTeamMode === 'boolean'
-            ? roomState.isTeamMode
-            : normalizedRoomStateMode === 'team' || normalizedRoomStateMode === '2v2' || normalizedRoomStateMode === 'partnership'
-                ? true
-                : normalizedRoomStateMode === 'ffa' || normalizedRoomStateMode === 'solo'
-                    ? false
-                    : this.isTeamMode;
+        const resolvedRoomMode = this.resolveRoomModeState(roomState, null);
+        this.isTeamMode = resolvedRoomMode.isTeamMode;
+        this._resolvedRoomModeFromState = resolvedRoomMode.roomModeFromState || '';
+        this._resolvedScoreMode = resolvedRoomMode.scoreMode || '';
+        this._resolvedTopHudMode = resolvedRoomMode.topHudMode || '';
+        this._lastRoomStateAt = Date.now();
+        this._lastRoomStateIsTeamMode = resolvedRoomMode.isTeamMode;
+        this._lastRoomStateRoomMode = resolvedRoomMode.roomMode;
+        this._lastRoomStatePlayersSafe = this.buildRoomStatePlayersSafe(roomState);
+        this._lastRoomStateTeamAssignmentsSafe = this.buildTeamAssignmentsSafe(roomState);
+        this._lastRoomStateSeatAssignmentsSafe = this.buildSeatAssignmentsSafe(roomState);
         this.turnVersion = Number(roomState?.turnVersion || this.turnVersion || 1);
         this.turnTimeoutMs = Number(roomState?.turnDurationMs || this.turnTimeoutMs || TURN_TIMEOUT_MS);
         this.syncServerClock(roomState?.serverNow || roomState?.serverTime || 0);
@@ -12270,14 +12450,11 @@ class DominoGame {
 
         const roomPlayers = Array.isArray(roomState.players) ? roomState.players : [];
         const totalPlayers = Math.max(2, Number(roomState.totalPlayers || roomState.humanSeats || roomPlayers.length || 2));
-        const normalizedWaitingRoomStateMode = String(roomState?.roomMode || '').trim().toLowerCase();
-        this.isTeamMode = typeof roomState?.isTeamMode === 'boolean'
-            ? roomState.isTeamMode
-            : normalizedWaitingRoomStateMode === 'team' || normalizedWaitingRoomStateMode === '2v2' || normalizedWaitingRoomStateMode === 'partnership'
-                ? true
-                : normalizedWaitingRoomStateMode === 'ffa' || normalizedWaitingRoomStateMode === 'solo'
-                    ? false
-                    : this.isTeamMode;
+        const resolvedRoomMode = this.resolveRoomModeState(roomState, null);
+        this.isTeamMode = resolvedRoomMode.isTeamMode;
+        this._resolvedRoomModeFromState = resolvedRoomMode.roomModeFromState || '';
+        this._resolvedScoreMode = resolvedRoomMode.scoreMode || '';
+        this._resolvedTopHudMode = resolvedRoomMode.topHudMode || '';
         const mySessionId = this.network?.room?.sessionId || '';
         const myIndex = roomPlayers.findIndex((player) => player.sessionId === mySessionId);
 
@@ -13536,11 +13713,17 @@ class DominoGame {
     }
     renderState() {
         this.renderer.removeArrows();
+        const resolvedRoomMode = this.resolveRoomModeState(this.currentRoomState, null);
+        this.isTeamMode = resolvedRoomMode.isTeamMode;
+        this._resolvedRoomModeFromState = resolvedRoomMode.roomModeFromState || '';
+        this._resolvedScoreMode = resolvedRoomMode.scoreMode || '';
+        this._resolvedTopHudMode = resolvedRoomMode.topHudMode || '';
+        const isTeamMode = resolvedRoomMode.isTeamMode;
         if (this.gameActive) {
             document.getElementById('round-end-screen')?.classList.remove('active');
         }
         let displayEntities;
-        if (this.isTeamMode) {
+        if (isTeamMode) {
             const teamA = this.getTeamMembers(0);
             const teamB = this.getTeamMembers(1);
             const resolveTeamProfile = (members) => members.map((index) => this.roomPlayerRefs?.[index] || null).find((player) => Boolean(String(player?.playerId || player?.userId || player?.id || '').trim()) && !player?.isBot) || members.map((index) => this.roomPlayerRefs?.[index] || null).find((player) => Boolean(String(player?.playerId || player?.userId || player?.id || '').trim())) || null;
@@ -14149,8 +14332,14 @@ class DominoGame {
 
     renderRealtimeGameDeltaView({ boardChanged = false, handChanged = true, opponentHandsChanged = true, scoresChanged = true, infoChanged = true, force = false } = {}) {
         const roomPlayers = Array.isArray(this.currentRoomState?.players) ? this.currentRoomState.players : [];
+        const resolvedRoomMode = this.resolveRoomModeState(this.currentRoomState, null);
+        this.isTeamMode = resolvedRoomMode.isTeamMode;
+        this._resolvedRoomModeFromState = resolvedRoomMode.roomModeFromState || '';
+        this._resolvedScoreMode = resolvedRoomMode.scoreMode || '';
+        this._resolvedTopHudMode = resolvedRoomMode.topHudMode || '';
+        const isTeamMode = resolvedRoomMode.isTeamMode;
         let displayEntities;
-        if (this.isTeamMode) {
+        if (isTeamMode) {
             const teamA = this.getTeamMembers(0);
             const teamB = this.getTeamMembers(1);
             const resolveTeamProfile = (members) => members.map((index) => this.roomPlayerRefs?.[index] || null).find((player) => Boolean(String(player?.playerId || player?.userId || player?.id || '').trim()) && !player?.isBot) || members.map((index) => this.roomPlayerRefs?.[index] || null).find((player) => Boolean(String(player?.playerId || player?.userId || player?.id || '').trim())) || null;
@@ -14223,7 +14412,11 @@ class DominoGame {
         this.syncServerClock(payload?.serverNow || 0);
         this.currentPlayer = Number(payload?.currentPlayerIndex ?? 0);
         this.boneyard = Array.from({ length: Number(payload?.boneyardCount || 0) });
-        this.isTeamMode = Boolean(payload?.isTeamMode);
+        const resolvedRoomMode = this.resolveRoomModeState(this.currentRoomState, payload);
+        this.isTeamMode = resolvedRoomMode.isTeamMode;
+        this._resolvedRoomModeFromState = resolvedRoomMode.roomModeFromState || '';
+        this._resolvedScoreMode = resolvedRoomMode.scoreMode || '';
+        this._resolvedTopHudMode = resolvedRoomMode.topHudMode || '';
         this.teamScores = Array.from(payload?.teamScores || [0, 0]);
         this.teamRoundWins = Array.from(payload?.teamRoundWins || [0, 0]);
         this.matchRound = Number(payload?.matchRound || 1);
@@ -14314,6 +14507,11 @@ class DominoGame {
         }
         const isBoardAnimationAction = boardChanged && (action === 'play' || action === 'gosha') && !isOwnOptimisticPlay;
         const deferScoreUi = scoreDelta > 0 && (action === 'play' || action === 'gosha');
+        const resolvedRoomMode = this.resolveRoomModeState(this.currentRoomState, payload);
+        this.isTeamMode = resolvedRoomMode.isTeamMode;
+        this._resolvedRoomModeFromState = resolvedRoomMode.roomModeFromState || '';
+        this._resolvedScoreMode = resolvedRoomMode.scoreMode || '';
+        this._resolvedTopHudMode = resolvedRoomMode.topHudMode || '';
 
         const previousTileIds = new Set(this.board.nodes.map((n) => n.tile.id));
 
@@ -14466,7 +14664,11 @@ class DominoGame {
         
         this.currentPlayer = state?.currentPlayerIndex ?? 0;
         this.boneyard = Array.from({ length: state?.boneyardCount || 0 });
-        this.isTeamMode = !!state?.isTeamMode;
+        const resolvedRoomMode = this.resolveRoomModeState(this.currentRoomState, state);
+        this.isTeamMode = resolvedRoomMode.isTeamMode;
+        this._resolvedRoomModeFromState = resolvedRoomMode.roomModeFromState || '';
+        this._resolvedScoreMode = resolvedRoomMode.scoreMode || '';
+        this._resolvedTopHudMode = resolvedRoomMode.topHudMode || '';
         this.matchRound = state?.matchRound || 1;
         this.deal = state?.deal || 1;
         this.gameActive = !!state?.gameActive;
@@ -14595,9 +14797,10 @@ class DominoGame {
         // Reconstruct all hands to show them at the end
         const finalHands = data.hands.map(h => h.map(t => new Tile(t.a, t.b)));
         this.hands = finalHands;
+        const isTeamMode = this.resolveRoomModeState(this.currentRoomState, data).isTeamMode;
         
         let displayEntities;
-        if(this.isTeamMode){
+        if(isTeamMode){
             const wt = data.winnerIndex % 2;
             displayEntities = [
                 {name: this.getTeamDisplayName(0), isWinner: wt===0, score: this.teamScores[0], handPoints: this.getTeamHandPoints(0), leftoverHands: this.getTeamLeftoverHands(0)},
@@ -14633,12 +14836,13 @@ class DominoGame {
         this.gameActive = false;
         this.clearTurnTimers();
         const wi = data.winnerIndex;
-        const winnerTeamIndex = data.isTeamMode ? (wi % 2) : null;
+        const isTeamMode = this.resolveRoomModeState(this.currentRoomState, data).isTeamMode;
+        const winnerTeamIndex = isTeamMode ? (wi % 2) : null;
         this.roundOver = true;
 
-        if (data.isTeamMode) {
-            this.teamScores = data.teamScores;
-            this.teamRoundWins = data.teamRoundWins;
+        if (isTeamMode) {
+            this.teamScores = Array.from(data.teamScores || this.teamScores || [0, 0]);
+            this.teamRoundWins = Array.from(data.teamRoundWins || this.teamRoundWins || [0, 0]);
         } else {
             for (const p of data.players) {
                 const idx = this.playerNames.indexOf(p.name);
@@ -14654,7 +14858,7 @@ class DominoGame {
         this.applyOnlineEconomySettlement(data.economy);
 
         let displayEntities;
-        if (data.isTeamMode) {
+        if (isTeamMode) {
             displayEntities = [
                 {name: this.getTeamDisplayName(0), isWinner: winnerTeamIndex === 0, score: data.teamScores[0], roundWins: data.teamRoundWins[0]},
                 {name: this.getTeamDisplayName(1), isWinner: winnerTeamIndex === 1, score: data.teamScores[1], roundWins: data.teamRoundWins[1]}
@@ -14666,7 +14870,7 @@ class DominoGame {
         if (data.isMatchOver) {
             this.showMatchResult();
         } else {
-            const winnerLabel = data.isTeamMode ? this.getTeamDisplayName(winnerTeamIndex) : this.playerNames[wi];
+            const winnerLabel = isTeamMode ? this.getTeamDisplayName(winnerTeamIndex) : this.playerNames[wi];
             this.renderer.renderRoundEnd(winnerLabel, displayEntities, data.wins, data.matchRound, false);
         }
         this.matchRound = data.matchRound + 1;
@@ -15101,7 +15305,8 @@ class DominoGame {
         const economySummary = this.network.isMultiplayer
             ? (this.onlineEconomyMode === 'coins' ? { ...this.onlineCoinSummary } : null)
             : (this.soloEconomyMode === 'coins' ? { ...this.coinMatchSummary } : null);
-        if(this.isTeamMode){
+        const isTeamMode = this.resolveRoomModeState(this.currentRoomState, null).isTeamMode;
+        if(isTeamMode){
             const w=this.teamScores[0]>=this.teamScores[1]?0:1;
             this.renderer.renderGameOver(w===0?this.getTeamDisplayName(0):this.getTeamDisplayName(1),[
                 {name:this.t('team-a'),score:this.teamScores[0],roundWins:this.teamRoundWins[0]},
@@ -15138,7 +15343,8 @@ class DominoGame {
                 score: this.scores[index] || 0,
                 roundWins: this.roundWins[index] || 0
             }));
-        const winnerLabel = this.isTeamMode
+        const isTeamMode = this.resolveRoomModeState(this.currentRoomState, null).isTeamMode;
+        const winnerLabel = isTeamMode
             ? (payload.teamScores?.[0] >= payload.teamScores?.[1] ? this.getTeamDisplayName(0) : this.getTeamDisplayName(1))
             : (payload.values?.player || this.t('online-room-closed'));
         const economySummary = this.network.isMultiplayer
@@ -15160,21 +15366,22 @@ class DominoGame {
         if (this.network.isMultiplayer) return;
         const platformToken = this.account?.getRoomAuthToken?.();
         if (!platformToken) return;
+        const isTeamMode = this.resolveRoomModeState(this.currentRoomState, null).isTeamMode;
         try {
             const participants = this.playerNames.map((name, index) => ({
                 isSelf: index === this.humanPlayerIndex,
                 name,
-                teamIndex: this.isTeamMode ? (index % 2) : null,
-                winnerKey: this.isTeamMode ? `team:${winnerIndex}` : `player:${winnerIndex}`,
-                points: this.isTeamMode ? (this.teamScores[index % 2] || 0) : (this.scores[index] || 0),
-                roundWins: this.isTeamMode ? (this.teamRoundWins[index % 2] || 0) : (this.roundWins[index] || 0),
+                teamIndex: isTeamMode ? (index % 2) : null,
+                winnerKey: isTeamMode ? `team:${winnerIndex}` : `player:${winnerIndex}`,
+                points: isTeamMode ? (this.teamScores[index % 2] || 0) : (this.scores[index] || 0),
+                roundWins: isTeamMode ? (this.teamRoundWins[index % 2] || 0) : (this.roundWins[index] || 0),
                 economyMode: this.soloEconomyMode,
                 stakeKey: this.soloStakeKey
             }));
             await this.account.recordMatch({
-                mode: this.isTeamMode ? 'team' : 'solo',
-                isTeamMode: this.isTeamMode,
-                winnerKey: this.isTeamMode ? `team:${winnerIndex}` : `player:${winnerIndex}`,
+                mode: isTeamMode ? 'team' : 'solo',
+                isTeamMode,
+                winnerKey: isTeamMode ? `team:${winnerIndex}` : `player:${winnerIndex}`,
                 participants,
                 economyMode: this.soloEconomyMode,
                 stakeKey: this.soloStakeKey,

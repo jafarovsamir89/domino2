@@ -112,6 +112,7 @@ test("buildRoomStatePayload preserves room_state fields and currentPlayers logic
         roomCode: "ABCD",
         roomVisibility: "open",
         roomMode: "team",
+        scoreMode: "team",
         stakeKey: "stake_500",
         stakeAmount: 500,
         bankAmount: 1000,
@@ -128,7 +129,16 @@ test("buildRoomStatePayload preserves room_state fields and currentPlayers logic
         gameActive: true,
         seatSelectionRequired: false,
         hostName: "Host",
-        players
+        players: [
+            { sessionId: "s1", index: 0, name: "Host", userId: "", playerId: "", avatarUrl: "", isConnected: true, isBot: false, seatIndex: 0, seatNumber: 1, team: 0, voiceEnabled: false },
+            { sessionId: "s2", index: 1, name: "Guest", userId: "", playerId: "", avatarUrl: "", isConnected: true, isBot: false, seatIndex: 1, seatNumber: 2, team: 1, voiceEnabled: false }
+        ],
+        teamScores: [0, 0],
+        teamRoundWins: [0, 0],
+        teams: [
+            { index: 0, name: "Team A", score: 0, roundWins: 0, memberSessionIds: ["s1"], memberPlayerIds: [] },
+            { index: 1, name: "Team B", score: 0, roundWins: 0, memberSessionIds: ["s2"], memberPlayerIds: [] }
+        ]
     });
 });
 
@@ -168,4 +178,8 @@ test("buildRoomStatePayload uses connected human count when the game is inactive
     assert.equal(payload.stakeKey, "stake_200");
     assert.equal(payload.hostName, "Host");
     assert.equal(payload.seatSelectionRequired, true);
+    assert.equal(payload.scoreMode, "solo");
+    assert.deepEqual(payload.teamScores, []);
+    assert.deepEqual(payload.teamRoundWins, []);
+    assert.deepEqual(payload.teams, []);
 });
