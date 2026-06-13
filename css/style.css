@@ -3114,15 +3114,45 @@ body.move-hint-selection-active #game-screen .player-name-btn {
 }
 
 .room-player-chip {
-    display: flex;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
     align-items: center;
-    justify-content: space-between;
-    gap: 8px;
+    gap: 10px;
     padding: 10px 12px;
     border-radius: 12px;
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.08);
     font-size: 0.8rem;
+}
+
+.room-player-chip-body {
+    min-width: 0;
+    display: grid;
+    gap: 4px;
+}
+
+.room-player-chip-title-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    min-width: 0;
+}
+
+.room-player-chip-title {
+    color: var(--text);
+    font-size: 0.88rem;
+    font-weight: 800;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.room-player-chip-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    min-width: 0;
 }
 
 .room-player-avatar {
@@ -3150,12 +3180,12 @@ body.move-hint-selection-active #game-screen .player-name-btn {
 
 .room-player-chip.empty {
     color: var(--text-dim);
-    font-style: italic;
-    display: grid;
-    gap: 8px;
-    align-items: start;
-    justify-items: stretch;
     font-style: normal;
+}
+
+.room-player-chip.empty .room-player-avatar,
+.room-player-chip.bot .room-player-avatar {
+    background: linear-gradient(180deg, rgba(240, 192, 64, 0.14), rgba(13, 22, 34, 0.96));
 }
 
 .room-player-empty-label {
@@ -3165,7 +3195,8 @@ body.move-hint-selection-active #game-screen .player-name-btn {
 }
 
 .room-slot-invite-btn {
-    width: 100%;
+    width: auto;
+    min-width: 108px;
     padding: 8px 10px;
     border-radius: 12px;
     font-size: 0.76rem;
@@ -3199,6 +3230,23 @@ body.move-hint-selection-active #game-screen .player-name-btn {
 .multi-status {
     margin-bottom: 10px;
     line-height: 1.45;
+}
+
+@media (max-width: 640px) {
+    .room-player-chip {
+        grid-template-columns: auto minmax(0, 1fr);
+        align-items: start;
+    }
+
+    .room-player-chip-actions {
+        grid-column: 2;
+        justify-content: flex-start;
+    }
+
+    .room-slot-invite-btn {
+        width: 100%;
+        min-width: 0;
+    }
 }
 
 #join-code-input {

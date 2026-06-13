@@ -205,6 +205,24 @@ test("maybeAutoStartGame does not rely on clients length when humans are already
     assert.equal(room.countReadyHumanPlayers(), 2);
 });
 
+test("ffa room auto-starts with bots once human seats are filled", async () => {
+    const room = createRoom({ totalPlayers: 4, aiCount: 2, isTeamMode: false });
+    let startCalls = 0;
+    room.maybeAutoStartGame = DominoRoom.prototype.maybeAutoStartGame.bind(room);
+    room.startGame = async () => {
+        startCalls += 1;
+    };
+
+    await joinHuman(room, "host", "Host");
+    await joinHumanWithoutClientList(room, "guest", "Guest");
+    await new Promise((resolve) => setTimeout(resolve, 650));
+
+    assert.equal(startCalls, 1);
+    assert.equal(room._lastAutoStartCheckAt > 0, true);
+    assert.equal(room._lastAutoStartTriggeredAt > 0, true);
+    assert.equal(room._lastAutoStartBlockedReason, "");
+});
+
 test("updateSchemaState syncs player handCount fields from live hands", async () => {
     const room = createRoom({ totalPlayers: 2, aiCount: 0, isTeamMode: false });
     await joinHuman(room, "host", "Host");

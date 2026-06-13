@@ -37,16 +37,21 @@ test("client keeps team runtime and seat picker close flow explicit", () => {
         "event.preventDefault();",
         "event.stopPropagation();",
         "roomRuntime: {",
+        "roomStart: {",
         "startGamePayloadSafe",
         "lastRoomStatePlayersSafe",
         "teamAssignmentsSafe",
         "seatAssignmentsSafe",
+        "lastRoomStateRoomStart",
         "scoreMode",
         "topHudMode",
         "isMoveHintSelectionActive()",
         "syncMoveHintSelectionUiState()",
         "lastProfileOpenBlockedByMoveHint",
-        "lastProfileClickBlockedReason"
+        "lastProfileClickBlockedReason",
+        "activeRoomIdBeforeClose",
+        "gameStateBeforeClose",
+        "lastAutoStartCheckAt"
     ];
 
     for (const source of [appSource, webAppSource]) {

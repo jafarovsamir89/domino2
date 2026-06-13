@@ -1256,8 +1256,26 @@ class DominoGame {
         this._lastProfileCloseTouchedGameState = false;
         this._lastProfileCloseError = '';
         try {
+            const currentRoomId = String(this.currentRoomState?.roomId || this.getCurrentRoomCode?.() || '').trim() || null;
+            const currentGameState = {
+                gameActive: Boolean(this.gameActive),
+                matchOver: Boolean(this.matchOver),
+                roundOver: Boolean(this.roundOver),
+                roomId: currentRoomId,
+                screen: document.getElementById('game-screen')?.classList.contains('active') ? 'game-screen' : 'start-screen'
+            };
+            this._lastProfileCloseActiveRoomIdBefore = currentRoomId;
+            this._lastProfileCloseGameStateBefore = currentGameState;
             document.getElementById('player-profile-modal')?.classList.remove('active');
             this.playerProfileState = null;
+            this._lastProfileCloseActiveRoomIdAfter = String(this.currentRoomState?.roomId || this.getCurrentRoomCode?.() || '').trim() || null;
+            this._lastProfileCloseGameStateAfter = {
+                gameActive: Boolean(this.gameActive),
+                matchOver: Boolean(this.matchOver),
+                roundOver: Boolean(this.roundOver),
+                roomId: this._lastProfileCloseActiveRoomIdAfter,
+                screen: document.getElementById('game-screen')?.classList.contains('active') ? 'game-screen' : 'start-screen'
+            };
         } catch (error) {
             this._lastProfileCloseError = String(error?.message || error || '').trim();
             throw error;
@@ -1502,9 +1520,14 @@ class DominoGame {
         const lastRoomStateSeatAssignmentsSafe = Array.isArray(this._lastRoomStateSeatAssignmentsSafe) && this._lastRoomStateSeatAssignmentsSafe.length
             ? this._lastRoomStateSeatAssignmentsSafe
             : this.buildSeatAssignmentsSafe(currentRoomState);
+        const lastRoomStateRoomStart = this._lastRoomStateRoomStart || currentRoomState?.roomStart || {};
         const activePlayerId = String(messagesState.activePlayerId || '').trim();
         const activeHeaderPlayerId = String(this._activeHeaderPlayerId || '').trim();
         const headerProfileMatchesConversation = !activePlayerId || !activeHeaderPlayerId || activeHeaderPlayerId === activePlayerId;
+        const roomStartPlayers = Array.isArray(lastRoomStatePlayersSafe) ? lastRoomStatePlayersSafe : [];
+        const roomStartHumanCount = roomStartPlayers.filter((player) => !player?.isBot).length;
+        const roomStartBotCount = roomStartPlayers.filter((player) => Boolean(player?.isBot)).length;
+        const roomStartReadyPlayersCount = roomStartPlayers.filter((player) => Boolean(player?.isConnected) && (!Boolean(currentRoomState?.isTeamMode) || (Number.isInteger(Number(player?.seatIndex)) && Number(player.seatIndex) >= 0))).length;
 
         return {
             socket: {
@@ -1608,11 +1631,28 @@ class DominoGame {
                 lastSeatPickerCloseStartedGame: Boolean(this._lastSeatPickerCloseStartedGame),
                 lastSeatPickerCloseError: String(this._lastSeatPickerCloseError || '').trim() || null
             },
-                moveHints: {
-                    active: this.isMoveHintSelectionActive(),
-                    lastShownAt: Number(this._lastMoveHintShownAt || 0) || 0,
-                    lastClearedAt: Number(this._lastMoveHintClearedAt || 0) || 0,
-                    lastLeftHintRectSafe: this._lastLeftHintRectSafe || null,
+            roomStart: {
+                roomMode: String((currentRoomState?.roomStart?.roomMode || this._lastRoomStateRoomStart?.roomMode || resolvedRoomMode.roomModeFromState || (this.isTeamMode ? 'team' : 'ffa'))).trim() || null,
+                isTeamMode: typeof (currentRoomState?.roomStart?.isTeamMode ?? this._lastRoomStateRoomStart?.isTeamMode) === 'boolean'
+                    ? Boolean(currentRoomState?.roomStart?.isTeamMode ?? this._lastRoomStateRoomStart?.isTeamMode)
+                    : Boolean(currentRoomState?.isTeamMode ?? this.isTeamMode),
+                maxPlayers: Number(currentRoomState?.roomStart?.maxPlayers || this._lastRoomStateRoomStart?.maxPlayers || currentRoomState?.totalPlayers || this.onlinePlayerCount || 0) || 0,
+                occupiedSeats: Number(currentRoomState?.roomStart?.occupiedSeats || this._lastRoomStateRoomStart?.occupiedSeats || lastRoomStatePlayersSafe.length || 0) || 0,
+                humanCount: Number(currentRoomState?.roomStart?.humanCount || this._lastRoomStateRoomStart?.humanCount || roomStartPlayers.filter((player) => !player?.isBot).length || 0) || 0,
+                botCount: Number(currentRoomState?.roomStart?.botCount || this._lastRoomStateRoomStart?.botCount || roomStartPlayers.filter((player) => Boolean(player?.isBot)).length || 0) || 0,
+                readyPlayersCount: Number(currentRoomState?.roomStart?.readyPlayersCount || this._lastRoomStateRoomStart?.readyPlayersCount || roomStartReadyPlayersCount || 0) || 0,
+                botsReadyCount: Number(currentRoomState?.roomStart?.botsReadyCount || this._lastRoomStateRoomStart?.botsReadyCount || roomStartPlayers.filter((player) => Boolean(player?.isBot)).length || 0) || 0,
+                pendingInvitesCount: Number(playInviteCounts.pending || 0) || 0,
+                joinedInviteCount: Number(playInviteCounts.joined || 0) || 0,
+                lastAutoStartCheckAt: Number(currentRoomState?.roomStart?.lastAutoStartCheckAt || this._lastAutoStartCheckAt || 0) || 0,
+                lastAutoStartBlockedReason: String(currentRoomState?.roomStart?.lastAutoStartBlockedReason || this._lastAutoStartBlockedReason || '').trim() || null,
+                lastAutoStartTriggeredAt: Number(currentRoomState?.roomStart?.lastAutoStartTriggeredAt || this._lastAutoStartTriggeredAt || 0) || 0
+            },
+            moveHints: {
+                active: this.isMoveHintSelectionActive(),
+                lastShownAt: Number(this._lastMoveHintShownAt || 0) || 0,
+                lastClearedAt: Number(this._lastMoveHintClearedAt || 0) || 0,
+                lastLeftHintRectSafe: this._lastLeftHintRectSafe || null,
                 lastRightHintRectSafe: this._lastRightHintRectSafe || null,
                 lastProfileClickBlockedAt: Number(this._lastProfileClickBlockedAt || 0) || 0,
                 lastProfileClickBlockedReason: String(this._lastProfileClickBlockedReason || '').trim() || null,
@@ -1626,6 +1666,10 @@ class DominoGame {
                 lastProfileCloseAction: String(this._lastProfileCloseAction || '').trim() || null,
                 lastProfileCloseTouchedGameState: Boolean(this._lastProfileCloseTouchedGameState),
                 lastProfileCloseError: String(this._lastProfileCloseError || '').trim() || null,
+                activeRoomIdBeforeClose: String(this._lastProfileCloseActiveRoomIdBefore || '').trim() || null,
+                activeRoomIdAfterClose: String(this._lastProfileCloseActiveRoomIdAfter || '').trim() || null,
+                gameStateBeforeClose: this._lastProfileCloseGameStateBefore || null,
+                gameStateAfterClose: this._lastProfileCloseGameStateAfter || null,
                 lastProfileOpenAttemptAt: Number(this._lastProfileOpenAttemptAt || 0) || 0,
                 lastProfileOpenBlockedByMoveHint: Boolean(this._lastProfileOpenBlockedByMoveHint)
             },
@@ -1976,6 +2020,7 @@ class DominoGame {
         const incomingActive = incomingPlay.filter((invite) => this.isPlayInviteActive(invite));
         const sentActive = sentPlay.filter((invite) => this.isPlayInviteActive(invite));
         const waitingInvites = [...incomingActive, ...sentActive].filter((invite) => this.isPlayInviteWaiting(invite));
+        const activePlayInvites = [...incomingActive, ...sentActive];
         const hiddenStatusCounts = [...incomingPlay, ...sentPlay].reduce((acc, invite) => {
             const status = String(invite?.status || '').trim().toLowerCase();
             if (status === 'expired') acc.expiredHidden += 1;
@@ -1983,6 +2028,8 @@ class DominoGame {
             if (status === 'declined') acc.declinedHidden += 1;
             return acc;
         }, { expiredHidden: 0, cancelledHidden: 0, declinedHidden: 0 });
+        const pendingCount = activePlayInvites.filter((invite) => String(invite?.status || '').trim().toLowerCase() === 'pending').length;
+        const joinedCount = activePlayInvites.filter((invite) => String(invite?.status || '').trim().toLowerCase() === 'joined').length;
         return {
             rawIncoming: incomingPlay.length,
             rawOutgoing: sentPlay.length,
@@ -1991,6 +2038,8 @@ class DominoGame {
             incoming: incomingActive.length,
             outgoing: sentActive.length,
             waiting: waitingInvites.length,
+            pending: pendingCount,
+            joined: joinedCount,
             expiredHiddenCount: hiddenStatusCounts.expiredHidden,
             cancelledHiddenCount: hiddenStatusCounts.cancelledHidden,
             declinedHiddenCount: hiddenStatusCounts.declinedHidden
@@ -12696,6 +12745,7 @@ class DominoGame {
         this._lastRoomStateAt = Date.now();
         this._lastRoomStateIsTeamMode = resolvedRoomMode.isTeamMode;
         this._lastRoomStateRoomMode = resolvedRoomMode.roomMode;
+        this._lastRoomStateRoomStart = roomState?.roomStart || null;
         this._lastRoomStatePlayersSafe = this.buildRoomStatePlayersSafe(roomState);
         this._lastRoomStateTeamAssignmentsSafe = this.buildTeamAssignmentsSafe(roomState);
         this._lastRoomStateSeatAssignmentsSafe = this.buildSeatAssignmentsSafe(roomState);
@@ -12744,20 +12794,15 @@ class DominoGame {
             source: 'room-player-slot',
             openSeatPickerOnJoin: roomMode === 'team'
         });
-
-        for (const [index, player] of (roomState.players || []).entries()) {
-            const displayName = getFirstNameDisplayName(player.name || '', `Player ${index + 1}`);
+        const createChip = ({ kind = 'human', displayName = '', subtitle = '', avatarUrl = '', seatNumber = 0, sessionId = '', isSelf = false, actionNode = null, iconText = '' }) => {
             const chip = document.createElement('div');
             chip.className = 'room-player-chip';
-            if (player.sessionId === mySessionId) {
-                chip.classList.add('you');
-            }
+            chip.classList.add(`is-${kind}`);
+            if (isSelf) chip.classList.add('you');
+            if (sessionId) chip.dataset.sessionId = sessionId;
+
             const avatar = document.createElement('span');
             avatar.className = 'room-player-avatar';
-            const avatarUrl = player.avatarUrl || this.roomAvatarBySessionId.get(player.sessionId) || '';
-            if (player.sessionId) {
-                this.roomAvatarBySessionId.set(player.sessionId, avatarUrl || this.roomAvatarBySessionId.get(player.sessionId) || '');
-            }
             if (avatarUrl) {
                 avatar.classList.add('has-image');
                 const img = document.createElement('img');
@@ -12766,59 +12811,95 @@ class DominoGame {
                 img.referrerPolicy = 'no-referrer';
                 avatar.appendChild(img);
             } else {
-                avatar.textContent = this.getTurnAvatarText(displayName || '');
+                avatar.textContent = iconText || this.getTurnAvatarText(displayName || '');
             }
-            const name = document.createElement('span');
-            name.textContent = player.sessionId === mySessionId ? `${displayName} (${this.t('online-you')})` : displayName;
-            const state = document.createElement('span');
-            state.className = 'room-player-state';
-            state.textContent = player.isConnected ? this.t('online-ready') : this.t('online-offline');
-            chip.dataset.sessionId = player.sessionId || '';
-            if (player.seatNumber) {
+
+            const body = document.createElement('div');
+            body.className = 'room-player-chip-body';
+            const titleRow = document.createElement('div');
+            titleRow.className = 'room-player-chip-title-row';
+            if (seatNumber) {
                 const seat = document.createElement('span');
                 seat.className = 'room-player-seat';
-                seat.textContent = `${this.t('seat-prefix')} ${player.seatNumber}`;
-                chip.appendChild(seat);
+                seat.textContent = `${this.t('seat-prefix')} ${seatNumber}`;
+                titleRow.appendChild(seat);
+            }
+            const name = document.createElement('span');
+            name.className = 'room-player-chip-title';
+            name.textContent = displayName;
+            titleRow.appendChild(name);
+            const state = document.createElement('span');
+            state.className = 'room-player-state';
+            state.textContent = subtitle;
+            body.appendChild(titleRow);
+            body.appendChild(state);
+
+            const actions = document.createElement('div');
+            actions.className = 'room-player-chip-actions';
+            if (actionNode) {
+                actions.appendChild(actionNode);
             }
 
             chip.appendChild(avatar);
-            chip.appendChild(name);
-            chip.appendChild(state);
-            list.appendChild(chip);
+            chip.appendChild(body);
+            chip.appendChild(actions);
+            return chip;
+        };
+
+        for (const [index, player] of (roomState.players || []).entries()) {
+            const displayName = getFirstNameDisplayName(player.name || '', `Player ${index + 1}`);
+            const avatarUrl = player.avatarUrl || this.roomAvatarBySessionId.get(player.sessionId) || '';
+            if (player.sessionId) {
+                this.roomAvatarBySessionId.set(player.sessionId, avatarUrl || this.roomAvatarBySessionId.get(player.sessionId) || '');
+            }
+            const row = createChip({
+                kind: player.isBot ? 'bot' : 'human',
+                displayName: player.sessionId === mySessionId ? `${displayName} (${this.t('online-you')})` : displayName,
+                subtitle: player.isBot ? this.t('online-bot-slot', { index: index + 1 }) : (player.isConnected ? this.t('online-ready') : this.t('online-offline')),
+                avatarUrl,
+                seatNumber: player.seatNumber,
+                sessionId: player.sessionId || '',
+                isSelf: player.sessionId === mySessionId,
+                iconText: player.isBot ? 'AI' : ''
+            });
+            list.appendChild(row);
         }
 
         const humanPlayerCount = (roomState.players || []).filter(player => !player.isBot).length;
         for (let i = humanPlayerCount; i < humanSeats; i++) {
-            const chip = document.createElement('div');
-            chip.className = 'room-player-chip empty';
-            const label = document.createElement('span');
-            label.className = 'room-player-empty-label';
-            label.textContent = this.format('online-waiting-slot', { index: i + 1 });
-            chip.appendChild(label);
-            if (roomMode === 'ffa') {
-                const inviteBtn = document.createElement('button');
-                inviteBtn.type = 'button';
-                inviteBtn.className = 'btn btn-menu room-slot-invite-btn';
-                inviteBtn.textContent = this.t('friend-invite');
-                inviteBtn.addEventListener('click', async () => {
-                    await this.openContextualRoomInvitePicker({
-                        source: 'ffa-slot',
-                        targetSlotIndex: i,
-                        openSeatPickerOnJoin: false,
-                        roomInviteContext
-                    });
+            const inviteBtn = document.createElement('button');
+            inviteBtn.type = 'button';
+            inviteBtn.className = 'btn btn-menu room-slot-invite-btn';
+            inviteBtn.textContent = this.t('friend-invite');
+            inviteBtn.addEventListener('click', async () => {
+                await this.openContextualRoomInvitePicker({
+                    source: 'ffa-slot',
+                    targetSlotIndex: i,
+                    openSeatPickerOnJoin: false,
+                    roomInviteContext
                 });
-                chip.appendChild(inviteBtn);
-            }
-            list.appendChild(chip);
+            });
+            const row = createChip({
+                kind: 'empty',
+                displayName: this.format('online-waiting-slot', { index: i + 1 }),
+                subtitle: this.t('friend-invite'),
+                seatNumber: i + 1,
+                actionNode: inviteBtn,
+                iconText: String(i + 1)
+            });
+            list.appendChild(row);
         }
 
         if (!roomState.gameActive && aiCount > 0) {
             for (let i = 0; i < aiCount; i++) {
-                const chip = document.createElement('div');
-                chip.className = 'room-player-chip bot';
-                chip.textContent = this.format('online-bot-slot', { index: i + 1 });
-                list.appendChild(chip);
+                const row = createChip({
+                    kind: 'bot',
+                    displayName: this.format('online-bot-slot', { index: i + 1 }),
+                    subtitle: this.t('online-bot-slot', { index: i + 1 }),
+                    seatNumber: 0,
+                    iconText: 'AI'
+                });
+                list.appendChild(row);
             }
         }
 
@@ -14105,7 +14186,7 @@ class DominoGame {
         if (names.length) return names.join('\n');
         const members = this.getTeamMembers(teamIndex);
         const fallbackNames = members.map((i) => this.playerNames[i] || `Player ${i + 1}`);
-        if (fallbackNames.length) return fallbackNames.join(' & ');
+        if (fallbackNames.length) return fallbackNames.join('\n');
         return teamIndex === 0 ? this.t('team-a') : this.t('team-b');
     }
     getTeamHandPoints(teamIndex) {
