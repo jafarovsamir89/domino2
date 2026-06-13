@@ -53,6 +53,11 @@ type PlayInviteRow = {
   id: string;
   roomId: string | null;
   roomCode: string | null;
+  stakeKey: string | null;
+  stakeAmount: number;
+  humanSeats: number;
+  totalPlayers: number;
+  isTeamMode: boolean;
   status: string;
   kind: "play";
   note: string | null;
@@ -516,6 +521,56 @@ export class SocialService {
     return wallet;
   }
 
+  private async getWalletBalance(playerId: string) {
+    const wallet = await this.prisma.coinWallet.findUnique({
+      where: { playerId },
+      select: {
+        balance: true
+      }
+    });
+    return Math.max(0, Math.trunc(Number(wallet?.balance || 0)));
+  }
+
+  private async assertRoomJoinWalletGate(
+    playerId: string,
+    roomContext: { stakeAmount?: number | null; stakeKey?: string | null } | null,
+    fallback: { stakeAmount?: number | null; stakeKey?: string | null } | null = null
+  ) {
+    const requiredStake = Math.max(
+      0,
+      Math.trunc(Number(
+        roomContext?.stakeAmount
+        ?? fallback?.stakeAmount
+        ?? 0
+      ))
+    );
+    const stakeKey = String(roomContext?.stakeKey || fallback?.stakeKey || "").trim() || null;
+    if (!requiredStake) {
+      return {
+        ok: true,
+        requiredStake: 0,
+        balance: 0,
+        stakeKey
+      };
+    }
+    const balance = await this.getWalletBalance(playerId);
+    if (requiredStake > 0 && balance < requiredStake) {
+      return {
+        ok: false,
+        reason: "insufficient_coins",
+        requiredStake,
+        balance,
+        stakeKey
+      };
+    }
+    return {
+      ok: true,
+      requiredStake,
+      balance,
+      stakeKey
+    };
+  }
+
   private async debitWallet(
     db: Prisma.TransactionClient | PrismaService,
     playerId: string,
@@ -877,6 +932,11 @@ export class SocialService {
       id: row.id,
       roomId: roomContext.roomId,
       roomCode: roomContext.roomCode,
+      stakeKey: roomContext.stakeKey,
+      stakeAmount: roomContext.stakeAmount,
+      humanSeats: roomContext.humanSeats,
+      totalPlayers: roomContext.totalPlayers,
+      isTeamMode: roomContext.isTeamMode,
       status: row.status,
       kind: "play",
       note: row.note ?? null,
@@ -915,7 +975,32 @@ export class SocialService {
       || normalizedPayloadJson?.roomCode
       || ""
     ).trim().toUpperCase() || null;
-    return { roomId, roomCode };
+    const stakeKey = String(
+      payloadRoomContext?.stakeKey
+      || normalizedPayloadJson?.stakeKey
+      || ""
+    ).trim() || null;
+    const stakeAmount = Math.max(0, Math.trunc(Number(
+      payloadRoomContext?.stakeAmount
+      ?? normalizedPayloadJson?.stakeAmount
+      ?? 0
+    )));
+    const humanSeats = Math.max(0, Math.trunc(Number(
+      payloadRoomContext?.humanSeats
+      ?? normalizedPayloadJson?.humanSeats
+      ?? 0
+    )));
+    const totalPlayers = Math.max(0, Math.trunc(Number(
+      payloadRoomContext?.totalPlayers
+      ?? normalizedPayloadJson?.totalPlayers
+      ?? 0
+    )));
+    const isTeamMode = Boolean(
+      payloadRoomContext?.isTeamMode
+      ?? normalizedPayloadJson?.isTeamMode
+      ?? false
+    );
+    return { roomId, roomCode, stakeKey, stakeAmount, humanSeats, totalPlayers, isTeamMode };
   }
 
   async getFriends(headers: IncomingHttpHeaders) {
@@ -2668,8 +2753,16 @@ export class SocialService {
       });
       return { ok: false, reason: "invite_not_available" };
     }
+    const roomContext = this.extractPlayInviteRoomContext(row);
+    const walletGate = await this.assertRoomJoinWalletGate(
+      currentPlayer.id,
+      roomContext,
+      roomContext.roomId ? roomContext : null
+    );
+    if (!walletGate.ok) {
+      return walletGate;
+    }
     if (row.status === "accepted") {
-      const roomContext = this.extractPlayInviteRoomContext(row);
       const normalized = row.expiresAt
         ? await this.prisma.playInvite.update({
             where: { id },
@@ -2694,7 +2787,6 @@ export class SocialService {
       throw new BadRequestException("Invitation already responded");
     }
 
-    const roomContext = this.extractPlayInviteRoomContext(row);
     const accepted = await this.prisma.playInvite.update({
       where: { id },
       data: {
@@ -3085,6 +3177,20 @@ export class SocialService {
         item: this.summarizeInvite(expired as any)
       };
     }
+    const walletGate = await this.assertRoomJoinWalletGate(
+      currentPlayer.id,
+      {
+        stakeAmount: row.stakeAmount,
+        stakeKey: row.stakeKey
+      },
+      {
+        stakeAmount: row.stakeAmount,
+        stakeKey: row.stakeKey
+      }
+    );
+    if (!walletGate.ok) {
+      return walletGate;
+    }
     if (row.status === "accepted") {
       const accepted = this.summarizeInvite(row);
       const roomCode = String(accepted.roomCode || "").trim();
@@ -3103,6 +3209,7 @@ export class SocialService {
           roomId: String(accepted.roomId || "").trim(),
           roomMode: String(accepted.roomMode || "ffa").trim(),
           stakeKey: String(accepted.stakeKey || "").trim() || null,
+          stakeAmount: Number(accepted.stakeAmount || 0) || 0,
           expiresAt: accepted.expiresAt
         }
       };
@@ -3146,6 +3253,7 @@ export class SocialService {
         roomId: String(invite.roomId || "").trim(),
         roomMode: String(invite.roomMode || "ffa").trim(),
         stakeKey: String(invite.stakeKey || "").trim() || null,
+        stakeAmount: Number(invite.stakeAmount || 0) || 0,
         expiresAt: invite.expiresAt
       }
     };
