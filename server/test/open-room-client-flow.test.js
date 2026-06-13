@@ -53,13 +53,54 @@ test("client keeps team runtime and seat picker close flow explicit", () => {
         "gameStateBeforeClose",
         "lastAutoStartCheckAt"
     ];
+    const closeHandlerTokens = [
+        "closeBtn.addEventListener('click', (event) => {",
+        "event.preventDefault();",
+        "event.stopPropagation();",
+        "void this.handleSeatSelectionClose('seat-picker-close');"
+    ];
 
     for (const source of [appSource, webAppSource]) {
         for (const token of requiredTokens) {
             assert.equal(source.includes(token), true);
         }
+        for (const token of closeHandlerTokens) {
+            assert.equal(source.includes(token), true);
+        }
         assert.equal(source.includes("closeBtn.addEventListener('click', () => this.hideSeatSelectionUi());"), false);
         assert.equal(source.includes("this.isTeamMode = Boolean(payload?.isTeamMode);"), false);
+    }
+});
+
+test("client renders waiting room rows in a strict single-line format", () => {
+    const appSource = read("js/app.js");
+    const webAppSource = read("www/js/app.js");
+    const cssSource = read("css/style.css");
+    const jsTokens = [
+        "chip.classList.add(kind);",
+        "chip.classList.add(`is-${kind}`);",
+        "displayName: this.t('seat-free')",
+        "displayName: 'AI Bot'",
+        "subtitle: this.t('online-ready')",
+        "iconText: '○'"
+    ];
+    const cssTokens = [
+        "room-player-chip.empty",
+        "room-player-chip.bot",
+        "room-player-chip-title-row",
+        "room-player-chip-actions",
+        "room-player-state",
+        "room-slot-invite-btn",
+        "white-space: nowrap"
+    ];
+
+    for (const source of [appSource, webAppSource]) {
+        for (const token of jsTokens) {
+            assert.equal(source.includes(token), true);
+        }
+    }
+    for (const token of cssTokens) {
+        assert.equal(cssSource.includes(token), true);
     }
 });
 

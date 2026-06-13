@@ -1,4 +1,4 @@
-import { Tile, createFullSet, shuffle, getHandSize, determineFirstPlayer, handPoints, getOpeningPlayScore, hasInvalidOpeningHand, roundTo5 } from './model.js';
+﻿import { Tile, createFullSet, shuffle, getHandSize, determineFirstPlayer, handPoints, getOpeningPlayScore, hasInvalidOpeningHand, roundTo5 } from './model.js';
 import { Board, cloneBoard, reconstructBoard } from './board.js';
 import { AIPlayer } from './ai.js';
 import { Renderer } from './renderer.js?v=social-live-1';
@@ -12797,6 +12797,7 @@ class DominoGame {
         const createChip = ({ kind = 'human', displayName = '', subtitle = '', avatarUrl = '', seatNumber = 0, sessionId = '', isSelf = false, actionNode = null, iconText = '' }) => {
             const chip = document.createElement('div');
             chip.className = 'room-player-chip';
+            chip.classList.add(kind);
             chip.classList.add(`is-${kind}`);
             if (isSelf) chip.classList.add('you');
             if (sessionId) chip.dataset.sessionId = sessionId;
@@ -12855,7 +12856,7 @@ class DominoGame {
             const row = createChip({
                 kind: player.isBot ? 'bot' : 'human',
                 displayName: player.sessionId === mySessionId ? `${displayName} (${this.t('online-you')})` : displayName,
-                subtitle: player.isBot ? this.t('online-bot-slot', { index: index + 1 }) : (player.isConnected ? this.t('online-ready') : this.t('online-offline')),
+                subtitle: player.isBot ? this.t('online-ready') : (player.isConnected ? this.t('online-ready') : this.t('online-offline')),
                 avatarUrl,
                 seatNumber: player.seatNumber,
                 sessionId: player.sessionId || '',
@@ -12881,11 +12882,11 @@ class DominoGame {
             });
             const row = createChip({
                 kind: 'empty',
-                displayName: this.format('online-waiting-slot', { index: i + 1 }),
-                subtitle: this.t('friend-invite'),
+                displayName: this.t('seat-free'),
+                subtitle: '',
                 seatNumber: i + 1,
                 actionNode: inviteBtn,
-                iconText: String(i + 1)
+                iconText: '○'
             });
             list.appendChild(row);
         }
@@ -12894,8 +12895,8 @@ class DominoGame {
             for (let i = 0; i < aiCount; i++) {
                 const row = createChip({
                     kind: 'bot',
-                    displayName: this.format('online-bot-slot', { index: i + 1 }),
-                    subtitle: this.t('online-bot-slot', { index: i + 1 }),
+                    displayName: 'AI Bot',
+                    subtitle: this.t('online-ready'),
                     seatNumber: 0,
                     iconText: 'AI'
                 });
@@ -16043,5 +16044,6 @@ window.addEventListener('resize', () => {
     clearTimeout(_resizeTimer);
     _resizeTimer = setTimeout(() => game.renderState(), 150);
 });
+
 
 
