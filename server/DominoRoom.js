@@ -274,6 +274,13 @@ class DominoRoom extends Room {
         return true;
     }
 
+    getFirstAvailableSeatIndex() {
+        for (let seatIndex = 0; seatIndex < this.totalPlayers; seatIndex++) {
+            if (this.isSeatAvailable(seatIndex)) return seatIndex;
+        }
+        return -1;
+    }
+
     rebuildPlayerOrderBySeats() {
         const currentOrder = Array.from(this.state.playerOrder || []).filter((sessionId) => this.state.players.has(sessionId));
         const orderIndex = new Map(currentOrder.map((sessionId, index) => [sessionId, index]));
@@ -327,6 +334,55 @@ class DominoRoom extends Room {
         return count;
     }
 
+    getAutoStartState() {
+        const players = Array.from(this.state?.players?.values?.() || []);
+        const humanPlayers = players.filter((player) => player && !player.isBot);
+        const botPlayers = players.filter((player) => player && player.isBot);
+        const connectedHumanPlayers = humanPlayers.filter((player) => Boolean(player.isConnected));
+        const seatedHumanPlayers = connectedHumanPlayers.filter((player) => Number.isInteger(Number(player.seatIndex)) && Number(player.seatIndex) >= 0);
+        const isTeamMode = Boolean(isRoomTeamMode(this));
+        const roomMode = isTeamMode ? "team" : "ffa";
+        const readyPlayersCount = isTeamMode ? seatedHumanPlayers.length : connectedHumanPlayers.length;
+        const botsReadyCount = botPlayers.filter((player) => Boolean(player.isConnected)).length;
+        const occupiedSeats = players.filter((player) => Number.isInteger(Number(player?.seatIndex)) && Number(player.seatIndex) >= 0).length;
+        const canStart = isTeamMode
+            ? seatedHumanPlayers.length >= this.humanSeats && connectedHumanPlayers.length >= this.humanSeats
+            : connectedHumanPlayers.length >= this.humanSeats;
+        let blockedReason = "";
+
+        if (this.state.gameActive) {
+            blockedReason = "already_game_active";
+        } else if (this.gameStarting) {
+            blockedReason = "game_starting";
+        } else if (this.matchFinished) {
+            blockedReason = "match_finished";
+        } else if (this.hasRestoredMatchInProgress()) {
+            blockedReason = "restored_match";
+        } else if (connectedHumanPlayers.length < this.humanSeats) {
+            blockedReason = "waiting-for-human";
+        } else if (isTeamMode && seatedHumanPlayers.length < this.humanSeats) {
+            blockedReason = "waiting-for-seat";
+        } else if (!canStart) {
+            blockedReason = "waiting-for-ready";
+        }
+
+        return {
+            roomMode,
+            isTeamMode,
+            maxPlayers: Number(this.totalPlayers || 0),
+            occupiedSeats,
+            humanCount: connectedHumanPlayers.length,
+            botCount: botPlayers.length,
+            readyPlayersCount,
+            botsReadyCount,
+            canStart,
+            blockedReason,
+            connectedHumanPlayers,
+            seatedHumanPlayers,
+            botPlayers
+        };
+    }
+
     areAllHumanPlayersSeated() {
         if (this.totalPlayers <= 2) return true;
         return this.countSeatedHumanPlayers() >= this.humanSeats;
@@ -348,41 +404,62 @@ class DominoRoom extends Room {
     }
 
     maybeAutoStartGame() {
-        const readyHumans = this.countReadyHumanPlayers();
-        const seatedHumans = this.countSeatedHumanPlayers();
-        const botsNeeded = Math.max(0, this.aiCount - this.botIds.length);
-        const seatsOccupied = Array.from(this.state.players.values()).filter((player) => {
-            const seatIndex = Number(player?.seatIndex);
-            return player && Number.isInteger(seatIndex) && seatIndex >= 0;
-        }).length;
-        const reason = this.state.gameActive
-            ? "already_game_active"
-            : this.gameStarting
-                ? "game_starting"
-                : this.matchFinished
-                    ? "match_finished"
-                    : this.hasRestoredMatchInProgress()
-                        ? "restored_match"
-                        : (readyHumans >= this.humanSeats && seatedHumans >= this.humanSeats ? "start" : "not_enough_ready_humans");
-        const decision = reason === "start" ? "start" : "wait";
+        const autoStartState = this.getAutoStartState();
+        this._lastAutoStartCheckAt = Date.now();
+        if (this.gameStarting || this.autoStartTimer) {
+            this._lastAutoStartBlockedReason = autoStartState.blockedReason || "game_starting";
+            debugLog("[ROOM_DEBUG] autostart:decision", {
+                roomId: this.roomId,
+                roomCode: this.roomCode,
+                roomMode: autoStartState.roomMode,
+                isTeamMode: autoStartState.isTeamMode,
+                totalPlayers: this.totalPlayers,
+                maxPlayers: autoStartState.maxPlayers,
+                maxClients: this.maxClients,
+                clientsLength: this.clients.length,
+                aiCount: this.aiCount,
+                gameActive: this.state.gameActive,
+                gameStarting: this.gameStarting,
+                matchFinished: this.matchFinished,
+                readyPlayersCount: autoStartState.readyPlayersCount,
+                botsReadyCount: autoStartState.botsReadyCount,
+                humanCount: autoStartState.humanCount,
+                botCount: autoStartState.botCount,
+                occupiedSeats: autoStartState.occupiedSeats,
+                botIdsLength: this.botIds.length,
+                playerOrder: Array.from(this.state.playerOrder || []),
+                players: debugPlayerSummary(this),
+                blockedReason: this._lastAutoStartBlockedReason || null,
+                decision: "wait",
+                reason: "game_starting"
+            });
+            return true;
+        }
+        const reason = autoStartState.canStart ? "start" : autoStartState.blockedReason || "waiting-for-ready";
+        const decision = autoStartState.canStart ? "start" : "wait";
+        this._lastAutoStartBlockedReason = autoStartState.canStart ? "" : reason;
         debugLog("[ROOM_DEBUG] autostart:decision", {
             roomId: this.roomId,
             roomCode: this.roomCode,
+            roomMode: autoStartState.roomMode,
+            isTeamMode: autoStartState.isTeamMode,
             totalPlayers: this.totalPlayers,
+            maxPlayers: autoStartState.maxPlayers,
             maxClients: this.maxClients,
             clientsLength: this.clients.length,
             aiCount: this.aiCount,
-            isTeamMode: this.state.isTeamMode,
             gameActive: this.state.gameActive,
             gameStarting: this.gameStarting,
             matchFinished: this.matchFinished,
-            readyHumans,
-            seatedHumans,
-            botsNeeded,
+            readyPlayersCount: autoStartState.readyPlayersCount,
+            botsReadyCount: autoStartState.botsReadyCount,
+            humanCount: autoStartState.humanCount,
+            botCount: autoStartState.botCount,
+            occupiedSeats: autoStartState.occupiedSeats,
             botIdsLength: this.botIds.length,
             playerOrder: Array.from(this.state.playerOrder || []),
             players: debugPlayerSummary(this),
-            seatsOccupied,
+            blockedReason: autoStartState.blockedReason || null,
             decision,
             reason
         });
@@ -391,6 +468,7 @@ class DominoRoom extends Room {
         this.gameStarting = true;
         this.autoStartTimer = setTimeout(() => {
             this.autoStartTimer = null;
+            this._lastAutoStartTriggeredAt = Date.now();
             void this.startGame({ allowAlreadyStarting: true });
         }, AUTO_START_DELAY_MS);
         return true;
@@ -473,7 +551,9 @@ class DominoRoom extends Room {
                 isConnected: true,
                 isBot: false,
                 avatarUrl: String(identity.avatarUrl || options.avatarUrl || "").trim(),
-                seatIndex: this.state.playerOrder.length === 0 ? 0 : (this.totalPlayers <= 2 ? 1 : -1)
+                seatIndex: this.state.isTeamMode
+                    ? (this.state.playerOrder.length === 0 ? 0 : -1)
+                    : (this.getFirstAvailableSeatIndex() >= 0 ? this.getFirstAvailableSeatIndex() : (this.state.playerOrder.length === 0 ? 0 : -1))
             };
             this.state.players.set(client.sessionId, player);
             this.state.playerOrder.push(client.sessionId);
@@ -793,14 +873,20 @@ class DominoRoom extends Room {
             });
             console.warn("[ROOM] Previous match recording is still pending; continuing with the new game start.");
         }
-        if (this.countReadyHumanPlayers() < this.humanSeats || this.countSeatedHumanPlayers() < this.humanSeats) {
+        const autoStartState = this.getAutoStartState();
+        if (!autoStartState.canStart) {
             this.gameStarting = false;
             debugLog("[ROOM_DEBUG] startGame:blocked", {
                 roomId: this.roomId,
                 roomCode: this.roomCode,
-                reason: "not_enough_ready_humans",
-                readyHumans: this.countReadyHumanPlayers(),
-                seatedHumans: this.countSeatedHumanPlayers(),
+                reason: autoStartState.blockedReason || "not_enough_ready_humans",
+                roomMode: autoStartState.roomMode,
+                isTeamMode: autoStartState.isTeamMode,
+                readyPlayersCount: autoStartState.readyPlayersCount,
+                botsReadyCount: autoStartState.botsReadyCount,
+                humanCount: autoStartState.humanCount,
+                botCount: autoStartState.botCount,
+                occupiedSeats: autoStartState.occupiedSeats,
                 humanSeats: this.humanSeats,
                 players: debugPlayerSummary(this)
             });

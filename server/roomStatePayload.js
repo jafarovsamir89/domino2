@@ -30,6 +30,32 @@ function buildRoomStatePlayers({ playerOrder = [], players, identityBySessionId,
     });
 }
 
+function buildRoomStartPayload(room, connectedHumanPlayers = 0) {
+    const isTeamMode = Boolean(room?.state?.isTeamMode);
+    const roomMode = String(room?.roomMode || (isTeamMode ? "team" : "ffa")).trim().toLowerCase();
+    const safePlayers = Array.from(room?.state?.players?.values?.() || []);
+    const humanPlayers = safePlayers.filter((player) => player && !player.isBot);
+    const botPlayers = safePlayers.filter((player) => player && player.isBot);
+    const connectedHumans = humanPlayers.filter((player) => Boolean(player.isConnected)).length;
+    const seatedHumans = humanPlayers.filter((player) => Boolean(player.isConnected) && Number.isInteger(Number(player.seatIndex)) && Number(player.seatIndex) >= 0).length;
+
+    return {
+        roomMode: roomMode === "team" || roomMode === "2v2" || roomMode === "partnership" ? "team" : "ffa",
+        isTeamMode,
+        maxPlayers: Number(room?.totalPlayers || 0),
+        occupiedSeats: safePlayers.filter((player) => Number.isInteger(Number(player?.seatIndex)) && Number(player.seatIndex) >= 0).length,
+        humanCount: connectedHumans || Number(connectedHumanPlayers || 0),
+        botCount: botPlayers.length,
+        readyPlayersCount: isTeamMode ? seatedHumans : connectedHumans,
+        botsReadyCount: botPlayers.filter((player) => Boolean(player.isConnected)).length,
+        pendingInvitesCount: 0,
+        joinedInviteCount: 0,
+        lastAutoStartCheckAt: Number(room?._lastAutoStartCheckAt || 0) || 0,
+        lastAutoStartBlockedReason: String(room?._lastAutoStartBlockedReason || "").trim() || null,
+        lastAutoStartTriggeredAt: Number(room?._lastAutoStartTriggeredAt || 0) || 0
+    };
+}
+
 function buildRoomStatePayload({ room, players } = {}) {
     const isTeamMode = Boolean(room?.state?.isTeamMode);
     const normalizedRoomMode = String(room?.roomMode || (isTeamMode ? "team" : "ffa")).trim().toLowerCase();
@@ -82,6 +108,7 @@ function buildRoomStatePayload({ room, players } = {}) {
         seatSelectionRequired: !room.state.gameActive && room.totalPlayers > 2 && !room.areAllHumanPlayersSeated?.(),
         hostName: getFirstNameDisplayName(room.state.players.get(room.state.playerOrder[0])?.name || "Player", "Player"),
         players: safePlayers,
+        roomStart: buildRoomStartPayload(room, connectedHumanPlayers),
         teamScores: isTeamMode ? Array.from(room?.state?.teamScores || [0, 0]) : [],
         teamRoundWins: isTeamMode ? Array.from(room?.state?.teamRoundWins || [0, 0]) : [],
         teams: isTeamMode ? [
