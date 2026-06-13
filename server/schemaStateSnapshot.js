@@ -1,4 +1,4 @@
-function buildSchemaStateSnapshotData({ state }) {
+function buildSchemaStateSnapshotData({ state, roomMode = "", scoreMode = "" }) {
     const playerOrder = Array.from(state?.playerOrder || []);
 
     return {
@@ -10,6 +10,8 @@ function buildSchemaStateSnapshotData({ state }) {
         deal: state?.deal,
         boardJson: state?.boardJson,
         isTeamMode: state?.isTeamMode,
+        roomMode: String(roomMode || (state?.isTeamMode ? "team" : "ffa")).trim() || "ffa",
+        scoreMode: String(scoreMode || (state?.isTeamMode ? "team" : "solo")).trim() || "solo",
         playerCount: state?.playerCount,
         turnDeadlineAt: state?.turnDeadlineAt || 0,
         turnVersion: state?.turnVersion || 1,
@@ -81,6 +83,8 @@ function buildRestoredSchemaStateData({ snapshot, currentState, totalPlayers, sa
         deal: Number(snapshot?.deal || 1),
         boardJson: snapshot?.boardJson || "{}",
         isTeamMode: Boolean(snapshot?.isTeamMode),
+        roomMode: String(snapshot?.roomMode || (snapshot?.isTeamMode ? "team" : "ffa")).trim() || "ffa",
+        scoreMode: String(snapshot?.scoreMode || (snapshot?.isTeamMode ? "team" : "solo")).trim() || "solo",
         playerCount: Number(snapshot?.playerCount || totalPlayers || 2),
         turnDeadlineAt: Number(snapshot?.turnDeadlineAt || 0),
         turnVersion: Number(snapshot?.turnVersion || 1),

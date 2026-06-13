@@ -28,6 +28,32 @@ test("client opens seat picker for team rooms regardless of visibility", () => {
     );
 });
 
+test("client keeps team runtime and seat picker close flow explicit", () => {
+    const appSource = read("js/app.js");
+    const webAppSource = read("www/js/app.js");
+    const requiredTokens = [
+        "resolveRoomModeState(",
+        "handleSeatSelectionClose('seat-picker-close')",
+        "event.preventDefault();",
+        "event.stopPropagation();",
+        "roomRuntime: {",
+        "startGamePayloadSafe",
+        "lastRoomStatePlayersSafe",
+        "teamAssignmentsSafe",
+        "seatAssignmentsSafe",
+        "scoreMode",
+        "topHudMode"
+    ];
+
+    for (const source of [appSource, webAppSource]) {
+        for (const token of requiredTokens) {
+            assert.equal(source.includes(token), true);
+        }
+        assert.equal(source.includes("closeBtn.addEventListener('click', () => this.hideSeatSelectionUi());"), false);
+        assert.equal(source.includes("this.isTeamMode = Boolean(payload?.isTeamMode);"), false);
+    }
+});
+
 test("client moves play invite entry points into room context", () => {
     const appSource = read("js/app.js");
     const webAppSource = read("www/js/app.js");
