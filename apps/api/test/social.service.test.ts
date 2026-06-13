@@ -764,6 +764,65 @@ test("createPlayInvite creates a play invite without roomId", async () => {
   assert.equal(result.item.note, "play now");
 });
 
+test("createPlayInvite preserves roomContext roomId and roomCode", async () => {
+  const inviter = makePlayer("player-a", "Alpha");
+  const invitee = makePlayer("player-b", "Beta");
+  let capturedCreateData: any = null;
+
+  const prismaMock = {
+    player: {
+      findUnique: async ({ where }: any) => {
+        if (where.id === invitee.id) return invitee;
+        if (where.id === inviter.id) return inviter;
+        return null;
+      }
+    },
+    friendConnection: {
+      findFirst: async () => ({
+        id: "friend-1",
+        requesterPlayerId: inviter.id,
+        addresseePlayerId: invitee.id,
+        status: "accepted"
+      })
+    },
+    playInvite: {
+      findFirst: async () => null,
+      create: async ({ data }: any) => {
+        capturedCreateData = data;
+        return {
+          ...data,
+          id: "play-invite-room-bound-1",
+          inviter,
+          invitee,
+          createdAt: new Date("2024-01-01T00:00:00.000Z"),
+          updatedAt: new Date("2024-01-01T00:00:00.000Z"),
+          respondedAt: null
+        };
+      }
+    },
+    $transaction: async (fn: any) => fn({ ...prismaMock })
+  } as any;
+
+  const service = new SocialService(prismaMock, {} as any);
+  (service as any).getCurrentPlayer = async () => inviter;
+
+  const result = await service.createPlayInvite({} as any, {
+    inviteePlayerId: invitee.id,
+    note: "play now",
+    payloadJson: {
+      roomContext: {
+        roomId: "room-123",
+        roomCode: "abcd"
+      }
+    }
+  });
+
+  assert.equal(capturedCreateData?.roomId, "room-123");
+  assert.equal(capturedCreateData?.roomCode, "ABCD");
+  assert.equal(result.item.roomId, "room-123");
+  assert.equal(result.item.roomCode, "ABCD");
+});
+
 test("getPlayInvites returns incoming, outgoing and waiting invites", async () => {
   const currentPlayer = makePlayer("player-a", "Alpha");
   const friend = makePlayer("player-b", "Beta");
@@ -973,6 +1032,55 @@ test("acceptPlayInvite changes status to accepted", async () => {
   assert.equal(accepted.item!.status, "accepted");
   assert.equal(updates[0].status, "accepted");
   assert.equal(updates[0].expiresAt, null);
+});
+
+test("acceptPlayInvite preserves room context for room-bound invites", async () => {
+  const inviter = makePlayer("player-a", "Alpha");
+  const invitee = makePlayer("player-b", "Beta");
+  const invite = {
+    id: "play-invite-room-bound-accept",
+    roomId: null,
+    roomCode: null,
+    status: "pending",
+    note: null,
+    payloadJson: {
+      roomContext: {
+        roomId: "room-456",
+        roomCode: "wxyz"
+      }
+    },
+    createdAt: new Date("2024-01-03T00:00:00.000Z"),
+    updatedAt: new Date("2024-01-03T00:00:00.000Z"),
+    respondedAt: null,
+    expiresAt: new Date(Date.now() + 60_000),
+    inviterPlayerId: inviter.id,
+    inviteePlayerId: invitee.id,
+    inviter,
+    invitee
+  };
+  const updates: any[] = [];
+
+  const prismaMock = {
+    playInvite: {
+      findUnique: async () => invite,
+      update: async ({ data }: any) => {
+        updates.push(data);
+        Object.assign(invite, data);
+        return invite;
+      }
+    }
+  } as any;
+
+  const service = new SocialService(prismaMock, {} as any);
+  (service as any).getCurrentPlayer = async () => invitee;
+
+  const accepted = await service.acceptPlayInvite({} as any, invite.id);
+  assert.ok(accepted.item);
+  assert.equal(accepted.item!.status, "accepted");
+  assert.equal(accepted.item!.roomId, "room-456");
+  assert.equal(accepted.item!.roomCode, "WXYZ");
+  assert.equal(updates[0].roomId, "room-456");
+  assert.equal(updates[0].roomCode, "WXYZ");
 });
 
 test("declinePlayInvite changes status to declined", async () => {

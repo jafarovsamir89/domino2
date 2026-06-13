@@ -54,3 +54,12 @@ test("client moves play invite entry points into room context", () => {
         }
     }
 });
+
+test("client friends page no longer appends an undefined invite button", () => {
+    const appSource = read("js/app.js");
+    const webAppSource = read("www/js/app.js");
+    const orphanInviteButtonSequence = "action.appendChild(inviteBtn);\n                    action.appendChild(messageBtn);\n                    action.appendChild(removeBtn);";
+
+    assert.equal(appSource.includes(orphanInviteButtonSequence), false);
+    assert.equal(webAppSource.includes(orphanInviteButtonSequence), false);
+});
