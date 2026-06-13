@@ -52,7 +52,9 @@ test("buildSchemaStateSnapshotData returns the expected snapshot shape", () => {
     const stateClone = structuredClone({
         ...state,
         playerOrder: [...state.playerOrder],
-        players: Array.from(state.players.entries())
+        players: Array.from(state.players.entries()),
+        roomMode: "ffa",
+        scoreMode: "solo"
     });
 
     const snapshot = buildSchemaStateSnapshotData({ state });
@@ -114,6 +116,8 @@ test("buildSchemaStateSnapshotData returns the expected snapshot shape", () => {
         turnVersion: state.turnVersion,
         teamScores: state.teamScores,
         teamRoundWins: state.teamRoundWins,
+        roomMode: snapshot.roomMode,
+        scoreMode: snapshot.scoreMode,
         players: Array.from(state.players.entries())
     }, stateClone);
 });

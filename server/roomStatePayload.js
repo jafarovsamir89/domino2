@@ -8,22 +8,25 @@ function buildRoomStatePlayers({ playerOrder = [], players, identityBySessionId,
             player ? player.name : identity.displayName || "Player",
             identity.displayName || "Player"
         );
-        return {
+        const row = {
             sessionId,
             index,
             name: displayName,
-            userId: player ? player.userId : "",
+            userId: String(player?.userId || ""),
             playerId: identity.playerId || player?.userId || "",
             avatarUrl: player?.avatarUrl || identity.avatarUrl || "",
             isConnected: player ? player.isConnected : false,
             isBot: player ? player.isBot : false,
             seatIndex: Number.isInteger(Number(player?.seatIndex)) ? Number(player.seatIndex) : -1,
             seatNumber: Number.isInteger(Number(player?.seatIndex)) && Number(player.seatIndex) >= 0 ? Number(player.seatIndex) + 1 : 0,
-            team: isTeamMode && Number.isInteger(Number(player?.seatIndex)) && Number(player.seatIndex) >= 0
-                ? Number(player.seatIndex) % 2
-                : null,
             voiceEnabled: Boolean(voiceEnabledBySessionId?.has(sessionId))
         };
+        if (isTeamMode) {
+            row.team = Number.isInteger(Number(player?.seatIndex)) && Number(player.seatIndex) >= 0
+                ? Number(player.seatIndex) % 2
+                : null;
+        }
+        return row;
     });
 }
 
