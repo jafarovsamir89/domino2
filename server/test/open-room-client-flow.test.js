@@ -44,6 +44,10 @@ test("client moves play invite entry points into room context", () => {
         "seat-selection-invite-btn",
         "room-slot-invite-btn"
     ];
+    const seatPickerRoomBoundInviteStrings = [
+        "source: 'seat-picker'",
+        "openSeatPickerOnJoin: true"
+    ];
 
     for (const source of [appSource, webAppSource]) {
         for (const callSite of socialInviteCallSites) {
@@ -51,6 +55,9 @@ test("client moves play invite entry points into room context", () => {
         }
         for (const hook of roomInviteHooks) {
             assert.equal(source.includes(hook), true);
+        }
+        for (const token of seatPickerRoomBoundInviteStrings) {
+            assert.equal(source.includes(token), true);
         }
     }
 });

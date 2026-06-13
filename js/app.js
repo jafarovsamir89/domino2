@@ -206,6 +206,9 @@ class DominoGame {
         this._lastSeatPickerOpenAttemptAt = 0;
         this._lastSeatPickerOpenSource = '';
         this._lastSeatPickerOpenSkippedReason = '';
+        this._lastSeatPickerInviteButtonRendered = false;
+        this._lastSeatPickerInviteButtonDisabledReason = '';
+        this._lastSeatPickerOpenedAfterRoomBoundInvite = false;
         this.pendingReconnectResolution = false;
         this.openRooms = [];
         this.socialCenterTab = 'friends';
@@ -1495,7 +1498,10 @@ class DominoGame {
                 lastRoomCreateRequiresSeatPicker: Boolean(this._lastRoomCreateRequiresSeatPicker),
                 lastSeatPickerOpenAttemptAt: Number(this._lastSeatPickerOpenAttemptAt || 0) || 0,
                 lastSeatPickerOpenSource: String(this._lastSeatPickerOpenSource || '').trim() || null,
-                lastSeatPickerOpenSkippedReason: String(this._lastSeatPickerOpenSkippedReason || '').trim() || null
+                lastSeatPickerOpenSkippedReason: String(this._lastSeatPickerOpenSkippedReason || '').trim() || null,
+                inviteButtonRendered: Boolean(this._lastSeatPickerInviteButtonRendered),
+                inviteButtonDisabledReason: String(this._lastSeatPickerInviteButtonDisabledReason || '').trim() || null,
+                openedAfterRoomBoundInvite: Boolean(this._lastSeatPickerOpenedAfterRoomBoundInvite)
             },
             playInvite: {
                 rawPlayInviteIncomingCount: playInviteCounts.rawIncoming,
@@ -10090,11 +10096,21 @@ class DominoGame {
         if (footerActions) {
             footerActions.classList.remove('is-hidden');
         }
+        const inviteCandidates = this.getContextualRoomInviteCandidates(roomInviteContext || {});
+        const inviteButtonDisabledReason = !inviteCandidates.friends.length
+            ? 'no-eligible-friends'
+            : '';
         if (inviteBtn) {
+            this._lastSeatPickerInviteButtonRendered = true;
+            this._lastSeatPickerInviteButtonDisabledReason = inviteButtonDisabledReason;
             inviteBtn.hidden = false;
-            inviteBtn.disabled = false;
+            inviteBtn.disabled = Boolean(inviteButtonDisabledReason);
             inviteBtn.textContent = this.t('friend-invite');
+        } else {
+            this._lastSeatPickerInviteButtonRendered = false;
+            this._lastSeatPickerInviteButtonDisabledReason = 'missing-button';
         }
+        this._lastSeatPickerOpenedAfterRoomBoundInvite = Boolean(this._lastAcceptedInviteWasRoomBound);
         if (closeBtn) {
             closeBtn.disabled = false;
         }
