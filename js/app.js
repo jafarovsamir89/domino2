@@ -1,4 +1,4 @@
-﻿import { Tile, createFullSet, shuffle, getHandSize, determineFirstPlayer, handPoints, getOpeningPlayScore, hasInvalidOpeningHand, roundTo5 } from './model.js';
+import { Tile, createFullSet, shuffle, getHandSize, determineFirstPlayer, handPoints, getOpeningPlayScore, hasInvalidOpeningHand, roundTo5 } from './model.js';
 import { Board, cloneBoard, reconstructBoard } from './board.js';
 import { AIPlayer } from './ai.js';
 import { Renderer } from './renderer.js?v=social-live-1';
@@ -959,17 +959,16 @@ class DominoGame {
         this.syncStartAuthButton();
         this.syncStartAuthGate();
         this.ensureShopIconMarkup();
-
         const dailyBonusClaimBtn = document.getElementById('daily-bonus-claim-btn');
-        const dailyBonusRewardedBtn = document.getElementById('daily-bonus-rewarded-btn');
         if (dailyBonusClaimBtn) {
             dailyBonusClaimBtn.addEventListener('click', () => {
-                this.claimDailyBonus('normal');
-            });
-        }
-        if (dailyBonusRewardedBtn) {
-            dailyBonusRewardedBtn.addEventListener('click', () => {
-                this.claimDailyBonus('rewarded_x2');
+                const status = this.dailyBonusState.status;
+                const doubleAvailable = Boolean(status && status.doubleClaimAvailable);
+                if (doubleAvailable) {
+                    this.claimDailyBonus('rewarded_x2');
+                } else {
+                    this.claimDailyBonus('normal');
+                }
             });
         }
     }
@@ -6165,7 +6164,7 @@ class DominoGame {
                 rewardedBtn.textContent = this.t('daily-bonus-error');
             }
             if (normalAmountEl) normalAmountEl.textContent = '';
-            if (rewardedAmountEl) rewardedAmountEl.textContent = '';
+            if (normalAmountEl) normalAmountEl.textContent = '';
             if (actionsHintEl) actionsHintEl.textContent = '';
             if (this.dailyBonusState.rewardedAdError) {
                 this.dailyBonusState.rewardedAdError = '';
@@ -6173,6 +6172,8 @@ class DominoGame {
             if (streakRow) streakRow.innerHTML = '';
             return;
         }
+
+        const doubleAvailable = Boolean(status && status.doubleClaimAvailable);
 
         if (amountEl) {
             amountEl.textContent = `+${baseRewardAmount}`;
@@ -6183,45 +6184,40 @@ class DominoGame {
         }
 
         if (normalAmountEl) {
-            normalAmountEl.textContent = `+${baseRewardAmount}`;
-        }
-
-        if (rewardedAmountEl) {
-            rewardedAmountEl.textContent = `+${doubledRewardAmount}`;
+            if (doubleAvailable) {
+                normalAmountEl.textContent = `+${doubledRewardAmount}`;
+            } else if (canClaim) {
+                normalAmountEl.textContent = `+${baseRewardAmount}`;
+            } else {
+                normalAmountEl.textContent = '';
+            }
         }
 
         if (normalBtn) {
             if (isClaimingNormal) {
                 normalBtn.disabled = true;
                 normalBtn.textContent = '...';
+            } else if (isClaimingRewarded) {
+                normalBtn.disabled = true;
+                if (rewardedAdInFlight) {
+                    normalBtn.textContent = this.t('daily-bonus-ad-loading');
+                } else {
+                    normalBtn.textContent = this.t('daily-bonus-claim-loading');
+                }
+            } else if (doubleAvailable) {
+                if (!rewardedAdAvailable) {
+                    normalBtn.disabled = true;
+                    normalBtn.textContent = this.t('daily-bonus-ad-unavailable');
+                } else {
+                    normalBtn.disabled = false;
+                    normalBtn.textContent = this.t('daily-bonus-claim-rewarded');
+                }
             } else if (!canClaim) {
                 normalBtn.disabled = true;
                 normalBtn.textContent = this.t('daily-bonus-claimed');
             } else {
                 normalBtn.disabled = false;
                 normalBtn.textContent = this.t('daily-bonus-claim-normal');
-            }
-        }
-
-        if (rewardedBtn) {
-            if (isClaimingRewarded && this.dailyBonusState.rewardedAdCancelledAt) {
-                rewardedBtn.disabled = true;
-                rewardedBtn.textContent = this.t('daily-bonus-claim-rewarded');
-            } else if (isClaimingRewarded && !rewardedAdInFlight) {
-                rewardedBtn.disabled = true;
-                rewardedBtn.textContent = this.t('daily-bonus-claim-loading');
-            } else if (rewardedAdInFlight) {
-                rewardedBtn.disabled = true;
-                rewardedBtn.textContent = this.t('daily-bonus-ad-loading');
-            } else if (!canClaim) {
-                rewardedBtn.disabled = true;
-                rewardedBtn.textContent = this.t('daily-bonus-claimed');
-            } else if (!rewardedAdAvailable) {
-                rewardedBtn.disabled = true;
-                rewardedBtn.textContent = this.t('daily-bonus-ad-unavailable');
-            } else {
-                rewardedBtn.disabled = false;
-                rewardedBtn.textContent = this.t('daily-bonus-claim-rewarded');
             }
         }
 
@@ -6235,12 +6231,16 @@ class DominoGame {
         }
 
         if (actionsHintEl) {
-            if (!canClaim) {
+            if (doubleAvailable) {
+                if (!rewardedAdAvailable) {
+                    actionsHintEl.textContent = this.t('daily-bonus-ad-unavailable');
+                } else if (this.dailyBonusState.rewardedAdError) {
+                    actionsHintEl.textContent = this.dailyBonusState.rewardedAdError;
+                } else {
+                    actionsHintEl.textContent = '';
+                }
+            } else if (!canClaim) {
                 actionsHintEl.textContent = this.t('daily-bonus-claimed');
-            } else if (!rewardedAdAvailable) {
-                actionsHintEl.textContent = this.t('daily-bonus-ad-unavailable');
-            } else if (this.dailyBonusState.rewardedAdError) {
-                actionsHintEl.textContent = this.dailyBonusState.rewardedAdError;
             } else {
                 actionsHintEl.textContent = '';
             }

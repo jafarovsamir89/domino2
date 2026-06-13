@@ -1345,8 +1345,10 @@ export class EconomyService {
 
     if (existingClaim) {
       claimedToday = true;
-      claimable = false;
       streakDay = existingClaim.streakDay;
+      const baseReward = getRewardForStreak(streakDay);
+      const doubleClaimAvailable = existingClaim.amount === baseReward;
+      claimable = doubleClaimAvailable;
       todayAmount = existingClaim.amount;
       lastClaimAt = existingClaim.createdAt;
     } else {
@@ -1361,10 +1363,14 @@ export class EconomyService {
     const tomorrowAmount = getRewardForStreak(tomorrowStreakDay);
     const nextClaimAt = getNextBakuMidnight(now);
 
+    const baseReward = getRewardForStreak(streakDay);
+    const doubleClaimAvailable = Boolean(existingClaim && existingClaim.amount === baseReward);
+
     return {
       claimable,
       canClaim: claimable,
       claimedToday,
+      doubleClaimAvailable,
       claimDate: existingClaim?.claimDate ?? claimDate,
       dailyBonusDateKey: claimDate,
       timezone: BAKU_TIME_ZONE,
@@ -1447,9 +1453,48 @@ export class EconomyService {
         }
       });
       if (existing) {
+        const rewardSchedule = buildDailyRewardSchedule(config);
+        const baseReward = getRewardAmountForDay(rewardSchedule, existing.streakDay);
+        if (claimMode === "rewarded_x2" && existing.amount === baseReward) {
+          const extraReward = baseReward;
+          const updatedClaim = await tx.coinDailyBonusClaim.update({
+            where: { id: existing.id },
+            data: { amount: baseReward * 2 }
+          });
+          const wallet = await this.creditWallet(
+            tx,
+            profile.player.id,
+            extraReward,
+            "daily_bonus",
+            "daily_bonus",
+            claimDate,
+            {
+              note: `Daily claim for ${claimDate} (rewarded x2 upgrade)`,
+              payloadJson: {
+                claimMode,
+                baseReward,
+                multiplier: 2,
+                reward: baseReward * 2,
+                streakDay: existing.streakDay,
+                claimDate
+              }
+            }
+          );
+          const status = await this.buildDailyBonusStatus(tx, profile.player.id, config, now);
+          return {
+            claimed: true,
+            claimMode,
+            baseReward,
+            multiplier: 2,
+            reward: extraReward,
+            claim: updatedClaim,
+            wallet,
+            dailyBonus: status
+          };
+        }
+
         const status = await this.buildDailyBonusStatus(tx, profile.player.id, config, now);
         const wallet = await this.ensureWallet(tx, profile.player.id);
-        const rewardSchedule = buildDailyRewardSchedule(config);
         return {
           claimed: false,
           claimMode,

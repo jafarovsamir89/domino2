@@ -214,6 +214,13 @@ class MockDb {
       const c = { id: `claim_${data.playerId}_${data.claimDate}`, ...data, createdAt: new Date() };
       this.claims.push(c);
       return c;
+    },
+    update: async ({ where, data }: any) => {
+      const c = this.claims.find(x => x.id === where.id);
+      if (c && data.amount !== undefined) {
+        c.amount = data.amount;
+      }
+      return c;
     }
   };
 
@@ -327,7 +334,8 @@ test("Daily Bonus - Claim credits wallet and advances quest", async () => {
   assert.equal(claimRes.claim.streakDay, 1);
   assert.equal(claimRes.wallet.balance, 200);
   assert.equal(claimRes.dailyBonus.claimedToday, true);
-  assert.equal(claimRes.dailyBonus.claimable, false);
+  assert.equal(claimRes.dailyBonus.claimable, true);
+  assert.equal(claimRes.dailyBonus.doubleClaimAvailable, true);
   assert.equal(claimRes.dailyBonus.nextClaimAt, "2024-03-01T20:00:00.000Z");
 
   // Check ledger entry
@@ -393,7 +401,7 @@ test("Daily Bonus - Second claim same day returns claimed false", async () => {
   assert.equal(secondRes.wallet.balance, initialBalance);
 });
 
-test("Daily Bonus - Normal claim blocks rewarded x2 on the same day", async () => {
+test("Daily Bonus - Normal claim allows upgrading to rewarded x2 on the same day", async () => {
   const mockDb = new MockDb() as any;
   const authMock = {
     getCurrentProfile: async () => ({ player: { id: "player_1" } })
@@ -405,10 +413,11 @@ test("Daily Bonus - Normal claim blocks rewarded x2 on the same day", async () =
   const secondClaim = await service.claimDailyBonus({}, { claimMode: "rewarded_x2" } as any, now);
 
   assert.equal(firstClaim.claimed, true);
-  assert.equal(secondClaim.claimed, false);
+  assert.equal(secondClaim.claimed, true);
   assert.equal(secondClaim.claimMode, "rewarded_x2");
   assert.equal(secondClaim.dailyBonus.claimedToday, true);
-  assert.equal(secondClaim.dailyBonus.canClaim, false);
+  assert.equal(secondClaim.dailyBonus.claimable, false);
+  assert.equal(secondClaim.wallet.balance, 400);
 });
 
 test("Daily Bonus - Rewarded x2 claim blocks normal claim on the same day", async () => {
@@ -537,4 +546,29 @@ test("Daily Bonus - Baku helpers resolve date keys and next midnight", async () 
   assert.equal(getBakuDateKey(now), "2024-03-01");
   assert.equal(getPreviousBakuDateKey(now), "2024-02-29");
   assert.equal(getNextBakuMidnight(now).toISOString(), "2024-03-01T20:00:00.000Z");
+});
+
+test("Daily Bonus - Normal claim followed by rewarded x2 upgrade credits wallet and updates claim", async () => {
+  const mockDb = new MockDb() as any;
+  const authMock = {
+    getCurrentProfile: async () => ({ player: { id: "player_1" } })
+  } as any;
+  const service = new EconomyService(mockDb, authMock);
+
+  const now = new Date("2024-03-01T18:30:00.000Z");
+
+  // 1. First claim normal (gives 200)
+  const res1 = await service.claimDailyBonus({}, { claimMode: "normal" }, now);
+  assert.equal(res1.claimed, true);
+  assert.equal(res1.reward, 200);
+  assert.equal(res1.wallet.balance, 200);
+  assert.equal(res1.dailyBonus.doubleClaimAvailable, true);
+
+  // 2. Second claim with rewarded_x2 (gives extra 200, making it 400 total)
+  const res2 = await service.claimDailyBonus({}, { claimMode: "rewarded_x2" }, now);
+  assert.equal(res2.claimed, true);
+  assert.equal(res2.reward, 200); // the extra credited amount
+  assert.equal(res2.wallet.balance, 400); // total balance updated to 400
+  assert.equal(res2.claim.amount, 400); // the claim row updated to 400
+  assert.equal(res2.dailyBonus.doubleClaimAvailable, false); // no longer available
 });
