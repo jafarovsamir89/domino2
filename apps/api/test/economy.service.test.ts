@@ -299,9 +299,9 @@ test("Daily Bonus - Authenticated status returns claimable true if no claim toda
   assert.equal(status.dailyBonus.canClaim, true);
   assert.equal(status.dailyBonus.claimedToday, false);
   assert.equal(status.dailyBonus.streakDay, 1);
-  assert.equal(status.dailyBonus.todayAmount, 25);
-  assert.equal(status.dailyBonus.todayReward.amount, 25);
-  assert.equal(status.dailyBonus.tomorrowAmount, 30);
+  assert.equal(status.dailyBonus.todayAmount, 200);
+  assert.equal(status.dailyBonus.todayReward.amount, 200);
+  assert.equal(status.dailyBonus.tomorrowAmount, 300);
   assert.equal(status.dailyBonus.timezone, "Asia/Baku");
   assert.equal(status.dailyBonus.dailyBonusDateKey, "2024-03-01");
   assert.equal(status.dailyBonus.nextClaimAt, "2024-03-01T20:00:00.000Z");
@@ -320,12 +320,12 @@ test("Daily Bonus - Claim credits wallet and advances quest", async () => {
   const claimRes = await service.claimDailyBonus({}, now);
   assert.equal(claimRes.claimed, true);
   assert.equal(claimRes.claimMode, "normal");
-  assert.equal(claimRes.baseReward, 25);
+  assert.equal(claimRes.baseReward, 200);
   assert.equal(claimRes.multiplier, 1);
-  assert.equal(claimRes.reward, 25);
-  assert.equal(claimRes.claim.amount, 25);
+  assert.equal(claimRes.reward, 200);
+  assert.equal(claimRes.claim.amount, 200);
   assert.equal(claimRes.claim.streakDay, 1);
-  assert.equal(claimRes.wallet.balance, 25);
+  assert.equal(claimRes.wallet.balance, 200);
   assert.equal(claimRes.dailyBonus.claimedToday, true);
   assert.equal(claimRes.dailyBonus.claimable, false);
   assert.equal(claimRes.dailyBonus.nextClaimAt, "2024-03-01T20:00:00.000Z");
@@ -333,7 +333,7 @@ test("Daily Bonus - Claim credits wallet and advances quest", async () => {
   // Check ledger entry
   assert.equal(mockDb.ledger.length, 1);
   assert.equal(mockDb.ledger[0].type, "daily_bonus");
-  assert.equal(mockDb.ledger[0].amount, 25);
+  assert.equal(mockDb.ledger[0].amount, 200);
 
   // Check quest progress
   assert.equal(mockDb.questProgress.length, 1);
@@ -352,12 +352,12 @@ test("Daily Bonus - Rewarded x2 claim doubles the reward", async () => {
   const claimRes = await service.claimDailyBonus({}, { claimMode: "rewarded_x2" } as any, now);
   assert.equal(claimRes.claimed, true);
   assert.equal(claimRes.claimMode, "rewarded_x2");
-  assert.equal(claimRes.baseReward, 25);
+  assert.equal(claimRes.baseReward, 200);
   assert.equal(claimRes.multiplier, 2);
-  assert.equal(claimRes.reward, 50);
-  assert.equal(claimRes.claim.amount, 50);
-  assert.equal(claimRes.wallet.balance, 50);
-  assert.equal(mockDb.ledger[0].amount, 50);
+  assert.equal(claimRes.reward, 400);
+  assert.equal(claimRes.claim.amount, 400);
+  assert.equal(claimRes.wallet.balance, 400);
+  assert.equal(mockDb.ledger[0].amount, 400);
 });
 
 test("Daily Bonus - Client amount is ignored", async () => {
@@ -370,9 +370,9 @@ test("Daily Bonus - Client amount is ignored", async () => {
   const now = new Date("2024-03-01T18:30:00.000Z");
   const claimRes = await service.claimDailyBonus({}, { claimMode: "normal", amount: 9999 } as any, now);
   assert.equal(claimRes.claimed, true);
-  assert.equal(claimRes.reward, 25);
-  assert.equal(claimRes.claim.amount, 25);
-  assert.equal(mockDb.ledger[0].amount, 25);
+  assert.equal(claimRes.reward, 200);
+  assert.equal(claimRes.claim.amount, 200);
+  assert.equal(mockDb.ledger[0].amount, 200);
 });
 
 test("Daily Bonus - Second claim same day returns claimed false", async () => {
@@ -423,7 +423,7 @@ test("Daily Bonus - Rewarded x2 claim blocks normal claim on the same day", asyn
   const secondClaim = await service.claimDailyBonus({}, { claimMode: "normal" } as any, now);
 
   assert.equal(firstClaim.claimed, true);
-  assert.equal(firstClaim.reward, 50);
+  assert.equal(firstClaim.reward, 400);
   assert.equal(secondClaim.claimed, false);
   assert.equal(secondClaim.claimMode, "normal");
   assert.equal(secondClaim.dailyBonus.claimedToday, true);
@@ -452,14 +452,14 @@ test("Daily Bonus - Previous day claim increases streak", async () => {
 
   const status = await service.getDailyBonusStatus({}, now);
   assert.equal(status.dailyBonus.streakDay, 3);
-  assert.equal(status.dailyBonus.todayAmount, 35);
-  assert.equal(status.dailyBonus.tomorrowAmount, 40);
-
+  assert.equal(status.dailyBonus.todayAmount, 350);
+  assert.equal(status.dailyBonus.tomorrowAmount, 400);
+ 
   // Execute claim
   const claimRes = await service.claimDailyBonus({}, now);
   assert.equal(claimRes.claimed, true);
   assert.equal(claimRes.claim.streakDay, 3);
-  assert.equal(claimRes.claim.amount, 35);
+  assert.equal(claimRes.claim.amount, 350);
 });
 
 test("Daily Bonus - After next Baku midnight claim is allowed", async () => {
@@ -475,10 +475,10 @@ test("Daily Bonus - After next Baku midnight claim is allowed", async () => {
   const firstClaim = await service.claimDailyBonus({}, firstNow);
   const secondClaim = await service.claimDailyBonus({}, secondNow);
 
-  assert.equal(firstClaim.claim.amount, 25);
+  assert.equal(firstClaim.claim.amount, 200);
   assert.equal(secondClaim.claimed, true);
   assert.equal(secondClaim.claim.streakDay, 2);
-  assert.equal(secondClaim.claim.amount, 30);
+  assert.equal(secondClaim.claim.amount, 300);
 });
 
 test("Daily Bonus - Missing previous day resets streak to 1", async () => {
@@ -503,7 +503,7 @@ test("Daily Bonus - Missing previous day resets streak to 1", async () => {
 
   const status = await service.getDailyBonusStatus({}, now);
   assert.equal(status.dailyBonus.streakDay, 1);
-  assert.equal(status.dailyBonus.todayAmount, 25);
+  assert.equal(status.dailyBonus.todayAmount, 200);
 });
 
 test("Daily Bonus - Streak capped at dailyMaxStreak", async () => {
@@ -528,8 +528,8 @@ test("Daily Bonus - Streak capped at dailyMaxStreak", async () => {
 
   const status = await service.getDailyBonusStatus({}, now);
   assert.equal(status.dailyBonus.streakDay, 7); // capped at 7
-  assert.equal(status.dailyBonus.todayAmount, 55);
-  assert.equal(status.dailyBonus.tomorrowAmount, 55);
+  assert.equal(status.dailyBonus.todayAmount, 2000);
+  assert.equal(status.dailyBonus.tomorrowAmount, 2000);
 });
 
 test("Daily Bonus - Baku helpers resolve date keys and next midnight", async () => {

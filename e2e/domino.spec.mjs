@@ -2922,7 +2922,7 @@ test("daily bonus flow: visible only when authed, handles status loading and cla
   await page.goto("/index.html");
   const card = page.locator("#daily-bonus-card");
   await expect(card).not.toHaveClass(/is-hidden/);
-  await expect(page.locator("#daily-bonus-amount")).toContainText("350 coins");
+  await expect(page.locator("#daily-bonus-amount")).toContainText("+350");
   await expect(page.locator("#daily-bonus-streak")).toContainText(/3/);
 
   const claimBtn = page.locator("#daily-bonus-claim-btn");

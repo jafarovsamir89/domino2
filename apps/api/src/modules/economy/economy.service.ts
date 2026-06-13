@@ -287,12 +287,22 @@ export function getNextBakuMidnight(date = new Date()) {
 
 function buildDailyRewardSchedule(config: { dailyMaxStreak: number; dailyBaseAmount: number; dailyStreakBonus: number }) {
   const maxStreak = Math.max(1, toInt(config.dailyMaxStreak, 7));
-  const baseAmount = Math.max(0, toInt(config.dailyBaseAmount, 25));
-  const streakBonus = Math.max(0, toInt(config.dailyStreakBonus, 5));
-  return Array.from({ length: maxStreak }, (_, index) => ({
-    day: index + 1,
-    amount: baseAmount + (index * streakBonus)
-  }));
+  const customRewards = [200, 300, 350, 400, 800, 1000, 2000];
+  return Array.from({ length: maxStreak }, (_, index) => {
+    const day = index + 1;
+    let amount = 0;
+    if (index < customRewards.length) {
+      amount = customRewards[index];
+    } else {
+      const lastCustom = customRewards[customRewards.length - 1];
+      const streakBonus = Math.max(0, toInt(config.dailyStreakBonus, 5));
+      amount = lastCustom + (index - customRewards.length + 1) * streakBonus;
+    }
+    return {
+      day,
+      amount
+    };
+  });
 }
 
 function getRewardAmountForDay(rewardSchedule: Array<{ day: number; amount: number }>, day: number) {
