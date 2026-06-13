@@ -210,6 +210,13 @@ class DominoGame {
         this._lastSeatPickerCloseAction = '';
         this._lastSeatPickerCloseStartedGame = false;
         this._lastSeatPickerCloseError = '';
+        this._lastCloseAttemptAt = 0;
+        this._lastCloseAction = '';
+        this._lastCloseStartedGame = false;
+        this._lastCloseCalledStartGame = false;
+        this._lastCloseCalledSelectSeat = false;
+        this._lastCloseCalledReady = false;
+        this._lastCloseError = '';
         this._lastSeatPickerInviteButtonRendered = false;
         this._lastSeatPickerInviteButtonDisabledReason = '';
         this._lastSeatPickerInviteContextSafe = null;
@@ -1629,7 +1636,14 @@ class DominoGame {
                 lastSeatPickerCloseAttemptAt: Number(this._lastSeatPickerCloseAttemptAt || 0) || 0,
                 lastSeatPickerCloseAction: String(this._lastSeatPickerCloseAction || '').trim() || null,
                 lastSeatPickerCloseStartedGame: Boolean(this._lastSeatPickerCloseStartedGame),
-                lastSeatPickerCloseError: String(this._lastSeatPickerCloseError || '').trim() || null
+                lastSeatPickerCloseError: String(this._lastSeatPickerCloseError || '').trim() || null,
+                lastCloseAttemptAt: Number(this._lastCloseAttemptAt || 0) || 0,
+                lastCloseAction: String(this._lastCloseAction || '').trim() || null,
+                lastCloseStartedGame: Boolean(this._lastCloseStartedGame),
+                lastCloseCalledStartGame: Boolean(this._lastCloseCalledStartGame),
+                lastCloseCalledSelectSeat: Boolean(this._lastCloseCalledSelectSeat),
+                lastCloseCalledReady: Boolean(this._lastCloseCalledReady),
+                lastCloseError: String(this._lastCloseError || '').trim() || null
             },
             roomStart: {
                 roomMode: String((currentRoomState?.roomStart?.roomMode || this._lastRoomStateRoomStart?.roomMode || resolvedRoomMode.roomModeFromState || (this.isTeamMode ? 'team' : 'ffa'))).trim() || null,
@@ -10572,11 +10586,19 @@ class DominoGame {
         this._lastSeatPickerCloseAction = String(action || '').trim() || 'seat-picker-close';
         this._lastSeatPickerCloseStartedGame = false;
         this._lastSeatPickerCloseError = '';
+        this._lastCloseAttemptAt = this._lastSeatPickerCloseAttemptAt;
+        this._lastCloseAction = this._lastSeatPickerCloseAction;
+        this._lastCloseStartedGame = false;
+        this._lastCloseCalledStartGame = false;
+        this._lastCloseCalledSelectSeat = false;
+        this._lastCloseCalledReady = false;
+        this._lastCloseError = '';
         try {
             this.hideSeatSelectionUi();
             this.renderSocialDebugPanel();
         } catch (error) {
             this._lastSeatPickerCloseError = String(error?.message || error || 'seat-picker-close-failed');
+            this._lastCloseError = this._lastSeatPickerCloseError;
             throw error;
         }
     }
@@ -12802,6 +12824,10 @@ class DominoGame {
             if (isSelf) chip.classList.add('you');
             if (sessionId) chip.dataset.sessionId = sessionId;
 
+            const seat = document.createElement('span');
+            seat.className = 'room-player-seat';
+            seat.textContent = seatNumber ? `${this.t('seat-prefix')} ${seatNumber}` : '';
+
             const avatar = document.createElement('span');
             avatar.className = 'room-player-avatar';
             if (avatarUrl) {
@@ -12819,12 +12845,6 @@ class DominoGame {
             body.className = 'room-player-chip-body';
             const titleRow = document.createElement('div');
             titleRow.className = 'room-player-chip-title-row';
-            if (seatNumber) {
-                const seat = document.createElement('span');
-                seat.className = 'room-player-seat';
-                seat.textContent = `${this.t('seat-prefix')} ${seatNumber}`;
-                titleRow.appendChild(seat);
-            }
             const name = document.createElement('span');
             name.className = 'room-player-chip-title';
             name.textContent = displayName;
@@ -12841,6 +12861,7 @@ class DominoGame {
                 actions.appendChild(actionNode);
             }
 
+            chip.appendChild(seat);
             chip.appendChild(avatar);
             chip.appendChild(body);
             chip.appendChild(actions);
@@ -12856,12 +12877,12 @@ class DominoGame {
             const row = createChip({
                 kind: player.isBot ? 'bot' : 'human',
                 displayName: player.sessionId === mySessionId ? `${displayName} (${this.t('online-you')})` : displayName,
-                subtitle: player.isBot ? this.t('online-ready') : (player.isConnected ? this.t('online-ready') : this.t('online-offline')),
+                subtitle: 'Hazır',
                 avatarUrl,
                 seatNumber: player.seatNumber,
                 sessionId: player.sessionId || '',
                 isSelf: player.sessionId === mySessionId,
-                iconText: player.isBot ? 'AI' : ''
+                iconText: player.isBot ? '🤖' : ''
             });
             list.appendChild(row);
         }
@@ -12871,7 +12892,7 @@ class DominoGame {
             const inviteBtn = document.createElement('button');
             inviteBtn.type = 'button';
             inviteBtn.className = 'btn btn-menu room-slot-invite-btn';
-            inviteBtn.textContent = this.t('friend-invite');
+            inviteBtn.textContent = 'Dəvət et';
             inviteBtn.addEventListener('click', async () => {
                 await this.openContextualRoomInvitePicker({
                     source: 'ffa-slot',
@@ -12882,8 +12903,8 @@ class DominoGame {
             });
             const row = createChip({
                 kind: 'empty',
-                displayName: this.t('seat-free'),
-                subtitle: '',
+                displayName: 'Boş',
+                subtitle: 'Dəvət et',
                 seatNumber: i + 1,
                 actionNode: inviteBtn,
                 iconText: '○'
@@ -12896,9 +12917,9 @@ class DominoGame {
                 const row = createChip({
                     kind: 'bot',
                     displayName: 'AI Bot',
-                    subtitle: this.t('online-ready'),
-                    seatNumber: 0,
-                    iconText: 'AI'
+                    subtitle: 'Hazır',
+                    seatNumber: humanSeats + i + 1,
+                    iconText: '🤖'
                 });
                 list.appendChild(row);
             }
