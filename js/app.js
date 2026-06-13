@@ -208,6 +208,7 @@ class DominoGame {
         this._lastSeatPickerOpenSkippedReason = '';
         this._lastSeatPickerInviteButtonRendered = false;
         this._lastSeatPickerInviteButtonDisabledReason = '';
+        this._lastSeatPickerInviteContextSafe = null;
         this._lastSeatPickerOpenedAfterRoomBoundInvite = false;
         this.pendingReconnectResolution = false;
         this.openRooms = [];
@@ -1501,7 +1502,9 @@ class DominoGame {
                 lastSeatPickerOpenSkippedReason: String(this._lastSeatPickerOpenSkippedReason || '').trim() || null,
                 inviteButtonRendered: Boolean(this._lastSeatPickerInviteButtonRendered),
                 inviteButtonDisabledReason: String(this._lastSeatPickerInviteButtonDisabledReason || '').trim() || null,
-                openedAfterRoomBoundInvite: Boolean(this._lastSeatPickerOpenedAfterRoomBoundInvite)
+                openedAfterRoomBoundInvite: Boolean(this._lastSeatPickerOpenedAfterRoomBoundInvite),
+                inviteContextSafe: this._lastSeatPickerInviteContextSafe || null,
+                renderError: ''
             },
             playInvite: {
                 rawPlayInviteIncomingCount: playInviteCounts.rawIncoming,
@@ -10055,6 +10058,24 @@ class DominoGame {
         const roomMode = String(roomState?.roomMode || (roomState?.isTeamMode ? 'team' : 'ffa')).trim().toLowerCase();
         const roomIsActive = Boolean(roomState?.gameActive || this.gameActive);
         const shouldShow = Boolean(this.network?.isMultiplayer && !roomIsActive && totalSeats > 2 && roomState?.seatSelectionRequired !== false);
+        const seatPickerRoomInviteContext = (() => {
+            const snapshot = this.getCurrentRoomSnapshot?.() || null;
+            const activeRoomId = String(roomState?.roomId || snapshot?.roomId || this.currentRoomState?.roomId || '').trim() || null;
+            const activeRoomCode = String(roomState?.roomCode || snapshot?.roomCode || this.currentRoomState?.roomCode || '').trim() || null;
+            const activeRoomMode = String(roomMode || roomState?.roomMode || snapshot?.roomMode || (roomState?.isTeamMode ? 'team' : 'ffa') || '').trim().toLowerCase();
+            const activeRoomVisibility = String(roomState?.roomVisibility || snapshot?.roomVisibility || this.onlineRoomVisibility || '').trim() || null;
+            const canInvite = Boolean(activeRoomId && activeRoomCode);
+            return {
+                roomId: activeRoomId,
+                roomCode: activeRoomCode,
+                roomMode: activeRoomMode === 'team' || activeRoomMode === '2v2' ? 'team' : activeRoomMode || 'team',
+                roomVisibility: activeRoomVisibility,
+                targetSlotIndex: null,
+                openSeatPickerOnJoin: true,
+                source: 'seat-picker',
+                canInvite
+            };
+        })();
         debugLog("[CLIENT_DEBUG] renderSeatSelectionUi", {
             roomId: roomState?.roomId,
             roomCode: roomState?.roomCode,
@@ -10062,7 +10083,8 @@ class DominoGame {
             totalSeats,
             shouldShow,
             gameActive: roomState?.gameActive,
-            seatSelectionRequired: roomState?.seatSelectionRequired
+            seatSelectionRequired: roomState?.seatSelectionRequired,
+            seatPickerRoomInviteContext
         });
         if (!shouldShow) {
             this.hideSeatSelectionUi();
@@ -10096,19 +10118,23 @@ class DominoGame {
         if (footerActions) {
             footerActions.classList.remove('is-hidden');
         }
-        const inviteCandidates = this.getContextualRoomInviteCandidates(roomInviteContext || {});
-        const inviteButtonDisabledReason = !inviteCandidates.friends.length
+        const inviteCandidates = this.getContextualRoomInviteCandidates(seatPickerRoomInviteContext || {});
+        const inviteButtonDisabledReason = !seatPickerRoomInviteContext?.canInvite
+            ? 'missing-room-context'
+            : !inviteCandidates.friends.length
             ? 'no-eligible-friends'
             : '';
         if (inviteBtn) {
             this._lastSeatPickerInviteButtonRendered = true;
             this._lastSeatPickerInviteButtonDisabledReason = inviteButtonDisabledReason;
+            this._lastSeatPickerInviteContextSafe = this.buildInviteDebugPayloadSafe(seatPickerRoomInviteContext);
             inviteBtn.hidden = false;
             inviteBtn.disabled = Boolean(inviteButtonDisabledReason);
             inviteBtn.textContent = this.t('friend-invite');
         } else {
             this._lastSeatPickerInviteButtonRendered = false;
             this._lastSeatPickerInviteButtonDisabledReason = 'missing-button';
+            this._lastSeatPickerInviteContextSafe = this.buildInviteDebugPayloadSafe(seatPickerRoomInviteContext);
         }
         this._lastSeatPickerOpenedAfterRoomBoundInvite = Boolean(this._lastAcceptedInviteWasRoomBound);
         if (closeBtn) {

@@ -46,7 +46,9 @@ test("client moves play invite entry points into room context", () => {
     ];
     const seatPickerRoomBoundInviteStrings = [
         "source: 'seat-picker'",
-        "openSeatPickerOnJoin: true"
+        "openSeatPickerOnJoin: true",
+        "const seatPickerRoomInviteContext = (() => {",
+        "inviteContextSafe"
     ];
 
     for (const source of [appSource, webAppSource]) {
