@@ -10598,6 +10598,9 @@ class DominoGame {
         this._lastCloseError = '';
         try {
             this.hideSeatSelectionUi();
+            if (this.network?.room) {
+                await this.returnToMainMenu({ settleForfeit: false });
+            }
             this.renderSocialDebugPanel();
         } catch (error) {
             this._lastSeatPickerCloseError = String(error?.message || error || 'seat-picker-close-failed');

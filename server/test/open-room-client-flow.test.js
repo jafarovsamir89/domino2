@@ -36,6 +36,8 @@ test("client keeps team runtime and seat picker close flow explicit", () => {
         "handleSeatSelectionClose('seat-picker-close')",
         "event.preventDefault();",
         "event.stopPropagation();",
+        "if (this.network?.room) {",
+        "await this.returnToMainMenu({ settleForfeit: false });",
         "roomRuntime: {",
         "roomStart: {",
         "startGamePayloadSafe",
@@ -104,6 +106,7 @@ test("client keeps team runtime and seat picker close flow explicit", () => {
         assert.equal(closeSnippet.includes("this.startGame();"), false);
         assert.equal(closeSnippet.includes("this.selectSeat("), false);
         assert.equal(closeSnippet.includes("this.ready("), false);
+        assert.equal(closeSnippet.includes("await this.returnToMainMenu({ settleForfeit: false });"), true);
     }
 });
 
