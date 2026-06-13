@@ -221,6 +221,18 @@ class DominoGame {
         this._lastRoomStatePlayersSafe = [];
         this._lastRoomStateTeamAssignmentsSafe = [];
         this._lastRoomStateSeatAssignmentsSafe = [];
+        this._lastMoveHintSelectionActive = false;
+        this._lastMoveHintShownAt = 0;
+        this._lastMoveHintClearedAt = 0;
+        this._lastLeftHintRectSafe = null;
+        this._lastRightHintRectSafe = null;
+        this._lastProfileClickBlockedAt = 0;
+        this._lastProfileClickBlockedReason = '';
+        this._lastHintClickAt = 0;
+        this._lastHintClickSide = '';
+        this._lastHintClickStoppedPropagation = false;
+        this._lastProfileOpenAttemptAt = 0;
+        this._lastProfileOpenBlockedByMoveHint = false;
         this._resolvedRoomModeFromState = '';
         this._resolvedScoreMode = '';
         this._resolvedTopHudMode = '';
@@ -1216,6 +1228,13 @@ class DominoGame {
     }
 
     async openPlayerProfileModal(playerRef) {
+        this._lastProfileOpenAttemptAt = Date.now();
+        this._lastProfileOpenBlockedByMoveHint = this.isMoveHintSelectionActive();
+        if (this._lastProfileOpenBlockedByMoveHint) {
+            this._lastProfileClickBlockedAt = this._lastProfileOpenAttemptAt;
+            this._lastProfileClickBlockedReason = 'move-hint-selection-active';
+            return false;
+        }
         const playerId = this.resolvePlayerProfileId(playerRef);
         const modal = document.getElementById('player-profile-modal');
         if (!modal || !playerId) return;
@@ -1551,6 +1570,22 @@ class DominoGame {
                 lastSeatPickerCloseStartedGame: Boolean(this._lastSeatPickerCloseStartedGame),
                 lastSeatPickerCloseError: String(this._lastSeatPickerCloseError || '').trim() || null
             },
+            moveHints: {
+                active: this.isMoveHintSelectionActive(),
+                lastShownAt: Number(this._lastMoveHintShownAt || 0) || 0,
+                lastClearedAt: Number(this._lastMoveHintClearedAt || 0) || 0,
+                lastLeftHintRectSafe: this._lastLeftHintRectSafe || null,
+                lastRightHintRectSafe: this._lastRightHintRectSafe || null,
+                lastProfileClickBlockedAt: Number(this._lastProfileClickBlockedAt || 0) || 0,
+                lastProfileClickBlockedReason: String(this._lastProfileClickBlockedReason || '').trim() || null,
+                lastHintClickAt: Number(this._lastHintClickAt || 0) || 0,
+                lastHintClickSide: String(this._lastHintClickSide || '').trim() || null,
+                lastHintClickStoppedPropagation: Boolean(this._lastHintClickStoppedPropagation)
+            },
+            profile: {
+                lastProfileOpenAttemptAt: Number(this._lastProfileOpenAttemptAt || 0) || 0,
+                lastProfileOpenBlockedByMoveHint: Boolean(this._lastProfileOpenBlockedByMoveHint)
+            },
             seatPicker: {
                 lastRoomCreateVisibility: String(this._lastRoomCreateVisibility || '').trim() || null,
                 lastRoomCreateMode: String(this._lastRoomCreateMode || '').trim() || null,
@@ -1767,6 +1802,49 @@ class DominoGame {
         const output = panel?.querySelector('[data-social-debug-output]');
         if (!output) return;
         output.textContent = JSON.stringify(this.getSocialDebugState(), null, 2);
+    }
+
+    isMoveHintSelectionActive() {
+        return Boolean(
+            this.gameActive
+            && !this.matchOver
+            && !this.roundOver
+            && Number.isInteger(Number(this.selectedTileIndex))
+            && Number(this.selectedTileIndex) >= 0
+        );
+    }
+
+    syncMoveHintSelectionUiState() {
+        const active = this.isMoveHintSelectionActive();
+        if (document.body) {
+            document.body.classList.toggle('move-hint-selection-active', active);
+        }
+        if (active !== this._lastMoveHintSelectionActive) {
+            const now = Date.now();
+            if (active) {
+                this._lastMoveHintShownAt = now;
+                const toSafeRect = (el) => {
+                    const rect = el?.getBoundingClientRect?.();
+                    if (!rect) return null;
+                    return {
+                        left: Math.round(rect.left),
+                        top: Math.round(rect.top),
+                        right: Math.round(rect.right),
+                        bottom: Math.round(rect.bottom),
+                        width: Math.round(rect.width),
+                        height: Math.round(rect.height)
+                    };
+                };
+                this._lastLeftHintRectSafe = toSafeRect(document.querySelector('#arrow-overlay .arrow-btn.arrow-left'));
+                this._lastRightHintRectSafe = toSafeRect(document.querySelector('#arrow-overlay .arrow-btn.arrow-right'));
+            } else {
+                this._lastMoveHintClearedAt = now;
+                this._lastLeftHintRectSafe = null;
+                this._lastRightHintRectSafe = null;
+            }
+        }
+        this._lastMoveHintSelectionActive = active;
+        return active;
     }
 
     getFriendPlayerId(friendRef) {
@@ -9534,7 +9612,16 @@ class DominoGame {
         button.textContent = String(label || 'Player');
         const playerId = this.resolvePlayerProfileId(playerRef);
         if (playerId && !playerRef?.isBot) {
-            button.addEventListener('click', () => this.openPlayerProfileModal(playerRef));
+            button.addEventListener('click', (event) => {
+                if (this.isMoveHintSelectionActive()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    this._lastProfileClickBlockedAt = Date.now();
+                    this._lastProfileClickBlockedReason = 'move-hint-selection-active';
+                    return;
+                }
+                void this.openPlayerProfileModal(playerRef);
+            });
         } else {
             button.disabled = true;
             button.classList.add('is-static');
@@ -13746,6 +13833,7 @@ class DominoGame {
         }
         this.renderer.renderScores(displayEntities, this.currentPlayer);
         this.renderer.renderInfo(this.matchRound, this.deal, this.boneyard.length, this.board.getOpenEndsScore(), this.getCurrentStakeLabel());
+        this.syncMoveHintSelectionUiState();
         const waitingOpenRoom = this.network.isMultiplayer
             && !this.gameActive
             && !this.currentRoomState?.gameActive
@@ -14389,6 +14477,7 @@ class DominoGame {
             this.renderer.renderInfo(this.matchRound, this.deal, this.boneyard.length, this.board.getOpenEndsScore(), this.getCurrentStakeLabel());
             this._realtimeRenderSignatures.info = nextSignatures.info;
         }
+        this.syncMoveHintSelectionUiState();
 
         const waitingOpenRoom = this.network.isMultiplayer
             && !this.gameActive
@@ -14882,6 +14971,7 @@ class DominoGame {
     onHandTileClick(ti, fromRemote=false) {
         this.selectedTileIndex = -1;
         this.renderer.removeArrows();
+        this.syncMoveHintSelectionUiState();
         if (this.network.isMultiplayer) {
             // In server multiplayer, client only sends its own moves
             if (this.currentPlayer !== this.humanPlayerIndex) return;
@@ -14905,18 +14995,25 @@ class DominoGame {
             else if (ends.length > 1) {
                 this.selectedTileIndex = ti;
                 this.renderer.renderHand(this.myHand, this.validMoves, this.selectedTileIndex);
+                this.syncMoveHintSelectionUiState();
                 this.renderer.showArrowChoices(this.board, ends,
                     (ei) => {
                         const actionId = this.network.nextActionId('play');
                         if (!this.applyOptimisticOnlinePlay(ti, ei, actionId)) {
                             this.selectedTileIndex = -1;
                             this.renderer.renderHand(this.myHand, this.validMoves, -1);
+                            this.syncMoveHintSelectionUiState();
                             return;
                         }
                         this.network.sendPlay(ti, ei, actionId);
                     },
-                    () => { this.selectedTileIndex = -1; this.renderer.renderHand(this.myHand, this.validMoves, -1); }
+                    () => {
+                        this.selectedTileIndex = -1;
+                        this.renderer.renderHand(this.myHand, this.validMoves, -1);
+                        this.syncMoveHintSelectionUiState();
+                    }
                 );
+                this.syncMoveHintSelectionUiState();
             }
             return;
         }
@@ -14937,10 +15034,20 @@ class DominoGame {
         else if (ends.length > 1) {
             this.selectedTileIndex = ti;
             this.renderer.renderHand(hand, this.validMoves, this.selectedTileIndex);
+            this.syncMoveHintSelectionUiState();
             this.renderer.showArrowChoices(this.board, ends,
-                (ei) => { this.selectedTileIndex = -1; this.playTile(pi, ti, ei); },
-                () => { this.selectedTileIndex = -1; this.renderer.renderHand(this.hands[pi], this.validMoves, -1); }
+                (ei) => {
+                    this.selectedTileIndex = -1;
+                    this.playTile(pi, ti, ei);
+                    this.syncMoveHintSelectionUiState();
+                },
+                () => {
+                    this.selectedTileIndex = -1;
+                    this.renderer.renderHand(this.hands[pi], this.validMoves, -1);
+                    this.syncMoveHintSelectionUiState();
+                }
             );
+            this.syncMoveHintSelectionUiState();
         }
     }
 

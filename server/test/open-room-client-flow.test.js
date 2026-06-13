@@ -42,7 +42,11 @@ test("client keeps team runtime and seat picker close flow explicit", () => {
         "teamAssignmentsSafe",
         "seatAssignmentsSafe",
         "scoreMode",
-        "topHudMode"
+        "topHudMode",
+        "isMoveHintSelectionActive()",
+        "syncMoveHintSelectionUiState()",
+        "lastProfileOpenBlockedByMoveHint",
+        "lastProfileClickBlockedReason"
     ];
 
     for (const source of [appSource, webAppSource]) {
@@ -51,6 +55,42 @@ test("client keeps team runtime and seat picker close flow explicit", () => {
         }
         assert.equal(source.includes("closeBtn.addEventListener('click', () => this.hideSeatSelectionUi());"), false);
         assert.equal(source.includes("this.isTeamMode = Boolean(payload?.isTeamMode);"), false);
+    }
+});
+
+test("client blocks profile clicks while move hints are active and exposes safe debug state", () => {
+    const appSource = read("js/app.js");
+    const webAppSource = read("www/js/app.js");
+    const cssSource = read("css/style.css");
+    const requiredAppTokens = [
+        "move-hint-selection-active",
+        "_lastMoveHintSelectionActive",
+        "_lastMoveHintShownAt",
+        "_lastMoveHintClearedAt",
+        "_lastLeftHintRectSafe",
+        "_lastRightHintRectSafe",
+        "_lastProfileClickBlockedAt",
+        "_lastProfileClickBlockedReason",
+        "_lastHintClickAt",
+        "_lastHintClickSide",
+        "_lastHintClickStoppedPropagation",
+        "body.classList.toggle('move-hint-selection-active', active)",
+        "this.isMoveHintSelectionActive()",
+        "lastProfileOpenBlockedByMoveHint"
+    ];
+    const requiredCssTokens = [
+        "body.move-hint-selection-active #game-screen .score-name-button",
+        "body.move-hint-selection-active #game-screen .opp-label-button",
+        "body.move-hint-selection-active #game-screen .player-name-btn"
+    ];
+
+    for (const source of [appSource, webAppSource]) {
+        for (const token of requiredAppTokens) {
+            assert.equal(source.includes(token), true);
+        }
+    }
+    for (const token of requiredCssTokens) {
+        assert.equal(cssSource.includes(token), true);
     }
 });
 

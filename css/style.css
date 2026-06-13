@@ -3106,6 +3106,13 @@ body.seat-selection-active #game-screen {
     filter: blur(1px) saturate(0.95);
 }
 
+body.move-hint-selection-active #game-screen .score-name-button,
+body.move-hint-selection-active #game-screen .opp-label-button,
+body.move-hint-selection-active #game-screen .player-name-btn {
+    pointer-events: none !important;
+    cursor: default !important;
+}
+
 .room-player-chip {
     display: flex;
     align-items: center;
