@@ -6,7 +6,7 @@ const { AIPlayer } = require("./ai");
 const { Tile, createFullSet, shuffle, getHandSize, determineFirstPlayer, handPoints, getOpeningPlayScore, hasInvalidOpeningHand, roundTo5 } = require("./model");
 const { verifyGameToken } = require("./platformAuth");
 const { buildSignedRequestBody } = require("./signedRequest");
-const { generateRoomCode, normalizeRoomVisibility, normalizeStakeKey, normalizePlayerCount, normalizeAiCount, normalizeDlossThreshold, normalizeInstantWinEnabled, normalizeAiDifficulty } = require("./roomConfig");
+const { generateRoomCode, normalizeRoomVisibility, normalizeRoomMode, normalizeStakeKey, normalizePlayerCount, normalizeAiCount, normalizeDlossThreshold, normalizeInstantWinEnabled, normalizeAiDifficulty } = require("./roomConfig");
 const { normalizeAuthToken, buildRoomIdentity, getFirstNameDisplayName } = require("./roomIdentity");
 const { buildLivePlayerPayload } = require("./roomPresence");
 const { buildPlatformMatchPayload, sanitizeParticipant } = require("./matchResultPayload");
@@ -93,7 +93,8 @@ class DominoRoom extends Room {
         this.setState(new GameState());
         this.attachStateCollections();
         this.voiceEnabledBySessionId = new Set();
-        this.state.isTeamMode = options.isTeamMode === true;
+        this.roomMode = normalizeRoomMode(options.roomMode, options.isTeamMode);
+        this.state.isTeamMode = this.roomMode === "team";
         this.totalPlayers = normalizePlayerCount(options.playerCount, this.state.isTeamMode);
         this.aiCount = normalizeAiCount(options.aiCount, this.totalPlayers);
         this.humanSeats = this.totalPlayers - this.aiCount;

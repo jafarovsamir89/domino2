@@ -16,6 +16,17 @@ function normalizeRoomVisibility(value) {
     return String(value || "closed").trim() === "open" ? "open" : "closed";
 }
 
+function normalizeRoomMode(value, isTeamMode) {
+    const roomMode = String(value || "").trim().toLowerCase();
+    if (roomMode === "team" || roomMode === "2v2" || roomMode === "partnership") {
+        return "team";
+    }
+    if (roomMode === "ffa" || roomMode === "solo") {
+        return "ffa";
+    }
+    return isTeamMode === true ? "team" : "ffa";
+}
+
 function normalizeStakeKey(value) {
     return String(value || DEFAULT_STAKE_KEY).trim() || DEFAULT_STAKE_KEY;
 }
@@ -43,6 +54,7 @@ function normalizeAiDifficulty(value) {
 module.exports = {
     generateRoomCode,
     normalizeRoomVisibility,
+    normalizeRoomMode,
     normalizeStakeKey,
     normalizePlayerCount,
     normalizeAiCount,

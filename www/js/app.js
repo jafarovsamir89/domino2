@@ -717,6 +717,17 @@ class DominoGame {
         document.getElementById('host-game-btn')?.addEventListener('click', async () => {
             const name = this.requirePlayerName('online');
             if (!name) return;
+            const roomCreateMode = this.isTeamMode ? 'team' : 'ffa';
+            const roomCreateOptions = {
+                isTeamMode: roomCreateMode === 'team',
+                roomMode: roomCreateMode,
+                playerCount: this.onlinePlayerCount,
+                aiCount: this.onlineAiCount,
+                roomVisibility: this.onlineRoomVisibility === "open" ? "open" : "closed",
+                stakeKey: this.onlineStakeKey || "stake_200",
+                instantWinEnabled: document.getElementById('instant-win-setting')?.checked,
+                dlossThreshold: parseInt(document.getElementById('dloss-setting')?.value || '255', 10)
+            };
             const profile = await this.requireRegisteredAccount('account-registration-required-online');
             if (!profile) {
                 this.setHostStatus(this.t('account-registration-required-online'));
@@ -735,7 +746,7 @@ class DominoGame {
                 document.getElementById('online-invite-status-banner')?.classList.add('is-hidden');
             }, (err) => {
                 this.setHostStatus(`${this.t('online-room-status-error')}: ${err}`);
-            });
+            }, roomCreateOptions);
         });
 
         document.getElementById('join-game-btn')?.addEventListener('click', () => {
@@ -12071,7 +12082,14 @@ class DominoGame {
             return;
         }
         this.currentRoomState = roomState;
-        this.isTeamMode = Boolean(roomState?.isTeamMode ?? this.isTeamMode);
+        const normalizedRoomStateMode = String(roomState?.roomMode || '').trim().toLowerCase();
+        this.isTeamMode = typeof roomState?.isTeamMode === 'boolean'
+            ? roomState.isTeamMode
+            : normalizedRoomStateMode === 'team' || normalizedRoomStateMode === '2v2' || normalizedRoomStateMode === 'partnership'
+                ? true
+                : normalizedRoomStateMode === 'ffa' || normalizedRoomStateMode === 'solo'
+                    ? false
+                    : this.isTeamMode;
         this.turnVersion = Number(roomState?.turnVersion || this.turnVersion || 1);
         this.turnTimeoutMs = Number(roomState?.turnDurationMs || this.turnTimeoutMs || TURN_TIMEOUT_MS);
         this.syncServerClock(roomState?.serverNow || roomState?.serverTime || 0);
@@ -12252,7 +12270,14 @@ class DominoGame {
 
         const roomPlayers = Array.isArray(roomState.players) ? roomState.players : [];
         const totalPlayers = Math.max(2, Number(roomState.totalPlayers || roomState.humanSeats || roomPlayers.length || 2));
-        this.isTeamMode = Boolean(roomState?.isTeamMode ?? this.isTeamMode);
+        const normalizedWaitingRoomStateMode = String(roomState?.roomMode || '').trim().toLowerCase();
+        this.isTeamMode = typeof roomState?.isTeamMode === 'boolean'
+            ? roomState.isTeamMode
+            : normalizedWaitingRoomStateMode === 'team' || normalizedWaitingRoomStateMode === '2v2' || normalizedWaitingRoomStateMode === 'partnership'
+                ? true
+                : normalizedWaitingRoomStateMode === 'ffa' || normalizedWaitingRoomStateMode === 'solo'
+                    ? false
+                    : this.isTeamMode;
         const mySessionId = this.network?.room?.sessionId || '';
         const myIndex = roomPlayers.findIndex((player) => player.sessionId === mySessionId);
 
