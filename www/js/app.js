@@ -10516,7 +10516,9 @@ class DominoGame {
             event.preventDefault();
             event.stopPropagation();
             event.stopImmediatePropagation();
-            void this.handleSeatSelectionClose('seat-picker-close');
+            setTimeout(() => {
+                void this.handleSeatSelectionClose('seat-picker-close');
+            }, 0);
         });
         headCopy.appendChild(kicker);
         headCopy.appendChild(title);

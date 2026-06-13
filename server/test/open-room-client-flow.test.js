@@ -57,7 +57,9 @@ test("client keeps team runtime and seat picker close flow explicit", () => {
         "event.preventDefault();",
         "event.stopPropagation();",
         "event.stopImmediatePropagation();",
-        "void this.handleSeatSelectionClose('seat-picker-close');"
+        "setTimeout(() => {",
+        "void this.handleSeatSelectionClose('seat-picker-close');",
+        "}, 0);"
     ];
     const debugTokens = [
         "lastCloseAttemptAt",
