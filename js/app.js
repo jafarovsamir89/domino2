@@ -280,6 +280,19 @@ class DominoGame {
         this._lastPlayInviteUpdatePayloadSafe = null;
         this._lastPlayInviteAcceptedAt = 0;
         this._lastPlayInviteAcceptedPayloadSafe = null;
+        this._lastPlayInviteAcceptedFlowType = '';
+        this._lastPlayInviteAcceptedHadRoomId = false;
+        this._lastPlayInviteAcceptedJoinAttemptAt = 0;
+        this._lastPlayInviteAcceptedJoinRoomId = '';
+        this._lastPlayInviteAcceptedJoinRoomCode = '';
+        this._lastPlayInviteAcceptedJoinError = '';
+        this._lastPlayInviteAcceptedWaitingSuppressedForRoomBound = false;
+        this._lastAcceptedInviteWasRoomBound = false;
+        this._lastContextualInvitePayloadSafe = null;
+        this._lastContextualInviteResultSafe = null;
+        this._lastContextualInviteFlowType = '';
+        this._lastContextualInviteRoomIdPersisted = false;
+        this._lastContextualInviteRoomCodePersisted = false;
         this._lastPlayInviteRoomAttachAttemptAt = 0;
         this._lastPlayInviteRoomAttachPayloadSafe = null;
         this._lastPlayInviteRoomAttachResultSafe = null;
@@ -1461,7 +1474,12 @@ class DominoGame {
                     selectedFriendId: String(this._lastContextualInviteSelectedFriendId || '').trim() || null,
                     sendAt: Number(this._lastContextualInviteSendAt || 0) || 0,
                     sendResultSafe: this._lastContextualInviteSendResultSafe || null,
-                    sendError: String(this._lastContextualInviteSendError || '').trim() || null
+                    sendError: String(this._lastContextualInviteSendError || '').trim() || null,
+                    flowType: String(this._lastContextualInviteFlowType || '').trim() || null,
+                    roomIdPersisted: Boolean(this._lastContextualInviteRoomIdPersisted),
+                    roomCodePersisted: Boolean(this._lastContextualInviteRoomCodePersisted),
+                    payloadSafe: this._lastContextualInvitePayloadSafe || null,
+                    resultSafe: this._lastContextualInviteResultSafe || null
                 },
                 friendPicker: {
                     open: Boolean(this.friendPickerOpen),
@@ -1491,6 +1509,14 @@ class DominoGame {
                 lastPlayInviteEventAt: Number(this._lastPlayInviteEventAt || 0) || 0,
                 lastPlayInviteAcceptedAt: Number(this._lastPlayInviteAcceptedAt || 0) || 0,
                 lastPlayInviteAcceptedPayloadSafe: this._lastPlayInviteAcceptedPayloadSafe || null,
+                lastPlayInviteAcceptedFlowType: String(this._lastPlayInviteAcceptedFlowType || '').trim() || null,
+                lastPlayInviteAcceptedHadRoomId: Boolean(this._lastPlayInviteAcceptedHadRoomId),
+                lastPlayInviteAcceptedJoinAttemptAt: Number(this._lastPlayInviteAcceptedJoinAttemptAt || 0) || 0,
+                lastPlayInviteAcceptedJoinRoomId: String(this._lastPlayInviteAcceptedJoinRoomId || '').trim() || null,
+                lastPlayInviteAcceptedJoinRoomCode: String(this._lastPlayInviteAcceptedJoinRoomCode || '').trim() || null,
+                lastPlayInviteAcceptedJoinError: String(this._lastPlayInviteAcceptedJoinError || '').trim() || null,
+                lastPlayInviteAcceptedWaitingSuppressedForRoomBound: Boolean(this._lastPlayInviteAcceptedWaitingSuppressedForRoomBound),
+                lastAcceptedInviteWasRoomBound: Boolean(this._lastAcceptedInviteWasRoomBound),
                 lastPlayInviteRoomAttachAttemptAt: Number(this._lastPlayInviteRoomAttachAttemptAt || 0) || 0,
                 lastPlayInviteRoomAttachPayloadSafe: this._lastPlayInviteRoomAttachPayloadSafe || null,
                 lastPlayInviteRoomAttachResultSafe: this._lastPlayInviteRoomAttachResultSafe || null,
@@ -1691,7 +1717,19 @@ class DominoGame {
 
     isPlayInviteWaiting(invite) {
         const status = String(invite?.status || '').trim().toLowerCase();
-        return this.isPlayInviteRecord(invite) && status === 'accepted' && !String(invite?.roomId || '').trim();
+        return this.isPlayInviteRecord(invite) && status === 'accepted' && !this.isPlayInviteRoomBound(invite);
+    }
+
+    isPlayInviteRoomBound(invite) {
+        if (!this.isPlayInviteRecord(invite)) return false;
+        return Boolean(
+            String(invite?.roomId || '').trim()
+            || String(invite?.roomCode || '').trim()
+            || String(invite?.payloadJson?.roomId || '').trim()
+            || String(invite?.payloadJson?.roomCode || '').trim()
+            || String(invite?.payloadJson?.roomContext?.roomId || '').trim()
+            || String(invite?.payloadJson?.roomContext?.roomCode || '').trim()
+        );
     }
 
     isPlayInviteRecord(invite) {
@@ -1771,7 +1809,7 @@ class DominoGame {
         const currentPlayerId = this.getCurrentAccountPlayerId();
         const inviterPlayerId = String(invite?.inviter?.id || invite?.inviterPlayerId || '').trim();
         const inviteePlayerId = String(invite?.invitee?.id || invite?.inviteePlayerId || '').trim();
-        if (status === 'accepted' && !String(invite?.roomId || '').trim()) {
+        if (status === 'accepted' && !this.isPlayInviteRoomBound(invite)) {
             if (inviteePlayerId === currentPlayerId) {
                 return this.currentLang === 'az'
                     ? 'Otaq gözlənilir'
@@ -3080,6 +3118,10 @@ class DominoGame {
         if (!manual) {
             this.playInviteAutoJoinAttemptedIds.add(inviteId);
         }
+        this._lastPlayInviteAcceptedJoinAttemptAt = Date.now();
+        this._lastPlayInviteAcceptedJoinRoomId = String(invite?.roomId || '').trim();
+        this._lastPlayInviteAcceptedJoinRoomCode = roomCode;
+        this._lastPlayInviteAcceptedJoinError = '';
         this._lastPlayInviteAutoJoinAttemptAt = Date.now();
         this._lastPlayInviteAutoJoinError = '';
         this.renderer.showMessage(
@@ -3105,6 +3147,7 @@ class DominoGame {
         } catch (error) {
             const message = String(error?.message || error || '').trim();
             this._lastPlayInviteAutoJoinError = message;
+            this._lastPlayInviteAcceptedJoinError = message;
             if (!manual && this.network?.room) {
                 try {
                     await this.markPlayInviteFailedToJoinWithFallback(inviteId, {
@@ -6882,7 +6925,6 @@ class DominoGame {
                         }
                     });
 
-                    action.appendChild(inviteBtn);
                     action.appendChild(messageBtn);
                     action.appendChild(removeBtn);
                     card.appendChild(action);
@@ -7049,7 +7091,7 @@ class DominoGame {
         const inviteId = String(invite?.id || invite?.invitationId || invite?.roomInvitationId || '').trim();
         const pending = isPlayInvite ? status === 'pending' : this.isRoomInvitationPending(invite);
         const isAcceptedWaiting = isPlayInvite
-            ? status === 'accepted' && !String(invite?.roomId || '').trim()
+            ? status === 'accepted' && !this.isPlayInviteRoomBound(invite)
             : status === 'accepted' && !String(invite?.roomCode || '').trim();
         const isRoomReady = isPlayInvite && status === 'room_created';
         const isJoined = isPlayInvite && status === 'joined';
@@ -7116,13 +7158,24 @@ class DominoGame {
                             const acceptedInvite = accepted?.item || accepted?.invite || invite;
                             this._lastPlayInviteAcceptedAt = Date.now();
                             this._lastPlayInviteAcceptedPayloadSafe = this.buildInviteDebugPayloadSafe(acceptedInvite || invite);
-                            this.acceptedWaitingInviteIds.add(inviteId);
-                            this.renderer.showMessage(
-                                this.currentLang === 'az'
-                                    ? 'Otaq gözlənilir'
-                                    : 'Waiting for room',
-                                1800
-                            );
+                            const acceptedRoomBound = this.isPlayInviteRoomBound(acceptedInvite || invite);
+                            this._lastPlayInviteAcceptedFlowType = acceptedRoomBound ? 'room-bound' : 'reservation';
+                            this._lastPlayInviteAcceptedHadRoomId = Boolean(String(acceptedInvite?.roomId || invite?.roomId || '').trim());
+                            this._lastAcceptedInviteWasRoomBound = acceptedRoomBound;
+                            if (acceptedRoomBound) {
+                                this._lastPlayInviteAcceptedWaitingSuppressedForRoomBound = true;
+                                this.acceptedWaitingInviteIds.delete(inviteId);
+                                await this.joinPlayInviteRoom(acceptedInvite || invite, { manual: true }).catch(() => {});
+                            } else {
+                                this._lastPlayInviteAcceptedWaitingSuppressedForRoomBound = false;
+                                this.acceptedWaitingInviteIds.add(inviteId);
+                                this.renderer.showMessage(
+                                    this.currentLang === 'az'
+                                        ? 'Otaq gözlənilir'
+                                        : 'Waiting for room',
+                                    1800
+                                );
+                            }
                             await this.loadSocialInvitesPage();
                         } catch (err) {
                             this._lastPlayInviteError = String(err?.message || err || '').trim();
@@ -8472,41 +8525,58 @@ class DominoGame {
             this._lastPlayInviteAcceptedAt = Date.now();
             this._lastPlayInviteAcceptedPayloadSafe = safePayload;
             const acceptedInviteId = String(normalizedInvite.id || '').trim();
-            if (acceptedInviteId) {
-                this.acceptedWaitingInviteIds.add(acceptedInviteId);
-            }
+            const acceptedRoomBound = this.isPlayInviteRoomBound(normalizedInvite);
+            this._lastPlayInviteAcceptedFlowType = acceptedRoomBound ? 'room-bound' : 'reservation';
+            this._lastPlayInviteAcceptedHadRoomId = Boolean(String(normalizedInvite.roomId || '').trim());
+            this._lastAcceptedInviteWasRoomBound = acceptedRoomBound;
+            this._lastPlayInviteAcceptedWaitingSuppressedForRoomBound = acceptedRoomBound;
             const inviterPlayerId = String(normalizedInvite.inviter?.id || '').trim();
             const inviteePlayerId = String(normalizedInvite.invitee?.id || '').trim();
             if (inviterPlayerId === currentPlayerId) {
                 const inviteeName = String(normalizedInvite.invitee?.displayName || 'Player').trim();
                 const message = this.currentLang === 'az'
-                    ? `${inviteeName} dəvəti qəbul etdi və gözləyir`
-                    : `${inviteeName} accepted your invite and is waiting.`;
+                    ? (acceptedRoomBound
+                        ? `${inviteeName} dəvəti qəbul etdi`
+                        : `${inviteeName} dəvəti qəbul etdi və gözləyir`)
+                    : (acceptedRoomBound
+                        ? `${inviteeName} accepted your invite`
+                        : `${inviteeName} accepted your invite and is waiting.`);
                 this.renderer.showMessage(message, 1800);
-                this.acceptedWaitingInviteIds.add(acceptedInviteId);
+                if (!acceptedRoomBound && acceptedInviteId) {
+                    this.acceptedWaitingInviteIds.add(acceptedInviteId);
+                }
                 void this.loadFriendsHub().catch(() => {});
             }
             if (inviteePlayerId === currentPlayerId) {
-                this.acceptedWaitingInviteIds.add(acceptedInviteId);
-                this.gameInviteState = {
-                    ...(this.gameInviteState || {}),
-                    inviteId: acceptedInviteId || this.gameInviteState?.inviteId || '',
-                    inviteePlayerId: currentPlayerId,
-                    inviteeDisplayName: String(normalizedInvite.invitee?.displayName || this.accountProfile?.displayName || '').trim(),
-                    sessionId: String(normalizedInvite.id || normalizedInvite.roomId || this.gameInviteState?.sessionId || '').trim(),
-                    role: 'invitee',
-                    roomLinked: Boolean(String(normalizedInvite.roomId || '').trim()),
-                    createPromptShown: Boolean(this.gameInviteState?.createPromptShown),
-                    waitingPromptShown: true,
-                    createdAt: this.gameInviteState?.createdAt || Date.now()
-                };
-                this.startGameInviteRefresh();
-                this.renderer.showMessage(
-                    this.currentLang === 'az'
-                        ? 'Otaq gözlənilir'
-                        : 'Waiting for room',
-                    1800
-                );
+                if (!acceptedRoomBound) {
+                    if (acceptedInviteId) {
+                        this.acceptedWaitingInviteIds.add(acceptedInviteId);
+                    }
+                    this.gameInviteState = {
+                        ...(this.gameInviteState || {}),
+                        inviteId: acceptedInviteId || this.gameInviteState?.inviteId || '',
+                        inviteePlayerId: currentPlayerId,
+                        inviteeDisplayName: String(normalizedInvite.invitee?.displayName || this.accountProfile?.displayName || '').trim(),
+                        sessionId: String(normalizedInvite.id || normalizedInvite.roomId || this.gameInviteState?.sessionId || '').trim(),
+                        role: 'invitee',
+                        roomLinked: Boolean(String(normalizedInvite.roomId || '').trim()),
+                        createPromptShown: Boolean(this.gameInviteState?.createPromptShown),
+                        waitingPromptShown: true,
+                        createdAt: this.gameInviteState?.createdAt || Date.now()
+                    };
+                    this.startGameInviteRefresh();
+                    this.renderer.showMessage(
+                        this.currentLang === 'az'
+                            ? 'Otaq gözlənilir'
+                            : 'Waiting for room',
+                        1800
+                    );
+                } else {
+                    this._lastPlayInviteAcceptedWaitingSuppressedForRoomBound = true;
+                    this.acceptedWaitingInviteIds.delete(acceptedInviteId);
+                    this.gameInviteState = null;
+                    void this.joinPlayInviteRoom(normalizedInvite, { manual: true }).catch(() => {});
+                }
             }
         }
         if (isPlayEvent && (eventName === 'play-invite:room-ready' || eventName === 'play_invite_room_ready' || eventType === 'play_invite_room_ready' || inviteStatus === 'room_created')) {
@@ -8923,6 +8993,10 @@ class DominoGame {
                 } : {})
             }
         };
+        this._lastContextualInvitePayloadSafe = this.buildInviteDebugPayloadSafe(payload);
+        this._lastContextualInviteFlowType = normalizedRoomInviteContext?.roomId ? 'room-bound' : 'reservation';
+        this._lastContextualInviteRoomIdPersisted = Boolean(normalizedRoomInviteContext?.roomId);
+        this._lastContextualInviteRoomCodePersisted = Boolean(normalizedRoomInviteContext?.roomCode);
         this._socialInviteTrace = {
             ...(this._socialInviteTrace || {}),
             chosenTransport: this._socialSocket?.connected ? 'socket' : 'rest',
@@ -8932,6 +9006,12 @@ class DominoGame {
         const result = await this.sendPlayInviteWithFallback(payload);
         const item = result?.item || null;
         const inviteId = String(item?.id || '').trim();
+        this._lastContextualInviteResultSafe = this.buildInviteDebugPayloadSafe(item || result || {});
+        if (String(item?.roomId || '').trim() || String(item?.roomCode || '').trim()) {
+            this._lastContextualInviteFlowType = 'room-bound';
+        }
+        this._lastContextualInviteRoomIdPersisted = this._lastContextualInviteRoomIdPersisted || Boolean(String(item?.roomId || '').trim());
+        this._lastContextualInviteRoomCodePersisted = this._lastContextualInviteRoomCodePersisted || Boolean(String(item?.roomCode || '').trim());
         this.gameInviteState = {
             inviteId,
             inviteePlayerId,
@@ -11671,12 +11751,21 @@ class DominoGame {
                 inviteePlayerId
             }
         };
+        this._lastContextualInvitePayloadSafe = this.buildInviteDebugPayloadSafe(payload);
+        this._lastContextualInviteFlowType = roomContext?.roomId ? 'room-bound' : 'reservation';
+        this._lastContextualInviteRoomIdPersisted = Boolean(roomContext?.roomId);
+        this._lastContextualInviteRoomCodePersisted = Boolean(roomContext?.roomCode);
         this._lastContextualInviteSelectedFriendId = inviteePlayerId;
         this._lastContextualInviteSendAt = Date.now();
         this._lastContextualInviteSendResultSafe = null;
         this._lastContextualInviteSendError = '';
         const result = await this.sendPlayInviteWithFallback(payload);
         this._lastContextualInviteSendResultSafe = this.buildInviteDebugPayloadSafe(result?.item || result || {});
+        if (String(result?.item?.roomId || '').trim() || String(result?.item?.roomCode || '').trim()) {
+            this._lastContextualInviteFlowType = 'room-bound';
+        }
+        this._lastContextualInviteRoomIdPersisted = this._lastContextualInviteRoomIdPersisted || Boolean(String(result?.item?.roomId || '').trim());
+        this._lastContextualInviteRoomCodePersisted = this._lastContextualInviteRoomCodePersisted || Boolean(String(result?.item?.roomCode || '').trim());
         return result;
     }
 

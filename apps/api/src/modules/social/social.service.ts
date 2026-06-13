@@ -861,6 +861,7 @@ export class SocialService {
       id: string;
       roomId: string | null;
       roomCode: string | null;
+      payloadJson?: Prisma.JsonValue | null;
       status: string;
       note: string | null;
       createdAt: Date;
@@ -871,10 +872,11 @@ export class SocialService {
       invitee: { id: string; displayName: string; avatarSeed: string | null; isGuest: boolean };
     }
   ): PlayInviteRow {
+    const roomContext = this.extractPlayInviteRoomContext(row);
     return {
       id: row.id,
-      roomId: row.roomId ? String(row.roomId).trim() : null,
-      roomCode: row.roomCode ? String(row.roomCode).trim() : null,
+      roomId: roomContext.roomId,
+      roomCode: roomContext.roomCode,
       status: row.status,
       kind: "play",
       note: row.note ?? null,
@@ -885,6 +887,35 @@ export class SocialService {
       inviter: this.summarizePlayer(row.inviter),
       invitee: this.summarizePlayer(row.invitee)
     };
+  }
+
+  private extractPlayInviteRoomContext(
+    row: {
+      roomId: string | null;
+      roomCode: string | null;
+      payloadJson?: Prisma.JsonValue | null;
+    }
+  ) {
+    const payloadJson = row.payloadJson;
+    const normalizedPayloadJson = payloadJson && typeof payloadJson === "object" && !Array.isArray(payloadJson)
+      ? payloadJson as Record<string, unknown>
+      : null;
+    const payloadRoomContext = normalizedPayloadJson?.roomContext && typeof normalizedPayloadJson.roomContext === "object" && !Array.isArray(normalizedPayloadJson.roomContext)
+      ? normalizedPayloadJson.roomContext as Record<string, unknown>
+      : null;
+    const roomId = String(
+      row.roomId
+      || payloadRoomContext?.roomId
+      || normalizedPayloadJson?.roomId
+      || ""
+    ).trim() || null;
+    const roomCode = String(
+      row.roomCode
+      || payloadRoomContext?.roomCode
+      || normalizedPayloadJson?.roomCode
+      || ""
+    ).trim().toUpperCase() || null;
+    return { roomId, roomCode };
   }
 
   async getFriends(headers: IncomingHttpHeaders) {
@@ -1787,7 +1818,7 @@ export class SocialService {
       .filter((row) => row.inviterPlayerId === currentPlayer.id)
       .map((row) => this.summarizePlayInvite(row as any));
     const waiting = rows
-      .filter((row) => row.status === "accepted" && !String(row.roomId || "").trim())
+      .filter((row) => row.status === "accepted" && !this.extractPlayInviteRoomContext(row as any).roomId)
       .map((row) => this.summarizePlayInvite(row as any));
     const acceptedWaiting = waiting;
 
@@ -2498,6 +2529,11 @@ export class SocialService {
     const expiresAt = body?.expiresAt ? new Date(body.expiresAt) : new Date(Date.now() + 1000 * 60 * 5);
     const note = String(body?.note || "").trim() || null;
     const payloadJson = body?.payloadJson === undefined ? null : body.payloadJson;
+    const payloadRoomContext = this.extractPlayInviteRoomContext({
+      roomId: null,
+      roomCode: null,
+      payloadJson: payloadJson as Prisma.JsonValue | null
+    });
     const invitationInclude = {
       inviter: { select: this.playerSelect() },
       invitee: { select: this.playerSelect() }
@@ -2506,7 +2542,8 @@ export class SocialService {
     const row = await this.prisma
       .$transaction(async (tx) => {
         const data = {
-          roomId: null,
+          roomId: payloadRoomContext.roomId,
+          roomCode: payloadRoomContext.roomCode,
           inviteePlayerId,
           inviterPlayerId: currentPlayer.id,
           status: "pending",
@@ -2571,7 +2608,8 @@ export class SocialService {
         return this.prisma.playInvite.update({
           where: { id: fallback.id },
           data: {
-            roomId: null,
+            roomId: payloadRoomContext.roomId,
+            roomCode: payloadRoomContext.roomCode,
             inviteePlayerId,
             inviterPlayerId: currentPlayer.id,
             status: "pending",
@@ -2631,11 +2669,18 @@ export class SocialService {
       return { ok: false, reason: "invite_not_available" };
     }
     if (row.status === "accepted") {
+      const roomContext = this.extractPlayInviteRoomContext(row);
       const normalized = row.expiresAt
         ? await this.prisma.playInvite.update({
             where: { id },
             data: {
-              expiresAt: null
+              expiresAt: null,
+              ...(roomContext.roomId
+                ? {
+                    roomId: roomContext.roomId,
+                    roomCode: roomContext.roomCode ?? null
+                  }
+                : {})
             },
             include: {
               inviter: { select: this.playerSelect() },
@@ -2649,12 +2694,19 @@ export class SocialService {
       throw new BadRequestException("Invitation already responded");
     }
 
+    const roomContext = this.extractPlayInviteRoomContext(row);
     const accepted = await this.prisma.playInvite.update({
       where: { id },
       data: {
         status: "accepted",
         respondedAt: new Date(),
-        expiresAt: null
+        expiresAt: null,
+        ...(roomContext.roomId
+          ? {
+              roomId: roomContext.roomId,
+              roomCode: roomContext.roomCode ?? null
+            }
+          : {})
       },
       include: {
         inviter: { select: this.playerSelect() },
