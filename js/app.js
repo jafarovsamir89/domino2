@@ -10067,30 +10067,12 @@ class DominoGame {
             const banner = document.createElement('div');
             banner.id = 'resume-session-banner';
             banner.className = 'resume-session-banner is-hidden';
-            const copy = document.createElement('div');
-            copy.className = 'resume-session-copy';
-            const kicker = document.createElement('div');
-            kicker.className = 'section-kicker';
-            kicker.dataset.i18n = 'resume-session-kicker';
-            kicker.textContent = this.t('resume-session-kicker');
-            const title = document.createElement('div');
-            title.className = 'resume-session-title';
-            title.id = 'resume-session-title';
-            title.textContent = this.t('resume-session-title');
-            const desc = document.createElement('div');
-            desc.className = 'resume-session-desc';
-            desc.id = 'resume-session-desc';
-            desc.textContent = this.t('resume-session-desc');
             const resumeBtn = document.createElement('button');
-            resumeBtn.className = 'btn btn-primary';
+            resumeBtn.className = 'btn btn-primary resume-session-btn-solo';
             resumeBtn.id = 'resume-session-btn';
             resumeBtn.type = 'button';
-            resumeBtn.dataset.i18n = 'resume-session';
-            resumeBtn.textContent = this.t('resume-session');
-            copy.appendChild(kicker);
-            copy.appendChild(title);
-            copy.appendChild(desc);
-            banner.appendChild(copy);
+            resumeBtn.dataset.i18n = 'resume-session-return';
+            resumeBtn.textContent = this.t('resume-session-return');
             banner.appendChild(resumeBtn);
             startActions.insertAdjacentElement('afterend', banner);
         }
@@ -11359,8 +11341,6 @@ class DominoGame {
             ? this.account?.getStoredGameResumeState?.()
             : snapshot;
         const banner = document.getElementById('resume-session-banner');
-        const title = document.getElementById('resume-session-title');
-        const desc = document.getElementById('resume-session-desc');
         const button = document.getElementById('resume-session-btn');
         if (!banner) return;
 
@@ -11368,15 +11348,8 @@ class DominoGame {
         banner.classList.toggle('is-hidden', !hasState);
         if (!hasState) return;
 
-        const isOnline = state.kind === 'online';
-        if (title) {
-            title.textContent = isOnline ? this.t('resume-session-online-title') : this.t('resume-session-offline-title');
-        }
-        if (desc) {
-            desc.textContent = isOnline ? this.t('resume-session-online-desc') : this.t('resume-session-offline-desc');
-        }
         if (button) {
-            button.textContent = this.t('resume-session');
+            button.textContent = this.t('resume-session-return');
         }
     }
 
@@ -11478,7 +11451,8 @@ class DominoGame {
                 return true;
             } catch (error) {
                 console.warn('[Resume] Online session restore failed', error);
-                await this.validateStoredResumeSnapshot();
+                this.clearGameResumeSnapshot();
+                this.refreshResumeBanner(null);
                 this.renderer.showMessage(this.t('session-restore-failed'), 2200);
                 return false;
             }
@@ -14473,6 +14447,7 @@ class DominoGame {
             "online-bot-slot": { az: "AI {index}", en: "AI {index}" },
             "resume-session-kicker": { az: "Yarımçıq sessiya", en: "Unfinished session", ru: "Незавершённая сессия" },
             "resume-session": { az: "Davam et", en: "Resume", ru: "Продолжить" },
+            "resume-session-return": { az: "Oyuna qayt", en: "Return to game", ru: "Вернуться в игру" },
             "resume-session-title": { az: "Yarımçıq sessiyanı davam etdir", en: "Continue your unfinished session", ru: "Продолжить незавершённую сессию" },
             "resume-session-desc": { az: "Yarımda qalan oyunu eyni yerdən davam etdirə bilərsiniz.", en: "You can pick up the game from where you left off.", ru: "Можно продолжить игру с того же места." },
             "resume-session-online-title": { az: "Onlayn sessiyanız yarımçıq qalıb", en: "Your online session is unfinished", ru: "Ваша онлайн-сессия не завершена" },
