@@ -15231,7 +15231,7 @@ class DominoGame {
 
         const gameOverReason = String(state?.gameOverReason || '').trim();
         if (this.pendingReconnectResolution) {
-            if (this.matchOver || gameOverReason === 'disconnect') {
+            if (this.matchOver && gameOverReason === 'disconnect') {
                 let economy = this.lastDisconnectEconomySummary || null;
                 if (!economy && state?.gameOverSummaryJson) {
                     try {
@@ -15268,7 +15268,7 @@ class DominoGame {
             document.getElementById('game-screen').classList.add('active');
         }
 
-        if (this.matchOver || gameOverReason === 'disconnect') {
+        if (this.matchOver && gameOverReason === 'disconnect') {
             let economy = this.lastDisconnectEconomySummary || null;
             if (!economy && state?.gameOverSummaryJson) {
                 try {

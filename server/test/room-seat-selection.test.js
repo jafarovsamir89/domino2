@@ -43,6 +43,7 @@ function createRoom({ totalPlayers = 4, aiCount = 0, isTeamMode = true } = {}) {
     room.currentDealBankAmount = 0;
     room.matchRecorded = false;
     room.forfeitSettlementMade = false;
+    room.explicitLeaveSessionIds = new Set();
     room.restoredFromSnapshot = false;
     room.lastReservedMatchRound = 0;
     room.pendingMatchRecording = null;
@@ -278,6 +279,7 @@ test("leaving before the game starts frees the seat", async () => {
     const guest = await joinHuman(room, "guest", "Guest");
 
     room.handleChooseSeat(guest, { seatIndex: 2 });
+    room.explicitLeaveSessionIds.add("guest");
     await room.onLeave(guest, true);
 
     assert.equal(room.state.players.has("guest"), false);

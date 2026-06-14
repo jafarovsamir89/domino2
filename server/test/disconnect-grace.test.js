@@ -28,6 +28,8 @@ function createActiveRoom() {
         players: new Map([["session-1", { name: "Alice", isConnected: true }]])
     };
     room.identityBySessionId = new Map();
+    room.pendingDisconnects = new Map();
+    room.pendingDisconnectTimers = new Map();
     room.explicitLeaveSessionIds = new Set();
     room.broadcastRoomState = () => {};
     room.broadcast = () => {};
@@ -56,6 +58,7 @@ test("accidental disconnect during an active game uses reconnect grace and keeps
     };
 
     await room.onLeave({ sessionId: "session-1" }, false);
+    await new Promise((resolve) => setImmediate(resolve));
 
     assert.equal(reconnectCalls, 1);
     assert.equal(room.state.players.get("session-1").isConnected, true);
@@ -111,9 +114,7 @@ test("explicit leave marker for an active game ends the match immediately", asyn
 
 test("grace timeout triggers a disconnect forfeit", async () => {
     const room = createActiveRoom();
-    room.allowReconnection = async () => {
-        throw new Error("reconnect failed");
-    };
+    room.allowReconnection = () => new Promise(() => {});
     let forfeitCount = 0;
     room.settleForfeitStake = async () => ({ ok: true });
     room.recordForfeitMatchResult = async () => {
@@ -127,6 +128,14 @@ test("grace timeout triggers a disconnect forfeit", async () => {
 
     await room.onLeave({ sessionId: "session-1" }, false);
 
+    assert.equal(forfeitCount, 0);
+    assert.equal(room.state.gameActive, true);
+    assert.equal(room.state.matchOver, false);
+    assert.ok(room.lastDisconnectGraceStartedAt > 0);
+    assert.equal(room.lastReconnectGraceExpiredAt, 0);
+
+    await room.finalizeReconnectTimeout("session-1");
+
     assert.equal(forfeitCount, 1);
     assert.equal(room.state.gameActive, false);
     assert.equal(room.state.matchOver, true);
@@ -134,7 +143,7 @@ test("grace timeout triggers a disconnect forfeit", async () => {
     assert.ok(room.lastReconnectGraceExpiredAt > 0);
     assert.equal(room.lastGameEndWasExplicitLeave, false);
     assert.equal(room.lastGameEndWasGraceExpired, true);
-    assert.equal(room.lastForfeitReason, "reconnect failed");
+    assert.equal(room.lastForfeitReason, "reconnect_timeout");
     assert.ok(messages.some((item) => item.event === "msg" && item.payload?.key === "game-over-disconnect"));
 });
 
