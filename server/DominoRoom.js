@@ -146,14 +146,22 @@ class DominoRoom extends Room {
         this.restoredFromSnapshot = false;
         this.matchFinished = false;
         this.pendingAdvanceKind = null;
+        this.pendingDisconnectTimers = new Map();
+        this.pendingDisconnects = new Map();
         this.explicitLeaveSessionIds = new Set();
         this.lastLeaveConsentedValue = null;
         this.lastLeaveHadExplicitMarker = false;
         this.lastLeaveTreatedAsExplicit = false;
         this.lastDisconnectGraceStartedAt = 0;
+        this.lastDisconnectGraceExpiresAt = 0;
         this.lastDisconnectGraceMs = 0;
+        this.lastAllowReconnectionRejectedAt = 0;
+        this.lastAllowReconnectionError = "";
         this.lastReconnectSuccessAt = 0;
+        this.lastReconnectCompletedAt = 0;
+        this.lastReconnectCompletedBy = "";
         this.lastReconnectGraceExpiredAt = 0;
+        this.lastReconnectTimeoutFinalizedAt = 0;
         this.lastForfeitReason = "";
         this.lastGameEndReason = "";
         this.lastGameEndWasExplicitLeave = false;
@@ -273,6 +281,309 @@ class DominoRoom extends Room {
             }
         }
         return "";
+    }
+
+    getPendingDisconnectEntry(sessionId) {
+        const normalizedSessionId = String(sessionId || "").trim();
+        if (!normalizedSessionId) return null;
+        return this.pendingDisconnects?.get(normalizedSessionId) || null;
+    }
+
+    clearPendingDisconnect(sessionId) {
+        const normalizedSessionId = String(sessionId || "").trim();
+        if (!normalizedSessionId) return false;
+        const timer = this.pendingDisconnectTimers?.get(normalizedSessionId);
+        if (timer) clearTimeout(timer);
+        this.pendingDisconnectTimers?.delete(normalizedSessionId);
+        const hadEntry = this.pendingDisconnects?.has(normalizedSessionId);
+        this.pendingDisconnects?.delete(normalizedSessionId);
+        return Boolean(hadEntry);
+    }
+
+    getPendingDisconnectSafeEntries() {
+        return Array.from(this.pendingDisconnects?.values() || []).map((entry) => ({
+            sessionId: String(entry?.sessionId || ""),
+            playerName: String(entry?.playerName || ""),
+            startedAt: Number(entry?.startedAt || 0) || 0,
+            expiresAt: Number(entry?.expiresAt || 0) || 0,
+            reason: String(entry?.reason || ""),
+            leavingIndex: Number.isInteger(Number(entry?.leavingIndex)) ? Number(entry.leavingIndex) : -1,
+            isTeamMode: Boolean(entry?.isTeamMode)
+        }));
+    }
+
+    startReconnectGrace(client, {
+        player,
+        identity,
+        playerName = "",
+        leavingIndex = -1,
+        isTeamMode = false,
+        reason = "accidental_disconnect"
+    } = {}) {
+        const sessionId = String(client?.sessionId || "").trim();
+        if (!sessionId) return null;
+        this.pendingDisconnectTimers = this.pendingDisconnectTimers instanceof Map ? this.pendingDisconnectTimers : new Map();
+        this.pendingDisconnects = this.pendingDisconnects instanceof Map ? this.pendingDisconnects : new Map();
+        if (this.pendingDisconnects?.has(sessionId)) {
+            return this.pendingDisconnects.get(sessionId);
+        }
+
+        const resolvedPlayer = player || this.state.players.get(sessionId) || null;
+        const resolvedPlayerName = String(playerName || resolvedPlayer?.name || "Player").trim() || "Player";
+        const startedAt = Date.now();
+        const expiresAt = startedAt + RECONNECT_GRACE_MS;
+        const entry = {
+            sessionId,
+            playerName: resolvedPlayerName,
+            startedAt,
+            expiresAt,
+            leavingIndex,
+            isTeamMode: Boolean(isTeamMode),
+            reason: String(reason || "accidental_disconnect").trim() || "accidental_disconnect"
+        };
+
+        this.pendingDisconnects.set(sessionId, entry);
+        this.lastDisconnectGraceStartedAt = startedAt;
+        this.lastDisconnectGraceExpiresAt = expiresAt;
+        this.lastDisconnectGraceMs = RECONNECT_GRACE_MS;
+        this.lastReconnectTimeoutFinalizedAt = 0;
+        this.lastForfeitReason = "";
+        this.lastGameEndWasExplicitLeave = false;
+        this.lastGameEndWasGraceExpired = false;
+        this.lastGameEndReason = "";
+
+        if (resolvedPlayer) {
+            resolvedPlayer.isConnected = false;
+        }
+
+        const resolvedIdentity = identity || this.identityBySessionId.get(sessionId) || null;
+        if (resolvedIdentity) {
+            upsertLivePlayer(sessionId, {
+                sessionId,
+                roomId: getSafeRoomId(this),
+                roomCode: String(this.roomCode || "").trim(),
+                roomVisibility: this.roomVisibility,
+                roomMode: isTeamMode ? "team" : "ffa",
+                stakeKey: this.currentStakeKey,
+                stakeAmount: this.currentDealStakeAmount || 0,
+                humanSeats: this.humanSeats,
+                totalPlayers: this.totalPlayers,
+                aiCount: this.aiCount,
+                isTeamMode,
+                provider: resolvedIdentity.provider || "platform",
+                userId: resolvedIdentity.userId || "",
+                playerId: resolvedIdentity.playerId || resolvedIdentity.userId || "",
+                avatarUrl: resolvedIdentity.avatarUrl || "",
+                displayName: resolvedIdentity.displayName || resolvedPlayer?.name || resolvedPlayerName,
+                hostName: this.state.players.get(this.state.playerOrder[0])?.name || resolvedPlayer?.name || resolvedPlayerName,
+                role: resolvedIdentity.role || (this.state.playerOrder[0] === sessionId ? "host" : "player"),
+                isConnected: false,
+                isPlaying: Boolean(this.state.gameActive)
+            });
+        }
+
+        debugLog("[ROOM_DEBUG] leave:waiting_reconnect", {
+            roomId: getSafeRoomId(this),
+            roomCode: String(this.roomCode || "").trim(),
+            sessionId,
+            reason: entry.reason,
+            graceStartedAt: startedAt,
+            graceExpiresAt: expiresAt,
+            graceMs: RECONNECT_GRACE_MS
+        });
+
+        this.broadcastRoomState();
+        this.broadcast("msg", {
+            key: "connection-reconnecting",
+            values: { player: resolvedPlayerName },
+            time: 2200
+        });
+
+        const timer = setTimeout(() => {
+            void this.finalizeReconnectTimeout(sessionId);
+        }, RECONNECT_GRACE_MS);
+        if (typeof timer?.unref === "function") timer.unref();
+        this.pendingDisconnectTimers.set(sessionId, timer);
+
+        try {
+            const maybePromise = this.allowReconnection(client, RECONNECT_GRACE_MS / 1000);
+            if (maybePromise && typeof maybePromise.then === "function") {
+                maybePromise
+                    .then(() => {
+                        void this.completeReconnectGrace(sessionId, client?.sessionId || sessionId, { source: "allowReconnection" });
+                    })
+                    .catch((error) => {
+                        this.lastAllowReconnectionRejectedAt = Date.now();
+                        this.lastAllowReconnectionError = String(error?.message || error || "allowReconnection_failed");
+                        debugLog("[ROOM_DEBUG] leave:allow_reconnection_rejected", {
+                            roomId: getSafeRoomId(this),
+                            roomCode: String(this.roomCode || "").trim(),
+                            sessionId,
+                            reason: this.lastAllowReconnectionError
+                        });
+                    });
+            } else {
+                this.lastAllowReconnectionRejectedAt = Date.now();
+                this.lastAllowReconnectionError = "allowReconnection did not return a promise";
+            }
+        } catch (error) {
+            this.lastAllowReconnectionRejectedAt = Date.now();
+            this.lastAllowReconnectionError = String(error?.message || error || "allowReconnection_failed");
+            debugLog("[ROOM_DEBUG] leave:allow_reconnection_threw", {
+                roomId: getSafeRoomId(this),
+                roomCode: String(this.roomCode || "").trim(),
+                sessionId,
+                reason: this.lastAllowReconnectionError
+            });
+        }
+
+        return entry;
+    }
+
+    completeReconnectGrace(sessionId, nextSessionId = sessionId, { source = "reconnect" } = {}) {
+        const normalizedSessionId = String(sessionId || "").trim();
+        const normalizedNextSessionId = String(nextSessionId || sessionId || "").trim() || normalizedSessionId;
+        if (!normalizedSessionId) return false;
+
+        const pending = this.pendingDisconnects?.get(normalizedSessionId) || this.pendingDisconnects?.get(normalizedNextSessionId) || null;
+        if (!pending) return false;
+
+        this.clearPendingDisconnect(normalizedSessionId);
+        if (normalizedNextSessionId !== normalizedSessionId) {
+            this.clearPendingDisconnect(normalizedNextSessionId);
+        }
+
+        const player = this.state.players.get(normalizedNextSessionId) || this.state.players.get(normalizedSessionId);
+        if (player) {
+            player.isConnected = true;
+        }
+
+        const identity = this.identityBySessionId.get(normalizedNextSessionId) || this.identityBySessionId.get(normalizedSessionId);
+        if (identity && player) {
+            upsertLivePlayer(normalizedNextSessionId || normalizedSessionId, {
+                sessionId: normalizedNextSessionId || normalizedSessionId,
+                roomId: getSafeRoomId(this),
+                roomCode: String(this.roomCode || "").trim(),
+                roomVisibility: this.roomVisibility,
+                roomMode: pending.isTeamMode ? "team" : "ffa",
+                stakeKey: this.currentStakeKey,
+                stakeAmount: this.currentDealStakeAmount || 0,
+                humanSeats: this.humanSeats,
+                totalPlayers: this.totalPlayers,
+                aiCount: this.aiCount,
+                isTeamMode: Boolean(pending.isTeamMode),
+                provider: identity.provider || "platform",
+                userId: identity.userId || "",
+                playerId: identity.playerId || identity.userId || "",
+                avatarUrl: identity.avatarUrl || "",
+                displayName: identity.displayName || player.name || pending.playerName || "Player",
+                hostName: this.state.players.get(this.state.playerOrder[0])?.name || player.name || pending.playerName || "Player",
+                role: identity.role || (this.state.playerOrder[0] === normalizedNextSessionId ? "host" : "player"),
+                isConnected: true,
+                isPlaying: Boolean(this.state.gameActive)
+            });
+        }
+
+        this.lastReconnectSuccessAt = Date.now();
+        this.lastReconnectCompletedAt = this.lastReconnectSuccessAt;
+        this.lastReconnectCompletedBy = String(source || "reconnect");
+        this.lastForfeitReason = "";
+        this.lastGameEndReason = "";
+        this.lastReconnectGraceExpiredAt = 0;
+
+        const playerName = String(player?.name || pending.playerName || "Player").trim() || "Player";
+        debugLog("[ROOM_DEBUG] leave:reconnected", {
+            roomId: getSafeRoomId(this),
+            roomCode: String(this.roomCode || "").trim(),
+            sessionId: normalizedSessionId,
+            nextSessionId: normalizedNextSessionId,
+            reconnectSuccessAt: this.lastReconnectSuccessAt,
+            source: this.lastReconnectCompletedBy,
+            players: debugPlayerSummary(this)
+        });
+        this.broadcast("msg", {
+            key: "msg-player-reconnected",
+            values: { player: playerName },
+            time: 1500
+        });
+        this.syncState();
+        return true;
+    }
+
+    async finalizeReconnectTimeout(sessionId) {
+        const normalizedSessionId = String(sessionId || "").trim();
+        if (!normalizedSessionId) return false;
+
+        const pending = this.pendingDisconnects?.get(normalizedSessionId) || null;
+        if (!pending) return false;
+
+        const player = this.state.players.get(normalizedSessionId);
+        if (player && player.isConnected) {
+            this.clearPendingDisconnect(normalizedSessionId);
+            return false;
+        }
+
+        this.clearPendingDisconnect(normalizedSessionId);
+        this.lastReconnectTimeoutFinalizedAt = Date.now();
+        this.lastReconnectGraceExpiredAt = this.lastReconnectTimeoutFinalizedAt;
+
+        const playerName = String(player?.name || pending.playerName || "Player").trim() || "Player";
+        const leavingIndex = Number.isInteger(Number(pending.leavingIndex)) ? Number(pending.leavingIndex) : this.state.playerOrder.indexOf(normalizedSessionId);
+        const isTeamMode = Boolean(pending.isTeamMode);
+
+        debugLog("[ROOM_DEBUG] leave:grace_timeout", {
+            roomId: getSafeRoomId(this),
+            roomCode: String(this.roomCode || "").trim(),
+            sessionId: normalizedSessionId,
+            playerName,
+            expiresAt: Number(pending.expiresAt || 0) || 0
+        });
+
+        if (!this.state.gameActive) {
+            this.state.players.delete(normalizedSessionId);
+            this.identityBySessionId.delete(normalizedSessionId);
+            removeLivePlayer(normalizedSessionId);
+            const idx = this.state.playerOrder.indexOf(normalizedSessionId);
+            if (idx !== -1) this.state.playerOrder.splice(idx, 1);
+            this.rebuildPlayerOrderBySeats();
+            this.broadcast("msg", { key: "msg-player-left-room", values: { player: playerName }, time: 1500 });
+            this.broadcastRoomState();
+            return true;
+        }
+
+        this.lastForfeitReason = "reconnect_timeout";
+        this.lastGameEndReason = "disconnect";
+        this.lastGameEndWasExplicitLeave = false;
+        this.lastGameEndWasGraceExpired = true;
+
+        const settlement = await this.settleForfeitStake(normalizedSessionId).catch((err) => {
+            console.error("[ROOM] Failed to settle forfeit stake during reconnect timeout:", err);
+            return null;
+        });
+        if (!settlement) {
+            console.warn("[ROOM] Forfeit settlement did not complete; notifying the player that support may be needed.");
+            this.broadcast("msg", {
+                key: "forfeit-settlement-failed",
+                time: 3500
+            });
+        }
+        await this.recordForfeitMatchResult(normalizedSessionId);
+        this.state.gameActive = false;
+        this.state.matchOver = true;
+        this.state.gameOverReason = "disconnect";
+        this.state.gameOverPlayerName = playerName;
+        this.state.gameOverWinnerIndex = isTeamMode && leavingIndex !== -1 ? (leavingIndex % 2 === 0 ? 1 : 0) : -1;
+        this.state.gameOverSummaryJson = settlement ? JSON.stringify(settlement) : "";
+        this.clearTurnTimer();
+        this.clearNextDealTimer();
+        this.broadcastRoomState();
+        this.broadcast("msg", {
+            key: "game-over-disconnect",
+            values: { player: playerName },
+            time: 2500
+        });
+        this.syncState();
+        return true;
     }
 
     getPlayerSeatIndex(sessionId) {
@@ -616,6 +927,9 @@ class DominoRoom extends Room {
         });
 
         this.registerLivePlayer(client.sessionId, nextIdentity, player);
+        if (reusableSessionId && this.getPendingDisconnectEntry(reusableSessionId)) {
+            this.completeReconnectGrace(reusableSessionId, client.sessionId, { source: "join" });
+        }
 
         debugLog(`[ROOM] Current player count: ${this.clients.length} / ${this.maxClients}`);
         this.broadcast("msg", {
@@ -652,6 +966,13 @@ class DominoRoom extends Room {
         this.clearNextDealTimer();
         this.clearTurnTimer();
         this.clearMatchRecordingRetryTimer();
+        if (this.pendingDisconnectTimers instanceof Map) {
+            for (const timer of this.pendingDisconnectTimers.values()) {
+                clearTimeout(timer);
+            }
+        }
+        this.pendingDisconnectTimers?.clear?.();
+        this.pendingDisconnects?.clear?.();
         this.botTimer = null;
         this.aiPlayers?.clear?.();
         this.identityBySessionId?.clear?.();
@@ -750,7 +1071,7 @@ class DominoRoom extends Room {
         const leftPlayerName = player ? player.name : "Player";
         this.lastLeaveConsentedValue = Boolean(consented);
         this.lastLeaveHadExplicitMarker = hadExplicitMarker;
-        this.lastLeaveTreatedAsExplicit = hadExplicitMarker || Boolean(consented && !this.state.gameActive);
+        this.lastLeaveTreatedAsExplicit = hadExplicitMarker;
         if (player) player.isConnected = false;
         const identity = this.identityBySessionId.get(client.sessionId);
         if (identity) {
@@ -778,96 +1099,26 @@ class DominoRoom extends Room {
             });
         }
 
+        if (!hadExplicitMarker) {
+            this.startReconnectGrace(client, {
+                player,
+                identity,
+                playerName: leftPlayerName,
+                leavingIndex,
+                isTeamMode,
+                reason: "accidental_disconnect"
+            });
+            return;
+        }
+
         try {
-            if (hadExplicitMarker) {
-                debugLog("[ROOM_DEBUG] leave:explicit", {
-                    roomId,
-                    roomCode,
-                    sessionId: client.sessionId,
-                    playerName: leftPlayerName
-                });
-                throw new Error("explicit leave");
-            }
-
-            if (this.state.gameActive || !consented) {
-                this.lastDisconnectGraceStartedAt = Date.now();
-                this.lastDisconnectGraceMs = RECONNECT_GRACE_MS;
-                this.lastGameEndWasExplicitLeave = false;
-                this.lastGameEndWasGraceExpired = false;
-                debugLog("[ROOM_DEBUG] leave:waiting_reconnect", {
-                    roomId,
-                    roomCode,
-                    sessionId: client.sessionId,
-                    explicitLeave: hadExplicitMarker,
-                    graceStartedAt: this.lastDisconnectGraceStartedAt,
-                    graceMs: this.lastDisconnectGraceMs
-                });
-                this.broadcastRoomState();
-                this.broadcast("msg", {
-                    key: "connection-reconnecting",
-                    values: { player: leftPlayerName },
-                    time: 2200
-                });
-                await this.allowReconnection(client, RECONNECT_GRACE_MS / 1000);
-                this.lastReconnectSuccessAt = Date.now();
-                this.lastForfeitReason = "";
-                this.lastReconnectGraceExpiredAt = 0;
-                this.lastGameEndReason = "";
-                player.isConnected = true;
-                if (identity) {
-                    upsertLivePlayer(client.sessionId, {
-                        sessionId: client.sessionId,
-                        roomId,
-                        roomCode,
-                        roomVisibility: this.roomVisibility,
-                        roomMode: isTeamMode ? "team" : "ffa",
-                        stakeKey: this.currentStakeKey,
-                        stakeAmount: this.currentDealStakeAmount || 0,
-                        humanSeats: this.humanSeats,
-                        totalPlayers: this.totalPlayers,
-                        aiCount: this.aiCount,
-                        isTeamMode,
-                        provider: identity.provider || "platform",
-                        userId: identity.userId || "",
-                        playerId: identity.playerId || identity.userId || "",
-                        displayName: identity.displayName || player?.name || "Player",
-                        hostName: this.state.players.get(this.state.playerOrder[0])?.name || player?.name || "Player",
-                        role: identity.role || (this.state.playerOrder[0] === client.sessionId ? "host" : "player"),
-                        isConnected: true,
-                        isPlaying: Boolean(this.state.gameActive)
-                    });
-                }
-                debugLog("[ROOM_DEBUG] leave:reconnected", {
-                    roomId,
-                    roomCode,
-                    sessionId: client.sessionId,
-                    reconnectSuccessAt: this.lastReconnectSuccessAt,
-                    players: debugPlayerSummary(this)
-                });
-                this.broadcast("msg", { key: "msg-player-reconnected", values: { player: player.name }, time: 1500 });
-                this.syncState();
-                return;
-            }
-
-            debugLog("[ROOM_DEBUG] leave:removed", {
+            debugLog("[ROOM_DEBUG] leave:explicit", {
                 roomId,
                 roomCode,
                 sessionId: client.sessionId,
-                reason: "inactive_leave",
-                explicitLeave: hadExplicitMarker
+                playerName: leftPlayerName
             });
-            this.state.players.delete(client.sessionId);
-            this.identityBySessionId.delete(client.sessionId);
-            removeLivePlayer(client.sessionId);
-            this.lastGameEndReason = "";
-            this.lastGameEndWasExplicitLeave = false;
-            this.lastGameEndWasGraceExpired = false;
-            this.lastForfeitReason = "";
-            const idx = this.state.playerOrder.indexOf(client.sessionId);
-            if (idx !== -1) this.state.playerOrder.splice(idx, 1);
-            this.rebuildPlayerOrderBySeats();
-            this.broadcast("msg", { key: "msg-player-left-room", values: { player: leftPlayerName }, time: 1500 });
-            this.broadcastRoomState();
+            throw new Error("explicit leave");
         } catch (e) {
             debugLog("[ROOM_DEBUG] leave:removed", {
                 roomId,

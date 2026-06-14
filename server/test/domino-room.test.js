@@ -569,6 +569,8 @@ test("onLeave shows a support warning when forfeit settlement fails", async () =
         players: new Map([["session-1", { name: "Alice", isConnected: true }]])
     };
     room.identityBySessionId = new Map();
+    room.pendingDisconnects = new Map();
+    room.pendingDisconnectTimers = new Map();
     room.allowReconnection = async () => {
         throw new Error("reconnect failed");
     };
@@ -582,6 +584,7 @@ test("onLeave shows a support warning when forfeit settlement fails", async () =
     room.syncState = () => {};
 
     await room.onLeave({ sessionId: "session-1" }, false);
+    await room.finalizeReconnectTimeout("session-1");
 
     assert.ok(messages.some((item) => item.event === "msg" && item.payload?.key === "forfeit-settlement-failed"));
 });
@@ -603,6 +606,8 @@ test("onLeave records a forfeit match after successful settlement", async () => 
         ["session-1", { provider: "platform", authToken: "token-a", userId: "user-a", displayName: "Alice", playerId: "player-a", avatarUrl: "", role: "player" }],
         ["session-2", { provider: "platform", authToken: "token-b", userId: "user-b", displayName: "Bob", playerId: "player-b", avatarUrl: "", role: "player" }]
     ]);
+    room.pendingDisconnects = new Map();
+    room.pendingDisconnectTimers = new Map();
     room.allowReconnection = async () => {
         throw new Error("reconnect failed");
     };
@@ -618,6 +623,7 @@ test("onLeave records a forfeit match after successful settlement", async () => 
     room.syncState = () => {};
 
     await room.onLeave({ sessionId: "session-1" }, false);
+    await room.finalizeReconnectTimeout("session-1");
 
     assert.equal(recorded, 1);
 });
