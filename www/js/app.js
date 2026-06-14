@@ -176,6 +176,11 @@ class DominoGame {
         this.disconnectEconomyApplied = false;
         this.mobileAuthPending = false;
         this.network = new NetworkManager(this);
+        this.lastAccidentalDisconnectAt = 0;
+        this.resumeLastAttemptAt = 0;
+        this.resumeLastSuccess = 0;
+        this.resumeLastError = '';
+        this.lastGameEndModalReason = '';
         this.voice = new VoiceChatManager(this);
         this.account = new AccountClient(() => this.network.getServerUrl());
         this.accountProfile = this.account.getStoredProfile();
@@ -1534,6 +1539,7 @@ class DominoGame {
         const roomStartHumanCount = roomStartPlayers.filter((player) => !player?.isBot).length;
         const roomStartBotCount = roomStartPlayers.filter((player) => Boolean(player?.isBot)).length;
         const roomStartReadyPlayersCount = roomStartPlayers.filter((player) => Boolean(player?.isConnected) && (!Boolean(currentRoomState?.isTeamMode) || (Number.isInteger(Number(player?.seatIndex)) && Number(player.seatIndex) >= 0))).length;
+        const networkDisconnectDebug = this.network?.getDisconnectDebugState?.() || {};
 
         return {
             socket: {
@@ -1549,6 +1555,15 @@ class DominoGame {
                 displayName: String(this.accountProfile?.displayName || this.accountProfile?.name || '').trim() || null,
                 authenticated: Boolean(this.hasAuthenticatedAccount?.()),
                 socialSummaryLoaded: Boolean(this.socialSummaryLoaded)
+            },
+            network: {
+                lastNetworkLeaveRoomExplicit: networkDisconnectDebug.lastNetworkLeaveRoomExplicit,
+                lastExplicitLeaveSentAt: Number(networkDisconnectDebug.lastExplicitLeaveSentAt || 0) || 0,
+                lastAccidentalDisconnectAt: Number(networkDisconnectDebug.lastAccidentalDisconnectAt || this.lastAccidentalDisconnectAt || 0) || 0,
+                resumeLastAttemptAt: Number(this.resumeLastAttemptAt || 0) || 0,
+                resumeLastSuccess: Number(this.resumeLastSuccess || 0) || 0,
+                resumeLastError: String(this.resumeLastError || '').trim() || null,
+                lastGameEndModalReason: String(this.lastGameEndModalReason || '').trim() || null
             },
             chat: {
                 currentConversationPlayerId: activePlayerId || null,
@@ -11416,9 +11431,12 @@ class DominoGame {
     async resumeSavedSession() {
         const snapshot = this.account?.getStoredGameResumeState?.();
         if (!snapshot) return false;
+        this.resumeLastAttemptAt = Date.now();
+        this.resumeLastError = '';
 
         const isValid = await this.validateStoredResumeSnapshot();
         if (!isValid) {
+            this.resumeLastError = 'session-not-found';
             this.renderer.showMessage(this.t('session-not-found'), 1800);
             return false;
         }
@@ -11429,6 +11447,7 @@ class DominoGame {
             const token = String(snapshot.reconnectionToken || this.network?.getStoredReconnectionToken?.() || '').trim();
             if (!token) {
                 this.clearGameResumeSnapshot();
+                this.resumeLastError = 'session-not-found';
                 this.renderer.showMessage(this.t('session-not-found'), 1800);
                 return false;
             }
@@ -11448,11 +11467,14 @@ class DominoGame {
                 startGameMusic();
                 this.syncMultiplayerOptions();
                 this.refreshResumeBanner(snapshot);
+                this.resumeLastSuccess = Date.now();
+                this.resumeLastError = '';
                 return true;
             } catch (error) {
                 console.warn('[Resume] Online session restore failed', error);
                 this.clearGameResumeSnapshot();
                 this.refreshResumeBanner(null);
+                this.resumeLastError = String(error?.message || error || 'resume-failed');
                 this.renderer.showMessage(this.t('session-restore-failed'), 2200);
                 return false;
             }
@@ -11521,10 +11543,13 @@ class DominoGame {
                 this.queueAITurnIfNeeded(BOT_THINK_DELAY_MS);
             }
             this.refreshResumeBanner(snapshot);
+            this.resumeLastSuccess = Date.now();
+            this.resumeLastError = '';
             return true;
         } catch (error) {
             console.warn('[Resume] Solo session restore failed', error);
             this.clearGameResumeSnapshot();
+            this.resumeLastError = String(error?.message || error || 'resume-failed');
             return false;
         }
     }
@@ -12619,7 +12644,7 @@ class DominoGame {
 
     resetMultiplayerPanels(leaveRoom = false) {
         if (leaveRoom && this.network) {
-            this.network.leaveRoom();
+            this.network.leaveRoom({ explicit: true, reason: 'menu' });
             this.currentRoomState = null;
             this.sendSocialPresenceUpdate('online', { roomCode: null }).catch(() => {});
         }
@@ -13013,7 +13038,7 @@ class DominoGame {
         this.clearPendingOnlineAction({ rollback: false });
         this.clearNextDealAdvanceTimeout();
         this.clearTurnTimers();
-        this.network.leaveRoom();
+        this.network.leaveRoom({ explicit: false, reason: 'room_closed' });
         this.voice?.destroy?.();
         this.currentRoomState = null;
         this.roomAvatarBySessionId.clear();
@@ -13162,6 +13187,7 @@ class DominoGame {
         const snapshot = this.persistGameResumeSnapshot();
         this.refreshResumeBanner(snapshot);
         if (payload.reconnecting) {
+            this.lastAccidentalDisconnectAt = Date.now();
             this.voice?.stopSpeaking?.();
             this.renderer.showMessage(this.t('connection-lost'), 2200);
         }
@@ -13180,6 +13206,7 @@ class DominoGame {
 
     onNetworkReconnectFailed(error) {
         console.warn('[Network] Reconnect failed permanently', error);
+        this.resumeLastError = String(error?.message || error || 'reconnect-failed');
         void this.validateStoredResumeSnapshot();
         this.renderer.showMessage(this.t('session-restore-failed'), 2200);
     }
@@ -13934,7 +13961,7 @@ class DominoGame {
         this.clearGameResumeSnapshot();
         void this.clearLocalPresence();
         if (this.network.isMultiplayer && this.network.room) {
-            this.network.leaveRoom();
+            this.network.leaveRoom({ explicit: true, reason: 'menu' });
             this.myHand = null;
         }
         this.voice?.destroy?.();
@@ -15855,6 +15882,7 @@ class DominoGame {
     renderDisconnectGameOver(payload = {}) {
         this.clearNextDealAdvanceTimeout();
         this.clearTurnTimers();
+        this.lastGameEndModalReason = String(payload.reasonKey || payload.reason || 'game-over-disconnect').trim() || 'game-over-disconnect';
         this.gameActive = false;
         this.roundOver = true;
         this.matchOver = true;

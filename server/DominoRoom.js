@@ -146,6 +146,18 @@ class DominoRoom extends Room {
         this.restoredFromSnapshot = false;
         this.matchFinished = false;
         this.pendingAdvanceKind = null;
+        this.explicitLeaveSessionIds = new Set();
+        this.lastLeaveConsentedValue = null;
+        this.lastLeaveHadExplicitMarker = false;
+        this.lastLeaveTreatedAsExplicit = false;
+        this.lastDisconnectGraceStartedAt = 0;
+        this.lastDisconnectGraceMs = 0;
+        this.lastReconnectSuccessAt = 0;
+        this.lastReconnectGraceExpiredAt = 0;
+        this.lastForfeitReason = "";
+        this.lastGameEndReason = "";
+        this.lastGameEndWasExplicitLeave = false;
+        this.lastGameEndWasGraceExpired = false;
 
         if (restoreSnapshot) {
             this.applyCustomStateSnapshot(restoreSnapshot);
@@ -175,6 +187,15 @@ class DominoRoom extends Room {
         this.onMessage("gift", (client, message) => this.handleGift(client, message));
         this.onMessage("voice_signal", (client, message) => this.handleVoiceSignal(client, message));
         this.onMessage("sync_request", (client) => this.handleSyncRequest(client));
+        this.onMessage("explicit_leave", (client, message = {}) => {
+            this.explicitLeaveSessionIds.add(client.sessionId);
+            debugLog("[ROOM_DEBUG] explicit_leave", {
+                roomId: this.roomId,
+                roomCode: this.roomCode,
+                sessionId: client.sessionId,
+                reason: String(message?.reason || "").trim() || null
+            });
+        });
 
         if (this.pendingMatchRecording && !this.matchRecorded) {
             void this.retryPendingMatchRecording();
@@ -725,6 +746,11 @@ class DominoRoom extends Room {
         const player = this.state.players.get(client.sessionId);
         const leavingIndex = this.state.playerOrder.indexOf(client.sessionId);
         const isTeamMode = isRoomTeamMode(this);
+        const hadExplicitMarker = Boolean(this.explicitLeaveSessionIds?.has(client.sessionId));
+        const leftPlayerName = player ? player.name : "Player";
+        this.lastLeaveConsentedValue = Boolean(consented);
+        this.lastLeaveHadExplicitMarker = hadExplicitMarker;
+        this.lastLeaveTreatedAsExplicit = hadExplicitMarker || Boolean(consented && !this.state.gameActive);
         if (player) player.isConnected = false;
         const identity = this.identityBySessionId.get(client.sessionId);
         if (identity) {
@@ -753,54 +779,119 @@ class DominoRoom extends Room {
         }
 
         try {
-            if (consented) throw new Error("consented leave");
-            debugLog("[ROOM_DEBUG] leave:waiting_reconnect", {
-                roomId,
-                roomCode,
-                sessionId: client.sessionId
-            });
-            this.broadcastRoomState();
-            await this.allowReconnection(client, RECONNECT_GRACE_MS / 1000);
-            player.isConnected = true;
-            if (identity) {
-                upsertLivePlayer(client.sessionId, {
-                    sessionId: client.sessionId,
+            if (hadExplicitMarker) {
+                debugLog("[ROOM_DEBUG] leave:explicit", {
                     roomId,
                     roomCode,
-                    roomVisibility: this.roomVisibility,
-                    roomMode: isTeamMode ? "team" : "ffa",
-                    stakeKey: this.currentStakeKey,
-                    stakeAmount: this.currentDealStakeAmount || 0,
-                    humanSeats: this.humanSeats,
-                    totalPlayers: this.totalPlayers,
-                    aiCount: this.aiCount,
-                    isTeamMode,
-                    provider: identity.provider || "platform",
-                    userId: identity.userId || "",
-                    playerId: identity.playerId || identity.userId || "",
-                    displayName: identity.displayName || player?.name || "Player",
-                    hostName: this.state.players.get(this.state.playerOrder[0])?.name || player?.name || "Player",
-                    role: identity.role || (this.state.playerOrder[0] === client.sessionId ? "host" : "player"),
-                    isConnected: true,
-                    isPlaying: Boolean(this.state.gameActive)
+                    sessionId: client.sessionId,
+                    playerName: leftPlayerName
                 });
+                throw new Error("explicit leave");
             }
-            debugLog("[ROOM_DEBUG] leave:reconnected", {
+
+            if (this.state.gameActive || !consented) {
+                this.lastDisconnectGraceStartedAt = Date.now();
+                this.lastDisconnectGraceMs = RECONNECT_GRACE_MS;
+                this.lastGameEndWasExplicitLeave = false;
+                this.lastGameEndWasGraceExpired = false;
+                debugLog("[ROOM_DEBUG] leave:waiting_reconnect", {
+                    roomId,
+                    roomCode,
+                    sessionId: client.sessionId,
+                    explicitLeave: hadExplicitMarker,
+                    graceStartedAt: this.lastDisconnectGraceStartedAt,
+                    graceMs: this.lastDisconnectGraceMs
+                });
+                this.broadcastRoomState();
+                this.broadcast("msg", {
+                    key: "connection-reconnecting",
+                    values: { player: leftPlayerName },
+                    time: 2200
+                });
+                await this.allowReconnection(client, RECONNECT_GRACE_MS / 1000);
+                this.lastReconnectSuccessAt = Date.now();
+                this.lastForfeitReason = "";
+                this.lastReconnectGraceExpiredAt = 0;
+                this.lastGameEndReason = "";
+                player.isConnected = true;
+                if (identity) {
+                    upsertLivePlayer(client.sessionId, {
+                        sessionId: client.sessionId,
+                        roomId,
+                        roomCode,
+                        roomVisibility: this.roomVisibility,
+                        roomMode: isTeamMode ? "team" : "ffa",
+                        stakeKey: this.currentStakeKey,
+                        stakeAmount: this.currentDealStakeAmount || 0,
+                        humanSeats: this.humanSeats,
+                        totalPlayers: this.totalPlayers,
+                        aiCount: this.aiCount,
+                        isTeamMode,
+                        provider: identity.provider || "platform",
+                        userId: identity.userId || "",
+                        playerId: identity.playerId || identity.userId || "",
+                        displayName: identity.displayName || player?.name || "Player",
+                        hostName: this.state.players.get(this.state.playerOrder[0])?.name || player?.name || "Player",
+                        role: identity.role || (this.state.playerOrder[0] === client.sessionId ? "host" : "player"),
+                        isConnected: true,
+                        isPlaying: Boolean(this.state.gameActive)
+                    });
+                }
+                debugLog("[ROOM_DEBUG] leave:reconnected", {
+                    roomId,
+                    roomCode,
+                    sessionId: client.sessionId,
+                    reconnectSuccessAt: this.lastReconnectSuccessAt,
+                    players: debugPlayerSummary(this)
+                });
+                this.broadcast("msg", { key: "msg-player-reconnected", values: { player: player.name }, time: 1500 });
+                this.syncState();
+                return;
+            }
+
+            debugLog("[ROOM_DEBUG] leave:removed", {
                 roomId,
                 roomCode,
-                sessionId: client.sessionId
+                sessionId: client.sessionId,
+                reason: "inactive_leave",
+                explicitLeave: hadExplicitMarker
             });
-            this.broadcast("msg", { key: "msg-player-reconnected", values: { player: player.name }, time: 1500 });
-            this.syncState();
+            this.state.players.delete(client.sessionId);
+            this.identityBySessionId.delete(client.sessionId);
+            removeLivePlayer(client.sessionId);
+            this.lastGameEndReason = "";
+            this.lastGameEndWasExplicitLeave = false;
+            this.lastGameEndWasGraceExpired = false;
+            this.lastForfeitReason = "";
+            const idx = this.state.playerOrder.indexOf(client.sessionId);
+            if (idx !== -1) this.state.playerOrder.splice(idx, 1);
+            this.rebuildPlayerOrderBySeats();
+            this.broadcast("msg", { key: "msg-player-left-room", values: { player: leftPlayerName }, time: 1500 });
+            this.broadcastRoomState();
         } catch (e) {
             debugLog("[ROOM_DEBUG] leave:removed", {
                 roomId,
                 roomCode,
                 sessionId: client.sessionId,
-                reason: e?.message || "leave_error"
+                reason: e?.message || "leave_error",
+                explicitLeave: hadExplicitMarker
             });
-            const leftPlayerName = player ? player.name : "Player";
             if (this.state.gameActive) {
+                if (hadExplicitMarker) {
+                    this.lastDisconnectGraceStartedAt = 0;
+                    this.lastDisconnectGraceMs = 0;
+                    this.lastReconnectGraceExpiredAt = 0;
+                    this.lastForfeitReason = "explicit_leave";
+                    this.lastGameEndReason = "disconnect";
+                    this.lastGameEndWasExplicitLeave = true;
+                    this.lastGameEndWasGraceExpired = false;
+                } else {
+                    this.lastReconnectGraceExpiredAt = Date.now();
+                    this.lastForfeitReason = e?.message || "reconnect_failed";
+                    this.lastGameEndReason = "disconnect";
+                    this.lastGameEndWasExplicitLeave = false;
+                    this.lastGameEndWasGraceExpired = true;
+                }
                 const settlement = await this.settleForfeitStake(client.sessionId).catch((err) => {
                     console.error("[ROOM] Failed to settle forfeit stake during cleanup:", err);
                     return null;
@@ -839,6 +930,9 @@ class DominoRoom extends Room {
             this.rebuildPlayerOrderBySeats();
             this.broadcast("msg", { key: "msg-player-left-room", values: { player: leftPlayerName }, time: 1500 });
             this.broadcastRoomState();
+        }
+        finally {
+            this.explicitLeaveSessionIds?.delete(client.sessionId);
         }
     }
 

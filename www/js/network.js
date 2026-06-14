@@ -24,6 +24,9 @@ class NetworkManager {
         this.isGuest = false;
         this.reconnectionTokenKey = "dominoRoomReconnectionToken";
         this.manualLeaveRequested = false;
+        this.lastNetworkLeaveRoomExplicit = null;
+        this.lastExplicitLeaveSentAt = 0;
+        this.lastAccidentalDisconnectAt = 0;
         this.reconnectTimer = null;
         this.reconnectAttempt = 0;
         this.maxReconnectAttempts = 10;
@@ -425,6 +428,7 @@ class NetworkManager {
             const shouldReconnect = !this.manualLeaveRequested && Boolean(token);
 
             if (shouldReconnect) {
+                this.lastAccidentalDisconnectAt = Date.now();
                 this.game.onNetworkDisconnected?.({ code, reconnecting: true });
                 this.room = null;
                 this.scheduleReconnect(token, snapshot);
@@ -449,17 +453,31 @@ class NetworkManager {
         });
     }
 
-    leaveRoom() {
+    leaveRoom({ explicit = false, reason = "menu" } = {}) {
         debugLog("[CLIENT_DEBUG] network:leaveRoom", {
             hasRoom: Boolean(this.room),
+            explicit,
             manualLeaveRequested: this.manualLeaveRequested,
             reconnectInProgress: this.reconnectInProgress
         });
+        this.lastNetworkLeaveRoomExplicit = Boolean(explicit);
         this.manualLeaveRequested = true;
         this.clearReconnectTimer();
         this.clearReconnectState();
         if (this.room) {
-            this.room.leave();
+            const shouldSendExplicitLeave = Boolean(explicit && (this.room?.state?.gameActive || this.game?.gameActive));
+            if (shouldSendExplicitLeave) {
+                this.lastExplicitLeaveSentAt = Date.now();
+                try {
+                    this.room.send("explicit_leave", {
+                        reason: String(reason || "menu").trim() || "menu",
+                        ts: this.lastExplicitLeaveSentAt
+                    });
+                } catch (error) {
+                    console.warn("[Network] Failed to send explicit leave marker:", error);
+                }
+            }
+            this.room.leave(explicit);
         }
         this.room = null;
         this.isMultiplayer = false;
@@ -500,6 +518,14 @@ class NetworkManager {
             if (restoredRoom) return restoredRoom;
             throw reconnectError;
         }
+    }
+
+    getDisconnectDebugState() {
+        return {
+            lastNetworkLeaveRoomExplicit: this.lastNetworkLeaveRoomExplicit,
+            lastExplicitLeaveSentAt: Number(this.lastExplicitLeaveSentAt || 0) || 0,
+            lastAccidentalDisconnectAt: Number(this.lastAccidentalDisconnectAt || 0) || 0
+        };
     }
 
     async restoreRoomFromSnapshot(snapshot, reconnectionToken) {
