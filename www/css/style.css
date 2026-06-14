@@ -5068,36 +5068,11 @@ body.move-hint-selection-active #game-screen .player-name-btn {
 }
 
 .resume-session-banner {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 14px;
-    padding: 14px 16px;
-    border-radius: 18px;
-    border: 1px solid rgba(240, 192, 64, 0.18);
-    background: linear-gradient(135deg, rgba(240, 192, 64, 0.08), rgba(79, 207, 151, 0.08));
+    padding: 10px 0;
 }
 
-.resume-session-banner .btn {
-    flex: 0 0 auto;
-    min-width: 110px;
-}
-
-.resume-session-copy {
-    display: grid;
-    gap: 4px;
-}
-
-.resume-session-title {
-    font-size: 1rem;
-    font-weight: 800;
-    color: var(--text);
-}
-
-.resume-session-desc {
-    color: var(--text-dim);
-    font-size: 0.86rem;
-    line-height: 1.45;
+.resume-session-btn-solo {
+    width: 100%;
 }
 
 .connection-banner {
@@ -5136,15 +5111,6 @@ body.move-hint-selection-active #game-screen .player-name-btn {
     .menu-panel,
     .modal-card {
         width: min(100%, calc(100vw - 24px));
-    }
-
-    .resume-session-banner {
-        flex-direction: column;
-        align-items: stretch;
-    }
-
-    .resume-session-banner .btn {
-        width: 100%;
     }
 
     .connection-banner {
