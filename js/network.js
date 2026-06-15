@@ -613,49 +613,37 @@ class NetworkManager {
         this.lastConnectionOpenCheckAt = Date.now();
         if (!this.room) {
             this.lastConnectionOpenResult = false;
-            this.lastConnectionReadyState = null;
             this.lastConnectionBlockedReason = "no_room";
             return false;
         }
         if (this.reconnectInProgress) {
             this.lastConnectionOpenResult = false;
-            this.lastConnectionReadyState = null;
             this.lastConnectionBlockedReason = "reconnect_in_progress";
             return false;
         }
         if (this.manualLeaveRequested) {
             this.lastConnectionOpenResult = false;
-            this.lastConnectionReadyState = null;
             this.lastConnectionBlockedReason = "manual_leave_requested";
             return false;
         }
-        if (typeof navigator !== 'undefined' && navigator.onLine === false) {
-            this.lastConnectionOpenResult = false;
-            this.lastConnectionReadyState = null;
-            this.lastConnectionBlockedReason = "navigator_offline";
-            return false;
+
+        const connection = this.room.connection;
+        if (connection) {
+            const isOpen = (typeof connection.isOpen === 'function' ? connection.isOpen() : connection.isOpen) === true;
+            this.lastConnectionOpenResult = isOpen;
+            this.lastConnectionBlockedReason = isOpen ? "" : "connection_closed_flag";
+            return isOpen;
         }
 
-        const connection = this.room.connection || this.room.transport || null;
         const readyState =
-            connection?.readyState ??
-            connection?.ws?.readyState ??
-            connection?.transport?.ws?.readyState ??
-            this.room?.connection?.transport?.ws?.readyState;
-
-        this.lastConnectionReadyState = readyState;
+            this.room?.connection?.readyState ??
+            this.room?.connection?.transport?.ws?.readyState ??
+            this.room?.connection?.ws?.readyState;
 
         if (typeof readyState === 'number') {
             const isOpen = readyState === 1;
             this.lastConnectionOpenResult = isOpen;
             this.lastConnectionBlockedReason = isOpen ? "" : `invalid_readyState_${readyState}`;
-            return isOpen;
-        }
-
-        if (typeof connection?.isOpen === 'boolean') {
-            const isOpen = connection.isOpen;
-            this.lastConnectionOpenResult = isOpen;
-            this.lastConnectionBlockedReason = isOpen ? "" : "connection_not_open_flag";
             return isOpen;
         }
 

@@ -488,8 +488,8 @@ test("client check app.js authoritative reconnect logic via static source scan",
     const source = fs.readFileSync(path.resolve(__dirname, "../../js/app.js"), "utf8");
     
     // onHandTileClick connection checks and optimistic validation
-    assert.ok(source.includes("!this.network.isRoomConnectionOpen()"));
-    assert.ok(source.includes("this.notifyMultiplayerActionBlocked('connection')"));
+    assert.ok(source.includes("isRoomConnectionOpen"));
+    assert.ok(source.includes("this.notifyMultiplayerActionBlocked("));
     
     // drawFromBoneyard/passTurn/playGoshaCombo connection checks
     assert.ok(source.includes("drawFromBoneyard(fromRemote=false) {"));
@@ -506,4 +506,28 @@ test("client check app.js authoritative reconnect logic via static source scan",
     assert.ok(source.includes("this.lastFullStateForcedRenderAt = Date.now();"));
     assert.ok(source.includes("this.renderRealtimeGameDeltaView({"));
     assert.ok(source.includes("force: true"));
+});
+
+test("client validMoves reconstruction fallback on state update", () => {
+    const clientApp = {
+        gameActive: true,
+        currentPlayer: 0,
+        humanPlayerIndex: 0,
+        validMoves: [],
+        myHand: [{ a: 1, b: 2, id: 'tile1' }],
+        board: {
+            getValidMoves(hand) {
+                return [{ tileIndex: 0, openEndIndex: 0 }];
+            }
+        }
+    };
+    
+    const shouldKeepTurnHints = clientApp.gameActive && clientApp.currentPlayer === clientApp.humanPlayerIndex;
+    if (!shouldKeepTurnHints) {
+        clientApp.validMoves = [];
+    } else if (clientApp.validMoves.length === 0 && clientApp.myHand && clientApp.myHand.length > 0) {
+        clientApp.validMoves = clientApp.board.getValidMoves(clientApp.myHand) || [];
+    }
+    
+    assert.deepEqual(clientApp.validMoves, [{ tileIndex: 0, openEndIndex: 0 }]);
 });

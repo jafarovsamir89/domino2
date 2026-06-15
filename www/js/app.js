@@ -13115,11 +13115,6 @@ class DominoGame {
             this.lastOfflineActionBlockedAt = Date.now();
             return false;
         }
-        if (typeof navigator !== 'undefined' && navigator.onLine === false) {
-            this.lastBlockedOnlineActionReason = "navigator_offline";
-            this.lastOfflineActionBlockedAt = Date.now();
-            return false;
-        }
         if (this.pendingOnlineAction) {
             this.lastBlockedOnlineActionReason = "pending_action";
             return false;
@@ -15337,6 +15332,8 @@ class DominoGame {
         if (!shouldKeepTurnHints) {
             this.validMoves = [];
             this.goshaCombo = null;
+        } else if (this.validMoves.length === 0 && this.myHand && this.myHand.length > 0) {
+            this.validMoves = this.board?.getValidMoves?.(this.myHand) || [];
         }
         if (this.gameActive && Number(state?.turnDeadlineAt || 0) > 0) {
             this.startTurnTimer(Number(state.turnDeadlineAt), Number(state?.turnVersion || this.turnVersion || 1), this.currentPlayer);
@@ -15538,7 +15535,10 @@ class DominoGame {
         this.syncMoveHintSelectionUiState();
         if (this.network.isMultiplayer) {
             if (!this.canSendMultiplayerAction()) {
-                this.notifyMultiplayerActionBlocked();
+                const reason = this.lastBlockedOnlineActionReason;
+                if (reason === 'connection_closed' || reason === 'reconnect_in_progress' || reason === 'no_room') {
+                    this.notifyMultiplayerActionBlocked('connection');
+                }
                 return;
             }
             // In server multiplayer, client only sends its own moves
@@ -15622,11 +15622,10 @@ class DominoGame {
     playGoshaCombo(fromRemote=false) {
         if (this.network.isMultiplayer) {
             if (!this.canSendMultiplayerAction()) {
-                this.notifyMultiplayerActionBlocked('connection');
-                return;
-            }
-            if (!this.network.isRoomConnectionOpen()) {
-                this.notifyMultiplayerActionBlocked('connection');
+                const reason = this.lastBlockedOnlineActionReason;
+                if (reason === 'connection_closed' || reason === 'reconnect_in_progress' || reason === 'no_room') {
+                    this.notifyMultiplayerActionBlocked('connection');
+                }
                 return;
             }
             if (this.turnInProgress) return;
@@ -15677,11 +15676,10 @@ class DominoGame {
     drawFromBoneyard(fromRemote=false) {
         if (this.network.isMultiplayer) {
             if (!this.canSendMultiplayerAction()) {
-                this.notifyMultiplayerActionBlocked('connection');
-                return;
-            }
-            if (!this.network.isRoomConnectionOpen()) {
-                this.notifyMultiplayerActionBlocked('connection');
+                const reason = this.lastBlockedOnlineActionReason;
+                if (reason === 'connection_closed' || reason === 'reconnect_in_progress' || reason === 'no_room') {
+                    this.notifyMultiplayerActionBlocked('connection');
+                }
                 return;
             }
             if (this.turnInProgress) return;
@@ -15718,11 +15716,10 @@ class DominoGame {
     passTurn(fromRemote=false) {
         if (this.network.isMultiplayer) {
             if (!this.canSendMultiplayerAction()) {
-                this.notifyMultiplayerActionBlocked('connection');
-                return;
-            }
-            if (!this.network.isRoomConnectionOpen()) {
-                this.notifyMultiplayerActionBlocked('connection');
+                const reason = this.lastBlockedOnlineActionReason;
+                if (reason === 'connection_closed' || reason === 'reconnect_in_progress' || reason === 'no_room') {
+                    this.notifyMultiplayerActionBlocked('connection');
+                }
                 return;
             }
             if (this.turnInProgress) return;
