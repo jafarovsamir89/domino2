@@ -15382,7 +15382,9 @@ class DominoGame {
                 this.hands[this.humanPlayerIndex] = this.myHand;
             }
         }
-        this.playerCount = Number(state?.playerCount || playerOrder.length || this.playerCount || 0);
+        if (state.playerCount !== undefined && state.playerCount !== null) {
+            this.playerCount = Number(state.playerCount);
+        }
 
         if (state.boardJson) {
             try {
@@ -15391,20 +15393,34 @@ class DominoGame {
             } catch (e) { console.error(e); }
         }
         
-        this.currentPlayer = state?.currentPlayerIndex ?? 0;
-        this.boneyard = Array.from({ length: state?.boneyardCount || 0 });
+        if (state.currentPlayerIndex !== undefined && state.currentPlayerIndex !== null) {
+            this.currentPlayer = Number(state.currentPlayerIndex);
+        }
+        if (state.boneyardCount !== undefined && state.boneyardCount !== null) {
+            this.boneyard = Array.from({ length: state.boneyardCount || 0 });
+        }
         const resolvedRoomMode = this.resolveRoomModeState(this.currentRoomState, state);
         this.isTeamMode = resolvedRoomMode.isTeamMode;
         this._resolvedRoomModeFromState = resolvedRoomMode.roomModeFromState || '';
         this._resolvedScoreMode = resolvedRoomMode.scoreMode || '';
         this._resolvedTopHudMode = resolvedRoomMode.topHudMode || '';
-        this.matchRound = state?.matchRound || 1;
-        this.deal = state?.deal || 1;
-        this.gameActive = !!state?.gameActive;
-        this.matchOver = !!state?.matchOver;
+        if (state.matchRound !== undefined && state.matchRound !== null) {
+            this.matchRound = Number(state.matchRound);
+        }
+        if (state.deal !== undefined && state.deal !== null) {
+            this.deal = Number(state.deal);
+        }
+        if (state.gameActive !== undefined && state.gameActive !== null) {
+            this.gameActive = Boolean(state.gameActive);
+        }
+        if (state.matchOver !== undefined && state.matchOver !== null) {
+            this.matchOver = Boolean(state.matchOver);
+        }
         this.onlineStakeKey = state?.stakeKey || this.onlineStakeKey;
         this.onlineRoundBankAmount = Math.max(0, Number(state?.bankAmount || 0));
-        this.turnVersion = Number(state?.turnVersion || this.turnVersion || 1);
+        if (state.turnVersion !== undefined && state.turnVersion !== null) {
+            this.turnVersion = Number(state.turnVersion);
+        }
         if (this.hasPendingOnlinePlayAck(state, playerOrder, null)) {
             this.clearPendingOnlineAction({ rollback: false });
             this.turnInProgress = false;
