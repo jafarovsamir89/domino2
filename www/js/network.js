@@ -609,43 +609,134 @@ class NetworkManager {
         }
     }
 
+    isRoomConnectionOpen() {
+        this.lastConnectionOpenCheckAt = Date.now();
+        if (!this.room) {
+            this.lastConnectionOpenResult = false;
+            this.lastConnectionReadyState = null;
+            this.lastConnectionBlockedReason = "no_room";
+            return false;
+        }
+        if (this.reconnectInProgress) {
+            this.lastConnectionOpenResult = false;
+            this.lastConnectionReadyState = null;
+            this.lastConnectionBlockedReason = "reconnect_in_progress";
+            return false;
+        }
+        if (this.manualLeaveRequested) {
+            this.lastConnectionOpenResult = false;
+            this.lastConnectionReadyState = null;
+            this.lastConnectionBlockedReason = "manual_leave_requested";
+            return false;
+        }
+        if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+            this.lastConnectionOpenResult = false;
+            this.lastConnectionReadyState = null;
+            this.lastConnectionBlockedReason = "navigator_offline";
+            return false;
+        }
+
+        const connection = this.room.connection || this.room.transport || null;
+        const readyState =
+            connection?.readyState ??
+            connection?.ws?.readyState ??
+            connection?.transport?.ws?.readyState ??
+            this.room?.connection?.transport?.ws?.readyState;
+
+        this.lastConnectionReadyState = readyState;
+
+        if (typeof readyState === 'number') {
+            const isOpen = readyState === 1;
+            this.lastConnectionOpenResult = isOpen;
+            this.lastConnectionBlockedReason = isOpen ? "" : `invalid_readyState_${readyState}`;
+            return isOpen;
+        }
+
+        if (typeof connection?.isOpen === 'boolean') {
+            const isOpen = connection.isOpen;
+            this.lastConnectionOpenResult = isOpen;
+            this.lastConnectionBlockedReason = isOpen ? "" : "connection_not_open_flag";
+            return isOpen;
+        }
+
+        this.lastConnectionOpenResult = true;
+        this.lastConnectionBlockedReason = "";
+        return true;
+    }
+
     nextActionId(prefix = "act") {
         this.actionCounter += 1;
         return `${prefix}-${Date.now().toString(36)}-${this.actionCounter.toString(36)}`;
     }
 
     sendPlay(tileIndex, openEndIndex, actionId = this.nextActionId("play")) {
-        if (this.room) this.room.send("play", {
-            tileIndex,
-            openEndIndex,
-            turnVersion: this.getLocalTurnVersion(),
-            actionId
-        });
-        return actionId;
+        if (!this.isRoomConnectionOpen()) return null;
+        try {
+            if (this.room) {
+                this.room.send("play", {
+                    tileIndex,
+                    openEndIndex,
+                    turnVersion: this.getLocalTurnVersion(),
+                    actionId
+                });
+                return actionId;
+            }
+            return null;
+        } catch (error) {
+            console.error("sendPlay failed:", error);
+            return null;
+        }
     }
 
     sendDraw(actionId = this.nextActionId("draw")) {
-        if (this.room) this.room.send("draw", {
-            turnVersion: this.getLocalTurnVersion(),
-            actionId
-        });
-        return actionId;
+        if (!this.isRoomConnectionOpen()) return null;
+        try {
+            if (this.room) {
+                this.room.send("draw", {
+                    turnVersion: this.getLocalTurnVersion(),
+                    actionId
+                });
+                return actionId;
+            }
+            return null;
+        } catch (error) {
+            console.error("sendDraw failed:", error);
+            return null;
+        }
     }
 
     sendPass(actionId = this.nextActionId("pass")) {
-        if (this.room) this.room.send("pass", {
-            turnVersion: this.getLocalTurnVersion(),
-            actionId
-        });
-        return actionId;
+        if (!this.isRoomConnectionOpen()) return null;
+        try {
+            if (this.room) {
+                this.room.send("pass", {
+                    turnVersion: this.getLocalTurnVersion(),
+                    actionId
+                });
+                return actionId;
+            }
+            return null;
+        } catch (error) {
+            console.error("sendPass failed:", error);
+            return null;
+        }
     }
 
     sendGosha(actionId = this.nextActionId("gosha")) {
-        if (this.room) this.room.send("gosha", {
-            turnVersion: this.getLocalTurnVersion(),
-            actionId
-        });
-        return actionId;
+        if (!this.isRoomConnectionOpen()) return null;
+        try {
+            if (this.room) {
+                this.room.send("gosha", {
+                    turnVersion: this.getLocalTurnVersion(),
+                    actionId
+                });
+                return actionId;
+            }
+            return null;
+        } catch (error) {
+            console.error("sendGosha failed:", error);
+            return null;
+        }
     }
 
     sendNextDeal() {
@@ -674,7 +765,17 @@ class NetworkManager {
     }
 
     sendSyncRequest() {
-        if (this.room) this.room.send("sync_request", {});
+        if (!this.isRoomConnectionOpen()) return false;
+        try {
+            if (this.room) {
+                this.room.send("sync_request", {});
+                return true;
+            }
+            return false;
+        } catch (error) {
+            console.error("sendSyncRequest failed:", error);
+            return false;
+        }
     }
 
     async getVoiceConfig() {
