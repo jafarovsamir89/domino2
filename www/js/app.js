@@ -13096,7 +13096,7 @@ class DominoGame {
     }
 
     canSendMultiplayerAction() {
-        console.warn('[RECONNECT_DEBUG] canSendMultiplayerAction check:', {
+        console.warn('[RECONNECT_DEBUG] canSendMultiplayerAction check:', JSON.stringify({
             isMultiplayer: this.network?.isMultiplayer,
             reconnectInProgress: this.network?.reconnectInProgress,
             roomExists: Boolean(this.network?.room),
@@ -13110,7 +13110,7 @@ class DominoGame {
             isMyTurn: (this.currentPlayer === this.humanPlayerIndex),
             myHandLength: this.myHand?.length,
             validMovesCount: this.validMoves?.length
-        });
+        }));
         if (!this.network?.isMultiplayer) {
             this.lastBlockedOnlineActionReason = "not_multiplayer";
             return false;
