@@ -13292,6 +13292,10 @@ class DominoGame {
         this.resetReconnectRestoreUiState();
         this.pendingReconnectResolution = true;
         this.network?.sendSyncRequest?.();
+        
+        // Force full clean redraw ("Чистый лист")
+        this._realtimeRenderSignatures = {};
+        this.renderState();
     }
 
     onNetworkReconnectFailed(error) {
@@ -15279,6 +15283,16 @@ class DominoGame {
             this.roomAvatarBySessionId.set(sid, avatarUrl || this.roomAvatarBySessionId.get(sid) || '');
         }
 
+        // Calculate actual humanPlayerIndex based on roomPlayers and current socket sessionId
+        const mySid = this.network?.room?.sessionId || '';
+        if (mySid && roomPlayers.length > 0) {
+            const myIdx = roomPlayers.findIndex(p => String(p?.sessionId || '').trim() === mySid);
+            if (myIdx !== -1) {
+                const seatIndex = roomPlayers[myIdx].seatIndex;
+                this.humanPlayerIndex = (Number.isInteger(seatIndex) && seatIndex >= 0) ? seatIndex : myIdx;
+            }
+        }
+
         const preserveGameStats = Boolean(state?.gameActive);
         const schemaPlayerOrder = Array.isArray(state?.playerOrder) ? Array.from(state.playerOrder) : playerOrder;
         const schemaPlayers = state?.players;
@@ -15332,7 +15346,7 @@ class DominoGame {
         if (!shouldKeepTurnHints) {
             this.validMoves = [];
             this.goshaCombo = null;
-        } else if (this.validMoves.length === 0 && this.myHand && this.myHand.length > 0) {
+        } else if ((!Array.isArray(this.validMoves) || this.validMoves.length === 0) && this.myHand && this.myHand.length > 0) {
             this.validMoves = this.board?.getValidMoves?.(this.myHand) || [];
         }
         if (this.gameActive && Number(state?.turnDeadlineAt || 0) > 0) {
