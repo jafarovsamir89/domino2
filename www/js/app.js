@@ -13095,6 +13095,18 @@ class DominoGame {
         this.renderState();
     }
 
+    canSendMultiplayerAction() {
+        if (!this.network?.isMultiplayer) return false;
+        if (this.network?.reconnectInProgress) return false;
+        if (!this.network?.room) return false;
+        if (typeof navigator !== 'undefined' && navigator.onLine === false) return false;
+        return true;
+    }
+
+    notifyMultiplayerActionBlocked() {
+        this.renderer?.showMessage?.(this.t('connection-lost') || 'Connection lost', 1800);
+    }
+
     resetReconnectRestoreUiState() {
         this.clearPendingOnlineAction({ rollback: false });
         this.turnInProgress = false;
@@ -13128,7 +13140,7 @@ class DominoGame {
     }
 
     applyOptimisticOnlinePlay(tileIndex, openEndIndex, actionId = '') {
-        if (!this.network.isMultiplayer || this.currentPlayer !== this.humanPlayerIndex || !this.myHand) {
+        if (!this.canSendMultiplayerAction() || this.currentPlayer !== this.humanPlayerIndex || !this.myHand) {
             return false;
         }
 
@@ -13198,6 +13210,7 @@ class DominoGame {
     }
 
     onNetworkDisconnected(payload = {}) {
+        this.clearPendingOnlineAction({ rollback: true });
         const snapshot = this.persistGameResumeSnapshot();
         this.refreshResumeBanner(snapshot);
         if (payload.reconnecting) {
@@ -15437,6 +15450,10 @@ class DominoGame {
         this.renderer.removeArrows();
         this.syncMoveHintSelectionUiState();
         if (this.network.isMultiplayer) {
+            if (!this.canSendMultiplayerAction()) {
+                this.notifyMultiplayerActionBlocked();
+                return;
+            }
             // In server multiplayer, client only sends its own moves
             if (this.currentPlayer !== this.humanPlayerIndex) return;
             if (!this.myHand) return;
@@ -15517,6 +15534,10 @@ class DominoGame {
 
     playGoshaCombo(fromRemote=false) {
         if (this.network.isMultiplayer) {
+            if (!this.canSendMultiplayerAction()) {
+                this.notifyMultiplayerActionBlocked();
+                return;
+            }
             if (this.turnInProgress) return;
             this.turnInProgress = true;
             const actionId = this.network.sendGosha();
@@ -15559,6 +15580,10 @@ class DominoGame {
 
     drawFromBoneyard(fromRemote=false) {
         if (this.network.isMultiplayer) {
+            if (!this.canSendMultiplayerAction()) {
+                this.notifyMultiplayerActionBlocked();
+                return;
+            }
             if (this.turnInProgress) return;
             this.turnInProgress = true;
             const actionId = this.network.sendDraw();
@@ -15587,6 +15612,10 @@ class DominoGame {
     }
     passTurn(fromRemote=false) {
         if (this.network.isMultiplayer) {
+            if (!this.canSendMultiplayerAction()) {
+                this.notifyMultiplayerActionBlocked();
+                return;
+            }
             if (this.turnInProgress) return;
             this.turnInProgress = true;
             const actionId = this.network.sendPass();
