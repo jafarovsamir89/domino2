@@ -252,7 +252,7 @@ class DominoRoom extends Room {
     }
 
     onAuth(client, options, context) {
-        const token = String(context?.token || options?.authToken || "").trim();
+        const token = String(context?.token || options?.authToken || options?._authToken || "").trim();
         const platformIdentity = verifyGameToken(token);
         if (platformIdentity) {
             return {
@@ -634,11 +634,14 @@ class DominoRoom extends Room {
         // 4. resume turn timer / update deadline
         this.resumeTurnTimerAfterReconnect({ sessionId: normalizedNextSessionId, source });
 
-        // 5. send full_state
-        this.sendReconnectRestoreState(normalizedNextSessionId, { source });
-
-        // 6. sync state
-        this.syncState();
+        // 5. send full_state or broadcast state if sessionId changed
+        if (normalizedNextSessionId !== normalizedSessionId) {
+            this.broadcastFullState({ includeRoomState: true });
+        } else {
+            this.sendReconnectRestoreState(normalizedNextSessionId, { source });
+            // 6. sync state
+            this.syncState();
+        }
 
         return true;
     }

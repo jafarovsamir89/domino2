@@ -503,6 +503,9 @@ class NetworkManager {
         this.clearReconnectTimer();
 
         try {
+            if (this.client) {
+                this.client.http.authToken = this.game.account?.getRoomAuthToken?.() || '';
+            }
             const room = await this.client.reconnect(token);
             this.activateRoom(room, { isHost: false, isGuest: true, notifyReconnect: true });
             return this.room;
@@ -627,14 +630,6 @@ class NetworkManager {
             return false;
         }
 
-        const connection = this.room.connection;
-        if (connection) {
-            const isOpen = (typeof connection.isOpen === 'function' ? connection.isOpen() : connection.isOpen) === true;
-            this.lastConnectionOpenResult = isOpen;
-            this.lastConnectionBlockedReason = isOpen ? "" : "connection_closed_flag";
-            return isOpen;
-        }
-
         const readyState =
             this.room?.connection?.readyState ??
             this.room?.connection?.transport?.ws?.readyState ??
@@ -644,6 +639,14 @@ class NetworkManager {
             const isOpen = readyState === 1;
             this.lastConnectionOpenResult = isOpen;
             this.lastConnectionBlockedReason = isOpen ? "" : `invalid_readyState_${readyState}`;
+            return isOpen;
+        }
+
+        const connection = this.room.connection;
+        if (connection) {
+            const isOpen = (typeof connection.isOpen === 'function' ? connection.isOpen() : connection.isOpen) === true;
+            this.lastConnectionOpenResult = isOpen;
+            this.lastConnectionBlockedReason = isOpen ? "" : "connection_closed_flag";
             return isOpen;
         }
 
