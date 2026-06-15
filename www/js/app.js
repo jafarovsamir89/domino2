@@ -13113,6 +13113,12 @@ class DominoGame {
         if (this.network?.isRoomConnectionOpen?.() !== true) {
             this.lastBlockedOnlineActionReason = "connection_closed";
             this.lastOfflineActionBlockedAt = Date.now();
+            console.warn('[RECONNECT_DEBUG] canSendMultiplayerAction blocked: connection_closed', {
+                lastConnectionBlockedReason: this.network?.lastConnectionBlockedReason,
+                roomExists: Boolean(this.network?.room),
+                reconnectInProgress: this.network?.reconnectInProgress,
+                manualLeaveRequested: this.network?.manualLeaveRequested
+            });
             return false;
         }
         if (this.pendingOnlineAction) {
@@ -13129,6 +13135,7 @@ class DominoGame {
         }
         if (!this.gameActive) {
             this.lastBlockedOnlineActionReason = "game_inactive";
+            console.warn('[RECONNECT_DEBUG] canSendMultiplayerAction blocked: game_inactive');
             return false;
         }
         if (this.currentPlayer !== this.humanPlayerIndex) {
@@ -13296,6 +13303,27 @@ class DominoGame {
         // Force full clean redraw ("Чистый лист")
         this._realtimeRenderSignatures = {};
         this.renderState();
+
+        // Safety net: if state wasn't restored fully, re-sync after a short delay
+        clearTimeout(this._reconnectResyncTimer);
+        this._reconnectResyncTimer = setTimeout(() => {
+            if (!this.network?.isMultiplayer || !this.network?.room) return;
+            // If gameActive but humanPlayerIndex is -1, or if it's our turn but validMoves is empty
+            const needsResync =
+                (this.gameActive && this.humanPlayerIndex < 0) ||
+                (this.gameActive && this.currentPlayer === this.humanPlayerIndex && (!Array.isArray(this.validMoves) || this.validMoves.length === 0) && this.myHand?.length > 0);
+            if (needsResync) {
+                console.warn('[RECONNECT_DEBUG] Safety re-sync: state not fully restored, requesting sync again', {
+                    gameActive: this.gameActive,
+                    humanPlayerIndex: this.humanPlayerIndex,
+                    currentPlayer: this.currentPlayer,
+                    validMovesCount: this.validMoves?.length || 0,
+                    myHandCount: this.myHand?.length || 0,
+                    sessionId: this.network?.room?.sessionId || ''
+                });
+                this.network?.sendSyncRequest?.();
+            }
+        }, 1500);
     }
 
     onNetworkReconnectFailed(error) {

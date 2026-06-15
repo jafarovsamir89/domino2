@@ -2016,6 +2016,20 @@ class DominoRoom extends Room {
     handleSyncRequest(client) {
         this.sendRoomStateToClient(client);
         this.sendFullState(client);
+        
+        // In some unit tests, the room or its methods/state might be mocked or incomplete.
+        // Also check if the client is actually in the game's player order before attempting player-specific messages.
+        if (typeof this.getPlayerIndex === "function" && this.state && this.state.playerOrder) {
+            const pi = this.getPlayerIndex(client);
+            if (pi !== -1) {
+                if (typeof this.sendHandToClient === "function") {
+                    this.sendHandToClient(client);
+                }
+                if (pi === Number(this.state.currentPlayerIndex || 0) && typeof this.sendTurnInfoToPlayerIndex === "function") {
+                    this.sendTurnInfoToPlayerIndex(pi);
+                }
+            }
+        }
     }
 
     broadcastFullState({ includeRoomState = false } = {}) {
