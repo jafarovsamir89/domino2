@@ -13096,21 +13096,6 @@ class DominoGame {
     }
 
     canSendMultiplayerAction() {
-        console.warn('[RECONNECT_DEBUG] canSendMultiplayerAction check:', JSON.stringify({
-            isMultiplayer: this.network?.isMultiplayer,
-            reconnectInProgress: this.network?.reconnectInProgress,
-            roomExists: Boolean(this.network?.room),
-            isRoomConnectionOpen: this.network?.isRoomConnectionOpen?.(),
-            pendingOnlineAction: Boolean(this.pendingOnlineAction),
-            matchOver: this.matchOver,
-            roundOver: this.roundOver,
-            gameActive: this.gameActive,
-            currentPlayer: this.currentPlayer,
-            humanPlayerIndex: this.humanPlayerIndex,
-            isMyTurn: (this.currentPlayer === this.humanPlayerIndex),
-            myHandLength: this.myHand?.length,
-            validMovesCount: this.validMoves?.length
-        }));
         if (!this.network?.isMultiplayer) {
             this.lastBlockedOnlineActionReason = "not_multiplayer";
             return false;
@@ -13128,12 +13113,6 @@ class DominoGame {
         if (this.network?.isRoomConnectionOpen?.() !== true) {
             this.lastBlockedOnlineActionReason = "connection_closed";
             this.lastOfflineActionBlockedAt = Date.now();
-            console.warn('[RECONNECT_DEBUG] canSendMultiplayerAction blocked: connection_closed', {
-                lastConnectionBlockedReason: this.network?.lastConnectionBlockedReason,
-                roomExists: Boolean(this.network?.room),
-                reconnectInProgress: this.network?.reconnectInProgress,
-                manualLeaveRequested: this.network?.manualLeaveRequested
-            });
             return false;
         }
         if (this.pendingOnlineAction) {
@@ -13150,7 +13129,6 @@ class DominoGame {
         }
         if (!this.gameActive) {
             this.lastBlockedOnlineActionReason = "game_inactive";
-            console.warn('[RECONNECT_DEBUG] canSendMultiplayerAction blocked: game_inactive');
             return false;
         }
         if (this.currentPlayer !== this.humanPlayerIndex) {
@@ -15083,18 +15061,6 @@ class DominoGame {
     }
 
     onNetworkFullState(payload = {}) {
-        const mySidForLog = this.network?.room?.sessionId || '';
-        const orderForLog = Array.from(payload?.playerOrder || []);
-        console.warn('[RECONNECT_DEBUG] onNetworkFullState received payload details:', JSON.stringify({
-            gameActive: payload?.gameActive,
-            currentPlayerIndex: payload?.currentPlayerIndex,
-            selfHandCount: payload?.selfHand?.length,
-            validMovesCount: payload?.turnInfo?.validMoves?.length,
-            boardExists: Boolean(payload?.board),
-            mySessionId: mySidForLog,
-            playerOrder: orderForLog,
-            myIndexInOrder: orderForLog.indexOf(mySidForLog)
-        }));
         const playerOrder = Array.from(payload?.playerOrder || []);
         const getPlayer = this.applyPlayerRows(playerOrder, payload?.players || []);
         this.turnTimeoutMs = Number(payload?.turnDurationMs || this.turnTimeoutMs || TURN_TIMEOUT_MS);
@@ -15125,12 +15091,6 @@ class DominoGame {
         }
         this.validMoves = Array.isArray(payload?.turnInfo?.validMoves) ? payload.turnInfo.validMoves : [];
         this.goshaCombo = payload?.turnInfo?.goshaCombo || null;
-        console.warn('[RECONNECT_DEBUG] validMoves array content:', JSON.stringify(this.validMoves));
-        console.warn('[RECONNECT_DEBUG] myHand array content:', JSON.stringify(this.myHand));
-        console.warn('[RECONNECT_DEBUG] playable tiles indices:', JSON.stringify(this.myHand.map((t, i) => {
-            const isPlayable = this.validMoves.some(m => m.tileIndex === i);
-            return { index: i, tile: `${t.a}|${t.b}`, isPlayable };
-        })));
         if (this.gameActive && Number(payload?.turnDeadlineAt || 0) > 0) {
             this.startTurnTimer(Number(payload.turnDeadlineAt), Number(payload?.turnVersion || this.turnVersion || 1), this.currentPlayer);
         } else {
@@ -15319,12 +15279,6 @@ class DominoGame {
 
     // --- Network Handlers (Thin Client Mode) ---
     onNetworkStateUpdate(state) {
-        console.warn('[RECONNECT_DEBUG] onNetworkStateUpdate received:', JSON.stringify({
-            gameActive: state?.gameActive,
-            currentPlayerIndex: state?.currentPlayerIndex,
-            turnVersion: state?.turnVersion,
-            boardJsonLength: state?.boardJson?.length
-        }));
         if (this.shouldProcessSchemaState(state) === false) {
             return;
         }
