@@ -13096,6 +13096,21 @@ class DominoGame {
     }
 
     canSendMultiplayerAction() {
+        console.warn('[RECONNECT_DEBUG] canSendMultiplayerAction check:', {
+            isMultiplayer: this.network?.isMultiplayer,
+            reconnectInProgress: this.network?.reconnectInProgress,
+            roomExists: Boolean(this.network?.room),
+            isRoomConnectionOpen: this.network?.isRoomConnectionOpen?.(),
+            pendingOnlineAction: Boolean(this.pendingOnlineAction),
+            matchOver: this.matchOver,
+            roundOver: this.roundOver,
+            gameActive: this.gameActive,
+            currentPlayer: this.currentPlayer,
+            humanPlayerIndex: this.humanPlayerIndex,
+            isMyTurn: (this.currentPlayer === this.humanPlayerIndex),
+            myHandLength: this.myHand?.length,
+            validMovesCount: this.validMoves?.length
+        });
         if (!this.network?.isMultiplayer) {
             this.lastBlockedOnlineActionReason = "not_multiplayer";
             return false;
@@ -15068,13 +15083,18 @@ class DominoGame {
     }
 
     onNetworkFullState(payload = {}) {
-        console.warn('[RECONNECT_DEBUG] onNetworkFullState received:', {
+        const mySidForLog = this.network?.room?.sessionId || '';
+        const orderForLog = Array.from(payload?.playerOrder || []);
+        console.warn('[RECONNECT_DEBUG] onNetworkFullState received payload details:', JSON.stringify({
             gameActive: payload?.gameActive,
             currentPlayerIndex: payload?.currentPlayerIndex,
             selfHandCount: payload?.selfHand?.length,
-            turnInfo: payload?.turnInfo,
-            board: Boolean(payload?.board)
-        });
+            validMovesCount: payload?.turnInfo?.validMoves?.length,
+            boardExists: Boolean(payload?.board),
+            mySessionId: mySidForLog,
+            playerOrder: orderForLog,
+            myIndexInOrder: orderForLog.indexOf(mySidForLog)
+        }));
         const playerOrder = Array.from(payload?.playerOrder || []);
         const getPlayer = this.applyPlayerRows(playerOrder, payload?.players || []);
         this.turnTimeoutMs = Number(payload?.turnDurationMs || this.turnTimeoutMs || TURN_TIMEOUT_MS);
