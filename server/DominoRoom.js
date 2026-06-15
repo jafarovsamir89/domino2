@@ -507,8 +507,8 @@ class DominoRoom extends Room {
             const maybePromise = this.allowReconnection(client, RECONNECT_GRACE_MS / 1000);
             if (maybePromise && typeof maybePromise.then === "function") {
                 maybePromise
-                    .then(() => {
-                        void this.completeReconnectGrace(sessionId, client?.sessionId || sessionId, { source: "allowReconnection" });
+                    .then((reconnectedClient) => {
+                        void this.completeReconnectGrace(sessionId, reconnectedClient?.sessionId || client?.sessionId || sessionId, { source: "allowReconnection" });
                     })
                     .catch((error) => {
                         this.lastAllowReconnectionRejectedAt = Date.now();
@@ -546,20 +546,46 @@ class DominoRoom extends Room {
         const pending = this.pendingDisconnects?.get(normalizedSessionId) || this.pendingDisconnects?.get(normalizedNextSessionId) || null;
         if (!pending) return false;
 
+        // 1. Swap/update session ID references if they differ
+        if (normalizedNextSessionId !== normalizedSessionId) {
+            if (this.state.players.has(normalizedSessionId) && !this.state.players.has(normalizedNextSessionId)) {
+                const p = this.state.players.get(normalizedSessionId);
+                this.state.players.delete(normalizedSessionId);
+                this.state.players.set(normalizedNextSessionId, p);
+            }
+            const orderIndex = this.state.playerOrder.indexOf(normalizedSessionId);
+            if (orderIndex !== -1) {
+                this.state.playerOrder.splice(orderIndex, 1, normalizedNextSessionId);
+            }
+            if (this.identityBySessionId.has(normalizedSessionId) && !this.identityBySessionId.has(normalizedNextSessionId)) {
+                const ident = this.identityBySessionId.get(normalizedSessionId);
+                this.identityBySessionId.delete(normalizedSessionId);
+                this.identityBySessionId.set(normalizedNextSessionId, ident);
+            }
+            if (this.voiceEnabledBySessionId?.has?.(normalizedSessionId) && !this.voiceEnabledBySessionId?.has?.(normalizedNextSessionId)) {
+                const voice = this.voiceEnabledBySessionId.get(normalizedSessionId);
+                this.voiceEnabledBySessionId.delete(normalizedSessionId);
+                this.voiceEnabledBySessionId.set(normalizedNextSessionId, voice);
+            }
+            removeLivePlayer(normalizedSessionId);
+        }
+
+        // 2. Mark player connected
+        const player = this.state.players.get(normalizedNextSessionId);
+        if (player) {
+            player.isConnected = true;
+        }
+
+        // 3. Clear pending disconnect
         this.clearPendingDisconnect(normalizedSessionId);
         if (normalizedNextSessionId !== normalizedSessionId) {
             this.clearPendingDisconnect(normalizedNextSessionId);
         }
 
-        const player = this.state.players.get(normalizedNextSessionId) || this.state.players.get(normalizedSessionId);
-        if (player) {
-            player.isConnected = true;
-        }
-
-        const identity = this.identityBySessionId.get(normalizedNextSessionId) || this.identityBySessionId.get(normalizedSessionId);
+        const identity = this.identityBySessionId.get(normalizedNextSessionId);
         if (identity && player) {
-            upsertLivePlayer(normalizedNextSessionId || normalizedSessionId, {
-                sessionId: normalizedNextSessionId || normalizedSessionId,
+            upsertLivePlayer(normalizedNextSessionId, {
+                sessionId: normalizedNextSessionId,
                 roomId: getSafeRoomId(this),
                 roomCode: String(this.roomCode || "").trim(),
                 roomVisibility: this.roomVisibility,
@@ -604,9 +630,16 @@ class DominoRoom extends Room {
             values: { player: playerName },
             time: 1500
         });
+
+        // 4. resume turn timer / update deadline
         this.resumeTurnTimerAfterReconnect({ sessionId: normalizedNextSessionId, source });
-        this.syncState();
+
+        // 5. send full_state
         this.sendReconnectRestoreState(normalizedNextSessionId, { source });
+
+        // 6. sync state
+        this.syncState();
+
         return true;
     }
 
@@ -2315,6 +2348,13 @@ class DominoRoom extends Room {
 
     validateClientAction(client, message = {}, { allowTurnAdvancePending = false } = {}) {
         if (!this.state.gameActive) return { ok: false, reason: "game_inactive", pi: -1 };
+        if (this.state.players) {
+            const player = this.state.players.get(client.sessionId);
+            if (!player) return { ok: false, reason: "player_not_found", pi: -1 };
+            if (player.isConnected === false) return { ok: false, reason: "player_reconnecting", pi: -1 };
+        }
+        if (this.pendingDisconnects?.has?.(client.sessionId)) return { ok: false, reason: "player_reconnecting", pi: -1 };
+
         const pi = this.getPlayerIndex(client);
         if (pi !== this.state.currentPlayerIndex) return { ok: false, reason: "not_your_turn", pi };
         if (!allowTurnAdvancePending && this.turnAdvancePending) return { ok: false, reason: "turn_advancing", pi };

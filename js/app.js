@@ -13096,15 +13096,66 @@ class DominoGame {
     }
 
     canSendMultiplayerAction() {
-        if (!this.network?.isMultiplayer) return false;
-        if (this.network?.reconnectInProgress) return false;
-        if (!this.network?.room) return false;
-        if (typeof navigator !== 'undefined' && navigator.onLine === false) return false;
+        if (!this.network?.isMultiplayer) {
+            this.lastBlockedOnlineActionReason = "not_multiplayer";
+            return false;
+        }
+        if (this.network?.reconnectInProgress) {
+            this.lastBlockedOnlineActionReason = "reconnect_in_progress";
+            this.lastOfflineActionBlockedAt = Date.now();
+            return false;
+        }
+        if (!this.network?.room) {
+            this.lastBlockedOnlineActionReason = "no_room";
+            this.lastOfflineActionBlockedAt = Date.now();
+            return false;
+        }
+        if (this.network?.isRoomConnectionOpen?.() !== true) {
+            this.lastBlockedOnlineActionReason = "connection_closed";
+            this.lastOfflineActionBlockedAt = Date.now();
+            return false;
+        }
+        if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+            this.lastBlockedOnlineActionReason = "navigator_offline";
+            this.lastOfflineActionBlockedAt = Date.now();
+            return false;
+        }
+        if (this.pendingOnlineAction) {
+            this.lastBlockedOnlineActionReason = "pending_action";
+            return false;
+        }
+        if (this.matchOver) {
+            this.lastBlockedOnlineActionReason = "match_over";
+            return false;
+        }
+        if (this.roundOver) {
+            this.lastBlockedOnlineActionReason = "round_over";
+            return false;
+        }
+        if (!this.gameActive) {
+            this.lastBlockedOnlineActionReason = "game_inactive";
+            return false;
+        }
+        if (this.currentPlayer !== this.humanPlayerIndex) {
+            this.lastBlockedOnlineActionReason = "not_human_turn";
+            return false;
+        }
         return true;
     }
 
-    notifyMultiplayerActionBlocked() {
-        this.renderer?.showMessage?.(this.t('connection-lost') || 'Connection lost', 1800);
+    notifyMultiplayerActionBlocked(reason = 'connection') {
+        if (reason === 'connection') {
+            const lang = this.currentLang || 'az';
+            let msg = "Connection lost, reconnecting...";
+            if (lang === 'az') {
+                msg = "Bağlantı gözlənilir...";
+            } else if (lang === 'ru') {
+                msg = "Ожидание соединения...";
+            }
+            this.renderer?.showMessage?.(msg, 1800);
+        } else {
+            this.renderer?.showMessage?.(this.t('connection-lost') || 'Connection lost', 1800);
+        }
     }
 
     resetReconnectRestoreUiState() {
@@ -13210,9 +13261,23 @@ class DominoGame {
     }
 
     onNetworkDisconnected(payload = {}) {
+        this.networkActionBlockedForReconnect = true;
+        this.lastOptimisticRollbackOnDisconnectAt = Date.now();
+        this.lastOptimisticRollbackReason = payload.reconnecting ? 'reconnecting' : 'disconnect';
+
         this.clearPendingOnlineAction({ rollback: true });
+        this.turnInProgress = false;
+        this.postMoveWindowActive = false;
+        this.selectedTileIndex = -1;
+        this.renderer?.removeArrows?.();
+
         const snapshot = this.persistGameResumeSnapshot();
         this.refreshResumeBanner(snapshot);
+
+        // Force render from current local/server state on disconnect
+        this._realtimeRenderSignatures = {};
+        this.renderState();
+
         if (payload.reconnecting) {
             this.lastAccidentalDisconnectAt = Date.now();
             this.voice?.stopSpeaking?.();
@@ -13221,6 +13286,7 @@ class DominoGame {
     }
 
     onNetworkReconnected() {
+        this.networkActionBlockedForReconnect = false;
         document.getElementById('start-screen')?.classList.remove('active');
         document.getElementById('menu-screen')?.classList.remove('active');
         document.getElementById('round-end-screen')?.classList.remove('active');
@@ -14354,8 +14420,9 @@ class DominoGame {
 
         const canPlay = this.board.canPlayAny(this.normalizeHandForBoard(myHand));
         const emptyBoneyard = this.boneyard.length === 0;
-        this.renderer.drawBtn.disabled = waitingOpenRoom || !myTurn || canPlay || emptyBoneyard || this.postMoveWindowActive || this.turnInProgress;
-        this.renderer.passBtn.disabled = waitingOpenRoom || !myTurn || canPlay || !emptyBoneyard || this.postMoveWindowActive || this.turnInProgress;
+        const connectionLost = !this.network?.isRoomConnectionOpen?.() || this.networkActionBlockedForReconnect;
+        this.renderer.drawBtn.disabled = connectionLost || waitingOpenRoom || !myTurn || canPlay || emptyBoneyard || this.postMoveWindowActive || this.turnInProgress;
+        this.renderer.passBtn.disabled = connectionLost || waitingOpenRoom || !myTurn || canPlay || !emptyBoneyard || this.postMoveWindowActive || this.turnInProgress;
 
         this.goshaCombo = (this.gameActive && myTurn) ? this.board.getGoshaCombo(myHand) : null;
         this.renderer.showGoshaBtn(this.goshaCombo, () => this.playGoshaCombo());
@@ -14963,8 +15030,9 @@ class DominoGame {
             && this.roomRequiresSeatPicker(this.currentRoomState, this.currentRoomState);
         const canPlay = this.board.canPlayAny(this.normalizeHandForBoard(myHand));
         const emptyBoneyard = this.boneyard.length === 0;
-        this.renderer.drawBtn.disabled = waitingOpenRoom || !myTurn || canPlay || emptyBoneyard || this.postMoveWindowActive || this.turnInProgress;
-        this.renderer.passBtn.disabled = waitingOpenRoom || !myTurn || canPlay || !emptyBoneyard || this.postMoveWindowActive || this.turnInProgress;
+        const connectionLost = !this.network?.isRoomConnectionOpen?.() || this.networkActionBlockedForReconnect;
+        this.renderer.drawBtn.disabled = connectionLost || waitingOpenRoom || !myTurn || canPlay || emptyBoneyard || this.postMoveWindowActive || this.turnInProgress;
+        this.renderer.passBtn.disabled = connectionLost || waitingOpenRoom || !myTurn || canPlay || !emptyBoneyard || this.postMoveWindowActive || this.turnInProgress;
 
         this.goshaCombo = (this.gameActive && myTurn) ? this.goshaCombo : null;
         this.renderer.showGoshaBtn(this.goshaCombo, () => this.playGoshaCombo());
@@ -15009,6 +15077,25 @@ class DominoGame {
             this.clearTurnTimers();
         }
         this.resetReconnectRestoreUiState();
+        
+        // Reset signatures to force UI redraw
+        this._realtimeRenderSignatures = {};
+        
+        // Debug metrics
+        this.lastFullStateForcedRenderAt = Date.now();
+        this.lastFullStateIsMyTurn = (this.currentPlayer === this.humanPlayerIndex);
+        this.lastFullStateValidMovesCount = this.validMoves.length;
+        this.lastFullStateSelfHandCount = this.myHand.length;
+        this.lastFullStateControlsShouldBeEnabled = (this.currentPlayer === this.humanPlayerIndex && this.validMoves.length > 0);
+
+        this.renderRealtimeGameDeltaView({
+            boardChanged: true,
+            handChanged: true,
+            opponentHandsChanged: true,
+            scoresChanged: true,
+            infoChanged: true,
+            force: true
+        });
         this.renderState();
     }
 
@@ -15535,12 +15622,21 @@ class DominoGame {
     playGoshaCombo(fromRemote=false) {
         if (this.network.isMultiplayer) {
             if (!this.canSendMultiplayerAction()) {
-                this.notifyMultiplayerActionBlocked();
+                this.notifyMultiplayerActionBlocked('connection');
+                return;
+            }
+            if (!this.network.isRoomConnectionOpen()) {
+                this.notifyMultiplayerActionBlocked('connection');
                 return;
             }
             if (this.turnInProgress) return;
             this.turnInProgress = true;
             const actionId = this.network.sendGosha();
+            if (!actionId) {
+                this.turnInProgress = false;
+                this.notifyMultiplayerActionBlocked('connection');
+                return;
+            }
             this.queuePendingOnlineAction({ type: 'gosha', actionId });
             return;
         }
@@ -15581,12 +15677,21 @@ class DominoGame {
     drawFromBoneyard(fromRemote=false) {
         if (this.network.isMultiplayer) {
             if (!this.canSendMultiplayerAction()) {
-                this.notifyMultiplayerActionBlocked();
+                this.notifyMultiplayerActionBlocked('connection');
+                return;
+            }
+            if (!this.network.isRoomConnectionOpen()) {
+                this.notifyMultiplayerActionBlocked('connection');
                 return;
             }
             if (this.turnInProgress) return;
             this.turnInProgress = true;
             const actionId = this.network.sendDraw();
+            if (!actionId) {
+                this.turnInProgress = false;
+                this.notifyMultiplayerActionBlocked('connection');
+                return;
+            }
             this.queuePendingOnlineAction({ type: 'draw', actionId });
             return;
         }
@@ -15613,12 +15718,21 @@ class DominoGame {
     passTurn(fromRemote=false) {
         if (this.network.isMultiplayer) {
             if (!this.canSendMultiplayerAction()) {
-                this.notifyMultiplayerActionBlocked();
+                this.notifyMultiplayerActionBlocked('connection');
+                return;
+            }
+            if (!this.network.isRoomConnectionOpen()) {
+                this.notifyMultiplayerActionBlocked('connection');
                 return;
             }
             if (this.turnInProgress) return;
             this.turnInProgress = true;
             const actionId = this.network.sendPass();
+            if (!actionId) {
+                this.turnInProgress = false;
+                this.notifyMultiplayerActionBlocked('connection');
+                return;
+            }
             this.queuePendingOnlineAction({ type: 'pass', actionId });
             return;
         }
