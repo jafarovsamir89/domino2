@@ -162,6 +162,15 @@ class DominoRoom extends Room {
         this.lastReconnectCompletedBy = "";
         this.lastReconnectGraceExpiredAt = 0;
         this.lastReconnectTimeoutFinalizedAt = 0;
+        this.lastTurnTimerPausedForReconnectAt = 0;
+        this.lastTurnTimerPausedSessionId = "";
+        this.lastTurnTimerPausedPlayerName = "";
+        this.lastTurnTimerResumedAfterReconnectAt = 0;
+        this.lastTurnTimerResumedSessionId = "";
+        this.lastReconnectFullStateSentAt = 0;
+        this.lastReconnectFullStateSessionId = "";
+        this.lastReconnectFullStateSource = "";
+        this.lastReconnectRestoredWasCurrentPlayer = false;
         this.lastForfeitReason = "";
         this.lastGameEndReason = "";
         this.lastGameEndWasExplicitLeave = false;
@@ -312,6 +321,86 @@ class DominoRoom extends Room {
         }));
     }
 
+    getCurrentPlayerReconnectHold() {
+        const currentSessionId = String(this.state?.playerOrder?.[this.state?.currentPlayerIndex] || "").trim();
+        if (!currentSessionId) return null;
+        const player = this.state?.players?.get?.(currentSessionId) || null;
+        if (!player || player.isBot) return null;
+        const pending = this.getPendingDisconnectEntry(currentSessionId);
+        if (!pending && player.isConnected !== false) return null;
+        return {
+            sessionId: currentSessionId,
+            player,
+            pending
+        };
+    }
+
+    isCurrentPlayerDisconnectedOrReconnecting() {
+        return Boolean(this.getCurrentPlayerReconnectHold());
+    }
+
+    pauseTurnTimerForReconnect({ sessionId = "", playerName = "", expiresAt = 0, source = "reconnect" } = {}) {
+        this.lastTurnTimerPausedForReconnectAt = Date.now();
+        this.lastTurnTimerPausedSessionId = String(sessionId || "").trim();
+        this.lastTurnTimerPausedPlayerName = String(playerName || "").trim();
+        this.clearTurnTimer();
+        this.turnDeadlineAt = Number(expiresAt || 0) || 0;
+        this.state.turnDeadlineAt = this.turnDeadlineAt;
+        this.state.turnDurationMs = this.turnTimeoutMs;
+        this.state.serverNow = Date.now();
+        debugLog("[ROOM_DEBUG] turnTimerPausedForReconnect", {
+            roomId: getSafeRoomId(this),
+            roomCode: String(this.roomCode || "").trim(),
+            sessionId: this.lastTurnTimerPausedSessionId,
+            playerName: this.lastTurnTimerPausedPlayerName,
+            expiresAt: this.turnDeadlineAt,
+            source
+        });
+        this.broadcastRoomState();
+    }
+
+    resumeTurnTimerAfterReconnect({ sessionId = "", source = "reconnect" } = {}) {
+        const normalizedSessionId = String(sessionId || "").trim();
+        if (!normalizedSessionId) return false;
+        const currentSessionId = String(this.state?.playerOrder?.[this.state?.currentPlayerIndex] || "").trim();
+        if (currentSessionId !== normalizedSessionId) return false;
+        const player = this.state?.players?.get?.(normalizedSessionId) || null;
+        if (!player || player.isBot || player.isConnected === false) return false;
+
+        this.lastTurnTimerResumedAfterReconnectAt = Date.now();
+        this.lastTurnTimerResumedSessionId = normalizedSessionId;
+        debugLog("[ROOM_DEBUG] turnTimerResumedAfterReconnect", {
+            roomId: getSafeRoomId(this),
+            roomCode: String(this.roomCode || "").trim(),
+            sessionId: normalizedSessionId,
+            source
+        });
+        this.clearTurnTimer();
+        this.scheduleTurnTimer();
+        return true;
+    }
+
+    sendReconnectRestoreState(sessionId, { source = "reconnect" } = {}) {
+        const normalizedSessionId = String(sessionId || "").trim();
+        if (!normalizedSessionId) return false;
+        const client = this.clients.find((entry) => entry?.sessionId === normalizedSessionId);
+        if (!client) return false;
+
+        const currentSessionId = String(this.state?.playerOrder?.[this.state?.currentPlayerIndex] || "").trim();
+        const wasCurrentPlayer = currentSessionId === normalizedSessionId;
+        this.lastReconnectFullStateSentAt = Date.now();
+        this.lastReconnectFullStateSessionId = normalizedSessionId;
+        this.lastReconnectFullStateSource = String(source || "reconnect").trim() || "reconnect";
+        this.lastReconnectRestoredWasCurrentPlayer = wasCurrentPlayer;
+
+        this.sendFullState(client);
+        this.sendHandToClient(client);
+        if (wasCurrentPlayer) {
+            this.sendTurnInfoToPlayerIndex(this.state.currentPlayerIndex);
+        }
+        return true;
+    }
+
     startReconnectGrace(client, {
         player,
         identity,
@@ -354,6 +443,15 @@ class DominoRoom extends Room {
 
         if (resolvedPlayer) {
             resolvedPlayer.isConnected = false;
+        }
+
+        if (this.state?.gameActive && String(this.state?.playerOrder?.[this.state?.currentPlayerIndex] || "") === sessionId) {
+            this.pauseTurnTimerForReconnect({
+                sessionId,
+                playerName: resolvedPlayerName,
+                expiresAt,
+                source: reason
+            });
         }
 
         const resolvedIdentity = identity || this.identityBySessionId.get(sessionId) || null;
@@ -506,7 +604,9 @@ class DominoRoom extends Room {
             values: { player: playerName },
             time: 1500
         });
+        this.resumeTurnTimerAfterReconnect({ sessionId: normalizedNextSessionId, source });
         this.syncState();
+        this.sendReconnectRestoreState(normalizedNextSessionId, { source });
         return true;
     }
 
@@ -941,6 +1041,9 @@ class DominoRoom extends Room {
             this.syncState();
         } else {
             this.broadcastRoomState();
+        }
+        if (restoredJoin || reusableSessionId) {
+            this.sendReconnectRestoreState(client.sessionId, { source: restoredJoin ? "join" : "restore" });
         }
         if (this.maybeAutoStartGame()) {
             debugLog(`[ROOM] Room full. Starting game...`);
@@ -1542,6 +1645,16 @@ class DominoRoom extends Room {
             this.clearTurnTimer();
             return;
         }
+        const reconnectHold = this.getCurrentPlayerReconnectHold();
+        if (reconnectHold) {
+            this.pauseTurnTimerForReconnect({
+                sessionId: reconnectHold.sessionId,
+                playerName: reconnectHold.player?.name || reconnectHold.pending?.playerName || "Player",
+                expiresAt: reconnectHold.pending?.expiresAt || 0,
+                source: "scheduleTurnTimer"
+            });
+            return;
+        }
         if (this.turnTimer) clearTimeout(this.turnTimer);
         this.state.turnDurationMs = this.turnTimeoutMs;
         this.state.serverNow = Date.now();
@@ -1598,6 +1711,7 @@ class DominoRoom extends Room {
 
     handleTurnTimeout() {
         if (!this.state.gameActive || this.matchFinished) return;
+        if (this.isCurrentPlayerDisconnectedOrReconnecting()) return;
         const currentIndex = Number(this.state.currentPlayerIndex || 0);
         const winnerIndex = this.findTimeoutWinner(currentIndex);
         const actor = this.state.players.get(this.state.playerOrder[currentIndex]);

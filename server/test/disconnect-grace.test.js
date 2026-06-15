@@ -23,17 +23,26 @@ function createActiveRoom() {
     room.state = {
         gameActive: true,
         matchOver: false,
+        currentPlayerIndex: 0,
         isTeamMode: false,
         playerOrder: ["session-1"],
-        players: new Map([["session-1", { name: "Alice", isConnected: true }]])
+        players: new Map([["session-1", { name: "Alice", isConnected: true, isBot: false }]]),
+        turnDeadlineAt: 0,
+        turnDurationMs: 45000,
+        serverNow: Date.now()
     };
     room.identityBySessionId = new Map();
     room.pendingDisconnects = new Map();
     room.pendingDisconnectTimers = new Map();
     room.explicitLeaveSessionIds = new Set();
+    room.clients = [{ sessionId: "session-1", send() {} }];
+    room.turnTimeoutMs = 45000;
+    room.turnTimer = null;
+    room.lastReconnectGraceExpiredAt = 0;
+    room.lastReconnectTimeoutFinalizedAt = 0;
     room.broadcastRoomState = () => {};
     room.broadcast = () => {};
-    room.clearTurnTimer = () => {};
+    room.clearTurnTimer = DominoRoom.prototype.clearTurnTimer.bind(room);
     room.clearNextDealTimer = () => {};
     room.syncState = () => {};
     return room;
@@ -52,6 +61,8 @@ test("accidental disconnect during an active game uses reconnect grace and keeps
     room.recordForfeitMatchResult = async () => {
         throw new Error("should not record a forfeit during reconnect grace");
     };
+    room.resumeTurnTimerAfterReconnect = () => false;
+    room.sendReconnectRestoreState = () => true;
     const messages = [];
     room.broadcast = (event, payload) => {
         messages.push({ event, payload });
@@ -258,4 +269,77 @@ test("beforeunload and visibility handlers do not send explicit leave", () => {
     assert.equal(source.includes("pagehide"), false);
     assert.ok(source.includes("leaveRoom({ explicit: false, reason: 'room_closed' })"));
     assert.ok(source.includes("leaveRoom({ explicit: true, reason: 'menu' })"));
+});
+
+test("current-player reconnect grace pauses the turn timer and restores full state on reconnect", () => {
+    const room = createActiveRoom();
+    const events = [];
+    const expiresAt = Date.now() + 120000;
+    room.pendingDisconnects.set("session-1", {
+        sessionId: "session-1",
+        playerName: "Alice",
+        startedAt: Date.now(),
+        expiresAt,
+        leavingIndex: 0,
+        isTeamMode: false,
+        reason: "accidental_disconnect"
+    });
+    room.broadcastRoomState = () => events.push(["room_state"]);
+    room.sendFullState = (client) => events.push(["full_state", client.sessionId]);
+    room.sendHandToClient = (client) => events.push(["hand", client.sessionId]);
+    room.sendTurnInfoToPlayerIndex = (index) => events.push(["turn_info", index]);
+    room.syncState = () => events.push(["syncState"]);
+
+    DominoRoom.prototype.scheduleTurnTimer.call(room);
+
+    assert.equal(room.state.turnDeadlineAt, expiresAt);
+    assert.equal(room.lastTurnTimerPausedSessionId, "session-1");
+    assert.equal(events.some(([kind]) => kind === "room_state"), true);
+
+    room.scheduleTurnTimer = () => events.push(["scheduleTurnTimer"]);
+    const resumed = room.completeReconnectGrace("session-1", "session-1", { source: "join" });
+
+    assert.equal(resumed, true);
+    assert.equal(room.state.players.get("session-1").isConnected, true);
+    assert.equal(room.lastReconnectRestoredWasCurrentPlayer, true);
+    assert.equal(room.lastReconnectFullStateSessionId, "session-1");
+    assert.equal(room.lastReconnectFullStateSource, "join");
+    assert.ok(room.lastTurnTimerResumedAfterReconnectAt > 0);
+    assert.ok(events.some(([kind, sessionId]) => kind === "full_state" && sessionId === "session-1"));
+    assert.ok(events.some(([kind, sessionId]) => kind === "hand" && sessionId === "session-1"));
+    assert.ok(events.some(([kind]) => kind === "turn_info"));
+    assert.ok(events.some(([kind]) => kind === "scheduleTurnTimer"));
+});
+
+test("handleTurnTimeout ignores a reconnect-hold current player", () => {
+    const room = createActiveRoom();
+    let ended = 0;
+    room.state.players.set("session-1", { name: "Alice", isConnected: false, isBot: false });
+    room.pendingDisconnects.set("session-1", {
+        sessionId: "session-1",
+        playerName: "Alice",
+        startedAt: Date.now(),
+        expiresAt: Date.now() + 120000,
+        leavingIndex: 0,
+        isTeamMode: false,
+        reason: "accidental_disconnect"
+    });
+    room.endRound = () => { ended += 1; };
+
+    room.handleTurnTimeout();
+
+    assert.equal(ended, 0);
+});
+
+test("client reconnect restore clears stale turn state and requests sync", () => {
+    const source = fs.readFileSync(path.resolve(__dirname, "../../js/app.js"), "utf8");
+    assert.ok(source.includes("resetReconnectRestoreUiState()"));
+    assert.ok(source.includes("this.resetReconnectRestoreUiState();"));
+    assert.ok(source.includes("this.network?.sendSyncRequest?.();"));
+    assert.ok(source.includes("onNetworkFullState(payload = {}) {"));
+    assert.ok(source.includes("this.resetReconnectRestoreUiState();"));
+    assert.ok(source.includes("this.renderState();"));
+    assert.ok(source.includes("this.postMoveWindowActive = false;"));
+    assert.ok(source.includes("this.selectedTileIndex = -1;"));
+    assert.ok(source.includes("this.renderer?.removeArrows?.();"));
 });
