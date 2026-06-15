@@ -15068,6 +15068,13 @@ class DominoGame {
     }
 
     onNetworkFullState(payload = {}) {
+        console.warn('[RECONNECT_DEBUG] onNetworkFullState received:', {
+            gameActive: payload?.gameActive,
+            currentPlayerIndex: payload?.currentPlayerIndex,
+            selfHandCount: payload?.selfHand?.length,
+            turnInfo: payload?.turnInfo,
+            board: Boolean(payload?.board)
+        });
         const playerOrder = Array.from(payload?.playerOrder || []);
         const getPlayer = this.applyPlayerRows(playerOrder, payload?.players || []);
         this.turnTimeoutMs = Number(payload?.turnDurationMs || this.turnTimeoutMs || TURN_TIMEOUT_MS);
@@ -15286,6 +15293,12 @@ class DominoGame {
 
     // --- Network Handlers (Thin Client Mode) ---
     onNetworkStateUpdate(state) {
+        console.warn('[RECONNECT_DEBUG] onNetworkStateUpdate received:', {
+            gameActive: state?.gameActive,
+            currentPlayerIndex: state?.currentPlayerIndex,
+            turnVersion: state?.turnVersion,
+            boardJsonLength: state?.boardJson?.length
+        });
         if (this.shouldProcessSchemaState(state) === false) {
             return;
         }
