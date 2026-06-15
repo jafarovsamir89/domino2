@@ -13095,6 +13095,20 @@ class DominoGame {
         this.renderState();
     }
 
+    resetReconnectRestoreUiState() {
+        this.clearPendingOnlineAction({ rollback: false });
+        this.turnInProgress = false;
+        this.postMoveWindowActive = false;
+        this.postMoveWindowEndsAt = 0;
+        this.selectedTileIndex = -1;
+        this._pendingOptimisticPlayTileId = '';
+        this._pendingOptimisticPlayActionId = '';
+        this._boardAnimationActive = null;
+        this._boardAnimationPromise = Promise.resolve();
+        this.renderer?.removeArrows?.();
+        this.syncMoveHintSelectionUiState();
+    }
+
     queuePendingOnlineAction(action) {
         this.clearPendingOnlineAction({ rollback: false });
         this.pendingOnlineAction = action;
@@ -13201,7 +13215,9 @@ class DominoGame {
         this.showStartModal(null);
         this.clearNextDealAdvanceTimeout();
         this.clearTurnTimers();
+        this.resetReconnectRestoreUiState();
         this.pendingReconnectResolution = true;
+        this.network?.sendSyncRequest?.();
     }
 
     onNetworkReconnectFailed(error) {
@@ -14979,8 +14995,7 @@ class DominoGame {
         } else {
             this.clearTurnTimers();
         }
-        this.clearPendingOnlineAction({ rollback: false });
-        this.turnInProgress = false;
+        this.resetReconnectRestoreUiState();
         this.renderState();
     }
 
