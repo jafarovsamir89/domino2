@@ -15410,10 +15410,10 @@ class DominoGame {
                 this.pendingReconnectResolution = false;
                 return;
             }
-            if (!this.gameActive) {
-                return;
+            // If the game is already active or we received full_state payload, clear the block
+            if (this.gameActive) {
+                this.pendingReconnectResolution = false;
             }
-            this.pendingReconnectResolution = false;
         }
 
         // Hide start screen if we just started
