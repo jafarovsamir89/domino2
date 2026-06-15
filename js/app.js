@@ -15125,6 +15125,12 @@ class DominoGame {
         }
         this.validMoves = Array.isArray(payload?.turnInfo?.validMoves) ? payload.turnInfo.validMoves : [];
         this.goshaCombo = payload?.turnInfo?.goshaCombo || null;
+        console.warn('[RECONNECT_DEBUG] validMoves array content:', JSON.stringify(this.validMoves));
+        console.warn('[RECONNECT_DEBUG] myHand array content:', JSON.stringify(this.myHand));
+        console.warn('[RECONNECT_DEBUG] playable tiles indices:', JSON.stringify(this.myHand.map((t, i) => {
+            const isPlayable = this.validMoves.some(m => m.tileIndex === i);
+            return { index: i, tile: `${t.a}|${t.b}`, isPlayable };
+        })));
         if (this.gameActive && Number(payload?.turnDeadlineAt || 0) > 0) {
             this.startTurnTimer(Number(payload.turnDeadlineAt), Number(payload?.turnVersion || this.turnVersion || 1), this.currentPlayer);
         } else {
@@ -15313,12 +15319,12 @@ class DominoGame {
 
     // --- Network Handlers (Thin Client Mode) ---
     onNetworkStateUpdate(state) {
-        console.warn('[RECONNECT_DEBUG] onNetworkStateUpdate received:', {
+        console.warn('[RECONNECT_DEBUG] onNetworkStateUpdate received:', JSON.stringify({
             gameActive: state?.gameActive,
             currentPlayerIndex: state?.currentPlayerIndex,
             turnVersion: state?.turnVersion,
             boardJsonLength: state?.boardJson?.length
-        });
+        }));
         if (this.shouldProcessSchemaState(state) === false) {
             return;
         }
