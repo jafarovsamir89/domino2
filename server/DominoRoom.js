@@ -851,6 +851,48 @@ class DominoRoom extends Room {
         };
     }
 
+    async closeWaitingOpenRoom(reason = "host_left") {
+        this.state.gameActive = false;
+        this.state.matchOver = true;
+        this.state.gameOverReason = reason;
+        this.gameStarting = false;
+        this.matchFinished = true;
+        this.clearTurnTimer();
+        this.clearNextDealTimer();
+        if (this.autoStartTimer) {
+            clearTimeout(this.autoStartTimer);
+            this.autoStartTimer = null;
+        }
+        this.broadcast("room_closed", {
+            reasonKey: "open-room-host-left",
+            returnTo: "open_rooms",
+            roomVisibility: "open"
+        });
+        this.broadcast("msg", {
+            key: "open-room-host-left",
+            time: 2000
+        });
+        if (this.roomCode) {
+            await forgetRoom(this.roomCode, this.roomId);
+        }
+        removeRoomPlayers(this.roomId);
+        const closeClients = () => {
+            for (const activeClient of (this.clients || []).slice()) {
+                try {
+                    activeClient.leave(4000);
+                } catch {}
+            }
+            try {
+                this.disconnect?.();
+            } catch {}
+        };
+        if (this.clock?.setTimeout) {
+            this.clock.setTimeout(closeClients, 150);
+            return;
+        }
+        setTimeout(closeClients, 150);
+    }
+
     areAllHumanPlayersSeated() {
         if (this.totalPlayers <= 2) return true;
         return this.countSeatedHumanPlayers() >= this.humanSeats;
@@ -1207,6 +1249,10 @@ class DominoRoom extends Room {
         const leavingIndex = this.state.playerOrder.indexOf(client.sessionId);
         const isTeamMode = isRoomTeamMode(this);
         const hadExplicitMarker = Boolean(this.explicitLeaveSessionIds?.has(client.sessionId));
+        const hostSessionId = String(this.state.playerOrder?.[0] || "").trim();
+        const isHostLeaving = client.sessionId === hostSessionId;
+        const isOpenRoom = this.roomVisibility === "open";
+        const isWaitingRoom = !this.state.gameActive && !this.matchFinished;
         const leftPlayerName = player ? player.name : "Player";
         this.lastLeaveConsentedValue = Boolean(consented);
         this.lastLeaveHadExplicitMarker = hadExplicitMarker;
@@ -1257,6 +1303,15 @@ class DominoRoom extends Room {
                 sessionId: client.sessionId,
                 playerName: leftPlayerName
             });
+            if (isOpenRoom && isWaitingRoom && isHostLeaving && hadExplicitMarker) {
+                debugLog("[ROOM_DEBUG] leave:close_waiting_open_room", {
+                    roomId,
+                    roomCode,
+                    sessionId: client.sessionId
+                });
+                await this.closeWaitingOpenRoom("host_left");
+                return;
+            }
             throw new Error("explicit leave");
         } catch (e) {
             debugLog("[ROOM_DEBUG] leave:removed", {
@@ -1374,13 +1429,15 @@ class DominoRoom extends Room {
                 humanSeats: this.humanSeats,
                 players: debugPlayerSummary(this)
             });
-            this.broadcast("msg", {
-                key: "seat-selection-required",
-                time: 2200
-            });
-            this.broadcastRoomState();
-            return;
-        }
+                if (autoStartState.isTeamMode) {
+                    this.broadcast("msg", {
+                        key: "seat-selection-required",
+                        time: 2200
+                    });
+                }
+                this.broadcastRoomState();
+                return;
+            }
         try {
             this.state.matchRound = 1;
             this.state.deal = 1;

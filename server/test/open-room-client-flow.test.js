@@ -110,6 +110,56 @@ test("client keeps team runtime and seat picker close flow explicit", () => {
     }
 });
 
+test("client uses open-room waiting banner and returns room_closed players to open rooms", () => {
+    const appSource = read("js/app.js");
+    const webAppSource = read("www/js/app.js");
+    const htmlSource = read("index.html");
+    const cssSource = read("css/style.css");
+    const networkSource = read("js/network.js");
+    const webNetworkSource = read("www/js/network.js");
+
+    const requiredAppTokens = [
+        "isWaitingInOpenRoom(roomState = this.currentRoomState)",
+        "syncOpenRoomWaitingBanner(roomState = this.currentRoomState)",
+        "this.enterOpenRoomWaitingScreen(roomState);",
+        "const shouldReturnToOpenRooms = String(payload?.returnTo || '').trim() === 'open_rooms'",
+        "this.showOpenRoomsModal();",
+        "this.renderer.showMessage(this.t('open-room-closed-return'), 2200);",
+        "const waitingOpenRoom = this.isWaitingInOpenRoom(this.currentRoomState);"
+    ];
+    const requiredNetworkTokens = [
+        "this.game?.isWaitingInOpenRoom?.()"
+    ];
+    const requiredHtmlTokens = [
+        "open-room-waiting-banner",
+        "open-room-waiting-title",
+        "open-room-waiting-count"
+    ];
+    const requiredCssTokens = [
+        ".open-room-waiting-banner",
+        ".open-room-waiting-card",
+        ".open-room-waiting-title",
+        ".open-room-waiting-subtitle"
+    ];
+
+    for (const source of [appSource, webAppSource]) {
+        for (const token of requiredAppTokens) {
+            assert.equal(source.includes(token), true);
+        }
+    }
+    for (const source of [networkSource, webNetworkSource]) {
+        for (const token of requiredNetworkTokens) {
+            assert.equal(source.includes(token), true);
+        }
+    }
+    for (const token of requiredHtmlTokens) {
+        assert.equal(htmlSource.includes(token), true);
+    }
+    for (const token of requiredCssTokens) {
+        assert.equal(cssSource.includes(token), true);
+    }
+});
+
 test("client renders waiting room rows in a strict single-line format", () => {
     const appSource = read("js/app.js");
     const webAppSource = read("www/js/app.js");

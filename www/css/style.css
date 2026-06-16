@@ -3569,6 +3569,45 @@ body.move-hint-selection-active #game-screen .player-name-btn {
     background-repeat: no-repeat, no-repeat, no-repeat;
 }
 
+.open-room-waiting-banner {
+    position: fixed;
+    inset: 0;
+    z-index: 24;
+    display: grid;
+    place-items: center;
+    padding: 88px 16px 132px;
+    pointer-events: none;
+}
+
+.open-room-waiting-banner.is-hidden {
+    display: none;
+}
+
+.open-room-waiting-card {
+    width: min(420px, calc(100vw - 32px));
+    padding: 20px 24px;
+    border-radius: 24px;
+    text-align: center;
+    color: #f7fbff;
+    background: linear-gradient(180deg, rgba(10, 18, 30, 0.88), rgba(15, 27, 42, 0.74));
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.36);
+    backdrop-filter: blur(14px);
+}
+
+.open-room-waiting-title {
+    font-size: clamp(1.1rem, 2vw, 1.4rem);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+}
+
+.open-room-waiting-subtitle {
+    margin-top: 8px;
+    color: rgba(237, 245, 255, 0.76);
+    font-size: 0.96rem;
+    font-weight: 700;
+}
+
 .game-header {
     display: flex;
     align-items: center;
@@ -6993,6 +7032,16 @@ body.is-reconnecting .hand-container {
 }
 
 @media (max-width: 768px) {
+    .open-room-waiting-banner {
+        padding-top: 92px;
+        padding-bottom: 138px;
+    }
+
+    .open-room-waiting-card {
+        padding: 18px 18px 16px;
+        border-radius: 20px;
+    }
+
     .open-rooms-filter-panel {
         padding-left: 0;
         padding-right: 0;

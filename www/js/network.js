@@ -465,7 +465,11 @@ class NetworkManager {
         this.clearReconnectTimer();
         this.clearReconnectState();
         if (this.room) {
-            const shouldSendExplicitLeave = Boolean(explicit && (this.room?.state?.gameActive || this.game?.gameActive));
+            const shouldSendExplicitLeave = Boolean(explicit && (
+                this.room?.state?.gameActive
+                || this.game?.gameActive
+                || this.game?.isWaitingInOpenRoom?.()
+            ));
             if (shouldSendExplicitLeave) {
                 this.lastExplicitLeaveSentAt = Date.now();
                 try {

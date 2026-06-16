@@ -11865,6 +11865,34 @@ class DominoGame {
         };
     }
 
+    isWaitingInOpenRoom(roomState = this.currentRoomState) {
+        if (!this.network?.isMultiplayer) return false;
+        const state = roomState || {};
+        const visibility = String(state?.roomVisibility || this.onlineRoomVisibility || '').trim().toLowerCase();
+        return Boolean(
+            visibility === 'open'
+            && (state?.roomId || state?.roomCode || this.network?.room)
+            && !Boolean(state?.gameActive)
+            && !Boolean(this.gameActive)
+            && !Boolean(state?.matchOver)
+            && !String(state?.gameOverReason || '').trim()
+        );
+    }
+
+    syncOpenRoomWaitingBanner(roomState = this.currentRoomState) {
+        const banner = document.getElementById('open-room-waiting-banner');
+        const title = document.getElementById('open-room-waiting-title');
+        const count = document.getElementById('open-room-waiting-count');
+        if (!banner || !title || !count) return;
+        const shouldShow = this.isWaitingInOpenRoom(roomState);
+        banner.classList.toggle('is-hidden', !shouldShow);
+        if (!shouldShow) return;
+        const joined = Math.max(0, Number(roomState?.humanPlayers || roomState?.currentPlayers || 0));
+        const seats = Math.max(0, Number(roomState?.humanSeats || roomState?.totalPlayers || this.onlinePlayerCount || 0));
+        title.textContent = this.t('open-room-waiting-title');
+        count.textContent = `${joined}/${seats}`;
+    }
+
     async loadOpenRooms() {
         const list = document.getElementById('open-rooms-list');
         const modal = document.getElementById('open-rooms-modal');
@@ -13048,6 +13076,10 @@ class DominoGame {
             this.setJoinStatus(statusText);
         }
 
+        if (this.isWaitingInOpenRoom(roomState)) {
+            this.enterOpenRoomWaitingScreen(roomState);
+        }
+
         if (this.shouldOpenSeatPickerAfterRoomCreate({
             roomVisibility: roomState?.roomVisibility || this.onlineRoomVisibility,
             roomMode: roomState?.roomMode || (roomState?.isTeamMode ? 'team' : 'ffa'),
@@ -13145,6 +13177,8 @@ class DominoGame {
             console.trace("[CLIENT_DEBUG] onRoomClosed", payload || {});
         }
         const reason = this.resolveUiReason(payload) || this.t('online-room-closed');
+        const shouldReturnToOpenRooms = String(payload?.returnTo || '').trim() === 'open_rooms'
+            || String(payload?.roomVisibility || '').trim().toLowerCase() === 'open';
         this.clearPendingOnlineAction({ rollback: false });
         this.clearNextDealAdvanceTimeout();
         this.clearTurnTimers();
@@ -13156,17 +13190,24 @@ class DominoGame {
         this.gameActive = false;
         this.onlineRoundBankAmount = 0;
         this.resetOnlineCoinSummary();
-        this.showStartModal(null);
         this.resetMultiplayerPanels(false);
         document.getElementById('menu-screen').classList.remove('active');
         document.getElementById('round-end-screen').classList.remove('active');
         document.getElementById('game-over-screen').classList.remove('active');
         document.getElementById('game-screen').classList.remove('active');
-        document.getElementById('start-screen').classList.add('active');
+        document.getElementById('start-screen').classList.toggle('active', !shouldReturnToOpenRooms);
         this.hideSeatSelectionUi();
+        this.syncOpenRoomWaitingBanner(null);
         this.setJoinStatus(reason);
         this.setHostStatus(reason);
         this.clearGameResumeSnapshot();
+        this.showStartModal(null);
+        if (shouldReturnToOpenRooms) {
+            this.showOpenRoomsModal();
+            this.renderer.showMessage(this.t('open-room-closed-return'), 2200);
+            return;
+        }
+        this.renderer.showMessage(reason, 2200);
     }
 
     cloneTilesForSnapshot(tiles = []) {
@@ -13381,6 +13422,7 @@ class DominoGame {
 
         // Force render from current local/server state on disconnect
         this._realtimeRenderSignatures = {};
+        this.syncOpenRoomWaitingBanner(this.currentRoomState);
         this.renderState();
 
         if (payload.reconnecting) {
@@ -13405,6 +13447,7 @@ class DominoGame {
         
         // Force full clean redraw ("Чистый лист")
         this._realtimeRenderSignatures = {};
+        this.syncOpenRoomWaitingBanner(this.currentRoomState);
         this.renderState();
 
         // Safety net: if state wasn't restored fully, re-sync after a short delay
@@ -14195,6 +14238,7 @@ class DominoGame {
         this.roundOver = false;
         this.currentRoomState = null;
         this.disconnectEconomyApplied = false;
+        this.syncOpenRoomWaitingBanner(null);
         document.getElementById('game-screen').classList.remove('active');
         document.getElementById('start-screen').classList.add('active');
         if (this.hasAuthenticatedAccount()) {
@@ -14511,10 +14555,7 @@ class DominoGame {
         this.renderer.renderScores(displayEntities, this.currentPlayer);
         this.renderer.renderInfo(this.matchRound, this.deal, this.boneyard.length, this.board.getOpenEndsScore(), this.getCurrentStakeLabel());
         this.syncMoveHintSelectionUiState();
-        const waitingOpenRoom = this.network.isMultiplayer
-            && !this.gameActive
-            && !this.currentRoomState?.gameActive
-            && this.roomRequiresSeatPicker(this.currentRoomState, this.currentRoomState);
+        const waitingOpenRoom = this.isWaitingInOpenRoom(this.currentRoomState);
         const roundInfo = document.getElementById('round-info');
         const boneyardInfo = document.getElementById('boneyard-info');
         if (roundInfo) {
@@ -14537,6 +14578,7 @@ class DominoGame {
                 boneyardInfo.classList.add('is-hidden');
             }
         }
+        this.syncOpenRoomWaitingBanner(this.currentRoomState);
         
         this.renderer.renderBoard(this.board);
         const roomPlayers = Array.isArray(this.currentRoomState?.players) ? this.currentRoomState.players : [];
@@ -15160,10 +15202,7 @@ class DominoGame {
         }
         this.syncMoveHintSelectionUiState();
 
-        const waitingOpenRoom = this.network.isMultiplayer
-            && !this.gameActive
-            && !this.currentRoomState?.gameActive
-            && this.roomRequiresSeatPicker(this.currentRoomState, this.currentRoomState);
+        const waitingOpenRoom = this.isWaitingInOpenRoom(this.currentRoomState);
         const canPlay = this.board.canPlayAny(this.normalizeHandForBoard(myHand));
         const emptyBoneyard = this.boneyard.length === 0;
         const connectionLost = !this.network?.isRoomConnectionOpen?.() || this.networkActionBlockedForReconnect;
@@ -15172,6 +15211,7 @@ class DominoGame {
 
         this.goshaCombo = (this.gameActive && myTurn) ? this.goshaCombo : null;
         this.renderer.showGoshaBtn(this.goshaCombo, () => this.playGoshaCombo());
+        this.syncOpenRoomWaitingBanner(this.currentRoomState);
         this.updateTurnTimerHud();
         this.persistGameResumeSnapshot();
     }
