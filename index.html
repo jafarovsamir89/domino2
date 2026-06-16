@@ -271,8 +271,8 @@
             </section>
         </div>
 
-        <div id="open-rooms-modal" class="modal-backdrop">
-            <section class="modal-card modal-card-wide">
+        <div id="open-rooms-modal" class="screen">
+            <section class="modal-card modal-card-wide open-rooms-page">
                 <div class="modal-header account-modal-header">
                     <div class="account-modal-title-wrap">
                         <h2 data-i18n="open-rooms-title">Açıq otaqlar</h2>
@@ -281,32 +281,28 @@
                 </div>
                 <p class="modal-desc page-description" data-i18n="open-rooms-desc">Açıq otaqlara baxın və birbaşa qoşulun.</p>
 
-                <div id="open-rooms-menu-ui">
-                    <div class="open-rooms-actions">
-                        <button class="btn btn-action btn-strong open-rooms-create-btn" id="open-rooms-create-btn" data-i18n="open-rooms-create">Yarat</button>
-                        <button class="btn btn-action open-rooms-join-btn" id="open-rooms-join-btn" data-i18n="open-rooms-join">Qoşul</button>
-                    </div>
-                </div>
+                <button class="btn btn-action btn-strong open-rooms-create-btn" id="open-rooms-create-btn" data-i18n="open-rooms-create">Yarat</button>
 
-                <div id="open-rooms-list-ui" class="is-hidden">
-                    <div class="online-social-filters">
-                        <input type="search" id="open-room-search-input" data-i18n="open-rooms-search-placeholder" placeholder="Otaq və ya adla axtar">
-                        <div class="filter-row">
-                            <select id="open-room-mode-filter">
-                                <option value="all" data-i18n="filter-all">Hamısı</option>
-                                <option value="ffa" data-i18n="mode-ffa">Hamı hər kəsə</option>
-                                <option value="team" data-i18n="mode-team">2 vs 2</option>
-                            </select>
-                            <select id="open-room-stake-filter">
-                                <option value="all" data-i18n="stake-table-all">Bütün mərc masaları</option>
-                                <option value="stake_200">200</option>
-                                <option value="stake_500">500</option>
-                                <option value="stake_1000">1,000</option>
-                                <option value="stake_5000">5,000</option>
-                            </select>
+                <div id="open-rooms-list-ui">
+                    <div class="open-rooms-filter-panel">
+                        <div class="open-rooms-filter-primary-row">
+                            <input type="search" id="open-room-search-input" data-i18n="open-rooms-search-placeholder" placeholder="Otaq və ya adla axtar">
+                            <button class="btn btn-menu open-room-mode-toggle is-active" type="button" data-room-mode="ffa" aria-pressed="true">
+                                <span class="open-room-toggle-icon" aria-hidden="true">1v1</span>
+                                <span class="open-room-toggle-label">FFA</span>
+                            </button>
+                            <button class="btn btn-menu open-room-mode-toggle is-active" type="button" data-room-mode="team" aria-pressed="true">
+                                <span class="open-room-toggle-icon" aria-hidden="true">2v2</span>
+                                <span class="open-room-toggle-label" data-i18n="mode-team">2 vs 2</span>
+                            </button>
+                        </div>
+                        <div class="open-rooms-filter-stakes-row">
+                            <button class="btn btn-menu open-room-stake-toggle is-active" type="button" data-stake-key="stake_200" aria-pressed="true">200</button>
+                            <button class="btn btn-menu open-room-stake-toggle is-active" type="button" data-stake-key="stake_500" aria-pressed="true">500</button>
+                            <button class="btn btn-menu open-room-stake-toggle is-active" type="button" data-stake-key="stake_1000" aria-pressed="true">1000</button>
+                            <button class="btn btn-menu open-room-stake-toggle is-active" type="button" data-stake-key="stake_5000" aria-pressed="true">5000</button>
                         </div>
                     </div>
-
                     <div id="open-rooms-list" class="room-player-list"></div>
                 </div>
             </section>

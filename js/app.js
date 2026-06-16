@@ -140,7 +140,7 @@ class DominoGame {
         this.onlineStakeKey = 'stake_200';
         this.onlineRoomVisibility = 'closed';
         this.onlineRoomSource = 'closed';
-        this.openRoomsStage = 'menu';
+        this.openRoomsPrevScreen = null;
         this._openRoomsRefreshId = null;
         this.onlineEconomyMode = 'coins';
         this.onlineRoundBankAmount = 0;
@@ -273,8 +273,8 @@ class DominoGame {
         this.onlineSocialPanel = 'rooms';
         this.onlineRoomFilters = {
             search: '',
-            roomMode: 'all',
-            stakeKey: 'all'
+            roomModes: ['ffa', 'team'],
+            stakeKeys: ['stake_200', 'stake_500', 'stake_1000', 'stake_5000']
         };
         this.pendingSharedRoomCode = '';
         this.friendSearchResults = [];
@@ -593,13 +593,10 @@ class DominoGame {
             this.onlineRoomSource = 'open';
             this.onlineRoomVisibility = 'open';
             this.prefillOnlineNameIfPossible();
-            this.openRoomsStage = 'menu';
-            this.hideOpenRoomsModal();
+            this.hideOpenRoomsModal({ restorePreviousScreen: true });
             this.showStartModal('online');
             this.showOnlineCreateFlow('open');
         });
-        const openRoomsJoinBtn = document.getElementById('open-rooms-join-btn');
-        if (openRoomsJoinBtn) openRoomsJoinBtn.addEventListener('click', () => this.showOpenRoomsList());
         if (openLeaderboardBtn) openLeaderboardBtn.addEventListener('click', async () => {
             await this.openLeaderboardModal();
         });
@@ -836,14 +833,14 @@ class DominoGame {
             this.onlineRoomFilters.search = document.getElementById('open-room-search-input').value || '';
             void this.loadOpenRooms();
         });
-        document.getElementById('open-room-mode-filter')?.addEventListener('change', () => {
-            this.onlineRoomFilters.roomMode = document.getElementById('open-room-mode-filter').value || 'all';
+        document.querySelectorAll('.open-room-mode-toggle').forEach((button) => button.addEventListener('click', () => {
+            this.toggleOpenRoomModeFilter(button.dataset.roomMode || '');
             void this.loadOpenRooms();
-        });
-        document.getElementById('open-room-stake-filter')?.addEventListener('change', () => {
-            this.onlineRoomFilters.stakeKey = document.getElementById('open-room-stake-filter').value || 'all';
+        }));
+        document.querySelectorAll('.open-room-stake-toggle').forEach((button) => button.addEventListener('click', () => {
+            this.toggleOpenRoomStakeFilter(button.dataset.stakeKey || '');
             void this.loadOpenRooms();
-        });
+        }));
         document.querySelectorAll('#friends-search-input').forEach((friendsSearchInput) => {
             friendsSearchInput.addEventListener('keydown', (event) => {
                 if (event.key === 'Enter') {
@@ -5450,6 +5447,8 @@ class DominoGame {
         document.getElementById('solo-modal')?.classList.remove('active');
         document.getElementById('online-modal')?.classList.remove('active');
         document.getElementById('open-rooms-modal')?.classList.remove('active');
+        this.stopOpenRoomsAutoRefresh();
+        this.openRoomsPrevScreen = null;
         this.closeLeaderboardModal();
         this.closeFriendsModal();
         this.closeSocialCenterModal();
@@ -7420,7 +7419,7 @@ class DominoGame {
         this.stopOpenRoomsAutoRefresh();
         this._openRoomsRefreshId = window.setInterval(() => {
             const modal = document.getElementById('open-rooms-modal');
-            if (!modal?.classList.contains('active') || this.openRoomsStage !== 'list') return;
+            if (!modal?.classList.contains('active')) return;
             void this.loadOpenRooms();
         }, 12000);
     }
@@ -11674,38 +11673,37 @@ class DominoGame {
     showOpenRoomsModal() {
         const modal = document.getElementById('open-rooms-modal');
         if (!modal) return;
+        this.closeStartModals();
+        this.closePlayerProfileModal();
+        this.closeAccountModal();
+        this.closeCoinShopModal();
+        this.closeCosmeticsShopModal();
+        const startScreen = document.getElementById('start-screen');
+        const gameScreen = document.getElementById('game-screen');
+        if (startScreen && startScreen.classList.contains('active')) {
+            this.openRoomsPrevScreen = 'start-screen';
+            startScreen.classList.remove('active');
+        } else if (gameScreen && gameScreen.classList.contains('active')) {
+            this.openRoomsPrevScreen = 'game-screen';
+            gameScreen.classList.remove('active');
+        } else if (!this.openRoomsPrevScreen) {
+            this.openRoomsPrevScreen = 'start-screen';
+        }
         this.prefillOnlineNameIfPossible();
-        this.openRoomsStage = 'menu';
-        this.syncOpenRoomsStage();
         if (modal.parentElement !== document.body) document.body.appendChild(modal);
-        modal.style.zIndex = '24000';
+        modal.style.zIndex = '';
         modal.classList.add('active');
-        this.stopOpenRoomsAutoRefresh();
         this.resetOpenRoomsModalState();
+        void this.loadOpenRooms();
+        this.startOpenRoomsAutoRefresh();
     }
 
     showOpenRoomsMenu() {
-        const modal = document.getElementById('open-rooms-modal');
-        if (!modal) return;
-        this.openRoomsStage = 'menu';
-        this.syncOpenRoomsStage();
-        if (modal.parentElement !== document.body) document.body.appendChild(modal);
-        modal.style.zIndex = '24000';
-        modal.classList.add('active');
-        this.stopOpenRoomsAutoRefresh();
-        this.resetOpenRoomsModalState();
+        this.showOpenRoomsModal();
     }
 
     showOpenRoomsList() {
-        const modal = document.getElementById('open-rooms-modal');
-        if (!modal) return;
-        this.openRoomsStage = 'list';
-        this.syncOpenRoomsStage();
-        if (modal.parentElement !== document.body) document.body.appendChild(modal);
-        modal.style.zIndex = '24000';
-        modal.classList.add('active');
-        void this.loadOpenRooms();
-        this.startOpenRoomsAutoRefresh();
+        this.showOpenRoomsModal();
     }
 
     closeOnlineModalToSource() {
@@ -11728,35 +11726,27 @@ class DominoGame {
         this.showStartModal(null);
     }
 
-    hideOpenRoomsModal() {
+    hideOpenRoomsModal({ restorePreviousScreen = false } = {}) {
         document.getElementById('open-rooms-modal')?.classList.remove('active');
         this.stopOpenRoomsAutoRefresh();
+        if (restorePreviousScreen) {
+            const prevScreenId = this.openRoomsPrevScreen || 'start-screen';
+            const gameActive = document.getElementById('game-screen')?.classList.contains('active');
+            if (!gameActive) {
+                document.getElementById(prevScreenId)?.classList.add('active');
+            }
+            this.openRoomsPrevScreen = null;
+        }
     }
 
     closeOpenRoomsModal() {
-        if (this.openRoomsStage === 'list') {
-            this.showOpenRoomsMenu();
-            return;
-        }
-        this.stopOpenRoomsAutoRefresh();
-        this.hideOpenRoomsModal();
+        this.hideOpenRoomsModal({ restorePreviousScreen: true });
     }
 
     resetOpenRoomsModalState() {
         const search = document.getElementById('open-room-search-input');
-        const mode = document.getElementById('open-room-mode-filter');
-        const stake = document.getElementById('open-room-stake-filter');
         if (search) search.value = this.onlineRoomFilters.search || '';
-        if (mode) mode.value = this.onlineRoomFilters.roomMode || 'all';
-        if (stake) stake.value = this.onlineRoomFilters.stakeKey || 'all';
-    }
-
-    syncOpenRoomsStage() {
-        const menuUi = document.getElementById('open-rooms-menu-ui');
-        const listUi = document.getElementById('open-rooms-list-ui');
-        const menuVisible = this.openRoomsStage !== 'list';
-        menuUi?.classList.toggle('is-hidden', !menuVisible);
-        listUi?.classList.toggle('is-hidden', menuVisible);
+        this.syncOpenRoomFilterControls();
     }
 
     syncOnlineModalTitle(mode = null) {
@@ -11878,62 +11868,136 @@ class DominoGame {
     async loadOpenRooms() {
         const list = document.getElementById('open-rooms-list');
         const modal = document.getElementById('open-rooms-modal');
-        if (!list || !modal?.classList.contains('active') || this.openRoomsStage !== 'list') return;
+        if (!list || !modal?.classList.contains('active')) return;
         this.setSummaryMessage(list, this.t('account-profile-loading'));
         try {
             const rooms = await this.account.getOpenRooms({
                 search: this.onlineRoomFilters.search,
-                roomMode: this.onlineRoomFilters.roomMode,
-                stakeKey: this.onlineRoomFilters.stakeKey,
                 roomVisibility: 'open',
                 joinableOnly: true,
                 limit: 24
             });
-            if (!modal?.classList.contains('active') || this.openRoomsStage !== 'list') return;
+            if (!modal?.classList.contains('active')) return;
             this.openRooms = Array.isArray(rooms) ? rooms : [];
-            if (!this.openRooms.length) {
-                this.setSummaryMessage(list, this.t('no-open-rooms'));
-                return;
-            }
-
-            list.innerHTML = '';
-            this.openRooms.forEach((room) => {
-                const card = document.createElement('div');
-                card.className = 'open-room-card';
-                const title = document.createElement('div');
-                title.className = 'open-room-title';
-                const badges = document.createElement('div');
-                title.textContent = `${room.hostName || room.roomCode || room.roomId || this.t('room-open')}${room.roomCode ? ' \u00b7 ' + room.roomCode : ''}`;
-                badges.className = 'open-room-badges';
-                const seatCount = `${room.connectedPlayers || 0}/${room.humanSeats || room.totalPlayers || 0}`;
-                const modeLabel = room.roomMode === 'team'
-                    ? this.t('mode-team')
-                    : this.t('room-free-for-all');
-                const stakeLabel = room.stakeKey
-                    ? `${room.stakeKey.replace(/^stake_/i, '')}`
-                    : '200';
-                badges.appendChild(this.createRoomBadge('mode', modeLabel));
-                badges.appendChild(this.createRoomBadge('players', seatCount));
-                badges.appendChild(this.createRoomBadge('stake', stakeLabel));
-                badges.appendChild(this.createRoomBadge('open', this.t('room-open')));
-                const footer = document.createElement('div');
-                footer.className = 'open-room-footer';
-                const joinBtn = document.createElement('button');
-                joinBtn.className = 'btn btn-action btn-strong';
-                joinBtn.textContent = this.t('room-join');
-                joinBtn.addEventListener('click', async () => {
-                    const joined = await this.joinOnlineRoom(room);
-                    if (joined) this.hideOpenRoomsModal();
-                });
-                footer.appendChild(joinBtn);
-                card.appendChild(title);
-                card.appendChild(badges);
-                card.appendChild(footer);
-                list.appendChild(card);
-            });
+            this.renderOpenRooms();
         } catch (err) {
             this.setSummaryMessage(list, err.message || this.t('account-server-unavailable'));
         }
+    }
+
+    renderOpenRooms() {
+        const list = document.getElementById('open-rooms-list');
+        if (!list) return;
+        const rooms = this.getFilteredOpenRooms();
+        if (!rooms.length) {
+            this.setSummaryMessage(list, this.t('no-open-rooms'));
+            return;
+        }
+
+        list.innerHTML = '';
+        rooms.forEach((room) => {
+            const card = document.createElement('div');
+            card.className = 'open-room-card';
+            const title = document.createElement('div');
+            title.className = 'open-room-title';
+            const badges = document.createElement('div');
+            title.textContent = `${room.hostName || room.roomCode || room.roomId || this.t('room-open')}${room.roomCode ? ' \u00b7 ' + room.roomCode : ''}`;
+            badges.className = 'open-room-badges';
+            const seatCount = `${room.connectedPlayers || 0}/${room.humanSeats || room.totalPlayers || 0}`;
+            const modeLabel = room.roomMode === 'team'
+                ? this.t('mode-team')
+                : this.t('room-free-for-all');
+            const stakeLabel = room.stakeKey
+                ? `${room.stakeKey.replace(/^stake_/i, '')}`
+                : '200';
+            badges.appendChild(this.createRoomBadge('mode', modeLabel));
+            badges.appendChild(this.createRoomBadge('players', seatCount));
+            badges.appendChild(this.createRoomBadge('stake', stakeLabel));
+            badges.appendChild(this.createRoomBadge('open', this.t('room-open')));
+            const footer = document.createElement('div');
+            footer.className = 'open-room-footer';
+            const joinBtn = document.createElement('button');
+            joinBtn.className = 'btn btn-action btn-strong';
+            joinBtn.textContent = this.t('room-join');
+            joinBtn.addEventListener('click', async () => {
+                const joined = await this.joinOnlineRoom(room);
+                if (joined) this.hideOpenRoomsModal();
+            });
+            footer.appendChild(joinBtn);
+            card.appendChild(title);
+            card.appendChild(badges);
+            card.appendChild(footer);
+            list.appendChild(card);
+        });
+    }
+
+    getFilteredOpenRooms() {
+        const search = String(this.onlineRoomFilters.search || '').trim().toLowerCase();
+        const selectedModes = Array.isArray(this.onlineRoomFilters.roomModes) && this.onlineRoomFilters.roomModes.length
+            ? new Set(this.onlineRoomFilters.roomModes)
+            : new Set(['ffa', 'team']);
+        const selectedStakes = Array.isArray(this.onlineRoomFilters.stakeKeys) && this.onlineRoomFilters.stakeKeys.length
+            ? new Set(this.onlineRoomFilters.stakeKeys)
+            : new Set(['stake_200', 'stake_500', 'stake_1000', 'stake_5000']);
+        return (Array.isArray(this.openRooms) ? this.openRooms : []).filter((room) => {
+            const roomMode = String(room?.roomMode || '').trim().toLowerCase();
+            const stakeKey = String(room?.stakeKey || '').trim();
+            if (roomMode && !selectedModes.has(roomMode)) return false;
+            if (stakeKey && !selectedStakes.has(stakeKey)) return false;
+            if (!search) return true;
+            const haystack = [
+                room?.roomCode,
+                room?.roomId,
+                room?.hostName,
+                ...(Array.isArray(room?.players) ? room.players.map((player) => player?.displayName) : [])
+            ].filter(Boolean).join(' ').toLowerCase();
+            return haystack.includes(search);
+        });
+    }
+
+    syncOpenRoomFilterControls() {
+        const activeModes = new Set(this.onlineRoomFilters.roomModes || []);
+        const activeStakes = new Set(this.onlineRoomFilters.stakeKeys || []);
+        document.querySelectorAll('.open-room-mode-toggle').forEach((button) => {
+            const isActive = activeModes.has(button.dataset.roomMode || '');
+            button.classList.toggle('is-active', isActive);
+            button.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+        });
+        document.querySelectorAll('.open-room-stake-toggle').forEach((button) => {
+            const isActive = activeStakes.has(button.dataset.stakeKey || '');
+            button.classList.toggle('is-active', isActive);
+            button.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+        });
+    }
+
+    toggleOpenRoomModeFilter(roomMode) {
+        const validModes = ['ffa', 'team'];
+        if (!validModes.includes(roomMode)) return;
+        const activeModes = Array.isArray(this.onlineRoomFilters.roomModes)
+            ? this.onlineRoomFilters.roomModes.filter((mode) => validModes.includes(mode))
+            : validModes.slice();
+        const hasMode = activeModes.includes(roomMode);
+        let nextModes = hasMode
+            ? activeModes.filter((mode) => mode !== roomMode)
+            : activeModes.concat(roomMode);
+        if (!nextModes.length) nextModes = validModes.slice();
+        this.onlineRoomFilters.roomModes = validModes.filter((mode) => nextModes.includes(mode));
+        this.syncOpenRoomFilterControls();
+    }
+
+    toggleOpenRoomStakeFilter(stakeKey) {
+        const validStakeKeys = ['stake_200', 'stake_500', 'stake_1000', 'stake_5000'];
+        if (!validStakeKeys.includes(stakeKey)) return;
+        const activeStakeKeys = Array.isArray(this.onlineRoomFilters.stakeKeys)
+            ? this.onlineRoomFilters.stakeKeys.filter((key) => validStakeKeys.includes(key))
+            : validStakeKeys.slice();
+        const hasStakeKey = activeStakeKeys.includes(stakeKey);
+        let nextStakeKeys = hasStakeKey
+            ? activeStakeKeys.filter((key) => key !== stakeKey)
+            : activeStakeKeys.concat(stakeKey);
+        if (!nextStakeKeys.length) nextStakeKeys = validStakeKeys.slice();
+        this.onlineRoomFilters.stakeKeys = validStakeKeys.filter((key) => nextStakeKeys.includes(key));
+        this.syncOpenRoomFilterControls();
     }
 
     createRoomConditionIcon(kind) {
