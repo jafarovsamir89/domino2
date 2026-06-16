@@ -750,6 +750,8 @@ input, button { font: inherit; }
     display: flex;
     align-items: center;
     gap: 10px;
+    flex: 0 0 auto;
+    justify-content: flex-end;
 }
 
 .open-rooms-create-btn-header {
