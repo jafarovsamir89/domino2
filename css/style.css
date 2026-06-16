@@ -612,9 +612,12 @@ input, button { font: inherit; }
     display: flex;
 }
 
-#leaderboard-modal.screen,
-#open-rooms-modal.screen {
+#leaderboard-modal.screen {
     padding: 16px;
+}
+
+#open-rooms-modal.screen {
+    padding: 0;
 }
 
 #account-name-modal {
@@ -795,6 +798,10 @@ input, button { font: inherit; }
     min-height: 48px;
     border-radius: 16px;
     border: 1px solid rgba(255, 255, 255, 0.07);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center !important;
 }
 
 .friend-card {
@@ -807,28 +814,35 @@ input, button { font: inherit; }
 }
 
 .open-room-card {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
+    display: grid;
+    grid-template-columns: minmax(0, 3fr) minmax(96px, 2fr);
+    gap: 10px;
+    align-items: stretch;
     padding: 10px 12px;
     border-radius: 16px;
     background: rgba(255, 255, 255, 0.04);
     border: 1px solid rgba(255, 255, 255, 0.07);
 }
 
-.open-room-card-top,
-.open-room-card-bottom {
+.open-room-card-info {
+    min-width: 0;
     display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
+    flex-direction: column;
+    justify-content: center;
+    gap: 6px;
 }
 
-.open-room-title-group {
+.open-room-card-top {
     display: flex;
     align-items: center;
     gap: 8px;
     min-width: 0;
+}
+
+.open-room-card-bottom {
+    display: flex;
+    align-items: center;
+    gap: 12px;
 }
 
 .open-room-owner {
@@ -838,6 +852,8 @@ input, button { font: inherit; }
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    max-width: 120px;
+    flex-shrink: 1;
 }
 
 .open-room-code {
@@ -849,10 +865,10 @@ input, button { font: inherit; }
     border-radius: 6px;
     border: 1px solid rgba(240, 192, 64, 0.2);
     white-space: nowrap;
+    flex-shrink: 0;
 }
 
-.open-room-mode-badge {
-    flex-shrink: 0;
+.open-room-mode {
     font-size: 0.74rem;
     font-weight: 700;
     padding: 3px 8px;
@@ -860,31 +876,60 @@ input, button { font: inherit; }
     background: rgba(255, 255, 255, 0.08);
     border: 1px solid rgba(255, 255, 255, 0.12);
     color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex-shrink: 1;
 }
 
 .open-room-info-group {
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: 12px;
     min-width: 0;
 }
 
 .open-room-players,
 .open-room-stake {
+    display: flex;
+    align-items: center;
+    gap: 6px;
     color: var(--text-dim);
     font-size: 0.82rem;
     font-weight: 600;
 }
 
+.open-room-icon {
+    display: inline-flex;
+    width: 14px;
+    height: 14px;
+    color: var(--accent);
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.open-room-icon svg {
+    width: 100%;
+    height: 100%;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
 .open-room-join-btn {
-    padding: 6px 14px !important;
+    padding: 0 !important;
     min-height: 0 !important;
-    height: 32px !important;
-    font-size: 0.8rem !important;
-    border-radius: 999px !important;
-    display: inline-flex !important;
+    height: 100% !important;
+    font-size: 0.85rem !important;
+    border-radius: 12px !important;
+    display: flex !important;
     align-items: center !important;
     justify-content: center !important;
+    align-self: stretch !important;
+    width: 100% !important;
     flex-shrink: 0;
 }
 
@@ -5079,9 +5124,12 @@ body.move-hint-selection-active #game-screen .player-name-btn {
         padding: 0;
     }
 
-    #leaderboard-modal.screen,
-    #open-rooms-modal.screen {
+    #leaderboard-modal.screen {
         padding: 12px;
+    }
+
+    #open-rooms-modal.screen {
+        padding: 0;
     }
 
     #account-modal .modal-card-wide,
@@ -6924,30 +6972,30 @@ body.is-reconnecting .hand-container {
 
     .open-room-card {
         padding: 8px 10px;
-        gap: 6px;
+        gap: 8px;
+        grid-template-columns: minmax(0, 3fr) minmax(76px, 1.8fr);
     }
     .open-room-owner {
         font-size: 0.88rem;
+        max-width: 80px;
     }
     .open-room-code {
         font-size: 0.75rem;
         padding: 1px 4px;
     }
-    .open-room-mode-badge {
+    .open-room-mode {
         font-size: 0.7rem;
         padding: 2px 6px;
     }
-    .open-room-info-group {
-        gap: 10px;
+    .open-room-card-bottom {
+        gap: 8px;
     }
     .open-room-players,
     .open-room-stake {
         font-size: 0.76rem;
     }
     .open-room-join-btn {
-        padding: 5px 10px !important;
-        height: 28px !important;
-        font-size: 0.75rem !important;
+        font-size: 0.78rem !important;
     }
 }
 
