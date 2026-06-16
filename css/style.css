@@ -746,16 +746,54 @@ input, button { font: inherit; }
     max-width: 1120px !important;
 }
 
-.open-rooms-page .page-description {
-    margin-bottom: 16px;
-    padding: 0 24px;
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
-.open-rooms-create-btn {
-    width: calc(100% - 48px);
-    margin: 0 24px 18px;
-    min-height: 52px;
-    border-radius: 18px;
+.open-rooms-create-btn-header {
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+    border-radius: 50%;
+    background: rgba(240, 192, 64, 0.08);
+    border: 1px solid rgba(240, 192, 64, 0.2);
+    color: var(--accent);
+    font-size: 1.4rem;
+    font-weight: 400;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    line-height: 0;
+    padding: 0;
+}
+
+.open-rooms-create-btn-header:hover {
+    background: rgba(240, 192, 64, 0.2);
+    border-color: var(--accent);
+    transform: scale(1.05);
+}
+
+/* Sticky Scroll / Floating filters for Open Rooms */
+#open-rooms-modal .modal-card-wide {
+    overflow-y: hidden !important;
+}
+
+#open-rooms-modal #open-rooms-list-ui {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+}
+
+#open-rooms-list {
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0;
+    padding-bottom: 24px;
 }
 
 .open-rooms-filter-panel {
@@ -6948,12 +6986,6 @@ body.is-reconnecting .hand-container {
 }
 
 @media (max-width: 768px) {
-    .open-rooms-create-btn {
-        width: calc(100% - 32px);
-        margin-left: 16px;
-        margin-right: 16px;
-    }
-
     .open-rooms-filter-panel {
         padding-left: 0;
         padding-right: 0;

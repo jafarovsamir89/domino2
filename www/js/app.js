@@ -14754,6 +14754,12 @@ class DominoGame {
             openRoomsModalClose.title = closeLabel;
             openRoomsModalClose.setAttribute('aria-label', closeLabel);
         }
+        const openRoomsCreateBtn = document.getElementById('open-rooms-create-btn');
+        if (openRoomsCreateBtn) {
+            const createLabel = t['open-rooms-create'] || translations.en?.['open-rooms-create'] || translations.az?.['open-rooms-create'] || 'Create';
+            openRoomsCreateBtn.title = createLabel;
+            openRoomsCreateBtn.setAttribute('aria-label', createLabel);
+        }
         document.querySelectorAll('.btn-lang').forEach(b => {
             b.classList.toggle('active', b.dataset.lang === nextLang);
         });
