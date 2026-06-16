@@ -6208,30 +6208,28 @@ class DominoGame {
         }
 
         if (normalBtn) {
+            const tvIconSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" aria-hidden="true" style="width: 16px; height: 16px; min-width: 16px; flex-shrink: 0;"><rect x="3.5" y="5.5" width="17" height="13" rx="3" stroke="currentColor" stroke-width="1.6"/><path d="m10 9 4.8 3-4.8 3V9Z" fill="currentColor"/></svg>`;
             if (isClaimingNormal) {
                 normalBtn.disabled = true;
-                normalBtn.textContent = '...';
+                normalBtn.innerHTML = '...';
             } else if (isClaimingRewarded) {
                 normalBtn.disabled = true;
                 if (rewardedAdInFlight) {
-                    normalBtn.textContent = this.t('daily-bonus-ad-loading');
+                    normalBtn.innerHTML = this.t('daily-bonus-ad-loading');
                 } else {
-                    normalBtn.textContent = this.t('daily-bonus-claim-loading');
+                    normalBtn.innerHTML = this.t('daily-bonus-claim-loading');
                 }
             } else if (doubleAvailable) {
-                if (!rewardedAdAvailable) {
-                    normalBtn.disabled = true;
-                    normalBtn.textContent = this.t('daily-bonus-ad-unavailable');
-                } else {
-                    normalBtn.disabled = false;
-                    normalBtn.textContent = this.t('daily-bonus-claim-rewarded');
-                }
+                const template = this.t('daily-bonus-claim-rewarded') || 'Reklam izlə +{amount} qazan';
+                const btnText = template.replace('{amount}', doubledRewardAmount);
+                normalBtn.innerHTML = `${tvIconSvg}<span>${btnText}</span>`;
+                normalBtn.disabled = !rewardedAdAvailable;
             } else if (!canClaim) {
                 normalBtn.disabled = true;
-                normalBtn.textContent = this.t('daily-bonus-claimed');
+                normalBtn.innerHTML = `<span>${this.t('daily-bonus-claimed')}</span>`;
             } else {
                 normalBtn.disabled = false;
-                normalBtn.textContent = this.t('daily-bonus-claim-normal');
+                normalBtn.innerHTML = `<span>${this.t('daily-bonus-claim-normal')}</span>`;
             }
         }
 

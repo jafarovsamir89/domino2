@@ -5593,6 +5593,11 @@ body.is-reconnecting .hand-container {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    box-sizing: border-box;
     text-align: center;
 }
 
