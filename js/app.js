@@ -11898,35 +11898,69 @@ class DominoGame {
         rooms.forEach((room) => {
             const card = document.createElement('div');
             card.className = 'open-room-card';
-            const title = document.createElement('div');
-            title.className = 'open-room-title';
-            const badges = document.createElement('div');
-            title.textContent = `${room.hostName || room.roomCode || room.roomId || this.t('room-open')}${room.roomCode ? ' \u00b7 ' + room.roomCode : ''}`;
-            badges.className = 'open-room-badges';
-            const seatCount = `${room.connectedPlayers || 0}/${room.humanSeats || room.totalPlayers || 0}`;
+
+            const topRow = document.createElement('div');
+            topRow.className = 'open-room-card-top';
+
+            const titleGroup = document.createElement('div');
+            titleGroup.className = 'open-room-title-group';
+
+            const ownerSpan = document.createElement('span');
+            ownerSpan.className = 'open-room-owner';
+            ownerSpan.textContent = room.hostName || room.roomId || this.t('room-open');
+
+            titleGroup.appendChild(ownerSpan);
+
+            if (room.roomCode) {
+                const codeSpan = document.createElement('span');
+                codeSpan.className = 'open-room-code';
+                codeSpan.textContent = `#${room.roomCode}`;
+                titleGroup.appendChild(codeSpan);
+            }
+
+            topRow.appendChild(titleGroup);
+
             const modeLabel = room.roomMode === 'team'
                 ? this.t('mode-team')
-                : this.t('room-free-for-all');
-            const stakeLabel = room.stakeKey
-                ? `${room.stakeKey.replace(/^stake_/i, '')}`
+                : this.t('mode-ffa');
+            const modeBadge = document.createElement('span');
+            modeBadge.className = 'open-room-mode-badge';
+            modeBadge.textContent = modeLabel;
+            topRow.appendChild(modeBadge);
+
+            const bottomRow = document.createElement('div');
+            bottomRow.className = 'open-room-card-bottom';
+
+            const infoGroup = document.createElement('div');
+            infoGroup.className = 'open-room-info-group';
+
+            const seatCount = `${room.connectedPlayers || 0}/${room.humanSeats || room.totalPlayers || 0}`;
+            const playersSpan = document.createElement('span');
+            playersSpan.className = 'open-room-players';
+            playersSpan.textContent = `${this.t('room-players-label')}: ${seatCount}`;
+            infoGroup.appendChild(playersSpan);
+
+            const stakeVal = room.stakeKey
+                ? room.stakeKey.replace(/^stake_/i, '')
                 : '200';
-            badges.appendChild(this.createRoomBadge('mode', modeLabel));
-            badges.appendChild(this.createRoomBadge('players', seatCount));
-            badges.appendChild(this.createRoomBadge('stake', stakeLabel));
-            badges.appendChild(this.createRoomBadge('open', this.t('room-open')));
-            const footer = document.createElement('div');
-            footer.className = 'open-room-footer';
+            const stakeSpan = document.createElement('span');
+            stakeSpan.className = 'open-room-stake';
+            stakeSpan.textContent = `${this.t('room-stake-label')}: ${stakeVal}`;
+            infoGroup.appendChild(stakeSpan);
+
+            bottomRow.appendChild(infoGroup);
+
             const joinBtn = document.createElement('button');
-            joinBtn.className = 'btn btn-action btn-strong';
+            joinBtn.className = 'btn btn-action btn-strong open-room-join-btn';
             joinBtn.textContent = this.t('room-join');
             joinBtn.addEventListener('click', async () => {
                 const joined = await this.joinOnlineRoom(room);
                 if (joined) this.hideOpenRoomsModal();
             });
-            footer.appendChild(joinBtn);
-            card.appendChild(title);
-            card.appendChild(badges);
-            card.appendChild(footer);
+            bottomRow.appendChild(joinBtn);
+
+            card.appendChild(topRow);
+            card.appendChild(bottomRow);
             list.appendChild(card);
         });
     }
