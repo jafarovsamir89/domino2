@@ -753,27 +753,31 @@ input, button { font: inherit; }
 }
 
 .open-rooms-create-btn-header {
-    width: 32px;
     height: 32px;
-    min-width: 32px;
-    border-radius: 50%;
-    background: rgba(240, 192, 64, 0.08);
-    border: 1px solid rgba(240, 192, 64, 0.2);
-    color: var(--accent);
-    font-size: 1.4rem;
-    font-weight: 400;
-    display: grid;
-    place-items: center;
+    padding: 0 16px;
+    border-radius: 16px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border: none;
+    color: #1a1a1a;
+    font-size: 0.85rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     cursor: pointer;
     transition: all 0.2s ease;
-    line-height: 0;
-    padding: 0;
+    box-shadow: 0 2px 8px rgba(240, 192, 64, 0.2);
+    line-height: 1;
 }
 
 .open-rooms-create-btn-header:hover {
-    background: rgba(240, 192, 64, 0.2);
-    border-color: var(--accent);
-    transform: scale(1.05);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(240, 192, 64, 0.35);
+    filter: brightness(1.05);
+}
+
+.open-rooms-create-btn-header:active {
+    transform: translateY(0);
 }
 
 /* Sticky Scroll / Floating filters for Open Rooms */
@@ -799,7 +803,7 @@ input, button { font: inherit; }
 .open-rooms-filter-panel {
     display: grid;
     gap: 12px;
-    padding: 0 0 16px;
+    padding: 16px 0 16px;
     box-sizing: border-box;
 }
 
@@ -3159,6 +3163,7 @@ input, button { font: inherit; }
     display: grid;
     gap: 8px;
     margin-bottom: 12px;
+    align-content: start;
 }
 
 .seat-selection-overlay {

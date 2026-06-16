@@ -11913,7 +11913,7 @@ class DominoGame {
             if (room.roomCode) {
                 const codeSpan = document.createElement('span');
                 codeSpan.className = 'open-room-code';
-                codeSpan.textContent = `#${room.roomCode}`;
+                codeSpan.textContent = room.roomCode;
                 topRow.appendChild(codeSpan);
             }
 
