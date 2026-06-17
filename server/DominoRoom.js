@@ -1249,8 +1249,6 @@ class DominoRoom extends Room {
         const leavingIndex = this.state.playerOrder.indexOf(client.sessionId);
         const isTeamMode = isRoomTeamMode(this);
         const hadExplicitMarker = Boolean(this.explicitLeaveSessionIds?.has(client.sessionId));
-        const hostSessionId = String(this.state.playerOrder?.[0] || "").trim();
-        const isHostLeaving = client.sessionId === hostSessionId;
         const isOpenRoom = this.roomVisibility === "open";
         const isWaitingRoom = !this.state.gameActive && !this.matchFinished;
         const leftPlayerName = player ? player.name : "Player";
@@ -1284,15 +1282,19 @@ class DominoRoom extends Room {
             });
         }
 
-        if (!hadExplicitMarker) {
-            this.startReconnectGrace(client, {
-                player,
-                identity,
-                playerName: leftPlayerName,
-                leavingIndex,
-                isTeamMode,
-                reason: "accidental_disconnect"
+        if (isOpenRoom && isWaitingRoom && this.countConnectedHumanPlayers() <= 0) {
+            debugLog("[ROOM_DEBUG] leave:close_empty_waiting_open_room", {
+                roomId,
+                roomCode,
+                sessionId: client.sessionId,
+                hadExplicitMarker,
+                reason: "empty_open_room"
             });
+            try {
+                await this.closeWaitingOpenRoom("empty_open_room");
+            } finally {
+                this.explicitLeaveSessionIds?.delete(client.sessionId);
+            }
             return;
         }
 
@@ -1303,15 +1305,18 @@ class DominoRoom extends Room {
                 sessionId: client.sessionId,
                 playerName: leftPlayerName
             });
-            if (isOpenRoom && isWaitingRoom && isHostLeaving && hadExplicitMarker) {
-                debugLog("[ROOM_DEBUG] leave:close_waiting_open_room", {
-                    roomId,
-                    roomCode,
-                    sessionId: client.sessionId
+            if (!hadExplicitMarker) {
+                this.startReconnectGrace(client, {
+                    player,
+                    identity,
+                    playerName: leftPlayerName,
+                    leavingIndex,
+                    isTeamMode,
+                    reason: "accidental_disconnect"
                 });
-                await this.closeWaitingOpenRoom("host_left");
                 return;
             }
+
             throw new Error("explicit leave");
         } catch (e) {
             debugLog("[ROOM_DEBUG] leave:removed", {

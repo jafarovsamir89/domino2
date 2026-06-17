@@ -240,7 +240,26 @@ test("open ffa room reports waiting state until the final human joins", async ()
     assert.equal(waitingState.blockedReason, "waiting-for-human");
 });
 
-test("open waiting room host explicit leave closes the room before start", async () => {
+test("open waiting room host explicit leave keeps the room when another connected human remains", async () => {
+    const room = createRoom({ totalPlayers: 4, aiCount: 0, isTeamMode: false });
+    room.roomVisibility = "open";
+    room.clock = { setTimeout: (fn) => fn() };
+    room.disconnectCalls = 0;
+    room.disconnect = () => { room.disconnectCalls += 1; };
+
+    const host = await joinHuman(room, "host", "Host");
+    await joinHuman(room, "guest-a", "Alice");
+
+    room.explicitLeaveSessionIds.add("host");
+    await room.onLeave(host, true);
+
+    assert.equal(room.state.players.has("host"), false);
+    assert.equal(room.state.players.has("guest-a"), true);
+    assert.equal(room.broadcasts.some((entry) => entry.type === "room_closed"), false);
+    assert.equal(room.disconnectCalls, 0);
+});
+
+test("open waiting room last connected human leave closes the room before start", async () => {
     const room = createRoom({ totalPlayers: 4, aiCount: 0, isTeamMode: false });
     room.roomVisibility = "open";
     room.clock = { setTimeout: (fn) => fn() };
@@ -249,33 +268,11 @@ test("open waiting room host explicit leave closes the room before start", async
     room.closeWaitingOpenRoom = DominoRoom.prototype.closeWaitingOpenRoom.bind(room);
 
     const host = await joinHuman(room, "host", "Host");
-    await joinHuman(room, "guest-a", "Alice");
-    await joinHuman(room, "guest-b", "Bob");
 
-    room.explicitLeaveSessionIds.add("host");
-    await room.onLeave(host, true);
+    await room.onLeave(host, false);
 
     assert.equal(room.state.matchOver, true);
-    assert.equal(room.state.gameOverReason, "host_left");
-    assert.equal(room.broadcasts.some((entry) => entry.type === "room_closed" && entry.payload?.returnTo === "open_rooms"), true);
-    assert.equal(room.broadcasts.some((entry) => entry.type === "msg" && entry.payload?.key === "open-room-host-left"), true);
-    assert.equal(room.disconnectCalls, 1);
-});
-
-test("open waiting team room host explicit leave closes the room before start", async () => {
-    const room = createRoom({ totalPlayers: 4, aiCount: 0, isTeamMode: true });
-    room.roomVisibility = "open";
-    room.clock = { setTimeout: (fn) => fn() };
-    room.disconnectCalls = 0;
-    room.disconnect = () => { room.disconnectCalls += 1; };
-    room.closeWaitingOpenRoom = DominoRoom.prototype.closeWaitingOpenRoom.bind(room);
-
-    const host = await joinHuman(room, "host", "Host");
-    await joinHuman(room, "guest-a", "Alice");
-
-    room.explicitLeaveSessionIds.add("host");
-    await room.onLeave(host, true);
-
+    assert.equal(room.state.gameOverReason, "empty_open_room");
     assert.equal(room.broadcasts.some((entry) => entry.type === "room_closed" && entry.payload?.returnTo === "open_rooms"), true);
     assert.equal(room.disconnectCalls, 1);
 });
@@ -335,6 +332,30 @@ test("closing a waiting open room removes it from registry and open rooms listin
     openRooms = await getOpenRooms({ roomVisibility: "open", joinableOnly: true, limit: 24 });
     assert.equal(openRooms.items.some((item) => item.roomId === room.roomId), false);
     assert.equal(await resolveRoomIdByCode(room.roomCode), null);
+});
+
+test("open rooms listing hides rooms with no connected players", async () => {
+    global.__DOMINO_LIVE_PRESENCE = new Map();
+
+    upsertLivePlayer("host", {
+        sessionId: "host",
+        roomId: "room-empty",
+        roomCode: "EMPTY",
+        roomVisibility: "open",
+        roomMode: "ffa",
+        stakeKey: "stake_200",
+        humanSeats: 4,
+        totalPlayers: 4,
+        aiCount: 0,
+        isTeamMode: false,
+        displayName: "Host",
+        hostName: "Host",
+        isConnected: false,
+        isPlaying: false
+    });
+
+    const openRooms = await getOpenRooms({ roomVisibility: "open", joinableOnly: true, limit: 24 });
+    assert.equal(openRooms.items.some((item) => item.roomId === "room-empty"), false);
 });
 
 test("updateSchemaState syncs player handCount fields from live hands", async () => {

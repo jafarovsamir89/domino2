@@ -438,6 +438,7 @@ async function getOpenRooms(filters = {}) {
   const limit = Math.max(1, Number(filters.limit || 24));
 
   const items = summary.rooms.filter((room) => {
+    if (room.connectedPlayers < 1) return false;
     if (joinableOnly && !room.joinable) return false;
     if (visibility !== "all" && String(room.roomVisibility || "closed").toLowerCase() !== visibility) return false;
     if (stakeKey && stakeKey !== "all" && String(room.stakeKey || "") !== stakeKey) return false;
