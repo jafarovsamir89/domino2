@@ -20,8 +20,10 @@ test("result modal test overlay class is present only on final result screens", 
 
     for (const file of cssFiles) {
         const content = read(file);
-        assert.equal(content.includes('/* TEST: transparent result modal. Remove result-overlay-test from HTML to return old style. */'), true, `${file} missing test override comment`);
+        assert.equal(content.includes('/* TEST: ultra-transparent result modal. Remove result-overlay-test from HTML to return old style. */'), true, `${file} missing test override comment`);
         assert.equal(content.includes('.screen.overlay.result-overlay-test {'), true, `${file} missing result overlay override`);
-        assert.equal(content.includes('.screen.overlay.result-overlay-test .overlay-content h2 {'), true, `${file} missing readability override`);
+        assert.equal(content.includes('rgba(15, 25, 35, 0.36)'), true, `${file} missing updated transparency`);
+        assert.equal(content.includes('rgba(13, 23, 36, 0.28)'), true, `${file} missing updated transparency`);
+        assert.equal(content.includes('text-shadow:'), true, `${file} missing readability override`);
     }
 });
