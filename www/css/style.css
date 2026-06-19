@@ -4867,7 +4867,7 @@ body.move-hint-selection-active #game-screen .player-name-btn {
         rgba(15, 25, 35, 0.45),
         rgba(13, 23, 36, 0.37)
     ) !important;
-    border: 1px solid rgba(255, 255, 255, 0.28);
+    border: 1px solid rgba(255, 255, 255, 0.24);
     box-shadow:
         0 0 0 1px rgba(255, 244, 214, 0.14) inset,
         0 18px 46px rgba(0, 0, 0, 0.26),
@@ -4883,6 +4883,7 @@ body.move-hint-selection-active #game-screen .player-name-btn {
 .screen.overlay.result-overlay-test .overlay-content div,
 .screen.overlay.result-overlay-test #round-end-details,
 .screen.overlay.result-overlay-test #game-over-details {
+    color: #fff;
     text-shadow:
         0 2px 8px rgba(0, 0, 0, 0.75),
         0 0 18px rgba(0, 0, 0, 0.38);
