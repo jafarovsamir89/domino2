@@ -14603,7 +14603,9 @@ class DominoGame {
 
         const canPlay = this.board.canPlayAny(this.normalizeHandForBoard(myHand));
         const emptyBoneyard = this.boneyard.length === 0;
-        const connectionLost = !this.network?.isRoomConnectionOpen?.() || this.networkActionBlockedForReconnect;
+        const connectionLost = Boolean(this.network?.isMultiplayer) && (
+            !this.network?.isRoomConnectionOpen?.() || this.networkActionBlockedForReconnect
+        );
         this.renderer.drawBtn.disabled = connectionLost || waitingOpenRoom || !myTurn || canPlay || emptyBoneyard || this.postMoveWindowActive || this.turnInProgress;
         this.renderer.passBtn.disabled = connectionLost || waitingOpenRoom || !myTurn || canPlay || !emptyBoneyard || this.postMoveWindowActive || this.turnInProgress;
 
@@ -15216,7 +15218,9 @@ class DominoGame {
         const waitingOpenRoom = this.isWaitingInOpenRoom(this.currentRoomState);
         const canPlay = this.board.canPlayAny(this.normalizeHandForBoard(myHand));
         const emptyBoneyard = this.boneyard.length === 0;
-        const connectionLost = !this.network?.isRoomConnectionOpen?.() || this.networkActionBlockedForReconnect;
+        const connectionLost = Boolean(this.network?.isMultiplayer) && (
+            !this.network?.isRoomConnectionOpen?.() || this.networkActionBlockedForReconnect
+        );
         this.renderer.drawBtn.disabled = connectionLost || waitingOpenRoom || !myTurn || canPlay || emptyBoneyard || this.postMoveWindowActive || this.turnInProgress;
         this.renderer.passBtn.disabled = connectionLost || waitingOpenRoom || !myTurn || canPlay || !emptyBoneyard || this.postMoveWindowActive || this.turnInProgress;
 
