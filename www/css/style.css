@@ -4843,6 +4843,48 @@ body.move-hint-selection-active #game-screen .player-name-btn {
 
 .overlay-content .btn { margin-top: 18px; }
 
+/* TEST: transparent result modal. Remove result-overlay-test from HTML to return old style. */
+.screen.overlay.result-overlay-test {
+    background: transparent;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    pointer-events: auto;
+}
+
+.screen.overlay.result-overlay-test::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(circle at 50% 46%, rgba(0, 0, 0, 0.04), rgba(0, 0, 0, 0.16));
+    pointer-events: none;
+}
+
+.screen.overlay.result-overlay-test .overlay-content {
+    position: relative;
+    z-index: 1;
+    background: linear-gradient(
+        180deg,
+        rgba(15, 25, 35, 0.72),
+        rgba(13, 23, 36, 0.62)
+    );
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    box-shadow:
+        0 24px 70px rgba(0, 0, 0, 0.34),
+        inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(10px) saturate(1.15);
+    -webkit-backdrop-filter: blur(10px) saturate(1.15);
+}
+
+.screen.overlay.result-overlay-test .overlay-content h2 {
+    text-shadow: 0 2px 12px rgba(0, 0, 0, 0.55);
+}
+
+.screen.overlay.result-overlay-test #round-end-details,
+.screen.overlay.result-overlay-test #game-over-details {
+    text-shadow: 0 1px 8px rgba(0, 0, 0, 0.45);
+}
+
 .menu-panel {
     display: flex;
     flex-direction: column;
