@@ -3643,6 +3643,34 @@ body.move-hint-selection-active #game-screen .player-name-btn {
     line-height: 1;
 }
 
+.menu-btn.pause-menu-btn::before {
+    content: none;
+}
+
+.pause-menu-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.pause-icon {
+    width: 18px;
+    height: 20px;
+    display: inline-flex;
+    gap: 5px;
+    align-items: center;
+    justify-content: center;
+}
+
+.pause-icon::before,
+.pause-icon::after {
+    content: "";
+    width: 5px;
+    height: 18px;
+    border-radius: 999px;
+    background: currentColor;
+}
+
 .menu-btn:hover {
     background: rgba(255, 255, 255, 0.11);
     border-color: rgba(240, 192, 64, 0.3);

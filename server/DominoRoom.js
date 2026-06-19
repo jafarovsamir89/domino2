@@ -22,6 +22,7 @@ const { rememberRoom, forgetRoom } = require("./roomRegistry");
 const TARGET = 365, MAX_R = 3, DLOSS = 255, IWIN = 35;
 const TURN_TIMEOUT_MS = 30000;
 const BOT_THINK_DELAY_MS = 1500;
+const LAST_MOVE_REVEAL_DELAY_MS = 1200;
 const DEAL_END_MODAL_MS = 5000;
 const RECONNECT_GRACE_MS = 120000; // 2 minutes
 const AUTO_START_DELAY_MS = 500;
@@ -134,6 +135,8 @@ class DominoRoom extends Room {
         this.turnDeadlineAt = 0;
         this.turnAdvancePending = false;
         this.turnAdvanceTimer = null;
+        this.lastMoveRevealTimer = null;
+        this.lastMoveRevealPending = false;
         this.nextDealTimer = null;
         this.autoStartTimer = null;
         this.pendingActionContext = null;
@@ -1144,6 +1147,7 @@ class DominoRoom extends Room {
         removeRoomPlayers(this.roomId);
         this.botTimer && clearTimeout(this.botTimer);
         this.autoStartTimer && clearTimeout(this.autoStartTimer);
+        this.clearLastMoveRevealTimer();
         this.clearNextDealTimer();
         this.clearTurnTimer();
         this.clearMatchRecordingRetryTimer();
@@ -1533,6 +1537,7 @@ class DominoRoom extends Room {
             clearTimeout(this.botTimer);
             this.botTimer = null;
         }
+        this.clearLastMoveRevealTimer();
         this.clearNextDealTimer();
         this.clearTurnTimer();
         await this.pendingEconomySettlement.catch(() => {});
@@ -1640,6 +1645,7 @@ class DominoRoom extends Room {
             clearTimeout(this.botTimer);
             this.botTimer = null;
         }
+        this.clearLastMoveRevealTimer();
         this.clearNextDealTimer();
         this.clearTurnTimer();
         this.pendingAdvanceKind = null;
@@ -1680,6 +1686,14 @@ class DominoRoom extends Room {
         this.turnAdvancePending = false;
     }
 
+    clearLastMoveRevealTimer() {
+        if (this.lastMoveRevealTimer) {
+            clearTimeout(this.lastMoveRevealTimer);
+            this.lastMoveRevealTimer = null;
+        }
+        this.lastMoveRevealPending = false;
+    }
+
     clearNextDealTimer() {
         if (this.nextDealTimer) {
             clearTimeout(this.nextDealTimer);
@@ -1713,6 +1727,18 @@ class DominoRoom extends Room {
             if (this.matchFinished || this.state.gameActive) return;
             void this.startRound();
         }, delay);
+    }
+
+    scheduleLastMoveSettlement(callback, delay = LAST_MOVE_REVEAL_DELAY_MS) {
+        this.clearLastMoveRevealTimer();
+        this.lastMoveRevealPending = true;
+        this.clearTurnTimer();
+        this.clearTurnAdvanceTimer();
+        this.lastMoveRevealTimer = setTimeout(() => {
+            this.lastMoveRevealTimer = null;
+            this.lastMoveRevealPending = false;
+            callback?.();
+        }, Math.max(0, Number(delay || 0) || 0));
     }
 
     scheduleTurnAdvance(delay = this.turnAdvanceMs) {
@@ -2038,6 +2064,7 @@ class DominoRoom extends Room {
             playerCount: Number(this.state.playerCount || this.totalPlayers || 2),
             turnDeadlineAt: Number(this.state.turnDeadlineAt || 0),
             turnVersion: Number(this.state.turnVersion || 1),
+            lastMoveRevealPending: Boolean(this.lastMoveRevealPending),
             matchOver: Boolean(this.state.matchOver),
             gameOverReason: String(this.state.gameOverReason || ""),
             gameOverPlayerName: String(this.state.gameOverPlayerName || ""),
@@ -2124,6 +2151,7 @@ class DominoRoom extends Room {
             deal: Number(this.state.deal || 1),
             turnDeadlineAt: Number(this.state.turnDeadlineAt || 0),
             turnVersion: Number(this.state.turnVersion || 1),
+            lastMoveRevealPending: Boolean(this.lastMoveRevealPending),
             playerStats: this.buildPublicPlayerStats(),
             teamScores: Array.from(this.state.teamScores || [0, 0]),
             teamRoundWins: Array.from(this.state.teamRoundWins || [0, 0]),
@@ -2437,6 +2465,7 @@ class DominoRoom extends Room {
         const pi = this.getPlayerIndex(client);
         if (pi !== this.state.currentPlayerIndex) return { ok: false, reason: "not_your_turn", pi };
         if (!allowTurnAdvancePending && this.turnAdvancePending) return { ok: false, reason: "turn_advancing", pi };
+        if (this.lastMoveRevealPending) return { ok: false, reason: "result_reveal_pending", pi };
         if (Number(message?.turnVersion || 0) !== Number(this.state.turnVersion || 0)) return { ok: false, reason: "stale_turn", pi };
         return { ok: true, pi };
     }
@@ -2602,16 +2631,16 @@ class DominoRoom extends Room {
         });
 
         if (this.instantWinEnabled && score >= IWIN) {
-            this.endRound(pi, true);
-            return;
+            this.scheduleLastMoveSettlement(() => this.endRound(pi, true));
+            return true;
         }
 
         if (hand.length === 0) {
-            this.endDeal(pi, false);
-            return;
+            this.scheduleLastMoveSettlement(() => this.endDeal(pi, false));
+            return true;
         }
         if (this.internalBoard.isBlocked(this.hands, this.boneyard)) {
-            this.endDeal(this.findFishWinner(), true);
+            this.scheduleLastMoveSettlement(() => this.endDeal(this.findFishWinner(), true));
             return true;
         }
 
@@ -2736,16 +2765,16 @@ class DominoRoom extends Room {
         });
 
         if (this.instantWinEnabled && score >= IWIN) {
-            this.endRound(pi, true);
-            return;
+            this.scheduleLastMoveSettlement(() => this.endRound(pi, true));
+            return true;
         }
 
         if (hand.length === 0) {
-            this.endDeal(pi, false);
-            return;
+            this.scheduleLastMoveSettlement(() => this.endDeal(pi, false));
+            return true;
         }
         if (this.internalBoard.isBlocked(this.hands, this.boneyard)) {
-            this.endDeal(this.findFishWinner(), true);
+            this.scheduleLastMoveSettlement(() => this.endDeal(this.findFishWinner(), true));
             return true;
         }
 
