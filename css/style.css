@@ -4867,8 +4867,9 @@ body.move-hint-selection-active #game-screen .player-name-btn {
         rgba(15, 25, 35, 0.40),
         rgba(13, 23, 36, 0.32)
     ) !important;
-    border: 1px solid rgba(255, 255, 255, 0.24);
+    border: 1px solid rgba(240, 192, 64, 0.52);
     box-shadow:
+        0 0 0 1px rgba(255, 244, 214, 0.14) inset,
         0 18px 46px rgba(0, 0, 0, 0.26),
         inset 0 1px 0 rgba(255, 255, 255, 0.12);
     backdrop-filter: none !important;
