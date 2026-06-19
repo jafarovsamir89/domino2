@@ -14265,6 +14265,13 @@ class DominoGame {
             return;
         }
 
+        this.humanPlayerIndex = 0;
+        this.myHand = null;
+        this.roomPlayerRefs = [];
+        this.currentRoomState = null;
+        this.validMoves = [];
+        this.goshaCombo = null;
+        this.networkActionBlockedForReconnect = false;
         if (this.isTeamMode) this.playerCount = 4;
         this.currentMatchStartedAt = new Date().toISOString();
         this.currentMatchSessionId = this.createResumeId('solo');
@@ -14521,6 +14528,12 @@ class DominoGame {
     isPlayerInTeam(teamIndex, playerIndex) {
         return this.getTeamMembers(teamIndex).includes(playerIndex);
     }
+    getHumanHandForRender() {
+        if (this.network?.isMultiplayer) {
+            return this.myHand || this.hands[this.humanPlayerIndex] || [];
+        }
+        return this.hands[this.humanPlayerIndex] || [];
+    }
     renderState() {
         this.renderer.removeArrows();
         const resolvedRoomMode = this.resolveRoomModeState(this.currentRoomState, null);
@@ -14581,7 +14594,7 @@ class DominoGame {
         this.renderer.renderBoard(this.board);
         const roomPlayers = Array.isArray(this.currentRoomState?.players) ? this.currentRoomState.players : [];
         this.renderer.renderOpponentHands(this.hands, this.humanPlayerIndex, roomPlayers.length ? roomPlayers : this.playerNames, this.currentPlayer);
-        const myHand = this.myHand || this.hands[this.humanPlayerIndex] || [];
+        const myHand = this.getHumanHandForRender();
         if (!this.network.isMultiplayer) {
             this.validMoves = this.board.getValidMoves(myHand);
         }
@@ -15176,7 +15189,7 @@ class DominoGame {
             scores: `${this.getScoresRenderSignature(displayEntities, this.currentPlayer)}::${Number(this.matchRound || 0)}::${Number(this.deal || 0)}`,
             info: this.getInfoRenderSignature(this.matchRound, this.deal, this.boneyard.length, this.board.getOpenEndsScore(), this.getCurrentStakeLabel()),
             opponents: this.getOpponentHandsRenderSignature(this.hands, this.humanPlayerIndex, roomPlayers.length ? roomPlayers : this.playerNames, this.currentPlayer),
-            hand: this.getHandRenderSignature(this.myHand || this.hands[this.humanPlayerIndex] || [], this.validMoves, this.selectedTileIndex, this.currentPlayer === this.humanPlayerIndex)
+            hand: this.getHandRenderSignature(this.getHumanHandForRender(), this.validMoves, this.selectedTileIndex, this.currentPlayer === this.humanPlayerIndex)
         };
 
         if (boardChanged) {
@@ -15186,7 +15199,7 @@ class DominoGame {
             this.renderer.renderOpponentHands(this.hands, this.humanPlayerIndex, roomPlayers.length ? roomPlayers : this.playerNames, this.currentPlayer);
             this._realtimeRenderSignatures.opponents = nextSignatures.opponents;
         }
-        const myHand = this.myHand || this.hands[this.humanPlayerIndex] || [];
+        const myHand = this.getHumanHandForRender();
         const myTurn = this.currentPlayer === this.humanPlayerIndex;
         if (handChanged && (force || nextSignatures.hand !== this._realtimeRenderSignatures.hand)) {
             this.renderer.renderHand(myHand, this.validMoves, this.selectedTileIndex, myTurn);

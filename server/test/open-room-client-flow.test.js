@@ -319,6 +319,46 @@ test("client exposes team hud wallet gate and profile close debug hooks", () => 
     }
 });
 
+test("client renders bazaar draw state from live solo hands and keeps multiplayer cache isolated", () => {
+    const appSource = read("js/app.js");
+    const webAppSource = read("www/js/app.js");
+    const sources = [appSource, webAppSource];
+
+    const extract = (source, startMarker, endMarker) => {
+        const start = source.indexOf(startMarker);
+        const end = source.indexOf(endMarker, start);
+        return start >= 0 && end > start ? source.slice(start, end) : "";
+    };
+
+    for (const source of sources) {
+        const helperSnippet = extract(source, "    getHumanHandForRender() {", "    renderState()");
+        const renderStateSnippet = extract(source, "    renderState() {", "    playSound(name) {");
+        const realtimeSnippet = extract(source, "    renderRealtimeGameDeltaView({ boardChanged = false, handChanged = true, opponentHandsChanged = true, scoresChanged = true, infoChanged = true, force = false } = {}) {", "    onNetworkFullState(payload = {})");
+        const startGameSnippet = extract(source, "    async startNewGame() {", "    async prepareSoloEconomyStake()");
+
+        assert.equal(helperSnippet.includes("if (this.network?.isMultiplayer)"), true);
+        assert.equal(helperSnippet.includes("return this.myHand || this.hands[this.humanPlayerIndex] || [];"), true);
+        assert.equal(helperSnippet.includes("return this.hands[this.humanPlayerIndex] || [];"), true);
+
+        assert.equal(renderStateSnippet.includes("const myHand = this.getHumanHandForRender();"), true);
+        assert.equal(renderStateSnippet.includes("const myHand = this.myHand || this.hands[this.humanPlayerIndex] || [];"), false);
+        assert.equal(renderStateSnippet.includes("this.renderer.drawBtn.disabled = connectionLost || waitingOpenRoom || !myTurn || canPlay || emptyBoneyard"), true);
+        assert.equal(renderStateSnippet.includes("this.renderer.passBtn.disabled = connectionLost || waitingOpenRoom || !myTurn || canPlay || !emptyBoneyard"), true);
+
+        assert.equal(realtimeSnippet.includes("const myHand = this.getHumanHandForRender();"), true);
+        assert.equal(realtimeSnippet.includes("hand: this.getHandRenderSignature(this.getHumanHandForRender(),"), true);
+        assert.equal(realtimeSnippet.includes("const myHand = this.myHand || this.hands[this.humanPlayerIndex] || [];"), false);
+
+        assert.equal(startGameSnippet.includes("this.humanPlayerIndex = 0;"), true);
+        assert.equal(startGameSnippet.includes("this.myHand = null;"), true);
+        assert.equal(startGameSnippet.includes("this.roomPlayerRefs = [];"), true);
+        assert.equal(startGameSnippet.includes("this.currentRoomState = null;"), true);
+        assert.equal(startGameSnippet.includes("this.validMoves = [];"), true);
+        assert.equal(startGameSnippet.includes("this.goshaCombo = null;"), true);
+        assert.equal(startGameSnippet.includes("this.networkActionBlockedForReconnect = false;"), true);
+    }
+});
+
 test("client friends page no longer appends an undefined invite button", () => {
     const appSource = read("js/app.js");
     const webAppSource = read("www/js/app.js");
