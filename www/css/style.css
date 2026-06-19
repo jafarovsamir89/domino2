@@ -4864,16 +4864,17 @@ body.move-hint-selection-active #game-screen .player-name-btn {
     z-index: 1;
     background: linear-gradient(
         180deg,
-        rgba(15, 25, 35, 0.40),
-        rgba(13, 23, 36, 0.32)
+        rgba(15, 25, 35, 0.45),
+        rgba(13, 23, 36, 0.37)
     ) !important;
-    border: 1px solid rgba(240, 192, 64, 0.52);
+    border: 1px solid rgba(255, 255, 255, 0.28);
     box-shadow:
         0 0 0 1px rgba(255, 244, 214, 0.14) inset,
         0 18px 46px rgba(0, 0, 0, 0.26),
         inset 0 1px 0 rgba(255, 255, 255, 0.12);
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
+    color: #fff;
 }
 
 .screen.overlay.result-overlay-test .overlay-content h2,
@@ -4885,6 +4886,10 @@ body.move-hint-selection-active #game-screen .player-name-btn {
     text-shadow:
         0 2px 8px rgba(0, 0, 0, 0.75),
         0 0 18px rgba(0, 0, 0, 0.38);
+}
+
+.screen.overlay.result-overlay-test .overlay-content .btn {
+    color: #fff;
 }
 
 .screen.overlay.result-overlay-test .btn {
