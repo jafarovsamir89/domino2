@@ -99,6 +99,7 @@ class DominoRoom extends Room {
         this.attachStateCollections();
         this.voiceEnabledBySessionId = new Set();
         this.roomMode = normalizeRoomMode(options.roomMode, options.isTeamMode);
+        this.boardStartAxis = options.boardStartAxis || options.boardStart || 'horizontal';
         this.state.isTeamMode = this.roomMode === "team";
         this.totalPlayers = normalizePlayerCount(options.playerCount, this.state.isTeamMode);
         this.aiCount = normalizeAiCount(options.aiCount, this.totalPlayers);
@@ -109,6 +110,7 @@ class DominoRoom extends Room {
         this.hands = [];
         this.boneyard = [];
         this.internalBoard = new Board();
+        this.internalBoard.startAxis = this.boardStartAxis;
         this.playerMissingSuits = Array.from({ length: this.totalPlayers }, () => new Set());
         this.lastDealWinner = null;
         this.dlossThreshold = normalizeDlossThreshold(options.dlossThreshold);
@@ -1549,6 +1551,7 @@ class DominoRoom extends Room {
         this.state.gameOverWinnerIndex = -1;
         this.state.gameOverSummaryJson = "";
         this.internalBoard = new Board();
+        this.internalBoard.startAxis = this.boardStartAxis || 'horizontal';
         this.state.gameActive = false;
         this.currentDealMatchId = `${this.roomId}:round:${this.state.matchRound}`;
         this.currentDealStakeKey = this.currentStakeKey;
@@ -3162,6 +3165,7 @@ class DominoRoom extends Room {
             internalBoard: this.internalBoard,
             lastDealWinner: this.lastDealWinner,
             botIds: this.botIds,
+            boardStartAxis: this.boardStartAxis,
             playerMissingSuits: this.playerMissingSuits ? this.playerMissingSuits.map((s) => Array.from(s)) : [],
             identityBySessionId
         };
@@ -3196,6 +3200,7 @@ class DominoRoom extends Room {
         this.lastRoundEconomySummary = restoredMetadata.lastRoundEconomySummary;
         this.lastDealWinner = restoredMetadata.lastDealWinner;
         this.botIds = restoredMetadata.botIds;
+        this.boardStartAxis = data.boardStartAxis || 'horizontal';
         this.playerMissingSuits = restoredMetadata.playerMissingSuits;
         this.matchRecordId = String(data.matchRecordId || this.matchRecordId || "");
         this.pendingMatchRecording = data.pendingMatchRecording || this.pendingMatchRecording || null;
@@ -3219,6 +3224,7 @@ class DominoRoom extends Room {
         this.hands = Array.isArray(this.hands) ? this.hands : [];
         this.boneyard = Array.isArray(this.boneyard) ? this.boneyard : [];
         this.internalBoard = this.internalBoard || new Board();
+        this.internalBoard.startAxis = this.boardStartAxis || 'horizontal';
         this.state.playerCount = this.totalPlayers;
         this.state.isTeamMode = this.roomMode === "team";
         this.state.boneyardCount = this.boneyard.length;

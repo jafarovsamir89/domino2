@@ -40,7 +40,13 @@ class BoardNode {
 }
 
 class Board {
-    constructor() { this.nodes = []; this.openEnds = []; this.crossNodeId = null; this.crossSidesClosed = 0; }
+    constructor() {
+        this.nodes = [];
+        this.openEnds = [];
+        this.crossNodeId = null;
+        this.crossSidesClosed = 0;
+        this.startAxis = 'horizontal';
+    }
     get isEmpty() { return this.nodes.length === 0; }
 
     isOpenEndAvailable(oe) {
@@ -71,7 +77,8 @@ class Board {
                 growthDir: oe.growthDir
             })),
             crossNodeId: this.crossNodeId,
-            crossSidesClosed: this.crossSidesClosed
+            crossSidesClosed: this.crossSidesClosed,
+            startAxis: this.startAxis
         };
     }
 
@@ -87,18 +94,31 @@ class Board {
         board.openEnds = data.openEnds.map((oe) => new OpenEnd(oe.nodeId, oe.side, oe.value, oe.growthDir));
         board.crossNodeId = data.crossNodeId ?? null;
         board.crossSidesClosed = data.crossSidesClosed ?? 0;
+        board.startAxis = data.startAxis || 'horizontal';
         return board;
     }
 
     placeFirst(tile) {
-        const orientation = tile.isDouble ? 'vertical' : 'horizontal';
+        let orientation;
+        if (this.startAxis === 'vertical') {
+            orientation = 'vertical';
+        } else {
+            orientation = tile.isDouble ? 'vertical' : 'horizontal';
+        }
         const node = new BoardNode(tile, 0, 0, orientation, tile.a, tile.b);
         this.nodes.push(node);
         const id = 0;
-        this.openEnds = [
-            new OpenEnd(id, 'left', tile.a, 'left'), 
-            new OpenEnd(id, 'right', tile.isDouble ? tile.a : tile.b, 'right')
-        ];
+        if (this.startAxis === 'vertical') {
+            this.openEnds = [
+                new OpenEnd(id, 'top', tile.a, 'top'),
+                new OpenEnd(id, 'bottom', tile.isDouble ? tile.a : tile.b, 'bottom')
+            ];
+        } else {
+            this.openEnds = [
+                new OpenEnd(id, 'left', tile.a, 'left'), 
+                new OpenEnd(id, 'right', tile.isDouble ? tile.a : tile.b, 'right')
+            ];
+        }
         
         // Only [5|5] scores on first play
         if (tile.isDouble && tile.a === 5) return 10;

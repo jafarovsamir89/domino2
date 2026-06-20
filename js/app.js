@@ -8,6 +8,24 @@ import { VoiceChatManager } from './voice.js';
 import { sndPlace, sndScore, sndDraw, sndPass, sndWin, sndGosha, startMenuMusic, startGameMusic, nextTrack, toggleMute, stopMusic } from './sounds.js?v=social-live-1';
 // NetworkManager is loaded as global script
 
+function getBoardStartAxis() {
+    if (typeof window === 'undefined') return 'horizontal';
+    try {
+        const urlParams = new URLSearchParams(window.location.search);
+        const queryParam = urlParams.get('boardStart');
+        if (queryParam === 'vertical' || queryParam === 'horizontal') {
+            return queryParam;
+        }
+        const storageParam = window.localStorage?.getItem('dominoBoardStartAxis');
+        if (storageParam === 'vertical' || storageParam === 'horizontal') {
+            return storageParam;
+        }
+    } catch (e) {
+        // ignore
+    }
+    return 'horizontal';
+}
+
 const TARGET=365, MAX_R=3, DLOSS=255, IWIN=35;
 const TURN_TIMEOUT_MS = 30000;
 const BOT_THINK_DELAY_MS = 1500;
@@ -135,7 +153,7 @@ const SOCIAL_ICON_SVGS = {
 
 class DominoGame {
     constructor() {
-        this.renderer = new Renderer(this); this.board = new Board();
+        this.renderer = new Renderer(this); this.board = new Board(); this.board.startAxis = getBoardStartAxis();
         this.playerMissingSuits = [];
         this.playerCount=2; this.onlinePlayerCount=2; this.onlineAiCount=0; this.playerName=''; this.difficulty='medium';
         this.onlineStakeKey = 'stake_200';
@@ -11537,7 +11555,7 @@ class DominoGame {
             this.turnDeadlineAt = Number(snapshot.turnDeadlineAt || 0);
             this.dlossThreshold = Number(snapshot.dlossThreshold ?? this.dlossThreshold);
             this.instantWinEnabled = snapshot.instantWinEnabled !== false;
-            this.board = snapshot.board ? reconstructBoard(snapshot.board) : new Board();
+            this.board = snapshot.board ? reconstructBoard(snapshot.board) : (() => { const b = new Board(); b.startAxis = getBoardStartAxis(); return b; })();
             this.hands = Array.isArray(snapshot.hands)
                 ? snapshot.hands.map((hand) => (Array.isArray(hand) ? hand.map((tile) => new Tile(tile.a, tile.b)) : []))
                 : [];
@@ -13172,6 +13190,7 @@ class DominoGame {
         this.humanPlayerIndex = myIndex >= 0 ? myIndex : 0;
         this.currentPlayer = this.humanPlayerIndex;
         this.board = new Board();
+        this.board.startAxis = getBoardStartAxis();
         this.boneyard = [];
         this.validMoves = [];
         this.selectedTileIndex = -1;
@@ -13238,7 +13257,7 @@ class DominoGame {
     }
 
     cloneBoardForSnapshot(board = this.board) {
-        if (!board) return new Board();
+        if (!board) { const b = new Board(); b.startAxis = getBoardStartAxis(); return b; }
         return cloneBoard(board);
     }
 
@@ -14501,7 +14520,7 @@ class DominoGame {
         const turnCycleId = this._turnCycleId;
         this.clearNextDealAdvanceTimeout();
         this.clearTurnTimers();
-        this.board=new Board(); this.selectedTileIndex=-1; this.roundOver=false; this.gameActive=true; this.turnInProgress=false;
+        this.board=new Board(); this.board.startAxis = getBoardStartAxis(); this.selectedTileIndex=-1; this.roundOver=false; this.gameActive=true; this.turnInProgress=false;
         const deal = this.dealHandsWithValidation();
         this.hands = deal.hands;
         this.boneyard = deal.boneyard;
@@ -16512,6 +16531,23 @@ window.addEventListener('resize', () => {
     clearTimeout(_resizeTimer);
     _resizeTimer = setTimeout(() => game.renderState(), 150);
 });
+
+window.__dominoDebugState = () => {
+    const app = window.game;
+    if (!app) return { error: 'app_unavailable' };
+    const board = app.board || {};
+    const bounds = app.renderer?._konvaBoardRenderer?.lastLayout?.bounds || {};
+    return {
+        boardStartAxis: board.startAxis || 'horizontal',
+        firstTileOrientation: board.nodes?.[0]?.orientation || null,
+        firstOpenEndSides: board.openEnds?.map(oe => oe.side) || [],
+        firstOpenEndGrowthDirs: board.openEnds?.map(oe => oe.growthDir) || [],
+        boardBoundsWidth: bounds.width || 0,
+        boardBoundsHeight: bounds.height || 0,
+        boardScale: app.renderer?._konvaBoardRenderer?.lastLayout?.scale || 0,
+        boardIsVerticalStartEnabled: (board.startAxis === 'vertical')
+    };
+};
 
 
 

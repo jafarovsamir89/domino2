@@ -14,6 +14,24 @@ function debugLog(...args) {
     if (isDebugLoggingEnabled()) console.log(...args);
 }
 
+function getBoardStartAxis() {
+    if (typeof window === 'undefined') return 'horizontal';
+    try {
+        const urlParams = new URLSearchParams(window.location.search);
+        const queryParam = urlParams.get('boardStart');
+        if (queryParam === 'vertical' || queryParam === 'horizontal') {
+            return queryParam;
+        }
+        const storageParam = window.localStorage?.getItem('dominoBoardStartAxis');
+        if (storageParam === 'vertical' || storageParam === 'horizontal') {
+            return storageParam;
+        }
+    } catch (e) {
+        // ignore
+    }
+    return 'horizontal';
+}
+
 class NetworkManager {
     constructor(game) {
         this.game = game;
@@ -198,6 +216,7 @@ class NetworkManager {
             stakeKey: this.game.onlineStakeKey || "stake_200",
             instantWinEnabled: document.getElementById('instant-win-setting')?.checked,
             dlossThreshold: parseInt(document.getElementById('dloss-setting')?.value || '255', 10),
+            boardStartAxis: getBoardStartAxis(),
             ...extra
         };
     }
