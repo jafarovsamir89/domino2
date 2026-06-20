@@ -27,4 +27,3 @@ test("result modal test overlay class is present only on final result screens", 
         assert.equal(content.includes('text-shadow:'), true, `${file} missing readability override`);
     }
 });
-
