@@ -101,7 +101,7 @@ class Board {
     placeFirst(tile) {
         let orientation;
         if (this.startAxis === 'vertical') {
-            orientation = 'vertical';
+            orientation = tile.isDouble ? 'horizontal' : 'vertical';
         } else {
             orientation = tile.isDouble ? 'vertical' : 'horizontal';
         }

@@ -95,3 +95,68 @@ test("hand with five different doubles is invalid for opening deal", () => {
     assert.equal(hasInvalidOpeningHand(hand), true);
     assert.equal(hasInvalidOpeningHand([new Tile(0, 0), new Tile(1, 1), new Tile(2, 2), new Tile(3, 3)]), false);
 });
+
+test("Default horizontal mode layout behavior", () => {
+    // Normal tile
+    const board1 = new Board();
+    board1.startAxis = "horizontal";
+    board1.placeFirst(new Tile(3, 2));
+    assert.equal(board1.nodes[0].orientation, "horizontal");
+    assert.deepEqual(board1.openEnds.map(oe => oe.side), ["left", "right"]);
+
+    // Double tile
+    const board2 = new Board();
+    board2.startAxis = "horizontal";
+    board2.placeFirst(new Tile(5, 5));
+    assert.equal(board2.nodes[0].orientation, "vertical");
+    assert.deepEqual(board2.openEnds.map(oe => oe.side), ["left", "right"]);
+});
+
+test("Vertical mode layout behavior for normal tile", () => {
+    const board = new Board();
+    board.startAxis = "vertical";
+    board.placeFirst(new Tile(3, 2));
+    assert.equal(board.nodes[0].orientation, "vertical");
+    assert.deepEqual(board.openEnds.map(oe => oe.side), ["top", "bottom"]);
+    assert.equal(board.openEnds[0].value, 3);
+    assert.equal(board.openEnds[1].value, 2);
+});
+
+test("Vertical mode layout behavior for first double/gosha", () => {
+    // [5|5]
+    const board1 = new Board();
+    board1.startAxis = "vertical";
+    const score1 = board1.placeFirst(new Tile(5, 5));
+    assert.equal(board1.nodes[0].orientation, "horizontal");
+    assert.deepEqual(board1.openEnds.map(oe => oe.side), ["top", "bottom"]);
+    assert.equal(board1.openEnds[0].value, 5);
+    assert.equal(board1.openEnds[1].value, 5);
+    assert.equal(score1, 10);
+
+    // [6|6]
+    const board2 = new Board();
+    board2.startAxis = "vertical";
+    const score2 = board2.placeFirst(new Tile(6, 6));
+    assert.equal(board2.nodes[0].orientation, "horizontal");
+    assert.deepEqual(board2.openEnds.map(oe => oe.side), ["top", "bottom"]);
+    assert.equal(score2, 0);
+});
+
+test("Subsequent moves and score calculation after first double in vertical mode", () => {
+    const board = new Board();
+    board.startAxis = "vertical";
+    board.placeFirst(new Tile(5, 5));
+
+    // Place [5|2] on the bottom open end (index 1)
+    const score1 = board.placeTile(new Tile(5, 2), 1);
+    assert.equal(board.nodes.length, 2);
+    assert.ok(board.openEnds.some(oe => oe.value === 2));
+
+    // Place [5|3] on the top open end (index 0)
+    const score2 = board.placeTile(new Tile(5, 3), 0);
+    assert.equal(board.nodes.length, 3);
+    assert.ok(board.openEnds.some(oe => oe.value === 3));
+
+    assert.equal(board.calculateScore(), 5); // 2 + 3 = 5
+});
+
