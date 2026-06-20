@@ -1730,6 +1730,7 @@ class DominoRoom extends Room {
     }
 
     scheduleLastMoveSettlement(callback, delay = LAST_MOVE_REVEAL_DELAY_MS) {
+        const adjustedDelay = (Number(delay || 0) || 0) + 1500;
         this.clearLastMoveRevealTimer();
         this.lastMoveRevealPending = true;
         this.clearTurnTimer();
@@ -1738,7 +1739,7 @@ class DominoRoom extends Room {
             this.lastMoveRevealTimer = null;
             this.lastMoveRevealPending = false;
             callback?.();
-        }, Math.max(0, Number(delay || 0) || 0));
+        }, Math.max(0, adjustedDelay));
     }
 
     scheduleTurnAdvance(delay = this.turnAdvanceMs) {

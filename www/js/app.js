@@ -9413,6 +9413,7 @@ class DominoGame {
     }
 
     delayLastMoveSettlement(callback, delay = LAST_MOVE_REVEAL_DELAY_MS) {
+        const adjustedDelay = (Number(delay || 0) || 0) + 1500;
         clearTimeout(this._lastMoveRevealTimeout);
         this._lastMoveRevealTimeout = null;
         this.lastMoveRevealPending = true;
@@ -9427,7 +9428,7 @@ class DominoGame {
                 this.turnInProgress = false;
                 this.renderState();
             }
-        }, Math.max(0, Number(delay || 0) || 0));
+        }, Math.max(0, Number(adjustedDelay || 0) || 0));
     }
 
     scheduleTurnAdvance(delay = this.postMoveAdvanceMs, turnCycleId = this._turnCycleId) {
@@ -13543,6 +13544,7 @@ class DominoGame {
             screen.querySelector('.btn-review-toggle')?.addEventListener('click', (e) => {
                 e.stopPropagation();
                 screen.classList.toggle('review-mode');
+                e.currentTarget.blur();
             });
             screen.addEventListener('click', (e) => {
                 if (screen.classList.contains('review-mode')) {
@@ -14493,6 +14495,8 @@ class DominoGame {
 
     startDeal() {
         debugLog('[startDeal] Initializing deal...');
+        document.getElementById('round-end-screen')?.classList.remove('review-mode');
+        document.getElementById('game-over-screen')?.classList.remove('review-mode');
         this._turnCycleId += 1;
         const turnCycleId = this._turnCycleId;
         this.clearNextDealAdvanceTimeout();
