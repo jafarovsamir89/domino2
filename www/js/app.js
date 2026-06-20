@@ -13503,7 +13503,11 @@ class DominoGame {
         this.bindTap(this.renderer.drawBtn, () => this.drawFromBoneyard());
         this.bindTap(this.renderer.passBtn, () => this.passTurn());
         document.getElementById('next-round-btn')?.addEventListener('click', () => {
-            document.getElementById('round-end-screen').classList.remove('active');
+            const screen = document.getElementById('round-end-screen');
+            if (screen) {
+                screen.classList.remove('active');
+                screen.classList.remove('review-mode');
+            }
             if (this.matchOver) { this.showMatchResult(); return; }
             if (this.network.isMultiplayer) {
                 this.network.sendNextDeal();
@@ -13513,7 +13517,11 @@ class DominoGame {
             }
         });
         document.getElementById('new-game-btn')?.addEventListener('click', () => {
-            document.getElementById('game-over-screen').classList.remove('active');
+            const screen = document.getElementById('game-over-screen');
+            if (screen) {
+                screen.classList.remove('active');
+                screen.classList.remove('review-mode');
+            }
             if (this.network.isMultiplayer) {
                 void this.returnToMainMenu({ settleForfeit: false });
                 return;
@@ -13521,9 +13529,34 @@ class DominoGame {
             void this.startNewGame();
         });
         document.getElementById('game-over-quit-btn')?.addEventListener('click', async () => {
-            document.getElementById('game-over-screen').classList.remove('active');
+            const screen = document.getElementById('game-over-screen');
+            if (screen) {
+                screen.classList.remove('active');
+                screen.classList.remove('review-mode');
+            }
             await this.returnToMainMenu({ settleForfeit: false });
         });
+
+        const setupReviewMode = (screenId) => {
+            const screen = document.getElementById(screenId);
+            if (!screen) return;
+            screen.querySelector('.btn-review-toggle')?.addEventListener('click', (e) => {
+                e.stopPropagation();
+                screen.classList.toggle('review-mode');
+            });
+            screen.addEventListener('click', (e) => {
+                if (screen.classList.contains('review-mode')) {
+                    screen.classList.remove('review-mode');
+                    return;
+                }
+                if (e.target === screen) {
+                    screen.classList.add('review-mode');
+                }
+            });
+        };
+        setupReviewMode('round-end-screen');
+        setupReviewMode('game-over-screen');
+
         this.bindTap(this.renderer.handEl, e => {
             const el = e.target.closest('.tile.playable');
             if (el) this.onHandTileClick(parseInt(el.dataset.handIndex));

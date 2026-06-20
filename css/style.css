@@ -4899,6 +4899,66 @@ body.move-hint-selection-active #game-screen .player-name-btn {
     box-shadow: 0 8px 26px rgba(0, 0, 0, 0.28);
 }
 
+.btn-review-toggle {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: rgba(255, 255, 255, 0.7);
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 1.1rem;
+    transition: all 0.2s ease;
+    z-index: 10;
+    padding: 0;
+}
+
+.btn-review-toggle:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.3);
+    color: #fff;
+    transform: scale(1.08);
+}
+
+.screen.overlay.result-overlay-test .overlay-content {
+    transition: opacity 0.25s ease;
+}
+
+.screen.overlay.result-overlay-test.review-mode .overlay-content {
+    opacity: 0.08;
+    pointer-events: none;
+}
+
+.review-mode-tip {
+    position: absolute;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(15, 25, 35, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #fff;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.25s ease, transform 0.25s ease;
+    z-index: 105;
+    white-space: nowrap;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+}
+
+.screen.overlay.result-overlay-test.review-mode .review-mode-tip {
+    opacity: 1;
+    transform: translateX(-50%) translateY(-5px);
+}
+
 .menu-panel {
     display: flex;
     flex-direction: column;
