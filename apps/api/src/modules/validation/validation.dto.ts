@@ -137,6 +137,10 @@ export class SocialSendGiftDto {
   @IsString()
   @MaxLength(256)
   note?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  fromInventory?: boolean;
 }
 
 export class SocialSendMessageDto {

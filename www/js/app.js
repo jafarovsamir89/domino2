@@ -4592,7 +4592,7 @@ class DominoGame {
                 
                 const preview = document.createElement('div');
                 preview.className = 'friend-card-desc';
-                const lastText = String(thread?.lastMessage?.text || thread?.lastMessage?.body || '').trim();
+                const lastText = this.getMessagePreviewText(thread?.lastMessage);
                 preview.textContent = lastText || this.t('messages-empty');
 
                 const previewRow = document.createElement('div');
@@ -5408,7 +5408,7 @@ class DominoGame {
                 if (isThreadTyping) {
                     preview.innerHTML = `<span style="color: var(--color-primary, #00C853); font-style: italic;">yazır...</span>`;
                 } else {
-                    preview.textContent = lastMessage?.text || this.t('messages-empty');
+                    preview.textContent = this.getMessagePreviewText(lastMessage) || this.t('messages-empty');
                 }
 
                 copy.appendChild(top);
@@ -5518,10 +5518,86 @@ class DominoGame {
                     const bubble = document.createElement('div');
                     bubble.className = `message-bubble${optimistic ? ' is-pending' : ''}${isFailed ? ' is-failed' : ''}`;
 
-                    const text = document.createElement('div');
-                    text.className = 'message-text';
-                    text.textContent = message.text || message.body || '';
-                    bubble.appendChild(text);
+                    const msgText = message.text || message.body || '';
+                    let isJsonMedia = false;
+                    if (msgText.startsWith('{') && msgText.endsWith('}')) {
+                        try {
+                            const json = JSON.parse(msgText);
+                            if (json.type === 'image') {
+                                isJsonMedia = true;
+                                const imgContainer = document.createElement('div');
+                                imgContainer.className = 'chat-image-bubble';
+                                imgContainer.style.padding = '4px 0';
+
+                                const img = document.createElement('img');
+                                img.src = json.data;
+                                img.style.maxWidth = '200px';
+                                img.style.maxHeight = '200px';
+                                img.style.borderRadius = '8px';
+                                img.style.display = 'block';
+                                img.style.cursor = 'pointer';
+                                img.addEventListener('click', () => {
+                                    this.openChatImageModal(json.data);
+                                });
+
+                                imgContainer.appendChild(img);
+                                bubble.appendChild(imgContainer);
+                            } else if (json.type === 'voice') {
+                                isJsonMedia = true;
+                                const audioContainer = document.createElement('div');
+                                audioContainer.className = 'chat-voice-bubble';
+                                audioContainer.style.display = 'flex';
+                                audioContainer.style.alignItems = 'center';
+                                audioContainer.style.gap = '8px';
+                                audioContainer.style.padding = '4px 0';
+
+                                const playBtn = document.createElement('button');
+                                playBtn.type = 'button';
+                                playBtn.style.background = 'none';
+                                playBtn.style.border = 'none';
+                                playBtn.style.color = 'inherit';
+                                playBtn.style.cursor = 'pointer';
+                                playBtn.style.fontSize = '1.3em';
+                                playBtn.innerHTML = '▶️';
+
+                                const duration = document.createElement('span');
+                                duration.style.fontSize = '0.85em';
+                                const durSec = json.duration || 0;
+                                duration.textContent = `${Math.floor(durSec / 60)}:${(durSec % 60).toString().padStart(2, '0')}`;
+
+                                const audio = document.createElement('audio');
+                                audio.src = json.data;
+                                audio.preload = 'metadata';
+
+                                playBtn.addEventListener('click', () => {
+                                    if (audio.paused) {
+                                        audio.play();
+                                        playBtn.innerHTML = '⏸️';
+                                    } else {
+                                        audio.pause();
+                                        playBtn.innerHTML = '▶️';
+                                    }
+                                });
+                                audio.addEventListener('ended', () => {
+                                    playBtn.innerHTML = '▶️';
+                                });
+
+                                audioContainer.appendChild(playBtn);
+                                audioContainer.appendChild(duration);
+                                audioContainer.appendChild(audio);
+                                bubble.appendChild(audioContainer);
+                            }
+                        } catch (e) {
+                            // not json, fallback
+                        }
+                    }
+
+                    if (!isJsonMedia) {
+                        const text = document.createElement('div');
+                        text.className = 'message-text';
+                        text.textContent = msgText;
+                        bubble.appendChild(text);
+                    }
 
                     const footer = document.createElement('div');
                     footer.className = 'message-bubble-footer';
@@ -10763,7 +10839,6 @@ class DominoGame {
                     </div>
                     <div class="chat-header-actions">
                         <button type="button" class="chat-action-btn gift-action" id="chat-gift-btn" aria-label="Gift">🎁</button>
-                        <button type="button" class="chat-action-btn phone-action" id="chat-phone-btn" aria-label="Call">📞</button>
                         <button type="button" class="btn btn-action chat-header-profile-action" id="account-messages-open-btn" data-i18n="account-profile">Profil</button>
                     </div>
                 </header>
@@ -10776,9 +10851,17 @@ class DominoGame {
                     <button type="button" class="composer-attach-btn" aria-label="Attach">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
                     </button>
+                    <button type="button" class="composer-voice-btn" id="chat-voice-record-btn" aria-label="Voice">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v1a7 7 0 0 1-14 0v-1"/><line x1="12" x2="12" y1="19" y2="22"/></svg>
+                    </button>
                     <div class="chat-compose-input-wrapper">
                         <input type="text" id="account-message-input" class="chat-message-input" maxlength="500" data-i18n="messages-placeholder" placeholder="Write a message">
                         <button type="button" class="composer-emoji-btn" aria-label="Emoji">😊</button>
+                        <div id="chat-voice-recording-status" class="chat-voice-recording-status is-hidden" style="display: flex; align-items: center; gap: 8px; color: #ff3b30; width: 100%;">
+                            <span class="voice-record-dot" style="width: 8px; height: 8px; background: #ff3b30; border-radius: 50%; animation: pulse-voice 0.8s infinite alternate;"></span>
+                            <span id="voice-record-timer" style="font-size: 0.9em; font-weight: bold;">0:00</span>
+                            <button type="button" class="voice-record-cancel" style="background: none; border: none; color: var(--text-dim, #8f9cae); margin-left: auto; font-size: 0.85em; cursor: pointer; font-weight: bold;">Cancel</button>
+                        </div>
                     </div>
                     <button type="button" class="chat-send-btn" id="account-message-send-btn">
                         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
@@ -10801,6 +10884,8 @@ class DominoGame {
 
     attachSocialUiEventListeners() {
         const attachBtn = document.querySelector('#social-chats-panel .composer-attach-btn');
+        const voiceBtn = document.querySelector('#social-chats-panel #chat-voice-record-btn');
+        const cancelBtn = document.querySelector('#social-chats-panel .voice-record-cancel');
         const emojiBtn = document.querySelector('#social-chats-panel .composer-emoji-btn');
         const coinsChip = document.querySelector('#social-center-modal .coins-chip');
 
@@ -10817,7 +10902,9 @@ class DominoGame {
                     try {
                         this.renderer.showMessage(this.t('sending-attachment') || 'Photo sending...', 1200);
                         const tempId = `temp-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-                        await this.sendDirectMessageWithFallback(targetId, `📷 ${file.name}`, tempId);
+                        const compressedBase64 = await this.compressImage(file);
+                        const msgBody = JSON.stringify({ type: 'image', data: compressedBase64 });
+                        await this.sendDirectMessageWithFallback(targetId, msgBody, tempId);
                         await this.loadConversationWithPlayer(targetId);
                         await this.loadMessageThreads();
                     } catch (err) {
@@ -10825,6 +10912,20 @@ class DominoGame {
                     }
                 };
                 fileInput.click();
+            });
+        }
+
+        if (voiceBtn) {
+            voiceBtn.addEventListener('click', async (e) => {
+                e.stopPropagation();
+                await this.toggleVoiceRecording();
+            });
+        }
+
+        if (cancelBtn) {
+            cancelBtn.addEventListener('click', async (e) => {
+                e.stopPropagation();
+                await this.stopVoiceRecording(true);
             });
         }
 
@@ -10871,6 +10972,230 @@ class DominoGame {
                 picker.classList.add('is-hidden');
             }
         });
+    }
+
+    async toggleVoiceRecording() {
+        if (this._isRecordingVoice) {
+            await this.stopVoiceRecording(false);
+        } else {
+            await this.startVoiceRecording();
+        }
+    }
+
+    async startVoiceRecording() {
+        if (this._isRecordingVoice) return;
+        try {
+            this._voiceRecordStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        } catch (err) {
+            this.renderer.showMessage(this.t('voice-record-denied') || 'Microphone access denied', 1800);
+            return;
+        }
+
+        this._audioChunks = [];
+        this._mediaRecorder = new MediaRecorder(this._voiceRecordStream);
+        this._mediaRecorder.ondataavailable = (e) => {
+            if (e.data && e.data.size > 0) {
+                this._audioChunks.push(e.data);
+            }
+        };
+
+        this._mediaRecorder.onstop = async () => {
+            if (this._voiceRecordCancelled) {
+                this.cleanupVoiceRecord();
+                return;
+            }
+            const blob = new Blob(this._audioChunks, { type: 'audio/webm' });
+            this.cleanupVoiceRecord();
+
+            if (blob.size < 100) return; // Too short/empty
+
+            const reader = new FileReader();
+            reader.readAsDataURL(blob);
+            reader.onloadend = async () => {
+                const base64 = reader.result;
+                const duration = Math.round((Date.now() - this._voiceRecordStartTime) / 1000);
+                const targetId = String(this.accountMessagesState?.activePlayerId || '').trim();
+                if (!targetId || !base64) return;
+
+                try {
+                    const tempId = `temp-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+                    const messageBody = JSON.stringify({ type: 'voice', data: base64, duration });
+                    await this.sendDirectMessageWithFallback(targetId, messageBody, tempId);
+                    await this.loadConversationWithPlayer(targetId);
+                    await this.loadMessageThreads();
+                } catch (err) {
+                    this.renderer.showMessage(err.message, 1800);
+                }
+            };
+        };
+
+        this._voiceRecordStartTime = Date.now();
+        this._voiceRecordCancelled = false;
+        this._isRecordingVoice = true;
+        this._mediaRecorder.start();
+
+        // UI Updates
+        const composeArea = document.querySelector('#social-chats-panel .chat-compose-area');
+        const voiceBtn = document.querySelector('#social-chats-panel #chat-voice-record-btn');
+        const inputField = document.getElementById('account-message-input');
+        const emojiBtn = document.querySelector('#social-chats-panel .composer-emoji-btn');
+        const statusOverlay = document.getElementById('chat-voice-recording-status');
+
+        if (composeArea) composeArea.classList.add('is-recording');
+        if (voiceBtn) voiceBtn.classList.add('is-recording');
+        if (inputField) inputField.classList.add('is-hidden');
+        if (emojiBtn) emojiBtn.classList.add('is-hidden');
+        if (statusOverlay) {
+            statusOverlay.classList.remove('is-hidden');
+            const timerEl = document.getElementById('voice-record-timer');
+            if (timerEl) timerEl.textContent = '0:00';
+        }
+
+        // Start timer
+        this._voiceTimerInterval = setInterval(() => {
+            const timerEl = document.getElementById('voice-record-timer');
+            if (timerEl) {
+                const elapsed = Math.round((Date.now() - this._voiceRecordStartTime) / 1000);
+                const mins = Math.floor(elapsed / 60);
+                const secs = elapsed % 60;
+                timerEl.textContent = `${mins}:${secs.toString().padStart(2, '0')}`;
+
+                if (elapsed >= 60) {
+                    void this.stopVoiceRecording(false);
+                }
+            }
+        }, 1000);
+    }
+
+    async stopVoiceRecording(cancelled = false) {
+        if (!this._isRecordingVoice) return;
+        this._voiceRecordCancelled = cancelled;
+        this._isRecordingVoice = false;
+
+        if (this._voiceTimerInterval) {
+            clearInterval(this._voiceTimerInterval);
+            this._voiceTimerInterval = null;
+        }
+
+        if (this._mediaRecorder && this._mediaRecorder.state !== 'inactive') {
+            this._mediaRecorder.stop();
+        }
+
+        // UI Reset
+        const composeArea = document.querySelector('#social-chats-panel .chat-compose-area');
+        const voiceBtn = document.querySelector('#social-chats-panel #chat-voice-record-btn');
+        const inputField = document.getElementById('account-message-input');
+        const emojiBtn = document.querySelector('#social-chats-panel .composer-emoji-btn');
+        const statusOverlay = document.getElementById('chat-voice-recording-status');
+
+        if (composeArea) composeArea.classList.remove('is-recording');
+        if (voiceBtn) voiceBtn.classList.remove('is-recording');
+        if (inputField) {
+            inputField.classList.remove('is-hidden');
+            inputField.focus();
+        }
+        if (emojiBtn) emojiBtn.classList.remove('is-hidden');
+        if (statusOverlay) statusOverlay.classList.add('is-hidden');
+    }
+
+    cleanupVoiceRecord() {
+        if (this._voiceRecordStream) {
+            try {
+                this._voiceRecordStream.getTracks().forEach((track) => track.stop());
+            } catch (e) {}
+            this._voiceRecordStream = null;
+        }
+        this._mediaRecorder = null;
+    }
+
+    compressImage(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = (event) => {
+                const img = new Image();
+                img.src = event.target.result;
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    let width = img.width;
+                    let height = img.height;
+                    const maxDim = 800;
+
+                    if (width > maxDim || height > maxDim) {
+                        if (width > height) {
+                            height = Math.round((height * maxDim) / width);
+                            width = maxDim;
+                        } else {
+                            width = Math.round((width * maxDim) / height);
+                            height = maxDim;
+                        }
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+                    resolve(dataUrl);
+                };
+                img.onerror = (err) => reject(err);
+            };
+            reader.onerror = (err) => reject(err);
+        });
+    }
+
+    getMessagePreviewText(message) {
+        const text = String(message?.text || message?.body || '').trim();
+        if (!text) return '';
+        if (text.startsWith('{') && text.endsWith('}')) {
+            try {
+                const json = JSON.parse(text);
+                if (json.type === 'image') {
+                    return '📷 Foto';
+                }
+                if (json.type === 'voice') {
+                    return '🎤 Səsli mesaj';
+                }
+            } catch (e) {}
+        }
+        return text;
+    }
+
+    openChatImageModal(src) {
+        let modal = document.getElementById('chat-image-zoom-modal');
+        if (!modal) {
+            modal = document.createElement('div');
+            modal.id = 'chat-image-zoom-modal';
+            modal.style.position = 'fixed';
+            modal.style.top = '0';
+            modal.style.left = '0';
+            modal.style.width = '100%';
+            modal.style.height = '100%';
+            modal.style.backgroundColor = 'rgba(0,0,0,0.85)';
+            modal.style.display = 'flex';
+            modal.style.alignItems = 'center';
+            modal.style.justifyContent = 'center';
+            modal.style.zIndex = '99999';
+            modal.style.cursor = 'zoom-out';
+
+            const img = document.createElement('img');
+            img.id = 'chat-image-zoom-img';
+            img.style.maxWidth = '90%';
+            img.style.maxHeight = '90%';
+            img.style.borderRadius = '8px';
+            img.style.boxShadow = '0 8px 32px rgba(0,0,0,0.5)';
+
+            modal.appendChild(img);
+            document.body.appendChild(modal);
+
+            modal.addEventListener('click', () => {
+                modal.style.display = 'none';
+            });
+        }
+        const zoomImg = document.getElementById('chat-image-zoom-img');
+        if (zoomImg) zoomImg.src = src;
+        modal.style.display = 'flex';
     }
 
     ensureOnlineSocialUi() {
@@ -14371,52 +14696,164 @@ class DominoGame {
             });
         }
 
+        const mode = this.giftPickerMode || 'inventory';
+        const inventory = Array.isArray(this.giftInventory) ? this.giftInventory.filter(item => Number(item?.quantity || 0) > 0) : [];
+
+        const menuBar = document.createElement('div');
+        menuBar.className = 'gift-picker-menubar';
+        menuBar.style.display = 'flex';
+        menuBar.style.gap = '10px';
+        menuBar.style.margin = '10px 14px';
+
+        if (mode === 'inventory' && inventory.length > 0) {
+            const buyBtn = document.createElement('button');
+            buyBtn.type = 'button';
+            buyBtn.className = 'btn btn-secondary';
+            buyBtn.style.padding = '6px 12px';
+            buyBtn.style.fontSize = '0.85em';
+            buyBtn.textContent = 'Купить подарок';
+            buyBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.giftPickerMode = 'catalog';
+                this.renderGiftPicker();
+            });
+            menuBar.appendChild(buyBtn);
+        } else if (mode === 'catalog' && inventory.length > 0) {
+            const vaultBtn = document.createElement('button');
+            vaultBtn.type = 'button';
+            vaultBtn.className = 'btn btn-secondary';
+            vaultBtn.style.padding = '6px 12px';
+            vaultBtn.style.fontSize = '0.85em';
+            vaultBtn.textContent = 'Подарки из инвентаря';
+            vaultBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.giftPickerMode = 'inventory';
+                this.renderGiftPicker();
+            });
+            menuBar.appendChild(vaultBtn);
+        }
+
         const grid = document.createElement('div');
         grid.className = 'gift-picker-grid';
-        const gifts = Array.isArray(this.giftCatalog) ? this.giftCatalog : [];
-        if (!gifts.length) {
-            const empty = document.createElement('div');
-            empty.className = 'modal-desc';
-            empty.style.gridColumn = '1 / -1';
-            empty.textContent = this.t('gift-loading');
-            grid.appendChild(empty);
+
+        if (mode === 'inventory') {
+            if (inventory.length === 0) {
+                const noGiftsContainer = document.createElement('div');
+                noGiftsContainer.style.gridColumn = '1 / -1';
+                noGiftsContainer.style.textAlign = 'center';
+                noGiftsContainer.style.padding = '30px 10px';
+
+                const desc = document.createElement('div');
+                desc.className = 'modal-desc';
+                desc.style.marginBottom = '15px';
+                desc.textContent = 'У вас нет полученных подарков. Вы можете купить подарок за монеты.';
+                noGiftsContainer.appendChild(desc);
+
+                const buyBtn = document.createElement('button');
+                buyBtn.type = 'button';
+                buyBtn.className = 'btn btn-primary';
+                buyBtn.textContent = 'Купить подарок';
+                buyBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.giftPickerMode = 'catalog';
+                    this.renderGiftPicker();
+                });
+                noGiftsContainer.appendChild(buyBtn);
+                grid.appendChild(noGiftsContainer);
+            } else {
+                for (const item of inventory) {
+                    const gift = item.catalog;
+                    const card = document.createElement('button');
+                    card.type = 'button';
+                    card.className = 'gift-choice';
+                    card.dataset.giftKey = gift.key;
+                    
+                    const visual = document.createElement('div');
+                    visual.className = 'gift-choice-visual';
+                    visual.innerHTML = this.buildGiftMarkup(gift, 64);
+                    
+                    const name = document.createElement('div');
+                    name.className = 'gift-choice-name';
+                    name.textContent = gift.name;
+                    
+                    const meta = document.createElement('div');
+                    meta.className = 'gift-choice-meta';
+                    meta.textContent = this.format('gift-choice-meta', {
+                        rarity: gift.rarity || 'common',
+                        exchangeValue: gift.exchangeValue || 0
+                    });
+                    
+                    const count = document.createElement('div');
+                    count.className = 'gift-choice-cost';
+                    count.style.color = 'var(--color-primary, #00C853)';
+                    count.textContent = `Количество: ${item.quantity}`;
+                    
+                    card.appendChild(visual);
+                    card.appendChild(name);
+                    card.appendChild(meta);
+                    card.appendChild(count);
+                    
+                    card.addEventListener('click', async (event) => {
+                        event.stopPropagation();
+                        await this.sendGift(gift.key, this.selectedGiftRecipientId || recipients[0]?.id || '', true);
+                    });
+                    grid.appendChild(card);
+                }
+            }
         } else {
-            for (const gift of gifts) {
-                const card = document.createElement('button');
-                card.type = 'button';
-                card.className = 'gift-choice';
-                card.dataset.giftKey = gift.key;
-                const visual = document.createElement('div');
-                visual.className = 'gift-choice-visual';
-                visual.innerHTML = this.buildGiftMarkup(gift, 64);
-                const name = document.createElement('div');
-                name.className = 'gift-choice-name';
-                name.textContent = gift.name;
-                const meta = document.createElement('div');
-                meta.className = 'gift-choice-meta';
-                meta.textContent = `${gift.rarity || 'common'} вЂў ${gift.exchangeValue || 0} back`;
-                const cost = document.createElement('div');
-                cost.className = 'gift-choice-cost';
-                cost.textContent = `${gift.coinCost || 100} coins`;
-                meta.textContent = this.format('gift-choice-meta', {
-                    rarity: gift.rarity || 'common',
-                    exchangeValue: gift.exchangeValue || 0
-                });
-                cost.textContent = this.format('gift-coins', { value: gift.coinCost || 100 });
-                card.appendChild(visual);
-                card.appendChild(name);
-                card.appendChild(meta);
-                card.appendChild(cost);
-                card.addEventListener('click', async (event) => {
-                    event.stopPropagation();
-                    await this.sendGift(gift.key, this.selectedGiftRecipientId || recipients[0]?.id || '');
-                });
-                grid.appendChild(card);
+            // Catalog mode
+            const gifts = Array.isArray(this.giftCatalog) ? this.giftCatalog : [];
+            if (!gifts.length) {
+                const empty = document.createElement('div');
+                empty.className = 'modal-desc';
+                empty.style.gridColumn = '1 / -1';
+                empty.textContent = this.t('gift-loading');
+                grid.appendChild(empty);
+            } else {
+                for (const gift of gifts) {
+                    const card = document.createElement('button');
+                    card.type = 'button';
+                    card.className = 'gift-choice';
+                    card.dataset.giftKey = gift.key;
+                    
+                    const visual = document.createElement('div');
+                    visual.className = 'gift-choice-visual';
+                    visual.innerHTML = this.buildGiftMarkup(gift, 64);
+                    
+                    const name = document.createElement('div');
+                    name.className = 'gift-choice-name';
+                    name.textContent = gift.name;
+                    
+                    const meta = document.createElement('div');
+                    meta.className = 'gift-choice-meta';
+                    meta.textContent = this.format('gift-choice-meta', {
+                        rarity: gift.rarity || 'common',
+                        exchangeValue: gift.exchangeValue || 0
+                    });
+                    
+                    const cost = document.createElement('div');
+                    cost.className = 'gift-choice-cost';
+                    cost.textContent = this.format('gift-coins', { value: gift.coinCost || 100 });
+                    
+                    card.appendChild(visual);
+                    card.appendChild(name);
+                    card.appendChild(meta);
+                    card.appendChild(cost);
+                    
+                    card.addEventListener('click', async (event) => {
+                        event.stopPropagation();
+                        await this.sendGift(gift.key, this.selectedGiftRecipientId || recipients[0]?.id || '', false);
+                    });
+                    grid.appendChild(card);
+                }
             }
         }
 
         this.giftPicker.appendChild(header);
         this.giftPicker.appendChild(recipientRow);
+        if (menuBar.childNodes.length > 0) {
+            this.giftPicker.appendChild(menuBar);
+        }
         this.giftPicker.appendChild(grid);
     }
     toggleGiftPicker(force = null) {
@@ -14428,6 +14865,7 @@ class DominoGame {
             this.giftBtn.setAttribute('aria-expanded', String(open));
         }
         if (open) {
+            this.giftPickerMode = 'inventory'; // Reset mode to inventory on open
             this.renderGiftPicker();
             void this.loadGiftHub();
         }
@@ -14559,7 +14997,7 @@ class DominoGame {
             list.appendChild(card);
         }
     }
-    async sendGift(giftKey, recipientPlayerId) {
+    async sendGift(giftKey, recipientPlayerId, fromInventory = false) {
         const recipientId = String(recipientPlayerId || '').trim();
         const key = String(giftKey || '').trim();
         if (!recipientId || !key) {
@@ -14582,7 +15020,8 @@ class DominoGame {
                 giftKey: key,
                 contextType: this.network?.isMultiplayer ? 'match' : 'profile',
                 contextId: this.currentRoomState?.roomId || this.currentMatchSessionId || '',
-                note: `${gift.name}`
+                note: `${gift.name}`,
+                fromInventory: fromInventory
             });
             const name = this.getRecipientNameById(recipientId);
             this.closeGiftPicker();

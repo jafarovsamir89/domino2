@@ -2393,6 +2393,7 @@ export class SocialService {
       contextType?: string;
       contextId?: string;
       note?: string;
+      fromInventory?: boolean;
     }
   ) {
     const currentPlayer = await this.getCurrentPlayer(headers);
@@ -2401,6 +2402,7 @@ export class SocialService {
     const contextType = String(body?.contextType || "match").trim() || "match";
     const contextId = String(body?.contextId || "").trim() || null;
     const note = String(body?.note || "").trim() || null;
+    const fromInventory = Boolean(body?.fromInventory);
 
     if (!recipientPlayerId) {
       throw new BadRequestException("Recipient is required");
@@ -2441,23 +2443,41 @@ export class SocialService {
         throw new NotFoundException("Gift not found");
       }
 
-      const wallet = await this.debitWallet(
-        tx,
-        currentPlayer.id,
-        nextCatalog.coinCost,
-        "gift_send" as CoinLedgerType,
-        "gift_send",
-        nextCatalog.id,
-        {
-          note: note || `Gift ${nextCatalog.name}`,
-          payloadJson: {
-            recipientPlayerId,
-            giftKey: nextCatalog.key,
-            contextType,
-            contextId
+      let wallet = null;
+
+      if (fromInventory) {
+        const senderInventory = await tx.playerGiftInventory.findFirst({
+          where: {
+            playerId: currentPlayer.id,
+            giftCatalogId: nextCatalog.id
           }
+        });
+        if (!senderInventory || senderInventory.quantity <= 0) {
+          throw new ForbiddenException("You do not have this gift in your inventory");
         }
-      );
+        await tx.playerGiftInventory.update({
+          where: { id: senderInventory.id },
+          data: { quantity: { decrement: 1 } }
+        });
+      } else {
+        wallet = await this.debitWallet(
+          tx,
+          currentPlayer.id,
+          nextCatalog.coinCost,
+          "gift_send" as CoinLedgerType,
+          "gift_send",
+          nextCatalog.id,
+          {
+            note: note || `Gift ${nextCatalog.name}`,
+            payloadJson: {
+              recipientPlayerId,
+              giftKey: nextCatalog.key,
+              contextType,
+              contextId
+            }
+          }
+        );
+      }
 
       const inventory = await tx.playerGiftInventory.upsert({
         where: {
@@ -2491,11 +2511,11 @@ export class SocialService {
           giftKeySnapshot: nextCatalog.key,
           giftNameSnapshot: nextCatalog.name,
           assetKeySnapshot: nextCatalog.assetKey,
-          coinCost: nextCatalog.coinCost,
+          coinCost: fromInventory ? 0 : nextCatalog.coinCost,
           exchangeValue,
           contextType,
           contextId,
-          note,
+          note: note || (fromInventory ? `Gift ${nextCatalog.name} (from inventory)` : `Gift ${nextCatalog.name}`),
           status: "sent"
         },
         include: {
@@ -2529,7 +2549,7 @@ export class SocialService {
       });
 
       return {
-        wallet,
+        wallet: wallet ? wallet : undefined,
         gift: this.summarizeGiftTransaction(gift as unknown as GiftTransactionRow),
         inventory: this.summarizeGiftInventory(inventory as unknown as GiftInventoryRow),
         inbox: this.summarizeInboxMessage(inbox as unknown as InboxMessageRow)
