@@ -52,6 +52,32 @@ export const translations = {
         "msg-first-turn": "{player} ilk gedişə başlayır",
         "msg-last-winner-starts": "{player} əvvəlki oyunun qalibi kimi başlayır",
         "msg-gosha": "{player} Qoşa gəldi!",
+        "stage-search-opening": "İlk gediş axtarılır...",
+        "stage-opening-turn-desc": "İlk gediş: {player}",
+        "stage-opening-reason-gosha": "ən kiçik Qoşa",
+        "stage-opening-reason-smallest": "ən kiçik daş",
+        "stage-opening-you": "Siz başlayırsınız",
+        "stage-opening-required": "{tile} daşını yerləşdirin",
+        "stage-opening-required-title": "Yanlış ilk gediş",
+        "stage-opening-ai-desc": "{player} başlayır",
+        "stage-ai-thinking": "AI düşünür...",
+        "stage-ai-playing": "AI gediş edir",
+        "stage-ai-gosha": "AI Qoşa gəlir",
+        "stage-last-winner-starts": "Əvvəlki raundun qalibi başlayır",
+        "stage-final-tile-title": "{player} sonuncu daşı qoydu",
+        "stage-final-tile-subtitle": "Raund bitdi",
+        "stage-final-gosha-title": "{player} oyunu Qoşa ilə bitirdi",
+        "stage-final-gosha-subtitle": "{count} daş birdən oynanıldı",
+        "stage-final-fish-title": "Rıba (Bağlanma)",
+        "stage-final-fish-subtitle": "Qalıq xalların hesablanması",
+        "stage-final-instant-win-title": "Məsafəli qələbə",
+        "stage-final-instant-win-desc": "{player} lazımi xalları topladı",
+        "stage-counting": "Xallar hesablanır...",
+        "threat-one-tile": "1 daş qalıb!",
+        "threat-two-tiles": "2 daş qalıb!",
+        "threat-two-tiles-sub": "Qoşa ola bilər",
+        "threat-gosha-finish": "Qoşa bitişi!",
+        "threat-gosha-warning": "Qoşa təhlükəsi!",
         "round-end-next": "Davam et",
         "menu-title": "Menyu",
         "menu-resume": "Davam et",
@@ -527,6 +553,48 @@ export const translations = {
         ,"daily-bonus-toast": "+{amount} coin qazandın"
         ,"daily-bonus-day": "Gün {day}"
         ,"daily-bonus-max-streak": "Maksimum seriya"
+        ,"stage-deal-start": "Paylanma..."
+        ,"stage-search-opening": "İlk gediş axtarılır..."
+        ,"stage-opening-turn": "İlk gediş"
+        ,"stage-opening-turn-desc": "İlk gediş: {player}"
+        ,"stage-opening-you": "Siz başlayırsınız"
+        ,"stage-opening-wait": "İlk gediş gözlənilir"
+        ,"stage-opening-ai": "AI başlayır"
+        ,"stage-opening-ai-desc": "{player} başlayır"
+        ,"stage-opening-required": "{tile} ilə başlamalısınız"
+        ,"stage-opening-required-title": "Yanlış ilk gediş"
+        ,"stage-ai-thinking": "AI düşünür..."
+        ,"stage-ai-playing": "AI gediş edir"
+        ,"stage-ai-gosha": "AI Qoşa oynayır"
+        ,"stage-player-turn": "{player} oyunçunun gedişi"
+        ,"stage-your-turn": "Sizin gedişiniz"
+        ,"stage-final-tile-title": "{player} son daşı qoydu"
+        ,"stage-final-tile-subtitle": "Raund bitdi"
+        ,"stage-final-gosha-title": "{player} oyunu Qoşa ilə bağladı"
+        ,"stage-final-gosha-subtitle": "{count} daş birdən oynanıldı"
+        ,"stage-final-fish-title": "Bağlandı (Rıba)!"
+        ,"stage-final-fish-subtitle": "Qalıqların hesablanması"
+        ,"stage-final-instant-win-title": "Dərhal qələbə"
+        ,"stage-final-instant-win-desc": "{player} lazımi xalları topladı"
+        ,"stage-counting": "Xalların hesablanması..."
+        ,"threat-one-tile": "1 daş"
+        ,"threat-two-tiles": "2 daş"
+        ,"threat-two-tiles-sub": "Qoşa ola bilər"
+        ,"threat-gosha-finish": "Qoşa ilə bağlaya bilər"
+        ,"threat-gosha-warning": "Qoşa: 1 daş qalacaq"
+        ,"result-summary-out": "{player} birinci çıxdı"
+        ,"result-summary-gosha-title": "{player} oyunu Qoşa ilə bağladı"
+        ,"result-summary-gosha": "{count} daş birdən oynanıldı"
+        ,"result-summary-fish": "Bağlandı! Ən az xalı olan {player} qazandı"
+        ,"result-summary-team-bonus": "{team} komandası +{bonus} xal qazanır"
+        ,"result-summary-ffa-bonus": "Qalib +{bonus} xal qazanır"
+        ,"stage-last-winner-starts": "Əvvəlki oyunun qalibi başlayır"
+        ,"stage-kicker-deal": "Paylanma"
+        ,"stage-kicker-opening": "İlk gediş"
+        ,"stage-kicker-ai": "AI gedişi"
+        ,"stage-kicker-your-turn": "Sizin gedişiniz"
+        ,"stage-kicker-final": "Son daş"
+        ,"stage-kicker-counting": "Hesab"
     },
     en: {
         "game-title": "Domino (Telephone)",
@@ -581,6 +649,32 @@ export const translations = {
         "msg-first-turn": "{player} makes the opening move",
         "msg-last-winner-starts": "{player} starts as the previous deal winner",
         "msg-gosha": "{player} played Gosha!",
+        "stage-search-opening": "Searching for opening move...",
+        "stage-opening-turn-desc": "Opening turn: {player}",
+        "stage-opening-reason-gosha": "smallest Gosha",
+        "stage-opening-reason-smallest": "smallest tile",
+        "stage-opening-you": "You start",
+        "stage-opening-required": "Play {tile}",
+        "stage-opening-required-title": "Invalid opening move",
+        "stage-opening-ai-desc": "{player} starts",
+        "stage-ai-thinking": "AI is thinking...",
+        "stage-ai-playing": "AI is playing",
+        "stage-ai-gosha": "AI plays Gosha",
+        "stage-last-winner-starts": "Previous winner starts",
+        "stage-final-tile-title": "{player} played the last tile",
+        "stage-final-tile-subtitle": "Round ended",
+        "stage-final-gosha-title": "{player} closed the game with a Gosha",
+        "stage-final-gosha-subtitle": "{count} tiles played instantly",
+        "stage-final-fish-title": "Fish",
+        "stage-final-fish-subtitle": "Counting remaining points",
+        "stage-final-instant-win-title": "Instant Victory",
+        "stage-final-instant-win-desc": "{player} reached win score limit",
+        "stage-counting": "Counting points...",
+        "threat-one-tile": "1 tile left!",
+        "threat-two-tiles": "2 tiles left!",
+        "threat-two-tiles-sub": "Gosha possible",
+        "threat-gosha-finish": "Gosha finish!",
+        "threat-gosha-warning": "Gosha threat!",
         "round-end-next": "Continue",
         "menu-title": "Menu",
         "menu-resume": "Resume",
@@ -1056,6 +1150,48 @@ export const translations = {
         ,"daily-bonus-toast": "You earned +{amount} coins"
         ,"daily-bonus-day": "Day {day}"
         ,"daily-bonus-max-streak": "Max streak"
+        ,"stage-deal-start": "Dealing tiles..."
+        ,"stage-search-opening": "Finding first move..."
+        ,"stage-opening-turn": "First Move"
+        ,"stage-opening-turn-desc": "First Move: {player}"
+        ,"stage-opening-you": "You start"
+        ,"stage-opening-wait": "Waiting for first move"
+        ,"stage-opening-ai": "AI starts"
+        ,"stage-opening-ai-desc": "{player} starts"
+        ,"stage-opening-required": "Must start with {tile}"
+        ,"stage-opening-required-title": "Invalid first move"
+        ,"stage-ai-thinking": "AI is thinking..."
+        ,"stage-ai-playing": "AI makes a move"
+        ,"stage-ai-gosha": "AI plays Gosha combo"
+        ,"stage-player-turn": "{player}'s turn"
+        ,"stage-your-turn": "Your turn"
+        ,"stage-final-tile-title": "{player} played the last tile"
+        ,"stage-final-tile-subtitle": "Round over"
+        ,"stage-final-gosha-title": "{player} closed with Gosha"
+        ,"stage-final-gosha-subtitle": "{count} tiles played at once"
+        ,"stage-final-fish-title": "Fish!"
+        ,"stage-final-fish-subtitle": "Counting leftovers"
+        ,"stage-final-instant-win-title": "Instant Win"
+        ,"stage-final-instant-win-desc": "{player} reached the target score"
+        ,"stage-counting": "Counting points..."
+        ,"threat-one-tile": "1 tile"
+        ,"threat-two-tiles": "2 tiles"
+        ,"threat-two-tiles-sub": "possible Gosha"
+        ,"threat-gosha-finish": "Can close with Gosha"
+        ,"threat-gosha-warning": "Gosha: 1 tile left"
+        ,"result-summary-out": "{player} went out first"
+        ,"result-summary-gosha-title": "{player} closed with Gosha"
+        ,"result-summary-gosha": "{count} tiles played at once"
+        ,"result-summary-fish": "Fish! {player} won with fewer points"
+        ,"result-summary-team-bonus": "Team {team} gets +{bonus}"
+        ,"result-summary-ffa-bonus": "Winner gets +{bonus}"
+        ,"stage-last-winner-starts": "Last deal winner starts"
+        ,"stage-kicker-deal": "Dealing"
+        ,"stage-kicker-opening": "Opening move"
+        ,"stage-kicker-ai": "AI turn"
+        ,"stage-kicker-your-turn": "Your turn"
+        ,"stage-kicker-final": "Last tile"
+        ,"stage-kicker-counting": "Counting"
     },
     ru: {
         "game-title": "Домино (Телефон)",
@@ -1107,6 +1243,32 @@ export const translations = {
         "msg-first-turn": "{player} делает первый ход",
         "msg-last-winner-starts": "{player} начинает как победитель прошлой сдачи",
         "msg-gosha": "{player} сыграл Гошу!",
+        "stage-search-opening": "Поиск первого хода...",
+        "stage-opening-turn-desc": "Первый ход: {player}",
+        "stage-opening-reason-gosha": "минимальная Гоша",
+        "stage-opening-reason-smallest": "самый маленький камень",
+        "stage-opening-you": "Вы начинаете",
+        "stage-opening-required": "Поставьте {tile}",
+        "stage-opening-required-title": "Неверный первый ход",
+        "stage-opening-ai-desc": "{player} начинает",
+        "stage-ai-thinking": "AI думает...",
+        "stage-ai-playing": "AI ходит",
+        "stage-ai-gosha": "AI играет Гошу",
+        "stage-last-winner-starts": "Начинает победитель прошлой раздачи",
+        "stage-final-tile-title": "{player} поставил последний камень",
+        "stage-final-tile-subtitle": "Раунд окончен",
+        "stage-final-gosha-title": "{player} закрыл игру Гошей",
+        "stage-final-gosha-subtitle": "{count} камня сыграны сразу",
+        "stage-final-fish-title": "Рыба",
+        "stage-final-fish-subtitle": "Подсчёт остатков",
+        "stage-final-instant-win-title": "Мгновенная победа",
+        "stage-final-instant-win-desc": "{player} набрал нужные очки",
+        "stage-counting": "Подсчёт очков...",
+        "threat-one-tile": "1 камень остался!",
+        "threat-two-tiles": "2 камня осталось!",
+        "threat-two-tiles-sub": "возможна Гоша",
+        "threat-gosha-finish": "Финиш Гошей!",
+        "threat-gosha-warning": "Угроза Гоши!",
         "round-end-next": "Продолжить",
         "menu-title": "Меню",
         "menu-resume": "Продолжить",
@@ -1576,5 +1738,47 @@ export const translations = {
         ,"daily-bonus-toast": "Ты получил +{amount} монет"
         ,"daily-bonus-day": "День {day}"
         ,"daily-bonus-max-streak": "Максимальная серия"
+        ,"stage-deal-start": "Раздача карт..."
+        ,"stage-search-opening": "Ищем первый ход..."
+        ,"stage-opening-turn": "Первый ход"
+        ,"stage-opening-turn-desc": "Первый ход: {player}"
+        ,"stage-opening-you": "Вы начинаете"
+        ,"stage-opening-wait": "Ожидание первого хода"
+        ,"stage-opening-ai": "AI начинает"
+        ,"stage-opening-ai-desc": "{player} начинает"
+        ,"stage-opening-required": "Начать нужно с {tile}"
+        ,"stage-opening-required-title": "Неверный первый ход"
+        ,"stage-ai-thinking": "AI думает..."
+        ,"stage-ai-playing": "AI ходит"
+        ,"stage-ai-gosha": "AI играет Гошу"
+        ,"stage-player-turn": "Ход игрока {player}"
+        ,"stage-your-turn": "Ваш ход"
+        ,"stage-final-tile-title": "{player} поставил последний камень"
+        ,"stage-final-tile-subtitle": "Раунд окончен"
+        ,"stage-final-gosha-title": "{player} закрыл игру Гошей"
+        ,"stage-final-gosha-subtitle": "{count} камня сыграны сразу"
+        ,"stage-final-fish-title": "Рыба!"
+        ,"stage-final-fish-subtitle": "Подсчёт остатков"
+        ,"stage-final-instant-win-title": "Мгновенная победа"
+        ,"stage-final-instant-win-desc": "{player} набрал нужные очки"
+        ,"stage-counting": "Подсчёт очков..."
+        ,"threat-one-tile": "1 камень"
+        ,"threat-two-tiles": "2 камня"
+        ,"threat-two-tiles-sub": "возможна Гоша"
+        ,"threat-gosha-finish": "Может закрыть Гошей"
+        ,"threat-gosha-warning": "Гоша: останется 1"
+        ,"result-summary-out": "{player} вышел первым"
+        ,"result-summary-gosha-title": "{player} закрыл игру Гошей"
+        ,"result-summary-gosha": "{count} камня сыграны сразу"
+        ,"result-summary-fish": "Рыба! Победил {player} с меньшим остатком"
+        ,"result-summary-team-bonus": "Команда {team} получает +{bonus}"
+        ,"result-summary-ffa-bonus": "Победитель получает +{bonus}"
+        ,"stage-last-winner-starts": "Победитель прошлой раздачи начинает"
+        ,"stage-kicker-deal": "Раздача"
+        ,"stage-kicker-opening": "Первый ход"
+        ,"stage-kicker-ai": "Ход AI"
+        ,"stage-kicker-your-turn": "Ваш ход"
+        ,"stage-kicker-final": "Последний камень"
+        ,"stage-kicker-counting": "Подсчёт"
     }
 };

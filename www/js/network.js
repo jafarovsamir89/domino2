@@ -423,6 +423,10 @@ class NetworkManager {
             this.game.playSound(name);
         });
 
+        this.room.onMessage("round_stage", (payload) => {
+            this.game.onNetworkRoundStage?.(payload);
+        });
+
         this.room.onMessage("score_popup", (score) => {
             this.game.renderer.showScorePopup(score);
         });

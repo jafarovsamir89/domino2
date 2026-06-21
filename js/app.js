@@ -221,6 +221,13 @@ class DominoGame {
         this.currentRoundStakeAmount = 0;
         this.currentRoundBankAmount = 0;
         this.coinMatchSummary = { spent: 0, won: 0 };
+        this.roundStage = null;
+        this.roundStageTimer = null;
+        this.openingRequiredTileId = '';
+        this.openingRequiredTileIndex = -1;
+        this.openingRequiredPlayerIndex = -1;
+        this.lastShownStageKey = '';
+        this.lastResultStageKey = '';
         this.onlineCoinSummary = { spent: 0, won: 0 };
         this.currentRoomState = null;
         this.seatSelectionUi = null;
@@ -9430,15 +9437,17 @@ class DominoGame {
         }, delay);
     }
 
-    delayLastMoveSettlement(callback, delay = LAST_MOVE_REVEAL_DELAY_MS) {
-        const adjustedDelay = (Number(delay || 0) || 0) + 1500;
+    delayLastMoveSettlement(callback, delay = LAST_MOVE_REVEAL_DELAY_MS, finalInfo = null) {
         clearTimeout(this._lastMoveRevealTimeout);
         this._lastMoveRevealTimeout = null;
         this.lastMoveRevealPending = true;
         this.turnInProgress = true;
         this.renderState();
-        this._lastMoveRevealTimeout = setTimeout(() => {
-            this._lastMoveRevealTimeout = null;
+        
+        const runPreResultAndCallback = async () => {
+            if (finalInfo) {
+                await this.showPreResultStage(finalInfo);
+            }
             try {
                 callback?.();
             } finally {
@@ -9446,7 +9455,12 @@ class DominoGame {
                 this.turnInProgress = false;
                 this.renderState();
             }
-        }, Math.max(0, Number(adjustedDelay || 0) || 0));
+        };
+
+        this._lastMoveRevealTimeout = setTimeout(() => {
+            this._lastMoveRevealTimeout = null;
+            void runPreResultAndCallback();
+        }, Math.max(0, Number(delay || 0) || 0));
     }
 
     scheduleTurnAdvance(delay = this.postMoveAdvanceMs, turnCycleId = this._turnCycleId) {
@@ -14281,6 +14295,7 @@ class DominoGame {
     }
 
     async returnToMainMenu({ settleForfeit = false } = {}) {
+        this.clearRoundStage();
         this.clearPendingOnlineAction({ rollback: false });
         this.clearNextDealAdvanceTimeout();
         this.clearTurnTimers();
@@ -14485,6 +14500,7 @@ class DominoGame {
 
     async startRound() { 
         debugLog('[startRound] playerCount:', this.playerCount);
+        this.clearRoundStage();
         this.roundOver=false; this.scores=new Array(this.playerCount).fill(0); if(this.isTeamMode) this.teamScores=[0,0]; this.deal=1; 
         this.clearNextDealAdvanceTimeout();
         await this.pendingSoloSettlement.catch(() => {});
@@ -14514,6 +14530,10 @@ class DominoGame {
 
     startDeal() {
         debugLog('[startDeal] Initializing deal...');
+        this.clearRoundStage();
+        this.openingRequiredTileId = '';
+        this.openingRequiredTileIndex = -1;
+        this.openingRequiredPlayerIndex = -1;
         document.getElementById('round-end-screen')?.classList.remove('review-mode');
         document.getElementById('game-over-screen')?.classList.remove('review-mode');
         this._turnCycleId += 1;
@@ -14530,21 +14550,82 @@ class DominoGame {
             this.currentPlayer=fp; this.renderState();
             this.startTurnTimer();
             debugLog('[startDeal] Last deal winner starts:', fp);
+            const displayName = this.getPlayerDisplayName(fp);
+            this.showTimedRoundStage({
+                phase: 'opening-turn',
+                title: this.t('stage-last-winner-starts') || 'Победитель прошлой раздачи начинает',
+                subtitle: displayName,
+                blocksInput: false
+            }, 2000);
             this.broadcastMsg(this.format('msg-last-winner-starts', { player: this.playerNames[fp] }),2000);
             this.queueAITurnIfNeeded(BOT_THINK_DELAY_MS, turnCycleId);
         }else{
             const f=determineFirstPlayer(this.hands);
             const fp=f.player; const fi=f.tileIndex;
+            const tile = this.hands[fp][fi];
             this.currentPlayer=fp; this.renderState();
-            this.startTurnTimer();
             debugLog('[startDeal] First player determined:', fp);
             this.broadcastMsg(this.format('msg-first-turn', { player: this.playerNames[fp] }),2000);
-            this.turnInProgress=true;
-            this._firstTurnTimeout = setTimeout(() => {
+            
+            // Show "Finding first move..."
+            this.setRoundStage({
+                phase: 'search-opening',
+                title: this.t('stage-search-opening') || 'Ищем первый ход...',
+                blocksInput: true
+            });
+            
+            this.roundStageTimer = setTimeout(() => {
                 if (turnCycleId !== this._turnCycleId) return;
-                this.turnInProgress=false;
-                this.playTile(fp,fi,-1);
-            },BOT_THINK_DELAY_MS);
+                
+                const reason = this.describeOpeningReason(tile);
+                const tileStr = this.describeTile(tile);
+                const pName = this.getPlayerDisplayName(fp);
+                
+                this.setRoundStage({
+                    phase: 'opening-turn',
+                    title: this.format('stage-opening-turn-desc', { player: pName }) || `Первый ход: ${pName}`,
+                    subtitle: `${tileStr} (${reason})`,
+                    blocksInput: true
+                });
+                
+                this.roundStageTimer = setTimeout(() => {
+                    if (turnCycleId !== this._turnCycleId) return;
+                    
+                    this.clearRoundStage();
+                    this.startTurnTimer();
+                    this.turnInProgress = false;
+                    
+                    if (fp === this.humanPlayerIndex) {
+                        this.openingRequiredPlayerIndex = fp;
+                        this.openingRequiredTileIndex = fi;
+                        this.openingRequiredTileId = tile.id;
+                        this.renderState();
+                        
+                        this.setRoundStage({
+                            phase: 'opening-you',
+                            title: this.t('stage-opening-you') || 'Вы начинаете',
+                            subtitle: this.format('stage-opening-required', { tile: tileStr }) || `Поставьте ${tileStr}`,
+                            tile: tile,
+                            blocksInput: false
+                        });
+                    } else {
+                        this.renderState();
+                        this.setRoundStage({
+                            phase: 'opening-ai',
+                            title: this.format('stage-opening-ai-desc', { player: pName }) || `${pName} начинает`,
+                            subtitle: `Поставит ${tileStr}`,
+                            tile: tile,
+                            blocksInput: true
+                        });
+                        
+                        this.roundStageTimer = setTimeout(() => {
+                            if (turnCycleId !== this._turnCycleId) return;
+                            this.clearRoundStage();
+                            this.playTile(fp, fi, -1);
+                        }, 1500);
+                    }
+                }, 1500);
+            }, 1200);
         }
     }
 
@@ -14949,6 +15030,277 @@ class DominoGame {
         return String(payload.reason || '');
     }
 
+    setRoundStage(stage = {}) {
+        if (this.roundStageTimer) {
+            clearTimeout(this.roundStageTimer);
+            this.roundStageTimer = null;
+        }
+        this.roundStage = stage;
+        if (stage.phase) {
+            this.lastShownStageKey = stage.phase;
+        }
+        this.renderer.renderRoundStage(stage);
+    }
+
+    clearRoundStage(expectedPhase = '') {
+        if (expectedPhase && this.roundStage?.phase !== expectedPhase) {
+            return;
+        }
+        if (this.roundStageTimer) {
+            clearTimeout(this.roundStageTimer);
+            this.roundStageTimer = null;
+        }
+        this.roundStage = null;
+        this.renderer.clearRoundStage();
+    }
+
+    showTimedRoundStage(stage, duration = 1200) {
+        this.setRoundStage(stage);
+        this.roundStageTimer = setTimeout(() => {
+            this.clearRoundStage(stage.phase);
+        }, duration);
+    }
+
+    isInputBlockedByStage() {
+        if (this.lastMoveRevealPending) return true;
+        if (this.roundStage) {
+            if (this.roundStage.blocksInput) return true;
+            if (this.roundStage.phase === 'final-move') return true;
+            if (this.roundStage.phase === 'counting') return true;
+        }
+        if (this.pendingOnlineAction) return true;
+        if (this.pendingReconnectResolution) return true;
+        return false;
+    }
+
+    getPlayerDisplayName(playerIndex) {
+        if (this.isTeamMode) {
+            return this.getTeamDisplayName(this.getTeam(playerIndex));
+        }
+        return this.playerNames[playerIndex] || `Player ${playerIndex + 1}`;
+    }
+
+    getPlayerRole(playerIndex) {
+        if (playerIndex === this.humanPlayerIndex) return 'self';
+        if (this.isTeamMode && this.getTeam(playerIndex) === this.getTeam(this.humanPlayerIndex)) {
+            return 'teammate';
+        }
+        const isBot = this.network?.isMultiplayer
+            ? Boolean(this.currentRoomState?.players?.[playerIndex]?.isBot)
+            : true;
+        return isBot ? 'bot' : 'opponent';
+    }
+
+    describeTile(tile) {
+        if (!tile) return '';
+        return `[${tile.a}|${tile.b}]`;
+    }
+
+    describeOpeningReason(tile) {
+        if (!tile) return '';
+        if ((tile.a === 3 && tile.b === 2) || (tile.a === 2 && tile.b === 3)) {
+            return '[3|2]';
+        }
+        if (tile.isDouble && tile.a >= 1 && tile.a <= 6) {
+            return this.t('stage-opening-reason-gosha') || 'минимальная Гоша';
+        }
+        if (tile.isDouble && tile.a === 0) {
+            return '[0|0]';
+        }
+        return this.t('stage-opening-reason-smallest') || 'самый маленький камень';
+    }
+
+    buildOpeningStageForLocal(firstInfo) {
+        return firstInfo;
+    }
+
+    getPlayerCloseoutThreat(playerIndex) {
+        const hand = this.hands?.[playerIndex] || [];
+        const count = hand.length;
+
+        if (playerIndex === this.humanPlayerIndex) return null;
+        if (!this.gameActive || count <= 0) return null;
+
+        const role = this.getPlayerRole(playerIndex);
+
+        if (this.network?.isMultiplayer) {
+            if (count === 1) return { type: 'single', label: this.t('threat-one-tile'), role };
+            if (count === 2) return { type: 'two', label: this.t('threat-two-tiles'), subtitle: this.t('threat-two-tiles-sub') || 'возможна Гоша', role };
+            return null;
+        }
+
+        if (count === 1) return { type: 'single', label: this.t('threat-one-tile'), role };
+
+        const knownTiles = hand.every(tile => tile && typeof tile.a === 'number' && typeof tile.b === 'number');
+        if (knownTiles && this.board && !this.board.isEmpty) {
+            const combo = this.board.getGoshaCombo(hand);
+            if (combo?.matches?.length) {
+                if (combo.matches.length >= count) {
+                    return { type: 'gosha-finish', label: this.t('threat-gosha-finish'), combo, role };
+                }
+                if (count - combo.matches.length === 1) {
+                    return { type: 'gosha-warning', label: this.t('threat-gosha-warning'), combo, role };
+                }
+            }
+        }
+
+        if (count === 2) return { type: 'two', label: this.t('threat-two-tiles'), role };
+        return null;
+    }
+
+    async showPreResultStage(finalInfo) {
+        if (!finalInfo) return;
+        const actorName = this.playerNames[finalInfo.actorIndex] || '';
+        
+        let title = '';
+        let subtitle = '';
+        
+        switch (finalInfo.finishKind) {
+            case 'tile':
+                title = this.format('stage-final-tile-title', { player: actorName }) || `${actorName} поставил последний камень`;
+                subtitle = this.t('stage-final-tile-subtitle') || 'Раунд окончен';
+                break;
+            case 'gosha':
+                title = this.format('stage-final-gosha-title', { player: actorName }) || `${actorName} закрыл игру Гошей`;
+                subtitle = this.format('stage-final-gosha-subtitle', { count: finalInfo.tileCount }) || `${finalInfo.tileCount} камня сыграны сразу`;
+                break;
+            case 'fish':
+                title = this.t('stage-final-fish-title') || 'Рыба';
+                subtitle = this.t('stage-final-fish-subtitle') || 'Подсчёт остатков';
+                break;
+            case 'instant_win':
+            case 'instant_win_gosha':
+                title = this.t('stage-final-instant-win-title') || 'Мгновенная победа';
+                subtitle = this.format('stage-final-instant-win-desc', { player: actorName }) || `${actorName} набрал нужные очки`;
+                break;
+            default:
+                title = this.t('stage-final-tile-subtitle') || 'Раунд окончен';
+                break;
+        }
+
+        this.setRoundStage({
+            phase: 'final-move',
+            title,
+            subtitle,
+            blocksInput: true
+        });
+
+        await new Promise(resolve => setTimeout(resolve, 1500));
+
+        this.setRoundStage({
+            phase: 'counting',
+            title: this.t('stage-counting') || 'Подсчёт очков...',
+            blocksInput: true
+        });
+
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        this.clearRoundStage();
+    }
+
+    inferFinalInfoFromLocalMove(pi, isGosha, isFish, isInstantWin, comboMatchesLength = 0) {
+        let finishKind = 'tile';
+        if (isInstantWin) {
+            finishKind = isGosha ? 'instant_win_gosha' : 'instant_win';
+        } else if (isGosha) {
+            finishKind = 'gosha';
+        } else if (isFish) {
+            finishKind = 'fish';
+        }
+        return {
+            actorIndex: pi,
+            winnerIndex: isFish ? this.findFishWinner() : pi,
+            finishKind,
+            tileCount: isGosha ? comboMatchesLength : 1,
+            fish: isFish,
+            isLocal: true
+        };
+    }
+
+    inferFinalInfoFromNetworkDealEnd(data) {
+        if (!data) return null;
+        const wi = data.winnerIndex;
+        let finishKind = data.fish ? 'fish' : 'tile';
+        return {
+            actorIndex: wi,
+            winnerIndex: wi,
+            finishKind,
+            tileCount: data.fish ? 0 : 1,
+            fish: !!data.fish
+        };
+    }
+
+    inferFinalInfoFromNetworkRoundEnd(data) {
+        if (!data) return null;
+        const wi = data.winnerIndex;
+        let finishKind = data.isInstantWin ? 'instant_win' : 'tile';
+        return {
+            actorIndex: wi,
+            winnerIndex: wi,
+            finishKind,
+            tileCount: 1,
+            fish: false
+        };
+    }
+
+    onNetworkRoundStage(payload = {}) {
+        const phase = String(payload.phase || '');
+        const blocksInput = Boolean(payload.blocksInput || phase === 'final-move' || phase === 'counting');
+        
+        let title = '';
+        let subtitle = '';
+        
+        if (payload.titleKey) {
+            title = this.format(payload.titleKey, payload.values || {});
+        }
+        if (payload.subtitleKey) {
+            subtitle = this.format(payload.subtitleKey, payload.values || {});
+        }
+        
+        if (!title && phase) {
+            switch (phase) {
+                case 'deal-start':
+                    title = this.t('stage-deal-start') || 'Раздача карт...';
+                    break;
+                case 'opening-turn':
+                    const actorName = payload.actorName || this.playerNames[payload.actorIndex] || `Player ${payload.actorIndex + 1}`;
+                    title = this.format('stage-opening-turn-desc', { player: actorName }) || `Первый ход: ${actorName}`;
+                    break;
+                case 'final-move':
+                    const pName = payload.actorName || this.playerNames[payload.actorIndex] || `Player ${payload.actorIndex + 1}`;
+                    if (payload.finishKind === 'gosha') {
+                        title = this.format('stage-final-gosha-title', { player: pName }) || `${pName} закрыл игру Гошей`;
+                        subtitle = this.format('stage-final-gosha-subtitle', { count: payload.tileCount }) || `${payload.tileCount} камня сыграны сразу`;
+                    } else if (payload.finishKind === 'fish') {
+                        title = this.t('stage-final-fish-title') || 'Рыба';
+                        subtitle = this.t('stage-final-fish-subtitle') || 'Подсчёт остатков';
+                    } else if (payload.finishKind === 'instant_win' || payload.finishKind === 'instant_win_gosha') {
+                        title = this.t('stage-final-instant-win-title') || 'Мгновенная победа';
+                        subtitle = this.format('stage-final-instant-win-desc', { player: pName }) || `${pName} набрал нужные очки`;
+                    } else {
+                        title = this.format('stage-final-tile-title', { player: pName }) || `${pName} поставил последний камень`;
+                        subtitle = this.t('stage-final-tile-subtitle') || 'Раунд окончен';
+                    }
+                    break;
+                case 'counting':
+                    title = this.t('stage-counting') || 'Подсчёт очков...';
+                    break;
+            }
+        }
+        
+        this.setRoundStage({
+            phase,
+            title,
+            subtitle,
+            blocksInput
+        });
+
+        if (phase === 'deal-start' || (phase === 'opening-turn' && !blocksInput)) {
+            setTimeout(() => {
+                this.clearRoundStage(phase);
+            }, 1500);
+        }
+    }
+
     shouldProcessSchemaState(state) {
         void state;
         return true;
@@ -15347,6 +15699,17 @@ class DominoGame {
         }
         this.resetReconnectRestoreUiState();
         
+        this.lastMoveRevealPending = Boolean(payload?.lastMoveRevealPending);
+        if (this.lastMoveRevealPending) {
+            this.setRoundStage({
+                phase: 'counting',
+                title: this.t('stage-counting') || 'Подсчёт очков...',
+                blocksInput: true
+            });
+        } else if (!this.gameActive) {
+            this.clearRoundStage();
+        }
+        
         // Reset signatures to force UI redraw
         this._realtimeRenderSignatures = {};
         
@@ -15742,7 +16105,7 @@ class DominoGame {
     }
 
 
-    onNetworkDealEnd(data) {
+    async onNetworkDealEnd(data) {
         this.gameActive = false;
         this.lastMoveRevealPending = false;
         this.clearTurnTimers();
@@ -15762,7 +16125,8 @@ class DominoGame {
             displayEntities = this.playerNames.map((n,i)=>({name:n,isWinner:i===data.winnerIndex,handPoints:handPoints(this.hands[i]),score:this.scores[i], leftoverHands: [this.hands[i]]}));
         }
         
-        this.renderer.renderDealEnd(this.playerNames[data.winnerIndex], displayEntities, data.fish, data.bonus);
+        await this.showPreResultStage(data.finishInfo || this.inferFinalInfoFromNetworkDealEnd(data));
+        this.renderer.renderDealEnd(this.playerNames[data.winnerIndex], displayEntities, data.fish, data.bonus, data.finishInfo || {});
         this.persistGameResumeSnapshot();
     }
 
@@ -15784,7 +16148,7 @@ class DominoGame {
         }
     }
 
-    onNetworkRoundEnd(data) {
+    async onNetworkRoundEnd(data) {
         this.gameActive = false;
         this.lastMoveRevealPending = false;
         this.clearTurnTimers();
@@ -15820,6 +16184,13 @@ class DominoGame {
             displayEntities = data.players.map(p => ({name: p.name, isWinner: p.isWinner, score: p.score, roundWins: p.roundWins}));
         }
 
+        const gameOverReason = String(this.currentRoomState?.gameOverReason || data.gameOverReason || '').trim();
+        const isDisconnect = data.isMatchOver && (gameOverReason === 'disconnect' || data.forfeit);
+
+        if (!isDisconnect) {
+            await this.showPreResultStage(data.finishInfo || this.inferFinalInfoFromNetworkRoundEnd(data));
+        }
+
         if (data.isMatchOver) {
             this.showMatchResult();
         } else {
@@ -15833,6 +16204,7 @@ class DominoGame {
 
     // Override actions to send to network
     onHandTileClick(ti, fromRemote=false) {
+        if (this.isInputBlockedByStage()) return;
         this.selectedTileIndex = -1;
         this.renderer.removeArrows();
         this.syncMoveHintSelectionUiState();
@@ -15869,6 +16241,7 @@ class DominoGame {
                 this.syncMoveHintSelectionUiState();
                 this.renderer.showArrowChoices(this.board, ends,
                     (ei) => {
+                        if (this.isInputBlockedByStage()) return;
                         const actionId = this.network.nextActionId('play');
                         if (!this.applyOptimisticOnlinePlay(ti, ei, actionId)) {
                             this.selectedTileIndex = -1;
@@ -15897,10 +16270,31 @@ class DominoGame {
         const tile = hand[ti];
         if (!tile) return;
         
-        if (this.board.isEmpty) { this.playTile(pi, ti, -1); return; }
+        if (this.board.isEmpty) {
+            if (this.openingRequiredTileId) {
+                if (pi !== this.openingRequiredPlayerIndex || tile.id !== this.openingRequiredTileId) {
+                    const reqTile = hand.find(t => t.id === this.openingRequiredTileId) || tile;
+                    const reqTileStr = this.describeTile(reqTile);
+                    this.showTimedRoundStage({
+                        phase: 'opening-required',
+                        title: this.t('stage-opening-required-title') || 'Неверный первый ход',
+                        subtitle: this.format('stage-opening-required', { tile: reqTileStr }) || `Начать нужно с ${reqTileStr}`,
+                        tile: reqTile,
+                        blocksInput: false
+                    }, 1500);
+                    return;
+                }
+                this.openingRequiredTileId = '';
+                this.openingRequiredTileIndex = -1;
+                this.openingRequiredPlayerIndex = -1;
+                this.clearRoundStage();
+            }
+            this.playTile(pi, ti, -1);
+            return;
+        }
         const ends = [];
-            for (let j=0; j<this.board.openEnds.length; j++) if (tile.hasValue(this.board.openEnds[j].value)) ends.push(j);
-            if (ends.length > 1 && this.board.nodes.length === 1 && this.board.nodes[0].tile.isDouble) ends.length = 1;
+        for (let j=0; j<this.board.openEnds.length; j++) if (tile.hasValue(this.board.openEnds[j].value)) ends.push(j);
+        if (ends.length > 1 && this.board.nodes.length === 1 && this.board.nodes[0].tile.isDouble) ends.length = 1;
         if (ends.length === 1) this.playTile(pi, ti, ends[0]);
         else if (ends.length > 1) {
             this.selectedTileIndex = ti;
@@ -15908,6 +16302,7 @@ class DominoGame {
             this.syncMoveHintSelectionUiState();
             this.renderer.showArrowChoices(this.board, ends,
                 (ei) => {
+                    if (this.isInputBlockedByStage()) return;
                     this.selectedTileIndex = -1;
                     this.playTile(pi, ti, ei);
                     this.syncMoveHintSelectionUiState();
@@ -15923,6 +16318,7 @@ class DominoGame {
     }
 
     playGoshaCombo(fromRemote=false) {
+        if (this.isInputBlockedByStage()) return;
         if (this.network.isMultiplayer) {
             if (!this.canSendMultiplayerAction()) {
                 const reason = this.lastBlockedOnlineActionReason;
@@ -15967,16 +16363,17 @@ class DominoGame {
         this.renderState();
         
         const score = this.goshaCombo?.score || this.board.calculateScore();
-        if(score>0){this.addScore(pi,score);if(this.checkEnd(pi,score))return true;}
+        if(score>0){this.addScore(pi,score);if(this.checkEnd(pi,score,true,matches.length))return true;}
         this.broadcastMsg(this.format('msg-gosha', { player: this.playerNames[pi] }),2000);
-        if(hand.length===0){ this.delayLastMoveSettlement(()=>this.endDeal(pi,false)); return true;}
-        if(this.board.isBlocked(this.hands,this.boneyard)){ this.delayLastMoveSettlement(()=>this.endDeal(this.findFishWinner(),true)); return true;}
+        if(hand.length===0){ this.delayLastMoveSettlement(()=>this.endDeal(pi,false), LAST_MOVE_REVEAL_DELAY_MS, this.inferFinalInfoFromLocalMove(pi, true, false, false, matches.length)); return true;}
+        if(this.board.isBlocked(this.hands,this.boneyard)){ this.delayLastMoveSettlement(()=>this.endDeal(this.findFishWinner(),true), LAST_MOVE_REVEAL_DELAY_MS, this.inferFinalInfoFromLocalMove(pi, true, true, false, matches.length)); return true;}
         this.turnInProgress=false;
         const advanceDelay = this.shouldOpenGoshaChainWindow(pi) ? this.postMoveAdvanceMs : 0;
         this.scheduleTurnAdvance(advanceDelay, this._turnCycleId);
     }
 
     drawFromBoneyard(fromRemote=false) {
+        if (this.isInputBlockedByStage()) return;
         if (this.network.isMultiplayer) {
             if (!this.canSendMultiplayerAction()) {
                 const reason = this.lastBlockedOnlineActionReason;
@@ -16017,6 +16414,7 @@ class DominoGame {
         this.playSound('draw'); this.broadcastMsg(this.t('msg-took-bazaar'), 1500); this.renderState();
     }
     passTurn(fromRemote=false) {
+        if (this.isInputBlockedByStage()) return;
         if (this.network.isMultiplayer) {
             if (!this.canSendMultiplayerAction()) {
                 const reason = this.lastBlockedOnlineActionReason;
@@ -16074,10 +16472,10 @@ class DominoGame {
         this.broadcastMsg(`${this.playerNames[pi]} +${score}!`,2000);
         return score;
     }
-    checkEnd(pi,score){
+    checkEnd(pi,score,isGosha=false,comboMatchesLength=0){
         if(this.instantWinEnabled && score>=IWIN){
             this.playSound('win');
-            this.delayLastMoveSettlement(() => this.endRound(pi, true));
+            this.delayLastMoveSettlement(() => this.endRound(pi, true), LAST_MOVE_REVEAL_DELAY_MS, this.inferFinalInfoFromLocalMove(pi, isGosha, false, true, comboMatchesLength));
             return true;
         }
         return false;
@@ -16129,8 +16527,8 @@ class DominoGame {
         await travelPromise;
         
         if(score>0){this.addScore(pi,score);if(this.checkEnd(pi,score))return true;}
-        if(hand.length===0){ this.delayLastMoveSettlement(()=>{ if (turnCycleId !== this._turnCycleId) return; this.endDeal(pi,false); }); return true;}
-        if(this.board.isBlocked(this.hands,this.boneyard)){ this.delayLastMoveSettlement(()=>{ if (turnCycleId !== this._turnCycleId) return; this.endDeal(this.findFishWinner(),true); }); return true;}
+        if(hand.length===0){ this.delayLastMoveSettlement(()=>{ if (turnCycleId !== this._turnCycleId) return; this.endDeal(pi,false); }, LAST_MOVE_REVEAL_DELAY_MS, this.inferFinalInfoFromLocalMove(pi, false, false, false)); return true;}
+        if(this.board.isBlocked(this.hands,this.boneyard)){ this.delayLastMoveSettlement(()=>{ if (turnCycleId !== this._turnCycleId) return; this.endDeal(this.findFishWinner(),true); }, LAST_MOVE_REVEAL_DELAY_MS, this.inferFinalInfoFromLocalMove(pi, false, true, false)); return true;}
 
         this.turnInProgress=false;
         this.scheduleTurnAdvance(0, turnCycleId);
@@ -16155,8 +16553,21 @@ class DominoGame {
                 this.turnInProgress=true;
                 setTimeout(()=>{this.turnInProgress=false;this.advanceTurn();},1000);
             } else {
+                this.showTimedRoundStage({
+                    phase: 'your-turn',
+                    title: this.t('stage-your-turn') || 'Ваш ход',
+                    blocksInput: false
+                }, 1000);
                 this.renderer.showMessage(this.t('msg-your-turn'), 1000);
             }
+        } else {
+            const pName = this.getPlayerDisplayName(this.currentPlayer);
+            this.setRoundStage({
+                phase: 'ai-thinking',
+                title: this.t('stage-ai-thinking') || 'AI думает...',
+                subtitle: pName,
+                blocksInput: false
+            });
         }
         this.queueAITurnIfNeeded(BOT_THINK_DELAY_MS);
     }
@@ -16189,7 +16600,17 @@ class DominoGame {
         if (combo) {
             this.goshaCombo = combo;
             this.turnInProgress = false;
-            this.playGoshaCombo();
+            const pName = this.getPlayerDisplayName(pi);
+            this.showTimedRoundStage({
+                phase: 'ai-playing',
+                title: this.t('stage-ai-gosha') || 'AI играет Гошу',
+                subtitle: pName,
+                blocksInput: true
+            }, 800);
+            setTimeout(() => {
+                if (turnCycleId !== this._turnCycleId) return;
+                this.playGoshaCombo();
+            }, 800);
             return;
         }
 
@@ -16198,7 +16619,17 @@ class DominoGame {
 
         if (move) {
             this.turnInProgress = false;
-            this.playTile(pi, move.tileIndex, move.openEndIndex);
+            const pName = this.getPlayerDisplayName(pi);
+            this.showTimedRoundStage({
+                phase: 'ai-playing',
+                title: this.t('stage-ai-playing') || 'AI ходит',
+                subtitle: pName,
+                blocksInput: true
+            }, 800);
+            setTimeout(() => {
+                if (turnCycleId !== this._turnCycleId) return;
+                this.playTile(pi, move.tileIndex, move.openEndIndex);
+            }, 800);
         } else if (this.boneyard.length > 0) {
             this.turnInProgress = false;
             this.drawFromBoneyard();
@@ -16312,6 +16743,7 @@ class DominoGame {
         this.scheduleNextDealAdvance(DEAL_END_MODAL_MS);
     }
     showMatchResult(){
+        this.clearRoundStage();
         this.clearNextDealAdvanceTimeout();
         const newGameBtn = document.getElementById('new-game-btn');
         if (newGameBtn) newGameBtn.style.display = '';

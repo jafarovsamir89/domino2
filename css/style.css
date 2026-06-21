@@ -7249,4 +7249,167 @@ body.is-reconnecting .hand-container {
     }
 }
 
+/* Round Stage Banner */
+.round-stage-banner {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 90%;
+    max-width: 400px;
+    opacity: 1;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    pointer-events: none;
+}
+
+.round-stage-banner.is-hidden {
+    opacity: 0;
+    transform: translate(-50%, -45%);
+    pointer-events: none;
+    display: none !important;
+}
+
+.round-stage-banner.is-blocking {
+    pointer-events: auto;
+}
+
+.round-stage-card {
+    background: rgba(20, 20, 25, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 20px 24px;
+    width: 100%;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+    text-align: center;
+    animation: stageCardPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes stageCardPop {
+    0% { transform: scale(0.9); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+.round-stage-kicker {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--accent, #ffd700);
+    margin-bottom: 8px;
+    font-weight: 700;
+}
+
+.round-stage-title {
+    font-size: 1.35rem;
+    font-weight: 800;
+    color: #ffffff;
+    line-height: 1.3;
+    margin-bottom: 6px;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+}
+
+.round-stage-subtitle {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.7);
+    font-weight: 500;
+}
+
+.round-stage-tile {
+    display: inline-flex;
+    margin-top: 14px;
+    background: #ffffff;
+    color: #000000;
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-weight: 800;
+    font-size: 1.1rem;
+    gap: 6px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    align-items: center;
+}
+
+.round-stage-tile .divider {
+    width: 2px;
+    height: 16px;
+    background: #000000;
+    opacity: 0.3;
+}
+
+/* Locked hand UI style */
+.hand-container.input-locked {
+    pointer-events: none;
+    opacity: 0.6;
+    filter: grayscale(0.3);
+    transition: opacity 0.2s ease, filter 0.2s ease;
+}
+
+/* Threat Badges */
+.opp-threat-badge {
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 3px 6px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+    margin-left: 6px;
+    display: inline-flex;
+    align-items: center;
+    white-space: nowrap;
+}
+
+.opp-threat-badge .threat-sub {
+    font-size: 0.6rem;
+    opacity: 0.8;
+    margin-left: 4px;
+    font-weight: 500;
+}
+
+/* Opponent Hand Group Threat Colors */
+/* Teammate warning (neutral/blue) */
+.opp-hand-group.teammate-warning .opp-threat-badge {
+    background: linear-gradient(135deg, #1e3c72, #2a5298) !important;
+    color: #e0f2fe !important;
+    border: 1px solid rgba(56, 189, 248, 0.3) !important;
+}
+
+/* 1 tile threat (danger-single: red/gold) */
+.opp-hand-group.danger-single .opp-threat-badge {
+    background: linear-gradient(135deg, #b91c1c, #dc2626) !important;
+    color: #fee2e2 !important;
+    border: 1px solid rgba(248, 113, 113, 0.4) !important;
+    animation: pulseGlowRed 1.5s infinite alternate;
+}
+
+/* 2 tiles/gosha threat (danger-two: orange/yellow) */
+.opp-hand-group.danger-two .opp-threat-badge {
+    background: linear-gradient(135deg, #d97706, #ea580c) !important;
+    color: #fef3c7 !important;
+    border: 1px solid rgba(251, 191, 36, 0.4) !important;
+}
+
+/* Gosha finish threat (danger-gosha: purple/gold) */
+.opp-hand-group.danger-gosha .opp-threat-badge {
+    background: linear-gradient(135deg, #6d28d9, #7c3aed) !important;
+    color: #f5f3ff !important;
+    border: 1px solid rgba(167, 139, 250, 0.4) !important;
+    animation: pulseGlowPurple 1.5s infinite alternate;
+}
+
+@keyframes pulseGlowRed {
+    0% { box-shadow: 0 0 5px rgba(220, 38, 38, 0.4); }
+    100% { box-shadow: 0 0 15px rgba(220, 38, 38, 0.8); }
+}
+
+@keyframes pulseGlowPurple {
+    0% { box-shadow: 0 0 5px rgba(124, 58, 237, 0.4); }
+    100% { box-shadow: 0 0 15px rgba(124, 58, 237, 0.8); }
+}
+
+
 

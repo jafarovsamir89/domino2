@@ -43,6 +43,7 @@ export class Renderer {
         this.stakeInfoEl = document.getElementById('stake-info');
         this.boneyardInfoEl = document.getElementById('boneyard-info');
         this.boneyardVisual = document.getElementById('boneyard-visual');
+        this.roundStageBannerEl = document.getElementById('round-stage-banner');
         this.drawBtn = document.getElementById('draw-btn');
         this.passBtn = document.getElementById('pass-btn');
         this._pendingBoardTileTravel = null;
@@ -52,6 +53,74 @@ export class Renderer {
         this._konvaBoardRenderer = null;
         this._konvaBoardDisabled = false;
         this._konvaBoardMounted = false;
+    }
+
+    renderRoundStage(stage = {}) {
+        if (!this.roundStageBannerEl) {
+            this.roundStageBannerEl = document.getElementById('round-stage-banner');
+        }
+        if (!this.roundStageBannerEl) return;
+
+        const phase = stage.phase || '';
+        const title = stage.title || '';
+        const subtitle = stage.subtitle || '';
+        const tile = stage.tile;
+
+        this.roundStageBannerEl.className = 'round-stage-overlay';
+        if (phase) {
+            this.roundStageBannerEl.classList.add(`stage-${phase}`);
+        }
+
+        const titleEl = this.roundStageBannerEl.querySelector('.stage-title');
+        const subtitleEl = this.roundStageBannerEl.querySelector('.stage-subtitle');
+        const graphicEl = this.roundStageBannerEl.querySelector('.stage-tile-graphic');
+
+        if (titleEl) titleEl.textContent = title;
+        if (subtitleEl) subtitleEl.textContent = subtitle;
+
+        if (graphicEl) {
+            graphicEl.innerHTML = '';
+            graphicEl.style.display = 'none';
+
+            if (tile) {
+                graphicEl.style.display = '';
+                const tileNode = this.createTileEl(tile.a, tile.b, tile.a === tile.b ? 'vertical' : 'horizontal', false, tile.id);
+                tileNode.classList.add('domino-tile-stage');
+                graphicEl.appendChild(tileNode);
+            }
+        }
+
+        this.roundStageBannerEl.style.display = 'flex';
+        this.roundStageBannerEl.classList.add('visible');
+
+        // Also sync the input-locked class on hand container
+        const handContainer = document.getElementById('hand-container');
+        if (handContainer) {
+            if (stage.blocksInput || phase === 'final-move' || phase === 'counting') {
+                handContainer.classList.add('input-locked');
+            } else {
+                handContainer.classList.remove('input-locked');
+            }
+        }
+    }
+
+    clearRoundStage() {
+        if (!this.roundStageBannerEl) {
+            this.roundStageBannerEl = document.getElementById('round-stage-banner');
+        }
+        if (this.roundStageBannerEl) {
+            this.roundStageBannerEl.classList.remove('visible');
+            setTimeout(() => {
+                if (!this.roundStageBannerEl.classList.contains('visible')) {
+                    this.roundStageBannerEl.style.display = 'none';
+                }
+            }, 300);
+        }
+
+        const handContainer = document.getElementById('hand-container');
+        if (handContainer) {
+            handContainer.classList.remove('input-locked');
+        }
     }
 
     setTableSkin(assetUrl) {
@@ -164,6 +233,28 @@ export class Renderer {
                 pile.appendChild(t);
             }
             g.appendChild(pile);
+
+            // Closeout Threat UI Overlay
+            const threat = this.app?.getPlayerCloseoutThreat?.(i);
+            if (threat) {
+                const badge = document.createElement('span');
+                badge.className = `opp-threat-badge ${threat.type}`;
+                
+                let roleClass = 'danger-opponent';
+                if (threat.role === 'teammate') {
+                    roleClass = 'warning-teammate';
+                }
+                
+                badge.classList.add(roleClass);
+                g.classList.add(`${threat.type}-threat`, roleClass);
+                
+                let html = `<span class="threat-label">${threat.label}</span>`;
+                if (threat.subtitle) {
+                    html += `<span class="threat-sub">${threat.subtitle}</span>`;
+                }
+                badge.innerHTML = html;
+                g.appendChild(badge);
+            }
 
             if (hands.length === 4) {
                 const relativeSeat = (i - hi + hands.length) % hands.length;
@@ -936,11 +1027,19 @@ export class Renderer {
         const ov = document.getElementById('arrow-overlay');
         if (ov) ov.remove();
     }
-
     renderHand(hand, validMoves = [], sel = -1, isCurrent = false) {
         this.handEl.innerHTML = '';
         if (isCurrent) this.handEl.parentElement.classList.add('active-turn');
         else this.handEl.parentElement.classList.remove('active-turn');
+
+        const handContainer = this.handEl.parentElement;
+        if (handContainer) {
+            if (this.app?.isInputBlockedByStage?.()) {
+                handContainer.classList.add('input-locked');
+            } else {
+                handContainer.classList.remove('input-locked');
+            }
+        }
 
         const tiles = Array.isArray(hand) ? hand : [];
         for (let i = 0; i < tiles.length; i++) {

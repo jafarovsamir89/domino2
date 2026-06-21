@@ -1641,6 +1641,48 @@ class DominoRoom extends Room {
         this.state.gameActive = true;
         this.syncState();
         this.scheduleTurnTimer();
+
+        // Broadcast visual stages to all clients
+        try {
+            const firstIndex = this.state.currentPlayerIndex;
+            const actor = this.state.players.get(this.state.playerOrder[firstIndex]);
+            const actorName = actor ? actor.name : "Player";
+            
+            if (this.lastDealWinner !== null) {
+                this.broadcast("round_stage", {
+                    phase: "opening-turn",
+                    titleKey: "stage-last-winner-starts",
+                    values: { player: actorName },
+                    actorIndex: firstIndex,
+                    blocksInput: false
+                });
+            } else {
+                const f = determineFirstPlayer(this.hands);
+                
+                this.broadcast("round_stage", {
+                    phase: "search-opening",
+                    blocksInput: true
+                });
+                
+                setTimeout(() => {
+                    this.broadcast("round_stage", {
+                        phase: "opening-turn",
+                        actorIndex: f.player,
+                        actorName: actorName,
+                        blocksInput: true
+                    });
+                    
+                    setTimeout(() => {
+                        this.broadcast("round_stage", {
+                            phase: "deal-start",
+                            blocksInput: false
+                        });
+                    }, 1500);
+                }, 1200);
+            }
+        } catch (e) {
+            console.error("[DominoRoom] Error broadcasting opening stage:", e);
+        }
     }
 
     async startRound() {
