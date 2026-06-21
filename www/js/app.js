@@ -544,6 +544,17 @@ class DominoGame {
                 this.turnInProgress = false;
             }
         }, 2000);
+        if (typeof localforage !== 'undefined') {
+            localforage.config({
+                name: 'Domino2Chat',
+                storeName: 'chat_store'
+            });
+        }
+        if (typeof window !== 'undefined') {
+            window.addEventListener('online', () => {
+                void this.processOfflineOutbox();
+            });
+        }
         window.addEventListener('beforeunload', () => this.destroy(), { once: true });
     }
 
@@ -566,6 +577,142 @@ class DominoGame {
         this.voice?.destroy?.();
         this.clearTurnTimers();
     }
+    async getCachedThreads(currentPlayerId) {
+        if (typeof localforage === 'undefined' || !currentPlayerId) return [];
+        try {
+            const cacheKey = `chat_threads_${currentPlayerId}`;
+            const cached = await localforage.getItem(cacheKey);
+            return Array.isArray(cached) ? cached : [];
+        } catch (err) {
+            debugLog("[Chat Cache] Failed to load threads", err);
+            return [];
+        }
+    }
+
+    async saveCachedThreads(currentPlayerId, threads) {
+        if (typeof localforage === 'undefined' || !currentPlayerId) return;
+        try {
+            const cacheKey = `chat_threads_${currentPlayerId}`;
+            await localforage.setItem(cacheKey, threads);
+        } catch (err) {
+            debugLog("[Chat Cache] Failed to save threads", err);
+        }
+    }
+
+    async getCachedMessages(currentPlayerId, peerId) {
+        if (typeof localforage === 'undefined' || !currentPlayerId || !peerId) return [];
+        try {
+            const cacheKey = `chat_messages_${currentPlayerId}_${peerId}`;
+            const cached = await localforage.getItem(cacheKey);
+            return Array.isArray(cached) ? cached : [];
+        } catch (err) {
+            debugLog("[Chat Cache] Failed to load messages", err);
+            return [];
+        }
+    }
+
+    async saveCachedMessages(currentPlayerId, peerId, messages) {
+        if (typeof localforage === 'undefined' || !currentPlayerId || !peerId) return;
+        try {
+            const cacheKey = `chat_messages_${currentPlayerId}_${peerId}`;
+            const capped = Array.isArray(messages) ? messages.slice(-100) : [];
+            await localforage.setItem(cacheKey, capped);
+        } catch (err) {
+            debugLog("[Chat Cache] Failed to save messages", err);
+        }
+    }
+
+    async addMessageToOutbox(targetId, text, tempId) {
+        const currentPlayerId = String(this.account?.playerId || this.account?.id || '').trim();
+        if (!currentPlayerId || typeof localforage === 'undefined') return;
+        try {
+            const cacheKey = `chat_outbox_${currentPlayerId}`;
+            const outbox = await localforage.getItem(cacheKey).catch(() => null) || [];
+            const filtered = outbox.filter(item => item.tempId !== tempId);
+            filtered.push({
+                tempId,
+                targetId,
+                text,
+                createdAt: new Date().toISOString(),
+                retryCount: 0
+            });
+            await localforage.setItem(cacheKey, filtered);
+        } catch (err) {
+            debugLog("[Chat Outbox] Failed to save to outbox", err);
+        }
+    }
+
+    async removeMessageFromOutbox(tempId) {
+        const currentPlayerId = String(this.account?.playerId || this.account?.id || '').trim();
+        if (!currentPlayerId || typeof localforage === 'undefined') return;
+        try {
+            const cacheKey = `chat_outbox_${currentPlayerId}`;
+            const outbox = await localforage.getItem(cacheKey).catch(() => null) || [];
+            const filtered = outbox.filter(item => item.tempId !== tempId);
+            await localforage.setItem(cacheKey, filtered);
+        } catch (err) {
+            debugLog("[Chat Outbox] Failed to remove from outbox", err);
+        }
+    }
+
+    async processOfflineOutbox() {
+        if (this._processingOutbox) return;
+        const currentPlayerId = String(this.account?.playerId || this.account?.id || '').trim();
+        if (!currentPlayerId || typeof localforage === 'undefined') return;
+
+        try {
+            const cacheKey = `chat_outbox_${currentPlayerId}`;
+            const outbox = await localforage.getItem(cacheKey).catch(() => null) || [];
+            if (!outbox.length) return;
+
+            if (navigator && !navigator.onLine) return;
+
+            this._processingOutbox = true;
+            debugLog(`[Chat Outbox] Processing ${outbox.length} pending messages...`);
+
+            for (const item of outbox) {
+                try {
+                    const result = await this.sendDirectMessageWithFallback(item.targetId, item.text, item.tempId);
+                    const sentMessage = result?.item;
+                    await this.removeMessageFromOutbox(item.tempId);
+                    
+                    const state = this.accountMessagesState || {};
+                    if (String(state.activePlayerId || '').trim() === item.targetId) {
+                        const messages = Array.isArray(state.messages) ? [...state.messages] : [];
+                        const tempIndex = messages.findIndex((row) => String(row?.id || '').trim() === item.tempId);
+                        if (tempIndex >= 0) {
+                            messages[tempIndex] = {
+                                ...sentMessage,
+                                isOptimistic: false,
+                                localStatus: 'sent'
+                            };
+                            this.accountMessagesState = {
+                                ...state,
+                                messages
+                            };
+                            this.renderAccountMessagesPanel();
+                        }
+                    }
+                } catch (err) {
+                    debugLog(`[Chat Outbox] Failed to process message ${item.tempId}`, err);
+                    item.retryCount = (item.retryCount || 0) + 1;
+                }
+            }
+            
+            const updatedOutbox = await localforage.getItem(cacheKey).catch(() => null) || [];
+            const remaining = updatedOutbox.map(o => {
+                const match = outbox.find(item => item.tempId === o.tempId);
+                return match ? { ...o, retryCount: match.retryCount } : o;
+            }).filter(o => o.retryCount < 5);
+            await localforage.setItem(cacheKey, remaining);
+
+        } catch (err) {
+            debugLog("[Chat Outbox] Error processing outbox", err);
+        } finally {
+            this._processingOutbox = false;
+        }
+    }
+
     setupStartScreen() {
         this.ensureStartScreenEnhancements();
         this.ensureGameHudEnhancements();
@@ -3026,6 +3173,16 @@ class DominoGame {
         return entry;
     }
 
+    removeTypingPlayer(threadPlayerId) {
+        if (!this._typingPlayers) return;
+        const entry = this._typingPlayers.get(threadPlayerId);
+        if (entry) {
+            clearTimeout(entry.timeoutId);
+            this._typingPlayers.delete(threadPlayerId);
+            this.renderAccountMessagesPanel();
+        }
+    }
+
     refreshSocialPresenceUi() {
         if (this.socialCenterTab === 'friends') {
             void this.loadFriendsPage(true).catch(() => {});
@@ -3222,10 +3379,7 @@ class DominoGame {
             this.applyRealtimeDirectMessage(payload);
         });
 
-        socket.on('dm:ack', (payload) => {
-            markTouch('dm:ack', payload);
-            this.applyRealtimeDirectMessage(payload);
-        });
+        // Removed dm:ack listener as we now rely on ack callback directly
 
         socket.on('dm:read', (payload) => {
             markTouch('dm:read', payload);
@@ -3247,6 +3401,34 @@ class DominoGame {
             };
             this.renderAccountMessagesPanel();
             this.updateSocialCenterBadge();
+        });
+
+        socket.on('typing:start', (payload) => {
+            markTouch('typing:start', payload);
+            const threadPlayerId = String(payload?.threadPlayerId || '').trim();
+            if (!threadPlayerId) return;
+
+            this._typingPlayers = this._typingPlayers || new Map();
+            const existingTimeout = this._typingPlayers.get(threadPlayerId);
+            if (existingTimeout) clearTimeout(existingTimeout.timeoutId);
+
+            const timeoutId = setTimeout(() => {
+                this.removeTypingPlayer(threadPlayerId);
+            }, 5000);
+
+            this._typingPlayers.set(threadPlayerId, {
+                displayName: payload?.displayName || 'Someone',
+                timeoutId
+            });
+
+            this.renderAccountMessagesPanel();
+        });
+
+        socket.on('typing:stop', (payload) => {
+            markTouch('typing:stop', payload);
+            const threadPlayerId = String(payload?.threadPlayerId || '').trim();
+            if (!threadPlayerId) return;
+            this.removeTypingPlayer(threadPlayerId);
         });
 
         socket.on('invite:new', (payload) => {
@@ -3401,11 +3583,16 @@ class DominoGame {
             return null;
         }
         return new Promise((resolve) => {
+            const timeout = setTimeout(() => {
+                resolve({ ok: false, error: 'timeout', tempId });
+            }, 12000); // 12 seconds timeout
+
             socket.emit('dm:send', {
                 tempId: String(tempId || '').trim(),
                 receiverPlayerId: cleanTargetId,
                 text: cleanText
             }, (response) => {
+                clearTimeout(timeout);
                 resolve(response || null);
             });
         });
@@ -3523,6 +3710,77 @@ class DominoGame {
             };
         }
         return this.account.sendDirectMessage(targetId, text, tempId);
+    }
+
+    async retrySendMessage(tempId) {
+        const state = this.accountMessagesState || {};
+        const messages = Array.isArray(state.messages) ? [...state.messages] : [];
+        const index = messages.findIndex((m) => String(m.id || '').trim() === tempId);
+        if (index < 0) return;
+
+        const message = messages[index];
+        const targetId = String(state.activePlayerId || '').trim();
+        if (!targetId) return;
+
+        messages[index] = {
+            ...message,
+            localStatus: 'sending',
+            isOptimistic: true
+        };
+        this.accountMessagesState = {
+            ...state,
+            messages,
+            sendLoading: true,
+            error: ''
+        };
+        this.renderAccountMessagesPanel();
+
+        void this.addMessageToOutbox(targetId, message.text, tempId);
+
+        try {
+            const result = await this.sendDirectMessageWithFallback(targetId, message.text, tempId);
+            const sentMessage = result?.item || message;
+            void this.removeMessageFromOutbox(tempId);
+            const latestMessages = Array.isArray(this.accountMessagesState?.messages) ? [...this.accountMessagesState.messages] : [];
+            const tempIndex = latestMessages.findIndex((row) => String(row?.id || '').trim() === tempId);
+            if (tempIndex >= 0) {
+                latestMessages[tempIndex] = {
+                    ...sentMessage,
+                    isOptimistic: false,
+                    localStatus: 'sent'
+                };
+            }
+            this.accountMessagesState = {
+                ...(this.accountMessagesState || {}),
+                messages: latestMessages,
+                sendLoading: false,
+                error: ''
+            };
+            this.applyRealtimeDirectMessage({
+                type: 'message_sent',
+                tempId: tempId,
+                message: sentMessage,
+                threadPlayerId: targetId
+            });
+        } catch (err) {
+            const latestMessages = Array.isArray(this.accountMessagesState?.messages) ? [...this.accountMessagesState.messages] : [];
+            const tempIndex = latestMessages.findIndex((row) => String(row?.id || '').trim() === tempId);
+            if (tempIndex >= 0) {
+                latestMessages[tempIndex] = {
+                    ...latestMessages[tempIndex],
+                    isOptimistic: false,
+                    localStatus: 'failed'
+                };
+            }
+            this.accountMessagesState = {
+                ...(this.accountMessagesState || {}),
+                messages: latestMessages,
+                sendLoading: false,
+                error: err?.message || this.t('messages-send-failed') || this.t('chats-send-failed')
+            };
+            this.renderAccountMessagesPanel();
+            this.renderer.showMessage(err?.message || this.t('messages-send-failed'), 1800);
+        }
     }
 
     async markDirectMessageThreadReadWithFallback(playerId) {
@@ -4045,15 +4303,40 @@ class DominoGame {
 
     mergeConversationMessages(existingMessages = [], freshMessages = []) {
         const merged = new Map();
+        
+        const findExistingKey = (message) => {
+            const id = String(message?.id || '').trim();
+            const clientMsgId = String(message?.clientMessageId || message?.tempId || '').trim();
+            
+            if (id && merged.has(id)) return id;
+            
+            if (clientMsgId) {
+                for (const [key, val] of merged.entries()) {
+                    const valClientMsgId = String(val?.clientMessageId || val?.tempId || '').trim();
+                    if (valClientMsgId === clientMsgId) {
+                        return key;
+                    }
+                }
+            }
+            return null;
+        };
+
         const addMessage = (message, preferFresh = false) => {
             const id = String(message?.id || '').trim();
             if (!id) return;
-            const current = merged.get(id) || null;
-            if (!current) {
+            
+            const existingKey = findExistingKey(message);
+            if (!existingKey) {
                 merged.set(id, { ...message });
                 return;
             }
-            merged.set(id, preferFresh ? { ...current, ...message } : { ...message, ...current });
+            
+            const current = merged.get(existingKey);
+            merged.delete(existingKey);
+            
+            const mergedVal = preferFresh ? { ...current, ...message } : { ...message, ...current };
+            const finalId = (!String(existingKey).startsWith('temp-') && String(id).startsWith('temp-')) ? existingKey : id;
+            merged.set(finalId, mergedVal);
         };
 
         (Array.isArray(existingMessages) ? existingMessages : []).forEach((message) => addMessage(message, false));
@@ -4533,6 +4816,8 @@ class DominoGame {
         const currentState = this.accountMessagesState || {};
         const currentThreads = Array.isArray(currentState.threads) ? currentState.threads : [];
         const shouldShowLoading = !currentThreads.length;
+        const currentPlayerId = String(this.account?.playerId || this.account?.id || '').trim();
+
         if (shouldShowLoading) {
             this.accountMessagesState = {
                 ...currentState,
@@ -4540,6 +4825,19 @@ class DominoGame {
                 error: ''
             };
             this.renderAccountMessagesPanel();
+
+            if (currentPlayerId) {
+                this.getCachedThreads(currentPlayerId).then((cached) => {
+                    if (cached && cached.length && !this.accountMessagesState?.threads?.length) {
+                        this.accountMessagesState = {
+                            ...(this.accountMessagesState || {}),
+                            threads: cached,
+                            threadsLoading: true
+                        };
+                        this.renderAccountMessagesPanel();
+                    }
+                }).catch(() => {});
+            }
         }
 
         this._messageThreadsLoadInFlight = (async () => {
@@ -4547,7 +4845,12 @@ class DominoGame {
                 const items = await this.account.getMessageThreads();
                 const threads = Array.isArray(items) ? items : [];
                 const currentActiveId = String(this.accountMessagesState?.activePlayerId || '').trim();
-                const mergedThreads = this.mergeConversationThreads(currentThreads, threads, currentActiveId);
+                const mergedThreads = this.mergeConversationThreads(currentThreads.length ? currentThreads : (this.accountMessagesState?.threads || []), threads, currentActiveId);
+                
+                if (currentPlayerId) {
+                    void this.saveCachedThreads(currentPlayerId, mergedThreads);
+                }
+
                 const activeThread = mergedThreads.find((thread) => String(thread?.player?.id || thread?.playerId || thread?.id || '').trim() === currentActiveId) || null;
                 const nextActiveId = activeThread
                     ? currentActiveId
@@ -4574,14 +4877,14 @@ class DominoGame {
                 const message = err?.message || this.t('messages-load-failed') || this.t('chats-load-failed');
                 this.accountMessagesState = {
                     ...(this.accountMessagesState || {}),
-                    threads: currentThreads,
+                    threads: this.accountMessagesState?.threads || currentThreads,
                     threadsLoading: false,
                     error: message
                 };
                 this.renderAccountMessagesPanel();
                 await this.loadSocialSummary();
                 this.updateSocialCenterBadge();
-                return currentThreads;
+                return this.accountMessagesState?.threads || currentThreads;
             } finally {
                 this._messageThreadsLoadInFlight = null;
             }
@@ -4623,13 +4926,43 @@ class DominoGame {
         };
         this.renderAccountMessagesPanel();
 
+        const currentPlayerId = String(this.account?.playerId || this.account?.id || '').trim();
+        if (currentPlayerId && currentActiveId !== playerId) {
+            this.getCachedMessages(currentPlayerId, playerId).then((cached) => {
+                if (cached && cached.length && String(this.accountMessagesState?.activePlayerId || '').trim() === playerId) {
+                    this.accountMessagesState = {
+                        ...(this.accountMessagesState || {}),
+                        messages: cached,
+                        conversationLoading: false
+                    };
+                    this.renderAccountMessagesPanel();
+                }
+            }).catch(() => {});
+        }
+
         const loadPromise = (async () => {
             try {
                 const readPromise = this.markDirectMessageThreadReadWithFallback(playerId).catch(() => {});
                 const profilePromise = (currentActiveId === playerId && currentState.activePlayerProfile)
                     ? Promise.resolve(currentState.activePlayerProfile)
                     : this.account.getPlayerProfile(playerId).catch(() => null);
-                const messagesPromise = this.account.getDirectMessages(playerId);
+
+                const currentVisibleMessages = Array.isArray(this.accountMessagesState?.messages)
+                    ? this.accountMessagesState.messages
+                    : [];
+                const mergeBaseMessages = currentVisibleMessages.length
+                    ? currentVisibleMessages
+                    : (Array.isArray(currentState.messages) ? currentState.messages : []);
+
+                let afterId = '';
+                if (mergeBaseMessages.length > 0) {
+                    const realMessages = mergeBaseMessages.filter(m => m.id && !String(m.id).startsWith('temp-'));
+                    if (realMessages.length > 0) {
+                        afterId = realMessages[realMessages.length - 1].id;
+                    }
+                }
+
+                const messagesPromise = this.account.getDirectMessages(playerId, { after: afterId });
 
                 const [_, profile, messages] = await Promise.all([
                     readPromise,
@@ -4642,15 +4975,14 @@ class DominoGame {
                 }
 
                 const freshMessages = Array.isArray(messages) ? messages : [];
-                const currentVisibleMessages = Array.isArray(this.accountMessagesState?.messages)
+                const latestVisibleMessages = Array.isArray(this.accountMessagesState?.messages)
                     ? this.accountMessagesState.messages
                     : [];
-                const mergeBaseMessages = currentVisibleMessages.length
-                    ? currentVisibleMessages
-                    : (Array.isArray(currentState.messages) ? currentState.messages : []);
-                const mergedMessages = mergeBaseMessages.length
-                    ? this.mergeConversationMessages(mergeBaseMessages, freshMessages)
-                    : freshMessages;
+                const mergedMessages = this.mergeConversationMessages(latestVisibleMessages, freshMessages);
+
+                if (currentPlayerId) {
+                    void this.saveCachedMessages(currentPlayerId, playerId, mergedMessages);
+                }
 
                 this._lastDmError = '';
                 const profileBelongsToPlayer = (candidate) => {
@@ -5025,7 +5357,12 @@ class DominoGame {
                 const preview = document.createElement('div');
                 preview.className = 'friend-card-desc';
                 const lastMessage = thread?.lastMessage || null;
-                preview.textContent = lastMessage?.text || this.t('messages-empty');
+                const isThreadTyping = this._typingPlayers && this._typingPlayers.has(partnerId);
+                if (isThreadTyping) {
+                    preview.innerHTML = `<span style="color: var(--color-primary, #00C853); font-style: italic;">yazır...</span>`;
+                } else {
+                    preview.textContent = lastMessage?.text || this.t('messages-empty');
+                }
 
                 copy.appendChild(top);
                 copy.appendChild(preview);
@@ -5058,8 +5395,13 @@ class DominoGame {
         }
         threadList.replaceChildren(...threadNodes);
 
-        conversationTitle.textContent = activePlayer?.displayName
-            || (activePlayerId && state.conversationLoading ? this.t('account-profile-loading') : this.t('messages-conversation-title'));
+        const isTyping = this._typingPlayers && this._typingPlayers.has(activePlayerId);
+        if (isTyping) {
+            conversationTitle.innerHTML = `${activePlayer?.displayName || ''} <span class="chat-header-typing-status" style="font-size: 0.8em; font-weight: normal; color: var(--color-primary, #00C853); margin-left: 8px; font-style: italic;">yazır...</span>`;
+        } else {
+            conversationTitle.textContent = activePlayer?.displayName
+                || (activePlayerId && state.conversationLoading ? this.t('account-profile-loading') : this.t('messages-conversation-title'));
+        }
 
         const currentLastMsg = activeMessages[activeMessages.length - 1];
         const currentLastMsgId = currentLastMsg?.id || currentLastMsg?.createdAt || '';
@@ -5114,8 +5456,9 @@ class DominoGame {
 
                     const mine = String(message.senderPlayerId || '') === currentPlayerId;
                     const optimistic = Boolean(message.isOptimistic || message.localStatus === 'sending');
+                    const isFailed = message.localStatus === 'failed';
                     const row = document.createElement('div');
-                    row.className = `message-row ${mine ? 'is-self' : 'is-other'}${optimistic ? ' is-pending' : ''}`;
+                    row.className = `message-row ${mine ? 'is-self' : 'is-other'}${optimistic ? ' is-pending' : ''}${isFailed ? ' is-failed' : ''}`;
 
                     const bubbleContainer = document.createElement('div');
                     bubbleContainer.className = 'message-bubble-container';
@@ -5127,7 +5470,7 @@ class DominoGame {
                     }
 
                     const bubble = document.createElement('div');
-                    bubble.className = `message-bubble${optimistic ? ' is-pending' : ''}`;
+                    bubble.className = `message-bubble${optimistic ? ' is-pending' : ''}${isFailed ? ' is-failed' : ''}`;
 
                     const text = document.createElement('div');
                     text.className = 'message-text';
@@ -5144,8 +5487,26 @@ class DominoGame {
 
                     if (mine) {
                         const checks = document.createElement('span');
-                        checks.className = 'message-checks';
-                        checks.innerHTML = `<svg viewBox="0 0 16 16" fill="currentColor"><path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0zM10.354 3.646a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L3.5 9.293l5.646-5.647a.5.5 0 0 1 .708 0z"/></svg>`;
+                        const status = message.localStatus || (message.readAt ? 'read' : 'sent');
+                        
+                        if (status === 'sending' || status === 'pending') {
+                            checks.className = 'message-checks is-pending';
+                            checks.innerHTML = `<svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm.5-13v4.793l2.854 2.853a.5.5 0 0 1-.708.708L7.5 8.5V3a.5.5 0 0 1 1 0z"/></svg>`;
+                        } else if (status === 'failed') {
+                            checks.className = 'message-checks is-failed';
+                            checks.style.cursor = 'pointer';
+                            checks.title = this.t('retry-sending') || 'Click to retry';
+                            checks.innerHTML = `⚠️`;
+                            checks.addEventListener('click', async () => {
+                                await this.retrySendMessage(message.id);
+                            });
+                        } else if (status === 'read') {
+                            checks.className = 'message-checks is-read';
+                            checks.innerHTML = `<svg viewBox="0 0 16 16" fill="currentColor"><path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0zM10.354 3.646a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L3.5 9.293l5.646-5.647a.5.5 0 0 1 .708 0z"/></svg>`;
+                        } else {
+                            checks.className = 'message-checks is-sent';
+                            checks.innerHTML = `<svg viewBox="0 0 16 16" fill="currentColor"><path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.267.267 0 0 1 .02-.022z"/></svg>`;
+                        }
                         footer.appendChild(checks);
                     }
 
@@ -5221,6 +5582,9 @@ class DominoGame {
                 const targetId = String(this.accountMessagesState?.activePlayerId || '').trim();
                 const text = String(messageInput.value || '').trim();
                 if (!targetId || !text) return;
+                if (this._socialSocket && this._socialSocket.connected) {
+                    this._socialSocket.emit('typing:stop', { threadPlayerId: targetId });
+                }
                 const currentPlayerId = this.getCurrentAccountPlayerId();
                 const tempId = `temp-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
                 const tempMessage = {
@@ -5251,10 +5615,12 @@ class DominoGame {
                 };
                 this.upsertMessageThreadFromMessage(tempMessage, targetId);
                 this.renderAccountMessagesPanel();
+                void this.addMessageToOutbox(targetId, text, tempId);
                 messageInput.value = '';
                 try {
                     const result = await this.sendDirectMessageWithFallback(targetId, text, tempId);
                     const sentMessage = result?.item || tempMessage;
+                    void this.removeMessageFromOutbox(tempId);
                     const messages = Array.isArray(this.accountMessagesState?.messages) ? [...this.accountMessagesState.messages] : [];
                     const tempIndex = messages.findIndex((row) => String(row?.id || '').trim() === tempId);
                     const alreadyExists = messages.some((row) => String(row?.id || '').trim() === String(sentMessage?.id || '').trim());
@@ -5285,9 +5651,15 @@ class DominoGame {
                     });
                     this.renderer.showMessage(this.t('messages-sent') || this.t('chats-sent'), 1400);
                 } catch (err) {
-                    const messages = Array.isArray(this.accountMessagesState?.messages)
-                        ? this.accountMessagesState.messages.filter((row) => String(row?.id || '').trim() !== tempId)
-                        : [];
+                    const messages = Array.isArray(this.accountMessagesState?.messages) ? [...this.accountMessagesState.messages] : [];
+                    const tempIndex = messages.findIndex((row) => String(row?.id || '').trim() === tempId);
+                    if (tempIndex >= 0) {
+                        messages[tempIndex] = {
+                            ...messages[tempIndex],
+                            isOptimistic: false,
+                            localStatus: 'failed'
+                        };
+                    }
                     this.accountMessagesState = {
                         ...(this.accountMessagesState || {}),
                         messages,
@@ -5303,6 +5675,39 @@ class DominoGame {
                     };
                     this.renderAccountMessagesPanel();
                 }
+            });
+        }
+
+        if (!messageInput.dataset.bound) {
+            messageInput.dataset.bound = '1';
+            
+            messageInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    sendBtn.click();
+                }
+            });
+
+            let lastTypingSentAt = 0;
+            let typingStopTimeout = null;
+
+            messageInput.addEventListener('input', () => {
+                const targetId = String(this.accountMessagesState?.activePlayerId || '').trim();
+                if (!targetId || !this._socialSocket || !this._socialSocket.connected) return;
+
+                const now = Date.now();
+                if (now - lastTypingSentAt > 3000) {
+                    lastTypingSentAt = now;
+                    this._socialSocket.emit('typing:start', { threadPlayerId: targetId });
+                }
+
+                if (typingStopTimeout) clearTimeout(typingStopTimeout);
+                typingStopTimeout = setTimeout(() => {
+                    if (this._socialSocket && this._socialSocket.connected) {
+                        this._socialSocket.emit('typing:stop', { threadPlayerId: targetId });
+                    }
+                    typingStopTimeout = null;
+                }, 2000);
             });
         }
     }
@@ -10171,6 +10576,17 @@ class DominoGame {
         badge.className = 'premium-avatar-level';
         badge.textContent = level;
         wrapper.appendChild(badge);
+
+        const playerId = String(player?.id || player?.playerId || '').trim();
+        if (playerId && this.friendPresenceMap instanceof Map) {
+            const presence = this.friendPresenceMap.get(playerId);
+            if (presence) {
+                const statusDot = document.createElement('div');
+                statusDot.className = `premium-avatar-presence-dot is-${presence.status}`;
+                statusDot.title = presence.status === 'in_game' ? (this.t('presence-in-game') || 'In game') : (presence.status === 'online' ? (this.t('presence-online') || 'Online') : (this.t('presence-offline') || 'Offline'));
+                wrapper.appendChild(statusDot);
+            }
+        }
 
         return wrapper;
     }

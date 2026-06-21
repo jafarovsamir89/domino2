@@ -29,6 +29,11 @@ export class SocialRealtimeGateway implements OnModuleInit, OnModuleDestroy {
     this.unsubscribeLiveEvents = this.socialService.subscribeToLiveEvents((event) => {
       this.forwardLiveEvent(event.playerId, event.type, event.data);
     });
+
+    this.socialService.isPlayerOnlineHandler = (playerId: string) => {
+      const presence = this.realtimeService.getPresence(playerId);
+      return presence?.status === "online" || presence?.status === "in_game";
+    };
   }
 
   onModuleDestroy() {
@@ -122,7 +127,6 @@ export class SocialRealtimeGateway implements OnModuleInit, OnModuleDestroy {
           message,
           threadPlayerId: receiverPlayerId
         };
-        this.realtimeService.emitSocketEventToPlayer(claims.playerId, "dm:ack", ackPayload);
         this.realtimeService.emitSocketEventToPlayer(receiverPlayerId, "dm:new", {
           message,
           threadPlayerId: claims.playerId
@@ -425,13 +429,7 @@ export class SocialRealtimeGateway implements OnModuleInit, OnModuleDestroy {
       return;
     }
 
-    if (type === "message_sent") {
-      this.server.to(`player:${key}`).emit("dm:ack", {
-        message: data?.message || data,
-        threadPlayerId: String(data?.threadPlayerId || "").trim() || null
-      });
-      return;
-    }
+
 
     if (type === "invite_update") {
       const inviteType = String(data?.type || "").trim();

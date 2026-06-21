@@ -182,7 +182,6 @@ test("dm:send uses live socket delivery and invite:create pushes invite updates"
 
   assert.equal(dmAck?.ok, true);
   assert.equal(sentMessages.length, 1);
-  assert.ok(broadcasts.some((row) => row.room === "player:player-1" && row.event === "dm:ack"));
   assert.ok(broadcasts.some((row) => row.room === "player:player-2" && row.event === "dm:new"));
 
   broadcasts.length = 0;

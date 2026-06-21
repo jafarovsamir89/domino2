@@ -6280,6 +6280,28 @@ body.is-reconnecting .hand-container {
     box-shadow: 0 1px 3px rgba(0,0,0,0.5);
 }
 
+.premium-avatar-presence-dot {
+    position: absolute;
+    bottom: -2px;
+    right: -2px;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 2.5px solid #060a10;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.5);
+    z-index: 2;
+    box-sizing: border-box;
+}
+.premium-avatar-presence-dot.is-online {
+    background-color: #00C853;
+}
+.premium-avatar-presence-dot.is-in_game {
+    background-color: #FF9100;
+}
+.premium-avatar-presence-dot.is-offline {
+    background-color: #757575;
+}
+
 /* Presence Dot Indicator */
 .presence-dot {
     width: 7px;
@@ -6801,6 +6823,22 @@ body.is-reconnecting .hand-container {
     width: 12px;
     height: 12px;
     color: #ffd56a;
+}
+
+.message-checks.is-read {
+    color: #4da6ff; /* blue for read */
+}
+
+.message-checks.is-sent {
+    color: rgba(255, 255, 255, 0.6); /* grey for sent */
+}
+
+.message-checks.is-pending {
+    color: rgba(255, 255, 255, 0.4); /* light grey for sending */
+}
+
+.message-checks.is-failed {
+    color: #ff3b30; /* red for failed */
 }
 
 .message-checks svg {

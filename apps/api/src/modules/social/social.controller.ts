@@ -12,7 +12,9 @@ import {
   SocialSendGiftDto,
   SocialSendMessageDto,
   RoomInviteDto,
-  SocialRequestFriendDto
+  SocialRequestFriendDto,
+  RegisterFcmTokenDto,
+  UnregisterFcmTokenDto
 } from "../validation/validation.dto.js";
 
 @Controller("social")
@@ -225,5 +227,15 @@ export class SocialController {
   @Post("invitations/:id/cancel")
   async cancelRoomInvitation(@Req() req: Request, @Param("id") id: string) {
     return this.socialService.cancelRoomInvitation(req.headers, id);
+  }
+
+  @Post("fcm/register")
+  async registerFcmToken(@Req() req: Request, @Body() body: RegisterFcmTokenDto) {
+    return this.socialService.registerFcmToken(req.headers, body);
+  }
+
+  @Post("fcm/unregister")
+  async unregisterFcmToken(@Req() req: Request, @Body() body: UnregisterFcmTokenDto) {
+    return this.socialService.unregisterFcmToken(req.headers, body);
   }
 }

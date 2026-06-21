@@ -35,9 +35,11 @@
     "@capacitor/browser": "^8.0.3",
     "@capacitor/cli": "^8.3.1",
     "@capacitor/core": "^8.3.1",
+    "@capacitor/push-notifications": "^8.1.1",
     "@colyseus/sdk": "^0.17.42",
     "colyseus.js": "^0.16.22",
-    "gsap": "^3.15.0"
+    "gsap": "^3.15.0",
+    "localforage": "^1.10.0"
   },
   "devDependencies": {
     "@playwright/test": "^1.60.0"

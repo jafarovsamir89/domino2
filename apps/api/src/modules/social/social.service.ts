@@ -3,6 +3,8 @@ import { EventEmitter } from "node:events";
 import { Observable, Subject } from "rxjs";
 
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException, UnauthorizedException } from "@nestjs/common";
+import { initializeApp, getApps } from "firebase-admin/app";
+import { getMessaging } from "firebase-admin/messaging";
 import type { MessageEvent } from "@nestjs/common";
 import { Prisma, type CoinLedgerType } from "@prisma/client";
 
@@ -187,6 +189,8 @@ const DEFAULT_GIFT_CATALOG = [
 
 @Injectable()
 export class SocialService {
+  isPlayerOnlineHandler?: (playerId: string) => boolean;
+  private readonly fcmAvailable: boolean;
   private readonly sseEmitter = new EventEmitter();
   private readonly liveEmitter = new EventEmitter();
   private readonly socialRateLimits = {
@@ -200,6 +204,17 @@ export class SocialService {
     private readonly prisma: PrismaService,
     private readonly authService: AuthService
   ) {
+    // Initialize Firebase Admin
+    try {
+      if (getApps().length === 0) {
+        initializeApp();
+      }
+      this.fcmAvailable = true;
+    } catch (err: any) {
+      console.warn("[SocialService] FCM failed to initialize (local fallback active):", err.message);
+      this.fcmAvailable = false;
+    }
+
     // Run initial sweep
     this.purgeExpiredSocialData().catch((err) => {
       console.error("[SocialService] Initial purge sweep error:", err);
@@ -1788,6 +1803,10 @@ export class SocialService {
         message,
         threadPlayerId: targetPlayerId
       });
+    }
+
+    if (!this.isPlayerOnline(targetPlayerId)) {
+      void this.sendFcmPushNotification(targetPlayerId, currentPlayer.displayName || "", text);
     }
 
     return {
@@ -3466,5 +3485,99 @@ export class SocialService {
     }
 
     return { item: invite };
+  }
+
+  isPlayerOnline(playerId: string): boolean {
+    if (this.sseEmitter.listenerCount(`player:${playerId}`) > 0) {
+      return true;
+    }
+    if (this.isPlayerOnlineHandler) {
+      return this.isPlayerOnlineHandler(playerId);
+    }
+    return false;
+  }
+
+  async sendFcmPushNotification(playerId: string, senderDisplayName: string, text: string) {
+    if (!this.fcmAvailable) return;
+
+    try {
+      const tokens = await this.prisma.fcmToken.findMany({
+        where: { playerId }
+      });
+      if (tokens.length === 0) return;
+
+      const registrationTokens = tokens.map((t) => t.token);
+      const title = "Yeni mesaj";
+      const body = senderDisplayName ? `${senderDisplayName} size mesaj gönderdi` : "Yeni mesajınız var";
+
+      const payload = {
+        notification: {
+          title,
+          body
+        },
+        data: {
+          click_action: "FLUTTER_NOTIFICATION_CLICK",
+          type: "chat",
+          senderName: senderDisplayName
+        },
+        tokens: registrationTokens
+      };
+
+      const response = await getMessaging().sendEachForMulticast(payload);
+      
+      const tokensToDelete: string[] = [];
+      response.responses.forEach((res: any, idx: number) => {
+        if (!res.success && res.error) {
+          const code = res.error.code;
+          if (
+            code === "messaging/invalid-registration-token" ||
+            code === "messaging/registration-token-not-registered"
+          ) {
+            tokensToDelete.push(registrationTokens[idx]);
+          }
+        }
+      });
+
+      if (tokensToDelete.length > 0) {
+        await this.prisma.fcmToken.deleteMany({
+          where: { token: { in: tokensToDelete } }
+        });
+      }
+    } catch (err: any) {
+      console.error("[SocialService] Failed to send FCM push notification:", err.message);
+    }
+  }
+
+  async registerFcmToken(
+    headers: IncomingHttpHeaders,
+    body: { token: string }
+  ) {
+    const player = await this.getCurrentPlayer(headers);
+    const token = String(body?.token || "").trim();
+    if (!token) {
+      throw new BadRequestException("Token is required");
+    }
+
+    await this.prisma.fcmToken.upsert({
+      where: { token },
+      update: { playerId: player.id },
+      create: { token, playerId: player.id }
+    });
+
+    return { ok: true };
+  }
+
+  async unregisterFcmToken(
+    headers: IncomingHttpHeaders,
+    body: { token: string }
+  ) {
+    const token = String(body?.token || "").trim();
+    if (token) {
+      await this.prisma.fcmToken.deleteMany({
+        where: { token }
+      });
+    }
+
+    return { ok: true };
   }
 }

@@ -930,11 +930,15 @@ export class AccountClient {
         const params = new URLSearchParams();
         const limit = Number(options?.limit);
         const before = String(options?.before || "").trim();
+        const after = String(options?.after || "").trim();
         if (Number.isFinite(limit) && limit > 0) {
             params.set("limit", String(Math.trunc(limit)));
         }
         if (before) {
             params.set("before", before);
+        }
+        if (after) {
+            params.set("afterMessageId", after);
         }
         const query = params.toString();
         const data = await this.platformRequest(`/social/messages/${encodeURIComponent(id)}${query ? `?${query}` : ""}`);

@@ -561,3 +561,15 @@ export class PlayInviteJoinDto {
   @MaxLength(128)
   reason?: string | null;
 }
+
+export class RegisterFcmTokenDto {
+  @IsString()
+  @MaxLength(500)
+  token!: string;
+}
+
+export class UnregisterFcmTokenDto {
+  @IsString()
+  @MaxLength(500)
+  token!: string;
+}
