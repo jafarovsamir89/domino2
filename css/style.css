@@ -6711,6 +6711,21 @@ body.is-reconnecting .hand-container {
     gap: 12px;
 }
 
+/* Chat loading spinner */
+.chat-loading-spinner {
+    width: 28px;
+    height: 28px;
+    border: 3px solid rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    border-top-color: var(--color-primary, #00C853);
+    animation: chat-spin 1s linear infinite;
+    margin: 40px auto;
+}
+
+@keyframes chat-spin {
+    to { transform: rotate(360deg); }
+}
+
 /* Date Separators */
 .chat-date-separator {
     display: flex;

@@ -1386,19 +1386,40 @@ class DominoGame {
         const nextTab = tab === 'friends' || tab === 'invites' || tab === 'inbox'
             ? tab
             : 'friends';
+
+        let activePlayerId = '';
         if (playerRef) {
-            const playerId = String(playerRef?.playerId || playerRef?.userId || playerRef?.id || playerRef || '').trim();
-            if (playerId) {
-                this.accountMessagesState = {
-                    ...(this.accountMessagesState || {}),
-                    activePlayerId: playerId,
-                    error: ''
-                };
-            }
+            activePlayerId = String(playerRef?.playerId || playerRef?.userId || playerRef?.id || playerRef || '').trim();
         }
+
         this.socialCenterTab = nextTab;
         this.socialCenterView = nextTab === 'inbox' && playerRef ? 'conversation' : 'list';
+
+        if (nextTab === 'inbox' && this.socialCenterView === 'conversation' && activePlayerId) {
+            const currentState = this.accountMessagesState || {};
+            const isDifferentPlayer = String(currentState.activePlayerId || '').trim() !== activePlayerId;
+            const cachedProfile = this.findCachedPlayerProfile(activePlayerId);
+            this.accountMessagesState = {
+                ...currentState,
+                activePlayerId: activePlayerId,
+                activePlayerProfile: isDifferentPlayer ? cachedProfile : (currentState.activePlayerProfile || cachedProfile),
+                messages: isDifferentPlayer ? [] : (currentState.messages || []),
+                conversationLoading: isDifferentPlayer,
+                error: ''
+            };
+        } else if (playerRef && activePlayerId) {
+            this.accountMessagesState = {
+                ...(this.accountMessagesState || {}),
+                activePlayerId: activePlayerId,
+                error: ''
+            };
+        }
+
         this.renderSocialCenter();
+
+        if (this.socialCenterView === 'conversation') {
+            this.renderAccountMessagesPanel();
+        }
 
         if (!this.hasAuthenticatedAccount()) {
             this.updateSocialCenterBadge();
@@ -1408,8 +1429,21 @@ class DominoGame {
         void this.ensureSocialRealtimeStarted('social-tab-load');
 
         if (nextTab === 'inbox') {
-            await this.loadInboxPage();
-            await this.loadSocialInvitesPage().catch(() => {});
+            if (this.socialCenterView === 'conversation' && activePlayerId) {
+                // Prioritize loading conversation first
+                const convPromise = this.loadConversationWithPlayer(activePlayerId, true);
+
+                // Run other updates in parallel
+                void this.loadInboxPage().then(() => {
+                    this.loadSocialInvitesPage().catch(() => {});
+                });
+                void this.loadMessageThreads();
+
+                await convPromise;
+            } else {
+                await this.loadInboxPage();
+                await this.loadSocialInvitesPage().catch(() => {});
+            }
         } else {
             await this.loadSocialSummary();
             if (nextTab === 'friends') {
@@ -1417,14 +1451,6 @@ class DominoGame {
                 await this.loadSocialInvitesPage().catch(() => {});
             } else if (nextTab === 'invites') {
                 await this.loadSocialInvitesPage();
-            }
-        }
-
-        if (nextTab === 'inbox' && this.socialCenterView === 'conversation') {
-            const activeId = String(this.accountMessagesState?.activePlayerId || '').trim();
-            if (activeId) {
-                await this.loadMessageThreads();
-                await this.loadConversationWithPlayer(activeId, true);
             }
         }
 
@@ -5444,10 +5470,9 @@ class DominoGame {
 
             const conversationNodes = [];
             if (state.conversationLoading && !activeMessages.length) {
-                const loading = document.createElement('div');
-                loading.className = 'room-summary';
-                loading.textContent = this.t('account-profile-loading');
-                conversationNodes.push(loading);
+                const spinner = document.createElement('div');
+                spinner.className = 'chat-loading-spinner';
+                conversationNodes.push(spinner);
             } else if (!activePlayerId) {
                 const empty = document.createElement('div');
                 empty.className = 'room-summary';
