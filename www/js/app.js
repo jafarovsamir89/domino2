@@ -4852,7 +4852,7 @@ class DominoGame {
                 }
 
                 const activeThread = mergedThreads.find((thread) => String(thread?.player?.id || thread?.playerId || thread?.id || '').trim() === currentActiveId) || null;
-                const nextActiveId = activeThread
+                const nextActiveId = currentActiveId
                     ? currentActiveId
                     : String(mergedThreads[0]?.player?.id || mergedThreads[0]?.playerId || mergedThreads[0]?.id || '').trim();
                 this.accountMessagesState = {
