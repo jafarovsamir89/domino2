@@ -1442,7 +1442,8 @@ test("sendDirectMessage creates a message between two players", async () => {
   assert.deepEqual(capturedCreate.data, {
     senderPlayerId: currentPlayer.id,
     receiverPlayerId: targetPlayer.id,
-    text: "Hello from Alpha"
+    text: "Hello from Alpha",
+    clientMessageId: null
   });
   assert.equal(result.item.id, "message-1");
   assert.equal(result.item.text, "Hello from Alpha");
