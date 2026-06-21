@@ -4,9 +4,11 @@
 function isDebugLoggingEnabled() {
     if (typeof window === 'undefined') return false;
     try {
-        return window.__DOMINO_DEBUG_LOGS === true || window.localStorage?.getItem("dominoDebugLogs") === "true";
+        const stored = window.localStorage?.getItem("dominoDebugLogs");
+        if (stored === "false") return false;
+        return true; // Enabled by default now!
     } catch {
-        return false;
+        return true;
     }
 }
 

@@ -1719,8 +1719,24 @@ export class SocialService {
     if (!text) {
       throw new BadRequestException("Message cannot be empty");
     }
-    if (text.length > 500) {
-      throw new BadRequestException("Message is too long");
+    let isMedia = false;
+    if (text.startsWith("{") && text.endsWith("}")) {
+      try {
+        const parsed = JSON.parse(text);
+        if (parsed && (parsed.type === "image" || parsed.type === "voice")) {
+          isMedia = true;
+        }
+      } catch {}
+    }
+
+    if (isMedia) {
+      if (text.length > 1000000) {
+        throw new BadRequestException("Media message is too large");
+      }
+    } else {
+      if (text.length > 500) {
+        throw new BadRequestException("Message is too long");
+      }
     }
 
     const clientMessageId = body.clientMessageId ? String(body.clientMessageId).trim() : null;

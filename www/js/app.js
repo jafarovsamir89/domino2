@@ -93,9 +93,11 @@ const DEFAULT_TABLE_SKINS = [
 function isDebugLoggingEnabled() {
     if (typeof window === 'undefined') return false;
     try {
-        return window.__DOMINO_DEBUG_LOGS === true || window.localStorage?.getItem("dominoDebugLogs") === "true";
+        const stored = window.localStorage?.getItem("dominoDebugLogs");
+        if (stored === "false") return false;
+        return true; // Enabled by default now!
     } catch {
-        return false;
+        return true;
     }
 }
 
@@ -4243,35 +4245,45 @@ class DominoGame {
             return this.socialSummary;
         }
 
-        try {
-            const summary = await this.account.getSocialSummary();
-            this.socialSummary = {
-                inboxUnreadCount: Math.max(0, Number(summary?.inboxUnreadCount || 0)),
-                chatUnreadCount: Math.max(0, Number(summary?.chatUnreadCount || 0)),
-                inviteUnreadCount: Math.max(0, Number(summary?.inviteUnreadCount || 0)),
-                friendRequestCount: Math.max(0, Number(summary?.friendRequestCount || 0)),
-                totalUnreadCount: Math.max(0, Number(summary?.totalUnreadCount || 0))
-            };
-            this.socialSummaryLoaded = true;
-        } catch {
-            if (!this.socialSummaryLoaded) {
+        if (this._socialSummaryLoadInFlight) {
+            return this._socialSummaryLoadInFlight;
+        }
+
+        this._socialSummaryLoadInFlight = (async () => {
+            try {
+                const summary = await this.account.getSocialSummary();
                 this.socialSummary = {
-                    inboxUnreadCount: 0,
-                    chatUnreadCount: 0,
-                    inviteUnreadCount: 0,
-                    friendRequestCount: 0,
-                    totalUnreadCount: 0
+                    inboxUnreadCount: Math.max(0, Number(summary?.inboxUnreadCount || 0)),
+                    chatUnreadCount: Math.max(0, Number(summary?.chatUnreadCount || 0)),
+                    inviteUnreadCount: Math.max(0, Number(summary?.inviteUnreadCount || 0)),
+                    friendRequestCount: Math.max(0, Number(summary?.friendRequestCount || 0)),
+                    totalUnreadCount: Math.max(0, Number(summary?.totalUnreadCount || 0))
                 };
+                this.socialSummaryLoaded = true;
+            } catch {
+                if (!this.socialSummaryLoaded) {
+                    this.socialSummary = {
+                        inboxUnreadCount: 0,
+                        chatUnreadCount: 0,
+                        inviteUnreadCount: 0,
+                        friendRequestCount: 0,
+                        totalUnreadCount: 0
+                    };
+                }
+            } finally {
+                this._socialSummaryLoadInFlight = null;
             }
-        }
-        this.updateSocialCenterBadge();
-        if (this.hasAuthenticatedAccount()) {
-            void this.ensureSocialRealtimeStarted('summary-loaded');
-        }
-        if (this.hasAuthenticatedAccount()) {
-            this.startGameInviteRefresh();
-        }
-        return this.socialSummary;
+            this.updateSocialCenterBadge();
+            if (this.hasAuthenticatedAccount()) {
+                void this.ensureSocialRealtimeStarted('summary-loaded');
+            }
+            if (this.hasAuthenticatedAccount()) {
+                this.startGameInviteRefresh();
+            }
+            return this.socialSummary;
+        })();
+
+        return this._socialSummaryLoadInFlight;
     }
 
     async loadInboxPage(isBackground = false) {
@@ -4292,6 +4304,10 @@ class DominoGame {
             return [];
         }
 
+        if (this._inboxLoadInFlight) {
+            return this._inboxLoadInFlight;
+        }
+
         if (!isBackground) {
             this.socialInboxState = {
                 ...(this.socialInboxState || {}),
@@ -4301,35 +4317,41 @@ class DominoGame {
             this.renderSocialInboxPanel();
         }
 
-        try {
-            const [data, threadData] = await Promise.all([
-                this.account.getInbox(),
-                this.account.getMessageThreads().catch(() => [])
-            ]);
-            const items = Array.isArray(data?.items) ? data.items : [];
-            const threads = Array.isArray(threadData) ? threadData : [];
-            const unreadCount = Math.max(0, Number(data?.unreadCount || 0));
-            this.socialInboxState = {
-                items,
-                threads,
-                unreadCount,
-                loading: false,
-                error: ''
-            };
-            this.renderSocialInboxPanel();
-            await this.loadSocialSummary();
-            return items;
-        } catch (err) {
-            this.socialInboxState = {
-                items: [],
-                unreadCount: 0,
-                loading: false,
-                error: err?.message || this.t('inbox-load-failed')
-            };
-            this.renderSocialInboxPanel();
-            this.updateSocialCenterBadge();
-            return [];
-        }
+        this._inboxLoadInFlight = (async () => {
+            try {
+                const [data, threadData] = await Promise.all([
+                    this.account.getInbox(),
+                    this.loadMessageThreads().catch(() => [])
+                ]);
+                const items = Array.isArray(data?.items) ? data.items : [];
+                const threads = Array.isArray(threadData) ? threadData : [];
+                const unreadCount = Math.max(0, Number(data?.unreadCount || 0));
+                this.socialInboxState = {
+                    items,
+                    threads,
+                    unreadCount,
+                    loading: false,
+                    error: ''
+                };
+                this.renderSocialInboxPanel();
+                await this.loadSocialSummary();
+                return items;
+            } catch (err) {
+                this.socialInboxState = {
+                    items: [],
+                    unreadCount: 0,
+                    loading: false,
+                    error: err?.message || this.t('inbox-load-failed')
+                };
+                this.renderSocialInboxPanel();
+                this.updateSocialCenterBadge();
+                return [];
+            } finally {
+                this._inboxLoadInFlight = null;
+            }
+        })();
+
+        return this._inboxLoadInFlight;
     }
 
     mergeConversationMessages(existingMessages = [], freshMessages = []) {
@@ -4959,9 +4981,10 @@ class DominoGame {
         const cachedPeerForNewPlayerId = this.findCachedPlayerProfile(playerId);
         const hasCachedConversation = currentActiveId === playerId && (
             (Array.isArray(currentState.messages) && currentState.messages.length > 0) ||
-            Boolean(cachedPeerForNewPlayerId)
+            Boolean(cachedPeerForNewPlayerId) ||
+            currentState.conversationLoading === false
         );
-        const shouldShowLoading = !hasCachedConversation;
+        const shouldShowLoading = !isBackground && !hasCachedConversation;
         this.socialCenterView = 'conversation';
         this.accountMessagesState = {
             ...currentState,
@@ -7983,6 +8006,10 @@ class DominoGame {
             return;
         }
 
+        if (this._friendsLoadInFlight) {
+            return this._friendsLoadInFlight;
+        }
+
         searchInput.disabled = false;
         if (!isBackground) {
             if (!friendsList.children.length) this.setSummaryMessage(friendsList, loading);
@@ -7990,12 +8017,13 @@ class DominoGame {
             if (!searchResults.children.length) this.setSummaryMessage(searchResults, loading);
         }
 
-        try {
-            const [friends, leaderboardRows, presenceMap] = await Promise.all([
-                this.account.getFriends(),
-                this.account.getLeaderboard(100).catch(() => []),
-                this.loadFriendPresenceMap().catch(() => new Map())
-            ]);
+        this._friendsLoadInFlight = (async () => {
+            try {
+                const [friends, leaderboardRows, presenceMap] = await Promise.all([
+                    this.account.getFriends(),
+                    this.account.getLeaderboard(100).catch(() => []),
+                    this.loadFriendPresenceMap().catch(() => new Map())
+                ]);
             this.friendHub = friends || { accepted: [], incoming: [], outgoing: [], items: [] };
             this.friendRatingMap = new Map((Array.isArray(leaderboardRows) ? leaderboardRows : []).map((row) => [String(row.id || ''), Number(row.rating ?? 0)]));
             if (presenceMap instanceof Map) {
@@ -8190,9 +8218,14 @@ class DominoGame {
             this.setSummaryMessage(friendsList, err.message || this.t('friends-load-failed'));
             this.setSummaryMessage(requestsList, err.message || this.t('friends-load-failed'));
             this.setSummaryMessage(searchResults, err.message || this.t('friends-load-failed'));
+        } finally {
+            this._friendsLoadInFlight = null;
         }
         await this.loadSocialSummary();
         this.updateSocialCenterBadge();
+        })();
+
+        return this._friendsLoadInFlight;
     }
 
     getRoomInvitationStatusKey(invite) {
@@ -10891,23 +10924,41 @@ class DominoGame {
 
         if (attachBtn) {
             attachBtn.addEventListener('click', () => {
+                debugLog('[Chat Debug] Photo upload attachment clicked.');
                 const fileInput = document.createElement('input');
                 fileInput.type = 'file';
                 fileInput.accept = 'image/*';
                 fileInput.onchange = async (e) => {
                     const file = e.target.files?.[0];
-                    if (!file) return;
+                    if (!file) {
+                        debugLog('[Chat Debug] No file selected.');
+                        return;
+                    }
                     const targetId = String(this.accountMessagesState?.activePlayerId || '').trim();
-                    if (!targetId) return;
+                    debugLog('[Chat Debug] File selected:', {
+                        name: file.name,
+                        type: file.type,
+                        size: file.size,
+                        targetId
+                    });
+                    if (!targetId) {
+                        debugLog('[Chat Debug] No active player conversation to send to.');
+                        return;
+                    }
                     try {
                         this.renderer.showMessage(this.t('sending-attachment') || 'Photo sending...', 1200);
                         const tempId = `temp-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+                        debugLog('[Chat Debug] Compressing image...', file.name);
                         const compressedBase64 = await this.compressImage(file);
+                        debugLog('[Chat Debug] Image compressed. Base64 length:', compressedBase64?.length);
                         const msgBody = JSON.stringify({ type: 'image', data: compressedBase64 });
-                        await this.sendDirectMessageWithFallback(targetId, msgBody, tempId);
+                        debugLog('[Chat Debug] Sending compressed image payload...', { tempId, payloadLength: msgBody.length });
+                        const result = await this.sendDirectMessageWithFallback(targetId, msgBody, tempId);
+                        debugLog('[Chat Debug] Image message sent successfully.', result);
                         await this.loadConversationWithPlayer(targetId);
                         await this.loadMessageThreads();
                     } catch (err) {
+                        debugLog('[Chat Debug] Image send failed:', err);
                         this.renderer.showMessage(err.message, 1800);
                     }
                 };
@@ -10975,6 +11026,7 @@ class DominoGame {
     }
 
     async toggleVoiceRecording() {
+        debugLog('[Chat Debug] toggleVoiceRecording. Current state:', { isRecording: this._isRecordingVoice });
         if (this._isRecordingVoice) {
             await this.stopVoiceRecording(false);
         } else {
@@ -10983,31 +11035,65 @@ class DominoGame {
     }
 
     async startVoiceRecording() {
-        if (this._isRecordingVoice) return;
+        debugLog('[Chat Debug] startVoiceRecording requested.');
+        if (this._isRecordingVoice) {
+            debugLog('[Chat Debug] startVoiceRecording: already recording, aborting.');
+            return;
+        }
+
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            const errMsg = 'Microphone access is only available on secure connections (HTTPS) or localhost.';
+            debugLog('[Chat Debug] Microphone access not supported by browser/protocol', {
+                hasMediaDevices: !!navigator.mediaDevices,
+                protocol: window.location.protocol
+            });
+            this.renderer.showMessage(errMsg, 3000);
+            return;
+        }
+
         try {
+            debugLog('[Chat Debug] Requesting microphone access...');
             this._voiceRecordStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            debugLog('[Chat Debug] Microphone access granted.');
         } catch (err) {
+            debugLog('[Chat Debug] Microphone access denied or failed:', err);
             this.renderer.showMessage(this.t('voice-record-denied') || 'Microphone access denied', 1800);
             return;
         }
 
         this._audioChunks = [];
-        this._mediaRecorder = new MediaRecorder(this._voiceRecordStream);
+        try {
+            this._mediaRecorder = new MediaRecorder(this._voiceRecordStream);
+            debugLog('[Chat Debug] MediaRecorder created successfully. mimeType:', this._mediaRecorder.mimeType);
+        } catch (err) {
+            debugLog('[Chat Debug] Failed to create MediaRecorder:', err);
+            this.renderer.showMessage('Audio recorder initialization failed', 1800);
+            this.cleanupVoiceRecord();
+            return;
+        }
+
         this._mediaRecorder.ondataavailable = (e) => {
             if (e.data && e.data.size > 0) {
                 this._audioChunks.push(e.data);
+                debugLog('[Chat Debug] Voice recording chunk received. Size:', e.data.size);
             }
         };
 
         this._mediaRecorder.onstop = async () => {
+            debugLog('[Chat Debug] MediaRecorder stopped. Chunks:', this._audioChunks.length, 'Cancelled:', this._voiceRecordCancelled);
             if (this._voiceRecordCancelled) {
                 this.cleanupVoiceRecord();
                 return;
             }
-            const blob = new Blob(this._audioChunks, { type: 'audio/webm' });
+            const recordedType = this._mediaRecorder?.mimeType || 'audio/webm';
+            const blob = new Blob(this._audioChunks, { type: recordedType });
+            debugLog('[Chat Debug] Voice recording blob created. Size:', blob.size, 'Type:', recordedType);
             this.cleanupVoiceRecord();
 
-            if (blob.size < 100) return; // Too short/empty
+            if (blob.size < 100) {
+                debugLog('[Chat Debug] Voice recording blob size too small, skipping.');
+                return;
+            }
 
             const reader = new FileReader();
             reader.readAsDataURL(blob);
@@ -11015,15 +11101,19 @@ class DominoGame {
                 const base64 = reader.result;
                 const duration = Math.round((Date.now() - this._voiceRecordStartTime) / 1000);
                 const targetId = String(this.accountMessagesState?.activePlayerId || '').trim();
+                debugLog('[Chat Debug] Voice recording base64 ready. Length:', base64?.length, 'Duration:', duration, 'Recipient:', targetId);
                 if (!targetId || !base64) return;
 
                 try {
                     const tempId = `temp-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
                     const messageBody = JSON.stringify({ type: 'voice', data: base64, duration });
+                    debugLog('[Chat Debug] Sending voice message. Payload length:', messageBody.length);
                     await this.sendDirectMessageWithFallback(targetId, messageBody, tempId);
+                    debugLog('[Chat Debug] Voice message sent successfully.');
                     await this.loadConversationWithPlayer(targetId);
                     await this.loadMessageThreads();
                 } catch (err) {
+                    debugLog('[Chat Debug] Voice message send error:', err);
                     this.renderer.showMessage(err.message, 1800);
                 }
             };
@@ -11032,7 +11122,17 @@ class DominoGame {
         this._voiceRecordStartTime = Date.now();
         this._voiceRecordCancelled = false;
         this._isRecordingVoice = true;
-        this._mediaRecorder.start();
+        
+        try {
+            this._mediaRecorder.start();
+            debugLog('[Chat Debug] MediaRecorder started recording.');
+        } catch (err) {
+            debugLog('[Chat Debug] Failed to start MediaRecorder:', err);
+            this.renderer.showMessage('Failed to start recording', 1800);
+            this.cleanupVoiceRecord();
+            this._isRecordingVoice = false;
+            return;
+        }
 
         // UI Updates
         const composeArea = document.querySelector('#social-chats-panel .chat-compose-area');
@@ -11061,6 +11161,7 @@ class DominoGame {
                 timerEl.textContent = `${mins}:${secs.toString().padStart(2, '0')}`;
 
                 if (elapsed >= 60) {
+                    debugLog('[Chat Debug] Auto-stopping recording (max limit 60s reached).');
                     void this.stopVoiceRecording(false);
                 }
             }
@@ -11068,7 +11169,11 @@ class DominoGame {
     }
 
     async stopVoiceRecording(cancelled = false) {
-        if (!this._isRecordingVoice) return;
+        debugLog('[Chat Debug] stopVoiceRecording requested. Cancelled:', cancelled);
+        if (!this._isRecordingVoice) {
+            debugLog('[Chat Debug] stopVoiceRecording: Not currently recording, aborting.');
+            return;
+        }
         this._voiceRecordCancelled = cancelled;
         this._isRecordingVoice = false;
 
@@ -11078,7 +11183,12 @@ class DominoGame {
         }
 
         if (this._mediaRecorder && this._mediaRecorder.state !== 'inactive') {
-            this._mediaRecorder.stop();
+            try {
+                this._mediaRecorder.stop();
+                debugLog('[Chat Debug] MediaRecorder.stop() called.');
+            } catch (err) {
+                debugLog('[Chat Debug] Error calling MediaRecorder.stop():', err);
+            }
         }
 
         // UI Reset
@@ -11110,12 +11220,15 @@ class DominoGame {
 
     compressImage(file) {
         return new Promise((resolve, reject) => {
+            debugLog('[Chat Debug] compressImage: Reading file as Data URL...');
             const reader = new FileReader();
             reader.readAsDataURL(file);
             reader.onload = (event) => {
+                debugLog('[Chat Debug] compressImage: File read completed. Creating Image object...');
                 const img = new Image();
                 img.src = event.target.result;
                 img.onload = () => {
+                    debugLog('[Chat Debug] compressImage: Image loaded. Original dimensions:', img.width, 'x', img.height);
                     const canvas = document.createElement('canvas');
                     let width = img.width;
                     let height = img.height;
@@ -11131,17 +11244,25 @@ class DominoGame {
                         }
                     }
 
+                    debugLog('[Chat Debug] compressImage: Target dimensions:', width, 'x', height);
                     canvas.width = width;
                     canvas.height = height;
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(img, 0, 0, width, height);
 
                     const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+                    debugLog('[Chat Debug] compressImage: Canvas conversion to JPEG (quality 0.7) complete. Result URL size:', dataUrl.length);
                     resolve(dataUrl);
                 };
-                img.onerror = (err) => reject(err);
+                img.onerror = (err) => {
+                    debugLog('[Chat Debug] compressImage: Image load failed:', err);
+                    reject(err);
+                };
             };
-            reader.onerror = (err) => reject(err);
+            reader.onerror = (err) => {
+                debugLog('[Chat Debug] compressImage: FileReader failed:', err);
+                reject(err);
+            };
         });
     }
 
@@ -14631,7 +14752,13 @@ class DominoGame {
         }
     }
     renderGiftPicker() {
-        if (!this.giftPicker) return;
+        if (!this.giftPicker) {
+            debugLog('[Chat Debug] renderGiftPicker: giftPicker element not found.');
+            return;
+        }
+        const mode = this.giftPickerMode || 'inventory';
+        const inventory = Array.isArray(this.giftInventory) ? this.giftInventory.filter(item => Number(item?.quantity || 0) > 0) : [];
+        debugLog('[Chat Debug] renderGiftPicker: rendering in mode:', mode, 'inventory count:', inventory.length);
         this.giftPicker.innerHTML = '';
         const header = document.createElement('div');
         header.className = 'gift-picker-header';
@@ -14696,8 +14823,6 @@ class DominoGame {
             });
         }
 
-        const mode = this.giftPickerMode || 'inventory';
-        const inventory = Array.isArray(this.giftInventory) ? this.giftInventory.filter(item => Number(item?.quantity || 0) > 0) : [];
 
         const menuBar = document.createElement('div');
         menuBar.className = 'gift-picker-menubar';
@@ -14857,8 +14982,12 @@ class DominoGame {
         this.giftPicker.appendChild(grid);
     }
     toggleGiftPicker(force = null) {
-        if (!this.giftPicker) return;
+        if (!this.giftPicker) {
+            debugLog('[Chat Debug] toggleGiftPicker: giftPicker element not found.');
+            return;
+        }
         const open = force === null ? !this.giftPicker.classList.contains('open') : !!force;
+        debugLog('[Chat Debug] toggleGiftPicker. force:', force, 'nextOpenState:', open);
         this.giftPicker.classList.toggle('open', open);
         this.giftPicker.setAttribute('aria-hidden', String(!open));
         if (this.giftBtn) {
@@ -15000,21 +15129,26 @@ class DominoGame {
     async sendGift(giftKey, recipientPlayerId, fromInventory = false) {
         const recipientId = String(recipientPlayerId || '').trim();
         const key = String(giftKey || '').trim();
+        debugLog('[Chat Debug] sendGift requested:', { giftKey: key, recipientId, fromInventory });
         if (!recipientId || !key) {
+            debugLog('[Chat Debug] sendGift aborted: missing recipientId or giftKey');
             this.renderer.showMessage(this.t('gift-select-recipient'), 1400);
             return null;
         }
         const myPlayerId = String(this.accountProfile?.playerId || this.accountProfile?.id || this.accountProfile?.player?.id || '').trim();
         if (!this.accountProfile || recipientId === myPlayerId) {
+            debugLog('[Chat Debug] sendGift aborted: sender is not authed or trying to send to self');
             this.renderer.showMessage(this.t('gift-self-send'), 1600);
             return null;
         }
         const gift = this.giftCatalog.find((item) => item.key === key);
         if (!gift) {
+            debugLog('[Chat Debug] sendGift aborted: gift not found in catalog:', key);
             this.renderer.showMessage(this.t('gift-not-found'), 1600);
             return null;
         }
         try {
+            debugLog('[Chat Debug] sendGift: calling account.sendGift API...', { recipientId, key, fromInventory });
             const result = await this.account.sendGift({
                 recipientPlayerId: recipientId,
                 giftKey: key,
@@ -15023,12 +15157,14 @@ class DominoGame {
                 note: `${gift.name}`,
                 fromInventory: fromInventory
             });
+            debugLog('[Chat Debug] sendGift: API call successful, result:', result);
             const name = this.getRecipientNameById(recipientId);
             this.closeGiftPicker();
             this.lastGiftSentAt = Date.now();
             this.lastGiftSentKey = key;
             this.showGiftBurst(gift, this.accountProfile?.name || this.t('gift-button'), name);
             if (this.network?.isMultiplayer) {
+                debugLog('[Chat Debug] sendGift: sending gift event over the socket to room...', { key, recipientId, name });
                 this.network.sendGift({
                     giftKey: gift.key,
                     giftName: gift.name,
@@ -15046,6 +15182,7 @@ class DominoGame {
             this.renderer.showMessage(this.t('gift-sent'), 1500);
             return result;
         } catch (err) {
+            debugLog('[Chat Debug] sendGift: failed with error:', err);
             this.renderer.showMessage(err.message || this.t('gift-send-failed'), 1800);
             return null;
         }
