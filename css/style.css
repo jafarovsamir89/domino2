@@ -4875,6 +4875,14 @@ body.move-hint-selection-active #game-screen .player-name-btn {
     -webkit-backdrop-filter: none !important;
 }
 
+.screen.overlay.result-overlay-test .overlay-content {
+    background: linear-gradient(
+        180deg,
+        rgba(15, 25, 35, 0.51),
+        rgba(13, 23, 36, 0.43)
+    ) !important;
+}
+
 .screen.overlay.result-overlay-test .overlay-content h2,
 .screen.overlay.result-overlay-test .overlay-content h3,
 .screen.overlay.result-overlay-test .overlay-content p,
