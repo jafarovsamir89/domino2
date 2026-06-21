@@ -1706,14 +1706,52 @@ test("getMessageThreads returns only the current player's conversations with unr
     inboxMessage: {
       findMany: async () => []
     },
-    directMessage: {
-      findMany: async ({ where, take }: any) => {
-        assert.equal(take, 200);
-        assert.deepEqual(where.OR, [
-          { senderPlayerId: currentPlayer.id },
-          { receiverPlayerId: currentPlayer.id }
-        ]);
-        return rows.filter((row) => row.senderPlayerId === currentPlayer.id || row.receiverPlayerId === currentPlayer.id);
+    directMessageThread: {
+      findMany: async ({ where }: any) => {
+        assert.ok(where.OR.some((or: any) => or.playerAId === currentPlayer.id));
+        assert.ok(where.OR.some((or: any) => or.playerBId === currentPlayer.id));
+        return [
+          {
+            playerAId: currentPlayer.id,
+            playerBId: playerC.id,
+            unreadCountA: 1,
+            unreadCountB: 0,
+            lastMessageId: "m-4",
+            lastMessageAt: new Date("2024-03-02T09:00:00.000Z"),
+            playerA: currentPlayer,
+            playerB: playerC,
+            lastMessage: {
+              id: "m-4",
+              senderPlayerId: playerC.id,
+              receiverPlayerId: currentPlayer.id,
+              text: "Hey Alpha",
+              createdAt: new Date("2024-03-02T09:00:00.000Z"),
+              readAt: null,
+              sender: playerC,
+              receiver: currentPlayer
+            }
+          },
+          {
+            playerAId: currentPlayer.id,
+            playerBId: playerB.id,
+            unreadCountA: 1,
+            unreadCountB: 0,
+            lastMessageId: "m-3",
+            lastMessageAt: new Date("2024-03-01T12:00:00.000Z"),
+            playerA: currentPlayer,
+            playerB: playerB,
+            lastMessage: {
+              id: "m-3",
+              senderPlayerId: playerB.id,
+              receiverPlayerId: currentPlayer.id,
+              text: "Seen message",
+              createdAt: new Date("2024-03-01T12:00:00.000Z"),
+              readAt: new Date("2024-03-01T12:30:00.000Z"),
+              sender: playerB,
+              receiver: currentPlayer
+            }
+          }
+        ];
       }
     }
   } as any;
@@ -1725,10 +1763,10 @@ test("getMessageThreads returns only the current player's conversations with unr
 
   assert.equal(result.items.length, 2);
   assert.equal(result.items[0].player.id, playerC.id);
-  assert.equal(result.items[0].lastMessage.text, "Hey Alpha");
+  assert.equal(result.items[0].lastMessage?.text, "Hey Alpha");
   assert.equal(result.items[0].unreadCount, 1);
   assert.equal(result.items[1].player.id, playerB.id);
-  assert.equal(result.items[1].lastMessage.text, "Seen message");
+  assert.equal(result.items[1].lastMessage?.text, "Seen message");
   assert.equal(result.items[1].unreadCount, 1);
 });
 
@@ -1777,8 +1815,33 @@ test("getMessageThreads hides threads that the player archived", async () => {
         return [];
       }
     },
-    directMessage: {
-      findMany: async () => rows
+    directMessageThread: {
+      findMany: async ({ where }: any) => {
+        const hiddenArray = where.NOT.OR.flatMap((or: any) => or.playerAId.in || or.playerBId.in);
+        assert.ok(hiddenArray.includes(playerC.id));
+        return [
+          {
+            playerAId: currentPlayer.id,
+            playerBId: playerB.id,
+            unreadCountA: 1,
+            unreadCountB: 0,
+            lastMessageId: "m-2",
+            lastMessageAt: new Date("2024-03-01T11:00:00.000Z"),
+            playerA: currentPlayer,
+            playerB: playerB,
+            lastMessage: {
+              id: "m-2",
+              senderPlayerId: playerB.id,
+              receiverPlayerId: currentPlayer.id,
+              text: "Unread message",
+              createdAt: new Date("2024-03-01T11:00:00.000Z"),
+              readAt: null,
+              sender: playerB,
+              receiver: currentPlayer
+            }
+          }
+        ];
+      }
     }
   } as any;
 

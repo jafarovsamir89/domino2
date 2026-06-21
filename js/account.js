@@ -949,9 +949,12 @@ export class AccountClient {
         });
     }
 
-    async sendDirectMessage(playerId, text) {
+    async sendDirectMessage(playerId, text, clientMessageId = '') {
         const id = String(playerId || "").trim();
-        const body = { text: String(text || "").trim() };
+        const body = { 
+            text: String(text || "").trim(),
+            ...(clientMessageId ? { clientMessageId: String(clientMessageId).trim() } : {})
+        };
         return this.platformRequest(`/social/messages/${encodeURIComponent(id)}`, {
             method: "POST",
             body

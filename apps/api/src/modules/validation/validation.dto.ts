@@ -144,6 +144,11 @@ export class SocialSendMessageDto {
   @IsString()
   @MaxLength(500)
   text?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(128)
+  clientMessageId?: string;
 }
 
 export class SocialExchangeGiftDto {

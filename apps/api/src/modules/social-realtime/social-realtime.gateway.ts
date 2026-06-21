@@ -112,7 +112,7 @@ export class SocialRealtimeGateway implements OnModuleInit, OnModuleDestroy {
         const result = await this.socialService.sendDirectMessageForPlayer(
           player,
           receiverPlayerId,
-          { text },
+          { text, clientMessageId: tempId || undefined },
           { emitEvents: false }
         );
         const message = result.item;

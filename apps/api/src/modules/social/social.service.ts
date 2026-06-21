@@ -1138,24 +1138,25 @@ export class SocialService {
     }
 
     const now = new Date();
-    await this.prisma.directMessage.updateMany({
-      where: {
-        OR: [
-          {
-            senderPlayerId: targetPlayerId,
-            receiverPlayerId: currentPlayer.id
-          },
-          {
-            senderPlayerId: currentPlayer.id,
-            receiverPlayerId: targetPlayerId
-          }
-        ],
-        readAt: null
-      },
-      data: {
-        readAt: now
-      }
-    });
+    const [playerAId, playerBId] = [currentPlayer.id, targetPlayerId].sort();
+    const isPlayerA = currentPlayer.id === playerAId;
+
+    await this.prisma.$transaction([
+      this.prisma.directMessage.updateMany({
+        where: {
+          senderPlayerId: targetPlayerId,
+          receiverPlayerId: currentPlayer.id,
+          readAt: null
+        },
+        data: {
+          readAt: now
+        }
+      }),
+      this.prisma.directMessageThread.updateMany({
+        where: { playerAId, playerBId },
+        data: isPlayerA ? { unreadCountA: 0 } : { unreadCountB: 0 }
+      })
+    ]);
 
     return { ok: true };
   }
@@ -1397,39 +1398,52 @@ export class SocialService {
 
   async getMessageThreads(headers: IncomingHttpHeaders) {
     const { currentPlayer, hiddenPlayerIds } = await this.getHiddenDirectMessageThreadPlayerIds(headers);
-    const rows = await this.prisma.directMessage.findMany({
-      where: {
+    const hiddenArray = Array.from(hiddenPlayerIds);
+
+    const where: Prisma.DirectMessageThreadWhereInput = {
+      OR: [
+        { playerAId: currentPlayer.id },
+        { playerBId: currentPlayer.id }
+      ]
+    };
+    if (hiddenArray.length > 0) {
+      where.NOT = {
         OR: [
-          { senderPlayerId: currentPlayer.id },
-          { receiverPlayerId: currentPlayer.id }
+          { playerAId: { in: hiddenArray } },
+          { playerBId: { in: hiddenArray } }
         ]
-      },
+      };
+    }
+
+    const threads = await this.prisma.directMessageThread.findMany({
+      where,
       include: {
-        sender: { select: this.playerSelect() },
-        receiver: { select: this.playerSelect() }
+        playerA: { select: this.playerSelect() },
+        playerB: { select: this.playerSelect() },
+        lastMessage: {
+          include: {
+            sender: { select: this.playerSelect() },
+            receiver: { select: this.playerSelect() }
+          }
+        }
       },
-      orderBy: { createdAt: "desc" },
-      take: 200
+      orderBy: { lastMessageAt: "desc" }
     });
 
-    const grouped = new Map<string, DirectMessageRow[]>();
-    rows.forEach((row) => {
-      const partnerId = row.senderPlayerId === currentPlayer.id ? row.receiverPlayerId : row.senderPlayerId;
-      if (!partnerId) return;
-      if (hiddenPlayerIds.has(partnerId)) return;
-      const normalized = row as unknown as DirectMessageRow;
-      const list = grouped.get(partnerId) || [];
-      list.push(normalized);
-      grouped.set(partnerId, list);
-    });
+    const items = threads.map((thread) => {
+      const partner = thread.playerAId === currentPlayer.id ? thread.playerB : thread.playerA;
+      const unreadCount = thread.playerAId === currentPlayer.id ? thread.unreadCountA : thread.unreadCountB;
+      const lastMessage = thread.lastMessage
+        ? this.summarizeDirectMessage(thread.lastMessage as unknown as DirectMessageRow)
+        : null;
 
-    const items = Array.from(grouped.values())
-      .map((group) => this.summarizeMessageThread(currentPlayer.id, group))
-      .sort((left, right) => {
-        const leftAt = new Date(left.lastMessage?.createdAt || 0).getTime();
-        const rightAt = new Date(right.lastMessage?.createdAt || 0).getTime();
-        return rightAt - leftAt;
-      });
+      return {
+        player: this.summarizePlayer(partner || { id: "", displayName: "Player", isGuest: false, avatarSeed: null, avatarUrl: null }),
+        lastMessage,
+        unreadCount,
+        messageCount: 0
+      };
+    });
 
     return { items };
   }
@@ -1573,7 +1587,11 @@ export class SocialService {
     };
   }
 
-  async getDirectMessages(headers: IncomingHttpHeaders, playerId: string, options: { limit?: string | number; before?: string | null } = {}) {
+  async getDirectMessages(
+    headers: IncomingHttpHeaders,
+    playerId: string,
+    options: { limit?: string | number; before?: string | null; afterMessageId?: string | null } = {}
+  ) {
     const currentPlayer = await this.getCurrentPlayer(headers);
     const targetPlayerId = String(playerId || "").trim();
     if (!targetPlayerId) {
@@ -1585,6 +1603,8 @@ export class SocialService {
 
     const cleanLimit = Math.max(1, Math.min(100, Math.trunc(Number(options?.limit || 50) || 50)));
     const before = String(options?.before || "").trim();
+    const afterMessageId = String(options?.afterMessageId || "").trim();
+
     let beforeCreatedAt: Date | null = null;
     if (before) {
       const byId = await this.prisma.directMessage.findUnique({
@@ -1601,14 +1621,36 @@ export class SocialService {
       }
     }
 
+    let afterCreatedAt: Date | null = null;
+    if (afterMessageId) {
+      const byId = await this.prisma.directMessage.findUnique({
+        where: { id: afterMessageId },
+        select: { createdAt: true }
+      }).catch(() => null);
+      if (byId?.createdAt instanceof Date) {
+        afterCreatedAt = byId.createdAt;
+      }
+    }
+
+    const where: Prisma.DirectMessageWhereInput = {
+      OR: [
+        { senderPlayerId: currentPlayer.id, receiverPlayerId: targetPlayerId },
+        { senderPlayerId: targetPlayerId, receiverPlayerId: currentPlayer.id }
+      ]
+    };
+
+    if (beforeCreatedAt || afterCreatedAt) {
+      where.createdAt = {};
+      if (beforeCreatedAt) {
+        where.createdAt.lt = beforeCreatedAt;
+      }
+      if (afterCreatedAt) {
+        where.createdAt.gt = afterCreatedAt;
+      }
+    }
+
     const rows = await this.prisma.directMessage.findMany({
-      where: {
-        ...(beforeCreatedAt ? { createdAt: { lt: beforeCreatedAt } } : {}),
-        OR: [
-          { senderPlayerId: currentPlayer.id, receiverPlayerId: targetPlayerId },
-          { senderPlayerId: targetPlayerId, receiverPlayerId: currentPlayer.id }
-        ]
-      },
+      where,
       include: {
         sender: { select: this.playerSelect() },
         receiver: { select: this.playerSelect() }
@@ -1630,6 +1672,7 @@ export class SocialService {
     };
   }
 
+
   async sendDirectMessage(headers: IncomingHttpHeaders, playerId: string, body: { text?: string }) {
     const currentPlayer = await this.getCurrentPlayer(headers);
     return this.sendDirectMessageForPlayer(currentPlayer, playerId, body);
@@ -1638,7 +1681,7 @@ export class SocialService {
   async sendDirectMessageForPlayer(
     currentPlayer: { id: string; displayName?: string },
     playerId: string,
-    body: { text?: string },
+    body: { text?: string; clientMessageId?: string },
     options: SocialRealtimeEmitOptions = {}
   ) {
     const targetPlayerId = String(playerId || "").trim();
@@ -1665,22 +1708,72 @@ export class SocialService {
       throw new BadRequestException("Message is too long");
     }
 
+    const clientMessageId = body.clientMessageId ? String(body.clientMessageId).trim() : null;
+
+    if (clientMessageId) {
+      const existing = await this.prisma.directMessage.findUnique({
+        where: {
+          senderPlayerId_clientMessageId: {
+            senderPlayerId: currentPlayer.id,
+            clientMessageId
+          }
+        },
+        include: {
+          sender: { select: this.playerSelect() },
+          receiver: { select: this.playerSelect() }
+        }
+      });
+      if (existing) {
+        return {
+          item: this.summarizeDirectMessage(existing as unknown as DirectMessageRow)
+        };
+      }
+    }
+
     this.enforceRateLimit(this.socialRateLimits.directMessage, `${currentPlayer.id}:1s`, 1, 1000);
     this.enforceRateLimit(this.socialRateLimits.directMessage, `${currentPlayer.id}:1m`, 30, 60_000);
 
     await this.clearHiddenDirectMessageThreadMarkers([currentPlayer.id], targetPlayerId);
     await this.clearHiddenDirectMessageThreadMarkers([targetPlayerId], currentPlayer.id);
 
-    const messageRow = await this.prisma.directMessage.create({
-      data: {
-        senderPlayerId: currentPlayer.id,
-        receiverPlayerId: targetPlayerId,
-        text
-      },
-      include: {
-        sender: { select: this.playerSelect() },
-        receiver: { select: this.playerSelect() }
-      }
+    const [playerAId, playerBId] = [currentPlayer.id, targetPlayerId].sort();
+    const isReceiverA = targetPlayerId === playerAId;
+
+    const messageRow = await this.prisma.$transaction(async (tx) => {
+      const msg = await tx.directMessage.create({
+        data: {
+          senderPlayerId: currentPlayer.id,
+          receiverPlayerId: targetPlayerId,
+          text,
+          clientMessageId
+        },
+        include: {
+          sender: { select: this.playerSelect() },
+          receiver: { select: this.playerSelect() }
+        }
+      });
+
+      await tx.directMessageThread.upsert({
+        where: {
+          playerAId_playerBId: { playerAId, playerBId }
+        },
+        create: {
+          playerAId,
+          playerBId,
+          lastMessageId: msg.id,
+          lastMessageAt: msg.createdAt,
+          unreadCountA: isReceiverA ? 1 : 0,
+          unreadCountB: !isReceiverA ? 1 : 0
+        },
+        update: {
+          lastMessageId: msg.id,
+          lastMessageAt: msg.createdAt,
+          unreadCountA: isReceiverA ? { increment: 1 } : undefined,
+          unreadCountB: !isReceiverA ? { increment: 1 } : undefined
+        }
+      });
+
+      return msg;
     });
 
     const message = this.summarizeDirectMessage(messageRow as unknown as DirectMessageRow);

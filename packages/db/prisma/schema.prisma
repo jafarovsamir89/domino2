@@ -3,8 +3,9 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider          = "postgresql"
+  url               = env("DATABASE_URL")
+  shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
 }
 
 enum ReportStatus {
@@ -183,6 +184,8 @@ model Player {
   friendRequestsReceived FriendConnection[] @relation("FriendRequestRecipient")
   sentDirectMessages DirectMessage[] @relation("SentDirectMessages")
   receivedDirectMessages DirectMessage[] @relation("ReceivedDirectMessages")
+  threadsAsA DirectMessageThread[] @relation("ThreadPlayerA")
+  threadsAsB DirectMessageThread[] @relation("ThreadPlayerB")
   inboxMessages InboxMessage[]
   roomInvitesSent RoomInvitation[] @relation("RoomInviteSender")
   roomInvitesReceived RoomInvitation[] @relation("RoomInviteRecipient")
@@ -478,12 +481,35 @@ model DirectMessage {
   text             String
   createdAt        DateTime @default(now())
   readAt           DateTime?
+  clientMessageId  String?
 
   sender           Player   @relation("SentDirectMessages", fields: [senderPlayerId], references: [id], onDelete: Cascade)
   receiver         Player   @relation("ReceivedDirectMessages", fields: [receiverPlayerId], references: [id], onDelete: Cascade)
+  threadsLast      DirectMessageThread[] @relation("ThreadLastMessage")
 
+  @@unique([senderPlayerId, clientMessageId])
   @@index([senderPlayerId, receiverPlayerId, createdAt])
   @@index([receiverPlayerId, senderPlayerId, createdAt])
+  @@index([receiverPlayerId, readAt])
+  @@index([createdAt])
+}
+
+model DirectMessageThread {
+  playerAId     String
+  playerBId     String
+  lastMessageId String?
+  lastMessageAt DateTime?
+  unreadCountA  Int       @default(0)
+  unreadCountB  Int       @default(0)
+
+  playerA       Player    @relation("ThreadPlayerA", fields: [playerAId], references: [id], onDelete: Cascade)
+  playerB       Player    @relation("ThreadPlayerB", fields: [playerBId], references: [id], onDelete: Cascade)
+  lastMessage   DirectMessage? @relation("ThreadLastMessage", fields: [lastMessageId], references: [id], onDelete: SetNull)
+
+  @@unique([playerAId, playerBId])
+  @@index([playerAId, lastMessageAt])
+  @@index([playerBId, lastMessageAt])
+  @@map("direct_message_thread")
 }
 
 model InboxMessage {

@@ -132,9 +132,10 @@ export class SocialController {
     @Req() req: Request,
     @Param("playerId") playerId: string,
     @Query("limit") limit?: string,
-    @Query("before") before?: string
+    @Query("before") before?: string,
+    @Query("afterMessageId") afterMessageId?: string
   ) {
-    return this.socialService.getDirectMessages(req.headers, playerId, { limit, before });
+    return this.socialService.getDirectMessages(req.headers, playerId, { limit, before, afterMessageId });
   }
 
   @Post("messages/:playerId/read")

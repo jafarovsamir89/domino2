@@ -3522,7 +3522,7 @@ class DominoGame {
                 live: true
             };
         }
-        return this.account.sendDirectMessage(targetId, text);
+        return this.account.sendDirectMessage(targetId, text, tempId);
     }
 
     async markDirectMessageThreadReadWithFallback(playerId) {
@@ -10354,7 +10354,8 @@ class DominoGame {
                     if (!targetId) return;
                     try {
                         this.renderer.showMessage(this.t('sending-attachment') || 'Photo sending...', 1200);
-                        await this.sendDirectMessageWithFallback(targetId, `📷 ${file.name}`);
+                        const tempId = `temp-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+                        await this.sendDirectMessageWithFallback(targetId, `📷 ${file.name}`, tempId);
                         await this.loadConversationWithPlayer(targetId);
                         await this.loadMessageThreads();
                     } catch (err) {
