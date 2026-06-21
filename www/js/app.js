@@ -1530,9 +1530,14 @@ class DominoGame {
         }
         this.socialCenterTab = 'inbox';
         this.socialCenterView = 'conversation';
+
+        const currentState = this.accountMessagesState || {};
+        const isDifferentPlayer = String(currentState.activePlayerId || '').trim() !== playerId;
         this.accountMessagesState = {
-            ...(this.accountMessagesState || {}),
+            ...currentState,
             activePlayerId: playerId,
+            activePlayerProfile: isDifferentPlayer ? null : currentState.activePlayerProfile,
+            messages: isDifferentPlayer ? [] : (currentState.messages || []),
             error: ''
         };
         void this.ensureSocialRealtimeStarted('conversation-open');
@@ -4895,6 +4900,24 @@ class DominoGame {
         return this._messageThreadsLoadInFlight;
     }
 
+    findCachedPlayerProfile(playerId) {
+        const id = String(playerId || '').trim();
+        if (!id) return null;
+        const threads = Array.isArray(this.accountMessagesState?.threads) ? this.accountMessagesState.threads : [];
+        const thread = threads.find(t => String(t?.player?.id || t?.playerId || t?.id || '').trim() === id);
+        if (thread?.player) return thread.player;
+        const friends = Array.isArray(this.friendHub?.accepted) ? this.friendHub.accepted : [];
+        const friendItem = friends.find(f => String(f?.friend?.id || '').trim() === id);
+        if (friendItem?.friend) return friendItem.friend;
+        const incoming = Array.isArray(this.friendHub?.incoming) ? this.friendHub.incoming : [];
+        const incItem = incoming.find(f => String(f?.friend?.id || '').trim() === id);
+        if (incItem?.friend) return incItem.friend;
+        const outgoing = Array.isArray(this.friendHub?.outgoing) ? this.friendHub.outgoing : [];
+        const outItem = outgoing.find(f => String(f?.friend?.id || '').trim() === id);
+        if (outItem?.friend) return outItem.friend;
+        return null;
+    }
+
     async loadConversationWithPlayer(playerRef, isBackground = false) {
         const playerId = String(playerRef?.playerId || playerRef?.userId || playerRef?.id || playerRef || '').trim();
         if (!playerId || !this.hasAuthenticatedAccount()) {
@@ -4907,11 +4930,7 @@ class DominoGame {
 
         const currentState = this.accountMessagesState || {};
         const currentActiveId = String(currentState.activePlayerId || '').trim();
-        const currentThreads = Array.isArray(currentState.threads) ? currentState.threads : [];
-        const activeThread = currentThreads.find((thread) => String(thread?.player?.id || thread?.playerId || thread?.id || '').trim() === playerId) || null;
-        const cachedPeerForNewPlayerId = currentActiveId === playerId
-            ? (currentState.activePlayerProfile || activeThread?.player || null)
-            : (activeThread?.player || null);
+        const cachedPeerForNewPlayerId = this.findCachedPlayerProfile(playerId);
         const hasCachedConversation = currentActiveId === playerId && (
             (Array.isArray(currentState.messages) && currentState.messages.length > 0) ||
             Boolean(cachedPeerForNewPlayerId)
@@ -4929,7 +4948,7 @@ class DominoGame {
         this.renderAccountMessagesPanel();
 
         const currentPlayerId = String(this.account?.playerId || this.account?.id || '').trim();
-        if (currentPlayerId && currentActiveId !== playerId) {
+        if (currentPlayerId && (!this.accountMessagesState?.messages || this.accountMessagesState.messages.length === 0)) {
             this.getCachedMessages(currentPlayerId, playerId).then((cached) => {
                 if (cached && cached.length && String(this.accountMessagesState?.activePlayerId || '').trim() === playerId) {
                     this.accountMessagesState = {
