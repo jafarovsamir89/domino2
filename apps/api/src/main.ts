@@ -9,6 +9,7 @@ import RedisImport from "ioredis";
 
 import { AppModule } from "./modules/app.module.js";
 import { getBetterAuthConfig } from "./modules/auth/better-auth.config.js";
+import { RedisIoAdapter } from "./redis-io.adapter.js";
 import { auth } from "./modules/auth/auth.instance.js";
 
 const Redis = RedisImport as any;
@@ -110,7 +111,13 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     bodyParser: false
   });
-  app.useWebSocketAdapter(new IoAdapter(app));
+  if (redisUrl) {
+    const redisIoAdapter = new RedisIoAdapter(app);
+    await redisIoAdapter.connectToRedis(redisUrl);
+    app.useWebSocketAdapter(redisIoAdapter);
+  } else {
+    app.useWebSocketAdapter(new IoAdapter(app));
+  }
   app.useGlobalPipes(new ValidationPipe({
     transform: true,
     whitelist: true,

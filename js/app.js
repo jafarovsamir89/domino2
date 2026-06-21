@@ -3220,46 +3220,17 @@ class DominoGame {
         socket.on('dm:new', (payload) => {
             markTouch('dm:new', payload);
             this.applyRealtimeDirectMessage(payload);
-            const threadPlayerId = String(payload?.threadPlayerId || '').trim();
-            const activePlayerId = String(this.accountMessagesState?.activePlayerId || '').trim();
-            if (threadPlayerId && activePlayerId && threadPlayerId === activePlayerId) {
-                this.scheduleSocialRefresh('conversation', {
-                    delayMs: 1200,
-                    reason: 'socket-dm-new',
-                    playerId: threadPlayerId
-                });
-            }
-            this.scheduleSocialRefresh('messages', { delayMs: 1400, reason: 'socket-dm-new' });
         });
 
         socket.on('dm:ack', (payload) => {
             markTouch('dm:ack', payload);
             this.applyRealtimeDirectMessage(payload);
-            const threadPlayerId = String(payload?.threadPlayerId || '').trim();
-            const activePlayerId = String(this.accountMessagesState?.activePlayerId || '').trim();
-            if (threadPlayerId && activePlayerId && threadPlayerId === activePlayerId) {
-                this.scheduleSocialRefresh('conversation', {
-                    delayMs: 1200,
-                    reason: 'socket-dm-ack',
-                    playerId: threadPlayerId
-                });
-            }
-            this.scheduleSocialRefresh('messages', { delayMs: 1400, reason: 'socket-dm-ack' });
         });
 
         socket.on('dm:read', (payload) => {
             markTouch('dm:read', payload);
             const threadPlayerId = String(payload?.threadPlayerId || '').trim();
             if (!threadPlayerId) return;
-            const activePlayerId = String(this.accountMessagesState?.activePlayerId || '').trim();
-            if (activePlayerId && activePlayerId === threadPlayerId) {
-                this.scheduleSocialRefresh('conversation', {
-                    delayMs: 1200,
-                    reason: 'socket-dm-read',
-                    playerId: threadPlayerId
-                });
-            }
-            this.scheduleSocialRefresh('messages', { delayMs: 1400, reason: 'socket-dm-read' });
             const state = this.accountMessagesState || {};
             const messages = Array.isArray(state.messages) ? state.messages.map((message) => {
                 const isRelevant = String(message?.senderPlayerId || '').trim() === threadPlayerId
@@ -3917,18 +3888,7 @@ class DominoGame {
                 resetReconnectState();
                 const data = event.data ? JSON.parse(event.data) : null;
                 if (!data) return;
-
                 this.applyRealtimeDirectMessage(data);
-                const threadPlayerId = String(data?.threadPlayerId || '').trim();
-                const activePlayerId = String(this.accountMessagesState?.activePlayerId || '').trim();
-                if (threadPlayerId && activePlayerId && threadPlayerId === activePlayerId) {
-                    this.scheduleSocialRefresh('conversation', {
-                        delayMs: 1200,
-                        reason: 'sse-message',
-                        playerId: threadPlayerId
-                    });
-                }
-                this.scheduleSocialRefresh('messages', { delayMs: 1400, reason: 'sse-message' });
             } catch (err) {
                 console.error("SSE message handler error:", err);
             }
@@ -5297,13 +5257,14 @@ class DominoGame {
                     const sentMessage = result?.item || tempMessage;
                     const messages = Array.isArray(this.accountMessagesState?.messages) ? [...this.accountMessagesState.messages] : [];
                     const tempIndex = messages.findIndex((row) => String(row?.id || '').trim() === tempId);
+                    const alreadyExists = messages.some((row) => String(row?.id || '').trim() === String(sentMessage?.id || '').trim());
                     if (tempIndex >= 0) {
                         messages[tempIndex] = {
                             ...sentMessage,
                             isOptimistic: false,
                             localStatus: 'sent'
                         };
-                    } else {
+                    } else if (!alreadyExists) {
                         messages.push({
                             ...sentMessage,
                             isOptimistic: false,
@@ -5318,11 +5279,11 @@ class DominoGame {
                     };
                     this.applyRealtimeDirectMessage({
                         type: 'message_sent',
+                        tempId: tempId,
                         message: sentMessage,
                         threadPlayerId: targetId
                     });
                     this.renderer.showMessage(this.t('messages-sent') || this.t('chats-sent'), 1400);
-                    this.scheduleSocialSoftRefresh('send-direct-message', 4000);
                 } catch (err) {
                     const messages = Array.isArray(this.accountMessagesState?.messages)
                         ? this.accountMessagesState.messages.filter((row) => String(row?.id || '').trim() !== tempId)
@@ -9025,7 +8986,8 @@ class DominoGame {
             createdAt: String(payload.createdAt || new Date().toISOString()),
             readAt: payload.readAt || null,
             isOptimistic: Boolean(payload.isOptimistic),
-            localStatus: payload.localStatus || payload.status || ''
+            localStatus: payload.localStatus || payload.status || '',
+            tempId: payload.tempId || ''
         };
 
         const state = this.accountMessagesState || {};
@@ -9088,6 +9050,9 @@ class DominoGame {
             const existingIndex = existingMessages.findIndex((row) => String(row?.id || '').trim() === String(normalizedMessage.id || '').trim());
             const optimisticIndex = existingMessages.findIndex((row) => {
                 if (!row?.isOptimistic) return false;
+                if (normalizedMessage.tempId && String(row?.id || '').trim() === String(normalizedMessage.tempId).trim()) {
+                    return true;
+                }
                 const sameSender = String(row?.senderPlayerId || '').trim() === String(normalizedMessage.senderPlayerId || '').trim();
                 const sameReceiver = String(row?.receiverPlayerId || '').trim() === String(normalizedMessage.receiverPlayerId || '').trim();
                 const sameText = String(row?.text || row?.body || '').trim() === String(normalizedMessage.text || normalizedMessage.body || '').trim();
@@ -9138,6 +9103,7 @@ class DominoGame {
         ).trim();
         const normalized = this.upsertMessageThreadFromMessage({
             ...message,
+            tempId: payload?.tempId || message.tempId || '',
             type: eventType,
             isOptimistic: false
         }, threadPlayerId);
