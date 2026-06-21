@@ -1523,6 +1523,7 @@ class DominoGame {
 
     async openConversationWithPlayer(playerRef) {
         const playerId = this.resolvePlayerProfileId(playerRef);
+        console.log("[Chat Debug] openConversationWithPlayer: playerId =", playerId);
         if (!playerId) return;
         if (!this.hasAuthenticatedAccount()) {
             await this.openAccountModal();
@@ -4845,6 +4846,7 @@ class DominoGame {
                 const items = await this.account.getMessageThreads();
                 const threads = Array.isArray(items) ? items : [];
                 const currentActiveId = String(this.accountMessagesState?.activePlayerId || '').trim();
+                console.log("[Chat Debug] loadMessageThreads: currentActiveId =", currentActiveId);
                 const mergedThreads = this.mergeConversationThreads(currentThreads.length ? currentThreads : (this.accountMessagesState?.threads || []), threads, currentActiveId);
                 
                 if (currentPlayerId) {
@@ -4895,6 +4897,7 @@ class DominoGame {
 
     async loadConversationWithPlayer(playerRef, isBackground = false) {
         const playerId = String(playerRef?.playerId || playerRef?.userId || playerRef?.id || playerRef || '').trim();
+        console.log("[Chat Debug] loadConversationWithPlayer START: playerId =", playerId, "isBackground =", isBackground);
         if (!playerId || !this.hasAuthenticatedAccount()) {
             return [];
         }
@@ -5284,6 +5287,7 @@ class DominoGame {
 
         const isAuthed = this.hasAuthenticatedAccount();
         const state = this.accountMessagesState || {};
+        console.log("[Chat Debug] renderAccountMessagesPanel: activePlayerId =", state.activePlayerId, "view =", this.socialCenterView, "tab =", this.socialCenterTab);
         const threads = Array.isArray(state.threads) ? state.threads : [];
         const activePlayerId = String(state.activePlayerId || '').trim();
         const activeThread = threads.find((thread) => String(thread?.player?.id || thread?.playerId || thread?.id || '').trim() === activePlayerId) || null;
