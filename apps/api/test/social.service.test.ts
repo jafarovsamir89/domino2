@@ -1426,7 +1426,11 @@ test("sendDirectMessage creates a message between two players", async () => {
           receiver: targetPlayer
         };
       }
-    }
+    },
+    directMessageThread: {
+      upsert: async () => ({})
+    },
+    $transaction: async (fn: any) => fn(prismaMock)
   } as any;
 
   const service = new SocialService(prismaMock, {} as any);
@@ -1489,7 +1493,11 @@ test("sendDirectMessage clears hidden thread markers and emits full SSE payload"
         sender: currentPlayer,
         receiver: targetPlayer
       })
-    }
+    },
+    directMessageThread: {
+      upsert: async () => ({})
+    },
+    $transaction: async (fn: any) => fn(prismaMock)
   } as any;
 
   const service = new SocialService(prismaMock, {} as any);
@@ -1547,7 +1555,11 @@ test("sendDirectMessage restores hidden/deleted threads after a new incoming mes
         sender: currentPlayer,
         receiver: targetPlayer
       })
-    }
+    },
+    directMessageThread: {
+      upsert: async () => ({})
+    },
+    $transaction: async (fn: any) => fn(prismaMock)
   } as any;
 
   const service = new SocialService(prismaMock, {} as any);
@@ -1817,7 +1829,7 @@ test("getMessageThreads hides threads that the player archived", async () => {
     },
     directMessageThread: {
       findMany: async ({ where }: any) => {
-        const hiddenArray = where.NOT.OR.flatMap((or: any) => or.playerAId.in || or.playerBId.in);
+        const hiddenArray = where.NOT.OR.flatMap((or: any) => or.playerAId?.in || or.playerBId?.in || []);
         assert.ok(hiddenArray.includes(playerC.id));
         return [
           {
@@ -1918,7 +1930,14 @@ test("markDirectMessageThreadRead marks the matching direct message rows as read
         updates.push({ kind: "direct", query });
         return { count: 2 };
       }
-    }
+    },
+    directMessageThread: {
+      updateMany: async (query: any) => {
+        updates.push({ kind: "thread", query });
+        return { count: 1 };
+      }
+    },
+    $transaction: async (arg: any) => Promise.all(arg)
   } as any;
 
   const service = new SocialService(prismaMock, {} as any);
@@ -1926,10 +1945,17 @@ test("markDirectMessageThreadRead marks the matching direct message rows as read
 
   const result = await service.markDirectMessageThreadRead({} as any, targetPlayer.id);
   assert.equal(result.ok, true);
-  assert.equal(updates.length, 1);
-  assert.deepEqual(updates[0].query.where.OR[0], {
+  assert.equal(updates.length, 2);
+  assert.equal(updates[0].kind, "direct");
+  assert.deepEqual(updates[0].query.where, {
     senderPlayerId: targetPlayer.id,
-    receiverPlayerId: currentPlayer.id
+    receiverPlayerId: currentPlayer.id,
+    readAt: null
+  });
+  assert.equal(updates[1].kind, "thread");
+  assert.deepEqual(updates[1].query.where, {
+    playerAId: "player-a",
+    playerBId: "player-b"
   });
 });
 
@@ -2261,7 +2287,11 @@ test("sendDirectMessage emits live events for socket subscribers", async () => {
         sender: currentPlayer,
         receiver: targetPlayer
       })
-    }
+    },
+    directMessageThread: {
+      upsert: async () => ({})
+    },
+    $transaction: async (fn: any) => fn(prismaMock)
   } as any;
 
   const service = new SocialService(prismaMock, {} as any);
