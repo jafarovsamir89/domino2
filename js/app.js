@@ -14227,6 +14227,13 @@ class DominoGame {
         } catch (error) {
             console.warn("[VOICE] Failed to sync voice state", error);
         }
+
+        if (roomState?.gameActive) {
+            this.showStartModal(null);
+            this.hideOpenRoomsModal();
+            document.getElementById('start-screen')?.classList.remove('active');
+            document.getElementById('game-screen')?.classList.add('active');
+        }
     }
 
     enterOpenRoomWaitingScreen(roomState) {
@@ -17246,9 +17253,13 @@ class DominoGame {
         }
 
         // Hide start screen if we just started
-        if (this.gameActive && document.getElementById('start-screen').classList.contains('active')) {
-            document.getElementById('start-screen').classList.remove('active');
-            document.getElementById('game-screen').classList.add('active');
+        if (this.gameActive) {
+            this.showStartModal(null);
+            this.hideOpenRoomsModal();
+            if (document.getElementById('start-screen').classList.contains('active')) {
+                document.getElementById('start-screen').classList.remove('active');
+                document.getElementById('game-screen').classList.add('active');
+            }
         }
 
         if (this.matchOver && gameOverReason === 'disconnect') {
