@@ -1,7 +1,7 @@
 import { Tile, createFullSet, shuffle, getHandSize, determineFirstPlayer, handPoints, getOpeningPlayScore, hasInvalidOpeningHand, roundTo5 } from './model.js';
 import { Board, cloneBoard, reconstructBoard } from './board.js';
 import { AIPlayer } from './ai.js';
-import { Renderer } from './renderer.js?v=social-live-1';
+import { Renderer } from './renderer.js?v=social-live-2';
 import { translations } from './translations.js';
 import { AccountClient } from './account.js';
 import { VoiceChatManager } from './voice.js';

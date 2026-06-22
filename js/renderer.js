@@ -94,7 +94,7 @@ export class Renderer {
         this.roundStageBannerEl.classList.add('visible');
 
         // Also sync the input-locked class on hand container
-        const handContainer = document.getElementById('hand-container');
+        const handContainer = this.handEl?.parentElement || document.querySelector('.hand-container');
         if (handContainer) {
             if (stage.blocksInput || phase === 'final-move' || phase === 'counting') {
                 handContainer.classList.add('input-locked');
@@ -117,7 +117,7 @@ export class Renderer {
             }, 300);
         }
 
-        const handContainer = document.getElementById('hand-container');
+        const handContainer = this.handEl?.parentElement || document.querySelector('.hand-container');
         if (handContainer) {
             handContainer.classList.remove('input-locked');
         }
