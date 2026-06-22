@@ -21,6 +21,7 @@ const { rememberRoom, forgetRoom } = require("./roomRegistry");
 
 const TARGET = 365, MAX_R = 3, DLOSS = 255, IWIN = 35;
 const TURN_TIMEOUT_MS = 30000;
+const TIMEOUT_CONTINUE_MS = 30000;
 const BOT_THINK_DELAY_MS = 1500;
 const LAST_MOVE_REVEAL_DELAY_MS = 1200;
 const DEAL_END_MODAL_MS = 5000;
@@ -148,6 +149,8 @@ class DominoRoom extends Room {
         this.forfeitSettlementMade = false;
         this.identityBySessionId = new Map();
         this.lastRoundEconomySummary = null;
+        this.timeoutForfeitPending = null;
+        this.timeoutContinueTimer = null;
         this.restoredFromSnapshot = false;
         this.matchFinished = false;
         this.pendingAdvanceKind = null;
@@ -226,6 +229,7 @@ class DominoRoom extends Room {
         this.onMessage("reaction", (client, message) => this.handleReaction(client, message));
         this.onMessage("gift", (client, message) => this.handleGift(client, message));
         this.onMessage("voice_signal", (client, message) => this.handleVoiceSignal(client, message));
+        this.onMessage("timeout_continue", (client) => this.handleTimeoutContinue(client));
         this.onMessage("sync_request", (client) => this.handleSyncRequest(client));
         this.onMessage("explicit_leave", (client, message = {}) => {
             this.explicitLeaveSessionIds.add(client.sessionId);
@@ -1489,6 +1493,7 @@ class DominoRoom extends Room {
             this.matchFinished = false;
             this.pendingAdvanceKind = null;
             this.forfeitSettlementMade = false;
+            this.clearTimeoutForfeitState();
             this.pendingEconomySettlement = Promise.resolve();
             this.matchRecordId = `${this.roomId}:match:${Date.now().toString(36)}:${Math.random().toString(36).slice(2, 10)}`;
             this.matchRecordInFlight = false;
@@ -1570,6 +1575,7 @@ class DominoRoom extends Room {
         this.clearLastMoveRevealTimer();
         this.clearNextDealTimer();
         this.clearTurnTimer();
+        this.clearTimeoutForfeitState();
         await this.pendingEconomySettlement.catch(() => {});
         this.matchRecorded = false;
         this.pendingAdvanceKind = null;
@@ -1721,6 +1727,7 @@ class DominoRoom extends Room {
         this.clearLastMoveRevealTimer();
         this.clearNextDealTimer();
         this.clearTurnTimer();
+        this.clearTimeoutForfeitState();
         this.pendingAdvanceKind = null;
         this.state.gameActive = false;
 
@@ -1800,6 +1807,14 @@ class DominoRoom extends Room {
             if (this.matchFinished || this.state.gameActive) return;
             void this.startRound();
         }, delay);
+    }
+
+    clearTimeoutForfeitState() {
+        if (this.timeoutContinueTimer) {
+            clearTimeout(this.timeoutContinueTimer);
+            this.timeoutContinueTimer = null;
+        }
+        this.timeoutForfeitPending = null;
     }
 
     scheduleLastMoveSettlement(callback, delay = LAST_MOVE_REVEAL_DELAY_MS) {
@@ -1915,11 +1930,224 @@ class DominoRoom extends Room {
         const actor = this.state.players.get(this.state.playerOrder[currentIndex]);
         const actorName = actor ? actor.name : "Player";
         this.broadcast("msg", { key: "turn-timeout", values: { player: actorName }, time: 2000 });
-        void this.endRound(winnerIndex, false);
+        void this.endRoundByTimeoutForfeit({ loserIndex: currentIndex, winnerIndex });
     }
 
     async reserveEconomyStake() {
         return reserveEconomyStakeForRoom(this);
+    }
+
+    buildTimeoutForfeitPending({ loserSessionId, loserIndex, loserName, winnerIndex, economySummary, bankAmount } = {}) {
+        const createdAt = Date.now();
+        return {
+            loserSessionId: String(loserSessionId || "").trim(),
+            loserIndex: Number.isInteger(Number(loserIndex)) ? Number(loserIndex) : -1,
+            loserName: String(loserName || "Player").trim() || "Player",
+            winnerIndex: Number.isInteger(Number(winnerIndex)) ? Number(winnerIndex) : 0,
+            createdAt,
+            expiresAt: createdAt + TIMEOUT_CONTINUE_MS,
+            stakeKey: this.currentDealStakeKey || this.currentStakeKey,
+            bankAmount: Math.max(0, Number(bankAmount || this.currentDealBankAmount || 0)),
+            settled: true,
+            economy: economySummary || null
+        };
+    }
+
+    clearTimeoutForfeitTimer() {
+        if (this.timeoutContinueTimer) {
+            clearTimeout(this.timeoutContinueTimer);
+            this.timeoutContinueTimer = null;
+        }
+    }
+
+    async closeTimeoutForfeitRoom() {
+        this.clearTimeoutForfeitTimer();
+        this.clearTimeoutForfeitState();
+        this.state.gameActive = false;
+        this.state.matchOver = true;
+        this.state.gameOverReason = "timeout-forfeit-room-closed";
+        this.gameStarting = false;
+        this.matchFinished = true;
+        this.clearTurnTimer();
+        this.clearNextDealTimer();
+        if (this.autoStartTimer) {
+            clearTimeout(this.autoStartTimer);
+            this.autoStartTimer = null;
+        }
+        this.broadcast("room_closed", {
+            reasonKey: "timeout-forfeit-room-closed"
+        });
+        if (this.roomCode) {
+            await forgetRoom(this.roomCode, this.roomId);
+        }
+        removeRoomPlayers(this.roomId);
+        const closeClients = () => {
+            for (const activeClient of (this.clients || []).slice()) {
+                try {
+                    activeClient.leave(4000);
+                } catch {}
+            }
+            try {
+                this.disconnect?.();
+            } catch {}
+        };
+        if (this.clock?.setTimeout) {
+            this.clock.setTimeout(closeClients, 150);
+            return;
+        }
+        setTimeout(closeClients, 150);
+    }
+
+    async endRoundByTimeoutForfeit({ loserIndex, winnerIndex } = {}) {
+        if (!this.state.gameActive || this.matchFinished) return false;
+        const actualLoserIndex = Number.isInteger(Number(loserIndex)) ? Number(loserIndex) : Number(this.state.currentPlayerIndex || 0);
+        const actualWinnerIndex = Number.isInteger(Number(winnerIndex)) ? Number(winnerIndex) : this.findTimeoutWinner(actualLoserIndex);
+        const loserSessionId = String(this.state.playerOrder?.[actualLoserIndex] || "").trim();
+        const loserPlayer = loserSessionId ? this.state.players.get(loserSessionId) : null;
+        const loserName = loserPlayer ? loserPlayer.name : "Player";
+
+        this.clearTurnTimer();
+        this.clearTurnAdvanceTimer();
+        this.state.gameActive = false;
+        this.pendingAdvanceKind = "timeout_continue";
+        this.lastGameEndReason = "timeout_forfeit";
+        this.lastForfeitReason = "turn_timeout";
+        const pendingBankAmount = Math.max(0, Number(this.currentDealBankAmount || 0));
+
+        const economySummary = this.currentStakeKey !== "free"
+            ? await this.settleForfeitStake(loserSessionId)
+            : null;
+        this.currentDealBankAmount = 0;
+        this.currentDealStakeAmount = 0;
+        this.timeoutForfeitPending = this.buildTimeoutForfeitPending({
+            loserSessionId,
+            loserIndex: actualLoserIndex,
+            loserName,
+            winnerIndex: actualWinnerIndex,
+            economySummary,
+            bankAmount: pendingBankAmount
+        });
+
+        let wins = 1;
+        const isTeamMode = isRoomTeamMode(this);
+        const winnerTeamIndex = isTeamMode ? (actualWinnerIndex % 2) : null;
+
+        if (isTeamMode) {
+            const wt = winnerTeamIndex;
+            const loserTeamScore = this.state.teamScores[1 - wt];
+            if (loserTeamScore < this.dlossThreshold) wins = 2;
+            this.state.teamRoundWins[wt] += wins;
+        } else {
+            for (let i = 0; i < this.totalPlayers; i++) {
+                if (i === actualWinnerIndex) continue;
+                const sid = this.state.playerOrder[i];
+                const pScore = this.state.players.get(sid) ? this.state.players.get(sid).score : 0;
+                if (pScore < this.dlossThreshold) { wins = 2; break; }
+            }
+            const winnerSid = this.state.playerOrder[actualWinnerIndex];
+            if (this.state.players.get(winnerSid)) this.state.players.get(winnerSid).roundWins += wins;
+        }
+
+        const finalScoreReached = isTeamMode
+            ? (this.state.teamScores[0] >= TARGET || this.state.teamScores[1] >= TARGET)
+            : (this.state.players.get(this.state.playerOrder[actualWinnerIndex])?.score || 0) >= TARGET;
+        const isMatchOver = finalScoreReached;
+
+        const playerData = [];
+        for (let i = 0; i < this.state.playerOrder.length; i++) {
+            const sid = this.state.playerOrder[i];
+            const player = this.state.players.get(sid);
+            playerData.push({
+                name: player ? player.name : "Player",
+                score: player ? player.score : 0,
+                roundWins: player ? player.roundWins : 0,
+                isWinner: isTeamMode ? (i % 2 === winnerTeamIndex) : i === actualWinnerIndex
+            });
+        }
+
+        this.broadcast("round_end", {
+            winnerIndex: actualWinnerIndex,
+            wins,
+            isInstantWin: false,
+            isMatchOver,
+            matchRound: this.state.matchRound,
+            isTeamMode,
+            teamScores: Array.from(this.state.teamScores),
+            teamRoundWins: Array.from(this.state.teamRoundWins),
+            players: playerData,
+            economy: economySummary,
+            finishKind: "timeout_forfeit",
+            forfeitReason: "turn_timeout",
+            timeoutLoserIndex: actualLoserIndex,
+            timeoutLoserSessionId: loserSessionId,
+            timeoutLoserName: loserName,
+            canContinueSessionId: loserSessionId,
+            continueExpiresAt: this.timeoutForfeitPending.expiresAt
+        });
+
+        this.state.matchRound++;
+        if (isMatchOver) {
+            this.matchFinished = true;
+            this.timeoutForfeitPending = null;
+            this.recordMatchResult(actualWinnerIndex, false, playerData, wins);
+            return true;
+        }
+
+        this.timeoutContinueTimer = setTimeout(() => {
+            this.timeoutContinueTimer = null;
+            void this.closeTimeoutForfeitRoom();
+        }, TIMEOUT_CONTINUE_MS);
+        if (this.timeoutContinueTimer && typeof this.timeoutContinueTimer.unref === "function") {
+            this.timeoutContinueTimer.unref();
+        }
+        this.broadcastRoomState();
+        return true;
+    }
+
+    sendTimeoutContinueResult(client, payload = {}) {
+        if (!client || typeof client.send !== "function") return;
+        client.send("timeout_continue_result", {
+            ok: Boolean(payload.ok),
+            reason: String(payload.reason || "").trim(),
+            continueExpiresAt: Number(payload.continueExpiresAt || 0),
+            roomPhase: String(payload.roomPhase || "").trim()
+        });
+    }
+
+    async handleTimeoutContinue(client) {
+        const pending = this.timeoutForfeitPending;
+        if (!pending) return false;
+        if (String(client?.sessionId || "").trim() !== pending.loserSessionId) {
+            this.sendTimeoutContinueResult(client, { ok: false, reason: "forbidden", continueExpiresAt: pending.expiresAt, roomPhase: "timeout_result" });
+            return false;
+        }
+        if (Date.now() > pending.expiresAt) {
+            this.sendTimeoutContinueResult(client, { ok: false, reason: "expired", continueExpiresAt: pending.expiresAt, roomPhase: "timeout_result" });
+            void this.closeTimeoutForfeitRoom();
+            return false;
+        }
+
+        const originalMatchRound = Number(this.state.matchRound || 1);
+        this.currentDealMatchId = `${this.roomId}:round:${originalMatchRound}`;
+        const reserveResult = await this.reserveEconomyStake();
+        if (!reserveResult?.ok) {
+            const reason = String(reserveResult?.reason || "").toLowerCase();
+            const isLowBalance = reason.includes("insufficient") || reason.includes("balance");
+            this.sendTimeoutContinueResult(client, {
+                ok: false,
+                reason: isLowBalance ? "insufficient_balance" : "stake_unavailable",
+                continueExpiresAt: pending.expiresAt,
+                roomPhase: "timeout_result"
+            });
+            return false;
+        }
+
+        this.lastReservedMatchRound = originalMatchRound;
+        this.clearTimeoutForfeitTimer();
+        this.clearTimeoutForfeitState();
+        this.sendTimeoutContinueResult(client, { ok: true, continueExpiresAt: pending.expiresAt, roomPhase: "timeout_result" });
+        await this.startRound();
+        return true;
     }
 
     scheduleBotTurn(delay = BOT_THINK_DELAY_MS) {
@@ -2217,6 +2445,9 @@ class DominoRoom extends Room {
             boardDelta: base.boardDelta || null,
             scoreDelta: Number(base.scoreDelta || 0),
             scorePlayerIndex: Number.isInteger(Number(base.scorePlayerIndex)) ? Number(base.scorePlayerIndex) : -1,
+            isFinalMove: Boolean(base.isFinalMove),
+            finishKind: String(base.finishKind || "").trim() || null,
+            finishInfo: base.finishInfo || null,
             isTeamMode,
             currentPlayerIndex: Number(this.state.currentPlayerIndex || 0),
             boneyardCount: this.boneyard.length,
@@ -2695,13 +2926,30 @@ class DominoRoom extends Room {
         }
 
         const scoreDelta = score > 0 ? this.addScore(pi, score, { broadcast: false }) : 0;
+        const isFinalMove = this.instantWinEnabled && score >= IWIN || hand.length === 0 || this.internalBoard.isBlocked(this.hands, this.boneyard);
+        const finishKind = this.instantWinEnabled && score >= IWIN
+            ? "instant_win"
+            : hand.length === 0
+                ? "tile"
+                : this.internalBoard.isBlocked(this.hands, this.boneyard)
+                    ? "fish"
+                    : null;
         this.bumpTurnVersion();
         this.broadcastGameDelta({
             action: "play",
             actorIndex: pi,
             boardDelta,
             scoreDelta,
-            scorePlayerIndex: scoreDelta > 0 ? pi : -1
+            scorePlayerIndex: scoreDelta > 0 ? pi : -1,
+            isFinalMove,
+            finishKind,
+            finishInfo: isFinalMove ? {
+                actorIndex: pi,
+                winnerIndex: finishKind === "fish" ? this.findFishWinner() : pi,
+                finishKind: finishKind || "tile",
+                tileCount: 1,
+                action: "play"
+            } : null
         });
 
         if (this.instantWinEnabled && score >= IWIN) {
@@ -2820,6 +3068,14 @@ class DominoRoom extends Room {
 
         const score = combo.score || this.internalBoard.calculateScore();
         const scoreDelta = score > 0 ? this.addScore(pi, score, { broadcast: false }) : 0;
+        const isFinalMove = this.instantWinEnabled && score >= IWIN || hand.length === 0 || this.internalBoard.isBlocked(this.hands, this.boneyard);
+        const finishKind = this.instantWinEnabled && score >= IWIN
+            ? "instant_win_gosha"
+            : hand.length === 0
+                ? "gosha"
+                : this.internalBoard.isBlocked(this.hands, this.boneyard)
+                    ? "fish"
+                    : null;
         this.clearTurnTimer();
         const actor = this.state.players.get(this.state.playerOrder[pi]);
         const actorName = actor ? actor.name : "Player";
@@ -2835,7 +3091,16 @@ class DominoRoom extends Room {
                 placements
             },
             scoreDelta,
-            scorePlayerIndex: scoreDelta > 0 ? pi : -1
+            scorePlayerIndex: scoreDelta > 0 ? pi : -1,
+            isFinalMove,
+            finishKind,
+            finishInfo: isFinalMove ? {
+                actorIndex: pi,
+                winnerIndex: finishKind === "fish" ? this.findFishWinner() : pi,
+                finishKind: finishKind || "gosha",
+                tileCount: matches.length,
+                action: "gosha"
+            } : null
         });
 
         if (this.instantWinEnabled && score >= IWIN) {
@@ -2871,6 +3136,7 @@ class DominoRoom extends Room {
         if (this._lastNextDealAt && Date.now() - this._lastNextDealAt < 1500) return;
         this._lastNextDealAt = Date.now();
         this.clearNextDealTimer();
+        if (this.pendingAdvanceKind === "timeout_continue") return;
         if (this.pendingAdvanceKind === "round") {
             void this.startRound();
             return;
@@ -3230,6 +3496,7 @@ class DominoRoom extends Room {
             matchRecorded: this.matchRecorded,
             forfeitSettlementMade: this.forfeitSettlementMade,
             lastRoundEconomySummary: this.lastRoundEconomySummary,
+            timeoutForfeitPending: this.timeoutForfeitPending,
             matchRecordId: this.matchRecordId,
             pendingMatchRecording: this.pendingMatchRecording,
             hands: this.hands,
@@ -3270,6 +3537,7 @@ class DominoRoom extends Room {
         this.forfeitSettlementMade = restoredMetadata.forfeitSettlementMade;
         this.state.turnDeadlineAt = Number(data?.state?.turnDeadlineAt || this.state.turnDeadlineAt || 0);
         this.lastRoundEconomySummary = restoredMetadata.lastRoundEconomySummary;
+        this.timeoutForfeitPending = data.timeoutForfeitPending || null;
         this.lastDealWinner = restoredMetadata.lastDealWinner;
         this.botIds = restoredMetadata.botIds;
         this.boardStartAxis = data.boardStartAxis || 'horizontal';
@@ -3281,6 +3549,20 @@ class DominoRoom extends Room {
 
         if (data.state) {
             this.restoreSchemaState(data.state);
+        }
+
+        if (this.timeoutForfeitPending?.expiresAt && Date.now() < Number(this.timeoutForfeitPending.expiresAt)) {
+            this.clearTimeoutForfeitTimer();
+            const delay = Math.max(0, Number(this.timeoutForfeitPending.expiresAt) - Date.now());
+            this.timeoutContinueTimer = setTimeout(() => {
+                this.timeoutContinueTimer = null;
+                void this.closeTimeoutForfeitRoom();
+            }, delay);
+            if (this.timeoutContinueTimer && typeof this.timeoutContinueTimer.unref === "function") {
+                this.timeoutContinueTimer.unref();
+            }
+        } else {
+            this.clearTimeoutForfeitState();
         }
 
         if (data.hands) {

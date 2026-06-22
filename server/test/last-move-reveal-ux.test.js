@@ -41,10 +41,10 @@ test("client mirrors the reveal delay and pause menu chrome in both copies", () 
 
     for (const source of [appSource, webAppSource]) {
         assert.equal(source.includes("const LAST_MOVE_REVEAL_DELAY_MS = 1200;"), true);
-        assert.equal(source.includes("delayLastMoveSettlement(callback, delay = LAST_MOVE_REVEAL_DELAY_MS)"), true);
-        assert.equal(source.includes("this.delayLastMoveSettlement(() => this.endRound(pi, true));"), true);
-        assert.equal(source.includes("this.delayLastMoveSettlement(()=>this.endDeal(pi,false));"), true);
-        assert.equal(source.includes("this.delayLastMoveSettlement(()=>this.endDeal(this.findFishWinner(),true));"), true);
+        assert.equal(source.includes("delayLastMoveSettlement(callback, delay = LAST_MOVE_REVEAL_DELAY_MS, finalInfo = null)"), true);
+        assert.equal(source.includes("this.delayLastMoveSettlement(() => this.endRound(pi, true)"), true);
+        assert.equal(source.includes("this.delayLastMoveSettlement(()=>this.endDeal(pi,false)"), true);
+        assert.equal(source.includes("this.delayLastMoveSettlement(()=>this.endDeal(this.findFishWinner(),true)"), true);
         assert.equal(source.includes("setTimeout(() => this.endRound(pi, true), 800);"), false);
     }
 

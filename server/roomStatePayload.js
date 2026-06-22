@@ -91,6 +91,8 @@ function buildRoomStatePayload({ room, players } = {}) {
         roomVisibility: room.roomVisibility,
         roomPhase: room.state.gameActive
             ? "playing"
+            : room.timeoutForfeitPending
+                ? "timeout_result"
             : room.lastMoveRevealPending
                 ? "last_move_reveal"
                 : (room.matchFinished || room.state?.matchOver)
@@ -116,6 +118,12 @@ function buildRoomStatePayload({ room, players } = {}) {
         gameActive: room.state.gameActive,
         matchOver: Boolean(room.state?.matchOver || room.matchFinished),
         gameOverReason: String(room.state?.gameOverReason || room.lastGameEndReason || "").trim(),
+        timeoutForfeitPending: Boolean(room.timeoutForfeitPending),
+        timeoutLoserIndex: Number.isInteger(Number(room.timeoutForfeitPending?.loserIndex))
+            ? Number(room.timeoutForfeitPending.loserIndex)
+            : -1,
+        timeoutLoserName: String(room.timeoutForfeitPending?.loserName || "").trim(),
+        continueExpiresAt: Number(room.timeoutForfeitPending?.expiresAt || 0),
         seatSelectionRequired: !room.state.gameActive && room.totalPlayers > 2 && !room.areAllHumanPlayersSeated?.(),
         hostName: getFirstNameDisplayName(room.state.players.get(room.state.playerOrder[0])?.name || "Player", "Player"),
         players: safePlayers,

@@ -50,6 +50,7 @@ export class Renderer {
         this._activeTileTravel = null;
         this._animatedBoardTileIds = new Set();
         this._lastAnimatedBoardTileId = null;
+        this._timeoutForfeitCountdownTimer = null;
         this._konvaBoardRenderer = null;
         this._konvaBoardDisabled = false;
         this._konvaBoardMounted = false;
@@ -1229,11 +1230,125 @@ export class Renderer {
         if (screen) screen.classList.add('active');
     }
 
-    renderRoundEnd(wn, players, wins, mr, over) {
-        void players;
+    clearTimeoutForfeitUi() {
+        if (this._timeoutForfeitCountdownTimer) {
+            clearInterval(this._timeoutForfeitCountdownTimer);
+            this._timeoutForfeitCountdownTimer = null;
+        }
+        this._timeoutForfeitContinueBtn = null;
+        this._timeoutForfeitTopUpBtn = null;
+        this._timeoutForfeitExitBtn = null;
+        this._timeoutForfeitCountdownEl = null;
+    }
+
+    renderRoundEnd(wn, players, wins, mr, over, options = {}) {
         void mr;
         const action = document.getElementById('next-round-btn');
+        const details = document.getElementById('round-end-details');
+        const title = document.getElementById('round-end-title');
+        this.clearTimeoutForfeitUi();
         if (action) action.style.display = over ? '' : 'none';
+
+        if (options?.timeoutForfeit) {
+            if (title) {
+                title.textContent = this.app.t('timeout-forfeit-title') || `${wn} timed out`;
+            }
+            if (details) {
+                details.innerHTML = '';
+                const baseSummary = document.createElement('div');
+                baseSummary.className = 'detail-row';
+                const baseLabel = document.createElement('span');
+                baseLabel.textContent = this.app.t('timeout-forfeit-desc-loser') || 'Timeout forfeit';
+                const baseValue = document.createElement('span');
+                baseValue.className = 'detail-value';
+                baseValue.textContent = options.isTimeoutLoser
+                    ? (this.app.t('timeout-forfeit-desc-loser') || 'You lost the round by timeout')
+                    : (this.app.t('timeout-forfeit-desc-waiting') || 'Waiting for the player to continue');
+                baseSummary.appendChild(baseLabel);
+                baseSummary.appendChild(baseValue);
+                details.appendChild(baseSummary);
+
+                if (options.isTimeoutLoser && Number(options.bankAmount || 0) > 0) {
+                    const stakeRow = document.createElement('div');
+                    stakeRow.className = 'detail-row';
+                    const stakeLabel = document.createElement('span');
+                    stakeLabel.textContent = this.app.t('summary-coins');
+                    const stakeValue = document.createElement('span');
+                    stakeValue.className = 'detail-value';
+                    stakeValue.textContent = `${this.app.t('timeout-forfeit-topup') || 'Top up'}: ${Math.max(0, Number(options.bankAmount || 0))}`;
+                    stakeRow.appendChild(stakeLabel);
+                    stakeRow.appendChild(stakeValue);
+                    details.appendChild(stakeRow);
+                }
+
+                const countdownRow = document.createElement('div');
+                countdownRow.className = 'detail-row';
+                const countdownLabel = document.createElement('span');
+                countdownLabel.textContent = this.app.t('timeout-forfeit-countdown') || 'Continue window';
+                const countdownValue = document.createElement('span');
+                countdownValue.className = 'detail-value';
+                countdownValue.id = 'timeout-forfeit-countdown';
+                countdownRow.appendChild(countdownLabel);
+                countdownRow.appendChild(countdownValue);
+                details.appendChild(countdownRow);
+                this._timeoutForfeitCountdownEl = countdownValue;
+
+                const actionRow = document.createElement('div');
+                actionRow.className = 'game-over-actions';
+                if (options.isTimeoutLoser) {
+                    const continueBtn = document.createElement('button');
+                    continueBtn.className = 'btn btn-primary';
+                    continueBtn.type = 'button';
+                    continueBtn.textContent = this.app.t('timeout-forfeit-continue') || 'Continue';
+                    continueBtn.addEventListener('click', () => {
+                        if (continueBtn.disabled) return;
+                        continueBtn.disabled = true;
+                        options.onContinue?.();
+                    });
+                    actionRow.appendChild(continueBtn);
+                    this._timeoutForfeitContinueBtn = continueBtn;
+
+                    if (options.hasInsufficientBalance) {
+                        const topUpBtn = document.createElement('button');
+                        topUpBtn.className = 'btn btn-action';
+                        topUpBtn.type = 'button';
+                        topUpBtn.textContent = this.app.t('timeout-forfeit-topup') || 'Top up balance';
+                        topUpBtn.addEventListener('click', () => options.onTopUp?.());
+                        actionRow.appendChild(topUpBtn);
+                        this._timeoutForfeitTopUpBtn = topUpBtn;
+                    }
+                }
+
+                const exitBtn = document.createElement('button');
+                exitBtn.className = 'btn btn-menu';
+                exitBtn.type = 'button';
+                exitBtn.textContent = this.app.t('timeout-forfeit-exit') || 'Exit';
+                exitBtn.addEventListener('click', () => options.onExit?.());
+                actionRow.appendChild(exitBtn);
+                this._timeoutForfeitExitBtn = exitBtn;
+                details.appendChild(actionRow);
+
+                const updateCountdown = () => {
+                    if (!this._timeoutForfeitCountdownEl) return;
+                    const expiresAt = Number(options.continueExpiresAt || 0);
+                    const remainingMs = Math.max(0, expiresAt - Date.now());
+                    const remainingSec = Math.ceil(remainingMs / 1000);
+                    this._timeoutForfeitCountdownEl.textContent = expiresAt
+                        ? `${remainingSec}s`
+                        : (this.app.t('timeout-forfeit-countdown') || 'Waiting');
+                    if (remainingMs <= 0 && this._timeoutForfeitContinueBtn) {
+                        this._timeoutForfeitContinueBtn.disabled = true;
+                    }
+                };
+                updateCountdown();
+                if (Number(options.continueExpiresAt || 0) > 0) {
+                    this._timeoutForfeitCountdownTimer = setInterval(updateCountdown, 1000);
+                }
+            }
+            document.getElementById('round-end-screen')?.classList.add('active');
+            return;
+        }
+
         if (!over) {
             this.renderDealEnd(wn, players, false, wins);
         }
@@ -1245,6 +1360,7 @@ export class Renderer {
     }
 
     renderGameOver(wn, players, economySummary = null, options = {}) {
+        this.clearTimeoutForfeitUi();
         const title = options?.titleText || `${wn} ${this.app.t('won-suffix')}`;
         document.getElementById('game-over-title').textContent = title;
         const d = document.getElementById('game-over-details');
@@ -1285,6 +1401,20 @@ export class Renderer {
             d.appendChild(r);
         }
         document.getElementById('game-over-screen').classList.add('active');
+    }
+
+    onTimeoutContinueResult(payload = {}) {
+        const ok = Boolean(payload?.ok);
+        if (this._timeoutForfeitContinueBtn) {
+            this._timeoutForfeitContinueBtn.disabled = false;
+            if (ok) {
+                this._timeoutForfeitContinueBtn.textContent = this.app.t('timeout-forfeit-continue') || 'Continue';
+            }
+        }
+        if (ok) {
+            this.clearTimeoutForfeitUi();
+            document.getElementById('round-end-screen')?.classList.remove('active');
+        }
     }
 }
 

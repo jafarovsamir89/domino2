@@ -130,6 +130,10 @@ test("buildRoomStatePayload preserves room_state fields and currentPlayers logic
         gameActive: true,
         matchOver: false,
         gameOverReason: "",
+        timeoutForfeitPending: false,
+        timeoutLoserIndex: -1,
+        timeoutLoserName: "",
+        continueExpiresAt: 0,
         seatSelectionRequired: false,
         hostName: "Host",
         players: [
@@ -203,4 +207,47 @@ test("buildRoomStatePayload uses connected human count when the game is inactive
     assert.deepEqual(payload.teamScores, []);
     assert.deepEqual(payload.teamRoundWins, []);
     assert.deepEqual(payload.teams, []);
+});
+
+test("buildRoomStatePayload exposes timeout forfeit state", () => {
+    const room = {
+        roomId: "room-3",
+        roomCode: "IJKL",
+        roomVisibility: "open",
+        currentDealStakeKey: "stake_200",
+        currentStakeKey: "stake_200",
+        currentDealStakeAmount: 200,
+        currentDealBankAmount: 800,
+        timeoutForfeitPending: {
+            loserIndex: 1,
+            loserName: "Alice",
+            expiresAt: 1234567900
+        },
+        state: {
+            gameActive: false,
+            isTeamMode: false,
+            turnDeadlineAt: 0,
+            turnDurationMs: 30000,
+            serverNow: 1111111111113,
+            turnVersion: 5,
+            matchOver: false,
+            players: new Map([
+                ["s1", { name: "Host", isConnected: true, isBot: false, seatIndex: 0 }],
+                ["s2", { name: "Alice", isConnected: true, isBot: false, seatIndex: 1 }]
+            ]),
+            playerOrder: ["s1", "s2"]
+        },
+        totalPlayers: 2,
+        clients: [{}, {}],
+        maxClients: 2,
+        aiCount: 0,
+        areAllHumanPlayersSeated: () => true
+    };
+
+    const payload = buildRoomStatePayload({ room, players: [] });
+    assert.equal(payload.roomPhase, "timeout_result");
+    assert.equal(payload.timeoutForfeitPending, true);
+    assert.equal(payload.timeoutLoserIndex, 1);
+    assert.equal(payload.timeoutLoserName, "Alice");
+    assert.equal(payload.continueExpiresAt, 1234567900);
 });

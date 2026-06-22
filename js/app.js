@@ -464,8 +464,11 @@ class DominoGame {
             board: ''
         };
         this.pendingScorePopupAfterBoardAnimation = [];
+        this.pendingFinalScorePopups = [];
         this._boardAnimationPromise = Promise.resolve();
         this._boardAnimationActive = null;
+        this.finalMoveVisualPromise = Promise.resolve();
+        this.finalMoveVisualActive = false;
         this._pendingOptimisticPlayTileId = '';
         this._pendingOptimisticPlayActionId = '';
         this._lastMoveRevealTimeout = null;
@@ -13017,6 +13020,7 @@ class DominoGame {
             && !this.isResultScreenActive()
             && (!roomPhase || roomPhase === 'lobby' || roomPhase === 'waiting')
             && !String(state?.gameOverReason || '').trim()
+            && roomPhase !== 'timeout_result'
         );
     }
 
@@ -13043,6 +13047,7 @@ class DominoGame {
             || stagePhase === 'counting'
             || roomPhase === 'last_move_reveal'
             || roomPhase === 'result'
+            || roomPhase === 'timeout_result'
             || roomPhase === 'match_end'
             || this.isResultScreenActive()
         );
@@ -13050,6 +13055,9 @@ class DominoGame {
 
     resetOnlineResultFlowState() {
         this.onlineResultActive = false;
+        this.finalMoveVisualActive = false;
+        this.finalMoveVisualPromise = Promise.resolve();
+        this.pendingFinalScorePopups = [];
     }
 
     syncOpenRoomWaitingBanner(roomState = this.currentRoomState) {
@@ -14119,6 +14127,9 @@ class DominoGame {
         });
         if (incomingActive) {
             this.resetOnlineResultFlowState();
+            this.finalMoveVisualActive = false;
+            this.finalMoveVisualPromise = Promise.resolve();
+            this.pendingFinalScorePopups = [];
         }
 
         document.getElementById('room-code-display').textContent = roomState.roomCode || roomState.roomId || '....';
@@ -16509,6 +16520,10 @@ class DominoGame {
                 title = this.t('stage-final-instant-win-title') || 'Мгновенная победа';
                 subtitle = this.format('stage-final-instant-win-desc', { player: actorName }) || `${actorName} набрал нужные очки`;
                 break;
+            case 'timeout_forfeit':
+                title = this.t('timeout-forfeit-title') || `${actorName} не сделал ход вовремя`;
+                subtitle = this.t('timeout-forfeit-desc-waiting') || 'Ждём, продолжит ли игрок игру';
+                break;
             default:
                 title = this.t('stage-final-tile-subtitle') || 'Раунд окончен';
                 break;
@@ -16521,7 +16536,7 @@ class DominoGame {
             blocksInput: true
         });
 
-        await new Promise(resolve => setTimeout(resolve, 1500));
+        await new Promise(resolve => setTimeout(resolve, 850));
 
         this.setRoundStage({
             phase: 'counting',
@@ -16529,7 +16544,7 @@ class DominoGame {
             blocksInput: true
         });
 
-        await new Promise(resolve => setTimeout(resolve, 1500));
+        await new Promise(resolve => setTimeout(resolve, 850));
         this.clearRoundStage();
     }
 
@@ -16555,7 +16570,7 @@ class DominoGame {
     inferFinalInfoFromNetworkDealEnd(data) {
         if (!data) return null;
         const wi = data.winnerIndex;
-        let finishKind = data.fish ? 'fish' : 'tile';
+        let finishKind = String(data.finishKind || '').trim() || (data.fish ? 'fish' : 'tile');
         return {
             actorIndex: wi,
             winnerIndex: wi,
@@ -16568,7 +16583,7 @@ class DominoGame {
     inferFinalInfoFromNetworkRoundEnd(data) {
         if (!data) return null;
         const wi = data.winnerIndex;
-        let finishKind = data.isInstantWin ? 'instant_win' : 'tile';
+        let finishKind = String(data.finishKind || '').trim() || (data.isInstantWin ? 'instant_win' : 'tile');
         return {
             actorIndex: wi,
             winnerIndex: wi,
@@ -16718,6 +16733,25 @@ class DominoGame {
         for (const score of queue) {
             this.showScoreFeedback(score);
         }
+    }
+
+    enqueueFinalMoveScorePopup(score) {
+        const value = Number(score || 0);
+        if (value > 0) {
+            this.pendingFinalScorePopups.push(value);
+        }
+    }
+
+    flushPendingFinalMoveScorePopups() {
+        if (!this.pendingFinalScorePopups.length) return;
+        const queue = this.pendingFinalScorePopups.splice(0);
+        for (const score of queue) {
+            this.showScoreFeedback(score);
+        }
+    }
+
+    waitForFinalMoveVisualSettled() {
+        return this.finalMoveVisualPromise || Promise.resolve();
     }
 
     showScoreFeedback(score, options = {}) {
@@ -17122,6 +17156,7 @@ class DominoGame {
             : Number.isInteger(Number(payload?.actorIndex))
                 ? Number(payload.actorIndex)
                 : -1;
+        const isFinalMovePayload = Boolean(payload?.isFinalMove);
         const payloadTileId = String(payload?.boardDelta?.tile?.id || '');
         const isOwnOptimisticPlay = action === 'play'
             && payloadTileId
@@ -17205,9 +17240,26 @@ class DominoGame {
                 : this._boardAnimationPromise || Promise.resolve())
             : (isOwnOptimisticPlay ? (this._boardAnimationPromise || Promise.resolve()) : Promise.resolve());
 
+        if (isFinalMovePayload) {
+            this.finalMoveVisualActive = true;
+            const visualDelay = new Promise((resolve) => setTimeout(resolve, 850));
+            this.finalMoveVisualPromise = Promise.resolve(animationPromise)
+                .catch(() => {})
+                .then(() => visualDelay)
+                .finally(() => {
+                    this.finalMoveVisualActive = false;
+                    this.flushPendingFinalMoveScorePopups();
+                });
+        } else {
+            this.finalMoveVisualActive = false;
+            this.finalMoveVisualPromise = Promise.resolve();
+        }
+
         const shouldDelayScorePopup = scoreDelta > 0 && (action === 'play' || action === 'gosha') && (isBoardAnimationAction || isOwnOptimisticPlay);
 
-        if (shouldDelayScorePopup) {
+        if (isFinalMovePayload && scoreDelta > 0) {
+            this.enqueueFinalMoveScorePopup(scoreDelta);
+        } else if (shouldDelayScorePopup) {
             this.enqueueScorePopupAfterBoardAnimation(scoreDelta);
             animationPromise.finally(() => {
                 this.flushPendingScorePopupAfterBoardAnimation();
@@ -17470,6 +17522,7 @@ class DominoGame {
             displayEntities = this.playerNames.map((n,i)=>({name:n,isWinner:i===data.winnerIndex,handPoints:handPoints(this.hands[i]),score:this.scores[i], leftoverHands: [this.hands[i]]}));
         }
         
+        await this.waitForFinalMoveVisualSettled();
         await this.showPreResultStage(data.finishInfo || this.inferFinalInfoFromNetworkDealEnd(data));
         this.renderer.renderDealEnd(this.playerNames[data.winnerIndex], displayEntities, data.fish, data.bonus, data.finishInfo || {});
         this.persistGameResumeSnapshot();
@@ -17535,6 +17588,7 @@ class DominoGame {
         const isDisconnect = data.isMatchOver && (gameOverReason === 'disconnect' || data.forfeit);
 
         if (!isDisconnect) {
+            await this.waitForFinalMoveVisualSettled();
             await this.showPreResultStage(data.finishInfo || this.inferFinalInfoFromNetworkRoundEnd(data));
         }
 
@@ -17542,11 +17596,52 @@ class DominoGame {
             this.showMatchResult();
         } else {
             const winnerLabel = isTeamMode ? this.getTeamDisplayName(winnerTeamIndex) : this.playerNames[wi];
-            this.renderer.renderRoundEnd(winnerLabel, displayEntities, data.wins, data.matchRound, false);
+            const isTimeoutForfeit = String(data?.finishKind || '').trim() === 'timeout_forfeit' || String(data?.forfeitReason || '').trim() === 'turn_timeout';
+            const isTimeoutLoser = String(data?.timeoutLoserSessionId || '').trim() === String(this.network?.room?.sessionId || '').trim();
+            const currentBalance = Number(this.getCurrentWalletBalance?.() || 0);
+            const requiredBalance = Math.max(0, Number(data?.bankAmount || this.onlineRoundBankAmount || 0));
+            this.renderer.renderRoundEnd(winnerLabel, displayEntities, data.wins, data.matchRound, false, isTimeoutForfeit ? {
+                timeoutForfeit: true,
+                isTimeoutLoser,
+                continueExpiresAt: Number(data?.continueExpiresAt || 0),
+                loserName: String(data?.timeoutLoserName || '').trim(),
+                bankAmount: requiredBalance,
+                currentBalance,
+                hasInsufficientBalance: currentBalance < requiredBalance,
+                onContinue: async () => {
+                    this.network.room?.send?.('timeout_continue');
+                },
+                onTopUp: () => {
+                    void this.openCoinShopModal();
+                },
+                onExit: () => {
+                    this.network.leaveRoom({ explicit: true, reason: 'timeout_continue_exit' });
+                }
+            } : {});
         }
         this.matchRound = data.matchRound + 1;
         if (data.isMatchOver) this.clearGameResumeSnapshot();
         else this.persistGameResumeSnapshot();
+    }
+
+    onTimeoutContinueResult(payload = {}) {
+        const ok = Boolean(payload?.ok);
+        this.renderer?.onTimeoutContinueResult?.(payload);
+        if (ok) {
+            this.resetOnlineResultFlowState();
+            this.clearRoundStage();
+            document.getElementById('round-end-screen')?.classList.remove('active');
+            return;
+        }
+
+        const reason = String(payload?.reason || '').trim();
+        if (reason === 'insufficient_balance') {
+            this.renderer.showMessage(this.t('timeout-forfeit-insufficient-balance') || 'Not enough coins', 2200);
+            return;
+        }
+        if (reason) {
+            this.renderer.showMessage(reason.replace(/_/g, ' '), 1600);
+        }
     }
 
     // Override actions to send to network

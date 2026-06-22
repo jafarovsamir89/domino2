@@ -441,6 +441,10 @@ class NetworkManager {
             this.game.onNetworkRoundEnd(data);
         });
 
+        this.room.onMessage("timeout_continue_result", (payload) => {
+            this.game.onTimeoutContinueResult?.(payload);
+        });
+
         this.room.onMessage("room_closed", (payload) => {
             debugLog("[CLIENT_DEBUG] room_closed received", payload || {});
             this.game.onRoomClosed(payload);
