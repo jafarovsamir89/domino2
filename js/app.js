@@ -1505,17 +1505,6 @@ class DominoGame {
         if (!modal || !playerId) return;
         this._lastProfileOpenAt = Date.now();
 
-        const socialModal = document.getElementById('social-center-modal');
-        const chatModal = document.getElementById('social-chats-panel');
-        const isSocialOpen = (socialModal && socialModal.classList.contains('active')) || (chatModal && !chatModal.classList.contains('is-hidden'));
-        if (!isSocialOpen) {
-            this.closeSocialCenterModal();
-        }
-        this.closeStartModals();
-        this.closeAccountModal();
-        this.closeCoinShopModal();
-        this.closeCosmeticsShopModal();
-        this.closeLeaderboardModal();
         document.body.appendChild(modal);
         modal.style.zIndex = '32000';
         modal.style.position = 'fixed';
