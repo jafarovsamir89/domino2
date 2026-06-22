@@ -4584,7 +4584,6 @@ class DominoGame {
         };
         const filteredItems = items.filter((item) => item.type !== 'direct_message' && item.type !== 'direct_message_thread_hidden');
         if (threads.length) {
-            appendSectionTitle('Messages / Chat threads');
             threads.forEach((thread) => {
                 const partner = thread?.player || {};
                 const playerId = String(partner?.id || thread?.playerId || thread?.id || '').trim();

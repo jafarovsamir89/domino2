@@ -6749,6 +6749,10 @@ body.is-reconnecting .hand-container {
     gap: 8px;
     max-width: 82%;
     align-items: flex-end;
+    background: none !important;
+    border: none !important;
+    padding: 6px 0 !important;
+    box-shadow: none !important;
 }
 
 .message-row.is-other {

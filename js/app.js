@@ -1505,7 +1505,11 @@ class DominoGame {
         if (!modal || !playerId) return;
         this._lastProfileOpenAt = Date.now();
 
-        this.closeSocialCenterModal();
+        const socialModal = document.getElementById('social-center-modal');
+        const isSocialOpen = socialModal && socialModal.classList.contains('active');
+        if (!isSocialOpen) {
+            this.closeSocialCenterModal();
+        }
         this.closeStartModals();
         this.closeAccountModal();
         this.closeCoinShopModal();
@@ -4482,6 +4486,12 @@ class DominoGame {
 
         const invitations = this.roomInvitations || { incoming: [], sent: [] };
         const { incoming, sent } = this.getActiveRoomInvitations(invitations);
+        
+        const incomingSection = document.getElementById('social-invites-incoming-section');
+        const sentSection = document.getElementById('social-invites-sent-section');
+        if (incomingSection) incomingSection.classList.toggle('is-hidden', incoming.length === 0);
+        if (sentSection) sentSection.classList.toggle('is-hidden', sent.length === 0);
+
         const acceptedWaitingCount = this.getAcceptedWaitingPlayInvites().length;
         const renderState = {
             incomingBeforeRender: Array.isArray(incoming) ? incoming.length : 0,
@@ -4584,7 +4594,6 @@ class DominoGame {
         };
         const filteredItems = items.filter((item) => item.type !== 'direct_message' && item.type !== 'direct_message_thread_hidden');
         if (threads.length) {
-            appendSectionTitle('Messages / Chat threads');
             threads.forEach((thread) => {
                 const partner = thread?.player || {};
                 const playerId = String(partner?.id || thread?.playerId || thread?.id || '').trim();
@@ -8167,7 +8176,14 @@ class DominoGame {
             requestsList.innerHTML = '';
             const incomingRequests = Array.isArray(this.friendHub.incoming) ? this.friendHub.incoming : [];
             const outgoingRequests = Array.isArray(this.friendHub.outgoing) ? this.friendHub.outgoing : [];
-            if (!incomingRequests.length && !outgoingRequests.length) {
+            
+            const requestsSection = document.getElementById('social-requests-section');
+            const hasRequests = incomingRequests.length > 0 || outgoingRequests.length > 0;
+            if (requestsSection) {
+                requestsSection.classList.toggle('is-hidden', !hasRequests);
+            }
+
+            if (!hasRequests) {
                 this.setSummaryMessage(requestsList, this.t('no-friend-requests'));
             } else {
                 const renderRequest = (item, label, acceptable) => {
@@ -10767,15 +10783,6 @@ class DominoGame {
         }
 
         wrapper.appendChild(frame);
-
-        // Add rating/level overlay badge
-        const rating = typeof ratingValue === 'number' ? ratingValue : 1000;
-        const level = Math.max(1, Math.floor((rating - 1000) / 25) + 30);
-        
-        const badge = document.createElement('div');
-        badge.className = 'premium-avatar-level';
-        badge.textContent = level;
-        wrapper.appendChild(badge);
 
         const playerId = String(player?.id || player?.playerId || '').trim();
         if (playerId && this.friendPresenceMap instanceof Map) {
