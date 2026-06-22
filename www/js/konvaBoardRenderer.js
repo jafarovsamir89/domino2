@@ -836,14 +836,36 @@ export class KonvaBoardRenderer {
 
     getTileRect(tileId) {
         if (!tileId) return null;
-        const anchor = this.anchorElsByTileId.get(String(tileId)) || this.anchorEl?.querySelector?.(`[data-tile-id="${String(tileId)}"]`);
-        return anchor?.getBoundingClientRect?.() || null;
+        const local = this.tileRects.get(String(tileId));
+        if (!local) return null;
+        const rootRect = this.rootEl?.getBoundingClientRect?.() || { left: 0, top: 0 };
+        return {
+            left: local.left + rootRect.left,
+            top: local.top + rootRect.top,
+            width: local.width,
+            height: local.height,
+            right: local.right + rootRect.left,
+            bottom: local.bottom + rootRect.top,
+            centerX: local.centerX + rootRect.left,
+            centerY: local.centerY + rootRect.top
+        };
     }
 
     getNodeRect(nodeId) {
         if (!Number.isInteger(Number(nodeId))) return null;
-        const anchor = this.anchorElsByNodeId.get(String(nodeId)) || this.anchorEl?.querySelector?.(`[data-node-id="${String(nodeId)}"]`);
-        return anchor?.getBoundingClientRect?.() || null;
+        const local = this.nodeRects.get(String(nodeId));
+        if (!local) return null;
+        const rootRect = this.rootEl?.getBoundingClientRect?.() || { left: 0, top: 0 };
+        return {
+            left: local.left + rootRect.left,
+            top: local.top + rootRect.top,
+            width: local.width,
+            height: local.height,
+            right: local.right + rootRect.left,
+            bottom: local.bottom + rootRect.top,
+            centerX: local.centerX + rootRect.left,
+            centerY: local.centerY + rootRect.top
+        };
     }
 
     getOpenEndAnchorRect(openEnd) {
@@ -925,19 +947,18 @@ export class KonvaBoardRenderer {
 
     getBoardTileRects() {
         const rects = [];
-        for (const [tileId, anchor] of this.anchorElsByTileId.entries()) {
-            const rect = anchor?.getBoundingClientRect?.();
-            if (!rect) continue;
+        const rootRect = this.rootEl?.getBoundingClientRect?.() || { left: 0, top: 0 };
+        for (const [tileId, local] of this.tileRects.entries()) {
             rects.push({
                 tileId,
-                left: rect.left,
-                top: rect.top,
-                right: rect.right,
-                bottom: rect.bottom,
-                width: rect.width,
-                height: rect.height,
-                centerX: rect.left + rect.width / 2,
-                centerY: rect.top + rect.height / 2
+                left: local.left + rootRect.left,
+                top: local.top + rootRect.top,
+                right: local.right + rootRect.left,
+                bottom: local.bottom + rootRect.top,
+                width: local.width,
+                height: local.height,
+                centerX: local.centerX + rootRect.left,
+                centerY: local.centerY + rootRect.top
             });
         }
         return rects;

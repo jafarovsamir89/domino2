@@ -1,4 +1,4 @@
-const { Room } = require("colyseus");
+const { Room, ServerError } = require("colyseus");
 const Redis = require("ioredis");
 const { GameState, Player } = require("./schema/GameState");
 const { Board, cloneBoard } = require("./board");
@@ -85,7 +85,7 @@ class DominoRoom extends Room {
     async onCreate(options = {}) {
         const restoreSnapshot = await this.loadCustomStateForRestore(options);
         if ((options.restoreRoomCode || options.restoreRoomId || options.restoreSessionId) && !restoreSnapshot) {
-            throw new Error("restore_snapshot_not_found");
+            throw new ServerError(404, "restore_snapshot_not_found");
         }
 
         if (restoreSnapshot?.roomId && restoreSnapshot.roomId !== this.roomId) {
