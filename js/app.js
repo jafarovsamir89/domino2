@@ -1506,7 +1506,8 @@ class DominoGame {
         this._lastProfileOpenAt = Date.now();
 
         const socialModal = document.getElementById('social-center-modal');
-        const isSocialOpen = socialModal && socialModal.classList.contains('active');
+        const chatModal = document.getElementById('social-chats-panel');
+        const isSocialOpen = (socialModal && socialModal.classList.contains('active')) || (chatModal && !chatModal.classList.contains('is-hidden'));
         if (!isSocialOpen) {
             this.closeSocialCenterModal();
         }
@@ -14975,18 +14976,23 @@ class DominoGame {
 
         const recipientRow = document.createElement('div');
         recipientRow.className = 'gift-recipient-row';
-        const recipients = this.getGiftRecipients();
-        
-        const activePlayerId = String(this.accountMessagesState?.activePlayerId || '').trim();
-        const threads = Array.isArray(this.accountMessagesState?.threads) ? this.accountMessagesState.threads : [];
-        const activeThread = threads.find((t) => String(t?.player?.id || t?.playerId || t?.id || '').trim() === activePlayerId) || null;
-        const activePlayer = this.accountMessagesState?.activePlayerProfile || activeThread?.player || null;
-        if (activePlayerId && !recipients.some((item) => item.id === activePlayerId)) {
+        const chatPanel = document.getElementById('social-chats-panel');
+        const isChatActive = chatPanel && !chatPanel.classList.contains('is-hidden');
+        const activePlayerId = isChatActive ? String(this.accountMessagesState?.activePlayerId || '').trim() : '';
+
+        let recipients = [];
+        if (activePlayerId) {
+            const threads = Array.isArray(this.accountMessagesState?.threads) ? this.accountMessagesState.threads : [];
+            const activeThread = threads.find((t) => String(t?.player?.id || t?.playerId || t?.id || '').trim() === activePlayerId) || null;
+            const activePlayer = this.accountMessagesState?.activePlayerProfile || activeThread?.player || null;
             recipients.push({
                 id: activePlayerId,
                 displayName: activePlayer?.displayName || this.getRecipientNameById(activePlayerId) || 'Player',
                 avatarUrl: activePlayer?.avatarUrl || null
             });
+            this.selectedGiftRecipientId = activePlayerId;
+        } else {
+            recipients = this.getGiftRecipients();
         }
         
         if (!recipients.length) {
