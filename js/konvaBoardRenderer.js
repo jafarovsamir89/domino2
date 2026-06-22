@@ -183,6 +183,7 @@ export class KonvaBoardRenderer {
         this.metrics = readBoardMetrics();
         this.lowPowerMode = isLowPowerMode();
         this._resizeTimer = null;
+        this._visibilityRetryTimer = null;
     }
 
     log(...args) {
@@ -269,6 +270,10 @@ export class KonvaBoardRenderer {
     }
 
     destroy() {
+        if (this._visibilityRetryTimer) {
+            clearTimeout(this._visibilityRetryTimer);
+            this._visibilityRetryTimer = null;
+        }
         if (this.resizeObserver) {
             try { this.resizeObserver.disconnect(); } catch {}
             this.resizeObserver = null;
@@ -424,6 +429,15 @@ export class KonvaBoardRenderer {
         this.lastBoard = board;
         this.lastLayout = layout;
         this.lastContext = context;
+
+        if ((layout.stageWidth <= 1 || layout.stageHeight <= 1) && !this._visibilityRetryTimer) {
+            this._visibilityRetryTimer = setTimeout(() => {
+                this._visibilityRetryTimer = null;
+                if (this.enabled && this.lastBoard) {
+                    this.render(this.lastBoard, { ...this.lastContext, force: true });
+                }
+            }, 150);
+        }
 
         const Konva = getKonva();
         if (!Konva) {
