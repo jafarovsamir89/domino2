@@ -186,6 +186,24 @@ class DominoRoom extends Room {
             this.restoredFromSnapshot = true;
         }
 
+        this.presenceInterval = setInterval(() => {
+            try {
+                for (const [sessionId, player] of this.state.players.entries()) {
+                    if (player && !player.isBot && player.isConnected) {
+                        const identity = this.identityBySessionId.get(sessionId);
+                        if (identity) {
+                            this.registerLivePlayer(sessionId, identity, player);
+                        }
+                    }
+                }
+            } catch (err) {
+                console.error("[ROOM] Presence heartbeat error:", err);
+            }
+        }, 30000);
+        if (this.presenceInterval && typeof this.presenceInterval.unref === "function") {
+            this.presenceInterval.unref();
+        }
+
         debugLog("[ROOM_DEBUG] create", {
             roomId: this.roomId,
             roomCode: this.roomCode,
@@ -1147,6 +1165,16 @@ class DominoRoom extends Room {
             void forgetRoom(this.roomCode, this.roomId);
         }
         removeRoomPlayers(this.roomId);
+        if (this.presenceInterval) {
+            clearInterval(this.presenceInterval);
+            this.presenceInterval = null;
+        }
+        if (redis && this.roomId) {
+            void redis.del(`domino:custom:${this.roomId}`).catch(() => {});
+            if (this.roomCode) {
+                void redis.del(`domino:custom:code:${this.roomCode}`).catch(() => {});
+            }
+        }
         this.botTimer && clearTimeout(this.botTimer);
         this.autoStartTimer && clearTimeout(this.autoStartTimer);
         this.clearLastMoveRevealTimer();
