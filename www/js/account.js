@@ -318,9 +318,11 @@ export class AccountClient {
         const timeoutId = setTimeout(() => controller.abort(), 6000);
         try {
             const method = String(options.method || "GET").toUpperCase();
+            const token = this.platformGameToken;
             const response = await fetch(`${this.platformApiBase}${path}`, {
                 headers: {
                     "Content-Type": "application/json",
+                    ...(token ? { Authorization: `Bearer ${token}` } : {}),
                     ...(options.headers || {})
                 },
                 credentials: "include",
@@ -355,6 +357,16 @@ export class AccountClient {
             return platformData;
         }
 
+        const existingToken = this.platformGameToken;
+        const existingProfile = this.getPlatformProfile();
+        if (existingToken && existingProfile) {
+            console.log('[Auth Debug] bootstrap: cookie sync failed, using localStorage cached token and profile.');
+            return {
+                token: existingToken,
+                profile: existingProfile
+            };
+        }
+
         this.setStoredToken("");
         this.setStoredProfile(null);
         this.setPlatformProfile(null);
@@ -363,11 +375,13 @@ export class AccountClient {
 
     async syncPlatformSession() {
         try {
+            const token = this.platformGameToken;
             const response = await fetch(`${this.platformApiBase}/platform/game-token`, {
                 method: "GET",
                 credentials: "include",
                 headers: {
-                    "Content-Type": "application/json"
+                    "Content-Type": "application/json",
+                    ...(token ? { Authorization: `Bearer ${token}` } : {})
                 }
             });
 
@@ -382,9 +396,9 @@ export class AccountClient {
 
             const normalized = normalizeProfile(data, "better-auth");
             this.setPlatformGameToken(data.token);
-        this.setPlatformProfile(normalized.profile);
-        this.setStoredProfile(normalized.profile);
-        return normalized;
+            this.setPlatformProfile(normalized.profile);
+            this.setStoredProfile(normalized.profile);
+            return normalized;
         } catch {
             return null;
         }

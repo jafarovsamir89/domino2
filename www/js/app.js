@@ -4476,6 +4476,12 @@ class DominoGame {
 
         const invitations = this.roomInvitations || { incoming: [], sent: [] };
         const { incoming, sent } = this.getActiveRoomInvitations(invitations);
+        
+        const incomingSection = document.getElementById('social-invites-incoming-section');
+        const sentSection = document.getElementById('social-invites-sent-section');
+        if (incomingSection) incomingSection.classList.toggle('is-hidden', incoming.length === 0);
+        if (sentSection) sentSection.classList.toggle('is-hidden', sent.length === 0);
+
         const acceptedWaitingCount = this.getAcceptedWaitingPlayInvites().length;
         const renderState = {
             incomingBeforeRender: Array.isArray(incoming) ? incoming.length : 0,
@@ -5576,6 +5582,13 @@ class DominoGame {
                                 playBtn.style.fontSize = '1.3em';
                                 playBtn.innerHTML = '▶️';
 
+                                const progressBar = document.createElement('input');
+                                progressBar.type = 'range';
+                                progressBar.className = 'chat-voice-progress';
+                                progressBar.min = '0';
+                                progressBar.max = '100';
+                                progressBar.value = '0';
+
                                 const duration = document.createElement('span');
                                 duration.style.fontSize = '0.85em';
                                 const durSec = json.duration || 0;
@@ -5594,11 +5607,32 @@ class DominoGame {
                                         playBtn.innerHTML = '▶️';
                                     }
                                 });
+
+                                audio.addEventListener('timeupdate', () => {
+                                    if (audio.duration) {
+                                        const pct = (audio.currentTime / audio.duration) * 100;
+                                        progressBar.value = pct;
+                                        const curSec = Math.floor(audio.currentTime);
+                                        const totalSec = Math.floor(audio.duration || durSec);
+                                        duration.textContent = `${Math.floor(curSec / 60)}:${(curSec % 60).toString().padStart(2, '0')} / ${Math.floor(totalSec / 60)}:${(totalSec % 60).toString().padStart(2, '0')}`;
+                                    }
+                                });
+
+                                progressBar.addEventListener('input', () => {
+                                    if (audio.duration) {
+                                        audio.currentTime = (progressBar.value / 100) * audio.duration;
+                                    }
+                                });
+
                                 audio.addEventListener('ended', () => {
                                     playBtn.innerHTML = '▶️';
+                                    progressBar.value = '0';
+                                    const totalSec = Math.floor(audio.duration || durSec);
+                                    duration.textContent = `${Math.floor(totalSec / 60)}:${(totalSec % 60).toString().padStart(2, '0')}`;
                                 });
 
                                 audioContainer.appendChild(playBtn);
+                                audioContainer.appendChild(progressBar);
                                 audioContainer.appendChild(duration);
                                 audioContainer.appendChild(audio);
                                 bubble.appendChild(audioContainer);
@@ -5678,16 +5712,15 @@ class DominoGame {
         const chatGiftBtn = document.getElementById('chat-gift-btn');
         if (chatGiftBtn) {
             chatGiftBtn.hidden = !activePlayerId;
-            if (!chatGiftBtn.dataset.bound) {
-                chatGiftBtn.dataset.bound = '1';
-                chatGiftBtn.addEventListener('click', () => {
-                    const targetId = String(this.accountMessagesState?.activePlayerId || '').trim();
-                    if (!targetId) return;
-                    this.selectedGiftRecipientId = targetId;
-                    this.renderGiftPicker();
-                    this.toggleGiftPicker(true);
-                });
-            }
+            const newChatGiftBtn = chatGiftBtn.cloneNode(true);
+            chatGiftBtn.parentNode.replaceChild(newChatGiftBtn, chatGiftBtn);
+            newChatGiftBtn.addEventListener('click', () => {
+                const targetId = String(this.accountMessagesState?.activePlayerId || '').trim();
+                if (!targetId) return;
+                this.selectedGiftRecipientId = targetId;
+                this.renderGiftPicker();
+                this.toggleGiftPicker(true);
+            });
         }
 
         if (!backBtn.dataset.bound) {
@@ -5755,6 +5788,7 @@ class DominoGame {
                 this.renderAccountMessagesPanel();
                 void this.addMessageToOutbox(targetId, text, tempId);
                 messageInput.value = '';
+                this.syncSendAndVoiceBtnVisibility();
                 try {
                     const result = await this.sendDirectMessageWithFallback(targetId, text, tempId);
                     const sentMessage = result?.item || tempMessage;
@@ -5830,6 +5864,7 @@ class DominoGame {
             let typingStopTimeout = null;
 
             messageInput.addEventListener('input', () => {
+                this.syncSendAndVoiceBtnVisibility();
                 const targetId = String(this.accountMessagesState?.activePlayerId || '').trim();
                 if (!targetId || !this._socialSocket || !this._socialSocket.connected) return;
 
@@ -5847,6 +5882,22 @@ class DominoGame {
                     typingStopTimeout = null;
                 }, 2000);
             });
+        }
+        this.syncSendAndVoiceBtnVisibility();
+    }
+
+    syncSendAndVoiceBtnVisibility() {
+        const input = document.getElementById('account-message-input');
+        const voiceBtn = document.getElementById('chat-voice-record-btn');
+        const sendBtn = document.getElementById('account-message-send-btn');
+        if (!input || !voiceBtn || !sendBtn) return;
+        const hasText = input.value.trim().length > 0;
+        if (hasText) {
+            voiceBtn.classList.add('is-hidden');
+            sendBtn.classList.remove('is-hidden');
+        } else {
+            voiceBtn.classList.remove('is-hidden');
+            sendBtn.classList.add('is-hidden');
         }
     }
 
@@ -8115,7 +8166,14 @@ class DominoGame {
             requestsList.innerHTML = '';
             const incomingRequests = Array.isArray(this.friendHub.incoming) ? this.friendHub.incoming : [];
             const outgoingRequests = Array.isArray(this.friendHub.outgoing) ? this.friendHub.outgoing : [];
-            if (!incomingRequests.length && !outgoingRequests.length) {
+            
+            const requestsSection = document.getElementById('social-requests-section');
+            const hasRequests = incomingRequests.length > 0 || outgoingRequests.length > 0;
+            if (requestsSection) {
+                requestsSection.classList.toggle('is-hidden', !hasRequests);
+            }
+
+            if (!hasRequests) {
                 this.setSummaryMessage(requestsList, this.t('no-friend-requests'));
             } else {
                 const renderRequest = (item, label, acceptable) => {
@@ -10716,15 +10774,6 @@ class DominoGame {
 
         wrapper.appendChild(frame);
 
-        // Add rating/level overlay badge
-        const rating = typeof ratingValue === 'number' ? ratingValue : 1000;
-        const level = Math.max(1, Math.floor((rating - 1000) / 25) + 30);
-        
-        const badge = document.createElement('div');
-        badge.className = 'premium-avatar-level';
-        badge.textContent = level;
-        wrapper.appendChild(badge);
-
         const playerId = String(player?.id || player?.playerId || '').trim();
         if (playerId && this.friendPresenceMap instanceof Map) {
             const presence = this.friendPresenceMap.get(playerId);
@@ -10877,9 +10926,6 @@ class DominoGame {
                     <button type="button" class="composer-attach-btn" aria-label="Attach">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
                     </button>
-                    <button type="button" class="composer-voice-btn" id="chat-voice-record-btn" aria-label="Voice">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v1a7 7 0 0 1-14 0v-1"/><line x1="12" x2="12" y1="19" y2="22"/></svg>
-                    </button>
                     <div class="chat-compose-input-wrapper">
                         <input type="text" id="account-message-input" class="chat-message-input" maxlength="500" data-i18n="messages-placeholder" placeholder="Write a message">
                         <button type="button" class="composer-emoji-btn" aria-label="Emoji">😊</button>
@@ -10889,9 +10935,14 @@ class DominoGame {
                             <button type="button" class="voice-record-cancel" style="background: none; border: none; color: var(--text-dim, #8f9cae); margin-left: auto; font-size: 0.85em; cursor: pointer; font-weight: bold;">Cancel</button>
                         </div>
                     </div>
-                    <button type="button" class="chat-send-btn" id="account-message-send-btn">
-                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
-                    </button>
+                    <div class="chat-compose-right-btn-group" style="display: flex; align-items: center; justify-content: center; gap: 4px;">
+                        <button type="button" class="composer-voice-btn" id="chat-voice-record-btn" aria-label="Voice">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v1a7 7 0 0 1-14 0v-1"/><line x1="12" x2="12" y1="19" y2="22"/></svg>
+                        </button>
+                        <button type="button" class="chat-send-btn is-hidden" id="account-message-send-btn">
+                            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+                        </button>
+                    </div>
                 </div>
             </div>
         `;
@@ -10938,21 +10989,96 @@ class DominoGame {
                         debugLog('[Chat Debug] No active player conversation to send to.');
                         return;
                     }
+                    const tempId = `temp-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
                     try {
                         this.renderer.showMessage(this.t('sending-attachment') || 'Photo sending...', 1200);
-                        const tempId = `temp-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
                         debugLog('[Chat Debug] Compressing image...', file.name);
                         const compressedBase64 = await this.compressImage(file);
                         debugLog('[Chat Debug] Image compressed. Base64 length:', compressedBase64?.length);
                         const msgBody = JSON.stringify({ type: 'image', data: compressedBase64 });
+
+                        const currentPlayerId = this.getCurrentAccountPlayerId();
+                        const tempMessage = {
+                            id: tempId,
+                            senderPlayerId: currentPlayerId,
+                            receiverPlayerId: targetId,
+                            text: msgBody,
+                            createdAt: new Date().toISOString(),
+                            readAt: null,
+                            sender: this.accountProfile ? {
+                                id: this.accountProfile.playerId || this.accountProfile.id || currentPlayerId,
+                                displayName: this.accountProfile.displayName || this.accountProfile.name || '',
+                                avatarSeed: this.accountProfile.avatarSeed || null,
+                                avatarUrl: this.accountProfile.avatarUrl || null,
+                                isGuest: Boolean(this.accountProfile.isGuest)
+                            } : null,
+                            receiver: this.accountMessagesState?.activePlayerProfile || null,
+                            isOptimistic: true,
+                            localStatus: 'sending'
+                        };
+                        const messagesBeforeSend = Array.isArray(this.accountMessagesState?.messages) ? [...this.accountMessagesState.messages] : [];
+                        messagesBeforeSend.push(tempMessage);
+                        this.accountMessagesState = {
+                            ...(this.accountMessagesState || {}),
+                            messages: messagesBeforeSend,
+                            sendLoading: true,
+                            error: ''
+                        };
+                        this.upsertMessageThreadFromMessage(tempMessage, targetId);
+                        this.renderAccountMessagesPanel();
+
                         debugLog('[Chat Debug] Sending compressed image payload...', { tempId, payloadLength: msgBody.length });
                         const result = await this.sendDirectMessageWithFallback(targetId, msgBody, tempId);
                         debugLog('[Chat Debug] Image message sent successfully.', result);
+
+                        const sentMessage = result?.item || tempMessage;
+                        const messages = Array.isArray(this.accountMessagesState?.messages) ? [...this.accountMessagesState.messages] : [];
+                        const tempIndex = messages.findIndex((row) => String(row?.id || '').trim() === tempId);
+                        const alreadyExists = messages.some((row) => String(row?.id || '').trim() === String(sentMessage?.id || '').trim());
+                        if (tempIndex >= 0) {
+                            messages[tempIndex] = {
+                                ...sentMessage,
+                                isOptimistic: false,
+                                localStatus: 'sent'
+                            };
+                        } else if (!alreadyExists) {
+                            messages.push({
+                                ...sentMessage,
+                                isOptimistic: false,
+                                localStatus: 'sent'
+                            });
+                        }
+                        this.accountMessagesState = {
+                            ...(this.accountMessagesState || {}),
+                            messages,
+                            sendLoading: false,
+                            error: ''
+                        };
+                        this.applyRealtimeDirectMessage({
+                            type: 'message_sent',
+                            tempId: tempId,
+                            message: sentMessage,
+                            threadPlayerId: targetId
+                        });
                         await this.loadConversationWithPlayer(targetId);
                         await this.loadMessageThreads();
                     } catch (err) {
                         debugLog('[Chat Debug] Image send failed:', err);
                         this.renderer.showMessage(err.message, 1800);
+                        const messages = Array.isArray(this.accountMessagesState?.messages) ? [...this.accountMessagesState.messages] : [];
+                        const tempIndex = messages.findIndex((row) => String(row?.id || '').trim() === tempId);
+                        if (tempIndex >= 0) {
+                            messages[tempIndex] = {
+                                ...messages[tempIndex],
+                                localStatus: 'failed'
+                            };
+                            this.accountMessagesState = {
+                                ...(this.accountMessagesState || {}),
+                                messages,
+                                sendLoading: false
+                            };
+                            this.renderAccountMessagesPanel();
+                        }
                     }
                 };
                 fileInput.click();
@@ -11097,17 +11223,92 @@ class DominoGame {
                 debugLog('[Chat Debug] Voice recording base64 ready. Length:', base64?.length, 'Duration:', duration, 'Recipient:', targetId);
                 if (!targetId || !base64) return;
 
+                const tempId = `temp-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
                 try {
-                    const tempId = `temp-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
                     const messageBody = JSON.stringify({ type: 'voice', data: base64, duration });
+
+                    const currentPlayerId = this.getCurrentAccountPlayerId();
+                    const tempMessage = {
+                        id: tempId,
+                        senderPlayerId: currentPlayerId,
+                        receiverPlayerId: targetId,
+                        text: messageBody,
+                        createdAt: new Date().toISOString(),
+                        readAt: null,
+                        sender: this.accountProfile ? {
+                            id: this.accountProfile.playerId || this.accountProfile.id || currentPlayerId,
+                            displayName: this.accountProfile.displayName || this.accountProfile.name || '',
+                            avatarSeed: this.accountProfile.avatarSeed || null,
+                            avatarUrl: this.accountProfile.avatarUrl || null,
+                            isGuest: Boolean(this.accountProfile.isGuest)
+                        } : null,
+                        receiver: this.accountMessagesState?.activePlayerProfile || null,
+                        isOptimistic: true,
+                        localStatus: 'sending'
+                    };
+                    const messagesBeforeSend = Array.isArray(this.accountMessagesState?.messages) ? [...this.accountMessagesState.messages] : [];
+                    messagesBeforeSend.push(tempMessage);
+                    this.accountMessagesState = {
+                        ...(this.accountMessagesState || {}),
+                        messages: messagesBeforeSend,
+                        sendLoading: true,
+                        error: ''
+                    };
+                    this.upsertMessageThreadFromMessage(tempMessage, targetId);
+                    this.renderAccountMessagesPanel();
+
                     debugLog('[Chat Debug] Sending voice message. Payload length:', messageBody.length);
-                    await this.sendDirectMessageWithFallback(targetId, messageBody, tempId);
-                    debugLog('[Chat Debug] Voice message sent successfully.');
+                    const result = await this.sendDirectMessageWithFallback(targetId, messageBody, tempId);
+                    debugLog('[Chat Debug] Voice message sent successfully.', result);
+
+                    const sentMessage = result?.item || tempMessage;
+                    const messages = Array.isArray(this.accountMessagesState?.messages) ? [...this.accountMessagesState.messages] : [];
+                    const tempIndex = messages.findIndex((row) => String(row?.id || '').trim() === tempId);
+                    const alreadyExists = messages.some((row) => String(row?.id || '').trim() === String(sentMessage?.id || '').trim());
+                    if (tempIndex >= 0) {
+                        messages[tempIndex] = {
+                            ...sentMessage,
+                            isOptimistic: false,
+                            localStatus: 'sent'
+                        };
+                    } else if (!alreadyExists) {
+                        messages.push({
+                            ...sentMessage,
+                            isOptimistic: false,
+                            localStatus: 'sent'
+                        });
+                    }
+                    this.accountMessagesState = {
+                        ...(this.accountMessagesState || {}),
+                        messages,
+                        sendLoading: false,
+                        error: ''
+                    };
+                    this.applyRealtimeDirectMessage({
+                        type: 'message_sent',
+                        tempId: tempId,
+                        message: sentMessage,
+                        threadPlayerId: targetId
+                    });
                     await this.loadConversationWithPlayer(targetId);
                     await this.loadMessageThreads();
                 } catch (err) {
                     debugLog('[Chat Debug] Voice message send error:', err);
                     this.renderer.showMessage(err.message, 1800);
+                    const messages = Array.isArray(this.accountMessagesState?.messages) ? [...this.accountMessagesState.messages] : [];
+                    const tempIndex = messages.findIndex((row) => String(row?.id || '').trim() === tempId);
+                    if (tempIndex >= 0) {
+                        messages[tempIndex] = {
+                            ...messages[tempIndex],
+                            localStatus: 'failed'
+                        };
+                        this.accountMessagesState = {
+                            ...(this.accountMessagesState || {}),
+                            messages,
+                            sendLoading: false
+                        };
+                        this.renderAccountMessagesPanel();
+                    }
                 }
             };
         };
@@ -14687,8 +14888,8 @@ class DominoGame {
     }
     setupGiftUI() {
         this.giftBtn = document.getElementById('gift-btn');
-        this.giftPicker = document.getElementById('gift-picker');
-        if (!this.giftPicker) return;
+        const giftPicker = document.getElementById('gift-picker');
+        if (!giftPicker) return;
 
         if (this.giftBtn) {
             this.giftBtn.innerHTML = this.buildGiftButtonMarkup(48);
@@ -14700,10 +14901,11 @@ class DominoGame {
         this.renderGiftPicker();
 
         this._giftOutsideHandler = (event) => {
-            if (!this.giftPicker.classList.contains('open')) return;
+            const picker = document.getElementById('gift-picker');
+            if (!picker || !picker.classList.contains('open')) return;
             const target = event.target;
             const chatGiftBtn = document.getElementById('chat-gift-btn');
-            if (this.giftPicker.contains(target) 
+            if (picker.contains(target) 
                 || (this.giftBtn && this.giftBtn.contains(target))
                 || (chatGiftBtn && chatGiftBtn.contains(target))
             ) return;
@@ -14745,14 +14947,15 @@ class DominoGame {
         }
     }
     renderGiftPicker() {
-        if (!this.giftPicker) {
+        const giftPicker = document.getElementById('gift-picker');
+        if (!giftPicker) {
             debugLog('[Chat Debug] renderGiftPicker: giftPicker element not found.');
             return;
         }
         const mode = this.giftPickerMode || 'inventory';
         const inventory = Array.isArray(this.giftInventory) ? this.giftInventory.filter(item => Number(item?.quantity || 0) > 0) : [];
         debugLog('[Chat Debug] renderGiftPicker: rendering in mode:', mode, 'inventory count:', inventory.length);
-        this.giftPicker.innerHTML = '';
+        giftPicker.innerHTML = '';
         const header = document.createElement('div');
         header.className = 'gift-picker-header';
         const title = document.createElement('div');
@@ -14972,22 +15175,23 @@ class DominoGame {
             }
         }
 
-        this.giftPicker.appendChild(header);
-        this.giftPicker.appendChild(recipientRow);
+        giftPicker.appendChild(header);
+        giftPicker.appendChild(recipientRow);
         if (menuBar.childNodes.length > 0) {
-            this.giftPicker.appendChild(menuBar);
+            giftPicker.appendChild(menuBar);
         }
-        this.giftPicker.appendChild(grid);
+        giftPicker.appendChild(grid);
     }
     toggleGiftPicker(force = null) {
-        if (!this.giftPicker) {
+        const giftPicker = document.getElementById('gift-picker');
+        if (!giftPicker) {
             debugLog('[Chat Debug] toggleGiftPicker: giftPicker element not found.');
             return;
         }
-        const open = force === null ? !this.giftPicker.classList.contains('open') : !!force;
+        const open = force === null ? !giftPicker.classList.contains('open') : !!force;
         debugLog('[Chat Debug] toggleGiftPicker. force:', force, 'nextOpenState:', open);
-        this.giftPicker.classList.toggle('open', open);
-        this.giftPicker.setAttribute('aria-hidden', String(!open));
+        giftPicker.classList.toggle('open', open);
+        giftPicker.setAttribute('aria-hidden', String(!open));
         if (this.giftBtn) {
             this.giftBtn.setAttribute('aria-expanded', String(open));
         }

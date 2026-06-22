@@ -6749,6 +6749,10 @@ body.is-reconnecting .hand-container {
     gap: 8px;
     max-width: 82%;
     align-items: flex-end;
+    background: none !important;
+    border: none !important;
+    padding: 6px 0 !important;
+    box-shadow: none !important;
 }
 
 .message-row.is-other {
@@ -6850,6 +6854,15 @@ body.is-reconnecting .hand-container {
 
 .message-checks.is-pending {
     color: rgba(255, 255, 255, 0.4); /* light grey for sending */
+}
+
+@keyframes spin-checks {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.message-checks.is-pending svg {
+    animation: spin-checks 1.5s linear infinite;
 }
 
 .message-checks.is-failed {
@@ -7538,6 +7551,42 @@ body.is-reconnecting .hand-container {
 .gift-picker-menubar button:hover {
     transform: translateY(-1px);
     box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.chat-voice-progress {
+    -webkit-appearance: none;
+    appearance: none;
+    flex-grow: 1;
+    min-width: 60px;
+    max-width: 120px;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 2px;
+    outline: none;
+    cursor: pointer;
+    margin: 0 6px;
+    transition: background 0.1s;
+}
+
+.chat-voice-progress::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #00e676;
+    cursor: pointer;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+
+.chat-voice-progress::-moz-range-thumb {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #00e676;
+    cursor: pointer;
+    border: none;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
 }
 
 
