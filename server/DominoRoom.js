@@ -3053,6 +3053,7 @@ class DominoRoom extends Room {
 
         // Notify clients to show deal end screen
         this.broadcast("deal_end", { winnerIndex: wi, fish, bonus, hands: this.hands });
+        this.pendingAdvanceKind = "deal";
         this.state.deal++;
         this.syncState();
         this.scheduleNextDeal(DEAL_END_MODAL_MS);
@@ -3065,6 +3066,7 @@ class DominoRoom extends Room {
         }
         this.clearTurnTimer();
         this.state.gameActive = false;
+        this.pendingAdvanceKind = "round";
         this.syncState();
         const economySummary = this.currentStakeKey !== "free"
             ? await this.settleEconomyRound(wi, !!isInstantWin, null, null)

@@ -89,6 +89,15 @@ function buildRoomStatePayload({ room, players } = {}) {
         roomId: room.roomId,
         roomCode: room.roomCode,
         roomVisibility: room.roomVisibility,
+        roomPhase: room.state.gameActive
+            ? "playing"
+            : room.lastMoveRevealPending
+                ? "last_move_reveal"
+                : (room.matchFinished || room.state?.matchOver)
+                    ? "match_end"
+                    : (room.pendingAdvanceKind === "deal" || room.pendingAdvanceKind === "round")
+                        ? "result"
+                        : "lobby",
         roomMode,
         scoreMode: isTeamMode ? "team" : "solo",
         stakeKey: room.currentDealStakeKey || room.currentStakeKey,
@@ -105,6 +114,8 @@ function buildRoomStatePayload({ room, players } = {}) {
         totalPlayers: room.totalPlayers,
         isTeamMode,
         gameActive: room.state.gameActive,
+        matchOver: Boolean(room.state?.matchOver || room.matchFinished),
+        gameOverReason: String(room.state?.gameOverReason || room.lastGameEndReason || "").trim(),
         seatSelectionRequired: !room.state.gameActive && room.totalPlayers > 2 && !room.areAllHumanPlayersSeated?.(),
         hostName: getFirstNameDisplayName(room.state.players.get(room.state.playerOrder[0])?.name || "Player", "Player"),
         players: safePlayers,

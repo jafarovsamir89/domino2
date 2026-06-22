@@ -121,6 +121,9 @@ test("client uses open-room waiting banner and returns room_closed players to op
     const requiredAppTokens = [
         "isWaitingInOpenRoom(roomState = this.currentRoomState)",
         "syncOpenRoomWaitingBanner(roomState = this.currentRoomState)",
+        "isResultFlowActive(roomState = this.currentRoomState)",
+        "this.onlineResultActive = true;",
+        "resetOnlineResultFlowState()",
         "this.enterOpenRoomWaitingScreen(roomState);",
         "const shouldReturnToOpenRooms = String(payload?.returnTo || '').trim() === 'open_rooms'",
         "this.showOpenRoomsModal();",
@@ -160,6 +163,41 @@ test("client uses open-room waiting banner and returns room_closed players to op
     }
 });
 
+test("gift picker keeps room, chat, and social recipients separate", () => {
+    const appSource = read("js/app.js");
+    const webAppSource = read("www/js/app.js");
+    const translationSource = read("js/translations.js");
+
+    const requiredTokens = [
+        "giftPickerContext = {",
+        "getGiftPickerContext(options = {})",
+        "getRoomGiftRecipients()",
+        "getChatGiftRecipients()",
+        "getFriendGiftRecipients()",
+        "getGiftRecipientsByContext(context = this.getGiftPickerContext())",
+        "source: 'room',",
+        "this.toggleGiftPicker(true, { source: 'chat', activePlayerId: targetId })",
+        "this.toggleGiftPicker(true, { source: 'social', activePlayerId: item.friend.id })",
+        "contextType = context.source === 'room'"
+    ];
+
+    for (const source of [appSource, webAppSource]) {
+        for (const token of requiredTokens) {
+            assert.equal(source.includes(token), true);
+        }
+        assert.equal(source.includes("player?.playerId || player?.userId || player?.sessionId"), false);
+    }
+
+    for (const token of [
+        "\"gift-picker-room-title\"",
+        "\"gift-picker-chat-title\"",
+        "\"gift-picker-social-title\"",
+        "\"gift-no-room-recipient\""
+    ]) {
+        assert.equal(translationSource.includes(token), true);
+    }
+});
+
 test("client renders waiting room rows in a strict single-line format", () => {
     const appSource = read("js/app.js");
     const webAppSource = read("www/js/app.js");
@@ -191,7 +229,7 @@ test("client renders waiting room rows in a strict single-line format", () => {
 
     const extractWaitingRoomSnippet = (source) => {
         const start = source.indexOf("        const humanPlayerCount = (roomState.players || []).filter(player => !player.isBot).length;");
-        const end = source.indexOf("        if (!roomState.gameActive) {", start);
+        const end = source.indexOf("        const preGameLobby = !roomState.gameActive", start);
         return start >= 0 && end > start ? source.slice(start, end) : '';
     };
 

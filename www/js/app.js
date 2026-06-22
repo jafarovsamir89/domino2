@@ -486,9 +486,16 @@ class DominoGame {
         this.giftInventory = [];
         this.giftHistory = { sent: [], received: [], items: [] };
         this.giftRecipients = [];
+        this.giftPickerContext = {
+            source: 'social',
+            activePlayerId: '',
+            roomId: '',
+            roomCode: ''
+        };
         this.selectedGiftRecipientId = '';
         this.lastGiftSentAt = 0;
         this.lastGiftSentKey = '';
+        this.onlineResultActive = false;
         this.coinShopStatus = null;
         this.tableSkinShop = null;
         this.coinShopLoading = false;
@@ -5719,7 +5726,7 @@ class DominoGame {
                 if (!targetId) return;
                 this.selectedGiftRecipientId = targetId;
                 this.renderGiftPicker();
-                this.toggleGiftPicker(true);
+                this.toggleGiftPicker(true, { source: 'chat', activePlayerId: targetId });
             });
         }
 
@@ -12991,14 +12998,58 @@ class DominoGame {
         if (!this.network?.isMultiplayer) return false;
         const state = roomState || {};
         const visibility = String(state?.roomVisibility || this.onlineRoomVisibility || '').trim().toLowerCase();
+        const roomPhase = String(state?.roomPhase || '').trim().toLowerCase();
+        const stagePhase = String(this.roundStage?.phase || '').trim().toLowerCase();
         return Boolean(
             visibility === 'open'
             && (state?.roomId || state?.roomCode || this.network?.room)
+            && !this.onlineResultActive
             && !Boolean(state?.gameActive)
             && !Boolean(this.gameActive)
+            && !Boolean(state?.roundOver)
+            && !Boolean(this.roundOver)
             && !Boolean(state?.matchOver)
+            && !Boolean(this.matchOver)
+            && !Boolean(state?.lastMoveRevealPending)
+            && !Boolean(this.lastMoveRevealPending)
+            && stagePhase !== 'final-move'
+            && stagePhase !== 'counting'
+            && !this.isResultScreenActive()
+            && (!roomPhase || roomPhase === 'lobby' || roomPhase === 'waiting')
             && !String(state?.gameOverReason || '').trim()
         );
+    }
+
+    isResultScreenActive() {
+        return Boolean(
+            document.getElementById('round-end-screen')?.classList.contains('active')
+            || document.getElementById('game-over-screen')?.classList.contains('active')
+        );
+    }
+
+    isResultFlowActive(roomState = this.currentRoomState) {
+        const state = roomState || {};
+        const roomPhase = String(state?.roomPhase || '').trim().toLowerCase();
+        const stagePhase = String(this.roundStage?.phase || '').trim().toLowerCase();
+        return Boolean(
+            this.onlineResultActive
+            || Boolean(state?.roundOver)
+            || Boolean(this.roundOver)
+            || Boolean(state?.matchOver)
+            || Boolean(this.matchOver)
+            || Boolean(state?.lastMoveRevealPending)
+            || Boolean(this.lastMoveRevealPending)
+            || stagePhase === 'final-move'
+            || stagePhase === 'counting'
+            || roomPhase === 'last_move_reveal'
+            || roomPhase === 'result'
+            || roomPhase === 'match_end'
+            || this.isResultScreenActive()
+        );
+    }
+
+    resetOnlineResultFlowState() {
+        this.onlineResultActive = false;
     }
 
     syncOpenRoomWaitingBanner(roomState = this.currentRoomState) {
@@ -13006,6 +13057,10 @@ class DominoGame {
         const title = document.getElementById('open-room-waiting-title');
         const count = document.getElementById('open-room-waiting-count');
         if (!banner || !title || !count) return;
+        if (this.isResultScreenActive() || this.isResultFlowActive(roomState)) {
+            banner.classList.add('is-hidden');
+            return;
+        }
         const shouldShow = this.isWaitingInOpenRoom(roomState);
         banner.classList.toggle('is-hidden', !shouldShow);
         if (!shouldShow) return;
@@ -13433,7 +13488,7 @@ class DominoGame {
                     giftBtn.addEventListener('click', () => {
                         this.selectedGiftRecipientId = item.friend.id;
                         this.renderGiftPicker();
-                        this.toggleGiftPicker(true);
+                        this.toggleGiftPicker(true, { source: 'social', activePlayerId: item.friend.id });
                     });
                     removeBtn.addEventListener('click', async () => {
                         removeBtn.disabled = true;
@@ -13842,6 +13897,7 @@ class DominoGame {
             : { roomCode: codeOrContext };
         const nextCode = String(context?.roomCode || context?.roomId || codeOrContext || '').trim().toUpperCase();
         if (!nextCode) return false;
+        this.resetOnlineResultFlowState();
         const matchingOpenRoom = Array.isArray(this.openRooms)
             ? this.openRooms.find((room) => String(room?.roomCode || '').trim().toUpperCase() === nextCode) || null
             : null;
@@ -14061,6 +14117,9 @@ class DominoGame {
             topRightHudValue: topRightHud.value,
             topRightHudSource: topRightHud.sourceField
         });
+        if (incomingActive) {
+            this.resetOnlineResultFlowState();
+        }
 
         document.getElementById('room-code-display').textContent = roomState.roomCode || roomState.roomId || '....';
         const roomCountEl = document.getElementById('room-player-count-display');
@@ -14190,7 +14249,13 @@ class DominoGame {
             }
         }
 
-        if (!roomState.gameActive) {
+        const preGameLobby = !roomState.gameActive
+            && !this.isResultFlowActive(roomState)
+            && (() => {
+                const roomPhase = String(roomState?.roomPhase || '').trim().toLowerCase();
+                return !roomPhase || roomPhase === 'lobby' || roomPhase === 'waiting';
+            })();
+        if (preGameLobby) {
             const statusText = humanJoined < humanSeats
                 ? `${this.t('online-room-status-waiting')} (${humanJoined}/${humanSeats})`
                 : this.t('online-room-status-ready');
@@ -14198,7 +14263,7 @@ class DominoGame {
             this.setJoinStatus(statusText);
         }
 
-        if (this.isWaitingInOpenRoom(roomState)) {
+        if (preGameLobby && this.isWaitingInOpenRoom(roomState)) {
             this.enterOpenRoomWaitingScreen(roomState);
         }
 
@@ -14315,6 +14380,7 @@ class DominoGame {
         this.network.leaveRoom({ explicit: false, reason: 'room_closed' });
         this.voice?.destroy?.();
         this.currentRoomState = null;
+        this.resetOnlineResultFlowState();
         this.roomAvatarBySessionId.clear();
         this.myHand = null;
         this.gameActive = false;
@@ -14618,6 +14684,7 @@ class DominoGame {
                 screen.classList.remove('active');
                 screen.classList.remove('review-mode');
             }
+            this.resetOnlineResultFlowState();
             if (this.matchOver) { this.showMatchResult(); return; }
             if (this.network.isMultiplayer) {
                 this.network.sendNextDeal();
@@ -14902,7 +14969,11 @@ class DominoGame {
             this.giftBtn.innerHTML = this.buildGiftButtonMarkup(48);
             this.giftBtn.addEventListener('click', (event) => {
                 event.stopPropagation();
-                this.toggleGiftPicker();
+                this.toggleGiftPicker(true, {
+                    source: 'room',
+                    roomId: String(this.currentRoomState?.roomId || this.network?.room?.roomId || this.network?.room?.id || '').trim(),
+                    roomCode: String(this.currentRoomState?.roomCode || this.network?.room?.roomCode || '').trim()
+                });
             });
         }
         this.renderGiftPicker();
@@ -14967,34 +15038,22 @@ class DominoGame {
         header.className = 'gift-picker-header';
         const title = document.createElement('div');
         title.className = 'gift-picker-title';
-        title.textContent = this.t('gift-picker-title');
+        const context = this.getGiftPickerContext();
+        if (context.source === 'room') title.textContent = this.t('gift-picker-room-title');
+        else if (context.source === 'chat') title.textContent = this.t('gift-picker-chat-title');
+        else title.textContent = this.t('gift-picker-social-title');
         header.appendChild(title);
 
         const recipientRow = document.createElement('div');
         recipientRow.className = 'gift-recipient-row';
-        const chatPanel = document.getElementById('social-chats-panel');
-        const isChatActive = chatPanel && !chatPanel.classList.contains('is-hidden');
-        const activePlayerId = isChatActive ? String(this.accountMessagesState?.activePlayerId || '').trim() : '';
-
-        let recipients = [];
-        if (activePlayerId) {
-            const threads = Array.isArray(this.accountMessagesState?.threads) ? this.accountMessagesState.threads : [];
-            const activeThread = threads.find((t) => String(t?.player?.id || t?.playerId || t?.id || '').trim() === activePlayerId) || null;
-            const activePlayer = this.accountMessagesState?.activePlayerProfile || activeThread?.player || null;
-            recipients.push({
-                id: activePlayerId,
-                displayName: activePlayer?.displayName || this.getRecipientNameById(activePlayerId) || 'Player',
-                avatarUrl: activePlayer?.avatarUrl || null
-            });
-            this.selectedGiftRecipientId = activePlayerId;
-        } else {
-            recipients = this.getGiftRecipients();
-        }
+        const recipients = this.getGiftRecipientsByContext(context);
         
         if (!recipients.length) {
             const empty = document.createElement('div');
             empty.className = 'modal-desc';
-            empty.textContent = this.t('gift-no-recipient');
+            empty.textContent = context.source === 'room'
+                ? this.t('gift-no-room-recipient')
+                : this.t('gift-no-recipient');
             recipientRow.appendChild(empty);
         } else {
             if (!this.selectedGiftRecipientId || !recipients.some((item) => item.id === this.selectedGiftRecipientId)) {
@@ -15128,7 +15187,7 @@ class DominoGame {
                     
                     card.addEventListener('click', async (event) => {
                         event.stopPropagation();
-                        await this.sendGift(gift.key, this.selectedGiftRecipientId || recipients[0]?.id || '', true);
+                        await this.sendGift(gift.key, this.selectedGiftRecipientId || recipients[0]?.id || '', true, context);
                     });
                     grid.appendChild(card);
                 }
@@ -15175,7 +15234,7 @@ class DominoGame {
                     
                     card.addEventListener('click', async (event) => {
                         event.stopPropagation();
-                        await this.sendGift(gift.key, this.selectedGiftRecipientId || recipients[0]?.id || '', false);
+                        await this.sendGift(gift.key, this.selectedGiftRecipientId || recipients[0]?.id || '', false, context);
                     });
                     grid.appendChild(card);
                 }
@@ -15189,7 +15248,24 @@ class DominoGame {
         }
         giftPicker.appendChild(grid);
     }
-    toggleGiftPicker(force = null) {
+    getGiftPickerContext(options = {}) {
+        const nextOptions = options && typeof options === 'object' ? options : {};
+        const chatPanel = document.getElementById('social-chats-panel');
+        const isChatActive = chatPanel && !chatPanel.classList.contains('is-hidden');
+        const defaultSource = isChatActive ? 'chat' : 'social';
+        const current = this.giftPickerContext && typeof this.giftPickerContext === 'object'
+            ? this.giftPickerContext
+            : {};
+        const source = String(nextOptions.source || current.source || defaultSource).trim().toLowerCase();
+        return {
+            source: source === 'room' || source === 'chat' ? source : 'social',
+            activePlayerId: String(nextOptions.activePlayerId || current.activePlayerId || this.accountMessagesState?.activePlayerId || '').trim(),
+            roomId: String(nextOptions.roomId || current.roomId || this.currentRoomState?.roomId || this.network?.room?.roomId || this.network?.room?.id || '').trim(),
+            roomCode: String(nextOptions.roomCode || current.roomCode || this.currentRoomState?.roomCode || this.network?.room?.roomCode || '').trim()
+        };
+    }
+
+    toggleGiftPicker(force = null, options = {}) {
         const giftPicker = document.getElementById('gift-picker');
         if (!giftPicker) {
             debugLog('[Chat Debug] toggleGiftPicker: giftPicker element not found.');
@@ -15203,6 +15279,10 @@ class DominoGame {
             this.giftBtn.setAttribute('aria-expanded', String(open));
         }
         if (open) {
+            this.giftPickerContext = this.getGiftPickerContext(options);
+            if (this.giftPickerContext.source === 'chat' && this.giftPickerContext.activePlayerId) {
+                this.selectedGiftRecipientId = this.giftPickerContext.activePlayerId;
+            }
             this.giftPickerMode = 'inventory'; // Reset mode to inventory on open
             this.renderGiftPicker();
             void this.loadGiftHub();
@@ -15212,20 +15292,47 @@ class DominoGame {
         this.toggleGiftPicker(false);
     }
     getGiftRecipients() {
+        return this.getGiftRecipientsByContext(this.getGiftPickerContext());
+    }
+
+    getRoomGiftRecipients() {
         const recipients = [];
         const seen = new Set();
-        const myPlayerId = String(this.accountProfile?.playerId || this.accountProfile?.id || this.accountProfile?.player?.id || '').trim();
-        const roomPlayers = Array.isArray(this.currentRoomState?.players) ? this.currentRoomState.players : [];
+        const myPlayerId = this.getCurrentAccountPlayerId();
+        const roomPlayers = Array.isArray(this.currentRoomState?.players) && this.currentRoomState.players.length
+            ? this.currentRoomState.players
+            : (Array.isArray(this.roomPlayerRefs) ? this.roomPlayerRefs : []);
         for (const player of roomPlayers) {
-            const id = String(player?.playerId || player?.userId || player?.sessionId || '').trim();
+            if (player?.isBot) continue;
+            const id = String(player?.playerId || player?.userId || '').trim();
             if (!id || id === myPlayerId || seen.has(id)) continue;
             seen.add(id);
             recipients.push({
                 id,
                 displayName: String(player?.name || 'Player').trim() || 'Player',
-                avatarUrl: null
+                avatarUrl: player?.avatarUrl || null
             });
         }
+        return recipients;
+    }
+
+    getChatGiftRecipients() {
+        const activePlayerId = String(this.accountMessagesState?.activePlayerId || '').trim();
+        if (!activePlayerId || activePlayerId === this.getCurrentAccountPlayerId()) return [];
+        const threads = Array.isArray(this.accountMessagesState?.threads) ? this.accountMessagesState.threads : [];
+        const activeThread = threads.find((t) => String(t?.player?.id || t?.playerId || t?.id || '').trim() === activePlayerId) || null;
+        const activePlayer = this.accountMessagesState?.activePlayerProfile || activeThread?.player || null;
+        return [{
+            id: activePlayerId,
+            displayName: activePlayer?.displayName || this.getRecipientNameById(activePlayerId) || 'Player',
+            avatarUrl: activePlayer?.avatarUrl || null
+        }];
+    }
+
+    getFriendGiftRecipients() {
+        const recipients = [];
+        const seen = new Set();
+        const myPlayerId = this.getCurrentAccountPlayerId();
         for (const friend of Array.isArray(this.friendHub?.accepted) ? this.friendHub.accepted : []) {
             const id = String(friend?.friend?.id || '').trim();
             if (!id || id === myPlayerId || seen.has(id)) continue;
@@ -15237,6 +15344,12 @@ class DominoGame {
             });
         }
         return recipients;
+    }
+
+    getGiftRecipientsByContext(context = this.getGiftPickerContext()) {
+        if (context?.source === 'room') return this.getRoomGiftRecipients();
+        if (context?.source === 'chat') return this.getChatGiftRecipients();
+        return this.getFriendGiftRecipients();
     }
     async loadGiftHub() {
         if (!this.account?.getGiftCatalog) return;
@@ -15335,16 +15448,23 @@ class DominoGame {
             list.appendChild(card);
         }
     }
-    async sendGift(giftKey, recipientPlayerId, fromInventory = false) {
+    async sendGift(giftKey, recipientPlayerId, fromInventory = false, options = {}) {
         const recipientId = String(recipientPlayerId || '').trim();
         const key = String(giftKey || '').trim();
-        debugLog('[Chat Debug] sendGift requested:', { giftKey: key, recipientId, fromInventory });
+        const context = this.getGiftPickerContext(options);
+        const contextType = context.source === 'room'
+            ? 'room'
+            : (context.source === 'chat' ? 'chat' : 'social');
+        const contextId = context.source === 'room'
+            ? (context.roomId || context.roomCode || this.currentRoomState?.roomId || this.currentRoomState?.roomCode || this.network?.room?.id || '')
+            : (context.source === 'chat' ? context.activePlayerId : '');
+        debugLog('[Chat Debug] sendGift requested:', { giftKey: key, recipientId, fromInventory, contextType, contextId });
         if (!recipientId || !key) {
             debugLog('[Chat Debug] sendGift aborted: missing recipientId or giftKey');
             this.renderer.showMessage(this.t('gift-select-recipient'), 1400);
             return null;
         }
-        const myPlayerId = String(this.accountProfile?.playerId || this.accountProfile?.id || this.accountProfile?.player?.id || '').trim();
+        const myPlayerId = this.getCurrentAccountPlayerId();
         if (!this.accountProfile || recipientId === myPlayerId) {
             debugLog('[Chat Debug] sendGift aborted: sender is not authed or trying to send to self');
             this.renderer.showMessage(this.t('gift-self-send'), 1600);
@@ -15361,8 +15481,8 @@ class DominoGame {
             const result = await this.account.sendGift({
                 recipientPlayerId: recipientId,
                 giftKey: key,
-                contextType: this.network?.isMultiplayer ? 'match' : 'profile',
-                contextId: this.currentRoomState?.roomId || this.currentMatchSessionId || '',
+                contextType,
+                contextId,
                 note: `${gift.name}`,
                 fromInventory: fromInventory
             });
@@ -15380,8 +15500,8 @@ class DominoGame {
                     assetKey: gift.assetKey,
                     recipientPlayerId: recipientId,
                     recipientName: name,
-                    contextType: this.network?.isMultiplayer ? 'match' : 'profile',
-                    contextId: this.currentRoomState?.roomId || this.currentMatchSessionId || ''
+                    contextType,
+                    contextId
                 });
             }
             await this.loadAccountProfile();
@@ -15418,7 +15538,7 @@ class DominoGame {
         const id = String(playerId || '').trim();
         if (!id) return 'Player';
         const roomPlayers = Array.isArray(this.currentRoomState?.players) ? this.currentRoomState.players : [];
-        const roomPlayer = roomPlayers.find((player) => String(player?.playerId || player?.userId || player?.sessionId || '').trim() === id);
+        const roomPlayer = roomPlayers.find((player) => String(player?.playerId || player?.userId || '').trim() === id);
         if (roomPlayer?.name) return roomPlayer.name;
         const friend = Array.isArray(this.friendHub?.accepted)
             ? this.friendHub.accepted.find((item) => String(item?.friend?.id || '').trim() === id)
@@ -15513,6 +15633,7 @@ class DominoGame {
         this.clearPendingOnlineAction({ rollback: false });
         this.clearNextDealAdvanceTimeout();
         this.clearTurnTimers();
+        this.resetOnlineResultFlowState();
         if (!this.network.isMultiplayer && this.currentRoundStakeSessionId) {
             try {
                 if (settleForfeit) {
@@ -15744,6 +15865,7 @@ class DominoGame {
 
     startDeal() {
         debugLog('[startDeal] Initializing deal...');
+        this.resetOnlineResultFlowState();
         this.clearRoundStage();
         this.openingRequiredTileId = '';
         this.openingRequiredTileIndex = -1;
@@ -16893,6 +17015,9 @@ class DominoGame {
         this.deal = Number(payload?.deal || 1);
         this.gameActive = Boolean(payload?.gameActive);
         this.matchOver = Boolean(payload?.matchOver);
+        if (this.gameActive) {
+            this.resetOnlineResultFlowState();
+        }
         this.onlineStakeKey = payload?.stakeKey || this.onlineStakeKey;
         this.onlineRoundBankAmount = Math.max(0, Number(payload?.bankAmount || 0));
         this.turnVersion = Number(payload?.turnVersion || this.turnVersion || 1);
@@ -17324,6 +17449,8 @@ class DominoGame {
 
 
     async onNetworkDealEnd(data) {
+        this.onlineResultActive = true;
+        this.syncOpenRoomWaitingBanner(this.currentRoomState);
         this.gameActive = false;
         this.lastMoveRevealPending = false;
         this.clearTurnTimers();
@@ -17367,6 +17494,8 @@ class DominoGame {
     }
 
     async onNetworkRoundEnd(data) {
+        this.onlineResultActive = true;
+        this.syncOpenRoomWaitingBanner(this.currentRoomState);
         this.gameActive = false;
         this.lastMoveRevealPending = false;
         this.clearTurnTimers();

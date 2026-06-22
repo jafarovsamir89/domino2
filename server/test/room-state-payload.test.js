@@ -111,6 +111,7 @@ test("buildRoomStatePayload preserves room_state fields and currentPlayers logic
         roomId: "room-1",
         roomCode: "ABCD",
         roomVisibility: "open",
+        roomPhase: "playing",
         roomMode: "team",
         scoreMode: "team",
         stakeKey: "stake_500",
@@ -127,6 +128,8 @@ test("buildRoomStatePayload preserves room_state fields and currentPlayers logic
         totalPlayers: 4,
         isTeamMode: true,
         gameActive: true,
+        matchOver: false,
+        gameOverReason: "",
         seatSelectionRequired: false,
         hostName: "Host",
         players: [
@@ -190,10 +193,13 @@ test("buildRoomStatePayload uses connected human count when the game is inactive
     const payload = buildRoomStatePayload({ room, players: [] });
     assert.equal(payload.currentPlayers, 2);
     assert.equal(payload.humanPlayers, 2);
+    assert.equal(payload.roomPhase, "lobby");
     assert.equal(payload.stakeKey, "stake_200");
     assert.equal(payload.hostName, "Host");
     assert.equal(payload.seatSelectionRequired, true);
     assert.equal(payload.scoreMode, "solo");
+    assert.equal(payload.matchOver, false);
+    assert.equal(payload.gameOverReason, "");
     assert.deepEqual(payload.teamScores, []);
     assert.deepEqual(payload.teamRoundWins, []);
     assert.deepEqual(payload.teams, []);
