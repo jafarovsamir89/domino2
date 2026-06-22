@@ -1250,32 +1250,39 @@ export class Renderer {
         if (action) action.style.display = over ? '' : 'none';
 
         if (options?.timeoutForfeit) {
+            const isTimeoutLoser = Boolean(options.isTimeoutLoser);
+            const loserName = String(options.loserName || wn || '').trim() || wn;
+            const requiredStakeAmount = Math.max(0, Number(options.requiredStakeAmount || options.bankAmount || 0));
             if (title) {
-                title.textContent = this.app.t('timeout-forfeit-title') || `${wn} timed out`;
+                title.textContent = isTimeoutLoser
+                    ? (this.app.t('timeout-forfeit-title-loser') || `${wn} timed out`)
+                    : (this.app.format('timeout-forfeit-title-waiting', { player: loserName }) || `${loserName} timed out`);
             }
             if (details) {
                 details.innerHTML = '';
                 const baseSummary = document.createElement('div');
                 baseSummary.className = 'detail-row';
                 const baseLabel = document.createElement('span');
-                baseLabel.textContent = this.app.t('timeout-forfeit-desc-loser') || 'Timeout forfeit';
+                baseLabel.textContent = isTimeoutLoser
+                    ? (this.app.t('timeout-forfeit-desc-loser') || 'Timeout forfeit')
+                    : (this.app.t('timeout-forfeit-waiting-other') || 'Waiting for the player to continue');
                 const baseValue = document.createElement('span');
                 baseValue.className = 'detail-value';
-                baseValue.textContent = options.isTimeoutLoser
+                baseValue.textContent = isTimeoutLoser
                     ? (this.app.t('timeout-forfeit-desc-loser') || 'You lost the round by timeout')
-                    : (this.app.t('timeout-forfeit-desc-waiting') || 'Waiting for the player to continue');
+                    : (this.app.format('timeout-forfeit-desc-waiting', { player: loserName }) || 'Waiting for the player to continue');
                 baseSummary.appendChild(baseLabel);
                 baseSummary.appendChild(baseValue);
                 details.appendChild(baseSummary);
 
-                if (options.isTimeoutLoser && Number(options.bankAmount || 0) > 0) {
+                if (isTimeoutLoser && Number(requiredStakeAmount) > 0) {
                     const stakeRow = document.createElement('div');
                     stakeRow.className = 'detail-row';
                     const stakeLabel = document.createElement('span');
                     stakeLabel.textContent = this.app.t('summary-coins');
                     const stakeValue = document.createElement('span');
                     stakeValue.className = 'detail-value';
-                    stakeValue.textContent = `${this.app.t('timeout-forfeit-topup') || 'Top up'}: ${Math.max(0, Number(options.bankAmount || 0))}`;
+                    stakeValue.textContent = `${this.app.t('timeout-forfeit-topup') || 'Top up'}: ${requiredStakeAmount}`;
                     stakeRow.appendChild(stakeLabel);
                     stakeRow.appendChild(stakeValue);
                     details.appendChild(stakeRow);
@@ -1295,7 +1302,7 @@ export class Renderer {
 
                 const actionRow = document.createElement('div');
                 actionRow.className = 'game-over-actions';
-                if (options.isTimeoutLoser) {
+                if (isTimeoutLoser) {
                     const continueBtn = document.createElement('button');
                     continueBtn.className = 'btn btn-primary';
                     continueBtn.type = 'button';
@@ -1406,14 +1413,13 @@ export class Renderer {
     onTimeoutContinueResult(payload = {}) {
         const ok = Boolean(payload?.ok);
         if (this._timeoutForfeitContinueBtn) {
-            this._timeoutForfeitContinueBtn.disabled = false;
             if (ok) {
+                this._timeoutForfeitContinueBtn.disabled = true;
+                this._timeoutForfeitContinueBtn.textContent = this.app.t('timeout-forfeit-continue-in-progress') || 'Continuing...';
+            } else {
+                this._timeoutForfeitContinueBtn.disabled = false;
                 this._timeoutForfeitContinueBtn.textContent = this.app.t('timeout-forfeit-continue') || 'Continue';
             }
-        }
-        if (ok) {
-            this.clearTimeoutForfeitUi();
-            document.getElementById('round-end-screen')?.classList.remove('active');
         }
     }
 }

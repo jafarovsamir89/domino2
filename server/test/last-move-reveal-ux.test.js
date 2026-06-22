@@ -45,6 +45,7 @@ test("client mirrors the reveal delay and pause menu chrome in both copies", () 
         assert.equal(source.includes("this.delayLastMoveSettlement(() => this.endRound(pi, true)"), true);
         assert.equal(source.includes("this.delayLastMoveSettlement(()=>this.endDeal(pi,false)"), true);
         assert.equal(source.includes("this.delayLastMoveSettlement(()=>this.endDeal(this.findFishWinner(),true)"), true);
+        assert.equal(source.includes("onNetworkScorePopup(score)"), true);
         assert.equal(source.includes("setTimeout(() => this.endRound(pi, true), 800);"), false);
     }
 

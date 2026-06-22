@@ -430,7 +430,7 @@ class NetworkManager {
         });
 
         this.room.onMessage("score_popup", (score) => {
-            this.game.renderer.showScorePopup(score);
+            this.game.onNetworkScorePopup?.(score);
         });
 
         this.room.onMessage("deal_end", (data) => {

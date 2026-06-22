@@ -149,8 +149,10 @@ class DominoRoom extends Room {
         this.forfeitSettlementMade = false;
         this.identityBySessionId = new Map();
         this.lastRoundEconomySummary = null;
+        this.lastFinishInfo = null;
         this.timeoutForfeitPending = null;
         this.timeoutContinueTimer = null;
+        this.timeoutContinueInFlight = false;
         this.restoredFromSnapshot = false;
         this.matchFinished = false;
         this.pendingAdvanceKind = null;
@@ -1576,6 +1578,7 @@ class DominoRoom extends Room {
         this.clearNextDealTimer();
         this.clearTurnTimer();
         this.clearTimeoutForfeitState();
+        this.timeoutContinueInFlight = false;
         await this.pendingEconomySettlement.catch(() => {});
         this.matchRecorded = false;
         this.pendingAdvanceKind = null;
@@ -1584,6 +1587,7 @@ class DominoRoom extends Room {
         this.state.gameOverPlayerName = "";
         this.state.gameOverWinnerIndex = -1;
         this.state.gameOverSummaryJson = "";
+        this.lastFinishInfo = null;
         this.internalBoard = new Board();
         this.internalBoard.startAxis = this.boardStartAxis || 'horizontal';
         this.state.gameActive = false;
@@ -1815,6 +1819,7 @@ class DominoRoom extends Room {
             this.timeoutContinueTimer = null;
         }
         this.timeoutForfeitPending = null;
+        this.timeoutContinueInFlight = false;
     }
 
     scheduleLastMoveSettlement(callback, delay = LAST_MOVE_REVEAL_DELAY_MS) {
@@ -1937,7 +1942,7 @@ class DominoRoom extends Room {
         return reserveEconomyStakeForRoom(this);
     }
 
-    buildTimeoutForfeitPending({ loserSessionId, loserIndex, loserName, winnerIndex, economySummary, bankAmount } = {}) {
+    buildTimeoutForfeitPending({ loserSessionId, loserIndex, loserName, winnerIndex, economySummary, bankAmount, requiredStakeAmount } = {}) {
         const createdAt = Date.now();
         return {
             loserSessionId: String(loserSessionId || "").trim(),
@@ -1947,6 +1952,7 @@ class DominoRoom extends Room {
             createdAt,
             expiresAt: createdAt + TIMEOUT_CONTINUE_MS,
             stakeKey: this.currentDealStakeKey || this.currentStakeKey,
+            requiredStakeAmount: Math.max(0, Number(requiredStakeAmount || this.currentDealStakeAmount || 0)),
             bankAmount: Math.max(0, Number(bankAmount || this.currentDealBankAmount || 0)),
             settled: true,
             economy: economySummary || null
@@ -2005,6 +2011,7 @@ class DominoRoom extends Room {
         const loserSessionId = String(this.state.playerOrder?.[actualLoserIndex] || "").trim();
         const loserPlayer = loserSessionId ? this.state.players.get(loserSessionId) : null;
         const loserName = loserPlayer ? loserPlayer.name : "Player";
+        const requiredStakeAmount = Math.max(0, Number(this.currentDealStakeAmount || 0));
 
         this.clearTurnTimer();
         this.clearTurnAdvanceTimer();
@@ -2025,7 +2032,8 @@ class DominoRoom extends Room {
             loserName,
             winnerIndex: actualWinnerIndex,
             economySummary,
-            bankAmount: pendingBankAmount
+            bankAmount: pendingBankAmount,
+            requiredStakeAmount
         });
 
         let wins = 1;
@@ -2081,6 +2089,9 @@ class DominoRoom extends Room {
             timeoutLoserIndex: actualLoserIndex,
             timeoutLoserSessionId: loserSessionId,
             timeoutLoserName: loserName,
+            stakeKey: this.currentDealStakeKey || this.currentStakeKey,
+            requiredStakeAmount,
+            finishInfo: this.lastFinishInfo || null,
             canContinueSessionId: loserSessionId,
             continueExpiresAt: this.timeoutForfeitPending.expiresAt
         });
@@ -2121,33 +2132,60 @@ class DominoRoom extends Room {
             this.sendTimeoutContinueResult(client, { ok: false, reason: "forbidden", continueExpiresAt: pending.expiresAt, roomPhase: "timeout_result" });
             return false;
         }
+        if (this.timeoutContinueInFlight) {
+            this.sendTimeoutContinueResult(client, {
+                ok: false,
+                reason: "continue_in_progress",
+                continueExpiresAt: pending.expiresAt,
+                roomPhase: "timeout_result"
+            });
+            return false;
+        }
         if (Date.now() > pending.expiresAt) {
             this.sendTimeoutContinueResult(client, { ok: false, reason: "expired", continueExpiresAt: pending.expiresAt, roomPhase: "timeout_result" });
             void this.closeTimeoutForfeitRoom();
             return false;
         }
 
+        this.timeoutContinueInFlight = true;
         const originalMatchRound = Number(this.state.matchRound || 1);
         this.currentDealMatchId = `${this.roomId}:round:${originalMatchRound}`;
-        const reserveResult = await this.reserveEconomyStake();
-        if (!reserveResult?.ok) {
-            const reason = String(reserveResult?.reason || "").toLowerCase();
-            const isLowBalance = reason.includes("insufficient") || reason.includes("balance");
+        try {
+            const reserveResult = await this.reserveEconomyStake();
+            if (!reserveResult?.ok) {
+                const reason = String(reserveResult?.reason || "").toLowerCase();
+                const isLowBalance = reason.includes("insufficient") || reason.includes("balance");
+                this.sendTimeoutContinueResult(client, {
+                    ok: false,
+                    reason: isLowBalance ? "insufficient_balance" : "stake_unavailable",
+                    continueExpiresAt: pending.expiresAt,
+                    roomPhase: "timeout_result"
+                });
+                return false;
+            }
+
+            this.lastReservedMatchRound = originalMatchRound;
+            this.clearTimeoutForfeitTimer();
+            this.clearTimeoutForfeitState();
+            await this.startRound();
+            this.sendTimeoutContinueResult(client, { ok: true, continueExpiresAt: pending.expiresAt, roomPhase: "timeout_result" });
+            return true;
+        } catch (error) {
+            console.warn("[ROOM] Timeout continue failed:", error);
             this.sendTimeoutContinueResult(client, {
                 ok: false,
-                reason: isLowBalance ? "insufficient_balance" : "stake_unavailable",
+                reason: "continue_failed",
                 continueExpiresAt: pending.expiresAt,
                 roomPhase: "timeout_result"
             });
             return false;
+        } finally {
+            if (!this.timeoutForfeitPending) {
+                this.timeoutContinueInFlight = false;
+            } else {
+                this.timeoutContinueInFlight = false;
+            }
         }
-
-        this.lastReservedMatchRound = originalMatchRound;
-        this.clearTimeoutForfeitTimer();
-        this.clearTimeoutForfeitState();
-        this.sendTimeoutContinueResult(client, { ok: true, continueExpiresAt: pending.expiresAt, roomPhase: "timeout_result" });
-        await this.startRound();
-        return true;
     }
 
     scheduleBotTurn(delay = BOT_THINK_DELAY_MS) {
@@ -2367,6 +2405,7 @@ class DominoRoom extends Room {
             turnDeadlineAt: Number(this.state.turnDeadlineAt || 0),
             turnVersion: Number(this.state.turnVersion || 1),
             lastMoveRevealPending: Boolean(this.lastMoveRevealPending),
+            finishInfo: this.lastFinishInfo || null,
             matchOver: Boolean(this.state.matchOver),
             gameOverReason: String(this.state.gameOverReason || ""),
             gameOverPlayerName: String(this.state.gameOverPlayerName || ""),
@@ -2934,6 +2973,14 @@ class DominoRoom extends Room {
                 : this.internalBoard.isBlocked(this.hands, this.boneyard)
                     ? "fish"
                     : null;
+        this.lastFinishInfo = isFinalMove ? {
+            actorIndex: pi,
+            winnerIndex: finishKind === "fish" ? this.findFishWinner() : pi,
+            finishKind: finishKind || "tile",
+            tileCount: 1,
+            action: "play",
+            fish: finishKind === "fish"
+        } : null;
         this.bumpTurnVersion();
         this.broadcastGameDelta({
             action: "play",
@@ -2943,13 +2990,7 @@ class DominoRoom extends Room {
             scorePlayerIndex: scoreDelta > 0 ? pi : -1,
             isFinalMove,
             finishKind,
-            finishInfo: isFinalMove ? {
-                actorIndex: pi,
-                winnerIndex: finishKind === "fish" ? this.findFishWinner() : pi,
-                finishKind: finishKind || "tile",
-                tileCount: 1,
-                action: "play"
-            } : null
+            finishInfo: this.lastFinishInfo
         });
 
         if (this.instantWinEnabled && score >= IWIN) {
@@ -3082,6 +3123,14 @@ class DominoRoom extends Room {
         if (!isBot) {
             this.broadcast("msg", { key: "msg-player-gosha", values: { player: actorName }, time: 2000 });
         }
+        this.lastFinishInfo = isFinalMove ? {
+            actorIndex: pi,
+            winnerIndex: finishKind === "fish" ? this.findFishWinner() : pi,
+            finishKind: finishKind || "gosha",
+            tileCount: matches.length,
+            action: "gosha",
+            fish: finishKind === "fish"
+        } : null;
         this.bumpTurnVersion();
         this.broadcastGameDelta({
             action: "gosha",
@@ -3094,13 +3143,7 @@ class DominoRoom extends Room {
             scorePlayerIndex: scoreDelta > 0 ? pi : -1,
             isFinalMove,
             finishKind,
-            finishInfo: isFinalMove ? {
-                actorIndex: pi,
-                winnerIndex: finishKind === "fish" ? this.findFishWinner() : pi,
-                finishKind: finishKind || "gosha",
-                tileCount: matches.length,
-                action: "gosha"
-            } : null
+            finishInfo: this.lastFinishInfo
         });
 
         if (this.instantWinEnabled && score >= IWIN) {
@@ -3318,7 +3361,15 @@ class DominoRoom extends Room {
         }
 
         // Notify clients to show deal end screen
-        this.broadcast("deal_end", { winnerIndex: wi, fish, bonus, hands: this.hands });
+        const finishInfo = this.lastFinishInfo || {
+            actorIndex: wi,
+            winnerIndex: wi,
+            finishKind: fish ? "fish" : "tile",
+            tileCount: 1,
+            action: "play",
+            fish: Boolean(fish)
+        };
+        this.broadcast("deal_end", { winnerIndex: wi, fish, bonus, hands: this.hands, finishInfo });
         this.pendingAdvanceKind = "deal";
         this.state.deal++;
         this.syncState();
@@ -3378,6 +3429,14 @@ class DominoRoom extends Room {
             });
         }
 
+        const finishInfo = this.lastFinishInfo || {
+            actorIndex: wi,
+            winnerIndex: wi,
+            finishKind: isInstantWin ? "instant_win" : "tile",
+            tileCount: 1,
+            action: "play",
+            fish: false
+        };
         this.broadcast("round_end", {
             winnerIndex: wi,
             wins,
@@ -3388,7 +3447,8 @@ class DominoRoom extends Room {
             teamScores: Array.from(this.state.teamScores),
             teamRoundWins: Array.from(this.state.teamRoundWins),
             players: playerData,
-            economy: economySummary
+            economy: economySummary,
+            finishInfo
         });
 
         if (isMatchOver) {

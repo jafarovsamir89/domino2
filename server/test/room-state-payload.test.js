@@ -117,6 +117,7 @@ test("buildRoomStatePayload preserves room_state fields and currentPlayers logic
         stakeKey: "stake_500",
         stakeAmount: 500,
         bankAmount: 1000,
+        requiredStakeAmount: 500,
         turnDeadlineAt: 1234567890,
         turnDurationMs: 30000,
         serverNow: 1111111111111,
@@ -134,6 +135,7 @@ test("buildRoomStatePayload preserves room_state fields and currentPlayers logic
         timeoutLoserIndex: -1,
         timeoutLoserName: "",
         continueExpiresAt: 0,
+        finishInfo: null,
         seatSelectionRequired: false,
         hostName: "Host",
         players: [
@@ -218,10 +220,12 @@ test("buildRoomStatePayload exposes timeout forfeit state", () => {
         currentStakeKey: "stake_200",
         currentDealStakeAmount: 200,
         currentDealBankAmount: 800,
+        lastFinishInfo: { actorIndex: 1, winnerIndex: 1, finishKind: "tile", tileCount: 1 },
         timeoutForfeitPending: {
             loserIndex: 1,
             loserName: "Alice",
-            expiresAt: 1234567900
+            expiresAt: 1234567900,
+            stakeKey: "stake_200"
         },
         state: {
             gameActive: false,
@@ -250,4 +254,6 @@ test("buildRoomStatePayload exposes timeout forfeit state", () => {
     assert.equal(payload.timeoutLoserIndex, 1);
     assert.equal(payload.timeoutLoserName, "Alice");
     assert.equal(payload.continueExpiresAt, 1234567900);
+    assert.equal(payload.requiredStakeAmount, 200);
+    assert.deepEqual(payload.finishInfo, { actorIndex: 1, winnerIndex: 1, finishKind: "tile", tileCount: 1 });
 });

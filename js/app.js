@@ -469,6 +469,7 @@ class DominoGame {
         this._boardAnimationActive = null;
         this.finalMoveVisualPromise = Promise.resolve();
         this.finalMoveVisualActive = false;
+        this.lastFinishInfo = null;
         this._pendingOptimisticPlayTileId = '';
         this._pendingOptimisticPlayActionId = '';
         this._lastMoveRevealTimeout = null;
@@ -16750,6 +16751,16 @@ class DominoGame {
         }
     }
 
+    onNetworkScorePopup(score) {
+        const value = Number(score || 0);
+        if (!(value > 0)) return;
+        if (this.finalMoveVisualActive || this.onlineResultActive || this.lastMoveRevealPending) {
+            this.enqueueFinalMoveScorePopup(value);
+            return;
+        }
+        this.showScoreFeedback(value);
+    }
+
     waitForFinalMoveVisualSettled() {
         return this.finalMoveVisualPromise || Promise.resolve();
     }
@@ -17049,8 +17060,16 @@ class DominoGame {
         this.deal = Number(payload?.deal || 1);
         this.gameActive = Boolean(payload?.gameActive);
         this.matchOver = Boolean(payload?.matchOver);
+        this.lastFinishInfo = payload?.finishInfo || this.lastFinishInfo || null;
         if (this.gameActive) {
             this.resetOnlineResultFlowState();
+            this.roundOver = false;
+            this.matchOver = false;
+            this.pendingReconnectResolution = false;
+            this.lastMoveRevealPending = false;
+            this.clearRoundStage();
+            document.getElementById('round-end-screen')?.classList.remove('active');
+            document.getElementById('game-over-screen')?.classList.remove('active');
         }
         this.onlineStakeKey = payload?.stakeKey || this.onlineStakeKey;
         this.onlineRoundBankAmount = Math.max(0, Number(payload?.bankAmount || 0));
@@ -17374,6 +17393,7 @@ class DominoGame {
         if (state.matchOver !== undefined && state.matchOver !== null) {
             this.matchOver = Boolean(state.matchOver);
         }
+        this.lastFinishInfo = state?.finishInfo || this.lastFinishInfo || null;
         this.onlineStakeKey = state?.stakeKey || this.onlineStakeKey;
         this.onlineRoundBankAmount = Math.max(0, Number(state?.bankAmount || 0));
         if (state.turnVersion !== undefined && state.turnVersion !== null) {
@@ -17431,6 +17451,13 @@ class DominoGame {
 
         // Hide start screen if we just started
         if (this.gameActive) {
+            this.resetOnlineResultFlowState();
+            this.roundOver = false;
+            this.matchOver = false;
+            this.lastMoveRevealPending = false;
+            this.clearRoundStage();
+            document.getElementById('round-end-screen')?.classList.remove('active');
+            document.getElementById('game-over-screen')?.classList.remove('active');
             this.showStartModal(null);
             this.hideOpenRoomsModal();
             if (document.getElementById('start-screen').classList.contains('active')) {
@@ -17597,17 +17624,20 @@ class DominoGame {
         } else {
             const winnerLabel = isTeamMode ? this.getTeamDisplayName(winnerTeamIndex) : this.playerNames[wi];
             const isTimeoutForfeit = String(data?.finishKind || '').trim() === 'timeout_forfeit' || String(data?.forfeitReason || '').trim() === 'turn_timeout';
-            const isTimeoutLoser = String(data?.timeoutLoserSessionId || '').trim() === String(this.network?.room?.sessionId || '').trim();
+            const timeoutLoserSessionId = String(data?.timeoutLoserSessionId || '').trim();
+            const mySessionId = String(this.network?.room?.sessionId || '').trim();
+            const isTimeoutLoser = Boolean(timeoutLoserSessionId && mySessionId && timeoutLoserSessionId === mySessionId);
             const currentBalance = Number(this.getCurrentWalletBalance?.() || 0);
-            const requiredBalance = Math.max(0, Number(data?.bankAmount || this.onlineRoundBankAmount || 0));
+            const requiredStakeAmount = Math.max(0, Number(data?.requiredStakeAmount || data?.stakeAmount || data?.bankAmount || this.onlineRoundBankAmount || 0));
             this.renderer.renderRoundEnd(winnerLabel, displayEntities, data.wins, data.matchRound, false, isTimeoutForfeit ? {
                 timeoutForfeit: true,
                 isTimeoutLoser,
                 continueExpiresAt: Number(data?.continueExpiresAt || 0),
                 loserName: String(data?.timeoutLoserName || '').trim(),
-                bankAmount: requiredBalance,
+                stakeKey: String(data?.stakeKey || this.onlineStakeKey || '').trim(),
+                requiredStakeAmount,
                 currentBalance,
-                hasInsufficientBalance: currentBalance < requiredBalance,
+                hasInsufficientBalance: currentBalance < requiredStakeAmount,
                 onContinue: async () => {
                     this.network.room?.send?.('timeout_continue');
                 },
@@ -17628,15 +17658,24 @@ class DominoGame {
         const ok = Boolean(payload?.ok);
         this.renderer?.onTimeoutContinueResult?.(payload);
         if (ok) {
-            this.resetOnlineResultFlowState();
-            this.clearRoundStage();
-            document.getElementById('round-end-screen')?.classList.remove('active');
             return;
         }
 
         const reason = String(payload?.reason || '').trim();
         if (reason === 'insufficient_balance') {
             this.renderer.showMessage(this.t('timeout-forfeit-insufficient-balance') || 'Not enough coins', 2200);
+            return;
+        }
+        if (reason === 'continue_in_progress') {
+            this.renderer.showMessage(this.t('timeout-forfeit-continue-in-progress') || 'Continue already in progress', 1800);
+            return;
+        }
+        if (reason === 'stake_unavailable') {
+            this.renderer.showMessage(this.t('timeout-forfeit-stake-unavailable') || 'Stake is unavailable right now', 1800);
+            return;
+        }
+        if (reason === 'room_closed') {
+            this.renderer.showMessage(this.t('timeout-forfeit-room-closed') || 'Room closed', 1800);
             return;
         }
         if (reason) {

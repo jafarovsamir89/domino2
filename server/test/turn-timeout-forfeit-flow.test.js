@@ -50,6 +50,7 @@ test("endRoundByTimeoutForfeit broadcasts timeout forfeit state and arms continu
     assert.equal(roundEnd?.forfeitReason, "turn_timeout");
     assert.equal(roundEnd?.timeoutLoserSessionId, "loser-session");
     assert.equal(roundEnd?.canContinueSessionId, "loser-session");
+    assert.equal(roundEnd?.requiredStakeAmount, 200);
     assert.ok(roundEnd?.continueExpiresAt > Date.now());
     assert.ok(events.some(([kind]) => kind === "room_state"));
 
@@ -77,15 +78,21 @@ test("handleTimeoutContinue only accepts the timeout loser and starts the next r
         createdAt: Date.now(),
         expiresAt: Date.now() + 5000,
         stakeKey: "stake_200",
+        requiredStakeAmount: 200,
         bankAmount: 800,
         settled: true
     };
+    let resolveStartRound;
+    const startRoundStarted = new Promise((resolve) => {
+        resolveStartRound = resolve;
+    });
     room.reserveEconomyStake = async () => {
         reserveCalls += 1;
         return { ok: true, reserved: 200, stakeKey: "stake_200", bankAmount: 800 };
     };
     room.startRound = async () => {
         startRoundCalls += 1;
+        await startRoundStarted;
     };
     room.clearTimeoutForfeitTimer = () => {};
     room.clearTimeoutForfeitState = () => {
@@ -102,7 +109,15 @@ test("handleTimeoutContinue only accepts the timeout loser and starts the next r
     assert.equal(messages.find(([kind]) => kind === "timeout_continue_result")?.[1]?.reason, "forbidden");
 
     messages.length = 0;
-    const accepted = await room.handleTimeoutContinue(loserClient);
+    const acceptedPromise = room.handleTimeoutContinue(loserClient);
+    await new Promise((resolve) => setImmediate(resolve));
+    assert.equal(messages.find(([kind]) => kind === "timeout_continue_result"), undefined);
+    const duplicate = await room.handleTimeoutContinue(loserClient);
+    assert.equal(duplicate, false);
+    const duplicatePayload = messages.find(([kind]) => kind === "timeout_continue_result")?.[1];
+    assert.equal(duplicatePayload?.reason, "continue_in_progress");
+    resolveStartRound();
+    const accepted = await acceptedPromise;
     assert.equal(accepted, true);
     assert.equal(reserveCalls, 1);
     assert.equal(startRoundCalls, 1);
