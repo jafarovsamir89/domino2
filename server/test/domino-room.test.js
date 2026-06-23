@@ -731,7 +731,7 @@ test("addScore updates team totals and emits a game delta", () => {
     assert.equal(result, 10);
     assert.equal(room.state.players.get("host").score, 10);
     assert.equal(room.state.teamScores[0], 10);
-    assert.deepEqual(deltas, [{ action: "score", actorIndex: 0, scoreDelta: 10, scorePlayerIndex: 0 }]);
+    assert.deepEqual(deltas, [{ action: "score", actorIndex: 0, scoreDelta: 10, scorePlayerIndex: 0, scoreSource: "table" }]);
     assert.ok(broadcasts.some(([kind]) => kind === "score_popup"));
 });
 
@@ -781,7 +781,8 @@ test("performPlay broadcasts the board delta before any score popup and includes
             actorIndex: delta?.actorIndex,
             boardDelta: delta?.boardDelta,
             scoreDelta: delta?.scoreDelta,
-            scorePlayerIndex: delta?.scorePlayerIndex
+            scorePlayerIndex: delta?.scorePlayerIndex,
+            scoreSource: delta?.scoreSource
         },
         {
         action: "play",
@@ -792,9 +793,69 @@ test("performPlay broadcasts the board delta before any score popup and includes
             openEndIndex: 0
         },
         scoreDelta: 10,
-        scorePlayerIndex: 0
+        scorePlayerIndex: 0,
+        scoreSource: "table"
         }
     );
+    assert.equal(delta?.finishInfo, null);
+});
+
+test("endDeal sends hand bonus only through deal_end and keeps it out of score popups", () => {
+    const originalSndWin = global.sndWin;
+    const room = Object.create(DominoRoom.prototype);
+    const events = [];
+    global.sndWin = () => {};
+    room.state = {
+        gameActive: true,
+        currentPlayerIndex: 0,
+        turnVersion: 7,
+        isTeamMode: false,
+        playerOrder: ["session-1", "session-2"],
+        players: new Map([
+            ["session-1", { name: "Alice", score: 0, roundWins: 0, handCount: 1 }],
+            ["session-2", { name: "Bob", score: 0, roundWins: 0, handCount: 1 }]
+        ]),
+        teamScores: [0, 0],
+        teamRoundWins: [0, 0]
+    };
+    room.playerNames = ["Alice", "Bob"];
+    room.playerCount = 2;
+    room.totalPlayers = 2;
+    room.deal = 1;
+    room.hands = [[new Tile(6, 1)], [new Tile(6, 6)]];
+    room.boneyard = [];
+    room.lastFinishInfo = {
+        actorIndex: 0,
+        winnerIndex: 0,
+        finishKind: "tile",
+        tileCount: 1,
+        action: "play",
+        fish: false,
+        tableScoreDelta: 10,
+        handBonus: 0
+    };
+    room.broadcast = (event, payload) => events.push([event, payload]);
+    room.renderer = { renderDealEnd: () => {} };
+    room.clients = [];
+    room.clearTurnTimer = () => {};
+    room.persistGameResumeSnapshot = () => {};
+    room.syncLocalPresence = () => {};
+    room.syncState = () => {};
+    room.scheduleNextDeal = () => {};
+
+    try {
+        room.endDeal(0, false);
+    } finally {
+        global.sndWin = originalSndWin;
+    }
+
+    assert.equal(events.some(([kind]) => kind === "score_popup"), false);
+    const dealEnd = events.find(([kind]) => kind === "deal_end")?.[1];
+    assert.equal(dealEnd?.bonus > 0, true);
+    assert.equal(dealEnd?.bonusSource, "hand_bonus");
+    assert.equal(dealEnd?.tableScoreDelta, 10);
+    assert.equal(dealEnd?.finishInfo?.handBonus, dealEnd?.bonus);
+    assert.equal(dealEnd?.finishInfo?.bonusSource, "hand_bonus");
 });
 
 test("performDraw broadcasts a draw delta and keeps public hand counts in sync", () => {

@@ -470,6 +470,10 @@ class DominoGame {
         this.finalMoveVisualPromise = Promise.resolve();
         this.finalMoveVisualActive = false;
         this.lastFinishInfo = null;
+        this._lastFinalMoveTileId = '';
+        this._lastFinalMoveVisualSource = '';
+        this._lastFinalMoveTableScoreDelta = 0;
+        this._lastFinalMoveHandBonus = 0;
         this._pendingOptimisticPlayTileId = '';
         this._pendingOptimisticPlayActionId = '';
         this._lastMoveRevealTimeout = null;
@@ -16752,9 +16756,15 @@ class DominoGame {
     }
 
     onNetworkScorePopup(score) {
-        const value = Number(score || 0);
+        const payload = (score && typeof score === 'object') ? score : { score };
+        const value = Number(payload?.score || 0);
+        const scoreSource = String(payload?.scoreSource || payload?.source || '').trim();
         if (!(value > 0)) return;
+        if (scoreSource === 'hand_bonus' || scoreSource === 'deal_bonus') return;
         if (this.finalMoveVisualActive || this.onlineResultActive || this.lastMoveRevealPending) {
+            if (!scoreSource && this.finalMoveVisualActive && this._lastFinalMoveTableScoreDelta > 0 && value !== this._lastFinalMoveTableScoreDelta) {
+                return;
+            }
             this.enqueueFinalMoveScorePopup(value);
             return;
         }
@@ -16762,7 +16772,7 @@ class DominoGame {
     }
 
     waitForFinalMoveVisualSettled() {
-        return this.finalMoveVisualPromise || Promise.resolve();
+        return Promise.resolve(this.finalMoveVisualPromise || Promise.resolve());
     }
 
     showScoreFeedback(score, options = {}) {
@@ -17260,21 +17270,38 @@ class DominoGame {
             : (isOwnOptimisticPlay ? (this._boardAnimationPromise || Promise.resolve()) : Promise.resolve());
 
         if (isFinalMovePayload) {
-            this.finalMoveVisualActive = true;
-            this.pendingFinalScorePopups = [];
-            if (scoreDelta > 0) {
-                this.pendingFinalScorePopups.push(scoreDelta);
+            const finalTileId = payloadTileId || String(this.renderer?._pendingBoardTileTravel?.tileId || '');
+            const finalScoreSource = String(payload?.scoreSource || (scoreDelta > 0 ? 'table' : '')).trim();
+            const finalVisualSource = isOwnOptimisticPlay
+                ? 'optimistic-confirmed'
+                : (boardChanged ? 'server-delta' : 'server-delta-no-optimistic');
+            this._lastFinalMoveTileId = finalTileId;
+            this._lastFinalMoveVisualSource = finalVisualSource;
+            this._lastFinalMoveTableScoreDelta = scoreDelta > 0 && finalScoreSource !== 'hand_bonus' ? scoreDelta : 0;
+            this._lastFinalMoveHandBonus = Number(payload?.finishInfo?.handBonus || payload?.bonus || 0);
+            if (finalTileId) {
+                this.renderer?._animatedBoardTileIds?.add?.(finalTileId);
+                if (this.renderer) {
+                    this.renderer._lastAnimatedBoardTileId = finalTileId;
+                }
             }
+            this.finalMoveVisualActive = true;
             this.finalMoveVisualPromise = Promise.resolve(animationPromise)
                 .catch(() => {})
                 .then(async () => {
-                    if (scoreDelta > 0) {
-                        this.flushPendingFinalMoveScorePopups();
-                        await new Promise((resolve) => setTimeout(resolve, 1000));
+                    if (scoreDelta > 0 && finalScoreSource !== 'hand_bonus') {
+                        this.showScoreFeedback(scoreDelta, { source: finalScoreSource || 'table' });
+                        await new Promise((resolve) => setTimeout(resolve, 450));
+                    } else {
+                        await new Promise((resolve) => setTimeout(resolve, 650));
                     }
                 })
                 .finally(() => {
                     this.finalMoveVisualActive = false;
+                    if (isOwnOptimisticPlay) {
+                        this._pendingOptimisticPlayTileId = '';
+                        this._pendingOptimisticPlayActionId = '';
+                    }
                     this.flushPendingFinalMoveScorePopups();
                 });
         } else {
@@ -17296,11 +17323,11 @@ class DominoGame {
                     infoChanged: true
                 });
             });
-        } else if (scoreDelta > 0) {
+        } else if (!isFinalMovePayload && scoreDelta > 0 && String(payload?.scoreSource || '').trim() !== 'hand_bonus') {
             this.showScoreFeedback(scoreDelta);
         }
 
-        if (isOwnOptimisticPlay) {
+        if (isOwnOptimisticPlay && !isFinalMovePayload) {
             this._pendingOptimisticPlayTileId = '';
             this._pendingOptimisticPlayActionId = '';
         }

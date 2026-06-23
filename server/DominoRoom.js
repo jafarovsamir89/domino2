@@ -2483,6 +2483,7 @@ class DominoRoom extends Room {
             actorIndex: Number.isInteger(Number(base.actorIndex)) ? Number(base.actorIndex) : -1,
             boardDelta: base.boardDelta || null,
             scoreDelta: Number(base.scoreDelta || 0),
+            scoreSource: String(base.scoreSource || "").trim() || null,
             scorePlayerIndex: Number.isInteger(Number(base.scorePlayerIndex)) ? Number(base.scorePlayerIndex) : -1,
             isFinalMove: Boolean(base.isFinalMove),
             finishKind: String(base.finishKind || "").trim() || null,
@@ -2979,7 +2980,9 @@ class DominoRoom extends Room {
             finishKind: finishKind || "tile",
             tileCount: 1,
             action: "play",
-            fish: finishKind === "fish"
+            fish: finishKind === "fish",
+            tableScoreDelta: scoreDelta,
+            handBonus: 0
         } : null;
         this.bumpTurnVersion();
         this.broadcastGameDelta({
@@ -2987,6 +2990,7 @@ class DominoRoom extends Room {
             actorIndex: pi,
             boardDelta,
             scoreDelta,
+            scoreSource: "table",
             scorePlayerIndex: scoreDelta > 0 ? pi : -1,
             isFinalMove,
             finishKind,
@@ -3129,7 +3133,9 @@ class DominoRoom extends Room {
             finishKind: finishKind || "gosha",
             tileCount: matches.length,
             action: "gosha",
-            fish: finishKind === "fish"
+            fish: finishKind === "fish",
+            tableScoreDelta: scoreDelta,
+            handBonus: 0
         } : null;
         this.bumpTurnVersion();
         this.broadcastGameDelta({
@@ -3140,6 +3146,7 @@ class DominoRoom extends Room {
                 placements
             },
             scoreDelta,
+            scoreSource: "table",
             scorePlayerIndex: scoreDelta > 0 ? pi : -1,
             isFinalMove,
             finishKind,
@@ -3270,7 +3277,7 @@ class DominoRoom extends Room {
         return score;
     }
 
-    addScore(pi, score, { broadcast = true } = {}) {
+    addScore(pi, score, { broadcast = true, scoreSource = "table" } = {}) {
         const applied = this.applyScore(pi, score);
         if (!applied) return 0;
 
@@ -3279,13 +3286,18 @@ class DominoRoom extends Room {
             const player = this.state.players.get(sessionId);
             const playerName = player ? player.name : "Player";
             this.broadcast("sound", "score");
-            this.broadcast("score_popup", score);
+            this.broadcast("score_popup", {
+                score,
+                scoreSource,
+                actorIndex: pi
+            });
             this.broadcast("msg", { text: `${playerName} +${score}!`, time: 2000 });
             this.broadcastGameDelta({
                 action: "score",
                 actorIndex: pi,
                 scoreDelta: score,
-                scorePlayerIndex: pi
+                scorePlayerIndex: pi,
+                scoreSource
             });
         }
 
@@ -3334,14 +3346,14 @@ class DominoRoom extends Room {
             if (fish) for (const i of teamMembers) os -= handPoints(this.hands[i] || []);
             const currentScore = this.state.teamScores[wt] || 0;
             bonus = currentScore > 300 ? 0 : roundTo5(Math.max(0, os));
-            if (bonus > 0) bonus = this.addScore(wi, bonus, { broadcast: false });
+            if (bonus > 0) bonus = this.addScore(wi, bonus, { broadcast: false, scoreSource: "hand_bonus" });
         } else {
             let os = 0;
             for (let i = 0; i < this.totalPlayers; i++) if (i !== wi) os += handPoints(this.hands[i]);
             if (fish) os -= handPoints(this.hands[wi]);
             const currentScore = this.state.players.get(this.state.playerOrder[wi])?.score || 0;
             bonus = currentScore > 300 ? 0 : roundTo5(Math.max(0, os));
-            if (bonus > 0) bonus = this.addScore(wi, bonus, { broadcast: false });
+            if (bonus > 0) bonus = this.addScore(wi, bonus, { broadcast: false, scoreSource: "hand_bonus" });
         }
 
         this.broadcast("sound", "win");
@@ -3361,15 +3373,32 @@ class DominoRoom extends Room {
         }
 
         // Notify clients to show deal end screen
-        const finishInfo = this.lastFinishInfo || {
-            actorIndex: wi,
-            winnerIndex: wi,
-            finishKind: fish ? "fish" : "tile",
-            tileCount: 1,
-            action: "play",
-            fish: Boolean(fish)
+        const finishInfo = {
+            ...(this.lastFinishInfo || {
+                actorIndex: wi,
+                winnerIndex: wi,
+                finishKind: fish ? "fish" : "tile",
+                tileCount: 1,
+                action: "play",
+                fish: Boolean(fish),
+                tableScoreDelta: 0,
+                handBonus: 0
+            }),
+            handBonus: bonus,
+            bonusSource: "hand_bonus"
         };
-        this.broadcast("deal_end", { winnerIndex: wi, fish, bonus, hands: this.hands, finishInfo });
+        if (typeof finishInfo.tableScoreDelta !== "number") {
+            finishInfo.tableScoreDelta = 0;
+        }
+        this.broadcast("deal_end", {
+            winnerIndex: wi,
+            fish,
+            bonus,
+            hands: this.hands,
+            finishInfo,
+            bonusSource: "hand_bonus",
+            tableScoreDelta: Number(finishInfo.tableScoreDelta || 0)
+        });
         this.pendingAdvanceKind = "deal";
         this.state.deal++;
         this.syncState();

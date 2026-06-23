@@ -843,6 +843,8 @@ export class Renderer {
         const travelLayer = document.getElementById('game-screen') || document.body;
         const targetRect = targetEl.getBoundingClientRect();
         const clone = this.createTravelClone(sourceNode || targetEl);
+        const isFinalMoveTile = String(this.app?._lastFinalMoveTileId || '') === String(tileId || '')
+            && Boolean(this.app?._lastFinalMoveVisualSource);
         const sourceCenterX = sourceRect.left + sourceRect.width / 2;
         const sourceCenterY = sourceRect.top + sourceRect.height / 2;
         const targetCenterX = targetRect.left + targetRect.width / 2;
@@ -871,18 +873,24 @@ export class Renderer {
         gsap.set(clone, { x: 0, y: 0, scale: 1, rotation: 0, force3D: true });
         travelLayer.appendChild(clone);
 
-        targetEl.style.visibility = 'hidden';
+        if (!isFinalMoveTile) {
+            targetEl.style.visibility = 'hidden';
+        }
 
         return new Promise((resolve) => {
             const timeline = gsap.timeline({
                 onComplete: () => {
-                    this.revealBoardTile(tileId);
+                    if (!isFinalMoveTile) {
+                        this.revealBoardTile(tileId);
+                    }
                     clone.remove();
                     this._activeTileTravel = null;
                     resolve();
                 },
                 onInterrupt: () => {
-                    this.revealBoardTile(tileId);
+                    if (!isFinalMoveTile) {
+                        this.revealBoardTile(tileId);
+                    }
                     clone.remove();
                     this._activeTileTravel = null;
                     resolve();

@@ -31,6 +31,9 @@ test("server delays last-move settlement and blocks new actions during reveal", 
     assert.equal(source.includes("this.endDeal(this.findFishWinner(), true);\n            return true;"), false);
     assert.equal(source.includes("+ 1500"), false);
     assert.equal(source.includes("this.addScore(wi, bonus, { broadcast: false })"), true);
+    assert.equal(source.includes("scoreSource: \"table\""), true);
+    assert.equal(source.includes("bonusSource: \"hand_bonus\""), true);
+    assert.equal(source.includes("tableScoreDelta"), true);
 });
 
 test("client mirrors the reveal delay and pause menu chrome in both copies", () => {
@@ -49,6 +52,9 @@ test("client mirrors the reveal delay and pause menu chrome in both copies", () 
         assert.equal(source.includes("this.delayLastMoveSettlement(()=>this.endDeal(this.findFishWinner(),true)"), true);
         assert.equal(source.includes("onNetworkScorePopup(score)"), true);
         assert.equal(source.includes("setTimeout(() => this.endRound(pi, true), 800);"), false);
+        assert.equal(source.includes("_lastFinalMoveTileId"), true);
+        assert.equal(source.includes("_lastFinalMoveVisualSource"), true);
+        assert.equal(source.includes("_lastFinalMoveTableScoreDelta"), true);
     }
 
     for (const source of [htmlSource, webHtmlSource]) {
