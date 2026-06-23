@@ -475,6 +475,8 @@ class DominoGame {
         this._lastFinalMoveTableScoreDelta = 0;
         this._lastFinalMoveHandBonus = 0;
         this._pendingPostFinalSchemaState = null;
+        this._applyingPostFinalSchemaState = false;
+        this._boardAnimationPromiseByTileId = new Map();
         this._pendingOptimisticPlayTileId = '';
         this._pendingOptimisticPlayActionId = '';
         this._lastMoveRevealTimeout = null;
@@ -13065,6 +13067,7 @@ class DominoGame {
         this.finalMoveVisualPromise = Promise.resolve();
         this.pendingFinalScorePopups = [];
         this._pendingPostFinalSchemaState = null;
+        this._applyingPostFinalSchemaState = false;
     }
 
     syncOpenRoomWaitingBanner(roomState = this.currentRoomState) {
@@ -14453,6 +14456,7 @@ class DominoGame {
         this._pendingOptimisticPlayActionId = '';
         this._boardAnimationActive = null;
         this._boardAnimationPromise = Promise.resolve();
+        this._boardAnimationPromiseByTileId.clear();
         this.selectedTileIndex = pending.snapshot.selectedTileIndex;
         this.validMoves = pending.snapshot.validMoves;
         this.goshaCombo = pending.snapshot.goshaCombo;
@@ -14618,6 +14622,7 @@ class DominoGame {
                     });
                 });
             });
+            this._boardAnimationPromiseByTileId.set(String(tile.id), this._boardAnimationPromise);
         }
 
         this.queuePendingOnlineAction({
@@ -16791,12 +16796,13 @@ class DominoGame {
         return Boolean(
             state
             && state.gameActive === false
-            && (this.finalMoveVisualActive || this.lastMoveRevealPending || this.onlineResultActive)
+            && !this._applyingPostFinalSchemaState
+            && (this.finalMoveVisualActive || this.lastMoveRevealPending)
         );
     }
 
     queuePostFinalSchemaState(state, source = 'schema') {
-        this._pendingPostFinalSchemaState = state;
+        this._pendingPostFinalSchemaState = { state, source };
         debugLog('[FinalMove] deferring schema state until final visual settles', {
             source,
             gameActive: Boolean(state?.gameActive),
@@ -16804,6 +16810,23 @@ class DominoGame {
             lastMoveRevealPending: this.lastMoveRevealPending,
             onlineResultActive: this.onlineResultActive
         });
+    }
+
+    flushPendingPostFinalSchemaState() {
+        const pending = this._pendingPostFinalSchemaState;
+        if (!pending) return false;
+        this._pendingPostFinalSchemaState = null;
+        this._applyingPostFinalSchemaState = true;
+        try {
+            if (pending.source === 'full_state') {
+                this.onNetworkFullState(pending.state);
+            } else {
+                this.onNetworkStateUpdate(pending.state);
+            }
+        } finally {
+            this._applyingPostFinalSchemaState = false;
+        }
+        return true;
     }
 
     showScoreFeedback(score, options = {}) {
@@ -17297,9 +17320,9 @@ class DominoGame {
         this.renderRealtimeGameDeltaView(renderFlags);
 
         const optimisticAnimationPromise = isOwnOptimisticPlay
-            ? (this._boardAnimationActive && String(this._boardAnimationActive.tileId || '') === payloadTileId
-                ? this._boardAnimationPromise
-                : null)
+            ? (this._boardAnimationPromiseByTileId.get(payloadTileId)
+                || this._boardAnimationPromise
+                || null)
             : null;
         const animationPromise = isBoardAnimationAction
             ? (this.renderer?._pendingBoardTileTravel?.tileId
@@ -17362,11 +17385,17 @@ class DominoGame {
                     if (isOwnOptimisticPlay) {
                         this._pendingOptimisticPlayTileId = '';
                         this._pendingOptimisticPlayActionId = '';
+                        if (payloadTileId) {
+                            this._boardAnimationPromiseByTileId.delete(payloadTileId);
+                        }
                     }
                     this.flushPendingFinalMoveScorePopups();
                 });
         } else {
             this.finalMoveVisualActive = false;
+            if (isOwnOptimisticPlay && payloadTileId) {
+                this._boardAnimationPromiseByTileId.delete(payloadTileId);
+            }
             this.finalMoveVisualPromise = Promise.resolve();
         }
 
@@ -17391,6 +17420,9 @@ class DominoGame {
         if (isOwnOptimisticPlay && !isFinalMovePayload) {
             this._pendingOptimisticPlayTileId = '';
             this._pendingOptimisticPlayActionId = '';
+            if (payloadTileId) {
+                this._boardAnimationPromiseByTileId.delete(payloadTileId);
+            }
         }
     }
 
@@ -17628,15 +17660,15 @@ class DominoGame {
     async onNetworkDealEnd(data) {
         this.onlineResultActive = true;
         this.syncOpenRoomWaitingBanner(this.currentRoomState);
-        this.clearTurnTimers();
         debugLog('[DealEnd]', {
             bonus: data?.bonus,
             bonusSource: data?.bonusSource,
             tableScoreDelta: data?.tableScoreDelta,
             waitingForFinalMove: Boolean(this.finalMoveVisualPromise)
         });
+        this.clearTurnTimers();
         await this.waitForFinalMoveVisualSettled();
-        this._pendingPostFinalSchemaState = null;
+        this.flushPendingPostFinalSchemaState();
         this.gameActive = false;
         this.lastMoveRevealPending = false;
         // Reconstruct all hands to show them at the end

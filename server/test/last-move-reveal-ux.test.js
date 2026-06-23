@@ -7,6 +7,16 @@ function read(relativePath) {
     return fs.readFileSync(path.join(__dirname, "..", "..", relativePath), "utf8");
 }
 
+function assertOrder(source, tokens, label) {
+    let lastIndex = -1;
+    for (const token of tokens) {
+        const index = source.indexOf(token);
+        assert.notEqual(index, -1, `${label}: missing token ${token}`);
+        assert.ok(index > lastIndex, `${label}: token out of order ${token}`);
+        lastIndex = index;
+    }
+}
+
 test("server delays last-move settlement and blocks new actions during reveal", () => {
     const source = read("server/DominoRoom.js");
 
@@ -48,8 +58,11 @@ test("client mirrors the reveal delay and pause menu chrome in both copies", () 
         assert.equal(source.includes("const LAST_MOVE_REVEAL_DELAY_MS = 1200;"), true);
         assert.equal(source.includes("delayLastMoveSettlement(callback, delay = LAST_MOVE_REVEAL_DELAY_MS, finalInfo = null)"), true);
         assert.equal(source.includes("this._pendingPostFinalSchemaState = null;"), true);
+        assert.equal(source.includes("this._pendingPostFinalSchemaState = { state, source };"), true);
+        assert.equal(source.includes("flushPendingPostFinalSchemaState()"), true);
         assert.equal(source.includes("shouldDeferPostFinalSchemaState(state)"), true);
         assert.equal(source.includes("queuePostFinalSchemaState(state, source = 'schema')"), true);
+        assert.equal(source.includes("_boardAnimationPromiseByTileId"), true);
         assert.equal(source.includes("requestAnimationFrame(() => {"), true);
         assert.equal(source.includes("this._boardAnimationPromise = new Promise((resolve) => {"), true);
         assert.equal(source.includes("await this.waitForFinalMoveVisualSettled();"), true);
@@ -62,7 +75,18 @@ test("client mirrors the reveal delay and pause menu chrome in both copies", () 
         assert.equal(source.includes("_lastFinalMoveVisualSource"), true);
         assert.equal(source.includes("_lastFinalMoveTableScoreDelta"), true);
         assert.equal(source.includes("debugLog('[DealEnd]'"), true);
-        assert.equal(source.includes("await this.waitForFinalMoveVisualSettled();\n        this._pendingPostFinalSchemaState = null;\n        this.gameActive = false;"), true);
+        assert.equal(source.includes("await this.waitForFinalMoveVisualSettled();\n        this.flushPendingPostFinalSchemaState();\n        this.gameActive = false;"), true);
+        assertOrder(source, [
+            "this.finalMoveVisualPromise = Promise.resolve(animationPromise)",
+            "if (scoreDelta > 0 && finalScoreSource !== 'hand_bonus') {",
+            "this.showScoreFeedback(scoreDelta, { source: finalScoreSource || 'table' });",
+            "await new Promise((resolve) => setTimeout(resolve, 450));"
+        ], "final move popup ordering");
+        assertOrder(source, [
+            "await this.waitForFinalMoveVisualSettled();",
+            "this.flushPendingPostFinalSchemaState();",
+            "this.gameActive = false;"
+        ], "post-final state flush ordering");
     }
 
     for (const source of [htmlSource, webHtmlSource]) {
