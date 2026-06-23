@@ -30,6 +30,7 @@ test("server delays last-move settlement and blocks new actions during reveal", 
     assert.equal(source.includes("this.endDeal(pi, false);\n            return;"), false);
     assert.equal(source.includes("this.endDeal(this.findFishWinner(), true);\n            return true;"), false);
     assert.equal(source.includes("+ 1500"), false);
+    assert.equal(source.includes("this.addScore(wi, bonus, { broadcast: false })"), true);
 });
 
 test("client mirrors the reveal delay and pause menu chrome in both copies", () => {

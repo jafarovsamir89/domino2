@@ -3334,14 +3334,14 @@ class DominoRoom extends Room {
             if (fish) for (const i of teamMembers) os -= handPoints(this.hands[i] || []);
             const currentScore = this.state.teamScores[wt] || 0;
             bonus = currentScore > 300 ? 0 : roundTo5(Math.max(0, os));
-            if (bonus > 0) bonus = this.addScore(wi, bonus);
+            if (bonus > 0) bonus = this.addScore(wi, bonus, { broadcast: false });
         } else {
             let os = 0;
             for (let i = 0; i < this.totalPlayers; i++) if (i !== wi) os += handPoints(this.hands[i]);
             if (fish) os -= handPoints(this.hands[wi]);
             const currentScore = this.state.players.get(this.state.playerOrder[wi])?.score || 0;
             bonus = currentScore > 300 ? 0 : roundTo5(Math.max(0, os));
-            if (bonus > 0) bonus = this.addScore(wi, bonus);
+            if (bonus > 0) bonus = this.addScore(wi, bonus, { broadcast: false });
         }
 
         this.broadcast("sound", "win");

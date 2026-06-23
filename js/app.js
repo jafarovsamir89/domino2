@@ -16537,7 +16537,7 @@ class DominoGame {
             blocksInput: true
         });
 
-        await new Promise(resolve => setTimeout(resolve, 450));
+        await new Promise(resolve => setTimeout(resolve, 200));
 
         this.setRoundStage({
             phase: 'counting',
@@ -16545,7 +16545,7 @@ class DominoGame {
             blocksInput: true
         });
 
-        await new Promise(resolve => setTimeout(resolve, 350));
+        await new Promise(resolve => setTimeout(resolve, 150));
         this.clearRoundStage();
     }
 
@@ -17261,10 +17261,18 @@ class DominoGame {
 
         if (isFinalMovePayload) {
             this.finalMoveVisualActive = true;
-            const visualDelay = new Promise((resolve) => setTimeout(resolve, 450));
+            this.pendingFinalScorePopups = [];
+            if (scoreDelta > 0) {
+                this.pendingFinalScorePopups.push(scoreDelta);
+            }
             this.finalMoveVisualPromise = Promise.resolve(animationPromise)
                 .catch(() => {})
-                .then(() => visualDelay)
+                .then(async () => {
+                    if (scoreDelta > 0) {
+                        this.flushPendingFinalMoveScorePopups();
+                        await new Promise((resolve) => setTimeout(resolve, 1000));
+                    }
+                })
                 .finally(() => {
                     this.finalMoveVisualActive = false;
                     this.flushPendingFinalMoveScorePopups();
@@ -17276,9 +17284,7 @@ class DominoGame {
 
         const shouldDelayScorePopup = scoreDelta > 0 && (action === 'play' || action === 'gosha') && (isBoardAnimationAction || isOwnOptimisticPlay);
 
-        if (isFinalMovePayload && scoreDelta > 0) {
-            this.enqueueFinalMoveScorePopup(scoreDelta);
-        } else if (shouldDelayScorePopup) {
+        if (!isFinalMovePayload && shouldDelayScorePopup) {
             this.enqueueScorePopupAfterBoardAnimation(scoreDelta);
             animationPromise.finally(() => {
                 this.flushPendingScorePopupAfterBoardAnimation();
