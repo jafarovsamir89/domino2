@@ -77,10 +77,11 @@ test("client mirrors the reveal delay and pause menu chrome in both copies", () 
         assert.equal(source.includes("debugLog('[DealEnd]'"), true);
         assert.equal(source.includes("await this.waitForFinalMoveVisualSettled();\n        this.flushPendingPostFinalSchemaState();\n        this.gameActive = false;"), true);
         assertOrder(source, [
-            "this.finalMoveVisualPromise = Promise.resolve(animationPromise)",
-            "if (scoreDelta > 0 && finalScoreSource !== 'hand_bonus') {",
-            "this.showScoreFeedback(scoreDelta, { source: finalScoreSource || 'table' });",
-            "await new Promise((resolve) => setTimeout(resolve, 450));"
+            "this.finalMoveVisualPromise = (async () => {",
+            "await animationPromise;",
+            "if (finalTableScoreDelta > 0) {",
+            "this.showScoreFeedback(finalTableScoreDelta, { source: finalScoreSource || 'table' });",
+            "await new Promise((resolve) => setTimeout(resolve, LAST_MOVE_REVEAL_DELAY_MS));"
         ], "final move popup ordering");
         assertOrder(source, [
             "await this.waitForFinalMoveVisualSettled();",

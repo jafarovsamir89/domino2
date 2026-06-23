@@ -477,6 +477,7 @@ class DominoGame {
         this._pendingPostFinalSchemaState = null;
         this._applyingPostFinalSchemaState = false;
         this._boardAnimationPromiseByTileId = new Map();
+        this._suppressBoardRenderTileId = '';
         this._pendingOptimisticPlayTileId = '';
         this._pendingOptimisticPlayActionId = '';
         this._lastMoveRevealTimeout = null;
@@ -13068,6 +13069,7 @@ class DominoGame {
         this.pendingFinalScorePopups = [];
         this._pendingPostFinalSchemaState = null;
         this._applyingPostFinalSchemaState = false;
+        this._suppressBoardRenderTileId = '';
     }
 
     syncOpenRoomWaitingBanner(roomState = this.currentRoomState) {
@@ -16119,7 +16121,9 @@ class DominoGame {
         }
         this.syncOpenRoomWaitingBanner(this.currentRoomState);
         
-        this.renderer.renderBoard(this.board);
+        if (!this.consumeSuppressedBoardRender(this.board)) {
+            this.renderer.renderBoard(this.board);
+        }
         const roomPlayers = Array.isArray(this.currentRoomState?.players) ? this.currentRoomState.players : [];
         this.renderer.renderOpponentHands(this.hands, this.humanPlayerIndex, roomPlayers.length ? roomPlayers : this.playerNames, this.currentPlayer);
         const myHand = this.getHumanHandForRender();
@@ -16829,6 +16833,55 @@ class DominoGame {
         return true;
     }
 
+    buildBoardRenderSignature(boardLike = null) {
+        const nodes = Array.isArray(boardLike?.nodes) ? boardLike.nodes : [];
+        const openEnds = Array.isArray(boardLike?.openEnds) ? boardLike.openEnds : [];
+        return JSON.stringify({
+            nodes: nodes.map((node) => ({
+                tileId: String(node?.tile?.id || ''),
+                a: Number(node?.tile?.a ?? node?.displayA ?? 0),
+                b: Number(node?.tile?.b ?? node?.displayB ?? 0),
+                x: Number(node?.x || 0),
+                y: Number(node?.y || 0),
+                orientation: String(node?.orientation || ''),
+                displayA: Number(node?.displayA ?? node?.tile?.a ?? 0),
+                displayB: Number(node?.displayB ?? node?.tile?.b ?? 0)
+            })),
+            openEnds: openEnds.map((openEnd) => ({
+                nodeId: Number(openEnd?.nodeId ?? -1),
+                side: String(openEnd?.side || ''),
+                value: Number(openEnd?.value ?? 0),
+                growthDir: String(openEnd?.growthDir || '')
+            })),
+            crossNodeId: Number(boardLike?.crossNodeId ?? -1),
+            crossSidesClosed: Number(boardLike?.crossSidesClosed ?? 0)
+        });
+    }
+
+    shouldPreserveOptimisticFinalBoardRender(nextBoard = null) {
+        const finalTileId = String(this._lastFinalMoveTileId || '').trim();
+        if (!finalTileId || String(this._lastFinalMoveVisualSource || '') !== 'optimistic-confirmed') {
+            return false;
+        }
+        const currentHasTile = Array.isArray(this.board?.nodes)
+            && this.board.nodes.some((node) => String(node?.tile?.id || '') === finalTileId);
+        const nextHasTile = Array.isArray(nextBoard?.nodes)
+            && nextBoard.nodes.some((node) => String(node?.tile?.id || '') === finalTileId);
+        if (!currentHasTile || !nextHasTile) {
+            return false;
+        }
+        return this.buildBoardRenderSignature(this.board) === this.buildBoardRenderSignature(nextBoard);
+    }
+
+    consumeSuppressedBoardRender(board = this.board) {
+        const tileId = String(this._suppressBoardRenderTileId || '').trim();
+        if (!tileId) return false;
+        const hasTile = Array.isArray(board?.nodes)
+            && board.nodes.some((node) => String(node?.tile?.id || '') === tileId);
+        this._suppressBoardRenderTileId = '';
+        return hasTile;
+    }
+
     showScoreFeedback(score, options = {}) {
         const value = Number(score || 0);
         if (!(value > 0)) return;
@@ -17067,6 +17120,9 @@ class DominoGame {
             hand: this.getHandRenderSignature(this.getHumanHandForRender(), this.validMoves, this.selectedTileIndex, this.currentPlayer === this.humanPlayerIndex)
         };
 
+        if (boardChanged && this.consumeSuppressedBoardRender(this.board)) {
+            boardChanged = false;
+        }
         if (boardChanged) {
             this.renderer.renderBoard(this.board);
         }
@@ -17142,7 +17198,12 @@ class DominoGame {
         this.onlineStakeKey = payload?.stakeKey || this.onlineStakeKey;
         this.onlineRoundBankAmount = Math.max(0, Number(payload?.bankAmount || 0));
         this.turnVersion = Number(payload?.turnVersion || this.turnVersion || 1);
-        this.board = reconstructBoard(payload?.board || {});
+        const nextBoard = reconstructBoard(payload?.board || {});
+        const preserveOptimisticFinalBoard = this.shouldPreserveOptimisticFinalBoardRender(nextBoard);
+        this.board = nextBoard;
+        if (preserveOptimisticFinalBoard) {
+            this._suppressBoardRenderTileId = String(this._lastFinalMoveTileId || '').trim();
+        }
         this.myHand = Array.isArray(payload?.selfHand) ? payload.selfHand.map((t) => new Tile(t.a, t.b)) : [];
         const mySid = this.network?.room?.sessionId || '';
         const myIdx = playerOrder.indexOf(mySid);
@@ -17181,7 +17242,7 @@ class DominoGame {
         this.lastFullStateControlsShouldBeEnabled = (this.currentPlayer === this.humanPlayerIndex && this.validMoves.length > 0);
 
         this.renderRealtimeGameDeltaView({
-            boardChanged: true,
+            boardChanged: !preserveOptimisticFinalBoard,
             handChanged: true,
             opponentHandsChanged: true,
             scoresChanged: true,
@@ -17370,16 +17431,15 @@ class DominoGame {
                 }
             }
             this.finalMoveVisualActive = true;
-            this.finalMoveVisualPromise = Promise.resolve(animationPromise)
-                .catch(() => {})
-                .then(async () => {
-                    if (scoreDelta > 0 && finalScoreSource !== 'hand_bonus') {
-                        this.showScoreFeedback(scoreDelta, { source: finalScoreSource || 'table' });
-                        await new Promise((resolve) => setTimeout(resolve, 450));
-                    } else {
-                        await new Promise((resolve) => setTimeout(resolve, 650));
-                    }
-                })
+            this.finalMoveVisualPromise = (async () => {
+                try {
+                    await animationPromise;
+                } catch {}
+                if (finalTableScoreDelta > 0) {
+                    this.showScoreFeedback(finalTableScoreDelta, { source: finalScoreSource || 'table' });
+                    await new Promise((resolve) => setTimeout(resolve, LAST_MOVE_REVEAL_DELAY_MS));
+                }
+            })()
                 .finally(() => {
                     this.finalMoveVisualActive = false;
                     if (isOwnOptimisticPlay) {
@@ -17496,7 +17556,11 @@ class DominoGame {
         if (state.boardJson) {
             try {
                 const parsed = JSON.parse(state.boardJson);
-                this.board = reconstructBoard(parsed);
+                const nextBoard = reconstructBoard(parsed);
+                if (this.shouldPreserveOptimisticFinalBoardRender(nextBoard)) {
+                    this._suppressBoardRenderTileId = String(this._lastFinalMoveTileId || '').trim();
+                }
+                this.board = nextBoard;
             } catch (e) { console.error(e); }
         }
         
