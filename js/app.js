@@ -105,6 +105,10 @@ function debugLog(...args) {
     if (isDebugLoggingEnabled()) console.log(...args);
 }
 
+function fmLog(tag, data) {
+    try { console.log(`[FM ${performance.now().toFixed(1)}] ${tag}`, data ? JSON.stringify(data) : ''); } catch {}
+}
+
 const DOMINO_CLIENT_BUILD = {
     gitCommit: '669bbdc',
     builtAt: new Date().toISOString(),
@@ -16762,6 +16766,7 @@ class DominoGame {
         const tracked = Promise.resolve(promise)
             .catch(() => {})
             .finally(() => {
+                fmLog('track.resolved', { tileId });
                 if (this._boardAnimationPromise === tracked) {
                     this._boardAnimationPromise = Promise.resolve();
                 }
@@ -16770,6 +16775,7 @@ class DominoGame {
                 }
             });
         this._boardAnimationPromise = tracked;
+        fmLog('track.set', { tileId, action: context?.action, source: context?.source });
         if (tileId) {
             this._boardAnimationActive = {
                 tileId,
@@ -16786,8 +16792,10 @@ class DominoGame {
 
     presentOnlineResultAfterBoardAnimation(presenter) {
         const token = ++this._onlineResultPresentationToken;
+        fmLog('present.call', { token, boardAnimActive: Boolean(this._boardAnimationActive) });
         void (async () => {
             await this.getBoardAnimationPromise();
+            fmLog('present.fire(modal)', { token, current: this._onlineResultPresentationToken });
             if (token !== this._onlineResultPresentationToken) return;
             try {
                 presenter?.();
@@ -17210,6 +17218,7 @@ class DominoGame {
             boardChanged = false;
         }
         const isBoardAnimationAction = boardChanged && (action === 'play' || action === 'gosha') && !isOwnOptimisticPlay;
+        fmLog('game_delta', { action, payloadTileId, isOwnOptimisticPlay, boardChanged, isFinalMove: payload?.isFinalMove, lastMoveRevealPending: payload?.lastMoveRevealPending, scoreDelta });
         const deferScoreUi = scoreDelta > 0 && (action === 'play' || action === 'gosha');
         const resolvedRoomMode = this.resolveRoomModeState(this.currentRoomState, payload);
         this.isTeamMode = resolvedRoomMode.isTeamMode;
@@ -17281,6 +17290,7 @@ class DominoGame {
         if (isBoardAnimationAction) {
             const animationTileId = String(this.renderer?._pendingBoardTileTravel?.tileId || '');
             if (animationTileId) {
+                fmLog('animate.start', { animationTileId, action });
                 animationPromise = this.trackBoardAnimationPromise(
                     this.renderer.animateTileTravel(animationTileId).catch((error) => {
                         console.warn('[CLIENT_DEBUG] board animation failed', error);
@@ -17289,6 +17299,7 @@ class DominoGame {
                 );
             }
         } else if (isOwnOptimisticPlay) {
+            fmLog('no-animation(optimistic)');
             animationPromise = this.getBoardAnimationPromise();
         }
 
@@ -17318,6 +17329,7 @@ class DominoGame {
 
     // --- Network Handlers (Thin Client Mode) ---
     onNetworkStateUpdate(state) {
+        fmLog('schema.enter', { gameActive: state?.gameActive, hasBoardJson: Boolean(state?.boardJson), boardAnimActive: Boolean(this._boardAnimationActive) });
         if (this.shouldProcessSchemaState(state) === false) {
             return;
         }
@@ -17385,6 +17397,7 @@ class DominoGame {
                 this.board = reconstructBoard(parsed);
             } catch (e) { console.error(e); }
         }
+        fmLog('schema.board-applied', { gameActive: state?.gameActive, deal: state?.deal });
         
         if (state.currentPlayerIndex !== undefined && state.currentPlayerIndex !== null) {
             this.currentPlayer = Number(state.currentPlayerIndex);
@@ -17544,6 +17557,7 @@ class DominoGame {
 
 
     onNetworkDealEnd(data) {
+        fmLog('deal_end.recv', { winnerIndex: data?.winnerIndex, boardAnimActive: Boolean(this._boardAnimationActive) });
         this.onlineResultActive = true;
         this.syncOpenRoomWaitingBanner(this.currentRoomState);
         debugLog('[DealEnd]', {
@@ -17599,6 +17613,7 @@ class DominoGame {
     }
 
     onNetworkRoundEnd(data) {
+        fmLog('round_end.recv', { winnerIndex: data?.winnerIndex, boardAnimActive: Boolean(this._boardAnimationActive) });
         this.onlineResultActive = true;
         this.syncOpenRoomWaitingBanner(this.currentRoomState);
         this.gameActive = false;

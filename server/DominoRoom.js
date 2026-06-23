@@ -2530,6 +2530,7 @@ class DominoRoom extends Room {
     }
 
     syncState({ includeBoardJson = true } = {}) {
+        console.log(`[FM-SRV ${Date.now()}] syncState includeBoardJson=${includeBoardJson}`);
         this.updateSchemaState({ includeBoardJson });
         for (const client of this.clients) {
             this.sendHandToClient(client);
@@ -2997,17 +2998,21 @@ class DominoRoom extends Room {
             finishKind,
             finishInfo: this.lastFinishInfo
         });
+        console.log(`[FM-SRV ${Date.now()}] gameDelta isFinalMove=${isFinalMove}`);
 
         if (this.instantWinEnabled && score >= IWIN) {
+            console.log(`[FM-SRV ${Date.now()}] end immediate`);
             this.endRound(pi, true);
             return true;
         }
 
         if (hand.length === 0) {
+            console.log(`[FM-SRV ${Date.now()}] end immediate`);
             this.endDeal(pi, false);
             return true;
         }
         if (this.internalBoard.isBlocked(this.hands, this.boneyard)) {
+            console.log(`[FM-SRV ${Date.now()}] end immediate`);
             this.endDeal(this.findFishWinner(), true);
             return true;
         }
@@ -3154,17 +3159,21 @@ class DominoRoom extends Room {
             finishKind,
             finishInfo: this.lastFinishInfo
         });
+        console.log(`[FM-SRV ${Date.now()}] gameDelta isFinalMove=${isFinalMove}`);
 
         if (this.instantWinEnabled && score >= IWIN) {
+            console.log(`[FM-SRV ${Date.now()}] end immediate`);
             this.endRound(pi, true);
             return true;
         }
 
         if (hand.length === 0) {
+            console.log(`[FM-SRV ${Date.now()}] end immediate`);
             this.endDeal(pi, false);
             return true;
         }
         if (this.internalBoard.isBlocked(this.hands, this.boneyard)) {
+            console.log(`[FM-SRV ${Date.now()}] end immediate`);
             this.endDeal(this.findFishWinner(), true);
             return true;
         }
