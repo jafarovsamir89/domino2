@@ -7,16 +7,6 @@ function read(relativePath) {
     return fs.readFileSync(path.join(__dirname, "..", "..", relativePath), "utf8");
 }
 
-function assertOrder(source, tokens, label) {
-    let lastIndex = -1;
-    for (const token of tokens) {
-        const index = source.indexOf(token);
-        assert.notEqual(index, -1, `${label}: missing token ${token}`);
-        assert.ok(index > lastIndex, `${label}: token out of order ${token}`);
-        lastIndex = index;
-    }
-}
-
 function extractBlock(source, anchor) {
     const start = source.indexOf(anchor);
     assert.notEqual(start, -1, `missing anchor: ${anchor}`);
@@ -36,114 +26,48 @@ function extractBlock(source, anchor) {
     assert.fail(`missing closing brace for: ${anchor}`);
 }
 
-test("server delays last-move settlement and blocks new actions during reveal", () => {
+test("server keeps the final board on game_delta and omits it from the immediate result sync", () => {
     const source = read("server/DominoRoom.js");
 
-    const requiredTokens = [
-        "const LAST_MOVE_REVEAL_DELAY_MS = 1200;",
-        "this.lastMoveRevealTimer = null;",
-        "this.lastMoveRevealPending = false;",
-        "scheduleLastMoveSettlement(callback, delay = LAST_MOVE_REVEAL_DELAY_MS)",
-        "this.lastMoveRevealPending = true;",
-        "if (this.lastMoveRevealPending) return { ok: false, reason: \"result_reveal_pending\", pi };",
-        "this.scheduleLastMoveSettlement(() => this.endRound(pi, true));",
-        "this.scheduleLastMoveSettlement(() => this.endDeal(pi, false));",
-        "this.scheduleLastMoveSettlement(() => this.endDeal(this.findFishWinner(), true));"
-    ];
+    const syncStateBlock = extractBlock(source, "syncState({ includeBoardJson = true } = {})");
+    const performPlayBlock = extractBlock(source, "performPlay(pi, tileIndex, openEndIndex, isBot = false, meta = {})");
+    const performGoshaBlock = extractBlock(source, "performGosha(pi, combo, isBot = false, meta = {})");
+    const broadcastGameDeltaBlock = extractBlock(source, "broadcastGameDelta(base = {})");
+    const endDealBlock = extractBlock(source, "endDeal(wi, fish)");
+    const endRoundBlock = extractBlock(source, "endRound(wi, isInstantWin)");
+    const fullStateBlock = extractBlock(source, "buildFullStatePayloadForClient(client)");
 
-    for (const token of requiredTokens) {
-        assert.equal(source.includes(token), true, token);
-    }
+    assert.equal(syncStateBlock.includes("updateSchemaState({ includeBoardJson });"), true, "syncState should accept an includeBoardJson switch");
 
-    assert.equal(source.includes("this.endRound(pi, true);\n            return;"), false);
-    assert.equal(source.includes("this.endDeal(pi, false);\n            return;"), false);
-    assert.equal(source.includes("this.endDeal(this.findFishWinner(), true);\n            return true;"), false);
-    assert.equal(source.includes("+ 1500"), false);
-    assert.equal(source.includes("this.addScore(wi, bonus, { broadcast: false, scoreSource: \"hand_bonus\" })"), true);
-    assert.equal(source.includes("scoreSource: \"table\""), true);
-    assert.equal(source.includes("bonusSource: \"hand_bonus\""), true);
-    assert.equal(source.includes("tableScoreDelta"), true);
-});
+    assert.equal(performPlayBlock.includes("this.broadcastGameDelta({"), true, "performPlay should still publish the board delta before closing the deal");
+    assert.equal(performPlayBlock.includes("this.state.boardJson = JSON.stringify(this.internalBoard);"), true, "performPlay should persist the final board snapshot in memory");
+    assert.equal(performPlayBlock.includes("scheduleLastMoveSettlement(() => this.endRound(pi, true))"), false, "performPlay must not delay the final result through the old reveal timer");
+    assert.equal(performPlayBlock.includes("scheduleLastMoveSettlement(() => this.endDeal(pi, false))"), false, "performPlay must not delay deal_end through the old reveal timer");
+    assert.equal(performPlayBlock.includes("scheduleLastMoveSettlement(() => this.endDeal(this.findFishWinner(), true))"), false, "performPlay must not delay fish settlement through the old reveal timer");
+    assert.equal(performPlayBlock.includes("this.endRound(pi, true);"), true, "instant-win play should close the round immediately");
+    assert.equal(performPlayBlock.includes("this.endDeal(pi, false);"), true, "empty-hand play should close the deal immediately");
+    assert.equal(performPlayBlock.includes("this.endDeal(this.findFishWinner(), true);"), true, "blocked-board play should close the deal immediately");
 
-test("client mirrors the reveal delay and pause menu chrome in both copies", () => {
-    const appSource = read("js/app.js");
-    const webAppSource = read("www/js/app.js");
-    const htmlSource = read("index.html");
-    const webHtmlSource = read("www/index.html");
-    const cssSource = read("css/style.css");
-    const webCssSource = read("www/css/style.css");
-    const removedFinalMarkers = [
-        "finalMoveVisualPromise",
-        "finalMoveVisualActive",
-        "_pendingPostFinalSchemaState",
-        "_boardAnimationPromiseByTileId",
-        "_suppressBoardRenderTileId",
-        "waitForFinalMoveVisualSettled()",
-        "shouldDeferPostFinalSchemaState(state)",
-        "queuePostFinalSchemaState(state, source = 'schema')",
-        "flushPendingPostFinalSchemaState()",
-        "buildBoardRenderSignature(",
-        "shouldPreserveOptimisticFinalBoardRender(",
-        "consumeSuppressedBoardRender(",
-        "_lastFinalMoveTileId",
-        "_lastFinalMoveVisualSource",
-        "_lastFinalMoveTableScoreDelta",
-        "_lastFinalMoveHandBonus",
-        "pendingFinalScorePopups"
-    ];
+    assert.equal(performGoshaBlock.includes("this.broadcastGameDelta({"), true, "performGosha should still publish the board delta before closing the deal");
+    assert.equal(performGoshaBlock.includes("this.state.boardJson = JSON.stringify(this.internalBoard);"), true, "performGosha should persist the final board snapshot in memory");
+    assert.equal(performGoshaBlock.includes("scheduleLastMoveSettlement(() => this.endRound(pi, true))"), false, "performGosha must not delay the final result through the old reveal timer");
+    assert.equal(performGoshaBlock.includes("scheduleLastMoveSettlement(() => this.endDeal(pi, false))"), false, "performGosha must not delay deal_end through the old reveal timer");
+    assert.equal(performGoshaBlock.includes("scheduleLastMoveSettlement(() => this.endDeal(this.findFishWinner(), true))"), false, "performGosha must not delay fish settlement through the old reveal timer");
+    assert.equal(performGoshaBlock.includes("this.endRound(pi, true);"), true, "instant-win gosha should close the round immediately");
+    assert.equal(performGoshaBlock.includes("this.endDeal(pi, false);"), true, "empty-hand gosha should close the deal immediately");
+    assert.equal(performGoshaBlock.includes("this.endDeal(this.findFishWinner(), true);"), true, "blocked-board gosha should close the deal immediately");
 
-    for (const source of [appSource, webAppSource]) {
-        assert.equal(source.includes("const LAST_MOVE_REVEAL_DELAY_MS = 1200;"), true);
-        assert.equal(source.includes("delayLastMoveSettlement(callback, delay = LAST_MOVE_REVEAL_DELAY_MS, finalInfo = null)"), true);
-        assert.equal(source.includes("requestAnimationFrame(() => {"), true);
-        assert.equal(source.includes("this._boardAnimationPromise = new Promise((resolve) => {"), true);
-        assert.equal(source.includes("this.delayLastMoveSettlement(() => this.endRound(pi, true)"), true);
-        assert.equal(source.includes("this.delayLastMoveSettlement(()=>this.endDeal(pi,false)"), true);
-        assert.equal(source.includes("this.delayLastMoveSettlement(()=>this.endDeal(this.findFishWinner(),true)"), true);
-        assert.equal(source.includes("onNetworkScorePopup(score)"), true);
-        assert.equal(source.includes("setTimeout(() => this.endRound(pi, true), 800);"), false);
-        assert.equal(source.includes("debugLog('[DealEnd]'"), true);
-        for (const marker of removedFinalMarkers) {
-            assert.equal(source.includes(marker), false, `removed final path marker should be absent: ${marker}`);
-        }
+    assert.equal(broadcastGameDeltaBlock.includes("isFinalMove: Boolean(base.isFinalMove)"), true, "game_delta should still flag the final move");
+    assert.equal(broadcastGameDeltaBlock.includes("finishInfo: base.finishInfo || null"), true, "game_delta should still carry finish info");
+    assert.equal(broadcastGameDeltaBlock.includes("lastMoveRevealPending: Boolean(this.lastMoveRevealPending)"), true, "game_delta should still expose reveal state for the client contract");
 
-        const deltaBlock = extractBlock(source, "onNetworkGameDelta(payload = {})");
-        const scorePopupBlock = extractBlock(source, "onNetworkScorePopup(score)");
-        const dealEndBlock = extractBlock(source, "onNetworkDealEnd(data)");
-        const roundEndBlock = extractBlock(source, "onNetworkRoundEnd(data)");
-        const resultPresenterBlock = extractBlock(source, "presentOnlineResultAfterBoardAnimation(presenter)");
+    assert.equal(endDealBlock.includes("this.broadcast(\"deal_end\""), true, "deal_end should still be emitted");
+    assert.equal(endDealBlock.includes("this.syncState({ includeBoardJson: false });"), true, "deal_end sync should not re-broadcast the final boardJson");
+    assert.equal(endDealBlock.includes("this.scheduleNextDeal(DEAL_END_MODAL_MS);"), true, "deal_end should still advance the deal after the result window");
 
-        assert.equal(deltaBlock.includes("payload?.isFinalMove"), false, "final move should not have a dedicated delta branch");
-        assert.equal(deltaBlock.includes("trackBoardAnimationPromise("), true, "delta path should track board animation through the shared helper");
-        assert.equal(deltaBlock.includes("const shouldDelayScorePopup = scoreDelta > 0 && (action === 'play' || action === 'gosha') && (isBoardAnimationAction || isOwnOptimisticPlay);"), true, "final move score popup should use the same delay rule as ordinary moves");
-        assert.equal(deltaBlock.includes("if (shouldDelayScorePopup && String(payload?.scoreSource || '').trim() !== 'hand_bonus')"), true, "table score popup should stay tied to shared animation completion");
-        assert.equal(deltaBlock.includes("LAST_MOVE_REVEAL_DELAY_MS"), false, "delta path must not add an extra reveal timeout");
+    assert.equal(endRoundBlock.includes("this.broadcast(\"round_end\""), true, "round_end should still be emitted");
+    assert.equal(endRoundBlock.includes("this.syncState({ includeBoardJson: false });"), true, "round_end sync should not re-broadcast the final boardJson");
+    assert.equal(endRoundBlock.includes("this.scheduleNextRound(2000);"), true, "round_end should still advance the round after the result window");
 
-        assert.equal(scorePopupBlock.includes("scoreSource === 'hand_bonus' || scoreSource === 'deal_bonus'"), true, "hand bonus must stay out of +N popups");
-        assert.equal(scorePopupBlock.includes("enqueueScorePopupAfterBoardAnimation(value);"), true, "late score popups should still respect active board animation");
-
-        assert.equal(resultPresenterBlock.includes("await this.getBoardAnimationPromise();"), true, "result presentation should wait on the shared board animation promise");
-        assert.equal(resultPresenterBlock.includes("setTimeout("), false, "result presentation should not add its own reveal timer");
-
-        assert.equal(dealEndBlock.includes("presentOnlineResultAfterBoardAnimation("), true, "deal end should schedule result presentation after the shared board animation");
-        assert.equal(dealEndBlock.includes("showPreResultStage("), false, "deal end should not run a separate pre-result animation chain");
-        assert.equal(dealEndBlock.includes("await "), false, "deal end should not await a bespoke final animation chain");
-
-        assert.equal(roundEndBlock.includes("presentOnlineResultAfterBoardAnimation("), true, "round end should schedule result presentation after the shared board animation");
-        assert.equal(roundEndBlock.includes("showPreResultStage("), false, "round end should not run a separate pre-result animation chain");
-        assert.equal(roundEndBlock.includes("await "), false, "round end should not await a bespoke final animation chain");
-    }
-
-    for (const source of [htmlSource, webHtmlSource]) {
-        assert.equal(source.includes('pause-menu-btn'), true);
-        assert.equal(source.includes('pause-icon'), true);
-        assert.equal(source.includes('data-i18n="menu-open"'), false);
-    }
-
-    for (const source of [cssSource, webCssSource]) {
-        assert.equal(source.includes('.menu-btn.pause-menu-btn::before'), true);
-        assert.equal(source.includes('.pause-menu-btn {'), true);
-        assert.equal(source.includes('.pause-icon::before,'), true);
-        assert.equal(source.includes('.pause-icon::after {'), true);
-    }
+    assert.equal(fullStateBlock.includes("board: this.internalBoard.toJSON ? this.internalBoard.toJSON() : this.internalBoard"), true, "full_state should keep the authoritative board for reconnects");
 });

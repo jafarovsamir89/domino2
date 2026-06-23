@@ -2529,8 +2529,8 @@ class DominoRoom extends Room {
         });
     }
 
-    syncState() {
-        this.updateSchemaState({ includeBoardJson: true });
+    syncState({ includeBoardJson = true } = {}) {
+        this.updateSchemaState({ includeBoardJson });
         for (const client of this.clients) {
             this.sendHandToClient(client);
         }
@@ -2964,6 +2964,7 @@ class DominoRoom extends Room {
                 openEndIndex
             };
         }
+        this.state.boardJson = JSON.stringify(this.internalBoard);
 
         const scoreDelta = score > 0 ? this.addScore(pi, score, { broadcast: false }) : 0;
         const isFinalMove = this.instantWinEnabled && score >= IWIN || hand.length === 0 || this.internalBoard.isBlocked(this.hands, this.boneyard);
@@ -2998,16 +2999,16 @@ class DominoRoom extends Room {
         });
 
         if (this.instantWinEnabled && score >= IWIN) {
-            this.scheduleLastMoveSettlement(() => this.endRound(pi, true));
+            this.endRound(pi, true);
             return true;
         }
 
         if (hand.length === 0) {
-            this.scheduleLastMoveSettlement(() => this.endDeal(pi, false));
+            this.endDeal(pi, false);
             return true;
         }
         if (this.internalBoard.isBlocked(this.hands, this.boneyard)) {
-            this.scheduleLastMoveSettlement(() => this.endDeal(this.findFishWinner(), true));
+            this.endDeal(this.findFishWinner(), true);
             return true;
         }
 
@@ -3110,6 +3111,7 @@ class DominoRoom extends Room {
             }
             this.internalBoard.placeTile(tile, openEndIndex);
         }
+        this.state.boardJson = JSON.stringify(this.internalBoard);
 
         const score = combo.score || this.internalBoard.calculateScore();
         const scoreDelta = score > 0 ? this.addScore(pi, score, { broadcast: false }) : 0;
@@ -3154,16 +3156,16 @@ class DominoRoom extends Room {
         });
 
         if (this.instantWinEnabled && score >= IWIN) {
-            this.scheduleLastMoveSettlement(() => this.endRound(pi, true));
+            this.endRound(pi, true);
             return true;
         }
 
         if (hand.length === 0) {
-            this.scheduleLastMoveSettlement(() => this.endDeal(pi, false));
+            this.endDeal(pi, false);
             return true;
         }
         if (this.internalBoard.isBlocked(this.hands, this.boneyard)) {
-            this.scheduleLastMoveSettlement(() => this.endDeal(this.findFishWinner(), true));
+            this.endDeal(this.findFishWinner(), true);
             return true;
         }
 
@@ -3401,7 +3403,7 @@ class DominoRoom extends Room {
         });
         this.pendingAdvanceKind = "deal";
         this.state.deal++;
-        this.syncState();
+        this.syncState({ includeBoardJson: false });
         this.scheduleNextDeal(DEAL_END_MODAL_MS);
     }
 
@@ -3488,6 +3490,7 @@ class DominoRoom extends Room {
         }
 
         this.state.matchRound++;
+        this.syncState({ includeBoardJson: false });
     }
 
     async loadCustomStateForRestore(options = {}) {
