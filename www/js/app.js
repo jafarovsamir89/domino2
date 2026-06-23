@@ -16537,7 +16537,7 @@ class DominoGame {
             blocksInput: true
         });
 
-        await new Promise(resolve => setTimeout(resolve, 850));
+        await new Promise(resolve => setTimeout(resolve, 450));
 
         this.setRoundStage({
             phase: 'counting',
@@ -16545,7 +16545,7 @@ class DominoGame {
             blocksInput: true
         });
 
-        await new Promise(resolve => setTimeout(resolve, 850));
+        await new Promise(resolve => setTimeout(resolve, 350));
         this.clearRoundStage();
     }
 
@@ -17261,7 +17261,7 @@ class DominoGame {
 
         if (isFinalMovePayload) {
             this.finalMoveVisualActive = true;
-            const visualDelay = new Promise((resolve) => setTimeout(resolve, 850));
+            const visualDelay = new Promise((resolve) => setTimeout(resolve, 450));
             this.finalMoveVisualPromise = Promise.resolve(animationPromise)
                 .catch(() => {})
                 .then(() => visualDelay)
