@@ -474,6 +474,7 @@ class DominoGame {
         this._lastFinalMoveVisualSource = '';
         this._lastFinalMoveTableScoreDelta = 0;
         this._lastFinalMoveHandBonus = 0;
+        this._pendingPostFinalSchemaState = null;
         this._pendingOptimisticPlayTileId = '';
         this._pendingOptimisticPlayActionId = '';
         this._lastMoveRevealTimeout = null;
@@ -13063,6 +13064,7 @@ class DominoGame {
         this.finalMoveVisualActive = false;
         this.finalMoveVisualPromise = Promise.resolve();
         this.pendingFinalScorePopups = [];
+        this._pendingPostFinalSchemaState = null;
     }
 
     syncOpenRoomWaitingBanner(roomState = this.currentRoomState) {
@@ -14599,13 +14601,23 @@ class DominoGame {
                 action: 'play',
                 source: 'optimistic'
             };
-            this._boardAnimationPromise = this.renderer.animateTileTravel(tile.id)
-                .catch(() => {})
-                .finally(() => {
-                    if (String(this._boardAnimationActive?.tileId || '') === String(tile.id)) {
-                        this._boardAnimationActive = null;
-                    }
+            const raf = typeof requestAnimationFrame === 'function'
+                ? requestAnimationFrame.bind(window)
+                : (callback) => setTimeout(callback, 0);
+            this._boardAnimationPromise = new Promise((resolve) => {
+                raf(() => {
+                    raf(() => {
+                        this.renderer.animateTileTravel(tile.id)
+                            .catch(() => {})
+                            .finally(() => {
+                                if (String(this._boardAnimationActive?.tileId || '') === String(tile.id)) {
+                                    this._boardAnimationActive = null;
+                                }
+                                resolve();
+                            });
+                    });
                 });
+            });
         }
 
         this.queuePendingOnlineAction({
@@ -16775,6 +16787,25 @@ class DominoGame {
         return Promise.resolve(this.finalMoveVisualPromise || Promise.resolve());
     }
 
+    shouldDeferPostFinalSchemaState(state) {
+        return Boolean(
+            state
+            && state.gameActive === false
+            && (this.finalMoveVisualActive || this.lastMoveRevealPending || this.onlineResultActive)
+        );
+    }
+
+    queuePostFinalSchemaState(state, source = 'schema') {
+        this._pendingPostFinalSchemaState = state;
+        debugLog('[FinalMove] deferring schema state until final visual settles', {
+            source,
+            gameActive: Boolean(state?.gameActive),
+            finalMoveVisualActive: this.finalMoveVisualActive,
+            lastMoveRevealPending: this.lastMoveRevealPending,
+            onlineResultActive: this.onlineResultActive
+        });
+    }
+
     showScoreFeedback(score, options = {}) {
         const value = Number(score || 0);
         if (!(value > 0)) return;
@@ -17053,6 +17084,10 @@ class DominoGame {
     }
 
     onNetworkFullState(payload = {}) {
+        if (this.shouldDeferPostFinalSchemaState(payload)) {
+            this.queuePostFinalSchemaState(payload, 'full_state');
+            return;
+        }
         const playerOrder = Array.from(payload?.playerOrder || []);
         const getPlayer = this.applyPlayerRows(playerOrder, payload?.players || []);
         this.turnTimeoutMs = Number(payload?.turnDurationMs || this.turnTimeoutMs || TURN_TIMEOUT_MS);
@@ -17261,24 +17296,50 @@ class DominoGame {
         };
         this.renderRealtimeGameDeltaView(renderFlags);
 
+        const optimisticAnimationPromise = isOwnOptimisticPlay
+            ? (this._boardAnimationActive && String(this._boardAnimationActive.tileId || '') === payloadTileId
+                ? this._boardAnimationPromise
+                : null)
+            : null;
         const animationPromise = isBoardAnimationAction
             ? (this.renderer?._pendingBoardTileTravel?.tileId
                 ? this.renderer.animateTileTravel(this.renderer._pendingBoardTileTravel.tileId).catch((error) => {
                     console.warn('[CLIENT_DEBUG] board animation failed', error);
                 })
                 : this._boardAnimationPromise || Promise.resolve())
-            : (isOwnOptimisticPlay ? (this._boardAnimationPromise || Promise.resolve()) : Promise.resolve());
+            : (isOwnOptimisticPlay
+                ? (optimisticAnimationPromise || (console.warn('[FinalMove] missing optimistic board animation promise', {
+                    tileId: payloadTileId,
+                    action,
+                    scoreDelta,
+                    scoreSource: payload?.scoreSource || '',
+                    boardAnimationActive: this._boardAnimationActive
+                }), new Promise((resolve) => setTimeout(resolve, 600))))
+                : Promise.resolve());
 
         if (isFinalMovePayload) {
             const finalTileId = payloadTileId || String(this.renderer?._pendingBoardTileTravel?.tileId || '');
             const finalScoreSource = String(payload?.scoreSource || (scoreDelta > 0 ? 'table' : '')).trim();
+            const finalTableScoreDelta = scoreDelta > 0 && finalScoreSource !== 'hand_bonus' ? scoreDelta : 0;
+            const finalHandBonus = Number(payload?.finishInfo?.handBonus || payload?.bonus || 0);
             const finalVisualSource = isOwnOptimisticPlay
                 ? 'optimistic-confirmed'
                 : (boardChanged ? 'server-delta' : 'server-delta-no-optimistic');
+            debugLog('[FinalMove]', {
+                source: finalVisualSource,
+                tileId: finalTileId,
+                isOwnOptimisticPlay,
+                hasBoardAnimationPromise: Boolean(optimisticAnimationPromise || this._boardAnimationPromise),
+                scoreDelta,
+                scoreSource: finalScoreSource,
+                tableScoreDelta: finalTableScoreDelta,
+                handBonus: finalHandBonus,
+                finalMoveVisualActive: this.finalMoveVisualActive
+            });
             this._lastFinalMoveTileId = finalTileId;
             this._lastFinalMoveVisualSource = finalVisualSource;
-            this._lastFinalMoveTableScoreDelta = scoreDelta > 0 && finalScoreSource !== 'hand_bonus' ? scoreDelta : 0;
-            this._lastFinalMoveHandBonus = Number(payload?.finishInfo?.handBonus || payload?.bonus || 0);
+            this._lastFinalMoveTableScoreDelta = finalTableScoreDelta;
+            this._lastFinalMoveHandBonus = finalHandBonus;
             if (finalTileId) {
                 this.renderer?._animatedBoardTileIds?.add?.(finalTileId);
                 if (this.renderer) {
@@ -17336,6 +17397,10 @@ class DominoGame {
     // --- Network Handlers (Thin Client Mode) ---
     onNetworkStateUpdate(state) {
         if (this.shouldProcessSchemaState(state) === false) {
+            return;
+        }
+        if (this.shouldDeferPostFinalSchemaState(state)) {
+            this.queuePostFinalSchemaState(state, 'state_update');
             return;
         }
         this.turnTimeoutMs = Number(state?.turnDurationMs || this.turnTimeoutMs || TURN_TIMEOUT_MS);
@@ -17563,26 +17628,33 @@ class DominoGame {
     async onNetworkDealEnd(data) {
         this.onlineResultActive = true;
         this.syncOpenRoomWaitingBanner(this.currentRoomState);
+        this.clearTurnTimers();
+        debugLog('[DealEnd]', {
+            bonus: data?.bonus,
+            bonusSource: data?.bonusSource,
+            tableScoreDelta: data?.tableScoreDelta,
+            waitingForFinalMove: Boolean(this.finalMoveVisualPromise)
+        });
+        await this.waitForFinalMoveVisualSettled();
+        this._pendingPostFinalSchemaState = null;
         this.gameActive = false;
         this.lastMoveRevealPending = false;
-        this.clearTurnTimers();
         // Reconstruct all hands to show them at the end
         const finalHands = data.hands.map(h => h.map(t => new Tile(t.a, t.b)));
         this.hands = finalHands;
         const isTeamMode = this.resolveRoomModeState(this.currentRoomState, data).isTeamMode;
-        
+
         let displayEntities;
-        if(isTeamMode){
+        if (isTeamMode) {
             const wt = data.winnerIndex % 2;
             displayEntities = [
-                {name: this.getTeamDisplayName(0), isWinner: wt===0, score: this.teamScores[0], handPoints: this.getTeamHandPoints(0), leftoverHands: this.getTeamLeftoverHands(0)},
-                {name: this.getTeamDisplayName(1), isWinner: wt===1, score: this.teamScores[1], handPoints: this.getTeamHandPoints(1), leftoverHands: this.getTeamLeftoverHands(1)}
+                { name: this.getTeamDisplayName(0), isWinner: wt === 0, score: this.teamScores[0], handPoints: this.getTeamHandPoints(0), leftoverHands: this.getTeamLeftoverHands(0) },
+                { name: this.getTeamDisplayName(1), isWinner: wt === 1, score: this.teamScores[1], handPoints: this.getTeamHandPoints(1), leftoverHands: this.getTeamLeftoverHands(1) }
             ];
-        }else{
-            displayEntities = this.playerNames.map((n,i)=>({name:n,isWinner:i===data.winnerIndex,handPoints:handPoints(this.hands[i]),score:this.scores[i], leftoverHands: [this.hands[i]]}));
+        } else {
+            displayEntities = this.playerNames.map((n, i) => ({ name: n, isWinner: i === data.winnerIndex, handPoints: handPoints(this.hands[i]), score: this.scores[i], leftoverHands: [this.hands[i]] }));
         }
-        
-        await this.waitForFinalMoveVisualSettled();
+
         await this.showPreResultStage(data.finishInfo || this.inferFinalInfoFromNetworkDealEnd(data));
         this.renderer.renderDealEnd(this.playerNames[data.winnerIndex], displayEntities, data.fish, data.bonus, data.finishInfo || {});
         this.persistGameResumeSnapshot();

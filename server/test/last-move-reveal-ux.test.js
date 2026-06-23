@@ -30,7 +30,7 @@ test("server delays last-move settlement and blocks new actions during reveal", 
     assert.equal(source.includes("this.endDeal(pi, false);\n            return;"), false);
     assert.equal(source.includes("this.endDeal(this.findFishWinner(), true);\n            return true;"), false);
     assert.equal(source.includes("+ 1500"), false);
-    assert.equal(source.includes("this.addScore(wi, bonus, { broadcast: false })"), true);
+    assert.equal(source.includes("this.addScore(wi, bonus, { broadcast: false, scoreSource: \"hand_bonus\" })"), true);
     assert.equal(source.includes("scoreSource: \"table\""), true);
     assert.equal(source.includes("bonusSource: \"hand_bonus\""), true);
     assert.equal(source.includes("tableScoreDelta"), true);
@@ -47,6 +47,12 @@ test("client mirrors the reveal delay and pause menu chrome in both copies", () 
     for (const source of [appSource, webAppSource]) {
         assert.equal(source.includes("const LAST_MOVE_REVEAL_DELAY_MS = 1200;"), true);
         assert.equal(source.includes("delayLastMoveSettlement(callback, delay = LAST_MOVE_REVEAL_DELAY_MS, finalInfo = null)"), true);
+        assert.equal(source.includes("this._pendingPostFinalSchemaState = null;"), true);
+        assert.equal(source.includes("shouldDeferPostFinalSchemaState(state)"), true);
+        assert.equal(source.includes("queuePostFinalSchemaState(state, source = 'schema')"), true);
+        assert.equal(source.includes("requestAnimationFrame(() => {"), true);
+        assert.equal(source.includes("this._boardAnimationPromise = new Promise((resolve) => {"), true);
+        assert.equal(source.includes("await this.waitForFinalMoveVisualSettled();"), true);
         assert.equal(source.includes("this.delayLastMoveSettlement(() => this.endRound(pi, true)"), true);
         assert.equal(source.includes("this.delayLastMoveSettlement(()=>this.endDeal(pi,false)"), true);
         assert.equal(source.includes("this.delayLastMoveSettlement(()=>this.endDeal(this.findFishWinner(),true)"), true);
@@ -55,6 +61,8 @@ test("client mirrors the reveal delay and pause menu chrome in both copies", () 
         assert.equal(source.includes("_lastFinalMoveTileId"), true);
         assert.equal(source.includes("_lastFinalMoveVisualSource"), true);
         assert.equal(source.includes("_lastFinalMoveTableScoreDelta"), true);
+        assert.equal(source.includes("debugLog('[DealEnd]'"), true);
+        assert.equal(source.includes("await this.waitForFinalMoveVisualSettled();\n        this._pendingPostFinalSchemaState = null;\n        this.gameActive = false;"), true);
     }
 
     for (const source of [htmlSource, webHtmlSource]) {
