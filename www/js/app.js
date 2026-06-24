@@ -17391,13 +17391,15 @@ class DominoGame {
             this.playerCount = Number(state.playerCount);
         }
 
-        if (state.boardJson) {
+        if (state.boardJson && !this._boardAnimationActive) {
             try {
                 const parsed = JSON.parse(state.boardJson);
                 this.board = reconstructBoard(parsed);
             } catch (e) { console.error(e); }
+            fmLog('schema.board-applied', { gameActive: state?.gameActive, deal: state?.deal });
+        } else if (state.boardJson) {
+            fmLog('schema.board-skipped', { gameActive: state?.gameActive, deal: state?.deal, boardAnimActive: Boolean(this._boardAnimationActive) });
         }
-        fmLog('schema.board-applied', { gameActive: state?.gameActive, deal: state?.deal });
         
         if (state.currentPlayerIndex !== undefined && state.currentPlayerIndex !== null) {
             this.currentPlayer = Number(state.currentPlayerIndex);
