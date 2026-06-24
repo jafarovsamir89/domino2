@@ -1,6 +1,6 @@
 (function () {
     const SPLASH_KEY = 'dominoSplashShown';
-    const MIN_VISIBLE_MS = 3200;
+    const MIN_VISIBLE_MS = 5500;
     const splash = document.getElementById('splash-screen');
 
     if (!splash) return;

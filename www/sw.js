@@ -1,4 +1,4 @@
-const CACHE_NAME = 'domino-v41';
+const CACHE_NAME = 'domino-v42';
 const SW_VERSION = 'sw-dynamic-bypass-v4';
 const ASSETS = [
     '/',

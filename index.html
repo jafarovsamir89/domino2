@@ -7,7 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css?v=round-stage-2">
+    <link rel="stylesheet" href="css/style.css?v=round-stage-3">
     <link rel="icon" href="assets/icon.png">
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#0f1923">
@@ -31,7 +31,7 @@
         <div class="splash-copyright">© Domino Telefon Simplesoft 2026</div>
     </div>
     <script src="js/splash.js"></script>
-    <div id="start-screen" class="screen active auth-required">
+    <div id="start-screen" class="screen active auth-checking">
         <div class="start-topbar">
             <div class="start-profile-group">
                 <button class="icon-btn start-profile-btn" id="account-btn" type="button" aria-label="Account"></button>
@@ -661,11 +661,11 @@
     <script src="js/vendor/localforage.min.js" defer></script>
     <script src="shared/domino-model-core.cjs" defer></script>
     <script src="shared/domino-board-core.cjs" defer></script>
-    <script src="js/network.js?v=round-stage-2" defer></script>
-    <script type="module" src="js/app.js?v=round-stage-2" defer></script>
+    <script src="js/network.js?v=round-stage-3" defer></script>
+    <script type="module" src="js/app.js?v=round-stage-3" defer></script>
     <script>
         (() => {
-            const SW_VERSION = 'browser-production-trace-v1';
+            const SW_VERSION = 'browser-production-trace-v2';
             const SW_RELOAD_FLAG = 'dominoSwReloadedForVersion';
             let pendingSwReload = false;
 

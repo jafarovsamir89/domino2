@@ -7228,7 +7228,7 @@ class DominoGame {
     syncStartAuthGate() {
         const startScreen = document.getElementById('start-screen');
         if (!startScreen) return;
-        if (this.authResolved !== true) {
+        if (!this.authResolved) {
             startScreen.classList.add('auth-checking');
             startScreen.classList.remove('auth-required');
             return;
