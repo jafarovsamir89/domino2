@@ -30,7 +30,11 @@ function buildSchemaStateSnapshotData({ state, roomMode = "", scoreMode = "" }) 
                 handCount: player?.handCount || 0,
                 isConnected: player?.isConnected || false,
                 isBot: player?.isBot || false,
-                seatIndex
+                seatIndex,
+                controller: player?.controller || "human",
+                takeoverActive: player?.takeoverActive || false,
+                takeoverReason: player?.takeoverReason || "",
+                takeoverSince: player?.takeoverSince || 0
             };
         })
     };
@@ -60,8 +64,12 @@ function buildRestoredPlayerRows({ playerRows, sanitizeName }) {
                     handCount: Number(entry?.handCount || 0),
                     avatarUrl: String(entry?.avatarUrl || "").trim(),
                     isBot: Boolean(entry?.isBot),
-                    isConnected: Boolean(entry?.isBot),
-                    seatIndex: Number.isInteger(Number(entry?.seatIndex)) ? Number(entry.seatIndex) : -1
+                    isConnected: Boolean(entry?.isBot) || Boolean(entry?.takeoverActive),
+                    seatIndex: Number.isInteger(Number(entry?.seatIndex)) ? Number(entry.seatIndex) : -1,
+                    controller: String(entry?.controller || "human"),
+                    takeoverActive: Boolean(entry?.takeoverActive),
+                    takeoverReason: String(entry?.takeoverReason || ""),
+                    takeoverSince: Number(entry?.takeoverSince || 0)
                 };
             })
             .filter(Boolean)

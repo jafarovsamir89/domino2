@@ -4,6 +4,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 
 const DominoRoom = require("../DominoRoom");
+const { BotTakeoverController, BOT_TAKEOVER_CONFIG } = require("../botTakeover");
 
 let cachedNetworkManagerClass = null;
 
@@ -158,6 +159,37 @@ test("grace timeout triggers a disconnect forfeit", async () => {
     assert.ok(messages.some((item) => item.event === "msg" && item.payload?.key === "game-over-disconnect"));
 });
 
+test("grace timeout starts bot takeover instead of forfeit when the feature is enabled", async () => {
+    const room = createActiveRoom();
+    const originalEnabled = BOT_TAKEOVER_CONFIG.enabled;
+    BOT_TAKEOVER_CONFIG.enabled = true;
+    room.botTakeover = new BotTakeoverController(room);
+    room.allowReconnection = () => new Promise(() => {});
+    let forfeitCount = 0;
+    room.settleForfeitStake = async () => {
+        forfeitCount += 1;
+        return { ok: true };
+    };
+    room.recordForfeitMatchResult = async () => {
+        throw new Error("should not record forfeit when takeover is active");
+    };
+
+    try {
+        await room.onLeave({ sessionId: "session-1" }, false);
+        await room.finalizeReconnectTimeout("session-1");
+
+        const player = room.state.players.get("session-1");
+        assert.equal(forfeitCount, 0);
+        assert.equal(room.state.gameActive, true);
+        assert.equal(player.controller, "bot");
+        assert.equal(player.takeoverActive, true);
+        assert.equal(player.isConnected, true);
+        assert.equal(room.lastForfeitReason, "");
+    } finally {
+        BOT_TAKEOVER_CONFIG.enabled = originalEnabled;
+    }
+});
+
 test("NetworkManager explicit leave sends the marker before room.leave", async () => {
     const originalWindow = global.window;
     global.window = {
@@ -202,6 +234,37 @@ test("NetworkManager explicit leave sends the marker before room.leave", async (
         const debug = network.getDisconnectDebugState();
         assert.equal(debug.lastNetworkLeaveRoomExplicit, true);
         assert.ok(debug.lastExplicitLeaveSentAt > 0);
+    } finally {
+        global.window = originalWindow;
+    }
+});
+
+test("NetworkManager sends resume_control when reclaim is requested", () => {
+    const originalWindow = global.window;
+    global.window = {
+        addEventListener() {},
+        localStorage: {
+            getItem() { return null; },
+            setItem() {},
+            removeItem() {}
+        }
+    };
+
+    try {
+        const NetworkManager = loadNetworkManager();
+        const calls = [];
+        const network = new NetworkManager({ currentRoomState: { players: [] } });
+        network.room = {
+            connection: { isOpen: true },
+            send(event, payload) {
+                calls.push({ event, payload });
+            }
+        };
+        network.isRoomConnectionOpen = () => true;
+
+        const result = network.sendResumeControl();
+        assert.equal(result, true);
+        assert.deepEqual(calls, [{ event: "resume_control", payload: {} }]);
     } finally {
         global.window = originalWindow;
     }
@@ -360,6 +423,24 @@ test("validateClientAction rejects if pendingDisconnects.has(sessionId)", () => 
     const res = room.validateClientAction({ sessionId: "session-1" });
     assert.equal(res.ok, false);
     assert.equal(res.reason, "player_reconnecting");
+});
+
+test("validateClientAction rejects when the seat is under bot takeover", () => {
+    const room = createActiveRoom();
+    const originalEnabled = BOT_TAKEOVER_CONFIG.enabled;
+    BOT_TAKEOVER_CONFIG.enabled = true;
+    room.botTakeover = new BotTakeoverController(room);
+    const player = room.state.players.get("session-1");
+    player.controller = "bot";
+    player.takeoverActive = true;
+
+    try {
+        const res = room.validateClientAction({ sessionId: "session-1" });
+        assert.equal(res.ok, false);
+        assert.equal(res.reason, "bot_takeover_active");
+    } finally {
+        BOT_TAKEOVER_CONFIG.enabled = originalEnabled;
+    }
 });
 
 test("reconnect current player resumes fresh turnDeadlineAt", () => {

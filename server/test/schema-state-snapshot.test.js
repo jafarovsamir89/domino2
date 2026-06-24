@@ -22,7 +22,11 @@ test("buildSchemaStateSnapshotData returns the expected snapshot shape", () => {
                 handCount: 3,
                 isConnected: true,
                 isBot: false,
-                seatIndex: 0
+                seatIndex: 0,
+                controller: "human",
+                takeoverActive: false,
+                takeoverReason: "",
+                takeoverSince: 0
             }],
             ["session-2", {
                 name: "Bot",
@@ -33,7 +37,11 @@ test("buildSchemaStateSnapshotData returns the expected snapshot shape", () => {
                 handCount: 0,
                 isConnected: false,
                 isBot: true,
-                seatIndex: 2
+                seatIndex: 2,
+                controller: "bot",
+                takeoverActive: true,
+                takeoverReason: "disconnect",
+                takeoverSince: 1234
             }]
         ]),
         currentPlayerIndex: 1,
@@ -71,7 +79,11 @@ test("buildSchemaStateSnapshotData returns the expected snapshot shape", () => {
             handCount: 3,
             isConnected: true,
             isBot: false,
-            seatIndex: 0
+            seatIndex: 0,
+            controller: "human",
+            takeoverActive: false,
+            takeoverReason: "",
+            takeoverSince: 0
         },
         {
             sessionId: "session-2",
@@ -83,7 +95,11 @@ test("buildSchemaStateSnapshotData returns the expected snapshot shape", () => {
             handCount: 0,
             isConnected: false,
             isBot: true,
-            seatIndex: 2
+            seatIndex: 2,
+            controller: "bot",
+            takeoverActive: true,
+            takeoverReason: "disconnect",
+            takeoverSince: 1234
         }
     ]);
     assert.equal(snapshot.currentPlayerIndex, 1);
@@ -135,7 +151,11 @@ test("buildSchemaStateSnapshotData keeps fallback values for missing players", (
                 handCount: 1,
                 isConnected: false,
                 isBot: false,
-                seatIndex: -1
+                seatIndex: -1,
+                controller: "human",
+                takeoverActive: false,
+                takeoverReason: "",
+                takeoverSince: 0
             }]
         ]),
         teamScores: [],
@@ -155,7 +175,11 @@ test("buildSchemaStateSnapshotData keeps fallback values for missing players", (
             handCount: 1,
             isConnected: false,
             isBot: false,
-            seatIndex: -1
+            seatIndex: -1,
+            controller: "human",
+            takeoverActive: false,
+            takeoverReason: "",
+            takeoverSince: 0
         },
         {
             sessionId: "missing",
@@ -167,7 +191,11 @@ test("buildSchemaStateSnapshotData keeps fallback values for missing players", (
             handCount: 0,
             isConnected: false,
             isBot: false,
-            seatIndex: -1
+            seatIndex: -1,
+            controller: "human",
+            takeoverActive: false,
+            takeoverReason: "",
+            takeoverSince: 0
         }
     ]);
 });
@@ -201,7 +229,11 @@ test("buildRestoredPlayerRows sanitizes names and normalizes raw values", () => 
             handCount: "3",
             avatarUrl: " https://example.com/a.png ",
             isBot: false,
-            seatIndex: "2"
+            seatIndex: "2",
+            controller: "bot",
+            takeoverActive: true,
+            takeoverReason: "idle",
+            takeoverSince: "321"
         },
         {
             sessionId: "session-2",
@@ -212,7 +244,11 @@ test("buildRestoredPlayerRows sanitizes names and normalizes raw values", () => 
             handCount: undefined,
             avatarUrl: "",
             isBot: true,
-            seatIndex: 0
+            seatIndex: 0,
+            controller: "human",
+            takeoverActive: false,
+            takeoverReason: "",
+            takeoverSince: 0
         }
     ];
     const playerRowsClone = structuredClone(playerRows);
@@ -232,8 +268,12 @@ test("buildRestoredPlayerRows sanitizes names and normalizes raw values", () => 
             handCount: 3,
             avatarUrl: "https://example.com/a.png",
             isBot: false,
-            isConnected: false,
-            seatIndex: 2
+            isConnected: true,
+            seatIndex: 2,
+            controller: "bot",
+            takeoverActive: true,
+            takeoverReason: "idle",
+            takeoverSince: 321
         },
         {
             sessionId: "session-2",
@@ -245,7 +285,11 @@ test("buildRestoredPlayerRows sanitizes names and normalizes raw values", () => 
             avatarUrl: "",
             isBot: true,
             isConnected: true,
-            seatIndex: 0
+            seatIndex: 0,
+            controller: "human",
+            takeoverActive: false,
+            takeoverReason: "",
+            takeoverSince: 0
         }
     ]);
     assert.deepEqual(playerRows, playerRowsClone);
@@ -303,7 +347,11 @@ test("buildRestoredSchemaStateData applies current fallbacks and does not mutate
             avatarUrl: "https://example.com/b.png",
             isBot: true,
             isConnected: true,
-            seatIndex: 1
+            seatIndex: 1,
+            controller: "human",
+            takeoverActive: false,
+            takeoverReason: "",
+            takeoverSince: 0
         }
     ]);
     assert.equal(restored.currentPlayerIndex, 2);

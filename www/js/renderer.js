@@ -235,6 +235,13 @@ export class Renderer {
             }
             g.appendChild(pile);
 
+            if (this.app?.isBotTakeoverSeat?.(playerRef)) {
+                const takeoverBadge = document.createElement('span');
+                takeoverBadge.className = 'opp-bot-badge';
+                takeoverBadge.textContent = this.app?.t?.('bot-takeover-playing') || 'bot is playing';
+                g.appendChild(takeoverBadge);
+            }
+
             // Closeout Threat UI Overlay
             const threat = this.app?.getPlayerCloseoutThreat?.(i);
             if (threat) {

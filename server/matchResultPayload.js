@@ -16,26 +16,35 @@ function buildMatchParticipantRows({
     isTeamMode = false,
     teamScores = [],
     teamRoundWins = [],
-    winnerIndex = 0
+    winnerIndex = 0,
+    matchOutcome = "normal"
 } = {}) {
     const winnerTeamIndex = isTeamMode ? (winnerIndex % 2) : null;
+    const normalizedMatchOutcome = String(matchOutcome || "normal").trim().toLowerCase() || "normal";
+    const isDrawOutcome = normalizedMatchOutcome === "all_absent" || normalizedMatchOutcome === "draw" || normalizedMatchOutcome === "refund";
     const rows = [];
     for (let i = 0; i < playerOrder.length; i++) {
         const sid = playerOrder[i];
         const player = players?.get(sid);
         if (!player || !player.userId) continue;
         const teamIndex = isTeamMode ? (i % 2) : null;
-        rows.push({
+        const row = {
             userId: player.userId,
             name: player.name,
             teamIndex,
-            winnerKey: isTeamMode ? `team:${teamIndex}` : `player:${i}`,
+            winnerKey: isDrawOutcome ? "" : (isTeamMode ? `team:${teamIndex}` : `player:${i}`),
             points: isTeamMode ? teamScores[teamIndex] : player.score,
             roundWins: isTeamMode ? teamRoundWins[teamIndex] : player.roundWins,
-            result: isTeamMode
+            result: isDrawOutcome
+                ? "draw"
+                : isTeamMode
                 ? (teamIndex === winnerTeamIndex ? "win" : "loss")
                 : (i === winnerIndex ? "win" : "loss")
-        });
+        };
+        if (player.isBot === true) {
+            row.isBot = true;
+        }
+        rows.push(row);
     }
     return rows;
 }
@@ -67,7 +76,9 @@ function buildPlatformMatchPayload({
     forfeitUserIds = [],
     forfeitPlayerIds = []
 } = {}) {
-    const winnerKey = buildWinnerKey({ isTeamMode, winnerIndex });
+    const normalizedMatchOutcome = String(matchOutcome || "normal").trim().toLowerCase() || "normal";
+    const isDrawOutcome = normalizedMatchOutcome === "all_absent" || normalizedMatchOutcome === "draw" || normalizedMatchOutcome === "refund";
+    const winnerKey = isDrawOutcome ? "" : buildWinnerKey({ isTeamMode, winnerIndex });
     const teams = buildMatchTeams({ isTeamMode, teamScores, teamRoundWins });
     const participants = buildMatchParticipantRows({
         playerOrder,
@@ -75,7 +86,8 @@ function buildPlatformMatchPayload({
         isTeamMode,
         teamScores,
         teamRoundWins,
-        winnerIndex
+        winnerIndex,
+        matchOutcome: normalizedMatchOutcome
     }).map(sanitizeParticipant);
 
     if (isTeamMode) {
@@ -96,9 +108,9 @@ function buildPlatformMatchPayload({
         roomId,
         sourceMatchId: String(sourceMatchId || "").trim(),
         winnerKey,
-        result: "win",
+        result: isDrawOutcome ? "draw" : "win",
         stakeKey,
-        matchOutcome: String(matchOutcome || "normal").trim() || "normal",
+        matchOutcome: normalizedMatchOutcome,
         forfeitUserIds: Array.isArray(forfeitUserIds) ? forfeitUserIds.map((value) => String(value || "").trim()).filter(Boolean) : [],
         forfeitPlayerIds: Array.isArray(forfeitPlayerIds) ? forfeitPlayerIds.map((value) => String(value || "").trim()).filter(Boolean) : [],
         teams,

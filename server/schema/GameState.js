@@ -12,6 +12,17 @@ class Player extends Schema {
         this.isBot = false;
         this.avatarUrl = "";
         this.seatIndex = -1;
+        // --- Bot Takeover (feature-flagged) ---
+        // controller: who is currently acting for this seat — "human" or "bot".
+        // An original AI opponent keeps controller === "human" and isBot === true;
+        // only a SUBSTITUTE bot for an absent human sets controller === "bot".
+        this.controller = "human";
+        // takeoverActive: true while a substitute bot is playing this human's seat.
+        this.takeoverActive = false;
+        // takeoverReason: "disconnect" | "page_close" | "idle" (for UI/analytics).
+        this.takeoverReason = "";
+        // takeoverSince: epoch ms when the bot took over (debounce reclaim).
+        this.takeoverSince = 0;
     }
 }
 type("string")(Player.prototype, "name");
@@ -23,6 +34,10 @@ type("boolean")(Player.prototype, "isConnected");
 type("boolean")(Player.prototype, "isBot");
 type("string")(Player.prototype, "avatarUrl");
 type("number")(Player.prototype, "seatIndex");
+type("string")(Player.prototype, "controller");
+type("boolean")(Player.prototype, "takeoverActive");
+type("string")(Player.prototype, "takeoverReason");
+type("number")(Player.prototype, "takeoverSince");
 
 class GameState extends Schema {
     constructor() {
