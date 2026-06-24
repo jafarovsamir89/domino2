@@ -346,6 +346,8 @@ class DominoGame {
         this.preferredStartMode = this.loadPreferredStartMode();
         this.mode = 'telefon';
         this.ruleset = getRuleset(this.mode);
+        this.matchRuleState = null;
+        this.lastClassic101RoundResult = null;
         this.currentMatchStartedAt = null;
         this.currentMatchSessionId = null;
         this.activeMatchEconomyMode = 'coins';
@@ -12893,6 +12895,7 @@ class DominoGame {
             soloEconomyMode: this.soloEconomyMode,
             soloStakeKey: this.soloStakeKey,
             difficulty: this.difficulty,
+            mode: this.mode,
             isTeamMode: this.isTeamMode,
             humanPlayerIndex: this.humanPlayerIndex,
             playerNames: this.playerNames,
@@ -12914,6 +12917,7 @@ class DominoGame {
             board: boardState,
             hands,
             boneyard,
+            matchRuleState: this.cloneMatchRuleState(this.matchRuleState),
             createdAt: this.currentMatchStartedAt || new Date().toISOString()
         };
     }
@@ -13091,6 +13095,10 @@ class DominoGame {
             this.currentMatchStartedAt = snapshot.createdAt || new Date().toISOString();
             this.activeMatchEconomyMode = snapshot.soloEconomyMode || this.activeMatchEconomyMode;
             this.activeMatchStakeKey = snapshot.soloStakeKey || this.activeMatchStakeKey;
+            this.mode = String(snapshot.mode || this.mode || 'telefon').trim() || 'telefon';
+            this.ruleset = getRuleset(this.mode);
+            this.preferredStartMode = this.mode === 'classic101' ? 'classic101' : 'telefon';
+            this.lastClassic101RoundResult = null;
             this.playerName = snapshot.playerName || this.playerName;
             this.playerCount = snapshot.playerCount || this.playerCount;
             this.onlinePlayerCount = snapshot.onlinePlayerCount || this.onlinePlayerCount;
@@ -13125,6 +13133,10 @@ class DominoGame {
             this.boneyard = Array.isArray(snapshot.boneyard)
                 ? snapshot.boneyard.map((tile) => new Tile(tile.a, tile.b))
                 : [];
+            this.matchRuleState = this.mode === 'classic101'
+                ? (this.ruleset.normalizeMatchState?.(snapshot.matchRuleState, this.playerCount, this.isTeamMode) || this.ruleset.createMatchState?.(this.playerCount, this.isTeamMode) || null)
+                : null;
+            this.syncClassic101ScoreState(this.matchRuleState);
             this.ais = [];
             for (let i = 1; i < this.playerCount; i++) {
                 this.ais.push(new AIPlayer(i, this.difficulty));
@@ -13144,6 +13156,7 @@ class DominoGame {
                 this.queueAITurnIfNeeded(BOT_THINK_DELAY_MS);
             }
             this.refreshResumeBanner(snapshot);
+            this.syncStartModeUI();
             this.resumeLastSuccess = Date.now();
             this.resumeLastError = '';
             return true;
@@ -16187,6 +16200,12 @@ class DominoGame {
         }
 
         this.humanPlayerIndex = 0;
+        this.mode = this.getSoloStartMode();
+        this.ruleset = getRuleset(this.mode);
+        this.matchRuleState = this.mode === 'classic101'
+            ? (this.ruleset.createMatchState?.(this.playerCount, this.isTeamMode) || null)
+            : null;
+        this.lastClassic101RoundResult = null;
         this.myHand = null;
         this.roomPlayerRefs = [];
         this.currentRoomState = null;
@@ -16391,8 +16410,22 @@ class DominoGame {
             this.broadcastMsg(this.format('msg-last-winner-starts', { player: this.playerNames[fp] }),2000);
             this.queueAITurnIfNeeded(BOT_THINK_DELAY_MS, turnCycleId);
         }else{
-            const f=this.ruleset.determineFirstPlayer(this.hands);
-            const fp=f.player; const fi=f.tileIndex;
+            const f = this.ruleset.determineFirstPlayer(this.hands);
+            let fp = f.player;
+            let fi = f.tileIndex;
+            if (f?.drawToOpen && this.mode === 'classic101' && typeof this.ruleset.drawToOpen === 'function') {
+                const drawResult = this.ruleset.drawToOpen({
+                    hands: this.hands,
+                    boneyard: this.boneyard,
+                    startPlayer: 0
+                });
+                fp = Number.isInteger(Number(drawResult.player)) ? Number(drawResult.player) : 0;
+                fi = Number.isInteger(Number(drawResult.tileIndex)) ? Number(drawResult.tileIndex) : 0;
+            }
+            if (!this.hands[fp] || !this.hands[fp][fi]) {
+                fp = 0;
+                fi = 0;
+            }
             const tile = this.hands[fp][fi];
             this.currentPlayer=fp; this.renderState();
             debugLog('[startDeal] First player determined:', fp);
@@ -16927,6 +16960,43 @@ class DominoGame {
         const startScreenHero = document.getElementById('start-mode-hero');
         if (startScreenHero) {
             startScreenHero.classList.toggle('is-mode-classic101', mode === 'classic101');
+        }
+    }
+
+    getSoloStartMode() {
+        return ENABLE_MODE_101 && this.preferredStartMode === 'classic101' ? 'classic101' : 'telefon';
+    }
+
+    cloneMatchRuleState(matchState) {
+        if (!matchState || typeof matchState !== 'object') return null;
+        try {
+            return JSON.parse(JSON.stringify(matchState));
+        } catch {
+            return null;
+        }
+    }
+
+    syncClassic101ScoreState(matchState = this.matchRuleState) {
+        if (this.mode !== 'classic101') return;
+        if (!this.ruleset || typeof this.ruleset.normalizeMatchState !== 'function') return;
+        const normalized = this.ruleset.normalizeMatchState(matchState || this.ruleset.createMatchState?.(this.playerCount, this.isTeamMode), this.playerCount, this.isTeamMode);
+        this.matchRuleState = normalized;
+        const scoreboard = this.ruleset.getScoreboard?.(normalized, this.isTeamMode, this.playerCount)
+            || (this.isTeamMode
+                ? {
+                    teamScores: [Number(normalized.sides?.[0]?.scored || 0), Number(normalized.sides?.[1]?.scored || 0)],
+                    scores: Array.from({ length: Math.max(0, Number(this.playerCount) || 0) }, (_, index) => (index % 2 === 0 ? Number(normalized.sides?.[0]?.scored || 0) : Number(normalized.sides?.[1]?.scored || 0)))
+                }
+                : {
+                    teamScores: null,
+                    scores: Array.isArray(normalized.sides) ? normalized.sides.map((side) => Number(side?.scored || 0)) : []
+                });
+        if (this.isTeamMode) {
+            this.teamScores = Array.isArray(scoreboard.teamScores) ? scoreboard.teamScores.slice(0, 2) : [0, 0];
+            this.scores = Array.from({ length: this.playerCount }, (_, index) => Number(this.teamScores[index % 2] || 0));
+        } else {
+            this.scores = Array.isArray(scoreboard.scores) ? scoreboard.scores.slice(0, this.playerCount) : new Array(this.playerCount).fill(0);
+            this.teamScores = [0, 0];
         }
     }
 
@@ -18452,6 +18522,7 @@ class DominoGame {
             isInstantWinEnabled: this.instantWinEnabled,
             isGosha: true,
             isTeamMode: this.isTeamMode,
+            matchState: this.matchRuleState,
             getTeamMembers: this.getTeamMembers.bind(this)
         });
         if(score>0){this.addScore(pi,score);if(this.checkEnd(pi,score,true,matches.length))return true;}
@@ -18499,6 +18570,33 @@ class DominoGame {
         const openValues = this.board.openEnds.map(e => e.value);
         for (const v of openValues) {
             if (this.playerMissingSuits[pi]) this.playerMissingSuits[pi].add(v);
+        }
+
+        if (this.mode === 'classic101' && typeof this.ruleset.drawToPlay === 'function') {
+            const drawOutcome = this.ruleset.drawToPlay({
+                board: this.board,
+                hand: this.hands[pi],
+                boneyard: this.boneyard
+            });
+            if (drawOutcome.draws > 0) {
+                this.playSound('draw');
+            }
+            if (!drawOutcome.playable) {
+                this.renderState();
+                if (drawOutcome.exhausted) {
+                    this.passTurn();
+                }
+                return;
+            }
+            const moves = this.board.getValidMoves(this.normalizeHandForBoard(this.hands[pi]));
+            const move = moves[0];
+            if (!move) {
+                this.renderState();
+                return;
+            }
+            this.turnInProgress = false;
+            void this.playTile(pi, move.tileIndex, move.openEndIndex);
+            return;
         }
 
         this.hands[pi].push(this.boneyard.pop());
@@ -18574,6 +18672,7 @@ class DominoGame {
             isInstantWinEnabled: this.instantWinEnabled,
             isGosha,
             isTeamMode: this.isTeamMode,
+            matchState: this.matchRuleState,
             getTeamMembers: this.getTeamMembers.bind(this)
         });
         if (roundEnd?.isInstantWin) {
@@ -18639,6 +18738,7 @@ class DominoGame {
             isInstantWinEnabled: this.instantWinEnabled,
             isGosha: false,
             isTeamMode: this.isTeamMode,
+            matchState: this.matchRuleState,
             getTeamMembers: this.getTeamMembers.bind(this)
         });
 
@@ -18663,6 +18763,7 @@ class DominoGame {
             hands: this.hands,
             boneyard: this.boneyard,
             isTeamMode: this.isTeamMode,
+            matchState: this.matchRuleState,
             getTeamMembers: this.getTeamMembers.bind(this)
         });
         if (blocked) {
@@ -18759,7 +18860,9 @@ class DominoGame {
         } else if (this.boneyard.length > 0) {
             this.turnInProgress = false;
             this.drawFromBoneyard();
-            this.queueAITurnIfNeeded(BOT_THINK_DELAY_MS);
+            if (this.mode !== 'classic101') {
+                this.queueAITurnIfNeeded(BOT_THINK_DELAY_MS);
+            }
         } else {
             this.turnInProgress = false;
             this.passTurn();
@@ -18772,6 +18875,7 @@ class DominoGame {
             hands: this.hands,
             boneyard: this.boneyard,
             isTeamMode: this.isTeamMode,
+            matchState: this.matchRuleState,
             getTeamMembers: this.getTeamMembers.bind(this)
         });
         return Number.isInteger(Number(resolved?.winnerIndex)) ? Number(resolved.winnerIndex) : 0;
@@ -18792,6 +18896,55 @@ class DominoGame {
     endDeal(wi,fish){
         this.roundOver=false;
         this.gameActive=false;this.lastDealWinner=wi;this.turnInProgress=false;this.clearTurnTimers();let bonus=0;
+        if (this.mode === 'classic101') {
+            const roundResult = this.ruleset.resolveRoundEnd({
+                score: 0,
+                hand: this.hands[wi] || [],
+                board: this.board,
+                hands: this.hands,
+                boneyard: this.boneyard,
+                playerIndex: wi,
+                isInstantWinEnabled: this.instantWinEnabled,
+                isGosha: false,
+                isTeamMode: this.isTeamMode,
+                fish: Boolean(fish),
+                matchState: this.matchRuleState,
+                getTeamMembers: this.getTeamMembers.bind(this)
+            });
+            this.lastClassic101RoundResult = roundResult;
+            this.matchRuleState = roundResult.matchState || this.matchRuleState;
+            this.syncClassic101ScoreState(this.matchRuleState);
+            bonus = Number(roundResult?.scoreDelta || 0);
+            if (bonus > 0) {
+                this.playSound('score');
+                this.showScoreFeedback(bonus);
+            }
+            sndWin();
+            const scorePool = this.isTeamMode ? this.teamScores : this.scores;
+            const cs = scorePool.length > 0 ? Math.max(...scorePool) : 0;
+            if (cs >= this.ruleset.matchTarget) {
+                const rw = scorePool.indexOf(cs);
+                if (rw === -1) return;
+                this.endRound(this.isTeamMode ? (rw === 0 ? 0 : 1) : rw);
+                return;
+            }
+            let displayEntities;
+            if (this.isTeamMode) {
+                const wt = this.getTeam(wi);
+                displayEntities = [
+                    {name: this.getTeamDisplayName(0), isWinner: wt===0, score: this.teamScores[0], handPoints: this.getTeamHandPoints(0), leftoverHands: this.getTeamLeftoverHands(0)},
+                    {name: this.getTeamDisplayName(1), isWinner: wt===1, score: this.teamScores[1], handPoints: this.getTeamHandPoints(1), leftoverHands: this.getTeamLeftoverHands(1)}
+                ];
+            } else {
+                displayEntities = this.playerNames.map((n,i)=>({name:n,isWinner:i===wi,handPoints:this.ruleset.handPoints(this.hands[i]),score:this.scores[i], leftoverHands: [this.hands[i]]}));
+            }
+            this.renderer.renderDealEnd(this.playerNames[wi],displayEntities,Boolean(fish),bonus);
+            this.deal++;
+            this.persistGameResumeSnapshot();
+            void this.syncLocalPresence();
+            this.scheduleNextDealAdvance(DEAL_END_MODAL_MS);
+            return;
+        }
         let displayEntities;
         if(this.isTeamMode){
             const wt=this.getTeam(wi);let os=0;
@@ -18834,7 +18987,20 @@ class DominoGame {
         this.clearTurnTimers();
         let wins=1;
         let displayEntities;
-        if(this.isTeamMode){
+        if (this.mode === 'classic101') {
+            wins = this.lastClassic101RoundResult?.dryWin ? 2 : 1;
+            this.lastClassic101RoundResult = null;
+            if(this.isTeamMode){
+                this.teamRoundWins[this.getTeam(wi)]+=wins;
+                displayEntities = [
+                    {name: this.getTeamDisplayName(0), isWinner: this.getTeam(wi)===0, score: this.teamScores[0], roundWins: this.teamRoundWins[0]},
+                    {name: this.getTeamDisplayName(1), isWinner: this.getTeam(wi)===1, score: this.teamScores[1], roundWins: this.teamRoundWins[1]}
+                ];
+            } else {
+                this.roundWins[wi]+=wins;
+                displayEntities = this.playerNames.map((n,i)=>({name:n,isWinner:i===wi,score:this.scores[i],roundWins:this.roundWins[i]}));
+            }
+        } else if(this.isTeamMode){
             if(this.teamScores[1-this.getTeam(wi)]<this.dlossThreshold)wins=2;this.teamRoundWins[this.getTeam(wi)]+=wins;
             displayEntities = [
                 {name: this.getTeamDisplayName(0), isWinner: this.getTeam(wi)===0, score: this.teamScores[0], roundWins: this.teamRoundWins[0]},
