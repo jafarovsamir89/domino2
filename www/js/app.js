@@ -237,6 +237,7 @@ class DominoGame {
         this.lastResultStageKey = '';
         this.onlineCoinSummary = { spent: 0, won: 0 };
         this.currentRoomState = null;
+        this.botTakeoverUi = null;
         this.seatSelectionUi = null;
         this._lastRoomCreateVisibility = null;
         this._lastRoomCreateMode = null;
@@ -2477,7 +2478,10 @@ class DominoGame {
             seatNumber: Number.isInteger(Number(player?.seatNumber)) ? Number(player.seatNumber) : (Number.isInteger(Number(player?.seatIndex)) && Number(player.seatIndex) >= 0 ? Number(player.seatIndex) + 1 : 0),
             team: Number.isInteger(Number(player?.team)) ? Number(player.team) : null,
             isBot: Boolean(player?.isBot),
-            isConnected: Boolean(player?.isConnected)
+            isConnected: Boolean(player?.isConnected),
+            controller: String(player?.controller || '').trim() || 'human',
+            takeoverActive: Boolean(player?.takeoverActive),
+            takeoverReason: String(player?.takeoverReason || '').trim() || null
         }));
     }
 
@@ -2522,9 +2526,137 @@ class DominoGame {
                 displayName: String(player?.name || '').trim() || null,
                 team: Number.isInteger(Number(player?.team)) ? Number(player.team) : null,
                 isBot: Boolean(player?.isBot),
-                isConnected: Boolean(player?.isConnected)
+                isConnected: Boolean(player?.isConnected),
+                controller: String(player?.controller || '').trim() || 'human',
+                takeoverActive: Boolean(player?.takeoverActive)
             };
         });
+    }
+
+    getRoomStatePlayerBySessionId(sessionId, roomState = this.currentRoomState) {
+        const normalizedSessionId = String(sessionId || '').trim();
+        if (!normalizedSessionId) return null;
+        const players = Array.isArray(roomState?.players) ? roomState.players : [];
+        return players.find((player) => String(player?.sessionId || '').trim() === normalizedSessionId) || null;
+    }
+
+    getLocalRoomPlayerState(roomState = this.currentRoomState) {
+        return this.getRoomStatePlayerBySessionId(this.network?.room?.sessionId || '', roomState);
+    }
+
+    isBotTakeoverSeat(player) {
+        return Boolean(player && (player.takeoverActive || player.controller === 'bot'));
+    }
+
+    isLocalSeatBotControlled(roomState = this.currentRoomState) {
+        return this.isBotTakeoverSeat(this.getLocalRoomPlayerState(roomState));
+    }
+
+    getRoomStatePlayerSubtitle(player) {
+        if (!player) return this.t('online-ready');
+        if (this.isBotTakeoverSeat(player)) {
+            return this.t('bot-takeover-playing') || 'Bot is playing';
+        }
+        if (player.isConnected === false) {
+            return this.t('online-offline');
+        }
+        return this.t('online-ready');
+    }
+
+    ensureBotTakeoverUi() {
+        if (this.botTakeoverUi?.wrap?.isConnected) {
+            return this.botTakeoverUi;
+        }
+        const host = document.getElementById('game-screen');
+        if (!host) return null;
+
+        const wrap = document.createElement('div');
+        wrap.className = 'bot-takeover-banner is-hidden';
+
+        const text = document.createElement('div');
+        text.className = 'bot-takeover-banner-text';
+
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'btn btn-action btn-strong bot-takeover-banner-btn';
+        button.textContent = this.t('bot-takeover-return-control') || 'Return control';
+        button.addEventListener('click', () => {
+            this.network?.sendResumeControl?.();
+        });
+
+        wrap.appendChild(text);
+        wrap.appendChild(button);
+        host.appendChild(wrap);
+        this.botTakeoverUi = { wrap, text, button };
+        return this.botTakeoverUi;
+    }
+
+    syncBotTakeoverUiState(roomState = this.currentRoomState) {
+        const ui = this.ensureBotTakeoverUi();
+        if (!ui) return;
+        const localPlayer = this.getLocalRoomPlayerState(roomState);
+        const active = this.gameActive && this.isBotTakeoverSeat(localPlayer);
+        ui.text.textContent = this.t('bot-takeover-active') || 'Bot is playing for you right now.';
+        ui.button.textContent = this.t('bot-takeover-return-control') || 'Return control';
+        ui.wrap.classList.toggle('is-hidden', !active);
+    }
+
+    onBotTakeover(payload = {}) {
+        const roomState = this.currentRoomState;
+        const seatIndex = Number(payload?.seatIndex);
+        const roomPlayers = Array.isArray(roomState?.players) ? roomState.players : [];
+        const affectedPlayer = Number.isInteger(seatIndex) && seatIndex >= 0
+            ? roomPlayers.find((player) => Number(player?.seatIndex) === seatIndex || Number(player?.index) === seatIndex)
+            : null;
+        if (affectedPlayer) {
+            affectedPlayer.controller = 'bot';
+            affectedPlayer.takeoverActive = true;
+            affectedPlayer.takeoverReason = String(payload?.reason || '').trim() || affectedPlayer.takeoverReason || 'disconnect';
+            affectedPlayer.isConnected = true;
+        }
+        if (this.isLocalSeatBotControlled(roomState)) {
+            this.selectedTileIndex = -1;
+            this.renderer?.removeArrows?.();
+            this.syncMoveHintSelectionUiState?.();
+        }
+        this.syncBotTakeoverUiState(roomState);
+        this.scheduleRealtimeRender({
+            boardChanged: false,
+            handChanged: true,
+            opponentHandsChanged: true,
+            scoresChanged: false,
+            infoChanged: false,
+            force: true
+        });
+    }
+
+    onBotResume(payload = {}) {
+        const roomState = this.currentRoomState;
+        const seatIndex = Number(payload?.seatIndex);
+        const roomPlayers = Array.isArray(roomState?.players) ? roomState.players : [];
+        const localPlayer = this.getLocalRoomPlayerState(roomState);
+        const wasLocalTakeover = this.isBotTakeoverSeat(localPlayer);
+        const affectedPlayer = Number.isInteger(seatIndex) && seatIndex >= 0
+            ? roomPlayers.find((player) => Number(player?.seatIndex) === seatIndex || Number(player?.index) === seatIndex)
+            : null;
+        if (affectedPlayer) {
+            affectedPlayer.controller = 'human';
+            affectedPlayer.takeoverActive = false;
+            affectedPlayer.takeoverReason = '';
+            affectedPlayer.isConnected = true;
+        }
+        this.syncBotTakeoverUiState(roomState);
+        this.scheduleRealtimeRender({
+            boardChanged: false,
+            handChanged: true,
+            opponentHandsChanged: true,
+            scoresChanged: false,
+            infoChanged: false,
+            force: true
+        });
+        if (affectedPlayer && localPlayer && affectedPlayer === localPlayer && wasLocalTakeover) {
+            this.renderer?.showMessage?.(this.t('bot-takeover-you-back') || 'You are back in the game.', 1800);
+        }
     }
 
     recordInviteSendAttempt(payload = {}) {
@@ -13972,6 +14104,7 @@ class DominoGame {
         if (leaveRoom && this.network) {
             this.network.leaveRoom({ explicit: true, reason: 'menu' });
             this.currentRoomState = null;
+            this.syncBotTakeoverUiState(null);
             this.sendSocialPresenceUpdate('online', { roomCode: null }).catch(() => {});
         }
         this.showMultiplayerPanel(null);
@@ -14105,6 +14238,7 @@ class DominoGame {
         this.turnVersion = Number(roomState?.turnVersion || this.turnVersion || 1);
         this.turnTimeoutMs = Number(roomState?.turnDurationMs || this.turnTimeoutMs || TURN_TIMEOUT_MS);
         this.syncServerClock(roomState?.serverNow || roomState?.serverTime || 0);
+        this.syncBotTakeoverUiState(roomState);
         const topRightHud = this.getTopRightHudState();
         debugLog("[CLIENT_DEBUG] onRoomStateUpdate", {
             roomId: roomState?.roomId,
@@ -14211,13 +14345,17 @@ class DominoGame {
             const row = createChip({
                 kind: player.isBot ? 'bot' : 'human',
                 displayName: player.sessionId === mySessionId ? `${displayName} (${this.t('online-you')})` : displayName,
-                subtitle: 'Hazır',
+                subtitle: this.getRoomStatePlayerSubtitle(player),
                 avatarUrl,
                 seatNumber: player.seatNumber,
                 sessionId: player.sessionId || '',
                 isSelf: player.sessionId === mySessionId,
                 iconText: player.isBot ? '🤖' : ''
             });
+            const stateEl = row.querySelector('.room-player-state');
+            if (stateEl && this.isBotTakeoverSeat(player)) {
+                stateEl.classList.add('is-bot-takeover');
+            }
             list.appendChild(row);
         }
 
@@ -14488,6 +14626,10 @@ class DominoGame {
             this.lastBlockedOnlineActionReason = "game_inactive";
             return false;
         }
+        if (this.isLocalSeatBotControlled()) {
+            this.lastBlockedOnlineActionReason = "bot_takeover_active";
+            return false;
+        }
         if (this.currentPlayer !== this.humanPlayerIndex) {
             this.lastBlockedOnlineActionReason = "not_human_turn";
             return false;
@@ -14506,7 +14648,10 @@ class DominoGame {
             }
             this.renderer?.showMessage?.(msg, 1800);
         } else {
-            this.renderer?.showMessage?.(this.t('connection-lost') || 'Connection lost', 1800);
+            const message = reason === 'bot_takeover_active'
+                ? (this.t('bot-takeover-active') || 'Bot is playing for you right now.')
+                : (this.t('connection-lost') || 'Connection lost');
+            this.renderer?.showMessage?.(message, 1800);
         }
     }
 
@@ -15676,6 +15821,7 @@ class DominoGame {
         this.matchOver = false;
         this.roundOver = false;
         this.currentRoomState = null;
+        this.syncBotTakeoverUiState(null);
         this.disconnectEconomyApplied = false;
         this.syncOpenRoomWaitingBanner(null);
         document.getElementById('game-screen').classList.remove('active');
@@ -16109,19 +16255,21 @@ class DominoGame {
             this.validMoves = this.board.getValidMoves(myHand);
         }
         const myTurn = this.currentPlayer === this.humanPlayerIndex;
-        this.renderer.renderHand(myHand, this.validMoves, this.selectedTileIndex, myTurn);
+        const localBotControlled = this.isLocalSeatBotControlled();
+        this.renderer.renderHand(myHand, this.validMoves, this.selectedTileIndex, myTurn && !localBotControlled);
 
         const canPlay = this.board.canPlayAny(this.normalizeHandForBoard(myHand));
         const emptyBoneyard = this.boneyard.length === 0;
         const connectionLost = Boolean(this.network?.isMultiplayer) && (
             !this.network?.isRoomConnectionOpen?.() || this.networkActionBlockedForReconnect
         );
-        this.renderer.drawBtn.disabled = connectionLost || waitingOpenRoom || !myTurn || canPlay || emptyBoneyard || this.postMoveWindowActive || this.turnInProgress || this.lastMoveRevealPending;
-        this.renderer.passBtn.disabled = connectionLost || waitingOpenRoom || !myTurn || canPlay || !emptyBoneyard || this.postMoveWindowActive || this.turnInProgress || this.lastMoveRevealPending;
+        this.renderer.drawBtn.disabled = connectionLost || waitingOpenRoom || !myTurn || localBotControlled || canPlay || emptyBoneyard || this.postMoveWindowActive || this.turnInProgress || this.lastMoveRevealPending;
+        this.renderer.passBtn.disabled = connectionLost || waitingOpenRoom || !myTurn || localBotControlled || canPlay || !emptyBoneyard || this.postMoveWindowActive || this.turnInProgress || this.lastMoveRevealPending;
 
-        this.goshaCombo = (this.gameActive && myTurn) ? this.board.getGoshaCombo(myHand) : null;
+        this.goshaCombo = (this.gameActive && myTurn && !localBotControlled) ? this.board.getGoshaCombo(myHand) : null;
         this.renderer.showGoshaBtn(this.goshaCombo, () => this.playGoshaCombo());
         this.updateTurnTimerHud();
+        this.syncBotTakeoverUiState(this.currentRoomState);
         void this.syncLocalPresence();
         this.persistGameResumeSnapshot();
     }
@@ -16259,6 +16407,13 @@ class DominoGame {
             "online-you": { az: "you", en: "you" },
             "online-ready": { az: "ready", en: "ready" },
             "online-offline": { az: "offline", en: "offline" },
+            "bot-takeover-playing": { az: "bot oynayır", en: "bot is playing", ru: "играет бот" },
+            "bot-takeover-return-control": { az: "İdarəni qaytar", en: "Return control", ru: "Вернуть управление" },
+            "bot-takeover-active": { az: "Hazırda sizin yerinizə bot oynayır.", en: "Bot is playing for you right now.", ru: "Сейчас за вас играет бот." },
+            "bot-takeover-you-back": { az: "Yenidən oyundasınız.", en: "You are back in the game.", ru: "Вы снова в игре." },
+            "bot_takeover": { az: "{name} ayrıldı, indi onun yerinə bot oynayır", en: "{name} left, a bot is now playing", ru: "{name} выбыл, теперь за него играет бот" },
+            "bot_resume": { az: "{name} qayıtdı, bot oyundan çıxdı", en: "{name} returned, the bot stepped away", ru: "{name} вернулся, бот уступил место" },
+            "bot-takeover-all-absent": { az: "Bütün oyunçular oyundan ayrıldı. Matç heç-heçə bağlandı və stavkalar qaytarıldı.", en: "All players were absent. The match ended in a draw and stakes were refunded.", ru: "Все игроки отсутствовали. Матч завершён вничью, ставки возвращены." },
             "online-waiting-slot": { az: "Waiting for player {index}", en: "Waiting for player {index}" },
             "online-room-closed": { az: "Room closed", en: "Room closed" },
             "online-room-summary": { az: "{humans} humans + {bots} AI, {total} total", en: "{humans} humans + {bots} AI, {total} total" },
@@ -17180,7 +17335,10 @@ class DominoGame {
             this.clearPendingOnlineAction({ rollback: true });
             const reason = String(payload?.reason || '').trim();
             if (reason && reason !== 'stale_turn') {
-                this.renderer.showMessage(reason.replace(/_/g, ' '), 1200);
+                const message = reason === 'bot_takeover_active'
+                    ? (this.t('bot-takeover-active') || 'Bot is playing for you right now.')
+                    : reason.replace(/_/g, ' ');
+                this.renderer.showMessage(message, 1200);
             }
             return;
         }

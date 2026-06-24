@@ -57,9 +57,26 @@ class NetworkManager {
 
         if (typeof window !== 'undefined') {
             window.addEventListener('online', () => {
+                if (this.room) {
+                    this.requestResumeControlIfNeeded('online');
+                    return;
+                }
                 if (!this.room && !this.manualLeaveRequested) {
                     const token = this.getStoredReconnectionToken();
                     if (token) this.scheduleReconnect(token, this.game.account?.getStoredGameResumeState?.(), 0);
+                }
+            });
+        }
+        if (typeof document !== 'undefined') {
+            document.addEventListener('visibilitychange', () => {
+                if (document.visibilityState !== 'visible' || this.manualLeaveRequested) return;
+                if (this.room) {
+                    this.requestResumeControlIfNeeded('visibilitychange');
+                    return;
+                }
+                const token = this.getStoredReconnectionToken();
+                if (token) {
+                    this.scheduleReconnect(token, this.game.account?.getStoredGameResumeState?.(), 0);
                 }
             });
         }
@@ -259,6 +276,28 @@ class NetworkManager {
         return Number(this.room?.state?.turnVersion || 0);
     }
 
+    getLocalRoomPlayerState() {
+        const sessionId = String(this.room?.sessionId || '').trim();
+        if (!sessionId) return null;
+        const players = Array.isArray(this.game?.currentRoomState?.players) ? this.game.currentRoomState.players : [];
+        return players.find((player) => String(player?.sessionId || '').trim() === sessionId) || null;
+    }
+
+    isLocalSeatBotControlled() {
+        const player = this.getLocalRoomPlayerState();
+        return Boolean(player && (player.takeoverActive || player.controller === 'bot'));
+    }
+
+    requestResumeControlIfNeeded(source = 'resume-check') {
+        if (!this.room) return false;
+        if (!this.isLocalSeatBotControlled()) return false;
+        debugLog('[CLIENT_DEBUG] network:resume_control:auto', {
+            source,
+            sessionId: this.room?.sessionId || ''
+        });
+        return this.sendResumeControl();
+    }
+
     async resolveRoomId(code) {
         const roomCode = String(code || '').trim().toUpperCase();
         if (!roomCode) return null;
@@ -419,6 +458,14 @@ class NetworkManager {
                 hasValues: Boolean(msg?.values && Object.keys(msg.values).length)
             });
             this.game.renderer.showMessage(this.game.resolveUiMessage?.(msg) || msg.text || "", msg.time);
+        });
+
+        this.room.onMessage("bot_takeover", (payload) => {
+            this.game.onBotTakeover?.(payload);
+        });
+
+        this.room.onMessage("bot_resume", (payload) => {
+            this.game.onBotResume?.(payload);
         });
 
         this.room.onMessage("sound", (name) => {
@@ -774,6 +821,20 @@ class NetworkManager {
         if (this.room) this.room.send("choose_seat", {
             seatIndex: Number(seatIndex)
         });
+    }
+
+    sendResumeControl() {
+        if (!this.isRoomConnectionOpen()) return false;
+        try {
+            if (this.room) {
+                this.room.send("resume_control", {});
+                return true;
+            }
+            return false;
+        } catch (error) {
+            console.error("sendResumeControl failed:", error);
+            return false;
+        }
     }
 
     sendReaction(type) {

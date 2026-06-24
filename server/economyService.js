@@ -221,7 +221,7 @@ async function reserveEconomyStakeForRoom(room) {
     }
 }
 
-async function settleEconomyRoundForRoom(room, winnerIndex) {
+async function settleEconomyRoundForRoom(room, winnerIndex, options = {}) {
     if (room.currentStakeKey === "free") {
         room.pendingEconomySettlement = Promise.resolve();
         room.lastRoundEconomySummary = null;
@@ -233,12 +233,16 @@ async function settleEconomyRoundForRoom(room, winnerIndex) {
         return null;
     }
 
-    const winnerUserIds = buildWinnerUserIds({
-        playerOrder: room.state.playerOrder,
-        identityBySessionId: room.identityBySessionId,
-        isTeamMode: room.state.isTeamMode,
-        winnerIndex
-    });
+    const normalizedMatchOutcome = String(options?.matchOutcome || "normal").trim().toLowerCase() || "normal";
+    const isRefundOutcome = normalizedMatchOutcome === "all_absent" || normalizedMatchOutcome === "draw" || normalizedMatchOutcome === "refund";
+    const winnerUserIds = isRefundOutcome
+        ? []
+        : buildWinnerUserIds({
+            playerOrder: room.state.playerOrder,
+            identityBySessionId: room.identityBySessionId,
+            isTeamMode: room.state.isTeamMode,
+            winnerIndex
+        });
 
     try {
         const response = await postSettleEconomyMatch({

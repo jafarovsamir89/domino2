@@ -5,9 +5,9 @@ const { buildRoomStatePlayers, buildRoomStatePayload } = require("../roomStatePa
 
 test("buildRoomStatePlayers builds rows in player order with current fallbacks", () => {
     const players = new Map([
-        ["s1", { name: "Alice Johnson", userId: "u1", avatarUrl: "a1", isConnected: true, isBot: false, seatIndex: 0 }],
-        ["s2", { name: "Bob Marley", userId: "u2", avatarUrl: "a2", isConnected: false, isBot: true, seatIndex: -1 }],
-        ["s3", { name: "Carol Smith", userId: "u3", avatarUrl: "a3", isConnected: true, isBot: false, seatIndex: 2 }]
+        ["s1", { name: "Alice Johnson", userId: "u1", avatarUrl: "a1", isConnected: true, isBot: false, seatIndex: 0, controller: "human", takeoverActive: false, takeoverReason: "" }],
+        ["s2", { name: "Bob Marley", userId: "u2", avatarUrl: "a2", isConnected: false, isBot: true, seatIndex: -1, controller: "human", takeoverActive: false, takeoverReason: "" }],
+        ["s3", { name: "Carol Smith", userId: "u3", avatarUrl: "a3", isConnected: true, isBot: false, seatIndex: 2, controller: "bot", takeoverActive: true, takeoverReason: "disconnect" }]
     ]);
     const identities = new Map([
         ["s1", { playerId: "p1", avatarUrl: "ia1" }],
@@ -23,9 +23,9 @@ test("buildRoomStatePlayers builds rows in player order with current fallbacks",
     });
 
     assert.deepEqual(rows, [
-        { sessionId: "s1", index: 0, name: "Alice", userId: "u1", playerId: "p1", avatarUrl: "a1", isConnected: true, isBot: false, seatIndex: 0, seatNumber: 1, voiceEnabled: false },
-        { sessionId: "s2", index: 1, name: "Bob", userId: "u2", playerId: "u2", avatarUrl: "a2", isConnected: false, isBot: true, seatIndex: -1, seatNumber: 0, voiceEnabled: false },
-        { sessionId: "s3", index: 2, name: "Carol", userId: "u3", playerId: "p3", avatarUrl: "a3", isConnected: true, isBot: false, seatIndex: 2, seatNumber: 3, voiceEnabled: false }
+        { sessionId: "s1", index: 0, name: "Alice", userId: "u1", playerId: "p1", avatarUrl: "a1", isConnected: true, isBot: false, controller: "human", takeoverActive: false, takeoverReason: "", seatIndex: 0, seatNumber: 1, voiceEnabled: false },
+        { sessionId: "s2", index: 1, name: "Bob", userId: "u2", playerId: "u2", avatarUrl: "a2", isConnected: false, isBot: true, controller: "human", takeoverActive: false, takeoverReason: "", seatIndex: -1, seatNumber: 0, voiceEnabled: false },
+        { sessionId: "s3", index: 2, name: "Carol", userId: "u3", playerId: "p3", avatarUrl: "a3", isConnected: true, isBot: false, controller: "bot", takeoverActive: true, takeoverReason: "disconnect", seatIndex: 2, seatNumber: 3, voiceEnabled: false }
     ]);
     assert.deepEqual(players, playersClone);
     assert.deepEqual(identities, identitiesClone);
@@ -47,6 +47,9 @@ test("buildRoomStatePlayers keeps fallback values for missing players", () => {
         avatarUrl: "",
         isConnected: false,
         isBot: false,
+        controller: "human",
+        takeoverActive: false,
+        takeoverReason: "",
         seatIndex: -1,
         seatNumber: 0,
         voiceEnabled: false
@@ -71,6 +74,9 @@ test("buildRoomStatePlayers falls back when identity name is undefined-like", ()
         avatarUrl: "",
         isConnected: true,
         isBot: false,
+        controller: "human",
+        takeoverActive: false,
+        takeoverReason: "",
         seatIndex: 0,
         seatNumber: 1,
         voiceEnabled: false
@@ -94,8 +100,8 @@ test("buildRoomStatePayload preserves room_state fields and currentPlayers logic
             serverNow: 1111111111111,
             turnVersion: 7,
             players: new Map([
-                ["s1", { name: "Host Alpha", isConnected: true, isBot: false, seatIndex: 0 }],
-                ["s2", { name: "Guest Beta", isConnected: true, isBot: false, seatIndex: 1 }]
+                ["s1", { name: "Host Alpha", isConnected: true, isBot: false, seatIndex: 0, controller: "human", takeoverActive: false, takeoverReason: "" }],
+                ["s2", { name: "Guest Beta", isConnected: true, isBot: false, seatIndex: 1, controller: "bot", takeoverActive: true, takeoverReason: "idle" }]
             ]),
             playerOrder: ["s1", "s2"]
         },
@@ -139,8 +145,8 @@ test("buildRoomStatePayload preserves room_state fields and currentPlayers logic
         seatSelectionRequired: false,
         hostName: "Host",
         players: [
-            { sessionId: "s1", index: 0, name: "Host", userId: "", playerId: "", avatarUrl: "", isConnected: true, isBot: false, seatIndex: 0, seatNumber: 1, team: 0, voiceEnabled: false },
-            { sessionId: "s2", index: 1, name: "Guest", userId: "", playerId: "", avatarUrl: "", isConnected: true, isBot: false, seatIndex: 1, seatNumber: 2, team: 1, voiceEnabled: false }
+            { sessionId: "s1", index: 0, name: "Host", userId: "", playerId: "", avatarUrl: "", isConnected: true, isBot: false, controller: "human", takeoverActive: false, takeoverReason: "", seatIndex: 0, seatNumber: 1, team: 0, voiceEnabled: false },
+            { sessionId: "s2", index: 1, name: "Guest", userId: "", playerId: "", avatarUrl: "", isConnected: true, isBot: false, controller: "bot", takeoverActive: true, takeoverReason: "idle", seatIndex: 1, seatNumber: 2, team: 1, voiceEnabled: false }
         ],
         roomStart: {
             roomMode: "team",

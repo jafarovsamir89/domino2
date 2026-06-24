@@ -18,6 +18,7 @@ const { buildSchemaStateSnapshotData, buildRestoredSchemaStateData } = require("
 const { loadCustomStateSnapshotForRestore } = require("./roomRestoreLookup");
 const { upsertLivePlayer, removeLivePlayer, setRoomGameActive, removeRoomPlayers } = require("./livePresence");
 const { rememberRoom, forgetRoom } = require("./roomRegistry");
+const { BotTakeoverController, BOT_TAKEOVER_CONFIG, TAKEOVER_REASON } = require("./botTakeover");
 
 const TARGET = 365, MAX_R = 3, DLOSS = 255, IWIN = 35;
 const TURN_TIMEOUT_MS = 30000;
@@ -98,6 +99,7 @@ class DominoRoom extends Room {
 
         this.setState(new GameState());
         this.attachStateCollections();
+        this.botTakeover = new BotTakeoverController(this);
         this.voiceEnabledBySessionId = new Set();
         this.roomMode = normalizeRoomMode(options.roomMode, options.isTeamMode);
         this.boardStartAxis = options.boardStartAxis || options.boardStart || 'horizontal';
@@ -233,6 +235,7 @@ class DominoRoom extends Room {
         this.onMessage("voice_signal", (client, message) => this.handleVoiceSignal(client, message));
         this.onMessage("timeout_continue", (client) => this.handleTimeoutContinue(client));
         this.onMessage("sync_request", (client) => this.handleSyncRequest(client));
+        this.onMessage("resume_control", (client) => this.handleResumeControl(client));
         this.onMessage("explicit_leave", (client, message = {}) => {
             this.explicitLeaveSessionIds.add(client.sessionId);
             debugLog("[ROOM_DEBUG] explicit_leave", {
@@ -355,7 +358,11 @@ class DominoRoom extends Room {
         if (!currentSessionId) return null;
         const player = this.state?.players?.get?.(currentSessionId) || null;
         if (!player || player.isBot) return null;
+        if (this.isSeatUnderBotTakeover(player)) return null;
         const pending = this.getPendingDisconnectEntry(currentSessionId);
+        if (pending && this.canUseBotTakeoverForSeat(player, { sessionId: currentSessionId, reason: TAKEOVER_REASON.DISCONNECT })) {
+            return null;
+        }
         if (!pending && player.isConnected !== false) return null;
         return {
             sessionId: currentSessionId,
@@ -474,7 +481,11 @@ class DominoRoom extends Room {
             resolvedPlayer.isConnected = false;
         }
 
-        if (this.state?.gameActive && String(this.state?.playerOrder?.[this.state?.currentPlayerIndex] || "") === sessionId) {
+        if (
+            this.state?.gameActive
+            && String(this.state?.playerOrder?.[this.state?.currentPlayerIndex] || "") === sessionId
+            && !this.canUseBotTakeoverForSeat(resolvedPlayer, { sessionId, reason: TAKEOVER_REASON.DISCONNECT })
+        ) {
             this.pauseTurnTimerForReconnect({
                 sessionId,
                 playerName: resolvedPlayerName,
@@ -636,6 +647,11 @@ class DominoRoom extends Room {
                 isPlaying: Boolean(this.state.gameActive)
             });
         }
+        if (player && this.isSeatUnderBotTakeover(player)) {
+            this.botTakeover?.resume?.(player, {
+                requestUserId: identity?.userId || player.userId || ""
+            });
+        }
 
         this.lastReconnectSuccessAt = Date.now();
         this.lastReconnectCompletedAt = this.lastReconnectSuccessAt;
@@ -714,6 +730,18 @@ class DominoRoom extends Room {
             this.broadcast("msg", { key: "msg-player-left-room", values: { player: playerName }, time: 1500 });
             this.broadcastRoomState();
             return true;
+        }
+
+        if (player && this.canUseBotTakeoverForSeat(player, { sessionId: normalizedSessionId, reason: TAKEOVER_REASON.DISCONNECT })) {
+            const beganTakeover = this.botTakeover?.begin?.(player, TAKEOVER_REASON.DISCONNECT) === true;
+            if (beganTakeover) {
+                this.lastForfeitReason = "";
+                this.lastGameEndReason = "";
+                this.lastGameEndWasExplicitLeave = false;
+                this.lastGameEndWasGraceExpired = false;
+                this.syncState({ includeBoardJson: false });
+                return true;
+            }
         }
 
         this.lastForfeitReason = "reconnect_timeout";
@@ -829,6 +857,117 @@ class DominoRoom extends Room {
             }
         }
         return count;
+    }
+
+    getPlayerForTurnIndex(playerIndex) {
+        const normalizedIndex = Number(playerIndex);
+        if (!Number.isInteger(normalizedIndex) || normalizedIndex < 0) return null;
+        const sessionId = String(this.state?.playerOrder?.[normalizedIndex] || "").trim();
+        if (!sessionId) return null;
+        return this.state?.players?.get?.(sessionId) || null;
+    }
+
+    isSeatUnderBotTakeover(player) {
+        return Boolean(this.botTakeover?.isBotControlled?.(player));
+    }
+
+    isSeatDrivenByBot(player) {
+        return Boolean(player?.isBot) || this.isSeatUnderBotTakeover(player);
+    }
+
+    canUseBotTakeoverForSeat(player, { sessionId = "", reason = TAKEOVER_REASON.DISCONNECT } = {}) {
+        const normalizedSessionId = String(sessionId || "").trim();
+        if (!this.botTakeover?.isEnabled?.()) return false;
+        if (!player || player.isBot) return false;
+        if (!this.state?.gameActive || this.matchFinished) return false;
+        if (reason === "explicit_leave") return false;
+        if (normalizedSessionId && this.explicitLeaveSessionIds?.has?.(normalizedSessionId)) return false;
+        return !this.botTakeover?.hasReachedTakeoverLimit?.(player);
+    }
+
+    hasConnectedHumanController() {
+        for (const sessionId of this.state?.playerOrder || []) {
+            const player = this.state?.players?.get?.(sessionId);
+            if (!player || player.isBot) continue;
+            if (this.isSeatUnderBotTakeover(player)) continue;
+            if (player.isConnected !== false) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    getAllAbsentPlayerRows() {
+        return Array.from(this.state?.playerOrder || []).map((sessionId, index) => {
+            const player = this.state?.players?.get?.(sessionId) || null;
+            return {
+                name: player?.name || `Player ${index + 1}`,
+                score: Number(player?.score || 0),
+                roundWins: Number(player?.roundWins || 0),
+                isWinner: false
+            };
+        });
+    }
+
+    async endMatchAllAbsent() {
+        if (this.matchFinished) return false;
+        if (this.botTimer) {
+            clearTimeout(this.botTimer);
+            this.botTimer = null;
+        }
+        this.clearTurnTimer();
+        this.clearTurnAdvanceTimer();
+        this.clearLastMoveRevealTimer();
+        this.clearNextDealTimer();
+        this.pendingAdvanceKind = null;
+        this.state.gameActive = false;
+        this.state.matchOver = true;
+        this.matchFinished = true;
+        this.lastGameEndReason = "all_absent";
+        this.state.gameOverReason = "all_absent";
+        this.state.gameOverPlayerName = "";
+        this.state.gameOverWinnerIndex = -1;
+
+        const economySummary = this.currentStakeKey !== "free"
+            ? await this.settleEconomyRound(-1, false, null, null, { matchOutcome: "all_absent" })
+            : null;
+        this.state.gameOverSummaryJson = economySummary ? JSON.stringify(economySummary) : "";
+        await this.recordMatchResult(-1, false, this.getAllAbsentPlayerRows(), 0, { matchOutcome: "all_absent" });
+        this.broadcastRoomState();
+        this.broadcast("msg", {
+            key: "bot-takeover-all-absent",
+            time: 2600
+        });
+        this.syncState({ includeBoardJson: false });
+        return true;
+    }
+
+    onBotTakeoverActivated(player) {
+        if (!player) return;
+        if (!this.hasConnectedHumanController()) {
+            void this.endMatchAllAbsent();
+            return;
+        }
+        this.syncState({ includeBoardJson: false });
+        const currentSessionId = String(this.state?.playerOrder?.[this.state?.currentPlayerIndex] || "").trim();
+        const playerSessionId = Array.from(this.state?.players?.entries?.() || []).find(([, value]) => value === player)?.[0] || "";
+        if (currentSessionId && currentSessionId === playerSessionId && this.state?.gameActive) {
+            this.scheduleBotTurn(BOT_THINK_DELAY_MS);
+        }
+    }
+
+    onHumanControlResumed(player) {
+        if (!player) return;
+        if (this.botTimer) {
+            clearTimeout(this.botTimer);
+            this.botTimer = null;
+        }
+        this.syncState({ includeBoardJson: false });
+        const currentSessionId = String(this.state?.playerOrder?.[this.state?.currentPlayerIndex] || "").trim();
+        const playerSessionId = Array.from(this.state?.players?.entries?.() || []).find(([, value]) => value === player)?.[0] || "";
+        if (currentSessionId && currentSessionId === playerSessionId && this.state?.gameActive) {
+            this.scheduleTurnTimer();
+        }
     }
 
     getAutoStartState() {
@@ -1136,6 +1275,10 @@ class DominoRoom extends Room {
         this.registerLivePlayer(client.sessionId, nextIdentity, player);
         if (reusableSessionId && this.getPendingDisconnectEntry(reusableSessionId)) {
             this.completeReconnectGrace(reusableSessionId, client.sessionId, { source: "join" });
+        } else if (player && this.isSeatUnderBotTakeover(player)) {
+            this.botTakeover?.resume?.(player, {
+                requestUserId: nextIdentity?.userId || player.userId || ""
+            });
         }
 
         debugLog(`[ROOM] Current player count: ${this.clients.length} / ${this.maxClients}`);
@@ -1497,6 +1640,7 @@ class DominoRoom extends Room {
             this.forfeitSettlementMade = false;
             this.clearTimeoutForfeitState();
             this.pendingEconomySettlement = Promise.resolve();
+            this.botTakeover?.resetForNewMatch?.();
             this.matchRecordId = `${this.roomId}:match:${Date.now().toString(36)}:${Math.random().toString(36).slice(2, 10)}`;
             this.matchRecordInFlight = false;
             this.currentDealMatchId = "";
@@ -1504,6 +1648,14 @@ class DominoRoom extends Room {
             this.currentDealStakeAmount = 0;
             this.currentDealBankAmount = 0;
             this.lastReservedMatchRound = 0;
+            for (const sessionId of this.state.playerOrder || []) {
+                const player = this.state.players.get(sessionId);
+                if (!player) continue;
+                player.controller = "human";
+                player.takeoverActive = false;
+                player.takeoverReason = "";
+                player.takeoverSince = 0;
+            }
             this.rebuildPlayerOrderBySeats();
             debugLog("[ROOM_DEBUG] startGame:beforeBots", {
                 roomId: this.roomId,
@@ -1894,6 +2046,10 @@ class DominoRoom extends Room {
             this.turnTimer = null;
             this.handleTurnTimeout();
         }, this.turnTimeoutMs);
+        const currentPlayer = this.getPlayerForTurnIndex(this.state.currentPlayerIndex);
+        if (this.isSeatUnderBotTakeover(currentPlayer)) {
+            this.scheduleBotTurn(BOT_THINK_DELAY_MS);
+        }
     }
 
     findTimeoutWinner(timeoutIndex) {
@@ -1931,8 +2087,20 @@ class DominoRoom extends Room {
         if (!this.state.gameActive || this.matchFinished) return;
         if (this.isCurrentPlayerDisconnectedOrReconnecting()) return;
         const currentIndex = Number(this.state.currentPlayerIndex || 0);
+        const currentSessionId = String(this.state.playerOrder?.[currentIndex] || "").trim();
+        const actor = this.getPlayerForTurnIndex(currentIndex);
+        if (this.isSeatUnderBotTakeover(actor)) {
+            this.scheduleBotTurn(0);
+            return;
+        }
+        const timeoutReason = this.getPendingDisconnectEntry(currentSessionId) ? TAKEOVER_REASON.DISCONNECT : TAKEOVER_REASON.IDLE;
+        if (this.canUseBotTakeoverForSeat(actor, { sessionId: currentSessionId, reason: timeoutReason })) {
+            const beganTakeover = this.botTakeover?.begin?.(actor, timeoutReason) === true;
+            if (beganTakeover) {
+                return;
+            }
+        }
         const winnerIndex = this.findTimeoutWinner(currentIndex);
-        const actor = this.state.players.get(this.state.playerOrder[currentIndex]);
         const actorName = actor ? actor.name : "Player";
         this.broadcast("msg", { key: "turn-timeout", values: { player: actorName }, time: 2000 });
         void this.endRoundByTimeoutForfeit({ loserIndex: currentIndex, winnerIndex });
@@ -2192,7 +2360,8 @@ class DominoRoom extends Room {
         if (this.botTimer) clearTimeout(this.botTimer);
         if (!this.state.gameActive) return;
         const cpSession = this.state.playerOrder[this.state.currentPlayerIndex];
-        if (!cpSession || !cpSession.startsWith("bot-")) return;
+        const currentPlayer = this.getPlayerForTurnIndex(this.state.currentPlayerIndex);
+        if (!cpSession || !this.isSeatDrivenByBot(currentPlayer)) return;
         this.botTimer = setTimeout(() => this.runBotTurn(), delay);
     }
 
@@ -2200,10 +2369,15 @@ class DominoRoom extends Room {
         if (!this.state.gameActive) return;
         const pi = this.state.currentPlayerIndex;
         const sessionId = this.state.playerOrder[pi];
-        if (!sessionId || !sessionId.startsWith("bot-")) return;
+        const currentPlayer = this.getPlayerForTurnIndex(pi);
+        if (!sessionId || !this.isSeatDrivenByBot(currentPlayer)) return;
 
-        const bot = this.aiPlayers.get(sessionId) || new AIPlayer(pi, this.aiDifficulty);
-        this.aiPlayers.set(sessionId, bot);
+        const isTakeoverSeat = this.isSeatUnderBotTakeover(currentPlayer);
+        const aiKey = isTakeoverSeat ? `takeover:${sessionId}` : sessionId;
+        const aiDifficulty = isTakeoverSeat ? (BOT_TAKEOVER_CONFIG.botDifficulty || this.aiDifficulty) : this.aiDifficulty;
+        // TODO: team-mode takeover currently reuses the solo AI heuristics for v1.
+        const bot = this.aiPlayers.get(aiKey) || new AIPlayer(pi, aiDifficulty);
+        this.aiPlayers.set(aiKey, bot);
         const hand = this.hands[pi];
         if (!hand) return;
 
@@ -2355,7 +2529,10 @@ class DominoRoom extends Room {
                 handCount: Number(player.handCount || 0),
                 isConnected: Boolean(player.isConnected),
                 isBot: Boolean(player.isBot),
-                seatIndex: Number.isInteger(Number(player.seatIndex)) ? Number(player.seatIndex) : -1
+                seatIndex: Number.isInteger(Number(player.seatIndex)) ? Number(player.seatIndex) : -1,
+                controller: String(player.controller || "human"),
+                takeoverActive: Boolean(player.takeoverActive),
+                takeoverReason: String(player.takeoverReason || "")
             };
         });
     }
@@ -2460,6 +2637,17 @@ class DominoRoom extends Room {
                 }
             }
         }
+    }
+
+    handleResumeControl(client) {
+        if (!client) return false;
+        const player = this.state?.players?.get?.(client.sessionId) || null;
+        if (!player || !this.isSeatUnderBotTakeover(player)) return false;
+        if (!this.botTakeover?.canHumanReclaim?.(player)) return false;
+        const identity = this.identityBySessionId.get(client.sessionId);
+        return this.botTakeover?.resume?.(player, {
+            requestUserId: identity?.userId || player.userId || ""
+        }) === true;
     }
 
     broadcastFullState({ includeRoomState = false } = {}) {
@@ -2740,16 +2928,17 @@ class DominoRoom extends Room {
         }
     }
 
-    async settleEconomyRound(wi, isInstantWin, players, wins) {
-        return settleEconomyRoundForRoom(this, wi);
+    async settleEconomyRound(wi, isInstantWin, players, wins, options = {}) {
+        return settleEconomyRoundForRoom(this, wi, options);
     }
 
-    async recordMatchResult(wi, isInstantWin, players, wins) {
+    async recordMatchResult(wi, isInstantWin, players, wins, options = {}) {
         if (this.matchRecorded || this.matchRecordInFlight) return false;
         if (!this.matchRecordId) {
             this.matchRecordId = this.currentDealMatchId || `${this.roomId}:match:${Date.now().toString(36)}:${Math.random().toString(36).slice(2, 10)}`;
         }
         const isTeamMode = this.roomMode === "team";
+        const matchOutcome = String(options?.matchOutcome || "normal").trim() || "normal";
         const payload = buildPlatformMatchPayload({
             isTeamMode,
             roomId: this.roomId,
@@ -2759,7 +2948,8 @@ class DominoRoom extends Room {
             players: this.state.players,
             teamScores: this.state.teamScores,
             teamRoundWins: this.state.teamRoundWins,
-            winnerIndex: wi
+            winnerIndex: wi,
+            matchOutcome
         });
 
         if (!payload.participants.length) {
@@ -2805,6 +2995,7 @@ class DominoRoom extends Room {
             const player = this.state.players.get(client.sessionId);
             if (!player) return { ok: false, reason: "player_not_found", pi: -1 };
             if (player.isConnected === false) return { ok: false, reason: "player_reconnecting", pi: -1 };
+            if (this.isSeatUnderBotTakeover(player)) return { ok: false, reason: "bot_takeover_active", pi: -1 };
         }
         if (this.pendingDisconnects?.has?.(client.sessionId)) return { ok: false, reason: "player_reconnecting", pi: -1 };
 
@@ -3545,7 +3736,11 @@ class DominoRoom extends Room {
                 avatarUrl: entry.avatarUrl,
                 isBot: entry.isBot,
                 isConnected: entry.isConnected,
-                seatIndex: entry.seatIndex
+                seatIndex: entry.seatIndex,
+                controller: entry.controller,
+                takeoverActive: entry.takeoverActive,
+                takeoverReason: entry.takeoverReason,
+                takeoverSince: entry.takeoverSince
             };
             this.state.players.set(entry.sessionId, player);
         }
@@ -3732,7 +3927,7 @@ class DominoRoom extends Room {
         if (this.pendingMatchRecording && !this.matchRecorded) {
             void this.retryPendingMatchRecording();
         }
-        if (this.state.gameActive && this.state.playerOrder[this.state.currentPlayerIndex]?.startsWith('bot-')) {
+        if (this.state.gameActive && this.isSeatDrivenByBot(this.getPlayerForTurnIndex(this.state.currentPlayerIndex))) {
             this.scheduleBotTurn(BOT_THINK_DELAY_MS);
         }
     }

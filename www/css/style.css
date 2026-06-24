@@ -3512,6 +3512,14 @@ body.move-hint-selection-active #game-screen .player-name-btn {
     font-size: 0.76rem;
 }
 
+.room-player-state.is-bot-takeover {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: #ffd56a;
+    font-weight: 700;
+}
+
 .room-player-seat {
     color: var(--accent);
     font-size: 0.7rem;
@@ -3816,6 +3824,69 @@ body.move-hint-selection-active #game-screen .player-name-btn {
     pointer-events: auto;
     position: relative;
     z-index: 4;
+}
+
+.opp-bot-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 20px;
+    padding: 0 8px;
+    border-radius: 999px;
+    font-size: 0.66rem;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+    color: #1f1500;
+    background: linear-gradient(135deg, #ffd56a, #ffb347);
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.24);
+}
+
+.bot-takeover-banner {
+    position: absolute;
+    left: 50%;
+    bottom: clamp(86px, 14vh, 132px);
+    transform: translateX(-50%);
+    z-index: 22;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: min(92vw, 520px);
+    padding: 12px 14px;
+    border: 1px solid rgba(255, 213, 106, 0.35);
+    border-radius: 16px;
+    background: rgba(17, 20, 24, 0.9);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.28);
+}
+
+.bot-takeover-banner.is-hidden {
+    display: none;
+}
+
+.bot-takeover-banner-text {
+    flex: 1;
+    color: #fff4d1;
+    font-size: 0.92rem;
+    line-height: 1.35;
+}
+
+.bot-takeover-banner-btn {
+    flex: 0 0 auto;
+    min-width: 138px;
+}
+
+@media (max-width: 640px) {
+    .bot-takeover-banner {
+        bottom: max(78px, env(safe-area-inset-bottom));
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+    }
+
+    .bot-takeover-banner-btn {
+        width: 100%;
+    }
 }
 
 .opp-hand-group {

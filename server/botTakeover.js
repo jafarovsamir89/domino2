@@ -118,6 +118,7 @@ class BotTakeoverController {
         player.takeoverActive = true;
         player.takeoverReason = String(reason || TAKEOVER_REASON.DISCONNECT);
         player.takeoverSince = Date.now();
+        player.isConnected = true;
 
         const userId = String(player.userId || "").trim();
         if (userId) this.takeoverCounts.set(userId, this.getTakeoverCount(userId) + 1);
@@ -144,6 +145,7 @@ class BotTakeoverController {
         const requestUserId = options && options.requestUserId != null ? options.requestUserId : null;
         if (!this.isEnabled()) return false;
         if (!isControlledByBotTakeover(player)) return false;
+        if (options?.ignoreMinControlMs !== true && !this.canHumanReclaim(player)) return false;
         if (requestUserId != null) {
             const seatUser = String(player.userId || "").trim();
             if (seatUser && String(requestUserId).trim() !== seatUser) return false;
@@ -153,6 +155,7 @@ class BotTakeoverController {
         player.takeoverActive = false;
         player.takeoverReason = "";
         player.takeoverSince = 0;
+        player.isConnected = true;
 
         this._broadcastResume(player);
 

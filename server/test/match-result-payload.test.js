@@ -70,6 +70,28 @@ test("buildMatchParticipantRows keeps team shape", () => {
     ]);
 });
 
+test("buildMatchParticipantRows keeps takeover humans human and supports draw outcome", () => {
+    const players = new Map([
+        ["s1", { userId: "u1", name: "Alice", score: 11, roundWins: 1, isBot: false, takeoverActive: true, controller: "bot" }],
+        ["s2", { userId: "u2", name: "Bot", score: 22, roundWins: 2, isBot: true }]
+    ]);
+
+    const rows = buildMatchParticipantRows({
+        playerOrder: ["s1", "s2"],
+        players,
+        isTeamMode: false,
+        teamScores: [0, 0],
+        teamRoundWins: [0, 0],
+        winnerIndex: 0,
+        matchOutcome: "all_absent"
+    });
+
+    assert.deepEqual(rows, [
+        { userId: "u1", name: "Alice", teamIndex: null, winnerKey: "", points: 11, roundWins: 1, result: "draw" },
+        { userId: "u2", name: "Bot", teamIndex: null, winnerKey: "", points: 22, roundWins: 2, result: "draw", isBot: true }
+    ]);
+});
+
 test("buildPlatformMatchPayload fills team memberIds and keeps payload shape", () => {
     const players = new Map([
         ["s1", { userId: "u1", name: "Alice", score: 11, roundWins: 1 }],
@@ -130,4 +152,29 @@ test("buildPlatformMatchPayload keeps ffa payload mode and result", () => {
     assert.equal(payload.sourceMatchId, "room-1:match:def456");
     assert.deepEqual(payload.teams, []);
     assert.deepEqual(payload.participants.map((p) => p.result), ["loss", "win"]);
+});
+
+test("buildPlatformMatchPayload marks all_absent as draw and clears winner key", () => {
+    const players = new Map([
+        ["s1", { userId: "u1", name: "Alice", score: 11, roundWins: 1 }],
+        ["s2", { userId: "u2", name: "Bob", score: 22, roundWins: 2 }]
+    ]);
+
+    const payload = buildPlatformMatchPayload({
+        isTeamMode: false,
+        roomId: "room-1",
+        stakeKey: "stake_200",
+        sourceMatchId: "room-1:match:draw1",
+        playerOrder: ["s1", "s2"],
+        players,
+        teamScores: [0, 0],
+        teamRoundWins: [0, 0],
+        winnerIndex: -1,
+        matchOutcome: "all_absent"
+    });
+
+    assert.equal(payload.result, "draw");
+    assert.equal(payload.winnerKey, "");
+    assert.equal(payload.matchOutcome, "all_absent");
+    assert.deepEqual(payload.participants.map((entry) => entry.result), ["draw", "draw"]);
 });
