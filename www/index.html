@@ -12,6 +12,14 @@
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#0f1923">
     <meta name="description" content="Telefon Domino - Azerbaijani Domino (Pyaterochka / Five Club) online and offline multiplayer game.">
+    <script>
+        (function () {
+            try {
+                const preferredMode = localStorage.getItem('domino:preferredMode');
+                document.documentElement.dataset.dominoStartMode = preferredMode === 'classic101' ? 'classic101' : 'telefon';
+            } catch (_) {}
+        })();
+    </script>
 </head>
 <body>
     <div id="splash-screen" aria-hidden="false">
@@ -63,27 +71,72 @@
         </div>
 
         <div class="start-shell">
-            <section class="start-hero">
-                <div class="brand-lockup">
-                    <div class="domino-logo">
-                        <div class="tile horizontal">
-                            <div class="tile-half">
-                                <div class="pip"></div><div class="pip hidden"></div><div class="pip hidden"></div>
-                                <div class="pip hidden"></div><div class="pip"></div><div class="pip hidden"></div>
-                                <div class="pip hidden"></div><div class="pip hidden"></div><div class="pip"></div>
+            <section class="start-hero" id="start-mode-hero">
+                <div class="start-hero-stage" id="start-mode-stage">
+                    <section class="start-hero-face start-hero-face-front" data-mode-face="telefon" aria-hidden="false">
+                        <div class="brand-lockup">
+                            <div class="domino-logo">
+                                <div class="tile horizontal">
+                                    <div class="tile-half">
+                                        <div class="pip"></div><div class="pip hidden"></div><div class="pip hidden"></div>
+                                        <div class="pip hidden"></div><div class="pip"></div><div class="pip hidden"></div>
+                                        <div class="pip hidden"></div><div class="pip hidden"></div><div class="pip"></div>
+                                    </div>
+                                    <div class="tile-divider"></div>
+                                    <div class="tile-half">
+                                        <div class="pip"></div><div class="pip hidden"></div><div class="pip hidden"></div>
+                                        <div class="pip hidden"></div><div class="pip hidden"></div><div class="pip hidden"></div>
+                                        <div class="pip hidden"></div><div class="pip hidden"></div><div class="pip"></div>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="tile-divider"></div>
-                            <div class="tile-half">
-                                <div class="pip"></div><div class="pip hidden"></div><div class="pip hidden"></div>
-                                <div class="pip hidden"></div><div class="pip hidden"></div><div class="pip hidden"></div>
-                                <div class="pip hidden"></div><div class="pip hidden"></div><div class="pip"></div>
+
+                            <div class="brand-copy">
+                                <div class="start-mode-rating" data-mode-text="rating"></div>
+                                <div class="start-title-row">
+                                    <h1 class="game-title" data-i18n="game-title-telefon" data-mode-text="title">Domino (Telefon)</h1>
+                                    <div class="mode-switcher" role="tablist" aria-label="Game mode">
+                                        <button type="button" class="mode-switcher-segment is-active" data-mode-toggle="telefon" data-i18n="mode-switch-telefon">Telefon</button>
+                                        <button type="button" class="mode-switcher-segment" data-mode-toggle="classic101" data-i18n="mode-switch-101">101</button>
+                                    </div>
+                                </div>
+                                <p class="game-subtitle" data-i18n="game-subtitle-telefon" data-mode-text="subtitle">Azərbaycan Dominosu</p>
                             </div>
                         </div>
-                    </div>
+                    </section>
 
-                    <div class="brand-copy">
-                        <h1 class="game-title" data-i18n="game-title">Domino (Telefon)</h1>
-                    </div>
+                    <section class="start-hero-face start-hero-face-back" data-mode-face="classic101" aria-hidden="true" inert>
+                        <div class="brand-lockup">
+                            <div class="domino-logo">
+                                <div class="tile horizontal">
+                                    <div class="tile-half">
+                                        <div class="pip"></div><div class="pip hidden"></div><div class="pip hidden"></div>
+                                        <div class="pip hidden"></div><div class="pip"></div><div class="pip hidden"></div>
+                                        <div class="pip hidden"></div><div class="pip hidden"></div><div class="pip"></div>
+                                    </div>
+                                    <div class="tile-divider"></div>
+                                    <div class="tile-half">
+                                        <div class="pip"></div><div class="pip hidden"></div><div class="pip hidden"></div>
+                                        <div class="pip hidden"></div><div class="pip hidden"></div><div class="pip hidden"></div>
+                                        <div class="pip hidden"></div><div class="pip hidden"></div><div class="pip"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="brand-copy">
+                                <div class="start-mode-rating" data-mode-text="rating"></div>
+                                <div class="start-title-row">
+                                    <h1 class="game-title" data-i18n="game-title-101" data-mode-text="title">Domino (101)</h1>
+                                    <div class="mode-switcher" role="tablist" aria-label="Game mode">
+                                        <button type="button" class="mode-switcher-segment" data-mode-toggle="telefon" data-i18n="mode-switch-telefon">Telefon</button>
+                                        <button type="button" class="mode-switcher-segment is-active" data-mode-toggle="classic101" data-i18n="mode-switch-101">101</button>
+                                    </div>
+                                </div>
+                                <p class="game-subtitle" data-i18n="game-subtitle-101" data-mode-text="subtitle">Klassik domino</p>
+                                <div class="start-mode-note" data-mode-text="status"></div>
+                            </div>
+                        </div>
+                    </section>
                 </div>
 
             </section>

@@ -32,6 +32,7 @@ const BOT_THINK_DELAY_MS = 1500;
 const DEAL_END_MODAL_MS = 5000;
 const LAST_MOVE_REVEAL_DELAY_MS = 1200;
 const RESULT_MODAL_AFTER_LAND_DELAY_MS = 500;
+const ENABLE_MODE_101 = false;
 const DEFAULT_TABLE_SKIN_KEY = 'table_skin_default';
 const DEFAULT_TABLE_SKIN = {
     key: DEFAULT_TABLE_SKIN_KEY,
@@ -220,6 +221,7 @@ class DominoGame {
         this.localPresenceLastSentAt = 0;
         this.localPresenceClearQueued = false;
         this.currentLang = this.loadSavedLanguage();
+        this.preferredStartMode = this.loadPreferredStartMode();
         this.currentMatchStartedAt = null;
         this.currentMatchSessionId = null;
         this.activeMatchEconomyMode = 'coins';
@@ -742,6 +744,7 @@ class DominoGame {
         this.ensureNameEditModal();
         this.ensureSeatSelectionUi();
         this.setLanguage(this.currentLang);
+        this.syncStartModeUI();
 
         const openSoloBtn = document.getElementById('open-solo-modal-btn');
         const openOnlineBtn = document.getElementById('open-online-modal-btn');
@@ -763,6 +766,17 @@ class DominoGame {
         const coinShopModalClose = document.getElementById('coin-shop-modal-close');
         const cosmeticsShopModalClose = document.getElementById('cosmetics-shop-modal-close');
         const coinShopVideoBtn = document.getElementById('coin-shop-video-btn');
+        const startScreen = document.getElementById('start-screen');
+        if (startScreen && startScreen.dataset.modeToggleBound !== '1') {
+            startScreen.dataset.modeToggleBound = '1';
+            startScreen.addEventListener('click', (event) => {
+                const button = event.target?.closest?.('[data-mode-toggle]');
+                if (!button) return;
+                const nextMode = String(button.dataset.modeToggle || '').trim();
+                if (!nextMode) return;
+                this.setPreferredStartMode(nextMode);
+            });
+        }
 
         if (openSoloBtn) openSoloBtn.addEventListener('click', () => {
             this.syncSoloOptions();
@@ -16692,6 +16706,7 @@ class DominoGame {
         this.refreshResumeBanner();
         document.documentElement.lang = nextLang;
         this.renderDailyBonusCard();
+        this.syncStartModeUI();
     }
 
     t(key) {
@@ -16708,6 +16723,89 @@ class DominoGame {
         } catch {}
         return 'az';
     }
+
+    loadPreferredStartMode() {
+        try {
+            const saved = localStorage.getItem('domino:preferredMode');
+            if (saved === 'telefon' || saved === 'classic101') {
+                return saved;
+            }
+        } catch {}
+        return 'telefon';
+    }
+
+    savePreferredStartMode(mode) {
+        try {
+            localStorage.setItem('domino:preferredMode', mode);
+        } catch {}
+    }
+
+    setPreferredStartMode(mode, { persist = true } = {}) {
+        const nextMode = mode === 'classic101' ? 'classic101' : 'telefon';
+        this.preferredStartMode = nextMode;
+        if (persist) this.savePreferredStartMode(nextMode);
+        this.syncStartModeUI();
+    }
+
+    syncStartModeUI() {
+        const startScreen = document.getElementById('start-screen');
+        if (!startScreen) return;
+        const mode = this.preferredStartMode === 'classic101' ? 'classic101' : 'telefon';
+        const lang = translations[this.currentLang] ? this.currentLang : 'az';
+        const t = translations[lang] || translations.az;
+        const modeLabelKey = mode === 'classic101' ? 'mode-switch-101' : 'mode-switch-telefon';
+        const modeTitleKey = mode === 'classic101' ? 'game-title-101' : 'game-title-telefon';
+        const modeSubtitleKey = mode === 'classic101' ? 'game-subtitle-101' : 'game-subtitle-telefon';
+        const ratingLabel = this.format('start-mode-rating', { mode: t[modeLabelKey] || translations.en?.[modeLabelKey] || translations.az?.[modeLabelKey] || (mode === 'classic101' ? '101' : 'Telefon') });
+        const title = this.t(modeTitleKey);
+        const subtitle = this.t(modeSubtitleKey);
+        const soonLabel = ENABLE_MODE_101 ? '' : this.t('mode-soon');
+
+        document.documentElement.dataset.dominoStartMode = mode;
+        startScreen.classList.toggle('mode-classic101', mode === 'classic101');
+        startScreen.classList.toggle('mode-telefon', mode !== 'classic101');
+
+        const heroStage = document.getElementById('start-mode-stage');
+        if (heroStage) {
+            heroStage.classList.toggle('is-flipped', mode === 'classic101');
+        }
+
+        const faces = startScreen.querySelectorAll('.start-hero-face');
+        faces.forEach((face) => {
+            const faceMode = String(face.dataset.modeFace || 'telefon').trim();
+            const active = faceMode === mode;
+            face.setAttribute('aria-hidden', String(!active));
+            face.toggleAttribute('inert', !active);
+        });
+
+        startScreen.querySelectorAll('[data-mode-toggle]').forEach((button) => {
+            const buttonMode = String(button.dataset.modeToggle || '').trim();
+            const active = buttonMode === mode;
+            button.classList.toggle('is-active', active);
+            button.setAttribute('aria-pressed', String(active));
+        });
+
+        startScreen.querySelectorAll('[data-mode-text="rating"]').forEach((node) => {
+            node.textContent = ratingLabel;
+        });
+        startScreen.querySelectorAll('[data-mode-text="title"]').forEach((node) => {
+            node.textContent = title;
+        });
+        startScreen.querySelectorAll('[data-mode-text="subtitle"]').forEach((node) => {
+            node.textContent = subtitle;
+        });
+        startScreen.querySelectorAll('[data-mode-text="status"]').forEach((node) => {
+            const showSoon = mode === 'classic101' && Boolean(soonLabel);
+            node.textContent = showSoon ? soonLabel : '';
+            node.classList.toggle('is-hidden', !showSoon);
+        });
+
+        const startScreenHero = document.getElementById('start-mode-hero');
+        if (startScreenHero) {
+            startScreenHero.classList.toggle('is-mode-classic101', mode === 'classic101');
+        }
+    }
+
     format(key, values = {}) {
         return this.t(key).replace(/\{(\w+)\}/g, (_, token) => values[token] ?? `{${token}}`);
     }
