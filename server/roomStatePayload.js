@@ -17,6 +17,11 @@ function buildRoomStatePlayers({ playerOrder = [], players, identityBySessionId,
             avatarUrl: player?.avatarUrl || identity.avatarUrl || "",
             isConnected: player ? player.isConnected : false,
             isBot: player ? player.isBot : false,
+            // Bot Takeover (feature-flagged): expose who currently controls the seat
+            // so the client can show a "bot is playing" badge and a reclaim button.
+            controller: String(player?.controller || "human"),
+            takeoverActive: Boolean(player?.takeoverActive),
+            takeoverReason: String(player?.takeoverReason || ""),
             seatIndex: Number.isInteger(Number(player?.seatIndex)) ? Number(player.seatIndex) : -1,
             seatNumber: Number.isInteger(Number(player?.seatIndex)) && Number(player.seatIndex) >= 0 ? Number(player.seatIndex) + 1 : 0,
             voiceEnabled: Boolean(voiceEnabledBySessionId?.has(sessionId))
