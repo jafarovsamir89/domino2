@@ -6,7 +6,7 @@
     <title>Telefon - Domino</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css?v=round-stage-2">
     <link rel="icon" href="assets/icon.png">
     <link rel="manifest" href="manifest.json">
@@ -14,6 +14,23 @@
     <meta name="description" content="Telefon Domino - Azerbaijani Domino (Pyaterochka / Five Club) online and offline multiplayer game.">
 </head>
 <body>
+    <div id="splash-screen" aria-hidden="false">
+        <div class="splash-felt-glow"></div>
+        <div class="splash-board">
+            <div class="tile v splash-arm-top" data-v="3-5"></div>
+            <div class="tile v splash-arm-bottom" data-v="5-2"></div>
+            <div class="tile h splash-arm-left" data-v="4-5"></div>
+            <div class="tile h splash-arm-right" data-v="5-6"></div>
+            <div class="tile h splash-spinner" data-v="5-5"></div>
+            <div class="splash-score">+15</div>
+        </div>
+        <div class="splash-brand">
+            <div class="splash-title">DOMIN<span class="splash-title-dot">O</span></div>
+        </div>
+        <div class="splash-loader"></div>
+        <div class="splash-copyright">© Domino Telefon Simplesoft 2026</div>
+    </div>
+    <script src="js/splash.js"></script>
     <div id="start-screen" class="screen active auth-required">
         <div class="start-topbar">
             <div class="start-profile-group">
