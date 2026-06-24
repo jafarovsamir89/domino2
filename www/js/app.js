@@ -1498,18 +1498,21 @@ class DominoGame {
         const modal = document.createElement('div');
         modal.id = 'feedback-modal';
         modal.className = 'modal-backdrop social-feedback-modal';
+        modal.setAttribute('role', 'dialog');
+        modal.setAttribute('aria-modal', 'true');
+        modal.setAttribute('aria-hidden', 'true');
         modal.innerHTML = `
-            <section class="modal-card modal-card-small social-feedback-card">
-                <div class="modal-header">
-                    <div>
+            <section class="modal-card social-feedback-card">
+                <div class="modal-header feedback-modal-header">
+                    <div class="feedback-modal-copy">
                         <p class="section-kicker" data-i18n="feedback-kicker">Support</p>
                         <h2 data-i18n="feedback-title">Обратная связь</h2>
                         <p class="modal-desc" data-i18n="feedback-desc">Tell us what you want to improve.</p>
                     </div>
                     <button class="btn btn-action modal-close-btn" id="feedback-modal-close" type="button" data-i18n="modal-close">Close</button>
                 </div>
-                <form id="feedback-form" class="settings-grid compact-grid">
-                    <div class="settings-group field-span-2">
+                <form id="feedback-form" class="feedback-form">
+                    <div class="feedback-field">
                         <label for="feedback-modal-category" data-i18n="feedback-category-label">Topic</label>
                         <select id="feedback-modal-category" class="feedback-category-select">
                             <option value="general" data-i18n="feedback-category-general">General</option>
@@ -1518,18 +1521,16 @@ class DominoGame {
                             <option value="other" data-i18n="feedback-category-other">Other</option>
                         </select>
                     </div>
-                    <div class="settings-group field-span-2">
+                    <div class="feedback-field">
                         <label for="feedback-modal-contact" data-i18n="feedback-contact-label">Contact email</label>
                         <input type="email" id="feedback-modal-contact" class="feedback-contact-input" maxlength="254" data-i18n="feedback-contact-placeholder" placeholder="Optional email for reply">
                     </div>
-                    <div class="settings-group field-span-2">
+                    <div class="feedback-field">
                         <label for="feedback-modal-message" data-i18n="feedback-message-label">Message</label>
                         <textarea id="feedback-modal-message" class="feedback-message-textarea" maxlength="2000" data-i18n="feedback-message-placeholder" placeholder="Tell us what happened or what should change"></textarea>
                     </div>
-                    <div class="settings-group field-span-2">
-                        <div id="feedback-modal-status" class="room-summary"></div>
-                    </div>
-                    <div class="modal-footer modal-footer-split field-span-2">
+                    <div class="feedback-status" id="feedback-modal-status" role="status" aria-live="polite"></div>
+                    <div class="feedback-actions">
                         <button class="btn btn-primary btn-large modal-primary-btn" id="feedback-modal-send" type="submit" data-i18n="feedback-send">Send</button>
                         <button class="btn btn-menu modal-close-btn modal-secondary-btn" id="feedback-modal-cancel" type="button" data-i18n="feedback-cancel">Cancel</button>
                     </div>
@@ -1537,7 +1538,7 @@ class DominoGame {
             </section>
         `;
         document.body.appendChild(modal);
-        this.setLanguage(this.currentLang);
+        this.translateFeedbackModal(modal);
 
         modal.addEventListener('click', (event) => {
             if (event.target === modal) {
@@ -1554,10 +1555,38 @@ class DominoGame {
         });
     }
 
+    translateFeedbackModal(root = document.getElementById('feedback-modal')) {
+        if (!root) return;
+        const lang = translations[this.currentLang] ? this.currentLang : 'az';
+        const t = translations[lang] || translations.az;
+        root.querySelectorAll('[data-i18n]').forEach((el) => {
+            const key = String(el.dataset.i18n || '').trim();
+            const value = t[key] || translations.en?.[key] || translations.az?.[key] || key;
+            if (!value) return;
+            if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+                el.placeholder = value;
+            } else {
+                el.textContent = value;
+            }
+        });
+        const closeLabel = t['modal-close'] || translations.en?.['modal-close'] || translations.az?.['modal-close'] || 'Close';
+        root.querySelectorAll('.modal-close-btn').forEach((button) => {
+            button.title = closeLabel;
+            button.setAttribute('aria-label', closeLabel);
+        });
+        const sendButton = root.querySelector('#feedback-modal-send');
+        if (sendButton) {
+            const sendLabel = t['feedback-send'] || translations.en?.['feedback-send'] || translations.az?.['feedback-send'] || 'Send';
+            sendButton.title = sendLabel;
+            sendButton.setAttribute('aria-label', sendLabel);
+        }
+    }
+
     openFeedbackModal() {
         this.ensureFeedbackModal();
         const modal = document.getElementById('feedback-modal');
         if (!modal) return;
+        this.translateFeedbackModal(modal);
         const category = document.getElementById('feedback-modal-category');
         const contact = document.getElementById('feedback-modal-contact');
         const message = document.getElementById('feedback-modal-message');
@@ -1566,14 +1595,16 @@ class DominoGame {
         if (contact) contact.value = String(this.accountProfile?.email || '').trim();
         if (message) message.value = '';
         if (status) status.textContent = '';
-        modal.style.zIndex = '32000';
         if (modal.parentElement !== document.body) document.body.appendChild(modal);
+        modal.setAttribute('aria-hidden', 'false');
         modal.classList.add('active');
         message?.focus?.();
     }
 
     closeFeedbackModal() {
-        document.getElementById('feedback-modal')?.classList.remove('active');
+        const modal = document.getElementById('feedback-modal');
+        modal?.classList.remove('active');
+        modal?.setAttribute('aria-hidden', 'true');
     }
 
     async submitFeedback() {
@@ -11107,6 +11138,10 @@ class DominoGame {
                         <span class="currency-icon rating-icon"></span>
                         <span class="currency-value" id="social-header-rating">1,000</span>
                     </div>
+                    <button type="button" class="btn btn-action social-feedback-trigger" id="social-feedback-btn">
+                        <span class="feedback-icon" aria-hidden="true"></span>
+                        <span class="social-feedback-label" data-i18n="feedback-button">Feedback</span>
+                    </button>
                     <button class="social-close-btn" id="social-center-modal-close" type="button" aria-label="Close">×</button>
                 </div>
             </header>
@@ -11122,10 +11157,6 @@ class DominoGame {
                         <span class="tab-icon mail-icon"></span>
                         <span class="tab-label" data-i18n="social-tab-mail">Poçt</span>
                         <span class="tab-badge" id="social-mail-unread-badge"></span>
-                    </button>
-                    <button type="button" class="social-hub-tab social-feedback-btn" id="social-feedback-btn">
-                        <span class="tab-icon feedback-icon"></span>
-                        <span class="tab-label" data-i18n="feedback-button">Feedback</span>
                     </button>
                 </div>
             </div>
