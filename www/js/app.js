@@ -31,6 +31,7 @@ const TURN_TIMEOUT_MS = 30000;
 const BOT_THINK_DELAY_MS = 1500;
 const DEAL_END_MODAL_MS = 5000;
 const LAST_MOVE_REVEAL_DELAY_MS = 1200;
+const RESULT_MODAL_AFTER_LAND_DELAY_MS = 500;
 const DEFAULT_TABLE_SKIN_KEY = 'table_skin_default';
 const DEFAULT_TABLE_SKIN = {
     key: DEFAULT_TABLE_SKIN_KEY,
@@ -16795,8 +16796,10 @@ class DominoGame {
         fmLog('present.call', { token, boardAnimActive: Boolean(this._boardAnimationActive) });
         void (async () => {
             await this.getBoardAnimationPromise();
-            fmLog('present.fire(modal)', { token, current: this._onlineResultPresentationToken });
             if (token !== this._onlineResultPresentationToken) return;
+            await new Promise((resolve) => setTimeout(resolve, RESULT_MODAL_AFTER_LAND_DELAY_MS));
+            if (token !== this._onlineResultPresentationToken) return;
+            fmLog('present.fire(modal)', { token, current: this._onlineResultPresentationToken });
             try {
                 presenter?.();
             } catch (error) {
