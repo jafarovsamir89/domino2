@@ -421,6 +421,9 @@ export const translations = {
         "label-ai-slots": "AI botlar",
         "online-room-summary": "{humans} insan + {bots} AI bot, cəmi {total}",
         "online-bot-slot": "AI {index}"
+        ,"bot-takeover-playing": "AI Bot oynayır"
+        ,"bot-takeover-active": "AI Bot Oynayır"
+        ,"bot-takeover-return-control": "Oyuna qayıt"
         ,"account-btn": "Hesab"
         ,"account-kicker": "Profil"
         ,"account-title": "Hesab"
@@ -1026,6 +1029,9 @@ export const translations = {
         "label-ai-slots": "AI slots",
         "online-room-summary": "{humans} humans + {bots} AI, {total} total",
         "online-bot-slot": "AI {index}"
+        ,"bot-takeover-playing": "AI Bot is playing"
+        ,"bot-takeover-active": "AI Bot is playing"
+        ,"bot-takeover-return-control": "Return to game"
         ,"account-btn": "Account"
         ,"account-kicker": "Profile"
         ,"account-title": "Account"
@@ -1644,6 +1650,9 @@ export const translations = {
         "label-ai-slots": "AI botlar",
         "online-room-summary": "{humans} человек + {bots} AI, всего {total}",
         "online-bot-slot": "AI {index}"
+        ,"bot-takeover-playing": "Играет AI-бот"
+        ,"bot-takeover-active": "Играет AI-бот"
+        ,"bot-takeover-return-control": "Вернуться в игру"
         ,"account-btn": "Аккаунт"
         ,"account-kicker": "Профиль"
         ,"account-title": "Аккаунт"
