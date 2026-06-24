@@ -335,6 +335,43 @@ export class AdminService {
     };
   }
 
+  async listFeedback(headers: AdminHeaders, status?: string, query?: string) {
+    await this.requireAdmin(headers);
+    const nextStatus = normalizeFilter(status);
+    const nextQuery = normalizeFilter(query);
+
+    const feedback = await this.prisma.feedback.findMany({
+      orderBy: {
+        createdAt: "desc"
+      },
+      include: {
+        player: {
+          include: {
+            user: true
+          }
+        },
+        resolvedByUser: true
+      }
+    });
+
+    return {
+      items: feedback.filter((row) => {
+        const matchesStatus = !nextStatus || nextStatus === "all" || row.status === nextStatus;
+        const searchable = [
+          row.message,
+          row.category || "",
+          row.contactEmail || "",
+          row.player?.displayName || "",
+          row.player?.user?.email || "",
+          row.locale || "",
+          row.appVersion || ""
+        ].join(" ").toLowerCase();
+        const matchesQuery = !nextQuery || searchable.includes(nextQuery);
+        return matchesStatus && matchesQuery;
+      })
+    };
+  }
+
   async listBans(headers: AdminHeaders, status?: string) {
     await this.requireAdmin(headers);
     const nextStatus = normalizeFilter(status);
@@ -559,5 +596,46 @@ export class AdminService {
     });
 
     return { report };
+  }
+
+  async resolveFeedback(headers: AdminHeaders, feedbackId: string, body: { status?: "resolved" | "rejected" }) {
+    const session = await this.requireAdmin(headers);
+    const status = body.status === "rejected" ? "rejected" : "resolved";
+
+    const feedback = await this.prisma.$transaction(async (tx) => {
+      const updated = await tx.feedback.update({
+        where: { id: feedbackId },
+        data: {
+          status,
+          resolvedAt: new Date(),
+          resolvedByUserId: session.user.id
+        },
+        include: {
+          player: {
+            include: {
+              user: true
+            }
+          },
+          resolvedByUser: true
+        }
+      });
+
+      await tx.adminAuditLog.create({
+        data: {
+          adminUserId: session.user.id,
+          action: `feedback.${status}`,
+          entityType: "Feedback",
+          entityId: updated.id,
+          payloadJson: {
+            feedbackId: updated.id,
+            status
+          }
+        }
+      });
+
+      return updated;
+    });
+
+    return { feedback };
   }
 }

@@ -493,6 +493,19 @@ export class AccountClient {
         };
     }
 
+    async submitFeedback(payload = {}) {
+        return this.platformRequest("/social/feedback", {
+            method: "POST",
+            body: {
+                message: payload?.message,
+                category: payload?.category,
+                contactEmail: payload?.contactEmail,
+                locale: payload?.locale,
+                appVersion: payload?.appVersion
+            }
+        });
+    }
+
     async searchPlayers(query) {
         const q = String(query || "").trim();
         if (!q) {

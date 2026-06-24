@@ -364,6 +364,42 @@ export class SocialService {
     return profile.player;
   }
 
+  async submitFeedback(
+    headers: IncomingHttpHeaders,
+    body: {
+      message?: string;
+      category?: string;
+      contactEmail?: string;
+      locale?: string;
+      appVersion?: string;
+    }
+  ) {
+    const profile = await this.authService.getCurrentProfile(headers);
+    const message = String(body?.message || "").trim();
+    if (!message) {
+      throw new BadRequestException("Feedback message is required");
+    }
+
+    const category = String(body?.category || "general").trim() || "general";
+    const contactEmail = String(body?.contactEmail || profile?.user?.email || "").trim() || null;
+    const locale = String(body?.locale || profile?.player?.language || "").trim() || null;
+    const appVersion = String(body?.appVersion || "").trim() || null;
+
+    const row = await this.prisma.feedback.create({
+      data: {
+        playerId: profile?.player?.id || null,
+        message,
+        category,
+        contactEmail,
+        status: "new",
+        appVersion,
+        locale
+      }
+    });
+
+    return { item: row };
+  }
+
   private async getInboxMessageForCurrentPlayer(headers: IncomingHttpHeaders, id: string) {
     const currentPlayer = await this.getCurrentPlayer(headers);
     const messageId = String(id || "").trim();

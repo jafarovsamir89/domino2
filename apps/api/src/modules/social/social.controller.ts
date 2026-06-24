@@ -14,6 +14,7 @@ import {
   RoomInviteDto,
   SocialRequestFriendDto,
   RegisterFcmTokenDto,
+  SocialFeedbackDto,
   UnregisterFcmTokenDto
 } from "../validation/validation.dto.js";
 
@@ -59,6 +60,11 @@ export class SocialController {
   @Post("friends/request")
   async requestFriend(@Req() req: Request, @Body() body: SocialRequestFriendDto) {
     return this.socialService.requestFriend(req.headers, body);
+  }
+
+  @Post("feedback")
+  async submitFeedback(@Req() req: Request, @Body() body: SocialFeedbackDto) {
+    return this.socialService.submitFeedback(req.headers, body);
   }
 
   @Post("friends/:id/accept")

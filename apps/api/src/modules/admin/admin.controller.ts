@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Headers, Param, Patch, Post, Query } from "@nestjs/common";
 
 import { AdminService } from "./admin.service.js";
-import { AdminBanDto, AdminReportResolveDto } from "../validation/validation.dto.js";
+import { AdminBanDto, AdminFeedbackResolveDto, AdminReportResolveDto } from "../validation/validation.dto.js";
 
 @Controller("admin")
 export class AdminController {
@@ -39,6 +39,15 @@ export class AdminController {
     @Query("query") query?: string
   ) {
     return this.adminService.listReports(headers, status, query);
+  }
+
+  @Get("feedback")
+  async listFeedback(
+    @Headers() headers: Record<string, string | string[] | undefined>,
+    @Query("status") status?: string,
+    @Query("query") query?: string
+  ) {
+    return this.adminService.listFeedback(headers, status, query);
   }
 
   @Get("bans")
@@ -95,5 +104,14 @@ export class AdminController {
     @Body() body: AdminReportResolveDto
   ) {
     return this.adminService.resolveReport(headers, id, body);
+  }
+
+  @Patch("feedback/:id")
+  async resolveFeedback(
+    @Headers() headers: Record<string, string | string[] | undefined>,
+    @Param("id") id: string,
+    @Body() body: AdminFeedbackResolveDto
+  ) {
+    return this.adminService.resolveFeedback(headers, id, body);
   }
 }

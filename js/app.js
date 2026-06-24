@@ -1491,6 +1491,131 @@ class DominoGame {
         this.updateSocialCenterBadge();
     }
 
+    ensureFeedbackModal() {
+        if (document.getElementById('feedback-modal')) return;
+        if (typeof document === 'undefined' || !document.body) return;
+
+        const modal = document.createElement('div');
+        modal.id = 'feedback-modal';
+        modal.className = 'modal-backdrop social-feedback-modal';
+        modal.innerHTML = `
+            <section class="modal-card modal-card-small social-feedback-card">
+                <div class="modal-header">
+                    <div>
+                        <p class="section-kicker" data-i18n="feedback-kicker">Support</p>
+                        <h2 data-i18n="feedback-title">Обратная связь</h2>
+                        <p class="modal-desc" data-i18n="feedback-desc">Tell us what you want to improve.</p>
+                    </div>
+                    <button class="btn btn-action modal-close-btn" id="feedback-modal-close" type="button" data-i18n="modal-close">Close</button>
+                </div>
+                <form id="feedback-form" class="settings-grid compact-grid">
+                    <div class="settings-group field-span-2">
+                        <label for="feedback-modal-category" data-i18n="feedback-category-label">Topic</label>
+                        <select id="feedback-modal-category" class="feedback-category-select">
+                            <option value="general" data-i18n="feedback-category-general">General</option>
+                            <option value="bug" data-i18n="feedback-category-bug">Bug</option>
+                            <option value="suggestion" data-i18n="feedback-category-suggestion">Suggestion</option>
+                            <option value="other" data-i18n="feedback-category-other">Other</option>
+                        </select>
+                    </div>
+                    <div class="settings-group field-span-2">
+                        <label for="feedback-modal-contact" data-i18n="feedback-contact-label">Contact email</label>
+                        <input type="email" id="feedback-modal-contact" class="feedback-contact-input" maxlength="254" data-i18n="feedback-contact-placeholder" placeholder="Optional email for reply">
+                    </div>
+                    <div class="settings-group field-span-2">
+                        <label for="feedback-modal-message" data-i18n="feedback-message-label">Message</label>
+                        <textarea id="feedback-modal-message" class="feedback-message-textarea" maxlength="2000" data-i18n="feedback-message-placeholder" placeholder="Tell us what happened or what should change"></textarea>
+                    </div>
+                    <div class="settings-group field-span-2">
+                        <div id="feedback-modal-status" class="room-summary"></div>
+                    </div>
+                    <div class="modal-footer modal-footer-split field-span-2">
+                        <button class="btn btn-primary btn-large modal-primary-btn" id="feedback-modal-send" type="submit" data-i18n="feedback-send">Send</button>
+                        <button class="btn btn-menu modal-close-btn modal-secondary-btn" id="feedback-modal-cancel" type="button" data-i18n="feedback-cancel">Cancel</button>
+                    </div>
+                </form>
+            </section>
+        `;
+        document.body.appendChild(modal);
+        this.setLanguage(this.currentLang);
+
+        modal.addEventListener('click', (event) => {
+            if (event.target === modal) {
+                this.closeFeedbackModal();
+            }
+        });
+        modal.querySelector('.modal-card')?.addEventListener('click', (event) => event.stopPropagation());
+
+        document.getElementById('feedback-modal-close')?.addEventListener('click', () => this.closeFeedbackModal());
+        document.getElementById('feedback-modal-cancel')?.addEventListener('click', () => this.closeFeedbackModal());
+        document.getElementById('feedback-form')?.addEventListener('submit', (event) => {
+            event.preventDefault();
+            void this.submitFeedback();
+        });
+    }
+
+    openFeedbackModal() {
+        this.ensureFeedbackModal();
+        const modal = document.getElementById('feedback-modal');
+        if (!modal) return;
+        const category = document.getElementById('feedback-modal-category');
+        const contact = document.getElementById('feedback-modal-contact');
+        const message = document.getElementById('feedback-modal-message');
+        const status = document.getElementById('feedback-modal-status');
+        if (category) category.value = 'general';
+        if (contact) contact.value = String(this.accountProfile?.email || '').trim();
+        if (message) message.value = '';
+        if (status) status.textContent = '';
+        modal.style.zIndex = '32000';
+        if (modal.parentElement !== document.body) document.body.appendChild(modal);
+        modal.classList.add('active');
+        message?.focus?.();
+    }
+
+    closeFeedbackModal() {
+        document.getElementById('feedback-modal')?.classList.remove('active');
+    }
+
+    async submitFeedback() {
+        const messageInput = document.getElementById('feedback-modal-message');
+        const categoryInput = document.getElementById('feedback-modal-category');
+        const contactInput = document.getElementById('feedback-modal-contact');
+        const status = document.getElementById('feedback-modal-status');
+        const sendBtn = document.getElementById('feedback-modal-send');
+        const message = String(messageInput?.value || '').trim();
+        const category = String(categoryInput?.value || 'general').trim() || 'general';
+        const contactEmail = String(contactInput?.value || '').trim();
+
+        if (!message) {
+            if (status) status.textContent = this.t('feedback-message-required');
+            messageInput?.focus?.();
+            return false;
+        }
+
+        if (sendBtn) sendBtn.disabled = true;
+        if (status) status.textContent = this.t('feedback-sending');
+        try {
+            await this.account.submitFeedback({
+                message,
+                category,
+                contactEmail: contactEmail || undefined,
+                locale: this.currentLang,
+                appVersion: String(window.DOMINO_CLIENT_BUILD?.gitCommit || '').trim() || undefined
+            });
+            this.renderer.showMessage(this.t('feedback-sent'), 1800);
+            if (status) status.textContent = this.t('feedback-sent');
+            this.closeFeedbackModal();
+            return true;
+        } catch (err) {
+            const messageText = err?.message || this.t('feedback-send-failed');
+            if (status) status.textContent = messageText;
+            this.renderer.showMessage(messageText, 2200);
+            return false;
+        } finally {
+            if (sendBtn) sendBtn.disabled = false;
+        }
+    }
+
     closePlayerProfileModal() {
         this._lastProfileCloseAt = Date.now();
         this._lastProfileCloseAction = 'close-button';
@@ -10998,6 +11123,10 @@ class DominoGame {
                         <span class="tab-label" data-i18n="social-tab-mail">Poçt</span>
                         <span class="tab-badge" id="social-mail-unread-badge"></span>
                     </button>
+                    <button type="button" class="social-hub-tab social-feedback-btn" id="social-feedback-btn">
+                        <span class="tab-icon feedback-icon"></span>
+                        <span class="tab-label" data-i18n="feedback-button">Feedback</span>
+                    </button>
                 </div>
             </div>
 
@@ -11128,6 +11257,7 @@ class DominoGame {
         }
 
         this.attachSocialUiEventListeners();
+        this.ensureFeedbackModal();
     }
 
     attachSocialUiEventListeners() {
@@ -11136,6 +11266,7 @@ class DominoGame {
         const cancelBtn = document.querySelector('#social-chats-panel .voice-record-cancel');
         const emojiBtn = document.querySelector('#social-chats-panel .composer-emoji-btn');
         const coinsChip = document.querySelector('#social-center-modal .coins-chip');
+        const feedbackBtn = document.getElementById('social-feedback-btn');
 
         if (attachBtn) {
             attachBtn.addEventListener('click', () => {
@@ -11304,6 +11435,12 @@ class DominoGame {
         if (coinsChip) {
             coinsChip.addEventListener('click', () => {
                 void this.openCoinShopModal();
+            });
+        }
+
+        if (feedbackBtn) {
+            feedbackBtn.addEventListener('click', () => {
+                void this.openFeedbackModal();
             });
         }
 

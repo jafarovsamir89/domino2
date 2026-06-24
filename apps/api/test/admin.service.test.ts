@@ -52,3 +52,111 @@ test("AdminService.listSystemAuditLogs filters by action and entity type", async
   assert.equal(result.pagination.limit, 50);
   assert.equal(result.pagination.offset, 0);
 });
+
+test("AdminService.listFeedback filters by status and query", async () => {
+  const rows = [
+    {
+      id: "feedback-1",
+      playerId: "player-1",
+      message: "Crash when opening social hub",
+      category: "bug",
+      contactEmail: "alpha@example.com",
+      status: "new",
+      appVersion: "build-1",
+      locale: "az",
+      createdAt: new Date("2024-01-01T00:00:00.000Z"),
+      resolvedAt: null,
+      resolvedByUserId: null,
+      player: {
+        id: "player-1",
+        displayName: "Alpha",
+        user: { email: "alpha@example.com" }
+      },
+      resolvedByUser: null
+    },
+    {
+      id: "feedback-2",
+      playerId: null,
+      message: "Feature request",
+      category: "suggestion",
+      contactEmail: null,
+      status: "resolved",
+      appVersion: null,
+      locale: "en",
+      createdAt: new Date("2024-01-02T00:00:00.000Z"),
+      resolvedAt: new Date("2024-01-03T00:00:00.000Z"),
+      resolvedByUserId: "admin-1",
+      player: null,
+      resolvedByUser: {
+        id: "admin-1",
+        email: "admin@example.com",
+        name: "Admin",
+        role: "admin"
+      }
+    }
+  ];
+
+  const prismaMock = {
+    feedback: {
+      findMany: async () => rows
+    }
+  } as any;
+
+  const service = new AdminService({
+    getSession: async () => ({ user: { id: "admin-1", role: "admin" } })
+  } as any, prismaMock);
+
+  const result = await service.listFeedback({ authorization: "Bearer admin" } as any, "new", "crash");
+  assert.equal(result.items.length, 1);
+  assert.equal(result.items[0].id, "feedback-1");
+});
+
+test("AdminService.resolveFeedback updates feedback and records an audit log", async () => {
+  const auditRows: any[] = [];
+  const prismaMock = {
+    $transaction: async (callback: any) => callback({
+      feedback: {
+        update: async ({ data }: any) => ({
+          id: "feedback-1",
+          playerId: "player-1",
+          message: "Crash when opening social hub",
+          category: "bug",
+          contactEmail: "alpha@example.com",
+          status: data.status,
+          appVersion: "build-1",
+          locale: "az",
+          createdAt: new Date("2024-01-01T00:00:00.000Z"),
+          resolvedAt: data.resolvedAt,
+          resolvedByUserId: data.resolvedByUserId,
+          player: {
+            id: "player-1",
+            displayName: "Alpha",
+            user: { email: "alpha@example.com" }
+          },
+          resolvedByUser: {
+            id: data.resolvedByUserId,
+            email: "admin@example.com",
+            name: "Admin",
+            role: "admin"
+          }
+        })
+      },
+      adminAuditLog: {
+        create: async ({ data }: any) => {
+          auditRows.push(data);
+          return data;
+        }
+      }
+    })
+  } as any;
+
+  const service = new AdminService({
+    getSession: async () => ({ user: { id: "admin-1", role: "admin" } })
+  } as any, prismaMock);
+
+  const result = await service.resolveFeedback({ authorization: "Bearer admin" } as any, "feedback-1", { status: "resolved" });
+  assert.equal(result.feedback.status, "resolved");
+  assert.equal(result.feedback.resolvedByUserId, "admin-1");
+  assert.equal(auditRows[0].action, "feedback.resolved");
+  assert.equal(auditRows[0].entityType, "Feedback");
+});

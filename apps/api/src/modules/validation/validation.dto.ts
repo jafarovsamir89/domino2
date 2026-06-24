@@ -3,6 +3,7 @@ import {
   ArrayMaxSize,
   IsArray,
   IsBoolean,
+  IsEmail,
   IsIn,
   IsInt,
   IsNumber,
@@ -153,6 +154,32 @@ export class SocialSendMessageDto {
   @IsString()
   @MaxLength(128)
   clientMessageId?: string;
+}
+
+export class SocialFeedbackDto {
+  @IsString()
+  @MaxLength(2000)
+  message!: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(64)
+  category?: string;
+
+  @IsOptional()
+  @IsEmail()
+  @MaxLength(254)
+  contactEmail?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(16)
+  locale?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(64)
+  appVersion?: string;
 }
 
 export class SocialExchangeGiftDto {
@@ -404,6 +431,12 @@ export class AdminBanDto {
 }
 
 export class AdminReportResolveDto {
+  @IsOptional()
+  @IsIn(["resolved", "rejected"])
+  status?: "resolved" | "rejected";
+}
+
+export class AdminFeedbackResolveDto {
   @IsOptional()
   @IsIn(["resolved", "rejected"])
   status?: "resolved" | "rejected";

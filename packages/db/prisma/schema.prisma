@@ -14,6 +14,12 @@ enum ReportStatus {
   rejected
 }
 
+enum FeedbackStatus {
+  new
+  resolved
+  rejected
+}
+
 enum PaymentStatus {
   pending
   requires_action
@@ -99,6 +105,7 @@ model User {
   createdBans     PlayerBan[]     @relation("BanCreatedBy")
   revokedBans     PlayerBan[]     @relation("BanRevokedBy")
   resolvedReports PlayerReport[]  @relation("ReportResolvedBy")
+  resolvedFeedback Feedback[]     @relation("FeedbackResolvedBy")
   auditLogs       AdminAuditLog[]
   systemAuditLogs SystemAuditLog[] @relation("SystemAuditActorUser")
   coinLedgerEntries CoinLedgerEntry[]
@@ -180,6 +187,7 @@ model Player {
   tournamentEntries CoinTournamentEntry[]
   orders        Order[]
   entitlements  PlayerEntitlement[]
+  feedback      Feedback[]
   friendRequestsSent FriendConnection[] @relation("FriendRequestSender")
   friendRequestsReceived FriendConnection[] @relation("FriendRequestRecipient")
   sentDirectMessages DirectMessage[] @relation("SentDirectMessages")
@@ -628,6 +636,25 @@ model PlayerReport {
   @@index([targetPlayerId, status])
   @@index([reporterPlayerId])
   @@index([matchId])
+}
+
+model Feedback {
+  id              String         @id @default(cuid())
+  playerId        String?
+  message         String
+  category        String?
+  contactEmail    String?
+  status          FeedbackStatus @default(new)
+  appVersion      String?
+  locale          String?
+  createdAt       DateTime       @default(now())
+  resolvedAt      DateTime?
+  resolvedByUserId String?
+  player          Player?        @relation(fields: [playerId], references: [id], onDelete: SetNull)
+  resolvedByUser  User?          @relation("FeedbackResolvedBy", fields: [resolvedByUserId], references: [id], onDelete: SetNull)
+
+  @@index([status, createdAt])
+  @@index([playerId, createdAt])
 }
 
 model AdminAuditLog {

@@ -1513,6 +1513,7 @@ input, button { font: inherit; }
 .settings-group input[type="email"],
 .settings-group input[type="password"],
 .settings-group input[type="number"],
+.settings-group textarea,
 #join-code-input {
     width: 100%;
     padding: 13px 14px;
@@ -1537,7 +1538,16 @@ input, button { font: inherit; }
 }
 
 .settings-group input:focus,
+.settings-group textarea:focus,
 #join-code-input:focus {
+    outline: none;
+    border-color: var(--accent);
+    background: rgba(255, 255, 255, 0.06);
+    box-shadow: 0 0 0 3px rgba(240, 192, 64, 0.12);
+}
+
+.feedback-category-select:focus,
+.feedback-contact-input:focus {
     outline: none;
     border-color: var(--accent);
     background: rgba(255, 255, 255, 0.06);
@@ -1547,9 +1557,28 @@ input, button { font: inherit; }
 .settings-group input[type="text"]::placeholder,
 .settings-group input[type="email"]::placeholder,
 .settings-group input[type="password"]::placeholder,
+.settings-group textarea::placeholder,
 #join-code-input::placeholder {
     color: #7f90a3;
     opacity: 1;
+}
+
+.feedback-message-textarea {
+    min-height: 140px;
+    resize: vertical;
+}
+
+.feedback-category-select,
+.feedback-contact-input {
+    width: 100%;
+    padding: 13px 14px;
+    border-radius: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.03));
+    color: var(--text);
+    font-size: 0.94rem;
+    transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
 }
 
 .btn-group {
@@ -6443,6 +6472,10 @@ body.is-reconnecting .hand-container {
 
 .social-hub-tab.is-active .friends-icon {
     background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%231a1a1a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>');
+}
+
+.feedback-icon {
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23ffffff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 5.5h11A2.5 2.5 0 0 1 20 8v5a2.5 2.5 0 0 1-2.5 2.5H12l-4.5 3v-3H6.5A2.5 2.5 0 0 1 4 13V8a2.5 2.5 0 0 1 2.5-2.5Z"/><path d="M8 9h8M8 12h4" stroke-linecap="round"/></svg>');
 }
 
 /* Red Unread Badges on Tabs */

@@ -64,6 +64,49 @@ test("acceptFriend only allows the addressee to accept a request", async () => {
   );
 });
 
+test("submitFeedback stores player-linked feedback with metadata", async () => {
+  const createdRows: any[] = [];
+  const prismaMock = {
+    feedback: {
+      create: async ({ data }: any) => {
+        createdRows.push(data);
+        return {
+          id: "feedback-1",
+          ...data,
+          createdAt: new Date("2024-03-03T00:00:00.000Z"),
+          resolvedAt: null,
+          resolvedByUserId: null
+        };
+      }
+    }
+  } as any;
+
+  const service = new SocialService(prismaMock, {
+    getCurrentProfile: async () => ({
+      player: { id: "player-1", language: "az" },
+      user: { email: "player@example.com" }
+    })
+  } as any);
+
+  const result = await service.submitFeedback({ authorization: "Bearer token" } as any, {
+    message: "Great game",
+    category: "bug",
+    contactEmail: "reply@example.com",
+    locale: "az",
+    appVersion: "build-1"
+  });
+
+  assert.equal(createdRows.length, 1);
+  assert.equal(createdRows[0].playerId, "player-1");
+  assert.equal(createdRows[0].message, "Great game");
+  assert.equal(createdRows[0].category, "bug");
+  assert.equal(createdRows[0].contactEmail, "reply@example.com");
+  assert.equal(createdRows[0].locale, "az");
+  assert.equal(createdRows[0].appVersion, "build-1");
+  assert.equal(result.item.id, "feedback-1");
+  assert.equal(result.item.status, "new");
+});
+
 test("subscribeToSocialEvents emits heartbeat and clears the interval on cleanup", async () => {
   const originalSetInterval = global.setInterval;
   const originalClearInterval = global.clearInterval;
