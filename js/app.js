@@ -1605,7 +1605,7 @@ class DominoGame {
         if (contact) contact.value = String(this.accountProfile?.email || '').trim();
         if (message) message.value = '';
         if (status) status.textContent = '';
-        if (modal.parentElement !== document.body) document.body.appendChild(modal);
+        document.body.appendChild(modal);
         modal.setAttribute('aria-hidden', 'false');
         modal.classList.add('active');
         message?.focus?.();

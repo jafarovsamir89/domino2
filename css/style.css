@@ -1570,7 +1570,7 @@ input, button { font: inherit; }
 }
 
 .social-feedback-modal {
-    z-index: 90000;
+    z-index: 100000;
 }
 
 .social-feedback-card {
