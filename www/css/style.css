@@ -6414,25 +6414,31 @@ body.is-reconnecting .hand-container {
     min-width: 0;
     display: flex;
     align-items: center;
+    flex: 1 1 auto;
 }
 
 .social-hub-header-right {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
+    flex: 0 0 auto;
+    flex-wrap: nowrap;
 }
 
 .social-feedback-trigger {
-    width: auto;
+    width: 32px;
+    min-width: 32px;
+    height: 32px;
     margin: 0;
-    padding: 0 12px;
-    min-height: 32px;
-    border-radius: 16px;
+    padding: 0;
+    border-radius: 999px;
     display: inline-flex;
     align-items: center;
-    gap: 8px;
+    justify-content: center;
+    gap: 0;
+    flex: 0 0 32px;
     flex-shrink: 0;
-    white-space: nowrap;
+    overflow: hidden;
 }
 
 .social-feedback-trigger .feedback-icon {
@@ -6442,9 +6448,7 @@ body.is-reconnecting .hand-container {
 }
 
 .social-feedback-label {
-    font-size: 0.8rem;
-    font-weight: 700;
-    line-height: 1;
+    display: none;
 }
 
 /* Currency Chips inside Header */

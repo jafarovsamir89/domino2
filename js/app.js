@@ -804,6 +804,7 @@ class DominoGame {
             await this.openSocialCenterModal('friends');
         });
         const socialCenterTabs = document.getElementById('social-center-tabs');
+        const socialCenterModal = document.getElementById('social-center-modal');
         if (socialCenterTabs && !socialCenterTabs.dataset.bound) {
             socialCenterTabs.dataset.bound = '1';
             socialCenterTabs.addEventListener('click', async (event) => {
@@ -812,6 +813,15 @@ class DominoGame {
                 const tab = String(button.dataset.socialTab || '').trim();
                 if (!tab) return;
                 await this.loadSocialCenterTab(tab);
+            });
+        }
+        if (socialCenterModal && socialCenterModal.dataset.feedbackBound !== '1') {
+            socialCenterModal.dataset.feedbackBound = '1';
+            socialCenterModal.addEventListener('click', (event) => {
+                const target = event.target?.closest?.('#social-feedback-btn');
+                if (!target) return;
+                event.preventDefault();
+                this.openFeedbackModal();
             });
         }
         if (startCoinShopBtn) startCoinShopBtn.addEventListener('click', async () => {
@@ -11297,7 +11307,6 @@ class DominoGame {
         const cancelBtn = document.querySelector('#social-chats-panel .voice-record-cancel');
         const emojiBtn = document.querySelector('#social-chats-panel .composer-emoji-btn');
         const coinsChip = document.querySelector('#social-center-modal .coins-chip');
-        const feedbackBtn = document.getElementById('social-feedback-btn');
 
         if (attachBtn) {
             attachBtn.addEventListener('click', () => {
@@ -11466,12 +11475,6 @@ class DominoGame {
         if (coinsChip) {
             coinsChip.addEventListener('click', () => {
                 void this.openCoinShopModal();
-            });
-        }
-
-        if (feedbackBtn) {
-            feedbackBtn.addEventListener('click', () => {
-                void this.openFeedbackModal();
             });
         }
 
