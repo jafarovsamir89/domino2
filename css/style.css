@@ -63,6 +63,8 @@ input, button { font: inherit; }
     inset: 0;
     z-index: 9999;
     display: flex;
+    flex-direction: column;
+    gap: 34px;
     align-items: center;
     justify-content: center;
     overflow: hidden;
