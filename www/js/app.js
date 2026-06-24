@@ -16407,9 +16407,9 @@ class DominoGame {
             "online-you": { az: "you", en: "you" },
             "online-ready": { az: "ready", en: "ready" },
             "online-offline": { az: "offline", en: "offline" },
-            "bot-takeover-playing": { az: "bot oynayır", en: "bot is playing", ru: "играет бот" },
-            "bot-takeover-return-control": { az: "İdarəni qaytar", en: "Return control", ru: "Вернуть управление" },
-            "bot-takeover-active": { az: "Hazırda sizin yerinizə bot oynayır.", en: "Bot is playing for you right now.", ru: "Сейчас за вас играет бот." },
+            "bot-takeover-playing": { az: "AI Bot oynayır", en: "AI Bot is playing", ru: "Играет AI-бот" },
+            "bot-takeover-return-control": { az: "Oyuna qayıt", en: "Return to game", ru: "Вернуться в игру" },
+            "bot-takeover-active": { az: "AI Bot Oynayır", en: "AI Bot is playing", ru: "Играет AI-бот" },
             "bot-takeover-you-back": { az: "Yenidən oyundasınız.", en: "You are back in the game.", ru: "Вы снова в игре." },
             "bot_takeover": { az: "{name} ayrıldı, indi onun yerinə bot oynayır", en: "{name} left, a bot is now playing", ru: "{name} выбыл, теперь за него играет бот" },
             "bot_resume": { az: "{name} qayıtdı, bot oyundan çıxdı", en: "{name} returned, the bot stepped away", ru: "{name} вернулся, бот уступил место" },
@@ -16618,40 +16618,6 @@ class DominoGame {
 
     buildOpeningStageForLocal(firstInfo) {
         return firstInfo;
-    }
-
-    getPlayerCloseoutThreat(playerIndex) {
-        const hand = this.hands?.[playerIndex] || [];
-        const count = hand.length;
-
-        if (playerIndex === this.humanPlayerIndex) return null;
-        if (!this.gameActive || count <= 0) return null;
-
-        const role = this.getPlayerRole(playerIndex);
-
-        if (this.network?.isMultiplayer) {
-            if (count === 1) return { type: 'single', label: this.t('threat-one-tile'), role };
-            if (count === 2) return { type: 'two', label: this.t('threat-two-tiles'), subtitle: this.t('threat-two-tiles-sub') || 'возможна Гоша', role };
-            return null;
-        }
-
-        if (count === 1) return { type: 'single', label: this.t('threat-one-tile'), role };
-
-        const knownTiles = hand.every(tile => tile && typeof tile.a === 'number' && typeof tile.b === 'number');
-        if (knownTiles && this.board && !this.board.isEmpty) {
-            const combo = this.board.getGoshaCombo(hand);
-            if (combo?.matches?.length) {
-                if (combo.matches.length >= count) {
-                    return { type: 'gosha-finish', label: this.t('threat-gosha-finish'), combo, role };
-                }
-                if (count - combo.matches.length === 1) {
-                    return { type: 'gosha-warning', label: this.t('threat-gosha-warning'), combo, role };
-                }
-            }
-        }
-
-        if (count === 2) return { type: 'two', label: this.t('threat-two-tiles'), role };
-        return null;
     }
 
     async showPreResultStage(finalInfo) {

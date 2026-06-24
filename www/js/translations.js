@@ -73,11 +73,6 @@ export const translations = {
         "stage-final-instant-win-title": "Məsafəli qələbə",
         "stage-final-instant-win-desc": "{player} lazımi xalları topladı",
         "stage-counting": "Xallar hesablanır...",
-        "threat-one-tile": "1 daş qalıb!",
-        "threat-two-tiles": "2 daş qalıb!",
-        "threat-two-tiles-sub": "Qoşa ola bilər",
-        "threat-gosha-finish": "Qoşa bitişi!",
-        "threat-gosha-warning": "Qoşa təhlükəsi!",
         "round-end-next": "Davam et",
         "menu-title": "Menyu",
         "menu-resume": "Davam et",
@@ -595,11 +590,6 @@ export const translations = {
         ,"stage-final-instant-win-title": "Dərhal qələbə"
         ,"stage-final-instant-win-desc": "{player} lazımi xalları topladı"
         ,"stage-counting": "Xalların hesablanması..."
-        ,"threat-one-tile": "1 daş"
-        ,"threat-two-tiles": "2 daş"
-        ,"threat-two-tiles-sub": "Qoşa ola bilər"
-        ,"threat-gosha-finish": "Qoşa ilə bağlaya bilər"
-        ,"threat-gosha-warning": "Qoşa: 1 daş qalacaq"
         ,"result-summary-out": "{player} birinci çıxdı"
         ,"result-summary-gosha-title": "{player} oyunu Qoşa ilə bağladı"
         ,"result-summary-gosha": "{count} daş birdən oynanıldı"
@@ -688,11 +678,6 @@ export const translations = {
         "stage-final-instant-win-title": "Instant Victory",
         "stage-final-instant-win-desc": "{player} reached win score limit",
         "stage-counting": "Counting points...",
-        "threat-one-tile": "1 tile left!",
-        "threat-two-tiles": "2 tiles left!",
-        "threat-two-tiles-sub": "Gosha possible",
-        "threat-gosha-finish": "Gosha finish!",
-        "threat-gosha-warning": "Gosha threat!",
         "round-end-next": "Continue",
         "menu-title": "Menu",
         "menu-resume": "Resume",
@@ -1224,11 +1209,6 @@ export const translations = {
         ,"stage-final-instant-win-title": "Instant Win"
         ,"stage-final-instant-win-desc": "{player} reached the target score"
         ,"stage-counting": "Counting points..."
-        ,"threat-one-tile": "1 tile"
-        ,"threat-two-tiles": "2 tiles"
-        ,"threat-two-tiles-sub": "possible Gosha"
-        ,"threat-gosha-finish": "Can close with Gosha"
-        ,"threat-gosha-warning": "Gosha: 1 tile left"
         ,"result-summary-out": "{player} went out first"
         ,"result-summary-gosha-title": "{player} closed with Gosha"
         ,"result-summary-gosha": "{count} tiles played at once"
@@ -1314,11 +1294,6 @@ export const translations = {
         "stage-final-instant-win-title": "Мгновенная победа",
         "stage-final-instant-win-desc": "{player} набрал нужные очки",
         "stage-counting": "Подсчёт очков...",
-        "threat-one-tile": "1 камень остался!",
-        "threat-two-tiles": "2 камня осталось!",
-        "threat-two-tiles-sub": "возможна Гоша",
-        "threat-gosha-finish": "Финиш Гошей!",
-        "threat-gosha-warning": "Угроза Гоши!",
         "round-end-next": "Продолжить",
         "menu-title": "Меню",
         "menu-resume": "Продолжить",
@@ -1830,11 +1805,6 @@ export const translations = {
         ,"stage-final-instant-win-title": "Мгновенная победа"
         ,"stage-final-instant-win-desc": "{player} набрал нужные очки"
         ,"stage-counting": "Подсчёт очков..."
-        ,"threat-one-tile": "1 камень"
-        ,"threat-two-tiles": "2 камня"
-        ,"threat-two-tiles-sub": "возможна Гоша"
-        ,"threat-gosha-finish": "Может закрыть Гошей"
-        ,"threat-gosha-warning": "Гоша: останется 1"
         ,"result-summary-out": "{player} вышел первым"
         ,"result-summary-gosha-title": "{player} закрыл игру Гошей"
         ,"result-summary-gosha": "{count} камня сыграны сразу"

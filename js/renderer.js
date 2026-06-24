@@ -242,28 +242,6 @@ export class Renderer {
                 g.appendChild(takeoverBadge);
             }
 
-            // Closeout Threat UI Overlay
-            const threat = this.app?.getPlayerCloseoutThreat?.(i);
-            if (threat) {
-                const badge = document.createElement('span');
-                badge.className = `opp-threat-badge ${threat.type}`;
-                
-                let roleClass = 'danger-opponent';
-                if (threat.role === 'teammate') {
-                    roleClass = 'warning-teammate';
-                }
-                
-                badge.classList.add(roleClass);
-                g.classList.add(`${threat.type}-threat`, roleClass);
-                
-                let html = `<span class="threat-label">${threat.label}</span>`;
-                if (threat.subtitle) {
-                    html += `<span class="threat-sub">${threat.subtitle}</span>`;
-                }
-                badge.innerHTML = html;
-                g.appendChild(badge);
-            }
-
             if (hands.length === 4) {
                 const relativeSeat = (i - hi + hands.length) % hands.length;
                 if (relativeSeat === 1) {
