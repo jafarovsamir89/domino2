@@ -118,7 +118,7 @@ input, button { font: inherit; }
     margin-top: -6vh;
 }
 
-#splash-screen .tile {
+#splash-screen .splash-tile {
     position: absolute;
     background: var(--tile-bg);
     border: 1.5px solid var(--tile-border);
@@ -129,15 +129,15 @@ input, button { font: inherit; }
     opacity: 0;
 }
 
-#splash-screen .tile.h {
+#splash-screen .splash-tile.h {
     flex-direction: row;
 }
 
-#splash-screen .tile.v {
+#splash-screen .splash-tile.v {
     flex-direction: column;
 }
 
-#splash-screen .tile-half {
+#splash-screen .splash-half {
     flex: 1;
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -146,20 +146,20 @@ input, button { font: inherit; }
     place-items: center;
 }
 
-#splash-screen .tile-divider {
+#splash-screen .splash-divider {
     background: var(--tile-border);
     opacity: 0.95;
 }
 
-#splash-screen .tile.h > .tile-divider {
+#splash-screen .splash-tile.h > .splash-divider {
     width: 2px;
 }
 
-#splash-screen .tile.v > .tile-divider {
+#splash-screen .splash-tile.v > .splash-divider {
     height: 2px;
 }
 
-#splash-screen .pip {
+#splash-screen .splash-pip {
     width: 7px;
     height: 7px;
     border-radius: 50%;
@@ -167,7 +167,7 @@ input, button { font: inherit; }
     box-shadow: 0 0.6px 1.4px rgba(0, 0, 0, 0.16);
 }
 
-#splash-screen .pip.hidden {
+#splash-screen .splash-pip.off {
     visibility: hidden;
 }
 

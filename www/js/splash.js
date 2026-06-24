@@ -20,7 +20,7 @@
         3: [2, 4, 6],
         4: [0, 2, 6, 8],
         5: [0, 2, 4, 6, 8],
-        6: [0, 1, 2, 6, 7, 8]
+        6: [0, 2, 3, 5, 6, 8]
     };
 
     const parseTileValue = (tile) => {
@@ -34,11 +34,11 @@
 
     const buildHalf = (value) => {
         const half = document.createElement('div');
-        half.className = 'tile-half';
+        half.className = 'splash-half';
         const active = new Set(pipLayouts[value] || []);
         for (let index = 0; index < 9; index += 1) {
             const pip = document.createElement('span');
-            pip.className = active.has(index) ? 'pip' : 'pip hidden';
+            pip.className = active.has(index) ? 'splash-pip' : 'splash-pip off';
             half.appendChild(pip);
         }
         return half;
@@ -48,25 +48,25 @@
         const { left, right } = parseTileValue(tile);
         tile.textContent = '';
 
-        const firstHalf = buildHalf(tile.classList.contains('v') ? left : left);
-        const secondHalf = buildHalf(tile.classList.contains('v') ? right : right);
+        const firstHalf = buildHalf(left);
+        const secondHalf = buildHalf(right);
 
         if (tile.classList.contains('v')) {
             tile.appendChild(firstHalf);
             const divider = document.createElement('div');
-            divider.className = 'tile-divider';
+            divider.className = 'splash-divider';
             tile.appendChild(divider);
             tile.appendChild(secondHalf);
         } else {
             tile.appendChild(firstHalf);
             const divider = document.createElement('div');
-            divider.className = 'tile-divider';
+            divider.className = 'splash-divider';
             tile.appendChild(divider);
             tile.appendChild(secondHalf);
         }
     };
 
-    splash.querySelectorAll('.tile').forEach(buildTile);
+    splash.querySelectorAll('.splash-tile').forEach(buildTile);
 
     const startedAt = performance.now();
     let loadReady = document.readyState === 'complete';
