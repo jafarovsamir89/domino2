@@ -210,6 +210,7 @@ class DominoGame {
         this.voice = new VoiceChatManager(this);
         this.account = new AccountClient(() => this.network.getServerUrl());
         this.accountProfile = this.account.getStoredProfile();
+        this.authResolved = false;
         this.accountDetails = null;
         this.accountOnline = false;
         this.accountMode = 'login';
@@ -1178,32 +1179,47 @@ class DominoGame {
     }
 
     async bootstrapAccount() {
-        const details = await this.account.bootstrap();
-        this.accountDetails = details;
-        this.accountProfile = details?.profile || details?.user || this.account.getStoredProfile();
-        this.accountOnline = this.hasAuthenticatedAccount(this.accountProfile);
-        this.accountMode = this.accountOnline ? 'profile' : 'login';
-        this.prefillAccountNames();
-        this.applyActiveTableSkin();
-        if (this.accountOnline) {
-            void this.loadTableSkinShop();
-            void this.loadGiftHub();
-            void this.loadDailyBonusStatus();
-            void this.ensureSocialRealtimeStarted('account-ready');
-            startMenuMusic();
-        } else {
-            this.tableSkinShop = null;
+        try {
+            const details = await this.account.bootstrap();
+            this.accountDetails = details;
+            this.accountProfile = details?.profile || details?.user || this.account.getStoredProfile();
+            this.accountOnline = this.hasAuthenticatedAccount(this.accountProfile);
+            this.accountMode = this.accountOnline ? 'profile' : 'login';
+            this.prefillAccountNames();
+            this.applyActiveTableSkin();
+            if (this.accountOnline) {
+                void this.loadTableSkinShop();
+                void this.loadGiftHub();
+                void this.loadDailyBonusStatus();
+                void this.ensureSocialRealtimeStarted('account-ready');
+                startMenuMusic();
+            } else {
+                this.tableSkinShop = null;
+            }
+            this.renderAccountModal();
+            this.syncStartAuthButton();
+            this.refreshResumeBanner(null);
+            await this.validateStoredResumeSnapshot();
+            void this.loadSocialSummary();
+            if (this.hasAuthenticatedAccount()) {
+                void this.ensureSocialRealtimeStarted('session-restored');
+            }
+            if (!this.hasAuthenticatedAccount()) this.setAccountStatus(this.t('account-login-required'));
+        } catch (err) {
+            debugLog('bootstrapAccount failed:', err);
+            this.accountOnline = this.hasAuthenticatedAccount(this.accountProfile);
+            if (!this.accountOnline) {
+                this.accountMode = 'login';
+            }
+        } finally {
+            this.authResolved = true;
+            const startScreen = document.getElementById('start-screen');
+            if (startScreen) startScreen.classList.remove('auth-checking');
+            try {
+                sessionStorage.removeItem('dominoAuthPending');
+            } catch (_) {}
+            this.syncStartAuthGate();
         }
-        this.renderAccountModal();
-        this.syncStartAuthButton();
-        this.refreshResumeBanner(null);
-        await this.validateStoredResumeSnapshot();
-        void this.loadSocialSummary();
-        if (this.hasAuthenticatedAccount()) {
-            void this.ensureSocialRealtimeStarted('session-restored');
-        }
-        if (!this.hasAuthenticatedAccount()) this.setAccountStatus(this.t('account-login-required'));
-        this.syncStartAuthGate();
     }
 
     hasAuthenticatedAccount(profile = this.accountProfile) {
@@ -7212,7 +7228,13 @@ class DominoGame {
     syncStartAuthGate() {
         const startScreen = document.getElementById('start-screen');
         if (!startScreen) return;
+        if (this.authResolved !== true) {
+            startScreen.classList.add('auth-checking');
+            startScreen.classList.remove('auth-required');
+            return;
+        }
         const isAuthed = this.hasAuthenticatedAccount();
+        startScreen.classList.remove('auth-checking');
         startScreen.classList.toggle('auth-required', !isAuthed);
         if (!isAuthed) {
             this.showStartModal(null);
@@ -7456,6 +7478,9 @@ class DominoGame {
         const callbackURL = this.getAuthCallbackUrl();
         const result = await this.account.startGoogleSignIn(callbackURL);
         if (result?.url) {
+            try {
+                sessionStorage.setItem('dominoAuthPending', '1');
+            } catch (_) {}
             await this.openExternalAuthUrl(result.url);
             return;
         }
