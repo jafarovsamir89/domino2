@@ -8,6 +8,128 @@ import { VoiceChatManager } from './voice.js';
 import { sndPlace, sndScore, sndDraw, sndPass, sndWin, sndGosha, startMenuMusic, startGameMusic, nextTrack, toggleMute, stopMusic } from './sounds.js?v=social-live-1';
 // NetworkManager is loaded as global script
 
+const DOMINO_RULESETS = globalThis.DominoRulesets || null;
+const TELEFON_RULESET_FALLBACK = Object.freeze({
+    id: 'telefon',
+    matchTarget: 365,
+    instantWinThreshold: 35,
+    getHandSize(playerCount) {
+        return getHandSize(playerCount);
+    },
+    determineFirstPlayer(hands) {
+        return determineFirstPlayer(hands);
+    },
+    needsRedeal(hand) {
+        return hasInvalidOpeningHand(hand);
+    },
+    openingPlayScore(tile, currentScore) {
+        return getOpeningPlayScore(tile, currentScore);
+    },
+    scoreDuringPlay(board) {
+        return board?.calculateScore?.() || 0;
+    },
+    handPoints(hand) {
+        return handPoints(Array.isArray(hand) ? hand : []);
+    },
+    resolveBlocked(state = {}) {
+        const board = state.board || state.internalBoard || null;
+        const hands = Array.isArray(state.hands) ? state.hands : [];
+        const boneyard = Array.isArray(state.boneyard) ? state.boneyard : [];
+        if (!board?.isBlocked?.(hands, boneyard)) return null;
+        if (state.isTeamMode) {
+            const getTeamMembers = typeof state.getTeamMembers === 'function'
+                ? (teamIndex) => Array.from(state.getTeamMembers(teamIndex) || [])
+                : (teamIndex) => {
+                    const members = [];
+                    for (let index = 0; index < hands.length; index += 1) {
+                        if ((index % 2) === teamIndex) members.push(index);
+                    }
+                    return members;
+                };
+            const team0 = getTeamMembers(0);
+            const team1 = getTeamMembers(1);
+            const team0Points = team0.reduce((sum, index) => sum + handPoints(hands[index] || []), 0);
+            const team1Points = team1.reduce((sum, index) => sum + handPoints(hands[index] || []), 0);
+            const winningTeam = team0Points <= team1Points ? 0 : 1;
+            const winners = getTeamMembers(winningTeam);
+            let winnerIndex = winners[0] ?? 0;
+            let minPoints = Infinity;
+            for (const index of winners) {
+                const points = handPoints(hands[index] || []);
+                if (points < minPoints) {
+                    minPoints = points;
+                    winnerIndex = index;
+                }
+            }
+            return { blocked: true, fish: true, winnerIndex, teamIndex: winningTeam };
+        }
+        let winnerIndex = 0;
+        let minPoints = Infinity;
+        for (let index = 0; index < hands.length; index += 1) {
+            const points = handPoints(hands[index] || []);
+            if (points < minPoints) {
+                minPoints = points;
+                winnerIndex = index;
+            }
+        }
+        return { blocked: true, fish: true, winnerIndex, teamIndex: null };
+    },
+    resolveRoundEnd(state = {}) {
+        const score = Number(state.score || 0);
+        const hand = Array.isArray(state.hand) ? state.hand : [];
+        const playerIndex = Number.isInteger(Number(state.playerIndex)) ? Number(state.playerIndex) : 0;
+        const instantWinEnabled = state.instantWinEnabled !== false;
+        const instantWinThreshold = Number(state.instantWinThreshold || IWIN);
+        if (instantWinEnabled && score >= instantWinThreshold) {
+            return {
+                isFinalMove: true,
+                isInstantWin: true,
+                finishKind: state.isGosha ? 'instant_win_gosha' : 'instant_win',
+                winnerIndex: playerIndex,
+                fish: false,
+                dealEnd: false,
+                roundEnd: true
+            };
+        }
+        if (hand.length === 0) {
+            return {
+                isFinalMove: true,
+                isInstantWin: false,
+                finishKind: state.isGosha ? 'gosha' : 'tile',
+                winnerIndex: playerIndex,
+                fish: false,
+                dealEnd: true,
+                roundEnd: false
+            };
+        }
+        const blocked = TELEFON_RULESET_FALLBACK.resolveBlocked(state);
+        if (blocked) {
+            return {
+                isFinalMove: true,
+                isInstantWin: false,
+                finishKind: 'fish',
+                winnerIndex: blocked.winnerIndex,
+                fish: true,
+                dealEnd: true,
+                roundEnd: false
+            };
+        }
+        return {
+            isFinalMove: false,
+            isInstantWin: false,
+            finishKind: state.isGosha ? 'gosha' : 'tile',
+            winnerIndex: playerIndex,
+            fish: false,
+            dealEnd: false,
+            roundEnd: false
+        };
+    }
+});
+
+function getRuleset(mode = 'telefon') {
+    return DOMINO_RULESETS?.getRuleset?.(mode) || TELEFON_RULESET_FALLBACK;
+}
+
 function getBoardStartAxis() {
     if (typeof window === 'undefined') return 'horizontal';
     try {
@@ -222,6 +344,8 @@ class DominoGame {
         this.localPresenceClearQueued = false;
         this.currentLang = this.loadSavedLanguage();
         this.preferredStartMode = this.loadPreferredStartMode();
+        this.mode = 'telefon';
+        this.ruleset = getRuleset(this.mode);
         this.currentMatchStartedAt = null;
         this.currentMatchSessionId = null;
         this.activeMatchEconomyMode = 'coins';
@@ -12522,7 +12646,7 @@ class DominoGame {
             let best = members[0] ?? 0;
             let minPoints = Infinity;
             for (const idx of members) {
-                const points = handPoints(this.hands[idx] || []);
+                const points = this.ruleset.handPoints(this.hands[idx] || []);
                 if (points < minPoints) {
                     minPoints = points;
                     best = idx;
@@ -12535,7 +12659,7 @@ class DominoGame {
         let minPoints = Infinity;
         for (let i = 0; i < this.playerCount; i++) {
             if (i === timeoutIndex) continue;
-            const points = handPoints(this.hands[i] || []);
+            const points = this.ruleset.handPoints(this.hands[i] || []);
             if (points < minPoints) {
                 minPoints = points;
                 best = i;
@@ -16267,7 +16391,7 @@ class DominoGame {
             this.broadcastMsg(this.format('msg-last-winner-starts', { player: this.playerNames[fp] }),2000);
             this.queueAITurnIfNeeded(BOT_THINK_DELAY_MS, turnCycleId);
         }else{
-            const f=determineFirstPlayer(this.hands);
+            const f=this.ruleset.determineFirstPlayer(this.hands);
             const fp=f.player; const fi=f.tileIndex;
             const tile = this.hands[fp][fi];
             this.currentPlayer=fp; this.renderState();
@@ -16359,7 +16483,7 @@ class DominoGame {
         return teamIndex === 0 ? this.t('team-a') : this.t('team-b');
     }
     getTeamHandPoints(teamIndex) {
-        return this.getTeamMembers(teamIndex).reduce((total, i) => total + handPoints(this.hands[i] || []), 0);
+        return this.getTeamMembers(teamIndex).reduce((total, i) => total + this.ruleset.handPoints(this.hands[i] || []), 0);
     }
     getOpeningScoreContext(pi) {
         if (this.isTeamMode) {
@@ -16368,10 +16492,10 @@ class DominoGame {
         return Number(this.scores[pi] || 0);
     }
     shouldRedealOpeningHands(hands = []) {
-        return (Array.isArray(hands) ? hands : []).some((hand) => hasInvalidOpeningHand(hand));
+        return (Array.isArray(hands) ? hands : []).some((hand) => this.ruleset.needsRedeal(hand));
     }
     dealHandsWithValidation() {
-        const hs = getHandSize(this.playerCount);
+        const hs = this.ruleset.getHandSize(this.playerCount);
         let hands = [];
         let boneyard = [];
         let attempts = 0;
@@ -17811,6 +17935,11 @@ class DominoGame {
         if (state.playerCount !== undefined && state.playerCount !== null) {
             this.playerCount = Number(state.playerCount);
         }
+        const nextMode = String(state?.mode || this.mode || 'telefon').trim() || 'telefon';
+        if (nextMode !== this.mode) {
+            this.mode = nextMode;
+            this.ruleset = getRuleset(this.mode);
+        }
 
         if (state.boardJson && !this._boardAnimationActive) {
             try {
@@ -18007,7 +18136,7 @@ class DominoGame {
                 { name: this.getTeamDisplayName(1), isWinner: wt === 1, score: this.teamScores[1], handPoints: this.getTeamHandPoints(1), leftoverHands: this.getTeamLeftoverHands(1) }
             ];
         } else {
-            displayEntities = this.playerNames.map((n, i) => ({ name: n, isWinner: i === data.winnerIndex, handPoints: handPoints(this.hands[i]), score: this.scores[i], leftoverHands: [this.hands[i]] }));
+            displayEntities = this.playerNames.map((n, i) => ({ name: n, isWinner: i === data.winnerIndex, handPoints: this.ruleset.handPoints(this.hands[i]), score: this.scores[i], leftoverHands: [this.hands[i]] }));
         }
 
         this.presentOnlineResultAfterBoardAnimation(() => {
@@ -18312,11 +18441,23 @@ class DominoGame {
         }
         this.renderState();
         
-        const score = this.goshaCombo?.score || this.board.calculateScore();
+        const score = this.goshaCombo?.score || this.ruleset.scoreDuringPlay(this.board);
+        const roundEnd = this.ruleset.resolveRoundEnd({
+            score,
+            hand,
+            board: this.board,
+            hands: this.hands,
+            boneyard: this.boneyard,
+            playerIndex: pi,
+            isInstantWinEnabled: this.instantWinEnabled,
+            isGosha: true,
+            isTeamMode: this.isTeamMode,
+            getTeamMembers: this.getTeamMembers.bind(this)
+        });
         if(score>0){this.addScore(pi,score);if(this.checkEnd(pi,score,true,matches.length))return true;}
         this.broadcastMsg(this.format('msg-gosha', { player: this.playerNames[pi] }),2000);
-        if(hand.length===0){ this.delayLastMoveSettlement(()=>this.endDeal(pi,false), LAST_MOVE_REVEAL_DELAY_MS, this.inferFinalInfoFromLocalMove(pi, true, false, false, matches.length)); return true;}
-        if(this.board.isBlocked(this.hands,this.boneyard)){ this.delayLastMoveSettlement(()=>this.endDeal(this.findFishWinner(),true), LAST_MOVE_REVEAL_DELAY_MS, this.inferFinalInfoFromLocalMove(pi, true, true, false, matches.length)); return true;}
+        if(roundEnd?.dealEnd && !roundEnd?.fish){ this.delayLastMoveSettlement(()=>this.endDeal(pi,false), LAST_MOVE_REVEAL_DELAY_MS, this.inferFinalInfoFromLocalMove(pi, true, false, false, matches.length)); return true;}
+        if(roundEnd?.dealEnd && roundEnd?.fish){ this.delayLastMoveSettlement(()=>this.endDeal(Number.isInteger(Number(roundEnd?.winnerIndex)) ? Number(roundEnd.winnerIndex) : this.findFishWinner(),true), LAST_MOVE_REVEAL_DELAY_MS, this.inferFinalInfoFromLocalMove(pi, true, true, false, matches.length)); return true;}
         this.turnInProgress=false;
         const advanceDelay = this.shouldOpenGoshaChainWindow(pi) ? this.postMoveAdvanceMs : 0;
         this.scheduleTurnAdvance(advanceDelay, this._turnCycleId);
@@ -18423,7 +18564,19 @@ class DominoGame {
         return score;
     }
     checkEnd(pi,score,isGosha=false,comboMatchesLength=0){
-        if(this.instantWinEnabled && score>=IWIN){
+        const roundEnd = this.ruleset.resolveRoundEnd({
+            score,
+            hand: this.hands[pi] || [],
+            board: this.board,
+            hands: this.hands,
+            boneyard: this.boneyard,
+            playerIndex: pi,
+            isInstantWinEnabled: this.instantWinEnabled,
+            isGosha,
+            isTeamMode: this.isTeamMode,
+            getTeamMembers: this.getTeamMembers.bind(this)
+        });
+        if (roundEnd?.isInstantWin) {
             this.playSound('win');
             this.delayLastMoveSettlement(() => this.endRound(pi, true), LAST_MOVE_REVEAL_DELAY_MS, this.inferFinalInfoFromLocalMove(pi, isGosha, false, true, comboMatchesLength));
             return true;
@@ -18458,7 +18611,7 @@ class DominoGame {
         let score = 0;
         if (wasEmpty) {
             this.board.placeFirst(tile);
-            score = getOpeningPlayScore(tile, this.getOpeningScoreContext(pi));
+            score = this.ruleset.openingPlayScore(tile, this.getOpeningScoreContext(pi));
         } else {
             score = this.board.placeTile(tile,oei);
         }
@@ -18475,10 +18628,23 @@ class DominoGame {
             })
             : Promise.resolve();
         await travelPromise;
-        
+
+        const roundEnd = this.ruleset.resolveRoundEnd({
+            score,
+            hand,
+            board: this.board,
+            hands: this.hands,
+            boneyard: this.boneyard,
+            playerIndex: pi,
+            isInstantWinEnabled: this.instantWinEnabled,
+            isGosha: false,
+            isTeamMode: this.isTeamMode,
+            getTeamMembers: this.getTeamMembers.bind(this)
+        });
+
         if(score>0){this.addScore(pi,score);if(this.checkEnd(pi,score))return true;}
-        if(hand.length===0){ this.delayLastMoveSettlement(()=>{ if (turnCycleId !== this._turnCycleId) return; this.endDeal(pi,false); }, LAST_MOVE_REVEAL_DELAY_MS, this.inferFinalInfoFromLocalMove(pi, false, false, false)); return true;}
-        if(this.board.isBlocked(this.hands,this.boneyard)){ this.delayLastMoveSettlement(()=>{ if (turnCycleId !== this._turnCycleId) return; this.endDeal(this.findFishWinner(),true); }, LAST_MOVE_REVEAL_DELAY_MS, this.inferFinalInfoFromLocalMove(pi, false, true, false)); return true;}
+        if(roundEnd?.dealEnd && !roundEnd?.fish){ this.delayLastMoveSettlement(()=>{ if (turnCycleId !== this._turnCycleId) return; this.endDeal(pi,false); }, LAST_MOVE_REVEAL_DELAY_MS, this.inferFinalInfoFromLocalMove(pi, false, false, false)); return true;}
+        if(roundEnd?.dealEnd && roundEnd?.fish){ this.delayLastMoveSettlement(()=>{ if (turnCycleId !== this._turnCycleId) return; this.endDeal(Number.isInteger(Number(roundEnd?.winnerIndex)) ? Number(roundEnd.winnerIndex) : this.findFishWinner(),true); }, LAST_MOVE_REVEAL_DELAY_MS, this.inferFinalInfoFromLocalMove(pi, false, true, false)); return true;}
 
         this.turnInProgress=false;
         this.scheduleTurnAdvance(0, turnCycleId);
@@ -18492,7 +18658,17 @@ class DominoGame {
         this.postMoveWindowActive = false;
         clearTimeout(this._turnAdvanceTimeout);
         this._turnAdvanceTimeout = null;
-        if(this.board.isBlocked(this.hands,this.boneyard)){this.endDeal(this.findFishWinner(),true);return;}
+        const blocked = this.ruleset.resolveBlocked({
+            board: this.board,
+            hands: this.hands,
+            boneyard: this.boneyard,
+            isTeamMode: this.isTeamMode,
+            getTeamMembers: this.getTeamMembers.bind(this)
+        });
+        if (blocked) {
+            this.endDeal(Number.isInteger(Number(blocked?.winnerIndex)) ? Number(blocked.winnerIndex) : this.findFishWinner(), true);
+            return;
+        }
         this.currentPlayer=(this.currentPlayer+1)%this.playerCount;
         this.renderState();
         this.startTurnTimer();
@@ -18591,24 +18767,19 @@ class DominoGame {
     }
 
     findFishWinner(){
-        if(this.isTeamMode){
-            const t0 = this.getTeamHandPoints(0);
-            const t1 = this.getTeamHandPoints(1);
-            const winningTeam = t0<=t1?0:1;
-            const players = this.getTeamMembers(winningTeam);
-            let minP = Infinity, bestP = players[0];
-            for(const pIdx of players) {
-                const p = handPoints(this.hands[pIdx] || []);
-                if(p < minP) { minP = p; bestP = pIdx; }
-            }
-            return bestP;
-        }
-        let min=Infinity,w=0;for(let i=0;i<this.playerCount;i++){const p=handPoints(this.hands[i] || []);if(p<min){min=p;w=i;}}return w;
+        const resolved = this.ruleset.resolveBlocked({
+            board: this.board,
+            hands: this.hands,
+            boneyard: this.boneyard,
+            isTeamMode: this.isTeamMode,
+            getTeamMembers: this.getTeamMembers.bind(this)
+        });
+        return Number.isInteger(Number(resolved?.winnerIndex)) ? Number(resolved.winnerIndex) : 0;
     }
 
     isMatchTargetReached() {
         const pool = this.isTeamMode ? this.teamScores : this.scores;
-        return pool.some((score) => Number(score || 0) >= TARGET);
+        return pool.some((score) => Number(score || 0) >= this.ruleset.matchTarget);
     }
 
     getMatchWinnerIndex() {
@@ -18626,8 +18797,8 @@ class DominoGame {
             const wt=this.getTeam(wi);let os=0;
             const teamMembers = this.getTeamMembers(wt);
             const otherMembers = this.getTeamMembers(1 - wt);
-            for (const i of otherMembers) os += handPoints(this.hands[i] || []);
-            if (fish) for (const i of teamMembers) os -= handPoints(this.hands[i] || []);
+            for (const i of otherMembers) os += this.ruleset.handPoints(this.hands[i] || []);
+            if (fish) for (const i of teamMembers) os -= this.ruleset.handPoints(this.hands[i] || []);
             const currentScore = this.teamScores[wt] || 0;
             bonus = currentScore > 300 ? 0 : roundTo5(Math.max(0, os));
             if (bonus > 0) bonus = this.addScore(wi, bonus);
@@ -18636,17 +18807,17 @@ class DominoGame {
                 {name: this.getTeamDisplayName(1), isWinner: wt===1, score: this.teamScores[1], handPoints: this.getTeamHandPoints(1), leftoverHands: this.getTeamLeftoverHands(1)}
             ];
         }else{
-            let os=0;for(let i=0;i<this.playerCount;i++)if(i!==wi)os+=handPoints(this.hands[i]);
-            if(fish)os-=handPoints(this.hands[wi]);
+            let os=0;for(let i=0;i<this.playerCount;i++)if(i!==wi)os+=this.ruleset.handPoints(this.hands[i]);
+            if(fish)os-=this.ruleset.handPoints(this.hands[wi]);
             const currentScore = this.scores[wi] || 0;
             bonus = currentScore > 300 ? 0 : roundTo5(Math.max(0, os));
             if (bonus > 0) bonus = this.addScore(wi, bonus);
-            displayEntities = this.playerNames.map((n,i)=>({name:n,isWinner:i===wi,handPoints:handPoints(this.hands[i]),score:this.scores[i], leftoverHands: [this.hands[i]]}));
+            displayEntities = this.playerNames.map((n,i)=>({name:n,isWinner:i===wi,handPoints:this.ruleset.handPoints(this.hands[i]),score:this.scores[i], leftoverHands: [this.hands[i]]}));
         }
         sndWin();
         const scorePool = this.isTeamMode ? this.teamScores : this.scores;
         const cs = scorePool.length > 0 ? Math.max(...scorePool) : 0;
-        if (cs >= TARGET) {
+        if (cs >= this.ruleset.matchTarget) {
             const rw = scorePool.indexOf(cs);
             if (rw === -1) return;
             this.endRound(this.isTeamMode ? (rw === 0 ? 0 : 1) : rw);

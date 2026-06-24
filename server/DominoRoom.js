@@ -15,6 +15,7 @@ const { reserveEconomyStakeForRoom, settleEconomyRoundForRoom, settleForfeitStak
 const { buildSnapshotIdentityEntries, restoreSnapshotIdentityEntries, sanitizeName } = require("./roomSnapshot");
 const { buildRestoredRoomMetadata } = require("./roomRestore");
 const { buildSchemaStateSnapshotData, buildRestoredSchemaStateData } = require("./schemaStateSnapshot");
+const { getRuleset } = require("../shared/domino-rulesets.cjs");
 const { loadCustomStateSnapshotForRestore } = require("./roomRestoreLookup");
 const { upsertLivePlayer, removeLivePlayer, setRoomGameActive, removeRoomPlayers } = require("./livePresence");
 const { rememberRoom, forgetRoom } = require("./roomRegistry");
@@ -84,6 +85,14 @@ function isRoomTeamMode(room) {
 class DominoRoom extends Room {
     maxClients = 2;
 
+    getActiveRuleset() {
+        const mode = String(this.state?.mode || this.mode || "telefon").trim() || "telefon";
+        if (!this.ruleset || this.ruleset.id !== mode) {
+            this.ruleset = getRuleset(mode);
+        }
+        return this.ruleset;
+    }
+
     async onCreate(options = {}) {
         const restoreSnapshot = await this.loadCustomStateForRestore(options);
         if ((options.restoreRoomCode || options.restoreRoomId || options.restoreSessionId) && !restoreSnapshot) {
@@ -99,11 +108,14 @@ class DominoRoom extends Room {
 
         this.setState(new GameState());
         this.attachStateCollections();
+        this.mode = "telefon";
+        this.ruleset = this.getActiveRuleset();
         this.botTakeover = new BotTakeoverController(this);
         this.voiceEnabledBySessionId = new Set();
         this.roomMode = normalizeRoomMode(options.roomMode, options.isTeamMode);
         this.boardStartAxis = options.boardStartAxis || options.boardStart || 'horizontal';
         this.state.isTeamMode = this.roomMode === "team";
+        this.state.mode = this.mode;
         this.totalPlayers = normalizePlayerCount(options.playerCount, this.state.isTeamMode);
         this.aiCount = normalizeAiCount(options.aiCount, this.totalPlayers);
         this.humanSeats = this.totalPlayers - this.aiCount;
@@ -1752,7 +1764,7 @@ class DominoRoom extends Room {
         }
         this.state.turnVersion = 1;
 
-        const hs = getHandSize(this.totalPlayers);
+        const hs = this.getActiveRuleset().getHandSize(this.totalPlayers);
         let attempts = 0;
         do {
             const all = shuffle(createFullSet());
@@ -1769,7 +1781,7 @@ class DominoRoom extends Room {
         if (this.lastDealWinner !== null) {
             this.state.currentPlayerIndex = this.lastDealWinner;
         } else {
-            const f = determineFirstPlayer(this.hands);
+            const f = this.getActiveRuleset().determineFirstPlayer(this.hands);
             this.state.currentPlayerIndex = f.player;
         }
 
@@ -1847,7 +1859,7 @@ class DominoRoom extends Room {
                     blocksInput: false
                 });
             } else {
-                const f = determineFirstPlayer(this.hands);
+                const f = this.getActiveRuleset().determineFirstPlayer(this.hands);
                 
                 this.broadcast("round_stage", {
                     phase: "search-opening",
@@ -2061,7 +2073,7 @@ class DominoRoom extends Room {
             let minPoints = Infinity;
             let bestIndex = members[0] ?? 0;
             for (const pIdx of members) {
-                const points = handPoints(this.hands[pIdx] || []);
+                const points = this.getActiveRuleset().handPoints(this.hands[pIdx] || []);
                 if (points < minPoints) {
                     minPoints = points;
                     bestIndex = pIdx;
@@ -2074,7 +2086,7 @@ class DominoRoom extends Room {
         let bestIndex = -1;
         for (let i = 0; i < this.totalPlayers; i++) {
             if (i === timeoutIndex) continue;
-            const points = handPoints(this.hands[i] || []);
+            const points = this.getActiveRuleset().handPoints(this.hands[i] || []);
             if (points < minPoints) {
                 minPoints = points;
                 bestIndex = i;
@@ -2225,8 +2237,8 @@ class DominoRoom extends Room {
         }
 
         const finalScoreReached = isTeamMode
-            ? (this.state.teamScores[0] >= TARGET || this.state.teamScores[1] >= TARGET)
-            : (this.state.players.get(this.state.playerOrder[actualWinnerIndex])?.score || 0) >= TARGET;
+            ? (this.state.teamScores[0] >= this.getActiveRuleset().matchTarget || this.state.teamScores[1] >= this.getActiveRuleset().matchTarget)
+            : (this.state.players.get(this.state.playerOrder[actualWinnerIndex])?.score || 0) >= this.getActiveRuleset().matchTarget;
         const isMatchOver = finalScoreReached;
 
         const playerData = [];
@@ -2426,7 +2438,7 @@ class DominoRoom extends Room {
     }
 
     getTeamHandPoints(teamIndex) {
-        return this.getTeamMembers(teamIndex).reduce((sum, idx) => sum + handPoints(this.hands[idx] || []), 0);
+        return this.getTeamMembers(teamIndex).reduce((sum, idx) => sum + this.getActiveRuleset().handPoints(this.hands[idx] || []), 0);
     }
     getOpeningScoreContext(pi) {
         if (isRoomTeamMode(this)) {
@@ -2441,7 +2453,7 @@ class DominoRoom extends Room {
         if (!this.internalBoard?.isEmpty) return null;
         if (!Array.isArray(this.hands) || !this.hands.length) return null;
 
-        const opening = determineFirstPlayer(this.hands);
+        const opening = this.getActiveRuleset().determineFirstPlayer(this.hands);
         const playerIndex = Number(opening?.player);
         const tileIndex = Number(opening?.tileIndex);
         if (!Number.isInteger(playerIndex) || !Number.isInteger(tileIndex)) return null;
@@ -2473,7 +2485,7 @@ class DominoRoom extends Room {
         return this.internalBoard.getValidMoves(hand);
     }
     shouldRedealOpeningHands(hands = []) {
-        return (Array.isArray(hands) ? hands : []).some((hand) => hasInvalidOpeningHand(hand));
+        return (Array.isArray(hands) ? hands : []).some((hand) => this.getActiveRuleset().needsRedeal(hand));
     }
 
     updateSchemaState({ includeBoardJson = false } = {}) {
@@ -3143,7 +3155,7 @@ class DominoRoom extends Room {
         let boardDelta = null;
         if (wasEmpty) {
             this.internalBoard.placeFirst(tile);
-            score = getOpeningPlayScore(tile, this.getOpeningScoreContext(pi));
+            score = this.getActiveRuleset().openingPlayScore(tile, this.getOpeningScoreContext(pi));
             boardDelta = {
                 kind: "first",
                 tile: { a: tile.a, b: tile.b, id: tile.id }
@@ -3159,21 +3171,27 @@ class DominoRoom extends Room {
         this.state.boardJson = JSON.stringify(this.internalBoard);
 
         const scoreDelta = score > 0 ? this.addScore(pi, score, { broadcast: false }) : 0;
-        const isFinalMove = this.instantWinEnabled && score >= IWIN || hand.length === 0 || this.internalBoard.isBlocked(this.hands, this.boneyard);
-        const finishKind = this.instantWinEnabled && score >= IWIN
-            ? "instant_win"
-            : hand.length === 0
-                ? "tile"
-                : this.internalBoard.isBlocked(this.hands, this.boneyard)
-                    ? "fish"
-                    : null;
+        const roundEnd = this.getActiveRuleset().resolveRoundEnd({
+            score,
+            hand,
+            board: this.internalBoard,
+            hands: this.hands,
+            boneyard: this.boneyard,
+            playerIndex: pi,
+            isInstantWinEnabled: this.instantWinEnabled,
+            isGosha: false,
+            isTeamMode: isRoomTeamMode(this),
+            getTeamMembers: this.getTeamMembers.bind(this)
+        });
+        const isFinalMove = Boolean(roundEnd?.isFinalMove);
+        const finishKind = roundEnd?.finishKind || null;
         this.lastFinishInfo = isFinalMove ? {
             actorIndex: pi,
-            winnerIndex: finishKind === "fish" ? this.findFishWinner() : pi,
+            winnerIndex: Number.isInteger(Number(roundEnd?.winnerIndex)) ? Number(roundEnd.winnerIndex) : pi,
             finishKind: finishKind || "tile",
             tileCount: 1,
             action: "play",
-            fish: finishKind === "fish",
+            fish: Boolean(roundEnd?.fish),
             tableScoreDelta: scoreDelta,
             handBonus: 0
         } : null;
@@ -3191,20 +3209,20 @@ class DominoRoom extends Room {
         });
         console.log(`[FM-SRV ${Date.now()}] gameDelta isFinalMove=${isFinalMove}`);
 
-        if (this.instantWinEnabled && score >= IWIN) {
+        if (roundEnd?.isInstantWin) {
             console.log(`[FM-SRV ${Date.now()}] end immediate`);
             this.endRound(pi, true);
             return true;
         }
 
-        if (hand.length === 0) {
+        if (roundEnd?.dealEnd && !roundEnd?.fish) {
             console.log(`[FM-SRV ${Date.now()}] end immediate`);
             this.endDeal(pi, false);
             return true;
         }
-        if (this.internalBoard.isBlocked(this.hands, this.boneyard)) {
+        if (roundEnd?.dealEnd && roundEnd?.fish) {
             console.log(`[FM-SRV ${Date.now()}] end immediate`);
-            this.endDeal(this.findFishWinner(), true);
+            this.endDeal(Number.isInteger(Number(roundEnd?.winnerIndex)) ? Number(roundEnd.winnerIndex) : this.findFishWinner(), true);
             return true;
         }
 
@@ -3309,16 +3327,22 @@ class DominoRoom extends Room {
         }
         this.state.boardJson = JSON.stringify(this.internalBoard);
 
-        const score = combo.score || this.internalBoard.calculateScore();
+        const score = combo.score || this.getActiveRuleset().scoreDuringPlay(this.internalBoard);
         const scoreDelta = score > 0 ? this.addScore(pi, score, { broadcast: false }) : 0;
-        const isFinalMove = this.instantWinEnabled && score >= IWIN || hand.length === 0 || this.internalBoard.isBlocked(this.hands, this.boneyard);
-        const finishKind = this.instantWinEnabled && score >= IWIN
-            ? "instant_win_gosha"
-            : hand.length === 0
-                ? "gosha"
-                : this.internalBoard.isBlocked(this.hands, this.boneyard)
-                    ? "fish"
-                    : null;
+        const roundEnd = this.getActiveRuleset().resolveRoundEnd({
+            score,
+            hand,
+            board: this.internalBoard,
+            hands: this.hands,
+            boneyard: this.boneyard,
+            playerIndex: pi,
+            isInstantWinEnabled: this.instantWinEnabled,
+            isGosha: true,
+            isTeamMode: isRoomTeamMode(this),
+            getTeamMembers: this.getTeamMembers.bind(this)
+        });
+        const isFinalMove = Boolean(roundEnd?.isFinalMove);
+        const finishKind = roundEnd?.finishKind || null;
         this.clearTurnTimer();
         const actor = this.state.players.get(this.state.playerOrder[pi]);
         const actorName = actor ? actor.name : "Player";
@@ -3327,11 +3351,11 @@ class DominoRoom extends Room {
         }
         this.lastFinishInfo = isFinalMove ? {
             actorIndex: pi,
-            winnerIndex: finishKind === "fish" ? this.findFishWinner() : pi,
+            winnerIndex: Number.isInteger(Number(roundEnd?.winnerIndex)) ? Number(roundEnd.winnerIndex) : pi,
             finishKind: finishKind || "gosha",
             tileCount: matches.length,
             action: "gosha",
-            fish: finishKind === "fish",
+            fish: Boolean(roundEnd?.fish),
             tableScoreDelta: scoreDelta,
             handBonus: 0
         } : null;
@@ -3352,20 +3376,20 @@ class DominoRoom extends Room {
         });
         console.log(`[FM-SRV ${Date.now()}] gameDelta isFinalMove=${isFinalMove}`);
 
-        if (this.instantWinEnabled && score >= IWIN) {
+        if (roundEnd?.isInstantWin) {
             console.log(`[FM-SRV ${Date.now()}] end immediate`);
             this.endRound(pi, true);
             return true;
         }
 
-        if (hand.length === 0) {
+        if (roundEnd?.dealEnd && !roundEnd?.fish) {
             console.log(`[FM-SRV ${Date.now()}] end immediate`);
             this.endDeal(pi, false);
             return true;
         }
-        if (this.internalBoard.isBlocked(this.hands, this.boneyard)) {
+        if (roundEnd?.dealEnd && roundEnd?.fish) {
             console.log(`[FM-SRV ${Date.now()}] end immediate`);
-            this.endDeal(this.findFishWinner(), true);
+            this.endDeal(Number.isInteger(Number(roundEnd?.winnerIndex)) ? Number(roundEnd.winnerIndex) : this.findFishWinner(), true);
             return true;
         }
 
@@ -3457,8 +3481,15 @@ class DominoRoom extends Room {
 
     advanceTurn() {
         this.clearTurnAdvanceTimer();
-        if (this.internalBoard.isBlocked(this.hands, this.boneyard)) {
-            this.endDeal(this.findFishWinner(), true);
+        const blocked = this.getActiveRuleset().resolveBlocked({
+            board: this.internalBoard,
+            hands: this.hands,
+            boneyard: this.boneyard,
+            isTeamMode: isRoomTeamMode(this),
+            getTeamMembers: this.getTeamMembers.bind(this)
+        });
+        if (blocked) {
+            this.endDeal(Number.isInteger(Number(blocked?.winnerIndex)) ? Number(blocked.winnerIndex) : this.findFishWinner(), true);
             return;
         }
         this.state.currentPlayerIndex = (this.state.currentPlayerIndex + 1) % this.totalPlayers;
@@ -3507,25 +3538,14 @@ class DominoRoom extends Room {
     }
 
     findFishWinner() {
-        const isTeamMode = isRoomTeamMode(this);
-        if (isTeamMode) {
-            const t0 = this.getTeamHandPoints(0);
-            const t1 = this.getTeamHandPoints(1);
-            const winningTeam = t0 <= t1 ? 0 : 1;
-            const players = this.getTeamMembers(winningTeam);
-            let minP = Infinity, bestP = players[0];
-            for (const pIdx of players) {
-                const p = handPoints(this.hands[pIdx] || []);
-                if (p < minP) { minP = p; bestP = pIdx; }
-            }
-            return bestP;
-        }
-        let min = Infinity, w = 0;
-        for (let i = 0; i < this.totalPlayers; i++) {
-            const p = handPoints(this.hands[i] || []);
-            if (p < min) { min = p; w = i; }
-        }
-        return w;
+        const resolved = this.getActiveRuleset().resolveBlocked({
+            board: this.internalBoard,
+            hands: this.hands,
+            boneyard: this.boneyard,
+            isTeamMode: isRoomTeamMode(this),
+            getTeamMembers: this.getTeamMembers.bind(this)
+        });
+        return Number.isInteger(Number(resolved?.winnerIndex)) ? Number(resolved.winnerIndex) : 0;
     }
 
     endDeal(wi, fish) {
@@ -3544,15 +3564,15 @@ class DominoRoom extends Room {
             let os = 0;
             const teamMembers = this.getTeamMembers(wt);
             const otherMembers = this.getTeamMembers(1 - wt);
-            for (const i of otherMembers) os += handPoints(this.hands[i] || []);
-            if (fish) for (const i of teamMembers) os -= handPoints(this.hands[i] || []);
+            for (const i of otherMembers) os += this.getActiveRuleset().handPoints(this.hands[i] || []);
+            if (fish) for (const i of teamMembers) os -= this.getActiveRuleset().handPoints(this.hands[i] || []);
             const currentScore = this.state.teamScores[wt] || 0;
             bonus = currentScore > 300 ? 0 : roundTo5(Math.max(0, os));
             if (bonus > 0) bonus = this.addScore(wi, bonus, { broadcast: false, scoreSource: "hand_bonus" });
         } else {
             let os = 0;
-            for (let i = 0; i < this.totalPlayers; i++) if (i !== wi) os += handPoints(this.hands[i]);
-            if (fish) os -= handPoints(this.hands[wi]);
+            for (let i = 0; i < this.totalPlayers; i++) if (i !== wi) os += this.getActiveRuleset().handPoints(this.hands[i]);
+            if (fish) os -= this.getActiveRuleset().handPoints(this.hands[wi]);
             const currentScore = this.state.players.get(this.state.playerOrder[wi])?.score || 0;
             bonus = currentScore > 300 ? 0 : roundTo5(Math.max(0, os));
             if (bonus > 0) bonus = this.addScore(wi, bonus, { broadcast: false, scoreSource: "hand_bonus" });
@@ -3565,10 +3585,10 @@ class DominoRoom extends Room {
             ? this.state.teamScores
             : Array.from(this.state.players.values()).map(p => p.score);
         const cs = scorePool.length > 0 ? Math.max(...scorePool) : 0;
-        if (cs >= TARGET) {
+        if (cs >= this.getActiveRuleset().matchTarget) {
             const rw = isTeamMode
                 ? scorePool.indexOf(cs)
-                : this.state.playerOrder.findIndex((sid) => (this.state.players.get(sid)?.score || 0) >= TARGET);
+                : this.state.playerOrder.findIndex((sid) => (this.state.players.get(sid)?.score || 0) >= this.getActiveRuleset().matchTarget);
             if (rw === -1) return;
             this.endRound(isTeamMode ? (rw === 0 ? 0 : 1) : rw, false);
             return;
@@ -3643,8 +3663,8 @@ class DominoRoom extends Room {
         }
 
         const finalScoreReached = isTeamMode
-            ? (this.state.teamScores[0] >= TARGET || this.state.teamScores[1] >= TARGET)
-            : (this.state.players.get(this.state.playerOrder[wi])?.score || 0) >= TARGET;
+            ? (this.state.teamScores[0] >= this.getActiveRuleset().matchTarget || this.state.teamScores[1] >= this.getActiveRuleset().matchTarget)
+            : (this.state.players.get(this.state.playerOrder[wi])?.score || 0) >= this.getActiveRuleset().matchTarget;
         const isMatchOver = finalScoreReached;
 
         // Build player data for the round end screen
@@ -3752,6 +3772,9 @@ class DominoRoom extends Room {
         this.state.matchRound = restored.matchRound;
         this.state.deal = restored.deal;
         this.state.boardJson = restored.boardJson;
+        this.state.mode = String(restored.mode || this.state.mode || this.mode || "telefon").trim() || "telefon";
+        this.mode = this.state.mode;
+        this.ruleset = this.getActiveRuleset();
         this.roomMode = normalizeRoomMode(restored.roomMode || this.roomMode, restored.isTeamMode);
         this.state.isTeamMode = isRoomTeamMode(this);
         this.state.playerCount = restored.playerCount;
@@ -3831,6 +3854,8 @@ class DominoRoom extends Room {
         this.lastReservedMatchRound = restoredMetadata.lastReservedMatchRound;
         this.matchRecorded = restoredMetadata.matchRecorded;
         this.forfeitSettlementMade = restoredMetadata.forfeitSettlementMade;
+        this.mode = String(data.mode || data.state?.mode || this.mode || "telefon").trim() || "telefon";
+        this.ruleset = this.getActiveRuleset();
         this.state.turnDeadlineAt = Number(data?.state?.turnDeadlineAt || this.state.turnDeadlineAt || 0);
         this.lastRoundEconomySummary = restoredMetadata.lastRoundEconomySummary;
         this.timeoutForfeitPending = data.timeoutForfeitPending || null;
