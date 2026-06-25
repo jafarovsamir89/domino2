@@ -657,8 +657,8 @@ html[data-domino-start-mode="classic101"] #start-screen {
 
 .start-hero {
     display: grid;
-    gap: 14px;
-    padding: 22px 24px 18px;
+    gap: 10px;
+    padding: 16px 24px 14px;
     border: 1px solid var(--glass-border);
     border-radius: 28px;
     background: var(--mode-hero-bg);
@@ -669,7 +669,8 @@ html[data-domino-start-mode="classic101"] #start-screen {
 
 .start-hero-stage {
     position: relative;
-    min-height: 196px;
+    display: grid;
+    min-height: 0;
     transform-style: preserve-3d;
     transition: transform 0.95s cubic-bezier(.72, .04, .2, 1);
     will-change: transform;
@@ -682,15 +683,14 @@ html[data-domino-start-mode="classic101"] #start-screen .start-hero-stage {
 }
 
 .start-hero-face {
-    position: absolute;
-    inset: 0;
+    grid-area: 1 / 1;
     display: flex;
     align-items: center;
     justify-content: center;
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
     transform-style: preserve-3d;
-    padding: 6px 0;
+    padding: 4px 0;
 }
 
 .start-hero-face-back {
@@ -701,7 +701,7 @@ html[data-domino-start-mode="classic101"] #start-screen .start-hero-stage {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 12px;
+    gap: 8px;
     min-width: 0;
     text-align: center;
     width: 100%;
@@ -711,7 +711,7 @@ html[data-domino-start-mode="classic101"] #start-screen .start-hero-stage {
     min-width: 0;
     text-align: center;
     display: grid;
-    gap: 6px;
+    gap: 4px;
     justify-items: center;
 }
 
@@ -5804,11 +5804,11 @@ body.move-hint-selection-active #game-screen .player-name-btn {
     #start-screen { padding: 68px 16px 16px; }
 
     .start-hero {
-        padding: 18px;
+        padding: 15px 18px 13px;
     }
 
     .start-hero-stage {
-        min-height: 184px;
+        min-height: 0;
     }
 
     .hero-notes {
@@ -5875,16 +5875,16 @@ body.move-hint-selection-active #game-screen .player-name-btn {
     #start-screen { padding-top: 74px; }
 
     .start-hero {
-        padding: 18px 16px 15px;
+        padding: 14px 16px 12px;
     }
 
     .start-hero-stage {
-        min-height: 208px;
+        min-height: 0;
     }
 
     .brand-lockup {
         align-items: center;
-        gap: 10px;
+        gap: 8px;
     }
 
     .start-title-row {

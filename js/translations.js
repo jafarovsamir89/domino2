@@ -1287,7 +1287,7 @@ export const translations = {
         "game-title": "Домино (Телефон)",
         "game-subtitle": "Азербайджанское домино",
         "game-title-telefon": "Домино (Пятёрочка)",
-        "game-title-101": "Домино (Классическая)",
+        "game-title-101": "Домино (Классик)",
         "game-subtitle-telefon": "Азербайджанское домино",
         "game-subtitle-101": "Классическое домино",
         "mode-switch-telefon": "Телефон",
