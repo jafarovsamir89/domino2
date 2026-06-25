@@ -46,6 +46,8 @@ class Board {
         this.crossNodeId = null;
         this.crossSidesClosed = 0;
         this.startAxis = 'horizontal';
+        this.telephoneEnabled = true;
+        this.scoringEnabled = true;
     }
     get isEmpty() { return this.nodes.length === 0; }
 
@@ -78,7 +80,9 @@ class Board {
             })),
             crossNodeId: this.crossNodeId,
             crossSidesClosed: this.crossSidesClosed,
-            startAxis: this.startAxis
+            startAxis: this.startAxis,
+            telephoneEnabled: this.telephoneEnabled !== false,
+            scoringEnabled: this.scoringEnabled !== false
         };
     }
 
@@ -95,6 +99,8 @@ class Board {
         board.crossNodeId = data.crossNodeId ?? null;
         board.crossSidesClosed = data.crossSidesClosed ?? 0;
         board.startAxis = data.startAxis || 'horizontal';
+        board.telephoneEnabled = data.telephoneEnabled !== false;
+        board.scoringEnabled = data.scoringEnabled !== false;
         return board;
     }
 
@@ -121,6 +127,7 @@ class Board {
         }
         
         // Only [5|5] scores on first play
+        if (!this.scoringEnabled) return 0;
         if (tile.isDouble && tile.a === 5) return 10;
         return 0;
     }
@@ -161,35 +168,35 @@ class Board {
         const nextVal = tile.isDouble ? tile.a : other;
         this.openEnds.push(new OpenEnd(nodeId, this.getOpenSide(node, nextVal, gDir, oe.side), nextVal, gDir));
 
-        // Telephone Logic: The FIRST double to get 2 connections becomes the Telephone
-        if (this.crossNodeId === null) {
-            // Check if any double now has 2 connections (left and right)
-            for (let i = 0; i < this.nodes.length; i++) {
-                const n = this.nodes[i];
-                if (n.tile.isDouble) {
-                    const connCount = Object.keys(n.connections).length;
-                    if (connCount >= 2) {
-                        this.crossNodeId = i;
-                        this.crossSidesClosed = connCount;
-                        break;
+        if (this.telephoneEnabled) {
+            // Telephone Logic: The FIRST double to get 2 connections becomes the Telephone
+            if (this.crossNodeId === null) {
+                // Check if any double now has 2 connections (left and right)
+                for (let i = 0; i < this.nodes.length; i++) {
+                    const n = this.nodes[i];
+                    if (n.tile.isDouble) {
+                        const connCount = Object.keys(n.connections).length;
+                        if (connCount >= 2) {
+                            this.crossNodeId = i;
+                            this.crossSidesClosed = connCount;
+                            break;
+                        }
                     }
                 }
+            } else if (oe.nodeId === this.crossNodeId) {
+                this.crossSidesClosed = Object.keys(parent.connections).length;
             }
-        } else if (oe.nodeId === this.crossNodeId) {
-            this.crossSidesClosed = Object.keys(parent.connections).length;
-        }
 
-        const score = this.calculateScore();
-
-        // After scoring, if a Telephone was just established or updated, open top/bottom
-        if (this.crossNodeId !== null) {
-            const crossNode = this.nodes[this.crossNodeId];
-            if (Object.keys(crossNode.connections).length >= 2) {
-                const cv = crossNode.tile.a;
-                const branchSides = ['top', 'bottom', 'left', 'right'];
-                for (const s of branchSides) {
-                    if (!crossNode.connections[s] && !this.openEnds.some(e => e.nodeId === this.crossNodeId && e.side === s)) {
-                        this.openEnds.push(new OpenEnd(this.crossNodeId, s, cv, s));
+            // After scoring, if a Telephone was just established or updated, open top/bottom
+            if (this.crossNodeId !== null) {
+                const crossNode = this.nodes[this.crossNodeId];
+                if (Object.keys(crossNode.connections).length >= 2) {
+                    const cv = crossNode.tile.a;
+                    const branchSides = ['top', 'bottom', 'left', 'right'];
+                    for (const s of branchSides) {
+                        if (!crossNode.connections[s] && !this.openEnds.some(e => e.nodeId === this.crossNodeId && e.side === s)) {
+                            this.openEnds.push(new OpenEnd(this.crossNodeId, s, cv, s));
+                        }
                     }
                 }
             }
@@ -197,10 +204,11 @@ class Board {
 
         this.normalizeOpenEnds();
 
-        return score;
+        return this.calculateScore();
     }
 
     calculateScore() {
+        if (!this.scoringEnabled) return 0;
         this.normalizeOpenEnds();
         const sum = this.getOpenEndsScore();
         return (sum > 0 && sum % 5 === 0) ? sum : 0;

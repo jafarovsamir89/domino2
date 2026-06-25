@@ -293,7 +293,7 @@ const SOCIAL_ICON_SVGS = {
 
 class DominoGame {
     constructor() {
-        this.renderer = new Renderer(this); this.board = new Board(); this.board.startAxis = getBoardStartAxis();
+        this.renderer = new Renderer(this); this.board = new Board(); this.board.startAxis = getBoardStartAxis(); this.configureBoardForCurrentMode(this.board);
         this.playerMissingSuits = [];
         this.playerCount=2; this.onlinePlayerCount=2; this.onlineAiCount=0; this.playerName=''; this.difficulty='medium';
         this.onlineStakeKey = 'stake_200';
@@ -13137,6 +13137,7 @@ class DominoGame {
             this.dlossThreshold = Number(snapshot.dlossThreshold ?? this.dlossThreshold);
             this.instantWinEnabled = snapshot.instantWinEnabled !== false;
             this.board = snapshot.board ? reconstructBoard(snapshot.board) : (() => { const b = new Board(); b.startAxis = getBoardStartAxis(); return b; })();
+            this.configureBoardForCurrentMode(this.board);
             this.hands = Array.isArray(snapshot.hands)
                 ? snapshot.hands.map((hand) => (Array.isArray(hand) ? hand.map((tile) => new Tile(tile.a, tile.b)) : []))
                 : [];
@@ -14851,6 +14852,7 @@ class DominoGame {
         this.currentPlayer = this.humanPlayerIndex;
         this.board = new Board();
         this.board.startAxis = getBoardStartAxis();
+        this.configureBoardForCurrentMode(this.board);
         this.boneyard = [];
         this.validMoves = [];
         this.selectedTileIndex = -1;
@@ -14920,6 +14922,14 @@ class DominoGame {
     cloneBoardForSnapshot(board = this.board) {
         if (!board) { const b = new Board(); b.startAxis = getBoardStartAxis(); return b; }
         return cloneBoard(board);
+    }
+
+    configureBoardForCurrentMode(board = this.board) {
+        if (!board) return board;
+        const classic101 = this.mode === 'classic101';
+        board.telephoneEnabled = !classic101;
+        board.scoringEnabled = !classic101;
+        return board;
     }
 
     clearPendingOnlineAction({ rollback = false } = {}) {
@@ -16400,7 +16410,7 @@ class DominoGame {
         const turnCycleId = this._turnCycleId;
         this.clearNextDealAdvanceTimeout();
         this.clearTurnTimers();
-        this.board=new Board(); this.board.startAxis = getBoardStartAxis(); this.selectedTileIndex=-1; this.roundOver=false; this.gameActive=true; this.turnInProgress=false;
+        this.board=new Board(); this.board.startAxis = getBoardStartAxis(); this.configureBoardForCurrentMode(this.board); this.selectedTileIndex=-1; this.roundOver=false; this.gameActive=true; this.turnInProgress=false;
         const deal = this.dealHandsWithValidation();
         this.hands = deal.hands;
         this.boneyard = deal.boneyard;
@@ -17737,6 +17747,7 @@ class DominoGame {
         this.onlineRoundBankAmount = Math.max(0, Number(payload?.bankAmount || 0));
         this.turnVersion = Number(payload?.turnVersion || this.turnVersion || 1);
         this.board = reconstructBoard(payload?.board || {});
+        this.configureBoardForCurrentMode(this.board);
         this.myHand = Array.isArray(payload?.selfHand) ? payload.selfHand.map((t) => new Tile(t.a, t.b)) : [];
         const mySid = this.network?.room?.sessionId || '';
         const myIdx = playerOrder.indexOf(mySid);
@@ -18025,6 +18036,7 @@ class DominoGame {
             try {
                 const parsed = JSON.parse(state.boardJson);
                 this.board = reconstructBoard(parsed);
+                this.configureBoardForCurrentMode(this.board);
             } catch (e) { console.error(e); }
             fmLog('schema.board-applied', { gameActive: state?.gameActive, deal: state?.deal });
         } else if (state.boardJson) {
@@ -18759,6 +18771,9 @@ class DominoGame {
             })
             : Promise.resolve();
         await travelPromise;
+        if (this.mode === 'classic101') {
+            score = this.ruleset.scoreDuringPlay(this.board);
+        }
 
         if (this.mode === 'classic101') {
             debugLog('[101-debug] playTile pre-resolve', {

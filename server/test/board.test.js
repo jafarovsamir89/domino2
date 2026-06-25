@@ -16,6 +16,8 @@ test("board serializes and restores without losing structure", () => {
     assert.equal(restored.openEnds.length, board.openEnds.length);
     assert.equal(restored.crossNodeId, board.crossNodeId);
     assert.equal(restored.crossSidesClosed, board.crossSidesClosed);
+    assert.equal(restored.telephoneEnabled, board.telephoneEnabled);
+    assert.equal(restored.scoringEnabled, board.scoringEnabled);
     assert.equal(typeof restored.nodes[0].toJSON, "function");
 });
 
@@ -30,6 +32,27 @@ test("cloneBoard and reconstructBoard preserve the board snapshot", () => {
     assert.equal(reconstructed.nodes.length, 1);
     assert.equal(cloned.openEnds.length, 2);
     assert.equal(reconstructed.openEnds.length, 2);
+});
+
+test("board flags disable Telefon scoring and cross logic in classic101", () => {
+    const board = new Board();
+    board.telephoneEnabled = false;
+    board.scoringEnabled = false;
+
+    assert.equal(board.placeFirst(new Tile(5, 5)), 0);
+    assert.equal(board.openEnds.length, 2);
+    assert.equal(board.placeTile(new Tile(5, 2), 0), 0);
+    assert.equal(board.crossNodeId, null);
+    assert.equal(board.crossSidesClosed, 0);
+    assert.equal(board.openEnds.length, 2);
+
+    const cloned = cloneBoard(board);
+    const reconstructed = reconstructBoard(board.toJSON());
+
+    assert.equal(cloned.telephoneEnabled, false);
+    assert.equal(cloned.scoringEnabled, false);
+    assert.equal(reconstructed.telephoneEnabled, false);
+    assert.equal(reconstructed.scoringEnabled, false);
 });
 
 test("getGoshaCombo keeps the full score for a double gosha sequence", () => {
@@ -80,6 +103,17 @@ test("placeTile keeps legal 0/3 placements on the 0 end and exposes 3 as the nex
     assert.equal(board.nodes[1].displayA, 3);
     assert.equal(board.nodes[1].displayB, 0);
     assert.ok(board.openEnds.some((oe) => oe.value === 3));
+});
+
+test("default board keeps Telefon scoring and cross behavior", () => {
+    const board = new Board();
+
+    assert.equal(board.telephoneEnabled, true);
+    assert.equal(board.scoringEnabled, true);
+    assert.equal(board.placeFirst(new Tile(5, 5)), 10);
+    assert.equal(board.placeTile(new Tile(5, 2), 0), 0);
+    assert.equal(board.toJSON().telephoneEnabled, true);
+    assert.equal(board.toJSON().scoringEnabled, true);
 });
 
 test("hand with five different doubles is invalid for opening deal", () => {
