@@ -151,6 +151,7 @@ function getBoardStartAxis() {
 const TARGET=365, MAX_R=3, DLOSS=255, IWIN=35;
 const TURN_TIMEOUT_MS = 30000;
 const BOT_THINK_DELAY_MS = 1500;
+const CLASSIC101_BOT_DRAW_STEP_DELAY_MS = 550;
 const DEAL_END_MODAL_MS = 5000;
 const LAST_MOVE_REVEAL_DELAY_MS = 1200;
 const RESULT_MODAL_AFTER_LAND_DELAY_MS = 500;
@@ -18594,57 +18595,71 @@ class DominoGame {
             if (this.playerMissingSuits[pi]) this.playerMissingSuits[pi].add(v);
         }
 
-        if (this.mode === 'classic101' && isAI && typeof this.ruleset.drawToPlay === 'function') {
-            const drawOutcome = this.ruleset.drawToPlay({
-                board: this.board,
-                hand: this.hands[pi],
-                boneyard: this.boneyard
-            });
-            debugLog('[classic101] drawFromBoneyard outcome', {
-                player: pi,
-                draws: drawOutcome.draws || 0,
-                playable: Boolean(drawOutcome.playable),
-                exhausted: Boolean(drawOutcome.exhausted),
-                turnInProgress: this.turnInProgress
-            });
-            if (drawOutcome.draws > 0) {
-                this.playSound('draw');
-            }
-            if (!drawOutcome.playable) {
-                this.renderState();
-                if (drawOutcome.exhausted) {
-                    debugLog('[classic101] drawFromBoneyard -> passTurn', {
-                        player: pi,
-                        nextPlayer: (this.currentPlayer + 1) % this.playerCount
-                    });
-                    this.passTurn();
-                }
-                return;
-            }
-            const moves = this.board.getValidMoves(this.normalizeHandForBoard(this.hands[pi]));
-            const move = moves[0];
-            if (!move) {
-                debugLog('[classic101] drawFromBoneyard -> no valid move after draw, advancing turn', {
-                    player: pi,
-                    turnInProgress: this.turnInProgress
-                });
-                this.renderState();
-                this.turnInProgress = false;
-                this.scheduleTurnAdvance(0, this._turnCycleId);
-                return;
-            }
-            this.turnInProgress = false;
-            debugLog('[classic101] drawFromBoneyard -> auto play', {
-                player: pi,
-                tileIndex: move.tileIndex,
-                openEndIndex: move.openEndIndex
-            });
-            void this.playTile(pi, move.tileIndex, move.openEndIndex);
+        if (this.mode === 'classic101' && isAI) {
+            void this.runClassic101BotDrawSequence(pi, this._turnCycleId);
             return;
         }
 
         this.hands[pi].push(this.boneyard.pop());
         this.playSound('draw'); this.broadcastMsg(this.t('msg-took-bazaar'), 1500); this.renderState();
+    }
+
+    async runClassic101BotDrawSequence(pi, turnCycleId = this._turnCycleId) {
+        if (this.mode !== 'classic101' || !this.ais.some((ai) => ai.index === pi)) return;
+        const delay = CLASSIC101_BOT_DRAW_STEP_DELAY_MS;
+        const hasPlayableMove = () => this.board.canPlayAny(this.normalizeHandForBoard(this.hands[pi]));
+        while (
+            turnCycleId === this._turnCycleId &&
+            this.gameActive &&
+            !this.roundOver &&
+            !this.matchOver &&
+            !hasPlayableMove()
+        ) {
+            if (!this.boneyard.length) {
+                this.turnInProgress = false;
+                this.passTurn();
+                return;
+            }
+            const drawnTile = this.boneyard.pop();
+            if (!drawnTile) break;
+            this.hands[pi].push(drawnTile);
+            this.playSound('draw');
+            this.renderState();
+            await new Promise((resolve) => setTimeout(resolve, delay));
+        }
+        if (
+            turnCycleId !== this._turnCycleId ||
+            !this.gameActive ||
+            this.roundOver ||
+            this.matchOver
+        ) {
+            this.turnInProgress = false;
+            return;
+        }
+        if (!hasPlayableMove()) {
+            this.turnInProgress = false;
+            if (!this.boneyard.length) this.passTurn();
+            return;
+        }
+        const moves = this.board.getValidMoves(this.normalizeHandForBoard(this.hands[pi]));
+        const move = moves[0];
+        if (!move) {
+            this.turnInProgress = false;
+            if (!this.boneyard.length) this.passTurn();
+            return;
+        }
+        this.turnInProgress = false;
+        const pName = this.getPlayerDisplayName(pi);
+        this.showTimedRoundStage({
+            phase: 'ai-playing',
+            title: this.t('stage-ai-playing') || 'AI ходит',
+            subtitle: pName,
+            blocksInput: true
+        }, 800);
+        setTimeout(() => {
+            if (turnCycleId !== this._turnCycleId) return;
+            this.playTile(pi, move.tileIndex, move.openEndIndex);
+        }, 800);
     }
     passTurn(fromRemote=false) {
         if (this.isInputBlockedByStage()) return;
@@ -18948,6 +18963,10 @@ class DominoGame {
                 this.playTile(pi, move.tileIndex, move.openEndIndex);
             }, 800);
         } else if (this.boneyard.length > 0) {
+            if (this.mode === 'classic101') {
+                void this.runClassic101BotDrawSequence(pi, turnCycleId);
+                return;
+            }
             this.turnInProgress = false;
             this.drawFromBoneyard();
             debugLog('[turn] aiTurn draw handoff', {
