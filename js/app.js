@@ -18594,7 +18594,7 @@ class DominoGame {
             if (this.playerMissingSuits[pi]) this.playerMissingSuits[pi].add(v);
         }
 
-        if (this.mode === 'classic101' && typeof this.ruleset.drawToPlay === 'function') {
+        if (this.mode === 'classic101' && isAI && typeof this.ruleset.drawToPlay === 'function') {
             const drawOutcome = this.ruleset.drawToPlay({
                 board: this.board,
                 hand: this.hands[pi],
