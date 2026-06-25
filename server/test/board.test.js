@@ -1,8 +1,48 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
+const path = require("node:path");
+const { pathToFileURL } = require("node:url");
 
 const { Board, cloneBoard, reconstructBoard } = require("../board");
 const { Tile, getOpeningPlayScore, hasInvalidOpeningHand } = require("../model");
+
+function makeTile(a, b) {
+    return {
+        a,
+        b,
+        id: `${a}-${b}`,
+        isDouble: a === b,
+        total: a + b,
+        hasValue(value) {
+            return this.a === value || this.b === value;
+        },
+        otherSide(value) {
+            return this.a === value ? this.b : (this.b === value ? this.a : -1);
+        }
+    };
+}
+
+async function loadClientBoardModule() {
+    const previousWindow = global.window;
+    global.window = {
+        performance: { now: () => 0 },
+        crypto: {
+            getRandomValues(array) {
+                if (array && typeof array.length === "number") {
+                    for (let i = 0; i < array.length; i++) array[i] = 1;
+                }
+                return array;
+            }
+        }
+    };
+    try {
+        const url = pathToFileURL(path.join(__dirname, "../../js/board.js")).href;
+        return await import(`${url}?t=${Date.now()}-${Math.random()}`);
+    } finally {
+        if (previousWindow === undefined) delete global.window;
+        else global.window = previousWindow;
+    }
+}
 
 test("board serializes and restores without losing structure", () => {
     const board = new Board();
@@ -114,6 +154,43 @@ test("default board keeps Telefon scoring and cross behavior", () => {
     assert.equal(board.placeTile(new Tile(5, 2), 0), 0);
     assert.equal(board.toJSON().telephoneEnabled, true);
     assert.equal(board.toJSON().scoringEnabled, true);
+});
+
+test("client board round-trip keeps classic101 flags and stays two-ended across serialization", async () => {
+    const { Board: ClientBoard } = await loadClientBoardModule();
+    const board = new ClientBoard();
+    board.telephoneEnabled = false;
+    board.scoringEnabled = false;
+
+    assert.equal(board.placeFirst(makeTile(1, 1)), 0);
+    assert.equal(board.placeTile(makeTile(1, 3), 1), 0);
+
+    const restored = ClientBoard.fromJSON(board.toJSON());
+
+    assert.equal(restored.telephoneEnabled, false);
+    assert.equal(restored.scoringEnabled, false);
+
+    assert.equal(restored.placeTile(makeTile(1, 2), 0), 0);
+    assert.equal(restored.crossNodeId, null);
+    assert.equal(restored.crossSidesClosed, 0);
+    assert.equal(restored.openEnds.length, 2);
+    assert.equal(restored.openEnds.some((oe) => oe.side === "top" || oe.side === "bottom"), false);
+    assert.equal(restored.nodes[0].connections.left, 2);
+    assert.equal(restored.nodes[0].connections.right, 1);
+    assert.equal(restored.getValidMoves([makeTile(2, 3)]).length, 2);
+});
+
+test("client board keeps Telefon cross behavior by default", async () => {
+    const { Board: ClientBoard } = await loadClientBoardModule();
+    const board = new ClientBoard();
+
+    board.placeFirst(makeTile(1, 1));
+    board.placeTile(makeTile(1, 3), 1);
+    board.placeTile(makeTile(1, 2), 0);
+    assert.equal(board.crossNodeId, 0);
+    assert.equal(board.openEnds.length, 4);
+    assert.equal(board.openEnds.some((oe) => oe.side === "top"), true);
+    assert.equal(board.openEnds.some((oe) => oe.side === "bottom"), true);
 });
 
 test("hand with five different doubles is invalid for opening deal", () => {

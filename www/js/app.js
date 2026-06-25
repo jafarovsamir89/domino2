@@ -14920,7 +14920,7 @@ class DominoGame {
     }
 
     cloneBoardForSnapshot(board = this.board) {
-        if (!board) { const b = new Board(); b.startAxis = getBoardStartAxis(); return b; }
+        if (!board) { const b = new Board(); b.startAxis = getBoardStartAxis(); this.configureBoardForCurrentMode(b); return b; }
         return cloneBoard(board);
     }
 
