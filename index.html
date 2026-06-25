@@ -7,7 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css?v=round-stage-12-b5fb0d9">
+    <link rel="stylesheet" href="css/style.css?v=round-stage-13-9eddad2">
     <link rel="icon" href="assets/icon.png">
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#0f1923">
@@ -92,15 +92,9 @@
                             </div>
 
                             <div class="brand-copy">
-                                <div class="start-mode-rating" data-mode-text="rating"></div>
                                 <div class="start-title-row">
                                     <h1 class="game-title" data-i18n="game-title-telefon" data-mode-text="title">Domino (Telefon)</h1>
-                                    <div class="mode-switcher" role="tablist" aria-label="Game mode">
-                                        <button type="button" class="mode-switcher-segment is-active" data-mode-toggle="telefon" data-i18n="mode-switch-telefon">Telefon</button>
-                                        <button type="button" class="mode-switcher-segment" data-mode-toggle="classic101" data-i18n="mode-switch-101">101</button>
-                                    </div>
                                 </div>
-                                <p class="game-subtitle" data-i18n="game-subtitle-telefon" data-mode-text="subtitle">Azərbaycan Dominosu</p>
                             </div>
                         </div>
                     </section>
@@ -124,15 +118,9 @@
                             </div>
 
                             <div class="brand-copy">
-                                <div class="start-mode-rating" data-mode-text="rating"></div>
                                 <div class="start-title-row">
                                     <h1 class="game-title" data-i18n="game-title-101" data-mode-text="title">Domino (101)</h1>
-                                    <div class="mode-switcher" role="tablist" aria-label="Game mode">
-                                        <button type="button" class="mode-switcher-segment" data-mode-toggle="telefon" data-i18n="mode-switch-telefon">Telefon</button>
-                                        <button type="button" class="mode-switcher-segment is-active" data-mode-toggle="classic101" data-i18n="mode-switch-101">101</button>
-                                    </div>
                                 </div>
-                                <p class="game-subtitle" data-i18n="game-subtitle-101" data-mode-text="subtitle">Klassik domino</p>
                                 <div class="start-mode-note" data-mode-text="status"></div>
                             </div>
                         </div>
@@ -140,6 +128,13 @@
                 </div>
 
             </section>
+
+            <div class="start-mode-switch-row" aria-label="Game mode selection">
+                <div class="mode-switcher" role="tablist" aria-label="Game mode">
+                    <button type="button" class="mode-switcher-segment" data-mode-toggle="telefon" data-i18n="mode-switch-telefon">Telefon</button>
+                    <button type="button" class="mode-switcher-segment" data-mode-toggle="classic101" data-i18n="mode-switch-101">101</button>
+                </div>
+            </div>
 
             <section id="daily-bonus-card" class="daily-bonus-card is-hidden">
                 <div class="daily-bonus-header">
@@ -715,11 +710,11 @@
     <script src="shared/domino-model-core.cjs" defer></script>
     <script src="shared/domino-board-core.cjs" defer></script>
     <script src="shared/domino-rulesets.cjs" defer></script>
-    <script src="js/network.js?v=round-stage-12-b5fb0d9" defer></script>
-    <script type="module" src="js/app.js?v=round-stage-12-b5fb0d9" defer></script>
+    <script src="js/network.js?v=round-stage-13-9eddad2" defer></script>
+    <script type="module" src="js/app.js?v=round-stage-13-9eddad2" defer></script>
     <script>
         (() => {
-            const SW_VERSION = 'browser-production-trace-v12-b5fb0d9';
+            const SW_VERSION = 'browser-production-trace-v13-9eddad2';
             const SW_RELOAD_FLAG = 'dominoSwReloadedForVersion';
             let pendingSwReload = false;
 

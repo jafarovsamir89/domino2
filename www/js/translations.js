@@ -637,8 +637,8 @@ export const translations = {
     en: {
         "game-title": "Domino (Telephone)",
         "game-subtitle": "Azerbaijani Domino",
-        "game-title-telefon": "Domino (Telephone)",
-        "game-title-101": "Domino (101)",
+        "game-title-telefon": "Domino (Muggins)",
+        "game-title-101": "Domino (Classic)",
         "game-subtitle-telefon": "Azerbaijani Domino",
         "game-subtitle-101": "Classic domino",
         "mode-switch-telefon": "Telefon",
@@ -1286,8 +1286,8 @@ export const translations = {
     ru: {
         "game-title": "Домино (Телефон)",
         "game-subtitle": "Азербайджанское домино",
-        "game-title-telefon": "Домино (Телефон)",
-        "game-title-101": "Домино (101)",
+        "game-title-telefon": "Домино (Пятёрочка)",
+        "game-title-101": "Домино (Классическая)",
         "game-subtitle-telefon": "Азербайджанское домино",
         "game-subtitle-101": "Классическое домино",
         "mode-switch-telefon": "Телефон",
