@@ -97,6 +97,7 @@ function buildRoomStatePayload({ room, players } = {}) {
         roomId: room.roomId,
         roomCode: room.roomCode,
         roomVisibility: room.roomVisibility,
+        matchState: room.matchState || null,
         roomPhase: room.state.gameActive
             ? "playing"
             : room.timeoutForfeitPending

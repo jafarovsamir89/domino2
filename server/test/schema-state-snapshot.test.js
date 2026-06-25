@@ -50,6 +50,7 @@ test("buildSchemaStateSnapshotData returns the expected snapshot shape", () => {
         matchRound: 3,
         deal: 2,
         gameMode: "telefon",
+        matchStateJson: "{\"mode\":\"classic101\",\"carryPoints\":5,\"sides\":[]}",
         boardJson: "{\"nodes\":[]}",
         isTeamMode: false,
         playerCount: 2,
@@ -109,6 +110,7 @@ test("buildSchemaStateSnapshotData returns the expected snapshot shape", () => {
     assert.equal(snapshot.matchRound, 3);
     assert.equal(snapshot.deal, 2);
     assert.equal(snapshot.gameMode, "telefon");
+    assert.equal(snapshot.matchStateJson, "{\"mode\":\"classic101\",\"carryPoints\":5,\"sides\":[]}");
     assert.equal(snapshot.boardJson, "{\"nodes\":[]}");
     assert.equal(snapshot.isTeamMode, false);
     assert.equal(snapshot.roomMode, "ffa");
@@ -126,6 +128,7 @@ test("buildSchemaStateSnapshotData returns the expected snapshot shape", () => {
         matchRound: state.matchRound,
         deal: state.deal,
         gameMode: "telefon",
+        matchStateJson: state.matchStateJson,
         boardJson: state.boardJson,
         isTeamMode: state.isTeamMode,
         roomMode: "ffa",
@@ -320,6 +323,7 @@ test("buildRestoredSchemaStateData applies current fallbacks and does not mutate
         matchRound: "3",
         deal: "4",
         gameMode: "classic101",
+        matchStateJson: "{\"mode\":\"classic101\",\"carryPoints\":9,\"sides\":[{\"scored\":9,\"pending\":0,\"enteredBoard\":true,\"missStreak\":0}]}",
         boardJson: "{\"nodes\":[{\"id\":\"n1\"}]}",
         isTeamMode: 0,
         playerCount: "4",
@@ -364,6 +368,7 @@ test("buildRestoredSchemaStateData applies current fallbacks and does not mutate
     assert.equal(restored.matchRound, 3);
     assert.equal(restored.deal, 4);
     assert.equal(restored.gameMode, "classic101");
+    assert.equal(restored.matchStateJson, "{\"mode\":\"classic101\",\"carryPoints\":9,\"sides\":[{\"scored\":9,\"pending\":0,\"enteredBoard\":true,\"missStreak\":0}]}");
     assert.equal(restored.boardJson, "{\"nodes\":[{\"id\":\"n1\"}]}");
     assert.equal(restored.isTeamMode, false);
     assert.equal(restored.roomMode, "ffa");

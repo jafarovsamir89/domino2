@@ -89,6 +89,7 @@ test("buildRoomStatePayload preserves room_state fields and currentPlayers logic
         roomCode: "ABCD",
         roomVisibility: "open",
         gameMode: "classic101",
+        matchState: { mode: "classic101", carryPoints: 12, sides: [] },
         currentDealStakeKey: "stake_500",
         currentStakeKey: "stake_200",
         currentDealStakeAmount: 500,
@@ -118,6 +119,7 @@ test("buildRoomStatePayload preserves room_state fields and currentPlayers logic
         roomId: "room-1",
         roomCode: "ABCD",
         roomVisibility: "open",
+        matchState: { mode: "classic101", carryPoints: 12, sides: [] },
         roomPhase: "playing",
         roomMode: "team",
         gameMode: "classic101",
@@ -227,6 +229,7 @@ test("buildRoomStatePayload exposes timeout forfeit state", () => {
         roomCode: "IJKL",
         roomVisibility: "open",
         gameMode: "telefon",
+        matchState: null,
         currentDealStakeKey: "stake_200",
         currentStakeKey: "stake_200",
         currentDealStakeAmount: 200,
@@ -262,6 +265,7 @@ test("buildRoomStatePayload exposes timeout forfeit state", () => {
     const payload = buildRoomStatePayload({ room, players: [] });
     assert.equal(payload.roomPhase, "timeout_result");
     assert.equal(payload.gameMode, "telefon");
+    assert.equal(payload.matchState, null);
     assert.equal(payload.timeoutForfeitPending, true);
     assert.equal(payload.timeoutLoserIndex, 1);
     assert.equal(payload.timeoutLoserName, "Alice");

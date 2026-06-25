@@ -157,7 +157,56 @@ test("onCreate normalizes gameMode and selects the matching ruleset", async () =
     assert.equal(room.mode, "classic101");
     assert.equal(room.state.gameMode, "classic101");
     assert.equal(room.state.mode, "classic101");
+    assert.ok(room.matchState);
+    assert.equal(room.matchState.mode, "classic101");
+    assert.equal(room.state.matchStateJson, JSON.stringify(room.matchState));
     assert.equal(room.getActiveRuleset().id, "classic101");
+});
+
+test("onJoin rejects clients that ask for a different gameMode than the room", async () => {
+    const room = Object.create(DominoRoom.prototype);
+    Object.defineProperty(room, "roomId", {
+        value: "room-mode-test",
+        configurable: true,
+        enumerable: true
+    });
+    room.gameMode = "classic101";
+    room.mode = "classic101";
+    room.roomMode = "ffa";
+    room.clients = [];
+    room.state = {
+        gameActive: false,
+        matchFinished: false,
+        isTeamMode: false,
+        playerOrder: [],
+        players: new Map()
+    };
+    room.identityBySessionId = new Map();
+    room.clientMessages = [];
+    room.loadCustomStateForRestore = async () => null;
+    room.findReusableSessionId = () => "";
+    room.hasRestoredMatchInProgress = () => false;
+    room.broadcast = () => {};
+    room.broadcastRoomState = () => {};
+    room.syncState = () => {};
+    room.maybeAutoStartGame = () => false;
+    room.registerLivePlayer = () => {};
+
+    const client = {
+        sessionId: "session-1",
+        sent: [],
+        send(type, payload) { this.sent.push({ type, payload }); },
+        leave() { this.left = true; }
+    };
+
+    await room.onJoin(client, { name: "Alice", gameMode: "telefon" }, { provider: "platform" });
+
+    assert.equal(client.left, true);
+    assert.deepEqual(client.sent, [
+        { type: "room_closed", payload: { reasonKey: "room-closed-game-mode-mismatch" } }
+    ]);
+    assert.equal(room.state.players.size, 0);
+    assert.deepEqual(room.state.playerOrder, []);
 });
 
 test("handleNextDeal only advances for the host during pending transitions", () => {

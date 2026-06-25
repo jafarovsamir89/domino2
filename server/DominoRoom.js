@@ -93,6 +93,47 @@ class DominoRoom extends Room {
         return this.ruleset;
     }
 
+    parseMatchStateSnapshot(matchState) {
+        if (!matchState) return null;
+        if (typeof matchState === "string") {
+            try {
+                return JSON.parse(matchState);
+            } catch {
+                return null;
+            }
+        }
+        if (typeof matchState === "object") {
+            try {
+                return JSON.parse(JSON.stringify(matchState));
+            } catch {
+                return matchState;
+            }
+        }
+        return null;
+    }
+
+    createMatchStateForCurrentMode(playerCount = this.totalPlayers, isTeamMode = isRoomTeamMode(this)) {
+        if (this.gameMode !== "classic101") return null;
+        const ruleset = this.getActiveRuleset();
+        return ruleset?.createMatchState?.(playerCount, isTeamMode) || null;
+    }
+
+    normalizeMatchStateForCurrentMode(matchState = this.matchState, playerCount = this.totalPlayers, isTeamMode = isRoomTeamMode(this)) {
+        if (this.gameMode !== "classic101") return null;
+        const ruleset = this.getActiveRuleset();
+        if (!ruleset?.normalizeMatchState) return this.parseMatchStateSnapshot(matchState);
+        return ruleset.normalizeMatchState(matchState || ruleset.createMatchState?.(playerCount, isTeamMode) || null, playerCount, isTeamMode);
+    }
+
+    syncMatchStateToSchema() {
+        if (!this.state) return;
+        if (this.gameMode !== "classic101") {
+            this.state.matchStateJson = "";
+            return;
+        }
+        this.state.matchStateJson = this.matchState ? JSON.stringify(this.matchState) : "";
+    }
+
     async onCreate(options = {}) {
         const restoreSnapshot = await this.loadCustomStateForRestore(options);
         if ((options.restoreRoomCode || options.restoreRoomId || options.restoreSessionId) && !restoreSnapshot) {
@@ -119,6 +160,8 @@ class DominoRoom extends Room {
         this.state.gameMode = this.gameMode;
         this.state.mode = this.gameMode;
         this.totalPlayers = normalizePlayerCount(options.playerCount, this.state.isTeamMode);
+        this.matchState = this.createMatchStateForCurrentMode(this.totalPlayers, this.state.isTeamMode);
+        this.syncMatchStateToSchema();
         this.aiCount = normalizeAiCount(options.aiCount, this.totalPlayers);
         this.humanSeats = this.totalPlayers - this.aiCount;
         this.maxClients = this.humanSeats;
@@ -1202,6 +1245,12 @@ class DominoRoom extends Room {
             humanSeats: this.humanSeats,
             maxClients: this.maxClients
         });
+        const requestedGameMode = normalizeGameMode(options.gameMode || this.gameMode || this.mode);
+        if (requestedGameMode && this.gameMode && requestedGameMode !== this.gameMode) {
+            client.send("room_closed", { reasonKey: "room-closed-game-mode-mismatch" });
+            void client.leave();
+            return;
+        }
         const authToken = normalizeAuthToken(identity, options);
         const reusableSessionId = this.findReusableSessionId(options, identity);
         const humanPlayers = this.state.playerOrder.filter((sessionId) => !this.state.players.get(sessionId)?.isBot).length;
@@ -1665,6 +1714,8 @@ class DominoRoom extends Room {
             this.currentDealStakeAmount = 0;
             this.currentDealBankAmount = 0;
             this.lastReservedMatchRound = 0;
+            this.matchState = this.createMatchStateForCurrentMode(this.totalPlayers, this.state.isTeamMode);
+            this.syncMatchStateToSchema();
             for (const sessionId of this.state.playerOrder || []) {
                 const player = this.state.players.get(sessionId);
                 if (!player) continue;
@@ -2497,6 +2548,7 @@ class DominoRoom extends Room {
         this.state.turnDurationMs = this.turnTimeoutMs;
         this.state.serverNow = Date.now();
         this.syncPublicPlayerStatsToState();
+        this.syncMatchStateToSchema();
         this.state.boneyardCount = this.boneyard.length;
         if (includeBoardJson) {
             this.state.boardJson = JSON.stringify(this.internalBoard);
@@ -2586,6 +2638,8 @@ class DominoRoom extends Room {
             roomId: getSafeRoomId(this),
             roomCode: String(this.roomCode || ""),
             roomVisibility: this.roomVisibility,
+            gameMode: this.gameMode,
+            matchState: this.matchState || null,
             playerOrder: Array.from(this.state.playerOrder || []),
             players: this.buildPlayerSyncRows(),
             currentPlayerIndex: Number(this.state.currentPlayerIndex || 0),
@@ -3186,8 +3240,11 @@ class DominoRoom extends Room {
             isInstantWinEnabled: this.instantWinEnabled,
             isGosha: false,
             isTeamMode: isRoomTeamMode(this),
+            matchState: this.matchState,
             getTeamMembers: this.getTeamMembers.bind(this)
         });
+        this.matchState = this.normalizeMatchStateForCurrentMode(roundEnd?.matchState || this.matchState, this.totalPlayers, isRoomTeamMode(this));
+        this.syncMatchStateToSchema();
         const isFinalMove = Boolean(roundEnd?.isFinalMove);
         const finishKind = roundEnd?.finishKind || null;
         this.lastFinishInfo = isFinalMove ? {
@@ -3344,8 +3401,11 @@ class DominoRoom extends Room {
             isInstantWinEnabled: this.instantWinEnabled,
             isGosha: true,
             isTeamMode: isRoomTeamMode(this),
+            matchState: this.matchState,
             getTeamMembers: this.getTeamMembers.bind(this)
         });
+        this.matchState = this.normalizeMatchStateForCurrentMode(roundEnd?.matchState || this.matchState, this.totalPlayers, isRoomTeamMode(this));
+        this.syncMatchStateToSchema();
         const isFinalMove = Boolean(roundEnd?.isFinalMove);
         const finishKind = roundEnd?.finishKind || null;
         this.clearTurnTimer();
@@ -3491,9 +3551,10 @@ class DominoRoom extends Room {
             hands: this.hands,
             boneyard: this.boneyard,
             isTeamMode: isRoomTeamMode(this),
+            matchState: this.matchState,
             getTeamMembers: this.getTeamMembers.bind(this)
         });
-        if (blocked) {
+        if (blocked?.blocked) {
             this.endDeal(Number.isInteger(Number(blocked?.winnerIndex)) ? Number(blocked.winnerIndex) : this.findFishWinner(), true);
             return;
         }
@@ -3548,6 +3609,7 @@ class DominoRoom extends Room {
             hands: this.hands,
             boneyard: this.boneyard,
             isTeamMode: isRoomTeamMode(this),
+            matchState: this.matchState,
             getTeamMembers: this.getTeamMembers.bind(this)
         });
         return Number.isInteger(Number(resolved?.winnerIndex)) ? Number(resolved.winnerIndex) : 0;
@@ -3789,6 +3851,12 @@ class DominoRoom extends Room {
         this.state.turnVersion = restored.turnVersion;
         this.replaceSchemaArray(this.state.teamScores, restored.teamScores);
         this.replaceSchemaArray(this.state.teamRoundWins, restored.teamRoundWins);
+        this.matchState = this.normalizeMatchStateForCurrentMode(
+            this.parseMatchStateSnapshot(restored.matchStateJson || snapshot?.matchState || this.state.matchStateJson),
+            this.totalPlayers,
+            this.state.isTeamMode
+        );
+        this.syncMatchStateToSchema();
     }
 
     restoreTile(tile) {
@@ -3808,6 +3876,7 @@ class DominoRoom extends Room {
             mode: this.mode,
             state: this.buildSchemaStateSnapshot(),
             roomVisibility: this.roomVisibility,
+            matchState: this.matchState ? this.parseMatchStateSnapshot(this.matchState) : null,
             humanSeats: this.humanSeats,
             totalPlayers: this.totalPlayers,
             aiCount: this.aiCount,
@@ -3881,8 +3950,14 @@ class DominoRoom extends Room {
         if (data.state) {
             this.restoreSchemaState(data.state);
         }
+        this.matchState = this.normalizeMatchStateForCurrentMode(
+            this.parseMatchStateSnapshot(data.matchState || data.state?.matchStateJson || this.state.matchStateJson),
+            this.totalPlayers,
+            this.roomMode === "team"
+        );
         this.state.gameMode = this.gameMode;
         this.state.mode = this.gameMode;
+        this.syncMatchStateToSchema();
 
         if (this.timeoutForfeitPending?.expiresAt && Date.now() < Number(this.timeoutForfeitPending.expiresAt)) {
             this.clearTimeoutForfeitTimer();
