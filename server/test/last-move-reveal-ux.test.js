@@ -32,6 +32,7 @@ test("server keeps the final board on game_delta and omits it from the immediate
     const syncStateBlock = extractBlock(source, "syncState({ includeBoardJson = true } = {})");
     const performPlayBlock = extractBlock(source, "performPlay(pi, tileIndex, openEndIndex, isBot = false, meta = {})");
     const performGoshaBlock = extractBlock(source, "performGosha(pi, combo, isBot = false, meta = {})");
+    const advanceTurnBlock = extractBlock(source, "advanceTurn()");
     const broadcastGameDeltaBlock = extractBlock(source, "broadcastGameDelta(base = {})");
     const endDealBlock = extractBlock(source, "endDeal(wi, fish)");
     const endRoundBlock = extractBlock(source, "endRound(wi, isInstantWin)");
@@ -47,6 +48,7 @@ test("server keeps the final board on game_delta and omits it from the immediate
     assert.equal(performPlayBlock.includes("this.endRound(pi, true);"), true, "instant-win play should close the round immediately");
     assert.equal(performPlayBlock.includes("this.endDeal(pi, false);"), true, "empty-hand play should close the deal immediately");
     assert.equal(performPlayBlock.includes("this.endDeal(this.findFishWinner(), true);"), true, "blocked-board play should close the deal immediately");
+    assert.equal(advanceTurnBlock.includes("if (blocked?.blocked)"), true, "advanceTurn should only close the deal for a real blocked result");
 
     assert.equal(performGoshaBlock.includes("this.broadcastGameDelta({"), true, "performGosha should still publish the board delta before closing the deal");
     assert.equal(performGoshaBlock.includes("this.state.boardJson = JSON.stringify(this.internalBoard);"), true, "performGosha should persist the final board snapshot in memory");

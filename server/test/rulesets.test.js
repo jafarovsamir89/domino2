@@ -256,6 +256,38 @@ test("classic101 awards raw points, handles fish, threshold entry, and dry wins"
     assert.equal(bypassResult.matchTargetReached, false);
     assert.equal(bypassResult.scoreboard[0], 18);
 
+    const openBoard = new Board();
+    openBoard.placeFirst(new Tile(1, 1));
+    const openResult = classic101Ruleset.resolveBlocked({
+        board: openBoard,
+        hands: [
+            [new Tile(6, 6)],
+            [new Tile(1, 6)]
+        ],
+        boneyard: [],
+        isTeamMode: false,
+        matchState: createClassic101MatchState(2, false)
+    });
+    assert.equal(openResult.blocked, false);
+    assert.equal(openResult.fish, false);
+
+    const blockedBoard = new Board();
+    blockedBoard.placeFirst(new Tile(1, 1));
+    const blockedResult = classic101Ruleset.resolveBlocked({
+        board: blockedBoard,
+        hands: [
+            [new Tile(6, 6)],
+            [new Tile(5, 5)]
+        ],
+        boneyard: [],
+        isTeamMode: false,
+        matchState: createClassic101MatchState(2, false)
+    });
+    assert.equal(blockedResult.blocked, true);
+    assert.equal(blockedResult.fish, true);
+    assert.equal(blockedResult.winnerIndex, 1);
+    assert.ok(blockedResult.scoreDelta >= 0);
+
     const dryState = createClassic101MatchState(2, false);
     dryState.sides[0].scored = 99;
     dryState.sides[0].enteredBoard = true;

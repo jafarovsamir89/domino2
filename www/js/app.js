@@ -18844,7 +18844,7 @@ class DominoGame {
                 matchState: this.matchRuleState,
                 getTeamMembers: this.getTeamMembers.bind(this)
             });
-        if (blocked) {
+        if (blocked?.blocked) {
             this.endDeal(Number.isInteger(Number(blocked?.winnerIndex)) ? Number(blocked.winnerIndex) : this.findFishWinner(), true);
             return;
         }
