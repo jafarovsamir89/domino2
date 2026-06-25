@@ -233,6 +233,7 @@ class NetworkManager {
             aiCount: this.game.onlineAiCount,
             roomVisibility: this.game.onlineRoomVisibility === "open" ? "open" : "closed",
             stakeKey: this.game.onlineStakeKey || "stake_200",
+            gameMode: this.game.getSelectedGameMode?.() || this.game.mode || "telefon",
             instantWinEnabled: document.getElementById('instant-win-setting')?.checked,
             dlossThreshold: parseInt(document.getElementById('dloss-setting')?.value || '255', 10),
             boardStartAxis: getBoardStartAxis(),
@@ -627,7 +628,8 @@ class NetworkManager {
             restoreRoomCode: roomCode,
             restoreRoomId: String(snapshot.roomId || '').trim(),
             restoreSessionId,
-            restoreReconnectionToken: reconnectionToken
+            restoreReconnectionToken: reconnectionToken,
+            gameMode: String(snapshot?.gameMode || snapshot?.mode || this.game?.currentRoomState?.gameMode || this.game?.currentRoomState?.mode || this.game?.mode || this.game?.getSelectedGameMode?.() || 'telefon').trim() || 'telefon'
         });
 
         let room = null;

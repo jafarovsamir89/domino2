@@ -14,6 +14,7 @@ function buildLivePlayerPayload({
         roomId: room?.roomId,
         roomCode: room?.roomCode,
         roomVisibility: room?.roomVisibility,
+        gameMode: room?.gameMode || room?.state?.gameMode || room?.state?.mode || "telefon",
         roomMode: room?.state?.isTeamMode ? "team" : "ffa",
         stakeKey: room?.currentStakeKey,
         stakeAmount: room?.currentDealStakeAmount || 0,

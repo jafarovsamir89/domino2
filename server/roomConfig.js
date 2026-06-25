@@ -27,6 +27,18 @@ function normalizeRoomMode(value, isTeamMode) {
     return isTeamMode === true ? "team" : "ffa";
 }
 
+function normalizeGameMode(value) {
+    const gameMode = String(value || "").trim().toLowerCase();
+    if (!gameMode) return "telefon";
+    if (gameMode === "classic101" || gameMode === "classic-101" || gameMode === "101" || gameMode === "classic") {
+        return "classic101";
+    }
+    if (gameMode === "telefon" || gameMode === "tel" || gameMode === "phone" || gameMode === "muggins") {
+        return "telefon";
+    }
+    return "telefon";
+}
+
 function normalizeStakeKey(value) {
     return String(value || DEFAULT_STAKE_KEY).trim() || DEFAULT_STAKE_KEY;
 }
@@ -55,6 +67,7 @@ module.exports = {
     generateRoomCode,
     normalizeRoomVisibility,
     normalizeRoomMode,
+    normalizeGameMode,
     normalizeStakeKey,
     normalizePlayerCount,
     normalizeAiCount,

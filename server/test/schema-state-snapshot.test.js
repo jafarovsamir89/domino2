@@ -49,6 +49,7 @@ test("buildSchemaStateSnapshotData returns the expected snapshot shape", () => {
         gameActive: true,
         matchRound: 3,
         deal: 2,
+        gameMode: "telefon",
         boardJson: "{\"nodes\":[]}",
         isTeamMode: false,
         playerCount: 2,
@@ -107,6 +108,7 @@ test("buildSchemaStateSnapshotData returns the expected snapshot shape", () => {
     assert.equal(snapshot.gameActive, true);
     assert.equal(snapshot.matchRound, 3);
     assert.equal(snapshot.deal, 2);
+    assert.equal(snapshot.gameMode, "telefon");
     assert.equal(snapshot.boardJson, "{\"nodes\":[]}");
     assert.equal(snapshot.isTeamMode, false);
     assert.equal(snapshot.roomMode, "ffa");
@@ -123,6 +125,7 @@ test("buildSchemaStateSnapshotData returns the expected snapshot shape", () => {
         gameActive: state.gameActive,
         matchRound: state.matchRound,
         deal: state.deal,
+        gameMode: "telefon",
         boardJson: state.boardJson,
         isTeamMode: state.isTeamMode,
         roomMode: "ffa",
@@ -316,6 +319,7 @@ test("buildRestoredSchemaStateData applies current fallbacks and does not mutate
         gameActive: 1,
         matchRound: "3",
         deal: "4",
+        gameMode: "classic101",
         boardJson: "{\"nodes\":[{\"id\":\"n1\"}]}",
         isTeamMode: 0,
         playerCount: "4",
@@ -359,6 +363,7 @@ test("buildRestoredSchemaStateData applies current fallbacks and does not mutate
     assert.equal(restored.gameActive, true);
     assert.equal(restored.matchRound, 3);
     assert.equal(restored.deal, 4);
+    assert.equal(restored.gameMode, "classic101");
     assert.equal(restored.boardJson, "{\"nodes\":[{\"id\":\"n1\"}]}");
     assert.equal(restored.isTeamMode, false);
     assert.equal(restored.roomMode, "ffa");

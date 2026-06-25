@@ -38,6 +38,7 @@ function buildRoomStatePlayers({ playerOrder = [], players, identityBySessionId,
 function buildRoomStartPayload(room, connectedHumanPlayers = 0) {
     const isTeamMode = Boolean(room?.state?.isTeamMode);
     const roomMode = String(room?.roomMode || (isTeamMode ? "team" : "ffa")).trim().toLowerCase();
+    const gameMode = String(room?.gameMode || room?.state?.gameMode || room?.state?.mode || "telefon").trim().toLowerCase() || "telefon";
     const safePlayers = Array.from(room?.state?.players?.values?.() || []);
     const humanPlayers = safePlayers.filter((player) => player && !player.isBot);
     const botPlayers = safePlayers.filter((player) => player && player.isBot);
@@ -46,6 +47,7 @@ function buildRoomStartPayload(room, connectedHumanPlayers = 0) {
 
     return {
         roomMode: roomMode === "team" || roomMode === "2v2" || roomMode === "partnership" ? "team" : "ffa",
+        gameMode,
         isTeamMode,
         maxPlayers: Number(room?.totalPlayers || 0),
         occupiedSeats: safePlayers.filter((player) => Number.isInteger(Number(player?.seatIndex)) && Number(player.seatIndex) >= 0).length,
@@ -69,6 +71,7 @@ function buildRoomStatePayload({ room, players } = {}) {
         : normalizedRoomMode === "ffa" || normalizedRoomMode === "solo"
             ? "ffa"
             : (isTeamMode ? "team" : "ffa");
+    const gameMode = String(room?.gameMode || room?.state?.gameMode || room?.state?.mode || "telefon").trim().toLowerCase() || "telefon";
     const connectedHumanPlayers = (() => {
         const playerOrder = Array.from(room?.state?.playerOrder || []);
         const playersMap = room?.state?.players;
@@ -106,6 +109,7 @@ function buildRoomStatePayload({ room, players } = {}) {
                         ? "result"
                         : "lobby",
         roomMode,
+        gameMode,
         scoreMode: isTeamMode ? "team" : "solo",
         stakeKey: room.currentDealStakeKey || room.currentStakeKey,
         stakeAmount: room.currentDealStakeAmount,

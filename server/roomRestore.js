@@ -8,6 +8,7 @@ function buildRestoredRoomMetadata({ room, data }) {
         dlossThreshold: data.dlossThreshold ?? room.dlossThreshold,
         instantWinEnabled: data.instantWinEnabled ?? room.instantWinEnabled,
         aiDifficulty: data.aiDifficulty ?? room.aiDifficulty,
+        gameMode: data.gameMode ?? data.mode ?? room.gameMode ?? room.mode ?? "telefon",
         currentStakeKey: data.currentStakeKey ?? room.currentStakeKey,
         currentDealMatchId: data.currentDealMatchId ?? room.currentDealMatchId,
         currentDealStakeKey: data.currentDealStakeKey ?? room.currentDealStakeKey,

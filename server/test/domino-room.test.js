@@ -128,6 +128,38 @@ test("onCreate treats roomMode team as team mode even when isTeamMode is omitted
     assert.equal(room.maxClients, 2);
 });
 
+test("onCreate normalizes gameMode and selects the matching ruleset", async () => {
+    const room = Object.create(DominoRoom.prototype);
+    Object.defineProperty(room, "roomId", { value: "room-mode", writable: true, configurable: true });
+    room.loadCustomStateForRestore = async () => null;
+    room.setState = (state) => {
+        room.state = state;
+        room.state.players = new Map();
+        room.state.playerOrder = [];
+        room.state.teamScores = [];
+        room.state.teamRoundWins = [];
+    };
+    room.onMessage = () => {};
+    room.broadcast = () => {};
+    room.clearTurnTimer = () => {};
+    room.clearNextDealTimer = () => {};
+    room.syncState = () => {};
+
+    await room.onCreate({
+        gameMode: "classic101",
+        roomMode: "ffa",
+        playerCount: 2,
+        aiCount: 0,
+        roomVisibility: "open"
+    });
+
+    assert.equal(room.gameMode, "classic101");
+    assert.equal(room.mode, "classic101");
+    assert.equal(room.state.gameMode, "classic101");
+    assert.equal(room.state.mode, "classic101");
+    assert.equal(room.getActiveRuleset().id, "classic101");
+});
+
 test("handleNextDeal only advances for the host during pending transitions", () => {
     const room = Object.create(DominoRoom.prototype);
     let cleared = 0;

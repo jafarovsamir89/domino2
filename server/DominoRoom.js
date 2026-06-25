@@ -6,7 +6,7 @@ const { AIPlayer } = require("./ai");
 const { Tile, createFullSet, shuffle, getHandSize, determineFirstPlayer, handPoints, getOpeningPlayScore, hasInvalidOpeningHand, roundTo5 } = require("./model");
 const { verifyGameToken } = require("./platformAuth");
 const { buildSignedRequestBody } = require("./signedRequest");
-const { generateRoomCode, normalizeRoomVisibility, normalizeRoomMode, normalizeStakeKey, normalizePlayerCount, normalizeAiCount, normalizeDlossThreshold, normalizeInstantWinEnabled, normalizeAiDifficulty } = require("./roomConfig");
+const { generateRoomCode, normalizeRoomVisibility, normalizeRoomMode, normalizeGameMode, normalizeStakeKey, normalizePlayerCount, normalizeAiCount, normalizeDlossThreshold, normalizeInstantWinEnabled, normalizeAiDifficulty } = require("./roomConfig");
 const { normalizeAuthToken, buildRoomIdentity, getFirstNameDisplayName } = require("./roomIdentity");
 const { buildLivePlayerPayload } = require("./roomPresence");
 const { buildPlatformMatchPayload, sanitizeParticipant } = require("./matchResultPayload");
@@ -86,7 +86,7 @@ class DominoRoom extends Room {
     maxClients = 2;
 
     getActiveRuleset() {
-        const mode = String(this.state?.mode || this.mode || "telefon").trim() || "telefon";
+        const mode = String(this.state?.gameMode || this.state?.mode || this.gameMode || this.mode || "telefon").trim() || "telefon";
         if (!this.ruleset || this.ruleset.id !== mode) {
             this.ruleset = getRuleset(mode);
         }
@@ -108,14 +108,16 @@ class DominoRoom extends Room {
 
         this.setState(new GameState());
         this.attachStateCollections();
-        this.mode = "telefon";
+        this.gameMode = normalizeGameMode(restoreSnapshot?.gameMode || restoreSnapshot?.mode || options.gameMode || options.mode);
+        this.mode = this.gameMode;
         this.ruleset = this.getActiveRuleset();
         this.botTakeover = new BotTakeoverController(this);
         this.voiceEnabledBySessionId = new Set();
         this.roomMode = normalizeRoomMode(options.roomMode, options.isTeamMode);
         this.boardStartAxis = options.boardStartAxis || options.boardStart || 'horizontal';
         this.state.isTeamMode = this.roomMode === "team";
-        this.state.mode = this.mode;
+        this.state.gameMode = this.gameMode;
+        this.state.mode = this.gameMode;
         this.totalPlayers = normalizePlayerCount(options.playerCount, this.state.isTeamMode);
         this.aiCount = normalizeAiCount(options.aiCount, this.totalPlayers);
         this.humanSeats = this.totalPlayers - this.aiCount;
@@ -513,6 +515,7 @@ class DominoRoom extends Room {
                 roomId: getSafeRoomId(this),
                 roomCode: String(this.roomCode || "").trim(),
                 roomVisibility: this.roomVisibility,
+                gameMode: this.gameMode,
                 roomMode: isTeamMode ? "team" : "ffa",
                 stakeKey: this.currentStakeKey,
                 stakeAmount: this.currentDealStakeAmount || 0,
@@ -641,6 +644,7 @@ class DominoRoom extends Room {
                 roomId: getSafeRoomId(this),
                 roomCode: String(this.roomCode || "").trim(),
                 roomVisibility: this.roomVisibility,
+                gameMode: this.gameMode,
                 roomMode: pending.isTeamMode ? "team" : "ffa",
                 stakeKey: this.currentStakeKey,
                 stakeAmount: this.currentDealStakeAmount || 0,
@@ -1458,6 +1462,7 @@ class DominoRoom extends Room {
                 roomId,
                 roomCode,
                 roomVisibility: this.roomVisibility,
+                gameMode: this.gameMode,
                 roomMode: isTeamMode ? "team" : "ffa",
                 stakeKey: this.currentStakeKey,
                 stakeAmount: this.currentDealStakeAmount || 0,
@@ -3772,8 +3777,10 @@ class DominoRoom extends Room {
         this.state.matchRound = restored.matchRound;
         this.state.deal = restored.deal;
         this.state.boardJson = restored.boardJson;
-        this.state.mode = String(restored.mode || this.state.mode || this.mode || "telefon").trim() || "telefon";
-        this.mode = this.state.mode;
+        this.gameMode = normalizeGameMode(restored.gameMode || restored.mode || this.state.gameMode || this.state.mode || this.gameMode || this.mode);
+        this.mode = this.gameMode;
+        this.state.gameMode = this.gameMode;
+        this.state.mode = this.gameMode;
         this.ruleset = this.getActiveRuleset();
         this.roomMode = normalizeRoomMode(restored.roomMode || this.roomMode, restored.isTeamMode);
         this.state.isTeamMode = isRoomTeamMode(this);
@@ -3797,6 +3804,8 @@ class DominoRoom extends Room {
             roomCode: this.roomCode,
             roomMode: this.roomMode,
             scoreMode: isRoomTeamMode(this) ? "team" : "solo",
+            gameMode: this.gameMode,
+            mode: this.mode,
             state: this.buildSchemaStateSnapshot(),
             roomVisibility: this.roomVisibility,
             humanSeats: this.humanSeats,
@@ -3854,7 +3863,8 @@ class DominoRoom extends Room {
         this.lastReservedMatchRound = restoredMetadata.lastReservedMatchRound;
         this.matchRecorded = restoredMetadata.matchRecorded;
         this.forfeitSettlementMade = restoredMetadata.forfeitSettlementMade;
-        this.mode = String(data.mode || data.state?.mode || this.mode || "telefon").trim() || "telefon";
+        this.gameMode = normalizeGameMode(data.gameMode || data.mode || data.state?.gameMode || data.state?.mode || this.gameMode || this.mode);
+        this.mode = this.gameMode;
         this.ruleset = this.getActiveRuleset();
         this.state.turnDeadlineAt = Number(data?.state?.turnDeadlineAt || this.state.turnDeadlineAt || 0);
         this.lastRoundEconomySummary = restoredMetadata.lastRoundEconomySummary;
@@ -3871,6 +3881,8 @@ class DominoRoom extends Room {
         if (data.state) {
             this.restoreSchemaState(data.state);
         }
+        this.state.gameMode = this.gameMode;
+        this.state.mode = this.gameMode;
 
         if (this.timeoutForfeitPending?.expiresAt && Date.now() < Number(this.timeoutForfeitPending.expiresAt)) {
             this.clearTimeoutForfeitTimer();

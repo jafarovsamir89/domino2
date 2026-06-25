@@ -281,6 +281,7 @@ function getRoomSnapshot(roomId, players) {
   if (!roomPlayers.length) return null;
 
   const first = roomPlayers[0];
+  const gameMode = String(first.gameMode || first.mode || "telefon").trim().toLowerCase() || "telefon";
   const humanSeats = Number.isFinite(Number(first.humanSeats)) ? Number(first.humanSeats) : Number(first.totalPlayers ?? 0) || roomPlayers.length;
   const totalPlayers = Number.isFinite(Number(first.totalPlayers)) ? Number(first.totalPlayers) : roomPlayers.length;
   const connectedPlayers = roomPlayers.filter((player) => player.isConnected !== false).length;
@@ -291,6 +292,7 @@ function getRoomSnapshot(roomId, players) {
   return {
     roomId,
     roomCode: first.roomCode || null,
+    gameMode,
     roomMode: first.roomMode || (first.isTeamMode ? "team" : "ffa"),
     roomVisibility: first.roomVisibility || "closed",
     stakeKey: first.stakeKey || null,
@@ -337,6 +339,7 @@ async function getLiveSummary() {
     const current = roomsMap.get(player.roomId) || {
       roomId: player.roomId,
       roomCode: player.roomCode || null,
+      gameMode: String(player.gameMode || player.mode || "telefon").trim().toLowerCase() || "telefon",
       roomMode: player.roomMode || (player.isTeamMode ? "team" : "ffa"),
       roomVisibility: player.roomVisibility || "closed",
       stakeKey: player.stakeKey || null,
@@ -359,6 +362,7 @@ async function getLiveSummary() {
     current.authenticatedPlayers += player.provider === "platform" && player.isConnected !== false ? 1 : 0;
     current.gameActive = current.gameActive || Boolean(player.isPlaying);
     current.roomCode = current.roomCode || player.roomCode || null;
+    current.gameMode = current.gameMode || String(player.gameMode || player.mode || "telefon").trim().toLowerCase() || "telefon";
     current.roomMode = current.roomMode || player.roomMode || (player.isTeamMode ? "team" : "ffa");
     current.roomVisibility = current.roomVisibility || player.roomVisibility || "closed";
     current.stakeKey = current.stakeKey || player.stakeKey || null;
@@ -427,6 +431,7 @@ async function getOpenRooms(filters = {}) {
   const search = String(filters.search || filters.q || "").trim().toLowerCase();
   const stakeKey = String(filters.stakeKey || "").trim();
   const roomMode = String(filters.roomMode || filters.mode || "").trim().toLowerCase();
+  const gameMode = String(filters.gameMode || filters.game_mode || "").trim().toLowerCase();
   const joinableOnly = filters.joinableOnly === undefined
     ? true
     : String(filters.joinableOnly) !== "false" && String(filters.joinableOnly) !== "0";
@@ -442,6 +447,7 @@ async function getOpenRooms(filters = {}) {
     if (joinableOnly && !room.joinable) return false;
     if (visibility !== "all" && String(room.roomVisibility || "closed").toLowerCase() !== visibility) return false;
     if (stakeKey && stakeKey !== "all" && String(room.stakeKey || "") !== stakeKey) return false;
+    if (gameMode && gameMode !== "all" && String(room.gameMode || "telefon").toLowerCase() !== gameMode) return false;
     if (roomMode && roomMode !== "all" && String(room.roomMode || "").toLowerCase() !== roomMode) return false;
     if (minPlayers && room.connectedPlayers < minPlayers) return false;
     if (maxPlayers && room.connectedPlayers > maxPlayers) return false;
@@ -451,6 +457,7 @@ async function getOpenRooms(filters = {}) {
         room.roomId,
         room.hostName,
         room.stakeKey,
+        room.gameMode,
         room.roomMode,
         ...(room.players || []).map((player) => player.displayName)
       ].filter(Boolean).join(" ").toLowerCase();

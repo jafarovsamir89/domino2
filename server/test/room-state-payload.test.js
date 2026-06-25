@@ -88,6 +88,7 @@ test("buildRoomStatePayload preserves room_state fields and currentPlayers logic
         roomId: "room-1",
         roomCode: "ABCD",
         roomVisibility: "open",
+        gameMode: "classic101",
         currentDealStakeKey: "stake_500",
         currentStakeKey: "stake_200",
         currentDealStakeAmount: 500,
@@ -119,6 +120,7 @@ test("buildRoomStatePayload preserves room_state fields and currentPlayers logic
         roomVisibility: "open",
         roomPhase: "playing",
         roomMode: "team",
+        gameMode: "classic101",
         scoreMode: "team",
         stakeKey: "stake_500",
         stakeAmount: 500,
@@ -150,6 +152,7 @@ test("buildRoomStatePayload preserves room_state fields and currentPlayers logic
         ],
         roomStart: {
             roomMode: "team",
+            gameMode: "classic101",
             isTeamMode: true,
             maxPlayers: 4,
             occupiedSeats: 2,
@@ -206,6 +209,7 @@ test("buildRoomStatePayload uses connected human count when the game is inactive
     assert.equal(payload.currentPlayers, 2);
     assert.equal(payload.humanPlayers, 2);
     assert.equal(payload.roomPhase, "lobby");
+    assert.equal(payload.gameMode, "telefon");
     assert.equal(payload.stakeKey, "stake_200");
     assert.equal(payload.hostName, "Host");
     assert.equal(payload.seatSelectionRequired, true);
@@ -222,6 +226,7 @@ test("buildRoomStatePayload exposes timeout forfeit state", () => {
         roomId: "room-3",
         roomCode: "IJKL",
         roomVisibility: "open",
+        gameMode: "telefon",
         currentDealStakeKey: "stake_200",
         currentStakeKey: "stake_200",
         currentDealStakeAmount: 200,
@@ -256,6 +261,7 @@ test("buildRoomStatePayload exposes timeout forfeit state", () => {
 
     const payload = buildRoomStatePayload({ room, players: [] });
     assert.equal(payload.roomPhase, "timeout_result");
+    assert.equal(payload.gameMode, "telefon");
     assert.equal(payload.timeoutForfeitPending, true);
     assert.equal(payload.timeoutLoserIndex, 1);
     assert.equal(payload.timeoutLoserName, "Alice");

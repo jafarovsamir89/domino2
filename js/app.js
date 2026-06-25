@@ -440,6 +440,7 @@ class DominoGame {
         this._lastInsufficientCoinsModalShownAt = 0;
         this.insufficientCoinsPrevScreen = '';
         this._resolvedRoomModeFromState = '';
+        this._lastRoomStateGameMode = '';
         this._resolvedScoreMode = '';
         this._resolvedTopHudMode = '';
         this.pendingReconnectResolution = false;
@@ -450,6 +451,7 @@ class DominoGame {
         this.onlineRoomFilters = {
             search: '',
             roomModes: ['ffa', 'team'],
+            gameMode: this.preferredStartMode === 'classic101' ? 'classic101' : 'telefon',
             stakeKeys: ['stake_200', 'stake_500', 'stake_1000', 'stake_5000']
         };
         this.pendingSharedRoomCode = '';
@@ -1139,6 +1141,7 @@ class DominoGame {
             const roomCreateOptions = {
                 isTeamMode: roomCreateMode === 'team',
                 roomMode: roomCreateMode,
+                gameMode: this.getSelectedGameMode(),
                 playerCount: this.onlinePlayerCount,
                 aiCount: this.onlineAiCount,
                 roomVisibility: this.onlineRoomVisibility === "open" ? "open" : "closed",
@@ -12911,6 +12914,9 @@ class DominoGame {
             soloEconomyMode: this.soloEconomyMode,
             soloStakeKey: this.soloStakeKey,
             difficulty: this.difficulty,
+            gameMode: isOnline
+                ? String(this.currentRoomState?.gameMode || this.currentRoomState?.mode || this.mode || 'telefon').trim() || 'telefon'
+                : this.mode,
             mode: this.mode,
             isTeamMode: this.isTeamMode,
             humanPlayerIndex: this.humanPlayerIndex,
@@ -13111,7 +13117,7 @@ class DominoGame {
             this.currentMatchStartedAt = snapshot.createdAt || new Date().toISOString();
             this.activeMatchEconomyMode = snapshot.soloEconomyMode || this.activeMatchEconomyMode;
             this.activeMatchStakeKey = snapshot.soloStakeKey || this.activeMatchStakeKey;
-            this.mode = String(snapshot.mode || this.mode || 'telefon').trim() || 'telefon';
+            this.mode = String(snapshot.gameMode || snapshot.mode || this.mode || 'telefon').trim() || 'telefon';
             this.ruleset = getRuleset(this.mode);
             this.preferredStartMode = this.mode === 'classic101' ? 'classic101' : 'telefon';
             this.lastClassic101RoundResult = null;
@@ -13486,6 +13492,7 @@ class DominoGame {
             roomId,
             roomCode: roomCode || null,
             roomVisibility: String(roomState.roomVisibility || room?.roomVisibility || 'closed').trim(),
+            gameMode: String(roomState.gameMode || roomState.mode || room?.gameMode || room?.state?.gameMode || room?.state?.mode || this.getSelectedGameMode() || 'telefon').trim() || 'telefon',
             roomMode: String(roomState.roomMode || (roomState.isTeamMode ? 'team' : 'ffa') || (this.isTeamMode ? 'team' : 'ffa')).trim(),
             stakeKey: String(roomState.stakeKey || this.onlineStakeKey || 'stake_200').trim(),
             stakeAmount: Number(roomState.stakeAmount || this.onlineRoundBankAmount || 0),
@@ -13586,6 +13593,7 @@ class DominoGame {
                 search: this.onlineRoomFilters.search,
                 roomVisibility: 'open',
                 joinableOnly: true,
+                gameMode: this.onlineRoomFilters.gameMode || this.getSelectedGameMode(),
                 limit: 24
             });
             if (!modal?.classList.contains('active')) return;
@@ -13690,6 +13698,7 @@ class DominoGame {
 
     getFilteredOpenRooms() {
         const search = String(this.onlineRoomFilters.search || '').trim().toLowerCase();
+        const selectedGameMode = String(this.onlineRoomFilters.gameMode || this.getSelectedGameMode() || 'telefon').trim().toLowerCase();
         const selectedModes = Array.isArray(this.onlineRoomFilters.roomModes) && this.onlineRoomFilters.roomModes.length
             ? new Set(this.onlineRoomFilters.roomModes)
             : new Set(['ffa', 'team']);
@@ -13697,8 +13706,10 @@ class DominoGame {
             ? new Set(this.onlineRoomFilters.stakeKeys)
             : new Set(['stake_200', 'stake_500', 'stake_1000', 'stake_5000']);
         return (Array.isArray(this.openRooms) ? this.openRooms : []).filter((room) => {
+            const roomGameMode = String(room?.gameMode || room?.mode || 'telefon').trim().toLowerCase() || 'telefon';
             const roomMode = String(room?.roomMode || '').trim().toLowerCase();
             const stakeKey = String(room?.stakeKey || '').trim();
+            if (roomGameMode && selectedGameMode && selectedGameMode !== 'all' && roomGameMode !== selectedGameMode) return false;
             if (roomMode && !selectedModes.has(roomMode)) return false;
             if (stakeKey && !selectedStakes.has(stakeKey)) return false;
             if (!search) return true;
@@ -14404,10 +14415,28 @@ class DominoGame {
         const nextCode = String(context?.roomCode || context?.roomId || codeOrContext || '').trim().toUpperCase();
         if (!nextCode) return false;
         this.resetOnlineResultFlowState();
+        const selectedGameMode = this.getSelectedGameMode();
         const matchingOpenRoom = Array.isArray(this.openRooms)
             ? this.openRooms.find((room) => String(room?.roomCode || '').trim().toUpperCase() === nextCode) || null
             : null;
-        if (!this.canJoinRoomWithWalletGate(context, matchingOpenRoom, { roomId: String(context?.roomId || '').trim(), inviteId: String(context?.inviteId || '').trim() })) {
+        let roomMeta = matchingOpenRoom;
+        if (!roomMeta) {
+            const openRooms = await this.account.getOpenRooms({
+                search: nextCode,
+                roomVisibility: 'open',
+                joinableOnly: true,
+                limit: 24,
+                gameMode: 'all'
+            }).catch(() => []);
+            roomMeta = Array.isArray(openRooms)
+                ? openRooms.find((room) => String(room?.roomCode || '').trim().toUpperCase() === nextCode) || null
+                : null;
+        }
+        if (roomMeta && String(roomMeta.gameMode || 'telefon').trim().toLowerCase() !== selectedGameMode) {
+            this.setJoinStatus(this.t('online-room-game-mode-mismatch'));
+            return false;
+        }
+        if (!this.canJoinRoomWithWalletGate(context, roomMeta, { roomId: String(context?.roomId || '').trim(), inviteId: String(context?.inviteId || '').trim() })) {
             return false;
         }
         this.showStartModal('online');
@@ -14592,6 +14621,7 @@ class DominoGame {
         this._resolvedRoomModeFromState = resolvedRoomMode.roomModeFromState || '';
         this._resolvedScoreMode = resolvedRoomMode.scoreMode || '';
         this._resolvedTopHudMode = resolvedRoomMode.topHudMode || '';
+        this._lastRoomStateGameMode = String(roomState?.gameMode || roomState?.mode || this._lastRoomStateGameMode || '').trim();
         this._lastRoomStateAt = Date.now();
         this._lastRoomStateIsTeamMode = resolvedRoomMode.isTeamMode;
         this._lastRoomStateRoomMode = resolvedRoomMode.roomMode;
@@ -16969,6 +16999,7 @@ class DominoGame {
         const soonLabel = ENABLE_MODE_101 ? '' : this.t('mode-soon');
 
         document.documentElement.dataset.dominoStartMode = mode;
+        this.onlineRoomFilters.gameMode = mode;
         startScreen.classList.toggle('mode-classic101', mode === 'classic101');
         startScreen.classList.toggle('mode-telefon', mode !== 'classic101');
 
@@ -17011,10 +17042,17 @@ class DominoGame {
         if (startScreenHero) {
             startScreenHero.classList.toggle('is-mode-classic101', mode === 'classic101');
         }
+        if (document.getElementById('open-rooms-modal')?.classList.contains('active')) {
+            void this.loadOpenRooms();
+        }
     }
 
     getSoloStartMode() {
         return ENABLE_MODE_101 && this.preferredStartMode === 'classic101' ? 'classic101' : 'telefon';
+    }
+
+    getSelectedGameMode() {
+        return this.preferredStartMode === 'classic101' ? 'classic101' : 'telefon';
     }
 
     cloneMatchRuleState(matchState) {
@@ -18056,11 +18094,12 @@ class DominoGame {
         if (state.playerCount !== undefined && state.playerCount !== null) {
             this.playerCount = Number(state.playerCount);
         }
-        const nextMode = String(state?.mode || this.mode || 'telefon').trim() || 'telefon';
+        const nextMode = String(state?.gameMode || state?.mode || this.mode || 'telefon').trim() || 'telefon';
         if (nextMode !== this.mode) {
             this.mode = nextMode;
             this.ruleset = getRuleset(this.mode);
         }
+        this._lastRoomStateGameMode = String(state?.gameMode || state?.mode || this._lastRoomStateGameMode || '').trim();
 
         if (state.boardJson && !this._boardAnimationActive) {
             try {

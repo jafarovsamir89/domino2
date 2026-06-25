@@ -8,6 +8,7 @@ test("buildLivePlayerPayload uses team mode and host fallback correctly", () => 
         roomId: "room-1",
         roomCode: "ABCD",
         roomVisibility: "open",
+        gameMode: "classic101",
         state: {
             isTeamMode: true,
             gameActive: true,
@@ -28,6 +29,7 @@ test("buildLivePlayerPayload uses team mode and host fallback correctly", () => 
         joinedAt: "2026-05-20T10:00:00.000Z"
     });
 
+    assert.equal(payload.gameMode, "classic101");
     assert.equal(payload.roomMode, "team");
     assert.equal(payload.role, "host");
     assert.equal(payload.hostName, "Host");
@@ -40,6 +42,7 @@ test("buildLivePlayerPayload uses ffa mode and preserves current fallbacks", () 
         roomId: "room-2",
         roomCode: "WXYZ",
         roomVisibility: "closed",
+        gameMode: "telefon",
         state: {
             isTeamMode: false,
             gameActive: false,
@@ -65,6 +68,7 @@ test("buildLivePlayerPayload uses ffa mode and preserves current fallbacks", () 
         hostPlayer: null
     });
 
+    assert.equal(payload.gameMode, "telefon");
     assert.equal(payload.roomMode, "ffa");
     assert.equal(payload.role, "player");
     assert.equal(payload.hostName, "Bob");
