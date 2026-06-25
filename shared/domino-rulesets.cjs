@@ -549,7 +549,7 @@
             const tile = boneyard.pop();
             hands[player].push(tile);
             draws += 1;
-            if (tile?.isDouble && tile.a === 1) {
+            if (tile?.isDouble && Number(tile.a) >= 1) {
                 return {
                     found: true,
                     player,
@@ -597,11 +597,14 @@
             return getHandSize(playerCount);
         },
         determineFirstPlayer(hands) {
-            for (let player = 0; player < (Array.isArray(hands) ? hands.length : 0); player += 1) {
-                for (let tileIndex = 0; tileIndex < (Array.isArray(hands[player]) ? hands[player].length : 0); tileIndex += 1) {
-                    const current = hands[player][tileIndex];
-                    if (current?.isDouble && current.a === 1) {
-                        return { player, tileIndex, drawToOpen: false };
+            const normalizedHands = Array.isArray(hands) ? hands : [];
+            for (let doubleValue = 1; doubleValue <= 6; doubleValue += 1) {
+                for (let player = 0; player < normalizedHands.length; player += 1) {
+                    for (let tileIndex = 0; tileIndex < (Array.isArray(normalizedHands[player]) ? normalizedHands[player].length : 0); tileIndex += 1) {
+                        const current = normalizedHands[player][tileIndex];
+                        if (current?.isDouble && Number(current.a) === doubleValue) {
+                            return { player, tileIndex, drawToOpen: false };
+                        }
                     }
                 }
             }

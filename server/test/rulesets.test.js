@@ -82,10 +82,29 @@ test("telefon resolveBlocked picks the lowest hand points winner on a blocked bo
     });
 });
 
-test("classic101 opens with 1|1, draw-to-open, and raw scoring rules", () => {
+test("classic101 opens with the youngest double and raw scoring rules", () => {
     assert.equal(classic101Ruleset.matchTarget, 101);
     assert.deepEqual(classic101Ruleset.determineFirstPlayer([
         [new Tile(6, 6)],
+        [new Tile(2, 2)],
+        [new Tile(1, 1)],
+        [new Tile(0, 0)],
+        [new Tile(3, 4)]
+    ]), {
+        player: 2,
+        tileIndex: 0,
+        drawToOpen: false
+    });
+    assert.deepEqual(classic101Ruleset.determineFirstPlayer([
+        [new Tile(6, 6)],
+        [new Tile(2, 3)]
+    ]), {
+        player: 0,
+        tileIndex: 0,
+        drawToOpen: false
+    });
+    assert.deepEqual(classic101Ruleset.determineFirstPlayer([
+        [new Tile(6, 5)],
         [new Tile(2, 3)]
     ]), {
         player: -1,
@@ -93,9 +112,18 @@ test("classic101 opens with 1|1, draw-to-open, and raw scoring rules", () => {
         drawToOpen: true
     });
     assert.deepEqual(classic101Ruleset.determineFirstPlayer([
+        [new Tile(0, 0)],
         [new Tile(6, 6)],
-        [new Tile(1, 1)],
         [new Tile(2, 3)]
+    ]), {
+        player: 1,
+        tileIndex: 0,
+        drawToOpen: false
+    });
+    assert.deepEqual(classic101Ruleset.determineFirstPlayer([
+        [new Tile(6, 6)],
+        [new Tile(2, 2)],
+        [new Tile(3, 3)]
     ]), {
         player: 1,
         tileIndex: 0,
@@ -110,15 +138,16 @@ test("classic101 opens with 1|1, draw-to-open, and raw scoring rules", () => {
         [new Tile(6, 6)],
         [new Tile(2, 3)]
     ];
-    const boneyard = [new Tile(1, 1), new Tile(0, 5), new Tile(1, 2)];
+    const boneyard = [new Tile(1, 1), new Tile(0, 0)];
     const opened = classic101Ruleset.drawToOpen({ hands, boneyard, startPlayer: 0 });
     assert.deepEqual(opened, {
         found: true,
-        player: 0,
-        tileIndex: 2,
-        draws: 3
+        player: 1,
+        tileIndex: 1,
+        draws: 2
     });
-    assert.ok(hands[0].some((tile) => tile.a === 1 && tile.b === 1));
+    assert.ok(hands[0].some((tile) => tile.a === 0 && tile.b === 0));
+    assert.ok(hands[1].some((tile) => tile.a === 1 && tile.b === 1));
     assert.equal(boneyard.length, 0);
 
     const hand = [new Tile(1, 2)];

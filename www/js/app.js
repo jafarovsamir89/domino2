@@ -18760,6 +18760,16 @@ class DominoGame {
             : Promise.resolve();
         await travelPromise;
 
+        if (this.mode === 'classic101') {
+            debugLog('[101-debug] playTile pre-resolve', {
+                player: pi,
+                handLength: hand.length,
+                score,
+                boardEmpty: wasEmpty,
+                fish: false,
+                turnInProgress: this.turnInProgress
+            });
+        }
         const roundEnd = this.ruleset.resolveRoundEnd({
             score,
             hand,
@@ -18775,10 +18785,29 @@ class DominoGame {
         });
 
         if(score>0){this.addScore(pi,score);if(this.checkEnd(pi,score))return true;}
+        if (this.mode === 'classic101') {
+            debugLog('[101-debug] playTile roundEnd', {
+                player: pi,
+                handLength: hand.length,
+                dealEnd: Boolean(roundEnd?.dealEnd),
+                fish: Boolean(roundEnd?.fish),
+                isFinalMove: Boolean(roundEnd?.isFinalMove),
+                winnerIndex: roundEnd?.winnerIndex,
+                scoreDelta: roundEnd?.scoreDelta,
+                rawPoints: roundEnd?.rawPoints
+            });
+        }
         if(roundEnd?.dealEnd && !roundEnd?.fish){ this.delayLastMoveSettlement(()=>{ if (turnCycleId !== this._turnCycleId) return; this.endDeal(pi,false); }, LAST_MOVE_REVEAL_DELAY_MS, this.inferFinalInfoFromLocalMove(pi, false, false, false)); return true;}
         if(roundEnd?.dealEnd && roundEnd?.fish){ this.delayLastMoveSettlement(()=>{ if (turnCycleId !== this._turnCycleId) return; this.endDeal(Number.isInteger(Number(roundEnd?.winnerIndex)) ? Number(roundEnd.winnerIndex) : this.findFishWinner(),true); }, LAST_MOVE_REVEAL_DELAY_MS, this.inferFinalInfoFromLocalMove(pi, false, true, false)); return true;}
 
         this.turnInProgress=false;
+        if (this.mode === 'classic101') {
+            debugLog('[101-debug] playTile advanceTurn', {
+                player: pi,
+                nextPlayer: (pi + 1) % this.playerCount,
+                turnCycleId
+            });
+        }
         this.scheduleTurnAdvance(0, turnCycleId);
         } catch (e) {
             console.error('[playTile] Error:', e);
@@ -18945,6 +18974,13 @@ class DominoGame {
         this.roundOver=false;
         this.gameActive=false;this.lastDealWinner=wi;this.turnInProgress=false;this.clearTurnTimers();let bonus=0;
         if (this.mode === 'classic101') {
+            debugLog('[101-debug] endDeal classic101', {
+                winnerIndex: wi,
+                fish: Boolean(fish),
+                currentHands: this.hands.map((hand) => Array.isArray(hand) ? hand.length : 0),
+                currentScores: this.scores.slice(),
+                teamScores: this.teamScores.slice()
+            });
             const roundResult = this.ruleset.resolveRoundEnd({
                 score: 0,
                 hand: this.hands[wi] || [],
@@ -19036,6 +19072,12 @@ class DominoGame {
         let wins=1;
         let displayEntities;
         if (this.mode === 'classic101') {
+            debugLog('[101-debug] endRound classic101', {
+                winnerIndex: wi,
+                dryWin: this.lastClassic101RoundResult?.dryWin,
+                currentScores: this.scores.slice(),
+                teamScores: this.teamScores.slice()
+            });
             wins = this.lastClassic101RoundResult?.dryWin ? 2 : 1;
             this.lastClassic101RoundResult = null;
             if(this.isTeamMode){
