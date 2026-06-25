@@ -154,7 +154,17 @@ const BOT_THINK_DELAY_MS = 1500;
 const DEAL_END_MODAL_MS = 5000;
 const LAST_MOVE_REVEAL_DELAY_MS = 1200;
 const RESULT_MODAL_AFTER_LAND_DELAY_MS = 500;
-const ENABLE_MODE_101 = false;
+function loadMode101Enabled() {
+    try {
+        if (window.DOMINO_ENABLE_MODE_101 === false) return false;
+        if (window.DOMINO_ENABLE_MODE_101 === true) return true;
+        const stored = window.localStorage?.getItem('domino:enableMode101');
+        if (stored === '0' || stored === 'false') return false;
+        if (stored === '1' || stored === 'true') return true;
+    } catch {}
+    return true;
+}
+const ENABLE_MODE_101 = loadMode101Enabled();
 const DEFAULT_TABLE_SKIN_KEY = 'table_skin_default';
 const DEFAULT_TABLE_SKIN = {
     key: DEFAULT_TABLE_SKIN_KEY,
