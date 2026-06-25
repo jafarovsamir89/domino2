@@ -670,8 +670,8 @@ html[data-domino-start-mode="classic101"] #start-screen {
 
 .start-hero-stage {
     position: relative;
-    display: block;
-    min-height: clamp(170px, 18vw, 220px);
+    display: grid;
+    width: 100%;
     transform-style: preserve-3d;
     transition: transform 0.95s cubic-bezier(.72, .04, .2, 1);
     will-change: transform;
@@ -685,11 +685,11 @@ html[data-domino-start-mode="classic101"] #start-screen .start-hero-stage {
 }
 
 .start-hero-face {
-    position: absolute;
-    inset: 0;
     display: flex;
     align-items: center;
     justify-content: center;
+    grid-area: 1 / 1;
+    width: 100%;
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
     transform-style: preserve-3d;
