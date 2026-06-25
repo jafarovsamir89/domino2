@@ -18819,14 +18819,16 @@ class DominoGame {
         this.postMoveWindowActive = false;
         clearTimeout(this._turnAdvanceTimeout);
         this._turnAdvanceTimeout = null;
-        const blocked = this.ruleset.resolveBlocked({
-            board: this.board,
-            hands: this.hands,
-            boneyard: this.boneyard,
-            isTeamMode: this.isTeamMode,
-            matchState: this.matchRuleState,
-            getTeamMembers: this.getTeamMembers.bind(this)
-        });
+        const blocked = this.mode === 'classic101' && this.boneyard.length > 0
+            ? null
+            : this.ruleset.resolveBlocked({
+                board: this.board,
+                hands: this.hands,
+                boneyard: this.boneyard,
+                isTeamMode: this.isTeamMode,
+                matchState: this.matchRuleState,
+                getTeamMembers: this.getTeamMembers.bind(this)
+            });
         if (blocked) {
             this.endDeal(Number.isInteger(Number(blocked?.winnerIndex)) ? Number(blocked.winnerIndex) : this.findFishWinner(), true);
             return;
