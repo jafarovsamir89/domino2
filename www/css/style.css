@@ -663,17 +663,19 @@ html[data-domino-start-mode="classic101"] #start-screen {
     border-radius: 28px;
     background: var(--mode-hero-bg);
     box-shadow: 0 28px 60px rgba(0, 0, 0, 0.38);
-    perspective: 1400px;
+    perspective: 1200px;
+    perspective-origin: center;
     transform-style: preserve-3d;
 }
 
 .start-hero-stage {
     position: relative;
-    display: grid;
-    min-height: 0;
+    display: block;
+    min-height: clamp(170px, 18vw, 220px);
     transform-style: preserve-3d;
     transition: transform 0.95s cubic-bezier(.72, .04, .2, 1);
     will-change: transform;
+    transform-origin: center center;
 }
 
 .start-hero-stage.is-flipped,
@@ -683,7 +685,8 @@ html[data-domino-start-mode="classic101"] #start-screen .start-hero-stage {
 }
 
 .start-hero-face {
-    grid-area: 1 / 1;
+    position: absolute;
+    inset: 0;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -691,10 +694,16 @@ html[data-domino-start-mode="classic101"] #start-screen .start-hero-stage {
     -webkit-backface-visibility: hidden;
     transform-style: preserve-3d;
     padding: 4px 0;
+    transform-origin: center center;
+    pointer-events: none;
+}
+
+.start-hero-face-front {
+    transform: rotateY(0deg) translateZ(1px);
 }
 
 .start-hero-face-back {
-    transform: rotateY(180deg);
+    transform: rotateY(180deg) translateZ(1px);
 }
 
 .brand-lockup {

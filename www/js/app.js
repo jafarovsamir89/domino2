@@ -355,6 +355,8 @@ class DominoGame {
         this.localPresenceClearQueued = false;
         this.currentLang = this.loadSavedLanguage();
         this.preferredStartMode = this.loadPreferredStartMode();
+        this.startModeFlipLocked = false;
+        this.startModeFlipUnlockTimer = null;
         this.mode = 'telefon';
         this.ruleset = getRuleset(this.mode);
         this.matchRuleState = null;
@@ -16923,8 +16925,32 @@ class DominoGame {
 
     setPreferredStartMode(mode, { persist = true } = {}) {
         const nextMode = mode === 'classic101' ? 'classic101' : 'telefon';
+        if (nextMode === this.preferredStartMode || this.startModeFlipLocked) return;
         this.preferredStartMode = nextMode;
         if (persist) this.savePreferredStartMode(nextMode);
+        this.startModeFlipLocked = true;
+        if (this.startModeFlipUnlockTimer) {
+            clearTimeout(this.startModeFlipUnlockTimer);
+            this.startModeFlipUnlockTimer = null;
+        }
+        const heroStage = document.getElementById('start-mode-stage');
+        const releaseLock = () => {
+            if (this.startModeFlipUnlockTimer) {
+                clearTimeout(this.startModeFlipUnlockTimer);
+                this.startModeFlipUnlockTimer = null;
+            }
+            this.startModeFlipLocked = false;
+        };
+        if (heroStage) {
+            const onTransitionEnd = (event) => {
+                if (event?.target !== heroStage || event.propertyName !== 'transform') return;
+                releaseLock();
+            };
+            heroStage.addEventListener('transitionend', onTransitionEnd, { once: true });
+            this.startModeFlipUnlockTimer = window.setTimeout(releaseLock, 1100);
+        } else {
+            this.startModeFlipUnlockTimer = window.setTimeout(releaseLock, 1100);
+        }
         this.syncStartModeUI();
     }
 
