@@ -767,12 +767,14 @@ html[data-domino-start-mode="classic101"] #start-screen .start-hero-stage {
     display: block;
     font-size: clamp(2.2rem, 5vw, 3.5rem);
     font-weight: 800;
-    line-height: 0.92;
+    line-height: 1.06;
     letter-spacing: -0.07em;
     background: var(--mode-title-gradient);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
+    padding-bottom: 0.1em;
+    overflow: visible;
 }
 
 .start-title-row {
@@ -864,6 +866,15 @@ html[data-domino-start-mode="classic101"] #start-screen .start-hero-stage {
 }
 
 #start-screen.auth-required .start-actions {
+    display: none;
+}
+
+#start-screen.auth-required #start-mode-hero,
+#start-screen.auth-required .start-mode-switch-row,
+#start-screen.auth-required #daily-bonus-card,
+#start-screen.auth-checking #start-mode-hero,
+#start-screen.auth-checking .start-mode-switch-row,
+#start-screen.auth-checking #daily-bonus-card {
     display: none;
 }
 

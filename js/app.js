@@ -7554,6 +7554,9 @@ class DominoGame {
         startScreen.classList.remove('auth-checking');
         startScreen.classList.toggle('auth-required', !isAuthed);
         if (!isAuthed) {
+            this.renderDailyBonusCard('syncStartAuthGate:guest');
+        }
+        if (!isAuthed) {
             this.showStartModal(null);
             this.closeAccountModal();
             this.closeCoinShopModal();
