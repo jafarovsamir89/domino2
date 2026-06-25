@@ -18588,12 +18588,23 @@ class DominoGame {
                 hand: this.hands[pi],
                 boneyard: this.boneyard
             });
+            debugLog('[classic101] drawFromBoneyard outcome', {
+                player: pi,
+                draws: drawOutcome.draws || 0,
+                playable: Boolean(drawOutcome.playable),
+                exhausted: Boolean(drawOutcome.exhausted),
+                turnInProgress: this.turnInProgress
+            });
             if (drawOutcome.draws > 0) {
                 this.playSound('draw');
             }
             if (!drawOutcome.playable) {
                 this.renderState();
                 if (drawOutcome.exhausted) {
+                    debugLog('[classic101] drawFromBoneyard -> passTurn', {
+                        player: pi,
+                        nextPlayer: (this.currentPlayer + 1) % this.playerCount
+                    });
                     this.passTurn();
                 }
                 return;
@@ -18601,10 +18612,21 @@ class DominoGame {
             const moves = this.board.getValidMoves(this.normalizeHandForBoard(this.hands[pi]));
             const move = moves[0];
             if (!move) {
+                debugLog('[classic101] drawFromBoneyard -> no valid move after draw, advancing turn', {
+                    player: pi,
+                    turnInProgress: this.turnInProgress
+                });
                 this.renderState();
+                this.turnInProgress = false;
+                this.scheduleTurnAdvance(0, this._turnCycleId);
                 return;
             }
             this.turnInProgress = false;
+            debugLog('[classic101] drawFromBoneyard -> auto play', {
+                player: pi,
+                tileIndex: move.tileIndex,
+                openEndIndex: move.openEndIndex
+            });
             void this.playTile(pi, move.tileIndex, move.openEndIndex);
             return;
         }
@@ -18806,6 +18828,12 @@ class DominoGame {
                 blocksInput: false
             });
         }
+        debugLog('[turn] advanceTurn handoff', {
+            mode: this.mode,
+            nextPlayer: this.currentPlayer,
+            isAI: this.ais.some((ai) => ai.index === this.currentPlayer),
+            turnInProgress: this.turnInProgress
+        });
         this.queueAITurnIfNeeded(BOT_THINK_DELAY_MS);
     }
 
@@ -18814,6 +18842,12 @@ class DominoGame {
         if (isAI) {
             const turnCycleId = this._turnCycleId;
             clearTimeout(this._aiTurnTimeout);
+            debugLog('[turn] queueAITurnIfNeeded', {
+                mode: this.mode,
+                nextPlayer: this.currentPlayer,
+                delay,
+                turnCycleId
+            });
             this._aiTurnTimeout = setTimeout(() => {
                 if (turnCycleId !== this._turnCycleId) return;
                 this.aiTurn();
@@ -18870,9 +18904,13 @@ class DominoGame {
         } else if (this.boneyard.length > 0) {
             this.turnInProgress = false;
             this.drawFromBoneyard();
-            if (this.mode !== 'classic101') {
-                this.queueAITurnIfNeeded(BOT_THINK_DELAY_MS);
-            }
+            debugLog('[turn] aiTurn draw handoff', {
+                mode: this.mode,
+                player: pi,
+                nextPlayer: this.currentPlayer,
+                turnInProgress: this.turnInProgress
+            });
+            this.queueAITurnIfNeeded(BOT_THINK_DELAY_MS);
         } else {
             this.turnInProgress = false;
             this.passTurn();
