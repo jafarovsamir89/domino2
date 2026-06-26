@@ -247,8 +247,8 @@ function fmLog(tag, data) {
 const DOMINO_CLIENT_BUILD = {
     gitCommit: '669bbdc',
     builtAt: new Date().toISOString(),
-    socialRealtimeDebugVersion: 'browser-production-trace-v22-d2fa2fc',
-    cacheFixVersion: 'domino-v61'
+    socialRealtimeDebugVersion: 'browser-production-trace-v23-669bbdc',
+    cacheFixVersion: 'domino-v62'
 };
 
 if (typeof window !== 'undefined') {
