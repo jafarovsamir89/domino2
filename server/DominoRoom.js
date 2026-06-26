@@ -3962,6 +3962,7 @@ class DominoRoom extends Room {
             state: this.buildSchemaStateSnapshot(),
             roomVisibility: this.roomVisibility,
             matchState: this.matchState ? this.parseMatchStateSnapshot(this.matchState) : null,
+            matchStateJson: this.state?.matchStateJson || "",
             humanSeats: this.humanSeats,
             totalPlayers: this.totalPlayers,
             aiCount: this.aiCount,
@@ -4037,7 +4038,7 @@ class DominoRoom extends Room {
             this.restoreSchemaState(data.state);
         }
         this.matchState = this.normalizeMatchStateForCurrentMode(
-            this.parseMatchStateSnapshot(data.matchState || data.state?.matchStateJson || this.state.matchStateJson),
+            this.parseMatchStateSnapshot(data.matchState || data.matchStateJson || data.state?.matchStateJson || this.state.matchStateJson),
             this.totalPlayers,
             this.roomMode === "team"
         );

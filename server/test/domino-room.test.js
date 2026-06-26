@@ -1485,3 +1485,142 @@ test("startDeal snapshot restore keeps a playable turn state", async () => {
     restoredRoom.handlePlay({ sessionId: "session-1" }, { tileIndex: 0, openEndIndex: 0, turnVersion: 0 });
     assert.equal(plays, 0);
 });
+
+test("classic101 custom snapshots round-trip matchState and board flags", async () => {
+    const sourceRoom = Object.create(DominoRoom.prototype);
+    Object.defineProperty(sourceRoom, "roomId", { value: "room-101", writable: true, configurable: true });
+    sourceRoom.roomCode = "C101";
+    sourceRoom.totalPlayers = 2;
+    sourceRoom.aiCount = 0;
+    sourceRoom.humanSeats = 2;
+    sourceRoom.roomMode = "ffa";
+    sourceRoom.gameMode = "classic101";
+    sourceRoom.mode = "classic101";
+    sourceRoom.getActiveRuleset = () => getRuleset("classic101");
+    sourceRoom.state = {
+        gameActive: true,
+        matchRound: 6,
+        deal: 3,
+        currentPlayerIndex: 1,
+        turnVersion: 11,
+        isTeamMode: false,
+        playerOrder: ["session-1", "session-2"],
+        players: new Map([
+            ["session-1", { name: "Alice", score: 0, roundWins: 0, handCount: 3, isBot: false, isConnected: true }],
+            ["session-2", { name: "Bob", score: 0, roundWins: 0, handCount: 4, isBot: false, isConnected: true }]
+        ]),
+        teamScores: [0, 0],
+        teamRoundWins: [0, 0],
+        matchStateJson: ""
+    };
+    sourceRoom.matchState = {
+        mode: "classic101",
+        carryPoints: 8,
+        thresholdBypassNext: false,
+        sides: [
+            { scored: 47, pending: 0, enteredBoard: true, missStreak: 0 },
+            { scored: 62, pending: 5, enteredBoard: false, missStreak: 2 }
+        ]
+    };
+    sourceRoom.internalBoard = new Board();
+    sourceRoom.internalBoard.placeFirst(new Tile(1, 1));
+    sourceRoom.hands = [[new Tile(6, 6), new Tile(2, 4)], [new Tile(5, 5), new Tile(0, 6)]];
+    sourceRoom.boneyard = [new Tile(3, 3), new Tile(4, 4)];
+    sourceRoom.playerMissingSuits = [new Set(), new Set()];
+    sourceRoom.identityBySessionId = new Map();
+    sourceRoom.boardStartAxis = "horizontal";
+    sourceRoom.state.gameMode = "classic101";
+    sourceRoom.state.mode = "classic101";
+    sourceRoom.configureBoardForCurrentMode(sourceRoom.internalBoard);
+    sourceRoom.syncMatchStateToSchema();
+
+    const snapshot = sourceRoom.buildCustomStateSnapshot();
+    assert.equal(snapshot.gameMode, "classic101");
+    assert.equal(snapshot.matchStateJson, JSON.stringify(sourceRoom.matchState));
+    assert.equal(snapshot.state.matchStateJson, JSON.stringify(sourceRoom.matchState));
+    assert.equal(snapshot.state.gameMode, "classic101");
+
+    const restoredRoom = Object.create(DominoRoom.prototype);
+    Object.defineProperty(restoredRoom, "roomId", { value: "room-101", writable: true, configurable: true });
+    restoredRoom.state = {
+        turnDeadlineAt: 0,
+        players: new Map(),
+        playerOrder: [],
+        teamScores: [],
+        teamRoundWins: []
+    };
+    restoredRoom.identityBySessionId = new Map();
+    restoredRoom.internalBoard = null;
+    restoredRoom.hands = null;
+    restoredRoom.boneyard = null;
+    restoredRoom.playerMissingSuits = null;
+    restoredRoom.events = {
+        on() {},
+        once() {},
+        off() {},
+        removeListener() {},
+        emit() {}
+    };
+    restoredRoom.roomMode = "ffa";
+    restoredRoom.gameMode = "classic101";
+    restoredRoom.mode = "classic101";
+    restoredRoom.totalPlayers = 2;
+    restoredRoom.humanSeats = 2;
+    restoredRoom.aiCount = 0;
+    restoredRoom.roomVisibility = "open";
+    restoredRoom.boardStartAxis = "horizontal";
+    restoredRoom.ruleset = restoredRoom.getActiveRuleset?.() || null;
+    restoredRoom.ensureBotPlayers = () => {};
+    restoredRoom.clearTurnTimer = () => {};
+    restoredRoom.applyCustomStateSnapshot(snapshot);
+
+    assert.equal(restoredRoom.gameMode, "classic101");
+    assert.equal(restoredRoom.mode, "classic101");
+    assert.equal(restoredRoom.state.gameMode, "classic101");
+    assert.equal(restoredRoom.state.mode, "classic101");
+    assert.deepEqual(restoredRoom.matchState, snapshot.matchState);
+    assert.equal(restoredRoom.state.matchStateJson, JSON.stringify(snapshot.matchState));
+    assert.equal(restoredRoom.state.players.get("session-1").score, 47);
+    assert.equal(restoredRoom.state.players.get("session-2").score, 62);
+    assert.equal(restoredRoom.state.players.get("session-1").roundWins, 0);
+    assert.equal(restoredRoom.state.players.get("session-2").roundWins, 0);
+    assert.equal(restoredRoom.internalBoard.telephoneEnabled, false);
+    assert.equal(restoredRoom.internalBoard.scoringEnabled, false);
+    assert.equal(restoredRoom.internalBoard.startAxis, "horizontal");
+
+    const telefonRoom = Object.create(DominoRoom.prototype);
+    Object.defineProperty(telefonRoom, "roomId", { value: "room-tel", writable: true, configurable: true });
+    telefonRoom.state = {
+        turnDeadlineAt: 0,
+        players: new Map(),
+        playerOrder: [],
+        teamScores: [],
+        teamRoundWins: []
+    };
+    telefonRoom.identityBySessionId = new Map();
+    telefonRoom.internalBoard = null;
+    telefonRoom.hands = null;
+    telefonRoom.boneyard = null;
+    telefonRoom.playerMissingSuits = null;
+    telefonRoom.events = {
+        on() {},
+        once() {},
+        off() {},
+        removeListener() {},
+        emit() {}
+    };
+    telefonRoom.roomMode = "ffa";
+    telefonRoom.gameMode = "telefon";
+    telefonRoom.mode = "telefon";
+    telefonRoom.totalPlayers = 2;
+    telefonRoom.humanSeats = 2;
+    telefonRoom.aiCount = 0;
+    telefonRoom.roomVisibility = "open";
+    telefonRoom.ensureBotPlayers = () => {};
+    telefonRoom.clearTurnTimer = () => {};
+    const telefonSnapshot = telefonRoom.buildCustomStateSnapshot();
+    assert.equal(telefonSnapshot.gameMode, "telefon");
+    assert.equal(telefonSnapshot.matchState, null);
+    assert.equal(telefonSnapshot.matchStateJson, "");
+    assert.equal(telefonSnapshot.state.matchStateJson, "");
+});
