@@ -5,6 +5,7 @@ const path = require("node:path");
 
 const DominoRoom = require("../DominoRoom");
 const { BotTakeoverController, BOT_TAKEOVER_CONFIG } = require("../botTakeover");
+const { AIPlayer } = require("../ai");
 
 let cachedNetworkManagerClass = null;
 
@@ -611,4 +612,61 @@ test("client validMoves reconstruction fallback on state update", () => {
     }
     
     assert.deepEqual(clientApp.validMoves, [{ tileIndex: 0, openEndIndex: 0 }]);
+});
+
+test("team takeover bot prefers the partner-friendly move when takeover is active", () => {
+    const ai = new AIPlayer(0, "medium");
+    ai.params = { ...ai.params, scoreW: 0, doubleB: 0, totalW: 0.5, futureW: 0, goOut: 0, handP: 0, rand: 0, blockW: 0 };
+    ai.simulateMove = (_board, tile) => {
+        if (tile.total === 4) {
+            return { board: { openEnds: [{ value: 3 }, { value: 5 }] }, score: 0 };
+        }
+        return { board: { openEnds: [{ value: 8 }, { value: 9 }] }, score: 0 };
+    };
+
+    const board = { isEmpty: false };
+    const hand = [
+        {
+            total: 4,
+            isDouble: false,
+            hasValue(value) {
+                return value === 1 || value === 3;
+            }
+        },
+        {
+            total: 6,
+            isDouble: false,
+            hasValue(value) {
+                return value === 2 || value === 4;
+            }
+        }
+    ];
+    const partnerHand = [
+        {
+            total: 5,
+            isDouble: false,
+            hasValue(value) {
+                return value === 3;
+            }
+        }
+    ];
+    const otherHands = [
+        hand,
+        [],
+        partnerHand,
+        []
+    ];
+    const validMoves = [
+        { tileIndex: 0, openEndIndex: 0 },
+        { tileIndex: 1, openEndIndex: 0 }
+    ];
+
+    const soloChoice = ai.chooseMove(board, hand, validMoves, [0, 0, 0, 0], otherHands, [], null, null);
+    const teamChoice = ai.chooseMove(board, hand, validMoves, [0, 0, 0, 0], otherHands, [], null, {
+        isTeamMode: true,
+        partnerIndex: 2
+    });
+
+    assert.equal(soloChoice.tileIndex, 1);
+    assert.equal(teamChoice.tileIndex, 0);
 });

@@ -19,14 +19,14 @@ class AIPlayer {
         this.params = DIFF[difficulty] || DIFF.medium;
     }
 
-    chooseMove(board, hand, validMoves, scores, allHands, boneyard, missingSuits = null) {
+    chooseMove(board, hand, validMoves, scores, allHands, boneyard, missingSuits = null, teamContext = null) {
         if (validMoves.length === 0) return null;
         if (validMoves.length === 1) return validMoves[0];
 
         let bestMove = validMoves[0];
         let bestScore = -Infinity;
         for (const move of validMoves) {
-            const score = this.evaluateMove(board, hand, move, scores, allHands, boneyard, missingSuits);
+            const score = this.evaluateMove(board, hand, move, scores, allHands, boneyard, missingSuits, teamContext);
             if (score > bestScore) {
                 bestScore = score;
                 bestMove = move;
@@ -35,7 +35,7 @@ class AIPlayer {
         return bestMove;
     }
 
-    evaluateMove(board, hand, move, scores, allHands, boneyard, missingSuits) {
+    evaluateMove(board, hand, move, scores, allHands, boneyard, missingSuits, teamContext) {
         const P = this.params;
         const tile = hand[move.tileIndex];
         let score = 0;
@@ -97,6 +97,27 @@ class AIPlayer {
                 const estimatedOptions = totalOpponentTiles * uniqueEndValues * (2 / 7);
                 score -= estimatedOptions * P.blockW;
             }
+        }
+
+        if (teamContext?.isTeamMode && Number.isInteger(Number(teamContext.partnerIndex)) && Array.isArray(allHands)) {
+            const partnerIndex = Number(teamContext.partnerIndex);
+            const partnerHand = allHands[partnerIndex] || [];
+            const partnerHasPlay = partnerHand.some((partnerTile) => openEndValues.some((value) => partnerTile?.hasValue?.(value)));
+            let opponentPressure = 0;
+
+            for (let i = 0; i < allHands.length; i++) {
+                if (i === this.playerIndex || i === partnerIndex) continue;
+                const opponentHand = allHands[i] || [];
+                const opponentHasPlay = opponentHand.some((opponentTile) => openEndValues.some((value) => opponentTile?.hasValue?.(value)));
+                if (opponentHasPlay) opponentPressure++;
+            }
+
+            if (partnerHasPlay) {
+                score += Number(teamContext.partnerBonus ?? 6);
+            } else {
+                score -= Number(teamContext.partnerPenalty ?? 4);
+            }
+            score -= opponentPressure * Number(teamContext.opponentPenalty ?? 1);
         }
 
         score += randomFloat() * P.rand;

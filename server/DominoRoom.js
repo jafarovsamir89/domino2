@@ -2486,6 +2486,12 @@ class DominoRoom extends Room {
         this.aiPlayers.set(aiKey, bot);
         const hand = this.hands[pi];
         if (!hand) return;
+        const teamContext = isTakeoverSeat && this.state.isTeamMode
+            ? {
+                isTeamMode: true,
+                partnerIndex: this.getTeamPartnerIndex(pi)
+            }
+            : null;
 
         const combo = this.gameMode === "classic101" ? null : this.internalBoard.getGoshaCombo(hand);
         if (combo) {
@@ -2494,7 +2500,7 @@ class DominoRoom extends Room {
         }
 
         const moves = this.getValidMovesForPlayer(pi);
-        const move = bot.chooseMove(this.internalBoard, hand, moves, this.state.players, this.hands, this.boneyard, this.playerMissingSuits);
+        const move = bot.chooseMove(this.internalBoard, hand, moves, this.state.players, this.hands, this.boneyard, this.playerMissingSuits, teamContext);
         if (move) {
             this.performPlay(pi, move.tileIndex, move.openEndIndex, true);
             return;
@@ -2520,6 +2526,14 @@ class DominoRoom extends Room {
             if ((i % 2) === teamIndex) members.push(i);
         }
         return members;
+    }
+
+    getTeamPartnerIndex(playerIndex) {
+        if (!isRoomTeamMode(this)) return -1;
+        const index = Number(playerIndex);
+        if (!Number.isInteger(index) || index < 0) return -1;
+        const partner = this.getTeamMembers(index % 2).find((memberIndex) => memberIndex !== index);
+        return Number.isInteger(Number(partner)) ? Number(partner) : -1;
     }
 
     getTeamDisplayName(teamIndex) {
