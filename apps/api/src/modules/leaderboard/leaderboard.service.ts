@@ -5,6 +5,7 @@ import { Injectable, UnauthorizedException } from "@nestjs/common";
 import { AuthService } from "../auth/auth.service.js";
 import { PrismaService } from "../prisma/prisma.service.js";
 import { getPlayerRatingTitleCode } from "../ranking/player-ranking.js";
+import { createPlayerModeStatsSnapshot, normalizeRatingGameMode } from "../ranking/player-mode-stats.js";
 
 type LeaderboardRow = {
   id: string;
@@ -24,7 +25,7 @@ type LeaderboardRow = {
   weeklyMatchesPlayed?: number;
 };
 
-type StatsRow = {
+type ModeStatsRow = {
   playerId: string;
   rating: number;
   points: number;
@@ -33,6 +34,18 @@ type StatsRow = {
   draws: number;
   matchesPlayed: number;
   displayName: string;
+};
+
+type PlayerModeRecord = {
+  playerId: string;
+  displayName: string;
+  rating: number;
+  points: number;
+  wins: number;
+  losses: number;
+  draws: number;
+  matchesPlayed: number;
+  titleCode: string;
 };
 
 @Injectable()
@@ -50,56 +63,96 @@ export class LeaderboardService {
     return profile.player.id;
   }
 
-  private summarizeOverall(row: StatsRow, rank: number, isSelf = false): LeaderboardRow {
+  private normalizeModeStatsRow(row: Partial<ModeStatsRow> | null | undefined, fallbackDisplayName = "Player"): PlayerModeRecord {
+    const snapshot = createPlayerModeStatsSnapshot(row || {});
+    const displayName = String(row?.displayName || fallbackDisplayName || "Player").trim() || "Player";
+    return {
+      playerId: String(row?.playerId || ""),
+      displayName,
+      rating: Number(snapshot.rating ?? 1000),
+      points: Number(snapshot.points ?? 0),
+      wins: Number(snapshot.wins ?? 0),
+      losses: Number(snapshot.losses ?? 0),
+      draws: Number(snapshot.draws ?? 0),
+      matchesPlayed: Number(snapshot.matchesPlayed ?? 0),
+      titleCode: getPlayerRatingTitleCode(Number(snapshot.rating ?? 1000))
+    };
+  }
+
+  private summarizeRow(row: PlayerModeRecord, rank: number, isSelf = false, weekly?: Partial<LeaderboardRow>): LeaderboardRow {
     return {
       id: row.playerId,
       displayName: row.displayName || "Player",
       rating: Number(row.rating ?? 1000),
-      titleCode: getPlayerRatingTitleCode(Number(row.rating ?? 1000)),
+      titleCode: row.titleCode || getPlayerRatingTitleCode(Number(row.rating ?? 1000)),
       points: Number(row.points ?? 0),
       wins: Number(row.wins ?? 0),
       losses: Number(row.losses ?? 0),
       draws: Number(row.draws ?? 0),
       matchesPlayed: Number(row.matchesPlayed ?? 0),
       rank,
-      isSelf
+      isSelf,
+      weeklyRatingDelta: weekly?.weeklyRatingDelta,
+      weeklyWins: weekly?.weeklyWins,
+      weeklyLosses: weekly?.weeklyLosses,
+      weeklyMatchesPlayed: weekly?.weeklyMatchesPlayed
     };
   }
 
-  private async getOverallLeaderboard(limit = 10) {
-    const rows = await this.prisma.playerStats.findMany({
-      orderBy: [
-        { rating: "desc" },
-        { matchesPlayed: "desc" },
-        { wins: "desc" },
-        { losses: "asc" },
-        { playerId: "asc" }
-      ],
-      take: Math.max(1, Math.min(100, Math.trunc(Number(limit || 10) || 10))),
-      include: {
-        player: true
+  private normalizeLimit(limit = 10) {
+    return Math.max(1, Math.min(100, Math.trunc(Number(limit || 10) || 10)));
+  }
+
+  private async getOverallLeaderboard(gameMode = "telefon", limit = 10) {
+    const normalizedGameMode = normalizeRatingGameMode(gameMode);
+    const players = await this.prisma.player.findMany({
+      select: {
+        id: true,
+        displayName: true,
+        modeStats: {
+          where: {
+            gameMode: normalizedGameMode
+          },
+          take: 1
+        }
       }
     });
 
-    return rows.map((row, index) => this.summarizeOverall({
-      playerId: row.playerId,
-      displayName: row.player?.displayName ?? "Player",
-      rating: row.rating ?? 1000,
-      points: row.points ?? 0,
-      wins: row.wins ?? 0,
-      losses: row.losses ?? 0,
-      draws: row.draws ?? 0,
-      matchesPlayed: row.matchesPlayed ?? 0
-    }, index + 1));
+    const rows = players.map((player) => {
+      const row = player.modeStats?.[0] || null;
+      return this.normalizeModeStatsRow({
+        playerId: player.id,
+        displayName: player.displayName,
+        rating: row?.rating ?? 1000,
+        points: row?.points ?? 0,
+        wins: row?.wins ?? 0,
+        losses: row?.losses ?? 0,
+        draws: row?.draws ?? 0,
+        matchesPlayed: row?.matchesPlayed ?? 0
+      }, player.displayName);
+    });
+
+    return rows
+      .sort((a, b) => {
+        if (b.rating !== a.rating) return b.rating - a.rating;
+        if (b.matchesPlayed !== a.matchesPlayed) return b.matchesPlayed - a.matchesPlayed;
+        if (b.wins !== a.wins) return b.wins - a.wins;
+        if (a.losses !== b.losses) return a.losses - b.losses;
+        return a.displayName.localeCompare(b.displayName);
+      })
+      .slice(0, this.normalizeLimit(limit))
+      .map((row, index) => this.summarizeRow(row, index + 1));
   }
 
-  private async getWeeklyLeaderboard(limit = 10) {
+  private async getWeeklyLeaderboard(gameMode = "telefon", limit = 10) {
+    const normalizedGameMode = normalizeRatingGameMode(gameMode);
     const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
     const matches = await this.prisma.match.findMany({
       where: {
         createdAt: {
           gte: since
-        }
+        },
+        gameMode: normalizedGameMode
       },
       select: {
         participants: {
@@ -152,8 +205,9 @@ export class LeaderboardService {
     }));
 
     const playerIds = rows.map((row) => row.playerId);
-    const statsRows = await this.prisma.playerStats.findMany({
+    const statsRows = playerIds.length ? await this.prisma.playerModeStats.findMany({
       where: {
+        gameMode: normalizedGameMode,
         playerId: {
           in: playerIds
         }
@@ -161,29 +215,28 @@ export class LeaderboardService {
       include: {
         player: true
       }
-    });
+    }) : [];
     const statsMap = new Map(statsRows.map((row) => [row.playerId, row]));
 
     return rows
       .map((row) => {
         const stats = statsMap.get(row.playerId);
-        const rating = Number(stats?.rating ?? 1000);
-        return {
-          id: row.playerId,
+        const normalized = this.normalizeModeStatsRow({
+          playerId: row.playerId,
           displayName: stats?.player?.displayName ?? row.displayName ?? "Player",
-          rating,
-          titleCode: getPlayerRatingTitleCode(rating),
-          points: Number(stats?.points ?? 0),
-          wins: Number(stats?.wins ?? row.wins ?? 0),
-          losses: Number(stats?.losses ?? row.losses ?? 0),
-          draws: Number(stats?.draws ?? 0),
-          matchesPlayed: Number(row.matchesPlayed ?? stats?.matchesPlayed ?? 0),
-          rank: 0,
+          rating: stats?.rating ?? 1000,
+          points: stats?.points ?? 0,
+          wins: stats?.wins ?? row.wins ?? 0,
+          losses: stats?.losses ?? row.losses ?? 0,
+          draws: stats?.draws ?? 0,
+          matchesPlayed: stats?.matchesPlayed ?? row.matchesPlayed ?? 0
+        }, stats?.player?.displayName ?? row.displayName ?? "Player");
+        return this.summarizeRow(normalized, 0, false, {
           weeklyRatingDelta: row.ratingDelta,
           weeklyWins: row.wins,
           weeklyLosses: row.losses,
           weeklyMatchesPlayed: row.matchesPlayed
-        };
+        });
       })
       .sort((a, b) => {
         if ((b.weeklyRatingDelta ?? 0) !== (a.weeklyRatingDelta ?? 0)) {
@@ -197,14 +250,14 @@ export class LeaderboardService {
         }
         return a.displayName.localeCompare(b.displayName);
       })
-      .slice(0, Math.max(1, Math.min(100, Math.trunc(Number(limit || 10) || 10))))
+      .slice(0, this.normalizeLimit(limit))
       .map((row, index) => ({
         ...row,
         rank: index + 1
       }));
   }
 
-  private async getFriendsLeaderboard(headers: IncomingHttpHeaders, limit = 10) {
+  private async getFriendsLeaderboard(headers: IncomingHttpHeaders, gameMode = "telefon", limit = 10) {
     const currentPlayerId = await this.getCurrentPlayerId(headers);
     const friendships = await this.prisma.friendConnection.findMany({
       where: {
@@ -228,45 +281,64 @@ export class LeaderboardService {
       if (otherId) friendIds.add(otherId);
     }
 
-    const rows = await this.prisma.playerStats.findMany({
+    const players = await this.prisma.player.findMany({
       where: {
-        playerId: {
+        id: {
           in: Array.from(friendIds)
         }
       },
-      include: {
-        player: true
-      },
-      orderBy: [
-        { rating: "desc" },
-        { matchesPlayed: "desc" },
-        { wins: "desc" },
-        { losses: "asc" },
-        { playerId: "asc" }
-      ],
-      take: Math.max(1, Math.min(100, Math.trunc(Number(limit || 10) || 10)))
+      select: {
+        id: true,
+        displayName: true,
+        modeStats: {
+          where: {
+            gameMode: normalizeRatingGameMode(gameMode)
+          },
+          take: 1
+        }
+      }
     });
 
-    return rows.map((row, index) => this.summarizeOverall({
-      playerId: row.playerId,
-      displayName: row.player?.displayName ?? "Player",
-      rating: row.rating ?? 1000,
-      points: row.points ?? 0,
-      wins: row.wins ?? 0,
-      losses: row.losses ?? 0,
-      draws: row.draws ?? 0,
-      matchesPlayed: row.matchesPlayed ?? 0
-    }, index + 1, row.playerId === currentPlayerId));
+    const rows = players.map((player) => {
+      const row = player.modeStats?.[0] || null;
+      const normalized = this.normalizeModeStatsRow({
+        playerId: player.id,
+        displayName: player.displayName,
+        rating: row?.rating ?? 1000,
+        points: row?.points ?? 0,
+        wins: row?.wins ?? 0,
+        losses: row?.losses ?? 0,
+        draws: row?.draws ?? 0,
+        matchesPlayed: row?.matchesPlayed ?? 0
+      }, player.displayName);
+      return this.summarizeRow(normalized, 0, player.id === currentPlayerId);
+    });
+
+    return rows
+      .sort((a, b) => {
+        if (b.rating !== a.rating) return b.rating - a.rating;
+        if (b.matchesPlayed !== a.matchesPlayed) return b.matchesPlayed - a.matchesPlayed;
+        if (b.wins !== a.wins) return b.wins - a.wins;
+        if (a.losses !== b.losses) return a.losses - b.losses;
+        return a.displayName.localeCompare(b.displayName);
+      })
+      .slice(0, this.normalizeLimit(limit))
+      .map((row, index) => ({
+        ...row,
+        rank: index + 1,
+        isSelf: row.id === currentPlayerId
+      }));
   }
 
-  async getLeaderboard(headers: IncomingHttpHeaders, scope = "overall", limit = 10) {
+  async getLeaderboard(headers: IncomingHttpHeaders, scope = "overall", gameMode = "telefon", limit = 10) {
     const normalizedScope = String(scope || "overall").trim().toLowerCase();
+    const normalizedGameMode = normalizeRatingGameMode(gameMode);
     if (normalizedScope === "weekly") {
-      return this.getWeeklyLeaderboard(limit);
+      return this.getWeeklyLeaderboard(normalizedGameMode, limit);
     }
     if (normalizedScope === "friends") {
-      return this.getFriendsLeaderboard(headers, limit);
+      return this.getFriendsLeaderboard(headers, normalizedGameMode, limit);
     }
-    return this.getOverallLeaderboard(limit);
+    return this.getOverallLeaderboard(normalizedGameMode, limit);
   }
 }

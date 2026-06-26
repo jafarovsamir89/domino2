@@ -2004,6 +2004,17 @@ html[data-domino-start-mode="classic101"] #start-screen .start-hero-stage {
     gap: 10px;
 }
 
+.leaderboard-mode-row {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 6px;
+    width: 100%;
+}
+
+.leaderboard-mode-switcher {
+    width: min(360px, 100%);
+}
+
 .leaderboard-tabs {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -3614,6 +3625,23 @@ html[data-domino-start-mode="classic101"] #start-screen .start-hero-stage {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 10px;
+}
+
+.account-mode-stats {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.account-mode-stat-card {
+    display: grid;
+    gap: 4px;
+}
+
+.account-mode-stat-meta {
+    color: var(--text-dim);
+    font-size: 0.72rem;
+    line-height: 1.35;
 }
 
 .account-stat-card {
@@ -5926,6 +5954,10 @@ body.move-hint-selection-active #game-screen .player-name-btn {
     .hero-notes,
     .settings-grid,
     .start-actions {
+        grid-template-columns: 1fr;
+    }
+
+    .account-mode-stats {
         grid-template-columns: 1fr;
     }
 

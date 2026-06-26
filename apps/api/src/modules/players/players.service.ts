@@ -1,6 +1,7 @@
 import { Injectable } from "@nestjs/common";
 
 import { PrismaService } from "../prisma/prisma.service.js";
+import { createPlayerModeStatsSnapshot, normalizeRatingGameMode } from "../ranking/player-mode-stats.js";
 import { calculatePlayerRating, getPlayerRatingTitleCode } from "../ranking/player-ranking.js";
 
 @Injectable()
@@ -12,6 +13,7 @@ export class PlayersService {
       where: { id },
       include: {
         stats: true,
+        modeStats: true,
         wallet: true
       }
     });
@@ -20,18 +22,30 @@ export class PlayersService {
       return null;
     }
 
-    const rating = player.stats ? calculatePlayerRating(player.stats) : 1000;
-    const { wallet, ...publicPlayer } = player as typeof player & { wallet?: unknown };
+    const modeStatsMap = new Map((player.modeStats || []).map((row) => [normalizeRatingGameMode(row.gameMode), row]));
+    const telefonStats = player.stats ? createPlayerModeStatsSnapshot(player.stats) : createPlayerModeStatsSnapshot(modeStatsMap.get("telefon") || {});
+    const classic101Stats = createPlayerModeStatsSnapshot(modeStatsMap.get("classic101") || {});
+    const ratings = {
+      telefon: {
+        ...telefonStats,
+        titleCode: getPlayerRatingTitleCode(calculatePlayerRating(telefonStats))
+      },
+      classic101: {
+        ...classic101Stats,
+        titleCode: getPlayerRatingTitleCode(calculatePlayerRating(classic101Stats))
+      }
+    };
+    const rating = ratings.telefon.rating;
+    const { wallet, modeStats, ...publicPlayer } = player as typeof player & { wallet?: unknown; modeStats?: unknown };
 
     return {
       ...publicPlayer,
-      stats: player.stats
-        ? {
-            ...player.stats,
-            rating,
-            titleCode: getPlayerRatingTitleCode(rating)
-          }
-        : null
+      rating,
+      titleCode: ratings.telefon.titleCode,
+      stats: {
+        ...ratings.telefon
+      },
+      ratings
     };
   }
 }

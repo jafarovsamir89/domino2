@@ -56,6 +56,7 @@ function normalizeProfile(payload = {}, source = "legacy") {
     const user = payload.user || payload;
     const player = payload.player || null;
     const stats = payload.stats || payload.player?.stats || null;
+    const ratingsPayload = payload.ratings || payload.player?.ratings || null;
     const wallet = payload.wallet || payload.player?.wallet || null;
     const displayName = sanitizeName(
         payload.profile?.name ||
@@ -65,6 +66,22 @@ function normalizeProfile(payload = {}, source = "legacy") {
         payload.name ||
         "Player"
     );
+
+    const normalizeRatingBucket = (bucket, fallback = null, fallbackTitleCode = "rookie") => {
+        const seed = bucket || fallback || {};
+        const rating = Number(seed.rating ?? 1000);
+        return {
+            rating,
+            points: Number(seed.points ?? 0),
+            wins: Number(seed.wins ?? 0),
+            losses: Number(seed.losses ?? 0),
+            draws: Number(seed.draws ?? 0),
+            matchesPlayed: Number(seed.matchesPlayed ?? 0),
+            currentStreak: Number(seed.currentStreak ?? 0),
+            bestStreak: Number(seed.bestStreak ?? 0),
+            titleCode: String(seed.titleCode ?? fallbackTitleCode ?? "rookie").trim() || "rookie"
+        };
+    };
 
     const normalizedStats = stats ? {
         rating: Number(stats.rating ?? payload.rating ?? 1000),
@@ -77,8 +94,20 @@ function normalizeProfile(payload = {}, source = "legacy") {
         bestStreak: Number(stats.bestStreak ?? payload.bestStreak ?? 0),
         titleCode: String(stats.titleCode ?? payload.titleCode ?? payload.title ?? "rookie").trim() || "rookie"
     } : null;
+    const normalizedRatings = {
+        telefon: normalizeRatingBucket(
+            ratingsPayload?.telefon || normalizedStats || stats || null,
+            normalizedStats || stats || null,
+            normalizedStats?.titleCode || stats?.titleCode || payload.titleCode || payload.title || "rookie"
+        ),
+        classic101: normalizeRatingBucket(
+            ratingsPayload?.classic101 || payload.classic101Stats || null,
+            null,
+            "rookie"
+        )
+    };
     const walletBalance = Number(wallet?.balance ?? payload.coins ?? payload.balance ?? 0);
-    const titleCode = String(payload.titleCode || normalizedStats?.titleCode || payload.title || "rookie").trim() || "rookie";
+    const titleCode = String(payload.titleCode || normalizedRatings.telefon?.titleCode || normalizedStats?.titleCode || payload.title || "rookie").trim() || "rookie";
 
     const profile = {
         id: String(player?.id || user?.id || payload.id || ""),
@@ -97,15 +126,16 @@ function normalizeProfile(payload = {}, source = "legacy") {
         tableSkinKey: player?.tableSkinKey || payload.tableSkinKey || null,
         language: player?.language || payload.language || null,
         gameDisplayName: getFirstNameDisplayName(displayName, displayName),
-        rating: normalizedStats?.rating ?? Number(payload.rating ?? 1000),
-        points: normalizedStats?.points ?? Number(payload.points ?? 0),
-        wins: normalizedStats?.wins ?? Number(payload.wins ?? 0),
-        losses: normalizedStats?.losses ?? Number(payload.losses ?? 0),
-        draws: normalizedStats?.draws ?? Number(payload.draws ?? 0),
-        matchesPlayed: normalizedStats?.matchesPlayed ?? Number(payload.matchesPlayed ?? 0),
-        currentStreak: normalizedStats?.currentStreak ?? Number(payload.currentStreak ?? 0),
-        bestStreak: normalizedStats?.bestStreak ?? Number(payload.bestStreak ?? 0),
+        rating: normalizedRatings.telefon?.rating ?? normalizedStats?.rating ?? Number(payload.rating ?? 1000),
+        points: normalizedRatings.telefon?.points ?? normalizedStats?.points ?? Number(payload.points ?? 0),
+        wins: normalizedRatings.telefon?.wins ?? normalizedStats?.wins ?? Number(payload.wins ?? 0),
+        losses: normalizedRatings.telefon?.losses ?? normalizedStats?.losses ?? Number(payload.losses ?? 0),
+        draws: normalizedRatings.telefon?.draws ?? normalizedStats?.draws ?? Number(payload.draws ?? 0),
+        matchesPlayed: normalizedRatings.telefon?.matchesPlayed ?? normalizedStats?.matchesPlayed ?? Number(payload.matchesPlayed ?? 0),
+        currentStreak: normalizedRatings.telefon?.currentStreak ?? normalizedStats?.currentStreak ?? Number(payload.currentStreak ?? 0),
+        bestStreak: normalizedRatings.telefon?.bestStreak ?? normalizedStats?.bestStreak ?? Number(payload.bestStreak ?? 0),
         titleCode,
+        ratings: normalizedRatings,
         coins: walletBalance,
         wallet: wallet ? {
             ...wallet,
@@ -910,11 +940,12 @@ export class AccountClient {
         return true;
     }
 
-    async getLeaderboard(limit = 10, scope = "overall") {
+    async getLeaderboard(limit = 10, scope = "overall", mode = "telefon") {
         try {
             const params = new URLSearchParams();
             params.set("limit", String(limit));
             if (scope) params.set("scope", String(scope));
+            if (mode) params.set("mode", String(mode));
             const data = await this.platformRequest(`/leaderboard?${params.toString()}`);
             const items = Array.isArray(data?.items) ? data.items : [];
             return items.map((row, index) => ({

@@ -28,6 +28,20 @@ test("PlayersService.getById redacts wallet details from public output", async (
           currentStreak: 1,
           bestStreak: 1
         },
+        modeStats: [
+          {
+            playerId: "player-1",
+            gameMode: "classic101",
+            rating: 1111,
+            points: 12,
+            wins: 2,
+            losses: 1,
+            draws: 0,
+            matchesPlayed: 3,
+            currentStreak: 1,
+            bestStreak: 2
+          }
+        ],
         wallet: {
           id: "wallet-1",
           playerId: "player-1",
@@ -45,5 +59,39 @@ test("PlayersService.getById redacts wallet details from public output", async (
 
   assert.equal(result?.id, "player-1");
   assert.equal(typeof result?.stats?.titleCode, "string");
+  assert.equal(result?.rating, 1200);
+  assert.equal(result?.ratings?.telefon?.rating, 1200);
+  assert.equal(result?.ratings?.telefon?.titleCode, "silver");
+  assert.equal(result?.ratings?.classic101?.rating, 1111);
+  assert.equal(result?.ratings?.classic101?.titleCode, "bronze");
   assert.equal(Object.prototype.hasOwnProperty.call(result || {}, "wallet"), false);
+});
+
+test("PlayersService.getById fills missing mode ratings with the starting value", async () => {
+  const prismaMock = {
+    player: {
+      findUnique: async () => ({
+        id: "player-2",
+        displayName: "Bravo",
+        avatarSeed: null,
+        avatarUrl: null,
+        tableSkinKey: null,
+        language: "en",
+        createdAt: new Date("2024-01-01T00:00:00.000Z"),
+        updatedAt: new Date("2024-01-02T00:00:00.000Z"),
+        stats: null,
+        modeStats: [],
+        wallet: null
+      })
+    }
+  } as any;
+
+  const service = new PlayersService(prismaMock);
+  const result = await service.getById("player-2");
+
+  assert.equal(result?.rating, 1000);
+  assert.equal(result?.ratings?.telefon?.rating, 1000);
+  assert.equal(result?.ratings?.telefon?.titleCode, "rookie");
+  assert.equal(result?.ratings?.classic101?.rating, 1000);
+  assert.equal(result?.ratings?.classic101?.titleCode, "rookie");
 });

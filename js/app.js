@@ -247,8 +247,8 @@ function fmLog(tag, data) {
 const DOMINO_CLIENT_BUILD = {
     gitCommit: '669bbdc',
     builtAt: new Date().toISOString(),
-    socialRealtimeDebugVersion: 'browser-production-trace-v1',
-    cacheFixVersion: 'domino-v35'
+    socialRealtimeDebugVersion: 'browser-production-trace-v20-fadc306',
+    cacheFixVersion: 'domino-v59'
 };
 
 if (typeof window !== 'undefined') {
@@ -666,6 +666,7 @@ class DominoGame {
             error: ''
         };
         this.leaderboardScope = 'overall';
+        this.leaderboardGameMode = this.getSelectedGameMode();
         this.playerProfileState = null;
         this.socialCenterUnreadCount = 0;
         this.dailyBonusState = {
@@ -947,6 +948,19 @@ class DominoGame {
         if (openLeaderboardBtn) openLeaderboardBtn.addEventListener('click', async () => {
             await this.openLeaderboardModal();
         });
+        const leaderboardModal = document.getElementById('leaderboard-modal');
+        if (leaderboardModal && leaderboardModal.dataset.modeBound !== '1') {
+            leaderboardModal.dataset.modeBound = '1';
+            leaderboardModal.addEventListener('click', (event) => {
+                const button = event.target?.closest?.('[data-leaderboard-mode]');
+                if (!button) return;
+                const nextMode = String(button.dataset.leaderboardMode || '').trim();
+                if (!nextMode) return;
+                this.setPreferredStartMode(nextMode);
+                this.leaderboardGameMode = nextMode === 'classic101' ? 'classic101' : 'telefon';
+                void this.loadLeaderboard(this.leaderboardScope || 'overall', this.leaderboardGameMode);
+            });
+        }
         document.querySelectorAll('[data-leaderboard-scope]').forEach((button) => {
             button.addEventListener('click', () => {
                 void this.loadLeaderboard(button.dataset.leaderboardScope || 'overall');
@@ -1522,7 +1536,8 @@ class DominoGame {
         if (modal.parentElement !== document.body) document.body.appendChild(modal);
         modal.style.zIndex = '';
         modal.classList.add('active');
-        await this.loadLeaderboard(this.leaderboardScope || 'overall');
+        this.leaderboardGameMode = this.getSelectedGameMode();
+        await this.loadLeaderboard(this.leaderboardScope || 'overall', this.leaderboardGameMode);
     }
 
     closeLeaderboardModal() {
@@ -8299,11 +8314,119 @@ class DominoGame {
         document.getElementById('account-avatar-modal')?.classList.remove('active');
     }
 
-    async loadLeaderboard(scope = this.leaderboardScope || 'overall') {
+    getModeLabel(mode = this.getSelectedGameMode()) {
+        const normalizedMode = mode === 'classic101' ? 'classic101' : 'telefon';
+        return this.t(normalizedMode === 'classic101' ? 'leaderboard-mode-101' : 'leaderboard-mode-telefon');
+    }
+
+    getProfileModeStats(profile, mode = 'telefon') {
+        const normalizedMode = mode === 'classic101' ? 'classic101' : 'telefon';
+        const bucket = profile?.ratings?.[normalizedMode]
+            || (normalizedMode === 'telefon' ? profile?.stats : null)
+            || {};
+        return {
+            rating: Number(bucket.rating ?? 1000),
+            points: Number(bucket.points ?? 0),
+            wins: Number(bucket.wins ?? 0),
+            losses: Number(bucket.losses ?? 0),
+            draws: Number(bucket.draws ?? 0),
+            matchesPlayed: Number(bucket.matchesPlayed ?? 0),
+            currentStreak: Number(bucket.currentStreak ?? 0),
+            bestStreak: Number(bucket.bestStreak ?? 0),
+            titleCode: String(bucket.titleCode || 'rookie').trim() || 'rookie'
+        };
+    }
+
+    syncLeaderboardModeUI(mode = this.leaderboardGameMode || this.getSelectedGameMode()) {
+        const normalizedMode = mode === 'classic101' ? 'classic101' : 'telefon';
+        const modal = document.getElementById('leaderboard-modal');
+        if (!modal) return;
+        const modeRow = modal.querySelector('#leaderboard-mode-row');
+        if (modeRow) {
+            modeRow.classList.toggle('is-hidden', false);
+            modeRow.querySelectorAll('[data-leaderboard-mode]').forEach((button) => {
+                const buttonMode = String(button.dataset.leaderboardMode || '').trim();
+                const active = buttonMode === normalizedMode;
+                button.classList.toggle('is-active', active);
+                button.setAttribute('aria-pressed', String(active));
+            });
+        }
+        const titleButton = document.getElementById('open-leaderboard-btn');
+        if (titleButton) {
+            const label = `${this.t('leaderboard-title')} · ${this.getModeLabel(normalizedMode)}`;
+            titleButton.textContent = label;
+            titleButton.setAttribute('aria-label', label);
+            titleButton.title = label;
+        }
+    }
+
+    ensureAccountModeStats() {
+        const profilePanel = document.getElementById('account-profile-panel');
+        const statsGrid = document.getElementById('account-stats-grid');
+        if (!profilePanel || !statsGrid) return null;
+        let container = document.getElementById('account-mode-stats');
+        if (!container) {
+            container = document.createElement('div');
+            container.className = 'account-mode-stats';
+            container.id = 'account-mode-stats';
+            profilePanel.insertBefore(container, statsGrid.nextElementSibling || null);
+        }
+        return container;
+    }
+
+    syncAccountModeStats(profile = this.accountProfile) {
+        const container = this.ensureAccountModeStats();
+        if (!container) return;
+        const modeItems = [
+            { mode: 'telefon', labelKey: 'leaderboard-mode-telefon' },
+            { mode: 'classic101', labelKey: 'leaderboard-mode-101' }
+        ];
+        container.innerHTML = '';
+        modeItems.forEach(({ mode, labelKey }) => {
+            const stats = this.getProfileModeStats(profile, mode);
+            const card = document.createElement('div');
+            card.className = 'account-stat-card account-mode-stat-card';
+            const label = document.createElement('span');
+            label.textContent = this.t(labelKey);
+            const rating = document.createElement('strong');
+            rating.textContent = String(stats.rating ?? 1000);
+            const meta = document.createElement('div');
+            meta.className = 'account-mode-stat-meta';
+            meta.textContent = `${this.t(`title-${stats.titleCode}`)} · ${this.t('leaderboard-games')}: ${String(stats.matchesPlayed ?? 0)} · ${this.t('leaderboard-wins')}: ${String(stats.wins ?? 0)} · ${this.t('leaderboard-losses')}: ${String(stats.losses ?? 0)}`;
+            card.appendChild(label);
+            card.appendChild(rating);
+            card.appendChild(meta);
+            container.appendChild(card);
+        });
+    }
+
+    async loadLeaderboard(scope = this.leaderboardScope || 'overall', gameMode = this.leaderboardGameMode || this.getSelectedGameMode()) {
         const list = document.getElementById('leaderboard-list');
         const tabs = document.getElementById('leaderboard-tabs');
+        let modeRow = document.getElementById('leaderboard-mode-row');
         if (!list) return;
+        if (!modeRow && tabs?.parentElement) {
+            modeRow = document.createElement('div');
+            modeRow.className = 'leaderboard-mode-row';
+            modeRow.id = 'leaderboard-mode-row';
+            modeRow.innerHTML = `
+                <div class="mode-switcher leaderboard-mode-switcher" role="tablist" aria-label="${this.t('leaderboard-title')}">
+                    <button type="button" class="mode-switcher-segment" data-leaderboard-mode="telefon" data-i18n="leaderboard-mode-telefon">${this.t('leaderboard-mode-telefon')}</button>
+                    <button type="button" class="mode-switcher-segment" data-leaderboard-mode="classic101" data-i18n="leaderboard-mode-101">${this.t('leaderboard-mode-101')}</button>
+                </div>
+            `;
+            tabs.parentElement.insertBefore(modeRow, tabs);
+        }
         this.leaderboardScope = scope === 'weekly' || scope === 'friends' ? scope : 'overall';
+        this.leaderboardGameMode = gameMode === 'classic101' ? 'classic101' : 'telefon';
+        this.syncLeaderboardModeUI(this.leaderboardGameMode);
+        if (modeRow) {
+            modeRow.querySelectorAll('[data-leaderboard-mode]').forEach((button) => {
+                const isActive = button.dataset.leaderboardMode === this.leaderboardGameMode;
+                button.classList.toggle('is-active', isActive);
+                button.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+            });
+        }
         if (tabs) {
             tabs.querySelectorAll('[data-leaderboard-scope]').forEach((button) => {
                 const isActive = button.dataset.leaderboardScope === this.leaderboardScope;
@@ -8317,7 +8440,7 @@ class DominoGame {
                 this.setSummaryMessage(list, this.t('friends-login-required'));
                 return;
             }
-            const rows = await this.account.getLeaderboard(20, this.leaderboardScope);
+            const rows = await this.account.getLeaderboard(20, this.leaderboardScope, this.leaderboardGameMode);
             this.accountOnline = true;
             if (!rows.length) {
                 this.setSummaryMessage(list, this.t('leaderboard-empty'));
@@ -9717,16 +9840,21 @@ class DominoGame {
             ? this.t('account-guest-profile')
             : this.t('account-guest-profile');
         if (title) title.textContent = this.t('account-profile-title');
-        if (ratingValue) ratingValue.textContent = String(profile?.rating ?? 1000);
-        if (winsValue) winsValue.textContent = String(profile?.wins ?? 0);
-        if (matchesValue) matchesValue.textContent = String(profile?.matchesPlayed ?? 0);
+        const activeMode = this.getSelectedGameMode();
+        const activeStats = this.getProfileModeStats(profile, activeMode);
+        if (ratingValue) ratingValue.textContent = String(activeStats.rating ?? profile?.rating ?? 1000);
+        if (winsValue) winsValue.textContent = String(activeStats.wins ?? profile?.wins ?? 0);
+        if (matchesValue) matchesValue.textContent = String(activeStats.matchesPlayed ?? profile?.matchesPlayed ?? 0);
         if (coinsValue) coinsValue.textContent = String(details?.wallet?.balance ?? profile?.coins ?? profile?.wallet?.balance ?? 0);
         const titleCard = document.getElementById('account-title-value')?.closest?.('.account-stat-card');
         if (titleCard) titleCard.classList.add('is-hidden');
+        this.syncAccountModeStats(profile);
         if (!profile) {
+            document.getElementById('account-mode-stats')?.classList.add('is-hidden');
             if (historyList) this.setSummaryMessage(historyList, this.t('account-history-empty'));
             return;
         }
+        document.getElementById('account-mode-stats')?.classList.remove('is-hidden');
         if (historyList) {
             const recentMatches = Array.isArray(details?.recentMatches) ? details.recentMatches : [];
             if (!recentMatches.length) {
@@ -16958,6 +17086,7 @@ class DominoGame {
         const nextMode = mode === 'classic101' ? 'classic101' : 'telefon';
         if (nextMode === this.preferredStartMode || this.startModeFlipLocked) return;
         this.preferredStartMode = nextMode;
+        this.leaderboardGameMode = nextMode;
         if (persist) this.savePreferredStartMode(nextMode);
         this.startModeFlipLocked = true;
         if (this.startModeFlipUnlockTimer) {
@@ -16983,6 +17112,13 @@ class DominoGame {
             this.startModeFlipUnlockTimer = window.setTimeout(releaseLock, 1100);
         }
         this.syncStartModeUI();
+        if (document.getElementById('account-modal')?.classList.contains('active')) {
+            this.renderAccountModal();
+        }
+        if (document.getElementById('leaderboard-modal')?.classList.contains('active')) {
+            this.syncLeaderboardModeUI(nextMode);
+            void this.loadLeaderboard(this.leaderboardScope || 'overall', nextMode);
+        }
     }
 
     syncStartModeUI() {
@@ -16998,6 +17134,7 @@ class DominoGame {
         const title = this.t(modeTitleKey);
         const subtitle = this.t(modeSubtitleKey);
         const soonLabel = ENABLE_MODE_101 ? '' : this.t('mode-soon');
+        const leaderboardButtonLabel = `${this.t('leaderboard-title')} · ${this.getModeLabel(mode)}`;
 
         document.documentElement.dataset.dominoStartMode = mode;
         this.onlineRoomFilters.gameMode = mode;
@@ -17038,6 +17175,13 @@ class DominoGame {
             node.textContent = showSoon ? soonLabel : '';
             node.classList.toggle('is-hidden', !showSoon);
         });
+
+        const openLeaderboardBtn = document.getElementById('open-leaderboard-btn');
+        if (openLeaderboardBtn) {
+            openLeaderboardBtn.textContent = leaderboardButtonLabel;
+            openLeaderboardBtn.title = leaderboardButtonLabel;
+            openLeaderboardBtn.setAttribute('aria-label', leaderboardButtonLabel);
+        }
 
         const startScreenHero = document.getElementById('start-mode-hero');
         if (startScreenHero) {
