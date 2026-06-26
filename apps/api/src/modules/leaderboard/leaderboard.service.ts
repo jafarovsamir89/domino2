@@ -105,43 +105,49 @@ export class LeaderboardService {
 
   private async getOverallLeaderboard(gameMode = "telefon", limit = 10) {
     const normalizedGameMode = normalizeRatingGameMode(gameMode);
-    const players = await this.prisma.player.findMany({
+    const rows = await this.prisma.playerModeStats.findMany({
+      where: {
+        gameMode: normalizedGameMode
+      },
+      orderBy: [
+        { rating: "desc" },
+        { matchesPlayed: "desc" },
+        { wins: "desc" },
+        { losses: "asc" },
+        { playerId: "asc" }
+      ],
+      take: this.normalizeLimit(limit),
       select: {
-        id: true,
-        displayName: true,
-        modeStats: {
-          where: {
-            gameMode: normalizedGameMode
-          },
-          take: 1
+        playerId: true,
+        rating: true,
+        points: true,
+        wins: true,
+        losses: true,
+        draws: true,
+        matchesPlayed: true,
+        player: {
+          select: {
+            displayName: true
+          }
         }
       }
     });
 
-    const rows = players.map((player) => {
-      const row = player.modeStats?.[0] || null;
-      return this.normalizeModeStatsRow({
-        playerId: player.id,
-        displayName: player.displayName,
-        rating: row?.rating ?? 1000,
-        points: row?.points ?? 0,
-        wins: row?.wins ?? 0,
-        losses: row?.losses ?? 0,
-        draws: row?.draws ?? 0,
-        matchesPlayed: row?.matchesPlayed ?? 0
-      }, player.displayName);
-    });
-
-    return rows
-      .sort((a, b) => {
-        if (b.rating !== a.rating) return b.rating - a.rating;
-        if (b.matchesPlayed !== a.matchesPlayed) return b.matchesPlayed - a.matchesPlayed;
-        if (b.wins !== a.wins) return b.wins - a.wins;
-        if (a.losses !== b.losses) return a.losses - b.losses;
-        return a.displayName.localeCompare(b.displayName);
-      })
-      .slice(0, this.normalizeLimit(limit))
-      .map((row, index) => this.summarizeRow(row, index + 1));
+    return rows.map((row, index) =>
+      this.summarizeRow(
+        this.normalizeModeStatsRow({
+          playerId: row.playerId,
+          displayName: row.player?.displayName ?? "Player",
+          rating: row.rating ?? 1000,
+          points: row.points ?? 0,
+          wins: row.wins ?? 0,
+          losses: row.losses ?? 0,
+          draws: row.draws ?? 0,
+          matchesPlayed: row.matchesPlayed ?? 0
+        }, row.player?.displayName ?? "Player"),
+        index + 1
+      )
+    );
   }
 
   private async getWeeklyLeaderboard(gameMode = "telefon", limit = 10) {

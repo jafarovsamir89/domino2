@@ -377,9 +377,12 @@ test("classic101 matches update mode stats only and keep legacy telefon stats un
 
   assert.ok(result);
   assert.equal(statsByPlayerId.size, 0);
-  assert.equal(modeStatsByKey.get("player:1:classic101")?.matchesPlayed, 2);
-  assert.equal(modeStatsByKey.get("player:1:classic101")?.wins, 2);
-  assert.equal(modeStatsByKey.get("player:2:classic101")?.losses, 2);
+  assert.equal(modeStatsByKey.get("player:1:classic101")?.matchesPlayed, 1);
+  assert.equal(modeStatsByKey.get("player:1:classic101")?.wins, 1);
+  assert.equal(modeStatsByKey.get("player:1:classic101")?.currentStreak, 1);
+  assert.equal(modeStatsByKey.get("player:2:classic101")?.losses, 1);
+  assert.equal(modeStatsByKey.get("player:2:classic101")?.matchesPlayed, 1);
+  assert.equal(modeStatsByKey.get("player:2:classic101")?.currentStreak, 0);
   assert.equal(modeStatsByKey.get("player:1:classic101")?.rating, 1039);
   assert.equal(modeStatsByKey.get("player:2:classic101")?.rating, 961);
   assert.equal(modeStatsByKey.get("player:1:classic101")?.gameMode, "classic101");

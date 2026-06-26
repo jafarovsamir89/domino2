@@ -6,43 +6,33 @@ const { LeaderboardService } = await import("../src/modules/leaderboard/leaderbo
 test("LeaderboardService uses mode stats ordering and defaults to telefon", async () => {
   let captured: any = null;
   const prismaMock = {
-    player: {
+    playerModeStats: {
       findMany: async (query: any) => {
         captured = query;
         return [
           {
-            id: "p1",
-            displayName: "Alpha",
-            modeStats: [
-              {
-                playerId: "p1",
-                rating: 1500,
-                points: 100,
-                wins: 15,
-                losses: 1,
-                draws: 0,
-                matchesPlayed: 16,
-                currentStreak: 2,
-                bestStreak: 5
-              }
-            ]
+            playerId: "p1",
+            rating: 1500,
+            points: 100,
+            wins: 15,
+            losses: 1,
+            draws: 0,
+            matchesPlayed: 16,
+            currentStreak: 2,
+            bestStreak: 5,
+            player: { displayName: "Alpha" }
           },
           {
-            id: "p2",
-            displayName: "Bravo",
-            modeStats: [
-              {
-                playerId: "p2",
-                rating: 1400,
-                points: 80,
-                wins: 12,
-                losses: 2,
-                draws: 1,
-                matchesPlayed: 15,
-                currentStreak: 1,
-                bestStreak: 4
-              }
-            ]
+            playerId: "p2",
+            rating: 1400,
+            points: 80,
+            wins: 12,
+            losses: 2,
+            draws: 1,
+            matchesPlayed: 15,
+            currentStreak: 1,
+            bestStreak: 4,
+            player: { displayName: "Bravo" }
           }
         ];
       }
@@ -53,7 +43,16 @@ test("LeaderboardService uses mode stats ordering and defaults to telefon", asyn
   const items = await service.getLeaderboard({} as any, "overall", undefined as any, 5);
 
   assert.ok(captured);
-  assert.equal(captured.select.modeStats.where.gameMode, "telefon");
+  assert.equal(captured.where.gameMode, "telefon");
+  assert.deepEqual(captured.orderBy, [
+    { rating: "desc" },
+    { matchesPlayed: "desc" },
+    { wins: "desc" },
+    { losses: "asc" },
+    { playerId: "asc" }
+  ]);
+  assert.equal(captured.take, 5);
+  assert.equal(captured.select.player.select.displayName, true);
   assert.equal(items[0].id, "p1");
   assert.equal(items[0].rank, 1);
   assert.equal(items[0].titleCode, "platinum");

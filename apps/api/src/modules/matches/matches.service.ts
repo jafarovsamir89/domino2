@@ -436,10 +436,10 @@ export class MatchesService {
           if (classic101DryWin) {
             nextRating = applyOnce(nextRating, nextMatchesPlayed, actualScore);
             nextRating = normalizeEloRating(nextRating);
-            nextWins = entry.player.wins + (isWinner ? 2 : 0);
-            nextLosses = entry.player.losses + (isLoser ? 2 : 0);
-            nextMatchesPlayed = entry.player.matchesPlayed + 2;
-            nextCurrentStreak = isWinner ? entry.player.currentStreak + 2 : 0;
+            nextWins = entry.player.wins + (isWinner ? 1 : 0);
+            nextLosses = entry.player.losses + (isLoser ? 1 : 0);
+            nextMatchesPlayed = entry.player.matchesPlayed + 1;
+            nextCurrentStreak = isWinner ? entry.player.currentStreak + 1 : 0;
             nextBestStreak = Math.max(entry.player.bestStreak, nextCurrentStreak);
           }
 
