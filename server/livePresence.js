@@ -390,6 +390,7 @@ async function getLiveSummary() {
   const rooms = Array.from(roomsMap.values())
     .map((room) => ({
       ...room,
+      gameMode: String(room.gameMode || "telefon").trim().toLowerCase() || "telefon",
       openSeats: Math.max(0, Number(room.humanSeats || room.totalPlayers || 0) - room.connectedPlayers),
       joinable: !room.gameActive && Math.max(0, Number(room.humanSeats || room.totalPlayers || 0) - room.connectedPlayers) > 0,
       roomVisibility: room.roomVisibility || "closed",

@@ -247,8 +247,8 @@ function fmLog(tag, data) {
 const DOMINO_CLIENT_BUILD = {
     gitCommit: '669bbdc',
     builtAt: new Date().toISOString(),
-    socialRealtimeDebugVersion: 'browser-production-trace-v21-59e7b45',
-    cacheFixVersion: 'domino-v60'
+    socialRealtimeDebugVersion: 'browser-production-trace-v22-d2fa2fc',
+    cacheFixVersion: 'domino-v61'
 };
 
 if (typeof window !== 'undefined') {
@@ -13765,6 +13765,7 @@ class DominoGame {
         rooms.forEach((room) => {
             const card = document.createElement('div');
             card.className = 'open-room-card';
+            const roomGameMode = String(room?.gameMode || room?.mode || 'telefon').trim().toLowerCase() || 'telefon';
 
             const infoContainer = document.createElement('div');
             infoContainer.className = 'open-room-card-info';
@@ -13791,6 +13792,12 @@ class DominoGame {
             modeSpan.className = 'open-room-mode';
             modeSpan.textContent = modeLabel;
             topRow.appendChild(modeSpan);
+
+            const modeBadgeRow = document.createElement('div');
+            modeBadgeRow.className = 'open-room-badges';
+            const gameModeBadge = this.createRoomBadge('mode', this.getModeLabel(roomGameMode));
+            gameModeBadge.classList.add('open-room-mode-badge', `open-room-mode-badge-${roomGameMode}`);
+            modeBadgeRow.appendChild(gameModeBadge);
 
             const bottomRow = document.createElement('div');
             bottomRow.className = 'open-room-card-bottom';
@@ -13828,6 +13835,7 @@ class DominoGame {
             bottomRow.appendChild(stakeSpan);
 
             infoContainer.appendChild(topRow);
+            infoContainer.appendChild(modeBadgeRow);
             infoContainer.appendChild(bottomRow);
 
             const joinBtn = document.createElement('button');

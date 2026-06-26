@@ -1927,6 +1927,26 @@ html[data-domino-start-mode="classic101"] #start-screen .start-hero-stage {
     gap: 8px;
 }
 
+.open-room-mode-badge {
+    min-height: 30px;
+    padding: 5px 10px;
+    font-size: 0.7rem;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+}
+
+.open-room-mode-badge-telefon {
+    background: linear-gradient(135deg, rgba(43, 186, 203, 0.18), rgba(19, 122, 136, 0.18));
+    border-color: rgba(43, 186, 203, 0.3);
+    color: #6adce8;
+}
+
+.open-room-mode-badge-classic101 {
+    background: linear-gradient(135deg, rgba(110, 175, 72, 0.2), rgba(240, 192, 64, 0.18));
+    border-color: rgba(240, 192, 64, 0.3);
+    color: #f0c040;
+}
+
 .room-badge {
     display: inline-flex;
     align-items: center;

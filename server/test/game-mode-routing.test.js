@@ -62,4 +62,7 @@ test("open rooms are filtered by gameMode without mixing classic101 and telefon"
     assert.equal(classicRooms.items.some((item) => item.roomId === "room-telefon"), false);
     assert.equal(allRooms.items.some((item) => item.roomId === "room-telefon"), true);
     assert.equal(allRooms.items.some((item) => item.roomId === "room-classic"), true);
+    assert.equal(telefonRooms.items.every((item) => item.gameMode === "telefon"), true);
+    assert.equal(classicRooms.items.every((item) => item.gameMode === "classic101"), true);
+    assert.equal(allRooms.items.every((item) => item.gameMode === "telefon" || item.gameMode === "classic101"), true);
 });
