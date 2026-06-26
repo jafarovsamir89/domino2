@@ -18,6 +18,7 @@ function buildRestoredRoomMetadata({ room, data }) {
         lastReservedMatchRound: data.lastReservedMatchRound ?? room.lastReservedMatchRound,
         matchRecorded: data.matchRecorded ?? room.matchRecorded,
         forfeitSettlementMade: data.forfeitSettlementMade ?? room.forfeitSettlementMade,
+        pendingEconomySettlementState: data.pendingEconomySettlementState ?? room.pendingEconomySettlementState ?? null,
         lastRoundEconomySummary: data.lastRoundEconomySummary ?? room.lastRoundEconomySummary,
         lastDealWinner: data.lastDealWinner ?? room.lastDealWinner,
         botIds: Array.isArray(data.botIds) ? data.botIds : (Array.isArray(room.botIds) ? room.botIds : []),

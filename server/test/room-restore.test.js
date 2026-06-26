@@ -22,6 +22,17 @@ test("buildRestoredRoomMetadata falls back to room values when data fields are m
         lastReservedMatchRound: 3,
         matchRecorded: true,
         forfeitSettlementMade: false,
+        pendingEconomySettlementState: {
+            kind: "round",
+            roomId: "room-1",
+            matchId: "match-1",
+            stakeKey: "stake_200",
+            winnerIndex: 1,
+            matchOutcome: "normal",
+            winnerUserIds: ["u2"],
+            retryCount: 2,
+            nextRetryAt: 123456789
+        },
         lastRoundEconomySummary: { ok: true },
         lastDealWinner: "session-1",
         botIds: ["bot-a"],
@@ -53,6 +64,7 @@ test("buildRestoredRoomMetadata falls back to room values when data fields are m
     assert.equal(restored.lastReservedMatchRound, 3);
     assert.equal(restored.matchRecorded, true);
     assert.equal(restored.forfeitSettlementMade, false);
+    assert.deepEqual(restored.pendingEconomySettlementState, room.pendingEconomySettlementState);
     assert.deepEqual(restored.lastRoundEconomySummary, { ok: true });
     assert.equal(restored.lastDealWinner, "session-1");
     assert.deepEqual(restored.botIds, ["bot-a"]);
@@ -77,6 +89,7 @@ test("buildRestoredRoomMetadata falls back to room values when data fields are m
             lastReservedMatchRound: room.lastReservedMatchRound,
             matchRecorded: room.matchRecorded,
             forfeitSettlementMade: room.forfeitSettlementMade,
+            pendingEconomySettlementState: room.pendingEconomySettlementState,
             lastRoundEconomySummary: room.lastRoundEconomySummary,
             lastDealWinner: room.lastDealWinner,
             botIds: room.botIds,

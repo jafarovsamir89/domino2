@@ -1938,17 +1938,31 @@ export class EconomyService {
     }
 
     const resultSummary = await this.prisma.$transaction(async (tx) => {
-      const reservations = await tx.coinMatchStake.findMany({
-        where: {
-          roomId,
-          stakeTableId: stakeTable.id,
-          status: "reserved"
-        },
-        include: {
-          player: true,
-          stakeTable: true
-        }
-      });
+      const lockedReservations = await tx.$queryRaw<Array<{ id: string }>>(Prisma.sql`
+        SELECT "id"
+        FROM "CoinMatchStake"
+        WHERE "roomId" = ${roomId}
+          AND "stakeTableId" = ${stakeTable.id}
+          AND status = 'reserved'::"CoinStakeStatus"
+        FOR UPDATE
+      `);
+      const lockedReservationIds = lockedReservations.map((row) => toCleanString(row.id)).filter(Boolean);
+
+      const reservations = lockedReservationIds.length > 0
+        ? await tx.coinMatchStake.findMany({
+            where: {
+              id: { in: lockedReservationIds }
+            },
+            include: {
+              player: true,
+              stakeTable: true
+            },
+            orderBy: [
+              { reservedAt: "asc" },
+              { id: "asc" }
+            ]
+          })
+        : [];
 
       if (!reservations.length) {
         return {

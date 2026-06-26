@@ -15,6 +15,28 @@ function buildRefundLikeSummary(room) {
     };
 }
 
+function resolveCanonicalEconomyMatchId(room, explicitMatchId = "") {
+    const explicit = String(explicitMatchId || "").trim();
+    if (explicit) {
+        return explicit;
+    }
+
+    const currentRecordId = String(room?.matchRecordId || "").trim();
+    if (currentRecordId) {
+        return currentRecordId;
+    }
+
+    const currentDealMatchId = String(room?.currentDealMatchId || "").trim();
+    if (currentDealMatchId) {
+        room.matchRecordId = currentDealMatchId;
+        return currentDealMatchId;
+    }
+
+    const fallback = `${String(room?.roomId || "room").trim() || "room"}:match:${Date.now().toString(36)}:${Math.random().toString(36).slice(2, 10)}`;
+    room.matchRecordId = fallback;
+    return fallback;
+}
+
 function getResponseContentType(response) {
     return String(response?.headers?.get?.("content-type") || "").toLowerCase();
 }
@@ -129,13 +151,14 @@ async function reserveEconomyStakeForRoom(room) {
     }
 
     try {
+        const matchId = resolveCanonicalEconomyMatchId(room);
         const response = await postReserveEconomyMatch({
             baseUrl: process.env.PLATFORM_API_URL,
             authToken: platformIdentity.authToken,
             body: buildSignedRequestBody("economy.reserve", {
                 roomId: room.roomId,
                 roomCode: room.roomCode,
-                matchId: room.currentDealMatchId,
+                matchId,
                 stakeKey: room.currentStakeKey,
                 participants
             })
@@ -223,7 +246,15 @@ async function reserveEconomyStakeForRoom(room) {
 
 async function settleEconomyRoundForRoom(room, winnerIndex, options = {}) {
     if (room.currentStakeKey === "free") {
-        room.pendingEconomySettlement = Promise.resolve();
+        if (typeof room.resolvePendingEconomySettlement === "function") {
+            room.resolvePendingEconomySettlement();
+        } else {
+            room.pendingEconomySettlement = Promise.resolve();
+        }
+        room.pendingEconomySettlementState = null;
+        if (typeof room.clearEconomySettlementRetryTimer === "function") {
+            room.clearEconomySettlementRetryTimer();
+        }
         room.lastRoundEconomySummary = null;
         return null;
     }
@@ -234,15 +265,19 @@ async function settleEconomyRoundForRoom(room, winnerIndex, options = {}) {
     }
 
     const normalizedMatchOutcome = String(options?.matchOutcome || "normal").trim().toLowerCase() || "normal";
+    const matchId = resolveCanonicalEconomyMatchId(room, options?.matchId);
     const isRefundOutcome = normalizedMatchOutcome === "all_absent" || normalizedMatchOutcome === "draw" || normalizedMatchOutcome === "refund";
+    const providedWinnerUserIds = Array.isArray(options?.winnerUserIds) ? options.winnerUserIds : [];
     const winnerUserIds = isRefundOutcome
         ? []
-        : buildWinnerUserIds({
-            playerOrder: room.state.playerOrder,
-            identityBySessionId: room.identityBySessionId,
-            isTeamMode: room.state.isTeamMode,
-            winnerIndex
-        });
+        : providedWinnerUserIds.length
+            ? providedWinnerUserIds.map((value) => String(value || "").trim()).filter(Boolean)
+            : buildWinnerUserIds({
+                playerOrder: room.state.playerOrder,
+                identityBySessionId: room.identityBySessionId,
+                isTeamMode: room.state.isTeamMode,
+                winnerIndex
+            });
 
     try {
         const response = await postSettleEconomyMatch({
@@ -250,7 +285,7 @@ async function settleEconomyRoundForRoom(room, winnerIndex, options = {}) {
             authToken: platformIdentity.authToken,
             body: buildSignedRequestBody("economy.settle", {
                 roomId: room.roomId,
-                matchId: room.currentDealMatchId,
+                matchId,
                 stakeKey: room.currentDealStakeKey,
                 result: winnerUserIds.length ? "win" : "refund",
                 winnerUserIds
@@ -285,17 +320,44 @@ async function settleEconomyRoundForRoom(room, winnerIndex, options = {}) {
         room.currentDealBankAmount = 0;
         room.currentDealStakeAmount = 0;
         room.currentDealStakeKey = room.currentStakeKey;
-        room.pendingEconomySettlement = Promise.resolve();
+        if (typeof room.resolvePendingEconomySettlement === "function") {
+            room.resolvePendingEconomySettlement();
+        } else {
+            room.pendingEconomySettlement = Promise.resolve();
+        }
+        room.pendingEconomySettlementState = null;
+        if (typeof room.clearEconomySettlementRetryTimer === "function") {
+            room.clearEconomySettlementRetryTimer();
+        }
         room.lastRoundEconomySummary = summary;
         return summary;
     } catch (error) {
         console.warn("[ROOM] Failed to settle round stake:", error);
+        room.pendingEconomySettlementState = {
+            kind: "round",
+            roomId: room.roomId,
+            matchId,
+            stakeKey: room.currentDealStakeKey,
+            winnerIndex: Number.isInteger(Number(winnerIndex)) ? Number(winnerIndex) : 0,
+            matchOutcome: normalizedMatchOutcome,
+            winnerUserIds,
+            retryCount: Number(room.pendingEconomySettlementState?.retryCount || 0) + 1,
+            nextRetryAt: Date.now() + 5000
+        };
+        if (typeof room.beginPendingEconomySettlement === "function") {
+            room.beginPendingEconomySettlement();
+        } else {
+            room.pendingEconomySettlement = Promise.resolve();
+        }
+        if (typeof room.scheduleEconomySettlementRetry === "function") {
+            room.scheduleEconomySettlementRetry();
+        }
         room.lastRoundEconomySummary = buildRefundLikeSummary(room);
         return room.lastRoundEconomySummary;
     }
 }
 
-async function settleForfeitStakeForRoom(room, leavingSessionId) {
+async function settleForfeitStakeForRoom(room, leavingSessionId, options = {}) {
     if (room.forfeitSettlementMade || room.currentDealStakeKey === "free") {
         return false;
     }
@@ -311,13 +373,17 @@ async function settleForfeitStakeForRoom(room, leavingSessionId) {
         return false;
     }
 
-    const winnerUserIds = buildForfeitWinnerUserIds({
-        playerOrder: room.state.playerOrder,
-        identityBySessionId: room.identityBySessionId,
-        isTeamMode: room.state.isTeamMode,
-        leavingSessionId,
-        leavingIndex
-    });
+    const providedWinnerUserIds = Array.isArray(options?.winnerUserIds) ? options.winnerUserIds : [];
+    const winnerUserIds = providedWinnerUserIds.length
+        ? providedWinnerUserIds.map((value) => String(value || "").trim()).filter(Boolean)
+        : buildForfeitWinnerUserIds({
+            playerOrder: room.state.playerOrder,
+            identityBySessionId: room.identityBySessionId,
+            isTeamMode: room.state.isTeamMode,
+            leavingSessionId,
+            leavingIndex
+        });
+    const matchId = resolveCanonicalEconomyMatchId(room, options?.matchId);
 
     try {
         const response = await postSettleEconomyMatch({
@@ -325,7 +391,7 @@ async function settleForfeitStakeForRoom(room, leavingSessionId) {
             authToken: platformIdentity.authToken,
             body: buildSignedRequestBody("economy.settle", {
                 roomId: room.roomId,
-                matchId: room.currentDealMatchId,
+                matchId,
                 stakeKey: room.currentDealStakeKey,
                 result: winnerUserIds.length ? "loss" : "refund",
                 winnerUserIds
@@ -347,9 +413,36 @@ async function settleForfeitStakeForRoom(room, leavingSessionId) {
 
         const summary = economyResponse.json;
         room.forfeitSettlementMade = true;
+        room.pendingEconomySettlementState = null;
+        if (typeof room.resolvePendingEconomySettlement === "function") {
+            room.resolvePendingEconomySettlement();
+        } else {
+            room.pendingEconomySettlement = Promise.resolve();
+        }
+        if (typeof room.clearEconomySettlementRetryTimer === "function") {
+            room.clearEconomySettlementRetryTimer();
+        }
         return summary;
     } catch (error) {
         console.warn("[ROOM] Failed to settle forfeit stake:", error);
+        room.pendingEconomySettlementState = {
+            kind: "forfeit",
+            roomId: room.roomId,
+            matchId,
+            stakeKey: room.currentDealStakeKey,
+            leavingSessionId,
+            winnerUserIds,
+            retryCount: Number(room.pendingEconomySettlementState?.retryCount || 0) + 1,
+            nextRetryAt: Date.now() + 5000
+        };
+        if (typeof room.beginPendingEconomySettlement === "function") {
+            room.beginPendingEconomySettlement();
+        } else {
+            room.pendingEconomySettlement = Promise.resolve();
+        }
+        if (typeof room.scheduleEconomySettlementRetry === "function") {
+            room.scheduleEconomySettlementRetry();
+        }
         return false;
     }
 }

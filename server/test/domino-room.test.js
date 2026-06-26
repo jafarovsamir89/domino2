@@ -1527,6 +1527,16 @@ test("classic101 custom snapshots round-trip matchState and board flags", async 
     sourceRoom.hands = [[new Tile(6, 6), new Tile(2, 4)], [new Tile(5, 5), new Tile(0, 6)]];
     sourceRoom.boneyard = [new Tile(3, 3), new Tile(4, 4)];
     sourceRoom.playerMissingSuits = [new Set(), new Set()];
+    sourceRoom.pendingEconomySettlementState = {
+        kind: "round",
+        roomId: "room-101",
+        matchId: "room-101:match:abc",
+        stakeKey: "stake_200",
+        winnerIndex: 1,
+        matchOutcome: "normal",
+        retryCount: 2,
+        nextRetryAt: Date.now() + 5000
+    };
     sourceRoom.identityBySessionId = new Map();
     sourceRoom.boardStartAxis = "horizontal";
     sourceRoom.state.gameMode = "classic101";
@@ -1539,6 +1549,7 @@ test("classic101 custom snapshots round-trip matchState and board flags", async 
     assert.equal(snapshot.matchStateJson, JSON.stringify(sourceRoom.matchState));
     assert.equal(snapshot.state.matchStateJson, JSON.stringify(sourceRoom.matchState));
     assert.equal(snapshot.state.gameMode, "classic101");
+    assert.deepEqual(snapshot.pendingEconomySettlementState, sourceRoom.pendingEconomySettlementState);
 
     const restoredRoom = Object.create(DominoRoom.prototype);
     Object.defineProperty(restoredRoom, "roomId", { value: "room-101", writable: true, configurable: true });
@@ -1572,6 +1583,9 @@ test("classic101 custom snapshots round-trip matchState and board flags", async 
     restoredRoom.ruleset = restoredRoom.getActiveRuleset?.() || null;
     restoredRoom.ensureBotPlayers = () => {};
     restoredRoom.clearTurnTimer = () => {};
+    restoredRoom.scheduleEconomySettlementRetry = () => {
+        restoredRoom.pendingRetryScheduled = true;
+    };
     restoredRoom.applyCustomStateSnapshot(snapshot);
 
     assert.equal(restoredRoom.gameMode, "classic101");
@@ -1587,6 +1601,8 @@ test("classic101 custom snapshots round-trip matchState and board flags", async 
     assert.equal(restoredRoom.internalBoard.telephoneEnabled, false);
     assert.equal(restoredRoom.internalBoard.scoringEnabled, false);
     assert.equal(restoredRoom.internalBoard.startAxis, "horizontal");
+    assert.deepEqual(restoredRoom.pendingEconomySettlementState, snapshot.pendingEconomySettlementState);
+    assert.equal(restoredRoom.pendingRetryScheduled, true);
 
     const takeoverSourceRoom = Object.create(DominoRoom.prototype);
     Object.defineProperty(takeoverSourceRoom, "roomId", { value: "room-takeover", writable: true, configurable: true });

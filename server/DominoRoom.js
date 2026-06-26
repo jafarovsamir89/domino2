@@ -27,6 +27,7 @@ const TIMEOUT_CONTINUE_MS = 30000;
 const BOT_THINK_DELAY_MS = 1500;
 const LAST_MOVE_REVEAL_DELAY_MS = 1200;
 const DEAL_END_MODAL_MS = 5000;
+const ECONOMY_SETTLEMENT_RETRY_MS = 5000;
 const RECONNECT_GRACE_MS = 120000; // 2 minutes
 const AUTO_START_DELAY_MS = 500;
 const CUSTOM_STATE_TTL = 86400;
@@ -224,6 +225,9 @@ class DominoRoom extends Room {
         this.matchRecordInFlight = false;
         this.matchRecordRetryTimer = null;
         this.pendingEconomySettlement = Promise.resolve();
+        this.pendingEconomySettlementResolve = null;
+        this.pendingEconomySettlementState = null;
+        this.economySettlementRetryTimer = null;
         this.gameStarting = false;
         this.botTimer = null;
         this.turnTimer = null;
@@ -2925,6 +2929,68 @@ class DominoRoom extends Room {
         }
     }
 
+    clearEconomySettlementRetryTimer() {
+        if (this.economySettlementRetryTimer) {
+            clearTimeout(this.economySettlementRetryTimer);
+            this.economySettlementRetryTimer = null;
+        }
+    }
+
+    beginPendingEconomySettlement() {
+        if (this.pendingEconomySettlementResolve) {
+            return this.pendingEconomySettlement;
+        }
+        this.pendingEconomySettlement = new Promise((resolve) => {
+            this.pendingEconomySettlementResolve = resolve;
+        });
+        return this.pendingEconomySettlement;
+    }
+
+    resolvePendingEconomySettlement() {
+        if (!this.pendingEconomySettlementResolve) {
+            this.pendingEconomySettlement = Promise.resolve();
+            return;
+        }
+        const resolve = this.pendingEconomySettlementResolve;
+        this.pendingEconomySettlementResolve = null;
+        this.pendingEconomySettlement = Promise.resolve();
+        resolve();
+    }
+
+    scheduleEconomySettlementRetry() {
+        const pending = this.pendingEconomySettlementState;
+        if (!pending || this.economySettlementRetryTimer) {
+            return;
+        }
+        const nextRetryAt = Number(pending.nextRetryAt || 0);
+        const delay = Math.max(0, nextRetryAt ? nextRetryAt - Date.now() : ECONOMY_SETTLEMENT_RETRY_MS);
+        this.economySettlementRetryTimer = setTimeout(() => {
+            this.economySettlementRetryTimer = null;
+            void this.retryPendingEconomySettlement();
+        }, delay);
+        if (this.economySettlementRetryTimer && typeof this.economySettlementRetryTimer.unref === "function") {
+            this.economySettlementRetryTimer.unref();
+        }
+    }
+
+    async retryPendingEconomySettlement() {
+        const pending = this.pendingEconomySettlementState;
+        if (!pending) {
+            return false;
+        }
+        if (pending.kind === "forfeit") {
+            return settleForfeitStakeForRoom(this, pending.leavingSessionId, {
+                matchId: pending.matchId,
+                winnerUserIds: Array.isArray(pending.winnerUserIds) ? pending.winnerUserIds : []
+            });
+        }
+        return settleEconomyRoundForRoom(this, Number(pending.winnerIndex || 0), {
+            matchOutcome: pending.matchOutcome || "normal",
+            matchId: pending.matchId,
+            winnerUserIds: Array.isArray(pending.winnerUserIds) ? pending.winnerUserIds : []
+        });
+    }
+
     scheduleMatchRecordingRetry() {
         if (this.matchRecorded || this.matchRecordRetryTimer || !this.pendingMatchRecording) {
             return;
@@ -3992,6 +4058,7 @@ class DominoRoom extends Room {
             lastReservedMatchRound: this.lastReservedMatchRound,
             matchRecorded: this.matchRecorded,
             forfeitSettlementMade: this.forfeitSettlementMade,
+            pendingEconomySettlementState: this.pendingEconomySettlementState,
             lastRoundEconomySummary: this.lastRoundEconomySummary,
             timeoutForfeitPending: this.timeoutForfeitPending,
             matchRecordId: this.matchRecordId,
@@ -4032,6 +4099,7 @@ class DominoRoom extends Room {
         this.lastReservedMatchRound = restoredMetadata.lastReservedMatchRound;
         this.matchRecorded = restoredMetadata.matchRecorded;
         this.forfeitSettlementMade = restoredMetadata.forfeitSettlementMade;
+        this.pendingEconomySettlementState = restoredMetadata.pendingEconomySettlementState;
         this.gameMode = normalizeGameMode(data.gameMode || data.mode || data.state?.gameMode || data.state?.mode || this.gameMode || this.mode);
         this.mode = this.gameMode;
         this.ruleset = this.getActiveRuleset();
@@ -4059,6 +4127,11 @@ class DominoRoom extends Room {
         this.state.gameMode = this.gameMode;
         this.state.mode = this.gameMode;
         this.syncMatchStateToSchema();
+        if (this.pendingEconomySettlementState) {
+            this.beginPendingEconomySettlement();
+        } else {
+            this.resolvePendingEconomySettlement();
+        }
 
         if (this.timeoutForfeitPending?.expiresAt && Date.now() < Number(this.timeoutForfeitPending.expiresAt)) {
             this.clearTimeoutForfeitTimer();
@@ -4072,6 +4145,12 @@ class DominoRoom extends Room {
             }
         } else {
             this.clearTimeoutForfeitState();
+        }
+
+        if (!this.pendingEconomySettlementState) {
+            this.clearEconomySettlementRetryTimer();
+        } else {
+            this.scheduleEconomySettlementRetry();
         }
 
         if (data.hands) {

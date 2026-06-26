@@ -13,6 +13,7 @@ function createSettleRoom(overrides = {}) {
     return {
         currentStakeKey: "stake_200",
         currentDealMatchId: "match-1",
+        matchRecordId: "match-record-1",
         currentDealStakeKey: "stake_200",
         currentDealStakeAmount: 400,
         currentDealBankAmount: 800,
@@ -20,6 +21,7 @@ function createSettleRoom(overrides = {}) {
         matchRecorded: false,
         forfeitSettlementMade: false,
         pendingEconomySettlement: Promise.resolve("pending"),
+        pendingEconomySettlementState: null,
         lastRoundEconomySummary: { stale: true },
         roomId: "room-1",
         roomCode: "ABCD",
@@ -122,6 +124,7 @@ test("reserveEconomyStakeForRoom updates room fields on success", async () => {
     const room = {
         currentStakeKey: "stake_500",
         currentDealMatchId: "match-1",
+        matchRecordId: "match-record-1",
         currentDealStakeKey: "stake_200",
         currentDealStakeAmount: 0,
         currentDealBankAmount: 0,
@@ -177,6 +180,7 @@ test("reserveEconomyStakeForRoom updates room fields on success", async () => {
         assert.equal(fetchCalls[0].init.headers.Authorization, "Bearer token");
         const body = JSON.parse(fetchCalls[0].init.body);
         assert.equal(body.integrityScope, "economy.reserve");
+        assert.equal(body.matchId, "match-record-1");
         assert.equal(typeof body.proof, "string");
         assert.equal(body.participants[0].teamIndex, null);
         assert.equal(body.participants[1].teamIndex, null);
@@ -208,6 +212,7 @@ test("settleEconomyRoundForRoom forwards authToken to the settle request", async
         assert.equal(fetchCalls[0].init.headers.Authorization, "Bearer token-xyz");
         const body = JSON.parse(fetchCalls[0].init.body);
         assert.equal(body.integrityScope, "economy.settle");
+        assert.equal(body.matchId, "match-record-1");
     } finally {
         global.fetch = originalFetch;
     }
@@ -238,6 +243,7 @@ test("settleForfeitStakeForRoom forwards authToken to the settle request", async
         assert.equal(fetchCalls[0].init.headers.Authorization, "Bearer token-abc");
         const body = JSON.parse(fetchCalls[0].init.body);
         assert.equal(body.integrityScope, "economy.settle");
+        assert.equal(body.matchId, "match-record-1");
     } finally {
         global.fetch = originalFetch;
     }
@@ -564,7 +570,7 @@ test("settleEconomyRoundForRoom updates room fields on success in ffa", async ()
         assert.equal(fetchCalls[0].init.headers["content-type"], "application/json");
         const body = JSON.parse(fetchCalls[0].init.body);
         assert.equal(body.roomId, "room-1");
-        assert.equal(body.matchId, "match-1");
+        assert.equal(body.matchId, "match-record-1");
         assert.equal(body.stakeKey, "stake_200");
         assert.equal(body.result, "win");
         assert.deepEqual(body.winnerUserIds, ["u3"]);
@@ -613,7 +619,7 @@ test("settleEconomyRoundForRoom sends the correct winnerUserIds in team mode", a
         assert.equal(result.result, "win");
         assert.deepEqual(capturedBody.winnerUserIds, ["u2", "u4"]);
         assert.equal(capturedBody.roomId, "room-1");
-        assert.equal(capturedBody.matchId, "match-1");
+        assert.equal(capturedBody.matchId, "match-record-1");
         assert.equal(capturedBody.stakeKey, "stake_500");
         assert.equal(capturedBody.result, "win");
     } finally {
@@ -653,6 +659,44 @@ test("settleEconomyRoundForRoom returns refund summary when response is not ok",
         assert.equal(room.currentDealBankAmount, 500);
         assert.equal(room.currentDealStakeAmount, 250);
         assert.equal(room.currentDealStakeKey, "stake_200");
+    } finally {
+        global.fetch = originalFetch;
+    }
+});
+
+test("settleEconomyRoundForRoom stores a retry state when settlement fails", async () => {
+    const room = createSettleRoom({
+        currentStakeKey: "stake_500",
+        currentDealStakeKey: "stake_200",
+        currentDealStakeAmount: 250,
+        currentDealBankAmount: 500
+    });
+
+    const originalFetch = global.fetch;
+    global.fetch = async () => ({
+        ok: false,
+        status: 503,
+        text: async () => "settle unavailable",
+        json: async () => ({})
+    });
+
+    try {
+        const result = await settleEconomyRoundForRoom(room, 2, { matchOutcome: "normal" });
+        assert.deepEqual(result, {
+            stakeKey: "stake_200",
+            stakeAmount: 250,
+            bankAmount: 500,
+            commission: 0,
+            payout: 0,
+            winners: 0,
+            result: "refund",
+            reservations: []
+        });
+        assert.equal(room.pendingEconomySettlementState?.kind, "round");
+        assert.equal(room.pendingEconomySettlementState?.matchId, "match-record-1");
+        assert.equal(room.pendingEconomySettlementState?.winnerIndex, 2);
+        assert.equal(room.pendingEconomySettlementState?.stakeKey, "stake_200");
+        assert.ok(Array.isArray(room.pendingEconomySettlementState?.winnerUserIds));
     } finally {
         global.fetch = originalFetch;
     }
@@ -809,7 +853,7 @@ test("settleForfeitStakeForRoom updates flags and request payload on success in 
         assert.equal(room.forfeitSettlementMade, true);
         assert.equal(room.matchRecorded, false);
         assert.equal(capturedBody.roomId, "room-1");
-        assert.equal(capturedBody.matchId, "match-1");
+        assert.equal(capturedBody.matchId, "match-record-1");
         assert.equal(capturedBody.stakeKey, "stake_200");
         assert.equal(capturedBody.result, "loss");
         assert.deepEqual(capturedBody.winnerUserIds, ["u1", "u3"]);
@@ -877,6 +921,8 @@ test("settleForfeitStakeForRoom returns false when response is not ok", async ()
         assert.equal(result, false);
         assert.equal(room.forfeitSettlementMade, false);
         assert.equal(room.matchRecorded, false);
+        assert.equal(room.pendingEconomySettlementState?.kind, "forfeit");
+        assert.equal(room.pendingEconomySettlementState?.matchId, "match-record-1");
     } finally {
         global.fetch = originalFetch;
     }
@@ -895,6 +941,8 @@ test("settleForfeitStakeForRoom returns false on transport failure", async () =>
         assert.equal(result, false);
         assert.equal(room.forfeitSettlementMade, false);
         assert.equal(room.matchRecorded, false);
+        assert.equal(room.pendingEconomySettlementState?.kind, "forfeit");
+        assert.equal(room.pendingEconomySettlementState?.matchId, "match-record-1");
     } finally {
         global.fetch = originalFetch;
     }

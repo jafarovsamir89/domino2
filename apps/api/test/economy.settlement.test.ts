@@ -33,6 +33,7 @@ function makeEconomyHarness() {
   const stakes = new Map<string, any>();
   const matchStakes: any[] = [];
   const ledgerEntries: any[] = [];
+  const queryRawCalls: any[] = [];
 
   const prismaMock = {
     coinStakeTable: {
@@ -52,11 +53,17 @@ function makeEconomyHarness() {
         );
         return rows[rows.length - 1] || null;
       },
-      findMany: async ({ where }: any) => matchStakes.filter((row) =>
-        row.roomId === where.roomId &&
-        row.stakeTableId === where.stakeTableId &&
-        row.status === where.status
-      ),
+      findMany: async ({ where }: any) => {
+        const idIn = Array.isArray(where?.id?.in) ? new Set(where.id.in.map((value: any) => String(value))) : null;
+        if (idIn) {
+          return matchStakes.filter((row) => idIn.has(String(row.id)));
+        }
+        return matchStakes.filter((row) =>
+          row.roomId === where.roomId &&
+          row.stakeTableId === where.stakeTableId &&
+          row.status === where.status
+        );
+      },
       upsert: async ({ where, create, update }: any) => {
         const existing = matchStakes.find((row) =>
           row.roomId === where.roomId_playerId_stakeTableId.roomId &&
@@ -83,6 +90,22 @@ function makeEconomyHarness() {
         Object.assign(row, data);
         return row;
       }
+    },
+    $queryRaw: async (query: any) => {
+      queryRawCalls.push(query);
+      const values = Array.isArray(query?.values) ? query.values : [];
+      if (!String(query?.strings?.join?.("") || "").includes('FROM "CoinMatchStake"')) {
+        return [];
+      }
+      const roomId = String(values[0] || "");
+      const stakeTableId = String(values[1] || "");
+      return matchStakes
+        .filter((row) =>
+          row.roomId === roomId &&
+          row.stakeTableId === stakeTableId &&
+          row.status === "reserved"
+        )
+        .map((row) => ({ id: row.id }));
     },
     $transaction: async (fn: any) => fn(prismaMock)
   } as any;
@@ -208,7 +231,7 @@ function makeEconomyHarness() {
     return wallet;
   };
 
-  return { service, wallets, matchStakes, ledgerEntries };
+  return { service, wallets, matchStakes, ledgerEntries, queryRawCalls };
 }
 
 function withProof(payload: Record<string, unknown>, scope: string) {
@@ -220,7 +243,7 @@ function withProof(payload: Record<string, unknown>, scope: string) {
 }
 
 test("online stake reserve and settle keep the bank and payout balanced", async () => {
-  const { service, wallets, matchStakes, ledgerEntries } = makeEconomyHarness();
+  const { service, wallets, matchStakes, ledgerEntries, queryRawCalls } = makeEconomyHarness();
   const token = createGameToken({
     userId: "user-a",
     playerId: "player-a",
@@ -275,6 +298,7 @@ test("online stake reserve and settle keep the bank and payout balanced", async 
   assert.equal(wallets.get("player-a")?.reserved, 0);
   assert.equal(wallets.get("player-b")?.balance, 150);
   assert.equal(wallets.get("player-b")?.reserved, 0);
+  assert.equal(queryRawCalls.some((query) => String(query?.strings?.join?.("") || "").includes('FOR UPDATE')), true);
 });
 
 test("online stake reserve normalizes low balance errors to insufficient_coins", async () => {
