@@ -1588,6 +1588,129 @@ test("classic101 custom snapshots round-trip matchState and board flags", async 
     assert.equal(restoredRoom.internalBoard.scoringEnabled, false);
     assert.equal(restoredRoom.internalBoard.startAxis, "horizontal");
 
+    const takeoverSourceRoom = Object.create(DominoRoom.prototype);
+    Object.defineProperty(takeoverSourceRoom, "roomId", { value: "room-takeover", writable: true, configurable: true });
+    takeoverSourceRoom.roomCode = "TO1";
+    takeoverSourceRoom.totalPlayers = 2;
+    takeoverSourceRoom.aiCount = 0;
+    takeoverSourceRoom.humanSeats = 2;
+    takeoverSourceRoom.roomMode = "ffa";
+    takeoverSourceRoom.gameMode = "classic101";
+    takeoverSourceRoom.mode = "classic101";
+    takeoverSourceRoom.getActiveRuleset = () => getRuleset("classic101");
+    takeoverSourceRoom.state = {
+        gameActive: true,
+        matchRound: 2,
+        deal: 5,
+        currentPlayerIndex: 0,
+        turnVersion: 4,
+        isTeamMode: false,
+        playerOrder: ["session-1", "session-2"],
+        players: new Map([
+            ["session-1", {
+                name: "Alice",
+                userId: "u1",
+                score: 12,
+                roundWins: 1,
+                handCount: 2,
+                isBot: false,
+                isConnected: true,
+                seatIndex: 0,
+                controller: "bot",
+                takeoverActive: true,
+                takeoverReason: "disconnect",
+                takeoverSince: 321
+            }],
+            ["session-2", {
+                name: "Bob",
+                userId: "u2",
+                score: 9,
+                roundWins: 0,
+                handCount: 3,
+                isBot: false,
+                isConnected: true,
+                seatIndex: 1,
+                controller: "human",
+                takeoverActive: false,
+                takeoverReason: "",
+                takeoverSince: 0
+            }]
+        ]),
+        teamScores: [0, 0],
+        teamRoundWins: [0, 0],
+        matchStateJson: ""
+    };
+    takeoverSourceRoom.matchState = {
+        mode: "classic101",
+        carryPoints: 17,
+        thresholdBypassNext: false,
+        sides: [
+            { scored: 47, pending: 0, enteredBoard: true, missStreak: 0 },
+            { scored: 62, pending: 8, enteredBoard: true, missStreak: 1 }
+        ]
+    };
+    takeoverSourceRoom.internalBoard = new Board();
+    takeoverSourceRoom.internalBoard.placeFirst(new Tile(1, 1));
+    takeoverSourceRoom.hands = [[new Tile(6, 6)], [new Tile(0, 6)]];
+    takeoverSourceRoom.boneyard = [new Tile(3, 3)];
+    takeoverSourceRoom.playerMissingSuits = [new Set(), new Set()];
+    takeoverSourceRoom.identityBySessionId = new Map();
+    takeoverSourceRoom.boardStartAxis = "horizontal";
+    takeoverSourceRoom.state.gameMode = "classic101";
+    takeoverSourceRoom.state.mode = "classic101";
+    takeoverSourceRoom.configureBoardForCurrentMode(takeoverSourceRoom.internalBoard);
+    takeoverSourceRoom.syncMatchStateToSchema();
+
+    const takeoverSnapshot = takeoverSourceRoom.buildCustomStateSnapshot();
+    assert.equal(takeoverSnapshot.state.players[0].controller, "bot");
+    assert.equal(takeoverSnapshot.state.players[0].takeoverActive, true);
+    assert.equal(takeoverSnapshot.state.players[0].takeoverReason, "disconnect");
+    assert.equal(takeoverSnapshot.state.players[0].takeoverSince, 321);
+
+    const takeoverRestoredRoom = Object.create(DominoRoom.prototype);
+    Object.defineProperty(takeoverRestoredRoom, "roomId", { value: "room-takeover", writable: true, configurable: true });
+    takeoverRestoredRoom.state = {
+        turnDeadlineAt: 0,
+        players: new Map(),
+        playerOrder: [],
+        teamScores: [],
+        teamRoundWins: []
+    };
+    takeoverRestoredRoom.identityBySessionId = new Map();
+    takeoverRestoredRoom.internalBoard = null;
+    takeoverRestoredRoom.hands = null;
+    takeoverRestoredRoom.boneyard = null;
+    takeoverRestoredRoom.playerMissingSuits = null;
+    takeoverRestoredRoom.events = {
+        on() {},
+        once() {},
+        off() {},
+        removeListener() {},
+        emit() {}
+    };
+    takeoverRestoredRoom.roomMode = "ffa";
+    takeoverRestoredRoom.gameMode = "classic101";
+    takeoverRestoredRoom.mode = "classic101";
+    takeoverRestoredRoom.totalPlayers = 2;
+    takeoverRestoredRoom.humanSeats = 2;
+    takeoverRestoredRoom.aiCount = 0;
+    takeoverRestoredRoom.roomVisibility = "open";
+    takeoverRestoredRoom.boardStartAxis = "horizontal";
+    takeoverRestoredRoom.ruleset = takeoverRestoredRoom.getActiveRuleset?.() || null;
+    takeoverRestoredRoom.ensureBotPlayers = () => {};
+    takeoverRestoredRoom.clearTurnTimer = () => {};
+    takeoverRestoredRoom.applyCustomStateSnapshot(takeoverSnapshot);
+
+    const restoredTakeoverPlayer = takeoverRestoredRoom.state.players.get("session-1");
+    assert.equal(takeoverRestoredRoom.gameMode, "classic101");
+    assert.equal(takeoverRestoredRoom.state.gameMode, "classic101");
+    assert.equal(restoredTakeoverPlayer.controller, "bot");
+    assert.equal(restoredTakeoverPlayer.takeoverActive, true);
+    assert.equal(restoredTakeoverPlayer.takeoverReason, "disconnect");
+    assert.equal(restoredTakeoverPlayer.takeoverSince, 321);
+    assert.equal(restoredTakeoverPlayer.isConnected, true);
+    assert.equal(takeoverRestoredRoom.state.matchStateJson, JSON.stringify(takeoverSnapshot.matchState));
+
     const telefonRoom = Object.create(DominoRoom.prototype);
     Object.defineProperty(telefonRoom, "roomId", { value: "room-tel", writable: true, configurable: true });
     telefonRoom.state = {

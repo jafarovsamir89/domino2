@@ -191,6 +191,46 @@ test("grace timeout starts bot takeover instead of forfeit when the feature is e
     }
 });
 
+test("explicit leave stays a forfeit and never starts bot takeover", async () => {
+    const room = createActiveRoom();
+    const originalEnabled = BOT_TAKEOVER_CONFIG.enabled;
+    BOT_TAKEOVER_CONFIG.enabled = true;
+    room.botTakeover = new BotTakeoverController(room);
+    room.explicitLeaveSessionIds = new Set(["session-1"]);
+    room.allowReconnection = () => new Promise(() => {});
+    let forfeitCount = 0;
+    room.settleForfeitStake = async () => ({ ok: true });
+    room.recordForfeitMatchResult = async () => {
+        forfeitCount += 1;
+        return true;
+    };
+    room.pendingDisconnects.set("session-1", {
+        sessionId: "session-1",
+        playerName: "Alice",
+        startedAt: Date.now() - 1000,
+        expiresAt: Date.now() - 1,
+        leavingIndex: 0,
+        isTeamMode: false,
+        reason: "explicit_leave"
+    });
+    room.state.players.get("session-1").isConnected = false;
+
+    try {
+        await room.finalizeReconnectTimeout("session-1");
+
+        const player = room.state.players.get("session-1");
+        assert.equal(forfeitCount, 1);
+        assert.equal(room.state.gameActive, false);
+        assert.equal(room.state.matchOver, true);
+        assert.equal(room.lastForfeitReason, "reconnect_timeout");
+        assert.equal(player.controller, "human");
+        assert.equal(player.takeoverActive, false);
+        assert.equal(player.takeoverReason, "");
+    } finally {
+        BOT_TAKEOVER_CONFIG.enabled = originalEnabled;
+    }
+});
+
 test("NetworkManager explicit leave sends the marker before room.leave", async () => {
     const originalWindow = global.window;
     global.window = {
