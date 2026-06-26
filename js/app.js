@@ -10557,6 +10557,7 @@ class DominoGame {
     }
 
     shouldOpenGoshaChainWindow(pi) {
+        if (this.mode === 'classic101') return false;
         if (this.ais.some((ai) => ai.index === pi)) return false;
         const hand = this.hands[pi];
         if (!Array.isArray(hand) || hand.length === 0) return false;
@@ -16689,7 +16690,7 @@ class DominoGame {
         this.renderer.drawBtn.disabled = connectionLost || waitingOpenRoom || !myTurn || localBotControlled || canPlay || emptyBoneyard || this.postMoveWindowActive || this.turnInProgress || this.lastMoveRevealPending;
         this.renderer.passBtn.disabled = connectionLost || waitingOpenRoom || !myTurn || localBotControlled || canPlay || !emptyBoneyard || this.postMoveWindowActive || this.turnInProgress || this.lastMoveRevealPending;
 
-        this.goshaCombo = (this.gameActive && myTurn && !localBotControlled) ? this.board.getGoshaCombo(myHand) : null;
+        this.goshaCombo = (this.gameActive && myTurn && !localBotControlled && this.mode !== 'classic101') ? this.board.getGoshaCombo(myHand) : null;
         this.renderer.showGoshaBtn(this.goshaCombo, () => this.playGoshaCombo());
         this.updateTurnTimerHud();
         this.syncBotTakeoverUiState(this.currentRoomState);
@@ -17086,6 +17087,27 @@ class DominoGame {
             this.scores = Array.isArray(scoreboard.scores) ? scoreboard.scores.slice(0, this.playerCount) : new Array(this.playerCount).fill(0);
             this.teamScores = [0, 0];
         }
+    }
+
+    syncClassic101MatchStateFromNetwork(payload = {}) {
+        if (this.mode !== 'classic101') {
+            this.matchRuleState = null;
+            return;
+        }
+        let networkMatchState = payload?.matchState ?? payload?.matchStateJson ?? payload?.state?.matchStateJson ?? payload?.state?.matchState ?? null;
+        if (typeof networkMatchState === 'string') {
+            try {
+                networkMatchState = JSON.parse(networkMatchState);
+            } catch {
+                networkMatchState = null;
+            }
+        }
+        this.matchRuleState = this.ruleset.normalizeMatchState?.(
+            networkMatchState || this.ruleset.createMatchState?.(this.playerCount, this.isTeamMode) || null,
+            this.playerCount,
+            this.isTeamMode
+        ) || null;
+        this.syncClassic101ScoreState(this.matchRuleState);
     }
 
     format(key, values = {}) {
@@ -17775,7 +17797,7 @@ class DominoGame {
         this.renderer.drawBtn.disabled = connectionLost || waitingOpenRoom || !myTurn || canPlay || emptyBoneyard || this.postMoveWindowActive || this.turnInProgress || this.lastMoveRevealPending;
         this.renderer.passBtn.disabled = connectionLost || waitingOpenRoom || !myTurn || canPlay || !emptyBoneyard || this.postMoveWindowActive || this.turnInProgress || this.lastMoveRevealPending;
 
-        this.goshaCombo = (this.gameActive && myTurn) ? this.goshaCombo : null;
+        this.goshaCombo = (this.gameActive && myTurn && this.mode !== 'classic101') ? this.goshaCombo : null;
         this.renderer.showGoshaBtn(this.goshaCombo, () => this.playGoshaCombo());
         this.syncOpenRoomWaitingBanner(this.currentRoomState);
         this.updateTurnTimerHud();
@@ -17794,8 +17816,15 @@ class DominoGame {
         this._resolvedRoomModeFromState = resolvedRoomMode.roomModeFromState || '';
         this._resolvedScoreMode = resolvedRoomMode.scoreMode || '';
         this._resolvedTopHudMode = resolvedRoomMode.topHudMode || '';
+        const nextMode = String(payload?.gameMode || payload?.mode || this.mode || 'telefon').trim() || 'telefon';
+        if (nextMode !== this.mode) {
+            this.mode = nextMode;
+            this.ruleset = getRuleset(this.mode);
+        }
+        this.playerCount = Number(payload?.totalPlayers || this.playerCount || playerOrder.length || 0);
         this.teamScores = Array.from(payload?.teamScores || [0, 0]);
         this.teamRoundWins = Array.from(payload?.teamRoundWins || [0, 0]);
+        this.syncClassic101MatchStateFromNetwork(payload);
         this.matchRound = Number(payload?.matchRound || 1);
         this.deal = Number(payload?.deal || 1);
         this.gameActive = Boolean(payload?.gameActive);
@@ -17824,7 +17853,7 @@ class DominoGame {
             this.hands[myIdx] = this.myHand;
         }
         this.validMoves = Array.isArray(payload?.turnInfo?.validMoves) ? payload.turnInfo.validMoves : [];
-        this.goshaCombo = payload?.turnInfo?.goshaCombo || null;
+        this.goshaCombo = this.mode === 'classic101' ? null : (payload?.turnInfo?.goshaCombo || null);
         if (this.gameActive && Number(payload?.turnDeadlineAt || 0) > 0) {
             this.startTurnTimer(Number(payload.turnDeadlineAt), Number(payload?.turnVersion || this.turnVersion || 1), this.currentPlayer);
         } else {
@@ -18123,6 +18152,7 @@ class DominoGame {
         this._resolvedRoomModeFromState = resolvedRoomMode.roomModeFromState || '';
         this._resolvedScoreMode = resolvedRoomMode.scoreMode || '';
         this._resolvedTopHudMode = resolvedRoomMode.topHudMode || '';
+        this.syncClassic101MatchStateFromNetwork(state);
         if (state.matchRound !== undefined && state.matchRound !== null) {
             this.matchRound = Number(state.matchRound);
         }
@@ -18259,7 +18289,7 @@ class DominoGame {
 
     onNetworkTurnInfo(info) {
         this.validMoves = info.validMoves || [];
-        this.goshaCombo = info.goshaCombo || null;
+        this.goshaCombo = this.mode === 'classic101' ? null : (info.goshaCombo || null);
         if (this.network.isMultiplayer) {
             this.turnInProgress = false;
             this.scheduleRealtimeRender({ boardChanged: false, handChanged: true, opponentHandsChanged: false, scoresChanged: false, infoChanged: false });
@@ -18559,6 +18589,7 @@ class DominoGame {
 
     playGoshaCombo(fromRemote=false) {
         if (this.isInputBlockedByStage()) return;
+        if (this.mode === 'classic101') return;
         if (this.network.isMultiplayer) {
             if (!this.canSendMultiplayerAction()) {
                 const reason = this.lastBlockedOnlineActionReason;

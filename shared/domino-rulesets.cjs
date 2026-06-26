@@ -616,11 +616,14 @@
         openingPlayScore() {
             return 0;
         },
-        scoreDuringPlay() {
+        scoreDuringPlay(board) {
             return 0;
         },
         handPoints(hand) {
             return rawHandPoints(Array.isArray(hand) ? hand : []);
+        },
+        getScoreboard(matchState, isTeamMode = false, playerCount = 0) {
+            return getClassic101Scoreboard(matchState, isTeamMode, playerCount);
         },
         createMatchState(playerCount, isTeamMode) {
             return createClassic101MatchState(playerCount, isTeamMode);

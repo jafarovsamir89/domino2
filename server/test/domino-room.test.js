@@ -7,6 +7,7 @@ process.env.BETTER_AUTH_SECRET ||= process.env.DOMINO_SERVER_SECRET;
 const DominoRoom = require("../DominoRoom");
 const { Board } = require("../board");
 const { Tile } = require("../model");
+const { getRuleset } = require("../../shared/domino-rulesets.cjs");
 
 test("generateRoomCode returns compact upper-case codes", () => {
     const codes = new Set();
@@ -831,6 +832,7 @@ test("performPlay broadcasts the board delta before any score popup and includes
         isEmpty: false,
         openEnds: [{ value: 6 }],
         placeTile: () => 10,
+        calculateScore: () => 10,
         isBlocked: () => false
     };
     room.hands = [[new Tile(6, 1), new Tile(2, 3)]];
@@ -879,6 +881,115 @@ test("performPlay broadcasts the board delta before any score popup and includes
         }
     );
     assert.equal(delta?.finishInfo, null);
+});
+
+test("classic101 performPlay keeps in-play score at zero and hides gosha", () => {
+    const room = Object.create(DominoRoom.prototype);
+    Object.defineProperty(room, "roomId", { value: "room-101-play", writable: true, configurable: true });
+    room.gameMode = "classic101";
+    room.mode = "classic101";
+    room.ruleset = getRuleset("classic101");
+    room.isTeamMode = false;
+    room.state = {
+        gameActive: true,
+        currentPlayerIndex: 0,
+        turnVersion: 7,
+        isTeamMode: false,
+        playerOrder: ["session-1"],
+        players: new Map([["session-1", { name: "Alice", score: 0, roundWins: 0, handCount: 2 }]]),
+        teamScores: [0, 0],
+        teamRoundWins: [0, 0],
+        matchStateJson: ""
+    };
+    room.matchState = room.ruleset.createMatchState(1, false);
+    room.hands = [[new Tile(6, 1), new Tile(2, 3)]];
+    room.boneyard = [];
+    room.playerMissingSuits = [new Set()];
+    room.internalBoard = new Board();
+    room.internalBoard.telephoneEnabled = false;
+    room.internalBoard.scoringEnabled = false;
+    room.internalBoard.isEmpty = false;
+    room.internalBoard.openEnds = [{ value: 6 }];
+    room.internalBoard.placeTile = (tile, openEndIndex) => {
+        room.internalBoard.openEnds = [{ value: tile.hasValue(6) ? 1 : 6 }];
+        return 10;
+    };
+
+    const broadcasts = [];
+    const deltas = [];
+    room.broadcast = (event, payload) => broadcasts.push([event, payload]);
+    room.broadcastGameDelta = (payload) => deltas.push(payload);
+    room.clearTurnTimer = () => {};
+    room.clearTurnAdvanceTimer = () => {};
+    room.saveCustomStateToRedis = () => {};
+    room.endRound = () => {};
+    room.endDeal = () => {};
+    room.findFishWinner = () => 0;
+    room.scheduleTurnAdvance = () => {};
+    room.bumpTurnVersion = () => {};
+    room.getValidMovesForPlayer = () => [{ tileIndex: 0, openEndIndex: 0 }];
+    room.normalizeMatchStateForCurrentMode = (matchState) => matchState;
+
+    const accepted = room.performPlay(0, 0, 0, false);
+
+    assert.equal(accepted, true);
+    assert.equal(room.state.players.get("session-1").score, 0);
+    assert.equal(deltas[0]?.scoreDelta, 0);
+    assert.equal(deltas[0]?.scoreSource, "table");
+    assert.equal(room.state.matchStateJson, JSON.stringify(room.matchState));
+    assert.equal(room.buildTurnInfoForPlayer(0).goshaCombo, null);
+    assert.equal(broadcasts.some(([event]) => event === "score_popup"), false);
+});
+
+test("classic101 buildTurnInfoForPlayer hides gosha combos", () => {
+    const room = Object.create(DominoRoom.prototype);
+    room.gameMode = "classic101";
+    room.mode = "classic101";
+    room.internalBoard = {
+        getGoshaCombo: () => ({ score: 24, matches: [{ tileIndex: 0 }] })
+    };
+    room.hands = [[new Tile(1, 1)]];
+    room.getValidMovesForPlayer = () => [{ tileIndex: 0, openEndIndex: 0 }];
+
+    const info = room.buildTurnInfoForPlayer(0);
+
+    assert.deepEqual(info, {
+        validMoves: [{ tileIndex: 0, openEndIndex: 0 }],
+        goshaCombo: null
+    });
+});
+
+test("classic101 syncMatchStateToSchema mirrors scoreboard into visible scores", () => {
+    const room = Object.create(DominoRoom.prototype);
+    room.gameMode = "classic101";
+    room.mode = "classic101";
+    room.totalPlayers = 2;
+    room.roomMode = "ffa";
+    room.state = {
+        playerOrder: ["session-1", "session-2"],
+        players: new Map([
+            ["session-1", { score: 0, roundWins: 0 }],
+            ["session-2", { score: 0, roundWins: 0 }]
+        ]),
+        teamScores: [0, 0],
+        matchStateJson: ""
+    };
+    room.matchState = {
+        mode: "classic101",
+        carryPoints: 0,
+        thresholdBypassNext: false,
+        sides: [
+            { scored: 17, pending: 0, enteredBoard: true, missStreak: 0 },
+            { scored: 29, pending: 0, enteredBoard: true, missStreak: 0 }
+        ]
+    };
+    room.getActiveRuleset = () => getRuleset("classic101");
+
+    room.syncMatchStateToSchema();
+
+    assert.equal(room.state.players.get("session-1").score, 17);
+    assert.equal(room.state.players.get("session-2").score, 29);
+    assert.equal(room.state.matchStateJson, JSON.stringify(room.matchState));
 });
 
 test("endDeal sends hand bonus only through deal_end and keeps it out of score popups", () => {
