@@ -1,3 +1,7 @@
+// Import Sentry instrumentation before anything else so it can
+// auto-instrument the modules imported below.
+import "./instrument.js";
+
 import "reflect-metadata";
 
 import { ValidationPipe } from "@nestjs/common";
