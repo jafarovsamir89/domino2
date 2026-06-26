@@ -490,6 +490,11 @@ export class PlatformMatchDto {
   mode?: string;
 
   @IsOptional()
+  @IsString()
+  @MaxLength(32)
+  gameMode?: string;
+
+  @IsOptional()
   @IsBoolean()
   isTeamMode?: boolean;
 
@@ -547,6 +552,10 @@ export class PlatformMatchDto {
   @IsString()
   @MaxLength(16)
   matchOutcome?: string | null;
+
+  @IsOptional()
+  @IsBoolean()
+  classic101DryWin?: boolean;
 
   @IsOptional()
   @IsArray()

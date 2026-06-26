@@ -105,6 +105,20 @@ async function main() {
     }
   });
 
+  await prisma.playerModeStats.upsert({
+    where: {
+      playerId_gameMode: {
+        playerId: player.id,
+        gameMode: "telefon"
+      }
+    },
+    update: {},
+    create: {
+      playerId: player.id,
+      gameMode: "telefon"
+    }
+  });
+
   await prisma.$transaction(async (tx) => {
     await tx.coinEconomyConfig.upsert({
       where: { key: DEFAULT_CONFIG_KEY },

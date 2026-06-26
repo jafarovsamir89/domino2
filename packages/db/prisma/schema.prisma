@@ -175,6 +175,7 @@ model Player {
   updatedAt     DateTime           @updatedAt
   user          User?              @relation(fields: [userId], references: [id], onDelete: SetNull)
   stats         PlayerStats?
+  modeStats     PlayerModeStats[]
   matches       MatchParticipant[]
   reportsIn     PlayerReport[]     @relation("ReportTarget")
   reportsBy     PlayerReport[]     @relation("ReportAuthor")
@@ -220,6 +221,24 @@ model PlayerStats {
   player         Player @relation(fields: [playerId], references: [id], onDelete: Cascade)
 
   @@index([rating, matchesPlayed, wins])
+}
+
+model PlayerModeStats {
+  id            String @id @default(cuid())
+  playerId      String
+  gameMode      String @default("telefon")
+  rating        Int    @default(1000)
+  points        Int    @default(0)
+  wins          Int    @default(0)
+  losses        Int    @default(0)
+  draws         Int    @default(0)
+  matchesPlayed Int    @default(0)
+  currentStreak Int    @default(0)
+  bestStreak    Int    @default(0)
+  player        Player @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  @@unique([playerId, gameMode])
+  @@index([gameMode, rating, matchesPlayed, wins])
 }
 
 model CoinEconomyConfig {
@@ -386,6 +405,7 @@ model CoinTournamentEntry {
 model Match {
   id           String             @id @default(cuid())
   mode         String
+  gameMode     String             @default("telefon")
   isTeamMode   Boolean            @default(false)
   roomId       String?
   winnerKey    String?
@@ -394,6 +414,8 @@ model Match {
   createdAt    DateTime           @default(now())
   participants MatchParticipant[]
   reports      PlayerReport[]
+
+  @@index([gameMode, createdAt])
 }
 
 model MatchParticipant {

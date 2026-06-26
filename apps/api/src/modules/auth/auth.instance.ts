@@ -53,6 +53,20 @@ export const auth = betterAuth({
             }
           });
 
+          await prisma.playerModeStats.upsert({
+            where: {
+              playerId_gameMode: {
+                playerId: player.id,
+                gameMode: "telefon"
+              }
+            },
+            update: {},
+            create: {
+              playerId: player.id,
+              gameMode: "telefon"
+            }
+          });
+
           await grantStarterCoins(
             prisma,
             player.id,

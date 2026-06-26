@@ -2997,6 +2997,7 @@ class DominoRoom extends Room {
             : (leavingIndex === 0 ? 1 : 0);
         const payload = buildPlatformMatchPayload({
             isTeamMode,
+            gameMode: this.gameMode,
             roomId: this.roomId,
             stakeKey: this.currentStakeKey,
             sourceMatchId: this.matchRecordId,
@@ -3006,6 +3007,7 @@ class DominoRoom extends Room {
             teamRoundWins: this.state.teamRoundWins,
             winnerIndex,
             matchOutcome: "forfeit",
+            classic101DryWin: false,
             forfeitUserIds: [leavingIdentity.userId],
             forfeitPlayerIds: [leavingIdentity.playerId || leavingIdentity.userId]
         });
@@ -3050,6 +3052,7 @@ class DominoRoom extends Room {
         const matchOutcome = String(options?.matchOutcome || "normal").trim() || "normal";
         const payload = buildPlatformMatchPayload({
             isTeamMode,
+            gameMode: this.gameMode,
             roomId: this.roomId,
             stakeKey: this.currentStakeKey,
             sourceMatchId: this.matchRecordId,
@@ -3058,7 +3061,8 @@ class DominoRoom extends Room {
             teamScores: this.state.teamScores,
             teamRoundWins: this.state.teamRoundWins,
             winnerIndex: wi,
-            matchOutcome
+            matchOutcome,
+            classic101DryWin: this.gameMode === "classic101" && Number(wins || 0) >= 2
         });
 
         if (!payload.participants.length) {

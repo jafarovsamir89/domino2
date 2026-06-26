@@ -9,6 +9,12 @@ import {
   ELO_FORFEIT_PENALTY,
   normalizeEloRating
 } from "../ranking/player-ranking.js";
+import {
+  createPlayerModeStatsSnapshot,
+  ensurePlayerModeStats,
+  normalizeRatingGameMode,
+  syncTelefonPlayerStats
+} from "../ranking/player-mode-stats.js";
 import { signDominoPayload, verifyDominoPayload } from "../security/domino-proof.js";
 
 type MatchParticipantPayload = {
@@ -24,6 +30,7 @@ type MatchParticipantPayload = {
 
 type MatchPayload = {
   mode?: string;
+  gameMode?: string;
   isTeamMode?: boolean;
   roomId?: string | null;
   sourceMatchId?: string | null;
@@ -36,6 +43,7 @@ type MatchPayload = {
   integrityScope?: string | null;
   proof?: string | null;
   matchOutcome?: string | null;
+  classic101DryWin?: boolean;
   forfeitUserIds?: string[];
   forfeitPlayerIds?: string[];
 };
@@ -286,6 +294,7 @@ export class MatchesService {
     }
 
     const matchCreatedAt = new Date();
+    const gameMode = normalizeRatingGameMode(payload.gameMode);
 
     return this.prisma.$transaction(async (tx) => {
       const existingMatch = await tx.match.findUnique({
@@ -330,17 +339,17 @@ export class MatchesService {
           }
         });
 
-        const stats = player.stats || null;
-        const snapshotStats = stats || {
-          rating: 1000,
-          points: 0,
-          wins: 0,
-          losses: 0,
-          draws: 0,
-          matchesPlayed: 0,
-          currentStreak: 0,
-          bestStreak: 0
-        };
+        const existingModeStats = await tx.playerModeStats.findUnique({
+          where: {
+            playerId_gameMode: {
+              playerId: player.id,
+              gameMode
+            }
+          }
+        });
+        const snapshotStats = createPlayerModeStatsSnapshot(
+          existingModeStats || (gameMode === "telefon" ? (player.stats || {}) : null) || {}
+        );
 
         await grantStarterCoins(
           tx,
@@ -365,7 +374,7 @@ export class MatchesService {
             currentStreak: toInt(snapshotStats.currentStreak),
             bestStreak: toInt(snapshotStats.bestStreak)
           },
-          statsExists: Boolean(stats),
+          statsExists: Boolean(existingModeStats),
           sideKey: "",
           ratingBefore: normalizeEloRating(snapshotStats.rating),
           ratingAfter: normalizeEloRating(snapshotStats.rating),
@@ -383,27 +392,6 @@ export class MatchesService {
       });
 
       if (rankingContext.ranked) {
-        for (const entry of resolvedParticipants) {
-          if (!entry.statsExists) {
-            await tx.playerStats.create({
-              data: {
-                playerId: entry.player.playerId,
-                rating: 1000,
-                points: 0,
-                wins: 0,
-                losses: 0,
-                draws: 0,
-                matchesPlayed: 0,
-                currentStreak: 0,
-                bestStreak: 0
-              }
-            });
-            entry.statsExists = true;
-          }
-        }
-      }
-
-      if (rankingContext.ranked) {
         const isTeamMode = Boolean(payload.isTeamMode);
         const winnerSideKey = isTeamMode
           ? normalizeText(payload.winnerKey)
@@ -411,6 +399,7 @@ export class MatchesService {
         const losingSideKey = isTeamMode
           ? (winnerSideKey === "team:0" ? "team:1" : "team:0")
           : "loss";
+        const classic101DryWin = gameMode === "classic101" && Boolean(payload.classic101DryWin);
 
         for (const entry of resolvedParticipants) {
           const userId = String(entry.participant.userId || "").trim();
@@ -429,31 +418,61 @@ export class MatchesService {
           const opponentKey = isWinner ? losingSideKey : winnerSideKey;
           const opponentRating = rankingContext.sideAverageRatings?.get(opponentKey) ?? entry.player.rating;
           const penalty = rankingContext.isForfeit && rankingContext.forfeitUserIds.has(userId) ? -ELO_FORFEIT_PENALTY : 0;
-          const nextRating = calculateEloUpdate({
-            playerRating: entry.player.rating,
+          const applyOnce = (playerRating: number, matchesPlayed: number, score: number) => calculateEloUpdate({
+            playerRating,
             opponentRating,
-            actualScore,
-            matchesPlayed: entry.player.matchesPlayed,
+            actualScore: score,
+            matchesPlayed,
             penalty
           });
-          const nextCurrentStreak = isWinner ? entry.player.currentStreak + 1 : 0;
+
+          let nextRating = applyOnce(entry.player.rating, entry.player.matchesPlayed, actualScore);
+          let nextWins = entry.player.wins + (isWinner ? 1 : 0);
+          let nextLosses = entry.player.losses + (isLoser ? 1 : 0);
+          let nextMatchesPlayed = entry.player.matchesPlayed + 1;
+          let nextCurrentStreak = isWinner ? entry.player.currentStreak + 1 : 0;
+          let nextBestStreak = Math.max(entry.player.bestStreak, nextCurrentStreak);
+
+          if (classic101DryWin) {
+            nextRating = applyOnce(nextRating, nextMatchesPlayed, actualScore);
+            nextRating = normalizeEloRating(nextRating);
+            nextWins = entry.player.wins + (isWinner ? 2 : 0);
+            nextLosses = entry.player.losses + (isLoser ? 2 : 0);
+            nextMatchesPlayed = entry.player.matchesPlayed + 2;
+            nextCurrentStreak = isWinner ? entry.player.currentStreak + 2 : 0;
+            nextBestStreak = Math.max(entry.player.bestStreak, nextCurrentStreak);
+          }
+
           const nextStats = {
-            wins: entry.player.wins + (isWinner ? 1 : 0),
-            losses: entry.player.losses + (isLoser ? 1 : 0),
+            wins: nextWins,
+            losses: nextLosses,
             draws: entry.player.draws,
-            matchesPlayed: entry.player.matchesPlayed + 1,
+            matchesPlayed: nextMatchesPlayed,
             currentStreak: nextCurrentStreak,
-            bestStreak: Math.max(entry.player.bestStreak, nextCurrentStreak)
+            bestStreak: nextBestStreak
           };
 
-          await tx.playerStats.update({
-            where: { playerId: entry.player.playerId },
-            data: {
-              rating: nextRating,
-              points: entry.player.points + toInt(entry.participant.points),
-              ...nextStats
-            }
+          const nextModeStats = {
+            rating: nextRating,
+            points: entry.player.points + toInt(entry.participant.points),
+            ...nextStats
+          };
+
+          await ensurePlayerModeStats(tx, entry.player.playerId, gameMode, entry.player);
+
+          await tx.playerModeStats.update({
+            where: {
+              playerId_gameMode: {
+                playerId: entry.player.playerId,
+                gameMode
+              }
+            },
+            data: nextModeStats
           });
+
+          if (gameMode === "telefon") {
+            await syncTelefonPlayerStats(tx, entry.player.playerId, nextModeStats);
+          }
 
           entry.ratingBefore = entry.player.rating;
           entry.ratingAfter = nextRating;
@@ -470,6 +489,7 @@ export class MatchesService {
         data: {
           id: sourceMatchId,
           mode: payload.mode || "online",
+          gameMode,
           isTeamMode: Boolean(payload.isTeamMode),
           roomId: payload.roomId || claims.sessionId || null,
           winnerKey: payload.winnerKey || null,
@@ -508,10 +528,12 @@ export class MatchesService {
           entityId: match.id,
           payloadJson: {
             mode: payload.mode || "online",
+            gameMode,
             roomId: payload.roomId || claims.sessionId || null,
             winnerKey: payload.winnerKey || null,
             result: payload.result || null,
             matchOutcome: payload.matchOutcome || "normal",
+            classic101DryWin: Boolean(payload.classic101DryWin),
             stakeKey: payload.stakeKey || null,
             totalPoints: Number.isFinite(Number(payload.totalPoints))
               ? Number(payload.totalPoints)

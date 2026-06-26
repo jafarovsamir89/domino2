@@ -80,6 +80,37 @@ async function importPlayers(users = []) {
       }
     });
 
+    await prisma.playerModeStats.upsert({
+      where: {
+        playerId_gameMode: {
+          playerId: player.id,
+          gameMode: "telefon"
+        }
+      },
+      update: {
+        rating: legacyUser.rating || 1000,
+        points: legacyUser.points || 0,
+        wins: legacyUser.wins || 0,
+        losses: legacyUser.losses || 0,
+        draws: legacyUser.draws || 0,
+        matchesPlayed: legacyUser.matchesPlayed || 0,
+        currentStreak: legacyUser.currentStreak || 0,
+        bestStreak: legacyUser.bestStreak || 0
+      },
+      create: {
+        playerId: player.id,
+        gameMode: "telefon",
+        rating: legacyUser.rating || 1000,
+        points: legacyUser.points || 0,
+        wins: legacyUser.wins || 0,
+        losses: legacyUser.losses || 0,
+        draws: legacyUser.draws || 0,
+        matchesPlayed: legacyUser.matchesPlayed || 0,
+        currentStreak: legacyUser.currentStreak || 0,
+        bestStreak: legacyUser.bestStreak || 0
+      }
+    });
+
     playerMap.set(legacyUser.id, player);
   }
 
@@ -138,6 +169,7 @@ async function importMatches(matches = [], playerMap) {
       where: { id: legacyMatch.id },
       update: {
         mode: legacyMatch.mode || "legacy",
+        gameMode: legacyMatch.gameMode || "telefon",
         isTeamMode: Boolean(legacyMatch.isTeamMode),
         roomId: legacyMatch.roomId || null,
         winnerKey: legacyMatch.winnerKey || null,
@@ -147,6 +179,7 @@ async function importMatches(matches = [], playerMap) {
       create: {
         id: legacyMatch.id,
         mode: legacyMatch.mode || "legacy",
+        gameMode: legacyMatch.gameMode || "telefon",
         isTeamMode: Boolean(legacyMatch.isTeamMode),
         roomId: legacyMatch.roomId || null,
         winnerKey: legacyMatch.winnerKey || null,

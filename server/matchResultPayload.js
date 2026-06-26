@@ -64,6 +64,7 @@ function sanitizeParticipant(row) {
 
 function buildPlatformMatchPayload({
     isTeamMode = false,
+    gameMode = "telefon",
     roomId,
     stakeKey,
     sourceMatchId = "",
@@ -73,6 +74,7 @@ function buildPlatformMatchPayload({
     teamRoundWins = [],
     winnerIndex = 0,
     matchOutcome = "normal",
+    classic101DryWin = false,
     forfeitUserIds = [],
     forfeitPlayerIds = []
 } = {}) {
@@ -104,6 +106,7 @@ function buildPlatformMatchPayload({
 
     return {
         mode: isTeamMode ? "team" : "ffa",
+        gameMode: String(gameMode || "telefon").trim().toLowerCase() || "telefon",
         isTeamMode,
         roomId,
         sourceMatchId: String(sourceMatchId || "").trim(),
@@ -111,6 +114,7 @@ function buildPlatformMatchPayload({
         result: isDrawOutcome ? "draw" : "win",
         stakeKey,
         matchOutcome: normalizedMatchOutcome,
+        classic101DryWin: Boolean(classic101DryWin),
         forfeitUserIds: Array.isArray(forfeitUserIds) ? forfeitUserIds.map((value) => String(value || "").trim()).filter(Boolean) : [],
         forfeitPlayerIds: Array.isArray(forfeitPlayerIds) ? forfeitPlayerIds.map((value) => String(value || "").trim()).filter(Boolean) : [],
         teams,

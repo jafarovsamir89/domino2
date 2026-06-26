@@ -75,6 +75,14 @@ async function main() {
       }
     });
 
+    await tx.playerModeStats.deleteMany({
+      where: {
+        playerId: {
+          not: adminPlayer.id
+        }
+      }
+    });
+
     await tx.coinWallet.deleteMany({
       where: {
         playerId: {

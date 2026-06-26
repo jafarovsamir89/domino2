@@ -35,6 +35,7 @@ function makeRoom() {
 
 test("recordMatchResult retries a failed platform match recording without marking the match recorded", async () => {
     const room = makeRoom();
+    room.gameMode = "classic101";
     const fetchCalls = [];
     const originalFetch = global.fetch;
 
@@ -65,6 +66,8 @@ test("recordMatchResult retries a failed platform match recording without markin
         assert.equal(room.pendingMatchRecording.sourceMatchId, room.matchRecordId);
         assert.equal(fetchCalls.length, 1);
         assert.equal(fetchCalls[0].sourceMatchId, room.matchRecordId);
+        assert.equal(fetchCalls[0].gameMode, "classic101");
+        assert.equal(fetchCalls[0].classic101DryWin, false);
 
         const second = await room.retryPendingMatchRecording();
         assert.equal(second, true);
@@ -72,6 +75,7 @@ test("recordMatchResult retries a failed platform match recording without markin
         assert.equal(room.pendingMatchRecording, null);
         assert.equal(fetchCalls.length, 2);
         assert.equal(fetchCalls[1].sourceMatchId, room.matchRecordId);
+        assert.equal(fetchCalls[1].gameMode, "classic101");
     } finally {
         global.fetch = originalFetch;
     }
@@ -114,4 +118,32 @@ test("recordMatchResult handles payloads without userIds without breaking the ro
     } finally {
         console.warn = originalWarn;
     }
+});
+
+test("recordMatchResult forwards classic101 dry-win metadata", async () => {
+  const room = makeRoom();
+  room.gameMode = "classic101";
+  const fetchCalls = [];
+  const originalFetch = global.fetch;
+
+  global.fetch = async (_url, init) => {
+    const body = JSON.parse(init.body);
+    fetchCalls.push(body);
+    return {
+      ok: true,
+      status: 200,
+      text: async () => "",
+      json: async () => ({ ok: true })
+    };
+  };
+
+  try {
+    const result = await room.recordMatchResult(0, false, null, 2);
+    assert.equal(result, true);
+    assert.equal(fetchCalls.length, 1);
+    assert.equal(fetchCalls[0].gameMode, "classic101");
+    assert.equal(fetchCalls[0].classic101DryWin, true);
+  } finally {
+    global.fetch = originalFetch;
+  }
 });

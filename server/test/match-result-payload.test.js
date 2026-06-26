@@ -105,6 +105,7 @@ test("buildPlatformMatchPayload fills team memberIds and keeps payload shape", (
 
     const payload = buildPlatformMatchPayload({
         isTeamMode: true,
+        gameMode: "classic101",
         roomId: "room-1",
         stakeKey: "stake_200",
         sourceMatchId: "room-1:match:abc123",
@@ -116,6 +117,7 @@ test("buildPlatformMatchPayload fills team memberIds and keeps payload shape", (
     });
 
     assert.equal(payload.mode, "team");
+    assert.equal(payload.gameMode, "classic101");
     assert.equal(payload.result, "win");
     assert.equal(payload.winnerKey, "team:1");
     assert.equal(payload.sourceMatchId, "room-1:match:abc123");
@@ -136,6 +138,7 @@ test("buildPlatformMatchPayload keeps ffa payload mode and result", () => {
 
     const payload = buildPlatformMatchPayload({
         isTeamMode: false,
+        gameMode: "telefon",
         roomId: "room-1",
         stakeKey: "stake_200",
         sourceMatchId: "room-1:match:def456",
@@ -147,6 +150,7 @@ test("buildPlatformMatchPayload keeps ffa payload mode and result", () => {
     });
 
     assert.equal(payload.mode, "ffa");
+    assert.equal(payload.gameMode, "telefon");
     assert.equal(payload.result, "win");
     assert.equal(payload.winnerKey, "player:1");
     assert.equal(payload.sourceMatchId, "room-1:match:def456");
@@ -162,6 +166,7 @@ test("buildPlatformMatchPayload marks all_absent as draw and clears winner key",
 
     const payload = buildPlatformMatchPayload({
         isTeamMode: false,
+        gameMode: "classic101",
         roomId: "room-1",
         stakeKey: "stake_200",
         sourceMatchId: "room-1:match:draw1",
@@ -176,5 +181,28 @@ test("buildPlatformMatchPayload marks all_absent as draw and clears winner key",
     assert.equal(payload.result, "draw");
     assert.equal(payload.winnerKey, "");
     assert.equal(payload.matchOutcome, "all_absent");
+    assert.equal(payload.classic101DryWin, false);
     assert.deepEqual(payload.participants.map((entry) => entry.result), ["draw", "draw"]);
+});
+
+test("buildPlatformMatchPayload forwards classic101 dry-win flag", () => {
+    const payload = buildPlatformMatchPayload({
+        isTeamMode: false,
+        gameMode: "classic101",
+        roomId: "room-1",
+        stakeKey: "stake_200",
+        sourceMatchId: "room-1:match:dry1",
+        playerOrder: ["s1", "s2"],
+        players: new Map([
+            ["s1", { userId: "u1", name: "Alice", score: 101, roundWins: 2 }],
+            ["s2", { userId: "u2", name: "Bob", score: 0, roundWins: 0 }]
+        ]),
+        teamScores: [0, 0],
+        teamRoundWins: [0, 0],
+        winnerIndex: 0,
+        classic101DryWin: true
+    });
+
+    assert.equal(payload.gameMode, "classic101");
+    assert.equal(payload.classic101DryWin, true);
 });

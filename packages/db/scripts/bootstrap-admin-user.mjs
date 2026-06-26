@@ -85,6 +85,20 @@ async function createAdminAccount({ email, password, name }) {
         playerId: player.id
       }
     });
+
+    await prisma.playerModeStats.upsert({
+      where: {
+        playerId_gameMode: {
+          playerId: player.id,
+          gameMode: "telefon"
+        }
+      },
+      update: {},
+      create: {
+        playerId: player.id,
+        gameMode: "telefon"
+      }
+    });
   }
 
   return user;
