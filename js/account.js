@@ -381,8 +381,8 @@ export class AccountClient {
         return this.platformRequest("/platform/status");
     }
 
-    async bootstrap() {
-        const platformData = await this.syncPlatformSession();
+    async bootstrap(mode = null) {
+        const platformData = await this.syncPlatformSession(mode);
         if (platformData) {
             return platformData;
         }
@@ -403,10 +403,16 @@ export class AccountClient {
         return null;
     }
 
-    async syncPlatformSession() {
+    async syncPlatformSession(mode = null) {
         try {
             const token = this.platformGameToken;
-            const response = await fetch(`${this.platformApiBase}/platform/game-token`, {
+            const selectedMode = String(mode || "").trim();
+            const params = new URLSearchParams();
+            if (selectedMode === "telefon" || selectedMode === "classic101") {
+                params.set("mode", selectedMode);
+            }
+            const query = params.toString();
+            const response = await fetch(`${this.platformApiBase}/platform/game-token${query ? `?${query}` : ""}`, {
                 method: "GET",
                 credentials: "include",
                 headers: {
@@ -1039,8 +1045,8 @@ export class AccountClient {
         return this.sendDirectMessage(playerId, text);
     }
 
-    async getProfileDetails() {
-        const platform = await this.syncPlatformSession();
+    async getProfileDetails(mode = null) {
+        const platform = await this.syncPlatformSession(mode);
         if (platform) {
             return platform;
         }

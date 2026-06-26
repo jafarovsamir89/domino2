@@ -7,6 +7,7 @@ import { PrismaService } from "../prisma/prisma.service.js";
 import { createGameToken } from "./game-token.js";
 import { getBetterAuthConfig } from "./better-auth.config.js";
 import { auth } from "./auth.instance.js";
+import { normalizeRatingGameMode } from "../ranking/player-mode-stats.js";
 import { calculatePlayerRating, getPlayerRatingTitleCode } from "../ranking/player-ranking.js";
 
 @Injectable()
@@ -34,7 +35,7 @@ export class AuthService {
     });
   }
 
-  async getCurrentProfile(headers: IncomingHttpHeaders) {
+  async getCurrentProfile(headers: IncomingHttpHeaders, gameMode?: string) {
     const session = await this.getSession(headers);
     if (!session?.user) {
       return null;
@@ -82,6 +83,31 @@ export class AuthService {
     });
     const titleCode = getPlayerRatingTitleCode(nextRating);
 
+    const normalizedGameMode = String(gameMode || "").trim();
+    const recentMatches = await this.prisma.matchParticipant.findMany({
+      where: {
+        playerId: player.id,
+        ...(normalizedGameMode === "telefon" || normalizedGameMode === "classic101"
+          ? { match: { gameMode: normalizeRatingGameMode(normalizedGameMode) } }
+          : {})
+      },
+      orderBy: {
+        match: {
+          createdAt: "desc"
+        }
+      },
+      take: 20,
+      include: {
+        match: {
+          select: {
+            id: true,
+            gameMode: true,
+            createdAt: true
+          }
+        }
+      }
+    });
+
     return {
       session: {
         id: session.session.id,
@@ -116,7 +142,19 @@ export class AuthService {
         reservedBalance: wallet.reserved
       },
       coins: wallet.balance,
-      titleCode
+      titleCode,
+      recentMatches: recentMatches.map((row) => {
+        const gameMode = normalizeRatingGameMode(row.match?.gameMode);
+        return {
+          id: row.id,
+          matchId: row.matchId,
+          gameMode,
+          mode: gameMode,
+          createdAt: row.match?.createdAt?.toISOString?.() || null,
+          result: String(row.result || "").toLowerCase() || "draw",
+          ratingDelta: Number(row.ratingDelta ?? 0)
+        };
+      })
     };
   }
 
@@ -181,8 +219,8 @@ export class AuthService {
     return this.getCurrentProfile(headers);
   }
 
-  async mintGameToken(headers: IncomingHttpHeaders) {
-    const profile = await this.getCurrentProfile(headers);
+  async mintGameToken(headers: IncomingHttpHeaders, gameMode?: string) {
+    const profile = await this.getCurrentProfile(headers, gameMode);
     if (!profile) {
       return null;
     }

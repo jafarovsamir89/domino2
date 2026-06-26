@@ -1360,7 +1360,7 @@ class DominoGame {
 
     async bootstrapAccount() {
         try {
-            const details = await this.account.bootstrap();
+            const details = await this.account.bootstrap(this.getSelectedGameMode());
             this.accountDetails = details;
             this.accountProfile = details?.profile || details?.user || this.account.getStoredProfile();
             this.accountOnline = this.hasAuthenticatedAccount(this.accountProfile);
@@ -1439,9 +1439,9 @@ class DominoGame {
         return this.requireRegisteredAccount('account-registration-required');
     }
 
-    async loadAccountProfile() {
+    async loadAccountProfile(mode = this.getSelectedGameMode()) {
         try {
-            const details = await this.account.getProfileDetails();
+            const details = await this.account.getProfileDetails(mode);
             if (details) {
                 this.accountDetails = details;
                 this.accountProfile = details?.profile || details?.user || this.accountProfile;
@@ -1509,7 +1509,7 @@ class DominoGame {
         this.accountMode = this.accountProfile ? 'profile' : 'login';
         this.renderAccountModal();
         this.syncStartAuthButton();
-        await this.loadAccountProfile();
+        await this.loadAccountProfile(this.getSelectedGameMode());
         void this.loadTableSkinShop();
         await this.loadGiftHub();
     }
@@ -9861,19 +9861,38 @@ class DominoGame {
                 this.setSummaryMessage(historyList, this.t('account-history-empty'));
             } else {
                 historyList.innerHTML = '';
-            recentMatches.forEach((match) => {
-                const item = document.createElement('div');
-                const delta = Number(match.ratingDelta || 0);
+                recentMatches.forEach((match) => {
+                    const item = document.createElement('div');
+                    item.className = 'room-player-chip account-history-chip';
+                    const delta = Number(match.ratingDelta || 0);
                     const deltaLabel = delta > 0 ? `+${delta}` : `${delta}`;
                     const resultKey = match.result === 'win'
                         ? 'account-history-win'
                         : match.result === 'loss'
                             ? 'account-history-loss'
                             : 'account-history-draw';
-                    item.className = 'room-player-chip';
-                    label.textContent = `${this.t(resultKey)} · ${match.mode}`;
+                    const matchMode = match.gameMode || match.mode || this.getSelectedGameMode();
+
+                    const badge = document.createElement('span');
+                    badge.className = 'room-badge account-history-mode-badge';
+                    badge.textContent = this.getModeLabel(matchMode);
+
+                    const body = document.createElement('div');
+                    body.className = 'room-player-chip-body';
+                    const titleRow = document.createElement('div');
+                    titleRow.className = 'room-player-chip-title-row';
+                    const label = document.createElement('span');
+                    label.className = 'room-player-chip-title';
+                    label.textContent = this.t(resultKey);
+                    titleRow.appendChild(label);
+                    body.appendChild(titleRow);
+
+                    const value = document.createElement('strong');
+                    value.className = 'account-history-delta';
                     value.textContent = deltaLabel;
-                    item.appendChild(label);
+
+                    item.appendChild(badge);
+                    item.appendChild(body);
                     item.appendChild(value);
                     historyList.appendChild(item);
                 });
@@ -17113,7 +17132,7 @@ class DominoGame {
         }
         this.syncStartModeUI();
         if (document.getElementById('account-modal')?.classList.contains('active')) {
-            this.renderAccountModal();
+            void this.loadAccountProfile(nextMode);
         }
         if (document.getElementById('leaderboard-modal')?.classList.contains('active')) {
             this.syncLeaderboardModeUI(nextMode);

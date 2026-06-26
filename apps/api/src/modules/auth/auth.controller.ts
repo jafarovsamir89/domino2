@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Patch, Req } from "@nestjs/common";
+import { Body, Controller, Get, Patch, Query, Req } from "@nestjs/common";
 import type { Request } from "express";
 
 import { AuthService } from "./auth.service.js";
@@ -19,8 +19,8 @@ export class AuthController {
   }
 
   @Get("platform/game-token")
-  async getGameToken(@Req() req: Request) {
-    return this.authService.mintGameToken(req.headers);
+  async getGameToken(@Req() req: Request, @Query("mode") mode?: string, @Query("gameMode") gameMode?: string) {
+    return this.authService.mintGameToken(req.headers, mode || gameMode || undefined);
   }
 
   @Get("me")

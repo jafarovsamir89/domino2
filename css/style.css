@@ -4043,6 +4043,16 @@ body.move-hint-selection-active #game-screen .player-name-btn {
     font-size: 0.8rem;
 }
 
+.account-history-chip {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+}
+
+.account-history-delta {
+    justify-self: end;
+    font-weight: 800;
+    color: var(--text);
+}
+
 .room-player-chip-body {
     min-width: 0;
     display: grid;
