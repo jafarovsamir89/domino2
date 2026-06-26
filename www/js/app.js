@@ -245,10 +245,10 @@ function fmLog(tag, data) {
 }
 
 const DOMINO_CLIENT_BUILD = {
-    gitCommit: '669bbdc',
+    gitCommit: '7c5f3a1',
     builtAt: new Date().toISOString(),
-    socialRealtimeDebugVersion: 'browser-production-trace-v23-669bbdc',
-    cacheFixVersion: 'domino-v62'
+    socialRealtimeDebugVersion: 'browser-production-trace-v24-7c5f3a1',
+    cacheFixVersion: 'domino-v63'
 };
 
 if (typeof window !== 'undefined') {
@@ -17126,17 +17126,20 @@ class DominoGame {
                 clearTimeout(this.startModeFlipUnlockTimer);
                 this.startModeFlipUnlockTimer = null;
             }
+            heroStage?.classList.remove('is-flipping');
             this.startModeFlipLocked = false;
         };
+        const flipDurationMs = 760;
         if (heroStage) {
             const onTransitionEnd = (event) => {
                 if (event?.target !== heroStage || event.propertyName !== 'transform') return;
                 releaseLock();
             };
             heroStage.addEventListener('transitionend', onTransitionEnd, { once: true });
-            this.startModeFlipUnlockTimer = window.setTimeout(releaseLock, 1100);
+            requestAnimationFrame(() => heroStage.classList.add('is-flipping'));
+            this.startModeFlipUnlockTimer = window.setTimeout(releaseLock, flipDurationMs);
         } else {
-            this.startModeFlipUnlockTimer = window.setTimeout(releaseLock, 1100);
+            this.startModeFlipUnlockTimer = window.setTimeout(releaseLock, flipDurationMs);
         }
         this.syncStartModeUI();
         if (document.getElementById('account-modal')?.classList.contains('active')) {
