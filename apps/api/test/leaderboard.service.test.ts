@@ -9,7 +9,19 @@ test("LeaderboardService uses mode stats ordering and defaults to telefon", asyn
     playerModeStats: {
       findMany: async (query: any) => {
         captured = query;
-        return [
+        const rows = [
+          {
+            playerId: "p0",
+            rating: 1550,
+            points: 60,
+            wins: 9,
+            losses: 0,
+            draws: 0,
+            matchesPlayed: 9,
+            currentStreak: 1,
+            bestStreak: 2,
+            player: { displayName: "Ignored" }
+          },
           {
             playerId: "p1",
             rating: 1500,
@@ -35,6 +47,8 @@ test("LeaderboardService uses mode stats ordering and defaults to telefon", asyn
             player: { displayName: "Bravo" }
           }
         ];
+        const minMatches = Number(query?.where?.matchesPlayed?.gte ?? 0) || 0;
+        return rows.filter((row) => row.matchesPlayed >= minMatches);
       }
     }
   } as any;
@@ -44,6 +58,7 @@ test("LeaderboardService uses mode stats ordering and defaults to telefon", asyn
 
   assert.ok(captured);
   assert.equal(captured.where.gameMode, "telefon");
+  assert.equal(captured.where.matchesPlayed.gte, 10);
   assert.deepEqual(captured.orderBy, [
     { rating: "desc" },
     { matchesPlayed: "desc" },
@@ -58,6 +73,7 @@ test("LeaderboardService uses mode stats ordering and defaults to telefon", asyn
   assert.equal(items[0].titleCode, "platinum");
   assert.equal(items[1].id, "p2");
   assert.equal(items[1].rank, 2);
+  assert.equal(items.some((item) => item.id === "p0"), false);
 });
 
 test("LeaderboardService weekly leaderboard filters by match gameMode", async () => {

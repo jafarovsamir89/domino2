@@ -29,10 +29,6 @@ test("buildEconomyUrl builds the settle endpoint", () => {
     assert.equal(buildEconomyUrl("http://example.com", "/api/economy/matches/settle"), "http://example.com/api/economy/matches/settle");
 });
 
-test("buildEconomyUrl builds the refund endpoint", () => {
-    assert.equal(buildEconomyUrl("http://example.com", "/api/economy/matches/refund"), "http://example.com/api/economy/matches/refund");
-});
-
 test("probePlatformApiUrl flags html health responses as invalid", async () => {
     const originalFetch = global.fetch;
     global.fetch = async () => ({

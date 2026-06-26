@@ -68,7 +68,8 @@ test("getPublicConfig exposes the new coin shop reward and packs", async () => {
       findUnique: async () => ({
         key: "default",
         adRewardAmount: 25,
-        dailyClaimCooldown: 30
+        dailyClaimCooldown: 30,
+        dailyRewards: [200, 300, 350, 400, 800, 1000, 2000]
       })
     },
     coinStakeTable: {
@@ -127,6 +128,38 @@ test("getPublicConfig exposes the new coin shop reward and packs", async () => {
   );
 });
 
+test("Daily Bonus - configured dailyRewards control the schedule and extend with streak bonus", async () => {
+  const mockDb = new MockDb() as any;
+  mockDb.config.dailyRewards = [11, 22];
+  mockDb.config.dailyMaxStreak = 5;
+  mockDb.config.dailyStreakBonus = 7;
+  const authMock = {
+    getCurrentProfile: async () => ({ player: { id: "player_1" } })
+  } as any;
+  const service = new EconomyService(mockDb, authMock);
+
+  const status = await service.getDailyBonusStatus({}, new Date("2024-03-01T18:30:00.000Z"));
+  assert.equal(status.dailyBonus.todayAmount, 11);
+  assert.equal(status.dailyBonus.tomorrowAmount, 22);
+  assert.deepEqual(
+    status.dailyBonus.rewardSchedule.map((reward: any) => reward.amount),
+    [11, 22, 29, 36, 43]
+  );
+});
+
+test("Economy config update stores dailyRewards arrays", async () => {
+  const mockDb = new MockDb() as any;
+  const authMock = {
+    getSession: async () => ({ user: { id: "admin_1", role: "admin" } })
+  } as any;
+  const service = new EconomyService(mockDb, authMock);
+
+  const updated = await service.updateEconomyConfig({}, { dailyRewards: "[15, 25, 35]" } as any);
+
+  assert.deepEqual(updated.dailyRewards, [15, 25, 35]);
+  assert.deepEqual(mockDb.config.dailyRewards, [15, 25, 35]);
+});
+
 class MockDb {
   claims: any[] = [];
   wallets: Record<string, any> = {};
@@ -144,12 +177,17 @@ class MockDb {
     dailyBaseAmount: 25,
     dailyStreakBonus: 5,
     dailyMaxStreak: 7,
+    dailyRewards: [200, 300, 350, 400, 800, 1000, 2000],
     dailyClaimCooldown: 20
   };
 
   coinEconomyConfig = {
     upsert: async () => this.config,
-    findUnique: async () => this.config
+    findUnique: async () => this.config,
+    update: async ({ data }: any) => {
+      Object.assign(this.config, data);
+      return this.config;
+    }
   };
 
   coinStakeTable = {

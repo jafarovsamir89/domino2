@@ -1,4 +1,5 @@
 import { Injectable } from "@nestjs/common";
+import type { Prisma } from "@prisma/client";
 
 import { EconomyService } from "../economy/economy.service.js";
 import { grantStarterCoins } from "../economy/economy-starter.js";
@@ -72,6 +73,10 @@ type ResolvedParticipant = {
   ratingDelta: number;
 };
 
+const MIN_OPPONENT_MATCHES = 5;
+const MAX_RATED_PAIR_PER_DAY = 3;
+const RATED_PAIR_WINDOW_MS = 24 * 60 * 60 * 1000;
+
 function toInt(value: unknown, fallback = 0) {
   const parsed = Number.parseInt(String(value ?? ""), 10);
   return Number.isFinite(parsed) ? parsed : fallback;
@@ -111,6 +116,96 @@ function averageRating(participants: ResolvedParticipant[]) {
   if (!participants.length) return 0;
   const total = participants.reduce((sum, entry) => sum + normalizeEloRating(entry.player.rating), 0);
   return Math.round(total / participants.length);
+}
+
+function collectSidePlayers<T>(
+  participants: T[],
+  isTeamMode: boolean,
+  getParticipant: (participant: T) => MatchParticipantPayload,
+  getPlayerId: (participant: T) => string
+) {
+  const sides = new Map<string, string[]>();
+  for (const entry of participants) {
+    const sideKey = getParticipantSideKey(getParticipant(entry), isTeamMode);
+    const playerId = normalizeText(getPlayerId(entry));
+    if (!sideKey || !playerId) {
+      continue;
+    }
+    const list = sides.get(sideKey) || [];
+    list.push(playerId);
+    sides.set(sideKey, list);
+  }
+  return sides;
+}
+
+function buildPairSignatureFromSidePlayers(sidePlayers: Map<string, string[]>) {
+  const sideEntries = Array.from(sidePlayers.entries())
+    .map(([sideKey, playerIds]) => [
+      sideKey,
+      Array.from(new Set(playerIds.map((playerId) => normalizeText(playerId)).filter(Boolean))).sort()
+    ] as const)
+    .filter(([, playerIds]) => playerIds.length > 0)
+    .sort(([a], [b]) => a.localeCompare(b));
+
+  if (sideEntries.length < 2) {
+    return "";
+  }
+
+  return sideEntries
+    .map(([sideKey, playerIds]) => `${sideKey}:${playerIds.join(",")}`)
+    .join("|");
+}
+
+function buildPairSignatureFromMatchParticipants(participants: Array<{ playerId?: string | null; teamIndex?: number | null; result?: string | null; winnerKey?: string | null }>, isTeamMode: boolean) {
+  const sidePlayers = new Map<string, string[]>();
+  for (const participant of participants || []) {
+    const playerId = normalizeText(participant.playerId);
+    const sideKey = getParticipantSideKey(participant as MatchParticipantPayload, isTeamMode);
+    if (!playerId || !sideKey) {
+      continue;
+    }
+    const list = sidePlayers.get(sideKey) || [];
+    list.push(playerId);
+    sidePlayers.set(sideKey, list);
+  }
+  return buildPairSignatureFromSidePlayers(sidePlayers);
+}
+
+async function countRecentRatedPairMatches(
+  tx: Pick<Prisma.TransactionClient, "match">,
+  gameMode: string,
+  isTeamMode: boolean,
+  pairSignature: string,
+  since: Date
+) {
+  if (!pairSignature) {
+    return 0;
+  }
+
+  const matches = await tx.match.findMany({
+    where: {
+      gameMode,
+      isTeamMode,
+      createdAt: {
+        gte: since
+      }
+    },
+    select: {
+      participants: {
+        select: {
+          playerId: true,
+          teamIndex: true,
+          result: true,
+          winnerKey: true
+        }
+      }
+    }
+  });
+
+  return matches.reduce((count, match) => {
+    const currentSignature = buildPairSignatureFromMatchParticipants(match.participants as Array<{ playerId?: string | null; teamIndex?: number | null; result?: string | null; winnerKey?: string | null }>, isTeamMode);
+    return currentSignature === pairSignature ? count + 1 : count;
+  }, 0);
 }
 
 function buildRankedMatchContext({
@@ -400,6 +495,26 @@ export class MatchesService {
           ? (winnerSideKey === "team:0" ? "team:1" : "team:0")
           : "loss";
         const classic101DryWin = gameMode === "classic101" && Boolean(payload.classic101DryWin);
+        const sidePlayers = collectSidePlayers(
+          resolvedParticipants,
+          isTeamMode,
+          (entry) => entry.participant,
+          (entry) => entry.player.playerId
+        );
+        const loserSidePlayers = sidePlayers.get(losingSideKey) || [];
+        const pairSignature = buildPairSignatureFromSidePlayers(sidePlayers);
+        const recentPairCount = await countRecentRatedPairMatches(
+          tx,
+          gameMode,
+          isTeamMode,
+          pairSignature,
+          new Date(matchCreatedAt.getTime() - RATED_PAIR_WINDOW_MS)
+        );
+        const pairRepeatLimitReached = recentPairCount >= MAX_RATED_PAIR_PER_DAY;
+        const opponentsHaveHistory = loserSidePlayers.every((playerId) => {
+          const opponentEntry = resolvedParticipants.find((entry) => entry.player.playerId === playerId);
+          return Number(opponentEntry?.player.matchesPlayed ?? 0) >= MIN_OPPONENT_MATCHES;
+        });
 
         for (const entry of resolvedParticipants) {
           const userId = String(entry.participant.userId || "").trim();
@@ -426,7 +541,11 @@ export class MatchesService {
             penalty
           });
 
-          let nextRating = applyOnce(entry.player.rating, entry.player.matchesPlayed, actualScore);
+          const suppressAllRatingDelta = pairRepeatLimitReached;
+          const suppressWinnerGain = !pairRepeatLimitReached && isWinner && !opponentsHaveHistory && loserSidePlayers.length > 0;
+          let nextRating = (suppressAllRatingDelta || suppressWinnerGain)
+            ? entry.player.rating
+            : applyOnce(entry.player.rating, entry.player.matchesPlayed, actualScore);
           let nextWins = entry.player.wins + (isWinner ? 1 : 0);
           let nextLosses = entry.player.losses + (isLoser ? 1 : 0);
           let nextMatchesPlayed = entry.player.matchesPlayed + 1;
@@ -434,7 +553,9 @@ export class MatchesService {
           let nextBestStreak = Math.max(entry.player.bestStreak, nextCurrentStreak);
 
           if (classic101DryWin) {
-            nextRating = applyOnce(nextRating, nextMatchesPlayed, actualScore);
+            nextRating = suppressAllRatingDelta || suppressWinnerGain
+              ? entry.player.rating
+              : applyOnce(nextRating, nextMatchesPlayed, actualScore);
             nextRating = normalizeEloRating(nextRating);
             nextWins = entry.player.wins + (isWinner ? 1 : 0);
             nextLosses = entry.player.losses + (isLoser ? 1 : 0);

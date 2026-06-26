@@ -4,8 +4,7 @@ const assert = require("node:assert/strict");
 const {
     postEconomyRequest,
     postReserveEconomyMatch,
-    postSettleEconomyMatch,
-    postRefundEconomyMatch
+    postSettleEconomyMatch
 } = require("../economyClient");
 
 test("postEconomyRequest posts JSON to the resolved economy URL", async () => {
@@ -103,24 +102,6 @@ test("postSettleEconomyMatch calls the settle endpoint", async () => {
 
     assert.equal(response.kind, "settle");
     assert.equal(calls[0].url, "http://example.com/api/economy/matches/settle");
-    assert.equal(calls[0].init.method, "POST");
-});
-
-test("postRefundEconomyMatch calls the refund endpoint", async () => {
-    const calls = [];
-    const fetchImpl = async (url, init) => {
-        calls.push({ url, init });
-        return { ok: true, kind: "refund" };
-    };
-
-    const response = await postRefundEconomyMatch({
-        baseUrl: "http://example.com",
-        body: { matchId: "match-1" },
-        fetchImpl
-    });
-
-    assert.equal(response.kind, "refund");
-    assert.equal(calls[0].url, "http://example.com/api/economy/matches/refund");
     assert.equal(calls[0].init.method, "POST");
 });
 

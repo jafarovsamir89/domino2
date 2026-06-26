@@ -56,6 +56,7 @@ type EconomyConfigPayload = {
   dailyBaseAmount?: number;
   dailyStreakBonus?: number;
   dailyMaxStreak?: number;
+  dailyRewards?: unknown;
   dailyClaimCooldown?: number;
   tournamentCommissionBps?: number;
   adRewardAmount?: number;
@@ -120,6 +121,8 @@ const DEFAULT_STAKES: EconomyStakeTablePayload[] = [
   { key: "stake_1000", title: "1,000 coins", stakeAmount: 1000, commissionBps: 1000, isFree: false, isActive: true, sortOrder: 5 },
   { key: "stake_5000", title: "5,000 coins", stakeAmount: 5000, commissionBps: 1000, isFree: false, isActive: true, sortOrder: 6 }
 ];
+
+const DEFAULT_DAILY_REWARDS = [200, 300, 350, 400, 800, 1000, 2000];
 
 const DEFAULT_TABLE_SKINS = [
   {
@@ -291,18 +294,46 @@ export function getNextBakuMidnight(date = new Date()) {
   }, BAKU_TIME_ZONE);
 }
 
-function buildDailyRewardSchedule(config: { dailyMaxStreak: number; dailyBaseAmount: number; dailyStreakBonus: number }) {
+function normalizeDailyRewards(value: unknown) {
+  if (Array.isArray(value)) {
+    return value.map((entry) => Math.max(0, toInt(entry))).filter((entry) => Number.isFinite(entry));
+  }
+
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    if (!trimmed) {
+      return [];
+    }
+
+    try {
+      const parsed = JSON.parse(trimmed);
+      if (Array.isArray(parsed)) {
+        return parsed.map((entry) => Math.max(0, toInt(entry))).filter((entry) => Number.isFinite(entry));
+      }
+    } catch {
+      return trimmed
+        .split(/[\n,]+/)
+        .map((entry) => Math.max(0, toInt(entry)))
+        .filter((entry) => Number.isFinite(entry));
+    }
+  }
+
+  return [];
+}
+
+function buildDailyRewardSchedule(config: { dailyMaxStreak: number; dailyBaseAmount: number; dailyStreakBonus: number; dailyRewards?: unknown }) {
   const maxStreak = Math.max(1, toInt(config.dailyMaxStreak, 7));
-  const customRewards = [200, 300, 350, 400, 800, 1000, 2000];
+  const customRewards = normalizeDailyRewards(config.dailyRewards);
+  const baseRewards = customRewards.length ? customRewards : DEFAULT_DAILY_REWARDS;
   return Array.from({ length: maxStreak }, (_, index) => {
     const day = index + 1;
     let amount = 0;
-    if (index < customRewards.length) {
-      amount = customRewards[index];
+    if (index < baseRewards.length) {
+      amount = baseRewards[index];
     } else {
-      const lastCustom = customRewards[customRewards.length - 1];
+      const lastCustom = baseRewards[baseRewards.length - 1];
       const streakBonus = Math.max(0, toInt(config.dailyStreakBonus, 5));
-      amount = lastCustom + (index - customRewards.length + 1) * streakBonus;
+      amount = lastCustom + (index - baseRewards.length + 1) * streakBonus;
     }
     return {
       day,
@@ -1314,7 +1345,7 @@ export class EconomyService {
   private async buildDailyBonusStatus(
     tx: EconomyTx,
     playerId: string,
-    config: { dailyMaxStreak: number; dailyBaseAmount: number; dailyStreakBonus: number },
+    config: { dailyMaxStreak: number; dailyBaseAmount: number; dailyStreakBonus: number; dailyRewards?: unknown },
     now: Date
   ) {
     const rewardSchedule = buildDailyRewardSchedule(config);
@@ -2836,12 +2867,15 @@ export class EconomyService {
     const session = await this.requireAdmin(headers);
     await this.ensureBootstrap();
 
+    const nextDailyRewards = payload.dailyRewards === undefined ? undefined : normalizeDailyRewards(payload.dailyRewards);
+
     const updated = await this.prisma.coinEconomyConfig.update({
       where: { key: DEFAULT_CONFIG_KEY },
       data: {
         dailyBaseAmount: payload.dailyBaseAmount === undefined ? undefined : Math.max(0, toInt(payload.dailyBaseAmount)),
         dailyStreakBonus: payload.dailyStreakBonus === undefined ? undefined : Math.max(0, toInt(payload.dailyStreakBonus)),
         dailyMaxStreak: payload.dailyMaxStreak === undefined ? undefined : Math.max(1, toInt(payload.dailyMaxStreak)),
+        dailyRewards: nextDailyRewards === undefined ? undefined : nextDailyRewards,
         dailyClaimCooldown: payload.dailyClaimCooldown === undefined ? undefined : Math.max(1, toInt(payload.dailyClaimCooldown)),
         matchCommissionBps: payload.matchCommissionBps === undefined ? undefined : Math.max(0, toInt(payload.matchCommissionBps)),
         tournamentCommissionBps: payload.tournamentCommissionBps === undefined ? undefined : Math.max(0, toInt(payload.tournamentCommissionBps)),
@@ -2852,6 +2886,7 @@ export class EconomyService {
       dailyBaseAmount: updated.dailyBaseAmount,
       dailyStreakBonus: updated.dailyStreakBonus,
       dailyMaxStreak: updated.dailyMaxStreak,
+      dailyRewards: updated.dailyRewards,
       dailyClaimCooldown: updated.dailyClaimCooldown,
       matchCommissionBps: updated.matchCommissionBps,
       tournamentCommissionBps: updated.tournamentCommissionBps,

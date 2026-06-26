@@ -20,6 +20,7 @@ type EconomyOverviewResponse = {
   };
   config: {
     matchCommissionBps: number;
+    dailyRewards: number[];
   };
 };
 
@@ -122,11 +123,15 @@ export default async function EconomyPage() {
               method="PATCH"
               title="Update config"
               submitLabel="Save config"
-              note="Use this to tune the match commission without touching code."
+              note="Use this to tune the match commission and daily bonus schedule without touching code."
               fields={[
-                { name: "matchCommissionBps", label: "Match commission bps", type: "number", min: 0, step: 1, help: "Applied to stake matches." }
+                { name: "matchCommissionBps", label: "Match commission bps", type: "number", min: 0, step: 1, help: "Applied to stake matches." },
+                { name: "dailyRewards", label: "Daily bonus rewards", type: "textarea", rows: 3, help: "JSON array of per-day rewards, e.g. [200,300,350,400,800,1000,2000]. Empty values fall back to the default schedule." }
               ]}
-              initialValues={overview.config}
+              initialValues={{
+                ...overview.config,
+                dailyRewards: JSON.stringify(overview.config.dailyRewards ?? [])
+              }}
             />
           ) : (
             <div style={emptyStyle}>Economy config is not available yet.</div>

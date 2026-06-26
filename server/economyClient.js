@@ -19,13 +19,8 @@ async function postSettleEconomyMatch({ baseUrl, body, authToken, fetchImpl = fe
     return postEconomyRequest({ baseUrl, path: "/api/economy/matches/settle", body, authToken, fetchImpl });
 }
 
-async function postRefundEconomyMatch({ baseUrl, body, authToken, fetchImpl = fetch } = {}) {
-    return postEconomyRequest({ baseUrl, path: "/api/economy/matches/refund", body, authToken, fetchImpl });
-}
-
 module.exports = {
     postEconomyRequest,
     postReserveEconomyMatch,
-    postSettleEconomyMatch,
-    postRefundEconomyMatch
+    postSettleEconomyMatch
 };

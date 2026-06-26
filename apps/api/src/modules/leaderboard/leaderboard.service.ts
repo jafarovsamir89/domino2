@@ -7,6 +7,8 @@ import { PrismaService } from "../prisma/prisma.service.js";
 import { getPlayerRatingTitleCode } from "../ranking/player-ranking.js";
 import { createPlayerModeStatsSnapshot, normalizeRatingGameMode } from "../ranking/player-mode-stats.js";
 
+const MIN_RANKED_MATCHES = 10;
+
 type LeaderboardRow = {
   id: string;
   displayName: string;
@@ -107,7 +109,10 @@ export class LeaderboardService {
     const normalizedGameMode = normalizeRatingGameMode(gameMode);
     const rows = await this.prisma.playerModeStats.findMany({
       where: {
-        gameMode: normalizedGameMode
+        gameMode: normalizedGameMode,
+        matchesPlayed: {
+          gte: MIN_RANKED_MATCHES
+        }
       },
       orderBy: [
         { rating: "desc" },

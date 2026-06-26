@@ -229,6 +229,42 @@ function makePrismaHarness() {
         }
         return row;
       },
+      findMany: async ({ where, select }: any) => {
+        const createdAtGte = where?.createdAt?.gte ? new Date(where.createdAt.gte).getTime() : null;
+        const filtered = Array.from(matchesById.values()).filter((row) => {
+          if (where?.gameMode && row.gameMode !== where.gameMode) {
+            return false;
+          }
+          if (typeof where?.isTeamMode === "boolean" && row.isTeamMode !== where.isTeamMode) {
+            return false;
+          }
+          if (createdAtGte !== null && new Date(row.createdAt).getTime() < createdAtGte) {
+            return false;
+          }
+          return true;
+        });
+        return filtered.map((row) => {
+          const participants = participantsByMatchId.get(row.id) || [];
+          if (select?.participants?.select) {
+            const participantSelect = select.participants.select;
+            return {
+              participants: participants.map((participant: any) => {
+                const next: any = {};
+                for (const key of Object.keys(participantSelect)) {
+                  if (participantSelect[key]) {
+                    next[key] = participant[key];
+                  }
+                }
+                return next;
+              })
+            };
+          }
+          return {
+            ...row,
+            participants: [...participants]
+          };
+        });
+      },
       create: async ({ data, include }: any) => {
         const row = {
           id: data.id,
@@ -283,6 +319,29 @@ function makeService() {
   return { service, prismaMock, economyStub, ...rest };
 }
 
+function seedModeStats(modeStatsByKey: Map<string, any>, playerId: string, gameMode: string, overrides: Record<string, any> = {}) {
+  const row = {
+    id: `mode:${modeStatsByKey.size + 1}`,
+    playerId,
+    gameMode,
+    rating: overrides.rating ?? 1000,
+    points: overrides.points ?? 0,
+    wins: overrides.wins ?? 0,
+    losses: overrides.losses ?? 0,
+    draws: overrides.draws ?? 0,
+    matchesPlayed: overrides.matchesPlayed ?? 5,
+    currentStreak: overrides.currentStreak ?? 0,
+    bestStreak: overrides.bestStreak ?? 0
+  };
+  modeStatsByKey.set(`${playerId}:${gameMode}`, row);
+  return row;
+}
+
+function seedMatch(matchesById: Map<string, any>, participantsByMatchId: Map<string, any[]>, match: any, participants: any[]) {
+  matchesById.set(match.id, match);
+  participantsByMatchId.set(match.id, participants);
+}
+
 function makeToken(userId = "user-a", playerId = "player-a", displayName = "Alpha") {
   return createGameToken({
     userId,
@@ -299,6 +358,8 @@ function makeToken(userId = "user-a", playerId = "player-a", displayName = "Alph
 test("1v1 human vs human updates ELO, wins, losses, and matchesPlayed", async () => {
   const { service, statsByPlayerId, matchesById, modeStatsByKey } = makeService();
   const token = makeToken();
+  seedModeStats(modeStatsByKey, "player:1", "telefon", { matchesPlayed: 5, wins: 3, losses: 2, rating: 1000 });
+  seedModeStats(modeStatsByKey, "player:2", "telefon", { matchesPlayed: 5, wins: 2, losses: 3, rating: 1000 });
 
   const result = await service.recordPlatformMatch(token, withProof({
     sourceMatchId: "room-a:match:001",
@@ -320,11 +381,11 @@ test("1v1 human vs human updates ELO, wins, losses, and matchesPlayed", async ()
   assert.equal(result.matchId, "room-a:match:001");
   assert.equal(matchesById.size, 1);
   assert.equal(matchesById.get("room-a:match:001")?.gameMode, "telefon");
-  assert.equal(statsByPlayerId.get("player:1")?.matchesPlayed, 1);
-  assert.equal(statsByPlayerId.get("player:1")?.wins, 1);
+  assert.equal(statsByPlayerId.get("player:1")?.matchesPlayed, 6);
+  assert.equal(statsByPlayerId.get("player:1")?.wins, 4);
   assert.equal(statsByPlayerId.get("player:1")?.rating, 1020);
-  assert.equal(statsByPlayerId.get("player:2")?.matchesPlayed, 1);
-  assert.equal(statsByPlayerId.get("player:2")?.losses, 1);
+  assert.equal(statsByPlayerId.get("player:2")?.matchesPlayed, 6);
+  assert.equal(statsByPlayerId.get("player:2")?.losses, 4);
   assert.equal(statsByPlayerId.get("player:2")?.rating, 980);
   assert.equal(modeStatsByKey.get("player:1:telefon")?.rating, 1020);
   assert.equal(modeStatsByKey.get("player:2:telefon")?.rating, 980);
@@ -354,9 +415,36 @@ test("human vs bot stays unranked and does not create player stats", async () =>
   assert.equal(modeStatsByKey.size, 0);
 });
 
+test("ranked wins against low-history opponents do not award positive Elo", async () => {
+  const { service, modeStatsByKey } = makeService();
+  const token = makeToken();
+
+  const result = await service.recordPlatformMatch(token, withProof({
+    sourceMatchId: "room-low-history:match:001",
+    mode: "ffa",
+    gameMode: "telefon",
+    isTeamMode: false,
+    roomId: "room-low-history",
+    winnerKey: "player:0",
+    result: "win",
+    stakeKey: "stake_200",
+    participants: [
+      { playerId: "player-a", userId: "user-a", name: "Alpha", winnerKey: "player:0", points: 24, roundWins: 2, result: "win" },
+      { playerId: "player-b", userId: "user-b", name: "Beta", winnerKey: "player:1", points: 8, roundWins: 0, result: "loss" }
+    ],
+    totalPoints: 32
+  }, "platform.match"));
+
+  assert.ok(result);
+  assert.equal(modeStatsByKey.get("player:1:telefon")?.rating, 1000);
+  assert.equal(modeStatsByKey.get("player:2:telefon")?.rating, 980);
+});
+
 test("classic101 matches update mode stats only and keep legacy telefon stats untouched", async () => {
   const { service, statsByPlayerId, modeStatsByKey } = makeService();
   const token = makeToken();
+  seedModeStats(modeStatsByKey, "player:1", "classic101", { matchesPlayed: 5, wins: 3, losses: 2, rating: 1000 });
+  seedModeStats(modeStatsByKey, "player:2", "classic101", { matchesPlayed: 5, wins: 2, losses: 3, rating: 1000 });
 
   const result = await service.recordPlatformMatch(token, withProof({
     sourceMatchId: "room-b:match:101",
@@ -377,20 +465,72 @@ test("classic101 matches update mode stats only and keep legacy telefon stats un
 
   assert.ok(result);
   assert.equal(statsByPlayerId.size, 0);
-  assert.equal(modeStatsByKey.get("player:1:classic101")?.matchesPlayed, 1);
-  assert.equal(modeStatsByKey.get("player:1:classic101")?.wins, 1);
+  assert.equal(modeStatsByKey.get("player:1:classic101")?.matchesPlayed, 6);
+  assert.equal(modeStatsByKey.get("player:1:classic101")?.wins, 4);
   assert.equal(modeStatsByKey.get("player:1:classic101")?.currentStreak, 1);
-  assert.equal(modeStatsByKey.get("player:2:classic101")?.losses, 1);
-  assert.equal(modeStatsByKey.get("player:2:classic101")?.matchesPlayed, 1);
+  assert.equal(modeStatsByKey.get("player:2:classic101")?.losses, 4);
+  assert.equal(modeStatsByKey.get("player:2:classic101")?.matchesPlayed, 6);
   assert.equal(modeStatsByKey.get("player:2:classic101")?.currentStreak, 0);
   assert.equal(modeStatsByKey.get("player:1:classic101")?.rating, 1039);
   assert.equal(modeStatsByKey.get("player:2:classic101")?.rating, 961);
   assert.equal(modeStatsByKey.get("player:1:classic101")?.gameMode, "classic101");
 });
 
-test("team mode ranks humans while ignoring bots", async () => {
-  const { service, statsByPlayerId } = makeService();
+test("same pair repeated more than three times per day does not change Elo", async () => {
+  const { service, modeStatsByKey, matchesById, participantsByMatchId } = makeService();
   const token = makeToken();
+  seedModeStats(modeStatsByKey, "player:1", "telefon", { matchesPlayed: 5, wins: 3, losses: 2, rating: 1000 });
+  seedModeStats(modeStatsByKey, "player:2", "telefon", { matchesPlayed: 5, wins: 2, losses: 3, rating: 1000 });
+
+  const baseTime = new Date();
+  for (let index = 0; index < 3; index += 1) {
+    const matchId = `room-repeat:match:00${index + 1}`;
+    const createdAt = new Date(baseTime.getTime() - ((index + 1) * 60 * 60 * 1000));
+    seedMatch(matchesById, participantsByMatchId, {
+      id: matchId,
+      mode: "online",
+      gameMode: "telefon",
+      isTeamMode: false,
+      roomId: "room-repeat",
+      winnerKey: "player:0",
+      result: "win",
+      totalPoints: 32,
+      createdAt
+    }, [
+      { playerId: "player:1", teamIndex: null, winnerKey: "player:0", result: "win", ratingBefore: 1000, ratingAfter: 1010 },
+      { playerId: "player:2", teamIndex: null, winnerKey: "player:1", result: "loss", ratingBefore: 1000, ratingAfter: 990 }
+    ]);
+  }
+
+  const result = await service.recordPlatformMatch(token, withProof({
+    sourceMatchId: "room-repeat:match:004",
+    mode: "ffa",
+    gameMode: "telefon",
+    isTeamMode: false,
+    roomId: "room-repeat",
+    winnerKey: "player:0",
+    result: "win",
+    stakeKey: "stake_200",
+    participants: [
+      { playerId: "player-a", userId: "user-a", name: "Alpha", winnerKey: "player:0", points: 24, roundWins: 2, result: "win" },
+      { playerId: "player-b", userId: "user-b", name: "Beta", winnerKey: "player:1", points: 8, roundWins: 0, result: "loss" }
+    ],
+    totalPoints: 32
+  }, "platform.match"));
+
+  assert.ok(result);
+  assert.equal(modeStatsByKey.get("player:1:telefon")?.rating, 1000);
+  assert.equal(modeStatsByKey.get("player:2:telefon")?.rating, 1000);
+  assert.equal(modeStatsByKey.get("player:1:telefon")?.matchesPlayed, 6);
+  assert.equal(modeStatsByKey.get("player:2:telefon")?.matchesPlayed, 6);
+});
+
+test("team mode ranks humans while ignoring bots", async () => {
+  const { service, statsByPlayerId, modeStatsByKey } = makeService();
+  const token = makeToken();
+  seedModeStats(modeStatsByKey, "player:1", "telefon", { matchesPlayed: 5, wins: 3, losses: 2, rating: 1000 });
+  seedModeStats(modeStatsByKey, "player:2", "telefon", { matchesPlayed: 5, wins: 2, losses: 3, rating: 1000 });
+  seedModeStats(modeStatsByKey, "player:3", "telefon", { matchesPlayed: 5, wins: 3, losses: 2, rating: 1000 });
 
   const result = await service.recordPlatformMatch(token, withProof({
     sourceMatchId: "room-c:match:001",
@@ -420,8 +560,10 @@ test("team mode ranks humans while ignoring bots", async () => {
 });
 
 test("duplicate sourceMatchId does not update ELO twice", async () => {
-  const { service, statsByPlayerId, matchesById } = makeService();
+  const { service, statsByPlayerId, matchesById, modeStatsByKey } = makeService();
   const token = makeToken();
+  seedModeStats(modeStatsByKey, "player:1", "telefon", { matchesPlayed: 5, wins: 3, losses: 2, rating: 1000 });
+  seedModeStats(modeStatsByKey, "player:2", "telefon", { matchesPlayed: 5, wins: 2, losses: 3, rating: 1000 });
 
   const payload = withProof({
     sourceMatchId: "room-d:match:001",
@@ -455,8 +597,10 @@ test("duplicate sourceMatchId does not update ELO twice", async () => {
 });
 
 test("forfeit 1v1 applies an extra penalty to the leaving player", async () => {
-  const { service, statsByPlayerId } = makeService();
+  const { service, statsByPlayerId, modeStatsByKey } = makeService();
   const token = makeToken();
+  seedModeStats(modeStatsByKey, "player:1", "telefon", { matchesPlayed: 5, wins: 3, losses: 2, rating: 1000 });
+  seedModeStats(modeStatsByKey, "player:2", "telefon", { matchesPlayed: 5, wins: 2, losses: 3, rating: 1000 });
 
   const result = await service.recordPlatformMatch(token, withProof({
     sourceMatchId: "room-e:match:001",
@@ -478,14 +622,18 @@ test("forfeit 1v1 applies an extra penalty to the leaving player", async () => {
 
   assert.ok(result);
   assert.equal(statsByPlayerId.get("player:1")?.rating, 975);
-  assert.equal(statsByPlayerId.get("player:1")?.losses, 1);
+  assert.equal(statsByPlayerId.get("player:1")?.losses, 3);
   assert.equal(statsByPlayerId.get("player:2")?.rating, 1020);
-  assert.equal(statsByPlayerId.get("player:2")?.wins, 1);
+  assert.equal(statsByPlayerId.get("player:2")?.wins, 3);
 });
 
 test("forfeit team applies the penalty only to the leaving player", async () => {
-  const { service, statsByPlayerId } = makeService();
+  const { service, statsByPlayerId, modeStatsByKey } = makeService();
   const token = makeToken();
+  seedModeStats(modeStatsByKey, "player:1", "telefon", { matchesPlayed: 5, wins: 3, losses: 2, rating: 1000 });
+  seedModeStats(modeStatsByKey, "player:2", "telefon", { matchesPlayed: 5, wins: 2, losses: 3, rating: 1000 });
+  seedModeStats(modeStatsByKey, "player:3", "telefon", { matchesPlayed: 5, wins: 3, losses: 2, rating: 1000 });
+  seedModeStats(modeStatsByKey, "player:4", "telefon", { matchesPlayed: 5, wins: 3, losses: 2, rating: 1000 });
 
   const result = await service.recordPlatformMatch(token, withProof({
     sourceMatchId: "room-f:match:001",

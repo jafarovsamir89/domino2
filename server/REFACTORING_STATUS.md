@@ -47,8 +47,7 @@
   - Thin transport wrapper for economy endpoints.
   - `postEconomyRequest`.
   - `postReserveEconomyMatch`.
-  - `postSettleEconomyMatch`.
-  - `postRefundEconomyMatch`.
+- `postSettleEconomyMatch`.
 
 - `economyParticipants.js`
   - Pure participant/winner selection helpers for economy flows.

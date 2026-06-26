@@ -247,6 +247,7 @@ model CoinEconomyConfig {
   dailyBaseAmount     Int      @default(25)
   dailyStreakBonus    Int      @default(5)
   dailyMaxStreak      Int      @default(7)
+  dailyRewards        Int[]    @default([200, 300, 350, 400, 800, 1000, 2000])
   dailyClaimCooldown  Int      @default(20)
   matchCommissionBps  Int      @default(500)
   tournamentCommissionBps Int   @default(1000)
