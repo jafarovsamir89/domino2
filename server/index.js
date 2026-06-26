@@ -1,3 +1,7 @@
+// Initialize Sentry before requiring any other modules.
+require("./instrument.js");
+const Sentry = require("@sentry/node");
+
 const express = require("express");
 const cors = require("cors");
 const http = require("http");
@@ -333,6 +337,10 @@ app.get("/api/voice/config", (req, res) => {
         )
     });
 });
+
+// The Sentry error handler must be registered after all controllers/routes
+// and before any other error middleware / HTTP server creation.
+Sentry.setupExpressErrorHandler(app);
 
 const server = http.createServer(app);
 const gameServerOptions = {
