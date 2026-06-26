@@ -132,6 +132,14 @@ export class EconomyController {
     return this.economyService.getAdminOverview(req.headers);
   }
 
+  @Post("admin/economy/stakes/reconcile-stale-reserved")
+  async reconcileStaleReservedStakes(
+    @Req() req: Request,
+    @Body() body: Record<string, unknown>
+  ) {
+    return this.economyService.reconcileStaleReservedStakes(req.headers, body || {});
+  }
+
   @Get("admin/economy/wallets")
   async listAdminWallets(
     @Req() req: Request,

@@ -99,10 +99,16 @@ function normalizeReserveFailureReason(error: unknown): string {
   return message || "reserve_failed";
 }
 
+function isUniqueConstraintError(error: unknown) {
+  return Boolean(error && typeof error === "object" && "code" in error && (error as { code?: string }).code === "P2002");
+}
+
 const DEFAULT_CONFIG_KEY = "default";
 const COIN_SHOP_VIDEO_REWARD_AMOUNT = 1000;
 const COIN_SHOP_VIDEO_COOLDOWN_MINUTES = 30;
 const COIN_SHOP_VIDEO_DAILY_LIMIT = 6;
+const RESERVED_STALE_TTL_MIN = 120;
+const RESERVED_STALE_BATCH_LIMIT = 100;
 const BAKU_TIME_ZONE = "Asia/Baku";
 
 const DEFAULT_STAKES: EconomyStakeTablePayload[] = [
@@ -2496,6 +2502,136 @@ export class EconomyService {
       stakes: stakeRows.map(formatStakeSummary),
       reservations: recentReservations
     };
+  }
+
+  async reconcileStaleReservedStakes(
+    headers: IncomingHttpHeaders,
+    payload: { ttlMinutes?: number; limit?: number } = {}
+  ) {
+    const session = await this.requireAdmin(headers);
+    await this.ensureBootstrap();
+
+    const ttlMinutes = Math.max(1, Math.min(24 * 60, toInt(payload.ttlMinutes, RESERVED_STALE_TTL_MIN)));
+    const limit = Math.max(1, Math.min(500, toInt(payload.limit, RESERVED_STALE_BATCH_LIMIT)));
+    const cutoff = new Date(Date.now() - (ttlMinutes * 60_000));
+
+    const staleReservations = await this.prisma.coinMatchStake.findMany({
+      where: {
+        status: "reserved",
+        reservedAt: {
+          lt: cutoff
+        }
+      },
+      orderBy: [
+        { reservedAt: "asc" },
+        { id: "asc" }
+      ],
+      take: limit,
+      select: {
+        id: true,
+        roomId: true,
+        matchId: true,
+        playerId: true,
+        stakeTableId: true,
+        stakeAmount: true,
+        reservedAt: true
+      }
+    });
+
+    let scanned = 0;
+    let refunded = 0;
+    let skipped = 0;
+    let errors = 0;
+
+    for (const reservation of staleReservations) {
+      scanned += 1;
+      const idempotencyKey = `${reservation.roomId}:${reservation.matchId || "match"}:${reservation.playerId}:${reservation.stakeTableId}:refund`;
+
+      try {
+        const closed = await this.prisma.$transaction(async (tx) => {
+          const lockedRows = await tx.$queryRaw<Array<{ id: string }>>(Prisma.sql`
+            SELECT "id"
+            FROM "CoinMatchStake"
+            WHERE "id" = ${reservation.id}
+              AND status = 'reserved'::"CoinStakeStatus"
+            FOR UPDATE
+          `);
+          if (!lockedRows.length) {
+            return { skipped: true as const };
+          }
+
+          const existingLedger = await tx.coinLedgerEntry.findUnique({
+            where: { idempotencyKey }
+          });
+          if (existingLedger) {
+            await tx.coinMatchStake.update({
+              where: { id: reservation.id },
+              data: {
+                status: "refunded",
+                refundedAt: new Date()
+              }
+            });
+            return { skipped: true as const, alreadyClosed: true as const };
+          }
+
+          await this.releaseWallet(
+            tx,
+            reservation.playerId,
+            reservation.stakeAmount,
+            "refund",
+            "match_reconcile",
+            reservation.matchId || reservation.roomId,
+            {
+              idempotencyKey,
+              note: "stale reservation reconcile",
+              payloadJson: {
+                roomId: reservation.roomId,
+                matchId: reservation.matchId || null,
+                stakeTableId: reservation.stakeTableId,
+                reservedAt: reservation.reservedAt.toISOString(),
+                ttlMinutes
+              }
+            }
+          );
+
+          await tx.coinMatchStake.update({
+            where: { id: reservation.id },
+            data: {
+              status: "refunded",
+              refundedAt: new Date()
+            }
+          });
+
+          return { refunded: true as const };
+        });
+
+        if (closed.refunded) {
+          refunded += 1;
+        } else {
+          skipped += 1;
+        }
+      } catch (error) {
+        if (isUniqueConstraintError(error)) {
+          skipped += 1;
+          continue;
+        }
+        errors += 1;
+      }
+    }
+
+    const summary = {
+      scanned,
+      refunded,
+      skipped,
+      errors,
+      ttlMinutes,
+      limit,
+      cutoff: cutoff.toISOString()
+    };
+
+    await this.recordAdminAction(this.prisma, session.user.id, "economy.reserved_stakes.reconcile", "CoinMatchStake", "stale-reserved-batch", summary as Prisma.InputJsonValue);
+
+    return summary;
   }
 
   async listAdminQuests(headers: IncomingHttpHeaders) {

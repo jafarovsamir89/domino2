@@ -132,6 +132,9 @@ class MockDb {
   wallets: Record<string, any> = {};
   ledger: any[] = [];
   systemAudit: any[] = [];
+  adminAudit: any[] = [];
+  matchStakes: any[] = [];
+  queryRawCalls: any[] = [];
   questProgress: any[] = [];
   quests: Record<string, any> = {
     daily_login: { id: "quest_daily_login", key: "daily_login", isActive: true, maxProgress: 1 }
@@ -190,7 +193,9 @@ class MockDb {
           id: `wallet_${where.playerId}`,
           playerId: where.playerId,
           balance: create.balance || 0,
-          reserved: create.reserved || 0
+          reserved: create.reserved || 0,
+          lifetimeEarned: create.lifetimeEarned || 0,
+          lifetimeSpent: create.lifetimeSpent || 0
         };
       }
       return this.wallets[where.playerId];
@@ -199,6 +204,10 @@ class MockDb {
       const w = this.wallets[where.playerId];
       if (data.balance?.increment) w.balance += data.balance.increment;
       if (data.balance?.decrement) w.balance -= data.balance.decrement;
+      if (data.reserved?.increment) w.reserved += data.reserved.increment;
+      if (data.reserved?.decrement) w.reserved -= data.reserved.decrement;
+      if (data.lifetimeEarned?.increment) w.lifetimeEarned += data.lifetimeEarned.increment;
+      if (data.lifetimeSpent?.increment) w.lifetimeSpent += data.lifetimeSpent.increment;
       return w;
     }
   };
@@ -228,6 +237,9 @@ class MockDb {
     create: async ({ data }: any) => {
       this.ledger.push(data);
       return data;
+    },
+    findUnique: async ({ where }: any) => {
+      return this.ledger.find(entry => entry.idempotencyKey === where.idempotencyKey) || null;
     }
   };
 
@@ -235,6 +247,54 @@ class MockDb {
     create: async ({ data }: any) => {
       this.systemAudit.push(data);
       return data;
+    }
+  };
+
+  adminAuditLog = {
+    create: async ({ data }: any) => {
+      this.adminAudit.push(data);
+      return data;
+    }
+  };
+
+  coinMatchStake = {
+    findMany: async ({ where, orderBy, take, select }: any) => {
+      let rows = this.matchStakes.slice();
+      if (where?.status) {
+        rows = rows.filter(row => row.status === where.status);
+      }
+      if (where?.reservedAt?.lt) {
+        const cutoff = new Date(where.reservedAt.lt).getTime();
+        rows = rows.filter(row => new Date(row.reservedAt).getTime() < cutoff);
+      }
+      rows.sort((a, b) => {
+        const aTime = new Date(a.reservedAt).getTime();
+        const bTime = new Date(b.reservedAt).getTime();
+        if (aTime !== bTime) return aTime - bTime;
+        return String(a.id).localeCompare(String(b.id));
+      });
+      rows = rows.slice(0, take || rows.length);
+      if (select) {
+        return rows.map(row => {
+          const next: any = {};
+          for (const key of Object.keys(select)) {
+            if (select[key]) next[key] = row[key];
+          }
+          return next;
+        });
+      }
+      return rows;
+    },
+    findUnique: async ({ where }: any) => this.matchStakes.find(row =>
+      row.id === where.id ||
+      (where.roomId_playerId_stakeTableId && row.roomId === where.roomId_playerId_stakeTableId.roomId && row.playerId === where.roomId_playerId_stakeTableId.playerId && row.stakeTableId === where.roomId_playerId_stakeTableId.stakeTableId)
+    ) || null,
+    update: async ({ where, data }: any) => {
+      const row = this.matchStakes.find(entry => entry.id === where.id);
+      if (row) {
+        Object.assign(row, data);
+      }
+      return row;
     }
   };
 
@@ -267,6 +327,13 @@ class MockDb {
   };
 
   $queryRaw = async (query: any) => {
+    this.queryRawCalls.push(query);
+    const text = String(query?.strings?.join?.("") || "");
+    if (text.includes('FROM "CoinMatchStake"')) {
+      const stakeId = query.values[0];
+      const row = this.matchStakes.find(entry => entry.id === stakeId && entry.status === "reserved");
+      return row ? [{ id: row.id }] : [];
+    }
     const playerId = query.values[0];
     if (!this.wallets[playerId]) {
       this.wallets[playerId] = {
@@ -571,4 +638,101 @@ test("Daily Bonus - Normal claim followed by rewarded x2 upgrade credits wallet 
   assert.equal(res2.wallet.balance, 400); // total balance updated to 400
   assert.equal(res2.claim.amount, 400); // the claim row updated to 400
   assert.equal(res2.dailyBonus.doubleClaimAvailable, false); // no longer available
+});
+
+test("reconcileStaleReservedStakes refunds only stale rows and keeps fresh reservations untouched", async () => {
+  const mockDb = new MockDb() as any;
+  mockDb.wallets.player_1 = {
+    id: "wallet_player_1",
+    playerId: "player_1",
+    balance: 600,
+    reserved: 400,
+    lifetimeEarned: 0,
+    lifetimeSpent: 0
+  };
+  mockDb.matchStakes.push(
+    {
+      id: "stake-old",
+      roomId: "room-old",
+      matchId: "match-old",
+      playerId: "player_1",
+      stakeTableId: "stake_200",
+      stakeAmount: 200,
+      status: "reserved",
+      reservedAt: new Date(Date.now() - (3 * 60 * 60 * 1000))
+    },
+    {
+      id: "stake-fresh",
+      roomId: "room-fresh",
+      matchId: "match-fresh",
+      playerId: "player_1",
+      stakeTableId: "stake_200",
+      stakeAmount: 200,
+      status: "reserved",
+      reservedAt: new Date(Date.now() - (10 * 60 * 1000))
+    }
+  );
+  const authMock = {
+    getSession: async () => ({ user: { id: "admin_1", role: "admin" } })
+  } as any;
+  const service = new EconomyService(mockDb, authMock);
+
+  const summary = await service.reconcileStaleReservedStakes({}, { ttlMinutes: 120, limit: 10 });
+
+  assert.equal(summary.scanned, 1);
+  assert.equal(summary.refunded, 1);
+  assert.equal(summary.skipped, 0);
+  assert.equal(summary.errors, 0);
+  assert.equal(summary.ttlMinutes, 120);
+  assert.equal(summary.limit, 10);
+  assert.equal(mockDb.wallets.player_1.balance, 800);
+  assert.equal(mockDb.wallets.player_1.reserved, 200);
+  assert.equal(mockDb.matchStakes.find((row: any) => row.id === "stake-old")?.status, "refunded");
+  assert.equal(mockDb.matchStakes.find((row: any) => row.id === "stake-fresh")?.status, "reserved");
+  assert.equal(mockDb.ledger.filter((entry: any) => entry.idempotencyKey?.endsWith(":refund")).length, 1);
+  assert.equal(mockDb.queryRawCalls.some((query: any) => String(query?.strings?.join?.("") || "").includes('FOR UPDATE')), true);
+  assert.equal(mockDb.adminAudit.length, 1);
+});
+
+test("reconcileStaleReservedStakes treats an existing refund idempotency key as already closed", async () => {
+  const mockDb = new MockDb() as any;
+  mockDb.wallets.player_1 = {
+    id: "wallet_player_1",
+    playerId: "player_1",
+    balance: 600,
+    reserved: 200,
+    lifetimeEarned: 0,
+    lifetimeSpent: 0
+  };
+  const idempotencyKey = "room-collision:match-collision:player_1:stake_200:refund";
+  mockDb.ledger.push({
+    idempotencyKey,
+    type: "refund",
+    amount: 200
+  });
+  mockDb.matchStakes.push({
+    id: "stake-collision",
+    roomId: "room-collision",
+    matchId: "match-collision",
+    playerId: "player_1",
+    stakeTableId: "stake_200",
+    stakeAmount: 200,
+    status: "reserved",
+    reservedAt: new Date(Date.now() - (3 * 60 * 60 * 1000))
+  });
+  const authMock = {
+    getSession: async () => ({ user: { id: "admin_1", role: "admin" } })
+  } as any;
+  const service = new EconomyService(mockDb, authMock);
+
+  const summary = await service.reconcileStaleReservedStakes({}, { ttlMinutes: 120, limit: 10 });
+
+  assert.equal(summary.scanned, 1);
+  assert.equal(summary.refunded, 0);
+  assert.equal(summary.skipped, 1);
+  assert.equal(summary.errors, 0);
+  assert.equal(mockDb.wallets.player_1.balance, 600);
+  assert.equal(mockDb.wallets.player_1.reserved, 200);
+  assert.equal(mockDb.matchStakes.find((row: any) => row.id === "stake-collision")?.status, "refunded");
+  assert.equal(mockDb.ledger.filter((entry: any) => entry.idempotencyKey === idempotencyKey).length, 1);
 });
