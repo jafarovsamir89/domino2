@@ -1,7 +1,7 @@
 // js/network.js
 // Networking using Colyseus 0.17
 
-const DOMINO_ENDPOINTS = globalThis.DOMINO_ENDPOINTS || {
+var DOMINO_ENDPOINTS = globalThis.DOMINO_ENDPOINTS || {
     API_BASE: "https://apid.simplesoft.az/api",
     GAME_HTTP_BASE: "https://gamed.simplesoft.az",
     GAME_WS_URL: "wss://gamed.simplesoft.az"
@@ -40,7 +40,7 @@ function getBoardStartAxis() {
     return 'horizontal';
 }
 
-class NetworkManager {
+var NetworkManager = globalThis.NetworkManager || class NetworkManager {
     constructor(game) {
         this.game = game;
         this.client = null;
@@ -930,7 +930,7 @@ class NetworkManager {
 
         return this.voiceConfigPromise;
     }
-  }
+  };
 
 // Make available globally for ES modules
 if (typeof window !== 'undefined') {
