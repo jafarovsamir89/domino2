@@ -115,6 +115,26 @@ export class SocialRequestFriendDto {
   note?: string;
 }
 
+export class SocialReportPlayerDto {
+  @IsString()
+  @MaxLength(64)
+  targetPlayerId!: string;
+
+  @IsString()
+  @MaxLength(2000)
+  reason!: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(64)
+  category?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(64)
+  matchId?: string;
+}
+
 export class SocialSendGiftDto {
   @IsString()
   @MaxLength(64)

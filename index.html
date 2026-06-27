@@ -7,7 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css?v=round-stage-30-social">
+    <link rel="stylesheet" href="css/style.css?v=round-stage-31-moderation">
     <link rel="icon" href="assets/icon.png">
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#0f1923">
@@ -175,6 +175,8 @@
                 <p class="account-legal-copy">
                     <span data-i18n="account-legal-prefix">Davam etməklə siz</span>
                     <a href="terms.html" target="_blank" rel="noopener noreferrer" data-i18n="account-legal-link">İstifadəçi razılaşmasını</a>
+                    <span data-i18n="account-legal-and">və</span>
+                    <a href="terms.html#conduct" target="_blank" rel="noopener noreferrer" data-i18n="account-conduct-link">Davranış qaydaları</a>
                     <span data-i18n="account-legal-suffix">qəbul edirsiniz.</span>
                 </p>
             </section>
@@ -411,6 +413,8 @@
                         <button type="button" class="btn btn-action btn-strong" id="player-profile-friend-btn" data-i18n="friend-add">Dost et</button>
                         <button type="button" class="btn btn-action btn-strong" id="player-profile-invite-btn" data-i18n="friend-invite">Dəvət et</button>
                         <button type="button" class="btn btn-menu" id="player-profile-message-btn" data-i18n="player-profile-message">Mesajlar</button>
+                        <button type="button" class="btn btn-menu" id="player-profile-report-btn" data-i18n="player-profile-report">Şikayət et</button>
+                        <button type="button" class="btn btn-menu" id="player-profile-block-btn" data-i18n="player-profile-block">Blok et</button>
                     </div>
                 </div>
             </section>
@@ -603,6 +607,8 @@
                     <p class="account-legal-copy">
                         <span data-i18n="account-legal-prefix">Davam etməklə siz</span>
                         <a href="terms.html" target="_blank" rel="noopener noreferrer" data-i18n="account-legal-link">İstifadəçi razılaşmasını</a>
+                        <span data-i18n="account-legal-and">və</span>
+                        <a href="terms.html#conduct" target="_blank" rel="noopener noreferrer" data-i18n="account-conduct-link">Davranış qaydaları</a>
                         <span data-i18n="account-legal-suffix">qəbul edirsiniz.</span>
                     </p>
                 </section>
@@ -711,11 +717,11 @@
     <script src="shared/domino-model-core.cjs" defer></script>
     <script src="shared/domino-board-core.cjs" defer></script>
     <script src="shared/domino-rulesets.cjs" defer></script>
-    <script src="js/network.js?v=round-stage-30-social" defer></script>
-    <script type="module" src="js/app.js?v=round-stage-30-social" defer></script>
+    <script src="js/network.js?v=round-stage-31-moderation" defer></script>
+    <script type="module" src="js/app.js?v=round-stage-31-moderation" defer></script>
     <script>
         (() => {
-            const SW_VERSION = 'browser-production-trace-v30-social';
+            const SW_VERSION = 'browser-production-trace-v31-moderation';
             const SW_RELOAD_FLAG = 'dominoSwReloadedForVersion';
             let pendingSwReload = false;
 

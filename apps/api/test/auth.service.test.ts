@@ -170,3 +170,72 @@ test("AuthService.getCurrentProfile keeps default history behavior when no mode 
     ["classic101", "telefon"]
   );
 });
+
+test("AuthService.updateCurrentProfileAvatar rejects non-image https URLs", async () => {
+  const originalFetch = global.fetch;
+  const prismaMock = {
+    user: {
+      update: async () => ({})
+    },
+    player: {
+      upsert: async () => ({})
+    }
+  } as any;
+
+  const service = new AuthService(prismaMock);
+  (service as any).getSession = async () => makeSession();
+  global.fetch = (async () => ({
+    ok: true,
+    status: 200,
+    headers: {
+      get: (key: string) => (String(key).toLowerCase() === "content-type" ? "text/html" : null)
+    },
+    arrayBuffer: async () => new ArrayBuffer(0)
+  })) as any;
+
+  try {
+    await assert.rejects(
+      () => service.updateCurrentProfileAvatar({} as any, "https://example.com/avatar.html"),
+      /image/i
+    );
+  } finally {
+    global.fetch = originalFetch;
+  }
+});
+
+test("AuthService.updateCurrentProfileAvatar rejects oversized image URLs", async () => {
+  const originalFetch = global.fetch;
+  const prismaMock = {
+    user: {
+      update: async () => ({})
+    },
+    player: {
+      upsert: async () => ({})
+    }
+  } as any;
+
+  const service = new AuthService(prismaMock);
+  (service as any).getSession = async () => makeSession();
+  global.fetch = (async () => ({
+    ok: true,
+    status: 200,
+    headers: {
+      get: (key: string) => {
+        const normalized = String(key).toLowerCase();
+        if (normalized === "content-type") return "image/png";
+        if (normalized === "content-length") return String(3 * 1024 * 1024);
+        return null;
+      }
+    },
+    arrayBuffer: async () => new ArrayBuffer(3 * 1024 * 1024 + 1)
+  })) as any;
+
+  try {
+    await assert.rejects(
+      () => service.updateCurrentProfileAvatar({} as any, "https://example.com/avatar.png"),
+      /large/i
+    );
+  } finally {
+    global.fetch = originalFetch;
+  }
+});

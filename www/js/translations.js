@@ -423,6 +423,32 @@ export const translations = {
         "player-profile-status-ready": "Hazırdır",
         "player-profile-self": "Bu sizsiniz",
         "player-profile-send": "Göndər",
+        "player-profile-open": "Profili aç",
+        "player-profile-report": "Şikayət et",
+        "player-profile-block": "Blok et",
+        "player-profile-unblock": "Bloku sil",
+        "player-profile-blocked": "İstifadəçi bloklandı",
+        "player-profile-unblocked": "Blok silindi",
+        "player-profile-block-failed": "Bloklama alınmadı",
+        "player-profile-blocked-by-you": "Siz tərəfindən bloklanıb",
+        "player-profile-blocked-you": "Sizi bloklayıb",
+        "player-profile-blocked-both": "Hər iki tərəf bloklanıb",
+        "player-report-kicker": "Moderasiya",
+        "player-report-title": "Oyunçunu şikayət et",
+        "player-report-desc": "Nə baş verdiyini yazın.",
+        "player-report-category-label": "Kateqoriya",
+        "player-report-category-chat": "Çat",
+        "player-report-category-voice": "Səs",
+        "player-report-category-avatar": "Avatar",
+        "player-report-category-other": "Digər",
+        "player-report-message-label": "Səbəb",
+        "player-report-message-placeholder": "Qısa səbəb yazın",
+        "player-report-send": "Şikayəti göndər",
+        "player-report-required": "Zəhmət olmasa səbəbi yazın.",
+        "player-report-sent": "Şikayət göndərildi",
+        "player-report-failed": "Şikayət göndərilə bilmədi",
+        "voice-mute-player": "Səsi kəs",
+        "voice-unmute-player": "Səsi aç",
         "messages-title": "Mesajlar",
         "messages-empty": "Hələ mesaj yoxdur",
         "messages-inbox": "Inbox",
@@ -501,6 +527,8 @@ export const translations = {
         ,"turn-timeout": "{player} vaxtında oynamadı və raundu uduzdu"
         ,"account-legal-prefix": "Davam etməklə siz"
         ,"account-legal-link": "İstifadəçi razılaşmasını"
+        ,"account-legal-and": "və"
+        ,"account-conduct-link": "Davranış qaydaları"
         ,"account-legal-suffix": "qəbul edirsiniz."
         ,"account-profile": "Profil"
         ,"account-profile-empty": "Hələ profil yoxdur"
@@ -1066,6 +1094,32 @@ export const translations = {
         "player-profile-status-ready": "Ready",
         "player-profile-self": "This is you",
         "player-profile-send": "Send",
+        "player-profile-open": "Open profile",
+        "player-profile-report": "Report",
+        "player-profile-block": "Block",
+        "player-profile-unblock": "Unblock",
+        "player-profile-blocked": "User blocked",
+        "player-profile-unblocked": "Block removed",
+        "player-profile-block-failed": "Could not block user",
+        "player-profile-blocked-by-you": "Blocked by you",
+        "player-profile-blocked-you": "Blocked you",
+        "player-profile-blocked-both": "Blocked on both sides",
+        "player-report-kicker": "Moderation",
+        "player-report-title": "Report player",
+        "player-report-desc": "Tell us what happened.",
+        "player-report-category-label": "Category",
+        "player-report-category-chat": "Chat",
+        "player-report-category-voice": "Voice",
+        "player-report-category-avatar": "Avatar",
+        "player-report-category-other": "Other",
+        "player-report-message-label": "Reason",
+        "player-report-message-placeholder": "Write a short reason",
+        "player-report-send": "Send report",
+        "player-report-required": "Please enter a reason.",
+        "player-report-sent": "Report sent",
+        "player-report-failed": "Could not send report",
+        "voice-mute-player": "Mute",
+        "voice-unmute-player": "Unmute",
         "messages-title": "Messages",
         "messages-empty": "No messages yet",
         "messages-inbox": "Inbox",
@@ -1158,6 +1212,8 @@ export const translations = {
         ,"timeout-forfeit-waiting-other": "Waiting for continue"
         ,"account-legal-prefix": "By continuing, you agree to the"
         ,"account-legal-link": "Terms of Service"
+        ,"account-legal-and": "and"
+        ,"account-conduct-link": "Rules of Conduct"
         ,"account-legal-suffix": "."
         ,"account-profile": "Profile"
         ,"account-profile-empty": "No profile yet"
@@ -1722,6 +1778,32 @@ export const translations = {
         "player-profile-status-ready": "Готово",
         "player-profile-self": "Это вы",
         "player-profile-send": "Отправить",
+        "player-profile-open": "Открыть профиль",
+        "player-profile-report": "Пожаловаться",
+        "player-profile-block": "Заблокировать",
+        "player-profile-unblock": "Разблокировать",
+        "player-profile-blocked": "Игрок заблокирован",
+        "player-profile-unblocked": "Блокировка снята",
+        "player-profile-block-failed": "Не удалось заблокировать игрока",
+        "player-profile-blocked-by-you": "Заблокирован вами",
+        "player-profile-blocked-you": "Заблокировал вас",
+        "player-profile-blocked-both": "Блокировка с обеих сторон",
+        "player-report-kicker": "Модерация",
+        "player-report-title": "Пожаловаться на игрока",
+        "player-report-desc": "Расскажите, что произошло.",
+        "player-report-category-label": "Категория",
+        "player-report-category-chat": "Чат",
+        "player-report-category-voice": "Голос",
+        "player-report-category-avatar": "Аватар",
+        "player-report-category-other": "Другое",
+        "player-report-message-label": "Причина",
+        "player-report-message-placeholder": "Коротко опишите причину",
+        "player-report-send": "Отправить жалобу",
+        "player-report-required": "Укажите причину.",
+        "player-report-sent": "Жалоба отправлена",
+        "player-report-failed": "Не удалось отправить жалобу",
+        "voice-mute-player": "Заглушить",
+        "voice-unmute-player": "Включить",
         "messages-title": "Сообщения",
         "messages-empty": "Сообщений пока нет",
         "messages-inbox": "Входящие",
@@ -1800,6 +1882,8 @@ export const translations = {
         ,"turn-timeout": "{player} не успел сделать ход и проиграл раунд"
         ,"account-legal-prefix": "Продолжая, вы соглашаетесь с"
         ,"account-legal-link": "Пользовательским соглашением"
+        ,"account-legal-and": "и"
+        ,"account-conduct-link": "Правилами поведения"
         ,"account-legal-suffix": "."
         ,"account-profile": "Профиль"
         ,"account-profile-empty": "Профиль пока не создан"

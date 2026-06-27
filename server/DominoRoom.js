@@ -248,6 +248,7 @@ class DominoRoom extends Room {
         this.identityBySessionId = new Map();
         this.lastRoundEconomySummary = null;
         this.lastFinishInfo = null;
+        this.voiceModerationCache = new Map();
         this.timeoutForfeitPending = null;
         this.timeoutContinueTimer = null;
         this.timeoutContinueInFlight = false;
@@ -1516,10 +1517,10 @@ class DominoRoom extends Room {
         if (this.voiceEnabledBySessionId) {
             this.voiceEnabledBySessionId.delete(client.sessionId);
         }
-        this.broadcast("voice_signal", {
+        void this.relayVoiceSignal(client, {
             kind: "state",
-            fromSessionId: client.sessionId,
             enabled: false,
+            speaking: false,
             ts: Date.now()
         });
 
@@ -2894,6 +2895,111 @@ class DominoRoom extends Room {
         return null;
     }
 
+    getPlayerIdentityForSession(sessionId) {
+        const normalizedSessionId = String(sessionId || "").trim();
+        if (!normalizedSessionId) return { playerId: "", authToken: "", identity: null, player: null };
+        const identity = this.identityBySessionId.get(normalizedSessionId) || null;
+        const player = this.state?.players?.get?.(normalizedSessionId) || null;
+        const playerId = String(identity?.playerId || player?.playerId || player?.userId || player?.id || "").trim();
+        const authToken = String(identity?.authToken || "").trim();
+        return { playerId, authToken, identity, player };
+    }
+
+    getVoiceModerationCacheKey(senderPlayerId, targetPlayerId) {
+        return `${String(senderPlayerId || "").trim()}:${String(targetPlayerId || "").trim()}`;
+    }
+
+    async canRelayVoiceBetweenSessions(senderSessionId, targetSessionId) {
+        const sender = this.getPlayerIdentityForSession(senderSessionId);
+        const target = this.getPlayerIdentityForSession(targetSessionId);
+        if (!sender.playerId || !target.playerId) {
+            return true;
+        }
+        if (!sender.authToken) {
+            return true;
+        }
+
+        const cacheKey = this.getVoiceModerationCacheKey(sender.playerId, target.playerId);
+        const now = Date.now();
+        const cached = this.voiceModerationCache.get(cacheKey);
+        if (cached && cached.expiresAt > now) {
+            return !cached.blocked;
+        }
+
+        try {
+            const response = await fetch(`${process.env.PLATFORM_API_URL || "http://127.0.0.1:3000"}/api/social/players/${encodeURIComponent(target.playerId)}/moderation`, {
+                method: "GET",
+                headers: {
+                    Authorization: `Bearer ${sender.authToken}`
+                }
+            });
+            if (!response.ok) {
+                return true;
+            }
+            const data = await response.json().catch(() => null);
+            const moderation = data?.item || data || {};
+            const blocked = Boolean(moderation?.blocked || moderation?.currentPlayerBanned || moderation?.targetPlayerBanned);
+            this.voiceModerationCache.set(cacheKey, {
+                blocked,
+                expiresAt: now + 10_000
+            });
+            return !blocked;
+        } catch (error) {
+            console.warn("[ROOM] Voice moderation check failed:", error);
+            return true;
+        }
+    }
+
+    async relayVoiceSignal(client, message = {}) {
+        const kind = String(message?.kind || "").trim();
+        if (!["offer", "answer", "candidate", "state", "renegotiate"].includes(kind)) return;
+        const fromSessionId = String(client?.sessionId || "").trim();
+        if (!fromSessionId) return;
+
+        const basePayload = {
+            kind,
+            fromSessionId,
+            enabled: Boolean(message?.enabled),
+            speaking: Boolean(message?.speaking),
+            name: String(message?.name || "").trim(),
+            ts: Number(message?.ts || Date.now()) || Date.now()
+        };
+
+        if (kind === "state") {
+            const recipients = Array.isArray(this.clients)
+                ? this.clients.filter((entry) => entry?.sessionId && entry.sessionId !== fromSessionId)
+                : [];
+            for (const recipient of recipients) {
+                if (!recipient?.sessionId) continue;
+                if (!await this.canRelayVoiceBetweenSessions(fromSessionId, recipient.sessionId)) {
+                    continue;
+                }
+                recipient.send("voice_signal", {
+                    ...basePayload,
+                    targetSessionId: recipient.sessionId
+                });
+            }
+            return;
+        }
+
+        const targetSessionId = String(message?.targetSessionId || "").trim();
+        if (!targetSessionId) return;
+        if (!await this.canRelayVoiceBetweenSessions(fromSessionId, targetSessionId)) {
+            return;
+        }
+        const targetClient = Array.isArray(this.clients)
+            ? this.clients.find((entry) => entry?.sessionId === targetSessionId)
+            : null;
+        if (!targetClient) return;
+        targetClient.send("voice_signal", {
+            ...basePayload,
+            targetSessionId,
+            candidate: message?.candidate,
+            description: message?.description,
+            sdp: message?.sdp
+        });
+    }
+
     async recordPlatformMatch(payload) {
         const identity = this.getPlatformMatchIdentity();
         if (!identity) {
@@ -3660,7 +3766,7 @@ class DominoRoom extends Room {
         if (!client || !this.state?.players?.has(client.sessionId)) return;
         const kind = String(message.kind || "").trim();
         if (!["offer", "answer", "candidate", "state", "renegotiate"].includes(kind)) return;
-        
+
         if (kind === "state") {
             const enabled = Boolean(message.enabled);
             if (enabled) {
@@ -3670,15 +3776,9 @@ class DominoRoom extends Room {
             }
         }
 
-        const targetSessionId = String(message.targetSessionId || "").trim();
-        this.broadcast("voice_signal", {
+        void this.relayVoiceSignal(client, {
+            ...message,
             kind,
-            fromSessionId: client.sessionId,
-            targetSessionId,
-            speaking: Boolean(message.speaking),
-            enabled: typeof message.enabled === "boolean" ? message.enabled : undefined,
-            description: message.description || message.sdp || null,
-            candidate: message.candidate || null,
             ts: Date.now()
         });
     }

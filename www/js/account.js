@@ -589,6 +589,36 @@ export class AccountClient {
         });
     }
 
+    async blockPlayer(playerId) {
+        const id = String(playerId || "").trim();
+        if (!id) throw new Error("Player not found");
+        return this.platformRequest(`/social/players/${encodeURIComponent(id)}/block`, {
+            method: "POST"
+        });
+    }
+
+    async unblockPlayer(playerId) {
+        const id = String(playerId || "").trim();
+        if (!id) throw new Error("Player not found");
+        return this.platformRequest(`/social/players/${encodeURIComponent(id)}/block`, {
+            method: "DELETE"
+        });
+    }
+
+    async reportPlayer(targetPlayerId, payload = {}) {
+        const id = String(targetPlayerId || "").trim();
+        if (!id) throw new Error("Player not found");
+        return this.platformRequest("/social/reports", {
+            method: "POST",
+            body: {
+                targetPlayerId: id,
+                reason: String(payload?.reason || "").trim(),
+                category: String(payload?.category || "").trim() || undefined,
+                matchId: String(payload?.matchId || "").trim() || undefined
+            }
+        });
+    }
+
     async getRoomInvitations() {
         const data = await this.platformRequest("/social/invitations");
         return {
@@ -989,6 +1019,13 @@ export class AccountClient {
         const id = String(playerId || "").trim();
         if (!id) throw new Error("Player not found");
         const data = await this.platformRequest(`/social/players/${encodeURIComponent(id)}/profile`);
+        return data?.item || null;
+    }
+
+    async getPlayerModeration(playerId) {
+        const id = String(playerId || "").trim();
+        if (!id) throw new Error("Player not found");
+        const data = await this.platformRequest(`/social/players/${encodeURIComponent(id)}/moderation`);
         return data?.item || null;
     }
 

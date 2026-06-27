@@ -239,6 +239,120 @@ test("searchPlayers returns friendship status and friendship id", async () => {
   assert.equal(selfRow.friendshipStatus, "self");
 });
 
+test("blockPlayer creates a blocked connection without prior friendship", async () => {
+  const currentPlayer = makePlayer("player-current", "Current");
+  const targetPlayer = makePlayer("player-target", "Target");
+  const createdRows: any[] = [];
+  const prismaMock = {
+    player: {
+      findUnique: async ({ where }: any) => {
+        if (where?.id === targetPlayer.id) return targetPlayer;
+        return null;
+      }
+    },
+    playerBan: {
+      findFirst: async () => null
+    },
+    friendConnection: {
+      upsert: async ({ create, update }: any) => {
+        const row = {
+          id: "blocked-1",
+          requesterPlayerId: create.requesterPlayerId,
+          addresseePlayerId: create.addresseePlayerId,
+          status: update.status
+        };
+        createdRows.push({ create, update });
+        return row;
+      }
+    }
+  } as any;
+
+  const service = new SocialService(prismaMock, {} as any);
+  (service as any).getCurrentPlayer = async () => currentPlayer;
+  (service as any).emitSseEvent = () => {};
+
+  const result = await service.blockPlayer({} as any, targetPlayer.id);
+  assert.equal(createdRows.length, 1);
+  assert.equal(createdRows[0].create.requesterPlayerId, currentPlayer.id);
+  assert.equal(createdRows[0].create.addresseePlayerId, targetPlayer.id);
+  assert.equal(result.item.status, "blocked");
+});
+
+test("sendDirectMessageForPlayer rejects blocked pairs", async () => {
+  const currentPlayer = makePlayer("player-current", "Current");
+  const targetPlayer = makePlayer("player-target", "Target");
+  const prismaMock = {
+    player: {
+      findUnique: async ({ where }: any) => {
+        if (where?.id === targetPlayer.id) return targetPlayer;
+        return null;
+      }
+    },
+    playerBan: {
+      findFirst: async () => null
+    },
+    friendConnection: {
+      findMany: async () => ([
+        {
+          requesterPlayerId: currentPlayer.id,
+          addresseePlayerId: targetPlayer.id,
+          status: "blocked"
+        }
+      ])
+    }
+  } as any;
+
+  const service = new SocialService(prismaMock, {} as any);
+  (service as any).getCurrentPlayer = async () => currentPlayer;
+
+  await assert.rejects(
+    () => service.sendDirectMessageForPlayer(currentPlayer, targetPlayer.id, { text: "Hello" }),
+    /blocked/i
+  );
+});
+
+test("reportPlayer stores moderation reports", async () => {
+  const currentPlayer = makePlayer("player-current", "Current");
+  const targetPlayer = makePlayer("player-target", "Target");
+  const createdRows: any[] = [];
+  const prismaMock = {
+    player: {
+      findUnique: async ({ where }: any) => {
+        if (where?.id === targetPlayer.id) return targetPlayer;
+        return null;
+      }
+    },
+    playerReport: {
+      create: async ({ data }: any) => {
+        createdRows.push(data);
+        return {
+          id: "report-1",
+          status: "new",
+          createdAt: new Date("2024-03-04T00:00:00.000Z"),
+          ...data
+        };
+      }
+    }
+  } as any;
+
+  const service = new SocialService(prismaMock, {} as any);
+  (service as any).getCurrentPlayer = async () => currentPlayer;
+  (service as any).emitSseEvent = () => {};
+
+  const result = await service.reportPlayer({} as any, {
+    targetPlayerId: targetPlayer.id,
+    reason: "Spam chat",
+    category: "chat"
+  });
+
+  assert.equal(createdRows.length, 1);
+  assert.equal(createdRows[0].reporterPlayerId, currentPlayer.id);
+  assert.equal(createdRows[0].targetPlayerId, targetPlayer.id);
+  assert.equal(createdRows[0].reason, "chat: Spam chat");
+  assert.equal(result.item.id, "report-1");
+  assert.equal(result.item.status, "new");
+});
+
 test("cancelFriendRequest allows the requester to cancel a pending request", async () => {
   const currentPlayer = makePlayer("player-current", "Current");
   const otherPlayer = makePlayer("player-other", "Other");

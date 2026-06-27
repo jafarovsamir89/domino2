@@ -26,7 +26,7 @@ foreach ($item in $items) {
     Copy-Item -Recurse -Force $source $target
 }
 
-$files = @("index.html", "manifest.json", "sw.js", "mobile-auth-complete.html", "auth-complete.html")
+$files = @("index.html", "manifest.json", "sw.js", "terms.html", "mobile-auth-complete.html", "auth-complete.html")
 foreach ($file in $files) {
     Copy-Item -Force (Join-Path $root $file) (Join-Path $www $file)
 }

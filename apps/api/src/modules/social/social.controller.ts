@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Query, Req, Sse } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, Post, Query, Req, Sse } from "@nestjs/common";
 import type { MessageEvent } from "@nestjs/common";
 import type { Request } from "express";
 import type { Observable } from "rxjs";
@@ -11,6 +11,7 @@ import {
   PlayInviteDto,
   SocialSendGiftDto,
   SocialSendMessageDto,
+  SocialReportPlayerDto,
   RoomInviteDto,
   SocialRequestFriendDto,
   RegisterFcmTokenDto,
@@ -42,6 +43,11 @@ export class SocialController {
     return this.socialService.getPlayerProfile(req.headers, id);
   }
 
+  @Get("players/:id/moderation")
+  async getPlayerModeration(@Req() req: Request, @Param("id") id: string) {
+    return this.socialService.getPlayerModeration(req.headers, id);
+  }
+
   @Get("messages")
   async getMessageThreads(@Req() req: Request) {
     return this.socialService.getMessageThreads(req.headers);
@@ -67,6 +73,11 @@ export class SocialController {
     return this.socialService.submitFeedback(req.headers, body);
   }
 
+  @Post("reports")
+  async reportPlayer(@Req() req: Request, @Body() body: SocialReportPlayerDto) {
+    return this.socialService.reportPlayer(req.headers, body);
+  }
+
   @Post("friends/:id/accept")
   async acceptFriend(@Req() req: Request, @Param("id") id: string) {
     return this.socialService.acceptFriend(req.headers, id);
@@ -85,6 +96,16 @@ export class SocialController {
   @Post("friends/:id/remove")
   async removeFriend(@Req() req: Request, @Param("id") id: string) {
     return this.socialService.removeFriend(req.headers, id);
+  }
+
+  @Post("players/:id/block")
+  async blockPlayer(@Req() req: Request, @Param("id") id: string) {
+    return this.socialService.blockPlayer(req.headers, id);
+  }
+
+  @Delete("players/:id/block")
+  async unblockPlayer(@Req() req: Request, @Param("id") id: string) {
+    return this.socialService.unblockPlayer(req.headers, id);
   }
 
   @Get("invitations")

@@ -248,8 +248,8 @@ function fmLog(tag, data) {
 const DOMINO_CLIENT_BUILD = {
     gitCommit: '7c5f3a1',
     builtAt: new Date().toISOString(),
-    socialRealtimeDebugVersion: 'browser-production-trace-v30-social',
-    cacheFixVersion: 'domino-v69'
+    socialRealtimeDebugVersion: 'browser-production-trace-v31-moderation',
+    cacheFixVersion: 'domino-v70'
 };
 
 if (typeof window !== 'undefined') {
@@ -669,6 +669,7 @@ class DominoGame {
         this.leaderboardScope = 'overall';
         this.leaderboardGameMode = this.getSelectedGameMode();
         this.playerProfileState = null;
+        this.playerReportState = null;
         this.socialCenterUnreadCount = 0;
         this.dailyBonusState = {
             loading: false,
@@ -1746,6 +1747,158 @@ class DominoGame {
             const sendLabel = t['feedback-send'] || translations.en?.['feedback-send'] || translations.az?.['feedback-send'] || 'Send';
             sendButton.title = sendLabel;
             sendButton.setAttribute('aria-label', sendLabel);
+        }
+    }
+
+    ensurePlayerReportModal() {
+        if (document.getElementById('player-report-modal')) return;
+        if (typeof document === 'undefined' || !document.body) return;
+
+        const modal = document.createElement('div');
+        modal.id = 'player-report-modal';
+        modal.className = 'modal-backdrop social-feedback-modal player-report-modal';
+        modal.setAttribute('role', 'dialog');
+        modal.setAttribute('aria-modal', 'true');
+        modal.setAttribute('aria-hidden', 'true');
+        modal.innerHTML = `
+            <section class="modal-card social-feedback-card player-report-card">
+                <div class="modal-header account-modal-header feedback-modal-header">
+                    <div class="account-modal-title-wrap feedback-modal-copy">
+                        <p class="section-kicker" data-i18n="player-report-kicker">Moderation</p>
+                        <h2 id="player-report-title-text" data-i18n="player-report-title">Report player</h2>
+                        <p class="modal-desc" id="player-report-desc" data-i18n="player-report-desc">Tell us what happened.</p>
+                    </div>
+                    <button class="btn btn-menu modal-close-btn account-modal-close-btn" id="player-report-close" type="button" aria-label="Close">×</button>
+                </div>
+                <form id="player-report-form" class="feedback-form">
+                    <input type="hidden" id="player-report-target-id" value="">
+                    <div class="feedback-field">
+                        <label for="player-report-category" data-i18n="player-report-category-label">Category</label>
+                        <select id="player-report-category" class="feedback-category-select">
+                            <option value="chat" data-i18n="player-report-category-chat">Chat</option>
+                            <option value="voice" data-i18n="player-report-category-voice">Voice</option>
+                            <option value="avatar" data-i18n="player-report-category-avatar">Avatar</option>
+                            <option value="other" data-i18n="player-report-category-other">Other</option>
+                        </select>
+                    </div>
+                    <div class="feedback-field">
+                        <label for="player-report-message" data-i18n="player-report-message-label">Reason</label>
+                        <textarea id="player-report-message" class="feedback-message-textarea" maxlength="2000" data-i18n="player-report-message-placeholder" placeholder="Write a short reason"></textarea>
+                    </div>
+                    <div class="feedback-status" id="player-report-status" role="status" aria-live="polite"></div>
+                    <div class="feedback-actions feedback-actions-single">
+                        <button class="btn btn-primary btn-large modal-primary-btn" id="player-report-send" type="submit" data-i18n="player-report-send">Send report</button>
+                    </div>
+                </form>
+            </section>
+        `;
+        document.body.appendChild(modal);
+        this.translatePlayerReportModal(modal);
+
+        modal.addEventListener('click', (event) => {
+            if (event.target === modal) {
+                this.closePlayerReportModal();
+            }
+        });
+        modal.querySelector('.modal-card')?.addEventListener('click', (event) => event.stopPropagation());
+
+        document.getElementById('player-report-close')?.addEventListener('click', () => this.closePlayerReportModal());
+        document.getElementById('player-report-form')?.addEventListener('submit', (event) => {
+            event.preventDefault();
+            void this.submitPlayerReport();
+        });
+    }
+
+    translatePlayerReportModal(root = document.getElementById('player-report-modal')) {
+        if (!root) return;
+        const lang = translations[this.currentLang] ? this.currentLang : 'az';
+        const t = translations[lang] || translations.az;
+        root.querySelectorAll('[data-i18n]').forEach((el) => {
+            const key = String(el.dataset.i18n || '').trim();
+            const value = t[key] || translations.en?.[key] || translations.az?.[key] || key;
+            if (!value) return;
+            if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.tagName === 'SELECT') {
+                if (el.tagName === 'SELECT') {
+                    return;
+                }
+                el.placeholder = value;
+            } else {
+                el.textContent = value;
+            }
+        });
+        const closeLabel = t['modal-close'] || translations.en?.['modal-close'] || translations.az?.['modal-close'] || 'Close';
+        root.querySelectorAll('.modal-close-btn').forEach((button) => {
+            button.title = closeLabel;
+            button.setAttribute('aria-label', closeLabel);
+        });
+        const sendButton = root.querySelector('#player-report-send');
+        if (sendButton) {
+            const sendLabel = t['player-report-send'] || translations.en?.['player-report-send'] || translations.az?.['player-report-send'] || 'Send report';
+            sendButton.title = sendLabel;
+            sendButton.setAttribute('aria-label', sendLabel);
+        }
+    }
+
+    openPlayerReportModal(playerRef, options = {}) {
+        this.ensurePlayerReportModal();
+        const modal = document.getElementById('player-report-modal');
+        if (!modal) return false;
+        const targetPlayerId = this.resolvePlayerProfileId(playerRef);
+        if (!targetPlayerId) return false;
+        const status = document.getElementById('player-report-status');
+        const targetIdInput = document.getElementById('player-report-target-id');
+        const category = document.getElementById('player-report-category');
+        const message = document.getElementById('player-report-message');
+        if (targetIdInput) targetIdInput.value = targetPlayerId;
+        if (category) category.value = String(options.category || 'chat').trim() || 'chat';
+        if (message) message.value = '';
+        if (status) status.textContent = '';
+        const title = document.getElementById('player-report-title-text');
+        const desc = document.getElementById('player-report-desc');
+        if (title) title.textContent = this.t('player-report-title');
+        if (desc) desc.textContent = this.t('player-report-desc');
+        this.translatePlayerReportModal(modal);
+        document.body.appendChild(modal);
+        modal.setAttribute('aria-hidden', 'false');
+        modal.classList.add('active');
+        message?.focus?.();
+        return true;
+    }
+
+    closePlayerReportModal() {
+        const modal = document.getElementById('player-report-modal');
+        if (!modal) return;
+        modal.classList.remove('active');
+        modal.setAttribute('aria-hidden', 'true');
+        this.playerReportState = null;
+    }
+
+    async submitPlayerReport() {
+        const modal = document.getElementById('player-report-modal');
+        if (!modal) return;
+        const targetPlayerId = String(document.getElementById('player-report-target-id')?.value || '').trim();
+        const category = String(document.getElementById('player-report-category')?.value || 'chat').trim() || 'chat';
+        const message = String(document.getElementById('player-report-message')?.value || '').trim();
+        const status = document.getElementById('player-report-status');
+        const sendButton = document.getElementById('player-report-send');
+        if (!targetPlayerId || !message) {
+            if (status) status.textContent = this.t('player-report-required');
+            return;
+        }
+        if (sendButton) sendButton.disabled = true;
+        if (status) status.textContent = this.t('feedback-sending');
+        try {
+            await this.account.reportPlayer(targetPlayerId, {
+                category,
+                reason: message
+            });
+            if (status) status.textContent = this.t('player-report-sent');
+            this.renderer.showMessage(this.t('player-report-sent'), 1600);
+            this.closePlayerReportModal();
+        } catch (err) {
+            if (status) status.textContent = err?.message || this.t('player-report-failed');
+        } finally {
+            if (sendButton) sendButton.disabled = false;
         }
     }
 
@@ -5737,6 +5890,64 @@ class DominoGame {
                 }
             };
         }
+
+        const actionsEl = document.querySelector('#social-chats-panel .chat-header-actions');
+        if (actionsEl && activePlayer) {
+            const activePlayerId = String(activePlayer.id || activePlayer.playerId || '').trim();
+            const blockStatus = String(activePlayer?.blockStatus || activePlayer?.moderation?.blockStatus || 'none').trim() || 'none';
+            const isBlockedByMe = blockStatus === 'blocked_by_you' || blockStatus === 'blocked_both';
+            const isBlocked = blockStatus !== 'none' && blockStatus !== 'self';
+            let reportBtn = document.getElementById('chat-header-report-btn');
+            if (!reportBtn) {
+                reportBtn = document.createElement('button');
+                reportBtn.type = 'button';
+                reportBtn.className = 'btn btn-menu chat-header-action-btn';
+                reportBtn.id = 'chat-header-report-btn';
+                actionsEl.appendChild(reportBtn);
+            }
+            let blockBtn = document.getElementById('chat-header-block-btn');
+            if (!blockBtn) {
+                blockBtn = document.createElement('button');
+                blockBtn.type = 'button';
+                blockBtn.className = 'btn btn-menu chat-header-action-btn';
+                blockBtn.id = 'chat-header-block-btn';
+                actionsEl.appendChild(blockBtn);
+            }
+            const reportLabel = this.t('player-profile-report');
+            reportBtn.textContent = reportLabel;
+            reportBtn.title = reportLabel;
+            reportBtn.setAttribute('aria-label', reportLabel);
+            reportBtn.hidden = !activePlayerId || activePlayerId === this.getCurrentAccountPlayerId();
+            reportBtn.onclick = () => {
+                if (!activePlayerId || activePlayerId === this.getCurrentAccountPlayerId()) return;
+                this.openPlayerReportModal(activePlayer, { category: isBlocked ? 'chat' : 'voice' });
+            };
+
+            const blockLabel = isBlockedByMe ? this.t('player-profile-unblock') : this.t('player-profile-block');
+            blockBtn.textContent = blockLabel;
+            blockBtn.title = blockLabel;
+            blockBtn.setAttribute('aria-label', blockLabel);
+            blockBtn.hidden = !activePlayerId || activePlayerId === this.getCurrentAccountPlayerId();
+            blockBtn.onclick = async () => {
+                if (!activePlayerId || activePlayerId === this.getCurrentAccountPlayerId()) return;
+                try {
+                    const sessionId = this.resolvePlayerSessionId(activePlayer);
+                    if (isBlockedByMe) {
+                        await this.account.unblockPlayer(activePlayerId);
+                        this.renderer.showMessage(this.t('player-profile-unblocked'), 1400);
+                        if (sessionId) this.voice?.setPlayerMuted?.(sessionId, false);
+                    } else {
+                        await this.account.blockPlayer(activePlayerId);
+                        this.renderer.showMessage(this.t('player-profile-blocked'), 1400);
+                        if (sessionId) this.voice?.setPlayerMuted?.(sessionId, true);
+                    }
+                    await this.loadConversationWithPlayer(activePlayerId, true);
+                    await this.loadSocialSummary().catch(() => {});
+                } catch (err) {
+                    this.renderer.showMessage(err?.message || this.t('player-profile-block-failed'), 1800);
+                }
+            };
+        }
     }
 
     async loadSocialInvitesPage(isBackground = false) {
@@ -8170,6 +8381,15 @@ class DominoGame {
                 img.alt = profile?.name || 'Player avatar';
                 img.src = avatarUrl;
                 img.referrerPolicy = 'no-referrer';
+                img.onerror = () => {
+                    img.onerror = null;
+                    preview.classList.remove('has-image');
+                    preview.innerHTML = '';
+                    const initial = document.createElement('span');
+                    initial.className = 'account-avatar-initial';
+                    initial.textContent = this.getTurnAvatarText?.(profile?.name || profile?.displayName || 'P') || 'P';
+                    preview.appendChild(initial);
+                };
                 preview.appendChild(img);
             } else {
                 const initial = document.createElement('span');
@@ -9515,15 +9735,27 @@ class DominoGame {
         const friendBtn = document.getElementById('player-profile-friend-btn');
         const inviteBtn = document.getElementById('player-profile-invite-btn');
         const messageBtn = document.getElementById('player-profile-message-btn');
+        const blockBtn = document.getElementById('player-profile-block-btn');
+        const reportBtn = document.getElementById('player-profile-report-btn');
         const profile = this.playerProfileState?.profile || null;
         const isAuthed = this.hasAuthenticatedAccount();
         const isSelf = profile?.friendshipStatus === 'self';
+        const blockStatus = String(profile?.blockStatus || profile?.moderation?.blockStatus || 'none').trim() || 'none';
+        const isBlocked = blockStatus !== 'none' && blockStatus !== 'self';
         const loading = Boolean(this.playerProfileState?.loading);
-        const canInvite = Boolean(isAuthed && !isSelf && profile?.id);
+        const canInvite = Boolean(isAuthed && !isSelf && profile?.id && !isBlocked);
 
         if (name) name.textContent = profile?.displayName || this.playerProfileState?.error || this.t('account-profile-loading');
         if (status) {
+            const blockLabel = blockStatus === 'blocked_by_you'
+                ? this.t('player-profile-blocked-by-you')
+                : blockStatus === 'blocked_you'
+                    ? this.t('player-profile-blocked-you')
+                    : blockStatus === 'blocked_both'
+                        ? this.t('player-profile-blocked-both')
+                        : '';
             status.textContent = this.playerProfileState?.error
+                || blockLabel
                 || (loading ? this.t('account-profile-loading') : this.t('player-profile-status-ready'));
         }
 
@@ -9535,6 +9767,13 @@ class DominoGame {
                 img.alt = profile?.displayName || 'Player avatar';
                 img.src = avatarUrl;
                 img.referrerPolicy = 'no-referrer';
+                img.onerror = () => {
+                    img.onerror = null;
+                    const fallback = document.createElement('span');
+                    fallback.className = 'player-profile-avatar-fallback';
+                    fallback.textContent = this.getTurnAvatarText?.(profile?.displayName || 'P') || 'P';
+                    img.replaceWith(fallback);
+                };
                 avatar.appendChild(img);
             } else {
                 const fallback = document.createElement('span');
@@ -9577,8 +9816,8 @@ class DominoGame {
                 accepted: this.t('friends-request-accepted')
             };
             friendBtn.textContent = labels[statusKey] || this.t('friend-add');
-            const allowAction = isAuthed && !isSelf && (statusKey === 'none' || statusKey === 'pending_incoming' || statusKey === 'pending_outgoing');
-            friendBtn.hidden = isSelf || !isAuthed || statusKey === 'accepted';
+            const allowAction = isAuthed && !isSelf && !isBlocked && (statusKey === 'none' || statusKey === 'pending_incoming' || statusKey === 'pending_outgoing');
+            friendBtn.hidden = isSelf || !isAuthed || isBlocked || statusKey === 'accepted';
             friendBtn.disabled = !allowAction;
             friendBtn.onclick = async () => {
                 if (!allowAction || !profile?.id) return;
@@ -9623,11 +9862,57 @@ class DominoGame {
         }
 
         if (messageBtn) {
-            messageBtn.hidden = !canMessage;
-            messageBtn.disabled = !canMessage || loading;
+            messageBtn.hidden = !canMessage || isBlocked;
+            messageBtn.disabled = !canMessage || loading || isBlocked;
             messageBtn.onclick = async () => {
                 if (!canMessage || !profile?.id) return;
                 await this.openConversationWithPlayer(profile.id);
+            };
+        }
+
+        if (blockBtn) {
+            const isBlockedByMe = blockStatus === 'blocked_by_you' || blockStatus === 'blocked_both';
+            const label = isBlockedByMe ? this.t('player-profile-unblock') : this.t('player-profile-block');
+            blockBtn.hidden = !isAuthed || isSelf;
+            blockBtn.disabled = !isAuthed || isSelf || loading;
+            blockBtn.textContent = label;
+            blockBtn.title = label;
+            blockBtn.setAttribute('aria-label', label);
+            blockBtn.onclick = async () => {
+                if (!profile?.id || isSelf) return;
+                blockBtn.disabled = true;
+                try {
+                    const sessionId = this.resolvePlayerSessionId(profile);
+                    if (isBlockedByMe) {
+                        await this.account.unblockPlayer(profile.id);
+                        this.renderer.showMessage(this.t('player-profile-unblocked'), 1400);
+                        if (sessionId) this.voice?.setPlayerMuted?.(sessionId, false);
+                    } else {
+                        await this.account.blockPlayer(profile.id);
+                        this.renderer.showMessage(this.t('player-profile-blocked'), 1400);
+                        if (sessionId) this.voice?.setPlayerMuted?.(sessionId, true);
+                    }
+                    await this.openPlayerProfileModal(profile.id);
+                    await this.loadFriendsPage().catch(() => {});
+                    await this.loadSocialSummary().catch(() => {});
+                } catch (err) {
+                    this.renderer.showMessage(err?.message || this.t('player-profile-block-failed'), 1800);
+                } finally {
+                    blockBtn.disabled = false;
+                }
+            };
+        }
+
+        if (reportBtn) {
+            const label = this.t('player-profile-report');
+            reportBtn.hidden = !isAuthed || isSelf;
+            reportBtn.disabled = !isAuthed || isSelf || loading;
+            reportBtn.textContent = label;
+            reportBtn.title = label;
+            reportBtn.setAttribute('aria-label', label);
+            reportBtn.onclick = () => {
+                if (!profile?.id || isSelf) return;
+                this.openPlayerReportModal(profile, { category: blockStatus === 'blocked_you' ? 'voice' : 'chat' });
             };
         }
     }
@@ -9782,6 +10067,15 @@ class DominoGame {
                 img.alt = profile?.name || 'Player avatar';
                 img.src = avatarUrl;
                 img.referrerPolicy = 'no-referrer';
+                img.onerror = () => {
+                    img.onerror = null;
+                    avatar.classList.remove('has-image');
+                    avatar.innerHTML = '';
+                    const initial = document.createElement('span');
+                    initial.className = 'account-avatar-initial';
+                    initial.textContent = this.getTurnAvatarText?.(profile?.name || profile?.displayName || 'P') || 'P';
+                    avatar.appendChild(initial);
+                };
                 avatar.appendChild(img);
             } else {
                 const initial = document.createElement('span');
@@ -11300,7 +11594,21 @@ class DominoGame {
             }
             return false;
         });
-        return String(match?.playerId || match?.id || '').trim();
+        return String(match?.playerId || match?.userId || match?.sessionId || match?.id || '').trim();
+    }
+
+    resolvePlayerSessionId(playerRef) {
+        if (!playerRef || typeof playerRef === 'string') return '';
+        const directSessionId = String(playerRef?.sessionId || '').trim();
+        if (directSessionId) return directSessionId;
+        const playerId = this.resolvePlayerProfileId(playerRef);
+        if (!playerId) return '';
+        const roomPlayers = Array.isArray(this.currentRoomState?.players) ? this.currentRoomState.players : [];
+        const match = roomPlayers.find((player) => {
+            const candidate = String(player?.playerId || player?.userId || player?.id || '').trim();
+            return candidate && candidate === playerId;
+        });
+        return String(match?.sessionId || '').trim();
     }
 
     ensureStartScreenEnhancements() {
@@ -11364,6 +11672,12 @@ class DominoGame {
             img.src = player.avatarUrl;
             img.alt = player.displayName || 'Avatar';
             img.referrerPolicy = 'no-referrer';
+            img.onerror = () => {
+                img.onerror = null;
+                const fallback = document.createElement('span');
+                fallback.textContent = this.getTurnAvatarText?.(player?.displayName || 'P') || 'P';
+                img.replaceWith(fallback);
+            };
             frame.appendChild(img);
         } else {
             const fallback = document.createElement('span');
@@ -12666,6 +12980,12 @@ class DominoGame {
             const reactionSlot = document.querySelector('.reaction-slot');
             if (reactionSlot) actionBar.insertBefore(slot, reactionSlot);
             else actionBar.appendChild(slot);
+        }
+        if (actionBar && !document.getElementById('voice-speakers')) {
+            const speakers = document.createElement('div');
+            speakers.id = 'voice-speakers';
+            speakers.className = 'voice-speakers';
+            actionBar.appendChild(speakers);
         }
     }
 
@@ -14809,6 +15129,11 @@ class DominoGame {
                 img.alt = displayName || 'Player avatar';
                 img.src = avatarUrl;
                 img.referrerPolicy = 'no-referrer';
+                img.onerror = () => {
+                    img.onerror = null;
+                    avatar.classList.remove('has-image');
+                    avatar.textContent = iconText || this.getTurnAvatarText(displayName || '');
+                };
                 avatar.appendChild(img);
             } else {
                 avatar.textContent = iconText || this.getTurnAvatarText(displayName || '');
@@ -14860,6 +15185,19 @@ class DominoGame {
             const stateEl = row.querySelector('.room-player-state');
             if (stateEl && this.isBotTakeoverSeat(player)) {
                 stateEl.classList.add('is-bot-takeover');
+            }
+            if (player.sessionId && !player.isBot) {
+                row.style.cursor = 'pointer';
+                row.title = this.t('player-profile-open');
+                row.addEventListener('click', (event) => {
+                    if (event.target?.closest?.('button')) return;
+                    void this.openPlayerProfileModal({
+                        id: player.playerId || player.userId || player.sessionId,
+                        playerId: player.playerId || player.userId || player.sessionId,
+                        displayName: player.name || displayName,
+                        avatarUrl: player.avatarUrl || ''
+                    });
+                });
             }
             list.appendChild(row);
         }

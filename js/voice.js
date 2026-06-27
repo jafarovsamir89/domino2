@@ -44,6 +44,7 @@ export class VoiceChatManager {
         this.iceConfigError = "";
         this.audioPlaybackBlocked = false;
         this.remoteAudioPlayback = new Map();
+        this.mutedPlayers = new Set();
     }
 
     isAvailable() {
@@ -72,6 +73,34 @@ export class VoiceChatManager {
             .filter((player) => player && !player.isBot && String(player.sessionId || "").trim())
             .map((player) => String(player.sessionId).trim())
             .filter((sessionId) => sessionId && sessionId !== this.mySessionId);
+    }
+
+    isPlayerMuted(sessionId) {
+        const key = String(sessionId || "").trim();
+        return Boolean(key && this.mutedPlayers.has(key));
+    }
+
+    setPlayerMuted(sessionId, muted) {
+        const key = String(sessionId || "").trim();
+        if (!key || key === this.mySessionId) return false;
+        const nextMuted = Boolean(muted);
+        if (nextMuted) {
+            this.mutedPlayers.add(key);
+            this.closePeer(key, "muted");
+        } else {
+            this.mutedPlayers.delete(key);
+            if (this.isEnabled && this.localStream && this.voiceEnabledBySessionId.get(key) === true) {
+                this.connectPeer(key);
+            }
+        }
+        this.updateSpeakerUi();
+        return true;
+    }
+
+    toggleMutePlayer(sessionId) {
+        const key = String(sessionId || "").trim();
+        if (!key || key === this.mySessionId) return false;
+        return this.setPlayerMuted(key, !this.isPlayerMuted(key));
     }
 
     syncRoomState(roomState = null) {
@@ -107,14 +136,14 @@ export class VoiceChatManager {
             }
 
             for (const sessionId of Array.from(this.peersBySessionId.keys())) {
-                if (!activeRemoteEnabled.has(sessionId)) {
+                if (!activeRemoteEnabled.has(sessionId) || this.isPlayerMuted(sessionId)) {
                     this.closePeer(sessionId, "sync-disabled");
                 }
             }
 
             if (this.localStream) {
                 for (const sessionId of activeRemoteEnabled) {
-                    if (!this.peersBySessionId.has(sessionId)) {
+                    if (!this.peersBySessionId.has(sessionId) && !this.isPlayerMuted(sessionId)) {
                         this.connectPeer(sessionId);
                     }
                 }
@@ -325,6 +354,11 @@ export class VoiceChatManager {
             const enabled = Boolean(payload.enabled);
             debugLog(`[VOICE_DEBUG] voice:state:receive ${fromSessionId} enabled ${enabled}`);
             this.voiceEnabledBySessionId.set(fromSessionId, enabled);
+            if (this.isPlayerMuted(fromSessionId)) {
+                this.closePeer(fromSessionId, "muted");
+                this.updateSpeakerUi();
+                return;
+            }
             if (payload.speaking) {
                 this.remoteSpeaking.set(fromSessionId, {
                     speaking: true,
@@ -350,6 +384,11 @@ export class VoiceChatManager {
         if (payload.kind !== "state" && targetSessionId !== this.mySessionId) {
             const logKind = (payload.kind === "candidate" || payload.kind === "ice") ? "ice" : payload.kind;
             debugLog(`[VOICE_DEBUG] ${logKind}:receive ${fromSessionId} ${targetSessionId} ignored`);
+            return;
+        }
+
+        if (this.isPlayerMuted(fromSessionId)) {
+            debugLog(`[VOICE_DEBUG] ${payload.kind}:receive ${fromSessionId} muted ignored`);
             return;
         }
 
@@ -478,6 +517,7 @@ export class VoiceChatManager {
         this.isSpeaking = false;
         this.statusText = "";
         this.audioPlaybackBlocked = false;
+        this.mutedPlayers.clear();
         for (const sessionId of Array.from(this.peersBySessionId.keys())) {
             this.closePeer(sessionId, "room-reset");
         }
@@ -586,13 +626,90 @@ export class VoiceChatManager {
             }
         }
 
+        const speakersEl = document.getElementById("voice-speakers");
+        if (speakersEl) {
+            speakersEl.innerHTML = "";
+            const players = Array.isArray(this.roomState?.players) ? this.roomState.players : [];
+            const playerBySession = new Map(players.map((player) => [String(player.sessionId || ""), player]));
+            const visibleSessions = this.getRemoteHumanSessions();
+            if (visibleSessions.length) {
+                visibleSessions.forEach((sessionId) => {
+                    const player = playerBySession.get(sessionId);
+                    const muted = this.isPlayerMuted(sessionId);
+                    const speaker = document.createElement("div");
+                    speaker.className = `voice-speaker${muted ? " is-muted" : ""}`;
+                    const name = player?.name || this.game?.format?.("online-waiting-slot", { index: visibleSessions.indexOf(sessionId) + 1 }) || sessionId;
+                    const targetPlayerId = String(player?.playerId || player?.userId || player?.id || "").trim();
+                    const label = document.createElement("button");
+                    label.type = "button";
+                    label.className = "voice-speaker-label";
+                    label.textContent = name;
+                    label.title = this.game?.t?.("player-profile-open") || "Open profile";
+                    label.addEventListener("click", () => {
+                        if (!player) return;
+                        this.game?.openPlayerProfileModal?.(player);
+                    });
+
+                    const actions = document.createElement("div");
+                    actions.className = "voice-speaker-actions";
+
+                    const reportBtn = document.createElement("button");
+                    reportBtn.type = "button";
+                    reportBtn.className = "btn btn-menu voice-speaker-report-btn";
+                    reportBtn.textContent = this.game?.t?.("player-profile-report") || "Report";
+                    reportBtn.addEventListener("click", () => {
+                        if (!player) return;
+                        this.game?.openPlayerReportModal?.(player, { category: "voice" });
+                    });
+
+                    const blockBtn = document.createElement("button");
+                    blockBtn.type = "button";
+                    blockBtn.className = "btn btn-menu voice-speaker-block-btn";
+                    blockBtn.textContent = this.game?.t?.("player-profile-block") || "Block";
+                    blockBtn.addEventListener("click", async () => {
+                        if (!targetPlayerId) return;
+                        try {
+                            await this.game?.account?.blockPlayer?.(targetPlayerId);
+                            this.setPlayerMuted(sessionId, true);
+                            this.game?.renderer?.showMessage?.(this.game?.t?.("player-profile-blocked") || "Blocked", 1400);
+                            void (async () => {
+                                try {
+                                    await this.game?.loadFriendsPage?.();
+                                } catch {}
+                            })();
+                        } catch (error) {
+                            this.game?.renderer?.showMessage?.(error?.message || this.game?.t?.("player-profile-block-failed") || "Unable to block", 1800);
+                        }
+                    });
+
+                    const btn = document.createElement("button");
+                    btn.type = "button";
+                    btn.className = "btn btn-menu voice-speaker-mute-btn";
+                    btn.textContent = muted
+                        ? (this.game?.t?.("voice-unmute-player") || "Unmute")
+                        : (this.game?.t?.("voice-mute-player") || "Mute");
+                    btn.addEventListener("click", () => {
+                        this.toggleMutePlayer(sessionId);
+                    });
+
+                    actions.appendChild(reportBtn);
+                    actions.appendChild(blockBtn);
+                    actions.appendChild(btn);
+                    speaker.appendChild(label);
+                    speaker.appendChild(actions);
+                    speakersEl.appendChild(speaker);
+                });
+            }
+        }
+
         const chips = document.querySelectorAll('.room-player-chip[data-session-id]');
         chips.forEach((chip) => {
             const sessionId = String(chip.dataset.sessionId || "");
             const peer = this.peersBySessionId.get(sessionId);
             const isConn = peer && (peer.connectionState === "connected" || peer.iceConnectionState === "connected" || peer.iceConnectionState === "completed");
-            const isSpeaking = isConn && (this.remoteSpeaking.get(sessionId)?.speaking || false) && (this.remoteAudioPlayback.get(sessionId) !== false);
+            const isSpeaking = !this.isPlayerMuted(sessionId) && isConn && (this.remoteSpeaking.get(sessionId)?.speaking || false) && (this.remoteAudioPlayback.get(sessionId) !== false);
             chip.classList.toggle("speaking", isSpeaking);
+            chip.classList.toggle("is-muted", this.isPlayerMuted(sessionId));
         });
     }
 

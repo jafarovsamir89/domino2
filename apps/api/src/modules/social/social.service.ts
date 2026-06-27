@@ -20,6 +20,15 @@ type PlayerSummary = {
   createdAt?: Date | string | null;
 };
 
+type ModerationState = {
+  blockStatus: "self" | "none" | "blocked_by_you" | "blocked_you" | "blocked_both";
+  currentPlayerBanned: boolean;
+  targetPlayerBanned: boolean;
+  blocked: boolean;
+  blockedByCurrent: boolean;
+  blockedByTarget: boolean;
+};
+
 type FriendRow = {
   id: string;
   status: string;
@@ -362,6 +371,123 @@ export class SocialService {
     }
 
     return profile.player;
+  }
+
+  private async getActivePlayerBan(playerId: string) {
+    const cleanPlayerId = String(playerId || "").trim();
+    if (!cleanPlayerId) return false;
+    if (typeof this.prisma?.playerBan?.findFirst !== "function") {
+      return false;
+    }
+    const now = new Date();
+    const row = await this.prisma.playerBan.findFirst({
+      where: {
+        playerId: cleanPlayerId,
+        revokedAt: null,
+        OR: [
+          { expiresAt: null },
+          { expiresAt: { gt: now } }
+        ]
+      },
+      select: {
+        id: true
+      }
+    });
+    return Boolean(row);
+  }
+
+  private async getModerationState(currentPlayerId: string, targetPlayerId: string): Promise<ModerationState> {
+    const currentId = String(currentPlayerId || "").trim();
+    const targetId = String(targetPlayerId || "").trim();
+    if (!currentId || !targetId) {
+      return {
+        blockStatus: "none",
+        currentPlayerBanned: false,
+        targetPlayerBanned: false,
+        blocked: false,
+        blockedByCurrent: false,
+        blockedByTarget: false
+      };
+    }
+    if (currentId === targetId) {
+      const banned = await this.getActivePlayerBan(currentId);
+      return {
+        blockStatus: "self",
+        currentPlayerBanned: banned,
+        targetPlayerBanned: banned,
+        blocked: false,
+        blockedByCurrent: false,
+        blockedByTarget: false
+      };
+    }
+
+    const friendConnection = this.prisma.friendConnection;
+    const [currentPlayerBanned, targetPlayerBanned, rows] = await Promise.all([
+      this.getActivePlayerBan(currentId),
+      this.getActivePlayerBan(targetId),
+      typeof friendConnection?.findMany === "function"
+        ? friendConnection.findMany({
+            where: {
+              status: "blocked",
+              OR: [
+                {
+                  requesterPlayerId: currentId,
+                  addresseePlayerId: targetId
+                },
+                {
+                  requesterPlayerId: targetId,
+                  addresseePlayerId: currentId
+                }
+              ]
+            },
+            select: {
+              requesterPlayerId: true,
+              addresseePlayerId: true
+            }
+          })
+        : Promise.resolve([])
+    ]);
+
+    const blockedByCurrent = rows.some((row) => row.requesterPlayerId === currentId && row.addresseePlayerId === targetId);
+    const blockedByTarget = rows.some((row) => row.requesterPlayerId === targetId && row.addresseePlayerId === currentId);
+    const blocked = blockedByCurrent || blockedByTarget;
+    return {
+      blockStatus: blockedByCurrent && blockedByTarget
+        ? "blocked_both"
+        : blockedByCurrent
+          ? "blocked_by_you"
+          : blockedByTarget
+            ? "blocked_you"
+            : "none",
+      currentPlayerBanned,
+      targetPlayerBanned,
+      blocked,
+      blockedByCurrent,
+      blockedByTarget
+    };
+  }
+
+  private async ensureInteractionAllowed(currentPlayerId: string, targetPlayerId: string, options: { allowSelf?: boolean } = {}) {
+    const currentId = String(currentPlayerId || "").trim();
+    const targetId = String(targetPlayerId || "").trim();
+    if (!currentId || !targetId) {
+      throw new NotFoundException("Player not found");
+    }
+    if (!options.allowSelf && currentId === targetId) {
+      throw new ForbiddenException("You cannot act on yourself");
+    }
+
+    const moderation = await this.getModerationState(currentId, targetId);
+    if (moderation.currentPlayerBanned) {
+      throw new ForbiddenException("Your account is banned");
+    }
+    if (moderation.targetPlayerBanned) {
+      throw new ForbiddenException("Player is banned");
+    }
+    if (moderation.blocked) {
+      throw new ForbiddenException("Player is blocked");
+    }
+    return moderation;
   }
 
   async submitFeedback(
@@ -863,6 +989,36 @@ export class SocialService {
     return { currentPlayer, hiddenPlayerIds };
   }
 
+  private async getBlockedPeerIds(currentPlayerId: string) {
+    const currentId = String(currentPlayerId || "").trim();
+    if (!currentId) return new Set<string>();
+    if (typeof this.prisma?.friendConnection?.findMany !== "function") {
+      return new Set<string>();
+    }
+    const rows = await this.prisma.friendConnection.findMany({
+      where: {
+        status: "blocked",
+        OR: [
+          { requesterPlayerId: currentId },
+          { addresseePlayerId: currentId }
+        ]
+      },
+      select: {
+        requesterPlayerId: true,
+        addresseePlayerId: true
+      }
+    });
+    const blockedIds = new Set<string>();
+    rows.forEach((row) => {
+      const partnerId = row.requesterPlayerId === currentId ? row.addresseePlayerId : row.requesterPlayerId;
+      const cleanPartnerId = String(partnerId || "").trim();
+      if (cleanPartnerId) {
+        blockedIds.add(cleanPartnerId);
+      }
+    });
+    return blockedIds;
+  }
+
   private isInboxClaimable(row: Pick<InboxMessageRow, "type" | "rewardJson" | "status">) {
     if (row.status === "deleted" || row.status === "expired") {
       return false;
@@ -1255,6 +1411,9 @@ export class SocialService {
 
   async getSocialSummary(headers: IncomingHttpHeaders) {
     const { currentPlayer, hiddenPlayerIds } = await this.getHiddenDirectMessageThreadPlayerIds(headers);
+    const blockedPlayerIds = await this.getBlockedPeerIds(currentPlayer.id);
+    const hiddenThreadPlayerIds = new Set<string>([...hiddenPlayerIds, ...blockedPlayerIds]);
+    const hiddenArray = Array.from(hiddenThreadPlayerIds);
     const [inboxUnreadCount, directMessageUnreadCount, roomInviteUnreadCount, playInviteUnreadCount, friendRequestCount] = await Promise.all([
       this.prisma.inboxMessage.count({
         where: {
@@ -1269,10 +1428,10 @@ export class SocialService {
         where: {
           receiverPlayerId: currentPlayer.id,
           readAt: null,
-          ...(hiddenPlayerIds.size
+          ...(hiddenArray.length
             ? {
               senderPlayerId: {
-                notIn: Array.from(hiddenPlayerIds)
+                notIn: hiddenArray
               }
             }
             : {})
@@ -1330,9 +1489,12 @@ export class SocialService {
     });
 
     const playerIds = players.map((player) => String(player.id || "").trim()).filter(Boolean);
-    const friendshipRows = playerIds.length
+    const relationRows = playerIds.length
       ? await this.prisma.friendConnection.findMany({
           where: {
+            status: {
+              in: ["accepted", "pending", "blocked"]
+            },
             OR: [
               {
                 requesterPlayerId: currentPlayer.id,
@@ -1352,18 +1514,26 @@ export class SocialService {
           }
         })
       : [];
-    const friendshipByPlayerId = new Map<string, { id: string; requesterPlayerId: string; addresseePlayerId: string; status: string }>();
-    friendshipRows.forEach((row) => {
+    const relationByPlayerId = new Map<string, Array<{ id: string; requesterPlayerId: string; addresseePlayerId: string; status: string }>>();
+    relationRows.forEach((row) => {
       const partnerId = row.requesterPlayerId === currentPlayer.id ? row.addresseePlayerId : row.requesterPlayerId;
-      if (partnerId) {
-        friendshipByPlayerId.set(partnerId, row);
-      }
+      if (!partnerId) return;
+      const list = relationByPlayerId.get(partnerId) || [];
+      list.push(row);
+      relationByPlayerId.set(partnerId, list);
     });
+
+    const pickRelation = (rows: Array<{ id: string; requesterPlayerId: string; addresseePlayerId: string; status: string }> = [], status: string) => {
+      return rows.find((row) => row.status === status) || null;
+    };
 
     return {
       items: players.map((player) => {
         const playerId = String(player.id || "").trim();
-        const friendship = friendshipByPlayerId.get(playerId) || null;
+        const relations = relationByPlayerId.get(playerId) || [];
+        const friendship = pickRelation(relations, "accepted") || pickRelation(relations, "pending");
+        const blockedByCurrent = relations.some((row) => row.status === "blocked" && row.requesterPlayerId === currentPlayer.id);
+        const blockedByTarget = relations.some((row) => row.status === "blocked" && row.requesterPlayerId === playerId);
         let friendshipStatus: "self" | "none" | "pending_incoming" | "pending_outgoing" | "accepted" = "none";
         if (playerId === currentPlayer.id) {
           friendshipStatus = "self";
@@ -1374,11 +1544,22 @@ export class SocialService {
             friendshipStatus = friendship.requesterPlayerId === currentPlayer.id ? "pending_outgoing" : "pending_incoming";
           }
         }
+        const blockStatus = blockedByCurrent && blockedByTarget
+          ? "blocked_both"
+          : blockedByCurrent
+            ? "blocked_by_you"
+            : blockedByTarget
+              ? "blocked_you"
+              : "none";
+        if (blockStatus !== "none") {
+          friendshipStatus = "none";
+        }
 
         return {
           ...this.summarizePlayer(player),
-          friendshipId: friendship?.id || null,
-          friendshipStatus
+          friendshipId: blockStatus !== "none" ? null : friendship?.id || null,
+          friendshipStatus,
+          blockStatus
         };
       })
     };
@@ -1405,6 +1586,7 @@ export class SocialService {
     }
 
     const stats = player.stats || { rating: 1000, matchesPlayed: 0, wins: 0, losses: 0 };
+    const moderation = await this.getModerationState(currentPlayer.id, playerId);
     const friendship = await this.prisma.friendConnection.findFirst({
       where: {
         OR: [
@@ -1428,6 +1610,9 @@ export class SocialService {
     } else if (friendship?.status === "pending") {
       friendshipStatus = friendship.requesterPlayerId === currentPlayer.id ? "pending_outgoing" : "pending_incoming";
     }
+    if (moderation.blockStatus !== "none") {
+      friendshipStatus = "none";
+    }
 
     return {
       item: {
@@ -1435,21 +1620,24 @@ export class SocialService {
         displayName: player.displayName,
         avatarSeed: player.avatarSeed ?? null,
         avatarUrl: player.avatarUrl ?? null,
-        friendshipId: friendship?.id || null,
+        friendshipId: moderation.blockStatus !== "none" ? null : friendship?.id || null,
         stats: {
           rating: Number(stats.rating ?? 1000),
           matchesPlayed: Number(stats.matchesPlayed ?? 0),
           wins: Number(stats.wins ?? 0),
           losses: Number(stats.losses ?? 0)
         },
-        friendshipStatus
+        friendshipStatus,
+        blockStatus: moderation.blockStatus,
+        moderation
       }
     };
   }
 
   async getMessageThreads(headers: IncomingHttpHeaders) {
     const { currentPlayer, hiddenPlayerIds } = await this.getHiddenDirectMessageThreadPlayerIds(headers);
-    const hiddenArray = Array.from(hiddenPlayerIds);
+    const blockedPlayerIds = await this.getBlockedPeerIds(currentPlayer.id);
+    const hiddenArray = Array.from(new Set<string>([...hiddenPlayerIds, ...blockedPlayerIds]));
 
     const where: Prisma.DirectMessageThreadWhereInput = {
       OR: [
@@ -1557,6 +1745,7 @@ export class SocialService {
     if (targetPlayer.isGuest) {
       throw new ForbiddenException("Guest players cannot be added as friends");
     }
+    await this.ensureInteractionAllowed(currentPlayer.id, targetPlayerId);
 
     const acceptedFriendship = await this.prisma.friendConnection.findFirst({
       where: {
@@ -1650,6 +1839,10 @@ export class SocialService {
     }
     if (targetPlayerId === currentPlayer.id) {
       return { items: [] };
+    }
+    const blockedPlayerIds = await this.getBlockedPeerIds(currentPlayer.id);
+    if (blockedPlayerIds.has(targetPlayerId)) {
+      return { items: [], nextCursor: null, hasMore: false };
     }
 
     const cleanLimit = Math.max(1, Math.min(100, Math.trunc(Number(options?.limit || 50) || 50)));
@@ -1750,6 +1943,7 @@ export class SocialService {
     if (!targetPlayer) {
       throw new NotFoundException("Player not found");
     }
+    await this.ensureInteractionAllowed(currentPlayer.id, targetPlayerId);
 
     const text = String(body?.text || "").trim();
     if (!text) {
@@ -1881,6 +2075,7 @@ export class SocialService {
     if (row.addresseePlayerId !== currentPlayer.id) {
       throw new ForbiddenException("Friend request not found");
     }
+    await this.ensureInteractionAllowed(currentPlayer.id, row.requesterPlayerId);
 
     const accepted = await this.prisma.friendConnection.update({
       where: { id },
@@ -1977,6 +2172,9 @@ export class SocialService {
     if (row.addresseePlayerId !== currentPlayer.id && row.requesterPlayerId !== currentPlayer.id) {
       throw new ForbiddenException("Friend relationship not found");
     }
+    if (row.status === "blocked") {
+      throw new ForbiddenException("Player is blocked. Unblock first.");
+    }
 
     const partnerId = row.requesterPlayerId === currentPlayer.id ? row.addresseePlayerId : row.requesterPlayerId;
 
@@ -1986,6 +2184,159 @@ export class SocialService {
     this.emitSseEvent(currentPlayer.id, "friend_update", { type: "friend_removed", id });
 
     return { ok: true };
+  }
+
+  async blockPlayer(headers: IncomingHttpHeaders, targetPlayerIdInput: string) {
+    const currentPlayer = await this.getCurrentPlayer(headers);
+    const targetPlayerId = String(targetPlayerIdInput || "").trim();
+    if (!targetPlayerId) {
+      throw new NotFoundException("Player not found");
+    }
+    if (targetPlayerId === currentPlayer.id) {
+      throw new ForbiddenException("You cannot block yourself");
+    }
+    if (await this.getActivePlayerBan(currentPlayer.id)) {
+      throw new ForbiddenException("Your account is banned");
+    }
+
+    const targetPlayer = await this.prisma.player.findUnique({
+      where: { id: targetPlayerId },
+      select: this.playerSelect()
+    });
+    if (!targetPlayer) {
+      throw new NotFoundException("Player not found");
+    }
+
+    const row = await this.prisma.friendConnection.upsert({
+      where: {
+        requesterPlayerId_addresseePlayerId: {
+          requesterPlayerId: currentPlayer.id,
+          addresseePlayerId: targetPlayerId
+        }
+      },
+      create: {
+        requesterPlayerId: currentPlayer.id,
+        addresseePlayerId: targetPlayerId,
+        status: "blocked"
+      },
+      update: {
+        status: "blocked",
+        note: null,
+        respondedAt: null
+      }
+    });
+
+    this.emitSseEvent(currentPlayer.id, "friend_update", { type: "friend_blocked", id: row.id, targetPlayerId });
+    this.emitSseEvent(targetPlayerId, "friend_update", { type: "friend_blocked", id: row.id, requesterPlayerId: currentPlayer.id });
+
+    return { item: { id: row.id, targetPlayerId, status: "blocked" } };
+  }
+
+  async unblockPlayer(headers: IncomingHttpHeaders, targetPlayerIdInput: string) {
+    const currentPlayer = await this.getCurrentPlayer(headers);
+    const targetPlayerId = String(targetPlayerIdInput || "").trim();
+    if (!targetPlayerId) {
+      throw new NotFoundException("Player not found");
+    }
+    if (targetPlayerId === currentPlayer.id) {
+      return { ok: true };
+    }
+
+    const row = await this.prisma.friendConnection.findFirst({
+      where: {
+        requesterPlayerId: currentPlayer.id,
+        addresseePlayerId: targetPlayerId,
+        status: "blocked"
+      }
+    });
+    if (row) {
+      await this.prisma.friendConnection.delete({ where: { id: row.id } });
+    }
+
+    this.emitSseEvent(currentPlayer.id, "friend_update", { type: "friend_unblocked", targetPlayerId });
+    this.emitSseEvent(targetPlayerId, "friend_update", { type: "friend_unblocked", requesterPlayerId: currentPlayer.id });
+
+    return { ok: true };
+  }
+
+  async reportPlayer(headers: IncomingHttpHeaders, body: { targetPlayerId?: string; reason?: string; category?: string; matchId?: string }) {
+    const currentPlayer = await this.getCurrentPlayer(headers);
+    const targetPlayerId = String(body?.targetPlayerId || "").trim();
+    const reasonText = String(body?.reason || "").trim();
+    const category = String(body?.category || "").trim();
+    const matchId = String(body?.matchId || "").trim() || null;
+    if (!targetPlayerId) {
+      throw new NotFoundException("Player not found");
+    }
+    if (!reasonText) {
+      throw new BadRequestException("Reason is required");
+    }
+    if (targetPlayerId === currentPlayer.id) {
+      throw new ForbiddenException("You cannot report yourself");
+    }
+
+    const targetPlayer = await this.prisma.player.findUnique({
+      where: { id: targetPlayerId },
+      select: this.playerSelect()
+    });
+    if (!targetPlayer) {
+      throw new NotFoundException("Player not found");
+    }
+
+    const reason = [category ? `${category}:` : "", reasonText].join(" ").trim();
+    const report = await this.prisma.playerReport.create({
+      data: {
+        reporterPlayerId: currentPlayer.id,
+        targetPlayerId,
+        matchId,
+        reason
+      },
+      include: {
+        reporter: { select: this.playerSelect() },
+        target: { select: this.playerSelect() },
+        match: true
+      }
+    });
+
+    this.emitSseEvent(currentPlayer.id, "social_update", {
+      type: "player_report_created",
+      reportId: report.id,
+      targetPlayerId
+    });
+
+    return {
+      item: {
+        id: report.id,
+        targetPlayerId: report.targetPlayerId,
+        reason: report.reason,
+        category: category || null,
+        matchId: report.matchId,
+        status: report.status,
+        createdAt: report.createdAt.toISOString()
+      }
+    };
+  }
+
+  async getPlayerModeration(headers: IncomingHttpHeaders, id: string) {
+    const currentPlayer = await this.getCurrentPlayer(headers);
+    const targetPlayerId = String(id || "").trim();
+    if (!targetPlayerId) {
+      throw new NotFoundException("Player not found");
+    }
+    const targetPlayer = await this.prisma.player.findUnique({
+      where: { id: targetPlayerId },
+      select: this.playerSelect()
+    });
+    if (!targetPlayer) {
+      throw new NotFoundException("Player not found");
+    }
+    const moderation = await this.getModerationState(currentPlayer.id, targetPlayerId);
+    return {
+      item: {
+        targetPlayerId,
+        ...moderation
+      }
+    };
   }
 
   async getRoomInvitations(headers: IncomingHttpHeaders) {
@@ -2778,6 +3129,7 @@ export class SocialService {
     if (invitee.isGuest) {
       throw new ForbiddenException("Guest players cannot receive play invitations");
     }
+    await this.ensureInteractionAllowed(currentPlayer.id, inviteePlayerId);
 
     const isFriend = await this.prisma.friendConnection.findFirst({
       where: {
@@ -3190,6 +3542,7 @@ export class SocialService {
     if (invitee.isGuest) {
       throw new ForbiddenException("Guest players cannot receive room invitations");
     }
+    await this.ensureInteractionAllowed(currentPlayer.id, inviteePlayerId);
 
     const isFriend = await this.prisma.friendConnection.findFirst({
       where: {

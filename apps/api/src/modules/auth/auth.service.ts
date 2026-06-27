@@ -203,6 +203,30 @@ export class AuthService {
       if (!isDataUrl && !isHttpsUrl) {
         throw new BadRequestException("Unsupported avatar image format");
       }
+      if (isHttpsUrl) {
+        const response = await fetch(avatarUrl, {
+          method: "GET",
+          redirect: "follow"
+        }).catch((error) => {
+          throw new BadRequestException(`Avatar URL could not be loaded: ${String(error?.message || error || "fetch failed")}`);
+        });
+        if (!response.ok) {
+          throw new BadRequestException(`Avatar URL could not be loaded: HTTP ${response.status}`);
+        }
+        const contentType = String(response.headers.get("content-type") || "").trim().toLowerCase();
+        if (!contentType.startsWith("image/")) {
+          throw new BadRequestException("Avatar URL must point to an image");
+        }
+        const contentLength = Number(response.headers.get("content-length") || 0);
+        const maxBytes = 2 * 1024 * 1024;
+        if (Number.isFinite(contentLength) && contentLength > maxBytes) {
+          throw new BadRequestException("Avatar image is too large");
+        }
+        const bytes = new Uint8Array(await response.arrayBuffer());
+        if (bytes.byteLength > maxBytes) {
+          throw new BadRequestException("Avatar image is too large");
+        }
+      }
     }
 
     await this.prisma.player.upsert({
