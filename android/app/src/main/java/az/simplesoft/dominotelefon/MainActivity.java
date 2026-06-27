@@ -1,4 +1,4 @@
-package com.domino.pyaterochka;
+package az.simplesoft.dominotelefon;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
@@ -21,7 +21,7 @@ public class MainActivity extends BridgeActivity {
         registerPlugin(DominoGoogleAuthPlugin.class);
         registerPlugin(DominoBrowserPlugin.class);
         if (getBridge() != null && getBridge().getWebView() != null) {
-            getBridge().getWebView().getSettings().setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
+            getBridge().getWebView().getSettings().setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
             getBridge().getWebView().getSettings().setMediaPlaybackRequiresUserGesture(false);
             getBridge().getWebView().setWebChromeClient(new WebChromeClient() {
                 @Override

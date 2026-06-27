@@ -1,4 +1,4 @@
-package com.domino.pyaterochka;
+package az.simplesoft.dominotelefon;
 
 import android.content.ActivityNotFoundException;
 import android.content.Intent;

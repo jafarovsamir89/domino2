@@ -1,4 +1,4 @@
-package com.domino.pyaterochka;
+package az.simplesoft.dominotelefon;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -85,7 +85,7 @@ public class DominoGoogleAuthPlugin extends Plugin {
 
     private String buildConfigErrorMessage() {
         return "Google Sign-In is not configured for this Android build. " +
-            "Create an Android OAuth client in Google Cloud for package com.domino.pyaterochka " +
+            "Create an Android OAuth client in Google Cloud for package az.simplesoft.dominotelefon " +
             "and SHA-1 " + DEBUG_SHA1 + ", then keep your web client ID for requestIdToken().";
     }
 }
