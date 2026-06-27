@@ -4,7 +4,6 @@
   "webDir": "www",
   "bundledWebRuntime": false,
   "server": {
-    "url": "https://gamed.simplesoft.az",
     "androidScheme": "https",
     "allowNavigation": [
       "gamed.simplesoft.az",
@@ -14,11 +13,7 @@
       "www.googleapis.com",
       "oauth2.googleapis.com",
       "appleid.apple.com",
-      "appleid.cdn-apple.com",
-      "localhost",
-      "localhost:3000",
-      "localhost:3001",
-      "localhost:2567"
+      "appleid.cdn-apple.com"
     ]
   },
   "android": {

@@ -1,6 +1,12 @@
 // js/network.js
 // Networking using Colyseus 0.17
 
+const DOMINO_ENDPOINTS = globalThis.DOMINO_ENDPOINTS || {
+    API_BASE: "https://apid.simplesoft.az/api",
+    GAME_HTTP_BASE: "https://gamed.simplesoft.az",
+    GAME_WS_URL: "wss://gamed.simplesoft.az"
+};
+
 function isDebugLoggingEnabled() {
     if (typeof window === 'undefined') return false;
     try {
@@ -89,14 +95,18 @@ class NetworkManager {
             console.error('Colyseus not available');
             return false;
         }
-        const endpoint = this.getServerUrl();
+        const endpoint = this.getGameRealtimeUrl();
         debugLog('[Network] Using server endpoint:', endpoint);
         this.client = new ColyseusLib.Client(endpoint);
         return true;
     }
 
     getServerUrl() {
-        const fallbackUrl = "https://gamed.simplesoft.az";
+        return this.getGameHttpBase();
+    }
+
+    getGameHttpBase() {
+        const fallbackUrl = String(DOMINO_ENDPOINTS.GAME_HTTP_BASE || "https://gamed.simplesoft.az").trim();
         if (typeof window === 'undefined') return fallbackUrl;
 
         const override = this.getServerOverride();
@@ -114,6 +124,10 @@ class NetworkManager {
             return "http://localhost:2567";
         }
         return fallbackUrl;
+    }
+
+    getGameRealtimeUrl() {
+        return String(DOMINO_ENDPOINTS.GAME_WS_URL || "wss://gamed.simplesoft.az").trim();
     }
 
     getServerOverride() {
@@ -302,7 +316,7 @@ class NetworkManager {
     async resolveRoomId(code) {
         const roomCode = String(code || '').trim().toUpperCase();
         if (!roomCode) return null;
-        const endpoint = this.getServerUrl().replace(/\/$/, '');
+        const endpoint = this.getGameHttpBase().replace(/\/$/, '');
         try {
             const response = await fetch(`${endpoint}/room-id/${encodeURIComponent(roomCode)}`);
             if (!response.ok) return null;
@@ -317,7 +331,7 @@ class NetworkManager {
     async resolveRoomCode(roomId) {
         const id = String(roomId || '').trim();
         if (!id) return null;
-        const endpoint = this.getServerUrl().replace(/\/$/, '');
+        const endpoint = this.getGameHttpBase().replace(/\/$/, '');
         try {
             const response = await fetch(`${endpoint}/room-code/${encodeURIComponent(id)}`);
             if (!response.ok) return null;
@@ -870,7 +884,7 @@ class NetworkManager {
         if (this.voiceConfigPromise) return this.voiceConfigPromise;
 
         this.voiceConfigPromise = (async () => {
-            const endpoint = this.getServerUrl().replace(/\/$/, "");
+            const endpoint = this.getGameHttpBase().replace(/\/$/, "");
             const fallback = {
                 iceServers: [
                     { urls: ["stun:stun.l.google.com:19302"] },

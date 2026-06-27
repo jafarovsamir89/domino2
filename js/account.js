@@ -3,6 +3,11 @@ const PLATFORM_GAME_TOKEN_KEY = "dominoPlatformGameToken";
 const PLATFORM_PROFILE_KEY = "dominoPlatformProfile";
 const LOCAL_GAME_SESSION_KEY = "dominoLocalGameSessionId";
 const GAME_RESUME_STATE_KEY = "dominoGameResumeState";
+const DOMINO_ENDPOINTS = globalThis.DOMINO_ENDPOINTS || {
+    API_BASE: "https://apid.simplesoft.az/api",
+    GAME_HTTP_BASE: "https://gamed.simplesoft.az",
+    GAME_WS_URL: "wss://gamed.simplesoft.az"
+};
 
 function safeJsonParse(value) {
     try {
@@ -166,8 +171,7 @@ export class AccountClient {
     }
 
     get apiBase() {
-        const url = typeof this.getServerUrl === "function" ? this.getServerUrl() : "";
-        return String(url || "").replace(/\/$/, "");
+        return String(DOMINO_ENDPOINTS.API_BASE || "https://apid.simplesoft.az/api").replace(/\/$/, "");
     }
 
     get platformApiBase() {
@@ -177,7 +181,7 @@ export class AccountClient {
             }
 
             if (window.Capacitor) {
-                return "https://apid.simplesoft.az/api";
+                return this.apiBase;
             }
 
             const { hostname } = window.location;
@@ -185,7 +189,7 @@ export class AccountClient {
                 return "http://localhost:3000/api";
             }
 
-            return "https://apid.simplesoft.az/api";
+            return this.apiBase;
         } catch {
             return "http://localhost:3000/api";
         }
@@ -500,7 +504,7 @@ export class AccountClient {
         const key = String(sessionId || "").trim();
         if (!key) return null;
         try {
-            const data = await this.request(`/api/realtime/sessions/${encodeURIComponent(key)}`);
+            const data = await this.request(`/realtime/sessions/${encodeURIComponent(key)}`);
             return data?.item || null;
         } catch {
             return null;
@@ -515,7 +519,7 @@ export class AccountClient {
             params.set(key, String(value));
         }
         const query = params.toString();
-        const data = await this.request(`/api/realtime/rooms${query ? `?${query}` : ""}`);
+        const data = await this.request(`/realtime/rooms${query ? `?${query}` : ""}`);
         return Array.isArray(data?.items) ? data.items : [];
     }
 

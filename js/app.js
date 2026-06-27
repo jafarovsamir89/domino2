@@ -1,3 +1,4 @@
+import './endpoints.js';
 import { Tile, createFullSet, shuffle, getHandSize, determineFirstPlayer, handPoints, getOpeningPlayScore, hasInvalidOpeningHand, roundTo5 } from './model.js';
 import { Board, cloneBoard, reconstructBoard } from './board.js';
 import { AIPlayer } from './ai.js';
@@ -7864,7 +7865,7 @@ class DominoGame {
         const isLocalHost = typeof window !== 'undefined'
             && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
         if (window.Capacitor) {
-            return 'https://gamed.simplesoft.az/mobile-auth-complete.html';
+            return `${String(globalThis.DOMINO_ENDPOINTS?.GAME_HTTP_BASE || 'https://gamed.simplesoft.az').replace(/\/$/, '')}/mobile-auth-complete.html`;
         }
         if (isLocalHost) {
             return `${window.location.origin}${window.location.pathname}${window.location.search}`;

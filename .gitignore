@@ -26,3 +26,8 @@ Thumbs.db
 .DS_Store
 
 android/local.properties
+*.keystore
+*.jks
+google-services.json
+gradle.properties
+android/app/release/
