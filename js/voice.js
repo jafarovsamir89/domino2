@@ -626,12 +626,44 @@ export class VoiceChatManager {
             }
         }
 
+        const visibleSessions = this.getRemoteHumanSessions();
+        const rosterSlot = document.getElementById("voice-roster-slot");
+        const rosterToggle = document.getElementById("voice-roster-toggle");
+        const rosterPanel = document.getElementById("voice-roster-panel");
+        const rosterBadge = rosterToggle?.querySelector(".voice-roster-toggle-badge");
+        const hasVisibleSessions = visibleSessions.length > 0;
+        if (rosterSlot) {
+            rosterSlot.hidden = !hasVisibleSessions;
+        }
+        if (rosterToggle) {
+            const label = this.game?.t?.("voice-roster-toggle") || "Players";
+            rosterToggle.hidden = !hasVisibleSessions;
+            rosterToggle.dataset.remoteSpeakers = String(visibleSessions.length);
+            rosterToggle.setAttribute("aria-label", hasVisibleSessions ? `${label} (${visibleSessions.length})` : label);
+            rosterToggle.setAttribute("title", hasVisibleSessions ? `${label} (${visibleSessions.length})` : label);
+            rosterToggle.setAttribute("aria-expanded", String(Boolean(rosterPanel && rosterPanel.classList.contains("open") && !rosterPanel.hidden)));
+            rosterToggle.classList.toggle("has-speakers", hasVisibleSessions);
+            if (rosterBadge) {
+                rosterBadge.textContent = String(visibleSessions.length);
+                rosterBadge.hidden = !hasVisibleSessions;
+            }
+        }
+        if (rosterPanel) {
+            if (!hasVisibleSessions) {
+                rosterPanel.classList.remove("open");
+                rosterPanel.hidden = true;
+                rosterPanel.setAttribute("aria-hidden", "true");
+            } else if (!rosterPanel.hidden && !rosterPanel.classList.contains("open")) {
+                rosterPanel.classList.add("open");
+                rosterPanel.setAttribute("aria-hidden", "false");
+            }
+        }
+
         const speakersEl = document.getElementById("voice-speakers");
         if (speakersEl) {
             speakersEl.innerHTML = "";
             const players = Array.isArray(this.roomState?.players) ? this.roomState.players : [];
             const playerBySession = new Map(players.map((player) => [String(player.sessionId || ""), player]));
-            const visibleSessions = this.getRemoteHumanSessions();
             if (visibleSessions.length) {
                 visibleSessions.forEach((sessionId) => {
                     const player = playerBySession.get(sessionId);

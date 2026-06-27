@@ -248,8 +248,8 @@ function fmLog(tag, data) {
 const DOMINO_CLIENT_BUILD = {
     gitCommit: '7c5f3a1',
     builtAt: new Date().toISOString(),
-    socialRealtimeDebugVersion: 'browser-production-trace-v32-rooms-fix',
-    cacheFixVersion: 'domino-v71'
+    socialRealtimeDebugVersion: 'browser-production-trace-v33-voice-ui',
+    cacheFixVersion: 'domino-v72'
 };
 
 if (typeof window !== 'undefined') {
@@ -734,6 +734,10 @@ class DominoGame {
         if (this._giftOutsideHandler) {
             document.removeEventListener('pointerdown', this._giftOutsideHandler, true);
             this._giftOutsideHandler = null;
+        }
+        if (this._voiceRosterOutsideHandler) {
+            document.removeEventListener('pointerdown', this._voiceRosterOutsideHandler, true);
+            this._voiceRosterOutsideHandler = null;
         }
         this.stopSocialDebugPanelAutoRefresh();
         this.stopOpenRoomsAutoRefresh();
@@ -12981,11 +12985,28 @@ class DominoGame {
             if (reactionSlot) actionBar.insertBefore(slot, reactionSlot);
             else actionBar.appendChild(slot);
         }
-        if (actionBar && !document.getElementById('voice-speakers')) {
-            const speakers = document.createElement('div');
-            speakers.id = 'voice-speakers';
-            speakers.className = 'voice-speakers';
-            actionBar.appendChild(speakers);
+        if (actionBar && !document.getElementById('voice-roster-slot')) {
+            const rosterSlot = document.createElement('div');
+            rosterSlot.id = 'voice-roster-slot';
+            rosterSlot.className = 'voice-roster-slot';
+            rosterSlot.hidden = true;
+            rosterSlot.innerHTML = `
+                <button class="reaction-fab voice-roster-toggle" id="voice-roster-toggle" type="button" aria-label="${this.t('voice-roster-toggle') || 'Players'}" title="${this.t('voice-roster-toggle') || 'Players'}" aria-expanded="false">
+                    ${this.buildVoiceRosterToggleMarkup(22)}
+                </button>
+                <div class="voice-roster-panel" id="voice-roster-panel" hidden aria-hidden="true">
+                    <div id="voice-speakers" class="voice-speakers"></div>
+                </div>
+            `;
+            const reactionSlot = document.querySelector('.reaction-slot');
+            if (reactionSlot) actionBar.insertBefore(rosterSlot, reactionSlot);
+            else actionBar.appendChild(rosterSlot);
+        } else {
+            const panel = document.getElementById('voice-roster-panel');
+            const speakers = document.getElementById('voice-speakers');
+            if (panel && speakers && speakers.parentElement !== panel) {
+                panel.appendChild(speakers);
+            }
         }
     }
 
@@ -12995,6 +13016,16 @@ class DominoGame {
             <path d="M7.5 11.5v.5a4.5 4.5 0 0 0 9 0v-.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
             <path d="M12 16.5V20" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
         </svg>`;
+    }
+
+    buildVoiceRosterToggleMarkup(size = 22) {
+        return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M17 20v-1.2a3.8 3.8 0 0 0-3.8-3.8h-2.4A3.8 3.8 0 0 0 7 18.8V20" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+            <circle cx="12" cy="8" r="3.1" stroke="currentColor" stroke-width="1.8"/>
+            <path d="M20 20v-1a3.2 3.2 0 0 0-2.4-3.1" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+            <path d="M4 20v-1a3.2 3.2 0 0 1 2.4-3.1" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+        <span class="voice-roster-toggle-badge" aria-hidden="true">0</span>`;
     }
 
     getTurnAvatarText(name) {
@@ -16021,6 +16052,8 @@ class DominoGame {
         this.voiceBtn = document.getElementById('voice-btn');
         this.voiceUnlockBtn = document.getElementById('voice-unlock-btn');
         this.voiceStatusEl = document.getElementById('voice-status');
+        this.voiceRosterBtn = document.getElementById('voice-roster-toggle');
+        this.voiceRosterPanel = document.getElementById('voice-roster-panel');
         if (!this.voiceBtn || !this.voiceStatusEl) return;
 
         this.voiceBtn.addEventListener('click', async (event) => {
@@ -16041,6 +16074,24 @@ class DominoGame {
                 this.syncVoiceUi();
             });
         }
+
+        if (this.voiceRosterBtn && this.voiceRosterPanel) {
+            this.voiceRosterBtn.addEventListener('click', (event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                this.toggleVoiceRoster();
+            });
+        }
+
+        this._voiceRosterOutsideHandler = (event) => {
+            const panel = document.getElementById('voice-roster-panel');
+            const button = document.getElementById('voice-roster-toggle');
+            if (!panel || panel.hidden) return;
+            const target = event.target;
+            if (panel.contains(target) || (button && button.contains(target))) return;
+            this.toggleVoiceRoster(false);
+        };
+        document.addEventListener('pointerdown', this._voiceRosterOutsideHandler, true);
         this.syncVoiceUi();
     }
     syncVoiceUi() {
@@ -16299,6 +16350,9 @@ class DominoGame {
         }
         const open = force === null ? !giftPicker.classList.contains('open') : !!force;
         debugLog('[Chat Debug] toggleGiftPicker. force:', force, 'nextOpenState:', open);
+        if (open) {
+            this.toggleVoiceRoster(false);
+        }
         giftPicker.classList.toggle('open', open);
         giftPicker.setAttribute('aria-hidden', String(!open));
         if (this.giftBtn) {
@@ -16319,6 +16373,27 @@ class DominoGame {
     }
     getGiftRecipients() {
         return this.getGiftRecipientsByContext(this.getGiftPickerContext());
+    }
+
+    toggleVoiceRoster(force = null) {
+        const slot = document.getElementById('voice-roster-slot');
+        const button = document.getElementById('voice-roster-toggle');
+        const panel = document.getElementById('voice-roster-panel');
+        if (!slot || !button || !panel) return false;
+        const open = force === null ? !panel.classList.contains('open') : !!force;
+        if (open) {
+            this.closeGiftPicker();
+            this.closeReactionPicker();
+            slot.hidden = false;
+        }
+        panel.classList.toggle('open', open);
+        panel.hidden = !open;
+        panel.setAttribute('aria-hidden', String(!open));
+        button.setAttribute('aria-expanded', String(open));
+        if (open) {
+            this.voice?.updateSpeakerUi?.();
+        }
+        return open;
     }
 
     getRoomGiftRecipients() {
