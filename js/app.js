@@ -248,8 +248,8 @@ function fmLog(tag, data) {
 const DOMINO_CLIENT_BUILD = {
     gitCommit: '7c5f3a1',
     builtAt: new Date().toISOString(),
-    socialRealtimeDebugVersion: 'browser-production-trace-v31-moderation',
-    cacheFixVersion: 'domino-v70'
+    socialRealtimeDebugVersion: 'browser-production-trace-v32-rooms-fix',
+    cacheFixVersion: 'domino-v71'
 };
 
 if (typeof window !== 'undefined') {
@@ -13418,6 +13418,15 @@ class DominoGame {
         }
     }
 
+    isValidResumeSnapshotShape(snapshot = null) {
+        if (!snapshot || typeof snapshot !== 'object') return false;
+        const playerCount = Number(snapshot.playerCount ?? snapshot.onlinePlayerCount ?? snapshot.totalPlayers ?? 0);
+        const aiCount = Number(snapshot.onlineAiCount ?? snapshot.aiCount ?? 0);
+        if (!Number.isFinite(playerCount) || playerCount < 2 || playerCount > 4) return false;
+        if (!Number.isFinite(aiCount) || aiCount < 0 || aiCount > Math.max(0, playerCount - 1)) return false;
+        return true;
+    }
+
     async validateStoredResumeSnapshot() {
         const snapshot = this.account?.getStoredGameResumeState?.();
         if (!snapshot) {
@@ -13435,6 +13444,11 @@ class DominoGame {
         const createdAtTs = Date.parse(String(snapshot.createdAt || ""));
         const snapshotAgeMs = Number.isFinite(createdAtTs) ? Date.now() - createdAtTs : Infinity;
         const maxSoloSnapshotAgeMs = 12 * 60 * 60 * 1000;
+
+        if (!this.isValidResumeSnapshotShape(snapshot)) {
+            this.clearGameResumeSnapshot();
+            return null;
+        }
 
         if (!isOnlineSnapshot) {
             if (!Number.isFinite(createdAtTs) || snapshotAgeMs > maxSoloSnapshotAgeMs) {

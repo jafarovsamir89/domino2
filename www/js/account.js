@@ -174,6 +174,10 @@ export class AccountClient {
         return String(DOMINO_ENDPOINTS.API_BASE || "https://apid.simplesoft.az/api").replace(/\/$/, "");
     }
 
+    get gameHttpBase() {
+        return String(DOMINO_ENDPOINTS.GAME_HTTP_BASE || "https://gamed.simplesoft.az").replace(/\/$/, "");
+    }
+
     get platformApiBase() {
         try {
             if (window.DOMINO_PLATFORM_API_URL) {
@@ -322,6 +326,37 @@ export class AccountClient {
         try {
             const method = String(options.method || "GET").toUpperCase();
             const response = await fetch(`${this.apiBase}${path}`, {
+                headers: {
+                    "Content-Type": "application/json",
+                    ...(options.headers || {})
+                },
+                ...options,
+                signal: controller.signal,
+                body: options.body && method !== "GET" && method !== "HEAD"
+                    ? JSON.stringify(options.body)
+                    : undefined
+            });
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok) {
+                throw new Error(data.error || data.message || response.statusText || "Request failed");
+            }
+            this.lastError = "";
+            return data;
+        } catch (error) {
+            const normalized = this.normalizeError(error);
+            this.lastError = normalized;
+            throw new Error(normalized);
+        } finally {
+            clearTimeout(timeoutId);
+        }
+    }
+
+    async gameRequest(path, options = {}) {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 6000);
+        try {
+            const method = String(options.method || "GET").toUpperCase();
+            const response = await fetch(`${this.gameHttpBase}/api${path}`, {
                 headers: {
                     "Content-Type": "application/json",
                     ...(options.headers || {})
@@ -519,7 +554,7 @@ export class AccountClient {
             params.set(key, String(value));
         }
         const query = params.toString();
-        const data = await this.request(`/realtime/rooms${query ? `?${query}` : ""}`);
+        const data = await this.gameRequest(`/realtime/rooms${query ? `?${query}` : ""}`);
         return Array.isArray(data?.items) ? data.items : [];
     }
 
