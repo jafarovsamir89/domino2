@@ -1,6 +1,6 @@
 param(
     [string]$Message = "",
-    [string]$Branch = "main",
+    [string]$Branch = "",
     [switch]$PlatformOnly,
     [switch]$LegacyOnly,
     [switch]$SkipChecks
@@ -10,6 +10,14 @@ $ErrorActionPreference = "Stop"
 
 $repoRoot = Resolve-Path (Join-Path $PSScriptRoot "..\..")
 Set-Location $repoRoot
+
+if ([string]::IsNullOrWhiteSpace($Branch)) {
+    $Branch = (git rev-parse --abbrev-ref HEAD 2>$null).Trim()
+    if ([string]::IsNullOrWhiteSpace($Branch) -or $Branch -eq "HEAD") {
+        $Branch = "main"
+    }
+}
+Write-Host "[deploy] target branch: $Branch"
 
 function Invoke-GitCommitIfNeeded {
     $status = git status --porcelain
