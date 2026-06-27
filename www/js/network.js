@@ -1,11 +1,15 @@
 // js/network.js
 // Networking using Colyseus 0.17
 
-var DOMINO_ENDPOINTS = globalThis.DOMINO_ENDPOINTS || {
+const dominoEndpoints = globalThis.DOMINO_ENDPOINTS || {
     API_BASE: "https://apid.simplesoft.az/api",
     GAME_HTTP_BASE: "https://gamed.simplesoft.az",
     GAME_WS_URL: "wss://gamed.simplesoft.az"
 };
+
+if (!globalThis.DOMINO_ENDPOINTS) {
+    globalThis.DOMINO_ENDPOINTS = dominoEndpoints;
+}
 
 function isDebugLoggingEnabled() {
     if (typeof window === 'undefined') return false;
@@ -106,7 +110,7 @@ var NetworkManager = globalThis.NetworkManager || class NetworkManager {
     }
 
     getGameHttpBase() {
-        const fallbackUrl = String(DOMINO_ENDPOINTS.GAME_HTTP_BASE || "https://gamed.simplesoft.az").trim();
+        const fallbackUrl = String(dominoEndpoints.GAME_HTTP_BASE || "https://gamed.simplesoft.az").trim();
         if (typeof window === 'undefined') return fallbackUrl;
 
         const override = this.getServerOverride();
@@ -127,7 +131,7 @@ var NetworkManager = globalThis.NetworkManager || class NetworkManager {
     }
 
     getGameRealtimeUrl() {
-        return String(DOMINO_ENDPOINTS.GAME_WS_URL || "wss://gamed.simplesoft.az").trim();
+        return String(dominoEndpoints.GAME_WS_URL || "wss://gamed.simplesoft.az").trim();
     }
 
     getServerOverride() {

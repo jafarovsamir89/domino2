@@ -1,5 +1,5 @@
-const CACHE_NAME = 'domino-v65';
-const SW_VERSION = 'sw-dynamic-bypass-v27-7db05ca';
+const CACHE_NAME = 'domino-v66';
+const SW_VERSION = 'sw-dynamic-bypass-v28-networkfix';
 const ASSETS = [
     '/',
     '/index.html',
