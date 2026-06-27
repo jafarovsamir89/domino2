@@ -949,22 +949,9 @@ class DominoGame {
         if (openLeaderboardBtn) openLeaderboardBtn.addEventListener('click', async () => {
             await this.openLeaderboardModal();
         });
-        const leaderboardModal = document.getElementById('leaderboard-modal');
-        if (leaderboardModal && leaderboardModal.dataset.modeBound !== '1') {
-            leaderboardModal.dataset.modeBound = '1';
-            leaderboardModal.addEventListener('click', (event) => {
-                const button = event.target?.closest?.('[data-leaderboard-mode]');
-                if (!button) return;
-                const nextMode = String(button.dataset.leaderboardMode || '').trim();
-                if (!nextMode) return;
-                this.setPreferredStartMode(nextMode);
-                this.leaderboardGameMode = nextMode === 'classic101' ? 'classic101' : 'telefon';
-                void this.loadLeaderboard(this.leaderboardScope || 'overall', this.leaderboardGameMode);
-            });
-        }
         document.querySelectorAll('[data-leaderboard-scope]').forEach((button) => {
             button.addEventListener('click', () => {
-                void this.loadLeaderboard(button.dataset.leaderboardScope || 'overall');
+                void this.loadLeaderboard(button.dataset.leaderboardScope || 'overall', this.getSelectedGameMode());
             });
         });
         if (openFriendsBtn) openFriendsBtn.addEventListener('click', async () => {
@@ -8339,19 +8326,8 @@ class DominoGame {
     }
 
     syncLeaderboardModeUI(mode = this.leaderboardGameMode || this.getSelectedGameMode()) {
-        const normalizedMode = mode === 'classic101' ? 'classic101' : 'telefon';
         const modal = document.getElementById('leaderboard-modal');
         if (!modal) return;
-        const modeRow = modal.querySelector('#leaderboard-mode-row');
-        if (modeRow) {
-            modeRow.classList.toggle('is-hidden', false);
-            modeRow.querySelectorAll('[data-leaderboard-mode]').forEach((button) => {
-                const buttonMode = String(button.dataset.leaderboardMode || '').trim();
-                const active = buttonMode === normalizedMode;
-                button.classList.toggle('is-active', active);
-                button.setAttribute('aria-pressed', String(active));
-            });
-        }
         const titleButton = document.getElementById('open-leaderboard-btn');
         if (titleButton) {
             const label = this.t('leaderboard-title');
@@ -8404,30 +8380,10 @@ class DominoGame {
     async loadLeaderboard(scope = this.leaderboardScope || 'overall', gameMode = this.leaderboardGameMode || this.getSelectedGameMode()) {
         const list = document.getElementById('leaderboard-list');
         const tabs = document.getElementById('leaderboard-tabs');
-        let modeRow = document.getElementById('leaderboard-mode-row');
         if (!list) return;
-        if (!modeRow && tabs?.parentElement) {
-            modeRow = document.createElement('div');
-            modeRow.className = 'leaderboard-mode-row';
-            modeRow.id = 'leaderboard-mode-row';
-            modeRow.innerHTML = `
-                <div class="mode-switcher leaderboard-mode-switcher" role="tablist" aria-label="${this.t('leaderboard-title')}">
-                    <button type="button" class="mode-switcher-segment" data-leaderboard-mode="telefon" data-i18n="leaderboard-mode-telefon">${this.t('leaderboard-mode-telefon')}</button>
-                    <button type="button" class="mode-switcher-segment" data-leaderboard-mode="classic101" data-i18n="leaderboard-mode-101">${this.t('leaderboard-mode-101')}</button>
-                </div>
-            `;
-            tabs.parentElement.insertBefore(modeRow, tabs);
-        }
         this.leaderboardScope = scope === 'weekly' || scope === 'friends' ? scope : 'overall';
         this.leaderboardGameMode = gameMode === 'classic101' ? 'classic101' : 'telefon';
         this.syncLeaderboardModeUI(this.leaderboardGameMode);
-        if (modeRow) {
-            modeRow.querySelectorAll('[data-leaderboard-mode]').forEach((button) => {
-                const isActive = button.dataset.leaderboardMode === this.leaderboardGameMode;
-                button.classList.toggle('is-active', isActive);
-                button.setAttribute('aria-pressed', isActive ? 'true' : 'false');
-            });
-        }
         if (tabs) {
             tabs.querySelectorAll('[data-leaderboard-scope]').forEach((button) => {
                 const isActive = button.dataset.leaderboardScope === this.leaderboardScope;
@@ -17143,7 +17099,7 @@ class DominoGame {
         }
         if (document.getElementById('leaderboard-modal')?.classList.contains('active')) {
             this.syncLeaderboardModeUI(nextMode);
-            void this.loadLeaderboard(this.leaderboardScope || 'overall', nextMode);
+            void this.loadLeaderboard(this.leaderboardScope || 'overall', this.getSelectedGameMode());
         }
     }
 
@@ -17160,7 +17116,7 @@ class DominoGame {
         const title = this.t(modeTitleKey);
         const subtitle = this.t(modeSubtitleKey);
         const soonLabel = ENABLE_MODE_101 ? '' : this.t('mode-soon');
-        const leaderboardButtonLabel = `${this.t('leaderboard-title')} · ${this.getModeLabel(mode)}`;
+        const leaderboardButtonLabel = this.t('leaderboard-title');
 
         document.documentElement.dataset.dominoStartMode = mode;
         this.onlineRoomFilters.gameMode = mode;
