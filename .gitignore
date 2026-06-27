@@ -26,6 +26,8 @@ Thumbs.db
 .DS_Store
 
 android/local.properties
+qa-artifacts/
+keystore.properties
 *.keystore
 *.jks
 google-services.json
