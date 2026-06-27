@@ -248,8 +248,8 @@ function fmLog(tag, data) {
 const DOMINO_CLIENT_BUILD = {
     gitCommit: '7c5f3a1',
     builtAt: new Date().toISOString(),
-    socialRealtimeDebugVersion: 'browser-production-trace-v29-social',
-    cacheFixVersion: 'domino-v68'
+    socialRealtimeDebugVersion: 'browser-production-trace-v30-social',
+    cacheFixVersion: 'domino-v69'
 };
 
 if (typeof window !== 'undefined') {
@@ -1672,13 +1672,13 @@ class DominoGame {
         modal.setAttribute('aria-hidden', 'true');
         modal.innerHTML = `
             <section class="modal-card social-feedback-card">
-                <div class="modal-header feedback-modal-header">
-                    <div class="feedback-modal-copy">
+                <div class="modal-header account-modal-header feedback-modal-header">
+                    <div class="account-modal-title-wrap feedback-modal-copy">
                         <p class="section-kicker" data-i18n="feedback-kicker">Support</p>
                         <h2 data-i18n="feedback-title">Обратная связь</h2>
                         <p class="modal-desc" data-i18n="feedback-desc">Tell us what you want to improve.</p>
                     </div>
-                    <button class="btn btn-action modal-close-btn" id="feedback-modal-close" type="button" data-i18n="modal-close">Close</button>
+                    <button class="btn btn-menu modal-close-btn account-modal-close-btn" id="social-feedback-close" type="button" aria-label="Close">×</button>
                 </div>
                 <form id="feedback-form" class="feedback-form">
                     <div class="feedback-field">
@@ -1701,7 +1701,6 @@ class DominoGame {
                     <div class="feedback-status" id="feedback-modal-status" role="status" aria-live="polite"></div>
                     <div class="feedback-actions">
                         <button class="btn btn-primary btn-large modal-primary-btn" id="feedback-modal-send" type="submit" data-i18n="feedback-send">Send</button>
-                        <button class="btn btn-menu modal-close-btn modal-secondary-btn" id="feedback-modal-cancel" type="button" data-i18n="feedback-cancel">Cancel</button>
                     </div>
                 </form>
             </section>
@@ -1716,8 +1715,7 @@ class DominoGame {
         });
         modal.querySelector('.modal-card')?.addEventListener('click', (event) => event.stopPropagation());
 
-        document.getElementById('feedback-modal-close')?.addEventListener('click', () => this.closeFeedbackModal());
-        document.getElementById('feedback-modal-cancel')?.addEventListener('click', () => this.closeFeedbackModal());
+        document.getElementById('social-feedback-close')?.addEventListener('click', () => this.closeFeedbackModal());
         document.getElementById('feedback-form')?.addEventListener('submit', (event) => {
             event.preventDefault();
             void this.submitFeedback();

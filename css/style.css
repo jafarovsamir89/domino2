@@ -1747,7 +1747,7 @@ html[data-domino-start-mode="classic101"] #start-screen .start-hero-face-back {
 
 .feedback-modal-header {
     margin-bottom: 0;
-    align-items: flex-start;
+    align-items: center;
     padding-bottom: 12px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
@@ -1783,7 +1783,7 @@ html[data-domino-start-mode="classic101"] #start-screen .start-hero-face-back {
 
 .feedback-actions {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: minmax(0, 1fr);
     gap: 10px;
 }
 
@@ -6392,10 +6392,6 @@ body.move-hint-selection-active #game-screen .player-name-btn {
 
     .social-feedback-trigger {
         min-width: 32px;
-    }
-
-    .feedback-actions .btn {
-        flex-basis: 100%;
     }
 
     .feedback-actions {
