@@ -8354,7 +8354,7 @@ class DominoGame {
         }
         const titleButton = document.getElementById('open-leaderboard-btn');
         if (titleButton) {
-            const label = `${this.t('leaderboard-title')} · ${this.getModeLabel(normalizedMode)}`;
+            const label = this.t('leaderboard-title');
             titleButton.textContent = label;
             titleButton.setAttribute('aria-label', label);
             titleButton.title = label;
