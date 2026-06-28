@@ -1,6 +1,7 @@
 const Redis = require("ioredis");
+const { DISCONNECT_GRACE_SECONDS } = require("./roomConfig");
 
-const PRESENCE_TTL_SECONDS = 180;
+const PRESENCE_TTL_SECONDS = DISCONNECT_GRACE_SECONDS + 60;
 const redisUrl = process.env.REDIS_URI || "";
 const redis = redisUrl
   ? new Redis(redisUrl, {
@@ -22,7 +23,7 @@ if (redis) {
 function isStale(entry) {
   const updatedAt = Date.parse(entry?.updatedAt || "");
   if (!Number.isFinite(updatedAt)) return true;
-  return Date.now() - updatedAt > 90_000;
+  return Date.now() - updatedAt > DISCONNECT_GRACE_SECONDS * 1000;
 }
 
 function pruneStore() {
@@ -66,9 +67,9 @@ async function getRedisClient() {
 function normalizeEntry(sessionId, current, payload) {
   return {
     sessionId,
-    updatedAt: new Date().toISOString(),
     ...current,
-    ...payload
+    ...payload,
+    updatedAt: new Date().toISOString()
   };
 }
 
@@ -482,5 +483,6 @@ module.exports = {
   listLivePlayers,
   getLiveSummary,
   getOpenRooms,
-  getRoomSnapshot
+  getRoomSnapshot,
+  isStale
 };

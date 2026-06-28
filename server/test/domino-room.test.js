@@ -8,6 +8,11 @@ const DominoRoom = require("../DominoRoom");
 const { Board } = require("../board");
 const { Tile } = require("../model");
 const { getRuleset } = require("../../shared/domino-rulesets.cjs");
+const { resetJoinRateLimits } = require("../joinRateLimit");
+
+test.beforeEach(() => {
+    resetJoinRateLimits();
+});
 
 test("generateRoomCode returns compact upper-case codes", () => {
     const codes = new Set();

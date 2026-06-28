@@ -6,7 +6,7 @@ const { AIPlayer } = require("./ai");
 const { Tile, createFullSet, shuffle, getHandSize, determineFirstPlayer, handPoints, getOpeningPlayScore, hasInvalidOpeningHand, roundTo5 } = require("./model");
 const { verifyGameToken } = require("./platformAuth");
 const { buildSignedRequestBody } = require("./signedRequest");
-const { generateRoomCode, normalizeRoomVisibility, normalizeRoomMode, normalizeGameMode, normalizeStakeKey, normalizePlayerCount, normalizeAiCount, normalizeDlossThreshold, normalizeInstantWinEnabled, normalizeAiDifficulty } = require("./roomConfig");
+const { generateRoomCode, normalizeRoomVisibility, normalizeRoomMode, normalizeGameMode, normalizeStakeKey, normalizePlayerCount, normalizeAiCount, normalizeDlossThreshold, normalizeInstantWinEnabled, normalizeAiDifficulty, DISCONNECT_GRACE_SECONDS } = require("./roomConfig");
 const { normalizeAuthToken, buildRoomIdentity, getFirstNameDisplayName } = require("./roomIdentity");
 const { buildLivePlayerPayload } = require("./roomPresence");
 const { buildPlatformMatchPayload, sanitizeParticipant } = require("./matchResultPayload");
@@ -18,6 +18,7 @@ const { buildSchemaStateSnapshotData, buildRestoredSchemaStateData } = require("
 const { getRuleset } = require("../shared/domino-rulesets.cjs");
 const { loadCustomStateSnapshotForRestore } = require("./roomRestoreLookup");
 const { upsertLivePlayer, removeLivePlayer, setRoomGameActive, removeRoomPlayers } = require("./livePresence");
+const { checkJoinRateLimit } = require("./joinRateLimit");
 const { rememberRoom, forgetRoom } = require("./roomRegistry");
 const { BotTakeoverController, BOT_TAKEOVER_CONFIG, TAKEOVER_REASON } = require("./botTakeover");
 
@@ -28,7 +29,8 @@ const BOT_THINK_DELAY_MS = 1500;
 const LAST_MOVE_REVEAL_DELAY_MS = 1200;
 const DEAL_END_MODAL_MS = 5000;
 const ECONOMY_SETTLEMENT_RETRY_MS = 5000;
-const RECONNECT_GRACE_MS = 120000; // 2 minutes
+const RECONNECT_GRACE_SECONDS = DISCONNECT_GRACE_SECONDS;
+const RECONNECT_GRACE_MS = RECONNECT_GRACE_SECONDS * 1000;
 const AUTO_START_DELAY_MS = 500;
 const CUSTOM_STATE_TTL = 86400;
 const redisUrl = process.env.REDIS_URI || "";
@@ -1286,6 +1288,11 @@ class DominoRoom extends Room {
             humanSeats: this.humanSeats,
             maxClients: this.maxClients
         });
+        const joinRateKey = String(identity.userId || identity.playerId || client.sessionId || "").trim();
+        const joinLimit = checkJoinRateLimit(joinRateKey);
+        if (!joinLimit.allowed) {
+            throw new ServerError(429, `join_rate_limited:${joinLimit.retryAfterMs || 0}`);
+        }
         const requestedGameMode = normalizeGameMode(options.gameMode || this.gameMode || this.mode);
         if (requestedGameMode && this.gameMode && requestedGameMode !== this.gameMode) {
             client.send("room_closed", { reasonKey: "room-closed-game-mode-mismatch" });

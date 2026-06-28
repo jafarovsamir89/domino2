@@ -4,6 +4,7 @@ const ROOM_CODE_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 const DEFAULT_STAKE_KEY = "stake_200";
 const DEFAULT_AI_DIFFICULTY = "medium";
 const DEFAULT_DLOSS_THRESHOLD = 255;
+const DISCONNECT_GRACE_SECONDS = 120;
 
 function generateRoomCode() {
     let code = "";
@@ -73,5 +74,6 @@ module.exports = {
     normalizeAiCount,
     normalizeDlossThreshold,
     normalizeInstantWinEnabled,
-    normalizeAiDifficulty
+    normalizeAiDifficulty,
+    DISCONNECT_GRACE_SECONDS
 };

@@ -7,6 +7,11 @@ process.env.BETTER_AUTH_SECRET ||= process.env.DOMINO_SERVER_SECRET;
 const DominoRoom = require("../DominoRoom");
 const { rememberRoom, resolveRoomIdByCode } = require("../roomRegistry");
 const { upsertLivePlayer, getOpenRooms } = require("../livePresence");
+const { resetJoinRateLimits } = require("../joinRateLimit");
+
+test.beforeEach(() => {
+    resetJoinRateLimits();
+});
 
 function createRoom({ totalPlayers = 4, aiCount = 0, isTeamMode = true } = {}) {
     const room = Object.create(DominoRoom.prototype);
