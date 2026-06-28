@@ -9,6 +9,7 @@ import type { MessageEvent } from "@nestjs/common";
 import { Prisma, type CoinLedgerType } from "@prisma/client";
 
 import { AuthService } from "../auth/auth.service.js";
+import { CHAT_MESSAGE_FLOOD_MAX, CHAT_MESSAGE_FLOOD_WINDOW_MS, maskProfanity } from "./chatModeration.js";
 import { PrismaService } from "../prisma/prisma.service.js";
 
 type PlayerSummary = {
@@ -208,6 +209,7 @@ export class SocialService {
     roomInvite: new Map<string, number[]>(),
     playInvite: new Map<string, number[]>()
   };
+  private readonly chatFloodBuckets = new Map<string, number[]>();
 
   constructor(
     private readonly prisma: PrismaService,
@@ -608,6 +610,19 @@ export class SocialService {
     }
     nextValues.push(now);
     bucket.set(cleanKey, nextValues);
+  }
+
+  private enforceChatFloodLimit(playerId: string) {
+    const cleanPlayerId = String(playerId || "").trim();
+    if (!cleanPlayerId) return;
+    const now = Date.now();
+    const values = Array.isArray(this.chatFloodBuckets.get(cleanPlayerId)) ? this.chatFloodBuckets.get(cleanPlayerId)! : [];
+    const nextValues = values.filter((ts) => Number(ts || 0) > now - CHAT_MESSAGE_FLOOD_WINDOW_MS);
+    if (nextValues.length >= CHAT_MESSAGE_FLOOD_MAX) {
+      throw new ForbiddenException("Too many messages. Please slow down.");
+    }
+    nextValues.push(now);
+    this.chatFloodBuckets.set(cleanPlayerId, nextValues);
   }
 
   private async clearHiddenDirectMessageThreadMarkers(playerIds: string[], relatedPlayerId: string) {
@@ -1969,6 +1984,8 @@ export class SocialService {
       }
     }
 
+    const normalizedText = isMedia ? text : maskProfanity(text).text;
+
     const clientMessageId = body.clientMessageId ? String(body.clientMessageId).trim() : null;
 
     if (clientMessageId) {
@@ -1991,8 +2008,7 @@ export class SocialService {
       }
     }
 
-    this.enforceRateLimit(this.socialRateLimits.directMessage, `${currentPlayer.id}:1s`, 1, 1000);
-    this.enforceRateLimit(this.socialRateLimits.directMessage, `${currentPlayer.id}:1m`, 30, 60_000);
+    this.enforceChatFloodLimit(currentPlayer.id);
 
     await this.clearHiddenDirectMessageThreadMarkers([currentPlayer.id], targetPlayerId);
     await this.clearHiddenDirectMessageThreadMarkers([targetPlayerId], currentPlayer.id);
@@ -2005,7 +2021,7 @@ export class SocialService {
         data: {
           senderPlayerId: currentPlayer.id,
           receiverPlayerId: targetPlayerId,
-          text,
+          text: normalizedText,
           clientMessageId
         },
         include: {
@@ -2052,7 +2068,7 @@ export class SocialService {
     }
 
     if (!this.isPlayerOnline(targetPlayerId)) {
-      void this.sendFcmPushNotification(targetPlayerId, currentPlayer.displayName || "", text);
+      void this.sendFcmPushNotification(targetPlayerId, currentPlayer.displayName || "", normalizedText);
     }
 
     return {

@@ -2470,3 +2470,62 @@ test("sendDirectMessage emits live events for socket subscribers", async () => {
     unsubscribe();
   }
 });
+
+test("sendDirectMessageForPlayer masks profanity and rate limits floods", async () => {
+  const currentPlayer = makePlayer("player-a", "Alpha");
+  const targetPlayer = makePlayer("player-b", "Beta");
+  const createdRows: any[] = [];
+  const prismaMock = {
+    player: {
+      findUnique: async ({ where }: any) => {
+        if (where?.id === targetPlayer.id) return targetPlayer;
+        return null;
+      }
+    },
+    playerBan: {
+      findFirst: async () => null
+    },
+    friendConnection: {
+      findMany: async () => []
+    },
+    directMessage: {
+      findUnique: async () => null,
+      create: async ({ data }: any) => {
+        createdRows.push(data);
+        return {
+          id: `message-${createdRows.length}`,
+          senderPlayerId: data.senderPlayerId,
+          receiverPlayerId: data.receiverPlayerId,
+          text: data.text,
+          createdAt: new Date("2024-03-01T10:00:00.000Z"),
+          readAt: null,
+          sender: currentPlayer,
+          receiver: targetPlayer
+        };
+      }
+    },
+    directMessageThread: {
+      upsert: async () => ({})
+    },
+    $transaction: async (fn: any) => fn(prismaMock)
+  } as any;
+
+  const service = new SocialService(prismaMock, {} as any);
+  (service as any).getCurrentPlayer = async () => currentPlayer;
+  (service as any).clearHiddenDirectMessageThreadMarkers = async () => {};
+  (service as any).emitSseEvent = () => {};
+  (service as any).isPlayerOnline = () => true;
+
+  const masked = await service.sendDirectMessageForPlayer(currentPlayer, targetPlayer.id, { text: "с.у.к.а fuuuck sh1t hello" });
+  assert.equal(masked.item.text, "******* ****** **** hello");
+  assert.equal(createdRows[0].text, "******* ****** **** hello");
+
+  for (let index = 0; index < 4; index += 1) {
+    await service.sendDirectMessageForPlayer(currentPlayer, targetPlayer.id, { text: `hello ${index + 1}` });
+  }
+
+  await assert.rejects(
+    () => service.sendDirectMessageForPlayer(currentPlayer, targetPlayer.id, { text: "hello 6" }),
+    /Too many messages/i
+  );
+});
