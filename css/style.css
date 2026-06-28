@@ -1193,6 +1193,7 @@ html[data-domino-start-mode="classic101"] #start-screen .start-hero-face-back {
     min-height: 0;
     overflow-y: auto;
     padding-bottom: 4px;
+    align-content: start;
 }
 
 .modal-header {
@@ -1536,6 +1537,7 @@ html[data-domino-start-mode="classic101"] #start-screen .start-hero-face-back {
 }
 
 #account-modal-close,
+#leaderboard-modal-close,
 .account-close-btn {
     width: 40px;
     height: 40px;
@@ -2026,6 +2028,15 @@ html[data-domino-start-mode="classic101"] #start-screen .start-hero-face-back {
 .leaderboard-modal .modal-desc,
 .friends-modal .modal-desc.page-description {
     margin-bottom: 2px;
+}
+
+.leaderboard-modal .modal-header {
+    margin-bottom: 8px;
+}
+
+.leaderboard-modal .modal-desc.page-description {
+    margin-top: 2px;
+    margin-bottom: 8px;
 }
 
 .leaderboard-list {
@@ -8204,6 +8215,7 @@ body.is-reconnecting .hand-container {
 #account-modal #account-modal-close,
 #coin-shop-modal #coin-shop-modal-close,
 #cosmetics-shop-modal #cosmetics-shop-modal-close,
+#leaderboard-modal #leaderboard-modal-close,
 #open-rooms-modal #open-rooms-modal-close {
     width: 32px;
     height: 32px;
@@ -8225,6 +8237,7 @@ body.is-reconnecting .hand-container {
 #account-modal #account-modal-close:hover,
 #coin-shop-modal #coin-shop-modal-close:hover,
 #cosmetics-shop-modal #cosmetics-shop-modal-close:hover,
+#leaderboard-modal #leaderboard-modal-close:hover,
 #open-rooms-modal #open-rooms-modal-close:hover {
     background: rgba(255, 0, 0, 0.2);
     border-color: rgba(255, 0, 0, 0.4);
@@ -8234,6 +8247,7 @@ body.is-reconnecting .hand-container {
 #account-modal .account-modal-header,
 #coin-shop-modal .account-modal-header,
 #cosmetics-shop-modal .account-modal-header,
+#leaderboard-modal .account-modal-header,
 #open-rooms-modal .account-modal-header {
     display: flex;
     align-items: center;
@@ -8251,6 +8265,7 @@ body.is-reconnecting .hand-container {
 #account-modal .account-modal-title-wrap h2,
 #coin-shop-modal .account-modal-title-wrap h2,
 #cosmetics-shop-modal .account-modal-title-wrap h2,
+#leaderboard-modal .account-modal-title-wrap h2,
 #open-rooms-modal .account-modal-title-wrap h2 {
     margin: 0;
     font-size: 1.25rem;
