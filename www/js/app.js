@@ -248,8 +248,8 @@ function fmLog(tag, data) {
 const DOMINO_CLIENT_BUILD = {
     gitCommit: '7c5f3a1',
     builtAt: new Date().toISOString(),
-    socialRealtimeDebugVersion: 'browser-production-trace-v36-rating-pad',
-    cacheFixVersion: 'domino-v75'
+    socialRealtimeDebugVersion: 'browser-production-trace-v37-mode-i18n',
+    cacheFixVersion: 'domino-v76'
 };
 
 if (typeof window !== 'undefined') {
@@ -8591,7 +8591,7 @@ class DominoGame {
             rating.textContent = String(stats.rating ?? 1000);
             const meta = document.createElement('div');
             meta.className = 'account-mode-stat-meta';
-            meta.textContent = `${this.t(`title-${stats.titleCode}`)} · ${this.t('leaderboard-games')}: ${String(stats.matchesPlayed ?? 0)} · ${this.t('leaderboard-wins')}: ${String(stats.wins ?? 0)} · ${this.t('leaderboard-losses')}: ${String(stats.losses ?? 0)}`;
+            meta.textContent = `${this.t('leaderboard-games')}: ${String(stats.matchesPlayed ?? 0)} · ${this.t('leaderboard-wins')}: ${String(stats.wins ?? 0)} · ${this.t('leaderboard-losses')}: ${String(stats.losses ?? 0)}`;
             card.appendChild(label);
             card.appendChild(rating);
             card.appendChild(meta);
