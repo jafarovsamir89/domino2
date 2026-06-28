@@ -1,181 +1,139 @@
-const PROFANITY_TERMS = [
-  // Russian
-  "blyad",
-  "blyat",
-  "huy",
-  "khuy",
-  "pizda",
-  "suka",
-  // Azerbaijani / common transliterations
-  "qehbe",
-  "sik",
-  // Turkish
-  "amk",
-  "orospu",
-  "pust",
-  // English
-  "asshole",
-  "bitch",
-  "fuck",
-  "shit"
-] as const;
+// Server-side chat profanity masking.
+// Strategy:
+//  1) Normalize each WORD to a latin, de-obfuscated form: maps Cyrillic / Azerbaijani /
+//     Turkish letters to latin, converts leetspeak digits, strips separators (so "с.у.к.а"
+//     -> "suka"), and collapses repeated letters ("сууука" -> "suka").
+//  2) LONG roots (>=4 chars) match as a SUBSTRING of the normalized word -> catches
+//     inflections and suffixes ("fucking", "сукой", "пиздец", "siktir", "qancıq").
+//  3) SHORT roots (<=3 chars) match only as a whole word or word-prefix (avoids false positives).
+//  4) If a word matches, the WHOLE original word is replaced with asterisks.
+// To extend: just add a normalized (latin, no repeated letters) root to the lists below.
 
-const CHAR_NORMALIZATION_MAP: Record<string, string> = {
-  "@": "a",
+const CHAR_MAP: Record<string, string> = {
+  // Cyrillic
   "а": "a",
-  "á": "a",
-  "à": "a",
-  "â": "a",
-  "ä": "a",
   "б": "b",
-  "8": "b",
-  "ç": "c",
-  "с": "s",
-  "$": "s",
-  "5": "s",
-  "ş": "s",
-  "ё": "e",
-  "е": "e",
-  "ə": "e",
-  "3": "e",
-  "ф": "f",
+  "в": "v",
   "г": "g",
-  "ğ": "g",
-  "9": "g",
-  "һ": "h",
-  "х": "h",
-  "1": "i",
-  "!": "i",
-  "|": "i",
-  "і": "i",
-  "ı": "i",
-  "й": "y",
+  "д": "d",
+  "е": "e",
+  "ё": "e",
   "ж": "j",
+  "з": "z",
+  "и": "i",
+  "й": "i",
   "к": "k",
-  "қ": "q",
   "л": "l",
   "м": "m",
   "н": "n",
-  "0": "o",
   "о": "o",
-  "ө": "o",
-  "р": "p",
   "п": "p",
-  "2": "z",
-  "з": "z",
+  "р": "r",
+  "с": "s",
   "т": "t",
-  "7": "t",
   "у": "u",
-  "ü": "u",
-  "v": "u",
-  "в": "v",
-  "w": "w",
-  "ш": "w",
-  "щ": "w",
-  "x": "x",
-  "ы": "y",
+  "ф": "f",
+  "х": "h",
+  "ц": "c",
+  "ч": "ch",
+  "ш": "sh",
+  "щ": "sh",
+  "ъ": "",
+  "ы": "i",
+  "ь": "",
   "э": "e",
   "ю": "yu",
-  "я": "ya"
+  "я": "ya",
+  // Azerbaijani / Turkish
+  "ə": "e",
+  "ı": "i",
+  "ö": "o",
+  "ü": "u",
+  "ç": "c",
+  "ş": "s",
+  "ğ": "g",
+  "â": "a",
+  "î": "i",
+  "û": "u",
+  // Symbols / leet
+  "@": "a",
+  "$": "s",
+  "!": "i",
+  "|": "i"
 };
 
-const CHAR_CLASS_MAP: Record<string, string[]> = {
-  a: ["a", "а", "@", "4"],
-  b: ["b", "б", "8"],
-  c: ["c", "с", "ç", "ć", "č"],
-  d: ["d", "д"],
-  e: ["e", "е", "ё", "э", "3"],
-  f: ["f", "ф"],
-  g: ["g", "г", "ğ", "9"],
-  h: ["h", "х", "һ"],
-  i: ["i", "і", "1", "!", "|", "ı"],
-  j: ["j", "ж"],
-  k: ["k", "к", "қ"],
-  l: ["l", "л", "1", "|"],
-  m: ["m", "м"],
-  n: ["n", "н"],
-  o: ["o", "о", "0", "ө"],
-  p: ["p", "р", "п"],
-  q: ["q", "қ"],
-  r: ["r", "р"],
-  s: ["s", "с", "$", "5", "ş"],
-  t: ["t", "т", "7", "+"],
-  u: ["u", "у", "ü", "v"],
-  v: ["v", "в", "u"],
-  w: ["w", "ш", "щ"],
-  x: ["x", "х", "×"],
-  y: ["y", "у", "й", "ы"],
-  z: ["z", "з", "2"]
-};
-
-function escapeCharClass(value: string) {
-  return String(value).replace(/[\\\]\^-]/g, "\\$&");
-}
-
-function normalizeForLookup(value: string) {
-  const lower = String(value || "").toLowerCase();
-  const mapped = Array.from(lower, (char) => CHAR_NORMALIZATION_MAP[char] || char)
-    .join("")
-    .replace(/[^a-z0-9]+/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-  if (!mapped) return "";
-
-  const tokens = mapped.split(" ").map((token) => token.replace(/([a-z0-9])\1+/g, "$1"));
-  const merged: string[] = [];
-  for (const token of tokens) {
-    if (!token) continue;
-    const last = merged[merged.length - 1];
-    if (token.length === 1 && last && last.length === 1) {
-      merged[merged.length - 1] = `${last}${token}`;
-      continue;
-    }
-    merged.push(token);
+function normalizeToken(word: string): string {
+  const lower = String(word || "").toLowerCase();
+  let out = "";
+  for (const ch of lower) {
+    out += ch in CHAR_MAP ? CHAR_MAP[ch] : ch;
   }
-  return merged.join(" ");
+  out = out
+    .replace(/0/g, "o").replace(/1/g, "i").replace(/3/g, "e")
+    .replace(/4/g, "a").replace(/5/g, "s").replace(/7/g, "t")
+    .replace(/8/g, "b").replace(/9/g, "g");
+  out = out.replace(/[^a-z]/g, "");   // keep latin letters only
+  out = out.replace(/(.)\1+/g, "$1"); // collapse repeated letters
+  return out;
 }
 
-function buildProfanityPattern(term: string) {
-  const source = Array.from(term).map((char) => {
-    const alternatives = CHAR_CLASS_MAP[char] || [char];
-    const classBody = alternatives.map(escapeCharClass).join("");
-    return `[${classBody}]+`;
-  }).join("[\\W_]*");
+// Roots are stored already normalized (latin, no repeated letters).
+const LONG_ROOTS: string[] = [
+  // Russian
+  "huy","hui","hue","huya","huyu","huyn","ohue","ohuen","ohuet","nahuy","pohuy","nihuya","huynya",
+  "pizd","spizd","pizdec","pizdet","pizdat","pizdabol",
+  "ebal","ebat","ebut","eban","ebuch","ebla","eblan","zaeb","naeb","ueba","poeb","vyeb","yobn","zaebis",
+  "blyad","blyat",
+  "suka","suki","suku","sukoy","sukoi","sukin","sukam","suchk","suchar",
+  "mudak","mudil","mudoz",
+  "gandon","gondon",
+  "pidor","pidar","pidoras","pidr","pedik",
+  "zalup","manda","droch","droc",
+  "govno","govn","ublyud","ubludok",
+  "shlyuh","shluh","shlyux","svoloch","padla","padlo","gnida","mraz",
+  "nasrat","posrat","obosr","obosan","dolboeb","dolbaeb",
+  // Azerbaijani / Turkish
+  "sikim","sikis","sikdir","sikey","siken","siktir","sikij",
+  "amcig","amciq","amcik","amina","amik",
+  "qehbe","qehpe","kehbe","qancig","qanciq","ogras","oqras",
+  "yaraq","yarak","yarag","dasaq","dasak",
+  "gotver","gotun","gotlu","gotden","orospu","kahpe","kahbe","pezevenk","yavsak","gavat","pust","surtuk",
+  // English
+  "fuck","fucker","fuckin","fucken","motherfuck",
+  "shit","bullshit","bulshit","bitch","biatch","ashole","bastard",
+  "slut","whore","niger","niga","fagot","wanker","prick","pusi","pusy","cock","cocksuk","coksuk","dildo","dick"
+];
 
-  return new RegExp(`(^|[^\\p{L}\\p{N}])(${source})(?=$|[^\\p{L}\\p{N}])`, "giu");
+// Matched only as a whole word or as a word-prefix (kept short to limit false positives).
+const SHORT_ROOTS: string[] = ["sik","amk","amq","fck","fuk"];
+
+function isProfaneToken(norm: string): boolean {
+  if (!norm) return false;
+  for (const root of LONG_ROOTS) {
+    if (norm.includes(root)) return true;
+  }
+  for (const root of SHORT_ROOTS) {
+    if (norm === root || norm.startsWith(root)) return true;
+  }
+  return false;
 }
-
-const NORMALIZED_PROFANITY_TERMS = PROFANITY_TERMS.map((term) => normalizeForLookup(term));
-const PROFANITY_PATTERNS = PROFANITY_TERMS.map((term) => buildProfanityPattern(term));
 
 export const CHAT_MESSAGE_FLOOD_MAX = 5;
 export const CHAT_MESSAGE_FLOOD_WINDOW_MS = 10_000;
 
 export function maskProfanity(text: string): { text: string; masked: boolean } {
   const original = String(text || "");
-  if (!original) {
-    return { text: original, masked: false };
-  }
-
-  const probe = normalizeForLookup(original);
-  if (!probe) {
-    return { text: original, masked: false };
-  }
-
-  const hasMatch = NORMALIZED_PROFANITY_TERMS.some((term) => probe.includes(term));
-  if (!hasMatch) {
-    return { text: original, masked: false };
-  }
+  if (!original) return { text: original, masked: false };
 
   let masked = false;
-  let result = original;
-
-  for (const pattern of PROFANITY_PATTERNS) {
-    result = result.replace(pattern, (match, prefix: string, dirtyWord: string) => {
+  const result = original.replace(/\S+/gu, (word) => {
+    const norm = normalizeToken(word);
+    if (norm && isProfaneToken(norm)) {
       masked = true;
-      return `${prefix}${"*".repeat(String(dirtyWord || "").length)}`;
-    });
-  }
+      return "*".repeat(Array.from(word).length);
+    }
+    return word;
+  });
 
   return { text: result, masked };
 }

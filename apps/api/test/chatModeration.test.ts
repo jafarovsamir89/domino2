@@ -3,12 +3,40 @@ import assert from "node:assert/strict";
 
 import { maskProfanity } from "../src/modules/social/chatModeration.js";
 
-test("maskProfanity handles separators, repeats and leetspeak while leaving clean text alone", () => {
-  const dirty = maskProfanity("с.у.к.а fuuuck sh1t hello world");
-  assert.equal(dirty.masked, true);
-  assert.equal(dirty.text, "******* ****** **** hello world");
+test("maskProfanity handles inflections, suffixes, separators and leetspeak", () => {
+  for (const text of [
+    "сукой",
+    "суку",
+    "пиздец",
+    "ебать",
+    "мудак",
+    "fucking",
+    "fucked",
+    "bullshit",
+    "siktir",
+    "qancıq",
+    "orospu",
+    "f.u.c.k",
+    "х.у.й",
+    "s.u.k.a"
+  ]) {
+    const result = maskProfanity(text);
+    assert.equal(result.masked, true, `expected masked for ${text}`);
+    assert.match(result.text, /^\*+$/);
+  }
+});
 
-  const clean = maskProfanity("hello clean world");
-  assert.equal(clean.masked, false);
-  assert.equal(clean.text, "hello clean world");
+test("maskProfanity leaves clean text alone and avoids false positives", () => {
+  for (const text of [
+    "hello such a good game",
+    "I got it",
+    "classic",
+    "assassin",
+    "Scunthorpe",
+    "hello clean world"
+  ]) {
+    const result = maskProfanity(text);
+    assert.equal(result.masked, false, `expected clean for ${text}`);
+    assert.equal(result.text, text);
+  }
 });
