@@ -2467,20 +2467,37 @@ html[data-domino-start-mode="classic101"] #start-screen .start-hero-face-back {
 
 .chat-header-action-btn {
     min-width: 0;
-    min-height: 34px;
-    padding-inline: 12px;
-    font-size: 0.78rem;
-}
-
-.voice-roster-slot {
-    position: relative;
-    width: 42px;
-    min-width: 42px;
-    flex: 0 0 auto;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.08);
     display: grid;
     place-items: center;
-    align-self: center;
-    overflow: visible;
+    color: var(--text);
+    cursor: pointer;
+    flex: 0 0 auto;
+    overflow: hidden;
+}
+
+.chat-header-action-btn svg {
+    width: 18px;
+    height: 18px;
+    display: block;
+}
+
+.chat-header-action-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.chat-header-action-btn.is-danger {
+    color: #ff7c7c;
+}
+
+.chat-header-action-btn.is-danger:hover {
+    background: rgba(255, 123, 123, 0.12);
+    border-color: rgba(255, 123, 123, 0.38);
 }
 
 .voice-roster-toggle {
@@ -2505,21 +2522,21 @@ html[data-domino-start-mode="classic101"] #start-screen .start-hero-face-back {
 }
 
 .voice-roster-panel {
-    position: absolute;
-    left: 50%;
-    bottom: calc(100% + 10px);
-    transform: translateX(-50%) translateY(8px) scale(0.98);
-    width: min(360px, calc(100vw - 18px));
-    max-height: min(40vh, 320px);
-    padding: 10px;
-    border-radius: 20px;
+    position: fixed;
+    right: 16px;
+    bottom: 86px;
+    transform: translateY(12px) scale(0.96);
+    width: min(420px, calc(100vw - 24px));
+    max-height: min(72vh, 560px);
+    padding: 12px;
+    border-radius: 24px;
     border: 1px solid rgba(255, 255, 255, 0.12);
     background: rgba(12, 21, 31, 0.94);
     backdrop-filter: blur(18px);
     box-shadow: 0 18px 40px rgba(0, 0, 0, 0.38);
     display: grid;
-    gap: 8px;
-    z-index: 26010;
+    gap: 10px;
+    z-index: 26000;
     opacity: 0;
     pointer-events: none;
     overflow: hidden;
@@ -2528,14 +2545,59 @@ html[data-domino-start-mode="classic101"] #start-screen .start-hero-face-back {
 
 .voice-roster-panel.open {
     opacity: 1;
-    transform: translateX(-50%) translateY(0) scale(1);
+    transform: translateY(0) scale(1);
     pointer-events: auto;
+}
+
+.voice-roster-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.voice-roster-title-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+}
+
+.voice-roster-title {
+    color: var(--text);
+}
+
+.voice-roster-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 22px;
+    height: 22px;
+    padding: 0 7px;
+    border-radius: 999px;
+    background: rgba(240, 192, 64, 0.16);
+    color: #f0c040;
+    font-size: 0.72rem;
+    font-weight: 800;
+    flex: 0 0 auto;
+}
+
+.voice-roster-close-btn {
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+    min-height: 32px;
+    padding: 0;
+    display: grid;
+    place-items: center;
+    font-size: 1.1rem;
+    line-height: 1;
 }
 
 .voice-speakers {
     display: grid;
     gap: 6px;
-    max-height: min(40vh, 260px);
+    max-height: min(40vh, 320px);
     padding-right: 2px;
     overflow: auto;
     overflow-x: hidden;
@@ -2584,9 +2646,51 @@ html[data-domino-start-mode="classic101"] #start-screen .start-hero-face-back {
 }
 
 .voice-speaker-actions .btn {
-    min-height: 30px;
-    padding-inline: 10px;
-    font-size: 0.72rem;
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+    min-height: 36px;
+    padding: 0;
+    border-radius: 12px;
+    display: grid;
+    place-items: center;
+    flex: 0 0 auto;
+    overflow: hidden;
+}
+
+.voice-speaker-actions .btn svg {
+    width: 16px;
+    height: 16px;
+    display: block;
+}
+
+.voice-speaker-action-btn.is-danger {
+    color: #ff7c7c;
+}
+
+@media (max-width: 480px) {
+    .voice-roster-panel {
+        right: 10px;
+        left: 10px;
+        bottom: 84px;
+        width: auto;
+        max-height: min(46vh, 340px);
+    }
+
+    .voice-speaker {
+        grid-template-columns: 1fr;
+        gap: 6px;
+    }
+
+    .voice-speaker-actions {
+        width: 100%;
+    }
+
+    .voice-speaker-actions .btn {
+        flex: 1 1 0;
+        min-width: 0;
+        width: auto;
+    }
 }
 
 @media (min-width: 768px) {
@@ -6364,16 +6468,12 @@ body.move-hint-selection-active #game-screen .player-name-btn {
         min-width: 58px;
     }
 
-    .voice-roster-slot {
-        width: 40px;
-        min-width: 40px;
-    }
-
     .voice-roster-panel {
-        width: min(300px, calc(100vw - 16px));
-        max-height: min(46vh, 300px);
-        left: 50%;
-        bottom: calc(100% + 8px);
+        right: 10px;
+        left: 10px;
+        bottom: 84px;
+        width: auto;
+        max-height: min(46vh, 340px);
     }
 
     .voice-speaker {
@@ -7645,24 +7745,42 @@ body.is-reconnecting .hand-container {
 .chat-header-actions {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
     flex-shrink: 0;
 }
 
 .chat-action-btn {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.05);
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.06);
     border: 1px solid rgba(255, 255, 255, 0.08);
     display: grid;
     place-items: center;
-    font-size: 0.85rem;
+    color: var(--text);
     cursor: pointer;
+    flex: 0 0 auto;
+    overflow: hidden;
 }
 
 .chat-action-btn:hover {
     background: rgba(255, 255, 255, 0.1);
+}
+
+.chat-action-btn svg {
+    width: 18px;
+    height: 18px;
+    display: block;
+}
+
+.chat-action-btn.is-danger {
+    color: #ff7c7c;
+}
+
+.chat-action-btn.is-danger:hover {
+    background: rgba(255, 123, 123, 0.12);
+    border-color: rgba(255, 123, 123, 0.38);
 }
 
 .chat-header-profile-action {

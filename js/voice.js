@@ -103,6 +103,21 @@ export class VoiceChatManager {
         return this.setPlayerMuted(key, !this.isPlayerMuted(key));
     }
 
+    buildRosterReportIconMarkup(size = 16) {
+        return this.game?.buildChatHeaderReportIconMarkup?.(size) || `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 4h10l4 4v12H6z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M10 8v6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="10" cy="17" r="1" fill="currentColor"/></svg>`;
+    }
+
+    buildRosterBlockIconMarkup(size = 16) {
+        return this.game?.buildChatHeaderBlockIconMarkup?.(size) || `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="1.8"/><path d="M8.5 8.5l7 7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>`;
+    }
+
+    buildRosterMuteIconMarkup(size = 16, muted = false) {
+        if (muted) {
+            return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M11 5.5 7.2 9H4v6h3.2L11 18.5V5.5Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M15.5 9.5 20 14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M20 9.5 15.5 14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>`;
+        }
+        return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M11 5.5 7.2 9H4v6h3.2L11 18.5V5.5Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M15.2 8.8a4.5 4.5 0 0 1 0 6.4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M17.8 6.2a8.1 8.1 0 0 1 0 11.6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>`;
+    }
+
     syncRoomState(roomState = null) {
         try {
             this.roomState = roomState;
@@ -627,14 +642,12 @@ export class VoiceChatManager {
         }
 
         const visibleSessions = this.getRemoteHumanSessions();
-        const rosterSlot = document.getElementById("voice-roster-slot");
         const rosterToggle = document.getElementById("voice-roster-toggle");
         const rosterPanel = document.getElementById("voice-roster-panel");
         const rosterBadge = rosterToggle?.querySelector(".voice-roster-toggle-badge");
+        const rosterTitle = document.getElementById("voice-roster-title");
+        const rosterCount = document.getElementById("voice-roster-count");
         const hasVisibleSessions = visibleSessions.length > 0;
-        if (rosterSlot) {
-            rosterSlot.hidden = !hasVisibleSessions;
-        }
         if (rosterToggle) {
             const label = this.game?.t?.("voice-roster-toggle") || "Players";
             rosterToggle.hidden = !hasVisibleSessions;
@@ -657,6 +670,12 @@ export class VoiceChatManager {
                 rosterPanel.classList.add("open");
                 rosterPanel.setAttribute("aria-hidden", "false");
             }
+        }
+        if (rosterTitle) {
+            rosterTitle.textContent = this.game?.t?.("voice-roster-toggle") || "Players";
+        }
+        if (rosterCount) {
+            rosterCount.textContent = String(visibleSessions.length);
         }
 
         const speakersEl = document.getElementById("voice-speakers");
@@ -687,8 +706,10 @@ export class VoiceChatManager {
 
                     const reportBtn = document.createElement("button");
                     reportBtn.type = "button";
-                    reportBtn.className = "btn btn-menu voice-speaker-report-btn";
-                    reportBtn.textContent = this.game?.t?.("player-profile-report") || "Report";
+                    reportBtn.className = "btn voice-speaker-action-btn voice-speaker-report-btn";
+                    reportBtn.innerHTML = this.buildRosterReportIconMarkup(16);
+                    reportBtn.title = this.game?.t?.("player-profile-report") || "Report";
+                    reportBtn.setAttribute("aria-label", this.game?.t?.("player-profile-report") || "Report");
                     reportBtn.addEventListener("click", () => {
                         if (!player) return;
                         this.game?.openPlayerReportModal?.(player, { category: "voice" });
@@ -696,8 +717,10 @@ export class VoiceChatManager {
 
                     const blockBtn = document.createElement("button");
                     blockBtn.type = "button";
-                    blockBtn.className = "btn btn-menu voice-speaker-block-btn";
-                    blockBtn.textContent = this.game?.t?.("player-profile-block") || "Block";
+                    blockBtn.className = "btn voice-speaker-action-btn voice-speaker-block-btn is-danger";
+                    blockBtn.innerHTML = this.buildRosterBlockIconMarkup(16);
+                    blockBtn.title = this.game?.t?.("player-profile-block") || "Block";
+                    blockBtn.setAttribute("aria-label", this.game?.t?.("player-profile-block") || "Block");
                     blockBtn.addEventListener("click", async () => {
                         if (!targetPlayerId) return;
                         try {
@@ -716,10 +739,13 @@ export class VoiceChatManager {
 
                     const btn = document.createElement("button");
                     btn.type = "button";
-                    btn.className = "btn btn-menu voice-speaker-mute-btn";
-                    btn.textContent = muted
+                    btn.className = "btn voice-speaker-action-btn voice-speaker-mute-btn";
+                    btn.innerHTML = this.buildRosterMuteIconMarkup(16, muted);
+                    const muteLabel = muted
                         ? (this.game?.t?.("voice-unmute-player") || "Unmute")
                         : (this.game?.t?.("voice-mute-player") || "Mute");
+                    btn.title = muteLabel;
+                    btn.setAttribute("aria-label", muteLabel);
                     btn.addEventListener("click", () => {
                         this.toggleMutePlayer(sessionId);
                     });

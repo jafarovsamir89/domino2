@@ -248,8 +248,8 @@ function fmLog(tag, data) {
 const DOMINO_CLIENT_BUILD = {
     gitCommit: '7c5f3a1',
     builtAt: new Date().toISOString(),
-    socialRealtimeDebugVersion: 'browser-production-trace-v33-voice-ui',
-    cacheFixVersion: 'domino-v72'
+    socialRealtimeDebugVersion: 'browser-production-trace-v34-mod-ui',
+    cacheFixVersion: 'domino-v73'
 };
 
 if (typeof window !== 'undefined') {
@@ -5905,7 +5905,7 @@ class DominoGame {
             if (!reportBtn) {
                 reportBtn = document.createElement('button');
                 reportBtn.type = 'button';
-                reportBtn.className = 'btn btn-menu chat-header-action-btn';
+                reportBtn.className = 'btn chat-header-action-btn';
                 reportBtn.id = 'chat-header-report-btn';
                 actionsEl.appendChild(reportBtn);
             }
@@ -5913,12 +5913,12 @@ class DominoGame {
             if (!blockBtn) {
                 blockBtn = document.createElement('button');
                 blockBtn.type = 'button';
-                blockBtn.className = 'btn btn-menu chat-header-action-btn';
+                blockBtn.className = 'btn chat-header-action-btn is-danger';
                 blockBtn.id = 'chat-header-block-btn';
                 actionsEl.appendChild(blockBtn);
             }
             const reportLabel = this.t('player-profile-report');
-            reportBtn.textContent = reportLabel;
+            reportBtn.innerHTML = this.buildChatHeaderReportIconMarkup(18);
             reportBtn.title = reportLabel;
             reportBtn.setAttribute('aria-label', reportLabel);
             reportBtn.hidden = !activePlayerId || activePlayerId === this.getCurrentAccountPlayerId();
@@ -5928,7 +5928,7 @@ class DominoGame {
             };
 
             const blockLabel = isBlockedByMe ? this.t('player-profile-unblock') : this.t('player-profile-block');
-            blockBtn.textContent = blockLabel;
+            blockBtn.innerHTML = this.buildChatHeaderBlockIconMarkup(18);
             blockBtn.title = blockLabel;
             blockBtn.setAttribute('aria-label', blockLabel);
             blockBtn.hidden = !activePlayerId || activePlayerId === this.getCurrentAccountPlayerId();
@@ -12985,28 +12985,37 @@ class DominoGame {
             if (reactionSlot) actionBar.insertBefore(slot, reactionSlot);
             else actionBar.appendChild(slot);
         }
-        if (actionBar && !document.getElementById('voice-roster-slot')) {
-            const rosterSlot = document.createElement('div');
-            rosterSlot.id = 'voice-roster-slot';
-            rosterSlot.className = 'voice-roster-slot';
-            rosterSlot.hidden = true;
-            rosterSlot.innerHTML = `
-                <button class="reaction-fab voice-roster-toggle" id="voice-roster-toggle" type="button" aria-label="${this.t('voice-roster-toggle') || 'Players'}" title="${this.t('voice-roster-toggle') || 'Players'}" aria-expanded="false">
-                    ${this.buildVoiceRosterToggleMarkup(22)}
-                </button>
-                <div class="voice-roster-panel" id="voice-roster-panel" hidden aria-hidden="true">
-                    <div id="voice-speakers" class="voice-speakers"></div>
-                </div>
-            `;
+        if (actionBar && !document.getElementById('voice-roster-toggle')) {
+            const rosterBtn = document.createElement('button');
+            rosterBtn.id = 'voice-roster-toggle';
+            rosterBtn.type = 'button';
+            rosterBtn.className = 'reaction-fab voice-roster-toggle';
+            rosterBtn.hidden = true;
+            rosterBtn.setAttribute('aria-label', this.t('voice-roster-toggle') || 'Players');
+            rosterBtn.setAttribute('title', this.t('voice-roster-toggle') || 'Players');
+            rosterBtn.setAttribute('aria-expanded', 'false');
+            rosterBtn.innerHTML = this.buildVoiceRosterToggleMarkup(22);
             const reactionSlot = document.querySelector('.reaction-slot');
-            if (reactionSlot) actionBar.insertBefore(rosterSlot, reactionSlot);
-            else actionBar.appendChild(rosterSlot);
-        } else {
-            const panel = document.getElementById('voice-roster-panel');
-            const speakers = document.getElementById('voice-speakers');
-            if (panel && speakers && speakers.parentElement !== panel) {
-                panel.appendChild(speakers);
-            }
+            if (reactionSlot) actionBar.insertBefore(rosterBtn, reactionSlot);
+            else actionBar.appendChild(rosterBtn);
+        }
+        if (!document.getElementById('voice-roster-panel')) {
+            const rosterPanel = document.createElement('div');
+            rosterPanel.id = 'voice-roster-panel';
+            rosterPanel.className = 'gift-picker voice-roster-panel';
+            rosterPanel.hidden = true;
+            rosterPanel.setAttribute('aria-hidden', 'true');
+            rosterPanel.innerHTML = `
+                <div class="voice-roster-header gift-picker-header">
+                    <div class="voice-roster-title-wrap">
+                        <div class="gift-picker-title voice-roster-title" id="voice-roster-title">${this.t('voice-roster-toggle') || 'Players'}</div>
+                        <div class="voice-roster-count" id="voice-roster-count">0</div>
+                    </div>
+                    <button class="btn btn-action modal-close-btn voice-roster-close-btn" id="voice-roster-close-btn" type="button" aria-label="${this.t('modal-close') || 'Close'}" title="${this.t('modal-close') || 'Close'}">×</button>
+                </div>
+                <div id="voice-speakers" class="voice-speakers"></div>
+            `;
+            document.body.appendChild(rosterPanel);
         }
     }
 
@@ -13026,6 +13035,21 @@ class DominoGame {
             <path d="M4 20v-1a3.2 3.2 0 0 1 2.4-3.1" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
         </svg>
         <span class="voice-roster-toggle-badge" aria-hidden="true">0</span>`;
+    }
+
+    buildChatHeaderReportIconMarkup(size = 18) {
+        return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M6 4h10l4 4v12H6z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+            <path d="M10 8v6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+            <circle cx="10" cy="17" r="1" fill="currentColor"/>
+        </svg>`;
+    }
+
+    buildChatHeaderBlockIconMarkup(size = 18) {
+        return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="1.8"/>
+            <path d="M8.5 8.5l7 7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>`;
     }
 
     getTurnAvatarText(name) {
@@ -16054,6 +16078,7 @@ class DominoGame {
         this.voiceStatusEl = document.getElementById('voice-status');
         this.voiceRosterBtn = document.getElementById('voice-roster-toggle');
         this.voiceRosterPanel = document.getElementById('voice-roster-panel');
+        this.voiceRosterCloseBtn = document.getElementById('voice-roster-close-btn');
         if (!this.voiceBtn || !this.voiceStatusEl) return;
 
         this.voiceBtn.addEventListener('click', async (event) => {
@@ -16080,6 +16105,14 @@ class DominoGame {
                 event.preventDefault();
                 event.stopPropagation();
                 this.toggleVoiceRoster();
+            });
+        }
+
+        if (this.voiceRosterCloseBtn) {
+            this.voiceRosterCloseBtn.addEventListener('click', (event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                this.toggleVoiceRoster(false);
             });
         }
 
@@ -16376,20 +16409,26 @@ class DominoGame {
     }
 
     toggleVoiceRoster(force = null) {
-        const slot = document.getElementById('voice-roster-slot');
         const button = document.getElementById('voice-roster-toggle');
         const panel = document.getElementById('voice-roster-panel');
-        if (!slot || !button || !panel) return false;
+        const title = document.getElementById('voice-roster-title');
+        const count = document.getElementById('voice-roster-count');
+        if (!button || !panel) return false;
         const open = force === null ? !panel.classList.contains('open') : !!force;
         if (open) {
             this.closeGiftPicker();
             this.closeReactionPicker();
-            slot.hidden = false;
         }
         panel.classList.toggle('open', open);
         panel.hidden = !open;
         panel.setAttribute('aria-hidden', String(!open));
         button.setAttribute('aria-expanded', String(open));
+        if (title) {
+            title.textContent = this.t('voice-roster-toggle') || 'Players';
+        }
+        if (count) {
+            count.textContent = String(Number(button.dataset.remoteSpeakers || 0) || 0);
+        }
         if (open) {
             this.voice?.updateSpeakerUi?.();
         }
