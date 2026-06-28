@@ -421,7 +421,7 @@ export const translations = {
         "player-profile-friend-added": "Dost əlavə olundu",
         "player-profile-friend-pending": "Sorğu göndərildi",
         "player-profile-request-outgoing": "Sorğu göndərildi",
-        "player-profile-request-cancel": "Ləğv",
+        "player-profile-request-cancel": "Ləğv et",
         "player-profile-bot": "Bot",
         "player-profile-status-ready": "Hazırdır",
         "player-profile-self": "Bu sizsiniz",

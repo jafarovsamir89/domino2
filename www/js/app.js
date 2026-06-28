@@ -248,8 +248,8 @@ function fmLog(tag, data) {
 const DOMINO_CLIENT_BUILD = {
     gitCommit: '7c5f3a1',
     builtAt: new Date().toISOString(),
-    socialRealtimeDebugVersion: 'browser-production-trace-v38-profile-actions',
-    cacheFixVersion: 'domino-v77'
+    socialRealtimeDebugVersion: 'browser-production-trace-v39-profile-actions',
+    cacheFixVersion: 'domino-v78'
 };
 
 if (typeof window !== 'undefined') {
@@ -9737,7 +9737,6 @@ class DominoGame {
         const status = document.getElementById('player-profile-status');
         const stats = document.getElementById('player-profile-stats');
         const friendBtn = document.getElementById('player-profile-friend-btn');
-        const friendStatus = document.getElementById('player-profile-friend-status');
         const inviteBtn = document.getElementById('player-profile-invite-btn');
         const messageBtn = document.getElementById('player-profile-message-btn');
         const blockBtn = document.getElementById('player-profile-block-btn');
@@ -9817,22 +9816,13 @@ class DominoGame {
                 self: this.t('player-profile-self'),
                 none: this.t('friend-add'),
                 pending_incoming: this.t('friend-accept'),
-                pending_outgoing: this.t('player-profile-request-cancel'),
+                pending_outgoing: `${this.t('player-profile-request-outgoing') || 'Request sent'} - ${this.t('player-profile-request-cancel') || 'Cancel'}`,
                 accepted: this.t('friends-request-accepted')
             };
             const label = labels[statusKey] || this.t('friend-add');
             friendBtn.textContent = label;
             friendBtn.title = label;
             friendBtn.setAttribute('aria-label', label);
-            if (friendStatus) {
-                if (statusKey === 'pending_outgoing') {
-                    friendStatus.textContent = this.t('player-profile-request-outgoing');
-                    friendStatus.hidden = false;
-                } else {
-                    friendStatus.textContent = '';
-                    friendStatus.hidden = true;
-                }
-            }
             const allowAction = isAuthed && !isSelf && !isBlocked && (statusKey === 'none' || statusKey === 'pending_incoming' || statusKey === 'pending_outgoing');
             friendBtn.hidden = isSelf || !isAuthed || isBlocked || statusKey === 'accepted';
             friendBtn.disabled = !allowAction;

@@ -2478,30 +2478,18 @@ html[data-domino-start-mode="classic101"] #start-screen .start-hero-face-back {
     min-width: 0;
 }
 
-.player-profile-friend-status {
-    flex: 0 0 auto;
-    color: var(--text-dim);
-    font-size: 0.82rem;
-    font-weight: 700;
-    line-height: 1;
-    white-space: nowrap;
-    align-self: center;
-}
-
 .player-profile-icon-actions {
     width: 100%;
-    display: flex;
-    justify-content: center;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 10px;
     margin-top: 4px;
-    flex-wrap: wrap;
 }
 
 .player-profile-icon-actions .player-profile-icon-btn {
-    flex: 0 0 46px;
-    width: 46px;
+    width: 100%;
     height: 46px;
-    min-width: 46px;
+    min-width: 0;
     padding: 0;
     border-radius: 12px;
     display: inline-flex;
