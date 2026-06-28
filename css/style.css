@@ -2470,11 +2470,66 @@ html[data-domino-start-mode="classic101"] #start-screen .start-hero-face-back {
     justify-content: flex-start;
     gap: 8px;
     flex-wrap: wrap;
+    align-items: center;
 }
 
 .player-profile-actions .btn {
     flex: 1 1 180px;
     min-width: 0;
+}
+
+.player-profile-friend-status {
+    flex: 0 0 auto;
+    color: var(--text-dim);
+    font-size: 0.82rem;
+    font-weight: 700;
+    line-height: 1;
+    white-space: nowrap;
+    align-self: center;
+}
+
+.player-profile-icon-actions {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 4px;
+    flex-wrap: wrap;
+}
+
+.player-profile-icon-actions .player-profile-icon-btn {
+    flex: 0 0 46px;
+    width: 46px;
+    height: 46px;
+    min-width: 46px;
+    padding: 0;
+    border-radius: 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: var(--text);
+}
+
+.player-profile-icon-actions .player-profile-icon-btn:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.player-profile-icon-actions .player-profile-icon-btn.is-danger {
+    color: #ff7c7c;
+}
+
+.player-profile-icon-actions .player-profile-icon-btn.is-danger:hover:not(:disabled) {
+    background: rgba(255, 123, 123, 0.12);
+    border-color: rgba(255, 123, 123, 0.38);
+}
+
+.player-profile-icon-actions .player-profile-icon-btn svg {
+    width: 18px;
+    height: 18px;
+    display: block;
 }
 
 .chat-header-action-btn {

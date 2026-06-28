@@ -248,8 +248,8 @@ function fmLog(tag, data) {
 const DOMINO_CLIENT_BUILD = {
     gitCommit: '7c5f3a1',
     builtAt: new Date().toISOString(),
-    socialRealtimeDebugVersion: 'browser-production-trace-v37-mode-i18n',
-    cacheFixVersion: 'domino-v76'
+    socialRealtimeDebugVersion: 'browser-production-trace-v38-profile-actions',
+    cacheFixVersion: 'domino-v77'
 };
 
 if (typeof window !== 'undefined') {
@@ -9737,6 +9737,7 @@ class DominoGame {
         const status = document.getElementById('player-profile-status');
         const stats = document.getElementById('player-profile-stats');
         const friendBtn = document.getElementById('player-profile-friend-btn');
+        const friendStatus = document.getElementById('player-profile-friend-status');
         const inviteBtn = document.getElementById('player-profile-invite-btn');
         const messageBtn = document.getElementById('player-profile-message-btn');
         const blockBtn = document.getElementById('player-profile-block-btn');
@@ -9816,10 +9817,22 @@ class DominoGame {
                 self: this.t('player-profile-self'),
                 none: this.t('friend-add'),
                 pending_incoming: this.t('friend-accept'),
-                pending_outgoing: 'Cancel',
+                pending_outgoing: this.t('player-profile-request-cancel'),
                 accepted: this.t('friends-request-accepted')
             };
-            friendBtn.textContent = labels[statusKey] || this.t('friend-add');
+            const label = labels[statusKey] || this.t('friend-add');
+            friendBtn.textContent = label;
+            friendBtn.title = label;
+            friendBtn.setAttribute('aria-label', label);
+            if (friendStatus) {
+                if (statusKey === 'pending_outgoing') {
+                    friendStatus.textContent = this.t('player-profile-request-outgoing');
+                    friendStatus.hidden = false;
+                } else {
+                    friendStatus.textContent = '';
+                    friendStatus.hidden = true;
+                }
+            }
             const allowAction = isAuthed && !isSelf && !isBlocked && (statusKey === 'none' || statusKey === 'pending_incoming' || statusKey === 'pending_outgoing');
             friendBtn.hidden = isSelf || !isAuthed || isBlocked || statusKey === 'accepted';
             friendBtn.disabled = !allowAction;
@@ -9868,6 +9881,12 @@ class DominoGame {
         if (messageBtn) {
             messageBtn.hidden = !canMessage || isBlocked;
             messageBtn.disabled = !canMessage || loading || isBlocked;
+            messageBtn.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path d="M4 5.5h16a1.5 1.5 0 0 1 1.5 1.5v8a1.5 1.5 0 0 1-1.5 1.5H10l-4.6 3.8c-.7.6-1.4 0-1.4-.8V17H4a1.5 1.5 0 0 1-1.5-1.5V7A1.5 1.5 0 0 1 4 5.5Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+            </svg>`;
+            const label = this.t('player-profile-message');
+            messageBtn.title = label;
+            messageBtn.setAttribute('aria-label', label);
             messageBtn.onclick = async () => {
                 if (!canMessage || !profile?.id) return;
                 await this.openConversationWithPlayer(profile.id);
@@ -9879,7 +9898,7 @@ class DominoGame {
             const label = isBlockedByMe ? this.t('player-profile-unblock') : this.t('player-profile-block');
             blockBtn.hidden = !isAuthed || isSelf;
             blockBtn.disabled = !isAuthed || isSelf || loading;
-            blockBtn.textContent = label;
+            blockBtn.innerHTML = this.buildChatHeaderBlockIconMarkup(18);
             blockBtn.title = label;
             blockBtn.setAttribute('aria-label', label);
             blockBtn.onclick = async () => {
@@ -9911,7 +9930,7 @@ class DominoGame {
             const label = this.t('player-profile-report');
             reportBtn.hidden = !isAuthed || isSelf;
             reportBtn.disabled = !isAuthed || isSelf || loading;
-            reportBtn.textContent = label;
+            reportBtn.innerHTML = this.buildChatHeaderReportIconMarkup(18);
             reportBtn.title = label;
             reportBtn.setAttribute('aria-label', label);
             reportBtn.onclick = () => {

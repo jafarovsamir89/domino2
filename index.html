@@ -7,7 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css?v=round-stage-37-mode-i18n">
+    <link rel="stylesheet" href="css/style.css?v=round-stage-38-profile-actions">
     <link rel="icon" href="assets/icon.png">
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#0f1923">
@@ -411,10 +411,13 @@
                     <div class="player-profile-stats" id="player-profile-stats"></div>
                     <div class="player-profile-actions">
                         <button type="button" class="btn btn-action btn-strong" id="player-profile-friend-btn" data-i18n="friend-add">Dost et</button>
+                        <span class="player-profile-friend-status" id="player-profile-friend-status" hidden></span>
                         <button type="button" class="btn btn-action btn-strong" id="player-profile-invite-btn" data-i18n="friend-invite">Dəvət et</button>
-                        <button type="button" class="btn btn-menu" id="player-profile-message-btn" data-i18n="player-profile-message">Mesajlar</button>
-                        <button type="button" class="btn btn-menu" id="player-profile-report-btn" data-i18n="player-profile-report">Şikayət et</button>
-                        <button type="button" class="btn btn-menu" id="player-profile-block-btn" data-i18n="player-profile-block">Blok et</button>
+                        <div class="player-profile-icon-actions" role="group" aria-label="Player profile actions">
+                            <button type="button" class="btn player-profile-icon-btn" id="player-profile-message-btn" aria-label="Mesajlar" title="Mesajlar"></button>
+                            <button type="button" class="btn player-profile-icon-btn" id="player-profile-report-btn" aria-label="Şikayət et" title="Şikayət et"></button>
+                            <button type="button" class="btn player-profile-icon-btn is-danger" id="player-profile-block-btn" aria-label="Blok et" title="Blok et"></button>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -717,11 +720,11 @@
     <script src="shared/domino-model-core.cjs" defer></script>
     <script src="shared/domino-board-core.cjs" defer></script>
     <script src="shared/domino-rulesets.cjs" defer></script>
-    <script src="js/network.js?v=round-stage-37-mode-i18n" defer></script>
-    <script type="module" src="js/app.js?v=round-stage-37-mode-i18n" defer></script>
+    <script src="js/network.js?v=round-stage-38-profile-actions" defer></script>
+    <script type="module" src="js/app.js?v=round-stage-38-profile-actions" defer></script>
     <script>
         (() => {
-            const SW_VERSION = 'browser-production-trace-v37-mode-i18n';
+            const SW_VERSION = 'browser-production-trace-v38-profile-actions';
             const SW_RELOAD_FLAG = 'dominoSwReloadedForVersion';
             let pendingSwReload = false;
 
