@@ -248,8 +248,8 @@ function fmLog(tag, data) {
 const DOMINO_CLIENT_BUILD = {
     gitCommit: '7c5f3a1',
     builtAt: new Date().toISOString(),
-    socialRealtimeDebugVersion: 'browser-production-trace-v39-profile-actions',
-    cacheFixVersion: 'domino-v78'
+    socialRealtimeDebugVersion: 'browser-production-trace-v40-table-layout',
+    cacheFixVersion: 'domino-v79'
 };
 
 if (typeof window !== 'undefined') {
@@ -13308,6 +13308,21 @@ class DominoGame {
         });
     }
 
+    syncGameScreenUiState() {
+        const gameScreen = document.getElementById('game-screen');
+        if (!gameScreen) return;
+        const isSoloGame = Boolean(this.gameActive && !this.network?.isMultiplayer);
+        gameScreen.classList.toggle('is-solo-game', isSoloGame);
+        document.body?.classList.toggle?.('is-solo-game', isSoloGame);
+        if (isSoloGame) {
+            if (this.voiceRosterPanel && !this.voiceRosterPanel.hidden) {
+                this.toggleVoiceRoster(false);
+            }
+            this.closeGiftPicker();
+            this.closeReactionPicker();
+        }
+    }
+
     readSoloEconomySelectionFromUi() {
         const selectedStakeButton = document.querySelector('#solo-stake-group .btn-option.active');
         const stakeKey = selectedStakeButton?.dataset.value || this.soloStakeKey || 'stake_50';
@@ -13668,6 +13683,7 @@ class DominoGame {
             this.myHand = this.hands[this.humanPlayerIndex] || null;
             document.getElementById('start-screen')?.classList.remove('active');
             document.getElementById('game-screen')?.classList.add('active');
+            this.syncGameScreenUiState();
             startGameMusic();
             this.syncSoloOptions();
             this.renderState();
@@ -15000,6 +15016,7 @@ class DominoGame {
         if (modalName === 'solo') this.syncSoloOptions();
         if (modalName === 'online') this.syncMultiplayerOptions();
         if (!modalName) this.resetMultiplayerPanels(false);
+        this.syncGameScreenUiState();
     }
 
     resetMultiplayerPanels(leaveRoom = false) {
@@ -15367,6 +15384,7 @@ class DominoGame {
             this.hideOpenRoomsModal();
             document.getElementById('start-screen')?.classList.remove('active');
             document.getElementById('game-screen')?.classList.add('active');
+            this.syncGameScreenUiState();
         }
     }
 
@@ -15387,6 +15405,7 @@ class DominoGame {
         const gameScreen = document.getElementById('game-screen');
         startScreen?.classList.remove('active');
         gameScreen?.classList.add('active');
+        this.syncGameScreenUiState();
         this.showStartModal(null);
         this.hideOpenRoomsModal();
 
@@ -16815,6 +16834,7 @@ class DominoGame {
         this.syncOpenRoomWaitingBanner(null);
         document.getElementById('game-screen').classList.remove('active');
         document.getElementById('start-screen').classList.add('active');
+        this.syncGameScreenUiState();
         if (this.hasAuthenticatedAccount()) {
             startMenuMusic();
         } else {
@@ -16830,6 +16850,7 @@ class DominoGame {
         this.clearNextDealAdvanceTimeout();
         document.getElementById('start-screen').classList.remove('active');
         document.getElementById('game-screen').classList.add('active');
+        this.syncGameScreenUiState();
         startGameMusic();
         this.playerName = this.sanitizeName(this.playerName);
 
@@ -17033,6 +17054,7 @@ class DominoGame {
         this.clearNextDealAdvanceTimeout();
         this.clearTurnTimers();
         this.board=new Board(); this.board.startAxis = getBoardStartAxis(); this.configureBoardForCurrentMode(this.board); this.selectedTileIndex=-1; this.roundOver=false; this.gameActive=true; this.turnInProgress=false;
+        this.syncGameScreenUiState();
         const deal = this.dealHandsWithValidation();
         this.hands = deal.hands;
         this.boneyard = deal.boneyard;
@@ -17257,6 +17279,7 @@ class DominoGame {
         this.syncOpenRoomWaitingBanner(this.currentRoomState);
         
         this.renderer.renderBoard(this.board);
+        this.syncGameScreenUiState();
         const roomPlayers = Array.isArray(this.currentRoomState?.players) ? this.currentRoomState.players : [];
         this.renderer.renderOpponentHands(this.hands, this.humanPlayerIndex, roomPlayers.length ? roomPlayers : this.playerNames, this.currentPlayer);
         const myHand = this.getHumanHandForRender();

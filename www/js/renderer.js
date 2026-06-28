@@ -1128,7 +1128,8 @@ export class Renderer {
             btn = document.createElement('button');
             btn.id = 'gosha-btn';
             btn.className = 'btn btn-gosha';
-            document.querySelector('.action-bar').appendChild(btn);
+            const host = document.getElementById('game-screen') || document.querySelector('.action-bar');
+            host?.appendChild?.(btn);
         }
         btn.textContent = this.app.t('gosha-button');
         btn.onclick = () => {
