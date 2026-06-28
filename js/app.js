@@ -248,8 +248,8 @@ function fmLog(tag, data) {
 const DOMINO_CLIENT_BUILD = {
     gitCommit: '7c5f3a1',
     builtAt: new Date().toISOString(),
-    socialRealtimeDebugVersion: 'browser-production-trace-v43-open-rooms-filters',
-    cacheFixVersion: 'domino-v82'
+    socialRealtimeDebugVersion: 'browser-production-trace-v44-open-rooms-filters-2',
+    cacheFixVersion: 'domino-v83'
 };
 
 if (typeof window !== 'undefined') {
@@ -13903,12 +13903,17 @@ class DominoGame {
         panel.addEventListener('click', (event) => {
             const chip = event.target?.closest?.('.open-room-mode-toggle, .open-room-stake-toggle');
             if (!chip) return;
-            if (chip.classList.contains('open-room-mode-toggle')) {
-                this.toggleOpenRoomModeFilter(chip.dataset.roomMode || '');
-            } else {
-                this.toggleOpenRoomStakeFilter(chip.dataset.stakeKey || '');
-            }
+            const next = !chip.classList.contains('is-active');
+            chip.classList.toggle('is-active', next);
+            chip.setAttribute('aria-pressed', next ? 'true' : 'false');
             chip.blur?.();
+            this.onlineRoomFilters.roomModes = Array.from(document.querySelectorAll('.open-room-mode-toggle.is-active'))
+                .map((button) => button.dataset.roomMode || '')
+                .filter(Boolean);
+            this.onlineRoomFilters.stakeKeys = Array.from(document.querySelectorAll('.open-room-stake-toggle.is-active'))
+                .map((button) => button.dataset.stakeKey || '')
+                .filter(Boolean);
+            this.renderOpenRoomsFiltered();
         });
 
         const search = document.getElementById('open-room-search-input');
@@ -14312,9 +14317,7 @@ class DominoGame {
         let nextModes = hasMode
             ? activeModes.filter((mode) => mode !== roomMode)
             : activeModes.concat(roomMode);
-        if (!nextModes.length) nextModes = validModes.slice();
         this.onlineRoomFilters.roomModes = validModes.filter((mode) => nextModes.includes(mode));
-        this.syncOpenRoomFilterControls();
         this.renderOpenRoomsFiltered();
     }
 
@@ -14328,9 +14331,7 @@ class DominoGame {
         let nextStakeKeys = hasStakeKey
             ? activeStakeKeys.filter((key) => key !== stakeKey)
             : activeStakeKeys.concat(stakeKey);
-        if (!nextStakeKeys.length) nextStakeKeys = validStakeKeys.slice();
         this.onlineRoomFilters.stakeKeys = validStakeKeys.filter((key) => nextStakeKeys.includes(key));
-        this.syncOpenRoomFilterControls();
         this.renderOpenRoomsFiltered();
     }
 
