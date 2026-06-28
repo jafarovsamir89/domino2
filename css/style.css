@@ -1343,7 +1343,7 @@ html[data-domino-start-mode="classic101"] #start-screen .start-hero-face-back {
     text-align: center !important;
     opacity: 0.45;
     -webkit-tap-highlight-color: transparent;
-    transition: opacity 0.15s ease, background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, color 0.15s ease;
+    transition: border-color 0.15s ease, color 0.15s ease, opacity 0.15s ease;
     outline: none;
 }
 
@@ -1480,7 +1480,7 @@ html[data-domino-start-mode="classic101"] #start-screen .start-hero-face-back {
 .open-room-stake-toggle {
     background: rgba(255, 255, 255, 0.04);
     color: rgba(255, 255, 255, 0.78);
-    transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease, color 0.2s ease;
+    transition: border-color 0.15s ease, color 0.15s ease, opacity 0.15s ease;
 }
 
 .open-room-mode-toggle {
