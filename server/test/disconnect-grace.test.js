@@ -6,6 +6,7 @@ const path = require("node:path");
 const DominoRoom = require("../DominoRoom");
 const { BotTakeoverController, BOT_TAKEOVER_CONFIG } = require("../botTakeover");
 const { AIPlayer } = require("../ai");
+const { getLiveSession } = require("../livePresence");
 
 let cachedNetworkManagerClass = null;
 
@@ -158,6 +159,33 @@ test("grace timeout triggers a disconnect forfeit", async () => {
     assert.equal(room.lastGameEndWasGraceExpired, true);
     assert.equal(room.lastForfeitReason, "reconnect_timeout");
     assert.ok(messages.some((item) => item.event === "msg" && item.payload?.key === "game-over-disconnect"));
+});
+
+test("disconnect keeps live presence offline during grace and removes it after timeout", async () => {
+    global.__DOMINO_LIVE_PRESENCE = new Map();
+    const room = createActiveRoom();
+    room.allowReconnection = () => new Promise(() => {});
+    room.identityBySessionId.set("session-1", {
+        provider: "platform",
+        userId: "user-1",
+        playerId: "player-1",
+        displayName: "Alice",
+        role: "player"
+    });
+    room.broadcast = () => {};
+
+    await room.onLeave({ sessionId: "session-1" }, false);
+
+    const offlineDuringGrace = await getLiveSession("session-1");
+    assert.ok(offlineDuringGrace);
+    assert.equal(offlineDuringGrace.isConnected, false);
+    assert.equal(room.state.players.get("session-1").isConnected, false);
+    assert.equal(room.state.playerOrder.includes("session-1"), true);
+
+    await room.finalizeReconnectTimeout("session-1");
+
+    const afterTimeout = await getLiveSession("session-1");
+    assert.equal(afterTimeout, null);
 });
 
 test("grace timeout starts bot takeover instead of forfeit when the feature is enabled", async () => {

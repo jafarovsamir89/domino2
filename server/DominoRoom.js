@@ -1666,6 +1666,7 @@ class DominoRoom extends Room {
                     time: 2500
                 });
                 this.syncState();
+                removeLivePlayer(client.sessionId);
                 return;
             }
 
