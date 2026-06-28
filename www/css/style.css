@@ -1524,16 +1524,19 @@ html[data-domino-start-mode="classic101"] #start-screen .start-hero-face-back {
     box-shadow: 0 10px 24px rgba(240, 192, 64, 0.2);
 }
 
-.open-room-mode-toggle:hover,
-.open-room-stake-toggle:hover {
-    transform: translateY(-1px);
-    border-color: rgba(255, 255, 255, 0.2);
-    color: var(--text);
-}
+@media (hover: hover) and (pointer: fine) {
+    .open-room-mode-toggle:hover,
+    .open-room-stake-toggle:hover {
+        transform: translateY(-1px);
+        border-color: rgba(255, 255, 255, 0.2);
+        color: var(--text);
+    }
 
-.open-room-mode-toggle.is-active:hover,
-.open-room-stake-toggle.is-active:hover {
-    color: #11161d;
+    .open-room-mode-toggle.is-active:hover,
+    .open-room-stake-toggle.is-active:hover {
+        color: #11161d;
+        border-color: rgba(240, 192, 64, 0.58);
+    }
 }
 
 .open-room-mode-toggle:focus,
