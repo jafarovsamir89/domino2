@@ -1174,9 +1174,13 @@ export class Renderer {
         if (title) title.textContent = fish ? this.app.t('msg-fish') : `${wn} ${this.app.t('out-suffix')}`;
         if (details) {
             details.innerHTML = '';
-            for (const p of players || []) {
+            const orderedPlayers = [...(players || [])].sort(
+                (a, b) => (b?.isWinner ? 1 : 0) - (a?.isWinner ? 1 : 0)
+            );
+            for (const p of orderedPlayers) {
                 const row = document.createElement('div');
                 row.className = 'detail-row';
+                if (p?.isWinner) row.classList.add('round-end-winner-row');
                 row.style.flexDirection = 'column';
                 row.style.alignItems = 'flex-start';
                 row.style.gap = '6px';
