@@ -5891,6 +5891,7 @@ body.is-solo-game .voice-roster-panel {
 }
 
 #round-end-details .round-end-winner-row,
+#round-end-details .round-end-winner-row *,
 #round-end-details .round-end-winner-row .detail-value {
     color: var(--accent);
 }
