@@ -248,8 +248,8 @@ function fmLog(tag, data) {
 const DOMINO_CLIENT_BUILD = {
     gitCommit: '7c5f3a1',
     builtAt: new Date().toISOString(),
-    socialRealtimeDebugVersion: 'browser-production-trace-v42-deal-end-result',
-    cacheFixVersion: 'domino-v81'
+    socialRealtimeDebugVersion: 'browser-production-trace-v43-open-rooms-filters',
+    cacheFixVersion: 'domino-v82'
 };
 
 if (typeof window !== 'undefined') {
@@ -445,6 +445,7 @@ class DominoGame {
         this._resolvedScoreMode = '';
         this._resolvedTopHudMode = '';
         this.pendingReconnectResolution = false;
+        this._allOpenRooms = [];
         this.openRooms = [];
         this.socialCenterTab = 'friends';
         this.socialCenterView = 'list';
@@ -1194,18 +1195,7 @@ class DominoGame {
                 document.getElementById('connect-btn')?.click();
             }
         });
-        document.getElementById('open-room-search-input')?.addEventListener('input', () => {
-            this.onlineRoomFilters.search = document.getElementById('open-room-search-input').value || '';
-            void this.loadOpenRooms();
-        });
-        document.querySelectorAll('.open-room-mode-toggle').forEach((button) => button.addEventListener('click', () => {
-            this.toggleOpenRoomModeFilter(button.dataset.roomMode || '');
-            void this.loadOpenRooms();
-        }));
-        document.querySelectorAll('.open-room-stake-toggle').forEach((button) => button.addEventListener('click', () => {
-            this.toggleOpenRoomStakeFilter(button.dataset.stakeKey || '');
-            void this.loadOpenRooms();
-        }));
+        this.setupOpenRoomFilters();
         document.querySelectorAll('#friends-search-input').forEach((friendsSearchInput) => {
             friendsSearchInput.addEventListener('keydown', (event) => {
                 if (event.key === 'Enter') {
@@ -13828,6 +13818,7 @@ class DominoGame {
     showOpenRoomsModal() {
         const modal = document.getElementById('open-rooms-modal');
         if (!modal) return;
+        this.setupOpenRoomFilters();
         this.closeStartModals();
         this.closePlayerProfileModal();
         this.closeAccountModal();
@@ -13902,6 +13893,49 @@ class DominoGame {
         const search = document.getElementById('open-room-search-input');
         if (search) search.value = this.onlineRoomFilters.search || '';
         this.syncOpenRoomFilterControls();
+    }
+
+    setupOpenRoomFilters() {
+        const panel = document.querySelector('.open-rooms-filter-panel');
+        if (!panel || panel.dataset.bound === '1') return;
+        panel.dataset.bound = '1';
+
+        panel.addEventListener('click', (event) => {
+            const chip = event.target?.closest?.('.open-room-mode-toggle, .open-room-stake-toggle');
+            if (!chip) return;
+            if (chip.classList.contains('open-room-mode-toggle')) {
+                this.toggleOpenRoomModeFilter(chip.dataset.roomMode || '');
+            } else {
+                this.toggleOpenRoomStakeFilter(chip.dataset.stakeKey || '');
+            }
+            chip.blur?.();
+        });
+
+        const search = document.getElementById('open-room-search-input');
+        if (search && search.dataset.bound !== '1') {
+            search.dataset.bound = '1';
+            let searchTimer = null;
+            search.addEventListener('input', () => {
+                this.onlineRoomFilters.search = search.value || '';
+                if (searchTimer) {
+                    clearTimeout(searchTimer);
+                }
+                searchTimer = window.setTimeout(() => {
+                    searchTimer = null;
+                    this.renderOpenRoomsFiltered();
+                }, 200);
+            });
+            search.addEventListener('keydown', (event) => {
+                if (event.key === 'Enter') {
+                    event.preventDefault();
+                    if (searchTimer) {
+                        clearTimeout(searchTimer);
+                        searchTimer = null;
+                    }
+                    this.renderOpenRoomsFiltered();
+                }
+            });
+        }
     }
 
     syncOnlineModalTitle(mode = null) {
@@ -14106,25 +14140,19 @@ class DominoGame {
         if (!list || !modal?.classList.contains('active')) return;
         this.setSummaryMessage(list, this.t('account-profile-loading'));
         try {
-            const rooms = await this.account.getOpenRooms({
-                search: this.onlineRoomFilters.search,
-                roomVisibility: 'open',
-                joinableOnly: true,
-                gameMode: this.onlineRoomFilters.gameMode || this.getSelectedGameMode(),
-                limit: 24
-            });
+            const rooms = await this.account.getOpenRooms();
             if (!modal?.classList.contains('active')) return;
-            this.openRooms = Array.isArray(rooms) ? rooms : [];
-            this.renderOpenRooms();
+            this._allOpenRooms = Array.isArray(rooms) ? rooms : [];
+            this.openRooms = this._allOpenRooms;
+            this.renderOpenRoomsFiltered();
         } catch (err) {
             this.setSummaryMessage(list, err.message || this.t('account-server-unavailable'));
         }
     }
 
-    renderOpenRooms() {
+    renderOpenRoomsList(rooms = []) {
         const list = document.getElementById('open-rooms-list');
         if (!list) return;
-        const rooms = this.getFilteredOpenRooms();
         if (!rooms.length) {
             this.setSummaryMessage(list, this.t('no-open-rooms'));
             return;
@@ -14221,31 +14249,42 @@ class DominoGame {
         });
     }
 
-    getFilteredOpenRooms() {
-        const search = String(this.onlineRoomFilters.search || '').trim().toLowerCase();
-        const selectedGameMode = String(this.onlineRoomFilters.gameMode || this.getSelectedGameMode() || 'telefon').trim().toLowerCase();
-        const selectedModes = Array.isArray(this.onlineRoomFilters.roomModes) && this.onlineRoomFilters.roomModes.length
-            ? new Set(this.onlineRoomFilters.roomModes)
-            : new Set(['ffa', 'team']);
-        const selectedStakes = Array.isArray(this.onlineRoomFilters.stakeKeys) && this.onlineRoomFilters.stakeKeys.length
-            ? new Set(this.onlineRoomFilters.stakeKeys)
-            : new Set(['stake_200', 'stake_500', 'stake_1000', 'stake_5000']);
-        return (Array.isArray(this.openRooms) ? this.openRooms : []).filter((room) => {
-            const roomGameMode = String(room?.gameMode || room?.mode || 'telefon').trim().toLowerCase() || 'telefon';
-            const roomMode = String(room?.roomMode || '').trim().toLowerCase();
+    renderOpenRoomsFiltered() {
+        const { modes, stakes, search } = this.getOpenRoomFilterState();
+        const sourceRooms = Array.isArray(this._allOpenRooms) ? this._allOpenRooms : [];
+        const filtered = sourceRooms.filter((room) => {
+            const roomMode = String(room?.roomMode || room?.mode || '').trim().toLowerCase();
             const stakeKey = String(room?.stakeKey || '').trim();
-            if (roomGameMode && selectedGameMode && selectedGameMode !== 'all' && roomGameMode !== selectedGameMode) return false;
-            if (roomMode && !selectedModes.has(roomMode)) return false;
-            if (stakeKey && !selectedStakes.has(stakeKey)) return false;
-            if (!search) return true;
-            const haystack = [
-                room?.roomCode,
-                room?.roomId,
-                room?.hostName,
-                ...(Array.isArray(room?.players) ? room.players.map((player) => player?.displayName) : [])
-            ].filter(Boolean).join(' ').toLowerCase();
-            return haystack.includes(search);
+            if (modes.length && roomMode && !modes.includes(roomMode)) return false;
+            if (stakes.length && stakeKey && !stakes.includes(stakeKey)) return false;
+            if (search) {
+                const haystack = [
+                    room?.code,
+                    room?.roomCode,
+                    room?.hostName,
+                    room?.ownerName,
+                    ...(Array.isArray(room?.players) ? room.players.map((player) => player?.displayName) : [])
+                ].filter(Boolean).join(' ').toLowerCase();
+                if (!haystack.includes(search)) return false;
+            }
+            return true;
         });
+        this.renderOpenRoomsList(filtered);
+    }
+
+    getFilteredOpenRooms() {
+        return Array.isArray(this._allOpenRooms) ? this._allOpenRooms : [];
+    }
+
+    getOpenRoomFilterState() {
+        const modes = Array.from(document.querySelectorAll('.open-room-mode-toggle.is-active'))
+            .map((button) => button.dataset.roomMode || '')
+            .filter(Boolean);
+        const stakes = Array.from(document.querySelectorAll('.open-room-stake-toggle.is-active'))
+            .map((button) => button.dataset.stakeKey || '')
+            .filter(Boolean);
+        const search = String(document.getElementById('open-room-search-input')?.value || '').trim().toLowerCase();
+        return { modes, stakes, search };
     }
 
     syncOpenRoomFilterControls() {
@@ -14276,6 +14315,7 @@ class DominoGame {
         if (!nextModes.length) nextModes = validModes.slice();
         this.onlineRoomFilters.roomModes = validModes.filter((mode) => nextModes.includes(mode));
         this.syncOpenRoomFilterControls();
+        this.renderOpenRoomsFiltered();
     }
 
     toggleOpenRoomStakeFilter(stakeKey) {
@@ -14291,6 +14331,7 @@ class DominoGame {
         if (!nextStakeKeys.length) nextStakeKeys = validStakeKeys.slice();
         this.onlineRoomFilters.stakeKeys = validStakeKeys.filter((key) => nextStakeKeys.includes(key));
         this.syncOpenRoomFilterControls();
+        this.renderOpenRoomsFiltered();
     }
 
     createRoomConditionIcon(kind) {
