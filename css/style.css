@@ -1519,7 +1519,8 @@ html[data-domino-start-mode="classic101"] #start-screen .start-hero-face-back {
 .open-room-stake-toggle.is-active {
     opacity: 1;
     color: #11161d;
-    background: linear-gradient(135deg, rgba(240, 192, 64, 0.96), rgba(255, 223, 119, 0.92));
+    background: #f3c24a;
+    background-image: none;
     border-color: rgba(240, 192, 64, 0.58);
     box-shadow: 0 10px 24px rgba(240, 192, 64, 0.2);
 }
