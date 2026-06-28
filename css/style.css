@@ -1525,6 +1525,28 @@ html[data-domino-start-mode="classic101"] #start-screen .start-hero-face-back {
     box-shadow: 0 10px 24px rgba(240, 192, 64, 0.2);
 }
 
+/* Touch WebView keeps :hover stuck on the last-tapped button; .btn/.btn-menu
+   :hover then override the active chip. Force chip appearance regardless of hover. */
+.open-rooms-filter-panel .open-room-mode-toggle,
+.open-rooms-filter-panel .open-room-stake-toggle {
+    transform: none !important;
+}
+
+.open-rooms-filter-panel .open-room-mode-toggle:not(.is-active),
+.open-rooms-filter-panel .open-room-stake-toggle:not(.is-active) {
+    background: rgba(255, 255, 255, 0.04) !important;
+    background-image: none !important;
+    color: rgba(255, 255, 255, 0.78) !important;
+}
+
+.open-rooms-filter-panel .open-room-mode-toggle.is-active,
+.open-rooms-filter-panel .open-room-stake-toggle.is-active {
+    background: #f3c24a !important;
+    background-image: none !important;
+    color: #11161d !important;
+    border-color: rgba(240, 192, 64, 0.58) !important;
+}
+
 @media (hover: hover) and (pointer: fine) {
     .open-room-mode-toggle:hover,
     .open-room-stake-toggle:hover {
