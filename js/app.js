@@ -882,6 +882,17 @@ class DominoGame {
         }
     }
 
+    setOnlineSubmenuOpen(open = false) {
+        const button = document.getElementById('open-online-group-btn');
+        const submenu = document.getElementById('online-submenu');
+        const isOpen = Boolean(open);
+        button?.classList.toggle('is-expanded', isOpen);
+        button?.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+        submenu?.classList.toggle('is-open', isOpen);
+        submenu?.setAttribute('aria-hidden', isOpen ? 'false' : 'true');
+        if (submenu) submenu.inert = !isOpen;
+    }
+
     setupStartScreen() {
         this.ensureStartScreenEnhancements();
         this.ensureGameHudEnhancements();
@@ -896,6 +907,7 @@ class DominoGame {
         this.syncStartModeUI();
 
         const openSoloBtn = document.getElementById('open-solo-modal-btn');
+        const openOnlineGroupBtn = document.getElementById('open-online-group-btn');
         const openOnlineBtn = document.getElementById('open-online-modal-btn');
         const onlineCreateChoiceBtn = document.getElementById('online-create-choice-btn');
         const onlineConnectChoiceBtn = document.getElementById('online-connect-choice-btn');
@@ -931,7 +943,15 @@ class DominoGame {
             this.syncSoloOptions();
             this.showStartModal('solo');
         });
+        if (openOnlineGroupBtn && openOnlineGroupBtn.dataset.bound !== '1') {
+            openOnlineGroupBtn.dataset.bound = '1';
+            openOnlineGroupBtn.addEventListener('click', () => {
+                const submenu = document.getElementById('online-submenu');
+                this.setOnlineSubmenuOpen(!submenu?.classList.contains('is-open'));
+            });
+        }
         if (openOnlineBtn) openOnlineBtn.addEventListener('click', () => {
+            this.setOnlineSubmenuOpen(false);
             this.onlineRoomSource = 'closed';
             this.onlineRoomVisibility = 'closed';
             this.resetMultiplayerPanels(false);
@@ -943,7 +963,10 @@ class DominoGame {
         const openRoomsCreateBtn = document.getElementById('open-rooms-create-btn');
         const startCoinShopBtn = document.getElementById('start-coin-shop-btn');
         const startCosmeticsShopBtn = document.getElementById('start-cosmetics-shop-btn');
-        if (openRoomsBtn) openRoomsBtn.addEventListener('click', () => this.showOpenRoomsModal());
+        if (openRoomsBtn) openRoomsBtn.addEventListener('click', () => {
+            this.setOnlineSubmenuOpen(false);
+            this.showOpenRoomsModal();
+        });
         if (openRoomsCreateBtn) openRoomsCreateBtn.addEventListener('click', () => {
             this.onlineRoomSource = 'open';
             this.onlineRoomVisibility = 'open';
@@ -16876,6 +16899,7 @@ class DominoGame {
         this.syncOpenRoomWaitingBanner(null);
         document.getElementById('game-screen').classList.remove('active');
         document.getElementById('start-screen').classList.add('active');
+        this.setOnlineSubmenuOpen(false);
         this.syncGameScreenUiState();
         if (this.hasAuthenticatedAccount()) {
             startMenuMusic();

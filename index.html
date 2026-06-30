@@ -185,8 +185,13 @@
 
             <div class="start-actions">
                 <button class="btn btn-primary btn-large" id="open-solo-modal-btn" data-i18n="btn-solo">Solo play</button>
-                <button class="btn btn-action btn-large" id="open-online-modal-btn" data-i18n="btn-closed-rooms">Bağlı otaqlar</button>
-                <button class="btn btn-action btn-large" id="open-rooms-btn" data-i18n="open-rooms-button">Açıq otaqlar</button>
+                <div class="online-action-group">
+                    <button class="btn btn-action btn-large online-group-btn" id="open-online-group-btn" data-i18n="btn-online-group" aria-expanded="false" aria-controls="online-submenu">Onlayn</button>
+                    <div class="online-submenu" id="online-submenu" aria-hidden="true" inert>
+                        <button class="btn btn-action btn-large" id="open-online-modal-btn" data-i18n="btn-closed-rooms">Bağlı otaqlar</button>
+                        <button class="btn btn-action btn-large" id="open-rooms-btn" data-i18n="open-rooms-button">Açıq otaqlar</button>
+                    </div>
+                </div>
                 <button class="btn btn-action btn-large" id="open-leaderboard-btn" data-i18n="leaderboard-title">Reytinq</button>
             </div>
             <div class="auth-checking-loader" aria-hidden="true">
