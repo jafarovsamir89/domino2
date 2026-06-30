@@ -1391,12 +1391,12 @@ export class EconomyService {
     } else {
       claimedToday = false;
       claimable = true;
-      streakDay = previousClaim ? Math.min(config.dailyMaxStreak, previousClaim.streakDay + 1) : 1;
+      streakDay = previousClaim ? ((previousClaim.streakDay % config.dailyMaxStreak) + 1) : 1;
       todayAmount = getRewardForStreak(streakDay);
       lastClaimAt = previousClaim ? previousClaim.createdAt : null;
     }
 
-    const tomorrowStreakDay = Math.min(config.dailyMaxStreak, streakDay + 1);
+    const tomorrowStreakDay = (streakDay % config.dailyMaxStreak) + 1;
     const tomorrowAmount = getRewardForStreak(tomorrowStreakDay);
     const nextClaimAt = getNextBakuMidnight(now);
 
