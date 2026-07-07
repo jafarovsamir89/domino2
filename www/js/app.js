@@ -266,8 +266,8 @@ function fmLog(tag, data) {
 const DOMINO_CLIENT_BUILD = {
     gitCommit: '7c5f3a1',
     builtAt: new Date().toISOString(),
-    socialRealtimeDebugVersion: 'browser-production-trace-v54-gift-mp4',
-    cacheFixVersion: 'domino-v93'
+    socialRealtimeDebugVersion: 'browser-production-trace-v55-gift-webm',
+    cacheFixVersion: 'domino-v94'
 };
 
 const DOMINO_MONETIZATION_FLAGS = {
@@ -16816,13 +16816,10 @@ class DominoGame {
     getGiftStillAssetPath(gift) {
         return `assets/gift/${this.getGiftAssetKey(gift)}.png`;
     }
-    getGiftAnimatedAssetPaths(gift) {
+    getGiftAnimatedAssetPath(gift) {
         const assetKey = this.getGiftAssetKey(gift);
-        if (!ANIMATED_GIFT_ASSET_KEYS.has(assetKey)) return null;
-        return {
-            mp4: `assets/gift/${assetKey}_anim.mp4`,
-            webm: `assets/gift/${assetKey}_anim.webm`
-        };
+        if (!ANIMATED_GIFT_ASSET_KEYS.has(assetKey)) return '';
+        return `assets/gift/${assetKey}_anim.webm`;
     }
     activateGiftMedia(container) {
         if (!container || typeof window === 'undefined') return;
@@ -16861,14 +16858,14 @@ class DominoGame {
         const loop = resolvedOptions.loop !== false;
         const autoplay = resolvedOptions.autoplay !== false;
         const muted = resolvedOptions.muted !== false;
-        const preload = String(resolvedOptions.preload || (animated ? 'auto' : 'eager')).trim() || 'auto';
+        const preload = String(resolvedOptions.preload || (animated ? 'metadata' : 'eager')).trim() || 'metadata';
         const stillPath = this.getGiftStillAssetPath({ assetKey });
-        const animatedPaths = animated ? this.getGiftAnimatedAssetPaths({ assetKey }) : null;
-        if (animatedPaths) {
+        const animatedPath = animated ? this.getGiftAnimatedAssetPath({ assetKey }) : '';
+        if (animatedPath) {
             const loopAttr = loop ? ' loop' : '';
             const autoplayAttr = autoplay ? ' autoplay' : '';
             const mutedAttr = muted ? ' muted' : '';
-            return `<video poster="${stillPath}" width="${resolvedSize}" height="${resolvedSize}"${autoplayAttr}${loopAttr}${mutedAttr} playsinline webkit-playsinline disablepictureinpicture disableremoteplayback preload="${preload}" aria-label="${label}"><source src="${animatedPaths.mp4}" type="video/mp4"><source src="${animatedPaths.webm}" type="video/webm"></video>`;
+            return `<video src="${animatedPath}" poster="${stillPath}" width="${resolvedSize}" height="${resolvedSize}"${autoplayAttr}${loopAttr}${mutedAttr} playsinline webkit-playsinline disablepictureinpicture disableremoteplayback preload="${preload}" aria-label="${label}"></video>`;
         }
         return `<img src="${stillPath}" alt="${label}" width="${resolvedSize}" height="${resolvedSize}" loading="eager" decoding="async">`;
     }
