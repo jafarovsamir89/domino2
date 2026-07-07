@@ -266,8 +266,8 @@ function fmLog(tag, data) {
 const DOMINO_CLIENT_BUILD = {
     gitCommit: '7c5f3a1',
     builtAt: new Date().toISOString(),
-    socialRealtimeDebugVersion: 'browser-production-trace-v56-online-gifts',
-    cacheFixVersion: 'domino-v95'
+    socialRealtimeDebugVersion: 'browser-production-trace-v57-gift-webm-dom',
+    cacheFixVersion: 'domino-v96'
 };
 
 const DOMINO_MONETIZATION_FLAGS = {
@@ -16418,7 +16418,6 @@ class DominoGame {
                     const visual = document.createElement('div');
                     visual.className = 'gift-choice-visual';
                     visual.innerHTML = this.buildGiftMarkup(gift, 64);
-                    this.activateGiftMedia(visual);
                     
                     const name = document.createElement('div');
                     name.className = 'gift-choice-name';
@@ -16467,7 +16466,6 @@ class DominoGame {
                     const visual = document.createElement('div');
                     visual.className = 'gift-choice-visual';
                     visual.innerHTML = this.buildGiftMarkup(gift, 64);
-                    this.activateGiftMedia(visual);
                     
                     const name = document.createElement('div');
                     name.className = 'gift-choice-name';
@@ -16504,6 +16502,7 @@ class DominoGame {
             giftPicker.appendChild(menuBar);
         }
         giftPicker.appendChild(grid);
+        this.activateGiftMedia(giftPicker);
     }
     getGiftPickerContext(options = {}) {
         const nextOptions = options && typeof options === 'object' ? options : {};
@@ -16689,7 +16688,6 @@ class DominoGame {
             const thumb = document.createElement('div');
             thumb.className = 'gift-inventory-thumb';
             thumb.innerHTML = this.buildGiftMarkup(item.catalog, 44);
-            this.activateGiftMedia(thumb);
             const copy = document.createElement('div');
             copy.className = 'gift-inventory-copy';
             const name = document.createElement('div');
@@ -16735,6 +16733,7 @@ class DominoGame {
             card.appendChild(actions);
             list.appendChild(card);
         }
+        this.activateGiftMedia(list);
     }
     async sendGift(giftKey, recipientPlayerId, fromInventory = false, options = {}) {
         const recipientId = String(recipientPlayerId || '').trim();
@@ -16892,7 +16891,7 @@ class DominoGame {
             const loopAttr = loop ? ' loop' : '';
             const autoplayAttr = autoplay ? ' autoplay' : '';
             const mutedAttr = muted ? ' muted' : '';
-            return `<video src="${animatedPath}" poster="${stillPath}" width="${resolvedSize}" height="${resolvedSize}"${autoplayAttr}${loopAttr}${mutedAttr} playsinline webkit-playsinline disablepictureinpicture disableremoteplayback preload="${preload}" aria-label="${label}"></video>`;
+            return `<video src="${animatedPath}" width="${resolvedSize}" height="${resolvedSize}"${autoplayAttr}${loopAttr}${mutedAttr} playsinline webkit-playsinline disablepictureinpicture disableremoteplayback preload="${preload}" aria-label="${label}"></video>`;
         }
         return `<img src="${stillPath}" alt="${label}" width="${resolvedSize}" height="${resolvedSize}" loading="eager" decoding="async">`;
     }
@@ -16912,7 +16911,6 @@ class DominoGame {
             muted: true,
             preload: 'auto'
         });
-        this.activateGiftMedia(icon);
         burst.appendChild(icon);
         const label = document.createElement('div');
         label.className = 'gift-burst-label';
@@ -16925,6 +16923,7 @@ class DominoGame {
             burst.appendChild(chip);
         }
         this.reactionStage.appendChild(burst);
+        this.activateGiftMedia(burst);
         window.setTimeout(() => {
             burst.remove();
         }, 2100);
