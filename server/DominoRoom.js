@@ -3561,7 +3561,11 @@ class DominoRoom extends Room {
         const actor = this.state.players.get(this.state.playerOrder[pi]);
         const actorName = actor ? actor.name : "Player";
         if (!isBot) {
-            this.broadcast("msg", { text: `${actorName} drew a tile`, time: 1500 });
+            this.broadcast("msg", {
+                key: "msg-player-took-bazaar",
+                values: { player: actorName },
+                time: 1500
+            });
         }
         this.bumpTurnVersion();
         this.broadcastGameDelta({

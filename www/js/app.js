@@ -266,8 +266,8 @@ function fmLog(tag, data) {
 const DOMINO_CLIENT_BUILD = {
     gitCommit: '7c5f3a1',
     builtAt: new Date().toISOString(),
-    socialRealtimeDebugVersion: 'browser-production-trace-v49-google-native-session',
-    cacheFixVersion: 'domino-v88'
+    socialRealtimeDebugVersion: 'browser-production-trace-v51-voice-i18n',
+    cacheFixVersion: 'domino-v90'
 };
 
 if (typeof window !== 'undefined') {
@@ -17405,8 +17405,8 @@ class DominoGame {
             "economy-coins": { az: "Play on coins", en: "Play on coins" },
             "btn-host": { az: "Create", en: "Create" },
             "btn-join": { az: "Join", en: "Join" },
-            "btn-draw": { az: "Draw", en: "Draw" },
-            "btn-pass": { az: "Pass", en: "Pass" },
+            "btn-draw": { az: "BAZAR", en: "DRAW", ru: "БАЗАР" },
+            "btn-pass": { az: "PAS", en: "PASS", ru: "ПАС" },
             "btn-reactions": { az: "Reactions", en: "Reactions" },
             "room-visibility-closed": { az: "Bağlı otaq", en: "Closed room", ru: "Закрытая комната" },
             "room-visibility-open": { az: "Açıq otaq", en: "Open room", ru: "Открытая комната" },
@@ -17447,7 +17447,7 @@ class DominoGame {
             "account-coins": { az: "Coin", en: "Coins" },
             "account-wins": { az: "Qələbələr", en: "Wins" },
             "account-losses": { az: "Losses", en: "Losses" },
-            "account-draws": { az: "Draws", en: "Draws" },
+            "account-draws": { az: "Heç-heçə", en: "Draws", ru: "Ничьи" },
             "account-matches": { az: "Oyunlar", en: "Games" },
             "account-refresh": { az: "Refresh", en: "Refresh" },
             "account-logout": { az: "Logout", en: "Logout" },
@@ -17456,7 +17456,7 @@ class DominoGame {
             "account-history-empty": { az: "No match history yet", en: "No match history yet" },
             "account-history-win": { az: "Win", en: "Win" },
             "account-history-loss": { az: "Loss", en: "Loss" },
-            "account-history-draw": { az: "Draw", en: "Draw" },
+            "account-history-draw": { az: "Heç-heçə", en: "Draw", ru: "Ничья" },
             "account-server-unavailable": { az: "Server unavailable", en: "Server unavailable" },
             "account-registration-required": { az: "Coin oyunu üçün hesaba daxil olun və ya qeydiyyatdan keçin", en: "Sign in or register to play coin matches" },
             "account-registration-required-online": { az: "Onlayn coin otaqları üçün hesab mütləqdir", en: "An account is required for online coin rooms" },

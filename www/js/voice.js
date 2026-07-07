@@ -180,6 +180,7 @@ export class VoiceChatManager {
             button.disabled = !online;
             button.classList.toggle("is-ready", online);
             button.classList.toggle("is-speaking", online && this.isEnabled);
+            button.setAttribute("aria-pressed", online && this.isEnabled ? "true" : "false");
         }
         if (!online) {
             this.setStatus("");
@@ -196,7 +197,7 @@ export class VoiceChatManager {
     setStatus(text = "") {
         this.statusText = String(text || "");
         const el = this.getVoiceStatusEl();
-        if (el) el.textContent = this.statusText;
+        if (el) el.textContent = "";
         const button = this.getVoiceButton();
         if (button) {
             const title = this.statusText || this.game?.t?.("voice-ready") || "Voice ready";
@@ -624,22 +625,7 @@ export class VoiceChatManager {
         }
 
         const statusEl = this.getVoiceStatusEl();
-        if (statusEl) {
-            if (!this.isAvailable()) {
-                statusEl.textContent = "";
-            } else if (this.audioPlaybackBlocked) {
-                statusEl.textContent = this.game?.t?.("voice-enable-sound") || "Enable sound";
-            } else if (this.isEnabled) {
-                statusEl.textContent = this.game?.t?.("voice-speaking") || "Speaking";
-            } else if (activeNames.length > 0) {
-                const label = this.game?.t?.("voice-listening-to") || "Hearing";
-                statusEl.textContent = `${label}: ${activeNames.slice(0, 2).join(", ")}`;
-            } else if (this.statusText) {
-                statusEl.textContent = this.statusText;
-            } else {
-                statusEl.textContent = this.game?.t?.("voice-ready") || "Voice ready";
-            }
-        }
+        if (statusEl) statusEl.textContent = "";
 
         const visibleSessions = this.getRemoteHumanSessions();
         const rosterToggle = document.getElementById("voice-roster-toggle");

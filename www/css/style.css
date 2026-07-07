@@ -5145,22 +5145,32 @@ body.is-solo-game .voice-roster-panel {
 }
 
 .action-bar {
-    display: flex;
-    gap: 8px;
+    display: grid;
+    grid-template-columns: auto minmax(48px, 1fr) minmax(48px, 1fr) auto auto auto auto;
+    gap: clamp(4px, 1.6vw, 8px);
     justify-content: center;
-    padding: 6px 12px calc(6px + env(safe-area-inset-bottom, 0px));
+    padding: 6px clamp(8px, 3vw, 12px) calc(6px + env(safe-area-inset-bottom, 0px));
     background: rgba(0, 0, 0, 0.45);
     flex-shrink: 0;
     align-items: center;
     overflow: visible;
     position: relative;
     z-index: 15;
-    flex-wrap: wrap;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.action-bar > .btn-action {
+    width: 100%;
+    min-width: 0;
+    padding-left: clamp(8px, 2vw, 18px);
+    padding-right: clamp(8px, 2vw, 18px);
+    white-space: nowrap;
 }
 
 .turn-timer-slot {
-    width: 54px;
-    min-width: 54px;
+    width: clamp(34px, 10.5vw, 54px);
+    min-width: 0;
     flex: 0 0 auto;
     display: grid;
     place-items: center;
@@ -5170,8 +5180,8 @@ body.is-solo-game .voice-roster-panel {
 }
 
 .voice-slot {
-    width: 78px;
-    min-width: 78px;
+    width: clamp(34px, 10.5vw, 54px);
+    min-width: 0;
     flex: 0 0 auto;
     display: grid;
     place-items: center;
@@ -5216,7 +5226,8 @@ body.is-solo-game .voice-roster-panel {
 .voice-fab.is-speaking {
     border-color: rgba(79, 207, 151, 0.72);
     background: linear-gradient(180deg, rgba(79, 207, 151, 0.24), rgba(79, 207, 151, 0.10));
-    box-shadow: 0 0 0 1px rgba(79, 207, 151, 0.22) inset, 0 10px 20px rgba(0, 0, 0, 0.22);
+    color: #dfffe9;
+    box-shadow: 0 0 0 1px rgba(79, 207, 151, 0.34) inset, 0 0 18px rgba(79, 207, 151, 0.28), 0 10px 20px rgba(0, 0, 0, 0.22);
 }
 
 .voice-fab.has-remote-voice {
@@ -5224,8 +5235,9 @@ body.is-solo-game .voice-roster-panel {
 }
 
 .voice-status {
+    display: none;
     min-height: 1.1em;
-    max-width: 90px;
+    max-width: 54px;
     font-size: 0.58rem;
     font-weight: 700;
     letter-spacing: 0.05em;
@@ -5247,8 +5259,8 @@ body.is-solo-game .voice-roster-panel {
 }
 
 .turn-timer-ring {
-    width: 54px;
-    height: 54px;
+    width: clamp(34px, 10.5vw, 54px);
+    height: clamp(34px, 10.5vw, 54px);
     border-radius: 50%;
     padding: 3px;
     background:
@@ -5272,7 +5284,7 @@ body.is-solo-game .voice-roster-panel {
     background: linear-gradient(180deg, rgba(13, 22, 34, 0.98), rgba(20, 33, 48, 0.98));
     border: 1px solid rgba(255, 255, 255, 0.10);
     color: var(--text);
-    font-size: 0.92rem;
+    font-size: clamp(0.68rem, 2.4vw, 0.92rem);
     font-weight: 800;
     letter-spacing: 0.04em;
     text-transform: uppercase;
@@ -5288,7 +5300,7 @@ body.is-solo-game .voice-roster-panel {
 
 .turn-timer-caption {
     min-height: 1.1em;
-    font-size: 0.62rem;
+    font-size: clamp(0.48rem, 1.8vw, 0.62rem);
     font-weight: 700;
     letter-spacing: 0.08em;
     text-transform: uppercase;
@@ -5309,12 +5321,14 @@ body.is-solo-game .voice-roster-panel {
     display: flex;
     align-items: center;
     flex: 0 0 auto;
-    margin-left: 2px;
+    justify-content: center;
+    margin-left: 0;
 }
 
 .reaction-fab {
-    width: 42px;
-    height: 42px;
+    width: clamp(34px, 10.5vw, 42px);
+    height: clamp(34px, 10.5vw, 42px);
+    min-width: clamp(34px, 10.5vw, 42px);
     display: grid;
     place-items: center;
     border: 1px solid rgba(255, 255, 255, 0.12);
@@ -5334,8 +5348,8 @@ body.is-solo-game .voice-roster-panel {
 }
 
 .reaction-fab svg {
-    width: 26px;
-    height: 26px;
+    width: clamp(22px, 6.8vw, 26px);
+    height: clamp(22px, 6.8vw, 26px);
     display: block;
 }
 
@@ -6578,20 +6592,25 @@ body.is-solo-game .voice-roster-panel {
     }
 
     .reaction-fab {
-        width: 40px;
-        height: 40px;
+        width: clamp(34px, 10.5vw, 40px);
+        height: clamp(34px, 10.5vw, 40px);
+        min-width: clamp(34px, 10.5vw, 40px);
         border-radius: 13px;
     }
 
-    .reaction-fab svg,
+    .reaction-fab svg {
+        width: clamp(22px, 6.8vw, 28px);
+        height: clamp(22px, 6.8vw, 28px);
+    }
+
     .reaction-choice svg {
         width: 28px;
         height: 28px;
     }
 
     .voice-slot {
-        width: 58px;
-        min-width: 58px;
+        width: clamp(34px, 10.5vw, 40px);
+        min-width: 0;
     }
 
     .voice-roster-panel {
