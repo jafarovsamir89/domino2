@@ -9,6 +9,24 @@ import { VoiceChatManager } from './voice.js';
 import { sndPlace, sndScore, sndDraw, sndPass, sndWin, sndGosha, startMenuMusic, startGameMusic, nextTrack, toggleMute, stopMusic } from './sounds.js?v=social-live-1';
 // NetworkManager is loaded as global script
 
+let dominoGoogleAuthPlugin = null;
+function getDominoGoogleAuthPlugin() {
+    const cap = globalThis.Capacitor;
+    if (!dominoGoogleAuthPlugin && cap?.registerPlugin) {
+        try {
+            dominoGoogleAuthPlugin = cap.registerPlugin('DominoGoogleAuth');
+        } catch (error) {
+            debugLog('Failed to register DominoGoogleAuth plugin:', error);
+        }
+    }
+    if (!dominoGoogleAuthPlugin && cap?.nativePromise) {
+        dominoGoogleAuthPlugin = {
+            signIn: (options = {}) => cap.nativePromise('DominoGoogleAuth', 'signIn', options)
+        };
+    }
+    return dominoGoogleAuthPlugin;
+}
+
 const DOMINO_RULESETS = globalThis.DominoRulesets || null;
 const TELEFON_RULESET_FALLBACK = Object.freeze({
     id: 'telefon',
@@ -248,8 +266,8 @@ function fmLog(tag, data) {
 const DOMINO_CLIENT_BUILD = {
     gitCommit: '7c5f3a1',
     builtAt: new Date().toISOString(),
-    socialRealtimeDebugVersion: 'browser-production-trace-v47-open-rooms-filters-5',
-    cacheFixVersion: 'domino-v86'
+    socialRealtimeDebugVersion: 'browser-production-trace-v49-google-native-session',
+    cacheFixVersion: 'domino-v88'
 };
 
 if (typeof window !== 'undefined') {
@@ -7951,7 +7969,7 @@ class DominoGame {
         if (!window.Capacitor) {
             return false;
         }
-        const plugin = window.Capacitor?.Plugins?.DominoGoogleAuth;
+        const plugin = getDominoGoogleAuthPlugin() || window.Capacitor?.Plugins?.DominoGoogleAuth;
         if (!plugin?.signIn) {
             return false;
         }
@@ -7968,18 +7986,9 @@ class DominoGame {
             throw new Error('Google sign-in did not return an ID token');
         }
 
-        await this.account.platformRequest('/auth/sign-in/social', {
-            method: 'POST',
-            body: {
-                provider: 'google',
-                idToken: {
-                    token: idToken,
-                    accessToken: String(result?.accessToken || '').trim() || undefined
-                }
-            }
+        const details = await this.account.signInWithGoogleIdToken(idToken, {
+            gameMode: this.getSelectedGameMode()
         });
-
-        const details = await this.account.bootstrap();
         if (details?.profile) {
             this.enterAuthenticatedHome(details);
             this.renderer.showMessage(this.t('account-login'), 1500);

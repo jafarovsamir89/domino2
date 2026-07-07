@@ -945,6 +945,30 @@ export class AccountClient {
         });
     }
 
+    async signInWithGoogleIdToken(idToken, options = {}) {
+        const token = String(idToken || "").trim();
+        if (!token) {
+            throw new Error("Google ID token is required");
+        }
+        const data = await this.platformRequest("/platform/mobile-google-sign-in", {
+            method: "POST",
+            body: {
+                idToken: token,
+                gameMode: String(options?.gameMode || options?.mode || "").trim() || undefined
+            }
+        });
+        const normalized = normalizeProfile(data, "better-auth");
+        if (data?.token) {
+            this.setPlatformGameToken(data.token);
+            normalized.token = data.token;
+        }
+        if (normalized.profile) {
+            this.setPlatformProfile(normalized.profile);
+            this.setStoredProfile(normalized.profile);
+        }
+        return normalized;
+    }
+
     async startAppleSignIn(callbackURL) {
         const targetURL = String(callbackURL || "").trim() || "/";
         return this.platformRequest("/auth/sign-in/social", {

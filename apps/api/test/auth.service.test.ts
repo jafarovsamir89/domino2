@@ -50,6 +50,12 @@ test("AuthService.getCurrentProfile filters recent matches by gameMode and expos
     playerStats: {
       create: async () => ({})
     },
+    playerModeStats: {
+      upsert: async () => ({})
+    },
+    coinLedgerEntry: {
+      findUnique: async () => ({ id: "starter-ledger-1" })
+    },
     coinWallet: {
       upsert: async () => ({
         id: "wallet-1",
@@ -118,6 +124,12 @@ test("AuthService.getCurrentProfile keeps default history behavior when no mode 
     },
     playerStats: {
       create: async () => ({})
+    },
+    playerModeStats: {
+      upsert: async () => ({})
+    },
+    coinLedgerEntry: {
+      findUnique: async () => ({ id: "starter-ledger-1" })
     },
     coinWallet: {
       upsert: async () => ({

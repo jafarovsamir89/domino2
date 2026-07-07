@@ -1,7 +1,9 @@
+import { randomUUID } from "node:crypto";
 import type { IncomingHttpHeaders } from "node:http";
 
 import { BadRequestException, Injectable, UnauthorizedException } from "@nestjs/common";
 import { fromNodeHeaders } from "better-auth/node";
+import { OAuth2Client } from "google-auth-library";
 
 import { PrismaService } from "../prisma/prisma.service.js";
 import { createGameToken } from "./game-token.js";
@@ -9,10 +11,12 @@ import { getBetterAuthConfig } from "./better-auth.config.js";
 import { auth } from "./auth.instance.js";
 import { normalizeRatingGameMode } from "../ranking/player-mode-stats.js";
 import { calculatePlayerRating, getPlayerRatingTitleCode } from "../ranking/player-ranking.js";
+import { grantStarterCoins } from "../economy/economy-starter.js";
 
 @Injectable()
 export class AuthService {
   private readonly config = getBetterAuthConfig();
+  private readonly googleOAuthClient = new OAuth2Client();
 
   constructor(private readonly prisma: PrismaService) {}
 
@@ -41,14 +45,32 @@ export class AuthService {
       return null;
     }
 
+    return this.buildProfileForSessionUser(session.user, session.session, gameMode);
+  }
+
+  private async buildProfileForSessionUser(
+    sessionUser: {
+      id: string;
+      email?: string | null;
+      name?: string | null;
+      image?: string | null;
+      role?: string | null;
+    },
+    sessionData: {
+      id: string;
+      expiresAt: Date;
+    },
+    gameMode?: string
+  ) {
+    const displayName = String(sessionUser.name || sessionUser.email?.split("@")?.[0] || "Player").trim() || "Player";
     const player = await this.prisma.player.upsert({
-      where: { userId: session.user.id },
+      where: { userId: sessionUser.id },
       update: {
-        displayName: session.user.name
+        displayName
       },
       create: {
-        userId: session.user.id,
-        displayName: session.user.name,
+        userId: sessionUser.id,
+        displayName,
         isGuest: false
       },
       include: {
@@ -64,6 +86,28 @@ export class AuthService {
           }
         });
 
+    await this.prisma.playerModeStats.upsert({
+      where: {
+        playerId_gameMode: {
+          playerId: player.id,
+          gameMode: "telefon"
+        }
+      },
+      update: {},
+      create: {
+        playerId: player.id,
+        gameMode: "telefon",
+        rating: stats.rating,
+        points: stats.points,
+        wins: stats.wins,
+        losses: stats.losses,
+        draws: stats.draws,
+        matchesPlayed: stats.matchesPlayed,
+        currentStreak: stats.currentStreak,
+        bestStreak: stats.bestStreak
+      }
+    });
+
     const nextRating = calculatePlayerRating(stats);
     if (stats.rating !== nextRating) {
       await this.prisma.playerStats.update({
@@ -73,6 +117,14 @@ export class AuthService {
         }
       });
     }
+
+    await grantStarterCoins(
+      this.prisma,
+      player.id,
+      sessionUser.id,
+      player.displayName || displayName,
+      "auth_profile_bootstrap"
+    );
 
     const wallet = await this.prisma.coinWallet.upsert({
       where: { playerId: player.id },
@@ -110,15 +162,15 @@ export class AuthService {
 
     return {
       session: {
-        id: session.session.id,
-        expiresAt: session.session.expiresAt
+        id: sessionData.id,
+        expiresAt: sessionData.expiresAt
       },
       user: {
-        id: session.user.id,
-        email: session.user.email,
-        name: session.user.name,
-        image: session.user.image ?? null,
-        role: session.user.role ?? "player"
+        id: sessionUser.id,
+        email: sessionUser.email || "",
+        name: displayName,
+        image: sessionUser.image ?? null,
+        role: sessionUser.role ?? "player"
       },
       player: {
         id: player.id,
@@ -155,6 +207,131 @@ export class AuthService {
           ratingDelta: Number(row.ratingDelta ?? 0)
         };
       })
+    };
+  }
+
+  async signInWithGoogleIdToken(idTokenInput?: string, gameMode?: string) {
+    if (!this.config.google?.clientIds?.length) {
+      throw new BadRequestException("Google sign-in is not configured");
+    }
+
+    const idToken = String(idTokenInput || "").trim();
+    if (!idToken) {
+      throw new BadRequestException("Google ID token is required");
+    }
+
+    const ticket = await this.googleOAuthClient.verifyIdToken({
+      idToken,
+      audience: this.config.google.clientIds
+    }).catch(() => {
+      throw new UnauthorizedException("Invalid Google ID token");
+    });
+    const payload = ticket.getPayload();
+    const googleAccountId = String(payload?.sub || "").trim();
+    const email = String(payload?.email || "").trim().toLowerCase();
+    if (!googleAccountId || !email) {
+      throw new UnauthorizedException("Invalid Google account payload");
+    }
+
+    const name = String(payload?.name || email.split("@")[0] || "Player").trim() || "Player";
+    const image = String(payload?.picture || "").trim() || null;
+    const expiresAt = new Date(Date.now() + 1000 * 60 * 60 * 24 * 30);
+    const { user, session } = await this.prisma.$transaction(async (tx) => {
+      const linkedAccount = await tx.account.findFirst({
+        where: {
+          providerId: "google",
+          accountId: googleAccountId
+        },
+        include: {
+          user: true
+        }
+      });
+
+      const user = linkedAccount?.user
+        ? await tx.user.update({
+            where: { id: linkedAccount.user.id },
+            data: {
+              name,
+              image,
+              emailVerified: true
+            }
+          })
+        : await tx.user.upsert({
+            where: { email },
+            update: {
+              name,
+              image,
+              emailVerified: true
+            },
+            create: {
+              id: randomUUID(),
+              email,
+              name,
+              image,
+              emailVerified: true,
+              role: "player"
+            }
+          });
+
+      const account = linkedAccount || await tx.account.findFirst({
+        where: {
+          providerId: "google",
+          accountId: googleAccountId
+        }
+      });
+
+      if (account) {
+        await tx.account.update({
+          where: { id: account.id },
+          data: {
+            userId: user.id,
+            idToken
+          }
+        });
+      } else {
+        await tx.account.create({
+          data: {
+            id: randomUUID(),
+            accountId: googleAccountId,
+            providerId: "google",
+            userId: user.id,
+            idToken
+          }
+        });
+      }
+
+      const session = await tx.session.create({
+        data: {
+          id: randomUUID(),
+          token: randomUUID(),
+          userId: user.id,
+          expiresAt
+        }
+      });
+
+      return { user, session };
+    });
+
+    const profile = await this.buildProfileForSessionUser(user, session, gameMode);
+    return {
+      profile,
+      token: createGameToken({
+        userId: profile.user.id,
+        playerId: profile.player.id,
+        displayName: profile.player.displayName,
+        role: profile.user.role,
+        sessionId: profile.session.id,
+        provider: "better-auth",
+        issuedAt: Date.now(),
+        expiresAt: Date.now() + 1000 * 60 * 60 * 12
+      }),
+      user: profile.user,
+      player: profile.player,
+      session: profile.session,
+      stats: profile.stats,
+      wallet: profile.wallet,
+      coins: profile.coins,
+      titleCode: profile.titleCode
     };
   }
 

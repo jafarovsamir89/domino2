@@ -17,9 +17,9 @@ public class MainActivity extends BridgeActivity {
 
     @Override
     protected void load() {
-        super.load();
         registerPlugin(DominoGoogleAuthPlugin.class);
         registerPlugin(DominoBrowserPlugin.class);
+        super.load();
         if (getBridge() != null && getBridge().getWebView() != null) {
             getBridge().getWebView().getSettings().setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
             getBridge().getWebView().getSettings().setMediaPlaybackRequiresUserGesture(false);
