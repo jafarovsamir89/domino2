@@ -266,8 +266,8 @@ function fmLog(tag, data) {
 const DOMINO_CLIENT_BUILD = {
     gitCommit: '7c5f3a1',
     builtAt: new Date().toISOString(),
-    socialRealtimeDebugVersion: 'browser-production-trace-v58-gift-asset-bust',
-    cacheFixVersion: 'domino-v97'
+    socialRealtimeDebugVersion: 'browser-production-trace-v59-gift-table-flight',
+    cacheFixVersion: 'domino-v98'
 };
 
 const DOMINO_MONETIZATION_FLAGS = {
@@ -16417,7 +16417,7 @@ class DominoGame {
                     
                     const visual = document.createElement('div');
                     visual.className = 'gift-choice-visual';
-                    visual.innerHTML = this.buildGiftMarkup(gift, 64);
+                    visual.innerHTML = this.buildGiftMarkup(gift, 64, { animated: false });
                     
                     const name = document.createElement('div');
                     name.className = 'gift-choice-name';
@@ -16442,7 +16442,10 @@ class DominoGame {
                     
                     card.addEventListener('click', async (event) => {
                         event.stopPropagation();
-                        await this.sendGift(gift.key, this.selectedGiftRecipientId || recipients[0]?.id || '', true, context);
+                        await this.sendGift(gift.key, this.selectedGiftRecipientId || recipients[0]?.id || '', true, {
+                            ...context,
+                            launchRect: card.getBoundingClientRect()
+                        });
                     });
                     grid.appendChild(card);
                 }
@@ -16465,7 +16468,7 @@ class DominoGame {
                     
                     const visual = document.createElement('div');
                     visual.className = 'gift-choice-visual';
-                    visual.innerHTML = this.buildGiftMarkup(gift, 64);
+                    visual.innerHTML = this.buildGiftMarkup(gift, 64, { animated: false });
                     
                     const name = document.createElement('div');
                     name.className = 'gift-choice-name';
@@ -16489,7 +16492,10 @@ class DominoGame {
                     
                     card.addEventListener('click', async (event) => {
                         event.stopPropagation();
-                        await this.sendGift(gift.key, this.selectedGiftRecipientId || recipients[0]?.id || '', false, context);
+                        await this.sendGift(gift.key, this.selectedGiftRecipientId || recipients[0]?.id || '', false, {
+                            ...context,
+                            launchRect: card.getBoundingClientRect()
+                        });
                     });
                     grid.appendChild(card);
                 }
@@ -16502,7 +16508,6 @@ class DominoGame {
             giftPicker.appendChild(menuBar);
         }
         giftPicker.appendChild(grid);
-        this.activateGiftMedia(giftPicker);
     }
     getGiftPickerContext(options = {}) {
         const nextOptions = options && typeof options === 'object' ? options : {};
@@ -16687,7 +16692,7 @@ class DominoGame {
             top.className = 'gift-inventory-top';
             const thumb = document.createElement('div');
             thumb.className = 'gift-inventory-thumb';
-            thumb.innerHTML = this.buildGiftMarkup(item.catalog, 44);
+            thumb.innerHTML = this.buildGiftMarkup(item.catalog, 44, { animated: false });
             const copy = document.createElement('div');
             copy.className = 'gift-inventory-copy';
             const name = document.createElement('div');
@@ -16733,12 +16738,14 @@ class DominoGame {
             card.appendChild(actions);
             list.appendChild(card);
         }
-        this.activateGiftMedia(list);
     }
     async sendGift(giftKey, recipientPlayerId, fromInventory = false, options = {}) {
         const recipientId = String(recipientPlayerId || '').trim();
         const key = String(giftKey || '').trim();
         const context = this.getGiftPickerContext(options);
+        const launchRect = options?.launchRect && typeof options.launchRect === 'object'
+            ? options.launchRect
+            : null;
         const contextType = context.source === 'room'
             ? 'room'
             : (context.source === 'chat' ? 'chat' : 'social');
@@ -16778,7 +16785,7 @@ class DominoGame {
             this.closeGiftPicker();
             this.lastGiftSentAt = Date.now();
             this.lastGiftSentKey = key;
-            this.showGiftBurst(gift, this.accountProfile?.name || this.t('gift-button'), name);
+            this.showGiftBurst(gift, this.accountProfile?.name || this.t('gift-button'), name, launchRect);
             if (this.network?.isMultiplayer) {
                 debugLog('[Chat Debug] sendGift: sending gift event over the socket to room...', { key, recipientId, name });
                 this.network.sendGift({
@@ -16902,13 +16909,30 @@ class DominoGame {
     buildGiftButtonMarkup(size = 48) {
         return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="${size}" height="${size}" fill="none" aria-hidden="true"><path d="M5 9.5h14v9.5H5z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M4 8h16v3H4z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M12 8v11" stroke="currentColor" stroke-width="1.6"/><path d="M12 8c-1.3 0-3-1.1-3-2.6S10.3 3 12 5.1c1.7-2.1 3.9-2.7 4.7-1.2.8 1.5-.8 4.1-4.7 4.1Zm0 0c-1.4 0-3.1-1.2-4.3-2.4C6.6 4.3 6.2 2.9 7.2 2.3c1-.6 2.8.2 4.8 2.8Z" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
     }
-    showGiftBurst(gift, senderName = '', recipientName = '') {
+    showGiftBurst(gift, senderName = '', recipientName = '', launchRect = null) {
         if (!this.reactionStage) return;
+        const rect = launchRect && Number.isFinite(launchRect.left) && Number.isFinite(launchRect.top)
+            ? launchRect
+            : null;
+        const fromX = rect ? rect.left + (rect.width || 0) / 2 : window.innerWidth / 2;
+        const fromY = rect ? rect.top + (rect.height || 0) / 2 : window.innerHeight - 92;
+        const dx = (window.innerWidth / 2) - fromX;
+        const dy = (window.innerHeight / 2) - fromY;
         const burst = document.createElement('div');
         burst.className = 'gift-burst';
+        burst.style.setProperty('--gift-from-x', `${Math.round(fromX)}px`);
+        burst.style.setProperty('--gift-from-y', `${Math.round(fromY)}px`);
+        burst.style.setProperty('--gift-dx', `${Math.round(dx)}px`);
+        burst.style.setProperty('--gift-dy', `${Math.round(dy)}px`);
+        const flight = document.createElement('div');
+        flight.className = 'gift-burst-flight';
+        flight.innerHTML = this.buildGiftMarkup(gift, 78, {
+            animated: false
+        });
+        burst.appendChild(flight);
         const icon = document.createElement('div');
         icon.className = 'gift-burst-icon';
-        icon.innerHTML = this.buildGiftMarkup(gift, 104, {
+        icon.innerHTML = this.buildGiftMarkup(gift, 132, {
             animated: true,
             autoplay: true,
             loop: true,

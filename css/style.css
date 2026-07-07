@@ -5771,40 +5771,65 @@ body.is-solo-game .voice-roster-panel {
 
 .gift-burst {
     position: fixed;
-    left: 50%;
-    top: 50%;
+    inset: 0;
     z-index: 2600;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 8px;
-    padding: 18px 20px;
-    border-radius: 28px;
-    transform: translate(-50%, -50%) scale(0.3);
-    background: radial-gradient(circle at top, rgba(255, 214, 102, 0.25), rgba(15, 22, 31, 0.96));
-    border: 1px solid rgba(240, 192, 64, 0.22);
-    box-shadow: 0 18px 46px rgba(0, 0, 0, 0.4);
-    opacity: 0;
+    display: grid;
+    place-items: center;
     pointer-events: none;
-    animation: giftBurst 2.05s ease forwards;
+    --gift-from-x: 50vw;
+    --gift-from-y: calc(100vh - 92px);
+    --gift-dx: 0px;
+    --gift-dy: -38vh;
 }
 
 .gift-burst::before {
     content: "";
     position: absolute;
-    inset: -26px;
-    border-radius: 28px;
-    background: radial-gradient(circle, rgba(255, 255, 255, 0.18) 0%, rgba(240, 192, 64, 0.16) 28%, rgba(240, 192, 64, 0) 70%);
-    animation: giftGlow 2.05s ease forwards;
+    left: 50%;
+    top: 50%;
+    width: min(52vw, 360px);
+    height: min(52vw, 360px);
+    border-radius: 999px;
+    transform: translate(-50%, -50%) scale(0.6);
+    background:
+        radial-gradient(circle, rgba(255, 255, 255, 0.24) 0%, rgba(240, 192, 64, 0.18) 30%, rgba(240, 192, 64, 0) 68%),
+        radial-gradient(circle, rgba(57, 213, 255, 0.12) 0%, rgba(57, 213, 255, 0) 62%);
+    opacity: 0;
+    filter: blur(1px);
+    animation: giftTableGlow 2.7s cubic-bezier(.2, .8, .2, 1) forwards;
+}
+
+.gift-burst-flight {
+    position: fixed;
+    left: var(--gift-from-x);
+    top: var(--gift-from-y);
+    width: 78px;
+    height: 78px;
+    display: grid;
+    place-items: center;
+    transform: translate(-50%, -50%) scale(0.72) rotate(-9deg);
+    filter: drop-shadow(0 16px 22px rgba(0, 0, 0, 0.32));
+    animation: giftFlyToTable 0.78s cubic-bezier(.16, .92, .3, 1) forwards;
+}
+
+.gift-burst-flight img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
 }
 
 .gift-burst-icon {
     position: relative;
-    width: 104px;
-    height: 104px;
+    z-index: 2;
+    width: clamp(118px, 18vw, 156px);
+    height: clamp(118px, 18vw, 156px);
     display: grid;
     place-items: center;
-    filter: drop-shadow(0 8px 24px rgba(240, 192, 64, 0.28));
+    opacity: 0;
+    transform: scale(0.7);
+    filter: drop-shadow(0 18px 30px rgba(240, 192, 64, 0.34));
+    animation: giftRevealOnTable 1.95s cubic-bezier(.2, .8, .2, 1) 0.62s forwards;
 }
 
 .gift-burst-icon img,
@@ -5817,7 +5842,15 @@ body.is-solo-game .voice-roster-panel {
 
 .gift-burst-label {
     position: relative;
-    font-size: 0.78rem;
+    z-index: 3;
+    align-self: end;
+    margin-top: clamp(150px, 22vw, 190px);
+    padding: 7px 12px;
+    border-radius: 999px;
+    background: rgba(8, 13, 20, 0.72);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(8px);
+    font-size: 0.76rem;
     font-weight: 700;
     letter-spacing: 0.12em;
     text-transform: uppercase;
@@ -5825,30 +5858,79 @@ body.is-solo-game .voice-roster-panel {
     text-shadow: 0 1px 10px rgba(0, 0, 0, 0.45);
     text-align: center;
     line-height: 1.2;
+    opacity: 0;
+    transform: translateY(8px);
+    animation: giftCaptionIn 1.55s ease 0.84s forwards;
 }
 
 .gift-burst-chip {
     position: relative;
-    padding: 4px 8px;
+    z-index: 3;
+    align-self: end;
+    margin-top: calc(clamp(150px, 22vw, 190px) + 36px);
+    padding: 4px 10px;
     border-radius: 999px;
-    background: rgba(240, 192, 64, 0.16);
+    background: rgba(240, 192, 64, 0.18);
+    border: 1px solid rgba(240, 192, 64, 0.18);
     color: var(--accent);
     font-size: 0.7rem;
     font-weight: 700;
+    opacity: 0;
+    transform: translateY(8px);
+    animation: giftCaptionIn 1.55s ease 0.96s forwards;
 }
 
-@keyframes giftBurst {
-    0% { opacity: 0; transform: translate(-50%, 14%) scale(0.2) rotate(-8deg); }
-    16% { opacity: 1; transform: translate(-50%, -10%) scale(1.04) rotate(0deg); }
-    50% { opacity: 1; transform: translate(-50%, -34%) scale(1) rotate(0deg); }
-    78% { opacity: 1; transform: translate(-50%, -58%) scale(1) rotate(0deg); }
-    100% { opacity: 0; transform: translate(-50%, -108%) scale(0.94) rotate(0deg); }
+@keyframes giftFlyToTable {
+    0% {
+        opacity: 0.94;
+        transform: translate(-50%, -50%) scale(0.7) rotate(-10deg);
+    }
+    42% {
+        opacity: 1;
+        transform: translate(calc(-50% + (var(--gift-dx) * 0.62)), calc(-50% + (var(--gift-dy) * 0.42) - 34px)) scale(0.96) rotate(8deg);
+    }
+    78% {
+        opacity: 1;
+        transform: translate(calc(-50% + var(--gift-dx)), calc(-50% + var(--gift-dy))) scale(1.08) rotate(0deg);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(calc(-50% + var(--gift-dx)), calc(-50% + var(--gift-dy))) scale(0.92) rotate(0deg);
+    }
 }
 
-@keyframes giftGlow {
-    0% { opacity: 0; transform: scale(0.6); }
-    20% { opacity: 1; transform: scale(1); }
-    100% { opacity: 0; transform: scale(1.2); }
+@keyframes giftTableGlow {
+    0%, 18% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+    35% { opacity: 1; transform: translate(-50%, -50%) scale(0.96); }
+    72% { opacity: 0.86; transform: translate(-50%, -50%) scale(1.06); }
+    100% { opacity: 0; transform: translate(-50%, -50%) scale(1.22); }
+}
+
+@keyframes giftRevealOnTable {
+    0%, 8% { opacity: 0; transform: scale(0.62) translateY(10px); }
+    22% { opacity: 1; transform: scale(1.06) translateY(0); }
+    70% { opacity: 1; transform: scale(1) translateY(0); }
+    100% { opacity: 0; transform: scale(0.96) translateY(-8px); }
+}
+
+@keyframes giftCaptionIn {
+    0% { opacity: 0; transform: translateY(8px); }
+    18%, 76% { opacity: 1; transform: translateY(0); }
+    100% { opacity: 0; transform: translateY(-6px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .gift-burst-flight {
+        display: none;
+    }
+
+    .gift-burst::before,
+    .gift-burst-icon,
+    .gift-burst-label,
+    .gift-burst-chip {
+        animation-duration: 1.2s;
+        animation-delay: 0s;
+    }
 }
 
 .tile {
