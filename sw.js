@@ -1,5 +1,5 @@
-const CACHE_NAME = 'domino-v91';
-const SW_VERSION = 'sw-dynamic-bypass-v53-monetization-flags';
+const CACHE_NAME = 'domino-v92';
+const SW_VERSION = 'sw-dynamic-bypass-v54-gift-anim';
 const ASSETS = [
     '/',
     '/index.html',

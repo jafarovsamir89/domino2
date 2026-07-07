@@ -266,14 +266,29 @@ function fmLog(tag, data) {
 const DOMINO_CLIENT_BUILD = {
     gitCommit: '7c5f3a1',
     builtAt: new Date().toISOString(),
-    socialRealtimeDebugVersion: 'browser-production-trace-v52-monetization-flags',
-    cacheFixVersion: 'domino-v91'
+    socialRealtimeDebugVersion: 'browser-production-trace-v53-gift-anim',
+    cacheFixVersion: 'domino-v92'
 };
 
 const DOMINO_MONETIZATION_FLAGS = {
     adsEnabled: false,
     billingEnabled: false
 };
+
+const ANIMATED_GIFT_ASSET_KEYS = new Set([
+    'gift_001',
+    'gift_002',
+    'gift_003',
+    'gift_004',
+    'gift_005',
+    'gift_006',
+    'gift_007',
+    'gift_008',
+    'gift_009',
+    'gift_010',
+    'gift_011',
+    'gift_012'
+]);
 
 if (typeof window !== 'undefined') {
     window.DOMINO_CLIENT_BUILD = DOMINO_CLIENT_BUILD;
@@ -16792,10 +16807,36 @@ class DominoGame {
             : null;
         return friend?.friend?.displayName || 'Player';
     }
-    buildGiftMarkup(gift, size = 48) {
-        const assetKey = String(gift?.assetKey || gift?.key || 'gift_001').trim() || 'gift_001';
+    getGiftAssetKey(gift) {
+        return String(gift?.assetKey || gift?.key || 'gift_001').trim() || 'gift_001';
+    }
+    getGiftStillAssetPath(gift) {
+        return `assets/gift/${this.getGiftAssetKey(gift)}.png`;
+    }
+    getGiftAnimatedAssetPath(gift) {
+        const assetKey = this.getGiftAssetKey(gift);
+        if (!ANIMATED_GIFT_ASSET_KEYS.has(assetKey)) return '';
+        return `assets/gift/${assetKey}_anim.webm`;
+    }
+    buildGiftMarkup(gift, size = 48, options = {}) {
+        const resolvedSize = typeof size === 'number' ? size : Number(size?.size || 48);
+        const resolvedOptions = typeof size === 'number' ? options : (size || {});
+        const assetKey = this.getGiftAssetKey(gift);
         const label = String(gift?.name || gift?.key || 'Gift').trim() || 'Gift';
-        return `<img src="assets/gift/${assetKey}.png" alt="${label}" width="${size}" height="${size}" loading="eager" decoding="async">`;
+        const animated = resolvedOptions.animated !== false;
+        const loop = resolvedOptions.loop !== false;
+        const autoplay = resolvedOptions.autoplay !== false;
+        const muted = resolvedOptions.muted !== false;
+        const preload = String(resolvedOptions.preload || (animated ? 'metadata' : 'eager')).trim() || 'metadata';
+        const stillPath = this.getGiftStillAssetPath({ assetKey });
+        const animatedPath = animated ? this.getGiftAnimatedAssetPath({ assetKey }) : '';
+        if (animatedPath) {
+            const loopAttr = loop ? ' loop' : '';
+            const autoplayAttr = autoplay ? ' autoplay' : '';
+            const mutedAttr = muted ? ' muted' : '';
+            return `<video src="${animatedPath}" poster="${stillPath}" width="${resolvedSize}" height="${resolvedSize}"${autoplayAttr}${loopAttr}${mutedAttr} playsinline webkit-playsinline disablepictureinpicture disableremoteplayback preload="${preload}" aria-label="${label}"></video>`;
+        }
+        return `<img src="${stillPath}" alt="${label}" width="${resolvedSize}" height="${resolvedSize}" loading="eager" decoding="async">`;
     }
     buildGiftButtonMarkup(size = 48) {
         return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="${size}" height="${size}" fill="none" aria-hidden="true"><path d="M5 9.5h14v9.5H5z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M4 8h16v3H4z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M12 8v11" stroke="currentColor" stroke-width="1.6"/><path d="M12 8c-1.3 0-3-1.1-3-2.6S10.3 3 12 5.1c1.7-2.1 3.9-2.7 4.7-1.2.8 1.5-.8 4.1-4.7 4.1Zm0 0c-1.4 0-3.1-1.2-4.3-2.4C6.6 4.3 6.2 2.9 7.2 2.3c1-.6 2.8.2 4.8 2.8Z" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
@@ -16806,7 +16847,13 @@ class DominoGame {
         burst.className = 'gift-burst';
         const icon = document.createElement('div');
         icon.className = 'gift-burst-icon';
-        icon.innerHTML = this.buildGiftMarkup(gift, 96);
+        icon.innerHTML = this.buildGiftMarkup(gift, 104, {
+            animated: true,
+            autoplay: true,
+            loop: true,
+            muted: true,
+            preload: 'auto'
+        });
         burst.appendChild(icon);
         const label = document.createElement('div');
         label.className = 'gift-burst-label';
