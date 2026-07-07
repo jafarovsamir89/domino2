@@ -266,8 +266,8 @@ function fmLog(tag, data) {
 const DOMINO_CLIENT_BUILD = {
     gitCommit: '7c5f3a1',
     builtAt: new Date().toISOString(),
-    socialRealtimeDebugVersion: 'browser-production-trace-v57-gift-webm-dom',
-    cacheFixVersion: 'domino-v96'
+    socialRealtimeDebugVersion: 'browser-production-trace-v58-gift-asset-bust',
+    cacheFixVersion: 'domino-v97'
 };
 
 const DOMINO_MONETIZATION_FLAGS = {
@@ -16835,13 +16835,17 @@ class DominoGame {
     getGiftAssetKey(gift) {
         return String(gift?.assetKey || gift?.key || 'gift_001').trim() || 'gift_001';
     }
+    getGiftAssetVersionSuffix() {
+        const version = encodeURIComponent(DOMINO_CLIENT_BUILD.cacheFixVersion || DOMINO_CLIENT_BUILD.socialRealtimeDebugVersion || '');
+        return version ? `?v=${version}` : '';
+    }
     getGiftStillAssetPath(gift) {
-        return `assets/gift/${this.getGiftAssetKey(gift)}.png`;
+        return `assets/gift/${this.getGiftAssetKey(gift)}.png${this.getGiftAssetVersionSuffix()}`;
     }
     getGiftAnimatedAssetPath(gift) {
         const assetKey = this.getGiftAssetKey(gift);
         if (!ANIMATED_GIFT_ASSET_KEYS.has(assetKey)) return '';
-        return `assets/gift/${assetKey}_anim.webm`;
+        return `assets/gift/${assetKey}_anim.webm${this.getGiftAssetVersionSuffix()}`;
     }
     activateGiftMedia(container) {
         if (!container || typeof window === 'undefined') return;
