@@ -169,6 +169,8 @@ const allowedOrigins = new Set(
         "http://localhost:3000",
         "http://localhost:3001",
         "http://localhost:2567",
+        "https://localhost",
+        "capacitor://localhost",
         "https://gamed.simplesoft.az",
         "https://apid.simplesoft.az",
         "https://admind.simplesoft.az",

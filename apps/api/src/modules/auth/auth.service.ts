@@ -6,7 +6,7 @@ import { fromNodeHeaders } from "better-auth/node";
 import { OAuth2Client } from "google-auth-library";
 
 import { PrismaService } from "../prisma/prisma.service.js";
-import { createGameToken } from "./game-token.js";
+import { createGameToken, verifyGameToken } from "./game-token.js";
 import { getBetterAuthConfig } from "./better-auth.config.js";
 import { auth } from "./auth.instance.js";
 import { normalizeRatingGameMode } from "../ranking/player-mode-stats.js";
@@ -41,11 +41,27 @@ export class AuthService {
 
   async getCurrentProfile(headers: IncomingHttpHeaders, gameMode?: string) {
     const session = await this.getSession(headers);
-    if (!session?.user) {
+    if (session?.user) {
+      return this.buildProfileForSessionUser(session.user, session.session, gameMode);
+    }
+
+    const bearerToken = String(headers.authorization || "").replace(/^Bearer\s+/i, "").trim();
+    const claims = verifyGameToken(bearerToken);
+    if (!claims?.userId) {
       return null;
     }
 
-    return this.buildProfileForSessionUser(session.user, session.session, gameMode);
+    const user = await this.prisma.user.findUnique({
+      where: { id: claims.userId }
+    });
+    if (!user) {
+      return null;
+    }
+
+    return this.buildProfileForSessionUser(user, {
+      id: claims.sessionId || `token:${claims.userId}`,
+      expiresAt: new Date(claims.expiresAt)
+    }, gameMode);
   }
 
   private async buildProfileForSessionUser(

@@ -4,6 +4,7 @@ import assert from "node:assert/strict";
 process.env.BETTER_AUTH_SECRET ||= "b7f4c2d9a1e8f6c3b5a7d0e9f1c4b8a6d2e7f9c1";
 
 const { AuthService } = await import("../src/modules/auth/auth.service.js");
+const { createGameToken } = await import("../src/modules/auth/game-token.js");
 
 function makeSession() {
   return {
@@ -181,6 +182,84 @@ test("AuthService.getCurrentProfile keeps default history behavior when no mode 
     result.recentMatches.map((match: any) => match.gameMode).sort(),
     ["classic101", "telefon"]
   );
+});
+
+test("AuthService.getCurrentProfile accepts platform game bearer tokens when cookies are unavailable", async () => {
+  const prismaMock = {
+    user: {
+      findUnique: async (query: any) => {
+        assert.equal(query.where.id, "user-token");
+        return {
+          id: "user-token",
+          email: "token@example.com",
+          name: "Token Player",
+          image: null,
+          role: "player"
+        };
+      }
+    },
+    player: {
+      upsert: async () => ({
+        id: "player-token",
+        displayName: "Token Player",
+        avatarSeed: null,
+        avatarUrl: null,
+        tableSkinKey: null,
+        language: "en",
+        createdAt: new Date("2024-01-01T00:00:00.000Z"),
+        updatedAt: new Date("2024-01-02T00:00:00.000Z"),
+        stats: {
+          playerId: "player-token",
+          rating: 1000,
+          points: 0,
+          wins: 0,
+          losses: 0,
+          draws: 0,
+          matchesPlayed: 0,
+          currentStreak: 0,
+          bestStreak: 0
+        }
+      })
+    },
+    playerStats: {
+      create: async () => ({})
+    },
+    playerModeStats: {
+      upsert: async () => ({})
+    },
+    coinLedgerEntry: {
+      findUnique: async () => ({ id: "starter-ledger-token" })
+    },
+    coinWallet: {
+      upsert: async () => ({
+        id: "wallet-token",
+        balance: 1000,
+        reserved: 0
+      })
+    },
+    matchParticipant: {
+      findMany: async () => []
+    }
+  } as any;
+
+  const service = new AuthService(prismaMock);
+  (service as any).getSession = async () => null;
+  const token = createGameToken({
+    userId: "user-token",
+    playerId: "player-token",
+    displayName: "Token Player",
+    role: "player",
+    sessionId: "session-token",
+    provider: "better-auth",
+    issuedAt: Date.now(),
+    expiresAt: Date.now() + 60_000
+  });
+
+  const result: any = await service.getCurrentProfile({ authorization: `Bearer ${token}` } as any);
+
+  assert.equal(result.user.id, "user-token");
+  assert.equal(result.player.id, "player-token");
+  assert.equal(result.session.id, "session-token");
 });
 
 test("AuthService.updateCurrentProfileAvatar rejects non-image https URLs", async () => {
