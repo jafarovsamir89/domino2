@@ -266,12 +266,18 @@ function fmLog(tag, data) {
 const DOMINO_CLIENT_BUILD = {
     gitCommit: '7c5f3a1',
     builtAt: new Date().toISOString(),
-    socialRealtimeDebugVersion: 'browser-production-trace-v51-voice-i18n',
-    cacheFixVersion: 'domino-v90'
+    socialRealtimeDebugVersion: 'browser-production-trace-v52-monetization-flags',
+    cacheFixVersion: 'domino-v91'
+};
+
+const DOMINO_MONETIZATION_FLAGS = {
+    adsEnabled: false,
+    billingEnabled: false
 };
 
 if (typeof window !== 'undefined') {
     window.DOMINO_CLIENT_BUILD = DOMINO_CLIENT_BUILD;
+    window.DOMINO_MONETIZATION_FLAGS = Object.freeze({ ...DOMINO_MONETIZATION_FLAGS });
 }
 
 function getFirstNameDisplayName(value, fallback = 'Player') {
@@ -739,6 +745,14 @@ class DominoGame {
             });
         }
         window.addEventListener('beforeunload', () => this.destroy(), { once: true });
+    }
+
+    isRewardedAdsEnabled() {
+        return DOMINO_MONETIZATION_FLAGS.adsEnabled === true;
+    }
+
+    isGooglePlayBillingEnabled() {
+        return DOMINO_MONETIZATION_FLAGS.billingEnabled === true;
     }
 
     destroy() {
@@ -6919,6 +6933,8 @@ class DominoGame {
             videoReward: { amount: 1000, cooldownMinutes: 30, dailyLimit: 6 },
             packs: []
         };
+        const adsEnabled = this.isRewardedAdsEnabled() && shop.videoRewardEnabled === true;
+        const billingEnabled = this.isGooglePlayBillingEnabled() && shop.billingEnabled === true;
         const wallet = this.coinShopStatus?.wallet || this.accountDetails?.wallet || this.accountProfile?.wallet || null;
         const balance = Number(wallet?.balance ?? this.accountProfile?.coins ?? 0);
         const reward = shop.videoReward || { amount: 1000, cooldownMinutes: 30, dailyLimit: 6 };
@@ -6942,6 +6958,8 @@ class DominoGame {
             statusEl.textContent = errorText;
             statusEl.classList.toggle('is-hidden', !errorText);
         }
+        const rewardPanel = rewardTitle?.closest?.('.coin-shop-video-panel') || rewardBtn?.closest?.('.coin-shop-video-panel') || null;
+        if (rewardPanel) rewardPanel.classList.toggle('is-hidden', !adsEnabled);
         if (rewardTitle) {
             rewardTitle.textContent = this.format('coin-shop-video-title', {
                 amount: amount.toLocaleString('en-US')
@@ -6958,7 +6976,7 @@ class DominoGame {
             });
         }
         if (rewardBtn) {
-            rewardBtn.disabled = this.coinShopLoading || this.coinShopClaiming || !canClaim;
+            rewardBtn.disabled = !adsEnabled || this.coinShopLoading || this.coinShopClaiming || !canClaim;
             rewardBtn.textContent = this.coinShopClaiming
                 ? this.t('coin-shop-video-claiming')
                 : (canClaim ? this.t('coin-shop-video-btn') : this.t('coin-shop-video-blocked'));
@@ -6969,11 +6987,15 @@ class DominoGame {
                 : waitText;
         }
         if (note) {
-            note.textContent = this.t('coin-shop-footnote');
+            note.textContent = (adsEnabled || billingEnabled)
+                ? this.t('coin-shop-footnote')
+                : this.t('coin-shop-footnote-disabled');
         }
         if (packsGrid) {
+            const packsPanel = packsGrid.closest('.coin-shop-panel');
+            if (packsPanel) packsPanel.classList.toggle('is-hidden', !billingEnabled);
             packsGrid.innerHTML = '';
-            const packs = Array.isArray(shop.packs) ? shop.packs : [];
+            const packs = billingEnabled && Array.isArray(shop.packs) ? shop.packs : [];
             for (const pack of packs) {
                 const card = document.createElement('article');
                 card.className = `coin-pack-card${pack.isRecommended ? ' is-recommended' : ''}`;
@@ -7004,7 +7026,7 @@ class DominoGame {
                 const action = document.createElement('button');
                 action.type = 'button';
                 action.className = 'btn btn-menu coin-pack-action';
-                action.disabled = true;
+                action.disabled = !billingEnabled;
                 action.textContent = this.t('coin-shop-pack-buy');
                 card.appendChild(badge);
                 card.appendChild(top);
@@ -7237,6 +7259,7 @@ class DominoGame {
     }
 
     getDailyBonusRewardedAdProvider() {
+        if (!this.isRewardedAdsEnabled()) return null;
         return window.__dominoRewardedAdProvider
             || window.dominoRewardedAdProvider
             || window.rewardedAdProvider
@@ -7298,6 +7321,11 @@ class DominoGame {
     async claimDailyBonus(claimMode = 'normal') {
         if (this.dailyBonusState.claiming) return;
         const normalizedMode = claimMode === 'rewarded_x2' ? 'rewarded_x2' : 'normal';
+        if (normalizedMode === 'rewarded_x2' && !this.isRewardedAdsEnabled()) {
+            this.dailyBonusState.rewardedAdError = this.t('daily-bonus-ad-unavailable');
+            this.renderDailyBonusCard();
+            return;
+        }
         if (normalizedMode === 'rewarded_x2' && !this.refreshDailyBonusRewardedAdAvailability()) {
             this.dailyBonusState.rewardedAdError = this.t('daily-bonus-ad-unavailable');
             this.renderDailyBonusCard();
@@ -7477,7 +7505,7 @@ class DominoGame {
             return;
         }
 
-        const doubleAvailable = Boolean(status && status.doubleClaimAvailable);
+        const doubleAvailable = this.isRewardedAdsEnabled() && Boolean(status && status.doubleClaimAvailable);
 
         if (amountEl) {
             amountEl.textContent = `+${baseRewardAmount}`;

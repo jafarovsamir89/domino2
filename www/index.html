@@ -7,7 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css?v=round-stage-51-voice-i18n">
+    <link rel="stylesheet" href="css/style.css?v=round-stage-52-monetization-flags">
     <link rel="icon" href="assets/icon.png">
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#0f1923">
@@ -464,7 +464,7 @@
                     </div>
                     <button class="btn btn-menu modal-close-btn account-modal-close-btn" id="coin-shop-modal-close" type="button" aria-label="Close">×</button>
                 </div>
-                <p class="modal-desc coin-shop-intro" data-i18n="coin-shop-desc">In-app coin packs and a free video reward.</p>
+                <p class="modal-desc coin-shop-intro" data-i18n="coin-shop-desc">View your coin balance. Google Play purchases and rewarded ads will be enabled in a later update.</p>
 
                 <div class="coin-shop-hero">
                     <div class="coin-shop-wallet">
@@ -478,7 +478,7 @@
                 </div>
 
                 <div class="coin-shop-grid">
-                    <section class="coin-shop-panel coin-shop-video-panel">
+                    <section class="coin-shop-panel coin-shop-video-panel is-hidden">
                         <div class="section-kicker" data-i18n="coin-shop-video-kicker">Free coins</div>
                         <h3 id="coin-shop-video-title">1000 coins</h3>
                         <p id="coin-shop-video-desc" class="modal-desc">Watch a short video and receive coins.</p>
@@ -490,13 +490,13 @@
                         <div id="coin-shop-video-state" class="room-summary"></div>
                     </section>
 
-                    <section class="coin-shop-panel">
+                    <section class="coin-shop-panel is-hidden">
                         <div class="section-kicker" data-i18n="coin-shop-packs-title">Coin packs</div>
                         <div id="coin-shop-packs-grid" class="coin-pack-grid"></div>
                     </section>
                 </div>
 
-                <p id="coin-shop-footnote" class="account-legal-copy" data-i18n="coin-shop-footnote">Coins are used for stakes, gifts and social actions. Packs are purchased in-app.</p>
+                <p id="coin-shop-footnote" class="account-legal-copy" data-i18n="coin-shop-footnote-disabled">Google Play purchases and rewarded ads will be enabled after setup. Coins are for in-game use only.</p>
             </section>
         </div>
 
@@ -723,11 +723,11 @@
     <script src="shared/domino-model-core.cjs" defer></script>
     <script src="shared/domino-board-core.cjs" defer></script>
     <script src="shared/domino-rulesets.cjs" defer></script>
-    <script src="js/network.js?v=round-stage-51-voice-i18n" defer></script>
-    <script type="module" src="js/app.js?v=round-stage-51-voice-i18n" defer></script>
+    <script src="js/network.js?v=round-stage-52-monetization-flags" defer></script>
+    <script type="module" src="js/app.js?v=round-stage-52-monetization-flags" defer></script>
     <script>
         (() => {
-            const SW_VERSION = 'browser-production-trace-v51-voice-i18n';
+            const SW_VERSION = 'browser-production-trace-v52-monetization-flags';
             const SW_RELOAD_FLAG = 'dominoSwReloadedForVersion';
             let pendingSwReload = false;
 

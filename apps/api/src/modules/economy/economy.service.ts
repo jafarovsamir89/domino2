@@ -972,7 +972,11 @@ export class EconomyService {
   private buildCoinShopConfig(config: { adRewardAmount?: number | null; dailyClaimCooldown?: number | null } | null) {
     const rewardAmount = Math.max(COIN_SHOP_VIDEO_REWARD_AMOUNT, Number(config?.adRewardAmount || 0) || COIN_SHOP_VIDEO_REWARD_AMOUNT);
     const cooldownMinutes = Math.max(COIN_SHOP_VIDEO_COOLDOWN_MINUTES, Number(config?.dailyClaimCooldown || 0) || COIN_SHOP_VIDEO_COOLDOWN_MINUTES);
+    const videoRewardEnabled = process.env.ALLOW_UNVERIFIED_AD_REWARDS === "true";
+    const billingEnabled = process.env.GOOGLE_PLAY_BILLING_ENABLED === "true";
     return {
+      videoRewardEnabled,
+      billingEnabled,
       videoReward: {
         amount: rewardAmount,
         cooldownMinutes,
@@ -1017,7 +1021,7 @@ export class EconomyService {
     const nextAvailableAt = lastReward
       ? new Date(lastReward.createdAt.getTime() + shop.videoReward.cooldownMinutes * 60_000)
       : null;
-    const videoRewardEnabled = process.env.ALLOW_UNVERIFIED_AD_REWARDS === "true";
+    const videoRewardEnabled = shop.videoRewardEnabled === true;
     const canClaim = videoRewardEnabled && claimsToday < shop.videoReward.dailyLimit && (!nextAvailableAt || nextAvailableAt.getTime() <= Date.now());
 
     return {
