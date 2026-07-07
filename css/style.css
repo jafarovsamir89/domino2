@@ -380,6 +380,12 @@ input, button { font: inherit; }
     html[data-domino-start-mode="classic101"] #start-screen .start-hero-face-back {
         display: flex;
     }
+
+    .online-submenu,
+    .online-submenu .btn-large,
+    .online-group-btn::after {
+        transition: none !important;
+    }
 }
 
 #start-screen {
@@ -867,7 +873,8 @@ html[data-domino-start-mode="classic101"] #start-screen .start-hero-face-back {
 .start-actions {
     display: grid;
     gap: 12px;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    align-items: start;
 }
 
 #start-screen.auth-required .start-actions {
@@ -1024,6 +1031,66 @@ html[data-domino-start-mode="classic101"] #start-screen .start-hero-face-back {
     margin-top: 0;
     min-height: 56px;
     border-radius: 16px;
+}
+
+.online-action-group {
+    display: grid;
+    gap: 8px;
+    min-width: 0;
+}
+
+.online-group-btn {
+    position: relative;
+    padding-right: 40px;
+}
+
+.online-group-btn::after {
+    content: "";
+    position: absolute;
+    right: 18px;
+    top: 50%;
+    width: 9px;
+    height: 9px;
+    border-right: 2px solid currentColor;
+    border-bottom: 2px solid currentColor;
+    transform: translateY(-65%) rotate(45deg);
+    transition: transform 0.22s ease;
+    opacity: 0.85;
+}
+
+.online-group-btn.is-expanded::after {
+    transform: translateY(-35%) rotate(225deg);
+}
+
+.online-submenu {
+    display: grid;
+    gap: 8px;
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    pointer-events: none;
+    transform: translateY(-6px);
+    transition:
+        max-height 0.28s ease,
+        opacity 0.2s ease,
+        transform 0.28s ease;
+}
+
+.online-submenu.is-open {
+    max-height: 148px;
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+}
+
+.online-submenu .btn-large {
+    min-height: 50px;
+    transform: translateY(-8px);
+    transition: transform 0.24s ease, background 0.2s ease, border-color 0.2s ease;
+}
+
+.online-submenu.is-open .btn-large {
+    transform: translateY(0);
 }
 
 .start-shop-btn {

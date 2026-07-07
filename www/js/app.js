@@ -266,8 +266,8 @@ function fmLog(tag, data) {
 const DOMINO_CLIENT_BUILD = {
     gitCommit: '7c5f3a1',
     builtAt: new Date().toISOString(),
-    socialRealtimeDebugVersion: 'browser-production-trace-v55-gift-webm',
-    cacheFixVersion: 'domino-v94'
+    socialRealtimeDebugVersion: 'browser-production-trace-v56-online-gifts',
+    cacheFixVersion: 'domino-v95'
 };
 
 const DOMINO_MONETIZATION_FLAGS = {
@@ -929,6 +929,17 @@ class DominoGame {
         }
     }
 
+    setOnlineSubmenuOpen(open = false) {
+        const button = document.getElementById('open-online-group-btn');
+        const submenu = document.getElementById('online-submenu');
+        const isOpen = Boolean(open);
+        button?.classList.toggle('is-expanded', isOpen);
+        button?.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+        submenu?.classList.toggle('is-open', isOpen);
+        submenu?.setAttribute('aria-hidden', isOpen ? 'false' : 'true');
+        if (submenu) submenu.inert = !isOpen;
+    }
+
     setupStartScreen() {
         this.ensureStartScreenEnhancements();
         this.ensureGameHudEnhancements();
@@ -943,6 +954,7 @@ class DominoGame {
         this.syncStartModeUI();
 
         const openSoloBtn = document.getElementById('open-solo-modal-btn');
+        const openOnlineGroupBtn = document.getElementById('open-online-group-btn');
         const openOnlineBtn = document.getElementById('open-online-modal-btn');
         const onlineCreateChoiceBtn = document.getElementById('online-create-choice-btn');
         const onlineConnectChoiceBtn = document.getElementById('online-connect-choice-btn');
@@ -978,7 +990,15 @@ class DominoGame {
             this.syncSoloOptions();
             this.showStartModal('solo');
         });
+        if (openOnlineGroupBtn && openOnlineGroupBtn.dataset.bound !== '1') {
+            openOnlineGroupBtn.dataset.bound = '1';
+            openOnlineGroupBtn.addEventListener('click', () => {
+                const submenu = document.getElementById('online-submenu');
+                this.setOnlineSubmenuOpen(!submenu?.classList.contains('is-open'));
+            });
+        }
         if (openOnlineBtn) openOnlineBtn.addEventListener('click', () => {
+            this.setOnlineSubmenuOpen(false);
             this.onlineRoomSource = 'closed';
             this.onlineRoomVisibility = 'closed';
             this.resetMultiplayerPanels(false);
@@ -990,7 +1010,10 @@ class DominoGame {
         const openRoomsCreateBtn = document.getElementById('open-rooms-create-btn');
         const startCoinShopBtn = document.getElementById('start-coin-shop-btn');
         const startCosmeticsShopBtn = document.getElementById('start-cosmetics-shop-btn');
-        if (openRoomsBtn) openRoomsBtn.addEventListener('click', () => this.showOpenRoomsModal());
+        if (openRoomsBtn) openRoomsBtn.addEventListener('click', () => {
+            this.setOnlineSubmenuOpen(false);
+            this.showOpenRoomsModal();
+        });
         if (openRoomsCreateBtn) openRoomsCreateBtn.addEventListener('click', () => {
             this.onlineRoomSource = 'open';
             this.onlineRoomVisibility = 'open';
@@ -16823,30 +16846,34 @@ class DominoGame {
     }
     activateGiftMedia(container) {
         if (!container || typeof window === 'undefined') return;
-        window.requestAnimationFrame(() => {
-            const videos = container.querySelectorAll?.('video');
-            if (!videos?.length) return;
-            videos.forEach((video) => {
-                try {
-                    video.muted = true;
-                    video.defaultMuted = true;
-                    video.playsInline = true;
-                    const tryPlay = () => {
+        const videos = container.querySelectorAll?.('video');
+        if (!videos?.length) return;
+        videos.forEach((video) => {
+            try {
+                video.muted = true;
+                video.defaultMuted = true;
+                video.playsInline = true;
+                const tryPlay = () => {
+                    try {
                         const playPromise = video.play?.();
                         if (playPromise && typeof playPromise.catch === 'function') {
                             playPromise.catch(() => {});
                         }
-                    };
-                    if (video.readyState >= 2) {
-                        tryPlay();
-                    } else {
-                        video.addEventListener('loadeddata', tryPlay, { once: true });
-                        tryPlay();
-                    }
-                } catch (_) {
-                    // Keep static poster fallback when autoplay is blocked.
+                    } catch (_) {}
+                };
+                if (typeof video.load === 'function') {
+                    video.load();
                 }
-            });
+                if (video.readyState >= 2) {
+                    tryPlay();
+                } else {
+                    video.addEventListener('loadeddata', tryPlay, { once: true });
+                    video.addEventListener('canplay', tryPlay, { once: true });
+                    tryPlay();
+                }
+            } catch (_) {
+                // Keep static poster fallback when autoplay is blocked.
+            }
         });
     }
     buildGiftMarkup(gift, size = 48, options = {}) {
@@ -16858,7 +16885,7 @@ class DominoGame {
         const loop = resolvedOptions.loop !== false;
         const autoplay = resolvedOptions.autoplay !== false;
         const muted = resolvedOptions.muted !== false;
-        const preload = String(resolvedOptions.preload || (animated ? 'metadata' : 'eager')).trim() || 'metadata';
+        const preload = String(resolvedOptions.preload || (animated ? 'auto' : 'eager')).trim() || 'auto';
         const stillPath = this.getGiftStillAssetPath({ assetKey });
         const animatedPath = animated ? this.getGiftAnimatedAssetPath({ assetKey }) : '';
         if (animatedPath) {
@@ -16992,6 +17019,7 @@ class DominoGame {
         this.syncOpenRoomWaitingBanner(null);
         document.getElementById('game-screen').classList.remove('active');
         document.getElementById('start-screen').classList.add('active');
+        this.setOnlineSubmenuOpen(false);
         this.syncGameScreenUiState();
         if (this.hasAuthenticatedAccount()) {
             startMenuMusic();
