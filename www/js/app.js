@@ -266,8 +266,8 @@ function fmLog(tag, data) {
 const DOMINO_CLIENT_BUILD = {
     gitCommit: '7c5f3a1',
     builtAt: new Date().toISOString(),
-    socialRealtimeDebugVersion: 'browser-production-trace-v53-gift-anim',
-    cacheFixVersion: 'domino-v92'
+    socialRealtimeDebugVersion: 'browser-production-trace-v54-gift-mp4',
+    cacheFixVersion: 'domino-v93'
 };
 
 const DOMINO_MONETIZATION_FLAGS = {
@@ -16395,6 +16395,7 @@ class DominoGame {
                     const visual = document.createElement('div');
                     visual.className = 'gift-choice-visual';
                     visual.innerHTML = this.buildGiftMarkup(gift, 64);
+                    this.activateGiftMedia(visual);
                     
                     const name = document.createElement('div');
                     name.className = 'gift-choice-name';
@@ -16443,6 +16444,7 @@ class DominoGame {
                     const visual = document.createElement('div');
                     visual.className = 'gift-choice-visual';
                     visual.innerHTML = this.buildGiftMarkup(gift, 64);
+                    this.activateGiftMedia(visual);
                     
                     const name = document.createElement('div');
                     name.className = 'gift-choice-name';
@@ -16664,6 +16666,7 @@ class DominoGame {
             const thumb = document.createElement('div');
             thumb.className = 'gift-inventory-thumb';
             thumb.innerHTML = this.buildGiftMarkup(item.catalog, 44);
+            this.activateGiftMedia(thumb);
             const copy = document.createElement('div');
             copy.className = 'gift-inventory-copy';
             const name = document.createElement('div');
@@ -16813,10 +16816,41 @@ class DominoGame {
     getGiftStillAssetPath(gift) {
         return `assets/gift/${this.getGiftAssetKey(gift)}.png`;
     }
-    getGiftAnimatedAssetPath(gift) {
+    getGiftAnimatedAssetPaths(gift) {
         const assetKey = this.getGiftAssetKey(gift);
-        if (!ANIMATED_GIFT_ASSET_KEYS.has(assetKey)) return '';
-        return `assets/gift/${assetKey}_anim.webm`;
+        if (!ANIMATED_GIFT_ASSET_KEYS.has(assetKey)) return null;
+        return {
+            mp4: `assets/gift/${assetKey}_anim.mp4`,
+            webm: `assets/gift/${assetKey}_anim.webm`
+        };
+    }
+    activateGiftMedia(container) {
+        if (!container || typeof window === 'undefined') return;
+        window.requestAnimationFrame(() => {
+            const videos = container.querySelectorAll?.('video');
+            if (!videos?.length) return;
+            videos.forEach((video) => {
+                try {
+                    video.muted = true;
+                    video.defaultMuted = true;
+                    video.playsInline = true;
+                    const tryPlay = () => {
+                        const playPromise = video.play?.();
+                        if (playPromise && typeof playPromise.catch === 'function') {
+                            playPromise.catch(() => {});
+                        }
+                    };
+                    if (video.readyState >= 2) {
+                        tryPlay();
+                    } else {
+                        video.addEventListener('loadeddata', tryPlay, { once: true });
+                        tryPlay();
+                    }
+                } catch (_) {
+                    // Keep static poster fallback when autoplay is blocked.
+                }
+            });
+        });
     }
     buildGiftMarkup(gift, size = 48, options = {}) {
         const resolvedSize = typeof size === 'number' ? size : Number(size?.size || 48);
@@ -16827,14 +16861,14 @@ class DominoGame {
         const loop = resolvedOptions.loop !== false;
         const autoplay = resolvedOptions.autoplay !== false;
         const muted = resolvedOptions.muted !== false;
-        const preload = String(resolvedOptions.preload || (animated ? 'metadata' : 'eager')).trim() || 'metadata';
+        const preload = String(resolvedOptions.preload || (animated ? 'auto' : 'eager')).trim() || 'auto';
         const stillPath = this.getGiftStillAssetPath({ assetKey });
-        const animatedPath = animated ? this.getGiftAnimatedAssetPath({ assetKey }) : '';
-        if (animatedPath) {
+        const animatedPaths = animated ? this.getGiftAnimatedAssetPaths({ assetKey }) : null;
+        if (animatedPaths) {
             const loopAttr = loop ? ' loop' : '';
             const autoplayAttr = autoplay ? ' autoplay' : '';
             const mutedAttr = muted ? ' muted' : '';
-            return `<video src="${animatedPath}" poster="${stillPath}" width="${resolvedSize}" height="${resolvedSize}"${autoplayAttr}${loopAttr}${mutedAttr} playsinline webkit-playsinline disablepictureinpicture disableremoteplayback preload="${preload}" aria-label="${label}"></video>`;
+            return `<video poster="${stillPath}" width="${resolvedSize}" height="${resolvedSize}"${autoplayAttr}${loopAttr}${mutedAttr} playsinline webkit-playsinline disablepictureinpicture disableremoteplayback preload="${preload}" aria-label="${label}"><source src="${animatedPaths.mp4}" type="video/mp4"><source src="${animatedPaths.webm}" type="video/webm"></video>`;
         }
         return `<img src="${stillPath}" alt="${label}" width="${resolvedSize}" height="${resolvedSize}" loading="eager" decoding="async">`;
     }
@@ -16854,10 +16888,11 @@ class DominoGame {
             muted: true,
             preload: 'auto'
         });
+        this.activateGiftMedia(icon);
         burst.appendChild(icon);
         const label = document.createElement('div');
         label.className = 'gift-burst-label';
-        label.textContent = `${senderName || 'Player'} в†’ ${recipientName || 'Player'}`;
+        label.textContent = `${senderName || 'Player'} -> ${recipientName || 'Player'}`;
         burst.appendChild(label);
         if (gift?.name) {
             const chip = document.createElement('div');
