@@ -211,6 +211,9 @@ app.use(express.static(wwwRoot, {
             res.setHeader("Content-Type", "application/json; charset=UTF-8");
         } else if (ext === ".webp") {
             res.setHeader("Content-Type", "image/webp");
+        } else if (ext === ".webm") {
+            res.setHeader("Content-Type", "video/webm");
+            res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
         } else if (ext === ".svg") {
             res.setHeader("Content-Type", "image/svg+xml");
         } else if (ext === ".png") {

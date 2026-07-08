@@ -3880,6 +3880,36 @@ html[data-domino-start-mode="classic101"] #start-screen .start-hero-face-back {
     display: block;
 }
 
+.gift-media,
+.gift-choice-visual video,
+.gift-choice-visual img,
+.gift-burst-icon video,
+.gift-burst-icon img,
+.gift-inventory-thumb video,
+.gift-inventory-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+}
+
+.gift-media-video {
+    background: transparent;
+    border: 0;
+    outline: 0;
+    pointer-events: none;
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+.gift-media-video::-webkit-media-controls,
+.gift-media-video::-webkit-media-controls-panel,
+.gift-media-video::-webkit-media-controls-enclosure,
+.gift-media-video::-webkit-media-controls-start-playback-button {
+    display: none !important;
+    opacity: 0 !important;
+}
+
 .gift-inventory-copy {
     display: grid;
     gap: 2px;
@@ -5807,7 +5837,9 @@ body.is-solo-game .voice-roster-panel {
     height: 78px;
     display: grid;
     place-items: center;
-    transform: translate(-50%, -50%) scale(0.72) rotate(-9deg);
+    will-change: transform, opacity;
+    backface-visibility: hidden;
+    transform: translate3d(-50%, -50%, 0) scale(0.72) rotate(-9deg);
     filter: drop-shadow(0 16px 22px rgba(0, 0, 0, 0.32));
     animation: giftFlyToTable 0.78s cubic-bezier(.16, .92, .3, 1) forwards;
 }
@@ -5827,7 +5859,9 @@ body.is-solo-game .voice-roster-panel {
     display: grid;
     place-items: center;
     opacity: 0;
-    transform: scale(0.7);
+    will-change: transform, opacity;
+    backface-visibility: hidden;
+    transform: translate3d(0, 0, 0) scale(0.7);
     filter: drop-shadow(0 18px 30px rgba(240, 192, 64, 0.34));
     animation: giftRevealOnTable 1.95s cubic-bezier(.2, .8, .2, 1) 0.62s forwards;
 }
@@ -5897,20 +5931,20 @@ body.is-solo-game .voice-roster-panel {
 
 @keyframes giftFlyToTable {
     0% {
-        opacity: 0.94;
-        transform: translate(-50%, -50%) scale(0.7) rotate(-10deg);
+        opacity: 0.96;
+        transform: translate3d(-50%, -50%, 0) scale(0.7) rotate(-10deg);
     }
     42% {
         opacity: 1;
-        transform: translate(calc(-50% + (var(--gift-dx) * 0.62)), calc(-50% + (var(--gift-dy) * 0.42) - 34px)) scale(0.96) rotate(8deg);
+        transform: translate3d(calc(-50% + (var(--gift-dx) * 0.62)), calc(-50% + (var(--gift-dy) * 0.42) - 34px), 0) scale(0.96) rotate(8deg);
     }
     78% {
         opacity: 1;
-        transform: translate(calc(-50% + var(--gift-dx)), calc(-50% + var(--gift-dy))) scale(1.08) rotate(0deg);
+        transform: translate3d(calc(-50% + var(--gift-dx)), calc(-50% + var(--gift-dy)), 0) scale(1.08) rotate(0deg);
     }
     100% {
         opacity: 0;
-        transform: translate(calc(-50% + var(--gift-dx)), calc(-50% + var(--gift-dy))) scale(0.92) rotate(0deg);
+        transform: translate3d(calc(-50% + var(--gift-dx)), calc(-50% + var(--gift-dy)), 0) scale(0.92) rotate(0deg);
     }
 }
 
@@ -5922,10 +5956,23 @@ body.is-solo-game .voice-roster-panel {
 }
 
 @keyframes giftRevealOnTable {
-    0%, 8% { opacity: 0; transform: scale(0.62) translateY(10px); }
-    22% { opacity: 1; transform: scale(1.06) translateY(0); }
-    70% { opacity: 1; transform: scale(1) translateY(0); }
-    100% { opacity: 0; transform: scale(0.96) translateY(-8px); }
+    0%,
+    8% {
+        opacity: 0;
+        transform: translate3d(0, 10px, 0) scale(0.62);
+    }
+    22% {
+        opacity: 1;
+        transform: translate3d(0, 0, 0) scale(1.06);
+    }
+    70% {
+        opacity: 1;
+        transform: translate3d(0, 0, 0) scale(1);
+    }
+    100% {
+        opacity: 0;
+        transform: translate3d(0, -8px, 0) scale(0.96);
+    }
 }
 
 @keyframes giftCaptionIn {
