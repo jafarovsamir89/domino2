@@ -266,8 +266,8 @@ function fmLog(tag, data) {
 const DOMINO_CLIENT_BUILD = {
     gitCommit: '7c5f3a1',
     builtAt: new Date().toISOString(),
-    socialRealtimeDebugVersion: 'browser-production-trace-v60-gift-video-mask',
-    cacheFixVersion: 'domino-v99'
+    socialRealtimeDebugVersion: 'browser-production-trace-v61-gift-preload',
+    cacheFixVersion: 'domino-v100'
 };
 
 const DOMINO_MONETIZATION_FLAGS = {
@@ -16642,6 +16642,39 @@ class DominoGame {
         if (context?.source === 'chat') return this.getChatGiftRecipients();
         return this.getFriendGiftRecipients();
     }
+    preloadGiftAnimations(gifts = []) {
+        if (typeof document === 'undefined' || !Array.isArray(gifts) || !gifts.length) return;
+        const animatedPaths = gifts
+            .map((gift) => this.getGiftAnimatedAssetPath(gift))
+            .filter(Boolean);
+        if (!animatedPaths.length) return;
+        const hostId = 'gift-animation-preload-host';
+        let host = document.getElementById(hostId);
+        if (!host) {
+            host = document.createElement('div');
+            host.id = hostId;
+            host.hidden = true;
+            host.setAttribute('aria-hidden', 'true');
+            host.style.cssText = 'position:absolute;left:-99999px;top:-99999px;width:1px;height:1px;overflow:hidden;pointer-events:none;opacity:0;';
+            document.body.appendChild(host);
+        }
+        this._giftAnimationPreloadCache ||= new Set();
+        for (const animatedPath of animatedPaths) {
+            if (this._giftAnimationPreloadCache.has(animatedPath)) continue;
+            this._giftAnimationPreloadCache.add(animatedPath);
+            const video = document.createElement('video');
+            video.src = animatedPath;
+            video.preload = 'auto';
+            video.muted = true;
+            video.defaultMuted = true;
+            video.playsInline = true;
+            video.setAttribute('aria-hidden', 'true');
+            host.appendChild(video);
+            try {
+                video.load?.();
+            } catch (_) {}
+        }
+    }
     async loadGiftHub() {
         if (!this.account?.getGiftCatalog) return;
         try {
@@ -16655,6 +16688,10 @@ class DominoGame {
             this.giftHistory = history || { sent: [], received: [], items: [] };
             this.renderGiftPicker();
             this.renderGiftInventory();
+            this.preloadGiftAnimations([
+                ...this.giftCatalog,
+                ...this.giftInventory.map((item) => item?.catalog).filter(Boolean)
+            ]);
         } catch (err) {
             debugLog("Gift hub load failed:", err);
         }
@@ -16685,6 +16722,7 @@ class DominoGame {
             return;
         }
         panel.classList.remove('is-hidden');
+        this.preloadGiftAnimations(items.map((item) => item?.catalog).filter(Boolean));
         for (const item of items) {
             const card = document.createElement('div');
             card.className = 'gift-inventory-card';
@@ -16952,27 +16990,32 @@ class DominoGame {
             video.preload = 'auto';
             video.setAttribute('aria-label', String(gift?.name || gift?.key || 'Gift').trim() || 'Gift');
             video.setAttribute('aria-hidden', 'true');
-            video.addEventListener('playing', () => {
-                burst.classList.add('is-video-ready');
-            }, { once: true });
-            video.addEventListener('canplay', () => {
+            icon.appendChild(video);
+            const startVideo = () => {
                 try {
                     const playPromise = video.play?.();
                     if (playPromise && typeof playPromise.catch === 'function') {
                         playPromise.catch(() => {});
                     }
                 } catch (_) {}
-            }, { once: true });
-            icon.appendChild(video);
-            window.setTimeout(() => {
+            };
+            const revealVideo = () => burst.classList.add('is-video-ready');
+            const kickOff = () => {
+                requestAnimationFrame(() => {
+                    requestAnimationFrame(() => {
+                        revealVideo();
+                        startVideo();
+                    });
+                });
+            };
+            if (video.readyState >= 2) {
+                kickOff();
+            } else {
+                video.addEventListener('loadeddata', kickOff, { once: true });
                 try {
                     video.load?.();
-                    const playPromise = video.play?.();
-                    if (playPromise && typeof playPromise.catch === 'function') {
-                        playPromise.catch(() => {});
-                    }
                 } catch (_) {}
-            }, 32);
+            }
         }
         burst.appendChild(icon);
         const label = document.createElement('div');
