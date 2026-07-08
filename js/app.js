@@ -266,8 +266,8 @@ function fmLog(tag, data) {
 const DOMINO_CLIENT_BUILD = {
     gitCommit: '7c5f3a1',
     builtAt: new Date().toISOString(),
-    socialRealtimeDebugVersion: 'browser-production-trace-v59-gift-table-flight',
-    cacheFixVersion: 'domino-v98'
+    socialRealtimeDebugVersion: 'browser-production-trace-v60-gift-video-mask',
+    cacheFixVersion: 'domino-v99'
 };
 
 const DOMINO_MONETIZATION_FLAGS = {
@@ -16932,13 +16932,48 @@ class DominoGame {
         burst.appendChild(flight);
         const icon = document.createElement('div');
         icon.className = 'gift-burst-icon';
-        icon.innerHTML = this.buildGiftMarkup(gift, 132, {
-            animated: true,
-            autoplay: true,
-            loop: true,
-            muted: true,
-            preload: 'auto'
+        const still = document.createElement('div');
+        still.className = 'gift-burst-icon-still';
+        still.innerHTML = this.buildGiftMarkup(gift, 132, {
+            animated: false
         });
+        icon.appendChild(still);
+        const animatedPath = this.getGiftAnimatedAssetPath(gift);
+        if (animatedPath) {
+            const video = document.createElement('video');
+            video.className = 'gift-burst-video';
+            video.src = animatedPath;
+            video.width = 132;
+            video.height = 132;
+            video.muted = true;
+            video.defaultMuted = true;
+            video.loop = true;
+            video.playsInline = true;
+            video.preload = 'auto';
+            video.setAttribute('aria-label', String(gift?.name || gift?.key || 'Gift').trim() || 'Gift');
+            video.setAttribute('aria-hidden', 'true');
+            video.addEventListener('playing', () => {
+                burst.classList.add('is-video-ready');
+            }, { once: true });
+            video.addEventListener('canplay', () => {
+                try {
+                    const playPromise = video.play?.();
+                    if (playPromise && typeof playPromise.catch === 'function') {
+                        playPromise.catch(() => {});
+                    }
+                } catch (_) {}
+            }, { once: true });
+            icon.appendChild(video);
+            window.setTimeout(() => {
+                try {
+                    video.load?.();
+                    const playPromise = video.play?.();
+                    if (playPromise && typeof playPromise.catch === 'function') {
+                        playPromise.catch(() => {});
+                    }
+                } catch (_) {}
+            }, 32);
+        }
         burst.appendChild(icon);
         const label = document.createElement('div');
         label.className = 'gift-burst-label';

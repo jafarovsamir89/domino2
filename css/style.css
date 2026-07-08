@@ -5832,12 +5832,27 @@ body.is-solo-game .voice-roster-panel {
     animation: giftRevealOnTable 1.95s cubic-bezier(.2, .8, .2, 1) 0.62s forwards;
 }
 
-.gift-burst-icon img,
-.gift-burst-icon video {
+.gift-burst-icon-still,
+.gift-burst-video {
+    position: absolute;
+    inset: 0;
     width: 100%;
     height: 100%;
     object-fit: contain;
     display: block;
+}
+
+.gift-burst-video {
+    opacity: 0;
+    transition: opacity 0.18s ease;
+}
+
+.gift-burst.is-video-ready .gift-burst-video {
+    opacity: 1;
+}
+
+.gift-burst.is-video-ready .gift-burst-icon-still {
+    opacity: 0;
 }
 
 .gift-burst-label {
