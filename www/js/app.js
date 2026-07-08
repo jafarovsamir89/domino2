@@ -266,8 +266,8 @@ function fmLog(tag, data) {
 const DOMINO_CLIENT_BUILD = {
     gitCommit: '7c5f3a1',
     builtAt: new Date().toISOString(),
-    socialRealtimeDebugVersion: 'browser-production-trace-v61-gift-preload',
-    cacheFixVersion: 'domino-v100'
+    socialRealtimeDebugVersion: 'browser-production-trace-v62-gift-webm',
+    cacheFixVersion: 'domino-v101'
 };
 
 const DOMINO_MONETIZATION_FLAGS = {
@@ -16692,6 +16692,10 @@ class DominoGame {
                 ...this.giftCatalog,
                 ...this.giftInventory.map((item) => item?.catalog).filter(Boolean)
             ]);
+            this.preloadGiftPreviewPosters([
+                ...this.giftCatalog,
+                ...this.giftInventory.map((item) => item?.catalog).filter(Boolean)
+            ]);
         } catch (err) {
             debugLog("Gift hub load failed:", err);
         }
@@ -16723,6 +16727,7 @@ class DominoGame {
         }
         panel.classList.remove('is-hidden');
         this.preloadGiftAnimations(items.map((item) => item?.catalog).filter(Boolean));
+        this.preloadGiftPreviewPosters(items.map((item) => item?.catalog).filter(Boolean));
         for (const item of items) {
             const card = document.createElement('div');
             card.className = 'gift-inventory-card';
@@ -16892,6 +16897,13 @@ class DominoGame {
         if (!ANIMATED_GIFT_ASSET_KEYS.has(assetKey)) return '';
         return `assets/gift/${assetKey}_anim.webm${this.getGiftAssetVersionSuffix()}`;
     }
+    getGiftPreviewAssetPath(gift) {
+        const animatedPath = this.getGiftAnimatedAssetPath(gift);
+        if (animatedPath && this._giftPreviewPosterCache?.has(animatedPath)) {
+            return this._giftPreviewPosterCache.get(animatedPath);
+        }
+        return this.getGiftStillAssetPath(gift);
+    }
     activateGiftMedia(container) {
         if (!container || typeof window === 'undefined') return;
         const videos = container.querySelectorAll?.('video');
@@ -16924,6 +16936,76 @@ class DominoGame {
             }
         });
     }
+    async preloadGiftPreviewPosters(gifts = []) {
+        if (typeof document === 'undefined' || !Array.isArray(gifts) || !gifts.length) return;
+        const animatedPaths = [...new Set(gifts
+            .map((gift) => this.getGiftAnimatedAssetPath(gift))
+            .filter(Boolean))];
+        if (!animatedPaths.length) return;
+        this._giftPreviewPosterCache ||= new Map();
+        this._giftPreviewPosterLoading ||= new Set();
+        const hostId = 'gift-preview-preload-host';
+        let host = document.getElementById(hostId);
+        if (!host) {
+            host = document.createElement('div');
+            host.id = hostId;
+            host.hidden = true;
+            host.setAttribute('aria-hidden', 'true');
+            host.style.cssText = 'position:absolute;left:-99999px;top:-99999px;width:1px;height:1px;overflow:hidden;pointer-events:none;opacity:0;';
+            document.body.appendChild(host);
+        }
+        for (const animatedPath of animatedPaths) {
+            if (this._giftPreviewPosterCache.has(animatedPath) || this._giftPreviewPosterLoading.has(animatedPath)) continue;
+            this._giftPreviewPosterLoading.add(animatedPath);
+            const video = document.createElement('video');
+            video.src = animatedPath;
+            video.muted = true;
+            video.defaultMuted = true;
+            video.playsInline = true;
+            video.preload = 'auto';
+            video.setAttribute('aria-hidden', 'true');
+            const cleanup = () => {
+                this._giftPreviewPosterLoading?.delete(animatedPath);
+                try { video.remove(); } catch (_) {}
+            };
+            const captureFrame = () => {
+                try {
+                    const width = Number(video.videoWidth || 0);
+                    const height = Number(video.videoHeight || 0);
+                    if (!width || !height) return cleanup();
+                    const canvas = document.createElement('canvas');
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    if (!ctx) return cleanup();
+                    ctx.drawImage(video, 0, 0, width, height);
+                    const posterDataUrl = canvas.toDataURL('image/png');
+                    this._giftPreviewPosterCache.set(animatedPath, posterDataUrl);
+                    cleanup();
+                    if (document.getElementById('gift-picker') || document.getElementById('account-gifts-panel')) {
+                        this.renderGiftPicker();
+                        this.renderGiftInventory();
+                    }
+                } catch (_) {
+                    cleanup();
+                }
+            };
+            video.addEventListener('loadeddata', () => {
+                try {
+                    video.currentTime = 0.001;
+                } catch (_) {
+                    captureFrame();
+                }
+            }, { once: true });
+            video.addEventListener('seeked', captureFrame, { once: true });
+            try {
+                host.appendChild(video);
+                video.load?.();
+            } catch (_) {
+                cleanup();
+            }
+        }
+    }
     buildGiftMarkup(gift, size = 48, options = {}) {
         const resolvedSize = typeof size === 'number' ? size : Number(size?.size || 48);
         const resolvedOptions = typeof size === 'number' ? options : (size || {});
@@ -16936,13 +17018,14 @@ class DominoGame {
         const preload = String(resolvedOptions.preload || (animated ? 'auto' : 'eager')).trim() || 'auto';
         const stillPath = this.getGiftStillAssetPath({ assetKey });
         const animatedPath = animated ? this.getGiftAnimatedAssetPath({ assetKey }) : '';
+        const previewPath = animated ? stillPath : this.getGiftPreviewAssetPath({ assetKey });
         if (animatedPath) {
             const loopAttr = loop ? ' loop' : '';
             const autoplayAttr = autoplay ? ' autoplay' : '';
             const mutedAttr = muted ? ' muted' : '';
             return `<video src="${animatedPath}" width="${resolvedSize}" height="${resolvedSize}"${autoplayAttr}${loopAttr}${mutedAttr} playsinline webkit-playsinline disablepictureinpicture disableremoteplayback preload="${preload}" aria-label="${label}"></video>`;
         }
-        return `<img src="${stillPath}" alt="${label}" width="${resolvedSize}" height="${resolvedSize}" loading="eager" decoding="async">`;
+        return `<img src="${previewPath}" alt="${label}" width="${resolvedSize}" height="${resolvedSize}" loading="eager" decoding="async">`;
     }
     buildGiftButtonMarkup(size = 48) {
         return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="${size}" height="${size}" fill="none" aria-hidden="true"><path d="M5 9.5h14v9.5H5z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M4 8h16v3H4z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M12 8v11" stroke="currentColor" stroke-width="1.6"/><path d="M12 8c-1.3 0-3-1.1-3-2.6S10.3 3 12 5.1c1.7-2.1 3.9-2.7 4.7-1.2.8 1.5-.8 4.1-4.7 4.1Zm0 0c-1.4 0-3.1-1.2-4.3-2.4C6.6 4.3 6.2 2.9 7.2 2.3c1-.6 2.8.2 4.8 2.8Z" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
@@ -16985,7 +17068,9 @@ class DominoGame {
             video.height = 132;
             video.muted = true;
             video.defaultMuted = true;
+            video.autoplay = true;
             video.loop = true;
+            video.controls = false;
             video.playsInline = true;
             video.preload = 'auto';
             video.setAttribute('aria-label', String(gift?.name || gift?.key || 'Gift').trim() || 'Gift');
@@ -16993,6 +17078,7 @@ class DominoGame {
             icon.appendChild(video);
             const startVideo = () => {
                 try {
+                    video.currentTime = 0;
                     const playPromise = video.play?.();
                     if (playPromise && typeof playPromise.catch === 'function') {
                         playPromise.catch(() => {});
@@ -17000,10 +17086,10 @@ class DominoGame {
                 } catch (_) {}
             };
             const revealVideo = () => burst.classList.add('is-video-ready');
+            video.addEventListener('playing', revealVideo, { once: true });
             const kickOff = () => {
                 requestAnimationFrame(() => {
                     requestAnimationFrame(() => {
-                        revealVideo();
                         startVideo();
                     });
                 });
@@ -17029,7 +17115,6 @@ class DominoGame {
             burst.appendChild(chip);
         }
         this.reactionStage.appendChild(burst);
-        this.activateGiftMedia(burst);
         window.setTimeout(() => {
             burst.remove();
         }, 2100);
