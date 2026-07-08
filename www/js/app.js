@@ -266,8 +266,8 @@ function fmLog(tag, data) {
 const DOMINO_CLIENT_BUILD = {
     gitCommit: '7c5f3a1',
     builtAt: new Date().toISOString(),
-    socialRealtimeDebugVersion: 'browser-production-trace-v64-gift-preview',
-    cacheFixVersion: 'domino-v103'
+    socialRealtimeDebugVersion: 'browser-production-trace-v65-gift-burst-video',
+    cacheFixVersion: 'domino-v104'
 };
 
 const DOMINO_MONETIZATION_FLAGS = {
@@ -17087,7 +17087,7 @@ class DominoGame {
         const animatedPath = this.getGiftAnimatedAssetPath(gift);
         if (animatedPath) {
             const video = document.createElement('video');
-            video.className = 'gift-burst-video';
+            video.className = 'gift-burst-video gift-media gift-media-video';
             video.src = animatedPath;
             video.width = 132;
             video.height = 132;
@@ -17098,6 +17098,14 @@ class DominoGame {
             video.controls = false;
             video.playsInline = true;
             video.preload = 'auto';
+            video.poster = this.getGiftPreviewAssetPath(gift) || this.getGiftStillAssetPath(gift);
+            video.setAttribute('playsinline', '');
+            video.setAttribute('webkit-playsinline', '');
+            video.setAttribute('muted', '');
+            video.setAttribute('autoplay', '');
+            video.setAttribute('loop', '');
+            video.setAttribute('disablepictureinpicture', '');
+            video.setAttribute('disableremoteplayback', '');
             video.setAttribute('aria-label', String(gift?.name || gift?.key || 'Gift').trim() || 'Gift');
             video.setAttribute('aria-hidden', 'true');
             icon.appendChild(video);
@@ -17111,7 +17119,18 @@ class DominoGame {
                 } catch (_) {}
             };
             const revealVideo = () => burst.classList.add('is-video-ready');
+            video.addEventListener('loadeddata', revealVideo, { once: true });
+            video.addEventListener('canplay', revealVideo, { once: true });
             video.addEventListener('playing', revealVideo, { once: true });
+            video.addEventListener('timeupdate', revealVideo, { once: true });
+            video.addEventListener('error', () => {
+                console.warn('[Gift Debug] gift burst video failed', {
+                    src: video.currentSrc || video.src,
+                    error: video.error?.code || null,
+                    giftKey: gift?.key,
+                    assetKey: gift?.assetKey
+                });
+            }, { once: true });
             const kickOff = () => {
                 requestAnimationFrame(() => {
                     requestAnimationFrame(() => {
@@ -17140,9 +17159,10 @@ class DominoGame {
             burst.appendChild(chip);
         }
         this.reactionStage.appendChild(burst);
+        this.activateGiftMedia(burst);
         window.setTimeout(() => {
             burst.remove();
-        }, 2100);
+        }, 2400);
     }
     setupMenu() {
         document.getElementById('menu-btn')?.addEventListener('click', () => {

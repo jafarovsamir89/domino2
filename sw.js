@@ -1,5 +1,5 @@
-const CACHE_NAME = 'domino-v103';
-const SW_VERSION = 'sw-dynamic-bypass-v65-gift-preview';
+const CACHE_NAME = 'domino-v104';
+const SW_VERSION = 'sw-dynamic-bypass-v66-gift-burst-video';
 const ASSETS = [
     '/',
     '/index.html',
