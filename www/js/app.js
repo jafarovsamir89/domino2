@@ -266,8 +266,8 @@ function fmLog(tag, data) {
 const DOMINO_CLIENT_BUILD = {
     gitCommit: '7c5f3a1',
     builtAt: new Date().toISOString(),
-    socialRealtimeDebugVersion: 'browser-production-trace-v63-gift-video',
-    cacheFixVersion: 'domino-v102'
+    socialRealtimeDebugVersion: 'browser-production-trace-v64-gift-preview',
+    cacheFixVersion: 'domino-v103'
 };
 
 const DOMINO_MONETIZATION_FLAGS = {
@@ -17034,10 +17034,11 @@ class DominoGame {
             .replace(/"/g, '&quot;')
             .replace(/</g, '&lt;')
             .replace(/>/g, '&gt;');
+        const animated = resolvedOptions.animated !== false;
         const stillPath = this.getGiftStillAssetPath({ assetKey });
-        const animatedPath = this.getGiftAnimatedAssetPath({ assetKey });
+        const animatedPath = animated ? this.getGiftAnimatedAssetPath({ assetKey }) : '';
         if (animatedPath) {
-            const autoplay = resolvedOptions.animated !== false && resolvedOptions.autoplay !== false;
+            const autoplay = resolvedOptions.autoplay !== false;
             const loop = resolvedOptions.loop !== false;
             const muted = resolvedOptions.muted !== false;
             const preload = String(resolvedOptions.preload || (autoplay ? 'auto' : 'metadata')).trim() || 'metadata';
@@ -17048,7 +17049,8 @@ class DominoGame {
             const fallbackAttrs = ` data-gift-fallback-src="${stillPath}" data-gift-fallback-label="${safeLabel}"`;
             return `<video class="gift-media gift-media-video" src="${animatedPath}" width="${resolvedSize}" height="${resolvedSize}"${autoplayAttr}${loopAttr}${mutedAttr} playsinline webkit-playsinline disablepictureinpicture disableremoteplayback preload="${preload}" poster="${posterPath}" aria-label="${safeLabel}"${fallbackAttrs}></video>`;
         }
-        return `<img class="gift-media gift-media-image" src="${stillPath}" alt="${safeLabel}" width="${resolvedSize}" height="${resolvedSize}" loading="eager" decoding="async">`;
+        const previewPath = this.getGiftPreviewAssetPath({ assetKey }) || stillPath;
+        return `<img class="gift-media gift-media-image" src="${previewPath}" alt="${safeLabel}" width="${resolvedSize}" height="${resolvedSize}" loading="eager" decoding="async">`;
     }
     buildGiftButtonMarkup(size = 48) {
         return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="${size}" height="${size}" fill="none" aria-hidden="true"><path d="M5 9.5h14v9.5H5z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M4 8h16v3H4z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M12 8v11" stroke="currentColor" stroke-width="1.6"/><path d="M12 8c-1.3 0-3-1.1-3-2.6S10.3 3 12 5.1c1.7-2.1 3.9-2.7 4.7-1.2.8 1.5-.8 4.1-4.7 4.1Zm0 0c-1.4 0-3.1-1.2-4.3-2.4C6.6 4.3 6.2 2.9 7.2 2.3c1-.6 2.8.2 4.8 2.8Z" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
