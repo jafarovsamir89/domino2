@@ -266,8 +266,8 @@ function fmLog(tag, data) {
 const DOMINO_CLIENT_BUILD = {
     gitCommit: '7c5f3a1',
     builtAt: new Date().toISOString(),
-    socialRealtimeDebugVersion: 'browser-production-trace-v65-gift-burst-video',
-    cacheFixVersion: 'domino-v104'
+    socialRealtimeDebugVersion: 'browser-production-trace-v66-gift-burst-blob',
+    cacheFixVersion: 'domino-v105'
 };
 
 const DOMINO_MONETIZATION_FLAGS = {
@@ -16662,6 +16662,7 @@ class DominoGame {
         for (const animatedPath of animatedPaths) {
             if (this._giftAnimationPreloadCache.has(animatedPath)) continue;
             this._giftAnimationPreloadCache.add(animatedPath);
+            void this.getGiftAnimatedPlaybackSource(animatedPath);
             const video = document.createElement('video');
             video.src = animatedPath;
             video.preload = 'auto';
@@ -16904,6 +16905,44 @@ class DominoGame {
         }
         return this.getGiftStillAssetPath(gift);
     }
+    getGiftAnimatedPlaybackSource(animatedPath) {
+        const source = String(animatedPath || '').trim();
+        if (!source || typeof window === 'undefined') return Promise.resolve(source);
+        this._giftPlaybackSourceCache ||= new Map();
+        this._giftPlaybackSourceLoading ||= new Map();
+        if (this._giftPlaybackSourceCache.has(source)) {
+            return Promise.resolve(this._giftPlaybackSourceCache.get(source));
+        }
+        if (this._giftPlaybackSourceLoading.has(source)) {
+            return this._giftPlaybackSourceLoading.get(source);
+        }
+        const loading = fetch(source, { cache: 'force-cache' })
+            .then((response) => {
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                return response.blob();
+            })
+            .then((blob) => {
+                if (!blob?.size) throw new Error('empty gift animation');
+                const playableBlob = blob.type === 'video/webm'
+                    ? blob
+                    : new Blob([blob], { type: 'video/webm' });
+                const playbackUrl = URL.createObjectURL(playableBlob);
+                this._giftPlaybackSourceCache.set(source, playbackUrl);
+                return playbackUrl;
+            })
+            .catch((error) => {
+                console.warn('[Gift Debug] gift burst blob source failed', {
+                    src: source,
+                    message: error?.message || String(error || '')
+                });
+                return source;
+            })
+            .finally(() => {
+                this._giftPlaybackSourceLoading?.delete(source);
+            });
+        this._giftPlaybackSourceLoading.set(source, loading);
+        return loading;
+    }
     activateGiftMedia(container) {
         if (!container || typeof window === 'undefined') return;
         const videos = container.querySelectorAll?.('video');
@@ -17088,7 +17127,6 @@ class DominoGame {
         if (animatedPath) {
             const video = document.createElement('video');
             video.className = 'gift-burst-video gift-media gift-media-video';
-            video.src = animatedPath;
             video.width = 132;
             video.height = 132;
             video.muted = true;
@@ -17099,6 +17137,9 @@ class DominoGame {
             video.playsInline = true;
             video.preload = 'auto';
             video.poster = this.getGiftPreviewAssetPath(gift) || this.getGiftStillAssetPath(gift);
+            video.dataset.giftOriginalSrc = animatedPath;
+            video.dataset.giftFallbackSrc = this.getGiftStillAssetPath(gift);
+            video.dataset.giftFallbackLabel = String(gift?.name || gift?.key || 'Gift').trim() || 'Gift';
             video.setAttribute('playsinline', '');
             video.setAttribute('webkit-playsinline', '');
             video.setAttribute('muted', '');
@@ -17126,6 +17167,7 @@ class DominoGame {
             video.addEventListener('error', () => {
                 console.warn('[Gift Debug] gift burst video failed', {
                     src: video.currentSrc || video.src,
+                    originalSrc: video.dataset.giftOriginalSrc || animatedPath,
                     error: video.error?.code || null,
                     giftKey: gift?.key,
                     assetKey: gift?.assetKey
@@ -17138,14 +17180,15 @@ class DominoGame {
                     });
                 });
             };
-            if (video.readyState >= 2) {
-                kickOff();
-            } else {
+            this.getGiftAnimatedPlaybackSource(animatedPath).then((playbackSource) => {
+                if (!playbackSource || !video.isConnected) return;
+                video.src = playbackSource;
                 video.addEventListener('loadeddata', kickOff, { once: true });
                 try {
                     video.load?.();
                 } catch (_) {}
-            }
+                kickOff();
+            });
         }
         burst.appendChild(icon);
         const label = document.createElement('div');
