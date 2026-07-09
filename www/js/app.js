@@ -266,8 +266,8 @@ function fmLog(tag, data) {
 const DOMINO_CLIENT_BUILD = {
     gitCommit: '7c5f3a1',
     builtAt: new Date().toISOString(),
-    socialRealtimeDebugVersion: 'browser-production-trace-v67-gift-center-burst',
-    cacheFixVersion: 'domino-v106'
+    socialRealtimeDebugVersion: 'browser-production-trace-v68-gift-center-fix',
+    cacheFixVersion: 'domino-v107'
 };
 
 const DOMINO_MONETIZATION_FLAGS = {
@@ -17102,7 +17102,7 @@ class DominoGame {
         icon.className = 'gift-burst-icon';
         const still = document.createElement('div');
         still.className = 'gift-burst-icon-still';
-        still.innerHTML = this.buildGiftMarkup(gift, 198, {
+        still.innerHTML = this.buildGiftMarkup(gift, 220, {
             animated: false
         });
         icon.appendChild(still);
@@ -17110,8 +17110,8 @@ class DominoGame {
         if (animatedPath) {
             const video = document.createElement('video');
             video.className = 'gift-burst-video gift-media gift-media-video';
-            video.width = 198;
-            video.height = 198;
+            video.width = 220;
+            video.height = 220;
             video.muted = true;
             video.defaultMuted = true;
             video.autoplay = true;
