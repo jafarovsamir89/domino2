@@ -7,6 +7,7 @@ const { AuthService } = await import("../src/modules/auth/auth.service.js");
 const { createGameToken } = await import("../src/modules/auth/game-token.js");
 
 function makeSession() {
+  const expiresAt = new Date(Date.now() + 1000 * 60 * 60 * 24);
   return {
     user: {
       id: "user-1",
@@ -17,7 +18,8 @@ function makeSession() {
     },
     session: {
       id: "session-1",
-      expiresAt: new Date("2026-01-01T00:00:00.000Z")
+      token: "session-token-1",
+      expiresAt
     }
   };
 }
@@ -186,6 +188,16 @@ test("AuthService.getCurrentProfile keeps default history behavior when no mode 
 
 test("AuthService.getCurrentProfile accepts platform game bearer tokens when cookies are unavailable", async () => {
   const prismaMock = {
+    session: {
+      findUnique: async (query: any) => {
+        assert.equal(query.where.id, "session-token");
+        return {
+          id: "session-token",
+          token: "session-token-db",
+          expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24)
+        };
+      }
+    },
     user: {
       findUnique: async (query: any) => {
         assert.equal(query.where.id, "user-token");
@@ -252,7 +264,7 @@ test("AuthService.getCurrentProfile accepts platform game bearer tokens when coo
     sessionId: "session-token",
     provider: "better-auth",
     issuedAt: Date.now(),
-    expiresAt: Date.now() + 60_000
+    expiresAt: Date.now() - 60_000
   });
 
   const result: any = await service.getCurrentProfile({ authorization: `Bearer ${token}` } as any);
@@ -260,6 +272,7 @@ test("AuthService.getCurrentProfile accepts platform game bearer tokens when coo
   assert.equal(result.user.id, "user-token");
   assert.equal(result.player.id, "player-token");
   assert.equal(result.session.id, "session-token");
+  assert.equal(result.session.token, "session-token-db");
 });
 
 test("AuthService.updateCurrentProfileAvatar rejects non-image https URLs", async () => {

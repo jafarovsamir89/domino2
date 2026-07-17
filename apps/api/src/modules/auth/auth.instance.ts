@@ -1,6 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { betterAuth } from "better-auth";
+import { bearer } from "better-auth/plugins";
 
 import { getBetterAuthConfig } from "./better-auth.config.js";
 import { grantStarterCoins } from "../economy/economy-starter.js";
@@ -15,6 +16,7 @@ export const auth = betterAuth({
   secret: config.secret,
   baseURL: config.baseURL,
   trustedOrigins: config.trustedOrigins,
+  plugins: [bearer()],
   advanced: {
     crossSubDomainCookies: {
       enabled: true,

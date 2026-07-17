@@ -44,7 +44,7 @@ export function createGameToken(claims: GameTokenClaims) {
   return `${payload}.${signature}`;
 }
 
-export function verifyGameToken(token: string): GameTokenClaims | null {
+export function verifyGameToken(token: string, options: { allowExpired?: boolean } = {}): GameTokenClaims | null {
   const value = String(token || "").trim();
   if (!value) return null;
 
@@ -56,7 +56,8 @@ export function verifyGameToken(token: string): GameTokenClaims | null {
   try {
     const claims = JSON.parse(base64UrlDecode(payload)) as GameTokenClaims;
     if (!claims?.userId || !claims?.playerId || !claims?.displayName) return null;
-    if (typeof claims.expiresAt !== "number" || claims.expiresAt <= Date.now()) return null;
+    if (typeof claims.expiresAt !== "number") return null;
+    if (!options.allowExpired && claims.expiresAt <= Date.now()) return null;
     return claims;
   } catch {
     return null;

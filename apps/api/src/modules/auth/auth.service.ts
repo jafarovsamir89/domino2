@@ -34,20 +34,44 @@ export class AuthService {
   }
 
   async getSession(headers: IncomingHttpHeaders) {
-    return auth.api.getSession({
+    const session = await auth.api.getSession({
       headers: fromNodeHeaders(headers)
     });
+    const sessionId = String(session?.session?.id || "").trim();
+    if (session?.session && sessionId && !String(session.session.token || "").trim()) {
+      const storedSession = await this.prisma.session.findUnique({
+        where: { id: sessionId }
+      }).catch(() => null);
+      const sessionToken = String(storedSession?.token || "").trim();
+      if (sessionToken) {
+        session.session.token = sessionToken;
+      }
+    }
+    return session;
   }
 
   async getCurrentProfile(headers: IncomingHttpHeaders, gameMode?: string) {
     const session = await this.getSession(headers);
     if (session?.user) {
-      return this.buildProfileForSessionUser(session.user, session.session, gameMode);
+      return this.buildProfileForSessionUser(session.user, {
+        id: session.session.id,
+        expiresAt: session.session.expiresAt,
+        token: session.session.token
+      }, gameMode);
     }
 
     const bearerToken = String(headers.authorization || "").replace(/^Bearer\s+/i, "").trim();
-    const claims = verifyGameToken(bearerToken);
+    const claims = verifyGameToken(bearerToken, { allowExpired: true });
     if (!claims?.userId) {
+      return null;
+    }
+
+    const sessionRow = claims.sessionId
+      ? await this.prisma.session.findUnique({
+          where: { id: claims.sessionId }
+        }).catch(() => null)
+      : null;
+    if (!sessionRow || sessionRow.expiresAt <= new Date()) {
       return null;
     }
 
@@ -59,8 +83,9 @@ export class AuthService {
     }
 
     return this.buildProfileForSessionUser(user, {
-      id: claims.sessionId || `token:${claims.userId}`,
-      expiresAt: new Date(claims.expiresAt)
+      id: sessionRow.id,
+      expiresAt: sessionRow.expiresAt,
+      token: sessionRow.token
     }, gameMode);
   }
 
@@ -75,6 +100,7 @@ export class AuthService {
     sessionData: {
       id: string;
       expiresAt: Date;
+      token?: string | null;
     },
     gameMode?: string
   ) {
@@ -179,7 +205,10 @@ export class AuthService {
     return {
       session: {
         id: sessionData.id,
-        expiresAt: sessionData.expiresAt
+        expiresAt: sessionData.expiresAt,
+        ...(String(sessionData.token || "").trim()
+          ? { token: String(sessionData.token || "").trim() }
+          : {})
       },
       user: {
         id: sessionUser.id,
@@ -341,6 +370,7 @@ export class AuthService {
         issuedAt: Date.now(),
         expiresAt: Date.now() + 1000 * 60 * 60 * 12
       }),
+      sessionToken: String(profile.session.token || "").trim() || null,
       user: profile.user,
       player: profile.player,
       session: profile.session,
@@ -454,6 +484,7 @@ export class AuthService {
         issuedAt: Date.now(),
         expiresAt: Date.now() + 1000 * 60 * 60 * 12
       }),
+      sessionToken: String(profile.session.token || "").trim() || null,
       user: profile.user,
       player: profile.player,
       session: profile.session,

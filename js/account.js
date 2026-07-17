@@ -1,5 +1,6 @@
 const ACCOUNT_PROFILE_KEY = "dominoAuthProfile";
 const PLATFORM_GAME_TOKEN_KEY = "dominoPlatformGameToken";
+const PLATFORM_SESSION_TOKEN_KEY = "dominoPlatformSessionToken";
 const PLATFORM_PROFILE_KEY = "dominoPlatformProfile";
 const LOCAL_GAME_SESSION_KEY = "dominoLocalGameSessionId";
 const GAME_RESUME_STATE_KEY = "dominoGameResumeState";
@@ -160,6 +161,7 @@ function normalizeProfile(payload = {}, source = "legacy") {
         stats: normalizedStats,
         recentMatches: profile.recentMatches,
         session: payload.session || null,
+        sessionToken: String(payload.sessionToken || payload.session?.token || "").trim() || null,
         token: payload.token || null
     };
 }
@@ -227,6 +229,21 @@ export class AccountClient {
         try {
             if (token) window.localStorage?.setItem(PLATFORM_GAME_TOKEN_KEY, token);
             else window.localStorage?.removeItem(PLATFORM_GAME_TOKEN_KEY);
+        } catch {}
+    }
+
+    get platformSessionToken() {
+        try {
+            return window.localStorage?.getItem(PLATFORM_SESSION_TOKEN_KEY) || "";
+        } catch {
+            return "";
+        }
+    }
+
+    setPlatformSessionToken(token) {
+        try {
+            if (token) window.localStorage?.setItem(PLATFORM_SESSION_TOKEN_KEY, token);
+            else window.localStorage?.removeItem(PLATFORM_SESSION_TOKEN_KEY);
         } catch {}
     }
 
@@ -304,7 +321,12 @@ export class AccountClient {
     clearSession() {
         this.setStoredProfile(null);
         this.setPlatformGameToken("");
+        this.setPlatformSessionToken("");
         this.setPlatformProfile(null);
+    }
+
+    getPlatformAuthToken() {
+        return this.platformSessionToken || this.platformGameToken || "";
     }
 
     normalizeError(error) {
@@ -387,7 +409,7 @@ export class AccountClient {
         const timeoutId = setTimeout(() => controller.abort(), 6000);
         try {
             const method = String(options.method || "GET").toUpperCase();
-            const token = this.platformGameToken;
+            const token = this.getPlatformAuthToken();
             const response = await fetch(`${this.platformApiBase}${path}`, {
                 headers: {
                     "Content-Type": "application/json",
@@ -426,7 +448,7 @@ export class AccountClient {
             return platformData;
         }
 
-        const existingToken = this.platformGameToken;
+        const existingToken = this.getPlatformAuthToken();
         const existingProfile = this.getPlatformProfile();
         if (existingToken && existingProfile) {
             console.log('[Auth Debug] bootstrap: cookie sync failed, using localStorage cached token and profile.');
@@ -444,7 +466,7 @@ export class AccountClient {
 
     async syncPlatformSession(mode = null) {
         try {
-            const token = this.platformGameToken;
+            const token = this.getPlatformAuthToken();
             const selectedMode = String(mode || "").trim();
             const params = new URLSearchParams();
             if (selectedMode === "telefon" || selectedMode === "classic101") {
@@ -470,7 +492,9 @@ export class AccountClient {
             }
 
             const normalized = normalizeProfile(data, "better-auth");
+            const sessionToken = String(data?.sessionToken || normalized?.sessionToken || data?.session?.token || normalized?.session?.token || "").trim();
             this.setPlatformGameToken(data.token);
+            this.setPlatformSessionToken(sessionToken);
             this.setPlatformProfile(normalized.profile);
             this.setStoredProfile(normalized.profile);
             return normalized;
@@ -958,9 +982,13 @@ export class AccountClient {
             }
         });
         const normalized = normalizeProfile(data, "better-auth");
+        const sessionToken = String(data?.sessionToken || normalized?.sessionToken || data?.session?.token || normalized?.session?.token || "").trim();
         if (data?.token) {
             this.setPlatformGameToken(data.token);
             normalized.token = data.token;
+        }
+        if (sessionToken) {
+            this.setPlatformSessionToken(sessionToken);
         }
         if (normalized.profile) {
             this.setPlatformProfile(normalized.profile);
@@ -1155,46 +1183,29 @@ export class AccountClient {
     }
 
     async recordMatch(payload) {
-        const platformToken = this.platformGameToken;
-        if (platformToken) {
-            try {
-                const data = await this.platformRequest("/platform/matches", {
-                    method: "POST",
-                    headers: {
-                        Authorization: `Bearer ${platformToken}`
-                    },
-                    body: payload
-                });
-                return data.match || data || null;
-            } catch (error) {
-                throw error;
-            }
-        }
-        return null;
+        const token = this.getPlatformAuthToken();
+        if (!token) return null;
+        const data = await this.platformRequest("/platform/matches", {
+            method: "POST",
+            body: payload
+        });
+        return data.match || data || null;
     }
 
     async reserveSoloMatchStake(payload) {
         const body = payload && typeof payload === "object" ? payload : {};
+        if (!this.getPlatformAuthToken()) return null;
         return this.platformRequest("/economy/solo/reserve", {
             method: "POST",
-            headers: this.platformGameToken
-                ? {
-                    Authorization: `Bearer ${this.platformGameToken}`
-                }
-                : {},
             body
         });
     }
 
     async settleSoloMatchStake(payload) {
         const body = payload && typeof payload === "object" ? payload : {};
+        if (!this.getPlatformAuthToken()) return null;
         return this.platformRequest("/economy/solo/settle", {
             method: "POST",
-            headers: this.platformGameToken
-                ? {
-                    Authorization: `Bearer ${this.platformGameToken}`
-                }
-                : {},
             body
         });
     }
