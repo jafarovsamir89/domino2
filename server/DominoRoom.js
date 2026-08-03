@@ -3886,19 +3886,16 @@ class DominoRoom extends Room {
             if (isTeamMode) {
                 const wt = wi % 2;
                 let os = 0;
-                const teamMembers = this.getTeamMembers(wt);
                 const otherMembers = this.getTeamMembers(1 - wt);
                 for (const i of otherMembers) os += this.getActiveRuleset().handPoints(this.hands[i] || []);
-                if (fish) for (const i of teamMembers) os -= this.getActiveRuleset().handPoints(this.hands[i] || []);
                 const currentScore = this.state.teamScores[wt] || 0;
-                bonus = currentScore > 300 ? 0 : roundTo5(Math.max(0, os));
+                bonus = Math.min(roundTo5(Math.max(0, os)), Math.max(0, 300 - currentScore));
                 if (bonus > 0) bonus = this.addScore(wi, bonus, { broadcast: false, scoreSource: "hand_bonus" });
             } else {
                 let os = 0;
                 for (let i = 0; i < this.totalPlayers; i++) if (i !== wi) os += this.getActiveRuleset().handPoints(this.hands[i] || []);
-                if (fish) os -= this.getActiveRuleset().handPoints(this.hands[wi] || []);
                 const currentScore = this.state.players.get(this.state.playerOrder[wi])?.score || 0;
-                bonus = currentScore > 300 ? 0 : roundTo5(Math.max(0, os));
+                bonus = Math.min(roundTo5(Math.max(0, os)), Math.max(0, 300 - currentScore));
                 if (bonus > 0) bonus = this.addScore(wi, bonus, { broadcast: false, scoreSource: "hand_bonus" });
             }
         }
@@ -4008,7 +4005,7 @@ class DominoRoom extends Room {
         const finalScoreReached = isTeamMode
             ? (this.state.teamScores[0] >= this.getActiveRuleset().matchTarget || this.state.teamScores[1] >= this.getActiveRuleset().matchTarget)
             : (this.state.players.get(this.state.playerOrder[wi])?.score || 0) >= this.getActiveRuleset().matchTarget;
-        const isMatchOver = finalScoreReached;
+        const isMatchOver = finalScoreReached || Boolean(isInstantWin);
 
         // Build player data for the round end screen
         const playerData = [];

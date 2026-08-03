@@ -997,7 +997,7 @@ test("classic101 syncMatchStateToSchema mirrors scoreboard into visible scores",
     assert.equal(room.state.matchStateJson, JSON.stringify(room.matchState));
 });
 
-test("endDeal sends hand bonus only through deal_end and keeps it out of score popups", () => {
+test("endDeal awards full opponent hands on fish and caps hand bonuses at 300", () => {
     const originalSndWin = global.sndWin;
     const room = Object.create(DominoRoom.prototype);
     const events = [];
@@ -1009,7 +1009,7 @@ test("endDeal sends hand bonus only through deal_end and keeps it out of score p
         isTeamMode: false,
         playerOrder: ["session-1", "session-2"],
         players: new Map([
-            ["session-1", { name: "Alice", score: 0, roundWins: 0, handCount: 1 }],
+            ["session-1", { name: "Alice", score: 280, roundWins: 0, handCount: 1 }],
             ["session-2", { name: "Bob", score: 0, roundWins: 0, handCount: 1 }]
         ]),
         teamScores: [0, 0],
@@ -1019,7 +1019,7 @@ test("endDeal sends hand bonus only through deal_end and keeps it out of score p
     room.playerCount = 2;
     room.totalPlayers = 2;
     room.deal = 1;
-    room.hands = [[new Tile(6, 1)], [new Tile(6, 6)]];
+    room.hands = [[new Tile(6, 1)], [new Tile(6, 6), new Tile(6, 6), new Tile(6, 0)]];
     room.boneyard = [];
     room.lastFinishInfo = {
         actorIndex: 0,
@@ -1048,11 +1048,21 @@ test("endDeal sends hand bonus only through deal_end and keeps it out of score p
 
     assert.equal(events.some(([kind]) => kind === "score_popup"), false);
     const dealEnd = events.find(([kind]) => kind === "deal_end")?.[1];
-    assert.equal(dealEnd?.bonus > 0, true);
+    assert.equal(dealEnd?.bonus, 20);
+    assert.equal(room.state.players.get("session-1")?.score, 300);
     assert.equal(dealEnd?.bonusSource, "hand_bonus");
     assert.equal(dealEnd?.tableScoreDelta, 10);
     assert.equal(dealEnd?.finishInfo?.handBonus, dealEnd?.bonus);
     assert.equal(dealEnd?.finishInfo?.bonusSource, "hand_bonus");
+
+    events.length = 0;
+    room.state.players.get("session-1").score = 0;
+    room.hands = [[new Tile(6, 1)], [new Tile(6, 6)]];
+    room.lastFinishInfo = { ...room.lastFinishInfo, fish: true, handBonus: 0 };
+    room.endDeal(0, true);
+
+    const fishDealEnd = events.find(([kind]) => kind === "deal_end")?.[1];
+    assert.equal(fishDealEnd?.bonus, 15);
 });
 
 test("performDraw broadcasts a draw delta and keeps public hand counts in sync", () => {

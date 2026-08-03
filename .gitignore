@@ -33,3 +33,5 @@ keystore.properties
 google-services.json
 gradle.properties
 android/app/release/
+play-feature-graphic-1024x500.png
+play-store-icon-512.png
