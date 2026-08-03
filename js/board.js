@@ -132,7 +132,7 @@ export class Board {
         if (!this.isOpenEndAvailable(oe) || !tile?.hasValue?.(oe.value)) return 0;
         const parent = this.nodes[oe.nodeId];
         const val = oe.value;
-        const pos = this.calcPosition(parent, oe.side, tile, val, oe.growthDir);
+        const pos = this.findCollisionFreePosition(oe.nodeId, parent, oe.side, tile, val, oe.growthDir);
         const other = tile.isDouble ? tile.a : tile.otherSide(val);
         let dA, dB;
         if (tile.isDouble) { dA = tile.a; dB = tile.b; }
@@ -153,7 +153,7 @@ export class Board {
 
         // Snake/Turn Logic
         const MAX_W = 210, MAX_H = 350;
-        let gDir = oe.growthDir;
+        let gDir = pos.growthDir;
         if (gDir === 'right' && node.x > MAX_W) gDir = 'bottom';
         else if (gDir === 'left' && node.x < -MAX_W) gDir = 'top';
         else if (gDir === 'bottom' && node.y > MAX_H) gDir = 'left';
@@ -302,6 +302,107 @@ export class Board {
         return this.isEmpty || this.openEnds.some(oe => t.hasValue(oe.value));
     }
     canPlayAny(h) { return this.isEmpty ? h.length > 0 : h.some(t => this.canPlayTile(t)); }
+
+    findCollisionFreePosition(parentId, parent, side, tile, openValue, preferredDir=side) {
+        const allowed = this.getPlacementDirections(side, preferredDir);
+        const candidates = allowed.map((growthDir, order) => {
+            const position = this.calcPosition(parent, side, tile, openValue, growthDir);
+            const rect = this.getTileRect(position);
+            const collisions = this.countRectCollisions(rect, parentId);
+            return {
+                position,
+                collisions,
+                order,
+                clearance: this.getRectClearance(rect, parentId),
+                expansion: this.getBoundsExpansion(rect)
+            };
+        });
+
+        const preferred = candidates[0];
+        if (preferred && preferred.collisions === 0) return preferred.position;
+
+        const free = candidates.filter((candidate) => candidate.collisions === 0);
+        if (free.length) {
+            free.sort((a, b) => (
+                b.expansion - a.expansion
+                || b.clearance - a.clearance
+                || a.order - b.order
+            ));
+            return free[0].position;
+        }
+
+        candidates.sort((a, b) => (
+            a.collisions - b.collisions
+            || b.clearance - a.clearance
+            || b.expansion - a.expansion
+            || a.order - b.order
+        ));
+        return candidates[0]?.position || this.calcPosition(parent, side, tile, openValue, preferredDir);
+    }
+
+    getPlacementDirections(side, preferredDir) {
+        const turns = (side === 'left' || side === 'right')
+            ? ['top', 'bottom']
+            : ['left', 'right'];
+        const allowed = [side, ...turns];
+        return [preferredDir, ...allowed].filter((direction, index, values) => (
+            allowed.includes(direction) && values.indexOf(direction) === index
+        ));
+    }
+
+    getTileRect(nodeLike, padding=TILE_GAP / 2) {
+        const isHorizontal = nodeLike.orientation === 'horizontal';
+        const halfWidth = (isHorizontal ? TILE_W : TILE_H) / 2 + padding;
+        const halfHeight = (isHorizontal ? TILE_H : TILE_W) / 2 + padding;
+        return {
+            left: nodeLike.x - halfWidth,
+            right: nodeLike.x + halfWidth,
+            top: nodeLike.y - halfHeight,
+            bottom: nodeLike.y + halfHeight
+        };
+    }
+
+    rectsIntersect(a, b) {
+        return a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
+    }
+
+    countRectCollisions(rect, excludedNodeId) {
+        let count = 0;
+        for (let i = 0; i < this.nodes.length; i++) {
+            if (i === excludedNodeId) continue;
+            if (this.rectsIntersect(rect, this.getTileRect(this.nodes[i]))) count++;
+        }
+        return count;
+    }
+
+    getRectClearance(rect, excludedNodeId) {
+        let clearance = Infinity;
+        for (let i = 0; i < this.nodes.length; i++) {
+            if (i === excludedNodeId) continue;
+            const other = this.getTileRect(this.nodes[i]);
+            const dx = Math.max(other.left - rect.right, rect.left - other.right, 0);
+            const dy = Math.max(other.top - rect.bottom, rect.top - other.bottom, 0);
+            clearance = Math.min(clearance, Math.hypot(dx, dy));
+        }
+        return Number.isFinite(clearance) ? clearance : Infinity;
+    }
+
+    getBoundsExpansion(rect) {
+        if (!this.nodes.length) return 0;
+        const bounds = this.nodes.reduce((acc, node) => {
+            const current = this.getTileRect(node);
+            acc.left = Math.min(acc.left, current.left);
+            acc.right = Math.max(acc.right, current.right);
+            acc.top = Math.min(acc.top, current.top);
+            acc.bottom = Math.max(acc.bottom, current.bottom);
+            return acc;
+        }, { left: Infinity, right: -Infinity, top: Infinity, bottom: -Infinity });
+        return Math.max(bounds.left - rect.left, 0)
+            + Math.max(rect.right - bounds.right, 0)
+            + Math.max(bounds.top - rect.top, 0)
+            + Math.max(rect.bottom - bounds.bottom, 0);
+    }
+
     calcPosition(p, side, tile, openValue, growthDir=side) {
         const sideAxis = (side === 'left' || side === 'right') ? 'horizontal' : 'vertical';
         const growthAxis = (growthDir === 'left' || growthDir === 'right') ? 'horizontal' : 'vertical';

@@ -22,6 +22,52 @@ function makeTile(a, b) {
     };
 }
 
+function getTileRect(node, padding = 0.9) {
+    const isHorizontal = node.orientation === "horizontal";
+    const halfWidth = (isHorizontal ? 66 : 34) / 2 + padding;
+    const halfHeight = (isHorizontal ? 34 : 66) / 2 + padding;
+    return {
+        left: node.x - halfWidth,
+        right: node.x + halfWidth,
+        top: node.y - halfHeight,
+        bottom: node.y + halfHeight
+    };
+}
+
+function assertCollisionFree(board, context = "board") {
+    for (let i = 0; i < board.nodes.length; i++) {
+        const a = getTileRect(board.nodes[i]);
+        for (let j = i + 1; j < board.nodes.length; j++) {
+            const b = getTileRect(board.nodes[j]);
+            const intersects = a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
+            assert.equal(intersects, false, `${context}: nodes ${i} and ${j} overlap`);
+        }
+    }
+}
+
+function createTelephoneBoard(BoardClass = Board, tileFactory = (a, b) => new Tile(a, b), startAxis = "vertical") {
+    const board = new BoardClass();
+    board.startAxis = startAxis;
+    board.placeFirst(tileFactory(1, 1));
+
+    const firstSide = startAxis === "vertical" ? "top" : "left";
+    const secondSide = startAxis === "vertical" ? "bottom" : "right";
+    board.placeTile(tileFactory(1, 2), board.findOpenEndIndex(0, firstSide));
+    board.placeTile(tileFactory(1, 2), board.findOpenEndIndex(0, secondSide));
+    assert.equal(board.openEnds.length, 4);
+    return board;
+}
+
+function extendTelephoneBoard(board, tileFactory, chooseOpenEnd, targetNodeCount = 28) {
+    while (board.nodes.length < targetNodeCount) {
+        const openEndIndex = chooseOpenEnd(board);
+        const value = board.openEnds[openEndIndex].value;
+        const nextValue = value === 1 ? 2 : 1;
+        board.placeTile(tileFactory(value, nextValue), openEndIndex);
+        assertCollisionFree(board, `after node ${board.nodes.length - 1}`);
+    }
+}
+
 async function loadClientBoardModule() {
     const previousWindow = global.window;
     global.window = {
@@ -269,5 +315,55 @@ test("Subsequent moves and score calculation after first double in vertical mode
     assert.ok(board.openEnds.some(oe => oe.value === 3));
 
     assert.equal(board.calculateScore(), 5); // 2 + 3 = 5
+});
+
+test("telephone snake avoids self-intersection when right and bottom branches grow together", () => {
+    const board = createTelephoneBoard();
+    let step = 0;
+    extendTelephoneBoard(board, (a, b) => new Tile(a, b), (state) => {
+        const axis = step++ % 2 === 0 ? "x" : "y";
+        let bestIndex = 0;
+        for (let i = 1; i < state.openEnds.length; i++) {
+            const current = state.nodes[state.openEnds[i].nodeId];
+            const best = state.nodes[state.openEnds[bestIndex].nodeId];
+            if (current[axis] > best[axis]) bestIndex = i;
+        }
+        return bestIndex;
+    });
+});
+
+test("telephone snake remains collision-free for varied 28-tile move orders", () => {
+    for (let scenario = 1; scenario <= 100; scenario++) {
+        const startAxis = scenario % 2 === 0 ? "horizontal" : "vertical";
+        const board = createTelephoneBoard(Board, (a, b) => new Tile(a, b), startAxis);
+        let seed = scenario * 2654435761;
+        extendTelephoneBoard(board, (a, b) => new Tile(a, (seed & 4) === 0 ? a : b), (state) => {
+            seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
+            return seed % state.openEnds.length;
+        });
+    }
+});
+
+test("client and shared board engines choose identical collision-free coordinates", async () => {
+    const { Board: ClientBoard } = await loadClientBoardModule();
+    const serverBoard = createTelephoneBoard();
+    const clientBoard = createTelephoneBoard(ClientBoard, makeTile);
+    let seed = 0x51f15e;
+
+    while (serverBoard.nodes.length < 28) {
+        seed = (Math.imul(seed, 1103515245) + 12345) >>> 0;
+        const openEndIndex = seed % serverBoard.openEnds.length;
+        const value = serverBoard.openEnds[openEndIndex].value;
+        const nextValue = value === 1 ? 2 : 1;
+        serverBoard.placeTile(new Tile(value, nextValue), openEndIndex);
+        clientBoard.placeTile(makeTile(value, nextValue), openEndIndex);
+    }
+
+    assertCollisionFree(serverBoard, "shared board");
+    assertCollisionFree(clientBoard, "client board");
+    assert.deepEqual(
+        clientBoard.nodes.map(({ x, y, orientation }) => ({ x, y, orientation })),
+        serverBoard.nodes.map(({ x, y, orientation }) => ({ x, y, orientation }))
+    );
 });
 
