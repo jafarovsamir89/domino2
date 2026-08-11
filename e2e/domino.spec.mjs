@@ -37,10 +37,11 @@ async function stubApi(page) {
   });
 }
 
-async function setupSoloSmoke(page, { konvaEnabled = null } = {}) {
-  await page.addInitScript(({ konvaEnabled: enabled }) => {
+async function setupSoloSmoke(page, { konvaEnabled = null, rejectSoloStakeRequests = false } = {}) {
+  await page.addInitScript(({ konvaEnabled: enabled, rejectSoloStakeRequests: rejectSoloStake }) => {
     window.DOMINO_SERVER_URL = "http://127.0.0.1:3000";
     window.localStorage?.setItem("dominoDebugLogs", "false");
+    window.__soloStakeRequestCount = 0;
     if (enabled === true) window.localStorage?.setItem("dominoKonvaBoard", "true");
     else if (enabled === false) window.localStorage?.setItem("dominoKonvaBoard", "false");
     else window.localStorage?.removeItem("dominoKonvaBoard");
@@ -102,8 +103,12 @@ async function setupSoloSmoke(page, { konvaEnabled = null } = {}) {
         totalUnreadCount: 0
       });
       if (url.includes("/economy/daily-bonus/status")) return jsonResponse({ available: false });
-      if (url.includes("/economy/solo/reserve")) return jsonResponse({ ok: true });
-      if (url.includes("/economy/solo/settle")) return jsonResponse({ ok: true });
+      if (url.includes("/economy/solo/reserve") || url.includes("/economy/solo/settle")) {
+        window.__soloStakeRequestCount += 1;
+        return jsonResponse(rejectSoloStake
+          ? { ok: false, reason: "solo_stakes_disabled" }
+          : { ok: true });
+      }
       return originalFetch(input, init);
     };
 
@@ -120,7 +125,7 @@ async function setupSoloSmoke(page, { konvaEnabled = null } = {}) {
     }
 
     window.EventSource = FakeEventSource;
-  }, { konvaEnabled });
+  }, { konvaEnabled, rejectSoloStakeRequests });
 }
 
 async function startSoloGame(page) {
@@ -168,6 +173,36 @@ test("start screen loads and stays within mobile viewport", async ({ page }) => 
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1);
   expect(overflow).toBe(false);
 });
+
+for (const gameMode of ["telefon", "classic101"]) {
+  test(`solo ${gameMode} starts without calling disabled stake endpoints`, async ({ page }) => {
+    await setupSoloSmoke(page, { rejectSoloStakeRequests: true });
+    await page.goto("/index.html");
+    await page.waitForFunction(() => Boolean(window.game?.renderer && window.game?.account));
+    await page.evaluate((mode) => window.game?.setPreferredStartMode?.(mode), gameMode);
+    await startSoloGame(page);
+
+    const state = await page.evaluate(() => ({
+      gameActive: Boolean(window.game?.gameActive),
+      gameMode: window.game?.mode,
+      economyMode: window.game?.soloEconomyMode,
+      stakeKey: window.game?.currentRoundStakeKey,
+      bankAmount: window.game?.currentRoundBankAmount,
+      stakeRequestCount: window.__soloStakeRequestCount,
+      stakeControlsHidden: document.getElementById("solo-stake-wrapper")?.classList.contains("is-hidden")
+    }));
+
+    expect(state).toEqual({
+      gameActive: true,
+      gameMode,
+      economyMode: "free",
+      stakeKey: "free",
+      bankAmount: 0,
+      stakeRequestCount: 0,
+      stakeControlsHidden: true
+    });
+  });
+}
 
 test("Konva is enabled by default, mounts a canvas board, and clears the placeholder after the first move", async ({ page }) => {
   const pageErrors = [];
