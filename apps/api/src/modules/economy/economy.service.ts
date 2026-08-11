@@ -123,6 +123,7 @@ const DEFAULT_STAKES: EconomyStakeTablePayload[] = [
 ];
 
 const DEFAULT_DAILY_REWARDS = [200, 300, 350, 400, 800, 1000, 2000];
+const TABLE_SKIN_COIN_PRICE = 1500;
 
 const DEFAULT_TABLE_SKINS = [
   {
@@ -508,7 +509,7 @@ export class EconomyService {
         await db.catalogPrice.update({
           where: { id: price.id },
           data: {
-            amountMinor: 200,
+            amountMinor: TABLE_SKIN_COIN_PRICE,
             isActive: true
           }
         });
@@ -517,7 +518,7 @@ export class EconomyService {
           data: {
             productId: product.id,
             currency: "COIN",
-            amountMinor: 200,
+            amountMinor: TABLE_SKIN_COIN_PRICE,
             isActive: true
           }
         });
@@ -2981,7 +2982,7 @@ export class EconomyService {
         name: skin.name,
         description: skin.description,
         assetUrl: getTableSkinAssetUrl(skin.key),
-        price: Number(price?.amountMinor ?? 200),
+        price: Number(price?.amountMinor ?? TABLE_SKIN_COIN_PRICE),
         owned: ownedKeys.has(skin.key),
         equipped: player?.tableSkinKey === skin.key,
         isActive: product ? Boolean(product.isActive) : true

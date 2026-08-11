@@ -202,6 +202,59 @@ for (const gameMode of ["telefon", "classic101"]) {
       stakeControlsHidden: true
     });
   });
+
+  test(`solo ${gameMode} starts a fresh match after both win and loss`, async ({ page }) => {
+    await setupSoloSmoke(page, { rejectSoloStakeRequests: true });
+    await page.goto("/index.html");
+    await page.waitForFunction(() => Boolean(window.game?.renderer && window.game?.account));
+    await page.evaluate((mode) => window.game?.setPreferredStartMode?.(mode), gameMode);
+    await startSoloGame(page);
+
+    for (const winnerIndex of [0, 1]) {
+      const previousSessionId = await page.evaluate((nextWinnerIndex) => {
+        const game = window.game;
+        game.clearNextDealAdvanceTimeout();
+        game.clearTurnTimers();
+        game._turnCycleId += 1;
+        game.gameActive = false;
+        game.roundOver = true;
+        game.matchOver = true;
+        game.scores = game.playerNames.map((_, index) => index === nextWinnerIndex ? game.ruleset.matchTarget : 0);
+        game.roundWins = game.playerNames.map((_, index) => index === nextWinnerIndex ? 1 : 0);
+        game.showMatchResult(nextWinnerIndex);
+        return game.currentMatchSessionId;
+      }, winnerIndex);
+
+      await expect(page.locator("#game-over-screen")).toHaveClass(/active/);
+      await page.locator("#new-game-btn").click();
+      await page.waitForFunction((oldSessionId) => Boolean(
+        window.game?.gameActive
+        && !window.game?.roundOver
+        && !window.game?.matchOver
+        && window.game?.currentMatchSessionId
+        && window.game.currentMatchSessionId !== oldSessionId
+        && window.game?.hands?.every((hand) => Array.isArray(hand) && hand.length > 0)
+      ), previousSessionId);
+
+      const state = await page.evaluate(() => ({
+        gameActive: Boolean(window.game?.gameActive),
+        roundOver: Boolean(window.game?.roundOver),
+        matchOver: Boolean(window.game?.matchOver),
+        gameScreenActive: document.getElementById("game-screen")?.classList.contains("active"),
+        gameOverActive: document.getElementById("game-over-screen")?.classList.contains("active"),
+        stakeRequestCount: window.__soloStakeRequestCount
+      }));
+
+      expect(state).toEqual({
+        gameActive: true,
+        roundOver: false,
+        matchOver: false,
+        gameScreenActive: true,
+        gameOverActive: false,
+        stakeRequestCount: 0
+      });
+    }
+  });
 }
 
 test("Konva is enabled by default, mounts a canvas board, and clears the placeholder after the first move", async ({ page }) => {

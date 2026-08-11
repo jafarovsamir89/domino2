@@ -196,6 +196,7 @@ const DEFAULT_GIFT_CATALOG = [
   { key: "gift_011", name: "Gift 011", assetKey: "gift_011", rarity: "epic", sortOrder: 11 },
   { key: "gift_012", name: "Gift 012", assetKey: "gift_012", rarity: "epic", sortOrder: 12 }
 ] as const;
+const DEFAULT_GIFT_COIN_COST = 1000;
 
 @Injectable()
 export class SocialService {
@@ -667,7 +668,7 @@ export class SocialService {
       name: gift.name,
       description: `Gift asset ${gift.assetKey}`,
       assetKey: gift.assetKey,
-      coinCost: 100,
+      coinCost: DEFAULT_GIFT_COIN_COST,
       exchangeRateBps: 7000,
       rarity: gift.rarity,
       sortOrder: gift.sortOrder,

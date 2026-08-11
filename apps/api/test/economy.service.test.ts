@@ -10,6 +10,30 @@ const {
   getPreviousBakuDateKey
 } = await import("../src/modules/economy/economy.service.js");
 
+test("bootstrap prices every paid table skin at 1500 coins", async () => {
+  const createdPrices: number[] = [];
+  const prismaMock = {
+    coinEconomyConfig: { upsert: async () => ({ key: "default" }) },
+    coinStakeTable: { upsert: async () => null },
+    catalogProduct: {
+      upsert: async ({ where }: any) => ({ id: `catalog:${where.key}`, key: where.key })
+    },
+    catalogPrice: {
+      findFirst: async () => null,
+      create: async ({ data }: any) => {
+        createdPrices.push(data.amountMinor);
+        return data;
+      }
+    }
+  } as any;
+
+  const service = new EconomyService(prismaMock, {} as any);
+  await (service as any).ensureBootstrap();
+
+  assert.equal(createdPrices.length, 8);
+  assert.deepEqual(createdPrices, new Array(8).fill(1500));
+});
+
 test("getPublicConfig hides the free table from the public stake list", async () => {
   const prismaMock = {
     coinEconomyConfig: {

@@ -201,6 +201,7 @@ function loadMode101Enabled() {
 }
 const ENABLE_MODE_101 = loadMode101Enabled();
 const DEFAULT_TABLE_SKIN_KEY = 'table_skin_default';
+const TABLE_SKIN_COIN_PRICE = 1500;
 const DEFAULT_TABLE_SKIN = {
     key: DEFAULT_TABLE_SKIN_KEY,
     name: 'Aurora Felt',
@@ -281,8 +282,8 @@ function fmLog(tag, data) {
 const DOMINO_CLIENT_BUILD = {
     gitCommit: '7c5f3a1',
     builtAt: new Date().toISOString(),
-    socialRealtimeDebugVersion: 'browser-production-trace-v68-gift-center-fix',
-    cacheFixVersion: 'domino-v107'
+    socialRealtimeDebugVersion: 'browser-production-trace-v70-economy-prices',
+    cacheFixVersion: 'domino-v109'
 };
 
 const DOMINO_MONETIZATION_FLAGS = {
@@ -304,6 +305,7 @@ const ANIMATED_GIFT_ASSET_KEYS = new Set([
     'gift_011',
     'gift_012'
 ]);
+const DEFAULT_GIFT_COIN_COST = 1000;
 
 if (typeof window !== 'undefined') {
     window.DOMINO_CLIENT_BUILD = DOMINO_CLIENT_BUILD;
@@ -6870,7 +6872,7 @@ class DominoGame {
             ...skin,
             owned: false,
             equipped: this.accountProfile?.tableSkinKey === skin.key,
-            price: 200,
+            price: TABLE_SKIN_COIN_PRICE,
             isActive: true
         }));
     }
@@ -6953,7 +6955,7 @@ class DominoGame {
                 equippedKey: this.accountProfile?.tableSkinKey || null,
                 tableSkins: DEFAULT_TABLE_SKINS.map((skin) => ({
                     ...skin,
-                    price: 200,
+                    price: TABLE_SKIN_COIN_PRICE,
                     owned: false,
                     equipped: this.accountProfile?.tableSkinKey === skin.key,
                     isActive: true
@@ -7187,7 +7189,7 @@ class DominoGame {
             ? this.t('coin-shop-skin-equipped')
             : skin.owned
                 ? this.t('coin-shop-skin-owned')
-                : `${Number(skin.price || 200).toLocaleString('en-US')} coins`;
+                : `${Number(skin.price ?? TABLE_SKIN_COIN_PRICE).toLocaleString('en-US')} coins`;
         const action = document.createElement('button');
         action.type = 'button';
         action.className = `btn btn-menu table-skin-action${skin.equipped ? ' is-selected' : ''}`;
@@ -16498,7 +16500,7 @@ class DominoGame {
                     
                     const cost = document.createElement('div');
                     cost.className = 'gift-choice-cost';
-                    cost.textContent = this.format('gift-coins', { value: gift.coinCost || 100 });
+                    cost.textContent = this.format('gift-coins', { value: gift.coinCost ?? DEFAULT_GIFT_COIN_COST });
                     
                     card.appendChild(visual);
                     card.appendChild(name);

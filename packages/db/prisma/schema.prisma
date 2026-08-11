@@ -570,7 +570,7 @@ model GiftCatalog {
   name           String
   description    String?
   assetKey       String                @unique
-  coinCost       Int                   @default(100)
+  coinCost       Int                   @default(1000)
   exchangeRateBps Int                   @default(7000)
   rarity         String                @default("common")
   sortOrder      Int                   @default(0)

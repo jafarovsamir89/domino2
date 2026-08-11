@@ -6,6 +6,7 @@ const prisma = new PrismaClient();
 
 const DEFAULT_CONFIG_KEY = "default";
 const STARTER_COINS = 1000;
+const TABLE_SKIN_COIN_PRICE = 1500;
 
 const DEFAULT_STAKES = [
   { key: "free", title: "Free table", stakeAmount: 0, commissionBps: 0, isFree: true, isActive: true, sortOrder: 0 },
@@ -168,7 +169,7 @@ async function main() {
         await tx.catalogPrice.update({
           where: { id: price.id },
           data: {
-            amountMinor: 200,
+            amountMinor: TABLE_SKIN_COIN_PRICE,
             isActive: true
           }
         });
@@ -177,7 +178,7 @@ async function main() {
           data: {
             productId: product.id,
             currency: "COIN",
-            amountMinor: 200,
+            amountMinor: TABLE_SKIN_COIN_PRICE,
             isActive: true
           }
         });

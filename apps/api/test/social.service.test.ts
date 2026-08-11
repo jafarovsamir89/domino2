@@ -2287,6 +2287,14 @@ test("getSocialSummary counts inbox chats invites and friend requests", async ()
   assert.equal(result.totalUnreadCount, 20);
 });
 
+test("gift seed catalog prices every gift at 1000 coins", () => {
+  const service = new SocialService({} as any, {} as any);
+  const gifts = (service as any).giftSeedRows();
+
+  assert.equal(gifts.length, 12);
+  assert.deepEqual(gifts.map((gift: any) => gift.coinCost), new Array(12).fill(1000));
+});
+
 test("sendGift creates an inbox notification for the recipient", async () => {
   const currentPlayer = makePlayer("player-a", "Alpha");
   const recipient = makePlayer("player-b", "Beta");
@@ -2307,7 +2315,7 @@ test("sendGift creates an inbox notification for the recipient", async () => {
         key: "gift_001",
         name: "Gift 001",
         assetKey: "gift_001",
-        coinCost: 100,
+        coinCost: 1000,
         exchangeRateBps: 7000,
         isActive: true
       })
@@ -2321,7 +2329,7 @@ test("sendGift creates an inbox notification for the recipient", async () => {
             key: "gift_001",
             name: "Gift 001",
             assetKey: "gift_001",
-            coinCost: 100,
+            coinCost: 1000,
             exchangeRateBps: 7000,
             isActive: true
           })
@@ -2345,7 +2353,7 @@ test("sendGift creates an inbox notification for the recipient", async () => {
               name: "Gift 001",
               description: null,
               assetKey: "gift_001",
-              coinCost: 100,
+              coinCost: 1000,
               exchangeRateBps: 7000,
               rarity: "common",
               sortOrder: 1,
