@@ -1,0 +1,36 @@
+{
+  "session": "S005",
+  "date": "2026-10-18",
+  "task": "R-08",
+  "parentCommit": "3b5d3d7",
+  "branch": "fix/audit-foundation",
+  "status": "fixed-locally",
+  "changes": [
+    "Two server and four browser ruleset calls pass instantWinEnabled instead of isInstantWinEnabled",
+    "The four packaged www calls match browser source byte-for-byte",
+    "Rules, thresholds and shared/fallback ruleset implementations unchanged"
+  ],
+  "checks": {
+    "cleanServerInstall": "s005-server-ci.json",
+    "regressionBefore": {"command": "s005-instant-before.json", "tests": 33, "pass": 21, "fail": 12},
+    "regressionAfter": {"command": "s005-instant-after.json", "tests": 33, "pass": 33, "fail": 0},
+    "node22RegressionAndRulesets": {"command": "s005-instant-node22.json", "tests": 40, "pass": 40, "fail": 0},
+    "fullServerNode25": {"command": "s005-server-full.json", "tests": 276, "pass": 269, "fail": 7},
+    "sourceCheck": "s005-source-check.json",
+    "failureComparison": "failure-delta.json",
+    "discovery": {"files": 38, "inventory": "test-inventory.json"}
+  },
+  "coverage": [
+    "Actual server performPlay/performGosha at score30/35/40 with both setting values",
+    "Actual client playTile/playGoshaCombo/checkEnd with shared and fallback rulesets",
+    "Entire client class evaluated in VM without DOM/network constructor or brace parsing",
+    "Both browser and packaged www assets; disabled instant win still permits empty-hand deal end"
+  ],
+  "limits": [
+    "The same seven pre-existing server failures remain; no assertions weakened or tests excluded",
+    "No new server failures, R-25 remains partial",
+    "No real browser/device animation or installed APK check for this local rules-contract change",
+    "No deployment or published Play package modification"
+  ],
+  "handoff": {"completedLocalTasks": 5, "total": 42, "nextLargeTask": "R-03"}
+}

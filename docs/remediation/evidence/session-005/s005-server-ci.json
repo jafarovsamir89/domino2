@@ -1,0 +1,17 @@
+{
+  "label": "s005-server-ci",
+  "command": [
+    "npm",
+    "ci"
+  ],
+  "cwd": ".tmp/remediation-s005/clean/server",
+  "startedAt": "2026-10-18T22:04:03.323Z",
+  "finishedAt": "2026-10-18T22:04:15.239Z",
+  "durationMs": 11916,
+  "exitCode": 0,
+  "signal": null,
+  "timedOut": false,
+  "error": null,
+  "log": "docs/remediation/evidence/session-005/s005-server-ci.log",
+  "environment": "Fresh allowlist, synthetic local API/DB, optional Redis disabled, no inherited secrets or copied .env"
+}

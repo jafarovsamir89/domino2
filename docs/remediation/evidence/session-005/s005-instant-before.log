@@ -1,0 +1,312 @@
+ℹ️  optional .env file not found: .env.test, .env
+[FM-SRV 1792361118885] gameDelta isFinalMove=false
+[FM-SRV 1792361118886] gameDelta isFinalMove=false
+[FM-SRV 1792361118886] gameDelta isFinalMove=true
+[FM-SRV 1792361118886] end immediate
+[FM-SRV 1792361118887] gameDelta isFinalMove=true
+[FM-SRV 1792361118887] end immediate
+[FM-SRV 1792361118887] gameDelta isFinalMove=true
+[FM-SRV 1792361118887] end immediate
+[FM-SRV 1792361118888] gameDelta isFinalMove=true
+[FM-SRV 1792361118888] end immediate
+[FM-SRV 1792361118890] gameDelta isFinalMove=false
+[FM-SRV 1792361118890] gameDelta isFinalMove=false
+[FM-SRV 1792361118890] gameDelta isFinalMove=true
+[FM-SRV 1792361118890] end immediate
+[FM-SRV 1792361118890] gameDelta isFinalMove=true
+[FM-SRV 1792361118890] end immediate
+[FM-SRV 1792361118891] gameDelta isFinalMove=true
+[FM-SRV 1792361118891] end immediate
+[FM-SRV 1792361118891] gameDelta isFinalMove=true
+[FM-SRV 1792361118891] end immediate
+✔ server play: instant=false, score=30 honors the setting (1.583042ms)
+✔ server gosha: instant=false, score=30 honors the setting (0.32825ms)
+✖ server play: instant=false, score=35 honors the setting (0.814792ms)
+✖ server gosha: instant=false, score=35 honors the setting (0.212667ms)
+✖ server play: instant=false, score=40 honors the setting (0.166916ms)
+✖ server gosha: instant=false, score=40 honors the setting (0.17925ms)
+✔ server play: instant=true, score=30 honors the setting (0.19325ms)
+✔ server gosha: instant=true, score=30 honors the setting (0.093417ms)
+✔ server play: instant=true, score=35 honors the setting (0.103166ms)
+✔ server gosha: instant=true, score=35 honors the setting (0.138542ms)
+✔ server play: instant=true, score=40 honors the setting (0.080625ms)
+✔ server gosha: instant=true, score=40 honors the setting (0.085042ms)
+✖ js/app.js shared playTile: score35, instant=false (0.62375ms)
+✖ js/app.js shared playGoshaCombo: score35, instant=false (0.302208ms)
+✔ js/app.js shared playTile: score35, instant=true (0.071292ms)
+✔ js/app.js shared playGoshaCombo: score35, instant=true (0.052209ms)
+✔ js/app.js shared: disabling instant win still ends an empty hand (0.049583ms)
+✖ js/app.js fallback playTile: score35, instant=false (0.153167ms)
+✖ js/app.js fallback playGoshaCombo: score35, instant=false (0.097625ms)
+✔ js/app.js fallback playTile: score35, instant=true (0.050458ms)
+✔ js/app.js fallback playGoshaCombo: score35, instant=true (0.045583ms)
+✔ js/app.js fallback: disabling instant win still ends an empty hand (0.025292ms)
+✖ www/js/app.js shared playTile: score35, instant=false (0.398333ms)
+✖ www/js/app.js shared playGoshaCombo: score35, instant=false (0.219333ms)
+✔ www/js/app.js shared playTile: score35, instant=true (0.046625ms)
+✔ www/js/app.js shared playGoshaCombo: score35, instant=true (0.035708ms)
+✔ www/js/app.js shared: disabling instant win still ends an empty hand (0.023334ms)
+✖ www/js/app.js fallback playTile: score35, instant=false (0.1195ms)
+✖ www/js/app.js fallback playGoshaCombo: score35, instant=false (0.084792ms)
+✔ www/js/app.js fallback playTile: score35, instant=true (0.04375ms)
+✔ www/js/app.js fallback playGoshaCombo: score35, instant=true (0.044167ms)
+✔ www/js/app.js fallback: disabling instant win still ends an empty hand (0.023708ms)
+✔ web and packaged app assets stay identical (3.135375ms)
+ℹ tests 33
+ℹ suites 0
+ℹ pass 21
+ℹ fail 12
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 300.024875
+
+✖ failing tests:
+
+test at test/instant-win-setting.test.js:92:13
+✖ server play: instant=false, score=35 honors the setting (0.814792ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  1 !== 0
+  
+      at TestContext.<anonymous> (/Users/macbookair/Documents/domino/.tmp/remediation-s005/clean/server/test/instant-win-setting.test.js:98:24)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:787:18)
+      at Test.postRun (node:internal/test_runner/test:1247:19)
+      at Test.run (node:internal/test_runner/test:1175:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test/instant-win-setting.test.js:92:13
+✖ server gosha: instant=false, score=35 honors the setting (0.212667ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  1 !== 0
+  
+      at TestContext.<anonymous> (/Users/macbookair/Documents/domino/.tmp/remediation-s005/clean/server/test/instant-win-setting.test.js:98:24)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:787:18)
+      at Test.postRun (node:internal/test_runner/test:1247:19)
+      at Test.run (node:internal/test_runner/test:1175:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test/instant-win-setting.test.js:92:13
+✖ server play: instant=false, score=40 honors the setting (0.166916ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  1 !== 0
+  
+      at TestContext.<anonymous> (/Users/macbookair/Documents/domino/.tmp/remediation-s005/clean/server/test/instant-win-setting.test.js:98:24)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:787:18)
+      at Test.postRun (node:internal/test_runner/test:1247:19)
+      at Test.run (node:internal/test_runner/test:1175:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test/instant-win-setting.test.js:92:13
+✖ server gosha: instant=false, score=40 honors the setting (0.17925ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  1 !== 0
+  
+      at TestContext.<anonymous> (/Users/macbookair/Documents/domino/.tmp/remediation-s005/clean/server/test/instant-win-setting.test.js:98:24)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:787:18)
+      at Test.postRun (node:internal/test_runner/test:1247:19)
+      at Test.run (node:internal/test_runner/test:1175:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test/instant-win-setting.test.js:111:17
+✖ js/app.js shared playTile: score35, instant=false (0.62375ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  1 !== 0
+  
+      at TestContext.<anonymous> (/Users/macbookair/Documents/domino/.tmp/remediation-s005/clean/server/test/instant-win-setting.test.js:116:28)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test/instant-win-setting.test.js:111:17
+✖ js/app.js shared playGoshaCombo: score35, instant=false (0.302208ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  1 !== 0
+  
+      at TestContext.<anonymous> (/Users/macbookair/Documents/domino/.tmp/remediation-s005/clean/server/test/instant-win-setting.test.js:116:28)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:787:18)
+      at Test.postRun (node:internal/test_runner/test:1247:19)
+      at Test.run (node:internal/test_runner/test:1175:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test/instant-win-setting.test.js:111:17
+✖ js/app.js fallback playTile: score35, instant=false (0.153167ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  1 !== 0
+  
+      at TestContext.<anonymous> (/Users/macbookair/Documents/domino/.tmp/remediation-s005/clean/server/test/instant-win-setting.test.js:116:28)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test/instant-win-setting.test.js:111:17
+✖ js/app.js fallback playGoshaCombo: score35, instant=false (0.097625ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  1 !== 0
+  
+      at TestContext.<anonymous> (/Users/macbookair/Documents/domino/.tmp/remediation-s005/clean/server/test/instant-win-setting.test.js:116:28)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:787:18)
+      at Test.postRun (node:internal/test_runner/test:1247:19)
+      at Test.run (node:internal/test_runner/test:1175:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test/instant-win-setting.test.js:111:17
+✖ www/js/app.js shared playTile: score35, instant=false (0.398333ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  1 !== 0
+  
+      at TestContext.<anonymous> (/Users/macbookair/Documents/domino/.tmp/remediation-s005/clean/server/test/instant-win-setting.test.js:116:28)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test/instant-win-setting.test.js:111:17
+✖ www/js/app.js shared playGoshaCombo: score35, instant=false (0.219333ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  1 !== 0
+  
+      at TestContext.<anonymous> (/Users/macbookair/Documents/domino/.tmp/remediation-s005/clean/server/test/instant-win-setting.test.js:116:28)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:787:18)
+      at Test.postRun (node:internal/test_runner/test:1247:19)
+      at Test.run (node:internal/test_runner/test:1175:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test/instant-win-setting.test.js:111:17
+✖ www/js/app.js fallback playTile: score35, instant=false (0.1195ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  1 !== 0
+  
+      at TestContext.<anonymous> (/Users/macbookair/Documents/domino/.tmp/remediation-s005/clean/server/test/instant-win-setting.test.js:116:28)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test/instant-win-setting.test.js:111:17
+✖ www/js/app.js fallback playGoshaCombo: score35, instant=false (0.084792ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  1 !== 0
+  
+      at TestContext.<anonymous> (/Users/macbookair/Documents/domino/.tmp/remediation-s005/clean/server/test/instant-win-setting.test.js:116:28)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:787:18)
+      at Test.postRun (node:internal/test_runner/test:1247:19)
+      at Test.run (node:internal/test_runner/test:1175:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

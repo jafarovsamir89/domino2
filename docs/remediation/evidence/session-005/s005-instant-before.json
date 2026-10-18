@@ -1,0 +1,18 @@
+{
+  "label": "s005-instant-before",
+  "command": [
+    "node",
+    "--test",
+    "test/instant-win-setting.test.js"
+  ],
+  "cwd": ".tmp/remediation-s005/clean/server",
+  "startedAt": "2026-10-18T22:05:18.545Z",
+  "finishedAt": "2026-10-18T22:05:18.918Z",
+  "durationMs": 373,
+  "exitCode": 1,
+  "signal": null,
+  "timedOut": false,
+  "error": null,
+  "log": "docs/remediation/evidence/session-005/s005-instant-before.log",
+  "environment": "Fresh allowlist, synthetic local API/DB, optional Redis disabled, no inherited secrets or copied .env"
+}

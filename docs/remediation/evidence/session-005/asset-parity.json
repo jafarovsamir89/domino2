@@ -1,0 +1,10 @@
+{
+  "js/app.js": {
+    "equal": true,
+    "sha256": "93bf5f42fc9a6670fb79326802c1b0315966dee7011037f416cf0ce570597cff"
+  },
+  "shared/domino-rulesets.cjs": {
+    "equal": true,
+    "sha256": "cac5fb68ce54a663497e11133e9803759d4904f73bf1f6dd551a6cb6024881de"
+  }
+}

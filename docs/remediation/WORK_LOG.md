@@ -101,3 +101,19 @@
 - Для владельца: повторные/одновременные нажатия больше не увеличивают бонус сверх нормы и не ломают получение; нормальная выдача и суммы сохранены. Рекламное право R-09 остаётся открытым.
 - Production не обновлялся; при будущем внедрении все старые API instances должны быть заменены, иначе старый код не участвует в новой блокировке. Это примечание к будущему rollout, не поручение выполнить deploy. СобственныйPG остановлен s004-pg-stop.
 - Итог4/42локально закрыты, R-25partial,37open. Продолжаем без остановки небольшой S005/R-08: неверное isInstantWinEnabled передаётся вместо instantWinEnabled в2server и4client calls. Затем крупный R-03 требует отдельной реальной проверки reserve/settle/refund.
+
+## S005 — R-08, настройка мгновенной победы
+
+Продолжаем малый пункт без остановки после S004 commit3b5d3d7. СобственныйPG остановлен, production/Play не затрагиваются. Fresh .tmp/remediation-s005/clean/server npm ci passed. Shared/fallback ruleset ожидают instantWinEnabled, но2server и4client calls передают isInstantWinEnabled; www/js/app.js полностью совпадал с root source.
+
+Добавлен behavioral server/test/instant-win-setting.test.js: реальные performPlay/performGosha используют общий ruleset; полный DominoGame class+fallback загружены в VM без constructor/entrypoint (без brace parser), выполняются реальные playTile/playGoshaCombo→checkEnd в web/package assets. Score30/35/40 и flags проверяют server, client shared/fallback score35, empty-hand end и byte parity. Боковые эффекты renderer/timers/network изолированы, бизнес-решение о финале не подменяется. Исходный red и последующий green сохраняются отдельно. Исправление — только имя параметра во всех10calls (6уникальных +4packaged copies); правило и пороги не менялись.
+
+### S005.1 — результат и переход к крупному пункту
+
+- Новый behavioral suite: до21/33 (12fail именно false setting), после33/33. Node22regression+existingrulesets40/40, source check pass. Полный server269/276, те же7failure names S001,0newfailures; auto discovery38files включает новый файл. TAP baseline и spec текущего Node сопоставлены по названиям (`failure-delta.json`), historical logs не переписаны. E2E/Android package не запускались; проверялись реальные методы класса в VM, а не UI/анимации.
+- Для владельца: выключенная мгновенная победа действительно выключена — партия не обрывается на35очках; включённая настройка сохраняет прежнее поведение. Обычное завершение при пустой руке осталось. Правила/пороги не менялись, только согласован ключ опции.
+- Итог5/42локально закрыты (R-06,R-05,R-07,R-02,R-08), R-25partial,36open. Два текущих пакета отправляются отдельными commits; production/Play не обновлялись, локальные DB остановлены.
+
+### Подготовка следующего большого пакета S006/R-03
+
+Первичный просмотр показывает: settle SQL блокирует reserved только по roomId+stakeTableId, игнорирует matchId, а после присваивает payload matchId строке. Reserve имеет unique(roomId,playerId,stakeTableId), пропускает existing reserved любого матча и переиспользует settled row для нового matchId. Поэтому недостаточно добавить один WHERE: нужны проверки reserve replay/active-other-match/повторного settlement, сохранение identity и корректный переход следующего матча. Возможна миграция identity/истории; сначала изучить server/economyService.js, currentDealMatchId и API validation DTO, а не ломать старые контракты. До изменения финансового кода получить guarded real-DB failing regression позднего результата A при резерве B и сверить все wallet/ledger/reserve. Новый пакет не считать начатым исправлением; код R-03 пока не менялся.

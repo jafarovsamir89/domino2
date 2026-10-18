@@ -1,0 +1,25 @@
+{
+  "label": "s005-instant-node22",
+  "command": [
+    "npm",
+    "exec",
+    "--yes",
+    "--package=node@22.14.0",
+    "--package=npm@10.9.2",
+    "--",
+    "node",
+    "--test",
+    "test/instant-win-setting.test.js",
+    "test/rulesets.test.js"
+  ],
+  "cwd": ".tmp/remediation-s005/clean/server",
+  "startedAt": "2026-10-18T22:05:44.427Z",
+  "finishedAt": "2026-10-18T22:05:46.262Z",
+  "durationMs": 1835,
+  "exitCode": 0,
+  "signal": null,
+  "timedOut": false,
+  "error": null,
+  "log": "docs/remediation/evidence/session-005/s005-instant-node22.log",
+  "environment": "Fresh allowlist, synthetic local API/DB, optional Redis disabled, no inherited secrets or copied .env"
+}

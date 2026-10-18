@@ -1,0 +1,227 @@
+TAP version 13
+# ℹ️  optional .env file not found: .env.test, .env
+# [FM-SRV 1792361146176] gameDelta isFinalMove=false
+# [FM-SRV 1792361146177] gameDelta isFinalMove=false
+# [FM-SRV 1792361146177] gameDelta isFinalMove=false
+# [FM-SRV 1792361146177] gameDelta isFinalMove=false
+# [FM-SRV 1792361146178] gameDelta isFinalMove=false
+# [FM-SRV 1792361146178] gameDelta isFinalMove=false
+# [FM-SRV 1792361146178] gameDelta isFinalMove=false
+# [FM-SRV 1792361146178] gameDelta isFinalMove=false
+# [FM-SRV 1792361146178] gameDelta isFinalMove=true
+# [FM-SRV 1792361146178] end immediate
+# [FM-SRV 1792361146179] gameDelta isFinalMove=true
+# [FM-SRV 1792361146179] end immediate
+# [FM-SRV 1792361146179] gameDelta isFinalMove=true
+# [FM-SRV 1792361146179] end immediate
+# [FM-SRV 1792361146179] gameDelta isFinalMove=true
+# [FM-SRV 1792361146179] end immediate
+# Subtest: server play: instant=false, score=30 honors the setting
+ok 1 - server play: instant=false, score=30 honors the setting
+  ---
+  duration_ms: 1.664291
+  ...
+# Subtest: server gosha: instant=false, score=30 honors the setting
+ok 2 - server gosha: instant=false, score=30 honors the setting
+  ---
+  duration_ms: 0.287667
+  ...
+# Subtest: server play: instant=false, score=35 honors the setting
+ok 3 - server play: instant=false, score=35 honors the setting
+  ---
+  duration_ms: 0.106041
+  ...
+# Subtest: server gosha: instant=false, score=35 honors the setting
+ok 4 - server gosha: instant=false, score=35 honors the setting
+  ---
+  duration_ms: 0.130208
+  ...
+# Subtest: server play: instant=false, score=40 honors the setting
+ok 5 - server play: instant=false, score=40 honors the setting
+  ---
+  duration_ms: 0.103375
+  ...
+# Subtest: server gosha: instant=false, score=40 honors the setting
+ok 6 - server gosha: instant=false, score=40 honors the setting
+  ---
+  duration_ms: 0.087708
+  ...
+# Subtest: server play: instant=true, score=30 honors the setting
+ok 7 - server play: instant=true, score=30 honors the setting
+  ---
+  duration_ms: 0.076708
+  ...
+# Subtest: server gosha: instant=true, score=30 honors the setting
+ok 8 - server gosha: instant=true, score=30 honors the setting
+  ---
+  duration_ms: 0.272708
+  ...
+# Subtest: server play: instant=true, score=35 honors the setting
+ok 9 - server play: instant=true, score=35 honors the setting
+  ---
+  duration_ms: 0.442625
+  ...
+# Subtest: server gosha: instant=true, score=35 honors the setting
+ok 10 - server gosha: instant=true, score=35 honors the setting
+  ---
+  duration_ms: 0.371375
+  ...
+# Subtest: server play: instant=true, score=40 honors the setting
+ok 11 - server play: instant=true, score=40 honors the setting
+  ---
+  duration_ms: 0.152
+  ...
+# Subtest: server gosha: instant=true, score=40 honors the setting
+ok 12 - server gosha: instant=true, score=40 honors the setting
+  ---
+  duration_ms: 0.066209
+  ...
+# Subtest: js/app.js shared playTile: score35, instant=false
+ok 13 - js/app.js shared playTile: score35, instant=false
+  ---
+  duration_ms: 0.49
+  ...
+# Subtest: js/app.js shared playGoshaCombo: score35, instant=false
+ok 14 - js/app.js shared playGoshaCombo: score35, instant=false
+  ---
+  duration_ms: 0.179958
+  ...
+# Subtest: js/app.js shared playTile: score35, instant=true
+ok 15 - js/app.js shared playTile: score35, instant=true
+  ---
+  duration_ms: 0.076666
+  ...
+# Subtest: js/app.js shared playGoshaCombo: score35, instant=true
+ok 16 - js/app.js shared playGoshaCombo: score35, instant=true
+  ---
+  duration_ms: 0.054833
+  ...
+# Subtest: js/app.js shared: disabling instant win still ends an empty hand
+ok 17 - js/app.js shared: disabling instant win still ends an empty hand
+  ---
+  duration_ms: 0.045625
+  ...
+# Subtest: js/app.js fallback playTile: score35, instant=false
+ok 18 - js/app.js fallback playTile: score35, instant=false
+  ---
+  duration_ms: 0.155833
+  ...
+# Subtest: js/app.js fallback playGoshaCombo: score35, instant=false
+ok 19 - js/app.js fallback playGoshaCombo: score35, instant=false
+  ---
+  duration_ms: 0.056917
+  ...
+# Subtest: js/app.js fallback playTile: score35, instant=true
+ok 20 - js/app.js fallback playTile: score35, instant=true
+  ---
+  duration_ms: 0.058292
+  ...
+# Subtest: js/app.js fallback playGoshaCombo: score35, instant=true
+ok 21 - js/app.js fallback playGoshaCombo: score35, instant=true
+  ---
+  duration_ms: 0.050292
+  ...
+# Subtest: js/app.js fallback: disabling instant win still ends an empty hand
+ok 22 - js/app.js fallback: disabling instant win still ends an empty hand
+  ---
+  duration_ms: 0.030083
+  ...
+# Subtest: www/js/app.js shared playTile: score35, instant=false
+ok 23 - www/js/app.js shared playTile: score35, instant=false
+  ---
+  duration_ms: 0.4
+  ...
+# Subtest: www/js/app.js shared playGoshaCombo: score35, instant=false
+ok 24 - www/js/app.js shared playGoshaCombo: score35, instant=false
+  ---
+  duration_ms: 0.154583
+  ...
+# Subtest: www/js/app.js shared playTile: score35, instant=true
+ok 25 - www/js/app.js shared playTile: score35, instant=true
+  ---
+  duration_ms: 0.054917
+  ...
+# Subtest: www/js/app.js shared playGoshaCombo: score35, instant=true
+ok 26 - www/js/app.js shared playGoshaCombo: score35, instant=true
+  ---
+  duration_ms: 0.047416
+  ...
+# Subtest: www/js/app.js shared: disabling instant win still ends an empty hand
+ok 27 - www/js/app.js shared: disabling instant win still ends an empty hand
+  ---
+  duration_ms: 0.02725
+  ...
+# Subtest: www/js/app.js fallback playTile: score35, instant=false
+ok 28 - www/js/app.js fallback playTile: score35, instant=false
+  ---
+  duration_ms: 0.335125
+  ...
+# Subtest: www/js/app.js fallback playGoshaCombo: score35, instant=false
+ok 29 - www/js/app.js fallback playGoshaCombo: score35, instant=false
+  ---
+  duration_ms: 0.074125
+  ...
+# Subtest: www/js/app.js fallback playTile: score35, instant=true
+ok 30 - www/js/app.js fallback playTile: score35, instant=true
+  ---
+  duration_ms: 0.109208
+  ...
+# Subtest: www/js/app.js fallback playGoshaCombo: score35, instant=true
+ok 31 - www/js/app.js fallback playGoshaCombo: score35, instant=true
+  ---
+  duration_ms: 0.055333
+  ...
+# Subtest: www/js/app.js fallback: disabling instant win still ends an empty hand
+ok 32 - www/js/app.js fallback: disabling instant win still ends an empty hand
+  ---
+  duration_ms: 0.038667
+  ...
+# Subtest: web and packaged app assets stay identical
+ok 33 - web and packaged app assets stay identical
+  ---
+  duration_ms: 3.004583
+  ...
+# Subtest: telefon ruleset keeps the classic first-player order
+ok 34 - telefon ruleset keeps the classic first-player order
+  ---
+  duration_ms: 2.342042
+  ...
+# Subtest: telefon opening score keeps [5|5] at 10 below 300 and 0 at 300+
+ok 35 - telefon opening score keeps [5|5] at 10 below 300 and 0 at 300+
+  ---
+  duration_ms: 0.234417
+  ...
+# Subtest: telefon scoreDuringPlay keeps the board score on 5-multiples and telephone cross cases
+ok 36 - telefon scoreDuringPlay keeps the board score on 5-multiples and telephone cross cases
+  ---
+  duration_ms: 2.229667
+  ...
+# Subtest: telefon handPoints keeps the zero double bonus
+ok 37 - telefon handPoints keeps the zero double bonus
+  ---
+  duration_ms: 0.221542
+  ...
+# Subtest: telefon resolveBlocked picks the lowest hand points winner on a blocked board
+ok 38 - telefon resolveBlocked picks the lowest hand points winner on a blocked board
+  ---
+  duration_ms: 0.424625
+  ...
+# Subtest: classic101 opens with the youngest double and raw scoring rules
+ok 39 - classic101 opens with the youngest double and raw scoring rules
+  ---
+  duration_ms: 0.787625
+  ...
+# Subtest: classic101 awards raw points, handles fish, threshold entry, and dry wins
+ok 40 - classic101 awards raw points, handles fish, threshold entry, and dry wins
+  ---
+  duration_ms: 1.299334
+  ...
+1..40
+# tests 40
+# suites 0
+# pass 40
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 532.5135

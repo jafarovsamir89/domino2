@@ -56,7 +56,7 @@ R-25 относится к этапу 0, но окончательно закр�
 
 #### R-25 · P1 · Вернуть полную тестовую матрицу в CI
 
-Статус: **частично выполнено, S001**. Discovery включает все37файлов, новый E2E boundary проверен; актуальные236/243server и30/39E2E совпадают с audit baseline. CI-gate и исправление оставшихся падений открыты. [Диспозиция](../remediation/evidence/session-001/FAILURES.md). Основание: пробел/падения подтверждены; [доказательства](13_QA_TEST_RESULTS.md).
+Статус: **частично выполнено, S001/S005**. Discovery после S005 включает38файлов/276cases,269pass/7fail;33новых regression pass, [те же7падений](../remediation/evidence/session-005/failure-delta.json). Новый E2E boundary проверен, последний browser baseline30/39. CI-gate и исправление оставшихся падений открыты. [Диспозиция](../remediation/evidence/session-001/FAILURES.md). Основание: пробел/падения подтверждены; [исторические доказательства](13_QA_TEST_RESULTS.md).
 
 - **Изменение:** Включить обнаружение всех test files и зафиксировать исходные 7 server/9 E2E падений с причинами. Обновлять fixtures по согласованному поведению, а не ослаблять проверки ради зелёного результата. После исправлений сделать CI обязательным для полного набора, миграций, сборок и web asset parity.
 - **Где:** `server/package.json;e2e/domino.spec.mjs;CI отсутствует`.
@@ -163,7 +163,7 @@ R-25 относится к этапу 0, но окончательно закр�
 
 #### R-08 · P1 · Исправить параметр instant win
 
-Статус: **открыто**. Основание: контрактный дефект подтверждён; [доказательства](02_GAMEPLAY_RULES.md).
+Статус: **исправлено локально, S005**. В `fix/audit-foundation` все2server/4client calls передают instantWinEnabled, www parity сохранена. До33behavioral checks21pass/12fail, после33/33; Node22 с rulesets40/40. Score35 при false продолжает, при true завершает; play/gosha, shared/fallback и empty hand проверены. Full server269/276, те же7старыхfail. [Проверки](../remediation/evidence/session-005/summary.json). Production/Play не обновлялись. Основание: контрактный дефект подтверждён; [исторические доказательства](02_GAMEPLAY_RULES.md).
 
 - **Изменение:** Передавать instant-win настройку под фактически ожидаемым именем в общий ruleset из клиента и сервера. Пример приёмки: результат 35 при выключенной настройке не завершает матч.
 - **Где:** `shared/domino-rulesets.cjs:100;app.js:19894;DominoRoom.js:3489`.
