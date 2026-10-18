@@ -181,7 +181,7 @@ Status: **fixed locally, S012**. Server AI receives only its own hand and public
 
 #### R-16 · P1 · Отменять устаревший async turn
 
-Статус: **открыто**. Основание: controlled test подтверждён; [доказательства](04_FREEZES_AND_STATE.md).
+Status: **fixed locally, S018**. Async local turns carry owner/generation/cycle/board/hands/player context. Tile travel and 101 draw continuations recheck ownership after awaits; stale success/rejection/RAF callbacks cannot change new scores, turn or lock. Timer reset invalidates work; DOM/Konva animations cancel and settle once, including Konva destroy. Source/www kept identical. Before2/6 pass (four real stale failures); final14 new tests + instant rules33 pass on Node25, new14 Node22. Full server332/339 before two additional cancellation tests, same seven original failures. Initial six failures without VM timer globals were harness-only and excluded. [Evidence](../remediation/evidence/session-018/summary.json).
 
 - **Изменение:** После каждого await проверять актуальную сессию/цикл до изменения очков, поля и UI; отменять старую анимацию. Старый finally не должен разблокировать новый ход.
 - **Где:** `js/app.js:19908–19980`.

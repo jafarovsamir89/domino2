@@ -1,0 +1,17 @@
+{
+  "label": "s018-server-full",
+  "command": [
+    "npm",
+    "test"
+  ],
+  "cwd": ".tmp/remediation-s018/clean/server",
+  "startedAt": "2026-10-18T23:10:20.145Z",
+  "finishedAt": "2026-10-18T23:10:24.284Z",
+  "durationMs": 4139,
+  "exitCode": 1,
+  "signal": null,
+  "timedOut": false,
+  "error": null,
+  "log": "docs/remediation/evidence/session-018/s018-server-full.log",
+  "environment": "Fresh allowlist, synthetic local API/DB, optional Redis disabled, no inherited secrets or copied .env"
+}

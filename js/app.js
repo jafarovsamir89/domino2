@@ -10394,7 +10394,29 @@ class DominoGame {
         return `${prefix}-${Date.now().toString(36)}-${Math.floor(performance.now() * 1000).toString(36)}`;
     }
 
+    beginAsyncTurn(playerIndex, phase) {
+        const operation = { playerIndex, phase, cycleId: this._turnCycleId,
+            generation: this._asyncTurnGeneration || 0, board: this.board, hands: this.hands, startedAt: Date.now() };
+        this._activeAsyncTurn = operation;
+        return operation;
+    }
+
+    isAsyncTurnCurrent(operation) {
+        return Boolean(operation && this._activeAsyncTurn === operation && !operation.cancelled
+            && operation.generation === (this._asyncTurnGeneration || 0) && operation.cycleId === this._turnCycleId
+            && operation.board === this.board && operation.hands === this.hands
+            && operation.playerIndex === this.currentPlayer && this.gameActive && !this.roundOver && !this.matchOver);
+    }
+
+    invalidateAsyncTurn() {
+        if (this._activeAsyncTurn) this._activeAsyncTurn.cancelled = true;
+        this._activeAsyncTurn = null;
+        this._asyncTurnGeneration = (this._asyncTurnGeneration || 0) + 1;
+        this.renderer?.cancelActiveTileTravel?.();
+    }
+
     clearTurnTimers() {
+        this.invalidateAsyncTurn();
         clearTimeout(this._firstTurnTimeout);
         clearTimeout(this._aiTurnTimeout);
         clearTimeout(this._turnAdvanceTimeout);
@@ -19806,10 +19828,11 @@ class DominoGame {
 
     async runClassic101BotDrawSequence(pi, turnCycleId = this._turnCycleId) {
         if (this.mode !== 'classic101' || !this.ais.some((ai) => ai.index === pi)) return;
+        const operation = this.beginAsyncTurn(pi, "drawing");
         const delay = CLASSIC101_BOT_DRAW_STEP_DELAY_MS;
         const hasPlayableMove = () => this.board.canPlayAny(this.normalizeHandForBoard(this.hands[pi]));
         while (
-            turnCycleId === this._turnCycleId &&
+            this.isAsyncTurnCurrent(operation) &&
             this.gameActive &&
             !this.roundOver &&
             !this.matchOver &&
@@ -19826,6 +19849,7 @@ class DominoGame {
             this.playSound('draw');
             this.renderState();
             await new Promise((resolve) => setTimeout(resolve, delay));
+            if (!this.isAsyncTurnCurrent(operation)) return;
         }
         if (
             turnCycleId !== this._turnCycleId ||
@@ -19833,7 +19857,7 @@ class DominoGame {
             this.roundOver ||
             this.matchOver
         ) {
-            this.turnInProgress = false;
+            if (this.isAsyncTurnCurrent(operation)) this.turnInProgress = false;
             return;
         }
         if (!hasPlayableMove()) {
@@ -19857,7 +19881,7 @@ class DominoGame {
             blocksInput: true
         }, 800);
         setTimeout(() => {
-            if (turnCycleId !== this._turnCycleId) return;
+            if (!this.isAsyncTurnCurrent(operation)) return;
             this.playTile(pi, move.tileIndex, move.openEndIndex);
         }, 800);
     }
@@ -19948,6 +19972,7 @@ class DominoGame {
         this.clearTurnTimers();
         this.turnInProgress=true;
         const turnCycleId = this._turnCycleId;
+        const operation = this.beginAsyncTurn(pi, "tile-animation");
         try {
         const hand=this.hands[pi],tile=hand && hand[ti];
         if(!tile){this.turnInProgress=false;return;}
@@ -19977,15 +20002,19 @@ class DominoGame {
         this.log(`Play pi=${pi} ti=${ti}`);
         this.renderState();
         const travelPromise = sourceRect
-            ? new Promise((resolve) => {
+            ? new Promise((resolve, reject) => {
                 requestAnimationFrame(() => {
                     requestAnimationFrame(() => {
-                        this.renderer.animateTileTravel(tile.id).finally(resolve);
+                        if (!this.isAsyncTurnCurrent(operation)) { resolve(); return; }
+                        try { Promise.resolve(this.renderer.animateTileTravel(tile.id)).then(resolve, reject); }
+                        catch (error) { reject(error); }
                     });
                 });
             })
             : Promise.resolve();
         await travelPromise;
+        if (!this.isAsyncTurnCurrent(operation)) return false;
+        operation.phase = "settling";
         if (this.mode === 'classic101') {
             score = this.ruleset.scoreDuringPlay(this.board);
         }
@@ -20040,8 +20069,9 @@ class DominoGame {
         }
         this.scheduleTurnAdvance(0, turnCycleId);
         } catch (e) {
+            if (!this.isAsyncTurnCurrent(operation)) return false;
             console.error('[playTile] Error:', e);
-            this.turnInProgress = false;
+            if (this.isAsyncTurnCurrent(operation)) this.turnInProgress = false;
         }
     }
 

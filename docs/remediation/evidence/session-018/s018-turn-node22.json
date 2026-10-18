@@ -1,0 +1,25 @@
+{
+  "label": "s018-turn-node22",
+  "command": [
+    "npm",
+    "exec",
+    "--yes",
+    "--package=node@22.14.0",
+    "--package=npm@10.9.2",
+    "--",
+    "node",
+    "--test",
+    "test/stale-async-turn.test.js",
+    "test/instant-win-setting.test.js"
+  ],
+  "cwd": ".tmp/remediation-s018/clean/server",
+  "startedAt": "2026-10-18T23:10:19.021Z",
+  "finishedAt": "2026-10-18T23:10:20.074Z",
+  "durationMs": 1053,
+  "exitCode": 0,
+  "signal": null,
+  "timedOut": false,
+  "error": null,
+  "log": "docs/remediation/evidence/session-018/s018-turn-node22.log",
+  "environment": "Fresh allowlist, synthetic local API/DB, optional Redis disabled, no inherited secrets or copied .env"
+}

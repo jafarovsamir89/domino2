@@ -1,0 +1,18 @@
+{
+  "session": "S018",
+  "task": "R-16",
+  "status": "fixed-locally",
+  "details": "Async local turns carry owner/generation/cycle/board/hands/player context. Tile travel and 101 draw continuations recheck ownership after awaits; stale success/rejection/RAF callbacks cannot change new scores, turn or lock. Timer reset invalidates work; DOM/Konva animations cancel and settle once, including Konva destroy. Source/www kept identical. Before2/6 pass (four real stale failures); final14 new tests + instant rules33 pass on Node25, new14 Node22. Full server332/339 before two additional cancellation tests, same seven original failures. Initial six failures without VM timer globals were harness-only and excluded.",
+  "checks": [
+    "s018-turn-repro.json",
+    "s018-final-targeted.json",
+    "s018-final-node22.json",
+    "s018-server-full.json",
+    "s018-source.json"
+  ],
+  "limits": [
+    "R17 watchdog recovery and R40 pause handled next",
+    "Final batch suite will include all newly tracked server tests",
+    "No production/Play deployment"
+  ]
+}

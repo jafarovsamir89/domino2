@@ -1,0 +1,84 @@
+✖ js/app.js: a reset during tile travel prevents the old score/advance/unlock (10.902875ms)
+✖ js/app.js: replacing board/hands without a cycle change also invalidates old work (2.967209ms)
+✔ js/app.js: a current animation completes its move exactly once (2.569375ms)
+✖ www/js/app.js: a reset during tile travel prevents the old score/advance/unlock (9.149375ms)
+✖ www/js/app.js: replacing board/hands without a cycle change also invalidates old work (2.572ms)
+✔ www/js/app.js: a current animation completes its move exactly once (2.778625ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 2
+ℹ fail 4
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 115.744833
+
+✖ failing tests:
+
+test at test/stale-async-turn.test.js:3:2
+✖ js/app.js: a reset during tile travel prevents the old score/advance/unlock (10.902875ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  1 !== 0
+  
+      at TestContext.<anonymous> (/Users/macbookair/Documents/domino/.tmp/remediation-s018/clean/server/test/stale-async-turn.test.js:3:339)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:358:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test/stale-async-turn.test.js:4:2
+✖ js/app.js: replacing board/hands without a cycle change also invalidates old work (2.967209ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  1 !== 0
+  
+      at TestContext.<anonymous> (/Users/macbookair/Documents/domino/.tmp/remediation-s018/clean/server/test/stale-async-turn.test.js:4:287)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test/stale-async-turn.test.js:3:2
+✖ www/js/app.js: a reset during tile travel prevents the old score/advance/unlock (9.149375ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  1 !== 0
+  
+      at TestContext.<anonymous> (/Users/macbookair/Documents/domino/.tmp/remediation-s018/clean/server/test/stale-async-turn.test.js:3:339)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test/stale-async-turn.test.js:4:2
+✖ www/js/app.js: replacing board/hands without a cycle change also invalidates old work (2.572ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  1 !== 0
+  
+      at TestContext.<anonymous> (/Users/macbookair/Documents/domino/.tmp/remediation-s018/clean/server/test/stale-async-turn.test.js:4:287)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

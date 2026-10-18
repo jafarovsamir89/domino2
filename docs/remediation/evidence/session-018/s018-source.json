@@ -1,0 +1,18 @@
+{
+  "label": "s018-source",
+  "command": [
+    "npm",
+    "run",
+    "check"
+  ],
+  "cwd": ".tmp/remediation-s018/clean",
+  "startedAt": "2026-10-18T23:10:24.353Z",
+  "finishedAt": "2026-10-18T23:10:25.453Z",
+  "durationMs": 1100,
+  "exitCode": 0,
+  "signal": null,
+  "timedOut": false,
+  "error": null,
+  "log": "docs/remediation/evidence/session-018/s018-source.log",
+  "environment": "Fresh allowlist, synthetic local API/DB, optional Redis disabled, no inherited secrets or copied .env"
+}

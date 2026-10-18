@@ -1,0 +1,252 @@
+TAP version 13
+# ℹ️  optional .env file not found: .env.test, .env
+# [FM-SRV 1792365020042] gameDelta isFinalMove=false
+# [FM-SRV 1792365020043] gameDelta isFinalMove=false
+# [FM-SRV 1792365020043] gameDelta isFinalMove=false
+# [FM-SRV 1792365020043] gameDelta isFinalMove=false
+# [FM-SRV 1792365020043] gameDelta isFinalMove=false
+# [FM-SRV 1792365020043] gameDelta isFinalMove=false
+# [FM-SRV 1792365020043] gameDelta isFinalMove=false
+# [FM-SRV 1792365020044] gameDelta isFinalMove=false
+# [FM-SRV 1792365020044] gameDelta isFinalMove=true
+# [FM-SRV 1792365020044] end immediate
+# [FM-SRV 1792365020044] gameDelta isFinalMove=true
+# [FM-SRV 1792365020044] end immediate
+# [FM-SRV 1792365020045] gameDelta isFinalMove=true
+# [FM-SRV 1792365020045] end immediate
+# [FM-SRV 1792365020045] gameDelta isFinalMove=true
+# [FM-SRV 1792365020045] end immediate
+# Subtest: server play: instant=false, score=30 honors the setting
+ok 1 - server play: instant=false, score=30 honors the setting
+  ---
+  duration_ms: 1.014583
+  ...
+# Subtest: server gosha: instant=false, score=30 honors the setting
+ok 2 - server gosha: instant=false, score=30 honors the setting
+  ---
+  duration_ms: 0.237041
+  ...
+# Subtest: server play: instant=false, score=35 honors the setting
+ok 3 - server play: instant=false, score=35 honors the setting
+  ---
+  duration_ms: 0.094292
+  ...
+# Subtest: server gosha: instant=false, score=35 honors the setting
+ok 4 - server gosha: instant=false, score=35 honors the setting
+  ---
+  duration_ms: 0.12175
+  ...
+# Subtest: server play: instant=false, score=40 honors the setting
+ok 5 - server play: instant=false, score=40 honors the setting
+  ---
+  duration_ms: 0.096
+  ...
+# Subtest: server gosha: instant=false, score=40 honors the setting
+ok 6 - server gosha: instant=false, score=40 honors the setting
+  ---
+  duration_ms: 0.07925
+  ...
+# Subtest: server play: instant=true, score=30 honors the setting
+ok 7 - server play: instant=true, score=30 honors the setting
+  ---
+  duration_ms: 0.076625
+  ...
+# Subtest: server gosha: instant=true, score=30 honors the setting
+ok 8 - server gosha: instant=true, score=30 honors the setting
+  ---
+  duration_ms: 0.272709
+  ...
+# Subtest: server play: instant=true, score=35 honors the setting
+ok 9 - server play: instant=true, score=35 honors the setting
+  ---
+  duration_ms: 0.376833
+  ...
+# Subtest: server gosha: instant=true, score=35 honors the setting
+ok 10 - server gosha: instant=true, score=35 honors the setting
+  ---
+  duration_ms: 0.349375
+  ...
+# Subtest: server play: instant=true, score=40 honors the setting
+ok 11 - server play: instant=true, score=40 honors the setting
+  ---
+  duration_ms: 0.12175
+  ...
+# Subtest: server gosha: instant=true, score=40 honors the setting
+ok 12 - server gosha: instant=true, score=40 honors the setting
+  ---
+  duration_ms: 0.061333
+  ...
+# Subtest: js/app.js shared playTile: score35, instant=false
+ok 13 - js/app.js shared playTile: score35, instant=false
+  ---
+  duration_ms: 0.451542
+  ...
+# Subtest: js/app.js shared playGoshaCombo: score35, instant=false
+ok 14 - js/app.js shared playGoshaCombo: score35, instant=false
+  ---
+  duration_ms: 0.157125
+  ...
+# Subtest: js/app.js shared playTile: score35, instant=true
+ok 15 - js/app.js shared playTile: score35, instant=true
+  ---
+  duration_ms: 0.07425
+  ...
+# Subtest: js/app.js shared playGoshaCombo: score35, instant=true
+ok 16 - js/app.js shared playGoshaCombo: score35, instant=true
+  ---
+  duration_ms: 0.0485
+  ...
+# Subtest: js/app.js shared: disabling instant win still ends an empty hand
+ok 17 - js/app.js shared: disabling instant win still ends an empty hand
+  ---
+  duration_ms: 0.039875
+  ...
+# Subtest: js/app.js fallback playTile: score35, instant=false
+ok 18 - js/app.js fallback playTile: score35, instant=false
+  ---
+  duration_ms: 0.14075
+  ...
+# Subtest: js/app.js fallback playGoshaCombo: score35, instant=false
+ok 19 - js/app.js fallback playGoshaCombo: score35, instant=false
+  ---
+  duration_ms: 0.050917
+  ...
+# Subtest: js/app.js fallback playTile: score35, instant=true
+ok 20 - js/app.js fallback playTile: score35, instant=true
+  ---
+  duration_ms: 0.058834
+  ...
+# Subtest: js/app.js fallback playGoshaCombo: score35, instant=true
+ok 21 - js/app.js fallback playGoshaCombo: score35, instant=true
+  ---
+  duration_ms: 0.046208
+  ...
+# Subtest: js/app.js fallback: disabling instant win still ends an empty hand
+ok 22 - js/app.js fallback: disabling instant win still ends an empty hand
+  ---
+  duration_ms: 0.027041
+  ...
+# Subtest: www/js/app.js shared playTile: score35, instant=false
+ok 23 - www/js/app.js shared playTile: score35, instant=false
+  ---
+  duration_ms: 1.485125
+  ...
+# Subtest: www/js/app.js shared playGoshaCombo: score35, instant=false
+ok 24 - www/js/app.js shared playGoshaCombo: score35, instant=false
+  ---
+  duration_ms: 0.237
+  ...
+# Subtest: www/js/app.js shared playTile: score35, instant=true
+ok 25 - www/js/app.js shared playTile: score35, instant=true
+  ---
+  duration_ms: 0.091542
+  ...
+# Subtest: www/js/app.js shared playGoshaCombo: score35, instant=true
+ok 26 - www/js/app.js shared playGoshaCombo: score35, instant=true
+  ---
+  duration_ms: 0.057833
+  ...
+# Subtest: www/js/app.js shared: disabling instant win still ends an empty hand
+ok 27 - www/js/app.js shared: disabling instant win still ends an empty hand
+  ---
+  duration_ms: 0.030625
+  ...
+# Subtest: www/js/app.js fallback playTile: score35, instant=false
+ok 28 - www/js/app.js fallback playTile: score35, instant=false
+  ---
+  duration_ms: 0.173458
+  ...
+# Subtest: www/js/app.js fallback playGoshaCombo: score35, instant=false
+ok 29 - www/js/app.js fallback playGoshaCombo: score35, instant=false
+  ---
+  duration_ms: 0.059125
+  ...
+# Subtest: www/js/app.js fallback playTile: score35, instant=true
+ok 30 - www/js/app.js fallback playTile: score35, instant=true
+  ---
+  duration_ms: 0.067042
+  ...
+# Subtest: www/js/app.js fallback playGoshaCombo: score35, instant=true
+ok 31 - www/js/app.js fallback playGoshaCombo: score35, instant=true
+  ---
+  duration_ms: 0.050458
+  ...
+# Subtest: www/js/app.js fallback: disabling instant win still ends an empty hand
+ok 32 - www/js/app.js fallback: disabling instant win still ends an empty hand
+  ---
+  duration_ms: 0.031375
+  ...
+# Subtest: web and packaged app assets stay identical
+ok 33 - web and packaged app assets stay identical
+  ---
+  duration_ms: 2.905375
+  ...
+# Subtest: js/app.js: a reset during tile travel prevents the old score/advance/unlock
+ok 34 - js/app.js: a reset during tile travel prevents the old score/advance/unlock
+  ---
+  duration_ms: 10.625625
+  ...
+# Subtest: js/app.js: replacing board/hands without a cycle change also invalidates old work
+ok 35 - js/app.js: replacing board/hands without a cycle change also invalidates old work
+  ---
+  duration_ms: 3.295167
+  ...
+# Subtest: js/app.js: a current animation completes its move exactly once
+ok 36 - js/app.js: a current animation completes its move exactly once
+  ---
+  duration_ms: 2.675792
+  ...
+# Subtest: js/app.js: an old rejected animation cannot unlock a replacement turn
+ok 37 - js/app.js: an old rejected animation cannot unlock a replacement turn
+  ---
+  duration_ms: 3.034541
+  ...
+# Subtest: js/app.js: queued animation frames do not run against a replacement board
+ok 38 - js/app.js: queued animation frames do not run against a replacement board
+  ---
+  duration_ms: 2.358208
+  ...
+# Subtest: js/app.js: old 101 draw continuation cannot unlock a new turn
+ok 39 - js/app.js: old 101 draw continuation cannot unlock a new turn
+  ---
+  duration_ms: 3.313208
+  ...
+# Subtest: www/js/app.js: a reset during tile travel prevents the old score/advance/unlock
+ok 40 - www/js/app.js: a reset during tile travel prevents the old score/advance/unlock
+  ---
+  duration_ms: 8.467875
+  ...
+# Subtest: www/js/app.js: replacing board/hands without a cycle change also invalidates old work
+ok 41 - www/js/app.js: replacing board/hands without a cycle change also invalidates old work
+  ---
+  duration_ms: 3.032958
+  ...
+# Subtest: www/js/app.js: a current animation completes its move exactly once
+ok 42 - www/js/app.js: a current animation completes its move exactly once
+  ---
+  duration_ms: 2.801833
+  ...
+# Subtest: www/js/app.js: an old rejected animation cannot unlock a replacement turn
+ok 43 - www/js/app.js: an old rejected animation cannot unlock a replacement turn
+  ---
+  duration_ms: 4.794291
+  ...
+# Subtest: www/js/app.js: queued animation frames do not run against a replacement board
+ok 44 - www/js/app.js: queued animation frames do not run against a replacement board
+  ---
+  duration_ms: 2.622125
+  ...
+# Subtest: www/js/app.js: old 101 draw continuation cannot unlock a new turn
+ok 45 - www/js/app.js: old 101 draw continuation cannot unlock a new turn
+  ---
+  duration_ms: 2.711583
+  ...
+1..45
+# tests 45
+# suites 0
+# pass 45
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 185.419709

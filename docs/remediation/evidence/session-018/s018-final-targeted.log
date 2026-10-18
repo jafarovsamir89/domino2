@@ -1,0 +1,72 @@
+ℹ️  optional .env file not found: .env.test, .env
+[FM-SRV 1792365092187] gameDelta isFinalMove=false
+[FM-SRV 1792365092188] gameDelta isFinalMove=false
+[FM-SRV 1792365092188] gameDelta isFinalMove=false
+[FM-SRV 1792365092188] gameDelta isFinalMove=false
+[FM-SRV 1792365092190] gameDelta isFinalMove=false
+[FM-SRV 1792365092190] gameDelta isFinalMove=false
+[FM-SRV 1792365092190] gameDelta isFinalMove=false
+[FM-SRV 1792365092191] gameDelta isFinalMove=false
+[FM-SRV 1792365092191] gameDelta isFinalMove=true
+[FM-SRV 1792365092191] end immediate
+[FM-SRV 1792365092191] gameDelta isFinalMove=true
+[FM-SRV 1792365092191] end immediate
+[FM-SRV 1792365092191] gameDelta isFinalMove=true
+[FM-SRV 1792365092191] end immediate
+[FM-SRV 1792365092191] gameDelta isFinalMove=true
+[FM-SRV 1792365092191] end immediate
+✔ server play: instant=false, score=30 honors the setting (1.603875ms)
+✔ server gosha: instant=false, score=30 honors the setting (0.32275ms)
+✔ server play: instant=false, score=35 honors the setting (0.129041ms)
+✔ server gosha: instant=false, score=35 honors the setting (0.1365ms)
+✔ server play: instant=false, score=40 honors the setting (1.862792ms)
+✔ server gosha: instant=false, score=40 honors the setting (0.120375ms)
+✔ server play: instant=true, score=30 honors the setting (0.121125ms)
+✔ server gosha: instant=true, score=30 honors the setting (0.09725ms)
+✔ server play: instant=true, score=35 honors the setting (0.169875ms)
+✔ server gosha: instant=true, score=35 honors the setting (0.163834ms)
+✔ server play: instant=true, score=40 honors the setting (0.080709ms)
+✔ server gosha: instant=true, score=40 honors the setting (0.068ms)
+✔ js/app.js shared playTile: score35, instant=false (0.55475ms)
+✔ js/app.js shared playGoshaCombo: score35, instant=false (0.201709ms)
+✔ js/app.js shared playTile: score35, instant=true (0.08575ms)
+✔ js/app.js shared playGoshaCombo: score35, instant=true (0.053042ms)
+✔ js/app.js shared: disabling instant win still ends an empty hand (0.040834ms)
+✔ js/app.js fallback playTile: score35, instant=false (0.153584ms)
+✔ js/app.js fallback playGoshaCombo: score35, instant=false (0.081667ms)
+✔ js/app.js fallback playTile: score35, instant=true (0.05175ms)
+✔ js/app.js fallback playGoshaCombo: score35, instant=true (0.042208ms)
+✔ js/app.js fallback: disabling instant win still ends an empty hand (0.027666ms)
+✔ www/js/app.js shared playTile: score35, instant=false (0.396333ms)
+✔ www/js/app.js shared playGoshaCombo: score35, instant=false (0.156417ms)
+✔ www/js/app.js shared playTile: score35, instant=true (0.051541ms)
+✔ www/js/app.js shared playGoshaCombo: score35, instant=true (0.036334ms)
+✔ www/js/app.js shared: disabling instant win still ends an empty hand (0.022375ms)
+✔ www/js/app.js fallback playTile: score35, instant=false (0.133291ms)
+✔ www/js/app.js fallback playGoshaCombo: score35, instant=false (0.047ms)
+✔ www/js/app.js fallback playTile: score35, instant=true (0.049042ms)
+✔ www/js/app.js fallback playGoshaCombo: score35, instant=true (0.035125ms)
+✔ www/js/app.js fallback: disabling instant win still ends an empty hand (0.022875ms)
+✔ web and packaged app assets stay identical (2.995833ms)
+✔ js/app.js: a reset during tile travel prevents the old score/advance/unlock (11.4175ms)
+✔ js/app.js: replacing board/hands without a cycle change also invalidates old work (3.336583ms)
+✔ js/app.js: a current animation completes its move exactly once (2.939875ms)
+✔ js/app.js: an old rejected animation cannot unlock a replacement turn (3.104ms)
+✔ js/app.js: queued animation frames do not run against a replacement board (2.771875ms)
+✔ js/app.js: old 101 draw continuation cannot unlock a new turn (3.387625ms)
+✔ www/js/app.js: a reset during tile travel prevents the old score/advance/unlock (9.660334ms)
+✔ www/js/app.js: replacing board/hands without a cycle change also invalidates old work (4.949292ms)
+✔ www/js/app.js: a current animation completes its move exactly once (2.893958ms)
+✔ www/js/app.js: an old rejected animation cannot unlock a replacement turn (2.860042ms)
+✔ www/js/app.js: queued animation frames do not run against a replacement board (2.974458ms)
+✔ www/js/app.js: old 101 draw continuation cannot unlock a new turn (2.798208ms)
+✔ js/konvaBoardRenderer.js: cancelling an actual Konva travel settles it once and destroys the tween (2.484584ms)
+✔ www/js/konvaBoardRenderer.js: cancelling an actual Konva travel settles it once and destroys the tween (0.484958ms)
+ℹ tests 47
+ℹ suites 0
+ℹ pass 47
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 230.900625

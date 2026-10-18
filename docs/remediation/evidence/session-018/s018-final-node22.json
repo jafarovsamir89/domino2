@@ -1,0 +1,24 @@
+{
+  "label": "s018-final-node22",
+  "command": [
+    "npm",
+    "exec",
+    "--yes",
+    "--package=node@22.14.0",
+    "--package=npm@10.9.2",
+    "--",
+    "node",
+    "--test",
+    "test/stale-async-turn.test.js"
+  ],
+  "cwd": ".tmp/remediation-s018/clean/server",
+  "startedAt": "2026-10-18T23:11:55.704Z",
+  "finishedAt": "2026-10-18T23:11:56.589Z",
+  "durationMs": 885,
+  "exitCode": 0,
+  "signal": null,
+  "timedOut": false,
+  "error": null,
+  "log": "docs/remediation/evidence/session-018/s018-final-node22.log",
+  "environment": "Fresh allowlist, synthetic local API/DB, optional Redis disabled, no inherited secrets or copied .env"
+}

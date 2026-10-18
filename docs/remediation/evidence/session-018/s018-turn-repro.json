@@ -1,0 +1,18 @@
+{
+  "label": "s018-turn-repro",
+  "command": [
+    "node",
+    "--test",
+    "test/stale-async-turn.test.js"
+  ],
+  "cwd": ".tmp/remediation-s018/clean/server",
+  "startedAt": "2026-10-18T23:09:10.286Z",
+  "finishedAt": "2026-10-18T23:09:10.476Z",
+  "durationMs": 190,
+  "exitCode": 1,
+  "signal": null,
+  "timedOut": false,
+  "error": null,
+  "log": "docs/remediation/evidence/session-018/s018-turn-repro.log",
+  "environment": "Fresh allowlist, synthetic local API/DB, optional Redis disabled, no inherited secrets or copied .env"
+}

@@ -1,0 +1,19 @@
+{
+  "label": "s018-final-targeted",
+  "command": [
+    "node",
+    "--test",
+    "test/stale-async-turn.test.js",
+    "test/instant-win-setting.test.js"
+  ],
+  "cwd": ".tmp/remediation-s018/clean/server",
+  "startedAt": "2026-10-18T23:11:31.906Z",
+  "finishedAt": "2026-10-18T23:11:32.210Z",
+  "durationMs": 304,
+  "exitCode": 0,
+  "signal": null,
+  "timedOut": false,
+  "error": null,
+  "log": "docs/remediation/evidence/session-018/s018-final-targeted.log",
+  "environment": "Fresh allowlist, synthetic local API/DB, optional Redis disabled, no inherited secrets or copied .env"
+}

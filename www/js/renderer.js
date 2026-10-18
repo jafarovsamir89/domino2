@@ -905,6 +905,8 @@ export class Renderer {
     }
 
     cancelActiveTileTravel() {
+        this._pendingBoardTileTravel = null;
+        this._konvaBoardRenderer?.cancelTileTravels?.();
         if (!this._activeTileTravel) return;
         const { timeline, clone, tileId } = this._activeTileTravel;
         this._activeTileTravel = null;

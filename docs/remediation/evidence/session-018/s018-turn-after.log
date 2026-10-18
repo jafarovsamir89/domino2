@@ -1,0 +1,64 @@
+ℹ️  optional .env file not found: .env.test, .env
+[FM-SRV 1792364983285] gameDelta isFinalMove=false
+[FM-SRV 1792364983287] gameDelta isFinalMove=false
+[FM-SRV 1792364983287] gameDelta isFinalMove=false
+[FM-SRV 1792364983287] gameDelta isFinalMove=false
+[FM-SRV 1792364983289] gameDelta isFinalMove=false
+[FM-SRV 1792364983289] gameDelta isFinalMove=false
+[FM-SRV 1792364983289] gameDelta isFinalMove=false
+[FM-SRV 1792364983289] gameDelta isFinalMove=false
+[FM-SRV 1792364983290] gameDelta isFinalMove=true
+[FM-SRV 1792364983290] end immediate
+[FM-SRV 1792364983290] gameDelta isFinalMove=true
+[FM-SRV 1792364983290] end immediate
+[FM-SRV 1792364983290] gameDelta isFinalMove=true
+[FM-SRV 1792364983290] end immediate
+[FM-SRV 1792364983290] gameDelta isFinalMove=true
+[FM-SRV 1792364983290] end immediate
+✔ server play: instant=false, score=30 honors the setting (1.72225ms)
+✔ server gosha: instant=false, score=30 honors the setting (0.33825ms)
+✔ server play: instant=false, score=35 honors the setting (0.167417ms)
+✔ server gosha: instant=false, score=35 honors the setting (0.151417ms)
+✔ server play: instant=false, score=40 honors the setting (1.951834ms)
+✔ server gosha: instant=false, score=40 honors the setting (0.121167ms)
+✔ server play: instant=true, score=30 honors the setting (0.107417ms)
+✔ server gosha: instant=true, score=30 honors the setting (0.094125ms)
+✔ server play: instant=true, score=35 honors the setting (0.159334ms)
+✔ server gosha: instant=true, score=35 honors the setting (0.160084ms)
+✔ server play: instant=true, score=40 honors the setting (0.086667ms)
+✔ server gosha: instant=true, score=40 honors the setting (0.06775ms)
+✔ js/app.js shared playTile: score35, instant=false (0.568709ms)
+✔ js/app.js shared playGoshaCombo: score35, instant=false (0.189834ms)
+✔ js/app.js shared playTile: score35, instant=true (0.085375ms)
+✔ js/app.js shared playGoshaCombo: score35, instant=true (0.048375ms)
+✔ js/app.js shared: disabling instant win still ends an empty hand (0.041583ms)
+✔ js/app.js fallback playTile: score35, instant=false (0.149542ms)
+✔ js/app.js fallback playGoshaCombo: score35, instant=false (0.047458ms)
+✔ js/app.js fallback playTile: score35, instant=true (0.050542ms)
+✔ js/app.js fallback playGoshaCombo: score35, instant=true (0.041875ms)
+✔ js/app.js fallback: disabling instant win still ends an empty hand (0.023334ms)
+✔ www/js/app.js shared playTile: score35, instant=false (0.347834ms)
+✔ www/js/app.js shared playGoshaCombo: score35, instant=false (0.15075ms)
+✔ www/js/app.js shared playTile: score35, instant=true (0.0535ms)
+✔ www/js/app.js shared playGoshaCombo: score35, instant=true (0.035459ms)
+✔ www/js/app.js shared: disabling instant win still ends an empty hand (0.022542ms)
+✔ www/js/app.js fallback playTile: score35, instant=false (0.131334ms)
+✔ www/js/app.js fallback playGoshaCombo: score35, instant=false (0.04925ms)
+✔ www/js/app.js fallback playTile: score35, instant=true (0.047209ms)
+✔ www/js/app.js fallback playGoshaCombo: score35, instant=true (0.034667ms)
+✔ www/js/app.js fallback: disabling instant win still ends an empty hand (0.022833ms)
+✔ web and packaged app assets stay identical (2.998666ms)
+✔ js/app.js: a reset during tile travel prevents the old score/advance/unlock (11.618958ms)
+✔ js/app.js: replacing board/hands without a cycle change also invalidates old work (3.093ms)
+✔ js/app.js: a current animation completes its move exactly once (3.243ms)
+✔ www/js/app.js: a reset during tile travel prevents the old score/advance/unlock (10.280917ms)
+✔ www/js/app.js: replacing board/hands without a cycle change also invalidates old work (2.793166ms)
+✔ www/js/app.js: a current animation completes its move exactly once (2.898875ms)
+ℹ tests 39
+ℹ suites 0
+ℹ pass 39
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 299.253667

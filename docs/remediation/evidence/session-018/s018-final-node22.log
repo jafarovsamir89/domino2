@@ -1,0 +1,80 @@
+TAP version 13
+# Subtest: js/app.js: a reset during tile travel prevents the old score/advance/unlock
+ok 1 - js/app.js: a reset during tile travel prevents the old score/advance/unlock
+  ---
+  duration_ms: 10.537417
+  ...
+# Subtest: js/app.js: replacing board/hands without a cycle change also invalidates old work
+ok 2 - js/app.js: replacing board/hands without a cycle change also invalidates old work
+  ---
+  duration_ms: 3.427333
+  ...
+# Subtest: js/app.js: a current animation completes its move exactly once
+ok 3 - js/app.js: a current animation completes its move exactly once
+  ---
+  duration_ms: 3.167
+  ...
+# Subtest: js/app.js: an old rejected animation cannot unlock a replacement turn
+ok 4 - js/app.js: an old rejected animation cannot unlock a replacement turn
+  ---
+  duration_ms: 3.259917
+  ...
+# Subtest: js/app.js: queued animation frames do not run against a replacement board
+ok 5 - js/app.js: queued animation frames do not run against a replacement board
+  ---
+  duration_ms: 2.316791
+  ...
+# Subtest: js/app.js: old 101 draw continuation cannot unlock a new turn
+ok 6 - js/app.js: old 101 draw continuation cannot unlock a new turn
+  ---
+  duration_ms: 2.689333
+  ...
+# Subtest: www/js/app.js: a reset during tile travel prevents the old score/advance/unlock
+ok 7 - www/js/app.js: a reset during tile travel prevents the old score/advance/unlock
+  ---
+  duration_ms: 8.349833
+  ...
+# Subtest: www/js/app.js: replacing board/hands without a cycle change also invalidates old work
+ok 8 - www/js/app.js: replacing board/hands without a cycle change also invalidates old work
+  ---
+  duration_ms: 2.696291
+  ...
+# Subtest: www/js/app.js: a current animation completes its move exactly once
+ok 9 - www/js/app.js: a current animation completes its move exactly once
+  ---
+  duration_ms: 3.067916
+  ...
+# Subtest: www/js/app.js: an old rejected animation cannot unlock a replacement turn
+ok 10 - www/js/app.js: an old rejected animation cannot unlock a replacement turn
+  ---
+  duration_ms: 3.936208
+  ...
+# Subtest: www/js/app.js: queued animation frames do not run against a replacement board
+ok 11 - www/js/app.js: queued animation frames do not run against a replacement board
+  ---
+  duration_ms: 2.344166
+  ...
+# Subtest: www/js/app.js: old 101 draw continuation cannot unlock a new turn
+ok 12 - www/js/app.js: old 101 draw continuation cannot unlock a new turn
+  ---
+  duration_ms: 2.257791
+  ...
+# Subtest: js/konvaBoardRenderer.js: cancelling an actual Konva travel settles it once and destroys the tween
+ok 13 - js/konvaBoardRenderer.js: cancelling an actual Konva travel settles it once and destroys the tween
+  ---
+  duration_ms: 1.867333
+  ...
+# Subtest: www/js/konvaBoardRenderer.js: cancelling an actual Konva travel settles it once and destroys the tween
+ok 14 - www/js/konvaBoardRenderer.js: cancelling an actual Konva travel settles it once and destroys the tween
+  ---
+  duration_ms: 0.806416
+  ...
+1..14
+# tests 14
+# suites 0
+# pass 14
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 92.720708

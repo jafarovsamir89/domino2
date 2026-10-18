@@ -1,0 +1,19 @@
+{
+  "label": "s018-turn-after",
+  "command": [
+    "node",
+    "--test",
+    "test/stale-async-turn.test.js",
+    "test/instant-win-setting.test.js"
+  ],
+  "cwd": ".tmp/remediation-s018/clean/server",
+  "startedAt": "2026-10-18T23:09:42.933Z",
+  "finishedAt": "2026-10-18T23:09:43.309Z",
+  "durationMs": 376,
+  "exitCode": 0,
+  "signal": null,
+  "timedOut": false,
+  "error": null,
+  "log": "docs/remediation/evidence/session-018/s018-turn-after.log",
+  "environment": "Fresh allowlist, synthetic local API/DB, optional Redis disabled, no inherited secrets or copied .env"
+}

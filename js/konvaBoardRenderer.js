@@ -270,6 +270,7 @@ export class KonvaBoardRenderer {
     }
 
     destroy() {
+        this.cancelTileTravels();
         if (this._visibilityRetryTimer) {
             clearTimeout(this._visibilityRetryTimer);
             this._visibilityRetryTimer = null;
@@ -1144,6 +1145,11 @@ export class KonvaBoardRenderer {
         };
     }
 
+    cancelTileTravels() {
+        for (const animation of this.activeTileAnimations.values()) animation.cancel?.();
+        this.activeTileAnimations.clear();
+    }
+
     async animateTileTravel(tileId, sourceRect = null, sourceNode = null) {
         const entry = this.tileGroupsById.get(String(tileId));
         if (!entry || !this.lastLayout) {
@@ -1222,7 +1228,10 @@ export class KonvaBoardRenderer {
         const targetRotation = 0;
 
         return new Promise((resolve) => {
+            let finished = false;
             const finish = () => {
+                if (finished) return;
+                finished = true;
                 this.activeTileAnimations.delete(String(tileId));
                 this.animatedTileIds.add(String(tileId));
                 entry.group.position({ x: finalX, y: finalY });
@@ -1250,6 +1259,8 @@ export class KonvaBoardRenderer {
                 easing: Konva.Easings?.EaseInOut || Konva.Easings?.EaseOut,
                 onFinish: finish
             });
+            const animation = this.activeTileAnimations.get(String(tileId));
+            if (animation) animation.cancel = () => { tween?.pause?.(); tween?.destroy?.(); finish(); };
             if (!tween) {
                 finish();
             } else {
