@@ -183,3 +183,11 @@ Real Colyseus MatchMaker lifecycle в subprocess: SIGTERM→snapshot TTL/room+co
 Новые expectations до128/134pass (6fail), после134/134Node25/22. Старые x2-grant tests заменены на запрет+неизменность wallet/claim/ledger, firstnormalпослеdenied,100rejected, keysplayer/date/retry — не удалены радиgreen. Initial TS futurefield attempt отдельноисключён. ClientVM4/4 предотвращаетпоказрекламы приfalse/missingcapability; sourcecheckpass. Real freshPG Node25/22 четыре×100requests (normal/directx2/upgrade/mixed), rejected0/100/100/50, итогeach200/1claim/1ledger. NoSQL/schema/deploy. Historical S004 x2upgrade contract намеренноsuperseded; егоnormal-lock/idempotency актуальны. Existing s004 scripts описывают historicalcontract; новыйguarded verify-unverified-daily.mjs —текущий.
 
 Для владельца: лишние монеты за неподтверждённый просмотр больше не начисляются. Обычный ежедневный подарок работает. Удвоение выключено до настоящей серверной проверки рекламы; внешние SSV и положительный uniquead-event тест остаютсяотложенными.11/42локальныхобъёмов выполнены (R09сэтимограничением), R25partial. OwnPG покаработает дляS013 syntheticchecks.
+
+### S012/R-12 completed locally
+
+Server runBotTurn now passes own hand + public handCounts/scores/bazaarCount/missingSuits. AI rejects raw hand/bazaar arrays; team estimates use public missing-suit observations, never partner/opponent tiles. Existing weights unchanged. Offline js/ai.js was outside this server takeover card and remains unchanged.
+
+Before0/6 new regressions; after7/7 including contract rejection. Node22 with rulesets14/14, full server302/309 same seven original failures, source check pass. Boundary spies cover ordinary bot and takeover; paired worlds cover easy/medium/hard; changing public missing suits can change the move. Existing partner-friendly test now supplies public pass evidence and still requires a different team choice.
+
+Benefit: server takeover bots no longer see other players tiles. Local task scopes12/42 including R09 disabled-path scope (external SSV deferred), R25 partial. Continue fifth item R42. Code checkpoint66f0962 pushed; this follow-up records the milestone after the first documentation writer failed decoding stdin.

@@ -1,0 +1,30 @@
+{
+  "session": "S012",
+  "task": "R-12",
+  "status": "fixed-locally",
+  "before": {
+    "tests": 6,
+    "pass": 0,
+    "fail": 6
+  },
+  "after": {
+    "tests": 7,
+    "pass": 7,
+    "fail": 0
+  },
+  "node22WithRulesets": {
+    "tests": 14,
+    "pass": 14,
+    "fail": 0
+  },
+  "fullServer": {
+    "tests": 309,
+    "pass": 302,
+    "fail": 7
+  },
+  "limits": [
+    "Server bot/takeover only; offline client AI unchanged",
+    "Seven original server failures",
+    "No production/Play deployment"
+  ]
+}

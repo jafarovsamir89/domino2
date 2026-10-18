@@ -172,7 +172,7 @@ R-25 относится к этапу 0, но окончательно закр�
 
 #### R-12 · P1 · Убрать hidden hands из takeover AI
 
-Статус: **открыто**. Основание: paired-world подтверждён; [доказательства](02_GAMEPLAY_RULES.md).
+Status: **fixed locally, S012**. Server AI receives only its own hand and public hand counts, scores, bazaar count and missing suits. Paired hidden worlds and input boundary verified; 7/7, Node22 + rulesets14/14, full server302/309 with the same seven original failures. [Evidence](../remediation/evidence/session-012/summary.json). Offline client AI unchanged; no production/Play deployment.
 
 - **Изменение:** Передавать takeover AI только разрешённую публичную информацию и его собственную руку. Одинаковая публичная позиция должна давать одинаковое решение при замене скрытых рук соперников/партнёра.
 - **Где:** `server/ai.js:101–125;DominoRoom.js:2502`.
