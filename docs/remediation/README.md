@@ -57,3 +57,7 @@ node docs/remediation/scripts/run-check.mjs s002-api .tmp/remediation-s002/clean
 ## S007: рыба в101
 
 **R-31 исправлен локально:**79+50=129, одинфинал; carry/tie/2v2 проверены. [Проверки](evidence/session-007/summary.json). Локально7/42, R-25partial. В текущем пакете осталосьR-32.
+
+## S008: начало101 без дублей на руках
+
+**R-32 исправлен локально:** seed225 корректно начинает ход после добора;28костей, данные клиента и snapshot согласованы.7/7regressions, Node22+fish/rulesets17/17, два полных локальных матча завершены. [Проверки](evidence/session-008/summary.json). Текущий пакетR-03/R-31/R-32 завершён:8/42локально, R-25partial. Fullserver279/286, те же7старыхfail; API134/134. Следующий пакет из3 указан в AGENT_JOURNAL.md. Production/Play не обновлялись.

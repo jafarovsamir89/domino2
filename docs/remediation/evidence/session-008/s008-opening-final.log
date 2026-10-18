@@ -1,0 +1,6186 @@
+ℹ️  optional .env file not found: .env.test, .env
+[ROOM_DEBUG] create {
+  roomId: 'regression-101-1',
+  roomCode: 'LGRB',
+  roomVisibility: 'closed',
+  stakeKey: 'free',
+  totalPlayers: 2,
+  aiCount: 0,
+  humanSeats: 2,
+  maxClients: 2,
+  roomMode: 'ffa',
+  isTeamMode: false
+}
+[ROOM] Created room regression-101-1 (code LGRB), humanSeats=2, totalPlayers=2, aiCount=0, teamMode=false
+[ROOM_DEBUG] startDeal:enter {
+  roomId: 'regression-101-1',
+  roomCode: 'LGRB',
+  stakeKey: 'free',
+  currentDealMatchId: '',
+  matchRound: 1,
+  playerOrder: [ 's0', 's1' ],
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074018] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-1',
+  roomCode: 'LGRB',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[ROOM_DEBUG] create {
+  roomId: 'regression-101-2',
+  roomCode: '97Z4',
+  roomVisibility: 'closed',
+  stakeKey: 'free',
+  totalPlayers: 2,
+  aiCount: 0,
+  humanSeats: 2,
+  maxClients: 2,
+  roomMode: 'ffa',
+  isTeamMode: false
+}
+[ROOM] Created room regression-101-2 (code 97Z4), humanSeats=2, totalPlayers=2, aiCount=0, teamMode=false
+[ROOM_DEBUG] create {
+  roomId: 'regression-101-3',
+  roomCode: 'X4NB',
+  roomVisibility: 'closed',
+  stakeKey: 'free',
+  totalPlayers: 2,
+  aiCount: 0,
+  humanSeats: 2,
+  maxClients: 2,
+  roomMode: 'ffa',
+  isTeamMode: false
+}
+[ROOM] Created room regression-101-3 (code X4NB), humanSeats=2, totalPlayers=2, aiCount=0, teamMode=false
+[ROOM_DEBUG] startDeal:enter {
+  roomId: 'regression-101-3',
+  roomCode: 'X4NB',
+  stakeKey: 'free',
+  currentDealMatchId: '',
+  matchRound: 1,
+  playerOrder: [ 's0', 's1' ],
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074025] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-3',
+  roomCode: 'X4NB',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[ROOM_DEBUG] create {
+  roomId: 'regression-101-4',
+  roomCode: 'RKJ4',
+  roomVisibility: 'closed',
+  stakeKey: 'free',
+  totalPlayers: 2,
+  aiCount: 0,
+  humanSeats: 2,
+  maxClients: 2,
+  roomMode: 'ffa',
+  isTeamMode: false
+}
+[ROOM] Created room regression-101-4 (code RKJ4), humanSeats=2, totalPlayers=2, aiCount=0, teamMode=false
+[ROOM_DEBUG] startDeal:enter {
+  roomId: 'regression-101-4',
+  roomCode: 'RKJ4',
+  stakeKey: 'free',
+  currentDealMatchId: '',
+  matchRound: 1,
+  playerOrder: [ 's0', 's1' ],
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074026] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-4',
+  roomCode: 'RKJ4',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[ROOM_DEBUG] startDeal:enter {
+  roomId: 'regression-101-4',
+  roomCode: 'RKJ4',
+  stakeKey: 'free',
+  currentDealMatchId: 'regression-101-4:round:1',
+  matchRound: 1,
+  playerOrder: [ 's0', 's1' ],
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074027] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-4',
+  roomCode: 'RKJ4',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[ROOM_DEBUG] startDeal:enter {
+  roomId: 'regression-101-4',
+  roomCode: 'RKJ4',
+  stakeKey: 'free',
+  currentDealMatchId: 'regression-101-4:round:1',
+  matchRound: 1,
+  playerOrder: [ 's0', 's1' ],
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074027] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-4',
+  roomCode: 'RKJ4',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[ROOM_DEBUG] create {
+  roomId: 'regression-101-5',
+  roomCode: 'V9CB',
+  roomVisibility: 'closed',
+  stakeKey: 'free',
+  totalPlayers: 3,
+  aiCount: 0,
+  humanSeats: 3,
+  maxClients: 3,
+  roomMode: 'ffa',
+  isTeamMode: false
+}
+[ROOM] Created room regression-101-5 (code V9CB), humanSeats=3, totalPlayers=3, aiCount=0, teamMode=false
+[ROOM_DEBUG] startDeal:enter {
+  roomId: 'regression-101-5',
+  roomCode: 'V9CB',
+  stakeKey: 'free',
+  currentDealMatchId: '',
+  matchRound: 1,
+  playerOrder: [ 's0', 's1', 's2' ],
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's2',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 2,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074028] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-5',
+  roomCode: 'V9CB',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 3,
+  humanPlayers: 3,
+  humanSeats: 3,
+  aiCount: 0,
+  totalPlayers: 3,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's2',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 2,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[ROOM_DEBUG] startDeal:enter {
+  roomId: 'regression-101-5',
+  roomCode: 'V9CB',
+  stakeKey: 'free',
+  currentDealMatchId: 'regression-101-5:round:1',
+  matchRound: 1,
+  playerOrder: [ 's0', 's1', 's2' ],
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's2',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 2,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074028] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-5',
+  roomCode: 'V9CB',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 3,
+  humanPlayers: 3,
+  humanSeats: 3,
+  aiCount: 0,
+  totalPlayers: 3,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's2',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 2,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[ROOM_DEBUG] startDeal:enter {
+  roomId: 'regression-101-5',
+  roomCode: 'V9CB',
+  stakeKey: 'free',
+  currentDealMatchId: 'regression-101-5:round:1',
+  matchRound: 1,
+  playerOrder: [ 's0', 's1', 's2' ],
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's2',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 2,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074028] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-5',
+  roomCode: 'V9CB',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 3,
+  humanPlayers: 3,
+  humanSeats: 3,
+  aiCount: 0,
+  totalPlayers: 3,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's2',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 2,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[ROOM_DEBUG] create {
+  roomId: 'regression-101-6',
+  roomCode: 'N2DB',
+  roomVisibility: 'closed',
+  stakeKey: 'free',
+  totalPlayers: 4,
+  aiCount: 0,
+  humanSeats: 4,
+  maxClients: 4,
+  roomMode: 'team',
+  isTeamMode: true
+}
+[ROOM] Created room regression-101-6 (code N2DB), humanSeats=4, totalPlayers=4, aiCount=0, teamMode=true
+[ROOM_DEBUG] startDeal:enter {
+  roomId: 'regression-101-6',
+  roomCode: 'N2DB',
+  stakeKey: 'free',
+  currentDealMatchId: '',
+  matchRound: 1,
+  playerOrder: [ 's0', 's1', 's2', 's3' ],
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's2',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 2,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's3',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 3,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074029] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-6',
+  roomCode: 'N2DB',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 4,
+  humanPlayers: 4,
+  humanSeats: 4,
+  aiCount: 0,
+  totalPlayers: 4,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's2',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 2,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's3',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 3,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[ROOM_DEBUG] startDeal:enter {
+  roomId: 'regression-101-6',
+  roomCode: 'N2DB',
+  stakeKey: 'free',
+  currentDealMatchId: 'regression-101-6:round:1',
+  matchRound: 1,
+  playerOrder: [ 's0', 's1', 's2', 's3' ],
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's2',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 2,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's3',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 3,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074030] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-6',
+  roomCode: 'N2DB',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 4,
+  humanPlayers: 4,
+  humanSeats: 4,
+  aiCount: 0,
+  totalPlayers: 4,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's2',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 2,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's3',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 3,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[ROOM_DEBUG] startDeal:enter {
+  roomId: 'regression-101-6',
+  roomCode: 'N2DB',
+  stakeKey: 'free',
+  currentDealMatchId: 'regression-101-6:round:1',
+  matchRound: 1,
+  playerOrder: [ 's0', 's1', 's2', 's3' ],
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's2',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 2,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's3',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 3,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074030] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-6',
+  roomCode: 'N2DB',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 4,
+  humanPlayers: 4,
+  humanSeats: 4,
+  aiCount: 0,
+  totalPlayers: 4,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's2',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 2,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's3',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 3,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[ROOM_DEBUG] create {
+  roomId: 'regression-101-7',
+  roomCode: 'P8AB',
+  roomVisibility: 'closed',
+  stakeKey: 'free',
+  totalPlayers: 2,
+  aiCount: 0,
+  humanSeats: 2,
+  maxClients: 2,
+  roomMode: 'ffa',
+  isTeamMode: false
+}
+[ROOM] Created room regression-101-7 (code P8AB), humanSeats=2, totalPlayers=2, aiCount=0, teamMode=false
+[ROOM_DEBUG] startDeal:enter {
+  roomId: 'regression-101-7',
+  roomCode: 'P8AB',
+  stakeKey: 'free',
+  currentDealMatchId: '',
+  matchRound: 1,
+  playerOrder: [ 's0', 's1' ],
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074031] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-7',
+  roomCode: 'P8AB',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074031] gameDelta isFinalMove=false
+[FM-SRV 1792362074032] gameDelta isFinalMove=false
+[FM-SRV 1792362074032] gameDelta isFinalMove=false
+[FM-SRV 1792362074032] gameDelta isFinalMove=false
+[FM-SRV 1792362074033] gameDelta isFinalMove=false
+[FM-SRV 1792362074033] gameDelta isFinalMove=false
+[FM-SRV 1792362074033] gameDelta isFinalMove=false
+[FM-SRV 1792362074033] gameDelta isFinalMove=false
+[FM-SRV 1792362074033] gameDelta isFinalMove=false
+[FM-SRV 1792362074033] gameDelta isFinalMove=false
+[FM-SRV 1792362074033] gameDelta isFinalMove=false
+[FM-SRV 1792362074034] gameDelta isFinalMove=false
+[FM-SRV 1792362074034] gameDelta isFinalMove=false
+[FM-SRV 1792362074034] gameDelta isFinalMove=false
+[FM-SRV 1792362074034] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-7',
+  roomCode: 'P8AB',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074034] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-7',
+  roomCode: 'P8AB',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074034] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-7',
+  roomCode: 'P8AB',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074034] gameDelta isFinalMove=false
+[FM-SRV 1792362074034] gameDelta isFinalMove=true
+[FM-SRV 1792362074034] end immediate
+[FM-SRV 1792362074035] syncState includeBoardJson=false
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-7',
+  roomCode: 'P8AB',
+  gameActive: false,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[ROOM_DEBUG] startDeal:enter {
+  roomId: 'regression-101-7',
+  roomCode: 'P8AB',
+  stakeKey: 'free',
+  currentDealMatchId: 'regression-101-7:round:1',
+  matchRound: 1,
+  playerOrder: [ 's0', 's1' ],
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074035] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-7',
+  roomCode: 'P8AB',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074035] gameDelta isFinalMove=false
+[FM-SRV 1792362074035] gameDelta isFinalMove=false
+[FM-SRV 1792362074035] gameDelta isFinalMove=false
+[FM-SRV 1792362074035] gameDelta isFinalMove=false
+[FM-SRV 1792362074035] gameDelta isFinalMove=false
+[FM-SRV 1792362074035] gameDelta isFinalMove=false
+[FM-SRV 1792362074035] gameDelta isFinalMove=false
+[FM-SRV 1792362074035] gameDelta isFinalMove=false
+[FM-SRV 1792362074035] gameDelta isFinalMove=false
+[FM-SRV 1792362074035] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-7',
+  roomCode: 'P8AB',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074035] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-7',
+  roomCode: 'P8AB',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074035] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-7',
+  roomCode: 'P8AB',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074036] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-7',
+  roomCode: 'P8AB',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074036] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-7',
+  roomCode: 'P8AB',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074036] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-7',
+  roomCode: 'P8AB',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074036] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-7',
+  roomCode: 'P8AB',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074036] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-7',
+  roomCode: 'P8AB',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074036] gameDelta isFinalMove=false
+[FM-SRV 1792362074036] gameDelta isFinalMove=false
+[FM-SRV 1792362074036] gameDelta isFinalMove=false
+[FM-SRV 1792362074036] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-7',
+  roomCode: 'P8AB',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074036] gameDelta isFinalMove=false
+[FM-SRV 1792362074036] gameDelta isFinalMove=false
+[FM-SRV 1792362074036] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-7',
+  roomCode: 'P8AB',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074036] gameDelta isFinalMove=false
+[FM-SRV 1792362074036] gameDelta isFinalMove=false
+[FM-SRV 1792362074036] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-7',
+  roomCode: 'P8AB',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074037] gameDelta isFinalMove=false
+[FM-SRV 1792362074037] gameDelta isFinalMove=false
+[FM-SRV 1792362074037] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-7',
+  roomCode: 'P8AB',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074037] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-7',
+  roomCode: 'P8AB',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074037] gameDelta isFinalMove=false
+[FM-SRV 1792362074037] gameDelta isFinalMove=false
+[FM-SRV 1792362074037] gameDelta isFinalMove=false
+[FM-SRV 1792362074037] gameDelta isFinalMove=false
+[FM-SRV 1792362074037] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-7',
+  roomCode: 'P8AB',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074037] gameDelta isFinalMove=false
+[FM-SRV 1792362074037] gameDelta isFinalMove=false
+[FM-SRV 1792362074037] gameDelta isFinalMove=false
+[FM-SRV 1792362074038] syncState includeBoardJson=false
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-7',
+  roomCode: 'P8AB',
+  gameActive: false,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[ROOM_DEBUG] startDeal:enter {
+  roomId: 'regression-101-7',
+  roomCode: 'P8AB',
+  stakeKey: 'free',
+  currentDealMatchId: 'regression-101-7:round:1',
+  matchRound: 1,
+  playerOrder: [ 's0', 's1' ],
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074038] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-7',
+  roomCode: 'P8AB',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074038] gameDelta isFinalMove=false
+[FM-SRV 1792362074038] gameDelta isFinalMove=false
+[FM-SRV 1792362074038] gameDelta isFinalMove=false
+[FM-SRV 1792362074038] gameDelta isFinalMove=false
+[FM-SRV 1792362074038] gameDelta isFinalMove=false
+[FM-SRV 1792362074038] gameDelta isFinalMove=false
+[FM-SRV 1792362074038] gameDelta isFinalMove=false
+[FM-SRV 1792362074038] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-7',
+  roomCode: 'P8AB',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074038] gameDelta isFinalMove=false
+[FM-SRV 1792362074038] gameDelta isFinalMove=false
+[FM-SRV 1792362074038] gameDelta isFinalMove=false
+[FM-SRV 1792362074038] gameDelta isFinalMove=false
+[FM-SRV 1792362074038] gameDelta isFinalMove=false
+[FM-SRV 1792362074038] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-7',
+  roomCode: 'P8AB',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074038] gameDelta isFinalMove=false
+[FM-SRV 1792362074038] gameDelta isFinalMove=false
+[FM-SRV 1792362074038] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-7',
+  roomCode: 'P8AB',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074039] gameDelta isFinalMove=false
+[FM-SRV 1792362074039] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-7',
+  roomCode: 'P8AB',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074039] gameDelta isFinalMove=false
+[FM-SRV 1792362074039] gameDelta isFinalMove=true
+[FM-SRV 1792362074039] end immediate
+[FM-SRV 1792362074039] syncState includeBoardJson=false
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-7',
+  roomCode: 'P8AB',
+  gameActive: false,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[ROOM_DEBUG] startDeal:enter {
+  roomId: 'regression-101-7',
+  roomCode: 'P8AB',
+  stakeKey: 'free',
+  currentDealMatchId: 'regression-101-7:round:1',
+  matchRound: 1,
+  playerOrder: [ 's0', 's1' ],
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074039] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-7',
+  roomCode: 'P8AB',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074039] gameDelta isFinalMove=false
+[FM-SRV 1792362074039] gameDelta isFinalMove=false
+[FM-SRV 1792362074039] gameDelta isFinalMove=false
+[FM-SRV 1792362074039] gameDelta isFinalMove=false
+[FM-SRV 1792362074039] gameDelta isFinalMove=false
+[FM-SRV 1792362074039] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-7',
+  roomCode: 'P8AB',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074039] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-7',
+  roomCode: 'P8AB',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074039] gameDelta isFinalMove=false
+[FM-SRV 1792362074039] gameDelta isFinalMove=false
+[FM-SRV 1792362074039] gameDelta isFinalMove=false
+[FM-SRV 1792362074039] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-7',
+  roomCode: 'P8AB',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074039] gameDelta isFinalMove=false
+[FM-SRV 1792362074040] gameDelta isFinalMove=false
+[FM-SRV 1792362074040] gameDelta isFinalMove=false
+[FM-SRV 1792362074040] gameDelta isFinalMove=false
+[FM-SRV 1792362074040] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-7',
+  roomCode: 'P8AB',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074040] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-7',
+  roomCode: 'P8AB',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074040] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-7',
+  roomCode: 'P8AB',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074040] gameDelta isFinalMove=false
+[FM-SRV 1792362074040] gameDelta isFinalMove=false
+[FM-SRV 1792362074040] gameDelta isFinalMove=false
+[FM-SRV 1792362074040] gameDelta isFinalMove=false
+[FM-SRV 1792362074040] gameDelta isFinalMove=false
+[FM-SRV 1792362074040] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-7',
+  roomCode: 'P8AB',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074040] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-7',
+  roomCode: 'P8AB',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074040] gameDelta isFinalMove=false
+[FM-SRV 1792362074040] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-7',
+  roomCode: 'P8AB',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074040] gameDelta isFinalMove=false
+[FM-SRV 1792362074040] gameDelta isFinalMove=false
+[FM-SRV 1792362074040] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-7',
+  roomCode: 'P8AB',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074040] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-7',
+  roomCode: 'P8AB',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074040] gameDelta isFinalMove=false
+[FM-SRV 1792362074040] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-7',
+  roomCode: 'P8AB',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074041] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-7',
+  roomCode: 'P8AB',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074041] gameDelta isFinalMove=false
+[FM-SRV 1792362074041] gameDelta isFinalMove=false
+[FM-SRV 1792362074041] gameDelta isFinalMove=false
+[FM-SRV 1792362074041] gameDelta isFinalMove=false
+[FM-SRV 1792362074041] gameDelta isFinalMove=true
+[FM-SRV 1792362074041] end immediate
+[FM-SRV 1792362074041] syncState includeBoardJson=false
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-7',
+  roomCode: 'P8AB',
+  gameActive: false,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[ROOM_DEBUG] startDeal:enter {
+  roomId: 'regression-101-7',
+  roomCode: 'P8AB',
+  stakeKey: 'free',
+  currentDealMatchId: 'regression-101-7:round:1',
+  matchRound: 1,
+  playerOrder: [ 's0', 's1' ],
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074041] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-7',
+  roomCode: 'P8AB',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074041] gameDelta isFinalMove=false
+[FM-SRV 1792362074041] gameDelta isFinalMove=false
+[FM-SRV 1792362074041] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-7',
+  roomCode: 'P8AB',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074041] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-7',
+  roomCode: 'P8AB',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074041] gameDelta isFinalMove=false
+[FM-SRV 1792362074041] gameDelta isFinalMove=false
+[FM-SRV 1792362074041] gameDelta isFinalMove=false
+[FM-SRV 1792362074041] gameDelta isFinalMove=false
+[FM-SRV 1792362074041] gameDelta isFinalMove=false
+[FM-SRV 1792362074041] gameDelta isFinalMove=false
+[FM-SRV 1792362074041] gameDelta isFinalMove=false
+[FM-SRV 1792362074041] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-7',
+  roomCode: 'P8AB',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074042] gameDelta isFinalMove=false
+[FM-SRV 1792362074042] gameDelta isFinalMove=false
+[FM-SRV 1792362074042] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-7',
+  roomCode: 'P8AB',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074042] gameDelta isFinalMove=false
+[FM-SRV 1792362074042] gameDelta isFinalMove=false
+[FM-SRV 1792362074042] gameDelta isFinalMove=false
+[FM-SRV 1792362074042] gameDelta isFinalMove=false
+[FM-SRV 1792362074042] gameDelta isFinalMove=false
+[FM-SRV 1792362074042] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-7',
+  roomCode: 'P8AB',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074042] gameDelta isFinalMove=false
+[FM-SRV 1792362074042] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-7',
+  roomCode: 'P8AB',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074042] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-7',
+  roomCode: 'P8AB',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074042] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-7',
+  roomCode: 'P8AB',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074042] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-7',
+  roomCode: 'P8AB',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074042] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-7',
+  roomCode: 'P8AB',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074042] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-7',
+  roomCode: 'P8AB',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074043] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-7',
+  roomCode: 'P8AB',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074043] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-7',
+  roomCode: 'P8AB',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074043] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-7',
+  roomCode: 'P8AB',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074043] syncState includeBoardJson=false
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-7',
+  roomCode: 'P8AB',
+  gameActive: false,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[ROOM_DEBUG] startDeal:enter {
+  roomId: 'regression-101-7',
+  roomCode: 'P8AB',
+  stakeKey: 'free',
+  currentDealMatchId: 'regression-101-7:round:1',
+  matchRound: 1,
+  playerOrder: [ 's0', 's1' ],
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074043] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-7',
+  roomCode: 'P8AB',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074043] gameDelta isFinalMove=false
+[FM-SRV 1792362074043] gameDelta isFinalMove=false
+[FM-SRV 1792362074043] gameDelta isFinalMove=false
+[FM-SRV 1792362074044] gameDelta isFinalMove=false
+[FM-SRV 1792362074044] gameDelta isFinalMove=false
+[FM-SRV 1792362074044] gameDelta isFinalMove=false
+[FM-SRV 1792362074044] gameDelta isFinalMove=false
+[FM-SRV 1792362074044] gameDelta isFinalMove=false
+[FM-SRV 1792362074044] gameDelta isFinalMove=false
+[FM-SRV 1792362074044] gameDelta isFinalMove=false
+[FM-SRV 1792362074044] gameDelta isFinalMove=false
+[FM-SRV 1792362074044] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-7',
+  roomCode: 'P8AB',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074044] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-7',
+  roomCode: 'P8AB',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074044] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-7',
+  roomCode: 'P8AB',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074044] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-7',
+  roomCode: 'P8AB',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074044] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-7',
+  roomCode: 'P8AB',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074044] gameDelta isFinalMove=false
+[FM-SRV 1792362074044] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-7',
+  roomCode: 'P8AB',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074044] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-7',
+  roomCode: 'P8AB',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074044] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-7',
+  roomCode: 'P8AB',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074044] gameDelta isFinalMove=false
+[FM-SRV 1792362074044] gameDelta isFinalMove=false
+[FM-SRV 1792362074045] gameDelta isFinalMove=false
+[FM-SRV 1792362074045] gameDelta isFinalMove=false
+[FM-SRV 1792362074045] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-7',
+  roomCode: 'P8AB',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074045] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-7',
+  roomCode: 'P8AB',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074045] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-7',
+  roomCode: 'P8AB',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074045] gameDelta isFinalMove=false
+[FM-SRV 1792362074045] gameDelta isFinalMove=false
+[FM-SRV 1792362074045] gameDelta isFinalMove=false
+[FM-SRV 1792362074045] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-7',
+  roomCode: 'P8AB',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074045] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-7',
+  roomCode: 'P8AB',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074045] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-7',
+  roomCode: 'P8AB',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074045] gameDelta isFinalMove=false
+[FM-SRV 1792362074045] gameDelta isFinalMove=false
+[FM-SRV 1792362074045] gameDelta isFinalMove=false
+[FM-SRV 1792362074045] gameDelta isFinalMove=false
+[FM-SRV 1792362074045] gameDelta isFinalMove=false
+[FM-SRV 1792362074045] gameDelta isFinalMove=false
+[FM-SRV 1792362074045] gameDelta isFinalMove=false
+[FM-SRV 1792362074045] syncState includeBoardJson=false
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-7',
+  roomCode: 'P8AB',
+  gameActive: false,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[ROOM_DEBUG] startDeal:enter {
+  roomId: 'regression-101-7',
+  roomCode: 'P8AB',
+  stakeKey: 'free',
+  currentDealMatchId: 'regression-101-7:round:1',
+  matchRound: 1,
+  playerOrder: [ 's0', 's1' ],
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074046] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-7',
+  roomCode: 'P8AB',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074046] gameDelta isFinalMove=false
+[FM-SRV 1792362074046] gameDelta isFinalMove=false
+[FM-SRV 1792362074046] gameDelta isFinalMove=false
+[FM-SRV 1792362074046] gameDelta isFinalMove=false
+[FM-SRV 1792362074046] gameDelta isFinalMove=false
+[FM-SRV 1792362074046] gameDelta isFinalMove=false
+[FM-SRV 1792362074046] gameDelta isFinalMove=false
+[FM-SRV 1792362074046] gameDelta isFinalMove=false
+[FM-SRV 1792362074046] gameDelta isFinalMove=false
+[FM-SRV 1792362074046] gameDelta isFinalMove=false
+[FM-SRV 1792362074046] gameDelta isFinalMove=false
+[FM-SRV 1792362074046] gameDelta isFinalMove=false
+[FM-SRV 1792362074046] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-7',
+  roomCode: 'P8AB',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074046] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-7',
+  roomCode: 'P8AB',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074046] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-7',
+  roomCode: 'P8AB',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074046] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-7',
+  roomCode: 'P8AB',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074046] gameDelta isFinalMove=false
+[FM-SRV 1792362074046] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-7',
+  roomCode: 'P8AB',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074046] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-7',
+  roomCode: 'P8AB',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074047] gameDelta isFinalMove=false
+[FM-SRV 1792362074047] gameDelta isFinalMove=false
+[FM-SRV 1792362074047] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-7',
+  roomCode: 'P8AB',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074047] gameDelta isFinalMove=false
+[FM-SRV 1792362074047] gameDelta isFinalMove=false
+[FM-SRV 1792362074047] gameDelta isFinalMove=false
+[FM-SRV 1792362074047] gameDelta isFinalMove=false
+[FM-SRV 1792362074047] gameDelta isFinalMove=true
+[FM-SRV 1792362074047] end immediate
+[FM-SRV 1792362074047] syncState includeBoardJson=false
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-7',
+  roomCode: 'P8AB',
+  gameActive: false,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[ROOM_DEBUG] startDeal:enter {
+  roomId: 'regression-101-7',
+  roomCode: 'P8AB',
+  stakeKey: 'free',
+  currentDealMatchId: 'regression-101-7:round:1',
+  matchRound: 1,
+  playerOrder: [ 's0', 's1' ],
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074047] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-7',
+  roomCode: 'P8AB',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074047] gameDelta isFinalMove=false
+[FM-SRV 1792362074047] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-7',
+  roomCode: 'P8AB',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074047] gameDelta isFinalMove=false
+[FM-SRV 1792362074047] gameDelta isFinalMove=false
+[FM-SRV 1792362074047] gameDelta isFinalMove=false
+[FM-SRV 1792362074047] gameDelta isFinalMove=false
+[FM-SRV 1792362074047] gameDelta isFinalMove=false
+[FM-SRV 1792362074047] gameDelta isFinalMove=false
+[FM-SRV 1792362074047] gameDelta isFinalMove=false
+[FM-SRV 1792362074047] gameDelta isFinalMove=false
+[FM-SRV 1792362074047] gameDelta isFinalMove=false
+[FM-SRV 1792362074047] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-7',
+  roomCode: 'P8AB',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074048] gameDelta isFinalMove=false
+[FM-SRV 1792362074048] gameDelta isFinalMove=false
+[FM-SRV 1792362074048] gameDelta isFinalMove=false
+[FM-SRV 1792362074048] gameDelta isFinalMove=false
+[FM-SRV 1792362074048] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-7',
+  roomCode: 'P8AB',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074048] gameDelta isFinalMove=false
+[FM-SRV 1792362074048] gameDelta isFinalMove=true
+[FM-SRV 1792362074048] end immediate
+[FM-SRV 1792362074048] syncState includeBoardJson=false
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-7',
+  roomCode: 'P8AB',
+  gameActive: false,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[ROOM_DEBUG] startDeal:enter {
+  roomId: 'regression-101-7',
+  roomCode: 'P8AB',
+  stakeKey: 'free',
+  currentDealMatchId: 'regression-101-7:round:1',
+  matchRound: 1,
+  playerOrder: [ 's0', 's1' ],
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074048] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-7',
+  roomCode: 'P8AB',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074048] gameDelta isFinalMove=false
+[FM-SRV 1792362074048] gameDelta isFinalMove=false
+[FM-SRV 1792362074048] gameDelta isFinalMove=false
+[FM-SRV 1792362074048] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-7',
+  roomCode: 'P8AB',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074048] gameDelta isFinalMove=false
+[FM-SRV 1792362074048] gameDelta isFinalMove=false
+[FM-SRV 1792362074048] gameDelta isFinalMove=false
+[FM-SRV 1792362074048] gameDelta isFinalMove=false
+[FM-SRV 1792362074048] gameDelta isFinalMove=false
+[FM-SRV 1792362074048] gameDelta isFinalMove=false
+[FM-SRV 1792362074048] gameDelta isFinalMove=false
+[FM-SRV 1792362074048] gameDelta isFinalMove=false
+[FM-SRV 1792362074048] gameDelta isFinalMove=false
+[FM-SRV 1792362074048] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-7',
+  roomCode: 'P8AB',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074048] gameDelta isFinalMove=false
+[FM-SRV 1792362074049] gameDelta isFinalMove=false
+[FM-SRV 1792362074049] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-7',
+  roomCode: 'P8AB',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074049] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-7',
+  roomCode: 'P8AB',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074049] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-7',
+  roomCode: 'P8AB',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074049] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-7',
+  roomCode: 'P8AB',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074049] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-7',
+  roomCode: 'P8AB',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074049] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-7',
+  roomCode: 'P8AB',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074049] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-7',
+  roomCode: 'P8AB',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074049] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-7',
+  roomCode: 'P8AB',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074049] gameDelta isFinalMove=false
+[FM-SRV 1792362074049] gameDelta isFinalMove=true
+[FM-SRV 1792362074049] end immediate
+[FM-SRV 1792362074049] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-7',
+  roomCode: 'P8AB',
+  gameActive: false,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074049] syncState includeBoardJson=false
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-7',
+  roomCode: 'P8AB',
+  gameActive: false,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[ROOM_DEBUG] create {
+  roomId: 'regression-101-8',
+  roomCode: 'Q594',
+  roomVisibility: 'closed',
+  stakeKey: 'free',
+  totalPlayers: 4,
+  aiCount: 0,
+  humanSeats: 4,
+  maxClients: 4,
+  roomMode: 'team',
+  isTeamMode: true
+}
+[ROOM] Created room regression-101-8 (code Q594), humanSeats=4, totalPlayers=4, aiCount=0, teamMode=true
+[ROOM_DEBUG] startDeal:enter {
+  roomId: 'regression-101-8',
+  roomCode: 'Q594',
+  stakeKey: 'free',
+  currentDealMatchId: '',
+  matchRound: 1,
+  playerOrder: [ 's0', 's1', 's2', 's3' ],
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's2',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 2,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's3',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 3,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074050] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-8',
+  roomCode: 'Q594',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 4,
+  humanPlayers: 4,
+  humanSeats: 4,
+  aiCount: 0,
+  totalPlayers: 4,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's2',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 2,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's3',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 3,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074050] gameDelta isFinalMove=false
+[FM-SRV 1792362074050] gameDelta isFinalMove=false
+[FM-SRV 1792362074050] gameDelta isFinalMove=false
+[FM-SRV 1792362074050] gameDelta isFinalMove=false
+[FM-SRV 1792362074050] gameDelta isFinalMove=false
+[FM-SRV 1792362074050] gameDelta isFinalMove=false
+[FM-SRV 1792362074050] gameDelta isFinalMove=false
+[FM-SRV 1792362074050] gameDelta isFinalMove=false
+[FM-SRV 1792362074050] gameDelta isFinalMove=false
+[FM-SRV 1792362074050] gameDelta isFinalMove=false
+[FM-SRV 1792362074050] gameDelta isFinalMove=false
+[FM-SRV 1792362074051] gameDelta isFinalMove=false
+[FM-SRV 1792362074051] gameDelta isFinalMove=false
+[FM-SRV 1792362074051] gameDelta isFinalMove=false
+[FM-SRV 1792362074051] gameDelta isFinalMove=false
+[FM-SRV 1792362074051] gameDelta isFinalMove=false
+[FM-SRV 1792362074051] gameDelta isFinalMove=false
+[FM-SRV 1792362074051] gameDelta isFinalMove=false
+[FM-SRV 1792362074051] gameDelta isFinalMove=false
+[FM-SRV 1792362074051] syncState includeBoardJson=false
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-8',
+  roomCode: 'Q594',
+  gameActive: false,
+  seatSelectionRequired: false,
+  currentPlayers: 4,
+  humanPlayers: 4,
+  humanSeats: 4,
+  aiCount: 0,
+  totalPlayers: 4,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's2',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 2,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's3',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 3,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[ROOM_DEBUG] startDeal:enter {
+  roomId: 'regression-101-8',
+  roomCode: 'Q594',
+  stakeKey: 'free',
+  currentDealMatchId: 'regression-101-8:round:1',
+  matchRound: 1,
+  playerOrder: [ 's0', 's1', 's2', 's3' ],
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's2',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 2,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's3',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 3,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074051] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-8',
+  roomCode: 'Q594',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 4,
+  humanPlayers: 4,
+  humanSeats: 4,
+  aiCount: 0,
+  totalPlayers: 4,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's2',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 2,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's3',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 3,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074051] gameDelta isFinalMove=false
+[FM-SRV 1792362074051] gameDelta isFinalMove=false
+[FM-SRV 1792362074051] gameDelta isFinalMove=false
+[FM-SRV 1792362074051] gameDelta isFinalMove=false
+[FM-SRV 1792362074051] gameDelta isFinalMove=false
+[FM-SRV 1792362074051] gameDelta isFinalMove=false
+[FM-SRV 1792362074051] gameDelta isFinalMove=false
+[FM-SRV 1792362074051] gameDelta isFinalMove=false
+[FM-SRV 1792362074052] gameDelta isFinalMove=false
+[FM-SRV 1792362074052] gameDelta isFinalMove=false
+[FM-SRV 1792362074052] gameDelta isFinalMove=false
+[FM-SRV 1792362074052] gameDelta isFinalMove=false
+[FM-SRV 1792362074052] gameDelta isFinalMove=false
+[FM-SRV 1792362074052] gameDelta isFinalMove=false
+[FM-SRV 1792362074052] gameDelta isFinalMove=false
+[FM-SRV 1792362074052] gameDelta isFinalMove=false
+[FM-SRV 1792362074052] gameDelta isFinalMove=false
+[FM-SRV 1792362074052] gameDelta isFinalMove=false
+[FM-SRV 1792362074052] gameDelta isFinalMove=false
+[FM-SRV 1792362074052] gameDelta isFinalMove=false
+[FM-SRV 1792362074052] gameDelta isFinalMove=false
+[FM-SRV 1792362074052] gameDelta isFinalMove=false
+[FM-SRV 1792362074052] gameDelta isFinalMove=false
+[FM-SRV 1792362074052] gameDelta isFinalMove=true
+[FM-SRV 1792362074052] end immediate
+[FM-SRV 1792362074052] syncState includeBoardJson=false
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-8',
+  roomCode: 'Q594',
+  gameActive: false,
+  seatSelectionRequired: false,
+  currentPlayers: 4,
+  humanPlayers: 4,
+  humanSeats: 4,
+  aiCount: 0,
+  totalPlayers: 4,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's2',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 2,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's3',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 3,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[ROOM_DEBUG] startDeal:enter {
+  roomId: 'regression-101-8',
+  roomCode: 'Q594',
+  stakeKey: 'free',
+  currentDealMatchId: 'regression-101-8:round:1',
+  matchRound: 1,
+  playerOrder: [ 's0', 's1', 's2', 's3' ],
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's2',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 2,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's3',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 3,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074052] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-8',
+  roomCode: 'Q594',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 4,
+  humanPlayers: 4,
+  humanSeats: 4,
+  aiCount: 0,
+  totalPlayers: 4,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's2',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 2,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's3',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 3,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074053] gameDelta isFinalMove=false
+[FM-SRV 1792362074053] gameDelta isFinalMove=false
+[FM-SRV 1792362074053] gameDelta isFinalMove=false
+[FM-SRV 1792362074053] gameDelta isFinalMove=false
+[FM-SRV 1792362074053] gameDelta isFinalMove=false
+[FM-SRV 1792362074053] gameDelta isFinalMove=false
+[FM-SRV 1792362074053] gameDelta isFinalMove=false
+[FM-SRV 1792362074053] gameDelta isFinalMove=false
+[FM-SRV 1792362074053] gameDelta isFinalMove=false
+[FM-SRV 1792362074053] gameDelta isFinalMove=false
+[FM-SRV 1792362074053] gameDelta isFinalMove=false
+[FM-SRV 1792362074053] gameDelta isFinalMove=false
+[FM-SRV 1792362074053] gameDelta isFinalMove=false
+[FM-SRV 1792362074053] gameDelta isFinalMove=false
+[FM-SRV 1792362074053] gameDelta isFinalMove=false
+[FM-SRV 1792362074053] gameDelta isFinalMove=false
+[FM-SRV 1792362074053] gameDelta isFinalMove=false
+[FM-SRV 1792362074053] gameDelta isFinalMove=false
+[FM-SRV 1792362074053] gameDelta isFinalMove=false
+[FM-SRV 1792362074054] gameDelta isFinalMove=false
+[FM-SRV 1792362074054] gameDelta isFinalMove=false
+[FM-SRV 1792362074054] gameDelta isFinalMove=false
+[FM-SRV 1792362074054] gameDelta isFinalMove=false
+[FM-SRV 1792362074054] gameDelta isFinalMove=false
+[FM-SRV 1792362074054] gameDelta isFinalMove=true
+[FM-SRV 1792362074054] end immediate
+[FM-SRV 1792362074054] syncState includeBoardJson=false
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-8',
+  roomCode: 'Q594',
+  gameActive: false,
+  seatSelectionRequired: false,
+  currentPlayers: 4,
+  humanPlayers: 4,
+  humanSeats: 4,
+  aiCount: 0,
+  totalPlayers: 4,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's2',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 2,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's3',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 3,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[ROOM_DEBUG] startDeal:enter {
+  roomId: 'regression-101-8',
+  roomCode: 'Q594',
+  stakeKey: 'free',
+  currentDealMatchId: 'regression-101-8:round:1',
+  matchRound: 1,
+  playerOrder: [ 's0', 's1', 's2', 's3' ],
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's2',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 2,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's3',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 3,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074055] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-8',
+  roomCode: 'Q594',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 4,
+  humanPlayers: 4,
+  humanSeats: 4,
+  aiCount: 0,
+  totalPlayers: 4,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's2',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 2,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's3',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 3,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074055] gameDelta isFinalMove=false
+[FM-SRV 1792362074055] gameDelta isFinalMove=false
+[FM-SRV 1792362074055] gameDelta isFinalMove=false
+[FM-SRV 1792362074055] gameDelta isFinalMove=false
+[FM-SRV 1792362074055] gameDelta isFinalMove=false
+[FM-SRV 1792362074055] gameDelta isFinalMove=false
+[FM-SRV 1792362074055] gameDelta isFinalMove=false
+[FM-SRV 1792362074055] gameDelta isFinalMove=false
+[FM-SRV 1792362074055] gameDelta isFinalMove=false
+[FM-SRV 1792362074055] gameDelta isFinalMove=false
+[FM-SRV 1792362074055] gameDelta isFinalMove=false
+[FM-SRV 1792362074055] gameDelta isFinalMove=false
+[FM-SRV 1792362074055] gameDelta isFinalMove=false
+[FM-SRV 1792362074055] gameDelta isFinalMove=false
+[FM-SRV 1792362074055] gameDelta isFinalMove=false
+[FM-SRV 1792362074055] gameDelta isFinalMove=false
+[FM-SRV 1792362074055] gameDelta isFinalMove=false
+[FM-SRV 1792362074055] gameDelta isFinalMove=false
+[FM-SRV 1792362074055] gameDelta isFinalMove=false
+[FM-SRV 1792362074055] gameDelta isFinalMove=false
+[FM-SRV 1792362074055] gameDelta isFinalMove=false
+[FM-SRV 1792362074055] gameDelta isFinalMove=false
+[FM-SRV 1792362074056] gameDelta isFinalMove=true
+[FM-SRV 1792362074056] end immediate
+[FM-SRV 1792362074056] syncState includeBoardJson=false
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-8',
+  roomCode: 'Q594',
+  gameActive: false,
+  seatSelectionRequired: false,
+  currentPlayers: 4,
+  humanPlayers: 4,
+  humanSeats: 4,
+  aiCount: 0,
+  totalPlayers: 4,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's2',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 2,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's3',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 3,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[ROOM_DEBUG] startDeal:enter {
+  roomId: 'regression-101-8',
+  roomCode: 'Q594',
+  stakeKey: 'free',
+  currentDealMatchId: 'regression-101-8:round:1',
+  matchRound: 1,
+  playerOrder: [ 's0', 's1', 's2', 's3' ],
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's2',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 2,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's3',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 3,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074056] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-8',
+  roomCode: 'Q594',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 4,
+  humanPlayers: 4,
+  humanSeats: 4,
+  aiCount: 0,
+  totalPlayers: 4,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's2',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 2,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's3',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 3,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074056] gameDelta isFinalMove=false
+[FM-SRV 1792362074056] gameDelta isFinalMove=false
+[FM-SRV 1792362074056] gameDelta isFinalMove=false
+[FM-SRV 1792362074056] gameDelta isFinalMove=false
+[FM-SRV 1792362074056] gameDelta isFinalMove=false
+[FM-SRV 1792362074056] gameDelta isFinalMove=false
+[FM-SRV 1792362074056] gameDelta isFinalMove=false
+[FM-SRV 1792362074056] gameDelta isFinalMove=false
+[FM-SRV 1792362074056] gameDelta isFinalMove=false
+[FM-SRV 1792362074056] gameDelta isFinalMove=false
+[FM-SRV 1792362074056] gameDelta isFinalMove=false
+[FM-SRV 1792362074056] gameDelta isFinalMove=false
+[FM-SRV 1792362074056] gameDelta isFinalMove=false
+[FM-SRV 1792362074056] gameDelta isFinalMove=false
+[FM-SRV 1792362074056] gameDelta isFinalMove=false
+[FM-SRV 1792362074056] gameDelta isFinalMove=false
+[FM-SRV 1792362074056] gameDelta isFinalMove=false
+[FM-SRV 1792362074056] gameDelta isFinalMove=false
+[FM-SRV 1792362074056] gameDelta isFinalMove=false
+[FM-SRV 1792362074057] gameDelta isFinalMove=false
+[FM-SRV 1792362074057] gameDelta isFinalMove=false
+[FM-SRV 1792362074057] gameDelta isFinalMove=false
+[FM-SRV 1792362074057] gameDelta isFinalMove=true
+[FM-SRV 1792362074057] end immediate
+[FM-SRV 1792362074057] syncState includeBoardJson=false
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-8',
+  roomCode: 'Q594',
+  gameActive: false,
+  seatSelectionRequired: false,
+  currentPlayers: 4,
+  humanPlayers: 4,
+  humanSeats: 4,
+  aiCount: 0,
+  totalPlayers: 4,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's2',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 2,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's3',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 3,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[ROOM_DEBUG] startDeal:enter {
+  roomId: 'regression-101-8',
+  roomCode: 'Q594',
+  stakeKey: 'free',
+  currentDealMatchId: 'regression-101-8:round:1',
+  matchRound: 1,
+  playerOrder: [ 's0', 's1', 's2', 's3' ],
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's2',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 2,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's3',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 3,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074057] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-8',
+  roomCode: 'Q594',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 4,
+  humanPlayers: 4,
+  humanSeats: 4,
+  aiCount: 0,
+  totalPlayers: 4,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's2',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 2,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's3',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 3,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074057] gameDelta isFinalMove=false
+[FM-SRV 1792362074057] gameDelta isFinalMove=false
+[FM-SRV 1792362074057] gameDelta isFinalMove=false
+[FM-SRV 1792362074057] gameDelta isFinalMove=false
+[FM-SRV 1792362074057] gameDelta isFinalMove=false
+[FM-SRV 1792362074057] gameDelta isFinalMove=false
+[FM-SRV 1792362074057] gameDelta isFinalMove=false
+[FM-SRV 1792362074057] gameDelta isFinalMove=false
+[FM-SRV 1792362074057] gameDelta isFinalMove=false
+[FM-SRV 1792362074057] gameDelta isFinalMove=false
+[FM-SRV 1792362074057] gameDelta isFinalMove=false
+[FM-SRV 1792362074057] gameDelta isFinalMove=false
+[FM-SRV 1792362074057] gameDelta isFinalMove=false
+[FM-SRV 1792362074057] gameDelta isFinalMove=false
+[FM-SRV 1792362074057] gameDelta isFinalMove=false
+[FM-SRV 1792362074057] gameDelta isFinalMove=false
+[FM-SRV 1792362074058] gameDelta isFinalMove=false
+[FM-SRV 1792362074058] gameDelta isFinalMove=false
+[FM-SRV 1792362074058] gameDelta isFinalMove=false
+[FM-SRV 1792362074058] gameDelta isFinalMove=false
+[FM-SRV 1792362074058] gameDelta isFinalMove=false
+[FM-SRV 1792362074058] gameDelta isFinalMove=false
+[FM-SRV 1792362074058] syncState includeBoardJson=false
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-8',
+  roomCode: 'Q594',
+  gameActive: false,
+  seatSelectionRequired: false,
+  currentPlayers: 4,
+  humanPlayers: 4,
+  humanSeats: 4,
+  aiCount: 0,
+  totalPlayers: 4,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's2',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 2,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's3',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 3,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[ROOM_DEBUG] startDeal:enter {
+  roomId: 'regression-101-8',
+  roomCode: 'Q594',
+  stakeKey: 'free',
+  currentDealMatchId: 'regression-101-8:round:1',
+  matchRound: 1,
+  playerOrder: [ 's0', 's1', 's2', 's3' ],
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's2',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 2,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's3',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 3,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074058] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-8',
+  roomCode: 'Q594',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 4,
+  humanPlayers: 4,
+  humanSeats: 4,
+  aiCount: 0,
+  totalPlayers: 4,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's2',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 2,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's3',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 3,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074058] gameDelta isFinalMove=false
+[FM-SRV 1792362074058] gameDelta isFinalMove=false
+[FM-SRV 1792362074058] gameDelta isFinalMove=false
+[FM-SRV 1792362074058] gameDelta isFinalMove=false
+[FM-SRV 1792362074058] gameDelta isFinalMove=false
+[FM-SRV 1792362074058] gameDelta isFinalMove=false
+[FM-SRV 1792362074058] gameDelta isFinalMove=false
+[FM-SRV 1792362074058] gameDelta isFinalMove=false
+[FM-SRV 1792362074058] gameDelta isFinalMove=false
+[FM-SRV 1792362074058] gameDelta isFinalMove=false
+[FM-SRV 1792362074058] gameDelta isFinalMove=false
+[FM-SRV 1792362074058] gameDelta isFinalMove=false
+[FM-SRV 1792362074058] gameDelta isFinalMove=false
+[FM-SRV 1792362074058] gameDelta isFinalMove=false
+[FM-SRV 1792362074058] gameDelta isFinalMove=false
+[FM-SRV 1792362074059] gameDelta isFinalMove=false
+[FM-SRV 1792362074059] gameDelta isFinalMove=false
+[FM-SRV 1792362074059] gameDelta isFinalMove=false
+[FM-SRV 1792362074059] syncState includeBoardJson=false
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-8',
+  roomCode: 'Q594',
+  gameActive: false,
+  seatSelectionRequired: false,
+  currentPlayers: 4,
+  humanPlayers: 4,
+  humanSeats: 4,
+  aiCount: 0,
+  totalPlayers: 4,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's2',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 2,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's3',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 3,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[ROOM_DEBUG] startDeal:enter {
+  roomId: 'regression-101-8',
+  roomCode: 'Q594',
+  stakeKey: 'free',
+  currentDealMatchId: 'regression-101-8:round:1',
+  matchRound: 1,
+  playerOrder: [ 's0', 's1', 's2', 's3' ],
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's2',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 2,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's3',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 3,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074059] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-8',
+  roomCode: 'Q594',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 4,
+  humanPlayers: 4,
+  humanSeats: 4,
+  aiCount: 0,
+  totalPlayers: 4,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's2',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 2,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's3',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 3,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074059] gameDelta isFinalMove=false
+[FM-SRV 1792362074059] gameDelta isFinalMove=false
+[FM-SRV 1792362074059] gameDelta isFinalMove=false
+[FM-SRV 1792362074059] gameDelta isFinalMove=false
+[FM-SRV 1792362074059] gameDelta isFinalMove=false
+[FM-SRV 1792362074059] gameDelta isFinalMove=false
+[FM-SRV 1792362074059] gameDelta isFinalMove=false
+[FM-SRV 1792362074059] gameDelta isFinalMove=false
+[FM-SRV 1792362074059] gameDelta isFinalMove=false
+[FM-SRV 1792362074059] gameDelta isFinalMove=false
+[FM-SRV 1792362074059] gameDelta isFinalMove=false
+[FM-SRV 1792362074059] gameDelta isFinalMove=false
+[FM-SRV 1792362074059] gameDelta isFinalMove=false
+[FM-SRV 1792362074059] gameDelta isFinalMove=false
+[FM-SRV 1792362074059] gameDelta isFinalMove=false
+[FM-SRV 1792362074059] gameDelta isFinalMove=false
+[FM-SRV 1792362074059] gameDelta isFinalMove=false
+[FM-SRV 1792362074060] gameDelta isFinalMove=false
+[FM-SRV 1792362074060] gameDelta isFinalMove=false
+[FM-SRV 1792362074060] gameDelta isFinalMove=false
+[FM-SRV 1792362074060] gameDelta isFinalMove=false
+[FM-SRV 1792362074060] gameDelta isFinalMove=false
+[FM-SRV 1792362074060] gameDelta isFinalMove=false
+[FM-SRV 1792362074060] gameDelta isFinalMove=false
+[FM-SRV 1792362074060] gameDelta isFinalMove=true
+[FM-SRV 1792362074060] end immediate
+[FM-SRV 1792362074060] syncState includeBoardJson=false
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-8',
+  roomCode: 'Q594',
+  gameActive: false,
+  seatSelectionRequired: false,
+  currentPlayers: 4,
+  humanPlayers: 4,
+  humanSeats: 4,
+  aiCount: 0,
+  totalPlayers: 4,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's2',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 2,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's3',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 3,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[ROOM_DEBUG] startDeal:enter {
+  roomId: 'regression-101-8',
+  roomCode: 'Q594',
+  stakeKey: 'free',
+  currentDealMatchId: 'regression-101-8:round:1',
+  matchRound: 1,
+  playerOrder: [ 's0', 's1', 's2', 's3' ],
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's2',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 2,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's3',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 3,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074060] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-8',
+  roomCode: 'Q594',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 4,
+  humanPlayers: 4,
+  humanSeats: 4,
+  aiCount: 0,
+  totalPlayers: 4,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's2',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 2,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's3',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 3,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074060] gameDelta isFinalMove=false
+[FM-SRV 1792362074060] gameDelta isFinalMove=false
+[FM-SRV 1792362074060] gameDelta isFinalMove=false
+[FM-SRV 1792362074060] gameDelta isFinalMove=false
+[FM-SRV 1792362074060] gameDelta isFinalMove=false
+[FM-SRV 1792362074060] gameDelta isFinalMove=false
+[FM-SRV 1792362074060] gameDelta isFinalMove=false
+[FM-SRV 1792362074060] gameDelta isFinalMove=false
+[FM-SRV 1792362074060] gameDelta isFinalMove=false
+[FM-SRV 1792362074060] gameDelta isFinalMove=false
+[FM-SRV 1792362074060] gameDelta isFinalMove=false
+[FM-SRV 1792362074060] gameDelta isFinalMove=false
+[FM-SRV 1792362074060] gameDelta isFinalMove=false
+[FM-SRV 1792362074061] gameDelta isFinalMove=false
+[FM-SRV 1792362074061] gameDelta isFinalMove=false
+[FM-SRV 1792362074061] gameDelta isFinalMove=false
+[FM-SRV 1792362074061] gameDelta isFinalMove=false
+[FM-SRV 1792362074061] gameDelta isFinalMove=false
+[FM-SRV 1792362074061] gameDelta isFinalMove=false
+[FM-SRV 1792362074061] gameDelta isFinalMove=false
+[FM-SRV 1792362074061] gameDelta isFinalMove=false
+[FM-SRV 1792362074061] gameDelta isFinalMove=false
+[FM-SRV 1792362074061] gameDelta isFinalMove=false
+[FM-SRV 1792362074061] gameDelta isFinalMove=true
+[FM-SRV 1792362074061] end immediate
+[FM-SRV 1792362074061] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-8',
+  roomCode: 'Q594',
+  gameActive: false,
+  seatSelectionRequired: false,
+  currentPlayers: 4,
+  humanPlayers: 4,
+  humanSeats: 4,
+  aiCount: 0,
+  totalPlayers: 4,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's2',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 2,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's3',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 3,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792362074061] syncState includeBoardJson=false
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-8',
+  roomCode: 'Q594',
+  gameActive: false,
+  seatSelectionRequired: false,
+  currentPlayers: 4,
+  humanPlayers: 4,
+  humanSeats: 4,
+  aiCount: 0,
+  totalPlayers: 4,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's2',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 2,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's3',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 3,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+✔ 101 seed225 draws to opening double before turn, schema, payload and snapshot are published (10.736042ms)
+✔ 101 previous deal winner still opens without drawing extra tiles (0.848416ms)
+✔ 101 normal opening distribution and tile conservation for 2 players, team=false (1.496959ms)
+✔ 101 normal opening distribution and tile conservation for 3 players, team=false (1.283042ms)
+✔ 101 normal opening distribution and tile conservation for 4 players, team=true (1.615708ms)
+✔ 101 complete match from seed225, players=2 keeps a valid turn and all28tiles (19.212792ms)
+ℹ {"seed":225,"count":2,"team":false,"actions":267,"deals":9,"scores":[140,32]}
+✔ 101 complete match from seed17, players=4 keeps a valid turn and all28tiles (11.6225ms)
+ℹ {"seed":17,"count":4,"team":true,"actions":228,"deals":9,"scores":[105,85]}
+ℹ tests 7
+ℹ suites 0
+ℹ pass 7
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 286.838417

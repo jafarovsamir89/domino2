@@ -1,0 +1,914 @@
+ℹ️  optional .env file not found: .env.test, .env
+[ROOM_DEBUG] create {
+  roomId: 'regression-101-1',
+  roomCode: 'L5Y2',
+  roomVisibility: 'closed',
+  stakeKey: 'free',
+  totalPlayers: 2,
+  aiCount: 0,
+  humanSeats: 2,
+  maxClients: 2,
+  roomMode: 'ffa',
+  isTeamMode: false
+}
+[ROOM] Created room regression-101-1 (code L5Y2), humanSeats=2, totalPlayers=2, aiCount=0, teamMode=false
+[ROOM_DEBUG] startDeal:enter {
+  roomId: 'regression-101-1',
+  roomCode: 'L5Y2',
+  stakeKey: 'free',
+  currentDealMatchId: '',
+  matchRound: 1,
+  playerOrder: [ 's0', 's1' ],
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792361997404] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-1',
+  roomCode: 'L5Y2',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[ROOM_DEBUG] create {
+  roomId: 'regression-101-2',
+  roomCode: 'Q6XL',
+  roomVisibility: 'closed',
+  stakeKey: 'free',
+  totalPlayers: 2,
+  aiCount: 0,
+  humanSeats: 2,
+  maxClients: 2,
+  roomMode: 'ffa',
+  isTeamMode: false
+}
+[ROOM] Created room regression-101-2 (code Q6XL), humanSeats=2, totalPlayers=2, aiCount=0, teamMode=false
+[ROOM_DEBUG] create {
+  roomId: 'regression-101-3',
+  roomCode: '7Q3Q',
+  roomVisibility: 'closed',
+  stakeKey: 'free',
+  totalPlayers: 2,
+  aiCount: 0,
+  humanSeats: 2,
+  maxClients: 2,
+  roomMode: 'ffa',
+  isTeamMode: false
+}
+[ROOM] Created room regression-101-3 (code 7Q3Q), humanSeats=2, totalPlayers=2, aiCount=0, teamMode=false
+[ROOM_DEBUG] startDeal:enter {
+  roomId: 'regression-101-3',
+  roomCode: '7Q3Q',
+  stakeKey: 'free',
+  currentDealMatchId: '',
+  matchRound: 1,
+  playerOrder: [ 's0', 's1' ],
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792361997411] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-3',
+  roomCode: '7Q3Q',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[ROOM_DEBUG] create {
+  roomId: 'regression-101-4',
+  roomCode: 'CSDD',
+  roomVisibility: 'closed',
+  stakeKey: 'free',
+  totalPlayers: 2,
+  aiCount: 0,
+  humanSeats: 2,
+  maxClients: 2,
+  roomMode: 'ffa',
+  isTeamMode: false
+}
+[ROOM] Created room regression-101-4 (code CSDD), humanSeats=2, totalPlayers=2, aiCount=0, teamMode=false
+[ROOM_DEBUG] startDeal:enter {
+  roomId: 'regression-101-4',
+  roomCode: 'CSDD',
+  stakeKey: 'free',
+  currentDealMatchId: '',
+  matchRound: 1,
+  playerOrder: [ 's0', 's1' ],
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792361997412] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-4',
+  roomCode: 'CSDD',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[ROOM_DEBUG] startDeal:enter {
+  roomId: 'regression-101-4',
+  roomCode: 'CSDD',
+  stakeKey: 'free',
+  currentDealMatchId: 'regression-101-4:round:1',
+  matchRound: 1,
+  playerOrder: [ 's0', 's1' ],
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792361997412] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-4',
+  roomCode: 'CSDD',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[ROOM_DEBUG] startDeal:enter {
+  roomId: 'regression-101-4',
+  roomCode: 'CSDD',
+  stakeKey: 'free',
+  currentDealMatchId: 'regression-101-4:round:1',
+  matchRound: 1,
+  playerOrder: [ 's0', 's1' ],
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792361997413] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-4',
+  roomCode: 'CSDD',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[ROOM_DEBUG] create {
+  roomId: 'regression-101-5',
+  roomCode: 'KG58',
+  roomVisibility: 'closed',
+  stakeKey: 'free',
+  totalPlayers: 3,
+  aiCount: 0,
+  humanSeats: 3,
+  maxClients: 3,
+  roomMode: 'ffa',
+  isTeamMode: false
+}
+[ROOM] Created room regression-101-5 (code KG58), humanSeats=3, totalPlayers=3, aiCount=0, teamMode=false
+[ROOM_DEBUG] startDeal:enter {
+  roomId: 'regression-101-5',
+  roomCode: 'KG58',
+  stakeKey: 'free',
+  currentDealMatchId: '',
+  matchRound: 1,
+  playerOrder: [ 's0', 's1', 's2' ],
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's2',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 2,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792361997413] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-5',
+  roomCode: 'KG58',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 3,
+  humanPlayers: 3,
+  humanSeats: 3,
+  aiCount: 0,
+  totalPlayers: 3,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's2',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 2,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[ROOM_DEBUG] startDeal:enter {
+  roomId: 'regression-101-5',
+  roomCode: 'KG58',
+  stakeKey: 'free',
+  currentDealMatchId: 'regression-101-5:round:1',
+  matchRound: 1,
+  playerOrder: [ 's0', 's1', 's2' ],
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's2',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 2,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792361997414] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-5',
+  roomCode: 'KG58',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 3,
+  humanPlayers: 3,
+  humanSeats: 3,
+  aiCount: 0,
+  totalPlayers: 3,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's2',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 2,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[ROOM_DEBUG] startDeal:enter {
+  roomId: 'regression-101-5',
+  roomCode: 'KG58',
+  stakeKey: 'free',
+  currentDealMatchId: 'regression-101-5:round:1',
+  matchRound: 1,
+  playerOrder: [ 's0', 's1', 's2' ],
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's2',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 2,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792361997414] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-5',
+  roomCode: 'KG58',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 3,
+  humanPlayers: 3,
+  humanSeats: 3,
+  aiCount: 0,
+  totalPlayers: 3,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's2',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 2,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[ROOM_DEBUG] create {
+  roomId: 'regression-101-6',
+  roomCode: 'MNUM',
+  roomVisibility: 'closed',
+  stakeKey: 'free',
+  totalPlayers: 4,
+  aiCount: 0,
+  humanSeats: 4,
+  maxClients: 4,
+  roomMode: 'team',
+  isTeamMode: true
+}
+[ROOM] Created room regression-101-6 (code MNUM), humanSeats=4, totalPlayers=4, aiCount=0, teamMode=true
+[ROOM_DEBUG] startDeal:enter {
+  roomId: 'regression-101-6',
+  roomCode: 'MNUM',
+  stakeKey: 'free',
+  currentDealMatchId: '',
+  matchRound: 1,
+  playerOrder: [ 's0', 's1', 's2', 's3' ],
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's2',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 2,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's3',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 3,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792361997415] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-6',
+  roomCode: 'MNUM',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 4,
+  humanPlayers: 4,
+  humanSeats: 4,
+  aiCount: 0,
+  totalPlayers: 4,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's2',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 2,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's3',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 3,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[ROOM_DEBUG] startDeal:enter {
+  roomId: 'regression-101-6',
+  roomCode: 'MNUM',
+  stakeKey: 'free',
+  currentDealMatchId: 'regression-101-6:round:1',
+  matchRound: 1,
+  playerOrder: [ 's0', 's1', 's2', 's3' ],
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's2',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 2,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's3',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 3,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792361997415] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-6',
+  roomCode: 'MNUM',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 4,
+  humanPlayers: 4,
+  humanSeats: 4,
+  aiCount: 0,
+  totalPlayers: 4,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's2',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 2,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's3',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 3,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[ROOM_DEBUG] startDeal:enter {
+  roomId: 'regression-101-6',
+  roomCode: 'MNUM',
+  stakeKey: 'free',
+  currentDealMatchId: 'regression-101-6:round:1',
+  matchRound: 1,
+  playerOrder: [ 's0', 's1', 's2', 's3' ],
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's2',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 2,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's3',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 3,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792361997416] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-6',
+  roomCode: 'MNUM',
+  gameActive: true,
+  seatSelectionRequired: false,
+  currentPlayers: 4,
+  humanPlayers: 4,
+  humanSeats: 4,
+  aiCount: 0,
+  totalPlayers: 4,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's2',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 2,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's3',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 3,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+✔ 101 seed225 draws to opening double before turn, schema, payload and snapshot are published (10.927791ms)
+✔ 101 previous deal winner still opens without drawing extra tiles (0.894708ms)
+✔ 101 normal opening distribution and tile conservation for 2 players, team=false (1.531583ms)
+✔ 101 normal opening distribution and tile conservation for 3 players, team=false (1.293458ms)
+✔ 101 normal opening distribution and tile conservation for 4 players, team=true (1.610708ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 196.133334

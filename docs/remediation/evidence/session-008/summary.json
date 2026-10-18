@@ -1,0 +1,19 @@
+{
+  "session": "S008", "task": "R-32", "parentCommit": "a643f39", "status": "fixed-locally",
+  "changes": ["Run existing classic101 drawToOpen before reserve/activation/schema/timer when first positive double is in bazaar", "Do not publish an invalid opening player"],
+  "checks": {
+    "beforeInitialSuite": {"command": "s008-opening-before.json", "tests": 5, "pass": 4, "fail": 1},
+    "afterInitialSuite": {"command": "s008-opening-after.json", "pass": 5, "fail": 0},
+    "afterWithCompleteMatches": {"command": "s008-opening-final.json", "pass": 7, "fail": 0},
+    "node22WithFishAndRulesets": {"command": "s008-101-node22-final.json", "pass": 17, "fail": 0},
+    "fullServerFinal": {"command": "s008-server-final.json", "tests": 286, "pass": 279, "fail": 7},
+    "sourceCheck": "s008-source-check.json", "failureComparison": "failure-delta.json", "discovery": "test-inventory.json"
+  },
+  "seed225": {"previousPlayer": -1, "openingPlayer": 1, "openingTile": "3-3", "tileIndex": 7, "draws": 2, "handSizes": [8,8], "bazaar": 12, "uniqueTiles": 28, "schemaPayloadStageSnapshotAgree": true},
+  "completeMatches": [
+    {"seed": 225, "players": 2, "team": false, "actions": 267, "deals": 9, "scores": [140,32], "finals": 1},
+    {"seed": 17, "players": 4, "team": true, "actions": 228, "deals": 9, "scores": [105,85], "finals": 1}
+  ],
+  "limits": ["Free simulations use first legal moves, local virtual timers and seeded deck; no real monetary/network I/O", "No browser/installed Android animation check", "Seven original server failures unchanged; R-25 partial", "No production or Play deployment"],
+  "batch": {"completed": ["R-03","R-31","R-32"], "totalLocallyClosed": 8, "backlogTotal": 42}
+}

@@ -1,0 +1,18 @@
+{
+  "label": "s008-opening-final",
+  "command": [
+    "node",
+    "--test",
+    "test/classic101-opening.test.js"
+  ],
+  "cwd": ".tmp/remediation-s008/clean/server",
+  "startedAt": "2026-10-18T22:21:13.717Z",
+  "finishedAt": "2026-10-18T22:21:14.072Z",
+  "durationMs": 355,
+  "exitCode": 0,
+  "signal": null,
+  "timedOut": false,
+  "error": null,
+  "log": "docs/remediation/evidence/session-008/s008-opening-final.log",
+  "environment": "Fresh allowlist, synthetic local API/DB, optional Redis disabled, no inherited secrets or copied .env"
+}

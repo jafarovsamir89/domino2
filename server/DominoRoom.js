@@ -1887,8 +1887,16 @@ class DominoRoom extends Room {
         if (this.lastDealWinner !== null) {
             this.state.currentPlayerIndex = this.lastDealWinner;
         } else {
-            const f = this.getActiveRuleset().determineFirstPlayer(this.hands);
-            this.state.currentPlayerIndex = f.player;
+            const ruleset = this.getActiveRuleset();
+            let opening = ruleset.determineFirstPlayer(this.hands);
+            if (this.gameMode === "classic101" && opening.drawToOpen) {
+                opening = ruleset.drawToOpen({ hands: this.hands, boneyard: this.boneyard, startPlayer: 0 });
+            }
+            if (!Number.isInteger(opening.player) || !this.hands[opening.player]?.[opening.tileIndex]) {
+                console.error("[ROOM] Cannot determine a valid opening player");
+                return;
+            }
+            this.state.currentPlayerIndex = opening.player;
         }
 
         if (this.currentStakeKey !== "free" && this.lastReservedMatchRound !== this.state.matchRound) {

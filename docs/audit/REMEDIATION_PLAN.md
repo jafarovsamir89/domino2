@@ -56,7 +56,7 @@ R-25 относится к этапу 0, но окончательно закр�
 
 #### R-25 · P1 · Вернуть полную тестовую матрицу в CI
 
-Статус: **частично выполнено, S001/S005**. Discovery после S005 включает38файлов/276cases,269pass/7fail;33новых regression pass, [те же7падений](../remediation/evidence/session-005/failure-delta.json). Новый E2E boundary проверен, последний browser baseline30/39. CI-gate и исправление оставшихся падений открыты. [Диспозиция](../remediation/evidence/session-001/FAILURES.md). Основание: пробел/падения подтверждены; [исторические доказательства](13_QA_TEST_RESULTS.md).
+Статус: **частично выполнено, S001–S008**. Discovery после S008 включает40файлов/286cases,279pass/7fail; [те же7падений](../remediation/evidence/session-008/failure-delta.json). Новый E2E boundary проверен, последний browser baseline30/39; API134/134. CI-gate и исправление оставшихся падений открыты. [Диспозиция](../remediation/evidence/session-001/FAILURES.md). [Исторические доказательства](13_QA_TEST_RESULTS.md).
 
 - **Изменение:** Включить обнаружение всех test files и зафиксировать исходные 7 server/9 E2E падений с причинами. Обновлять fixtures по согласованному поведению, а не ослаблять проверки ради зелёного результата. После исправлений сделать CI обязательным для полного набора, миграций, сборок и web asset parity.
 - **Где:** `server/package.json;e2e/domino.spec.mjs;CI отсутствует`.
@@ -123,7 +123,7 @@ R-25 относится к этапу 0, но окончательно закр�
 
 #### R-32 · P0 · Обрабатывать drawToOpen в онлайн 101
 
-Статус: **открыто**. Основание: воспроизведено:seed 225, player=-1; [доказательства](CONTINUATION_ANALYSIS.md).
+Статус: **исправлено локально, S008**. В fix/audit-foundation drawToOpen выполняется до gameActive/schema/timer; seed225 даёт2добора, руки8/8, player1, tile3-3, bazaar12,28unique tiles. Full_state/stage/snapshot restore согласованы. Initial до4/5, после5/5; с2полными матчами7/7; Node22+fish/rulesets17/17. Full server279/286, те же7старыхfail. [Проверки](../remediation/evidence/session-008/summary.json). Production/Play не обновлялись. [Исторические доказательства](CONTINUATION_ANALYSIS.md).
 
 - **Изменение:** Выполнить drawToOpen, когда первый положительный дубль остался в базаре. До объявления активного хода обновить руки, базар и допустимого текущего игрока. Контрольный seed 225 не должен оставлять currentPlayerIndex=-1.
 - **Где:** `server/DominoRoom.js:1890;shared/domino-rulesets.cjs:611`.

@@ -145,3 +145,15 @@ S006 commitfd86a81 опубликован. Готова isolated server copy/cle
 ### S007.1 — итог
 
 Behavioral3/3pass, Node22+rulesets10/10; fullserver272/279, те же7failure names,0newfailures. Сеть/API/production не вызывались, golden28tilesfixture сохранена отдельно от historical audit. Нормальный ruleset не менялся. Для владельца: очки рыбы больше не теряются, финал/settlement не повторяется. Локально7/42, R-25partial. Продолжаем третий пункт R-32.
+
+## S008/R-32 — первый ход101 при дубле в базаре
+
+После опубликованного S007a643f39 подготовлена fresh server copy/npmci. Детерминированный seed225 сначала проверяется реальным shuffle/first-player: положительных дублей на руках нет. До новый suite4/5pass, golden fail currentPlayerIndex=-1. Expected после drawToOpen:2добора, руки8/8, базар12, игрок1, обязательная3-3/index7. Дополнительные случаи: предыдущий победитель без добора; обычные seed1/17/87 при2/3/4team сохраняют исходное распределение.
+
+startDeal теперь выполняет существующий ruleset.drawToOpen до reserve/gameActive/schema/timer/payload; недопустимый opening не публикуется. Проверки включают28unique tiles, handCount/boneyardCount, full_state.validMoves/selfHand, визуальный opening-stage actor и roundtrip custom snapshot. Node test mocks ограничены собственными timers/random, реальные constructor/schema и startDeal. Browser/Play не трогаем.
+
+### S008.1 — пакет из3 завершён
+
+Initialbefore4/5, after5/5. Дополнительно проверены полные free101матчи:2FFAseed225267actions/9deals/scores140,32;4teamseed17228actions/9deals/scores105,85. Реальные startDeal/play/draw/pass/advance/endDeal/endRound, seeded deck/virtualtimers/firstlegalmove;1final/record и0monetarycalls. Final7/7, Node22fish+opening+rulesets17/17. Fullserver279/286,40files, те же7S001fail names (failure-delta.json),0newfailures. Sourcecheckpass. Более ранние s008-server-full/101-node22 — suite до добавления2wholematches, финальные s008-server-final/101-node22-final. Не считать fullCIзелёным.
+
+Для владельца: раздача без дублей на руках больше не зависает — сервер добирает кости и назначает корректный первый ход; руки/базар/сохранение не расходятся. ПакетR03/R31/R32 локально завершён,8/42, R25partial. Живой сервер, реальные кошельки и Play не менялись; PGостановлен послеS006, новых pluginsнет. Следующая очередь из3: R01/R04/R09, сначала ownership regression по карточке.

@@ -1,0 +1,15 @@
+{
+  "baselineFailures": 7,
+  "currentFailures": 7,
+  "newFailures": [],
+  "resolvedFailures": [],
+  "names": [
+    "client renders bazaar draw state from live solo hands and keeps multiplayer cache isolated",
+    "disconnect keeps live presence offline during grace and removes it after timeout",
+    "explicit leave stays a forfeit and never starts bot takeover",
+    "grace timeout starts bot takeover instead of forfeit when the feature is enabled",
+    "handleTimeoutContinue only accepts the timeout loser and starts the next round on success",
+    "reusable session restore sends full_state to new sessionId",
+    "server keeps the final board on game_delta and omits it from the immediate result sync"
+  ]
+}
