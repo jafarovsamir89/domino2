@@ -1,0 +1,20 @@
+{
+  "label": "s019-recovery-after",
+  "command": [
+    "node",
+    "--test",
+    "test/turn-recovery.test.js",
+    "test/stale-async-turn.test.js",
+    "test/instant-win-setting.test.js"
+  ],
+  "cwd": ".tmp/remediation-s019/clean/server",
+  "startedAt": "2026-10-18T23:13:57.641Z",
+  "finishedAt": "2026-10-18T23:13:58.037Z",
+  "durationMs": 396,
+  "exitCode": 0,
+  "signal": null,
+  "timedOut": false,
+  "error": null,
+  "log": "docs/remediation/evidence/session-019/s019-recovery-after.log",
+  "environment": "Fresh allowlist, synthetic local API/DB, optional Redis disabled, no inherited secrets or copied .env"
+}

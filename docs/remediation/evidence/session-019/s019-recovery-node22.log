@@ -1,0 +1,342 @@
+TAP version 13
+# ℹ️  optional .env file not found: .env.test, .env
+# [FM-SRV 1792365277887] gameDelta isFinalMove=false
+# [FM-SRV 1792365277888] gameDelta isFinalMove=false
+# [FM-SRV 1792365277888] gameDelta isFinalMove=false
+# [FM-SRV 1792365277888] gameDelta isFinalMove=false
+# [FM-SRV 1792365277888] gameDelta isFinalMove=false
+# [FM-SRV 1792365277888] gameDelta isFinalMove=false
+# [FM-SRV 1792365277888] gameDelta isFinalMove=false
+# [FM-SRV 1792365277888] gameDelta isFinalMove=false
+# [FM-SRV 1792365277889] gameDelta isFinalMove=true
+# [FM-SRV 1792365277889] end immediate
+# [FM-SRV 1792365277889] gameDelta isFinalMove=true
+# [FM-SRV 1792365277889] end immediate
+# [FM-SRV 1792365277890] gameDelta isFinalMove=true
+# [FM-SRV 1792365277890] end immediate
+# [FM-SRV 1792365277890] gameDelta isFinalMove=true
+# [FM-SRV 1792365277890] end immediate
+# Subtest: server play: instant=false, score=30 honors the setting
+ok 1 - server play: instant=false, score=30 honors the setting
+  ---
+  duration_ms: 1.46475
+  ...
+# Subtest: server gosha: instant=false, score=30 honors the setting
+ok 2 - server gosha: instant=false, score=30 honors the setting
+  ---
+  duration_ms: 0.259875
+  ...
+# Subtest: server play: instant=false, score=35 honors the setting
+ok 3 - server play: instant=false, score=35 honors the setting
+  ---
+  duration_ms: 0.099834
+  ...
+# Subtest: server gosha: instant=false, score=35 honors the setting
+ok 4 - server gosha: instant=false, score=35 honors the setting
+  ---
+  duration_ms: 0.127084
+  ...
+# Subtest: server play: instant=false, score=40 honors the setting
+ok 5 - server play: instant=false, score=40 honors the setting
+  ---
+  duration_ms: 0.119917
+  ...
+# Subtest: server gosha: instant=false, score=40 honors the setting
+ok 6 - server gosha: instant=false, score=40 honors the setting
+  ---
+  duration_ms: 0.083
+  ...
+# Subtest: server play: instant=true, score=30 honors the setting
+ok 7 - server play: instant=true, score=30 honors the setting
+  ---
+  duration_ms: 0.077958
+  ...
+# Subtest: server gosha: instant=true, score=30 honors the setting
+ok 8 - server gosha: instant=true, score=30 honors the setting
+  ---
+  duration_ms: 0.292125
+  ...
+# Subtest: server play: instant=true, score=35 honors the setting
+ok 9 - server play: instant=true, score=35 honors the setting
+  ---
+  duration_ms: 0.391792
+  ...
+# Subtest: server gosha: instant=true, score=35 honors the setting
+ok 10 - server gosha: instant=true, score=35 honors the setting
+  ---
+  duration_ms: 0.3805
+  ...
+# Subtest: server play: instant=true, score=40 honors the setting
+ok 11 - server play: instant=true, score=40 honors the setting
+  ---
+  duration_ms: 0.129875
+  ...
+# Subtest: server gosha: instant=true, score=40 honors the setting
+ok 12 - server gosha: instant=true, score=40 honors the setting
+  ---
+  duration_ms: 0.062916
+  ...
+# Subtest: js/app.js shared playTile: score35, instant=false
+ok 13 - js/app.js shared playTile: score35, instant=false
+  ---
+  duration_ms: 0.595792
+  ...
+# Subtest: js/app.js shared playGoshaCombo: score35, instant=false
+ok 14 - js/app.js shared playGoshaCombo: score35, instant=false
+  ---
+  duration_ms: 0.194417
+  ...
+# Subtest: js/app.js shared playTile: score35, instant=true
+ok 15 - js/app.js shared playTile: score35, instant=true
+  ---
+  duration_ms: 0.096292
+  ...
+# Subtest: js/app.js shared playGoshaCombo: score35, instant=true
+ok 16 - js/app.js shared playGoshaCombo: score35, instant=true
+  ---
+  duration_ms: 0.056458
+  ...
+# Subtest: js/app.js shared: disabling instant win still ends an empty hand
+ok 17 - js/app.js shared: disabling instant win still ends an empty hand
+  ---
+  duration_ms: 0.045875
+  ...
+# Subtest: js/app.js fallback playTile: score35, instant=false
+ok 18 - js/app.js fallback playTile: score35, instant=false
+  ---
+  duration_ms: 0.163875
+  ...
+# Subtest: js/app.js fallback playGoshaCombo: score35, instant=false
+ok 19 - js/app.js fallback playGoshaCombo: score35, instant=false
+  ---
+  duration_ms: 0.05875
+  ...
+# Subtest: js/app.js fallback playTile: score35, instant=true
+ok 20 - js/app.js fallback playTile: score35, instant=true
+  ---
+  duration_ms: 0.064167
+  ...
+# Subtest: js/app.js fallback playGoshaCombo: score35, instant=true
+ok 21 - js/app.js fallback playGoshaCombo: score35, instant=true
+  ---
+  duration_ms: 0.050209
+  ...
+# Subtest: js/app.js fallback: disabling instant win still ends an empty hand
+ok 22 - js/app.js fallback: disabling instant win still ends an empty hand
+  ---
+  duration_ms: 0.030083
+  ...
+# Subtest: www/js/app.js shared playTile: score35, instant=false
+ok 23 - www/js/app.js shared playTile: score35, instant=false
+  ---
+  duration_ms: 0.469167
+  ...
+# Subtest: www/js/app.js shared playGoshaCombo: score35, instant=false
+ok 24 - www/js/app.js shared playGoshaCombo: score35, instant=false
+  ---
+  duration_ms: 0.149
+  ...
+# Subtest: www/js/app.js shared playTile: score35, instant=true
+ok 25 - www/js/app.js shared playTile: score35, instant=true
+  ---
+  duration_ms: 0.062458
+  ...
+# Subtest: www/js/app.js shared playGoshaCombo: score35, instant=true
+ok 26 - www/js/app.js shared playGoshaCombo: score35, instant=true
+  ---
+  duration_ms: 0.040167
+  ...
+# Subtest: www/js/app.js shared: disabling instant win still ends an empty hand
+ok 27 - www/js/app.js shared: disabling instant win still ends an empty hand
+  ---
+  duration_ms: 0.025792
+  ...
+# Subtest: www/js/app.js fallback playTile: score35, instant=false
+ok 28 - www/js/app.js fallback playTile: score35, instant=false
+  ---
+  duration_ms: 1.507541
+  ...
+# Subtest: www/js/app.js fallback playGoshaCombo: score35, instant=false
+ok 29 - www/js/app.js fallback playGoshaCombo: score35, instant=false
+  ---
+  duration_ms: 0.070083
+  ...
+# Subtest: www/js/app.js fallback playTile: score35, instant=true
+ok 30 - www/js/app.js fallback playTile: score35, instant=true
+  ---
+  duration_ms: 0.078708
+  ...
+# Subtest: www/js/app.js fallback playGoshaCombo: score35, instant=true
+ok 31 - www/js/app.js fallback playGoshaCombo: score35, instant=true
+  ---
+  duration_ms: 0.0525
+  ...
+# Subtest: www/js/app.js fallback: disabling instant win still ends an empty hand
+ok 32 - www/js/app.js fallback: disabling instant win still ends an empty hand
+  ---
+  duration_ms: 0.029584
+  ...
+# Subtest: web and packaged app assets stay identical
+ok 33 - web and packaged app assets stay identical
+  ---
+  duration_ms: 2.802792
+  ...
+# Subtest: js/app.js: a reset during tile travel prevents the old score/advance/unlock
+ok 34 - js/app.js: a reset during tile travel prevents the old score/advance/unlock
+  ---
+  duration_ms: 12.957042
+  ...
+# Subtest: js/app.js: replacing board/hands without a cycle change also invalidates old work
+ok 35 - js/app.js: replacing board/hands without a cycle change also invalidates old work
+  ---
+  duration_ms: 4.687375
+  ...
+# Subtest: js/app.js: a current animation completes its move exactly once
+ok 36 - js/app.js: a current animation completes its move exactly once
+  ---
+  duration_ms: 4.138208
+  ...
+# Subtest: js/app.js: an old rejected animation cannot unlock a replacement turn
+ok 37 - js/app.js: an old rejected animation cannot unlock a replacement turn
+  ---
+  duration_ms: 3.567041
+  ...
+# Subtest: js/app.js: queued animation frames do not run against a replacement board
+ok 38 - js/app.js: queued animation frames do not run against a replacement board
+  ---
+  duration_ms: 3.106916
+  ...
+# Subtest: js/app.js: old 101 draw continuation cannot unlock a new turn
+ok 39 - js/app.js: old 101 draw continuation cannot unlock a new turn
+  ---
+  duration_ms: 3.285416
+  ...
+# Subtest: www/js/app.js: a reset during tile travel prevents the old score/advance/unlock
+ok 40 - www/js/app.js: a reset during tile travel prevents the old score/advance/unlock
+  ---
+  duration_ms: 10.202875
+  ...
+# Subtest: www/js/app.js: replacing board/hands without a cycle change also invalidates old work
+ok 41 - www/js/app.js: replacing board/hands without a cycle change also invalidates old work
+  ---
+  duration_ms: 3.0215
+  ...
+# Subtest: www/js/app.js: a current animation completes its move exactly once
+ok 42 - www/js/app.js: a current animation completes its move exactly once
+  ---
+  duration_ms: 3.155333
+  ...
+# Subtest: www/js/app.js: an old rejected animation cannot unlock a replacement turn
+ok 43 - www/js/app.js: an old rejected animation cannot unlock a replacement turn
+  ---
+  duration_ms: 4.494333
+  ...
+# Subtest: www/js/app.js: queued animation frames do not run against a replacement board
+ok 44 - www/js/app.js: queued animation frames do not run against a replacement board
+  ---
+  duration_ms: 2.845166
+  ...
+# Subtest: www/js/app.js: old 101 draw continuation cannot unlock a new turn
+ok 45 - www/js/app.js: old 101 draw continuation cannot unlock a new turn
+  ---
+  duration_ms: 2.711458
+  ...
+# Subtest: js/konvaBoardRenderer.js: cancelling an actual Konva travel settles it once and destroys the tween
+ok 46 - js/konvaBoardRenderer.js: cancelling an actual Konva travel settles it once and destroys the tween
+  ---
+  duration_ms: 3.033291
+  ...
+# Subtest: www/js/konvaBoardRenderer.js: cancelling an actual Konva travel settles it once and destroys the tween
+ok 47 - www/js/konvaBoardRenderer.js: cancelling an actual Konva travel settles it once and destroys the tween
+  ---
+  duration_ms: 1.03625
+  ...
+# Subtest: js/app.js: stalled committed tile completes once without replaying the board
+ok 48 - js/app.js: stalled committed tile completes once without replaying the board
+  ---
+  duration_ms: 13.035
+  ...
+# Subtest: js/app.js: online recovery requests state without locally unlocking or advancing
+ok 49 - js/app.js: online recovery requests state without locally unlocking or advancing
+  ---
+  duration_ms: 4.835167
+  ...
+# Subtest: js/app.js: an unknown phase records diagnostics without blindly unlocking
+ok 50 - js/app.js: an unknown phase records diagnostics without blindly unlocking
+  ---
+  duration_ms: 3.908166
+  ...
+# Subtest: js/app.js: old pre-result await/finalizer cannot clear a new phase
+ok 51 - js/app.js: old pre-result await/finalizer cannot clear a new phase
+  ---
+  duration_ms: 3.74125
+  ...
+# Subtest: js/app.js: recovery cancels a 101 draw loop and queues only one recomputation
+ok 52 - js/app.js: recovery cancels a 101 draw loop and queues only one recomputation
+  ---
+  duration_ms: 3.22025
+  ...
+# Subtest: js/app.js: lost advance timer is recovered once
+ok 53 - js/app.js: lost advance timer is recovered once
+  ---
+  duration_ms: 3.216459
+  ...
+# Subtest: js/app.js: a final reveal can settle once while its old presentation is still waiting
+ok 54 - js/app.js: a final reveal can settle once while its old presentation is still waiting
+  ---
+  duration_ms: 4.319542
+  ...
+# Subtest: js/app.js: real pre-result stages stop after their owner is reset
+ok 55 - js/app.js: real pre-result stages stop after their owner is reset
+  ---
+  duration_ms: 3.724167
+  ...
+# Subtest: www/js/app.js: stalled committed tile completes once without replaying the board
+ok 56 - www/js/app.js: stalled committed tile completes once without replaying the board
+  ---
+  duration_ms: 9.946666
+  ...
+# Subtest: www/js/app.js: online recovery requests state without locally unlocking or advancing
+ok 57 - www/js/app.js: online recovery requests state without locally unlocking or advancing
+  ---
+  duration_ms: 4.24725
+  ...
+# Subtest: www/js/app.js: an unknown phase records diagnostics without blindly unlocking
+ok 58 - www/js/app.js: an unknown phase records diagnostics without blindly unlocking
+  ---
+  duration_ms: 2.649583
+  ...
+# Subtest: www/js/app.js: old pre-result await/finalizer cannot clear a new phase
+ok 59 - www/js/app.js: old pre-result await/finalizer cannot clear a new phase
+  ---
+  duration_ms: 3.535084
+  ...
+# Subtest: www/js/app.js: recovery cancels a 101 draw loop and queues only one recomputation
+ok 60 - www/js/app.js: recovery cancels a 101 draw loop and queues only one recomputation
+  ---
+  duration_ms: 2.544542
+  ...
+# Subtest: www/js/app.js: lost advance timer is recovered once
+ok 61 - www/js/app.js: lost advance timer is recovered once
+  ---
+  duration_ms: 3.315083
+  ...
+# Subtest: www/js/app.js: a final reveal can settle once while its old presentation is still waiting
+ok 62 - www/js/app.js: a final reveal can settle once while its old presentation is still waiting
+  ---
+  duration_ms: 2.654416
+  ...
+# Subtest: www/js/app.js: real pre-result stages stop after their owner is reset
+ok 63 - www/js/app.js: real pre-result stages stop after their owner is reset
+  ---
+  duration_ms: 3.311834
+  ...
+1..63
+# tests 63
+# suites 0
+# pass 63
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 283.158209

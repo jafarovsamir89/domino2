@@ -190,7 +190,7 @@ Status: **fixed locally, S018**. Async local turns carry owner/generation/cycle/
 
 #### R-17 · P1 · Phase recovery вместо boolean watchdog
 
-Статус: **открыто**. Основание: риск по механизму; [доказательства](04_FREEZES_AND_STATE.md).
+Status: **fixed locally, S019**. Watchdog now diagnoses phase and keeps online locks until authoritative sync. Local committed tile has once-only settlement continuation, independent of animation completion; drawing cancels old loop and recomputes from current hand; advance/reveal timers have owned resumable phases. Pre-result awaits and finalizers cannot clear a replacement phase. Unknown phases remain locked with diagnostics rather than guessed progress. Before0/8, final16new tests + R16(14) + instant(33)=63pass Node22; full355/362 with same original7, source check pass. [Evidence](../remediation/evidence/session-019/summary.json).
 
 - **Изменение:** Заменить безусловный сброс turnInProgress диагностикой фазы и контролируемым восстановлением. В online сверяться с сервером; в solo восстанавливать детерминированный переход без повторного хода. Бесконечное зависание именно от watchdog в аудите не доказано.
 - **Где:** `js/app.js:763–768`.

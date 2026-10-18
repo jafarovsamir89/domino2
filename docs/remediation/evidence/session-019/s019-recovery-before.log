@@ -1,0 +1,82 @@
+✖ js/app.js: stalled committed tile completes once without replaying the board (11.827708ms)
+✖ js/app.js: online recovery requests state without locally unlocking or advancing (2.93ms)
+✖ js/app.js: an unknown phase records diagnostics without blindly unlocking (2.552ms)
+✔ js/app.js: old pre-result await/finalizer cannot clear a new phase (2.853167ms)
+✖ www/js/app.js: stalled committed tile completes once without replaying the board (10.501375ms)
+✖ www/js/app.js: online recovery requests state without locally unlocking or advancing (2.892375ms)
+✖ www/js/app.js: an unknown phase records diagnostics without blindly unlocking (2.426209ms)
+✔ www/js/app.js: old pre-result await/finalizer cannot clear a new phase (4.410334ms)
+ℹ tests 8
+ℹ suites 0
+ℹ pass 2
+ℹ fail 6
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 130.1295
+
+✖ failing tests:
+
+test at test/turn-recovery.test.js:3:2
+✖ js/app.js: stalled committed tile completes once without replaying the board (11.827708ms)
+  TypeError: game.recoverStalledTurn is not a function
+      at TestContext.<anonymous> (/Users/macbookair/Documents/domino/.tmp/remediation-s019/clean/server/test/turn-recovery.test.js:3:355)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.start (node:internal/test_runner/test:1015:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:358:17)
+
+test at test/turn-recovery.test.js:4:2
+✖ js/app.js: online recovery requests state without locally unlocking or advancing (2.93ms)
+  TypeError: game.recoverStalledTurn is not a function
+      at TestContext.<anonymous> (/Users/macbookair/Documents/domino/.tmp/remediation-s019/clean/server/test/turn-recovery.test.js:4:280)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:787:18)
+      at Test.postRun (node:internal/test_runner/test:1247:19)
+      at Test.run (node:internal/test_runner/test:1175:12)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:358:3)
+
+test at test/turn-recovery.test.js:5:2
+✖ js/app.js: an unknown phase records diagnostics without blindly unlocking (2.552ms)
+  TypeError: game.recoverStalledTurn is not a function
+      at TestContext.<anonymous> (/Users/macbookair/Documents/domino/.tmp/remediation-s019/clean/server/test/turn-recovery.test.js:5:212)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:787:18)
+      at Test.postRun (node:internal/test_runner/test:1247:19)
+      at Test.run (node:internal/test_runner/test:1175:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7)
+
+test at test/turn-recovery.test.js:3:2
+✖ www/js/app.js: stalled committed tile completes once without replaying the board (10.501375ms)
+  TypeError: game.recoverStalledTurn is not a function
+      at TestContext.<anonymous> (/Users/macbookair/Documents/domino/.tmp/remediation-s019/clean/server/test/turn-recovery.test.js:3:355)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:787:18)
+      at Test.postRun (node:internal/test_runner/test:1247:19)
+      at Test.run (node:internal/test_runner/test:1175:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7)
+
+test at test/turn-recovery.test.js:4:2
+✖ www/js/app.js: online recovery requests state without locally unlocking or advancing (2.892375ms)
+  TypeError: game.recoverStalledTurn is not a function
+      at TestContext.<anonymous> (/Users/macbookair/Documents/domino/.tmp/remediation-s019/clean/server/test/turn-recovery.test.js:4:280)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:787:18)
+      at Test.postRun (node:internal/test_runner/test:1247:19)
+      at Test.run (node:internal/test_runner/test:1175:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7)
+
+test at test/turn-recovery.test.js:5:2
+✖ www/js/app.js: an unknown phase records diagnostics without blindly unlocking (2.426209ms)
+  TypeError: game.recoverStalledTurn is not a function
+      at TestContext.<anonymous> (/Users/macbookair/Documents/domino/.tmp/remediation-s019/clean/server/test/turn-recovery.test.js:5:212)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:787:18)
+      at Test.postRun (node:internal/test_runner/test:1247:19)
+      at Test.run (node:internal/test_runner/test:1175:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7)

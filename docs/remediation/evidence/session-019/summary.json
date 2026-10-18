@@ -1,0 +1,16 @@
+{
+  "session": "S019",
+  "task": "R-17",
+  "status": "fixed-locally",
+  "details": "Watchdog now diagnoses phase and keeps online locks until authoritative sync. Local committed tile has once-only settlement continuation, independent of animation completion; drawing cancels old loop and recomputes from current hand; advance/reveal timers have owned resumable phases. Pre-result awaits and finalizers cannot clear a replacement phase. Unknown phases remain locked with diagnostics rather than guessed progress. Before0/8, final16new tests + R16(14) + instant(33)=63pass Node22; full355/362 with same original7, source check pass.",
+  "checks": [
+    "s019-recovery-before.json",
+    "s019-recovery-node22.json",
+    "s019-server-full.json",
+    "s019-source.json"
+  ],
+  "limits": [
+    "Unknown phase is recorded and not blindly unlocked",
+    "No production/Play deployment"
+  ]
+}

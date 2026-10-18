@@ -760,13 +760,8 @@ class DominoGame {
         this.setupMobileAuthResume();
         this.bootstrapAccount();
 
-        // Watchdog for turn freeze
-        this._watchdogId = setInterval(() => {
-            if (this.turnInProgress && Date.now() - this.lastTurnStartTime > 6000) {
-                this.log("Watchdog: Resetting stuck turn");
-                this.turnInProgress = false;
-            }
-        }, 2000);
+        // Recover a known phase; never free a lock while its work is still live.
+        this._watchdogId = setInterval(() => this.recoverStalledTurn(), 2000);
         if (typeof localforage !== 'undefined') {
             localforage.config({
                 name: 'Domino2Chat',
@@ -10408,6 +10403,35 @@ class DominoGame {
             && operation.playerIndex === this.currentPlayer && this.gameActive && !this.roundOver && !this.matchOver);
     }
 
+    recoverStalledTurn(now = Date.now()) {
+        if (!this.gameActive || this.roundOver || this.matchOver || this.soloPaused) return 'inactive';
+        if (!this.turnInProgress && !this.postMoveWindowActive) return 'idle';
+        const operation = this._activeAsyncTurn;
+        const startedAt = operation?.startedAt || this.lastTurnStartTime || now;
+        if (now - startedAt <= 6000) return 'waiting';
+        const phase = operation?.phase || 'unknown';
+        if (this.network?.isMultiplayer) {
+            if (this.lastTurnRecovery?.mode === 'server-sync' && now - this.lastTurnRecovery.at < 2000) return 'server-sync';
+            this.lastTurnRecovery = { at: now, mode: 'server-sync', phase, cycleId: this._turnCycleId };
+            this.network.sendSyncRequest?.();
+            return 'server-sync';
+        }
+        this.lastTurnRecovery = { at: now, mode: 'solo', phase, cycleId: this._turnCycleId };
+        if (!this.isAsyncTurnCurrent(operation)) return 'unknown-phase';
+        if (operation.phase === 'drawing') {
+            this.invalidateAsyncTurn();
+            this.turnInProgress = false;
+            this.queueAITurnIfNeeded(0);
+            return 'drawing';
+        }
+        if (typeof operation.resume === 'function' && !operation.completed) {
+            this.renderer?.cancelActiveTileTravel?.();
+            operation.resume();
+            return phase;
+        }
+        return 'unknown-phase';
+    }
+
     invalidateAsyncTurn() {
         if (this._activeAsyncTurn) this._activeAsyncTurn.cancelled = true;
         this._activeAsyncTurn = null;
@@ -11027,48 +11051,49 @@ class DominoGame {
 
     delayLastMoveSettlement(callback, delay = LAST_MOVE_REVEAL_DELAY_MS, finalInfo = null) {
         clearTimeout(this._lastMoveRevealTimeout);
-        this._lastMoveRevealTimeout = null;
+        const operation = this.beginAsyncTurn(this.currentPlayer, 'result-reveal');
         this.lastMoveRevealPending = true;
         this.turnInProgress = true;
         this.renderState();
-        
-        const runPreResultAndCallback = async () => {
-            if (finalInfo) {
-                await this.showPreResultStage(finalInfo);
-            }
-            try {
-                callback?.();
-            } finally {
-                this.lastMoveRevealPending = false;
-                this.turnInProgress = false;
-                this.renderState();
-            }
+        operation.resume = () => {
+            if (!this.isAsyncTurnCurrent(operation) || operation.completed) return;
+            operation.completed = true;
+            operation.phase = 'settling';
+            this.lastMoveRevealPending = false;
+            this.turnInProgress = false;
+            callback?.();
         };
-
         this._lastMoveRevealTimeout = setTimeout(() => {
             this._lastMoveRevealTimeout = null;
-            void runPreResultAndCallback();
+            void (async () => {
+                try {
+                    if (!this.isAsyncTurnCurrent(operation) || operation.completed) return;
+                    if (finalInfo) await this.showPreResultStage(finalInfo, operation);
+                    if (!this.isAsyncTurnCurrent(operation) || operation.completed) return;
+                    operation.resume();
+                } catch (error) {
+                    if (this.isAsyncTurnCurrent(operation) && !operation.completed) operation.resume();
+                }
+            })();
         }, Math.max(0, Number(delay || 0) || 0));
     }
 
     scheduleTurnAdvance(delay = this.postMoveAdvanceMs, turnCycleId = this._turnCycleId) {
         clearTimeout(this._turnAdvanceTimeout);
-        if (delay <= 0) {
+        if (turnCycleId !== this._turnCycleId) return;
+        const operation = this.beginAsyncTurn(this.currentPlayer, 'advance-delay');
+        operation.resume = () => {
+            if (!this.isAsyncTurnCurrent(operation) || operation.completed) return;
+            operation.completed = true;
             this.postMoveWindowActive = false;
             this.postMoveWindowEndsAt = 0;
             this.turnInProgress = false;
             this.advanceTurn();
-            return;
-        }
+        };
+        if (delay <= 0) { operation.resume(); return; }
         this.postMoveWindowActive = true;
         this.postMoveWindowEndsAt = Date.now() + delay;
-        this._turnAdvanceTimeout = setTimeout(() => {
-            if (turnCycleId !== this._turnCycleId) return;
-            this.postMoveWindowActive = false;
-            this.postMoveWindowEndsAt = 0;
-            this.turnInProgress = false;
-            this.advanceTurn();
-        }, delay);
+        this._turnAdvanceTimeout = setTimeout(operation.resume, delay);
     }
 
     shouldOpenGoshaChainWindow(pi) {
@@ -18320,7 +18345,7 @@ class DominoGame {
         return firstInfo;
     }
 
-    async showPreResultStage(finalInfo) {
+    async showPreResultStage(finalInfo, operation = null) {
         if (!finalInfo) return;
         const actorName = this.playerNames[finalInfo.actorIndex] || '';
         
@@ -18362,6 +18387,7 @@ class DominoGame {
         });
 
         await new Promise(resolve => setTimeout(resolve, 200));
+        if (operation && (!this.isAsyncTurnCurrent(operation) || operation.completed)) return;
 
         this.setRoundStage({
             phase: 'counting',
@@ -18370,6 +18396,7 @@ class DominoGame {
         });
 
         await new Promise(resolve => setTimeout(resolve, 150));
+        if (operation && (!this.isAsyncTurnCurrent(operation) || operation.completed)) return;
         this.clearRoundStage();
     }
 
@@ -19998,6 +20025,8 @@ class DominoGame {
         } else {
             score = this.board.placeTile(tile,oei);
         }
+        Object.assign(operation, { pi, hand, wasEmpty, score, turnCycleId });
+        operation.resume = () => this.completeLocalTilePlay(operation);
         this.selectedTileIndex=-1;
         this.log(`Play pi=${pi} ti=${ti}`);
         this.renderState();
@@ -20014,7 +20043,19 @@ class DominoGame {
             : Promise.resolve();
         await travelPromise;
         if (!this.isAsyncTurnCurrent(operation)) return false;
-        operation.phase = "settling";
+        return this.completeLocalTilePlay(operation);
+        } catch (e) {
+            if (!this.isAsyncTurnCurrent(operation)) return false;
+            console.error('[playTile] Error:', e);
+            if (!operation.completed && operation.resume) operation.resume();
+        }
+    }
+
+    completeLocalTilePlay(operation) {
+        if (!this.isAsyncTurnCurrent(operation) || operation.completed) return false;
+        operation.completed = true;
+        operation.phase = 'settling';
+        let { pi, hand, wasEmpty, score, turnCycleId } = operation;
         if (this.mode === 'classic101') {
             score = this.ruleset.scoreDuringPlay(this.board);
         }
@@ -20068,11 +20109,8 @@ class DominoGame {
             });
         }
         this.scheduleTurnAdvance(0, turnCycleId);
-        } catch (e) {
-            if (!this.isAsyncTurnCurrent(operation)) return false;
-            console.error('[playTile] Error:', e);
-            if (this.isAsyncTurnCurrent(operation)) this.turnInProgress = false;
-        }
+        operation.phase = 'completed';
+        return true;
     }
 
     advanceTurn() {

@@ -231,3 +231,9 @@ Benefit: a fresh or upgraded database supports messaging instead of returning mi
 Async local turns carry owner/generation/cycle/board/hands/player context. Tile travel and 101 draw continuations recheck ownership after awaits; stale success/rejection/RAF callbacks cannot change new scores, turn or lock. Timer reset invalidates work; DOM/Konva animations cancel and settle once, including Konva destroy. Source/www kept identical. Before2/6 pass (four real stale failures); final14 new tests + instant rules33 pass on Node25, new14 Node22. Full server332/339 before two additional cancellation tests, same seven original failures. Initial six failures without VM timer globals were harness-only and excluded.
 
 Benefit: an animation or draw from an old deal cannot add points or unlock input in the replacement deal. Phone is connected again; separate audit package only for later pause/audio checks.
+
+### S019/R17 completed locally
+
+Watchdog now diagnoses phase and keeps online locks until authoritative sync. Local committed tile has once-only settlement continuation, independent of animation completion; drawing cancels old loop and recomputes from current hand; advance/reveal timers have owned resumable phases. Pre-result awaits and finalizers cannot clear a replacement phase. Unknown phases remain locked with diagnostics rather than guessed progress. Before0/8, final16new tests + R16(14) + instant(33)=63pass Node22; full355/362 with same original7, source check pass.
+
+Benefit: a slow/lost animation can finish the already committed move once; a network client requests server state instead of allowing a second local move. Stale result-stage finally was also fixed as part of the shared phase lifecycle.
