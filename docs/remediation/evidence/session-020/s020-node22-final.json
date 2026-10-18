@@ -1,0 +1,27 @@
+{
+  "label": "s020-node22-final",
+  "command": [
+    "npm",
+    "exec",
+    "--yes",
+    "--package=node@22.14.0",
+    "--package=npm@10.9.2",
+    "--",
+    "node",
+    "--test",
+    "test/solo-pause.test.js",
+    "test/turn-recovery.test.js",
+    "test/stale-async-turn.test.js",
+    "test/instant-win-setting.test.js"
+  ],
+  "cwd": ".tmp/remediation-s020/clean/server",
+  "startedAt": "2026-10-18T23:26:51.270Z",
+  "finishedAt": "2026-10-18T23:26:51.998Z",
+  "durationMs": 728,
+  "exitCode": 0,
+  "signal": null,
+  "timedOut": false,
+  "error": null,
+  "log": "docs/remediation/evidence/session-020/s020-node22-final.log",
+  "environment": "Fresh allowlist, synthetic local API/DB, optional Redis disabled, no inherited secrets or copied .env"
+}

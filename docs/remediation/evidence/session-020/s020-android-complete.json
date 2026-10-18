@@ -1,0 +1,17 @@
+{
+  "label": "s020-android-complete",
+  "command": [
+    "node",
+    "/Users/macbookair/Documents/domino/docs/remediation/scripts/device-pause.mjs"
+  ],
+  "cwd": ".tmp/remediation-s020/clean",
+  "startedAt": "2026-10-18T23:32:13.603Z",
+  "finishedAt": "2026-10-18T23:34:31.294Z",
+  "durationMs": 137691,
+  "exitCode": 0,
+  "signal": null,
+  "timedOut": false,
+  "error": null,
+  "log": "docs/remediation/evidence/session-020/s020-android-complete.log",
+  "environment": "Fresh allowlist, synthetic local API/DB, optional Redis disabled, no inherited secrets or copied .env"
+}

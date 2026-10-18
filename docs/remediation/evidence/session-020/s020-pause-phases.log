@@ -1,0 +1,16 @@
+✔ js/app.js: 60 seconds paused cannot expire a solo turn; 20 resumes preserve one timer (13.17325ms)
+✔ js/app.js: menu pause never extends an online deadline (3.361125ms)
+✔ js/app.js: game callbacks preserve their remaining delay across pause (4.13875ms)
+✔ www/js/app.js: 60 seconds paused cannot expire a solo turn; 20 resumes preserve one timer (11.635416ms)
+✔ www/js/app.js: menu pause never extends an online deadline (3.282917ms)
+✔ www/js/app.js: game callbacks preserve their remaining delay across pause (3.201375ms)
+✔ js/app.js: pausing a committed animation settles points once before the snapshot (3.207875ms)
+✔ www/js/app.js: pausing a committed animation settles points once before the snapshot (4.898875ms)
+ℹ tests 8
+ℹ suites 0
+ℹ pass 8
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 143.795375

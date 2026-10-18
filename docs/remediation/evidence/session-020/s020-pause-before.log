@@ -1,0 +1,80 @@
+✖ js/app.js: 60 seconds paused cannot expire a solo turn; 20 resumes preserve one timer (10.654ms)
+✖ js/app.js: menu pause never extends an online deadline (2.929625ms)
+✖ js/app.js: game callbacks preserve their remaining delay across pause (2.862958ms)
+✖ www/js/app.js: 60 seconds paused cannot expire a solo turn; 20 resumes preserve one timer (9.115958ms)
+✖ www/js/app.js: menu pause never extends an online deadline (2.51075ms)
+✖ www/js/app.js: game callbacks preserve their remaining delay across pause (2.930792ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 0
+ℹ fail 6
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 124.220667
+
+✖ failing tests:
+
+test at test/solo-pause.test.js:4:2
+✖ js/app.js: 60 seconds paused cannot expire a solo turn; 20 resumes preserve one timer (10.654ms)
+  TypeError: game.pauseSoloGame is not a function
+      at TestContext.<anonymous> (/Users/macbookair/Documents/domino/.tmp/remediation-s020/clean/server/test/solo-pause.test.js:4:184)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.start (node:internal/test_runner/test:1015:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:358:17)
+
+test at test/solo-pause.test.js:5:2
+✖ js/app.js: menu pause never extends an online deadline (2.929625ms)
+  TypeError: game.pauseSoloGame is not a function
+      at TestContext.<anonymous> (/Users/macbookair/Documents/domino/.tmp/remediation-s020/clean/server/test/solo-pause.test.js:5:209)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:787:18)
+      at Test.postRun (node:internal/test_runner/test:1247:19)
+      at Test.run (node:internal/test_runner/test:1175:12)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:358:3)
+
+test at test/solo-pause.test.js:6:2
+✖ js/app.js: game callbacks preserve their remaining delay across pause (2.862958ms)
+  TypeError: game.setGameTimeout is not a function
+      at TestContext.<anonymous> (/Users/macbookair/Documents/domino/.tmp/remediation-s020/clean/server/test/solo-pause.test.js:6:134)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:787:18)
+      at Test.postRun (node:internal/test_runner/test:1247:19)
+      at Test.run (node:internal/test_runner/test:1175:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7)
+
+test at test/solo-pause.test.js:4:2
+✖ www/js/app.js: 60 seconds paused cannot expire a solo turn; 20 resumes preserve one timer (9.115958ms)
+  TypeError: game.pauseSoloGame is not a function
+      at TestContext.<anonymous> (/Users/macbookair/Documents/domino/.tmp/remediation-s020/clean/server/test/solo-pause.test.js:4:184)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:787:18)
+      at Test.postRun (node:internal/test_runner/test:1247:19)
+      at Test.run (node:internal/test_runner/test:1175:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7)
+
+test at test/solo-pause.test.js:5:2
+✖ www/js/app.js: menu pause never extends an online deadline (2.51075ms)
+  TypeError: game.pauseSoloGame is not a function
+      at TestContext.<anonymous> (/Users/macbookair/Documents/domino/.tmp/remediation-s020/clean/server/test/solo-pause.test.js:5:209)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:787:18)
+      at Test.postRun (node:internal/test_runner/test:1247:19)
+      at Test.run (node:internal/test_runner/test:1175:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7)
+
+test at test/solo-pause.test.js:6:2
+✖ www/js/app.js: game callbacks preserve their remaining delay across pause (2.930792ms)
+  TypeError: game.setGameTimeout is not a function
+      at TestContext.<anonymous> (/Users/macbookair/Documents/domino/.tmp/remediation-s020/clean/server/test/solo-pause.test.js:6:134)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:787:18)
+      at Test.postRun (node:internal/test_runner/test:1247:19)
+      at Test.run (node:internal/test_runner/test:1175:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7)

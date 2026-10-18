@@ -1,0 +1,28 @@
+Connected to disposable audit WebView
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+locator.click: Timeout 30000ms exceeded.
+Call log:
+  - waiting for locator('#open-solo-modal-btn')
+    - locator resolved to <button data-i18n="btn-solo" id="open-solo-modal-btn" class="btn btn-primary btn-large">Одиночная игра</button>
+  - attempting click action
+    2 × waiting for element to be visible, enabled and stable
+      - element is not visible
+    - retrying click action
+    - waiting 20ms
+    2 × waiting for element to be visible, enabled and stable
+      - element is not visible
+    - retrying click action
+      - waiting 100ms
+    48 × waiting for element to be visible, enabled and stable
+       - element is not visible
+     - retrying click action
+       - waiting 500ms
+
+    at /Users/macbookair/Documents/domino/docs/remediation/scripts/device-pause.mjs:10:45 {
+  name: 'TimeoutError'
+}
+
+Node.js v25.6.0

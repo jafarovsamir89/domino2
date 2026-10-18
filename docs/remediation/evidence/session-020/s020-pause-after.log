@@ -1,0 +1,94 @@
+ℹ️  optional .env file not found: .env.test, .env
+[FM-SRV 1792365624620] gameDelta isFinalMove=false
+[FM-SRV 1792365624621] gameDelta isFinalMove=false
+[FM-SRV 1792365624621] gameDelta isFinalMove=false
+[FM-SRV 1792365624621] gameDelta isFinalMove=false
+[FM-SRV 1792365624623] gameDelta isFinalMove=false
+[FM-SRV 1792365624623] gameDelta isFinalMove=false
+[FM-SRV 1792365624624] gameDelta isFinalMove=false
+[FM-SRV 1792365624624] gameDelta isFinalMove=false
+[FM-SRV 1792365624624] gameDelta isFinalMove=true
+[FM-SRV 1792365624624] end immediate
+[FM-SRV 1792365624624] gameDelta isFinalMove=true
+[FM-SRV 1792365624624] end immediate
+[FM-SRV 1792365624624] gameDelta isFinalMove=true
+[FM-SRV 1792365624624] end immediate
+[FM-SRV 1792365624624] gameDelta isFinalMove=true
+[FM-SRV 1792365624624] end immediate
+✔ server play: instant=false, score=30 honors the setting (1.566333ms)
+✔ server gosha: instant=false, score=30 honors the setting (0.298042ms)
+✔ server play: instant=false, score=35 honors the setting (0.12125ms)
+✔ server gosha: instant=false, score=35 honors the setting (0.133209ms)
+✔ server play: instant=false, score=40 honors the setting (1.846ms)
+✔ server gosha: instant=false, score=40 honors the setting (0.117959ms)
+✔ server play: instant=true, score=30 honors the setting (0.109208ms)
+✔ server gosha: instant=true, score=30 honors the setting (0.096709ms)
+✔ server play: instant=true, score=35 honors the setting (0.161542ms)
+✔ server gosha: instant=true, score=35 honors the setting (0.166042ms)
+✔ server play: instant=true, score=40 honors the setting (0.082458ms)
+✔ server gosha: instant=true, score=40 honors the setting (0.066875ms)
+✔ js/app.js shared playTile: score35, instant=false (0.603875ms)
+✔ js/app.js shared playGoshaCombo: score35, instant=false (0.18875ms)
+✔ js/app.js shared playTile: score35, instant=true (0.088459ms)
+✔ js/app.js shared playGoshaCombo: score35, instant=true (0.056416ms)
+✔ js/app.js shared: disabling instant win still ends an empty hand (0.042833ms)
+✔ js/app.js fallback playTile: score35, instant=false (0.1595ms)
+✔ js/app.js fallback playGoshaCombo: score35, instant=false (0.048583ms)
+✔ js/app.js fallback playTile: score35, instant=true (0.053708ms)
+✔ js/app.js fallback playGoshaCombo: score35, instant=true (0.042833ms)
+✔ js/app.js fallback: disabling instant win still ends an empty hand (0.023459ms)
+✔ www/js/app.js shared playTile: score35, instant=false (0.386584ms)
+✔ www/js/app.js shared playGoshaCombo: score35, instant=false (0.155334ms)
+✔ www/js/app.js shared playTile: score35, instant=true (0.055ms)
+✔ www/js/app.js shared playGoshaCombo: score35, instant=true (0.039792ms)
+✔ www/js/app.js shared: disabling instant win still ends an empty hand (0.027875ms)
+✔ www/js/app.js fallback playTile: score35, instant=false (0.14ms)
+✔ www/js/app.js fallback playGoshaCombo: score35, instant=false (0.045583ms)
+✔ www/js/app.js fallback playTile: score35, instant=true (0.050625ms)
+✔ www/js/app.js fallback playGoshaCombo: score35, instant=true (0.034875ms)
+✔ www/js/app.js fallback: disabling instant win still ends an empty hand (0.024833ms)
+✔ web and packaged app assets stay identical (3.125834ms)
+✔ js/app.js: 60 seconds paused cannot expire a solo turn; 20 resumes preserve one timer (12.96575ms)
+✔ js/app.js: menu pause never extends an online deadline (3.841208ms)
+✔ js/app.js: game callbacks preserve their remaining delay across pause (3.595459ms)
+✔ www/js/app.js: 60 seconds paused cannot expire a solo turn; 20 resumes preserve one timer (11.958125ms)
+✔ www/js/app.js: menu pause never extends an online deadline (3.305584ms)
+✔ www/js/app.js: game callbacks preserve their remaining delay across pause (3.367417ms)
+✔ js/app.js: a reset during tile travel prevents the old score/advance/unlock (12.3985ms)
+✔ js/app.js: replacing board/hands without a cycle change also invalidates old work (3.709375ms)
+✔ js/app.js: a current animation completes its move exactly once (3.746333ms)
+✔ js/app.js: an old rejected animation cannot unlock a replacement turn (4.340292ms)
+✔ js/app.js: queued animation frames do not run against a replacement board (3.319292ms)
+✔ js/app.js: old 101 draw continuation cannot unlock a new turn (3.74225ms)
+✔ www/js/app.js: a reset during tile travel prevents the old score/advance/unlock (11.459166ms)
+✔ www/js/app.js: replacing board/hands without a cycle change also invalidates old work (3.923584ms)
+✔ www/js/app.js: a current animation completes its move exactly once (4.565791ms)
+✔ www/js/app.js: an old rejected animation cannot unlock a replacement turn (2.869292ms)
+✔ www/js/app.js: queued animation frames do not run against a replacement board (3.057292ms)
+✔ www/js/app.js: old 101 draw continuation cannot unlock a new turn (3.417209ms)
+✔ js/konvaBoardRenderer.js: cancelling an actual Konva travel settles it once and destroys the tween (3.312416ms)
+✔ www/js/konvaBoardRenderer.js: cancelling an actual Konva travel settles it once and destroys the tween (1.133958ms)
+✔ js/app.js: stalled committed tile completes once without replaying the board (13.479292ms)
+✔ js/app.js: online recovery requests state without locally unlocking or advancing (4.03425ms)
+✔ js/app.js: an unknown phase records diagnostics without blindly unlocking (3.456833ms)
+✔ js/app.js: old pre-result await/finalizer cannot clear a new phase (4.483417ms)
+✔ js/app.js: recovery cancels a 101 draw loop and queues only one recomputation (3.041834ms)
+✔ js/app.js: lost advance timer is recovered once (3.592167ms)
+✔ js/app.js: a final reveal can settle once while its old presentation is still waiting (3.166083ms)
+✔ js/app.js: real pre-result stages stop after their owner is reset (4.481333ms)
+✔ www/js/app.js: stalled committed tile completes once without replaying the board (12.256583ms)
+✔ www/js/app.js: online recovery requests state without locally unlocking or advancing (4.517292ms)
+✔ www/js/app.js: an unknown phase records diagnostics without blindly unlocking (2.800583ms)
+✔ www/js/app.js: old pre-result await/finalizer cannot clear a new phase (2.916333ms)
+✔ www/js/app.js: recovery cancels a 101 draw loop and queues only one recomputation (2.949625ms)
+✔ www/js/app.js: lost advance timer is recovered once (2.9655ms)
+✔ www/js/app.js: a final reveal can settle once while its old presentation is still waiting (3.330542ms)
+✔ www/js/app.js: real pre-result stages stop after their owner is reset (2.811417ms)
+ℹ tests 69
+ℹ suites 0
+ℹ pass 69
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 302.923084

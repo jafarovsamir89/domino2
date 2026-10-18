@@ -1,0 +1,25 @@
+{
+  "session": "S020",
+  "task": "R-40",
+  "status": "fixed-locally",
+  "checks": [
+    "s020-pause-after.json",
+    "s020-node22-final.json",
+    "s020-pause-phases.json",
+    "s020-source.json",
+    "s020-android-complete.json",
+    "android-pause.json"
+  ],
+  "result": "Pausable local timer registry freezes turn/stage/bot delays; committed animation settles once before pause; snapshot restores paused state and remaining delays. Online deadline unchanged.",
+  "limits": [
+    "Real Android audit package only; synthetic localhost UI API",
+    "Force-stop verified after1200ms storage settle; instant kill during WebView storage flush can retain a previous subsecond snapshot",
+    "No production or Play changes"
+  ],
+  "excluded": [
+    "android-pause: PID queried before process start",
+    "android-final: immediate kill retained an older storage write",
+    "android-persisted/verified: fixture did not reset old menu",
+    "android-final-ui: preview reached its10minute lifetime; terminated and rerun"
+  ]
+}

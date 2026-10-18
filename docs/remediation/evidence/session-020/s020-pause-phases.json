@@ -1,0 +1,18 @@
+{
+  "label": "s020-pause-phases",
+  "command": [
+    "node",
+    "--test",
+    "test/solo-pause.test.js"
+  ],
+  "cwd": ".tmp/remediation-s020/clean/server",
+  "startedAt": "2026-10-18T23:34:00.856Z",
+  "finishedAt": "2026-10-18T23:34:01.081Z",
+  "durationMs": 225,
+  "exitCode": 0,
+  "signal": null,
+  "timedOut": false,
+  "error": null,
+  "log": "docs/remediation/evidence/session-020/s020-pause-phases.log",
+  "environment": "Fresh allowlist, synthetic local API/DB, optional Redis disabled, no inherited secrets or copied .env"
+}

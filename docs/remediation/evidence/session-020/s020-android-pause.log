@@ -1,0 +1,23 @@
+Connected to disposable audit WebView
+Pause active; observing actual phone for60 seconds
+node:internal/errors:998
+  const err = new Error(message);
+              ^
+
+Error: Command failed: adb shell pidof az.simplesoft.dominotelefon.audit
+    at genericNodeError (node:internal/errors:998:15)
+    at wrappedFn (node:internal/errors:543:14)
+    at checkExecSyncError (node:child_process:925:11)
+    at execFileSync (node:child_process:961:15)
+    at shell (file:///Users/macbookair/Documents/domino/docs/remediation/scripts/device-pause.mjs:4:24)
+    at connect (file:///Users/macbookair/Documents/domino/docs/remediation/scripts/device-pause.mjs:5:36)
+    at file:///Users/macbookair/Documents/domino/docs/remediation/scripts/device-pause.mjs:17:124 {
+  status: 1,
+  signal: null,
+  output: [ null, '', '' ],
+  pid: 76381,
+  stdout: '',
+  stderr: ''
+}
+
+Node.js v25.6.0

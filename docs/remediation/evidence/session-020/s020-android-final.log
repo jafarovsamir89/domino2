@@ -1,0 +1,20 @@
+Connected to disposable audit WebView
+Pause active; observing actual phone for60 seconds
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+
+21616 !== 21154
+
+    at file:///Users/macbookair/Documents/domino/docs/remediation/scripts/device-pause.mjs:19:105 {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: 21616,
+  expected: 21154,
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v25.6.0

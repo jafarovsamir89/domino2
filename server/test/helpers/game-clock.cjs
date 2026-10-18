@@ -1,0 +1,5 @@
+function makeClock(){let now=1000000,serial=0;const timers=new Map();class FakeDate extends Date{constructor(...args){super(...(args.length?args:[now]))}static now(){return now}}
+ const add=(fn,ms,repeat)=>{const id=++serial;timers.set(id,{fn,at:now+Math.max(0,Number(ms)||0),repeat});return id};
+ const globals={Date:FakeDate,setTimeout:(fn,ms)=>add(fn,ms,0),clearTimeout:id=>timers.delete(id),setInterval:(fn,ms)=>add(fn,ms,Math.max(1,Number(ms)||1)),clearInterval:id=>timers.delete(id)};
+ return {globals,get now(){return now},get timeouts(){return [...timers.values()].filter(t=>!t.repeat).length},get intervals(){return [...timers.values()].filter(t=>t.repeat).length},advance(ms){const target=now+ms;let count=0;while(true){const next=[...timers].filter(([,t])=>t.at<=target).sort((a,b)=>a[1].at-b[1].at)[0];if(!next)break;if(++count>10000)throw Error('timer runaway');const [id,t]=next;now=t.at;if(t.repeat)t.at+=t.repeat;else timers.delete(id);t.fn()}now=target}};
+}module.exports={makeClock};

@@ -1,0 +1,18 @@
+{
+  "label": "s020-pause-before",
+  "command": [
+    "node",
+    "--test",
+    "test/solo-pause.test.js"
+  ],
+  "cwd": ".tmp/remediation-s020/clean/server",
+  "startedAt": "2026-10-18T23:19:48.257Z",
+  "finishedAt": "2026-10-18T23:19:48.456Z",
+  "durationMs": 199,
+  "exitCode": 1,
+  "signal": null,
+  "timedOut": false,
+  "error": null,
+  "log": "docs/remediation/evidence/session-020/s020-pause-before.log",
+  "environment": "Fresh allowlist, synthetic local API/DB, optional Redis disabled, no inherited secrets or copied .env"
+}

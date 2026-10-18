@@ -237,3 +237,9 @@ Benefit: an animation or draw from an old deal cannot add points or unlock input
 Watchdog now diagnoses phase and keeps online locks until authoritative sync. Local committed tile has once-only settlement continuation, independent of animation completion; drawing cancels old loop and recomputes from current hand; advance/reveal timers have owned resumable phases. Pre-result awaits and finalizers cannot clear a replacement phase. Unknown phases remain locked with diagnostics rather than guessed progress. Before0/8, final16new tests + R16(14) + instant(33)=63pass Node22; full355/362 with same original7, source check pass.
 
 Benefit: a slow/lost animation can finish the already committed move once; a network client requests server state instead of allowing a second local move. Stale result-stage finally was also fixed as part of the shared phase lifecycle.
+
+### S020/R40 completed locally
+
+Local timer descriptors preserve exact remaining turn/stage/bot delays; pause settles a committed placement/result once before saving. Input, watchdog and async guards respect pause. Resume arms one timer; restored snapshot reconstructs the remaining phase. Online does not pause. New8pause tests pass; combined69previous lifecycle/rules tests Node25/22; source check pass. Actual Android audit WebView60.5s unchanged board/hands/bazaar/score/turn,20UIcycles one timer, force-stop restored exact persisted state and remaining turn. Important limit: after an immediate force-stop WebView retained a previous write462ms older; final persisted-state drill waits1200ms, so instantaneous-write durability is NOT claimed. Earlier PID/start/menu-reset/preview-expiry harness attempts excluded and retained in summary.
+
+Benefit: solo menu really pauses the game; bots cannot win while the player reads the menu. Separate audit package only, Play app untouched. Six of eight batch items now complete; R27/R19 checks remain.

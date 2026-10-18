@@ -1,0 +1,17 @@
+{
+  "label": "s020-android-persisted",
+  "command": [
+    "node",
+    "/Users/macbookair/Documents/domino/docs/remediation/scripts/device-pause.mjs"
+  ],
+  "cwd": ".tmp/remediation-s020/clean",
+  "startedAt": "2026-10-18T23:28:43.998Z",
+  "finishedAt": "2026-10-18T23:29:15.081Z",
+  "durationMs": 31083,
+  "exitCode": 1,
+  "signal": null,
+  "timedOut": false,
+  "error": null,
+  "log": "docs/remediation/evidence/session-020/s020-android-persisted.log",
+  "environment": "Fresh allowlist, synthetic local API/DB, optional Redis disabled, no inherited secrets or copied .env"
+}

@@ -1,0 +1,18 @@
+{
+  "label": "s020-device-preview",
+  "command": [
+    "node",
+    "/Users/macbookair/Documents/domino/docs/remediation/scripts/device-preview.mjs",
+    "/Users/macbookair/Documents/domino"
+  ],
+  "cwd": ".tmp/remediation-s020/clean",
+  "startedAt": "2026-10-18T23:22:00.605Z",
+  "finishedAt": "2026-10-18T23:32:00.613Z",
+  "durationMs": 600008,
+  "exitCode": 0,
+  "signal": null,
+  "timedOut": true,
+  "error": null,
+  "log": "docs/remediation/evidence/session-020/s020-device-preview.log",
+  "environment": "Fresh allowlist, synthetic local API/DB, optional Redis disabled, no inherited secrets or copied .env"
+}

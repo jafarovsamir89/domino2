@@ -1,0 +1,3 @@
+Connected to disposable audit WebView
+Pause active; observing actual phone for60 seconds
+{"package":"az.simplesoft.dominotelefon.audit","observedPauseMs":121495.49599999998,"sixtySecondStateUnchanged":true,"remainingBefore":29302,"remainingAfter":29065,"cycles":20,"oneTimerPerResume":true,"forceStopRestoreStateUnchanged":true,"persistenceSettleMs":1200,"forceStopRemaining":5523,"afterStopRemaining":5296,"scope":"Real Android WebView+actual UI and timers; synthetic local UI API only; no production"}

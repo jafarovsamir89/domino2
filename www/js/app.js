@@ -6749,6 +6749,7 @@ class DominoGame {
     }
 
     closeAccountModal() {
+        if (this.soloPaused) document.getElementById("menu-screen")?.classList.add("active");
         const modal = document.getElementById('account-modal');
         if (modal) modal.classList.remove('active');
         this.closeGiftPicker();
@@ -10389,6 +10390,109 @@ class DominoGame {
         return `${prefix}-${Date.now().toString(36)}-${Math.floor(performance.now() * 1000).toString(36)}`;
     }
 
+    armGameTimeout(timer) {
+        if (timer.cancelled || this.soloPaused) return;
+        timer.deadline = Date.now() + timer.remaining;
+        timer.nativeId = setTimeout(() => {
+            timer.nativeId = null;
+            if (timer.cancelled) return;
+            if (this.soloPaused) { timer.remaining = 0; return; }
+            this._localGameTimers?.delete(timer);
+            timer.callback();
+        }, timer.remaining);
+    }
+
+    setGameTimeout(callback, delay = 0, onCancel = null) {
+        if (this.network?.isMultiplayer) return setTimeout(callback, delay);
+        const timer = { kind: 'local-game-timer', callback, remaining: Math.max(0, Number(delay) || 0), onCancel, nativeId: null, cancelled: false };
+        if (!this._localGameTimers) this._localGameTimers = new Set();
+        this._localGameTimers.add(timer);
+        this.armGameTimeout(timer);
+        return timer;
+    }
+
+    clearGameTimeout(timer) {
+        if (timer?.kind !== 'local-game-timer') { clearTimeout(timer); return; }
+        clearTimeout(timer.nativeId);
+        timer.nativeId = null;
+        timer.cancelled = true;
+        this._localGameTimers?.delete(timer);
+        timer.onCancel?.();
+    }
+
+    waitGameDelay(delay) {
+        return new Promise(resolve => this.setGameTimeout(resolve, delay, resolve));
+    }
+
+    pauseSoloGame() {
+        if (this.network?.isMultiplayer || this.soloPaused || this.matchOver || (!this.gameActive && !this.roundOver)) return false;
+        // Complete a committed placement/result before saving, so no points are lost
+        // when the app is force-stopped in the menu. A capture window stays open.
+        for (let i = 0; i < 3; i++) {
+            const operation = this._activeAsyncTurn;
+            if (!this.isAsyncTurnCurrent(operation) || !['tile-animation', 'result-reveal'].includes(operation.phase) || operation.completed) break;
+            operation.resume?.();
+        }
+        const now = Date.now();
+        this.soloPauseState = {
+            remainingTurnMs: this.turnDeadlineAt > 0 ? Math.max(0, this.turnDeadlineAt - this.getSyncedNow()) : null,
+            remainingAdvanceMs: this.postMoveWindowActive ? Math.max(0, this.postMoveWindowEndsAt - now) : null,
+            remainingNextDealMs: this._nextDealAdvanceTimeout?.kind === 'local-game-timer' ? Math.max(0, this._nextDealAdvanceTimeout.deadline - now) : null,
+            opening: null
+        };
+        if (this.board?.isEmpty && this.lastDealWinner == null && this.ruleset?.determineFirstPlayer) {
+            const first = this.ruleset.determineFirstPlayer(this.hands);
+            if (this.hands[first.player]?.[first.tileIndex]) this.soloPauseState.opening = { player: first.player, tileIndex: first.tileIndex };
+        }
+        this.soloPaused = true;
+        for (const timer of this._localGameTimers || []) {
+            timer.remaining = Math.max(0, timer.deadline - now);
+            clearTimeout(timer.nativeId);
+            timer.nativeId = null;
+        }
+        clearInterval(this._turnTimerTickId);
+        this._turnTimerTickId = null;
+        this.renderer?.cancelActiveTileTravel?.();
+        this.updateTurnTimerHud();
+        this.persistGameResumeSnapshot();
+        return true;
+    }
+
+    resumeSoloGame() {
+        if (this.network?.isMultiplayer || !this.soloPaused) return false;
+        const paused = this.soloPauseState || {};
+        this.soloPaused = false;
+        if (paused.remainingTurnMs != null) {
+            this.turnDeadlineAt = this.getSyncedNow() + Math.max(0, Number(paused.remainingTurnMs) || 0);
+            this.activeTurnDeadlineAt = this.turnDeadlineAt;
+        }
+        if (paused.remainingAdvanceMs != null) this.postMoveWindowEndsAt = Date.now() + paused.remainingAdvanceMs;
+        for (const timer of this._localGameTimers || []) this.armGameTimeout(timer);
+        if (this._soloPauseRestored) {
+            this._soloPauseRestored = false;
+            this.clearRoundStage();
+            if (this.roundOver && !this.matchOver) this.scheduleNextDealAdvance(paused.remainingNextDealMs ?? 0);
+            else if (paused.remainingAdvanceMs != null) this.scheduleTurnAdvance(paused.remainingAdvanceMs);
+            else if (paused.opening && this.hands[paused.opening.player]?.[paused.opening.tileIndex]) {
+                const { player, tileIndex } = paused.opening;
+                this.currentPlayer = player;
+                if (player === this.humanPlayerIndex) {
+                    this.openingRequiredPlayerIndex = player;
+                    this.openingRequiredTileIndex = tileIndex;
+                    this.openingRequiredTileId = this.hands[player][tileIndex].id;
+                } else this._aiTurnTimeout = this.setGameTimeout(() => this.playTile(player, tileIndex, -1), 0);
+            } else if (this.gameActive) this.queueAITurnIfNeeded(BOT_THINK_DELAY_MS);
+            if (this.gameActive && !this.roundOver) this.startTurnTimer(this.turnDeadlineAt > 0 ? this.turnDeadlineAt : null);
+        } else if (this.gameActive && !this.roundOver && paused.remainingTurnMs != null) {
+            clearInterval(this._turnTimerTickId);
+            this._turnTimerTickId = setInterval(() => this.updateTurnTimerHud(), 200);
+        }
+        this.soloPauseState = null;
+        this.updateTurnTimerHud();
+        this.persistGameResumeSnapshot();
+        return true;
+    }
+
     beginAsyncTurn(playerIndex, phase) {
         const operation = { playerIndex, phase, cycleId: this._turnCycleId,
             generation: this._asyncTurnGeneration || 0, board: this.board, hands: this.hands, startedAt: Date.now() };
@@ -10400,7 +10504,7 @@ class DominoGame {
         return Boolean(operation && this._activeAsyncTurn === operation && !operation.cancelled
             && operation.generation === (this._asyncTurnGeneration || 0) && operation.cycleId === this._turnCycleId
             && operation.board === this.board && operation.hands === this.hands
-            && operation.playerIndex === this.currentPlayer && this.gameActive && !this.roundOver && !this.matchOver);
+            && operation.playerIndex === this.currentPlayer && !this.soloPaused && this.gameActive && !this.roundOver && !this.matchOver);
     }
 
     recoverStalledTurn(now = Date.now()) {
@@ -10441,12 +10545,13 @@ class DominoGame {
 
     clearTurnTimers() {
         this.invalidateAsyncTurn();
-        clearTimeout(this._firstTurnTimeout);
-        clearTimeout(this._aiTurnTimeout);
-        clearTimeout(this._turnAdvanceTimeout);
-        clearTimeout(this._dealEndTimeout);
-        clearTimeout(this._lastMoveRevealTimeout);
-        clearTimeout(this._turnTimeoutId);
+        for (const timer of Array.from(this._localGameTimers || [])) this.clearGameTimeout(timer);
+        this.clearGameTimeout(this._firstTurnTimeout);
+        this.clearGameTimeout(this._aiTurnTimeout);
+        this.clearGameTimeout(this._turnAdvanceTimeout);
+        this.clearGameTimeout(this._dealEndTimeout);
+        this.clearGameTimeout(this._lastMoveRevealTimeout);
+        this.clearGameTimeout(this._turnTimeoutId);
         clearInterval(this._turnTimerTickId);
         this._firstTurnTimeout = null;
         this._aiTurnTimeout = null;
@@ -11035,14 +11140,14 @@ class DominoGame {
     }
 
     clearNextDealAdvanceTimeout() {
-        clearTimeout(this._nextDealAdvanceTimeout);
+        this.clearGameTimeout(this._nextDealAdvanceTimeout);
         this._nextDealAdvanceTimeout = null;
     }
 
     scheduleNextDealAdvance(delay = 900) {
         this.clearNextDealAdvanceTimeout();
         if (this.matchOver) return;
-        this._nextDealAdvanceTimeout = setTimeout(() => {
+        this._nextDealAdvanceTimeout = this.setGameTimeout(() => {
             this._nextDealAdvanceTimeout = null;
             if (this.matchOver) return;
             void this.startDeal();
@@ -11050,7 +11155,7 @@ class DominoGame {
     }
 
     delayLastMoveSettlement(callback, delay = LAST_MOVE_REVEAL_DELAY_MS, finalInfo = null) {
-        clearTimeout(this._lastMoveRevealTimeout);
+        this.clearGameTimeout(this._lastMoveRevealTimeout);
         const operation = this.beginAsyncTurn(this.currentPlayer, 'result-reveal');
         this.lastMoveRevealPending = true;
         this.turnInProgress = true;
@@ -11063,7 +11168,7 @@ class DominoGame {
             this.turnInProgress = false;
             callback?.();
         };
-        this._lastMoveRevealTimeout = setTimeout(() => {
+        this._lastMoveRevealTimeout = this.setGameTimeout(() => {
             this._lastMoveRevealTimeout = null;
             void (async () => {
                 try {
@@ -11079,7 +11184,7 @@ class DominoGame {
     }
 
     scheduleTurnAdvance(delay = this.postMoveAdvanceMs, turnCycleId = this._turnCycleId) {
-        clearTimeout(this._turnAdvanceTimeout);
+        this.clearGameTimeout(this._turnAdvanceTimeout);
         if (turnCycleId !== this._turnCycleId) return;
         const operation = this.beginAsyncTurn(this.currentPlayer, 'advance-delay');
         operation.resume = () => {
@@ -11093,7 +11198,7 @@ class DominoGame {
         if (delay <= 0) { operation.resume(); return; }
         this.postMoveWindowActive = true;
         this.postMoveWindowEndsAt = Date.now() + delay;
-        this._turnAdvanceTimeout = setTimeout(operation.resume, delay);
+        this._turnAdvanceTimeout = this.setGameTimeout(operation.resume, delay);
     }
 
     shouldOpenGoshaChainWindow(pi) {
@@ -13249,11 +13354,11 @@ class DominoGame {
         this.activeTurnDeadlineAt = endAt;
         this.activeTurnVersionForTimer = nextTurnVersion;
         this.activeTurnPlayerIndexForTimer = nextPlayerIndex;
-        clearTimeout(this._turnTimeoutId);
+        this.clearGameTimeout(this._turnTimeoutId);
         clearInterval(this._turnTimerTickId);
         this._turnTimerTickId = setInterval(() => this.updateTurnTimerHud(), 200);
         const delay = Math.max(0, endAt - this.getSyncedNow());
-        this._turnTimeoutId = setTimeout(() => {
+        this._turnTimeoutId = this.setGameTimeout(() => {
             this._turnTimeoutId = null;
             if (this.network.isMultiplayer) {
                 clearInterval(this._turnTimerTickId);
@@ -13340,7 +13445,7 @@ class DominoGame {
             avatar.removeAttribute('data-avatar-src');
             avatar.textContent = this.getTurnAvatarText(currentName);
         }
-        const remaining = Math.max(0, this.turnDeadlineAt - this.getSyncedNow());
+        const remaining = this.soloPaused ? Math.max(0, Number(this.soloPauseState?.remainingTurnMs || 0)) : Math.max(0, this.turnDeadlineAt - this.getSyncedNow());
         const duration = Math.max(1, Number(this.turnDurationMs || this.turnTimeoutMs || TURN_TIMEOUT_MS));
         const progress = Math.min(1, Math.max(0, 1 - (remaining / duration)));
         const angle = Math.max(0, Math.min(360, progress * 360));
@@ -13577,6 +13682,8 @@ class DominoGame {
             matchOver: this.matchOver,
             lastDealWinner: this.lastDealWinner,
             turnDeadlineAt: this.turnDeadlineAt || 0,
+            soloPaused: !isOnline && Boolean(this.soloPaused),
+            soloPauseState: !isOnline && this.soloPaused ? { ...this.soloPauseState } : null,
             dlossThreshold: this.dlossThreshold,
             instantWinEnabled: this.instantWinEnabled,
             board: boardState,
@@ -13770,6 +13877,10 @@ class DominoGame {
 
     restoreSoloSnapshot(snapshot) {
         try {
+            this.clearTurnTimers();
+            this.soloPaused = Boolean(snapshot.soloPaused && snapshot.soloPauseState);
+            this.soloPauseState = this.soloPaused ? { ...snapshot.soloPauseState } : null;
+            this._soloPauseRestored = this.soloPaused;
             this.network.leaveRoom?.();
             this.currentMatchSessionId = snapshot.sessionId || this.createResumeId('solo');
             this.currentMatchStartedAt = snapshot.createdAt || new Date().toISOString();
@@ -13832,12 +13943,14 @@ class DominoGame {
             startGameMusic();
             this.syncSoloOptions();
             this.renderState();
-            if (this.gameActive && this.turnDeadlineAt > 0) {
+            if (this.soloPaused) {
+                document.getElementById('menu-screen')?.classList.add('active');
+            } else if (this.gameActive && this.turnDeadlineAt > 0) {
                 this.startTurnTimer(this.turnDeadlineAt);
             } else {
                 this.clearTurnTimers();
             }
-            if (this.gameActive && this.currentPlayer !== this.humanPlayerIndex) {
+            if (!this.soloPaused && this.gameActive && this.currentPlayer !== this.humanPlayerIndex) {
                 this.queueAITurnIfNeeded(BOT_THINK_DELAY_MS);
             }
             this.refreshResumeBanner(snapshot);
@@ -17272,6 +17385,7 @@ class DominoGame {
     }
     setupMenu() {
         document.getElementById('menu-btn')?.addEventListener('click', () => {
+            this.pauseSoloGame();
             this.closeReactionPicker();
             this.closeGiftPicker();
             document.getElementById('menu-screen').classList.add('active');
@@ -17287,7 +17401,7 @@ class DominoGame {
                 await this.openAccountModal();
             });
         }
-        document.getElementById('menu-resume')?.addEventListener('click', () => document.getElementById('menu-screen').classList.remove('active'));
+        document.getElementById('menu-resume')?.addEventListener('click', () => { this.resumeSoloGame(); document.getElementById('menu-screen').classList.remove('active'); });
         document.getElementById('menu-next-track')?.addEventListener('click', () => {
             nextTrack();
         });
@@ -17297,7 +17411,7 @@ class DominoGame {
         document.getElementById('menu-quit')?.addEventListener('click', async () => {
             document.getElementById('menu-screen').classList.remove('active');
             const shouldQuit = await this.confirmQuitCurrentMatch();
-            if (!shouldQuit) return;
+            if (!shouldQuit) { document.getElementById('menu-screen').classList.add('active'); return; }
             await this.quitCurrentMatch();
         });
     }
@@ -17323,6 +17437,8 @@ class DominoGame {
     }
 
     async returnToMainMenu({ settleForfeit = false } = {}) {
+        this.soloPaused = false;
+        this.soloPauseState = null;
         this.clearRoundStage();
         this.clearPendingOnlineAction({ rollback: false });
         this.clearNextDealAdvanceTimeout();
@@ -17372,6 +17488,8 @@ class DominoGame {
     }
 
     async startNewGame() {
+        this.soloPaused = false;
+        this.soloPauseState = null;
         debugLog('[startNewGame] Starting...', 'isMultiplayer:', this.network.isMultiplayer);
         this.clearPendingOnlineAction({ rollback: false });
         this.clearNextDealAdvanceTimeout();
@@ -17524,6 +17642,7 @@ class DominoGame {
     }
 
     startDeal() {
+        if (this.soloPaused && !this.network?.isMultiplayer) return;
         debugLog('[startDeal] Initializing deal...');
         this.resetOnlineResultFlowState();
         this.clearRoundStage();
@@ -17585,7 +17704,7 @@ class DominoGame {
                 blocksInput: true
             });
             
-            this.roundStageTimer = setTimeout(() => {
+            this.roundStageTimer = this.setGameTimeout(() => {
                 if (turnCycleId !== this._turnCycleId) return;
                 
                 const reason = this.describeOpeningReason(tile);
@@ -17599,7 +17718,7 @@ class DominoGame {
                     blocksInput: true
                 });
                 
-                this.roundStageTimer = setTimeout(() => {
+                this.roundStageTimer = this.setGameTimeout(() => {
                     if (turnCycleId !== this._turnCycleId) return;
                     
                     this.clearRoundStage();
@@ -17629,7 +17748,7 @@ class DominoGame {
                             blocksInput: true
                         });
                         
-                        this.roundStageTimer = setTimeout(() => {
+                        this.roundStageTimer = this.setGameTimeout(() => {
                             if (turnCycleId !== this._turnCycleId) return;
                             this.clearRoundStage();
                             this.playTile(fp, fi, -1);
@@ -18263,7 +18382,7 @@ class DominoGame {
 
     setRoundStage(stage = {}) {
         if (this.roundStageTimer) {
-            clearTimeout(this.roundStageTimer);
+            this.clearGameTimeout(this.roundStageTimer);
             this.roundStageTimer = null;
         }
         this.roundStage = stage;
@@ -18278,7 +18397,7 @@ class DominoGame {
             return;
         }
         if (this.roundStageTimer) {
-            clearTimeout(this.roundStageTimer);
+            this.clearGameTimeout(this.roundStageTimer);
             this.roundStageTimer = null;
         }
         this.roundStage = null;
@@ -18287,12 +18406,13 @@ class DominoGame {
 
     showTimedRoundStage(stage, duration = 1200) {
         this.setRoundStage(stage);
-        this.roundStageTimer = setTimeout(() => {
+        this.roundStageTimer = this.setGameTimeout(() => {
             this.clearRoundStage(stage.phase);
         }, duration);
     }
 
     isInputBlockedByStage() {
+        if (this.soloPaused && !this.network?.isMultiplayer) return true;
         if (this.lastMoveRevealPending) return true;
         if (this.roundStage) {
             if (this.roundStage.blocksInput) return true;
@@ -18386,7 +18506,7 @@ class DominoGame {
             blocksInput: true
         });
 
-        await new Promise(resolve => setTimeout(resolve, 200));
+        await this.waitGameDelay(200);
         if (operation && (!this.isAsyncTurnCurrent(operation) || operation.completed)) return;
 
         this.setRoundStage({
@@ -18395,7 +18515,7 @@ class DominoGame {
             blocksInput: true
         });
 
-        await new Promise(resolve => setTimeout(resolve, 150));
+        await this.waitGameDelay(150);
         if (operation && (!this.isAsyncTurnCurrent(operation) || operation.completed)) return;
         this.clearRoundStage();
     }
@@ -19875,7 +19995,7 @@ class DominoGame {
             this.hands[pi].push(drawnTile);
             this.playSound('draw');
             this.renderState();
-            await new Promise((resolve) => setTimeout(resolve, delay));
+            await this.waitGameDelay(delay);
             if (!this.isAsyncTurnCurrent(operation)) return;
         }
         if (
@@ -19907,7 +20027,7 @@ class DominoGame {
             subtitle: pName,
             blocksInput: true
         }, 800);
-        setTimeout(() => {
+        this.setGameTimeout(() => {
             if (!this.isAsyncTurnCurrent(operation)) return;
             this.playTile(pi, move.tileIndex, move.openEndIndex);
         }, 800);
@@ -19955,7 +20075,7 @@ class DominoGame {
         this.clearTurnTimers();
         this.turnInProgress=true;
         this.playSound('pass'); this.broadcastMsg(this.t('btn-pass'), 300); 
-        this._turnAdvanceTimeout = setTimeout(()=>{this.turnInProgress=false;this.advanceTurn();}, 300);
+        this._turnAdvanceTimeout = this.setGameTimeout(()=>{this.turnInProgress=false;this.advanceTurn();}, 300);
     }
 
     log(m) {
@@ -19994,6 +20114,7 @@ class DominoGame {
     }
 
     async playTile(pi,ti,oei) {
+        if (this.soloPaused && !this.network?.isMultiplayer) return;
         if(this.turnInProgress) return;
         if (this.postMoveWindowActive) return;
         this.clearTurnTimers();
@@ -20114,8 +20235,9 @@ class DominoGame {
     }
 
     advanceTurn() {
+        if (this.soloPaused && !this.network?.isMultiplayer) return;
         this.postMoveWindowActive = false;
-        clearTimeout(this._turnAdvanceTimeout);
+        this.clearGameTimeout(this._turnAdvanceTimeout);
         this._turnAdvanceTimeout = null;
         const blocked = this.mode === 'classic101' && this.boneyard.length > 0
             ? null
@@ -20139,7 +20261,7 @@ class DominoGame {
             if(!this.board.canPlayAny(this.normalizeHandForBoard(h))&&!this.boneyard.length){
                 this.broadcastMsg(this.t('msg-no-moves'), 1000);
                 this.turnInProgress=true;
-                setTimeout(()=>{this.turnInProgress=false;this.advanceTurn();},1000);
+                this.setGameTimeout(()=>{this.turnInProgress=false;this.advanceTurn();},1000);
             } else {
                 this.showTimedRoundStage({
                     phase: 'your-turn',
@@ -20170,14 +20292,14 @@ class DominoGame {
         const isAI = this.ais.some(a => a.index === this.currentPlayer);
         if (isAI) {
             const turnCycleId = this._turnCycleId;
-            clearTimeout(this._aiTurnTimeout);
+            this.clearGameTimeout(this._aiTurnTimeout);
             debugLog('[turn] queueAITurnIfNeeded', {
                 mode: this.mode,
                 nextPlayer: this.currentPlayer,
                 delay,
                 turnCycleId
             });
-            this._aiTurnTimeout = setTimeout(() => {
+            this._aiTurnTimeout = this.setGameTimeout(() => {
                 if (turnCycleId !== this._turnCycleId) return;
                 this.aiTurn();
             }, delay);
@@ -20185,6 +20307,7 @@ class DominoGame {
     }
 
     aiTurn() {
+        if (this.soloPaused && !this.network?.isMultiplayer) return;
         if(!this.gameActive||this.turnInProgress||this.matchOver||this.roundOver) return;
         const pi=this.currentPlayer;
         const ai=this.ais.find(a=>a.index===pi);
@@ -20193,7 +20316,7 @@ class DominoGame {
         const hand = this.hands[pi];
         this.turnInProgress = true;
         const turnCycleId = this._turnCycleId;
-        clearTimeout(this._aiTurnTimeout);
+        this.clearGameTimeout(this._aiTurnTimeout);
         if (turnCycleId !== this._turnCycleId) return;
 
         const combo = this.board.getGoshaCombo(hand);
@@ -20207,7 +20330,7 @@ class DominoGame {
                 subtitle: pName,
                 blocksInput: true
             }, 800);
-            setTimeout(() => {
+            this.setGameTimeout(() => {
                 if (turnCycleId !== this._turnCycleId) return;
                 this.playGoshaCombo();
             }, 800);
@@ -20226,7 +20349,7 @@ class DominoGame {
                 subtitle: pName,
                 blocksInput: true
             }, 800);
-            setTimeout(() => {
+            this.setGameTimeout(() => {
                 if (turnCycleId !== this._turnCycleId) return;
                 this.playTile(pi, move.tileIndex, move.openEndIndex);
             }, 800);

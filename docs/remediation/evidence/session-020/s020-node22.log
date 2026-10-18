@@ -1,0 +1,190 @@
+TAP version 13
+# Subtest: js/app.js: 60 seconds paused cannot expire a solo turn; 20 resumes preserve one timer
+ok 1 - js/app.js: 60 seconds paused cannot expire a solo turn; 20 resumes preserve one timer
+  ---
+  duration_ms: 15.137417
+  ...
+# Subtest: js/app.js: menu pause never extends an online deadline
+ok 2 - js/app.js: menu pause never extends an online deadline
+  ---
+  duration_ms: 5.171333
+  ...
+# Subtest: js/app.js: game callbacks preserve their remaining delay across pause
+ok 3 - js/app.js: game callbacks preserve their remaining delay across pause
+  ---
+  duration_ms: 3.332083
+  ...
+# Subtest: www/js/app.js: 60 seconds paused cannot expire a solo turn; 20 resumes preserve one timer
+ok 4 - www/js/app.js: 60 seconds paused cannot expire a solo turn; 20 resumes preserve one timer
+  ---
+  duration_ms: 12.060291
+  ...
+# Subtest: www/js/app.js: menu pause never extends an online deadline
+ok 5 - www/js/app.js: menu pause never extends an online deadline
+  ---
+  duration_ms: 3.173791
+  ...
+# Subtest: www/js/app.js: game callbacks preserve their remaining delay across pause
+ok 6 - www/js/app.js: game callbacks preserve their remaining delay across pause
+  ---
+  duration_ms: 4.545875
+  ...
+# Subtest: js/app.js: a reset during tile travel prevents the old score/advance/unlock
+ok 7 - js/app.js: a reset during tile travel prevents the old score/advance/unlock
+  ---
+  duration_ms: 13.758958
+  ...
+# Subtest: js/app.js: replacing board/hands without a cycle change also invalidates old work
+ok 8 - js/app.js: replacing board/hands without a cycle change also invalidates old work
+  ---
+  duration_ms: 4.339917
+  ...
+# Subtest: js/app.js: a current animation completes its move exactly once
+ok 9 - js/app.js: a current animation completes its move exactly once
+  ---
+  duration_ms: 3.801917
+  ...
+# Subtest: js/app.js: an old rejected animation cannot unlock a replacement turn
+ok 10 - js/app.js: an old rejected animation cannot unlock a replacement turn
+  ---
+  duration_ms: 4.49925
+  ...
+# Subtest: js/app.js: queued animation frames do not run against a replacement board
+ok 11 - js/app.js: queued animation frames do not run against a replacement board
+  ---
+  duration_ms: 3.164
+  ...
+# Subtest: js/app.js: old 101 draw continuation cannot unlock a new turn
+ok 12 - js/app.js: old 101 draw continuation cannot unlock a new turn
+  ---
+  duration_ms: 4.172041
+  ...
+# Subtest: www/js/app.js: a reset during tile travel prevents the old score/advance/unlock
+ok 13 - www/js/app.js: a reset during tile travel prevents the old score/advance/unlock
+  ---
+  duration_ms: 9.943125
+  ...
+# Subtest: www/js/app.js: replacing board/hands without a cycle change also invalidates old work
+ok 14 - www/js/app.js: replacing board/hands without a cycle change also invalidates old work
+  ---
+  duration_ms: 3.588667
+  ...
+# Subtest: www/js/app.js: a current animation completes its move exactly once
+ok 15 - www/js/app.js: a current animation completes its move exactly once
+  ---
+  duration_ms: 3.476917
+  ...
+# Subtest: www/js/app.js: an old rejected animation cannot unlock a replacement turn
+ok 16 - www/js/app.js: an old rejected animation cannot unlock a replacement turn
+  ---
+  duration_ms: 3.848458
+  ...
+# Subtest: www/js/app.js: queued animation frames do not run against a replacement board
+ok 17 - www/js/app.js: queued animation frames do not run against a replacement board
+  ---
+  duration_ms: 2.667792
+  ...
+# Subtest: www/js/app.js: old 101 draw continuation cannot unlock a new turn
+ok 18 - www/js/app.js: old 101 draw continuation cannot unlock a new turn
+  ---
+  duration_ms: 2.718916
+  ...
+# Subtest: js/konvaBoardRenderer.js: cancelling an actual Konva travel settles it once and destroys the tween
+ok 19 - js/konvaBoardRenderer.js: cancelling an actual Konva travel settles it once and destroys the tween
+  ---
+  duration_ms: 3.598875
+  ...
+# Subtest: www/js/konvaBoardRenderer.js: cancelling an actual Konva travel settles it once and destroys the tween
+ok 20 - www/js/konvaBoardRenderer.js: cancelling an actual Konva travel settles it once and destroys the tween
+  ---
+  duration_ms: 1.289167
+  ...
+# Subtest: js/app.js: stalled committed tile completes once without replaying the board
+ok 21 - js/app.js: stalled committed tile completes once without replaying the board
+  ---
+  duration_ms: 13.85925
+  ...
+# Subtest: js/app.js: online recovery requests state without locally unlocking or advancing
+ok 22 - js/app.js: online recovery requests state without locally unlocking or advancing
+  ---
+  duration_ms: 4.380042
+  ...
+# Subtest: js/app.js: an unknown phase records diagnostics without blindly unlocking
+ok 23 - js/app.js: an unknown phase records diagnostics without blindly unlocking
+  ---
+  duration_ms: 3.758625
+  ...
+# Subtest: js/app.js: old pre-result await/finalizer cannot clear a new phase
+ok 24 - js/app.js: old pre-result await/finalizer cannot clear a new phase
+  ---
+  duration_ms: 4.204708
+  ...
+# Subtest: js/app.js: recovery cancels a 101 draw loop and queues only one recomputation
+ok 25 - js/app.js: recovery cancels a 101 draw loop and queues only one recomputation
+  ---
+  duration_ms: 3.588
+  ...
+# Subtest: js/app.js: lost advance timer is recovered once
+ok 26 - js/app.js: lost advance timer is recovered once
+  ---
+  duration_ms: 4.157959
+  ...
+# Subtest: js/app.js: a final reveal can settle once while its old presentation is still waiting
+ok 27 - js/app.js: a final reveal can settle once while its old presentation is still waiting
+  ---
+  duration_ms: 3.091625
+  ...
+# Subtest: js/app.js: real pre-result stages stop after their owner is reset
+ok 28 - js/app.js: real pre-result stages stop after their owner is reset
+  ---
+  duration_ms: 5.904792
+  ...
+# Subtest: www/js/app.js: stalled committed tile completes once without replaying the board
+ok 29 - www/js/app.js: stalled committed tile completes once without replaying the board
+  ---
+  duration_ms: 11.043041
+  ...
+# Subtest: www/js/app.js: online recovery requests state without locally unlocking or advancing
+ok 30 - www/js/app.js: online recovery requests state without locally unlocking or advancing
+  ---
+  duration_ms: 4.238958
+  ...
+# Subtest: www/js/app.js: an unknown phase records diagnostics without blindly unlocking
+ok 31 - www/js/app.js: an unknown phase records diagnostics without blindly unlocking
+  ---
+  duration_ms: 2.486792
+  ...
+# Subtest: www/js/app.js: old pre-result await/finalizer cannot clear a new phase
+ok 32 - www/js/app.js: old pre-result await/finalizer cannot clear a new phase
+  ---
+  duration_ms: 3.339667
+  ...
+# Subtest: www/js/app.js: recovery cancels a 101 draw loop and queues only one recomputation
+ok 33 - www/js/app.js: recovery cancels a 101 draw loop and queues only one recomputation
+  ---
+  duration_ms: 2.677167
+  ...
+# Subtest: www/js/app.js: lost advance timer is recovered once
+ok 34 - www/js/app.js: lost advance timer is recovered once
+  ---
+  duration_ms: 3.036209
+  ...
+# Subtest: www/js/app.js: a final reveal can settle once while its old presentation is still waiting
+ok 35 - www/js/app.js: a final reveal can settle once while its old presentation is still waiting
+  ---
+  duration_ms: 4.819458
+  ...
+# Subtest: www/js/app.js: real pre-result stages stop after their owner is reset
+ok 36 - www/js/app.js: real pre-result stages stop after their owner is reset
+  ---
+  duration_ms: 6.506792
+  ...
+1..36
+# tests 36
+# suites 0
+# pass 36
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 142.621125
