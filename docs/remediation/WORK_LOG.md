@@ -117,3 +117,21 @@
 ### Подготовка следующего большого пакета S006/R-03
 
 Первичный просмотр показывает: settle SQL блокирует reserved только по roomId+stakeTableId, игнорирует matchId, а после присваивает payload matchId строке. Reserve имеет unique(roomId,playerId,stakeTableId), пропускает existing reserved любого матча и переиспользует settled row для нового matchId. Поэтому недостаточно добавить один WHERE: нужны проверки reserve replay/active-other-match/повторного settlement, сохранение identity и корректный переход следующего матча. Возможна миграция identity/истории; сначала изучить server/economyService.js, currentDealMatchId и API validation DTO, а не ломать старые контракты. До изменения финансового кода получить guarded real-DB failing regression позднего результата A при резерве B и сверить все wallet/ledger/reserve. Новый пакет не считать начатым исправлением; код R-03 пока не менялся.
+
+## Пакет из трёх пунктов — S006–S008
+
+Пользователь18.10.2026 просит выполнять по3пункта за заход. Выбраны R-03 (match reserve identity), R-31 (101 fish scoring), R-32 (101 drawToOpen). Начало: чистый fix/audit-foundation HEAD46cc8c7,5/42локально закрыты. Production/Play не обновлять.
+
+### S006/R-03 — решение до реализации
+
+Прочитаны EconomyService, server/economyService.js, MatchesService и DTO. Сервер reserve/settle/forfeit передаёт canonical matchRecordId, MatchesService сохраняет sourceMatchId как Match.id; контракт совместим с обязательным matchId для платного резерва. Схему менять необязательно: existing уникальная строка room/player/stake остаётся текущим резервом, историческая identity хранится в immutable ledger keys/payload. Для предотвращения старого reserve replay после переиспользования row использовать существующий reserve ledger key. Это сохраняет совместимость schema с живой игрой и не требует migration.
+
+План: room transaction lock для reserve+settle; exact match filter для settlement; reject active other match и completed reserve replay; idempotent same-match reserve до проверки остатка; freeze stake/commission из reservation, wallet locks в стабильном порядке. Старые rows без matchId не угадывать/не присваивать новому матчу; безопасный конфликт и существующий reconciliation отдельно. Проверить на fresh local PG до и после, без .env/real users.
+
+### S006.1 — завершение R-03
+
+До API132/134 (две новые регрессииfail), realPG1/8pass: чужой matchResult потреблял2новых резерва; repeatedreserve создавалdeadlocks/ошибки; config изменял reportedbank. ПослеAPI134/134 Node25/22, PG9/9Node25 и10/10Node22 (добавлен explicit legacy-null safety check).100concurrentreserve+30settle дают один bank100/commission5 и final95, никаких двойныхопераций. Проверены changedparticipantset/oldmatchwithnewplayers/rollback+retry/replayAпослеB/C. При повторном резерве сbalance0 сохранён receipt; ставки/комиссия заморожены, отключение таблицы не блокирует расчёт уже удержанных средств.
+
+No migration: reused current row сохраняет схему, replay отсекается существующей immutable ledger history (indexed referenceType/referenceId плюс JSON room/match); initial/replay keys сохранены совместимыми. Roomlock1464091703, ReadCommitted/maxWait/timeout30s; wallets сортируются для lock order. Legacy null-match funds не переназначаются, future existing reconciliation отдельно. Production не трогали; свойPG остановлен s006-pg-stop. Будущий rollout требует убрать старые API instances. Evidence: session-006/summary.json.
+
+Для владельца: результат старой партии больше не может списать/вернуть монеты новой; повторные запросы безопасны. Размеры ставок и политика выигрыша не менялись. Локально6/42, R-25partial. Продолжаем R-31/R-32 в этом же заходе.

@@ -1,0 +1,18 @@
+{
+  "label": "s006-reservations-before",
+  "command": [
+    "node",
+    "/Users/macbookair/Documents/domino/docs/remediation/scripts/verify-match-reservations.mjs",
+    "domino_remediation_s006_before"
+  ],
+  "cwd": ".tmp/remediation-s006/clean",
+  "startedAt": "2026-10-18T22:11:29.128Z",
+  "finishedAt": "2026-10-18T22:11:32.796Z",
+  "durationMs": 3668,
+  "exitCode": 1,
+  "signal": null,
+  "timedOut": false,
+  "error": null,
+  "log": "docs/remediation/evidence/session-006/s006-reservations-before.log",
+  "environment": "Fresh allowlist, synthetic local API/DB, optional Redis disabled, no inherited secrets or copied .env"
+}

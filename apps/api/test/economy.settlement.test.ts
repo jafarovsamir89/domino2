@@ -39,6 +39,10 @@ function makeEconomyHarness() {
     coinStakeTable: {
       findUnique: async ({ where }: any) => stakes.get(where.key) || null
     },
+    coinLedgerEntry: {
+      findFirst: async ({ where }: any) => ledgerEntries.find(row => row.referenceType === where.referenceType && row.payloadJson?.roomId === where.payloadJson.equals && row.payloadJson?.matchId === where.AND[0].payloadJson.equals) || null,
+      findUnique: async ({ where }: any) => ledgerEntries.find(row => row.idempotencyKey === where.idempotencyKey) || null
+    },
     coinMatchStake: {
       findUnique: async ({ where }: any) => matchStakes.find((row) =>
         row.roomId === where.roomId_playerId_stakeTableId.roomId &&
@@ -60,7 +64,7 @@ function makeEconomyHarness() {
         }
         return matchStakes.filter((row) =>
           row.roomId === where.roomId &&
-          row.stakeTableId === where.stakeTableId &&
+          (!where.stakeTableId || row.stakeTableId === where.stakeTableId) &&
           row.status === where.status
         );
       },
@@ -99,10 +103,12 @@ function makeEconomyHarness() {
       }
       const roomId = String(values[0] || "");
       const stakeTableId = String(values[1] || "");
+      const matchId = values[2];
       return matchStakes
         .filter((row) =>
           row.roomId === roomId &&
           row.stakeTableId === stakeTableId &&
+          (matchId === undefined || row.matchId === matchId) &&
           row.status === "reserved"
         )
         .map((row) => ({ id: row.id }));
@@ -156,6 +162,7 @@ function makeEconomyHarness() {
       amount,
       referenceType,
       referenceId,
+      payloadJson: extras.payloadJson,
       idempotencyKey: extras?.idempotencyKey ?? null,
       balanceBefore: before.balance,
       balanceAfter: wallet.balance,
@@ -241,6 +248,31 @@ function withProof(payload: Record<string, unknown>, scope: string) {
     proof: signDominoPayload(body)
   };
 }
+
+test("late settlement and refund from match A leave match B reservations untouched", async () => {
+  const { service, wallets, matchStakes, ledgerEntries } = makeEconomyHarness();
+  const token = createGameToken({userId: "user-a", playerId: "player-a", displayName: "Alpha", role: "player", sessionId: "s", provider: "better-auth", issuedAt: Date.now(), expiresAt: Date.now() + 60_000});
+  await service.reserveMatchStake(token, withProof({roomId: "reuse", matchId: "B", stakeKey: "stake_50", participants: [{playerId: "player-a"}, {playerId: "player-b"}]}, "economy.reserve"));
+  const before = structuredClone({wallets: [...wallets], matchStakes, ledgerEntries});
+  for (const result of ["win", "refund"]) {
+    const response = await service.settleMatchStake(token, withProof({roomId: "reuse", matchId: "A", stakeKey: "stake_50", result, winnerPlayerIds: result === "win" ? ["player-a"] : []}, "economy.settle"));
+    assert.equal(response.settled, 0);
+    assert.deepEqual(structuredClone({wallets: [...wallets], matchStakes, ledgerEntries}), before);
+  }
+});
+
+test("paid match requests without match identity cannot change wallets", async () => {
+  const { service, wallets, ledgerEntries } = makeEconomyHarness();
+  const token = createGameToken({userId: "user-a", playerId: "player-a", displayName: "Alpha", role: "player", sessionId: "s", provider: "better-auth", issuedAt: Date.now(), expiresAt: Date.now() + 60_000});
+  const reserve = await service.reserveMatchStake(token, withProof({roomId: "missing", stakeKey: "stake_50", participants: [{playerId: "player-a"}]}, "economy.reserve"));
+  assert.equal(reserve.ok, false);
+  assert.equal(reserve.reason, "missing_match");
+  const settle = await service.settleMatchStake(token, withProof({roomId: "missing", stakeKey: "stake_50", result: "refund"}, "economy.settle"));
+  assert.equal(settle.ok, false);
+  assert.equal(settle.reason, "missing_match");
+  assert.equal(wallets.size, 0);
+  assert.equal(ledgerEntries.length, 0);
+});
 
 test("online stake reserve and settle keep the bank and payout balanced", async () => {
   const { service, wallets, matchStakes, ledgerEntries, queryRawCalls } = makeEconomyHarness();

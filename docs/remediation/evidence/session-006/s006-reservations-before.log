@@ -1,0 +1,60 @@
+{
+  "database": "domino_remediation_s006_before",
+  "results": [
+    {
+      "name": "late-result-and-refund",
+      "ok": false,
+      "error": "Expected values to be strictly equal:\n\n2 !== 0\n"
+    },
+    {
+      "name": "active-other-match",
+      "ok": false,
+      "error": "Expected values to be strictly equal:\n\ntrue !== false\n"
+    },
+    {
+      "name": "missing-match",
+      "ok": false,
+      "error": "Expected values to be strictly equal:\n+ actual - expected\n\n+ undefined\n- 'missing_match'\n"
+    },
+    {
+      "name": "concurrent-reserve-and-settle",
+      "ok": false,
+      "error": "[{\"ok\":false,\"reason\":\"\\nInvalid `prisma.$queryRaw()` invocation:\\n\\n\\nRaw query failed. Code: `40P01`. Message: `ERROR: deadlock detected\\nDETAIL: Process 55994 waits for AccessExclusiveLock on tuple (0,16) of relation 22702 of database 22338; blocked by process 56000.\\nProcess 56000 waits for ShareLock on transaction 1811; blocked by process 55992.\\nProcess 55992 waits for ShareLock on transaction 1814; blocked by process 55994.\\nHINT: See server log for query details.`\"},{\"ok\":false,\"reason\":\"Transaction API error: Unable to start a transaction in the given time.\"}]"
+    },
+    {
+      "name": "replay-and-next-match",
+      "ok": false,
+      "error": "Expected values to be strictly equal:\n\n2 !== 0\n"
+    },
+    {
+      "name": "winner-must-participate",
+      "ok": false,
+      "error": "Expected values to be strictly equal:\n\ntrue !== false\n"
+    },
+    {
+      "name": "rollback-settlement",
+      "ok": true,
+      "rollbackAndRetry": true
+    },
+    {
+      "name": "frozen-stake-and-commission",
+      "ok": false,
+      "error": "Expected values to be strictly equal:\n\n1800 !== 100\n"
+    }
+  ]
+}
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Some reservation scenarios failed
+    at file:///Users/macbookair/Documents/domino/docs/remediation/scripts/verify-match-reservations.mjs:123:10 {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: false,
+  expected: true,
+  operator: '==',
+  diff: 'simple'
+}
+
+Node.js v25.6.0

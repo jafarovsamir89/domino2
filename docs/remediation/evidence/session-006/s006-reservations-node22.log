@@ -1,0 +1,62 @@
+{
+  "database": "domino_remediation_s006_node22",
+  "results": [
+    {
+      "name": "late-result-and-refund",
+      "ok": true,
+      "newMatchUntouched": true
+    },
+    {
+      "name": "active-other-match",
+      "ok": true,
+      "rejectedWithoutWrites": true
+    },
+    {
+      "name": "missing-match",
+      "ok": true,
+      "rejectedWithoutWrites": true
+    },
+    {
+      "name": "concurrent-reserve-and-settle",
+      "ok": true,
+      "reserveRequests": 100,
+      "settleRequests": 30,
+      "bank": 100,
+      "finalBalanceSum": 95,
+      "commission": 5
+    },
+    {
+      "name": "replay-and-next-match",
+      "ok": true,
+      "completedMatches": 3,
+      "oldRequestsHarmless": true
+    },
+    {
+      "name": "winner-must-participate",
+      "ok": true,
+      "invalidWinnerRejected": true
+    },
+    {
+      "name": "participant-set-and-global-replay",
+      "ok": true,
+      "changedParticipantsRejected": true,
+      "oldMatchCannotUseNewPlayers": true
+    },
+    {
+      "name": "rollback-settlement",
+      "ok": true,
+      "rollbackAndRetry": true
+    },
+    {
+      "name": "legacy-unidentified-reserve",
+      "ok": true,
+      "unidentifiedFundsNotReassigned": true
+    },
+    {
+      "name": "frozen-stake-and-commission",
+      "ok": true,
+      "originalBank": 100,
+      "originalCommission": 5
+    }
+  ]
+}

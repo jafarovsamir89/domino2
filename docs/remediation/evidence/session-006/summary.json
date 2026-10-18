@@ -1,0 +1,27 @@
+{
+  "session": "S006", "task": "R-03", "parentCommit": "46cc8c7", "status": "fixed-locally",
+  "changes": [
+    "Room transaction lock shared by reserve and settle; stable wallet lock ordering",
+    "Paid requests require matchId; settlement filters exact room/table/match and never rewrites identity",
+    "Active participant set fixed; other-match reserve and completed match replay rejected",
+    "Immutable reserve ledger retains history when current reservation rows are reused",
+    "Reserved stake/commission survive admin edits or disabled table; no schema change"
+  ],
+  "checks": {
+    "unitBefore": {"command": "s006-api-before.json", "pass": 132, "fail": 2},
+    "unitNode25": {"command": "s006-api-final.json", "pass": 134, "fail": 0},
+    "unitNode22": {"command": "s006-api-node22.json", "pass": 134, "fail": 0},
+    "postgresBefore": {"command": "s006-reservations-before.json", "passed": 1, "failed": 7},
+    "postgresFinalNode25": {"command": "s006-reservations-final.json", "passed": 9},
+    "postgresFinalNode22": {"command": "s006-reservations-node22.json", "passed": 10},
+    "sourceCheck": "s006-source-check.json", "cleanup": "s006-pg-stop.json"
+  },
+  "coverage": ["late win/refund", "active other match", "missing match", "100 reserve retries/30 concurrent settles", "old replay/next match", "unknown winner", "changed participants", "rollback/retry", "legacy null match", "frozen stake/commission"],
+  "limits": [
+    "Synthetic loopback PostgreSQL14.20 only; no production/Play changes",
+    "Legacy reserves without matchId left untouched for existing reconciliation; never guessed",
+    "Current row reuse retained; immutable ledger is history, no data migration",
+    "When deploying later, replace legacy API instances which do not use the new lock/filter",
+    "R-25 known server/E2E failures and R-41 schema drift remain open"
+  ]
+}

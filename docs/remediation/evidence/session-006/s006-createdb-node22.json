@@ -1,0 +1,23 @@
+{
+  "label": "s006-createdb-node22",
+  "command": [
+    "/opt/homebrew/Cellar/postgresql@14/14.20/bin/createdb",
+    "-h",
+    "127.0.0.1",
+    "-p",
+    "55439",
+    "-U",
+    "domino_remediation",
+    "domino_remediation_s006_node22"
+  ],
+  "cwd": ".tmp/remediation-s006/clean",
+  "startedAt": "2026-10-18T22:13:40.880Z",
+  "finishedAt": "2026-10-18T22:13:40.947Z",
+  "durationMs": 67,
+  "exitCode": 0,
+  "signal": null,
+  "timedOut": false,
+  "error": null,
+  "log": "docs/remediation/evidence/session-006/s006-createdb-node22.log",
+  "environment": "Fresh allowlist, synthetic local API/DB, optional Redis disabled, no inherited secrets or copied .env"
+}

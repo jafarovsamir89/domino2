@@ -958,6 +958,12 @@ export class EconomyService implements OnModuleInit {
     });
   }
 
+  private async lockMatchRoom(db: EconomyTx, roomId: string) {
+    await db.$queryRaw(Prisma.sql`
+      SELECT 1 AS locked FROM pg_advisory_xact_lock(1464091703, hashtext(${roomId}))
+    `);
+  }
+
   async getPublicConfig() {
     const [config, stakes] = await Promise.all([
       this.getConfig(),
@@ -1832,12 +1838,13 @@ export class EconomyService implements OnModuleInit {
         reason: "invalid_proof"
       };
     }
+    if (!matchId && stakeKey !== "free") return { ok: false, reason: "missing_match" };
 
     const stakeTable = await this.prisma.coinStakeTable.findUnique({
       where: { key: stakeKey }
     });
 
-    if (!stakeTable || !stakeTable.isActive || stakeTable.stakeAmount <= 0) {
+    if (stakeKey === "free") {
       return {
         ok: true,
         reserved: 0,
@@ -1845,26 +1852,35 @@ export class EconomyService implements OnModuleInit {
         commissionBps: 0
       };
     }
+    if (!stakeTable) return { ok: false, reason: "stake_unavailable" };
 
     try {
       const result = await this.prisma.$transaction(async (tx) => {
-      const resolved = [];
-      const uniqueParticipants = new Map<string, StakeParticipant>();
-      for (const participant of participants) {
-        const playerKey = toCleanString(participant.playerId) || toCleanString(participant.userId);
-        if (!playerKey || uniqueParticipants.has(playerKey)) continue;
-        uniqueParticipants.set(playerKey, participant);
-      }
+        await this.lockMatchRoom(tx, roomId);
+        const active = await tx.coinMatchStake.findMany({ where: { roomId, status: "reserved" } });
+        if (active.some(row => row.matchId !== matchId || row.stakeTableId !== stakeTable.id)) {
+          throw new BadRequestException("reservation_match_conflict");
+        }
+        if (!active.length && await tx.coinLedgerEntry.findFirst({
+          where: {
+            referenceType: "match_reserve",
+            referenceId: { in: [roomId, matchId] },
+            payloadJson: { path: ["roomId"], equals: roomId },
+            AND: [{ payloadJson: { path: ["matchId"], equals: matchId } }]
+          }
+        })) throw new BadRequestException("match_already_settled");
+        const resolved = [];
+        const uniqueParticipants = new Map<string, StakeParticipant>();
+        for (const participant of participants) {
+          const playerKey = toCleanString(participant.playerId) || toCleanString(participant.userId);
+          if (!playerKey || uniqueParticipants.has(playerKey)) continue;
+          uniqueParticipants.set(playerKey, participant);
+        }
+        const resolvedPlayerIds = new Set<string>();
         for (const participant of uniqueParticipants.values()) {
           const player = await this.findOrCreatePlayerByIdentity(tx, participant, claims.displayName);
-          const wallet = await this.ensureWallet(tx, player.id);
-          if (wallet.balance < stakeTable.stakeAmount) {
-            throw new BadRequestException(`Insufficient coins for ${player.displayName}`);
-          }
-          resolved.push({ player, wallet });
-        }
-
-        for (const { player, wallet } of resolved) {
+          if (resolvedPlayerIds.has(player.id)) continue;
+          resolvedPlayerIds.add(player.id);
           const existing = await tx.coinMatchStake.findUnique({
             where: {
               roomId_playerId_stakeTableId: {
@@ -1874,18 +1890,37 @@ export class EconomyService implements OnModuleInit {
               }
             }
           });
-          if (existing && existing.status === "reserved") {
-            continue;
+          const reserveKey = `${roomId}:${matchId}:${player.id}:${stakeTable.id}:reserve`;
+          if (!(existing?.status === "reserved" && existing.matchId === matchId)) {
+            if (existing?.matchId === matchId || await tx.coinLedgerEntry.findUnique({ where: { idempotencyKey: reserveKey } })) {
+              throw new BadRequestException("match_already_settled");
+            }
+            if (!stakeTable.isActive || stakeTable.stakeAmount <= 0) throw new BadRequestException("stake_unavailable");
           }
+          resolved.push({ player, existing, reserveKey });
+        }
+        if (!resolved.length) throw new BadRequestException("missing_participants");
+        if (active.length && (active.length !== resolved.length || active.some(row => !resolvedPlayerIds.has(row.playerId)))) {
+          throw new BadRequestException("reservation_participants_conflict");
+        }
+        // Shared players in different rooms must acquire wallet locks in the same order.
+        resolved.sort((a, b) => a.player.id.localeCompare(b.player.id));
+        for (const { player, existing } of resolved) {
+          if (existing?.status === "reserved") continue;
+          const wallet = await this.getLockedWallet(tx, player.id);
+          if (wallet.balance < stakeTable.stakeAmount) throw new BadRequestException(`Insufficient coins for ${player.displayName}`);
+        }
+        for (const { player, existing, reserveKey } of resolved) {
+          if (existing?.status === "reserved") continue;
 
           await this.reserveWallet(
             tx,
             player.id,
             stakeTable.stakeAmount,
             "match_reserve",
-            roomId,
+            matchId,
             {
-              idempotencyKey: `${roomId}:${matchId || "match"}:${player.id}:${stakeTable.id}:reserve`,
+              idempotencyKey: reserveKey,
               note: stakeTable.title,
               payloadJson: {
                 stakeKey,
@@ -1907,14 +1942,17 @@ export class EconomyService implements OnModuleInit {
             },
             update: {
               status: "reserved",
-              matchId: payload.matchId || null,
+              matchId,
               stakeAmount: stakeTable.stakeAmount,
               commissionBps: stakeTable.commissionBps,
-              reservedAt: new Date()
+              reservedAt: new Date(),
+              commissionAmount: 0,
+              settledAt: null,
+              refundedAt: null
             },
             create: {
               roomId,
-              matchId: payload.matchId || null,
+              matchId,
               playerId: player.id,
               stakeTableId: stakeTable.id,
               stakeAmount: stakeTable.stakeAmount,
@@ -1928,11 +1966,11 @@ export class EconomyService implements OnModuleInit {
           ok: true,
           stakeKey,
           roomId,
-          reserved: resolved.length * stakeTable.stakeAmount,
+          reserved: resolved.reduce((sum, row) => sum + (row.existing?.status === "reserved" ? row.existing.stakeAmount : stakeTable.stakeAmount), 0),
           participants: resolved.length,
-          commissionBps: stakeTable.commissionBps
+          commissionBps: resolved[0].existing?.commissionBps ?? stakeTable.commissionBps
         };
-      });
+      }, { isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted, maxWait: 30_000, timeout: 30_000 });
 
       return result;
     } catch (error) {
@@ -1971,11 +2009,12 @@ export class EconomyService implements OnModuleInit {
         reason: "invalid_proof"
       };
     }
+    if (!matchId && stakeKey !== "free") return { ok: false, reason: "missing_match" };
 
     const stakeTable = await this.prisma.coinStakeTable.findUnique({
       where: { key: stakeKey }
     });
-    if (!stakeTable || !stakeTable.isActive || stakeTable.stakeAmount <= 0) {
+    if (!stakeTable || stakeKey === "free") {
       return {
         ok: true,
         settled: 0,
@@ -1986,11 +2025,13 @@ export class EconomyService implements OnModuleInit {
     }
 
     const resultSummary = await this.prisma.$transaction(async (tx) => {
+      await this.lockMatchRoom(tx, roomId);
       const lockedReservations = await tx.$queryRaw<Array<{ id: string }>>(Prisma.sql`
         SELECT "id"
         FROM "CoinMatchStake"
         WHERE "roomId" = ${roomId}
           AND "stakeTableId" = ${stakeTable.id}
+          AND "matchId" = ${matchId}
           AND status = 'reserved'::"CoinStakeStatus"
         FOR UPDATE
       `);
@@ -2034,18 +2075,28 @@ export class EconomyService implements OnModuleInit {
           payoutIds.add(reservation.playerId);
         }
       }
+      if (!drawOrRefund && !payoutIds.size) return { ok: false, reason: "winner_not_reserved", settled: 0 };
 
       const winnerBank = reservations
         .filter((reservation) => payoutIds.has(reservation.playerId))
         .reduce((sum, entry) => sum + Math.max(0, entry.stakeAmount), 0);
       const loserBank = Math.max(0, bank - winnerBank);
-      const commission = drawOrRefund ? 0 : calcCommission(loserBank, stakeTable.commissionBps);
+      const loserBanksByRate = new Map<number, number>();
+      for (const reservation of reservations) {
+        if (!payoutIds.has(reservation.playerId)) {
+          loserBanksByRate.set(reservation.commissionBps, (loserBanksByRate.get(reservation.commissionBps) || 0) + reservation.stakeAmount);
+        }
+      }
+      const commission = drawOrRefund ? 0 : [...loserBanksByRate].reduce((sum, [bps, amount]) => sum + calcCommission(amount, bps), 0);
       const payoutPool = drawOrRefund ? bank : Math.max(0, loserBank - commission);
       const payoutCount = payoutIds.size;
       const payoutShareBase = payoutCount > 0 ? Math.floor(payoutPool / payoutCount) : 0;
       const payoutRemainder = payoutCount > 0 ? payoutPool - payoutShareBase * payoutCount : 0;
       const payoutOrder = Array.from(payoutIds);
 
+      for (const playerId of [...new Set(reservations.map(row => row.playerId))].sort()) {
+        await this.getLockedWallet(tx, playerId);
+      }
       const settled = [];
       for (const reservation of reservations) {
         const isWinner = payoutIds.has(reservation.playerId);
@@ -2152,9 +2203,9 @@ export class EconomyService implements OnModuleInit {
           where: { id: reservation.id },
           data: {
             status: drawOrRefund ? "refunded" : "settled",
-            matchId: matchId || reservation.matchId,
             commissionAmount: drawOrRefund ? 0 : commission,
-            settledAt: new Date()
+            settledAt: new Date(),
+            refundedAt: drawOrRefund ? new Date() : null
           }
         });
       }
@@ -2172,7 +2223,7 @@ export class EconomyService implements OnModuleInit {
         result,
         reservations: settled
       };
-    });
+    }, { isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted, maxWait: 30_000, timeout: 30_000 });
 
     return resultSummary;
   }

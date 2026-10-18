@@ -1,0 +1,24 @@
+{
+  "label": "s006-reservations-node22",
+  "command": [
+    "npm",
+    "exec",
+    "--yes",
+    "--package=node@22.14.0",
+    "--package=npm@10.9.2",
+    "--",
+    "node",
+    "/Users/macbookair/Documents/domino/docs/remediation/scripts/verify-match-reservations.mjs",
+    "domino_remediation_s006_node22"
+  ],
+  "cwd": ".tmp/remediation-s006/clean",
+  "startedAt": "2026-10-18T22:13:53.649Z",
+  "finishedAt": "2026-10-18T22:13:55.402Z",
+  "durationMs": 1753,
+  "exitCode": 0,
+  "signal": null,
+  "timedOut": false,
+  "error": null,
+  "log": "docs/remediation/evidence/session-006/s006-reservations-node22.log",
+  "environment": "Fresh allowlist, synthetic local API/DB, optional Redis disabled, no inherited secrets or copied .env"
+}

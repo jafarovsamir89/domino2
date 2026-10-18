@@ -87,7 +87,7 @@ R-25 относится к этапу 0, но окончательно закр�
 
 #### R-03 · P0 · Связать reserve/settle/refund с matchId
 
-Статус: **открыто**. Основание: воспроизведено; [доказательства](08_ECONOMY_BALANCE.md).
+Статус: **исправлено локально, S006**. В `fix/audit-foundation` exact room/table/match settlement, общий transaction lock, fixed participants, replay protection по immutable ledger, frozen stake/commission. Без migration. API134/134 Node25/22; real PG:late A при B,100reserve/30settle, refund/replay/rollback/legacy проверены. [Проверки](../remediation/evidence/session-006/summary.json). Legacy null-match reserves не переназначаются, production не обновлялся. Основание: воспроизведено; [исторические доказательства](08_ECONOMY_BALANCE.md).
 
 - **Изменение:** Идентифицировать весь цикл reserve/settle/refund конкретным matchId, участником и ставкой. Поздний результат предыдущего матча не должен использовать резервы следующего.
 - **Где:** `apps/api/src/modules/economy/economy.service.ts:1983–1990`.
