@@ -1,0 +1,18 @@
+{
+  "label": "s002-economy-postgres",
+  "command": [
+    "node",
+    "/Users/macbookair/Documents/domino/docs/remediation/scripts/verify-economy-bootstrap.mjs",
+    "domino_remediation"
+  ],
+  "cwd": ".tmp/remediation-s002/clean",
+  "startedAt": "2026-10-18T21:52:37.505Z",
+  "finishedAt": "2026-10-18T21:52:38.053Z",
+  "durationMs": 548,
+  "exitCode": 0,
+  "signal": null,
+  "timedOut": false,
+  "error": null,
+  "log": "docs/remediation/evidence/session-002/s002-economy-postgres.log",
+  "environment": "Fresh allowlist, synthetic local API/DB, optional Redis disabled, no inherited secrets or copied .env"
+}

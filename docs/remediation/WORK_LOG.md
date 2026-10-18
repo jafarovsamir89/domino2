@@ -2,6 +2,10 @@
 
 Записи добавляются по завершённым действиям и решениям. Текущий краткий контекст — в `AGENT_JOURNAL.md`. Исторические audit logs не перезаписывать.
 
+## Правило объяснения результатов — 18.10.2026
+
+Пользователь просит после каждого завершённого пункта или пакета отдельно простыми словами объяснять, что исправлено и какую пользу это дало. Сохранять это правило в последующих сессиях.
+
 ## S001 — 18.10.2026 — подготовка исправлений
 
 **Поручение:** начать выполнение единого плана, вести журнал работ и памятку агента; учитывать действующий сервер и около 50 пользователей. Новые Codex plugins устанавливать только после подтверждения владельца.
@@ -43,3 +47,21 @@
 **Итог startup:** финальный запуск прошёл: `/health`200, `/health/ready`200с ожидаемым local/in-memory degraded status. Сервис импортирует Sentry из нового lockfile без ошибки; это smoke локального старта, не проверка production monitoring. Процесс штатно остановлен.
 
 **Уточнение R-25/source gate:** повтор root `npm run check` обнаружил не повреждение продукта, а собственные detector patterns внутри `.tmp` copies: checker обходил ignored temporary tree. Добавлен skip только `.tmp` (не source directories). Независимый `verify-source-check.mjs` сначала воспроизвёл false positive, затем подтвердил пропуск generated files и сохранение отказа для повреждённого `js/app.js`. Логи: `source-scope-before.log`, `source-scope-after.json`, `root-check-final.log`.
+
+## S002 — 18.10.2026 — R-05, настройки экономики
+
+Начало: чистая ветка `fix/audit-foundation`, HEAD `9f1380ae8a037b08494f55fd601cc627b36efa8e`, опубликованный в origin S001. Создана `.tmp/remediation-s002/clean` без .env; fresh root npm ci прошёл. Production/Android не затрагиваются, plugins не нужны.
+
+Уточнение реализации после чтения точной карточки: простой `upsert.update={}` сохранил бы данные, но оставил бы записи в GET. Поэтому bootstrap переносится из всех request paths в Nest `onModuleInit`, в транзакцию перед обслуживанием запросов. Existing stake/product/config/price сохраняются; создаются лишь отсутствующие defaults. Несколько экземпляров API должны сериализовать bootstrap, иначе findFirst/create prices допускает дубли. Схема/миграции и суммы наград не меняются.
+
+Добавлены три regression cases в существующий economy.service.test.ts: read без конфигурационных writes, сохранение настроек после restart, повторяемый fresh startup/создание отсутствующей цены. Stateful fixture применяет фактические Prisma update payloads к строкам. Первый запуск до исправления сохраняется в `evidence/session-002/s002-api-before.*`.
+
+### S002.1 — результат и ограничения
+
+- До исправления финальный regression suite:127/130 (все исходные127pass, три новыхfail). После:130/130 на Node25.6 и22.14; source check pass. Логи/command metadata и сводка — `evidence/session-002/summary.json`.
+- Реализация: EconomyService implements OnModuleInit, транзакция с pg_advisory_xact_lock(1464091701,5), timeout30s; 29 request-level bootstrap calls удалены, только lifecycle вызывает private initializer. Существующие rows не меняются; отсутствующие config/stakes/products/prices создаются. Нет миграции/изменения наград.
+- Fresh отдельный PG14.20 в `.tmp/remediation-s002/pg`, loopback55439, synthetic role/database domino_remediation. Все18 migrations применились. Nest application contexts подтвердили4 concurrent fresh start и4 restart, 7 SELECT на проверяемые config/stakes/catalog reads,0writes, timestamps/custom/disabled rows сохранены,0wallets/ledger. Node22 повтор на свежей `domino_remediation_s002_node22` дополнительно подтвердил rollback всех defaults при искусственной startup error. Это не production DB.
+- Первая green-попытка `s002-api-after` имела1fail из-за ID fixture: prices.size повторно использовал существующий ID после удаления другой цены. Исправлено monotonic counter; итоговый red и green выполнены заново, assertions не ослаблены. `s002-migrations-node22` — только schema export, не migration check; действительная проверка `s002-migrate-fresh-node22`.
+- Простое объяснение владельцу: заданные цены, комиссии и отключённые столы больше не сбрасываются от просмотра настроек или перезапуска. На рабочий сервер это ещё не установлено.
+- R-05 локально закрыт. Общий итог2/42, R-25partial. R-07 seed/R-41schema drift не закрыты этим пакетом. Browser/server matrix повторять без причины не нужно.
+- Следом S003/R-07: daily claim использует обязательный daily_login, которого нет после fresh migrations. Изучить контракт, воспроизвести без ручного quest, добавить идемпотентный seed в startup и проверить реальное начисление. PG этого пакета пока запущен исключительно локально для следующей проверки; перед финальной передачей остановить собственный кластер через pg_ctl -D .tmp/remediation-s002/pg -m fast -w stop.

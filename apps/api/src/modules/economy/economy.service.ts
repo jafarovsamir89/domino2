@@ -1,4 +1,5 @@
 import { BadRequestException, ForbiddenException, Injectable, UnauthorizedException } from "@nestjs/common";
+import type { OnModuleInit } from "@nestjs/common";
 import type { IncomingHttpHeaders } from "node:http";
 
 import { Prisma, type CoinLedgerType } from "@prisma/client";
@@ -396,11 +397,20 @@ function startOfUtcDay(date: Date) {
 }
 
 @Injectable()
-export class EconomyService {
+export class EconomyService implements OnModuleInit {
   constructor(
     private readonly prisma: PrismaService,
     private readonly authService: AuthService
   ) {}
+
+  async onModuleInit() {
+    await this.prisma.$transaction(async (db) => {
+      // Serialize initialization across API instances; prices have no unique
+      // product/currency key. This transaction lock is released on commit/error.
+      await db.$queryRaw`SELECT 1 AS locked FROM pg_advisory_xact_lock(1464091701, 5)`;
+      await this.ensureBootstrap(db);
+    }, { timeout: 30_000 });
+  }
 
   private async requireAdmin(headers: IncomingHttpHeaders) {
     const session = await this.authService.getSession(headers);
@@ -470,14 +480,7 @@ export class EconomyService {
     for (const stake of DEFAULT_STAKES) {
       await db.coinStakeTable.upsert({
         where: { key: stake.key },
-        update: {
-          title: stake.title,
-          stakeAmount: stake.stakeAmount,
-          commissionBps: stake.commissionBps,
-          isFree: stake.isFree,
-          isActive: stake.isActive,
-          sortOrder: stake.sortOrder
-        },
+        update: {},
         create: stake
       });
     }
@@ -485,11 +488,7 @@ export class EconomyService {
     for (const skin of DEFAULT_TABLE_SKINS) {
       const product = await db.catalogProduct.upsert({
         where: { key: skin.key },
-        update: {
-          name: skin.name,
-          description: skin.description,
-          isActive: true
-        },
+        update: {},
         create: {
           key: skin.key,
           name: skin.name,
@@ -505,15 +504,7 @@ export class EconomyService {
         }
       });
 
-      if (price) {
-        await db.catalogPrice.update({
-          where: { id: price.id },
-          data: {
-            amountMinor: TABLE_SKIN_COIN_PRICE,
-            isActive: true
-          }
-        });
-      } else {
+      if (!price) {
         await db.catalogPrice.create({
           data: {
             productId: product.id,
@@ -947,14 +938,12 @@ export class EconomyService {
   }
 
   private async getConfig(db: EconomyTx = this.prisma) {
-    await this.ensureBootstrap(db);
     return db.coinEconomyConfig.findUnique({
       where: { key: DEFAULT_CONFIG_KEY }
     });
   }
 
   async getPublicConfig() {
-    await this.ensureBootstrap();
     const [config, stakes] = await Promise.all([
       this.getConfig(),
       this.prisma.coinStakeTable.findMany({
@@ -999,7 +988,6 @@ export class EconomyService {
       throw new UnauthorizedException("Login required");
     }
 
-    await this.ensureBootstrap();
     const config = await this.getConfig();
     const wallet = await this.ensureWallet(this.prisma, profile.player.id);
     const shop = this.buildCoinShopConfig(config);
@@ -1053,7 +1041,6 @@ export class EconomyService {
       throw new BadRequestException("Video rewards are temporarily disabled");
     }
 
-    await this.ensureBootstrap();
     const config = await this.getConfig();
     const shop = this.buildCoinShopConfig(config);
     const now = new Date();
@@ -1157,7 +1144,6 @@ export class EconomyService {
 
   async getAdminOverview(headers: IncomingHttpHeaders) {
     await this.requireAdmin(headers);
-    await this.ensureBootstrap();
 
     const [walletCount, balanceAgg, reservedAgg, ledgerCount, stakeCount] = await Promise.all([
       this.prisma.coinWallet.count(),
@@ -1182,7 +1168,6 @@ export class EconomyService {
 
   async listAdminWallets(headers: IncomingHttpHeaders, query?: string, limit?: string, offset?: string) {
     await this.requireAdmin(headers);
-    await this.ensureBootstrap();
 
     const take = Math.max(1, Math.min(100, toInt(limit, 25)));
     const skip = Math.max(0, toInt(offset, 0));
@@ -1237,7 +1222,6 @@ export class EconomyService {
 
   async getAdminWallet(headers: IncomingHttpHeaders, playerId: string) {
     await this.requireAdmin(headers);
-    await this.ensureBootstrap();
 
     const player = await this.prisma.player.findUnique({
       where: { id: playerId },
@@ -1302,7 +1286,6 @@ export class EconomyService {
   }
 
   async listPublicStakes() {
-    await this.ensureBootstrap();
     const stakes = await this.prisma.coinStakeTable.findMany({
       where: { isActive: true },
       orderBy: [{ sortOrder: "asc" }, { stakeAmount: "asc" }]
@@ -1312,7 +1295,6 @@ export class EconomyService {
 
   async listPublicQuests(headers: IncomingHttpHeaders) {
     const profile = await this.authService.getCurrentProfile(headers);
-    await this.ensureBootstrap();
 
     const quests = await this.prisma.coinQuest.findMany({
       where: { isActive: true },
@@ -1623,7 +1605,6 @@ export class EconomyService {
       throw new UnauthorizedException("Login required");
     }
 
-    await this.ensureBootstrap();
 
     return this.prisma.$transaction(async (tx) => {
       const quest = await tx.coinQuest.findUnique({
@@ -1699,7 +1680,6 @@ export class EconomyService {
     }
 
     const nextQuantity = Math.max(1, Math.min(99, Math.trunc(quantity) || 1));
-    await this.ensureBootstrap();
     return this.prisma.$transaction(async (tx) => {
       const product = await tx.catalogProduct.findUnique({
         where: { key: productKey },
@@ -1802,7 +1782,6 @@ export class EconomyService {
       };
     }
 
-    await this.ensureBootstrap();
     const roomId = toCleanString(payload.roomId);
     const matchId = toCleanString(payload.matchId);
     const stakeKey = toCleanString(payload.stakeKey, "free") || "free";
@@ -1945,7 +1924,6 @@ export class EconomyService {
       };
     }
 
-    await this.ensureBootstrap();
     const roomId = toCleanString(payload.roomId);
     const matchId = toCleanString(payload.matchId);
     const stakeKey = toCleanString(payload.stakeKey, "free") || "free";
@@ -2180,7 +2158,6 @@ export class EconomyService {
       };
     }
 
-    await this.ensureBootstrap();
     const matchId = toCleanString(payload.matchId, claims.sessionId || claims.userId || claims.playerId || "");
     const stakeKey = toCleanString(payload.stakeKey, "free") || "free";
     const difficulty = toCleanString(payload.difficulty, "medium") || "medium";
@@ -2325,7 +2302,6 @@ export class EconomyService {
       };
     }
 
-    await this.ensureBootstrap();
     const matchId = toCleanString(payload.matchId, claims.sessionId || claims.userId || claims.playerId || "");
     const stakeKey = toCleanString(payload.stakeKey, "free") || "free";
     const result = toCleanString(payload.result, "win");
@@ -2512,7 +2488,6 @@ export class EconomyService {
 
   async getMatchStakeOverview(headers: IncomingHttpHeaders) {
     await this.requireAdmin(headers);
-    await this.ensureBootstrap();
 
     const [reservedCount, stakeRows, recentReservations] = await Promise.all([
       this.prisma.coinMatchStake.count({ where: { status: "reserved" } }),
@@ -2545,7 +2520,6 @@ export class EconomyService {
     payload: { ttlMinutes?: number; limit?: number } = {}
   ) {
     const session = await this.requireAdmin(headers);
-    await this.ensureBootstrap();
 
     const ttlMinutes = Math.max(1, Math.min(24 * 60, toInt(payload.ttlMinutes, RESERVED_STALE_TTL_MIN)));
     const limit = Math.max(1, Math.min(500, toInt(payload.limit, RESERVED_STALE_BATCH_LIMIT)));
@@ -2672,7 +2646,6 @@ export class EconomyService {
 
   async listAdminQuests(headers: IncomingHttpHeaders) {
     await this.requireAdmin(headers);
-    await this.ensureBootstrap();
     const quests = await this.prisma.coinQuest.findMany({
       orderBy: [{ isActive: "desc" }, { rewardAmount: "desc" }, { title: "asc" }],
       include: {
@@ -2687,7 +2660,6 @@ export class EconomyService {
 
   async listAdminTournaments(headers: IncomingHttpHeaders) {
     await this.requireAdmin(headers);
-    await this.ensureBootstrap();
     const tournaments = await this.prisma.coinTournament.findMany({
       orderBy: [{ isActive: "desc" }, { startsAt: "asc" }, { updatedAt: "desc" }],
       include: {
@@ -2709,7 +2681,6 @@ export class EconomyService {
 
   async upsertStakeTable(headers: IncomingHttpHeaders, payload: EconomyStakeTablePayload) {
     const session = await this.requireAdmin(headers);
-    await this.ensureBootstrap();
 
     const key = toCleanString(payload.key);
     if (!key) {
@@ -2760,7 +2731,6 @@ export class EconomyService {
 
   async upsertQuest(headers: IncomingHttpHeaders, payload: EconomyQuestPayload) {
     const session = await this.requireAdmin(headers);
-    await this.ensureBootstrap();
 
     const key = toCleanString(payload.key);
     if (!key) {
@@ -2811,7 +2781,6 @@ export class EconomyService {
 
   async upsertTournament(headers: IncomingHttpHeaders, payload: EconomyTournamentPayload) {
     const session = await this.requireAdmin(headers);
-    await this.ensureBootstrap();
 
     const key = toCleanString(payload.key);
     if (!key) {
@@ -2870,7 +2839,6 @@ export class EconomyService {
 
   async updateEconomyConfig(headers: IncomingHttpHeaders, payload: EconomyConfigPayload) {
     const session = await this.requireAdmin(headers);
-    await this.ensureBootstrap();
 
     const nextDailyRewards = payload.dailyRewards === undefined ? undefined : normalizeDailyRewards(payload.dailyRewards);
 
@@ -2902,7 +2870,6 @@ export class EconomyService {
 
   async listCatalog(headers: IncomingHttpHeaders) {
     await this.requireAdmin(headers);
-    await this.ensureBootstrap();
     return this.prisma.catalogProduct.findMany({
       orderBy: { updatedAt: "desc" },
       include: {
@@ -2919,7 +2886,6 @@ export class EconomyService {
       throw new UnauthorizedException("Login required");
     }
 
-    await this.ensureBootstrap();
 
     const skinKeys = DEFAULT_TABLE_SKINS.map((skin) => skin.key);
     const [player, products, entitlements, wallet] = await Promise.all([
@@ -3004,7 +2970,6 @@ export class EconomyService {
 
   async upsertCatalog(headers: IncomingHttpHeaders, payload: { id?: string; key: string; name: string; description?: string | null; coinCost?: number; isActive?: boolean }) {
     const session = await this.requireAdmin(headers);
-    await this.ensureBootstrap();
 
     const key = toCleanString(payload.key);
     if (!key) {
@@ -3148,7 +3113,6 @@ export class EconomyService {
 
   async grantCoins(headers: IncomingHttpHeaders, playerId: string, payload: EconomyGrantPayload) {
     const session = await this.requireAdmin(headers);
-    await this.ensureBootstrap();
 
     const amount = Math.max(0, toInt(payload.amount));
     if (!amount) {
@@ -3191,7 +3155,6 @@ export class EconomyService {
 
   async spendCoins(headers: IncomingHttpHeaders, playerId: string, payload: EconomyGrantPayload) {
     const session = await this.requireAdmin(headers);
-    await this.ensureBootstrap();
 
     const amount = Math.max(0, toInt(payload.amount));
     if (!amount) {
@@ -3239,7 +3202,6 @@ export class EconomyService {
     amount: number,
     meta: { source: string; referenceId?: string | null }
   ) {
-    await this.ensureBootstrap(db);
     const nextAmount = Math.max(1, Math.trunc(amount) || 1);
     const quest = await db.coinQuest.findUnique({
       where: { key: questKey }

@@ -1,0 +1,362 @@
+
+> @domino2/api@0.1.0 pretest
+> node -e "require('fs').rmSync('dist',{recursive:true,force:true})"
+
+
+> @domino2/api@0.1.0 test
+> npm run build && node --test dist/test/chatModeration.test.js dist/test/realtime.helpers.test.js dist/test/player-ranking.test.js dist/test/economy.service.test.js dist/test/economy.settlement.test.js dist/test/leaderboard.service.test.js dist/test/players.service.test.js dist/test/auth.service.test.js dist/test/realtime.controller.test.js dist/test/social.service.test.js dist/test/social-realtime.gateway.test.js dist/test/health.controller.test.js dist/test/admin.service.test.js dist/test/validation.pipe.test.js dist/test/auth.secret-guard.test.js dist/test/matches.service.test.js
+
+
+> @domino2/api@0.1.0 prebuild
+> cd ../.. && npm run generate -w @domino2/db
+
+
+> @domino2/db@0.1.0 generate
+> prisma generate
+
+Prisma schema loaded from prisma/schema.prisma
+
+✔ Generated Prisma Client (v6.19.3) to ./../../node_modules/@prisma/client in 142ms
+
+Start by importing your Prisma Client (See: https://pris.ly/d/importing-client)
+
+Tip: Need your database queries to be 1000x faster? Accelerate offers you that and more: https://pris.ly/tip-2-accelerate
+
+
+> @domino2/api@0.1.0 build
+> tsc -p tsconfig.json
+
+✔ AdminService.listSystemAuditLogs filters by action and entity type (173.002291ms)
+✔ AdminService.listFeedback filters by status and query (0.468834ms)
+✔ AdminService.resolveFeedback updates feedback and records an audit log (0.787291ms)
+✔ production rejects weak auth secrets (155.247875ms)
+✔ development fallback secrets keep auth and proof signing working (5.4295ms)
+✔ AuthService.getCurrentProfile filters recent matches by gameMode and exposes gameMode on each item (2.358083ms)
+✔ AuthService.getCurrentProfile keeps default history behavior when no mode is passed (1.164166ms)
+✔ AuthService.getCurrentProfile accepts platform game bearer tokens when cookies are unavailable (0.91525ms)
+✔ AuthService.updateCurrentProfileAvatar rejects non-image https URLs (5.775875ms)
+✔ AuthService.updateCurrentProfileAvatar rejects oversized image URLs (9.388875ms)
+✔ maskProfanity handles inflections, suffixes, separators and leetspeak (1.34325ms)
+✔ maskProfanity leaves clean text alone and avoids false positives (0.218416ms)
+✖ public economy reads preserve customized defaults and perform no configuration writes (179.083958ms)
+✖ startup preserves owner settings and existing inactive prices across restarts (0.694625ms)
+✖ fresh startup creates missing defaults once and restores only missing prices (0.549417ms)
+✔ bootstrap prices every paid table skin at 1500 coins (1.05075ms)
+✔ getPublicConfig hides the free table from the public stake list (0.418166ms)
+✔ getPublicConfig exposes the new coin shop reward and packs (1.62725ms)
+✔ Daily Bonus - configured dailyRewards control the schedule and extend with streak bonus (6.230291ms)
+✔ Economy config update stores dailyRewards arrays (0.428667ms)
+✔ Daily Bonus - Unauthenticated status returns 401 (0.455625ms)
+✔ Daily Bonus - Authenticated status returns claimable true if no claim today (0.668834ms)
+✔ Daily Bonus - Claim credits wallet and advances quest (1.579584ms)
+✔ Daily Bonus - Rewarded x2 claim doubles the reward (0.922708ms)
+✔ Daily Bonus - Client amount is ignored (0.854417ms)
+✔ Daily Bonus - Second claim same day returns claimed false (2.211ms)
+✔ Daily Bonus - Normal claim allows upgrading to rewarded x2 on the same day (2.977292ms)
+✔ Daily Bonus - Rewarded x2 claim blocks normal claim on the same day (7.058084ms)
+✔ Daily Bonus - Previous day claim increases streak (4.360209ms)
+✔ Daily Bonus - After next Baku midnight claim is allowed (7.048333ms)
+✔ Daily Bonus - Missing previous day resets streak to 1 (0.715166ms)
+✔ Daily Bonus - Streak capped at dailyMaxStreak (0.505792ms)
+✔ Daily Bonus - Baku helpers resolve date keys and next midnight (0.29675ms)
+✔ Daily Bonus - Normal claim followed by rewarded x2 upgrade credits wallet and updates claim (6.607375ms)
+✔ reconcileStaleReservedStakes refunds only stale rows and keeps fresh reservations untouched (15.374417ms)
+✔ reconcileStaleReservedStakes treats an existing refund idempotency key as already closed (0.332334ms)
+✔ online stake reserve and settle keep the bank and payout balanced (167.599041ms)
+✔ online stake reserve normalizes low balance errors to insufficient_coins (3.07725ms)
+✔ online stake reserve rejects an invalid proof (0.637875ms)
+✔ online stake reserve is idempotent for the same room and match (25.713625ms)
+✔ online stake settle is idempotent for the same match (1.833083ms)
+✔ forfeit-settle replay does not pay the bank twice (2.93225ms)
+✔ online stake reserve deduplicates repeated participants (0.930167ms)
+✔ online team stake settle splits the losing bank across winners (1.484917ms)
+✔ solo stake reserve and settle are disabled for coin staking (2.562833ms)
+✔ HealthController reports database and redis status (1.852959ms)
+✔ LeaderboardService uses mode stats ordering and defaults to telefon (111.912041ms)
+✔ LeaderboardService weekly leaderboard filters by match gameMode (0.819583ms)
+✔ LeaderboardService friends leaderboard uses mode stats and fills missing rows with the starting rating (0.362458ms)
+✔ 1v1 human vs human updates ELO, wins, losses, and matchesPlayed (72.411125ms)
+✔ human vs bot stays unranked and does not create player stats (0.463291ms)
+✔ ranked wins against low-history opponents do not award positive Elo (0.458625ms)
+✔ classic101 matches update mode stats only and keep legacy telefon stats untouched (0.739125ms)
+✔ same pair repeated more than three times per day does not change Elo (1.849167ms)
+✔ team mode ranks humans while ignoring bots (0.650667ms)
+✔ duplicate sourceMatchId does not update ELO twice (1.28225ms)
+✔ forfeit 1v1 applies an extra penalty to the leaving player (10.894458ms)
+✔ forfeit team applies the penalty only to the leaving player (0.448584ms)
+✔ calculatePlayerRating returns the stored elo baseline for empty stats (1.830666ms)
+✔ normalizeEloRating clamps the rating range (0.253208ms)
+✔ calculateEloExpectedScore is symmetric around equal ratings (0.207542ms)
+✔ calculateEloDelta uses provisional k factor for new players (0.1255ms)
+✔ calculateEloDelta switches to standard k after enough matches (0.11825ms)
+✔ calculateEloUpdate applies penalties and clamps results (0.076875ms)
+✔ getPlayerRatingTitleCode still maps tiers for compatibility (0.080958ms)
+✔ PlayersService.getById redacts wallet details from public output (1.037334ms)
+✔ PlayersService.getById fills missing mode ratings with the starting value (0.134042ms)
+✔ RealtimeController heartbeat rejects requests without a valid auth token (1.370708ms)
+✔ RealtimeController heartbeat accepts a valid auth token (0.709375ms)
+✔ normalizePresenceEntry keeps platform provider and trims room data (1.65575ms)
+✔ isStalePresenceEntry flags old or invalid timestamps (0.105791ms)
+✔ social realtime gateway accepts valid token, marks presence online, and broadcasts presence snapshots (11.423041ms)
+✔ social realtime gateway rejects invalid token (0.493166ms)
+✔ dm:send uses live socket delivery and invite:create pushes invite updates (0.747959ms)
+✔ play-invite:create and play-invite:accept emit play invite socket events (0.707833ms)
+✔ play-invite:cancel emits play invite socket events (0.471625ms)
+✔ play-invite room-ready and joined live events map to socket events (0.19775ms)
+✔ presence:update toggles in_game and offline states (0.719292ms)
+✔ acceptFriend only allows the addressee to accept a request (7.17875ms)
+✔ submitFeedback stores player-linked feedback with metadata (0.245583ms)
+[SocialService] Failed to send FCM push notification: Cannot read properties of undefined (reading 'findMany')
+[SocialService] Failed to send FCM push notification: Cannot read properties of undefined (reading 'findMany')
+[SocialService] Failed to send FCM push notification: Cannot read properties of undefined (reading 'findMany')
+[SocialService] Failed to send FCM push notification: Cannot read properties of undefined (reading 'findMany')
+✔ subscribeToSocialEvents emits heartbeat and clears the interval on cleanup (3.898875ms)
+✔ getPlayerProfile resolves profiles by userId when playerId is not provided (0.424583ms)
+✔ searchPlayers returns friendship status and friendship id (0.374333ms)
+✔ blockPlayer creates a blocked connection without prior friendship (0.206459ms)
+✔ sendDirectMessageForPlayer rejects blocked pairs (0.313666ms)
+✔ reportPlayer stores moderation reports (0.317292ms)
+✔ cancelFriendRequest allows the requester to cancel a pending request (0.258458ms)
+✔ inviteFriendToRoom refreshes an existing pending invite after a unique constraint race (0.682667ms)
+✔ inviteFriendToRoom updates an accepted invite when the room is linked later (0.234208ms)
+✔ inviteFriendToRoom defaults invite expiration to about 5 minutes (0.2035ms)
+✔ acceptRoomInvitation returns room_not_available for expired invites and marks them expired (0.226917ms)
+✔ acceptRoomInvitation returns join payload when roomCode is available (0.202458ms)
+✔ acceptRoomInvitation blocks invitees without enough coins (0.101291ms)
+✔ getRoomInvitations returns incoming and sent invites separately (0.189958ms)
+✔ cancelRoomInvitation allows the inviter to cancel pending sent invites (0.154334ms)
+✔ cancelRoomInvitation rejects an invitee trying to cancel someone else's invite (0.101916ms)
+✔ createPlayInvite creates a play invite without roomId (0.394541ms)
+✔ createPlayInvite preserves roomContext roomId and roomCode (0.179584ms)
+✔ getPlayInvites returns incoming, outgoing and waiting invites (0.241458ms)
+✔ attachPlayInviteRoom sets roomId and emits room-ready to invitee (0.379791ms)
+✔ attachPlayInviteRoom ignores pending declined and cancelled invites (0.896125ms)
+✔ acceptPlayInvite changes status to accepted (0.205792ms)
+✔ acceptPlayInvite preserves room context for room-bound invites (0.122417ms)
+✔ acceptPlayInvite blocks invitees without enough coins for room-bound play invites (0.0985ms)
+✔ declinePlayInvite changes status to declined (0.144292ms)
+✔ cancelPlayInvite allows inviter to cancel a pending play invite (0.179ms)
+✔ cancelPlayInvite allows invitee to leave an accepted waiting play invite (0.095ms)
+✔ cancelPlayInvite allows inviter to cancel an accepted waiting play invite (0.093ms)
+✔ sendDirectMessage rejects messaging yourself (0.169958ms)
+✔ sendDirectMessage rejects empty and overlong text (0.140708ms)
+✔ sendDirectMessage creates a message between two players (0.877541ms)
+✔ sendDirectMessage clears hidden thread markers and emits full SSE payload (0.370708ms)
+✔ sendDirectMessage restores hidden/deleted threads after a new incoming message (0.269917ms)
+✔ getDirectMessages returns the newest page of messages first (0.296958ms)
+✔ getMessageThreads returns only the current player's conversations with unread counts (0.285833ms)
+✔ getMessageThreads hides threads that the player archived (0.18875ms)
+✔ getInbox returns inbox items and unread count (0.276708ms)
+✔ markDirectMessageThreadRead marks the matching direct message rows as read (0.156084ms)
+✔ markInboxRead claimInboxMessage and deleteInboxMessage update inbox state (0.357542ms)
+✔ deleteMessageThread hides a conversation and clears inbox rows for that thread (0.184167ms)
+✔ getSocialSummary counts inbox chats invites and friend requests (0.223125ms)
+✔ gift seed catalog prices every gift at 1000 coins (0.09775ms)
+✔ sendGift creates an inbox notification for the recipient (0.566541ms)
+✔ sendDirectMessage emits live events for socket subscribers (0.290417ms)
+✔ sendDirectMessageForPlayer masks profanity and rate limits floods (0.648125ms)
+✔ ValidationPipe rejects unknown properties on DTO payloads (3.08475ms)
+✔ ValidationPipe accepts a valid heartbeat DTO payload (2.184542ms)
+✔ ValidationPipe accepts signed economy reserve payload fields (1.0725ms)
+✔ ValidationPipe accepts signed economy settle payload fields (1.667417ms)
+✔ ValidationPipe accepts signed platform match payload fields (0.506375ms)
+ℹ tests 130
+ℹ suites 0
+ℹ pass 127
+ℹ fail 3
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1771.872458
+
+✖ failing tests:
+
+test at dist/test/economy.service.test.js:53:1
+✖ public economy reads preserve customized defaults and perform no configuration writes (179.083958ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  ... Skipped lines
+  
+    {
+      config: {
+        dailyRewards: [
+          11,
+          22
+  ...
+        {
+  +       amountMinor: 1500,
+  -       amountMinor: 4242,
+          currency: 'COIN',
+          id: 'price:0',
+  +       isActive: true,
+  -       isActive: false,
+          productId: 'product:table_skin_02'
+        },
+        {
+  +       amountMinor: 1500,
+  -       amountMinor: 4242,
+          currency: 'COIN',
+          id: 'price:1',
+  +       isActive: true,
+  -       isActive: false,
+          productId: 'product:table_skin_03'
+        },
+        {
+  +       amountMinor: 1500,
+  -       amountMinor: 4242,
+          currency: 'COIN',
+          id: 'price:2',
+  +       isActive: true,
+  -       isActive: false,
+          productId: 'product:table_skin_04'
+        },
+        {
+  +       amountMinor: 1500,
+  -       amountMinor: 4242,
+          currency: 'COIN',
+          id: 'price:3',
+  +       isActive: true,
+  -       isActive: false,
+          productId: 'product:table_skin_05'
+        },
+        {
+  +       amountMinor: 1500,
+  -       amountMinor: 4242,
+          currency: 'COIN',
+          id: 'price:4',
+  +       isActive: true,
+  -       isActive: false,
+          productId: 'product:table_skin_06'
+        },
+        {
+  +       amountMinor: 1500,
+  -       amountMinor: 4242,
+          currency: 'COIN',
+          id: 'price:5',
+  +       isActive: true,
+  -       isActive: false,
+          productId: 'product:table_skin_07'
+        },
+        {
+  +       amountMinor: 1500,
+  -       amountMinor: 4242,
+          currency: 'COIN',
+          id: 'price:6',
+  +       isActive: true,
+  -       isActive: false,
+          productId: 'product:table_skin_08'
+        },
+        {
+  +       amountMinor: 1500,
+  -       amountMinor: 4242,
+          currency: 'COIN',
+          id: 'price:7',
+  +       isActive: true,
+  -       isActive: false,
+          productId: 'product:table_skin_09'
+        }
+      ],
+      products: [
+        {
+  +       description: 'Dark carbon weave with a subtle studio shine.',
+  -       description: 'Owner description',
+          id: 'product:table_skin_02',
+  +       isActive: true,
+  -       isActive: false,
+          key: 'table_skin_02',
+  +       name: 'Midnight Carbon'
+  -       name: 'Owner skin'
+        },
+        {
+          description: 'Rich green felt with clean tournament contrast.',
+          id: 'product:table_skin_03',
+          isActive: true,
+  ...
+        {
+  +       commissionBps: 1000,
+  -       commissionBps: 250,
+          id: 'stake:stake_50',
+  +       isActive: true,
+  -       isActive: false,
+          isFree: false,
+          key: 'stake_50',
+  +       sortOrder: 1,
+  +       stakeAmount: 50,
+  +       title: '50 coins'
+  -       sortOrder: 99,
+  -       stakeAmount: 75,
+  -       title: 'Owner table'
+        },
+        {
+          commissionBps: 1000,
+          id: 'stake:stake_100',
+          isActive: true,
+  
+      at TestContext.<anonymous> (file:///Users/macbookair/Documents/domino/.tmp/remediation-s002/clean/apps/api/dist/test/economy.service.test.js:63:12)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:358:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: {
+      config: { key: 'default', dailyRewards: [Array], matchCommissionBps: 250 },
+      stakes: [
+        [Object], [Object],
+        [Object], [Object],
+        [Object], [Object],
+        [Object]
+      ],
+      products: [
+        [Object], [Object],
+        [Object], [Object],
+        [Object], [Object],
+        [Object], [Object]
+      ],
+      prices: [
+        [Object], [Object],
+        [Object], [Object],
+        [Object], [Object],
+        [Object], [Object]
+      ]
+    },
+    expected: {
+      config: { key: 'default', dailyRewards: [Array], matchCommissionBps: 250 },
+      stakes: [
+        [Object], [Object],
+        [Object], [Object],
+        [Object], [Object],
+        [Object]
+      ],
+      products: [
+        [Object], [Object],
+        [Object], [Object],
+        [Object], [Object],
+        [Object], [Object]
+      ],
+      prices: [
+        [Object], [Object],
+        [Object], [Object],
+        [Object], [Object],
+        [Object], [Object]
+      ]
+    },
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at dist/test/economy.service.test.js:69:1
+✖ startup preserves owner settings and existing inactive prices across restarts (0.694625ms)
+  TypeError: service.onModuleInit is not a function
+      at TestContext.<anonymous> (file:///Users/macbookair/Documents/domino/.tmp/remediation-s002/clean/apps/api/dist/test/economy.service.test.js:75:19)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7)
+
+test at dist/test/economy.service.test.js:79:1
+✖ fresh startup creates missing defaults once and restores only missing prices (0.549417ms)
+  TypeError: service.onModuleInit is not a function
+      at TestContext.<anonymous> (file:///Users/macbookair/Documents/domino/.tmp/remediation-s002/clean/apps/api/dist/test/economy.service.test.js:82:19)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:787:18)
+      at Test.postRun (node:internal/test_runner/test:1247:19)
+      at Test.run (node:internal/test_runner/test:1175:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7)

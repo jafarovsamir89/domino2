@@ -1,0 +1,19 @@
+{
+  "label": "s002-api-final",
+  "command": [
+    "npm",
+    "--prefix",
+    "apps/api",
+    "test"
+  ],
+  "cwd": ".tmp/remediation-s002/clean",
+  "startedAt": "2026-10-18T21:52:06.451Z",
+  "finishedAt": "2026-10-18T21:52:11.978Z",
+  "durationMs": 5527,
+  "exitCode": 0,
+  "signal": null,
+  "timedOut": false,
+  "error": null,
+  "log": "docs/remediation/evidence/session-002/s002-api-final.log",
+  "environment": "Fresh allowlist, synthetic local API/DB, optional Redis disabled, no inherited secrets or copied .env"
+}

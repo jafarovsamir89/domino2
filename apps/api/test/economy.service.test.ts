@@ -10,6 +10,104 @@ const {
   getPreviousBakuDateKey
 } = await import("../src/modules/economy/economy.service.js");
 
+// Apply writes to persistent rows so reads cannot silently reset owner settings.
+function bootstrapFixture() {
+  const config = { key: "default", dailyRewards: [11, 22], matchCommissionBps: 250 };
+  const stakes = new Map<string, any>();
+  const products = new Map<string, any>();
+  const prices = new Map<string, any>();
+  let priceId = 0;
+  const writes: string[] = [];
+  const upsert = (rows: Map<string, any>, model: string) => async ({ where, create, update }: any) => {
+    writes.push(model);
+    const row = rows.get(where.key);
+    if (row) Object.assign(row, update);
+    else rows.set(where.key, { id: `${model}:${where.key}`, ...create });
+    return rows.get(where.key);
+  };
+  const db: any = {
+    coinEconomyConfig: {
+      upsert: async ({ update }: any) => { writes.push("config"); return Object.assign(config, update); },
+      findUnique: async () => config
+    },
+    coinStakeTable: {
+      upsert: upsert(stakes, "stake"),
+      findMany: async () => [...stakes.values()].filter(row => row.isActive)
+    },
+    catalogProduct: { upsert: upsert(products, "product") },
+    catalogPrice: {
+      findFirst: async ({ where }: any) => [...prices.values()].find(row => row.productId === where.productId && row.currency === where.currency) || null,
+      create: async ({ data }: any) => {
+        writes.push("price.create");
+        const row = { id: `price:${priceId++}`, ...data };
+        prices.set(row.id, row);
+        return row;
+      },
+      update: async ({ where, data }: any) => { writes.push("price.update"); return Object.assign(prices.get(where.id), data); }
+    },
+    $queryRaw: async () => [{ locked: 1 }],
+    $transaction: async (run: any) => run(db)
+  };
+  const snapshot = () => structuredClone({ config, stakes: [...stakes.values()], products: [...products.values()], prices: [...prices.values()] });
+  return { db, config, stakes, products, prices, writes, snapshot };
+}
+
+function customizeBootstrap(fixture: ReturnType<typeof bootstrapFixture>) {
+  Object.assign(fixture.stakes.get("stake_50"), { title: "Owner table", stakeAmount: 75, commissionBps: 250, isActive: false, sortOrder: 99 });
+  Object.assign(fixture.products.get("table_skin_02"), { name: "Owner skin", description: "Owner description", isActive: false });
+  for (const price of fixture.prices.values()) Object.assign(price, { amountMinor: 4242, isActive: false });
+}
+
+test("public economy reads preserve customized defaults and perform no configuration writes", async () => {
+  const fixture = bootstrapFixture();
+  const service = new EconomyService(fixture.db, {} as any);
+  await (service as any).ensureBootstrap();
+  customizeBootstrap(fixture);
+  const before = fixture.snapshot();
+  fixture.writes.length = 0;
+
+  const config = await service.getPublicConfig();
+  const stakes = await service.listPublicStakes();
+  await service.getPublicConfig();
+
+  assert.deepEqual(fixture.snapshot(), before);
+  assert.deepEqual(fixture.writes, []);
+  assert.equal(config.stakes.some(row => row.key === "stake_50"), false);
+  assert.equal(stakes.some(row => row.key === "stake_50"), false);
+  assert.deepEqual(config.config?.dailyRewards, [11, 22]);
+});
+
+test("startup preserves owner settings and existing inactive prices across restarts", async () => {
+  const fixture = bootstrapFixture();
+  const service = new EconomyService(fixture.db, {} as any);
+  await (service as any).ensureBootstrap();
+  customizeBootstrap(fixture);
+  const before = fixture.snapshot();
+
+  await (service as any).onModuleInit();
+  await (service as any).onModuleInit();
+
+  assert.deepEqual(fixture.snapshot(), before);
+});
+
+test("fresh startup creates missing defaults once and restores only missing prices", async () => {
+  const fixture = bootstrapFixture();
+  const service = new EconomyService(fixture.db, {} as any);
+  await (service as any).onModuleInit();
+  const before = fixture.snapshot();
+  assert.equal(fixture.prices.size, 8);
+  assert.ok([...fixture.prices.values()].every(row => row.amountMinor === 1500));
+  assert.ok(fixture.stakes.has("stake_50"));
+  await (service as any).onModuleInit();
+  assert.deepEqual(fixture.snapshot(), before);
+
+  const missing = [...fixture.prices.values()][0];
+  fixture.prices.delete(missing.id);
+  await (service as any).onModuleInit();
+  assert.equal([...fixture.prices.values()].filter(row => row.productId === missing.productId).length, 1);
+  assert.equal(fixture.prices.size, 8);
+});
+
 test("bootstrap prices every paid table skin at 1500 coins", async () => {
   const createdPrices: number[] = [];
   const prismaMock = {

@@ -1,0 +1,24 @@
+{
+  "label": "s002-economy-postgres-node22",
+  "command": [
+    "npm",
+    "exec",
+    "--yes",
+    "--package=node@22.14.0",
+    "--package=npm@10.9.2",
+    "--",
+    "node",
+    "/Users/macbookair/Documents/domino/docs/remediation/scripts/verify-economy-bootstrap.mjs",
+    "domino_remediation_s002_node22"
+  ],
+  "cwd": ".tmp/remediation-s002/clean",
+  "startedAt": "2026-10-18T21:53:24.963Z",
+  "finishedAt": "2026-10-18T21:53:26.481Z",
+  "durationMs": 1518,
+  "exitCode": 0,
+  "signal": null,
+  "timedOut": false,
+  "error": null,
+  "log": "docs/remediation/evidence/session-002/s002-economy-postgres-node22.log",
+  "environment": "Fresh allowlist, synthetic local API/DB, optional Redis disabled, no inherited secrets or copied .env"
+}

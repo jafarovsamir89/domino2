@@ -1,0 +1,24 @@
+{
+  "label": "s002-pg-start",
+  "command": [
+    "/opt/homebrew/Cellar/postgresql@14/14.20/bin/pg_ctl",
+    "-D",
+    "../pg",
+    "-l",
+    "../pg-server.log",
+    "-o",
+    "-h 127.0.0.1 -p 55439 -k /tmp",
+    "-w",
+    "start"
+  ],
+  "cwd": ".tmp/remediation-s002/clean",
+  "startedAt": "2026-10-18T21:52:05.064Z",
+  "finishedAt": "2026-10-18T21:52:05.187Z",
+  "durationMs": 123,
+  "exitCode": 0,
+  "signal": null,
+  "timedOut": false,
+  "error": null,
+  "log": "docs/remediation/evidence/session-002/s002-pg-start.log",
+  "environment": "Fresh allowlist, synthetic local API/DB, optional Redis disabled, no inherited secrets or copied .env"
+}

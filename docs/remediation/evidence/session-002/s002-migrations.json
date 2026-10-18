@@ -1,0 +1,20 @@
+{
+  "label": "s002-migrations",
+  "command": [
+    "npm",
+    "run",
+    "migrate:deploy",
+    "-w",
+    "@domino2/db"
+  ],
+  "cwd": ".tmp/remediation-s002/clean",
+  "startedAt": "2026-10-18T21:52:05.531Z",
+  "finishedAt": "2026-10-18T21:52:06.369Z",
+  "durationMs": 838,
+  "exitCode": 0,
+  "signal": null,
+  "timedOut": false,
+  "error": null,
+  "log": "docs/remediation/evidence/session-002/s002-migrations.log",
+  "environment": "Fresh allowlist, synthetic local API/DB, optional Redis disabled, no inherited secrets or copied .env"
+}

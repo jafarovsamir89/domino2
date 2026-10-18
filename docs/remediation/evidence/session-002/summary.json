@@ -1,0 +1,61 @@
+{
+  "session": "S002",
+  "date": "2026-10-18",
+  "task": "R-05",
+  "branch": "fix/audit-foundation",
+  "parentCommit": "9f1380ae8a037b08494f55fd601cc627b36efa8e",
+  "status": "fixed-locally",
+  "changes": [
+    "Bootstrap only during Nest module initialization, removed from all request paths",
+    "Existing configuration, stakes, products and prices are preserved, including inactive rows",
+    "Startup transaction and PostgreSQL advisory lock serialize API instances without schema changes"
+  ],
+  "checks": {
+    "cleanInstall": "s002-root-ci.json",
+    "before": {
+      "command": "s002-api-before-final.json",
+      "tests": 130,
+      "pass": 127,
+      "fail": 3,
+      "note": "Three new regressions fail on original code; original 127 pass"
+    },
+    "afterNode25": {
+      "command": "s002-api-final.json",
+      "pass": 130,
+      "fail": 0
+    },
+    "afterNode22": {
+      "command": "s002-api-node22.json",
+      "pass": 130,
+      "fail": 0
+    },
+    "sourceCheck": "s002-source-check.json",
+    "postgresNode25": "s002-economy-postgres.json",
+    "postgresNode22": "s002-economy-postgres-node22.json",
+    "freshMigrations": [
+      "s002-migrations.json",
+      "s002-migrate-fresh-node22.json"
+    ]
+  },
+  "postgresEvidence": {
+    "server": "PostgreSQL 14.20, isolated .tmp/remediation-s002/pg, 127.0.0.1:55439",
+    "freshInstances": 4,
+    "concurrentRestarts": 4,
+    "readConfigurationWrites": 0,
+    "timestampsPreserved": true,
+    "startupRollbackVerifiedOnNode22": true,
+    "walletsCreated": 0,
+    "ledgerEntriesCreated": 0
+  },
+  "excludedAttempts": {
+    "s002-api-after.json": "Fixture used prices.size for ID: deleting one price reused an existing ID. Fixed with monotonic counter; final before and after rerun. Product assertions unchanged.",
+    "s002-migrations-node22.json": "Schema-only export, not migrations verification; actual fresh migration result is s002-migrate-fresh-node22.json"
+  },
+  "limits": [
+    "No deployment or production migration",
+    "No real player wallets or personal data",
+    "Unrelated R-25 server/E2E failures remain; browser/server matrix not rerun for API-only change",
+    "Initialization recreates missing default rows at next API start; existing disabled rows stay disabled",
+    "Known schema drift R-41 and daily seed R-07 remain open at this checkpoint"
+  ]
+}

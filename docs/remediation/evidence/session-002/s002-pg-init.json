@@ -1,0 +1,25 @@
+{
+  "label": "s002-pg-init",
+  "command": [
+    "/opt/homebrew/Cellar/postgresql@14/14.20/bin/initdb",
+    "-D",
+    "../pg",
+    "-U",
+    "domino_remediation",
+    "-A",
+    "trust",
+    "--no-locale",
+    "-E",
+    "UTF8"
+  ],
+  "cwd": ".tmp/remediation-s002/clean",
+  "startedAt": "2026-10-18T21:51:46.863Z",
+  "finishedAt": "2026-10-18T21:51:47.452Z",
+  "durationMs": 589,
+  "exitCode": 0,
+  "signal": null,
+  "timedOut": false,
+  "error": null,
+  "log": "docs/remediation/evidence/session-002/s002-pg-init.log",
+  "environment": "Fresh allowlist, synthetic local API/DB, optional Redis disabled, no inherited secrets or copied .env"
+}

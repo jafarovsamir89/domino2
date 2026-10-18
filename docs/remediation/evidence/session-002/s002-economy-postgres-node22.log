@@ -1,0 +1,15 @@
+{
+  "database": "domino_remediation_s002_node22",
+  "startupFailureRollsBack": true,
+  "concurrentFreshInstances": 4,
+  "concurrentRestarts": 4,
+  "freshConfig": 1,
+  "freshStakes": 7,
+  "freshProducts": 8,
+  "freshPrices": 8,
+  "readQueryCount": 7,
+  "configurationWritesOnRead": 0,
+  "settingsAndTimestampsPreserved": true,
+  "walletCount": 0,
+  "ledgerCount": 0
+}

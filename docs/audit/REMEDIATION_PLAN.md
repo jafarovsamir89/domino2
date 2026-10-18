@@ -69,7 +69,7 @@ R-25 относится к этапу 0, но окончательно закр�
 
 #### R-05 · P0 · Убрать admin defaults из read path
 
-Статус: **открыто**. Основание: воспроизведено; [доказательства](08_ECONOMY_BALANCE.md).
+Статус: **исправлено локально, S002**. В `fix/audit-foundation` bootstrap перенесён в Nest startup transaction с сериализацией экземпляров; request paths не инициализируют defaults. Existing config/stakes/products/prices и timestamps сохраняются. До правки127/130API (3 новых regression fail), после130/130 на Node25/22; fresh PostgreSQL migrations, четыре concurrent start/restart и rollback проверены. [Текущие проверки](../remediation/evidence/session-002/summary.json). Production не обновлялся. Основание: воспроизведено; [исторические доказательства](08_ECONOMY_BALANCE.md).
 
 - **Изменение:** Сделать чтение конфигурации операцией без записи. Инициализировать defaults только при создании/миграции, сохраняя последующие административные изменения.
 - **Где:** `apps/api/src/modules/economy/economy.service.ts:461–515`.
