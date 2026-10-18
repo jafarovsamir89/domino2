@@ -1,0 +1,18 @@
+{
+  "label": "s014-refresh-lock",
+  "command": [
+    "npm",
+    "install",
+    "--package-lock-only"
+  ],
+  "cwd": ".tmp/remediation-s014/clean",
+  "startedAt": "2026-10-18T23:14:38.025Z",
+  "finishedAt": "2026-10-18T23:14:38.844Z",
+  "durationMs": 819,
+  "exitCode": 0,
+  "signal": null,
+  "timedOut": false,
+  "error": null,
+  "log": "docs/remediation/evidence/session-014/s014-refresh-lock.log",
+  "environment": "Fresh allowlist, synthetic local API/DB, optional Redis disabled, no inherited secrets or copied .env"
+}

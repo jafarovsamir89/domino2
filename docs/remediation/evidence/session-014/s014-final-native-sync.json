@@ -1,0 +1,19 @@
+{
+  "label": "s014-final-native-sync",
+  "command": [
+    "npx",
+    "cap",
+    "sync",
+    "android"
+  ],
+  "cwd": ".tmp/remediation-s014/clean",
+  "startedAt": "2026-10-18T23:39:31.485Z",
+  "finishedAt": "2026-10-18T23:39:32.604Z",
+  "durationMs": 1119,
+  "exitCode": 0,
+  "signal": null,
+  "timedOut": false,
+  "error": null,
+  "log": "docs/remediation/evidence/session-014/s014-final-native-sync.log",
+  "environment": "Fresh allowlist, synthetic local API/DB, optional Redis disabled, no inherited secrets or copied .env"
+}

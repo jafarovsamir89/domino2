@@ -1,0 +1,18 @@
+{
+  "label": "s014-audit-workspaces",
+  "command": [
+    "npm",
+    "audit",
+    "--json"
+  ],
+  "cwd": ".tmp/remediation-s014/clean",
+  "startedAt": "2026-10-18T23:03:21.312Z",
+  "finishedAt": "2026-10-18T23:03:23.909Z",
+  "durationMs": 2597,
+  "exitCode": 1,
+  "signal": null,
+  "timedOut": false,
+  "error": null,
+  "log": "docs/remediation/evidence/session-014/s014-audit-workspaces.log",
+  "environment": "Fresh allowlist, synthetic local API/DB, optional Redis disabled, no inherited secrets or copied .env"
+}

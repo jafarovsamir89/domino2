@@ -1,0 +1,23 @@
+{
+  "label": "s014-batch-server-final",
+  "command": [
+    "npm",
+    "exec",
+    "--yes",
+    "--package=node@22.14.0",
+    "--package=npm@10.9.2",
+    "--",
+    "npm",
+    "test"
+  ],
+  "cwd": ".tmp/remediation-s014/final/server",
+  "startedAt": "2026-10-18T23:36:46.556Z",
+  "finishedAt": "2026-10-18T23:36:51.709Z",
+  "durationMs": 5153,
+  "exitCode": 1,
+  "signal": null,
+  "timedOut": false,
+  "error": null,
+  "log": "docs/remediation/evidence/session-014/s014-batch-server-final.log",
+  "environment": "Fresh allowlist, synthetic local API/DB, optional Redis disabled, no inherited secrets or copied .env"
+}

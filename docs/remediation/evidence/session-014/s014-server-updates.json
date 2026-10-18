@@ -1,0 +1,17 @@
+{
+  "label": "s014-server-updates",
+  "command": [
+    "npm",
+    "update"
+  ],
+  "cwd": ".tmp/remediation-s014/clean/server",
+  "startedAt": "2026-10-18T23:04:56.731Z",
+  "finishedAt": "2026-10-18T23:05:41.778Z",
+  "durationMs": 45047,
+  "exitCode": 0,
+  "signal": null,
+  "timedOut": false,
+  "error": null,
+  "log": "docs/remediation/evidence/session-014/s014-server-updates.log",
+  "environment": "Fresh allowlist, synthetic local API/DB, optional Redis disabled, no inherited secrets or copied .env"
+}

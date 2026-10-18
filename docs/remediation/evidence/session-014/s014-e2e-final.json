@@ -1,0 +1,18 @@
+{
+  "label": "s014-e2e-final",
+  "command": [
+    "npx",
+    "playwright",
+    "test"
+  ],
+  "cwd": ".tmp/remediation-s014/final",
+  "startedAt": "2026-10-18T23:37:39.315Z",
+  "finishedAt": "2026-10-18T23:41:24.825Z",
+  "durationMs": 225510,
+  "exitCode": 1,
+  "signal": null,
+  "timedOut": false,
+  "error": null,
+  "log": "docs/remediation/evidence/session-014/s014-e2e-final.log",
+  "environment": "Fresh allowlist, synthetic local API/DB, optional Redis disabled, no inherited secrets or copied .env"
+}

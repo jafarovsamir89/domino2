@@ -1,0 +1,26 @@
+{
+  "label": "s014-upgrade-candidates",
+  "command": [
+    "npm",
+    "update",
+    "@capacitor/android",
+    "@capacitor/core",
+    "@capacitor/cli",
+    "better-auth",
+    "@better-auth/prisma-adapter",
+    "@better-auth/telemetry",
+    "next",
+    "proxy-addr",
+    "tar"
+  ],
+  "cwd": ".tmp/remediation-s014/clean",
+  "startedAt": "2026-10-18T22:58:54.358Z",
+  "finishedAt": "2026-10-18T23:00:24.680Z",
+  "durationMs": 90322,
+  "exitCode": 0,
+  "signal": null,
+  "timedOut": false,
+  "error": null,
+  "log": "docs/remediation/evidence/session-014/s014-upgrade-candidates.log",
+  "environment": "Fresh allowlist, synthetic local API/DB, optional Redis disabled, no inherited secrets or copied .env"
+}

@@ -1,0 +1,18 @@
+{
+  "label": "s014-e2e-current",
+  "command": [
+    "npx",
+    "playwright",
+    "test"
+  ],
+  "cwd": ".tmp/remediation-s014/final",
+  "startedAt": "2026-10-18T23:31:12.833Z",
+  "finishedAt": "2026-10-18T23:31:28.485Z",
+  "durationMs": 15652,
+  "exitCode": 1,
+  "signal": null,
+  "timedOut": false,
+  "error": null,
+  "log": "docs/remediation/evidence/session-014/s014-e2e-current.log",
+  "environment": "Fresh allowlist, synthetic local API/DB, optional Redis disabled, no inherited secrets or copied .env"
+}

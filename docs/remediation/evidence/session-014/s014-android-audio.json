@@ -1,0 +1,23 @@
+{
+  "label": "s014-android-audio",
+  "command": [
+    "env",
+    "JAVA_HOME=/Users/macbookair/Documents/domino/.tmp/audit-jdk21/Contents/Home",
+    "ANDROID_HOME=/Users/macbookair/Library/Android/sdk",
+    "bash",
+    "./gradlew",
+    "-I",
+    "../docs/audit/android/init.gradle",
+    "assembleDebug"
+  ],
+  "cwd": ".tmp/remediation-s014/clean/android",
+  "startedAt": "2026-10-18T23:30:04.520Z",
+  "finishedAt": "2026-10-18T23:30:06.466Z",
+  "durationMs": 1946,
+  "exitCode": 0,
+  "signal": null,
+  "timedOut": false,
+  "error": null,
+  "log": "docs/remediation/evidence/session-014/s014-android-audio.log",
+  "environment": "Fresh allowlist, synthetic local API/DB, optional Redis disabled, no inherited secrets or copied .env"
+}

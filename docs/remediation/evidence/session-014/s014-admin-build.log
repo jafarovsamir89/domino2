@@ -1,0 +1,52 @@
+
+> @domino2/admin@0.1.0 build
+> next build
+
+ ⚠ Warning: Next.js inferred your workspace root, but it may not be correct.
+ We detected multiple lockfiles and selected the directory of /Users/macbookair/Documents/domino/package-lock.json as the root directory.
+ To silence this warning, set `outputFileTracingRoot` in your Next.js config, or consider removing one of the lockfiles if it's not needed.
+   See https://nextjs.org/docs/app/api-reference/config/next-config-js/output#caveats for more information.
+ Detected additional lockfiles: 
+   * /Users/macbookair/Documents/domino/.tmp/remediation-s014/clean/package-lock.json
+
+⚠ No build cache found. Please configure build caching for faster rebuilds. Read more: https://nextjs.org/docs/messages/no-cache
+   ▲ Next.js 15.5.28
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully in 5.0s
+   Linting and checking validity of types ...
+   Collecting page data ...
+   Generating static pages (0/10) ...
+   Generating static pages (2/10) 
+   Generating static pages (4/10) 
+   Generating static pages (7/10) 
+ ✓ Generating static pages (10/10)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                                 Size  First Load JS
+┌ ○ /                                      165 B         106 kB
+├ ○ /_not-found                            992 B         104 kB
+├ ƒ /audit                                 165 B         106 kB
+├ ○ /auth/google                         1.09 kB         118 kB
+├ ƒ /bans                                 1.2 kB         107 kB
+├ ƒ /dashboard                            1.3 kB         119 kB
+├ ƒ /economy                             2.11 kB         108 kB
+├ ƒ /feedback                             1.2 kB         107 kB
+├ ○ /forgot-password                      1.8 kB         108 kB
+├ ○ /login                               1.61 kB         119 kB
+├ ƒ /players                              1.2 kB         107 kB
+├ ƒ /players/[id]                         2.4 kB         108 kB
+├ ƒ /reports                              1.2 kB         107 kB
+├ ƒ /reset-password                      1.94 kB         108 kB
+├ ƒ /reset-password/[token]                119 B         103 kB
+└ ƒ /verify-email                        1.96 kB         108 kB
++ First Load JS shared by all             103 kB
+  ├ chunks/18-8a0e9dadb94224f5.js        46.6 kB
+  ├ chunks/87c73c54-24122e7b92478d00.js  54.2 kB
+  └ other shared chunks (total)          1.92 kB
+
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+

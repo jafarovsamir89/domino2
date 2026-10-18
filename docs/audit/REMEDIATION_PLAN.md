@@ -141,7 +141,7 @@ R-25 относится к этапу 0, но окончательно закр�
 
 #### R-27 · P0 · Triage и совместимое обновление critical dependencies
 
-Статус: **открыто**. Основание: версии/advisory подтверждены; [доказательства](07_SECURITY_ANTICHEAT.md).
+Статус: **исправлено локально, S014**. Обновлены совместимые lockfiles/минимумы: Capacitor8.5.3, Better Auth1.7.10, Next15.5.28. Critical5→0; остаточные root high4 разобраны по достижимости, server critical/high0. Fresh ci Node22, API142/142, admin/native build,4OAuth/navigation contract tests, отдельный Android .audit проверены. Полные server377/384/E2E31/40имеют те же7/9старых падений. Внешний OAuth и Play release отложены. [Сводка](../remediation/evidence/session-014/summary.json), [reachability](../remediation/evidence/session-014/DEPENDENCIES.md). Production/Play не обновлялись.
 
 - **Изменение:** Повторно проверить актуальность advisories и достижимость затронутых поверхностей, подобрать совместимые исправленные версии и обновить lockfiles. Версия из аудита — исторический факт, не готовая рекомендация версии для сегодняшнего обновления.
 - **Где:** `package-lock.json; Capacitor8.3.1`.

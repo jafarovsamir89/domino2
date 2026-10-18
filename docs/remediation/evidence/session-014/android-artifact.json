@@ -1,0 +1,9 @@
+{
+  "package": "az.simplesoft.dominotelefon.audit",
+  "sha256": "4dad6a974f0ad41d9589a460b5e9aa132a5a52bbdb7d0da3ca82e6dd9bb5670a",
+  "bytes": 28789181,
+  "buildCheck": "s014-final-android.json",
+  "nativeVersion": "8.5.3",
+  "releasePublished": false,
+  "apkCommitted": false
+}

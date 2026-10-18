@@ -1,0 +1,23 @@
+{
+  "label": "s014-final-ci",
+  "command": [
+    "npm",
+    "exec",
+    "--yes",
+    "--package=node@22.14.0",
+    "--package=npm@10.9.2",
+    "--",
+    "npm",
+    "ci"
+  ],
+  "cwd": ".tmp/remediation-s014/final",
+  "startedAt": "2026-10-18T23:30:44.483Z",
+  "finishedAt": "2026-10-18T23:30:57.224Z",
+  "durationMs": 12741,
+  "exitCode": 0,
+  "signal": null,
+  "timedOut": false,
+  "error": null,
+  "log": "docs/remediation/evidence/session-014/s014-final-ci.log",
+  "environment": "Fresh allowlist, synthetic local API/DB, optional Redis disabled, no inherited secrets or copied .env"
+}

@@ -1,0 +1,19 @@
+{
+  "labels": [
+    {
+      "lang": "az",
+      "text": "Səsi yandır"
+    },
+    {
+      "lang": "ru",
+      "text": "Включить звук"
+    },
+    {
+      "lang": "en",
+      "text": "Unmute sound"
+    }
+  ],
+  "ariaPressed": true,
+  "music": 23,
+  "effects": 37
+}

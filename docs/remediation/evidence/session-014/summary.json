@@ -1,0 +1,93 @@
+{
+  "session": "S014",
+  "task": "R-27",
+  "status": "fixed-locally",
+  "audit": {
+    "rootBefore": {
+      "info": 0,
+      "low": 1,
+      "moderate": 9,
+      "high": 21,
+      "critical": 5,
+      "total": 36
+    },
+    "rootAfter": {
+      "info": 0,
+      "low": 0,
+      "moderate": 4,
+      "high": 4,
+      "critical": 0,
+      "total": 8
+    },
+    "serverAfter": {
+      "info": 0,
+      "low": 5,
+      "moderate": 3,
+      "high": 0,
+      "critical": 0,
+      "total": 8
+    }
+  },
+  "lockedVersions": {
+    "capacitor": "8.5.3",
+    "betterAuth": "1.7.10",
+    "next": "15.5.28",
+    "proxyAddr": "2.0.8",
+    "tar": "7.5.22"
+  },
+  "lockSha256": {
+    "package-lock.json": "7dc72cb4b3d532171f86b182c3ee29c8a8a79e1ea2cf09514bcf1d635dd1cad0",
+    "server/package-lock.json": "f35c8d5bed8a2e07f202be71c01fb46b0a1430e84b9d1e39b378d8e12d4b6c6c"
+  },
+  "checks": [
+    "s014-final-ci.json",
+    "s014-final-server-ci.json",
+    "s014-api-batch.json",
+    "s014-final-api.json",
+    "s014-final-admin.json",
+    "s014-oauth-navigation.json",
+    "s014-batch-server-final.json",
+    "s014-batch-source-final.json",
+    "s014-final-native-sync.json",
+    "s014-final-android.json",
+    "s014-e2e-final.json",
+    "failure-delta.json",
+    "android-artifact.json",
+    "cleanup.json"
+  ],
+  "results": {
+    "api": {
+      "pass": 142,
+      "total": 142
+    },
+    "server": {
+      "pass": 377,
+      "total": 384,
+      "sameOldFailures": 7
+    },
+    "e2e": {
+      "pass": 31,
+      "total": 40,
+      "sameOldFailures": 9
+    },
+    "oauthNavigation": {
+      "pass": 4,
+      "total": 4
+    },
+    "rootAndServerCi": "fresh Node22/npm10",
+    "android": "audit-only patched runtime built, physical device checked through localhost"
+  },
+  "limits": [
+    "Residual root high4 in inspected build/config chains; DEPENDENCIES.md records reachability and follow-up",
+    "External Google/Apple/OAuth/production cookies/Play release remain deferred",
+    "Full server/E2E suites are not green",
+    "E2E/full-server ran before final UI-only language-sync line; that line was checked separately on Android in3languages",
+    "No production or Play changes"
+  ],
+  "excluded": [
+    "s014-android-build: gradlew not executable; rerun through bash succeeded",
+    "s014-e2e-current: matching browser executable absent; downloaded ordinary test runtime",
+    "s014-e2e-verified: two additional warnings-only assertion failures after suppressing autoplay diagnostic; restored diagnostic and final full rerun matches baseline"
+  ],
+  "sources": "DEPENDENCIES.md"
+}

@@ -1,0 +1,17 @@
+{
+  "label": "s014-server-current",
+  "command": [
+    "npm",
+    "test"
+  ],
+  "cwd": ".tmp/remediation-s014/clean/server",
+  "startedAt": "2026-10-18T23:30:24.413Z",
+  "finishedAt": "2026-10-18T23:30:28.794Z",
+  "durationMs": 4381,
+  "exitCode": 1,
+  "signal": null,
+  "timedOut": false,
+  "error": null,
+  "log": "docs/remediation/evidence/session-014/s014-server-current.log",
+  "environment": "Fresh allowlist, synthetic local API/DB, optional Redis disabled, no inherited secrets or copied .env"
+}

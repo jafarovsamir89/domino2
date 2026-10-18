@@ -1,0 +1,22 @@
+{
+  "label": "s014-android-build",
+  "command": [
+    "env",
+    "JAVA_HOME=/Users/macbookair/Documents/domino/.tmp/audit-jdk21/Contents/Home",
+    "ANDROID_HOME=/Users/macbookair/Library/Android/sdk",
+    "./gradlew",
+    "-I",
+    "../docs/audit/android/init.gradle",
+    "assembleDebug"
+  ],
+  "cwd": ".tmp/remediation-s014/clean/android",
+  "startedAt": "2026-10-18T23:21:03.672Z",
+  "finishedAt": "2026-10-18T23:21:03.676Z",
+  "durationMs": 4,
+  "exitCode": 126,
+  "signal": null,
+  "timedOut": false,
+  "error": null,
+  "log": "docs/remediation/evidence/session-014/s014-android-build.log",
+  "environment": "Fresh allowlist, synthetic local API/DB, optional Redis disabled, no inherited secrets or copied .env"
+}

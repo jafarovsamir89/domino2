@@ -1,0 +1,19 @@
+{
+  "label": "s014-browser-runtime",
+  "command": [
+    "npx",
+    "playwright",
+    "install",
+    "chromium"
+  ],
+  "cwd": ".tmp/remediation-s014/final",
+  "startedAt": "2026-10-18T23:32:02.504Z",
+  "finishedAt": "2026-10-18T23:32:36.800Z",
+  "durationMs": 34296,
+  "exitCode": 0,
+  "signal": null,
+  "timedOut": false,
+  "error": null,
+  "log": "docs/remediation/evidence/session-014/s014-browser-runtime.log",
+  "environment": "Fresh allowlist, synthetic local API/DB, optional Redis disabled, no inherited secrets or copied .env"
+}

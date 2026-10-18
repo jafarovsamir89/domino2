@@ -1,0 +1,19 @@
+{
+  "label": "s014-native-sync",
+  "command": [
+    "node",
+    "node_modules/@capacitor/cli/bin/capacitor",
+    "sync",
+    "android"
+  ],
+  "cwd": ".tmp/remediation-s014/clean",
+  "startedAt": "2026-10-18T23:21:03.277Z",
+  "finishedAt": "2026-10-18T23:21:03.607Z",
+  "durationMs": 330,
+  "exitCode": 0,
+  "signal": null,
+  "timedOut": false,
+  "error": null,
+  "log": "docs/remediation/evidence/session-014/s014-native-sync.log",
+  "environment": "Fresh allowlist, synthetic local API/DB, optional Redis disabled, no inherited secrets or copied .env"
+}

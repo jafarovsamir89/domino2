@@ -1,0 +1,18 @@
+{
+  "label": "s014-audit-before",
+  "command": [
+    "npm",
+    "audit",
+    "--json"
+  ],
+  "cwd": ".tmp/remediation-s014/clean",
+  "startedAt": "2026-10-18T22:58:19.169Z",
+  "finishedAt": "2026-10-18T22:58:31.192Z",
+  "durationMs": 12023,
+  "exitCode": 1,
+  "signal": null,
+  "timedOut": false,
+  "error": null,
+  "log": "docs/remediation/evidence/session-014/s014-audit-before.log",
+  "environment": "Fresh allowlist, synthetic local API/DB, optional Redis disabled, no inherited secrets or copied .env"
+}

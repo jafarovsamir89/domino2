@@ -1,0 +1,18 @@
+{
+  "label": "s014-oauth-navigation",
+  "command": [
+    "node",
+    "--test",
+    "test/auth-navigation.test.js"
+  ],
+  "cwd": ".tmp/remediation-s014/clean/server",
+  "startedAt": "2026-10-18T23:27:44.066Z",
+  "finishedAt": "2026-10-18T23:27:44.256Z",
+  "durationMs": 190,
+  "exitCode": 0,
+  "signal": null,
+  "timedOut": false,
+  "error": null,
+  "log": "docs/remediation/evidence/session-014/s014-oauth-navigation.log",
+  "environment": "Fresh allowlist, synthetic local API/DB, optional Redis disabled, no inherited secrets or copied .env"
+}

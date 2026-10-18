@@ -1,0 +1,685 @@
+
+Running 40 tests using 2 workers
+(node:78329) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:78328) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+FF(node:78330) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+F(node:78331) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+F(node:78332) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+F(node:78333) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+F(node:78334) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+F(node:78335) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+F(node:78338) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+F(node:78339) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+F(node:78341) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+F(node:78342) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+F(node:78343) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+F(node:78344) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+F(node:78352) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+F(node:78353) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+F(node:78363) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+F(node:78364) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+F(node:78365) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+F(node:78366) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+F(node:78367) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+F(node:78368) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+F(node:78369) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+F(node:78370) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+F(node:78372) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+F(node:78375) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+F(node:78378) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+F(node:78381) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+F(node:78382) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+F(node:78383) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+F(node:78384) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+F(node:78385) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+F(node:78387) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+F(node:78390) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+F(node:78391) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+F(node:78392) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+F(node:78393) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+F(node:78394) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+F(node:78397) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+F(node:78418) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+F
+
+  1) e2e/domino.spec.mjs:152:1 › start screen loads and stays within mobile viewport ───────────────
+
+    Error: browserType.launch: Executable doesn't exist at /Users/macbookair/Library/Caches/ms-playwright/chromium_headless_shell-1248/chrome-headless-shell-mac-arm64/chrome-headless-shell
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: test-results/domino-start-screen-loads-and-stays-within-mobile-viewport/error-context.md
+
+  2) e2e/domino.spec.mjs:178:3 › solo telefon starts without calling disabled stake endpoints ──────
+
+    Error: browserType.launch: Executable doesn't exist at /Users/macbookair/Library/Caches/ms-playwright/chromium_headless_shell-1248/chrome-headless-shell-mac-arm64/chrome-headless-shell
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: test-results/domino-solo-telefon-starts-a53e8-ng-disabled-stake-endpoints/error-context.md
+
+  3) e2e/domino.spec.mjs:206:3 › solo telefon starts a fresh match after both win and loss ─────────
+
+    Error: browserType.launch: Executable doesn't exist at /Users/macbookair/Library/Caches/ms-playwright/chromium_headless_shell-1248/chrome-headless-shell-mac-arm64/chrome-headless-shell
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: test-results/domino-solo-telefon-starts-477e2-tch-after-both-win-and-loss/error-context.md
+
+  4) e2e/domino.spec.mjs:178:3 › solo classic101 starts without calling disabled stake endpoints ───
+
+    Error: browserType.launch: Executable doesn't exist at /Users/macbookair/Library/Caches/ms-playwright/chromium_headless_shell-1248/chrome-headless-shell-mac-arm64/chrome-headless-shell
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: test-results/domino-solo-classic101-sta-cc8bd-ng-disabled-stake-endpoints/error-context.md
+
+  5) e2e/domino.spec.mjs:206:3 › solo classic101 starts a fresh match after both win and loss ──────
+
+    Error: browserType.launch: Executable doesn't exist at /Users/macbookair/Library/Caches/ms-playwright/chromium_headless_shell-1248/chrome-headless-shell-mac-arm64/chrome-headless-shell
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: test-results/domino-solo-classic101-sta-c697c-tch-after-both-win-and-loss/error-context.md
+
+  6) e2e/domino.spec.mjs:260:1 › Konva is enabled by default, mounts a canvas board, and clears the placeholder after the first move 
+
+    Error: browserType.launch: Executable doesn't exist at /Users/macbookair/Library/Caches/ms-playwright/chromium_headless_shell-1248/chrome-headless-shell-mac-arm64/chrome-headless-shell
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: test-results/domino-Konva-is-enabled-by-9db12-holder-after-the-first-move/error-context.md
+
+  7) e2e/domino.spec.mjs:295:1 › Konva query flag 0 forces DOM board and stores false ──────────────
+
+    Error: browserType.launch: Executable doesn't exist at /Users/macbookair/Library/Caches/ms-playwright/chromium_headless_shell-1248/chrome-headless-shell-mac-arm64/chrome-headless-shell
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: test-results/domino-Konva-query-flag-0-forces-DOM-board-and-stores-false/error-context.md
+
+  8) e2e/domino.spec.mjs:326:1 › Konva query flag 1 forces Konva board and stores true ─────────────
+
+    Error: browserType.launch: Executable doesn't exist at /Users/macbookair/Library/Caches/ms-playwright/chromium_headless_shell-1248/chrome-headless-shell-mac-arm64/chrome-headless-shell
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: test-results/domino-Konva-query-flag-1-forces-Konva-board-and-stores-true/error-context.md
+
+  9) e2e/domino.spec.mjs:400:1 › Konva realtime scheduler batches duplicate delta renders and keeps signatures stable 
+
+    Error: browserType.launch: Executable doesn't exist at /Users/macbookair/Library/Caches/ms-playwright/chromium_headless_shell-1248/chrome-headless-shell-mac-arm64/chrome-headless-shell
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: test-results/domino-Konva-realtime-sche-a8281-and-keeps-signatures-stable/error-context.md
+
+  10) e2e/domino.spec.mjs:515:1 › Konva game_delta play renders the board before the score popup ───
+
+    Error: browserType.launch: Executable doesn't exist at /Users/macbookair/Library/Caches/ms-playwright/chromium_headless_shell-1248/chrome-headless-shell-mac-arm64/chrome-headless-shell
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: test-results/domino-Konva-game-delta-pl-c00f8-oard-before-the-score-popup/error-context.md
+
+  11) e2e/domino.spec.mjs:605:1 › Konva game_delta draw updates opponent hand count without redrawing the board 
+
+    Error: browserType.launch: Executable doesn't exist at /Users/macbookair/Library/Caches/ms-playwright/chromium_headless_shell-1248/chrome-headless-shell-mac-arm64/chrome-headless-shell
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: test-results/domino-Konva-game-delta-dr-4fc30-without-redrawing-the-board/error-context.md
+
+  12) e2e/domino.spec.mjs:666:1 › Konva rollback clears pending optimistic play without ReferenceError 
+
+    Error: browserType.launch: Executable doesn't exist at /Users/macbookair/Library/Caches/ms-playwright/chromium_headless_shell-1248/chrome-headless-shell-mac-arm64/chrome-headless-shell
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: test-results/domino-Konva-rollback-clea-671a7-play-without-ReferenceError/error-context.md
+
+  13) e2e/domino.spec.mjs:719:1 › Konva local addScore triggers score feedback once ────────────────
+
+    Error: browserType.launch: Executable doesn't exist at /Users/macbookair/Library/Caches/ms-playwright/chromium_headless_shell-1248/chrome-headless-shell-mac-arm64/chrome-headless-shell
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: test-results/domino-Konva-local-addScore-triggers-score-feedback-once/error-context.md
+
+  14) e2e/domino.spec.mjs:750:1 › Konva local score feedback plays sound once and shows popup once ─
+
+    Error: browserType.launch: Executable doesn't exist at /Users/macbookair/Library/Caches/ms-playwright/chromium_headless_shell-1248/chrome-headless-shell-mac-arm64/chrome-headless-shell
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: test-results/domino-Konva-local-score-f-bee6b-d-once-and-shows-popup-once/error-context.md
+
+  15) e2e/domino.spec.mjs:785:1 › Konva travel animation stays opaque and does not blink on rerender 
+
+    Error: browserType.launch: Executable doesn't exist at /Users/macbookair/Library/Caches/ms-playwright/chromium_headless_shell-1248/chrome-headless-shell-mac-arm64/chrome-headless-shell
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: test-results/domino-Konva-travel-animat-5b9ba--does-not-blink-on-rerender/error-context.md
+
+  16) e2e/domino.spec.mjs:867:1 › Konva scheduleRealtimeRender defaults to all false flags ─────────
+
+    Error: browserType.launch: Executable doesn't exist at /Users/macbookair/Library/Caches/ms-playwright/chromium_headless_shell-1248/chrome-headless-shell-mac-arm64/chrome-headless-shell
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: test-results/domino-Konva-scheduleRealt-8585a-defaults-to-all-false-flags/error-context.md
+
+  17) e2e/domino.spec.mjs:902:1 › Konva open-end highlights stay clear of tile bodies on stretched boards 
+
+    Error: browserType.launch: Executable doesn't exist at /Users/macbookair/Library/Caches/ms-playwright/chromium_headless_shell-1248/chrome-headless-shell-mac-arm64/chrome-headless-shell
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: test-results/domino-Konva-open-end-high-322de--bodies-on-stretched-boards/error-context.md
+
+  18) e2e/domino.spec.mjs:991:1 › Konva top open-end highlight stays centered without stage clamping 
+
+    Error: browserType.launch: Executable doesn't exist at /Users/macbookair/Library/Caches/ms-playwright/chromium_headless_shell-1248/chrome-headless-shell-mac-arm64/chrome-headless-shell
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: test-results/domino-Konva-top-open-end--b940d-ered-without-stage-clamping/error-context.md
+
+  19) e2e/domino.spec.mjs:1075:1 › Konva tile rects stay in viewport coordinates and source rect is excluded from collision 
+
+    Error: browserType.launch: Executable doesn't exist at /Users/macbookair/Library/Caches/ms-playwright/chromium_headless_shell-1248/chrome-headless-shell-mac-arm64/chrome-headless-shell
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: test-results/domino-Konva-tile-rects-st-40f9a--is-excluded-from-collision/error-context.md
+
+  20) e2e/domino.spec.mjs:1158:1 › Konva arrow axes stay locked and emergency fallback only shifts when normal candidates fail 
+
+    Error: browserType.launch: Executable doesn't exist at /Users/macbookair/Library/Caches/ms-playwright/chromium_headless_shell-1248/chrome-headless-shell-mac-arm64/chrome-headless-shell
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: test-results/domino-Konva-arrow-axes-st-1dc27-when-normal-candidates-fail/error-context.md
+
+  21) e2e/domino.spec.mjs:1282:1 › Konva open-end hints sit lower and arrow buttons match the CSS size 
+
+    Error: browserType.launch: Executable doesn't exist at /Users/macbookair/Library/Caches/ms-playwright/chromium_headless_shell-1248/chrome-headless-shell-mac-arm64/chrome-headless-shell
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: test-results/domino-Konva-open-end-hint-0dba5--buttons-match-the-CSS-size/error-context.md
+
+  22) e2e/domino.spec.mjs:1479:1 › bank HUD stays visible across consecutive deals in the same round 
+
+    Error: browserType.launch: Executable doesn't exist at /Users/macbookair/Library/Caches/ms-playwright/chromium_headless_shell-1248/chrome-headless-shell-mac-arm64/chrome-headless-shell
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: test-results/domino-bank-HUD-stays-visi-4dd6f-ive-deals-in-the-same-round/error-context.md
+
+  23) e2e/domino.spec.mjs:1527:1 › Konva board parity keeps DOM palette, geometry, and overlays aligned 
+
+    Error: browserType.launch: Executable doesn't exist at /Users/macbookair/Library/Caches/ms-playwright/chromium_headless_shell-1248/chrome-headless-shell-mac-arm64/chrome-headless-shell
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: test-results/domino-Konva-board-parity--ea86e-ometry-and-overlays-aligned/error-context.md
+
+  24) e2e/domino.spec.mjs:1735:1 › guest start screen hides auth-only top buttons and keeps language visible 
+
+    Error: browserType.launch: Executable doesn't exist at /Users/macbookair/Library/Caches/ms-playwright/chromium_headless_shell-1248/chrome-headless-shell-mac-arm64/chrome-headless-shell
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: test-results/domino-guest-start-screen--24d8a--and-keeps-language-visible/error-context.md
+
+  25) e2e/domino.spec.mjs:1750:1 › authenticated profile shows four stats cards without Xal and leaderboard uses Reyting 
+
+    Error: browserType.launch: Executable doesn't exist at /Users/macbookair/Library/Caches/ms-playwright/chromium_headless_shell-1248/chrome-headless-shell-mac-arm64/chrome-headless-shell
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: test-results/domino-authenticated-profi-b829d-nd-leaderboard-uses-Reyting/error-context.md
+
+  26) e2e/domino.spec.mjs:2347:1 › invite polling catches incoming room invitations without SSE ────
+
+    Error: browserType.launch: Executable doesn't exist at /Users/macbookair/Library/Caches/ms-playwright/chromium_headless_shell-1248/chrome-headless-shell-mac-arm64/chrome-headless-shell
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: test-results/domino-invite-polling-catc-a2718-oom-invitations-without-SSE/error-context.md
+
+  27) e2e/domino.spec.mjs:2497:1 › open rooms modal uses a standard title bar and close button ─────
+
+    Error: browserType.launch: Executable doesn't exist at /Users/macbookair/Library/Caches/ms-playwright/chromium_headless_shell-1248/chrome-headless-shell-mac-arm64/chrome-headless-shell
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: test-results/domino-open-rooms-modal-us-717bd--title-bar-and-close-button/error-context.md
+
+  28) e2e/domino.spec.mjs:2511:1 › closed and open rooms create flows use contextual visibility without toggle UI 
+
+    Error: browserType.launch: Executable doesn't exist at /Users/macbookair/Library/Caches/ms-playwright/chromium_headless_shell-1248/chrome-headless-shell-mac-arm64/chrome-headless-shell
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: test-results/domino-closed-and-open-roo-b7127-isibility-without-toggle-UI/error-context.md
+
+  29) e2e/domino.spec.mjs:2546:1 › solo and online modals keep header title separate from description 
+
+    Error: browserType.launch: Executable doesn't exist at /Users/macbookair/Library/Caches/ms-playwright/chromium_headless_shell-1248/chrome-headless-shell-mac-arm64/chrome-headless-shell
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: test-results/domino-solo-and-online-mod-be1e5-e-separate-from-description/error-context.md
+
+  30) e2e/domino.spec.mjs:2562:1 › in-game pause menu keeps only continue and exit and round summary hides winner hand details 
+
+    Error: browserType.launch: Executable doesn't exist at /Users/macbookair/Library/Caches/ms-playwright/chromium_headless_shell-1248/chrome-headless-shell-mac-arm64/chrome-headless-shell
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: test-results/domino-in-game-pause-menu--ff7fd-y-hides-winner-hand-details/error-context.md
+
+  31) e2e/domino.spec.mjs:2625:1 › reconnect banner appears during network reconnect and clears on recovery 
+
+    Error: browserType.launch: Executable doesn't exist at /Users/macbookair/Library/Caches/ms-playwright/chromium_headless_shell-1248/chrome-headless-shell-mac-arm64/chrome-headless-shell
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: test-results/domino-reconnect-banner-ap-15fab-nect-and-clears-on-recovery/error-context.md
+
+  32) e2e/domino.spec.mjs:2653:1 › renderer setTableSkin stays silent unless debug logging is enabled 
+
+    Error: browserType.launch: Executable doesn't exist at /Users/macbookair/Library/Caches/ms-playwright/chromium_headless_shell-1248/chrome-headless-shell-mac-arm64/chrome-headless-shell
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: test-results/domino-renderer-setTableSk-f8f83-ss-debug-logging-is-enabled/error-context.md
+
+  33) e2e/domino.spec.mjs:2670:1 › turn timer uses synced server clock and does not restart on the same deadline 
+
+    Error: browserType.launch: Executable doesn't exist at /Users/macbookair/Library/Caches/ms-playwright/chromium_headless_shell-1248/chrome-headless-shell-mac-arm64/chrome-headless-shell
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: test-results/domino-turn-timer-uses-syn-33153-estart-on-the-same-deadline/error-context.md
+
+  34) e2e/domino.spec.mjs:2735:1 › expired seat reservation reconnect falls back to snapshot restore without retry spam 
+
+    Error: browserType.launch: Executable doesn't exist at /Users/macbookair/Library/Caches/ms-playwright/chromium_headless_shell-1248/chrome-headless-shell-mac-arm64/chrome-headless-shell
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: test-results/domino-expired-seat-reserv-7090a--restore-without-retry-spam/error-context.md
+
+  35) e2e/domino.spec.mjs:2797:1 › resume banner renders stored session state ──────────────────────
+
+    Error: browserType.launch: Executable doesn't exist at /Users/macbookair/Library/Caches/ms-playwright/chromium_headless_shell-1248/chrome-headless-shell-mac-arm64/chrome-headless-shell
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: test-results/domino-resume-banner-renders-stored-session-state/error-context.md
+
+  36) e2e/domino.spec.mjs:2818:1 › team score names open the player profile modal above the table ──
+
+    Error: browserType.launch: Executable doesn't exist at /Users/macbookair/Library/Caches/ms-playwright/chromium_headless_shell-1248/chrome-headless-shell-mac-arm64/chrome-headless-shell
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: test-results/domino-team-score-names-op-9f701-ofile-modal-above-the-table/error-context.md
+
+  37) e2e/domino.spec.mjs:2855:1 › game invite attaches the resolved room code instead of the room id 
+
+    Error: browserType.launch: Executable doesn't exist at /Users/macbookair/Library/Caches/ms-playwright/chromium_headless_shell-1248/chrome-headless-shell-mac-arm64/chrome-headless-shell
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: test-results/domino-game-invite-attache-ce7c6-code-instead-of-the-room-id/error-context.md
+
+  38) e2e/domino.spec.mjs:2892:1 › daily bonus flow: visible only when authed, handles status loading and claim successfully 
+
+    Error: browserType.launch: Executable doesn't exist at /Users/macbookair/Library/Caches/ms-playwright/chromium_headless_shell-1248/chrome-headless-shell-mac-arm64/chrome-headless-shell
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: test-results/domino-daily-bonus-flow-vi-5f966-ding-and-claim-successfully/error-context.md
+
+  39) e2e/domino.spec.mjs:3033:1 › capture screenshots for review ──────────────────────────────────
+
+    Error: browserType.launch: Executable doesn't exist at /Users/macbookair/Library/Caches/ms-playwright/chromium_headless_shell-1248/chrome-headless-shell-mac-arm64/chrome-headless-shell
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: test-results/domino-capture-screenshots-for-review/error-context.md
+
+  40) e2e/network-boundary.spec.mjs:3:1 › local tests block unmocked external HTTP and WebSocket traffic 
+
+    Error: browserType.launch: Executable doesn't exist at /Users/macbookair/Library/Caches/ms-playwright/chromium_headless_shell-1248/chrome-headless-shell-mac-arm64/chrome-headless-shell
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: test-results/network-boundary-local-tes-b7224--HTTP-and-WebSocket-traffic/error-context.md
+
+  40 failed
+    e2e/domino.spec.mjs:152:1 › start screen loads and stays within mobile viewport ────────────────
+    e2e/domino.spec.mjs:178:3 › solo telefon starts without calling disabled stake endpoints ───────
+    e2e/domino.spec.mjs:206:3 › solo telefon starts a fresh match after both win and loss ──────────
+    e2e/domino.spec.mjs:178:3 › solo classic101 starts without calling disabled stake endpoints ────
+    e2e/domino.spec.mjs:206:3 › solo classic101 starts a fresh match after both win and loss ───────
+    e2e/domino.spec.mjs:260:1 › Konva is enabled by default, mounts a canvas board, and clears the placeholder after the first move 
+    e2e/domino.spec.mjs:295:1 › Konva query flag 0 forces DOM board and stores false ───────────────
+    e2e/domino.spec.mjs:326:1 › Konva query flag 1 forces Konva board and stores true ──────────────
+    e2e/domino.spec.mjs:400:1 › Konva realtime scheduler batches duplicate delta renders and keeps signatures stable 
+    e2e/domino.spec.mjs:515:1 › Konva game_delta play renders the board before the score popup ─────
+    e2e/domino.spec.mjs:605:1 › Konva game_delta draw updates opponent hand count without redrawing the board 
+    e2e/domino.spec.mjs:666:1 › Konva rollback clears pending optimistic play without ReferenceError 
+    e2e/domino.spec.mjs:719:1 › Konva local addScore triggers score feedback once ──────────────────
+    e2e/domino.spec.mjs:750:1 › Konva local score feedback plays sound once and shows popup once ───
+    e2e/domino.spec.mjs:785:1 › Konva travel animation stays opaque and does not blink on rerender ─
+    e2e/domino.spec.mjs:867:1 › Konva scheduleRealtimeRender defaults to all false flags ───────────
+    e2e/domino.spec.mjs:902:1 › Konva open-end highlights stay clear of tile bodies on stretched boards 
+    e2e/domino.spec.mjs:991:1 › Konva top open-end highlight stays centered without stage clamping ─
+    e2e/domino.spec.mjs:1075:1 › Konva tile rects stay in viewport coordinates and source rect is excluded from collision 
+    e2e/domino.spec.mjs:1158:1 › Konva arrow axes stay locked and emergency fallback only shifts when normal candidates fail 
+    e2e/domino.spec.mjs:1282:1 › Konva open-end hints sit lower and arrow buttons match the CSS size 
+    e2e/domino.spec.mjs:1479:1 › bank HUD stays visible across consecutive deals in the same round ─
+    e2e/domino.spec.mjs:1527:1 › Konva board parity keeps DOM palette, geometry, and overlays aligned 
+    e2e/domino.spec.mjs:1735:1 › guest start screen hides auth-only top buttons and keeps language visible 
+    e2e/domino.spec.mjs:1750:1 › authenticated profile shows four stats cards without Xal and leaderboard uses Reyting 
+    e2e/domino.spec.mjs:2347:1 › invite polling catches incoming room invitations without SSE ──────
+    e2e/domino.spec.mjs:2497:1 › open rooms modal uses a standard title bar and close button ───────
+    e2e/domino.spec.mjs:2511:1 › closed and open rooms create flows use contextual visibility without toggle UI 
+    e2e/domino.spec.mjs:2546:1 › solo and online modals keep header title separate from description 
+    e2e/domino.spec.mjs:2562:1 › in-game pause menu keeps only continue and exit and round summary hides winner hand details 
+    e2e/domino.spec.mjs:2625:1 › reconnect banner appears during network reconnect and clears on recovery 
+    e2e/domino.spec.mjs:2653:1 › renderer setTableSkin stays silent unless debug logging is enabled 
+    e2e/domino.spec.mjs:2670:1 › turn timer uses synced server clock and does not restart on the same deadline 
+    e2e/domino.spec.mjs:2735:1 › expired seat reservation reconnect falls back to snapshot restore without retry spam 
+    e2e/domino.spec.mjs:2797:1 › resume banner renders stored session state ────────────────────────
+    e2e/domino.spec.mjs:2818:1 › team score names open the player profile modal above the table ────
+    e2e/domino.spec.mjs:2855:1 › game invite attaches the resolved room code instead of the room id 
+    e2e/domino.spec.mjs:2892:1 › daily bonus flow: visible only when authed, handles status loading and claim successfully 
+    e2e/domino.spec.mjs:3033:1 › capture screenshots for review ────────────────────────────────────
+    e2e/network-boundary.spec.mjs:3:1 › local tests block unmocked external HTTP and WebSocket traffic 

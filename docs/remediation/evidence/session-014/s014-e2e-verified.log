@@ -1,0 +1,323 @@
+
+Running 40 tests using 2 workers
+(node:78705) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:78706) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+·F(node:78740) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+······F(node:78837) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+··········F(node:79019) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+···F(node:79121) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+·F(node:79145) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+F(node:79158) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+·F(node:79185) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+·F(node:79199) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+···F(node:79245) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+··F(node:79257) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+F(node:79490) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+·
+
+  1) e2e/domino.spec.mjs:152:1 › start screen loads and stays within mobile viewport ───────────────
+
+    Error: expect(locator).toHaveCount(expected) failed
+
+    Locator:  locator('script[src*="js/app.js?v=social-live-1"]')
+    Expected: 1
+    Received: 0
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toHaveCount" locator('script[src*="js/app.js?v=social-live-1"]') with timeout 5000ms
+      - waiting for locator('script[src*="js/app.js?v=social-live-1"]')
+        14 × locator resolved to 0 elements
+           - unexpected value "0"
+
+
+      153 |   await page.goto("/index.html");
+      154 |
+    > 155 |   await expect(page.locator('script[src*="js/app.js?v=social-live-1"]')).toHaveCount(1);
+          |                                                                          ^
+      156 |   await expect(page.locator('script[src*="js/network.js?v=social-live-1"]')).toHaveCount(1);
+      157 |   await expect(page.locator("#start-screen")).toHaveClass(/active/);
+      158 |   await expect(page.locator("#account-btn")).toHaveClass(/start-profile-btn/);
+        at /Users/macbookair/Documents/domino/.tmp/remediation-s014/final/e2e/domino.spec.mjs:155:74
+
+    Error Context: test-results/domino-start-screen-loads-and-stays-within-mobile-viewport/error-context.md
+
+  2) e2e/domino.spec.mjs:326:1 › Konva query flag 1 forces Konva board and stores true ─────────────
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    Expected: ArrayContaining [StringContaining "Menu music autoplay prevented"]
+    Received: ["Service Worker registration blocked by Playwright", "[KonvaBoard] Falling back to DOM renderer Error: konva-boom
+        at new window.Konva.Rect (eval at evaluate (:370:30), <anonymous>:5:17)
+        at KonvaBoardRenderer.createTileEntry (http://127.0.0.1:4173/js/konvaBoardRenderer.js:499:22)
+        at KonvaBoardRenderer.syncBoardTiles (http://127.0.0.1:4173/js/konvaBoardRenderer.js:585:30)
+        at KonvaBoardRenderer.render (http://127.0.0.1:4173/js/konvaBoardRenderer.js:484:32)
+        at Renderer.renderBoard (http://127.0.0.1:4173/js/renderer.js?v=social-live-2:624:30)
+        at eval (eval at evaluate (:370:30), <anonymous>:19:26)
+        at UtilityScript.evaluate (<anonymous>:372:16)
+        at UtilityScript.<anonymous> (<anonymous>:1:44)"]
+
+      395 |   expect(pageErrors).toEqual([]);
+      396 |   expect(consoleErrors).toEqual([]);
+    > 397 |   expect(consoleWarnings).toEqual(expect.arrayContaining([expect.stringContaining("Menu music autoplay prevented")]));
+          |                           ^
+      398 | });
+      399 |
+      400 | test("Konva realtime scheduler batches duplicate delta renders and keeps signatures stable", async ({ page }) => {
+        at /Users/macbookair/Documents/domino/.tmp/remediation-s014/final/e2e/domino.spec.mjs:397:27
+
+    Error Context: test-results/domino-Konva-query-flag-1-forces-Konva-board-and-stores-true/error-context.md
+
+  3) e2e/domino.spec.mjs:1075:1 › Konva tile rects stay in viewport coordinates and source rect is excluded from collision 
+
+    Error: expect(received).toBeCloseTo(expected, precision)
+
+    Expected: 157.6015625
+    Received: 176.3
+
+    Expected precision:    1
+    Expected difference: < 0.05
+    Received difference:   18.69843750000001
+
+      1145 |   expect(result.tileRect).not.toBeNull();
+      1146 |   expect(result.tileElRect).not.toBeNull();
+    > 1147 |   expect(result.tileRect.left).toBeCloseTo(result.tileElRect.left, 1);
+           |                                ^
+      1148 |   expect(result.tileRect.top).toBeCloseTo(result.tileElRect.top, 1);
+      1149 |   expect(result.tileRect.centerX).toBeCloseTo(result.tileElRect.left + result.tileElRect.width / 2, 1);
+      1150 |   expect(result.tileRect.centerY).toBeCloseTo(result.tileElRect.top + result.tileElRect.height / 2, 1);
+        at /Users/macbookair/Documents/domino/.tmp/remediation-s014/final/e2e/domino.spec.mjs:1147:32
+
+    Error Context: test-results/domino-Konva-tile-rects-st-40f9a--is-excluded-from-collision/error-context.md
+
+  4) e2e/domino.spec.mjs:1527:1 › Konva board parity keeps DOM palette, geometry, and overlays aligned 
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    Expected: ArrayContaining [StringContaining "Menu music autoplay prevented"]
+    Received: ["Service Worker registration blocked by Playwright"]
+
+      1730 |   expect(pageErrors).toEqual([]);
+      1731 |   expect(consoleErrors).toEqual([]);
+    > 1732 |   expect(consoleWarnings).toEqual(expect.arrayContaining([expect.stringContaining("Menu music autoplay prevented")]));
+           |                           ^
+      1733 | });
+      1734 |
+      1735 | test("guest start screen hides auth-only top buttons and keeps language visible", async ({ page }) => {
+        at /Users/macbookair/Documents/domino/.tmp/remediation-s014/final/e2e/domino.spec.mjs:1732:27
+
+    Error Context: test-results/domino-Konva-board-parity--ea86e-ometry-and-overlays-aligned/error-context.md
+
+  5) e2e/domino.spec.mjs:1750:1 › authenticated profile shows four stats cards without Xal and leaderboard uses Reyting 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator:  locator('#player-profile-invite-btn')
+    Expected: visible
+    Received: hidden
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toBeVisible" locator('#player-profile-invite-btn') with timeout 5000ms
+      - waiting for locator('#player-profile-invite-btn')
+        14 × locator resolved to <button disabled hidden="" type="button" title="Invite" data-i18n="friend-invite" id="player-profile-invite-btn" class="btn btn-action btn-strong">Invite</button>
+           - unexpected value "hidden"
+
+
+      2263 |     game.renderPlayerProfileModal?.();
+      2264 |   });
+    > 2265 |   await expect(page.locator("#player-profile-invite-btn")).toBeVisible();
+           |                                                            ^
+      2266 |   await expect(page.locator("#player-profile-message-btn")).toBeVisible();
+      2267 |   await page.locator("#player-profile-message-btn").click();
+      2268 |
+        at /Users/macbookair/Documents/domino/.tmp/remediation-s014/final/e2e/domino.spec.mjs:2265:60
+
+    Error Context: test-results/domino-authenticated-profi-b829d-nd-leaderboard-uses-Reyting/error-context.md
+
+  6) e2e/domino.spec.mjs:2347:1 › invite polling catches incoming room invitations without SSE ─────
+
+    Error: expect(received).toBeGreaterThanOrEqual(expected)
+
+    Expected: >= 2
+    Received:    0
+
+    Call Log:
+    - Timeout 5000ms exceeded while waiting on the predicate
+
+      2489 |   });
+      2490 |
+    > 2491 |   await expect.poll(() => inviteRequestCount, { timeout: 5000 }).toBeGreaterThanOrEqual(2);
+           |                                                                  ^
+      2492 |   await expect(page.locator("#open-social-btn .start-social-badge")).toHaveText("1");
+      2493 |   await page.locator("#open-social-btn").click();
+      2494 |   await expect(page.locator("#social-invites-incoming-list .friend-card")).toHaveCount(1);
+        at /Users/macbookair/Documents/domino/.tmp/remediation-s014/final/e2e/domino.spec.mjs:2491:66
+
+    Error Context: test-results/domino-invite-polling-catc-a2718-oom-invitations-without-SSE/error-context.md
+
+  7) e2e/domino.spec.mjs:2511:1 › closed and open rooms create flows use contextual visibility without toggle UI 
+
+    Error: expect(locator).not.toHaveClass(expected) failed
+
+    Locator: locator('#open-rooms-menu-ui')
+    Expected pattern: not /is-hidden/
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "not toHaveClass" locator('#open-rooms-menu-ui') with timeout 5000ms
+      - waiting for locator('#open-rooms-menu-ui')
+
+
+      2524 |   await page.evaluate(() => document.getElementById("open-rooms-btn")?.click());
+      2525 |   await expect(page.locator("#open-rooms-modal")).toHaveClass(/active/);
+    > 2526 |   await expect(page.locator("#open-rooms-menu-ui")).not.toHaveClass(/is-hidden/);
+           |                                                         ^
+      2527 |   await expect(page.locator("#open-rooms-list-ui")).toHaveClass(/is-hidden/);
+      2528 |   await expect(page.locator("#open-rooms-create-btn")).toBeVisible();
+      2529 |   await expect(page.locator("#open-rooms-join-btn")).toBeVisible();
+        at /Users/macbookair/Documents/domino/.tmp/remediation-s014/final/e2e/domino.spec.mjs:2526:57
+
+    Error Context: test-results/domino-closed-and-open-roo-b7127-isibility-without-toggle-UI/error-context.md
+
+  8) e2e/domino.spec.mjs:2562:1 › in-game pause menu keeps only continue and exit and round summary hides winner hand details 
+
+    Error: expect(locator).toContainText(expected) failed
+
+    Locator: locator('#menu-screen')
+    Timeout: 5000ms
+    Expected pattern: /Davam et|Продолжить|Continue/
+    Received string:  "·········
+                Menu
+                Resume·············
+                Next track
+                Mute / Unmute·············
+                    Music15%·················
+                    Effects100%······························
+                Quit
+                Все права защищены © SimpleSoft - Domino ver 1.33·········
+        "
+
+    Call log:
+      - Expect "toContainText" locator('#menu-screen') with timeout 5000ms
+      - waiting for locator('#menu-screen')
+        14 × locator resolved to <div id="menu-screen" class="screen overlay active">…</div>
+           - unexpected value "
+            
+                Menu
+                Resume
+                
+                Next track
+                Mute / Unmute
+                
+                    Music15%
+                    
+                    Effects100%
+                    
+                
+                Quit
+                Все права защищены © SimpleSoft - Domino ver 1.33
+            
+        "
+
+
+      2571 |   await expect(page.locator("#menu-screen .menu-panel .btn-menu")).toHaveCount(4);
+      2572 |   await expect(page.locator("#menu-screen")).not.toContainText(/Profile|Профиль|Coin|Coins|Магазин|Skin|Скины/i);
+    > 2573 |   await expect(page.locator("#menu-screen")).toContainText(/Davam et|Продолжить|Continue/);
+           |                                              ^
+      2574 |   await expect(page.locator("#menu-screen")).toContainText(/Çıxış|Выход|Exit/);
+      2575 |
+      2576 |   await page.evaluate(async () => {
+        at /Users/macbookair/Documents/domino/.tmp/remediation-s014/final/e2e/domino.spec.mjs:2573:46
+
+    Error Context: test-results/domino-in-game-pause-menu--ff7fd-y-hides-winner-hand-details/error-context.md
+
+  9) e2e/domino.spec.mjs:2735:1 › expired seat reservation reconnect falls back to snapshot restore without retry spam 
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    Expected: ArrayContaining ["clear-token", "clear-state", "restore-empty"]
+    Received: ["restore-token"]
+
+      2789 |
+      2790 |   expect(result.roomId).toBe("restored-room");
+    > 2791 |   expect(result.calls).toEqual(expect.arrayContaining(["clear-token", "clear-state", "restore-empty"]));
+           |                        ^
+      2792 |   expect(result.calls).not.toContain("failed");
+      2793 |   expect(result.reconnectAttempt).toBe(0);
+      2794 |   expect(result.storedToken).toBe("");
+        at /Users/macbookair/Documents/domino/.tmp/remediation-s014/final/e2e/domino.spec.mjs:2791:24
+
+    Error Context: test-results/domino-expired-seat-reserv-7090a--restore-without-retry-spam/error-context.md
+
+  10) e2e/domino.spec.mjs:2855:1 › game invite attaches the resolved room code instead of the room id 
+
+    Error: expect(received).toBeTruthy()
+
+    Received: null
+
+      2886 |   });
+      2887 |
+    > 2888 |   expect(payload).toBeTruthy();
+           |                   ^
+      2889 |   expect(payload.roomCode).toBe("ABCD");
+      2890 | });
+      2891 |
+        at /Users/macbookair/Documents/domino/.tmp/remediation-s014/final/e2e/domino.spec.mjs:2888:19
+
+    Error Context: test-results/domino-game-invite-attache-ce7c6-code-instead-of-the-room-id/error-context.md
+
+  11) e2e/domino.spec.mjs:2892:1 › daily bonus flow: visible only when authed, handles status loading and claim successfully 
+
+    Error: expect(locator).not.toHaveClass(expected) failed
+
+    Locator: locator('#daily-bonus-card')
+    Expected pattern: not /is-hidden/
+    Received string: "daily-bonus-card is-hidden"
+    Timeout: 5000ms
+
+    Call log:
+      - Expect "not toHaveClass" locator('#daily-bonus-card') with timeout 5000ms
+      - waiting for locator('#daily-bonus-card')
+        14 × locator resolved to <section id="daily-bonus-card" class="daily-bonus-card is-hidden">…</section>
+           - unexpected value "daily-bonus-card is-hidden"
+
+
+      3010 |   await page.goto("/index.html");
+      3011 |   const card = page.locator("#daily-bonus-card");
+    > 3012 |   await expect(card).not.toHaveClass(/is-hidden/);
+           |                          ^
+      3013 |   await expect(page.locator("#daily-bonus-amount")).toContainText("+350");
+      3014 |
+      3015 |   const claimBtn = page.locator("#daily-bonus-claim-btn");
+        at /Users/macbookair/Documents/domino/.tmp/remediation-s014/final/e2e/domino.spec.mjs:3012:26
+
+    Error Context: test-results/domino-daily-bonus-flow-vi-5f966-ding-and-claim-successfully/error-context.md
+
+  11 failed
+    e2e/domino.spec.mjs:152:1 › start screen loads and stays within mobile viewport ────────────────
+    e2e/domino.spec.mjs:326:1 › Konva query flag 1 forces Konva board and stores true ──────────────
+    e2e/domino.spec.mjs:1075:1 › Konva tile rects stay in viewport coordinates and source rect is excluded from collision 
+    e2e/domino.spec.mjs:1527:1 › Konva board parity keeps DOM palette, geometry, and overlays aligned 
+    e2e/domino.spec.mjs:1750:1 › authenticated profile shows four stats cards without Xal and leaderboard uses Reyting 
+    e2e/domino.spec.mjs:2347:1 › invite polling catches incoming room invitations without SSE ──────
+    e2e/domino.spec.mjs:2511:1 › closed and open rooms create flows use contextual visibility without toggle UI 
+    e2e/domino.spec.mjs:2562:1 › in-game pause menu keeps only continue and exit and round summary hides winner hand details 
+    e2e/domino.spec.mjs:2735:1 › expired seat reservation reconnect falls back to snapshot restore without retry spam 
+    e2e/domino.spec.mjs:2855:1 › game invite attaches the resolved room code instead of the room id 
+    e2e/domino.spec.mjs:2892:1 › daily bonus flow: visible only when authed, handles status loading and claim successfully 
+  29 passed (3.8m)

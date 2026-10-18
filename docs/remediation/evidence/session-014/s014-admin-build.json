@@ -1,0 +1,20 @@
+{
+  "label": "s014-admin-build",
+  "command": [
+    "npm",
+    "run",
+    "build",
+    "-w",
+    "@domino2/admin"
+  ],
+  "cwd": ".tmp/remediation-s014/clean",
+  "startedAt": "2026-10-18T23:14:46.441Z",
+  "finishedAt": "2026-10-18T23:15:01.902Z",
+  "durationMs": 15461,
+  "exitCode": 0,
+  "signal": null,
+  "timedOut": false,
+  "error": null,
+  "log": "docs/remediation/evidence/session-014/s014-admin-build.log",
+  "environment": "Fresh allowlist, synthetic local API/DB, optional Redis disabled, no inherited secrets or copied .env"
+}

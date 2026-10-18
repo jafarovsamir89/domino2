@@ -1,0 +1,36 @@
+{
+  "checks": [
+    {
+      "label": "stop-audit-only",
+      "ok": true,
+      "output": ""
+    },
+    {
+      "label": "forward-9224",
+      "ok": true,
+      "alreadyAbsent": true
+    },
+    {
+      "label": "forward-9225",
+      "ok": true,
+      "alreadyAbsent": true
+    },
+    {
+      "label": "remove-owned-forward-9226",
+      "ok": true,
+      "output": ""
+    },
+    {
+      "label": "remove-owned-reverse4175",
+      "ok": true,
+      "output": ""
+    },
+    {
+      "label": "stop-owned-local-PG55439",
+      "ok": true,
+      "output": "waiting for server to shut down.... done\nserver stopped"
+    }
+  ],
+  "playPackageChanged": false,
+  "productionChanged": false
+}

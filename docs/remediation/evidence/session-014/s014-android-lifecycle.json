@@ -1,0 +1,23 @@
+{
+  "label": "s014-android-lifecycle",
+  "command": [
+    "env",
+    "JAVA_HOME=/Users/macbookair/Documents/domino/.tmp/audit-jdk21/Contents/Home",
+    "ANDROID_HOME=/Users/macbookair/Library/Android/sdk",
+    "bash",
+    "./gradlew",
+    "-I",
+    "../docs/audit/android/init.gradle",
+    "assembleDebug"
+  ],
+  "cwd": ".tmp/remediation-s014/clean/android",
+  "startedAt": "2026-10-18T23:36:35.846Z",
+  "finishedAt": "2026-10-18T23:36:37.778Z",
+  "durationMs": 1932,
+  "exitCode": 0,
+  "signal": null,
+  "timedOut": false,
+  "error": null,
+  "log": "docs/remediation/evidence/session-014/s014-android-lifecycle.log",
+  "environment": "Fresh allowlist, synthetic local API/DB, optional Redis disabled, no inherited secrets or copied .env"
+}

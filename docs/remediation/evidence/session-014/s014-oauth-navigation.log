@@ -1,0 +1,12 @@
+✔ OAuth requests and native token adoption retain their contract (5.315833ms)
+✔ navigation preserves web return and native browser plugin paths (10.436208ms)
+✔ www/OAuth requests and native token adoption retain their contract (1.349583ms)
+✔ www/navigation preserves web return and native browser plugin paths (10.298042ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 119.430916

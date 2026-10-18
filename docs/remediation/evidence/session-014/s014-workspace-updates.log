@@ -1,0 +1,8 @@
+npm warn workspaces @domino2/admin in filter set, but no workspace folder present
+npm warn workspaces @domino2/api in filter set, but no workspace folder present
+npm warn workspaces @domino2/db in filter set, but no workspace folder present
+npm warn workspaces @domino2/shared in filter set, but no workspace folder present
+npm warn deprecated uuid@7.0.3: uuid@10 and below is no longer supported.  For ESM codebases, update to uuid@latest.  For CommonJS codebases, use uuid@11 (but be aware this version will likely be deprecated in 2028).
+npm warn deprecated glob@10.5.0: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+
+added 53 packages, removed 67 packages, and changed 174 packages in 2m

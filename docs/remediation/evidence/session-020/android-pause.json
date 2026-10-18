@@ -10,5 +10,7 @@
   "persistenceSettleMs": 1200,
   "forceStopRemaining": 5523,
   "afterStopRemaining": 5296,
-  "scope": "Real Android WebView+actual UI and timers; synthetic local UI API only; no production"
+  "scope": "Real Android WebView+actual UI and timers; synthetic local UI API only; no production",
+  "continuousPauseWindowMs": 60500,
+  "observedPauseMsIncludesResumeCyclesAndRestart": true
 }
