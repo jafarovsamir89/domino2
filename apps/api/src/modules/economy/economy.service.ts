@@ -1483,6 +1483,12 @@ export class EconomyService implements OnModuleInit {
     const claimDate = getBakuDateKey(now);
 
     return this.prisma.$transaction(async (tx) => {
+      // Serialize all daily claims for this player, before checking entitlement.
+      // A DB lock also covers different API instances and a missing wallet.
+      // Hash collisions only queue unrelated players; they cannot share rewards.
+      await tx.$queryRaw(Prisma.sql`
+        SELECT 1 AS locked FROM pg_advisory_xact_lock(1464091702, hashtext(${profile.player.id}))
+      `);
       const existing = await tx.coinDailyBonusClaim.findUnique({
         where: {
           playerId_claimDate: {
@@ -1508,6 +1514,7 @@ export class EconomyService implements OnModuleInit {
             "daily_bonus",
             claimDate,
             {
+              idempotencyKey: `daily_bonus:${profile.player.id}:${claimDate}:upgrade`,
               note: `Daily claim for ${claimDate} (rewarded x2 upgrade)`,
               payloadJson: {
                 claimMode,
@@ -1559,6 +1566,7 @@ export class EconomyService implements OnModuleInit {
         "daily_bonus",
         claimDate,
         {
+          idempotencyKey: `daily_bonus:${profile.player.id}:${claimDate}:initial`,
           note: `Daily claim for ${claimDate}${claimMode === "rewarded_x2" ? " (rewarded x2)" : ""}`,
           payloadJson: {
             claimMode,
@@ -1597,6 +1605,11 @@ export class EconomyService implements OnModuleInit {
         wallet,
         dailyBonus: statusAfter
       };
+    }, {
+      // Each read after waiting must see the preceding claim's committed state.
+      isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted,
+      maxWait: 30_000,
+      timeout: 30_000
     });
   }
 

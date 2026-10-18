@@ -1,0 +1,84 @@
+{"observation":"normal","requests":100,"rejected":0,"grants":1,"actualBalance":200,"expected":200}
+{"observation":"directx2","requests":100,"rejected":0,"grants":1,"actualBalance":400,"expected":400}
+{"observation":"upgrade","requests":100,"rejected":0,"grants":1,"actualBalance":400,"expected":400}
+{"observation":"mixed","requests":100,"rejected":0,"grants":1,"actualBalance":400,"expected":400}
+{
+  "database": "domino_remediation_s004_node22",
+  "scope": "Synthetic normal/x2 contract; ad verification R-09 remains open",
+  "rows": [
+    {
+      "name": "normal",
+      "ok": true,
+      "requests": 100,
+      "rejected": 0,
+      "grants": 1,
+      "actualBalance": 200,
+      "expected": 200,
+      "balance": 200,
+      "ledgerEntries": 1,
+      "claims": 1,
+      "sequentialRetries": 5
+    },
+    {
+      "name": "directx2",
+      "ok": true,
+      "requests": 100,
+      "rejected": 0,
+      "grants": 1,
+      "actualBalance": 400,
+      "expected": 400,
+      "balance": 400,
+      "ledgerEntries": 1,
+      "claims": 1,
+      "sequentialRetries": 5
+    },
+    {
+      "name": "upgrade",
+      "ok": true,
+      "requests": 100,
+      "rejected": 0,
+      "grants": 1,
+      "actualBalance": 400,
+      "expected": 400,
+      "balance": 400,
+      "ledgerEntries": 2,
+      "claims": 1,
+      "sequentialRetries": 5
+    },
+    {
+      "name": "mixed",
+      "ok": true,
+      "requests": 100,
+      "rejected": 0,
+      "grants": 1,
+      "actualBalance": 400,
+      "expected": 400,
+      "balance": 400,
+      "ledgerEntries": 1,
+      "claims": 1,
+      "sequentialRetries": 5
+    },
+    {
+      "name": "rollback-and-retry",
+      "ok": true,
+      "rolledBackInitialAndUpgrade": true,
+      "balance": 400,
+      "ledgerEntries": 2,
+      "claims": 1
+    },
+    {
+      "name": "legacy-claim-without-ledger-key",
+      "ok": true,
+      "balance": 400,
+      "upgradeEntries": 1
+    },
+    {
+      "name": "baku-midnight-and-streak-gap",
+      "ok": true,
+      "balance": 700,
+      "ledgerEntries": 3,
+      "claims": 3
+    }
+  ],
+  "failures": []
+}

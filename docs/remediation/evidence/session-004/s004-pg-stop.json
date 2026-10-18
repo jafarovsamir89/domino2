@@ -1,0 +1,22 @@
+{
+  "label": "s004-pg-stop",
+  "command": [
+    "/opt/homebrew/Cellar/postgresql@14/14.20/bin/pg_ctl",
+    "-D",
+    "../../remediation-s002/pg",
+    "-m",
+    "fast",
+    "-w",
+    "stop"
+  ],
+  "cwd": ".tmp/remediation-s004/clean",
+  "startedAt": "2026-10-18T22:03:34.975Z",
+  "finishedAt": "2026-10-18T22:03:35.086Z",
+  "durationMs": 111,
+  "exitCode": 0,
+  "signal": null,
+  "timedOut": false,
+  "error": null,
+  "log": "docs/remediation/evidence/session-004/s004-pg-stop.log",
+  "environment": "Fresh allowlist, synthetic local API/DB, optional Redis disabled, no inherited secrets or copied .env"
+}

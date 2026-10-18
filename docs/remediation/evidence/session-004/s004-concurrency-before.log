@@ -1,0 +1,90 @@
+{"observation":"normal","requests":100,"rejected":11,"grants":1,"actualBalance":200,"expected":200}
+{"observation":"directx2","requests":100,"rejected":11,"grants":1,"actualBalance":400,"expected":400}
+{"observation":"upgrade","requests":100,"rejected":0,"grants":12,"actualBalance":2600,"expected":400}
+{"observation":"mixed","requests":100,"rejected":11,"grants":10,"actualBalance":2000,"expected":400}
+{
+  "database": "domino_remediation_s004_before",
+  "scope": "Synthetic normal/x2 contract; ad verification R-09 remains open",
+  "rows": [
+    {
+      "name": "normal",
+      "ok": false,
+      "error": "Retries must not fail: P2002\n\n11 !== 0\n"
+    },
+    {
+      "name": "directx2",
+      "ok": false,
+      "error": "Retries must not fail: P2002\n\n11 !== 0\n"
+    },
+    {
+      "name": "upgrade",
+      "ok": false,
+      "error": "Expected values to be strictly equal:\n\n12 !== 1\n"
+    },
+    {
+      "name": "mixed",
+      "ok": false,
+      "error": "Retries must not fail: P2002\n\n11 !== 0\n"
+    },
+    {
+      "name": "rollback-and-retry",
+      "ok": false,
+      "error": "Every new daily grant has an idempotency key"
+    },
+    {
+      "name": "legacy-claim-without-ledger-key",
+      "ok": false,
+      "error": "The expression evaluated to a falsy value:\n\n  assert.ok(entries[0].idempotencyKey)\n"
+    },
+    {
+      "name": "baku-midnight-and-streak-gap",
+      "ok": false,
+      "error": "Every new daily grant has an idempotency key"
+    }
+  ],
+  "failures": [
+    "normal",
+    "directx2",
+    "upgrade",
+    "mixed",
+    "rollback-and-retry",
+    "legacy-claim-without-ledger-key",
+    "baku-midnight-and-streak-gap"
+  ]
+}
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
++ actual - expected
+
++ [
++   'normal',
++   'directx2',
++   'upgrade',
++   'mixed',
++   'rollback-and-retry',
++   'legacy-claim-without-ledger-key',
++   'baku-midnight-and-streak-gap'
++ ]
+- []
+
+    at file:///Users/macbookair/Documents/domino/docs/remediation/scripts/verify-daily-concurrency.mjs:122:10 {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: [
+    'normal',
+    'directx2',
+    'upgrade',
+    'mixed',
+    'rollback-and-retry',
+    'legacy-claim-without-ledger-key',
+    'baku-midnight-and-streak-gap'
+  ],
+  expected: [],
+  operator: 'deepStrictEqual',
+  diff: 'simple'
+}
+
+Node.js v25.6.0

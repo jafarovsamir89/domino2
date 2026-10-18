@@ -1,0 +1,55 @@
+{
+  "session": "S004",
+  "date": "2026-10-18",
+  "task": "R-02",
+  "branch": "fix/audit-foundation",
+  "parentCommit": "8c69090",
+  "status": "fixed-locally",
+  "changes": [
+    "Transaction-level daily lock per player precedes entitlement lookup, including fresh wallets",
+    "ReadCommitted explicitly refreshes state after waiting for another transaction",
+    "Existing unique ledger idempotencyKey stores player/date/initial-or-upgrade identifiers",
+    "Transaction maxWait and timeout are 30 seconds; no schema or reward amount changes"
+  ],
+  "checks": {
+    "cleanInstall": "s004-root-ci.json",
+    "unitBefore": {"command": "s004-api-before.json", "pass": 131, "fail": 1},
+    "unitAfterNode25": {"command": "s004-api-after.json", "pass": 132, "fail": 0},
+    "unitAfterNode22": {"command": "s004-api-node22.json", "pass": 132, "fail": 0},
+    "sourceCheck": "s004-source-check.json",
+    "postgresBefore": "s004-concurrency-before.json",
+    "postgresAfterNode25": "s004-concurrency-after.json",
+    "postgresAfterNode22": "s004-concurrency-node22.json",
+    "cleanup": "s004-pg-stop.json"
+  },
+  "reproduction": {
+    "requestsPerScenario": 100,
+    "normalRejected": 11,
+    "directX2Rejected": 11,
+    "upgradeGrants": 12,
+    "upgradeBalance": 2600,
+    "expectedUpgradeBalance": 400,
+    "mixedRejected": 11,
+    "mixedBalance": 2000
+  },
+  "after": {
+    "requestsPerScenario": 100,
+    "scenarios": ["normal", "directx2", "upgrade", "mixed"],
+    "rejected": 0,
+    "balances": [200, 400, 400, 400],
+    "serviceObjects": 4,
+    "postgresConnections": 12,
+    "newWalletsCovered": true,
+    "initialAndUpgradeRollbackCovered": true,
+    "legacyClaimWithoutKeyCovered": true,
+    "bakuMidnightAndStreakGapCovered": true,
+    "sequentialRetriesPerScenario": 5,
+    "walletLedgerClaimsReconciled": true
+  },
+  "limits": [
+    "R-09 ad entitlement verification is not fixed; test preserves current normal/x2 contract",
+    "All scenarios run on isolated PostgreSQL14.20, no real players or deployment",
+    "When eventually deploying, replace all legacy API instances; old code does not participate in the new daily lock",
+    "R-25 server/E2E failures and R-41 schema drift remain open"
+  ]
+}

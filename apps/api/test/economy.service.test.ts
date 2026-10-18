@@ -511,6 +511,7 @@ class MockDb {
   $queryRaw = async (query: any) => {
     this.queryRawCalls.push(query);
     const text = String(query?.strings?.join?.("") || "");
+    if (text.includes("pg_advisory_xact_lock")) return [{ locked: 1 }];
     if (text.includes('FROM "CoinMatchStake"')) {
       const stakeId = query.values[0];
       const row = this.matchStakes.find(entry => entry.id === stakeId && entry.status === "reserved");
@@ -820,6 +821,26 @@ test("Daily Bonus - Normal claim followed by rewarded x2 upgrade credits wallet 
   assert.equal(res2.wallet.balance, 400); // total balance updated to 400
   assert.equal(res2.claim.amount, 400); // the claim row updated to 400
   assert.equal(res2.dailyBonus.doubleClaimAvailable, false); // no longer available
+});
+
+test("Daily Bonus - ledger keys distinguish initial grant, upgrade, player and date across retries", async () => {
+  const mockDb = new MockDb() as any;
+  let playerId = "player_1";
+  const service = new EconomyService(mockDb, { getCurrentProfile: async () => ({ player: { id: playerId } }) } as any);
+  const day = new Date("2024-03-01T18:30:00.000Z");
+  await service.claimDailyBonus({}, { claimMode: "normal" }, day);
+  await service.claimDailyBonus({}, { claimMode: "rewarded_x2" }, day);
+  await service.claimDailyBonus({}, { claimMode: "rewarded_x2" }, day);
+  await service.claimDailyBonus({}, { claimMode: "normal" }, new Date("2024-03-02T18:30:00.000Z"));
+  playerId = "player_2";
+  await service.claimDailyBonus({}, { claimMode: "rewarded_x2" }, day);
+
+  assert.equal(mockDb.ledger.length, 4);
+  const keys = mockDb.ledger.map((entry: any) => entry.idempotencyKey);
+  assert.ok(keys.every((key: unknown) => typeof key === "string" && key.length > 0));
+  assert.equal(new Set(keys).size, 4);
+  assert.equal(mockDb.wallets.player_1.balance, 700);
+  assert.equal(mockDb.wallets.player_2.balance, 400);
 });
 
 test("reconcileStaleReservedStakes refunds only stale rows and keeps fresh reservations untouched", async () => {

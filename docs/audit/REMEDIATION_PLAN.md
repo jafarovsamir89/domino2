@@ -78,7 +78,7 @@ R-25 относится к этапу 0, но окончательно закр�
 
 #### R-02 · P0 · Однократное daily начисление/upgrade
 
-Статус: **открыто**. Основание: воспроизведено; [доказательства](08_ECONOMY_BALANCE.md).
+Статус: **исправлено локально, S004**. В `fix/audit-foundation` DB transaction lock по player предшествует проверке daily; initial/upgrade имеют unique ledger keys, используются existing constraints без migration. До правки100parallel upgrade давали2600вместо400; после четыре100-request сценария дают200/400/400/400 без ошибок на Node25/22. Rollback/retry, legacy claim и даты проверены, API132/132. [Текущие проверки](../remediation/evidence/session-004/summary.json). R-09ad verification остаётся отдельно, production не обновлялся. Основание: воспроизведено; [исторические доказательства](08_ECONOMY_BALANCE.md).
 
 - **Изменение:** Объединить проверку права на daily/upgrade и начисление в одну атомарную операцию. Добавить уникальный ключ начисления и безопасный повтор; не менять размер daily в этом исправлении.
 - **Где:** `apps/api/src/modules/economy/economy.service.ts:1490–1506`.

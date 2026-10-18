@@ -81,3 +81,23 @@
 - Полные команды и логи — `evidence/session-003/summary.json`. Только synthetic player/email @example.invalid, никаких real profiles/production endpoints. Собственный PG .tmp/remediation-s002/pg штатно остановлен (`s003-pg-stop`); временные DB остаются для повторного анализа, .env не копировались.
 - Для владельца: ежедневный бонус теперь работает и на новой базе без ручного добавления служебной записи; суммы выплат остались прежними. На действующий сервер изменения не устанавливались.
 - Итог3/42локально закрыты (R-06,R-05,R-07), R-25partial,38open. Следующий пакет S004/R-02: сначала failing100parallel/retry для ежедневного начисления и upgrade, затем атомарная проверка+изменение claim+wallet; не смешивать с решением о рекламном x2 (R-09) или изменением суммы наград. Проверки R-25/E2E и schema drift R-41 остаются открыты.
+
+## Правило размера пакетов — 18.10.2026
+
+Пользователь просит небольшие пункты выполнять подряд без остановки, до существенного большого пункта. Сохранять автономное продолжение и отдельные простые объяснения по завершённым пунктам.
+
+## S004 — R-02, атомарное ежедневное начисление
+
+Начало: clean fix/audit-foundation, HEAD8c69090, предыдущие3/42 закрыты локально. Подготовлена .tmp/remediation-s004/clean без .env. Production не используется. Цель:100одновременных normal/direct-x2/upgrade/mixed запросов не начисляют больше установленной награды и возвращают безопасный повтор. R-09подтверждение рекламы остаётся отдельным пунктом; существующие размеры и доступность x2 здесь не меняются.
+
+Причина: проверка существующего claim выполняется до wallet lock. Поздняя блокировка защищает арифметику баланса, но не право начисления. План: транзакционная блокировка daily по player (включая отсутствие кошелька и смену дня), затем проверка/claim/credit в одной транзакции; устойчивые unique ledger keys initial/upgrade используют существующий nullable unique idempotencyKey, без schema migration. Проверить legacy claims без ключа и rollback/retry. Нужна реальная локальная PostgreSQL, MockDb не моделирует конкуренцию.
+
+### S004.1 — результат
+
+- До: unit131/132, новый ledger-key regression fail. Real PG100parallel: normal11P2002, directx2также11P2002, upgrade12successfulgrants/balance2600вместо400, mixed11errors/balance2000. Это новые локальные synthetic DB, не реальные игроки.
+- После: unit132/132 Node25.6/22.14, source check passed. Real PG14.20 на обеих Node версиях:4сценария по100запросов через4service objects/12DBconnections,0rejected, balance200/400/400/400. Отсутствующий wallet создаётся безопасно; повторные sequential retries, rollback initial+upgrade и успешный retry, legacy daily claim без ledger-key, полночь Баку и пропуск streak проверены. Wallet/claim/ledger amounts сверены, новые keys заполнены и уникальны. Evidence:session-004/summary.json и исходные logs.
+- Изменение ограничено claimDailyBonus: pg_advisory_xact_lock(1464091702,hashtext(playerId)) до lookup, ReadCommitted после ожидания, maxWait/timeout30s; idempotency keys daily_bonus:player:date:initial|upgrade. Hash collision лишь сериализует разных игроков; не объединяет их claim/keys. Existing unique CoinLedgerEntry.idempotencyKey уже в миграциях; migration не нужна. Множители/размеры наград и ad eligibility не менялись.
+- Официальная документация через существующий Context7: https://www.postgresql.org/docs/15/explicit-locking.html (transaction-level locks released on commit/rollback), https://www.postgresql.org/docs/15/transaction-iso.html (ReadCommitted command snapshots). ЛокальныйPG14подтвердил используемые SQL; plugins не устанавливались.
+- Для владельца: повторные/одновременные нажатия больше не увеличивают бонус сверх нормы и не ломают получение; нормальная выдача и суммы сохранены. Рекламное право R-09 остаётся открытым.
+- Production не обновлялся; при будущем внедрении все старые API instances должны быть заменены, иначе старый код не участвует в новой блокировке. Это примечание к будущему rollout, не поручение выполнить deploy. СобственныйPG остановлен s004-pg-stop.
+- Итог4/42локально закрыты, R-25partial,37open. Продолжаем без остановки небольшой S005/R-08: неверное isInstantWinEnabled передаётся вместо instantWinEnabled в2server и4client calls. Затем крупный R-03 требует отдельной реальной проверки reserve/settle/refund.
