@@ -1,10 +1,10 @@
 # Agent journal — текущее состояние
 
-Обновлено18.10.2026. Пакет из трёх завершён: S006/R-03, S007/R-31, S008/R-32 закрыты локально.
+Обновлено18.10.2026. Текущий пакет из5: S009/R01 закрыт локально; далее S010/R04, S011/R09, S012/R12, S013/R42.
 
 ## Миссия и ограничения
 
-Исправлять42пункта docs/audit/REMEDIATION_PLAN.md, вести этот краткий журнал и append-only WORK_LOG.md. Игра развёрнута, около50пользователей. Локальные исправления разрешены; production deploy/migrations/real wallet edits/Play требуют прямого поручения. Никаких real.env/tokens в копиях/evidence. Новые Codex plugins согласовать, сейчас не нужны. Последнее правило пользователя: выполнять по3пункта за заход и после каждого отдельно объяснять простыми словами исправление/пользу.
+Исправлять42пункта docs/audit/REMEDIATION_PLAN.md, вести этот краткий журнал и append-only WORK_LOG.md. Игра развёрнута, около50пользователей. Локальные исправления разрешены; production deploy/migrations/real wallet edits/Play требуют прямого поручения. Никаких real.env/tokens в копиях/evidence. Новые Codex plugins согласовать, сейчас не нужны. Последнее правило пользователя: выполнять по5пунктов за заход и после каждого отдельно объяснять простыми словами исправление/пользу.
 
 ## Git и готовность
 
@@ -29,8 +29,14 @@ R-31 закрыт локально S007. Checkpoint subject: fix(rules): apply b
 
 R-32 закрыт S008. startDeal вызывает existing drawToOpen до gameActive/schema/timer. Seed225:2draws,hands8/8,player1,tile3-3/index7,bazaar12.28unique tiles/schema/full_state/stage/snapshotrestore проверены, lastwinner/normal2/3/4team openings не меняются. Initial before4/5, after5/5; добавлены полные free matches2FFAseed225(267actions9deals,scores140/32) и4teamseed17(228actions9deals,105/85),1final/record. Final7/7, Node22+fish/rulesets17/17. Fullserver279/286, те же7старыхfail,40discovered files; sourcecheckpass. evidence/session-008/summary.json. Browser/installedAndroid animations не проверялись, local payload contract проверен.
 
-Следующий пакет из3 предварительно R-01 (restore ownership), R-04 (shutdown snapshots), R-09 (server right for rewarded x2). Сначала прочитать соответствующие карточки; начатьR-01 с failing local identity regression. Это подготовленная очередь, код ещё не менялся. R-09dependsR02 выполнено, external SSV отложены — unverified path должен быть закрыт по карточке, не включать ad integration автоматически. R-27dependency upgrade остаётся P0 и требует отдельного совместимого triage. Не возобновлять полный аудит и не считать внешний доступ необходимым для локальных исправлений.
+Следующий пакет из5: R12/R42 плюс R-01 (restore ownership), R-04 (shutdown snapshots), R-09 (server right for rewarded x2). Сначала прочитать соответствующие карточки; начатьR-01 с failing local identity regression. Это подготовленная очередь, код ещё не менялся. R-09dependsR02 выполнено, external SSV отложены — unverified path должен быть закрыт по карточке, не включать ad integration автоматически. R-27dependency upgrade остаётся P0 и требует отдельного совместимого triage. Не возобновлять полный аудит и не считать внешний доступ необходимым для локальных исправлений.
 
 ## Как продолжать
 
-AGENTS.md → этот журнал → WORK_LOG.md → карточки. prepare-checkout копирует tracked/staged source без.env/deps/evidence; untracked tests явно копировать/stage. run-check sNNN-* требует matching .tmp/remediation-sNNN/NAME и сохраняет synthetic env/commands/logs. После изменения audit docs запускать validate-audit, обновить SHA256 manifest, verify-manifest. После каждого закрытого пункта журналы+focused commit+pushfeaturebranch; следующий заход выполнять по3пункта с понятным объяснением каждого.
+AGENTS.md → этот журнал → WORK_LOG.md → карточки. prepare-checkout копирует tracked/staged source без.env/deps/evidence; untracked tests явно копировать/stage. run-check sNNN-* требует matching .tmp/remediation-sNNN/NAME и сохраняет synthetic env/commands/logs. После изменения audit docs запускать validate-audit, обновить SHA256 manifest, verify-manifest. После каждого закрытого пункта журналы+focused commit+pushfeaturebranch; следующий заход выполнять по5пунктов с понятным объяснением каждого.
+
+## Текущий пакет S009–S013
+
+Последнее правило пользователя —5пунктов за заход. S009/R01 готов: findReusableSessionId проверяет platform/userId/playerId и room/code/match context до mutation; explicit occupied seat conflict409. Клиент+www сохраняют/передают matchId, full_state/room_state его включают. Before9tests2pass7fail, после targeted24/24 Node25/22; fullserver288/295, те же7old failures. Два outdated assertions исправлены по новому контракту (old test разрешал чужое место). Evidence session-009/summary.json. Локально9/42, R25partial,32open.
+
+S010/R04 начат: .tmp/remediation-s010/clean с server npmci; временно собран официальный Redis7.4.11 в .tmp/remediation-s010/redis-src, SHA проверен по redis/redis-hashes. Не plugin/global install. Redis ещё не запущен. Дефект: onBeforeShutdown сохраняет, disconnect→onDispose сразу удаляет snapshot+registry; onLeave может мутировать/forfeit приshutdown. Следующее: red subprocess SIGTERM с real localRedis127.0.0.1:56379, затем lifecycle guards/preserve snapshot/version/context; проверить samehand/turn/match,0shutdownsettlement/1final. Clean S010 создан до finalS009fixtures: синхронизировать source перед тестами.

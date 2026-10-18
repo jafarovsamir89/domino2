@@ -86,6 +86,7 @@ test("buildRoomStatePlayers falls back when identity name is undefined-like", ()
 test("buildRoomStatePayload preserves room_state fields and currentPlayers logic", () => {
     const room = {
         roomId: "room-1",
+        matchRecordId: "match-live",
         roomCode: "ABCD",
         roomVisibility: "open",
         gameMode: "classic101",
@@ -117,6 +118,7 @@ test("buildRoomStatePayload preserves room_state fields and currentPlayers logic
     const payload = buildRoomStatePayload({ room, players });
     assert.deepEqual(payload, {
         roomId: "room-1",
+        matchId: "match-live",
         roomCode: "ABCD",
         roomVisibility: "open",
         matchState: { mode: "classic101", carryPoints: 12, sides: [] },

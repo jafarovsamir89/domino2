@@ -13485,6 +13485,7 @@ class DominoGame {
             sessionId: isOnline ? (this.network.room?.sessionId || '') : (this.currentMatchSessionId || ''),
             roomId: isOnline ? (this.network.room?.roomId || this.network.room?.id || '') : null,
             roomCode: isOnline ? (this.currentRoomState?.roomCode || document.getElementById('room-code-display')?.textContent?.trim() || null) : null,
+            matchId: isOnline ? String(this.currentRoomState?.matchId || '') : null,
             reconnectionToken: isOnline ? (this.network.room?.reconnectionToken || this.network.getStoredReconnectionToken?.() || '') : '',
             playerName: this.playerName || '',
             playerCount: this.playerCount,
@@ -18869,6 +18870,7 @@ class DominoGame {
     }
 
     onNetworkFullState(payload = {}) {
+        if (payload.matchId) this.currentRoomState = { ...(this.currentRoomState || {}), matchId: payload.matchId };
         const playerOrder = Array.from(payload?.playerOrder || []);
         const getPlayer = this.applyPlayerRows(playerOrder, payload?.players || []);
         this.turnTimeoutMs = Number(payload?.turnDurationMs || this.turnTimeoutMs || TURN_TIMEOUT_MS);

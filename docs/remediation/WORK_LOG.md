@@ -157,3 +157,13 @@ startDeal теперь выполняет существующий ruleset.drawT
 Initialbefore4/5, after5/5. Дополнительно проверены полные free101матчи:2FFAseed225267actions/9deals/scores140,32;4teamseed17228actions/9deals/scores105,85. Реальные startDeal/play/draw/pass/advance/endDeal/endRound, seeded deck/virtualtimers/firstlegalmove;1final/record и0monetarycalls. Final7/7, Node22fish+opening+rulesets17/17. Fullserver279/286,40files, те же7S001fail names (failure-delta.json),0newfailures. Sourcecheckpass. Более ранние s008-server-full/101-node22 — suite до добавления2wholematches, финальные s008-server-final/101-node22-final. Не считать fullCIзелёным.
 
 Для владельца: раздача без дублей на руках больше не зависает — сервер добирает кости и назначает корректный первый ход; руки/базар/сохранение не расходятся. ПакетR03/R31/R32 локально завершён,8/42, R25partial. Живой сервер, реальные кошельки и Play не менялись; PGостановлен послеS006, новых pluginsнет. Следующая очередь из3: R01/R04/R09, сначала ownership regression по карточке.
+
+## Пакет из пяти — S009–S013
+
+Последнее поручение пользователя: выполнять сразу5пунктов. Выбраны R-01,R-04,R-09,R-12,R-42, зависимости закрыты/внутри пакета. Начало: clean fix/audit-foundation HEAD3fa26e0,8/42локально закрыты, R25partial. Все исправления/тесты локальные, никаких production/Play/realwallet edits; pluginsне нужны. Для каждого пункта red regression→fix→checks→focused commit; сохранить простое объяснение пользы и текущую точку агента.
+
+### S009/R-01 — завершено локально
+
+До9regressions2pass/7fail: чужая identity могла восстановить место. Теперь проверяется platform identity+user/player ownership до mutation/hand; supplied room/code/match сверяется, occupied target запрещён. Клиент+www сохраняют matchId, оба payload его передают. Legacy snapshots без matchId допускают только владельца. Targeted24/24 Node25/22; sourcecheckpass; full295tests288pass7fail — те же исходные7. Два старых assertions обновлены: wrongowner больше не allowed, payload теперь содержит matchId. Промежуточный misplaced fixture исправлен, не засчитан успешным прогоном. Evidence session-009/summary.json.
+
+Для владельца: сохранённое место и костяшки получает только их владелец; свой возврат сохраняет игру. Локально9/42, R25partial. Продолжаем R04; production/Play не менялись.

@@ -646,6 +646,7 @@ var NetworkManager = globalThis.NetworkManager || class NetworkManager {
             restoreRoomCode: roomCode,
             restoreRoomId: String(snapshot.roomId || '').trim(),
             restoreSessionId,
+            restoreMatchId: String(snapshot.matchId || '').trim(),
             restoreReconnectionToken: reconnectionToken,
             gameMode: String(snapshot?.gameMode || snapshot?.mode || this.game?.currentRoomState?.gameMode || this.game?.currentRoomState?.mode || this.game?.mode || this.game?.getSelectedGameMode?.() || 'telefon').trim() || 'telefon'
         });

@@ -1,0 +1,370 @@
+TAP version 13
+# ℹ️  optional .env file not found: .env.test, .env
+# [ROOM] Redis restore error SyntaxError: Expected property name or '}' in JSON at position 1 (line 1 column 2)
+#     at JSON.parse (<anonymous>)
+#     at loadCustomStateSnapshotForRestore (/Users/macbookair/Documents/domino/.tmp/remediation-s009/clean/server/roomRestoreLookup.js:18:33)
+# [ROOM] Redis restore error Error: redis unavailable
+#     at Object.connect (/Users/macbookair/Documents/domino/.tmp/remediation-s009/clean/server/test/restore-lookup.test.js:117:19)
+#     at FakeRedis.connect (/Users/macbookair/Documents/domino/.tmp/remediation-s009/clean/server/test/restore-lookup.test.js:22:43)
+#     at loadCustomStateSnapshotForRestore (/Users/macbookair/Documents/domino/.tmp/remediation-s009/clean/server/roomRestoreLookup.js:13:25)
+#     at DominoRoom.loadCustomStateForRestore (/Users/macbookair/Documents/domino/.tmp/remediation-s009/clean/server/DominoRoom.js:4093:16)
+#     at /Users/macbookair/Documents/domino/.tmp/remediation-s009/clean/server/test/restore-lookup.test.js:122:37
+#     at withDominoRoomStub (/Users/macbookair/Documents/domino/.tmp/remediation-s009/clean/server/test/restore-lookup.test.js:44:22)
+#     at TestContext.<anonymous> (/Users/macbookair/Documents/domino/.tmp/remediation-s009/clean/server/test/restore-lookup.test.js:114:11)
+#     at async Test.run (node:internal/test_runner/test:980:9)
+#     at async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+# Subtest: loadCustomStateForRestore returns the room-id snapshot when Redis has the room key
+ok 1 - loadCustomStateForRestore returns the room-id snapshot when Redis has the room key
+  ---
+  duration_ms: 216.077458
+  ...
+# Subtest: loadCustomStateForRestore returns the room-code snapshot when Redis has the code key
+ok 2 - loadCustomStateForRestore returns the room-code snapshot when Redis has the code key
+  ---
+  duration_ms: 0.523458
+  ...
+# Subtest: loadCustomStateForRestore skips snapshots whose roomCode does not match the requested code
+ok 3 - loadCustomStateForRestore skips snapshots whose roomCode does not match the requested code
+  ---
+  duration_ms: 0.439333
+  ...
+# Subtest: loadCustomStateForRestore returns null for invalid JSON and Redis errors
+ok 4 - loadCustomStateForRestore returns null for invalid JSON and Redis errors
+  ---
+  duration_ms: 2.801166
+  ...
+# Subtest: loadCustomStateForRestore returns null when no restore keys are provided
+ok 5 - loadCustomStateForRestore returns null when no restore keys are provided
+  ---
+  duration_ms: 1.3745
+  ...
+# Subtest: findReusableSessionId only falls back to userId during an explicit restore request
+ok 6 - findReusableSessionId only falls back to userId during an explicit restore request
+  ---
+  duration_ms: 1.169084
+  ...
+# ℹ️  optional .env file not found: .env.test, .env
+# [ROOM_DEBUG] create {
+#   roomId: 'regression-101-1',
+#   roomCode: 'G2BF',
+#   roomVisibility: 'closed',
+#   stakeKey: 'free',
+#   totalPlayers: 2,
+#   aiCount: 0,
+#   humanSeats: 2,
+#   maxClients: 2,
+#   roomMode: 'ffa',
+#   isTeamMode: false
+# }
+# [ROOM] Created room regression-101-1 (code G2BF), humanSeats=2, totalPlayers=2, aiCount=0, teamMode=false
+# [ROOM] Client new joining with name: undefined
+# [ROOM_DEBUG] join:start {
+#   roomId: 'regression-101-1',
+#   roomCode: 'G2BF',
+#   sessionId: 'new',
+#   clientsLength: 0,
+#   playerOrder: [ 's0', 's1' ],
+#   totalPlayers: 2,
+#   aiCount: 0,
+#   humanSeats: 2,
+#   maxClients: 2
+# }
+# [ROOM_DEBUG] create {
+#   roomId: 'regression-101-2',
+#   roomCode: 'VKS9',
+#   roomVisibility: 'closed',
+#   stakeKey: 'free',
+#   totalPlayers: 2,
+#   aiCount: 0,
+#   humanSeats: 2,
+#   maxClients: 2,
+#   roomMode: 'ffa',
+#   isTeamMode: false
+# }
+# [ROOM] Created room regression-101-2 (code VKS9), humanSeats=2, totalPlayers=2, aiCount=0, teamMode=false
+# [ROOM] Client new joining with name: undefined
+# [ROOM_DEBUG] join:start {
+#   roomId: 'regression-101-2',
+#   roomCode: 'VKS9',
+#   sessionId: 'new',
+#   clientsLength: 0,
+#   playerOrder: [ 's0', 's1' ],
+#   totalPlayers: 2,
+#   aiCount: 0,
+#   humanSeats: 2,
+#   maxClients: 2
+# }
+# [ROOM_DEBUG] create {
+#   roomId: 'regression-101-3',
+#   roomCode: '4H2A',
+#   roomVisibility: 'closed',
+#   stakeKey: 'free',
+#   totalPlayers: 2,
+#   aiCount: 0,
+#   humanSeats: 2,
+#   maxClients: 2,
+#   roomMode: 'ffa',
+#   isTeamMode: false
+# }
+# [ROOM] Created room regression-101-3 (code 4H2A), humanSeats=2, totalPlayers=2, aiCount=0, teamMode=false
+# [ROOM] Client new joining with name: undefined
+# [ROOM_DEBUG] join:start {
+#   roomId: 'regression-101-3',
+#   roomCode: '4H2A',
+#   sessionId: 'new',
+#   clientsLength: 0,
+#   playerOrder: [ 's0', 's1' ],
+#   totalPlayers: 2,
+#   aiCount: 0,
+#   humanSeats: 2,
+#   maxClients: 2
+# }
+# [ROOM_DEBUG] create {
+#   roomId: 'regression-101-4',
+#   roomCode: 'VT2Q',
+#   roomVisibility: 'closed',
+#   stakeKey: 'free',
+#   totalPlayers: 2,
+#   aiCount: 0,
+#   humanSeats: 2,
+#   maxClients: 2,
+#   roomMode: 'ffa',
+#   isTeamMode: false
+# }
+# [ROOM] Created room regression-101-4 (code VT2Q), humanSeats=2, totalPlayers=2, aiCount=0, teamMode=false
+# [ROOM] Client new joining with name: undefined
+# [ROOM_DEBUG] join:start {
+#   roomId: 'regression-101-4',
+#   roomCode: 'VT2Q',
+#   sessionId: 'new',
+#   clientsLength: 0,
+#   playerOrder: [ 's0', 's1' ],
+#   totalPlayers: 2,
+#   aiCount: 0,
+#   humanSeats: 2,
+#   maxClients: 2
+# }
+# [ROOM_DEBUG] create {
+#   roomId: 'regression-101-5',
+#   roomCode: 'UT4J',
+#   roomVisibility: 'closed',
+#   stakeKey: 'free',
+#   totalPlayers: 2,
+#   aiCount: 0,
+#   humanSeats: 2,
+#   maxClients: 2,
+#   roomMode: 'ffa',
+#   isTeamMode: false
+# }
+# [ROOM] Created room regression-101-5 (code UT4J), humanSeats=2, totalPlayers=2, aiCount=0, teamMode=false
+# [ROOM_DEBUG] create {
+#   roomId: 'regression-101-6',
+#   roomCode: 'J85J',
+#   roomVisibility: 'closed',
+#   stakeKey: 'free',
+#   totalPlayers: 2,
+#   aiCount: 0,
+#   humanSeats: 2,
+#   maxClients: 2,
+#   roomMode: 'ffa',
+#   isTeamMode: false
+# }
+# [ROOM] Created room regression-101-6 (code J85J), humanSeats=2, totalPlayers=2, aiCount=0, teamMode=false
+# [ROOM_DEBUG] create {
+#   roomId: 'regression-101-7',
+#   roomCode: 'XDQV',
+#   roomVisibility: 'closed',
+#   stakeKey: 'free',
+#   totalPlayers: 2,
+#   aiCount: 0,
+#   humanSeats: 2,
+#   maxClients: 2,
+#   roomMode: 'ffa',
+#   isTeamMode: false
+# }
+# [ROOM] Created room regression-101-7 (code XDQV), humanSeats=2, totalPlayers=2, aiCount=0, teamMode=false
+# [ROOM_DEBUG] create {
+#   roomId: 'regression-101-8',
+#   roomCode: 'XW58',
+#   roomVisibility: 'closed',
+#   stakeKey: 'free',
+#   totalPlayers: 2,
+#   aiCount: 0,
+#   humanSeats: 2,
+#   maxClients: 2,
+#   roomMode: 'ffa',
+#   isTeamMode: false
+# }
+# [ROOM] Created room regression-101-8 (code XW58), humanSeats=2, totalPlayers=2, aiCount=0, teamMode=false
+# [ROOM] Client new joining with name: undefined
+# [ROOM_DEBUG] join:start {
+#   roomId: 'regression-101-8',
+#   roomCode: 'XW58',
+#   sessionId: 'new',
+#   clientsLength: 0,
+#   playerOrder: [ 's0', 's1' ],
+#   totalPlayers: 2,
+#   aiCount: 0,
+#   humanSeats: 2,
+#   maxClients: 2
+# }
+# [ROOM_DEBUG] join:identity {
+#   sessionId: 'new',
+#   hasUserId: true,
+#   hasPlayerId: true,
+#   hasAuthToken: false,
+#   provider: 'platform',
+#   displayName: 'Owner'
+# }
+# [ROOM] Current player count: 0 / 2
+# [ROOM_DEBUG] join:assigned {
+#   sessionId: 'new',
+#   seatIndex: 0,
+#   isHost: true,
+#   playerOrder: [ 'new', 's1' ],
+#   connectedHumans: 2,
+#   readyHumans: 2,
+#   seatedHumans: 2
+# }
+# [ROOM_DEBUG] create {
+#   roomId: 'regression-101-9',
+#   roomCode: 'DAZF',
+#   roomVisibility: 'closed',
+#   stakeKey: 'free',
+#   totalPlayers: 2,
+#   aiCount: 0,
+#   humanSeats: 2,
+#   maxClients: 2,
+#   roomMode: 'ffa',
+#   isTeamMode: false
+# }
+# [ROOM] Created room regression-101-9 (code DAZF), humanSeats=2, totalPlayers=2, aiCount=0, teamMode=false
+# [ROOM] Client new joining with name: undefined
+# [ROOM_DEBUG] join:start {
+#   roomId: 'regression-101-9',
+#   roomCode: 'DAZF',
+#   sessionId: 'new',
+#   clientsLength: 0,
+#   playerOrder: [ 's0', 's1' ],
+#   totalPlayers: 2,
+#   aiCount: 0,
+#   humanSeats: 2,
+#   maxClients: 2
+# }
+# [ROOM_DEBUG] join:identity {
+#   sessionId: 'new',
+#   hasUserId: true,
+#   hasPlayerId: true,
+#   hasAuthToken: false,
+#   provider: 'platform',
+#   displayName: 'Owner'
+# }
+# [ROOM] Current player count: 0 / 2
+# [ROOM_DEBUG] join:assigned {
+#   sessionId: 'new',
+#   seatIndex: 0,
+#   isHost: true,
+#   playerOrder: [ 'new', 's1' ],
+#   connectedHumans: 2,
+#   readyHumans: 2,
+#   seatedHumans: 2
+# }
+# Subtest: explicit restore rejects mismatching owner {"userId":"other"} before mutation or hand delivery
+ok 7 - explicit restore rejects mismatching owner {"userId":"other"} before mutation or hand delivery
+  ---
+  duration_ms: 4.850167
+  ...
+# Subtest: explicit restore rejects mismatching owner {"playerId":"other"} before mutation or hand delivery
+ok 8 - explicit restore rejects mismatching owner {"playerId":"other"} before mutation or hand delivery
+  ---
+  duration_ms: 2.441167
+  ...
+# Subtest: explicit restore rejects mismatching owner {"provider":"guest"} before mutation or hand delivery
+ok 9 - explicit restore rejects mismatching owner {"provider":"guest"} before mutation or hand delivery
+  ---
+  duration_ms: 3.598625
+  ...
+# Subtest: explicit restore rejects mismatching owner {"userId":""} before mutation or hand delivery
+ok 10 - explicit restore rejects mismatching owner {"userId":""} before mutation or hand delivery
+  ---
+  duration_ms: 0.872416
+  ...
+# Subtest: restore rejects stale context {"restoreRoomId":"other"}
+ok 11 - restore rejects stale context {"restoreRoomId":"other"}
+  ---
+  duration_ms: 0.841208
+  ...
+# Subtest: restore rejects stale context {"restoreRoomCode":"OTHER"}
+ok 12 - restore rejects stale context {"restoreRoomCode":"OTHER"}
+  ---
+  duration_ms: 0.50325
+  ...
+# Subtest: restore rejects stale context {"restoreMatchId":"old-match"}
+ok 13 - restore rejects stale context {"restoreMatchId":"old-match"}
+  ---
+  duration_ms: 0.374209
+  ...
+# Subtest: owner restore preserves hand and seat, snapshot=false
+ok 14 - owner restore preserves hand and seat, snapshot=false
+  ---
+  duration_ms: 1.504292
+  ...
+# Subtest: owner restore preserves hand and seat, snapshot=true
+ok 15 - owner restore preserves hand and seat, snapshot=true
+  ---
+  duration_ms: 2.291417
+  ...
+# Subtest: buildRestoredRoomMetadata falls back to room values when data fields are missing
+ok 16 - buildRestoredRoomMetadata falls back to room values when data fields are missing
+  ---
+  duration_ms: 2.571625
+  ...
+# Subtest: buildRestoredRoomMetadata normalizes visibility and economy reservation state
+ok 17 - buildRestoredRoomMetadata normalizes visibility and economy reservation state
+  ---
+  duration_ms: 0.225208
+  ...
+# Subtest: buildRestoredRoomMetadata keeps botIds and playerMissingSuits fallbacks without mutation
+ok 18 - buildRestoredRoomMetadata keeps botIds and playerMissingSuits fallbacks without mutation
+  ---
+  duration_ms: 0.802625
+  ...
+# Subtest: buildRoomStatePlayers builds rows in player order with current fallbacks
+ok 19 - buildRoomStatePlayers builds rows in player order with current fallbacks
+  ---
+  duration_ms: 3.110709
+  ...
+# Subtest: buildRoomStatePlayers keeps fallback values for missing players
+ok 20 - buildRoomStatePlayers keeps fallback values for missing players
+  ---
+  duration_ms: 0.300833
+  ...
+# Subtest: buildRoomStatePlayers falls back when identity name is undefined-like
+ok 21 - buildRoomStatePlayers falls back when identity name is undefined-like
+  ---
+  duration_ms: 0.129959
+  ...
+# Subtest: buildRoomStatePayload preserves room_state fields and currentPlayers logic
+ok 22 - buildRoomStatePayload preserves room_state fields and currentPlayers logic
+  ---
+  duration_ms: 2.190875
+  ...
+# Subtest: buildRoomStatePayload uses connected human count when the game is inactive
+ok 23 - buildRoomStatePayload uses connected human count when the game is inactive
+  ---
+  duration_ms: 3.298875
+  ...
+# Subtest: buildRoomStatePayload exposes timeout forfeit state
+ok 24 - buildRoomStatePayload exposes timeout forfeit state
+  ---
+  duration_ms: 0.285583
+  ...
+1..24
+# tests 24
+# suites 0
+# pass 24
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 377.425792

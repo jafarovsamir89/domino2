@@ -1,0 +1,17 @@
+{
+  "label": "s009-server-verified",
+  "command": [
+    "npm",
+    "test"
+  ],
+  "cwd": ".tmp/remediation-s009/clean/server",
+  "startedAt": "2026-10-18T22:36:47.432Z",
+  "finishedAt": "2026-10-18T22:36:51.565Z",
+  "durationMs": 4133,
+  "exitCode": 1,
+  "signal": null,
+  "timedOut": false,
+  "error": null,
+  "log": "docs/remediation/evidence/session-009/s009-server-verified.log",
+  "environment": "Fresh allowlist, synthetic local API/DB, optional Redis disabled, no inherited secrets or copied .env"
+}

@@ -135,6 +135,11 @@ test("loadCustomStateForRestore returns null when no restore keys are provided",
 test("findReusableSessionId only falls back to userId during an explicit restore request", async () => {
     await withDominoRoomStub({}, async (DominoRoom) => {
         const room = Object.create(DominoRoom.prototype);
+        room.roomCode = "ROOM-2";
+        room.identityBySessionId = new Map([
+            ["session-1", {userId: "u1", playerId: "p1"}],
+            ["session-2", {userId: "u2", playerId: "p2"}]
+        ]);
         room.state = {
             players: new Map([
                 ["session-1", { isBot: false, userId: "u1" }],
@@ -143,9 +148,10 @@ test("findReusableSessionId only falls back to userId during an explicit restore
             playerOrder: ["session-1", "session-2"]
         };
 
-        assert.equal(room.findReusableSessionId({ restoreSessionId: "session-2" }, { userId: "u1" }), "session-2");
+        assert.throws(() => room.findReusableSessionId({ restoreSessionId: "session-2" }, {provider: "platform", userId: "u1", playerId: "p1"}), /restore_identity_mismatch/);
+        assert.equal(room.findReusableSessionId({restoreSessionId: "session-2"}, {provider: "platform", userId: "u2", playerId: "p2"}), "session-2");
         assert.equal(room.findReusableSessionId({ restoreSessionId: "missing" }, { userId: "u2" }), "");
-        assert.equal(room.findReusableSessionId({ restoreRoomCode: "ROOM-2" }, { userId: "u2" }), "session-2");
+        assert.equal(room.findReusableSessionId({ restoreRoomCode: "ROOM-2" }, {provider: "platform", userId: "u2", playerId: "p2"}), "session-2");
         assert.equal(room.findReusableSessionId({ restoreSessionId: "missing" }, { userId: "" }), "");
     });
 });

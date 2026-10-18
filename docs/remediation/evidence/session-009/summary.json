@@ -1,0 +1,32 @@
+{
+  "session": "S009",
+  "task": "R-01",
+  "status": "fixed-locally",
+  "checks": {
+    "before": {
+      "tests": 9,
+      "pass": 2,
+      "fail": 7
+    },
+    "targetedNode25And22": {
+      "tests": 24,
+      "pass": 24,
+      "fail": 0
+    },
+    "fullServer": {
+      "tests": 295,
+      "pass": 288,
+      "fail": 7
+    },
+    "source": "s009-source-final.json"
+  },
+  "limits": [
+    "Same seven original server failures; R25 partial",
+    "Legacy missing match context requires verified owner",
+    "No production or Play deployment"
+  ],
+  "excludedAttempts": [
+    "s009-server-full: two outdated expected contracts, subsequently corrected",
+    "s009-restore-final: misplaced fixture metadata, subsequently corrected"
+  ]
+}

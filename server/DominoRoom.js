@@ -400,8 +400,27 @@ class DominoRoom extends Room {
     }
 
     findReusableSessionId(options = {}, identity = {}) {
+        const matchId = String(this.matchRecordId || this.currentDealMatchId || "").trim();
+        if ((options.restoreRoomId && String(options.restoreRoomId).trim() !== this.roomId)
+            || (options.restoreRoomCode && String(options.restoreRoomCode).trim().toUpperCase() !== this.roomCode)
+            || (options.restoreMatchId && String(options.restoreMatchId).trim() !== matchId)) {
+            throw new ServerError(403, "restore_context_mismatch");
+        }
+        const ownsSeat = (sessionId) => {
+            const player = this.state.players.get(sessionId);
+            const saved = this.identityBySessionId?.get(sessionId) || {};
+            const userId = String(identity.userId || "").trim();
+            const playerId = String(identity.playerId || "").trim();
+            if (identity.provider !== "platform" || !userId || !playerId || !player || player.isBot) return false;
+            if (String(player.userId || "").trim() !== userId) return false;
+            if (saved.userId && saved.userId !== userId) return false;
+            // Older snapshots used userId as a playerId fallback; the stable user
+            // still proves ownership. Compare real stored player IDs when present.
+            return !saved.playerId || saved.playerId === saved.userId || saved.playerId === playerId;
+        };
         const requestedSessionId = String(options.restoreSessionId || "").trim();
         if (requestedSessionId && this.state.players.has(requestedSessionId)) {
+            if (!ownsSeat(requestedSessionId)) throw new ServerError(403, "restore_identity_mismatch");
             return requestedSessionId;
         }
 
@@ -417,7 +436,7 @@ class DominoRoom extends Room {
 
         for (const sessionId of this.state.playerOrder) {
             const player = this.state.players.get(sessionId);
-            if (player && !player.isBot && String(player.userId || "").trim() === userId) {
+            if (ownsSeat(sessionId)) {
                 return sessionId;
             }
         }
@@ -1307,6 +1326,9 @@ class DominoRoom extends Room {
         let isFreshJoin = false;
 
         if (reusableSessionId) {
+            if (reusableSessionId !== client.sessionId && this.state.players.has(client.sessionId)) {
+                throw new ServerError(409, "restore_session_conflict");
+            }
             restoredJoin = reusableSessionId !== client.sessionId || this.restoredFromSnapshot;
             player = this.state.players.get(reusableSessionId);
             if (reusableSessionId !== client.sessionId) {
@@ -2709,6 +2731,7 @@ class DominoRoom extends Room {
             : { validMoves: [], goshaCombo: null };
         return {
             roomId: getSafeRoomId(this),
+            matchId: String(this.matchRecordId || this.currentDealMatchId || ""),
             roomCode: String(this.roomCode || ""),
             roomVisibility: this.roomVisibility,
             gameMode: this.gameMode,

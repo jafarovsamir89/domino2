@@ -1,0 +1,21 @@
+{
+  "label": "s009-restore-verified",
+  "command": [
+    "node",
+    "--test",
+    "test/restore-ownership.test.js",
+    "test/restore-lookup.test.js",
+    "test/room-state-payload.test.js",
+    "test/room-restore.test.js"
+  ],
+  "cwd": ".tmp/remediation-s009/clean/server",
+  "startedAt": "2026-10-18T22:36:41.457Z",
+  "finishedAt": "2026-10-18T22:36:41.817Z",
+  "durationMs": 360,
+  "exitCode": 0,
+  "signal": null,
+  "timedOut": false,
+  "error": null,
+  "log": "docs/remediation/evidence/session-009/s009-restore-verified.log",
+  "environment": "Fresh allowlist, synthetic local API/DB, optional Redis disabled, no inherited secrets or copied .env"
+}

@@ -1,0 +1,422 @@
+ℹ️  optional .env file not found: .env.test, .env
+[ROOM_DEBUG] create {
+  roomId: 'regression-101-1',
+  roomCode: 'UFA4',
+  roomVisibility: 'closed',
+  stakeKey: 'free',
+  totalPlayers: 2,
+  aiCount: 0,
+  humanSeats: 2,
+  maxClients: 2,
+  roomMode: 'ffa',
+  isTeamMode: false
+}
+[ROOM] Created room regression-101-1 (code UFA4), humanSeats=2, totalPlayers=2, aiCount=0, teamMode=false
+[ROOM] Client new joining with name: undefined
+[ROOM_DEBUG] join:start {
+  roomId: 'regression-101-1',
+  roomCode: 'UFA4',
+  sessionId: 'new',
+  clientsLength: 0,
+  playerOrder: [ 's0', 's1' ],
+  totalPlayers: 2,
+  aiCount: 0,
+  humanSeats: 2,
+  maxClients: 2
+}
+[ROOM_DEBUG] join:identity {
+  sessionId: 'new',
+  hasUserId: true,
+  hasPlayerId: true,
+  hasAuthToken: false,
+  provider: 'platform',
+  displayName: 'Owner'
+}
+[ROOM] Current player count: 0 / 2
+[ROOM_DEBUG] join:assigned {
+  sessionId: 'new',
+  seatIndex: 0,
+  isHost: true,
+  playerOrder: [ 'new', 's1' ],
+  connectedHumans: 2,
+  readyHumans: 2,
+  seatedHumans: 2
+}
+[ROOM_DEBUG] create {
+  roomId: 'regression-101-2',
+  roomCode: '5UY6',
+  roomVisibility: 'closed',
+  stakeKey: 'free',
+  totalPlayers: 2,
+  aiCount: 0,
+  humanSeats: 2,
+  maxClients: 2,
+  roomMode: 'ffa',
+  isTeamMode: false
+}
+[ROOM] Created room regression-101-2 (code 5UY6), humanSeats=2, totalPlayers=2, aiCount=0, teamMode=false
+[ROOM] Client new joining with name: undefined
+[ROOM_DEBUG] join:start {
+  roomId: 'regression-101-2',
+  roomCode: '5UY6',
+  sessionId: 'new',
+  clientsLength: 0,
+  playerOrder: [ 's0', 's1' ],
+  totalPlayers: 2,
+  aiCount: 0,
+  humanSeats: 2,
+  maxClients: 2
+}
+[ROOM_DEBUG] join:identity {
+  sessionId: 'new',
+  hasUserId: true,
+  hasPlayerId: true,
+  hasAuthToken: false,
+  provider: 'platform',
+  displayName: 'Owner'
+}
+[ROOM] Current player count: 0 / 2
+[ROOM_DEBUG] join:assigned {
+  sessionId: 'new',
+  seatIndex: 0,
+  isHost: true,
+  playerOrder: [ 'new', 's1' ],
+  connectedHumans: 2,
+  readyHumans: 2,
+  seatedHumans: 2
+}
+[ROOM_DEBUG] create {
+  roomId: 'regression-101-3',
+  roomCode: 'VF7U',
+  roomVisibility: 'closed',
+  stakeKey: 'free',
+  totalPlayers: 2,
+  aiCount: 0,
+  humanSeats: 2,
+  maxClients: 2,
+  roomMode: 'ffa',
+  isTeamMode: false
+}
+[ROOM] Created room regression-101-3 (code VF7U), humanSeats=2, totalPlayers=2, aiCount=0, teamMode=false
+[ROOM] Client new joining with name: undefined
+[ROOM_DEBUG] join:start {
+  roomId: 'regression-101-3',
+  roomCode: 'VF7U',
+  sessionId: 'new',
+  clientsLength: 0,
+  playerOrder: [ 's0', 's1' ],
+  totalPlayers: 2,
+  aiCount: 0,
+  humanSeats: 2,
+  maxClients: 2
+}
+[ROOM_DEBUG] join:identity {
+  sessionId: 'new',
+  hasUserId: true,
+  hasPlayerId: true,
+  hasAuthToken: false,
+  provider: 'guest',
+  displayName: 'Owner'
+}
+[ROOM] Current player count: 0 / 2
+[ROOM_DEBUG] join:assigned {
+  sessionId: 'new',
+  seatIndex: 0,
+  isHost: true,
+  playerOrder: [ 'new', 's1' ],
+  connectedHumans: 2,
+  readyHumans: 2,
+  seatedHumans: 2
+}
+[ROOM_DEBUG] create {
+  roomId: 'regression-101-4',
+  roomCode: 'HD76',
+  roomVisibility: 'closed',
+  stakeKey: 'free',
+  totalPlayers: 2,
+  aiCount: 0,
+  humanSeats: 2,
+  maxClients: 2,
+  roomMode: 'ffa',
+  isTeamMode: false
+}
+[ROOM] Created room regression-101-4 (code HD76), humanSeats=2, totalPlayers=2, aiCount=0, teamMode=false
+[ROOM] Client new joining with name: undefined
+[ROOM_DEBUG] join:start {
+  roomId: 'regression-101-4',
+  roomCode: 'HD76',
+  sessionId: 'new',
+  clientsLength: 0,
+  playerOrder: [ 's0', 's1' ],
+  totalPlayers: 2,
+  aiCount: 0,
+  humanSeats: 2,
+  maxClients: 2
+}
+[ROOM_DEBUG] join:identity {
+  sessionId: 'new',
+  hasUserId: true,
+  hasPlayerId: true,
+  hasAuthToken: false,
+  provider: 'platform',
+  displayName: 'Owner'
+}
+[ROOM] Current player count: 0 / 2
+[ROOM_DEBUG] join:assigned {
+  sessionId: 'new',
+  seatIndex: 0,
+  isHost: true,
+  playerOrder: [ 'new', 's1' ],
+  connectedHumans: 2,
+  readyHumans: 2,
+  seatedHumans: 2
+}
+[ROOM_DEBUG] create {
+  roomId: 'regression-101-5',
+  roomCode: 'TS24',
+  roomVisibility: 'closed',
+  stakeKey: 'free',
+  totalPlayers: 2,
+  aiCount: 0,
+  humanSeats: 2,
+  maxClients: 2,
+  roomMode: 'ffa',
+  isTeamMode: false
+}
+[ROOM] Created room regression-101-5 (code TS24), humanSeats=2, totalPlayers=2, aiCount=0, teamMode=false
+[ROOM_DEBUG] create {
+  roomId: 'regression-101-6',
+  roomCode: 'RKEX',
+  roomVisibility: 'closed',
+  stakeKey: 'free',
+  totalPlayers: 2,
+  aiCount: 0,
+  humanSeats: 2,
+  maxClients: 2,
+  roomMode: 'ffa',
+  isTeamMode: false
+}
+[ROOM] Created room regression-101-6 (code RKEX), humanSeats=2, totalPlayers=2, aiCount=0, teamMode=false
+[ROOM_DEBUG] create {
+  roomId: 'regression-101-7',
+  roomCode: 'CHXS',
+  roomVisibility: 'closed',
+  stakeKey: 'free',
+  totalPlayers: 2,
+  aiCount: 0,
+  humanSeats: 2,
+  maxClients: 2,
+  roomMode: 'ffa',
+  isTeamMode: false
+}
+[ROOM] Created room regression-101-7 (code CHXS), humanSeats=2, totalPlayers=2, aiCount=0, teamMode=false
+[ROOM_DEBUG] create {
+  roomId: 'regression-101-8',
+  roomCode: 'YVWW',
+  roomVisibility: 'closed',
+  stakeKey: 'free',
+  totalPlayers: 2,
+  aiCount: 0,
+  humanSeats: 2,
+  maxClients: 2,
+  roomMode: 'ffa',
+  isTeamMode: false
+}
+[ROOM] Created room regression-101-8 (code YVWW), humanSeats=2, totalPlayers=2, aiCount=0, teamMode=false
+[ROOM] Client new joining with name: undefined
+[ROOM_DEBUG] join:start {
+  roomId: 'regression-101-8',
+  roomCode: 'YVWW',
+  sessionId: 'new',
+  clientsLength: 0,
+  playerOrder: [ 's0', 's1' ],
+  totalPlayers: 2,
+  aiCount: 0,
+  humanSeats: 2,
+  maxClients: 2
+}
+[ROOM_DEBUG] join:identity {
+  sessionId: 'new',
+  hasUserId: true,
+  hasPlayerId: true,
+  hasAuthToken: false,
+  provider: 'platform',
+  displayName: 'Owner'
+}
+[ROOM] Current player count: 0 / 2
+[ROOM_DEBUG] join:assigned {
+  sessionId: 'new',
+  seatIndex: 0,
+  isHost: true,
+  playerOrder: [ 'new', 's1' ],
+  connectedHumans: 2,
+  readyHumans: 2,
+  seatedHumans: 2
+}
+[ROOM_DEBUG] create {
+  roomId: 'regression-101-9',
+  roomCode: 'CYU6',
+  roomVisibility: 'closed',
+  stakeKey: 'free',
+  totalPlayers: 2,
+  aiCount: 0,
+  humanSeats: 2,
+  maxClients: 2,
+  roomMode: 'ffa',
+  isTeamMode: false
+}
+[ROOM] Created room regression-101-9 (code CYU6), humanSeats=2, totalPlayers=2, aiCount=0, teamMode=false
+[ROOM] Client new joining with name: undefined
+[ROOM_DEBUG] join:start {
+  roomId: 'regression-101-9',
+  roomCode: 'CYU6',
+  sessionId: 'new',
+  clientsLength: 0,
+  playerOrder: [ 's0', 's1' ],
+  totalPlayers: 2,
+  aiCount: 0,
+  humanSeats: 2,
+  maxClients: 2
+}
+[ROOM_DEBUG] join:identity {
+  sessionId: 'new',
+  hasUserId: true,
+  hasPlayerId: true,
+  hasAuthToken: false,
+  provider: 'platform',
+  displayName: 'Owner'
+}
+[ROOM] Current player count: 0 / 2
+[ROOM_DEBUG] join:assigned {
+  sessionId: 'new',
+  seatIndex: 0,
+  isHost: true,
+  playerOrder: [ 'new', 's1' ],
+  connectedHumans: 2,
+  readyHumans: 2,
+  seatedHumans: 2
+}
+✖ explicit restore rejects mismatching owner {"userId":"other"} before mutation or hand delivery (5.899292ms)
+✖ explicit restore rejects mismatching owner {"playerId":"other"} before mutation or hand delivery (2.171292ms)
+✖ explicit restore rejects mismatching owner {"provider":"guest"} before mutation or hand delivery (0.575625ms)
+✖ explicit restore rejects mismatching owner {"userId":""} before mutation or hand delivery (0.464291ms)
+✖ restore rejects stale context {"restoreRoomId":"other"} (0.464792ms)
+✖ restore rejects stale context {"restoreRoomCode":"OTHER"} (0.340542ms)
+✖ restore rejects stale context {"restoreMatchId":"old-match"} (0.3165ms)
+✔ owner restore preserves hand and seat, snapshot=false (0.422625ms)
+✔ owner restore preserves hand and seat, snapshot=true (0.368041ms)
+ℹ tests 9
+ℹ suites 0
+ℹ pass 2
+ℹ fail 7
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 260.95375
+
+✖ failing tests:
+
+test at test/restore-ownership.test.js:28:5
+✖ explicit restore rejects mismatching owner {"userId":"other"} before mutation or hand delivery (5.899292ms)
+  AssertionError [ERR_ASSERTION]: Missing expected exception.
+      at TestContext.<anonymous> (/Users/macbookair/Documents/domino/.tmp/remediation-s009/clean/server/test/restore-ownership.test.js:31:16)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:358:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: /restore_identity_mismatch/,
+    operator: 'throws',
+    diff: 'simple'
+  }
+
+test at test/restore-ownership.test.js:28:5
+✖ explicit restore rejects mismatching owner {"playerId":"other"} before mutation or hand delivery (2.171292ms)
+  AssertionError [ERR_ASSERTION]: Missing expected exception.
+      at TestContext.<anonymous> (/Users/macbookair/Documents/domino/.tmp/remediation-s009/clean/server/test/restore-ownership.test.js:31:16)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: /restore_identity_mismatch/,
+    operator: 'throws',
+    diff: 'simple'
+  }
+
+test at test/restore-ownership.test.js:28:5
+✖ explicit restore rejects mismatching owner {"provider":"guest"} before mutation or hand delivery (0.575625ms)
+  AssertionError [ERR_ASSERTION]: Missing expected exception.
+      at TestContext.<anonymous> (/Users/macbookair/Documents/domino/.tmp/remediation-s009/clean/server/test/restore-ownership.test.js:31:16)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: /restore_identity_mismatch/,
+    operator: 'throws',
+    diff: 'simple'
+  }
+
+test at test/restore-ownership.test.js:28:5
+✖ explicit restore rejects mismatching owner {"userId":""} before mutation or hand delivery (0.464291ms)
+  AssertionError [ERR_ASSERTION]: Missing expected exception.
+      at TestContext.<anonymous> (/Users/macbookair/Documents/domino/.tmp/remediation-s009/clean/server/test/restore-ownership.test.js:31:16)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: /restore_identity_mismatch/,
+    operator: 'throws',
+    diff: 'simple'
+  }
+
+test at test/restore-ownership.test.js:38:5
+✖ restore rejects stale context {"restoreRoomId":"other"} (0.464792ms)
+  AssertionError [ERR_ASSERTION]: Missing expected exception.
+      at TestContext.<anonymous> (/Users/macbookair/Documents/domino/.tmp/remediation-s009/clean/server/test/restore-ownership.test.js:40:16)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: /restore_context_mismatch/,
+    operator: 'throws',
+    diff: 'simple'
+  }
+
+test at test/restore-ownership.test.js:38:5
+✖ restore rejects stale context {"restoreRoomCode":"OTHER"} (0.340542ms)
+  AssertionError [ERR_ASSERTION]: Missing expected exception.
+      at TestContext.<anonymous> (/Users/macbookair/Documents/domino/.tmp/remediation-s009/clean/server/test/restore-ownership.test.js:40:16)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: /restore_context_mismatch/,
+    operator: 'throws',
+    diff: 'simple'
+  }
+
+test at test/restore-ownership.test.js:38:5
+✖ restore rejects stale context {"restoreMatchId":"old-match"} (0.3165ms)
+  AssertionError [ERR_ASSERTION]: Missing expected exception.
+      at TestContext.<anonymous> (/Users/macbookair/Documents/domino/.tmp/remediation-s009/clean/server/test/restore-ownership.test.js:40:16)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: /restore_context_mismatch/,
+    operator: 'throws',
+    diff: 'simple'
+  }

@@ -95,6 +95,7 @@ function buildRoomStatePayload({ room, players } = {}) {
     });
     return {
         roomId: room.roomId,
+        matchId: String(room.matchRecordId || room.currentDealMatchId || ""),
         roomCode: room.roomCode,
         roomVisibility: room.roomVisibility,
         matchState: room.matchState || null,

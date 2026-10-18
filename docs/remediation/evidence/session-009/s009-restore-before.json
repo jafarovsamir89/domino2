@@ -1,0 +1,18 @@
+{
+  "label": "s009-restore-before",
+  "command": [
+    "node",
+    "--test",
+    "test/restore-ownership.test.js"
+  ],
+  "cwd": ".tmp/remediation-s009/clean/server",
+  "startedAt": "2026-10-18T22:29:23.592Z",
+  "finishedAt": "2026-10-18T22:29:23.924Z",
+  "durationMs": 332,
+  "exitCode": 1,
+  "signal": null,
+  "timedOut": false,
+  "error": null,
+  "log": "docs/remediation/evidence/session-009/s009-restore-before.log",
+  "environment": "Fresh allowlist, synthetic local API/DB, optional Redis disabled, no inherited secrets or copied .env"
+}

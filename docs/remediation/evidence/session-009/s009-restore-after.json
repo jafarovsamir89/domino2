@@ -1,0 +1,19 @@
+{
+  "label": "s009-restore-after",
+  "command": [
+    "node",
+    "--test",
+    "test/restore-ownership.test.js",
+    "test/room-restore.test.js"
+  ],
+  "cwd": ".tmp/remediation-s009/clean/server",
+  "startedAt": "2026-10-18T22:29:41.674Z",
+  "finishedAt": "2026-10-18T22:29:41.992Z",
+  "durationMs": 318,
+  "exitCode": 0,
+  "signal": null,
+  "timedOut": false,
+  "error": null,
+  "log": "docs/remediation/evidence/session-009/s009-restore-after.log",
+  "environment": "Fresh allowlist, synthetic local API/DB, optional Redis disabled, no inherited secrets or copied .env"
+}

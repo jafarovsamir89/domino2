@@ -1,0 +1,18 @@
+{
+  "label": "s009-source-check",
+  "command": [
+    "npm",
+    "run",
+    "check"
+  ],
+  "cwd": ".tmp/remediation-s009/clean",
+  "startedAt": "2026-10-18T22:35:34.948Z",
+  "finishedAt": "2026-10-18T22:35:36.696Z",
+  "durationMs": 1748,
+  "exitCode": 0,
+  "signal": null,
+  "timedOut": false,
+  "error": null,
+  "log": "docs/remediation/evidence/session-009/s009-source-check.log",
+  "environment": "Fresh allowlist, synthetic local API/DB, optional Redis disabled, no inherited secrets or copied .env"
+}
