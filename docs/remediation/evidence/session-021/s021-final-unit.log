@@ -1,0 +1,60 @@
+TAP version 13
+# Subtest: js/sounds.js: master mute prevents all procedural nodes including a delayed bounce
+ok 1 - js/sounds.js: master mute prevents all procedural nodes including a delayed bounce
+  ---
+  duration_ms: 3.40325
+  ...
+# Subtest: js/sounds.js: legacy mute preference also silences effects
+ok 2 - js/sounds.js: legacy mute preference also silences effects
+  ---
+  duration_ms: 0.44525
+  ...
+# Subtest: js/sounds.js: music/effects levels are independent and persist with the master state
+ok 3 - js/sounds.js: music/effects levels are independent and persist with the master state
+  ---
+  duration_ms: 1.410666
+  ...
+# Subtest: js/sounds.js: hidden page suspends playback and cannot create new effects
+ok 4 - js/sounds.js: hidden page suspends playback and cannot create new effects
+  ---
+  duration_ms: 0.442125
+  ...
+# Subtest: js/sounds.js: native lifecycle gates both engines without changing preferences
+ok 5 - js/sounds.js: native lifecycle gates both engines without changing preferences
+  ---
+  duration_ms: 3.745666
+  ...
+# Subtest: www/js/sounds.js: master mute prevents all procedural nodes including a delayed bounce
+ok 6 - www/js/sounds.js: master mute prevents all procedural nodes including a delayed bounce
+  ---
+  duration_ms: 0.600167
+  ...
+# Subtest: www/js/sounds.js: legacy mute preference also silences effects
+ok 7 - www/js/sounds.js: legacy mute preference also silences effects
+  ---
+  duration_ms: 0.501584
+  ...
+# Subtest: www/js/sounds.js: music/effects levels are independent and persist with the master state
+ok 8 - www/js/sounds.js: music/effects levels are independent and persist with the master state
+  ---
+  duration_ms: 1.165625
+  ...
+# Subtest: www/js/sounds.js: hidden page suspends playback and cannot create new effects
+ok 9 - www/js/sounds.js: hidden page suspends playback and cannot create new effects
+  ---
+  duration_ms: 0.756209
+  ...
+# Subtest: www/js/sounds.js: native lifecycle gates both engines without changing preferences
+ok 10 - www/js/sounds.js: native lifecycle gates both engines without changing preferences
+  ---
+  duration_ms: 7.62975
+  ...
+1..10
+# tests 10
+# suites 0
+# pass 10
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 86.815875

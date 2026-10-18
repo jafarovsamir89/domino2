@@ -6240,6 +6240,8 @@ body.is-solo-game .voice-roster-panel {
 }
 
 .menu-panel {
+    max-height: 88dvh;
+    overflow-y: auto;
     display: flex;
     flex-direction: column;
     min-height: 320px;
@@ -9010,3 +9012,8 @@ body.is-reconnecting .hand-container {
 
 
 
+
+.audio-controls { display: grid; gap: 6px; padding: 10px 4px; }
+.audio-controls label { display: flex; justify-content: space-between; gap: 12px; font-size: 0.9rem; }
+.audio-controls input[type="range"] { width: 100%; min-height: 32px; accent-color: #f0c040; }
+.audio-controls output { font-variant-numeric: tabular-nums; }

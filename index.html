@@ -692,6 +692,12 @@
             <button class="btn btn-menu" id="menu-newgame" data-i18n="menu-new">Yeni oyun</button>
             <button class="btn btn-menu" id="menu-next-track" data-i18n="menu-next-track">Növbəti musiqi</button>
             <button class="btn btn-menu" id="menu-toggle-mute" data-i18n="menu-toggle-mute">Səsi söndür</button>
+            <div class="audio-controls">
+                <label for="audio-music"><span data-i18n="audio-music">Musiqi</span><output id="audio-music-value" for="audio-music">15%</output></label>
+                <input id="audio-music" type="range" min="0" max="100" step="1" value="15">
+                <label for="audio-effects"><span data-i18n="audio-effects">Effektlər</span><output id="audio-effects-value" for="audio-effects">100%</output></label>
+                <input id="audio-effects" type="range" min="0" max="100" step="1" value="100">
+            </div>
             <button class="btn btn-menu" id="menu-quit" data-i18n="menu-quit">Çıxış</button>
             <div class="screen-copyright menu-copyright">Все права защищены © SimpleSoft - Domino ver 1.33</div>
         </div>

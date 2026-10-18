@@ -1,0 +1,17 @@
+{
+  "label": "s021-android-audio",
+  "command": [
+    "node",
+    "/Users/macbookair/Documents/domino/docs/remediation/scripts/device-audio.mjs"
+  ],
+  "cwd": ".tmp/remediation-s021/clean",
+  "startedAt": "2026-10-18T23:35:10.803Z",
+  "finishedAt": "2026-10-18T23:35:19.805Z",
+  "durationMs": 9002,
+  "exitCode": 1,
+  "signal": null,
+  "timedOut": false,
+  "error": null,
+  "log": "docs/remediation/evidence/session-021/s021-android-audio.log",
+  "environment": "Fresh allowlist, synthetic local API/DB, optional Redis disabled, no inherited secrets or copied .env"
+}

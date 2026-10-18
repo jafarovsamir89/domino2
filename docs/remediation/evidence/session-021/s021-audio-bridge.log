@@ -1,0 +1,18 @@
+✔ js/sounds.js: master mute prevents all procedural nodes including a delayed bounce (2.2085ms)
+✔ js/sounds.js: legacy mute preference also silences effects (0.634083ms)
+✔ js/sounds.js: music/effects levels are independent and persist with the master state (0.992834ms)
+✔ js/sounds.js: hidden page suspends playback and cannot create new effects (0.496334ms)
+✔ js/sounds.js: native background/focus loss gates both engines without changing preferences (3.306917ms)
+✔ www/js/sounds.js: master mute prevents all procedural nodes including a delayed bounce (0.644291ms)
+✔ www/js/sounds.js: legacy mute preference also silences effects (0.415042ms)
+✔ www/js/sounds.js: music/effects levels are independent and persist with the master state (0.800333ms)
+✔ www/js/sounds.js: hidden page suspends playback and cannot create new effects (0.394625ms)
+✔ www/js/sounds.js: native background/focus loss gates both engines without changing preferences (1.77475ms)
+ℹ tests 10
+ℹ suites 0
+ℹ pass 10
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 103.14625

@@ -1,0 +1,60 @@
+TAP version 13
+# Subtest: js/sounds.js: master mute prevents all procedural nodes including a delayed bounce
+ok 1 - js/sounds.js: master mute prevents all procedural nodes including a delayed bounce
+  ---
+  duration_ms: 2.715083
+  ...
+# Subtest: js/sounds.js: legacy mute preference also silences effects
+ok 2 - js/sounds.js: legacy mute preference also silences effects
+  ---
+  duration_ms: 0.46275
+  ...
+# Subtest: js/sounds.js: music/effects levels are independent and persist with the master state
+ok 3 - js/sounds.js: music/effects levels are independent and persist with the master state
+  ---
+  duration_ms: 1.193667
+  ...
+# Subtest: js/sounds.js: hidden page suspends playback and cannot create new effects
+ok 4 - js/sounds.js: hidden page suspends playback and cannot create new effects
+  ---
+  duration_ms: 0.473125
+  ...
+# Subtest: js/sounds.js: native background/focus loss gates both engines without changing preferences
+ok 5 - js/sounds.js: native background/focus loss gates both engines without changing preferences
+  ---
+  duration_ms: 3.20725
+  ...
+# Subtest: www/js/sounds.js: master mute prevents all procedural nodes including a delayed bounce
+ok 6 - www/js/sounds.js: master mute prevents all procedural nodes including a delayed bounce
+  ---
+  duration_ms: 0.871
+  ...
+# Subtest: www/js/sounds.js: legacy mute preference also silences effects
+ok 7 - www/js/sounds.js: legacy mute preference also silences effects
+  ---
+  duration_ms: 0.461709
+  ...
+# Subtest: www/js/sounds.js: music/effects levels are independent and persist with the master state
+ok 8 - www/js/sounds.js: music/effects levels are independent and persist with the master state
+  ---
+  duration_ms: 0.760417
+  ...
+# Subtest: www/js/sounds.js: hidden page suspends playback and cannot create new effects
+ok 9 - www/js/sounds.js: hidden page suspends playback and cannot create new effects
+  ---
+  duration_ms: 0.547875
+  ...
+# Subtest: www/js/sounds.js: native background/focus loss gates both engines without changing preferences
+ok 10 - www/js/sounds.js: native background/focus loss gates both engines without changing preferences
+  ---
+  duration_ms: 1.746041
+  ...
+1..10
+# tests 10
+# suites 0
+# pass 10
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 47.996583

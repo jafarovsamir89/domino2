@@ -1,0 +1,19 @@
+Warning: Activity not started, its current task has been brought to the front
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+
+false !== true
+
+    at file:///Users/macbookair/Documents/domino/docs/remediation/scripts/device-audio.mjs:20:175 {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: false,
+  expected: true,
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v25.6.0

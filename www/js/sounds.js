@@ -1,5 +1,75 @@
 // Advanced procedural sound effects using Web Audio API
+const audioSettings = { masterMuted: false, musicVolume: 0.15, effectsVolume: 1 };
+function validVolume(value, fallback) { return typeof value === 'number' && Number.isFinite(value) ? Math.max(0, Math.min(1, value)) : fallback; }
+try {
+    audioSettings.masterMuted = localStorage.getItem('domino_music_muted') === 'true';
+    const saved = JSON.parse(localStorage.getItem('domino_audio_settings') || 'null');
+    if (saved && typeof saved === 'object') {
+        if (typeof saved.masterMuted === 'boolean') audioSettings.masterMuted = saved.masterMuted;
+        audioSettings.musicVolume = validVolume(saved.musicVolume, audioSettings.musicVolume);
+        audioSettings.effectsVolume = validVolume(saved.effectsVolume, audioSettings.effectsVolume);
+    }
+} catch (_) {}
+let lifecycleMuted = typeof document !== 'undefined' && document.hidden;
 let ctx = null;
+let effectsGain = null;
+let nativeMuted = false;
+let nativeAudio = null;
+let nativeAudioReady = null;
+const effectsEnabled = () => !audioSettings.masterMuted && !lifecycleMuted && !nativeMuted && audioSettings.effectsVolume > 0;
+export function getAudioSettings() { return { ...audioSettings }; }
+export function updateAudioSettings(patch = {}) {
+    if (typeof patch.masterMuted === 'boolean') audioSettings.masterMuted = patch.masterMuted;
+    audioSettings.musicVolume = validVolume(patch.musicVolume, audioSettings.musicVolume);
+    audioSettings.effectsVolume = validVolume(patch.effectsVolume, audioSettings.effectsVolume);
+    try {
+        localStorage.setItem('domino_audio_settings', JSON.stringify(audioSettings));
+        localStorage.setItem('domino_music_muted', String(audioSettings.masterMuted));
+    } catch (_) {}
+    applyAudioState();
+    syncNativeAudio();
+    return getAudioSettings();
+}
+function applyAudioState() {
+    if (effectsGain) effectsGain.gain.value = effectsEnabled() ? audioSettings.effectsVolume : 0;
+    if (currentAudio) {
+        currentAudio.volume = audioSettings.musicVolume;
+        if (audioSettings.masterMuted || lifecycleMuted || nativeMuted || audioSettings.musicVolume === 0) currentAudio.pause();
+        else if (currentMusicMode && currentAudio.paused) currentAudio.play().catch(error => {
+            console.warn(currentMusicMode === 'menu' ? 'Menu music autoplay prevented, waiting for interaction' : 'Game music autoplay prevented, waiting for interaction', error);
+        });
+    }
+}
+function syncLifecycleAudio() {
+    lifecycleMuted = document.hidden;
+    if (lifecycleMuted && ctx) ctx.suspend().catch(() => {});
+    applyAudioState();
+}
+if (typeof document !== 'undefined') document.addEventListener('visibilitychange', syncLifecycleAudio);
+window.addEventListener?.('pagehide', () => { lifecycleMuted = true; if (ctx) ctx.suspend().catch(() => {}); applyAudioState(); });
+window.addEventListener?.('pageshow', syncLifecycleAudio);
+function acceptNativeAudioState(state) {
+    nativeMuted = !state.active;
+    if (nativeMuted && ctx) ctx.suspend().catch(() => {});
+    applyAudioState();
+}
+function syncNativeAudio() {
+    if (!nativeAudioReady) return;
+    nativeAudioReady.then(() => nativeAudio.configure({ enabled: !audioSettings.masterMuted &&
+        (audioSettings.musicVolume > 0 || audioSettings.effectsVolume > 0) })).then(acceptNativeAudioState).catch(() => {});
+}
+// Older installed builds have no custom audio bridge; browser lifecycle still works.
+try {
+    const cap = window.Capacitor;
+    if (cap?.isNativePlatform?.() && cap.isPluginAvailable?.('DominoAudio')) {
+        nativeMuted = true;
+        nativeAudio = cap.registerPlugin?.('DominoAudio') || cap.Plugins?.DominoAudio;
+        if (!nativeAudio) throw new Error('Native audio bridge unavailable');
+        nativeAudioReady = Promise.resolve(nativeAudio.addListener('stateChange', acceptNativeAudioState));
+        syncNativeAudio();
+    }
+} catch (_) { nativeMuted = false; }
+
 let noiseBuffer = null;
 let fallbackNoiseSeed = (Date.now() ^ Math.floor((window.performance?.now?.() || 0) * 1000)) >>> 0;
 
@@ -9,10 +79,17 @@ function nextFallbackNoiseValue() {
 }
 
 function getCtx() {
+    if (!effectsEnabled()) return null;
     try {
         const AudioCtor = window.AudioContext || window.webkitAudioContext;
         if (!AudioCtor) return null;
-        if (!ctx) ctx = new AudioCtor();
+        if (!ctx) {
+            ctx = new AudioCtor();
+            effectsGain = ctx.createGain();
+            effectsGain.gain.value = audioSettings.effectsVolume;
+            effectsGain.connect(ctx.destination);
+        }
+        if (ctx.state === 'suspended') ctx.resume().catch(() => {});
     } catch (e) {
         return null;
     }
@@ -76,15 +153,16 @@ function playClack(freq = 150, noiseVol = 0.3, oscVol = 0.2, dur = 0.1) {
         oscGain.gain.setValueAtTime(oscVol, now);
         oscGain.gain.exponentialRampToValueAtTime(0.001, now + dur);
 
-        noise.connect(noiseFilter).connect(noiseGain).connect(c.destination);
-        osc.connect(oscGain).connect(c.destination);
+        noise.connect(noiseFilter).connect(noiseGain).connect(effectsGain);
+        osc.connect(oscGain).connect(effectsGain);
 
         noise.start(now); noise.stop(now + 0.05);
         osc.start(now); osc.stop(now + dur);
     } catch (e) {}
 }
 
-export function sndPlace() { 
+export function sndPlace() {
+    if (!effectsEnabled()) return;
     playClack(180, 0.6, 0.4, 0.07); // Louder, sharper clack
     setTimeout(() => playClack(140, 0.2, 0.1, 0.05), 30); // Subtle secondary bounce
 }
@@ -99,7 +177,7 @@ export function sndScore() {
         notes.forEach((f, i) => {
             const osc = c.createOscillator();
             const g = c.createGain();
-            osc.connect(g).connect(c.destination);
+            osc.connect(g).connect(effectsGain);
             osc.frequency.setValueAtTime(f, now + i * 0.07);
             g.gain.setValueAtTime(0.3, now + i * 0.07); // Louder
             g.gain.exponentialRampToValueAtTime(0.001, now + i * 0.07 + 0.25);
@@ -124,7 +202,7 @@ export function sndDraw() {
         const g = c.createGain();
         g.gain.setValueAtTime(0.2, now); // Louder
         g.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
-        noise.connect(filter).connect(g).connect(c.destination);
+        noise.connect(filter).connect(g).connect(effectsGain);
         noise.start(now); noise.stop(now + 0.2);
     } catch(e) {}
 }
@@ -143,7 +221,7 @@ export function sndWin() {
             const osc = c.createOscillator();
             const g = c.createGain();
             osc.type = 'triangle';
-            osc.connect(g).connect(c.destination);
+            osc.connect(g).connect(effectsGain);
             osc.frequency.setValueAtTime(f, now + i * 0.1);
             g.gain.setValueAtTime(0.3, now + i * 0.1); // Louder
             g.gain.exponentialRampToValueAtTime(0.001, now + i * 0.1 + 0.4);
@@ -152,7 +230,8 @@ export function sndWin() {
     } catch (e) {}
 }
 
-export function sndGosha() { 
+export function sndGosha() {
+    if (!effectsEnabled()) return;
     sndScore();
     setTimeout(() => playClack(200, 0.7, 0.4, 0.12), 80);
 }
@@ -161,17 +240,9 @@ export function sndGosha() {
 let currentAudio = null;
 let currentPlaylist = [];
 let currentPlaylistIndex = -1;
-let isMusicMuted = false;
 let currentMusicMode = null; // 'menu' or 'game'
 
-// Load state from localStorage if available
-try {
-    isMusicMuted = localStorage.getItem('domino_music_muted') === 'true';
-} catch (e) {}
-
-export function isMuted() {
-    return isMusicMuted;
-}
+export function isMuted() { return audioSettings.masterMuted; }
 
 export function startMenuMusic() {
     if (currentMusicMode === 'menu' && currentAudio && !currentAudio.paused) {
@@ -182,11 +253,9 @@ export function startMenuMusic() {
     
     currentAudio = new Audio('assets/sounds/menu music/Majestic Menu Lounge.mp3');
     currentAudio.loop = true;
-    currentAudio.volume = isMusicMuted ? 0 : 0.15;
+    currentAudio.volume = audioSettings.musicVolume;
     
-    currentAudio.play().catch(err => {
-        console.warn('Menu music autoplay prevented, waiting for interaction', err);
-    });
+    applyAudioState();
 }
 
 function playGameTrack() {
@@ -201,7 +270,7 @@ function playGameTrack() {
         currentAudio = new Audio(src);
     }
     currentAudio.loop = false;
-    currentAudio.volume = isMusicMuted ? 0 : 0.15;
+    currentAudio.volume = audioSettings.musicVolume;
     
     currentAudio.onended = () => {
         if (currentMusicMode === 'game') {
@@ -210,9 +279,7 @@ function playGameTrack() {
         }
     };
     
-    currentAudio.play().catch(err => {
-        console.warn('Game music autoplay prevented, waiting for interaction', err);
-    });
+    applyAudioState();
 }
 
 export function startGameMusic() {
@@ -247,13 +314,5 @@ export function stopMusic() {
 }
 
 export function toggleMute() {
-    isMusicMuted = !isMusicMuted;
-    try {
-        localStorage.setItem('domino_music_muted', String(isMusicMuted));
-    } catch (e) {}
-    
-    if (currentAudio) {
-        currentAudio.volume = isMusicMuted ? 0 : 0.15;
-    }
-    return isMusicMuted;
+    return updateAudioSettings({ masterMuted: !audioSettings.masterMuted }).masterMuted;
 }

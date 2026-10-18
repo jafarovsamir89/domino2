@@ -19,6 +19,7 @@ public class MainActivity extends BridgeActivity {
     protected void load() {
         registerPlugin(DominoGoogleAuthPlugin.class);
         registerPlugin(DominoBrowserPlugin.class);
+        registerPlugin(DominoAudioPlugin.class);
         registerPlugin(DominoDeviceRegionPlugin.class);
         super.load();
         if (getBridge() != null && getBridge().getWebView() != null) {

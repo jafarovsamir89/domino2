@@ -369,7 +369,7 @@ Status: **fixed locally, S016**. Liveness/readiness bypass application Redis rat
 
 #### R-19 · P2 · Music/effects/master mute
 
-Статус: **открыто**. Основание: probe подтверждён; [доказательства](06_UI_UX_DESIGN.md).
+Статус: **локальные настройки исправлены, S021; внешняя приёмка audio focus остаётся**. Master mute отключает SFX и музыку; независимые уровни сохраняются. Android:0новых oscillators при mute, настройки23%/37% переживают force-stop, HOME останавливает музыку/SFX даже при visibility=visible, возврат возобновляет звук. Нативный bridge передаёт lifecycle, системный audio focus остаётся у Chromium. Звонок/Bluetooth не проверены; карточка целиком не закрыта. [Проверки](../remediation/evidence/session-021/summary.json).
 
 - **Изменение:** Определить master mute и отдельные music/effects уровни, применить настройку к Web Audio и HTMLAudio. На Android muted=true всё ещё создавал 3 score oscillators. Проверить сохранение настроек; внешний audio focus остаётся отдельным сценарием.
 - **Где:** `js/sounds.js:88,96,249–259`.

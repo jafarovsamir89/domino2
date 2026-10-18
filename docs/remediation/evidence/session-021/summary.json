@@ -1,0 +1,45 @@
+{
+  "session": "S021",
+  "task": "R-19",
+  "status": "local-controls-complete-external-audio-focus-pending",
+  "details": "Master mute gates new Web Audio nodes and existing effects gain plus HTMLAudio pause. Independent clamped music/effects levels persist with legacy compatibility. Native Activity lifecycle gates audio even when document.visibilityState stays visible. AZ/RU/EN controls and percentage outputs; web/www parity.",
+  "checks": [
+    "s021-audio-before.json",
+    "s021-final-unit.json",
+    "s021-final-source.json",
+    "s021-android-final.json",
+    "android-audio.json"
+  ],
+  "units": {
+    "before": {
+      "pass": 0,
+      "fail": 8
+    },
+    "after": {
+      "pass": 10,
+      "fail": 0
+    }
+  },
+  "device": {
+    "package": "az.simplesoft.dominotelefon.audit",
+    "muteScoreOscillators": 0,
+    "persistentSettings": {
+      "masterMuted": true,
+      "musicVolume": 0.23,
+      "effectsVolume": 0.37
+    },
+    "homePausesMedia": true,
+    "homePreventsSfx": true,
+    "foregroundResumes": true
+  },
+  "limits": [
+    "Incoming call/Bluetooth/other external audio-focus scenarios not tested; R19 full acceptance remains pending",
+    "System audio focus remains Chromium-owned; Activity bridge handles background/foreground only",
+    "Force-stop checked after1200ms WebView storage settle",
+    "No acoustic measurement, production or Play release"
+  ],
+  "excluded": [
+    "First native probe assumed registerPlugin exists globally; actual legacy Capacitor.Plugins bridge now supported and unit-covered",
+    "Initial additional AudioManager focus owner competed with Chromium and kept media paused. Removed; final native bridge does not request a second focus owner."
+  ]
+}

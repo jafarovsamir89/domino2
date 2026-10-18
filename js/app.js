@@ -6,7 +6,7 @@ import { Renderer } from './renderer.js?v=social-live-2';
 import { translations } from './translations.js';
 import { AccountClient } from './account.js';
 import { VoiceChatManager } from './voice.js';
-import { sndPlace, sndScore, sndDraw, sndPass, sndWin, sndGosha, startMenuMusic, startGameMusic, nextTrack, toggleMute, stopMusic } from './sounds.js?v=social-live-1';
+import { sndPlace, sndScore, sndDraw, sndPass, sndWin, sndGosha, startMenuMusic, startGameMusic, nextTrack, toggleMute, stopMusic, getAudioSettings, updateAudioSettings } from './sounds.js?v=social-live-1';
 // NetworkManager is loaded as global script
 
 let dominoGoogleAuthPlugin = null;
@@ -17383,9 +17383,26 @@ class DominoGame {
             burst.remove();
         }, 3300);
     }
+    syncAudioControls() {
+        const settings = getAudioSettings();
+        const master = document.getElementById('menu-toggle-mute');
+        if (master) {
+            master.textContent = this.t(settings.masterMuted ? 'audio-unmute' : 'audio-mute');
+            master.setAttribute('aria-pressed', String(settings.masterMuted));
+        }
+        for (const [id, key] of [['music', 'musicVolume'], ['effects', 'effectsVolume']]) {
+            const input = document.getElementById('audio-' + id);
+            const output = document.getElementById('audio-' + id + '-value');
+            const percent = Math.round(settings[key] * 100);
+            if (input) input.value = String(percent);
+            if (output) output.textContent = percent + '%';
+        }
+    }
+
     setupMenu() {
         document.getElementById('menu-btn')?.addEventListener('click', () => {
             this.pauseSoloGame();
+            this.syncAudioControls();
             this.closeReactionPicker();
             this.closeGiftPicker();
             document.getElementById('menu-screen').classList.add('active');
@@ -17407,7 +17424,15 @@ class DominoGame {
         });
         document.getElementById('menu-toggle-mute')?.addEventListener('click', () => {
             toggleMute();
+            this.syncAudioControls();
         });
+        for (const [id, key] of [['music', 'musicVolume'], ['effects', 'effectsVolume']]) {
+            document.getElementById('audio-' + id)?.addEventListener('input', event => {
+                updateAudioSettings({ [key]: Number(event.target.value) / 100 });
+                this.syncAudioControls();
+            });
+        }
+        this.syncAudioControls();
         document.getElementById('menu-quit')?.addEventListener('click', async () => {
             document.getElementById('menu-screen').classList.remove('active');
             const shouldQuit = await this.confirmQuitCurrentMatch();
@@ -18120,6 +18145,7 @@ class DominoGame {
         document.querySelectorAll('.btn-lang').forEach(b => {
             b.classList.toggle('active', b.dataset.lang === nextLang);
         });
+        this.syncAudioControls();
         this.syncAccountUiChrome();
         this.ensureShopIconMarkup();
         this.syncStartAuthButton();

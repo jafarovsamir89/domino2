@@ -1,0 +1,144 @@
+✖ js/sounds.js: master mute prevents all procedural nodes including a delayed bounce (2.8165ms)
+✖ js/sounds.js: legacy mute preference also silences effects (0.519125ms)
+✖ js/sounds.js: music/effects levels are independent and persist with the master state (0.579417ms)
+✖ js/sounds.js: hidden page suspends playback and cannot create new effects (0.491208ms)
+✖ www/js/sounds.js: master mute prevents all procedural nodes including a delayed bounce (1.079042ms)
+✖ www/js/sounds.js: legacy mute preference also silences effects (0.475833ms)
+✖ www/js/sounds.js: music/effects levels are independent and persist with the master state (0.447625ms)
+✖ www/js/sounds.js: hidden page suspends playback and cannot create new effects (0.407417ms)
+ℹ tests 8
+ℹ suites 0
+ℹ pass 0
+ℹ fail 8
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 95.844083
+
+✖ failing tests:
+
+test at test/audio-settings.test.js:14:2
+✖ js/sounds.js: master mute prevents all procedural nodes including a delayed bounce (2.8165ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  1 !== 0
+  
+      at TestContext.<anonymous> (/Users/macbookair/Documents/domino/.tmp/remediation-s021/clean/server/test/audio-settings.test.js:14:286)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.start (node:internal/test_runner/test:1015:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:358:17) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test/audio-settings.test.js:15:2
+✖ js/sounds.js: legacy mute preference also silences effects (0.519125ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  3 !== 0
+  
+      at TestContext.<anonymous> (/Users/macbookair/Documents/domino/.tmp/remediation-s021/clean/server/test/audio-settings.test.js:15:196)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:787:18)
+      at Test.postRun (node:internal/test_runner/test:1247:19)
+      at Test.run (node:internal/test_runner/test:1175:12)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:358:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 3,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test/audio-settings.test.js:16:2
+✖ js/sounds.js: music/effects levels are independent and persist with the master state (0.579417ms)
+  TypeError: api.updateAudioSettings is not a function
+      at TestContext.<anonymous> (/Users/macbookair/Documents/domino/.tmp/remediation-s021/clean/server/test/audio-settings.test.js:16:142)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:787:18)
+      at Test.postRun (node:internal/test_runner/test:1247:19)
+      at Test.run (node:internal/test_runner/test:1175:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7)
+
+test at test/audio-settings.test.js:17:2
+✖ js/sounds.js: hidden page suspends playback and cannot create new effects (0.491208ms)
+  TypeError: listeners.visibilitychange is not a function
+      at TestContext.<anonymous> (/Users/macbookair/Documents/domino/.tmp/remediation-s021/clean/server/test/audio-settings.test.js:17:192)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:787:18)
+      at Test.postRun (node:internal/test_runner/test:1247:19)
+      at Test.run (node:internal/test_runner/test:1175:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7)
+
+test at test/audio-settings.test.js:14:2
+✖ www/js/sounds.js: master mute prevents all procedural nodes including a delayed bounce (1.079042ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  1 !== 0
+  
+      at TestContext.<anonymous> (/Users/macbookair/Documents/domino/.tmp/remediation-s021/clean/server/test/audio-settings.test.js:14:286)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:787:18)
+      at Test.postRun (node:internal/test_runner/test:1247:19)
+      at Test.run (node:internal/test_runner/test:1175:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test/audio-settings.test.js:15:2
+✖ www/js/sounds.js: legacy mute preference also silences effects (0.475833ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  3 !== 0
+  
+      at TestContext.<anonymous> (/Users/macbookair/Documents/domino/.tmp/remediation-s021/clean/server/test/audio-settings.test.js:15:196)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:787:18)
+      at Test.postRun (node:internal/test_runner/test:1247:19)
+      at Test.run (node:internal/test_runner/test:1175:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 3,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test/audio-settings.test.js:16:2
+✖ www/js/sounds.js: music/effects levels are independent and persist with the master state (0.447625ms)
+  TypeError: api.updateAudioSettings is not a function
+      at TestContext.<anonymous> (/Users/macbookair/Documents/domino/.tmp/remediation-s021/clean/server/test/audio-settings.test.js:16:142)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:787:18)
+      at Test.postRun (node:internal/test_runner/test:1247:19)
+      at Test.run (node:internal/test_runner/test:1175:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7)
+
+test at test/audio-settings.test.js:17:2
+✖ www/js/sounds.js: hidden page suspends playback and cannot create new effects (0.407417ms)
+  TypeError: listeners.visibilitychange is not a function
+      at TestContext.<anonymous> (/Users/macbookair/Documents/domino/.tmp/remediation-s021/clean/server/test/audio-settings.test.js:17:192)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:787:18)
+      at Test.postRun (node:internal/test_runner/test:1247:19)
+      at Test.run (node:internal/test_runner/test:1175:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7)
