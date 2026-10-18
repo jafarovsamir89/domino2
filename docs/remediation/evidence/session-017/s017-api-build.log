@@ -1,0 +1,35 @@
+
+> @domino2/api@0.1.0 prebuild
+> cd ../.. && npm run generate -w @domino2/db
+
+
+> @domino2/db@0.1.0 generate
+> prisma generate
+
+Prisma schema loaded from prisma/schema.prisma
+Error: Prisma schema validation - (get-dmmf wasm)
+Error code: P1012
+error: Error validating model "CatalogProduct": The index definition refers to the unknown fields: productId.
+  -->  prisma/schema.prisma:724
+   | 
+723 | 
+724 |   @@index([productId])
+   | 
+error: Error validating model "CatalogProduct": The index definition refers to the unknown fields: currency.
+  -->  prisma/schema.prisma:725
+   | 
+724 |   @@index([productId])
+725 |   @@index([currency])
+   | 
+
+Validation Error Count: 2
+[Context: getDmmf]
+
+Prisma CLI Version : 6.19.3
+npm error Lifecycle script `generate` failed with error:
+npm error code 1
+npm error path /Users/macbookair/Documents/domino/.tmp/remediation-s017/clean/packages/db
+npm error workspace @domino2/db@0.1.0
+npm error location /Users/macbookair/Documents/domino/.tmp/remediation-s017/clean/packages/db
+npm error command failed
+npm error command sh -c prisma generate

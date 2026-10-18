@@ -1,0 +1,23 @@
+{
+  "label": "s017-create-drift-db",
+  "command": [
+    "/opt/homebrew/Cellar/postgresql@14/14.20/bin/createdb",
+    "-h",
+    "127.0.0.1",
+    "-p",
+    "55439",
+    "-U",
+    "domino_remediation",
+    "domino_remediation_s017_drift"
+  ],
+  "cwd": ".tmp/remediation-s017/clean",
+  "startedAt": "2026-10-18T23:03:56.922Z",
+  "finishedAt": "2026-10-18T23:03:57.072Z",
+  "durationMs": 150,
+  "exitCode": 0,
+  "signal": null,
+  "timedOut": false,
+  "error": null,
+  "log": "docs/remediation/evidence/session-017/s017-create-drift-db.log",
+  "environment": "Fresh allowlist, synthetic local API/DB, optional Redis disabled, no inherited secrets or copied .env"
+}

@@ -208,7 +208,7 @@ Status: **fixed locally, S012**. Server AI receives only its own hand and public
 
 #### R-41 · P1 · Добавить forward migrations текущей social schema
 
-Статус: **открыто**. Основание: 18 миграций применены; DM500 и schema drift подтверждены; [доказательства](SINGLE_ANDROID_AUDIT.md).
+Status: **fixed locally, S017**. Additive transactional migration19 adds DM clientMessageId, thread/fcm tables, missing enum/indexes/FKs. Backfills legacy threads, latest message (timestamp+ID tie break), unread counts. Existing four indexes are declared in schema rather than dropped. Fresh and populated18->19 upgrades on Node25/22 preserve history and wallets, read/send/read-state/retry and local FCM CRUD pass; repeated deploy is no-op and drift0. Initial schema edit put indexes on the wrong model; corrected before final fresh/upgrade checks. Exploratory drift DB is used; final and node22 DBs are independent fresh proofs. No production migration. [Evidence](../remediation/evidence/session-017/summary.json).
 
 - **Изменение:** Добавить forward migrations для clientMessageId, direct_message_thread, fcm_token, индексов и связей текущей schema. На пустой БД все 18 миграций применились, DM вернул 500. Проверять и пустую установку, и upgrade без reset/db push.
 - **Где:** `packages/db/prisma/schema.prisma:509,516,529,790;packages/db/prisma/migrations`.

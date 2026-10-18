@@ -1,0 +1,17 @@
+{
+  "label": "s017-drift-after",
+  "command": [
+    "node",
+    "/Users/macbookair/Documents/domino/docs/remediation/scripts/social-schema-diff.mjs"
+  ],
+  "cwd": ".tmp/remediation-s017/clean",
+  "startedAt": "2026-10-18T23:06:15.280Z",
+  "finishedAt": "2026-10-18T23:06:16.539Z",
+  "durationMs": 1259,
+  "exitCode": 1,
+  "signal": null,
+  "timedOut": false,
+  "error": null,
+  "log": "docs/remediation/evidence/session-017/s017-drift-after.log",
+  "environment": "Fresh allowlist, synthetic local API/DB, optional Redis disabled, no inherited secrets or copied .env"
+}

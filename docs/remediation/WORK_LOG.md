@@ -219,3 +219,9 @@ Checks: {"apiNode25And22":{"pass":142,"fail":0},"presenceAndRooms":"s015-presenc
 Liveness/readiness bypass application Redis rate limiter. Readiness requires PING,750ms deadline, shared in-flight probe prevents queue growth. Real owned Redis pause: liveness under500ms, readiness503 under1000ms, recovery200 and exact room/snapshot preserved on Node25/22. Own Redis stopped. Initial recovery fixture was corrected to await completion of its released PING before probing recovery.
 
 Checks: {"unit":"s016-health-verified.json","node22":"s016-node22.json","redis":"s016-real-redis-health.json","redisNode22":"s016-redis-node22.json","fullServer":"s016-server-full.json"}. Benefit: A Redis interruption no longer makes the running game server appear dead; readiness reports the actual problem and recovers.
+
+### S017/R41 completed locally
+
+Additive transactional migration19 adds DM clientMessageId, thread/fcm tables, missing enum/indexes/FKs. Backfills legacy threads, latest message (timestamp+ID tie break), unread counts. Existing four indexes are declared in schema rather than dropped. Fresh and populated18->19 upgrades on Node25/22 preserve history and wallets, read/send/read-state/retry and local FCM CRUD pass; repeated deploy is no-op and drift0. Initial schema edit put indexes on the wrong model; corrected before final fresh/upgrade checks. Exploratory drift DB is used; final and node22 DBs are independent fresh proofs. No production migration.
+
+Benefit: a fresh or upgraded database supports messaging instead of returning missing-column/table errors; existing conversations are retained. API142/142; PostgreSQL14 fresh+upgrade on Node25/22, drift0. FCM test is local CRUD only, no external notifications. Migration uses BEGIN/COMMIT; migration history1-18 unchanged. Prisma current docs were consulted via Context7 but v8 examples were not applied to this pinned6 CLI.

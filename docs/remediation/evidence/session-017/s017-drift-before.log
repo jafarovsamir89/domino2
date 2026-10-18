@@ -1,0 +1,158 @@
+Prisma schema loaded from packages/db/prisma/schema.prisma
+Datasource "db": PostgreSQL database "domino_remediation_s017_drift", schema "public" at "127.0.0.1:55439"
+
+18 migrations found in prisma/migrations
+
+Applying migration `20260507_000001_initial_platform`
+Applying migration `20260508_000002_economy`
+Applying migration `20260508_000003_social`
+Applying migration `20260513_000004_player_avatar_url`
+Applying migration `20260513_000005_gifts`
+Applying migration `20260515_000006_gift_ledger_types`
+Applying migration `20260515_000007_table_skins`
+Applying migration `20260518_000008_hardening`
+Applying migration `20260518_000009_leaderboard_index`
+Applying migration `20260518_000010_system_audit_log`
+Applying migration `20260603_000011_add_direct_messages`
+Applying migration `20260603_000012_add_inbox_messages`
+Applying migration `20260612_000013_add_play_invite_reservation`
+Applying migration `20260612_000014_add_play_invite_room_ready`
+Applying migration `20260625_000015_add_feedback`
+Applying migration `20260626_000016_split_rating_by_mode`
+Applying migration `20260626_000017_daily_rewards_config`
+Applying migration `20260811_000018_update_cosmetic_and_gift_prices`
+
+The following migration(s) have been applied:
+
+migrations/
+  └─ 20260507_000001_initial_platform/
+    └─ migration.sql
+  └─ 20260508_000002_economy/
+    └─ migration.sql
+  └─ 20260508_000003_social/
+    └─ migration.sql
+  └─ 20260513_000004_player_avatar_url/
+    └─ migration.sql
+  └─ 20260513_000005_gifts/
+    └─ migration.sql
+  └─ 20260515_000006_gift_ledger_types/
+    └─ migration.sql
+  └─ 20260515_000007_table_skins/
+    └─ migration.sql
+  └─ 20260518_000008_hardening/
+    └─ migration.sql
+  └─ 20260518_000009_leaderboard_index/
+    └─ migration.sql
+  └─ 20260518_000010_system_audit_log/
+    └─ migration.sql
+  └─ 20260603_000011_add_direct_messages/
+    └─ migration.sql
+  └─ 20260603_000012_add_inbox_messages/
+    └─ migration.sql
+  └─ 20260612_000013_add_play_invite_reservation/
+    └─ migration.sql
+  └─ 20260612_000014_add_play_invite_room_ready/
+    └─ migration.sql
+  └─ 20260625_000015_add_feedback/
+    └─ migration.sql
+  └─ 20260626_000016_split_rating_by_mode/
+    └─ migration.sql
+  └─ 20260626_000017_daily_rewards_config/
+    └─ migration.sql
+  └─ 20260811_000018_update_cosmetic_and_gift_prices/
+    └─ migration.sql
+      
+All migrations have been successfully applied.
+-- AlterEnum
+ALTER TYPE "CoinLedgerType" ADD VALUE 'consume';
+
+-- DropIndex
+DROP INDEX "CatalogPrice_currency_idx";
+
+-- DropIndex
+DROP INDEX "CatalogPrice_productId_idx";
+
+-- DropIndex
+DROP INDEX "Order_playerId_idx";
+
+-- DropIndex
+DROP INDEX "Payment_orderId_idx";
+
+-- AlterTable
+ALTER TABLE "DirectMessage" ADD COLUMN     "clientMessageId" TEXT;
+
+-- CreateTable
+CREATE TABLE "direct_message_thread" (
+    "playerAId" TEXT NOT NULL,
+    "playerBId" TEXT NOT NULL,
+    "lastMessageId" TEXT,
+    "lastMessageAt" TIMESTAMP(3),
+    "unreadCountA" INTEGER NOT NULL DEFAULT 0,
+    "unreadCountB" INTEGER NOT NULL DEFAULT 0
+);
+
+-- CreateTable
+CREATE TABLE "fcm_token" (
+    "id" TEXT NOT NULL,
+    "playerId" TEXT NOT NULL,
+    "token" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "fcm_token_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateIndex
+CREATE INDEX "direct_message_thread_playerAId_lastMessageAt_idx" ON "direct_message_thread"("playerAId", "lastMessageAt");
+
+-- CreateIndex
+CREATE INDEX "direct_message_thread_playerBId_lastMessageAt_idx" ON "direct_message_thread"("playerBId", "lastMessageAt");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "direct_message_thread_playerAId_playerBId_key" ON "direct_message_thread"("playerAId", "playerBId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "fcm_token_token_key" ON "fcm_token"("token");
+
+-- CreateIndex
+CREATE INDEX "fcm_token_playerId_idx" ON "fcm_token"("playerId");
+
+-- CreateIndex
+CREATE INDEX "DirectMessage_receiverPlayerId_readAt_idx" ON "DirectMessage"("receiverPlayerId", "readAt");
+
+-- CreateIndex
+CREATE INDEX "DirectMessage_createdAt_idx" ON "DirectMessage"("createdAt");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "DirectMessage_senderPlayerId_clientMessageId_key" ON "DirectMessage"("senderPlayerId", "clientMessageId");
+
+-- CreateIndex
+CREATE INDEX "Order_playerId_status_idx" ON "Order"("playerId", "status");
+
+-- CreateIndex
+CREATE INDEX "Payment_orderId_status_idx" ON "Payment"("orderId", "status");
+
+-- CreateIndex
+CREATE INDEX "PlayerBan_playerId_idx" ON "PlayerBan"("playerId");
+
+-- CreateIndex
+CREATE INDEX "PlayerReport_targetPlayerId_status_idx" ON "PlayerReport"("targetPlayerId", "status");
+
+-- CreateIndex
+CREATE INDEX "PlayerReport_reporterPlayerId_idx" ON "PlayerReport"("reporterPlayerId");
+
+-- CreateIndex
+CREATE INDEX "PlayerReport_matchId_idx" ON "PlayerReport"("matchId");
+
+-- AddForeignKey
+ALTER TABLE "direct_message_thread" ADD CONSTRAINT "direct_message_thread_playerAId_fkey" FOREIGN KEY ("playerAId") REFERENCES "Player"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "direct_message_thread" ADD CONSTRAINT "direct_message_thread_playerBId_fkey" FOREIGN KEY ("playerBId") REFERENCES "Player"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "direct_message_thread" ADD CONSTRAINT "direct_message_thread_lastMessageId_fkey" FOREIGN KEY ("lastMessageId") REFERENCES "DirectMessage"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "fcm_token" ADD CONSTRAINT "fcm_token_playerId_fkey" FOREIGN KEY ("playerId") REFERENCES "Player"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+

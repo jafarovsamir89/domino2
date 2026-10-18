@@ -1,0 +1,16 @@
+{
+  "session": "S017",
+  "task": "R-41",
+  "status": "fixed-locally",
+  "details": "Additive transactional migration19 adds DM clientMessageId, thread/fcm tables, missing enum/indexes/FKs. Backfills legacy threads, latest message (timestamp+ID tie break), unread counts. Existing four indexes are declared in schema rather than dropped. Fresh and populated18->19 upgrades on Node25/22 preserve history and wallets, read/send/read-state/retry and local FCM CRUD pass; repeated deploy is no-op and drift0. Initial schema edit put indexes on the wrong model; corrected before final fresh/upgrade checks. Exploratory drift DB is used; final and node22 DBs are independent fresh proofs. No production migration.",
+  "checks": [
+    "s017-social-db.json",
+    "s017-social-node22.json",
+    "s017-drift-verified.json",
+    "s017-api-verified.json"
+  ],
+  "limits": [
+    "Existing manually drifted production DB needs preflight before any approved rollout",
+    "No db push/reset; no production changes"
+  ]
+}

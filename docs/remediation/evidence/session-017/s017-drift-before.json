@@ -1,0 +1,17 @@
+{
+  "label": "s017-drift-before",
+  "command": [
+    "node",
+    "/Users/macbookair/Documents/domino/docs/remediation/scripts/social-schema-diff.mjs"
+  ],
+  "cwd": ".tmp/remediation-s017/clean",
+  "startedAt": "2026-10-18T23:03:57.152Z",
+  "finishedAt": "2026-10-18T23:03:58.652Z",
+  "durationMs": 1500,
+  "exitCode": 0,
+  "signal": null,
+  "timedOut": false,
+  "error": null,
+  "log": "docs/remediation/evidence/session-017/s017-drift-before.log",
+  "environment": "Fresh allowlist, synthetic local API/DB, optional Redis disabled, no inherited secrets or copied .env"
+}

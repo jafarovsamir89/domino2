@@ -1,0 +1,20 @@
+{
+  "label": "s017-api-build",
+  "command": [
+    "npm",
+    "--prefix",
+    "apps/api",
+    "run",
+    "build"
+  ],
+  "cwd": ".tmp/remediation-s017/clean",
+  "startedAt": "2026-10-18T23:06:16.607Z",
+  "finishedAt": "2026-10-18T23:06:17.427Z",
+  "durationMs": 820,
+  "exitCode": 1,
+  "signal": null,
+  "timedOut": false,
+  "error": null,
+  "log": "docs/remediation/evidence/session-017/s017-api-build.log",
+  "environment": "Fresh allowlist, synthetic local API/DB, optional Redis disabled, no inherited secrets or copied .env"
+}

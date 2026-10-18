@@ -731,6 +731,9 @@ model CatalogPrice {
   createdAt   DateTime @default(now())
   product     CatalogProduct @relation(fields: [productId], references: [id], onDelete: Cascade)
   orders      Order[]
+
+  @@index([productId])
+  @@index([currency])
 }
 
 model Order {
@@ -747,6 +750,7 @@ model Order {
   price       CatalogPrice  @relation(fields: [priceId], references: [id], onDelete: Cascade)
   payments    Payment[]
 
+  @@index([playerId])
   @@index([playerId, status])
   @@index([productId])
   @@index([priceId])
@@ -764,6 +768,7 @@ model Payment {
   updatedAt         DateTime      @updatedAt
   order             Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
 
+  @@index([orderId])
   @@index([orderId, status])
 }
 

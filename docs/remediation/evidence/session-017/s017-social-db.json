@@ -1,0 +1,18 @@
+{
+  "label": "s017-social-db",
+  "command": [
+    "node",
+    "/Users/macbookair/Documents/domino/docs/remediation/scripts/verify-social-migrations.mjs",
+    "final"
+  ],
+  "cwd": ".tmp/remediation-s017/clean",
+  "startedAt": "2026-10-18T23:08:12.630Z",
+  "finishedAt": "2026-10-18T23:08:17.181Z",
+  "durationMs": 4551,
+  "exitCode": 0,
+  "signal": null,
+  "timedOut": false,
+  "error": null,
+  "log": "docs/remediation/evidence/session-017/s017-social-db.log",
+  "environment": "Fresh allowlist, synthetic local API/DB, optional Redis disabled, no inherited secrets or copied .env"
+}

@@ -1,0 +1,9 @@
+Prisma schema loaded from packages/db/prisma/schema.prisma
+Datasource "db": PostgreSQL database "domino_remediation_s017_drift", schema "public" at "127.0.0.1:55439"
+
+19 migrations found in prisma/migrations
+
+
+No pending migrations to apply.
+-- This is an empty migration.
+

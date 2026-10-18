@@ -1,0 +1,62 @@
+Prisma schema loaded from packages/db/prisma/schema.prisma
+Datasource "db": PostgreSQL database "domino_remediation_s017_drift", schema "public" at "127.0.0.1:55439"
+
+19 migrations found in prisma/migrations
+
+Applying migration `20261018_000019_complete_social_schema`
+
+┌─────────────────────────────────────────────────────────┐
+│  Update available 6.19.3 -> 8.0.0-rc.23                 │
+│                                                         │
+│  This is a major update - please follow the guide at    │
+│  https://pris.ly/d/major-version-upgrade                │
+│                                                         │
+│  Run the following to update                            │
+│    npm i --save-dev prisma@latest                       │
+│    npm i @prisma/client@latest                          │
+└─────────────────────────────────────────────────────────┘
+The following migration(s) have been applied:
+
+migrations/
+  └─ 20261018_000019_complete_social_schema/
+    └─ migration.sql
+      
+All migrations have been successfully applied.
+Error: P1012
+
+error: Error validating model "CatalogProduct": The index definition refers to the unknown fields: productId.
+  -->  packages/db/prisma/schema.prisma:724
+   | 
+723 | 
+724 |   @@index([productId])
+   | 
+error: Error validating model "CatalogProduct": The index definition refers to the unknown fields: currency.
+  -->  packages/db/prisma/schema.prisma:725
+   | 
+724 |   @@index([productId])
+725 |   @@index([currency])
+   | 
+
+
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+
+1 !== 0
+
+    at run (file:///Users/macbookair/Documents/domino/docs/remediation/scripts/social-schema-diff.mjs:4:164)
+    at file:///Users/macbookair/Documents/domino/docs/remediation/scripts/social-schema-diff.mjs:6:1
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:655:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5) {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: 1,
+  expected: 0,
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v25.6.0
