@@ -1,0 +1,2662 @@
+[
+  {
+    "path": ".dockerignore",
+    "bytes": 146
+  },
+  {
+    "path": ".gitignore",
+    "bytes": 508
+  },
+  {
+    "path": "AGENT_HANDOFF.md",
+    "bytes": 5479
+  },
+  {
+    "path": "AGENT_WORK_LOG.md",
+    "bytes": 27875
+  },
+  {
+    "path": "BETA_READINESS_NOTES.md",
+    "bytes": 2167
+  },
+  {
+    "path": "DEPLOY_GOOGLE_CLOUD.md",
+    "bytes": 2314
+  },
+  {
+    "path": "DEPLOY_SERVER_GUIDE.md",
+    "bytes": 1283
+  },
+  {
+    "path": "DEV_SUMMARY.md",
+    "bytes": 2673
+  },
+  {
+    "path": "DOMINO_AUDIT_TODO.md",
+    "bytes": 13593
+  },
+  {
+    "path": "Dockerfile",
+    "bytes": 213
+  },
+  {
+    "path": "GOOGLE_PLAY_DATA_SAFETY_NOTES.md",
+    "bytes": 4328
+  },
+  {
+    "path": "IDEA.md",
+    "bytes": 4698
+  },
+  {
+    "path": "README.md",
+    "bytes": 11316
+  },
+  {
+    "path": "SECURITY_NOTES.md",
+    "bytes": 1971
+  },
+  {
+    "path": "android/.gitignore",
+    "bytes": 1824
+  },
+  {
+    "path": "android/OAUTH_SETUP.md",
+    "bytes": 740
+  },
+  {
+    "path": "android/app/.gitignore",
+    "bytes": 26
+  },
+  {
+    "path": "android/app/build.gradle",
+    "bytes": 3147
+  },
+  {
+    "path": "android/app/capacitor.build.gradle",
+    "bytes": 478
+  },
+  {
+    "path": "android/app/proguard-rules.pro",
+    "bytes": 1242
+  },
+  {
+    "path": "android/app/src/androidTest/java/com/getcapacitor/myapp/ExampleInstrumentedTest.java",
+    "bytes": 774
+  },
+  {
+    "path": "android/app/src/main/AndroidManifest.xml",
+    "bytes": 2162
+  },
+  {
+    "path": "android/app/src/main/java/az/simplesoft/dominotelefon/DominoBrowserPlugin.java",
+    "bytes": 1253
+  },
+  {
+    "path": "android/app/src/main/java/az/simplesoft/dominotelefon/DominoDeviceRegionPlugin.java",
+    "bytes": 726
+  },
+  {
+    "path": "android/app/src/main/java/az/simplesoft/dominotelefon/DominoGoogleAuthPlugin.java",
+    "bytes": 3766
+  },
+  {
+    "path": "android/app/src/main/java/az/simplesoft/dominotelefon/MainActivity.java",
+    "bytes": 4111
+  },
+  {
+    "path": "android/app/src/main/res/drawable-land-hdpi/splash.png",
+    "bytes": 7705
+  },
+  {
+    "path": "android/app/src/main/res/drawable-land-mdpi/splash.png",
+    "bytes": 4040
+  },
+  {
+    "path": "android/app/src/main/res/drawable-land-xhdpi/splash.png",
+    "bytes": 9251
+  },
+  {
+    "path": "android/app/src/main/res/drawable-land-xxhdpi/splash.png",
+    "bytes": 13984
+  },
+  {
+    "path": "android/app/src/main/res/drawable-land-xxxhdpi/splash.png",
+    "bytes": 17683
+  },
+  {
+    "path": "android/app/src/main/res/drawable-port-hdpi/splash.png",
+    "bytes": 7934
+  },
+  {
+    "path": "android/app/src/main/res/drawable-port-mdpi/splash.png",
+    "bytes": 4096
+  },
+  {
+    "path": "android/app/src/main/res/drawable-port-xhdpi/splash.png",
+    "bytes": 9875
+  },
+  {
+    "path": "android/app/src/main/res/drawable-port-xxhdpi/splash.png",
+    "bytes": 13346
+  },
+  {
+    "path": "android/app/src/main/res/drawable-port-xxxhdpi/splash.png",
+    "bytes": 17489
+  },
+  {
+    "path": "android/app/src/main/res/drawable-v24/ic_launcher_foreground.xml",
+    "bytes": 1880
+  },
+  {
+    "path": "android/app/src/main/res/drawable/ic_launcher_background.xml",
+    "bytes": 5606
+  },
+  {
+    "path": "android/app/src/main/res/drawable/splash.png",
+    "bytes": 4040
+  },
+  {
+    "path": "android/app/src/main/res/layout/activity_main.xml",
+    "bytes": 535
+  },
+  {
+    "path": "android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml",
+    "bytes": 265
+  },
+  {
+    "path": "android/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml",
+    "bytes": 265
+  },
+  {
+    "path": "android/app/src/main/res/mipmap-hdpi/ic_launcher.png",
+    "bytes": 12063
+  },
+  {
+    "path": "android/app/src/main/res/mipmap-hdpi/ic_launcher_foreground.png",
+    "bytes": 53358
+  },
+  {
+    "path": "android/app/src/main/res/mipmap-hdpi/ic_launcher_round.png",
+    "bytes": 12063
+  },
+  {
+    "path": "android/app/src/main/res/mipmap-mdpi/ic_launcher.png",
+    "bytes": 5857
+  },
+  {
+    "path": "android/app/src/main/res/mipmap-mdpi/ic_launcher_foreground.png",
+    "bytes": 25135
+  },
+  {
+    "path": "android/app/src/main/res/mipmap-mdpi/ic_launcher_round.png",
+    "bytes": 5857
+  },
+  {
+    "path": "android/app/src/main/res/mipmap-xhdpi/ic_launcher.png",
+    "bytes": 20421
+  },
+  {
+    "path": "android/app/src/main/res/mipmap-xhdpi/ic_launcher_foreground.png",
+    "bytes": 90230
+  },
+  {
+    "path": "android/app/src/main/res/mipmap-xhdpi/ic_launcher_round.png",
+    "bytes": 20421
+  },
+  {
+    "path": "android/app/src/main/res/mipmap-xxhdpi/ic_launcher.png",
+    "bytes": 43127
+  },
+  {
+    "path": "android/app/src/main/res/mipmap-xxhdpi/ic_launcher_foreground.png",
+    "bytes": 192117
+  },
+  {
+    "path": "android/app/src/main/res/mipmap-xxhdpi/ic_launcher_round.png",
+    "bytes": 43127
+  },
+  {
+    "path": "android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png",
+    "bytes": 73364
+  },
+  {
+    "path": "android/app/src/main/res/mipmap-xxxhdpi/ic_launcher_foreground.png",
+    "bytes": 332896
+  },
+  {
+    "path": "android/app/src/main/res/mipmap-xxxhdpi/ic_launcher_round.png",
+    "bytes": 73364
+  },
+  {
+    "path": "android/app/src/main/res/values/ic_launcher_background.xml",
+    "bytes": 121
+  },
+  {
+    "path": "android/app/src/main/res/values/strings.xml",
+    "bytes": 306
+  },
+  {
+    "path": "android/app/src/main/res/values/styles.xml",
+    "bytes": 823
+  },
+  {
+    "path": "android/app/src/main/res/xml/file_paths.xml",
+    "bytes": 213
+  },
+  {
+    "path": "android/app/src/main/res/xml/network_security_config.xml",
+    "bytes": 146
+  },
+  {
+    "path": "android/app/src/test/java/com/getcapacitor/myapp/ExampleUnitTest.java",
+    "bytes": 402
+  },
+  {
+    "path": "android/build.gradle",
+    "bytes": 637
+  },
+  {
+    "path": "android/capacitor.settings.gradle",
+    "bytes": 496
+  },
+  {
+    "path": "android/gradle.properties",
+    "bytes": 987
+  },
+  {
+    "path": "android/gradle/wrapper/gradle-wrapper.jar",
+    "bytes": 43764
+  },
+  {
+    "path": "android/gradle/wrapper/gradle-wrapper.properties",
+    "bytes": 253
+  },
+  {
+    "path": "android/gradlew",
+    "bytes": 8733
+  },
+  {
+    "path": "android/gradlew.bat",
+    "bytes": 2843
+  },
+  {
+    "path": "android/keystore.properties.example",
+    "bytes": 49
+  },
+  {
+    "path": "android/settings.gradle",
+    "bytes": 208
+  },
+  {
+    "path": "android/variables.gradle",
+    "bytes": 498
+  },
+  {
+    "path": "apps/admin/.env.example",
+    "bytes": 168
+  },
+  {
+    "path": "apps/admin/app/audit/page.tsx",
+    "bytes": 4855
+  },
+  {
+    "path": "apps/admin/app/auth/google/page.tsx",
+    "bytes": 2194
+  },
+  {
+    "path": "apps/admin/app/bans/page.tsx",
+    "bytes": 4987
+  },
+  {
+    "path": "apps/admin/app/dashboard/page.tsx",
+    "bytes": 12761
+  },
+  {
+    "path": "apps/admin/app/economy/page.tsx",
+    "bytes": 11654
+  },
+  {
+    "path": "apps/admin/app/feedback/page.tsx",
+    "bytes": 6634
+  },
+  {
+    "path": "apps/admin/app/forgot-password/page.tsx",
+    "bytes": 3994
+  },
+  {
+    "path": "apps/admin/app/layout.tsx",
+    "bytes": 1049
+  },
+  {
+    "path": "apps/admin/app/login/page.tsx",
+    "bytes": 2737
+  },
+  {
+    "path": "apps/admin/app/page.tsx",
+    "bytes": 4811
+  },
+  {
+    "path": "apps/admin/app/players/[id]/page.tsx",
+    "bytes": 10444
+  },
+  {
+    "path": "apps/admin/app/players/page.tsx",
+    "bytes": 10721
+  },
+  {
+    "path": "apps/admin/app/reports/page.tsx",
+    "bytes": 6147
+  },
+  {
+    "path": "apps/admin/app/reset-password/[token]/page.tsx",
+    "bytes": 575
+  },
+  {
+    "path": "apps/admin/app/reset-password/page.tsx",
+    "bytes": 1870
+  },
+  {
+    "path": "apps/admin/app/verify-email/page.tsx",
+    "bytes": 1897
+  },
+  {
+    "path": "apps/admin/components/access-required.tsx",
+    "bytes": 1377
+  },
+  {
+    "path": "apps/admin/components/action-button.tsx",
+    "bytes": 1947
+  },
+  {
+    "path": "apps/admin/components/admin-frame.tsx",
+    "bytes": 5387
+  },
+  {
+    "path": "apps/admin/components/dashboard-session-card.tsx",
+    "bytes": 4126
+  },
+  {
+    "path": "apps/admin/components/economy-edit-form.tsx",
+    "bytes": 8152
+  },
+  {
+    "path": "apps/admin/components/login-form.tsx",
+    "bytes": 5324
+  },
+  {
+    "path": "apps/admin/components/reset-password-form.tsx",
+    "bytes": 4367
+  },
+  {
+    "path": "apps/admin/components/verify-email-panel.tsx",
+    "bytes": 4880
+  },
+  {
+    "path": "apps/admin/lib/admin-session.ts",
+    "bytes": 496
+  },
+  {
+    "path": "apps/admin/lib/api.ts",
+    "bytes": 2084
+  },
+  {
+    "path": "apps/admin/lib/auth-actions.ts",
+    "bytes": 1796
+  },
+  {
+    "path": "apps/admin/lib/auth-client.ts",
+    "bytes": 267
+  },
+  {
+    "path": "apps/admin/lib/game-server.ts",
+    "bytes": 617
+  },
+  {
+    "path": "apps/admin/lib/server-api.ts",
+    "bytes": 279
+  },
+  {
+    "path": "apps/admin/next-env.d.ts",
+    "bytes": 262
+  },
+  {
+    "path": "apps/admin/next.config.ts",
+    "bytes": 130
+  },
+  {
+    "path": "apps/admin/package.json",
+    "bytes": 448
+  },
+  {
+    "path": "apps/admin/tsconfig.json",
+    "bytes": 587
+  },
+  {
+    "path": "apps/api/.env.example",
+    "bytes": 390
+  },
+  {
+    "path": "apps/api/nest-cli.json",
+    "bytes": 171
+  },
+  {
+    "path": "apps/api/package.json",
+    "bytes": 1958
+  },
+  {
+    "path": "apps/api/src/instrument.ts",
+    "bytes": 579
+  },
+  {
+    "path": "apps/api/src/main.ts",
+    "bytes": 6150
+  },
+  {
+    "path": "apps/api/src/modules/admin/admin.controller.ts",
+    "bytes": 3603
+  },
+  {
+    "path": "apps/api/src/modules/admin/admin.module.ts",
+    "bytes": 405
+  },
+  {
+    "path": "apps/api/src/modules/admin/admin.service.ts",
+    "bytes": 17520
+  },
+  {
+    "path": "apps/api/src/modules/app.module.ts",
+    "bytes": 1477
+  },
+  {
+    "path": "apps/api/src/modules/auth/auth.controller.ts",
+    "bytes": 1639
+  },
+  {
+    "path": "apps/api/src/modules/auth/auth.instance.ts",
+    "bytes": 3152
+  },
+  {
+    "path": "apps/api/src/modules/auth/auth.module.ts",
+    "bytes": 274
+  },
+  {
+    "path": "apps/api/src/modules/auth/auth.service.ts",
+    "bytes": 14796
+  },
+  {
+    "path": "apps/api/src/modules/auth/better-auth.config.ts",
+    "bytes": 4322
+  },
+  {
+    "path": "apps/api/src/modules/auth/game-token.ts",
+    "bytes": 1960
+  },
+  {
+    "path": "apps/api/src/modules/economy/economy-starter.ts",
+    "bytes": 1474
+  },
+  {
+    "path": "apps/api/src/modules/economy/economy.controller.ts",
+    "bytes": 6619
+  },
+  {
+    "path": "apps/api/src/modules/economy/economy.module.ts",
+    "bytes": 448
+  },
+  {
+    "path": "apps/api/src/modules/economy/economy.service.ts",
+    "bytes": 98705
+  },
+  {
+    "path": "apps/api/src/modules/health/health.controller.ts",
+    "bytes": 1390
+  },
+  {
+    "path": "apps/api/src/modules/health/health.module.ts",
+    "bytes": 179
+  },
+  {
+    "path": "apps/api/src/modules/leaderboard/leaderboard.controller.ts",
+    "bytes": 781
+  },
+  {
+    "path": "apps/api/src/modules/leaderboard/leaderboard.module.ts",
+    "bytes": 447
+  },
+  {
+    "path": "apps/api/src/modules/leaderboard/leaderboard.service.ts",
+    "bytes": 11228
+  },
+  {
+    "path": "apps/api/src/modules/matches/matches.controller.ts",
+    "bytes": 620
+  },
+  {
+    "path": "apps/api/src/modules/matches/matches.module.ts",
+    "bytes": 358
+  },
+  {
+    "path": "apps/api/src/modules/matches/matches.service.ts",
+    "bytes": 22857
+  },
+  {
+    "path": "apps/api/src/modules/players/players.controller.ts",
+    "bytes": 479
+  },
+  {
+    "path": "apps/api/src/modules/players/players.module.ts",
+    "bytes": 297
+  },
+  {
+    "path": "apps/api/src/modules/players/players.service.ts",
+    "bytes": 1671
+  },
+  {
+    "path": "apps/api/src/modules/prisma/prisma.module.ts",
+    "bytes": 214
+  },
+  {
+    "path": "apps/api/src/modules/prisma/prisma.service.ts",
+    "bytes": 351
+  },
+  {
+    "path": "apps/api/src/modules/ranking/player-mode-stats.ts",
+    "bytes": 2037
+  },
+  {
+    "path": "apps/api/src/modules/ranking/player-ranking.ts",
+    "bytes": 3182
+  },
+  {
+    "path": "apps/api/src/modules/realtime/realtime.controller.ts",
+    "bytes": 1059
+  },
+  {
+    "path": "apps/api/src/modules/realtime/realtime.helpers.ts",
+    "bytes": 1867
+  },
+  {
+    "path": "apps/api/src/modules/realtime/realtime.module.ts",
+    "bytes": 305
+  },
+  {
+    "path": "apps/api/src/modules/realtime/realtime.service.ts",
+    "bytes": 9835
+  },
+  {
+    "path": "apps/api/src/modules/security/domino-proof.ts",
+    "bytes": 1924
+  },
+  {
+    "path": "apps/api/src/modules/social-realtime/social-realtime.gateway.ts",
+    "bytes": 17650
+  },
+  {
+    "path": "apps/api/src/modules/social-realtime/social-realtime.module.ts",
+    "bytes": 553
+  },
+  {
+    "path": "apps/api/src/modules/social-realtime/social-realtime.service.ts",
+    "bytes": 8574
+  },
+  {
+    "path": "apps/api/src/modules/social/chatModeration.ts",
+    "bytes": 4345
+  },
+  {
+    "path": "apps/api/src/modules/social/social.controller.ts",
+    "bytes": 8619
+  },
+  {
+    "path": "apps/api/src/modules/social/social.module.ts",
+    "bytes": 440
+  },
+  {
+    "path": "apps/api/src/modules/social/social.service.ts",
+    "bytes": 129702
+  },
+  {
+    "path": "apps/api/src/modules/validation/validation.dto.ts",
+    "bytes": 10050
+  },
+  {
+    "path": "apps/api/src/redis-io.adapter.ts",
+    "bytes": 973
+  },
+  {
+    "path": "apps/api/src/types/better-auth-node.d.ts",
+    "bytes": 226
+  },
+  {
+    "path": "apps/api/test/admin.service.test.ts",
+    "bytes": 4884
+  },
+  {
+    "path": "apps/api/test/auth.secret-guard.test.ts",
+    "bytes": 2837
+  },
+  {
+    "path": "apps/api/test/auth.service.test.ts",
+    "bytes": 9154
+  },
+  {
+    "path": "apps/api/test/chatModeration.test.ts",
+    "bytes": 1029
+  },
+  {
+    "path": "apps/api/test/economy.service.test.ts",
+    "bytes": 28785
+  },
+  {
+    "path": "apps/api/test/economy.settlement.test.ts",
+    "bytes": 21418
+  },
+  {
+    "path": "apps/api/test/health.controller.test.ts",
+    "bytes": 603
+  },
+  {
+    "path": "apps/api/test/leaderboard.service.test.ts",
+    "bytes": 5643
+  },
+  {
+    "path": "apps/api/test/matches.service.test.ts",
+    "bytes": 25973
+  },
+  {
+    "path": "apps/api/test/player-ranking.test.ts",
+    "bytes": 2060
+  },
+  {
+    "path": "apps/api/test/players.service.test.ts",
+    "bytes": 2954
+  },
+  {
+    "path": "apps/api/test/realtime.controller.test.ts",
+    "bytes": 1632
+  },
+  {
+    "path": "apps/api/test/realtime.helpers.test.ts",
+    "bytes": 1622
+  },
+  {
+    "path": "apps/api/test/social-realtime.gateway.test.ts",
+    "bytes": 12738
+  },
+  {
+    "path": "apps/api/test/social.service.test.ts",
+    "bytes": 80424
+  },
+  {
+    "path": "apps/api/test/validation.pipe.test.ts",
+    "bytes": 4084
+  },
+  {
+    "path": "apps/api/tsconfig.json",
+    "bytes": 370
+  },
+  {
+    "path": "assets/cosmetics/table/table_skin_01.webp",
+    "bytes": 622330
+  },
+  {
+    "path": "assets/cosmetics/table/table_skin_02.webp",
+    "bytes": 683572
+  },
+  {
+    "path": "assets/cosmetics/table/table_skin_03.webp",
+    "bytes": 730840
+  },
+  {
+    "path": "assets/cosmetics/table/table_skin_04.webp",
+    "bytes": 408934
+  },
+  {
+    "path": "assets/cosmetics/table/table_skin_05.webp",
+    "bytes": 1697924
+  },
+  {
+    "path": "assets/cosmetics/table/table_skin_06.webp",
+    "bytes": 13660
+  },
+  {
+    "path": "assets/cosmetics/table/table_skin_07.webp",
+    "bytes": 211834
+  },
+  {
+    "path": "assets/cosmetics/table/table_skin_08.webp",
+    "bytes": 211106
+  },
+  {
+    "path": "assets/cosmetics/table/table_skin_09.webp",
+    "bytes": 234578
+  },
+  {
+    "path": "assets/gift/gift_001.png",
+    "bytes": 251764
+  },
+  {
+    "path": "assets/gift/gift_001_anim.webm",
+    "bytes": 217855
+  },
+  {
+    "path": "assets/gift/gift_002.png",
+    "bytes": 168874
+  },
+  {
+    "path": "assets/gift/gift_002_anim.webm",
+    "bytes": 342033
+  },
+  {
+    "path": "assets/gift/gift_003.png",
+    "bytes": 332188
+  },
+  {
+    "path": "assets/gift/gift_003_anim.webm",
+    "bytes": 452841
+  },
+  {
+    "path": "assets/gift/gift_004.png",
+    "bytes": 246432
+  },
+  {
+    "path": "assets/gift/gift_004_anim.webm",
+    "bytes": 365313
+  },
+  {
+    "path": "assets/gift/gift_005.png",
+    "bytes": 316329
+  },
+  {
+    "path": "assets/gift/gift_005_anim.webm",
+    "bytes": 344244
+  },
+  {
+    "path": "assets/gift/gift_006.png",
+    "bytes": 259670
+  },
+  {
+    "path": "assets/gift/gift_006_anim.webm",
+    "bytes": 345479
+  },
+  {
+    "path": "assets/gift/gift_007.png",
+    "bytes": 207670
+  },
+  {
+    "path": "assets/gift/gift_007_anim.webm",
+    "bytes": 336919
+  },
+  {
+    "path": "assets/gift/gift_008.png",
+    "bytes": 264284
+  },
+  {
+    "path": "assets/gift/gift_008_anim.webm",
+    "bytes": 339992
+  },
+  {
+    "path": "assets/gift/gift_009.png",
+    "bytes": 334225
+  },
+  {
+    "path": "assets/gift/gift_009_anim.webm",
+    "bytes": 401668
+  },
+  {
+    "path": "assets/gift/gift_010.png",
+    "bytes": 297652
+  },
+  {
+    "path": "assets/gift/gift_010_anim.webm",
+    "bytes": 344391
+  },
+  {
+    "path": "assets/gift/gift_011.png",
+    "bytes": 341832
+  },
+  {
+    "path": "assets/gift/gift_011_anim.webm",
+    "bytes": 344162
+  },
+  {
+    "path": "assets/gift/gift_012.png",
+    "bytes": 117381
+  },
+  {
+    "path": "assets/gift/gift_012_anim.webm",
+    "bytes": 347630
+  },
+  {
+    "path": "assets/icon.png",
+    "bytes": 716927
+  },
+  {
+    "path": "assets/logo.png",
+    "bytes": 547690
+  },
+  {
+    "path": "assets/reactions/1F48B.svg",
+    "bytes": 2996
+  },
+  {
+    "path": "assets/reactions/1F609.svg",
+    "bytes": 1508
+  },
+  {
+    "path": "assets/reactions/1F618.svg",
+    "bytes": 2410
+  },
+  {
+    "path": "assets/reactions/1F62D.svg",
+    "bytes": 2114
+  },
+  {
+    "path": "assets/reactions/1F62E-200D-1F4A8.svg",
+    "bytes": 3168
+  },
+  {
+    "path": "assets/reactions/1F634.svg",
+    "bytes": 3461
+  },
+  {
+    "path": "assets/reactions/1F914.svg",
+    "bytes": 1826
+  },
+  {
+    "path": "assets/reactions/1F923.svg",
+    "bytes": 2738
+  },
+  {
+    "path": "assets/reactions/1F929.svg",
+    "bytes": 2947
+  },
+  {
+    "path": "assets/reactions/1F92C.svg",
+    "bytes": 3865
+  },
+  {
+    "path": "assets/sounds/menu music/Majestic Menu Lounge.mp3",
+    "bytes": 2440367
+  },
+  {
+    "path": "assets/sounds/playlist game/Baku Breeze Lounge.mp3",
+    "bytes": 2469551
+  },
+  {
+    "path": "assets/sounds/playlist game/Legacy of the Tiles.mp3",
+    "bytes": 2722223
+  },
+  {
+    "path": "auth-complete.html",
+    "bytes": 9100
+  },
+  {
+    "path": "capacitor.config.json",
+    "bytes": 480
+  },
+  {
+    "path": "chat-screen-mobile.png",
+    "bytes": 129473
+  },
+  {
+    "path": "css/style.css",
+    "bytes": 195464
+  },
+  {
+    "path": "delete-account.html",
+    "bytes": 5601
+  },
+  {
+    "path": "docker-compose.platform.yml",
+    "bytes": 406
+  },
+  {
+    "path": "docs/agent-deploy-quickstart.md",
+    "bytes": 3247
+  },
+  {
+    "path": "docs/domino-telefon-remediation-todo-ru.md",
+    "bytes": 59298
+  },
+  {
+    "path": "docs/economy-dev-log.md",
+    "bytes": 2040
+  },
+  {
+    "path": "docs/economy-tz.md",
+    "bytes": 3611
+  },
+  {
+    "path": "docs/https-setup-simplesoft-az.md",
+    "bytes": 4841
+  },
+  {
+    "path": "docs/platform-deploy-gcloud.md",
+    "bytes": 2600
+  },
+  {
+    "path": "docs/platform-migration-tz.md",
+    "bytes": 6987
+  },
+  {
+    "path": "docs/server-update-workflow.md",
+    "bytes": 1937
+  },
+  {
+    "path": "docs/social-play-invite-reservation-flow.md",
+    "bytes": 14259
+  },
+  {
+    "path": "docs/social-realtime-audit.md",
+    "bytes": 12429
+  },
+  {
+    "path": "docs/social-realtime-qa-checklist.md",
+    "bytes": 4003
+  },
+  {
+    "path": "domino-gifts-todo-ru.md",
+    "bytes": 6805
+  },
+  {
+    "path": "e2e/domino.spec.mjs",
+    "bytes": 124086
+  },
+  {
+    "path": "e2e/static-server.cjs",
+    "bytes": 1787
+  },
+  {
+    "path": "index.html",
+    "bytes": 49399
+  },
+  {
+    "path": "js/account.js",
+    "bytes": 44908
+  },
+  {
+    "path": "js/ai.js",
+    "bytes": 6756
+  },
+  {
+    "path": "js/app.js",
+    "bytes": 1011943
+  },
+  {
+    "path": "js/board.js",
+    "bytes": 19509
+  },
+  {
+    "path": "js/endpoints.js",
+    "bytes": 296
+  },
+  {
+    "path": "js/konvaBoardRenderer.js",
+    "bytes": 50026
+  },
+  {
+    "path": "js/model.js",
+    "bytes": 2981
+  },
+  {
+    "path": "js/network.js",
+    "bytes": 34711
+  },
+  {
+    "path": "js/renderer.js",
+    "bytes": 61907
+  },
+  {
+    "path": "js/sounds.js",
+    "bytes": 8185
+  },
+  {
+    "path": "js/splash.js",
+    "bytes": 3128
+  },
+  {
+    "path": "js/translations.js",
+    "bytes": 115128
+  },
+  {
+    "path": "js/vendor/colyseus.js",
+    "bytes": 438839
+  },
+  {
+    "path": "js/vendor/gsap.min.js",
+    "bytes": 72927
+  },
+  {
+    "path": "js/vendor/konva.min.js",
+    "bytes": 185931
+  },
+  {
+    "path": "js/vendor/localforage.min.js",
+    "bytes": 29703
+  },
+  {
+    "path": "js/vendor/socket.io.min.js",
+    "bytes": 46822
+  },
+  {
+    "path": "js/voice.js",
+    "bytes": 34877
+  },
+  {
+    "path": "load-test-results/2026-06-04_03-53/economy.json",
+    "bytes": 818
+  },
+  {
+    "path": "load-test-results/2026-06-04_03-53/errors.json",
+    "bytes": 2
+  },
+  {
+    "path": "load-test-results/2026-06-04_03-53/events.jsonl",
+    "bytes": 153
+  },
+  {
+    "path": "load-test-results/2026-06-04_03-53/players.json",
+    "bytes": 854
+  },
+  {
+    "path": "load-test-results/2026-06-04_03-53/rating.json",
+    "bytes": 1154
+  },
+  {
+    "path": "load-test-results/2026-06-04_03-53/server-metrics.json",
+    "bytes": 124
+  },
+  {
+    "path": "load-test-results/2026-06-04_03-53/summary.json",
+    "bytes": 1112
+  },
+  {
+    "path": "load-test-results/2026-06-04_03-53/summary.md",
+    "bytes": 1512
+  },
+  {
+    "path": "load-test-results/2026-06-04_03-54/economy.json",
+    "bytes": 818
+  },
+  {
+    "path": "load-test-results/2026-06-04_03-54/errors.json",
+    "bytes": 2
+  },
+  {
+    "path": "load-test-results/2026-06-04_03-54/events.jsonl",
+    "bytes": 153
+  },
+  {
+    "path": "load-test-results/2026-06-04_03-54/players.json",
+    "bytes": 854
+  },
+  {
+    "path": "load-test-results/2026-06-04_03-54/rating.json",
+    "bytes": 1154
+  },
+  {
+    "path": "load-test-results/2026-06-04_03-54/server-metrics.json",
+    "bytes": 124
+  },
+  {
+    "path": "load-test-results/2026-06-04_03-54/summary.json",
+    "bytes": 1043
+  },
+  {
+    "path": "load-test-results/2026-06-04_03-54/summary.md",
+    "bytes": 1493
+  },
+  {
+    "path": "load-test-results/2026-06-04_04-10/economy.json",
+    "bytes": 818
+  },
+  {
+    "path": "load-test-results/2026-06-04_04-10/errors.json",
+    "bytes": 83501
+  },
+  {
+    "path": "load-test-results/2026-06-04_04-10/events.jsonl",
+    "bytes": 145999
+  },
+  {
+    "path": "load-test-results/2026-06-04_04-10/players.json",
+    "bytes": 48329
+  },
+  {
+    "path": "load-test-results/2026-06-04_04-10/rating.json",
+    "bytes": 1154
+  },
+  {
+    "path": "load-test-results/2026-06-04_04-10/server-metrics.json",
+    "bytes": 90053
+  },
+  {
+    "path": "load-test-results/2026-06-04_04-10/summary.json",
+    "bytes": 1127
+  },
+  {
+    "path": "load-test-results/2026-06-04_04-10/summary.md",
+    "bytes": 1525
+  },
+  {
+    "path": "load-test-results/2026-06-04_04-14/economy.json",
+    "bytes": 818
+  },
+  {
+    "path": "load-test-results/2026-06-04_04-14/errors.json",
+    "bytes": 322
+  },
+  {
+    "path": "load-test-results/2026-06-04_04-14/events.jsonl",
+    "bytes": 896
+  },
+  {
+    "path": "load-test-results/2026-06-04_04-14/players.json",
+    "bytes": 973
+  },
+  {
+    "path": "load-test-results/2026-06-04_04-14/rating.json",
+    "bytes": 1154
+  },
+  {
+    "path": "load-test-results/2026-06-04_04-14/server-metrics.json",
+    "bytes": 464
+  },
+  {
+    "path": "load-test-results/2026-06-04_04-14/summary.json",
+    "bytes": 1124
+  },
+  {
+    "path": "load-test-results/2026-06-04_04-14/summary.md",
+    "bytes": 1497
+  },
+  {
+    "path": "load-test-results/2026-06-04_04-15/economy.json",
+    "bytes": 846
+  },
+  {
+    "path": "load-test-results/2026-06-04_04-15/errors.json",
+    "bytes": 83542
+  },
+  {
+    "path": "load-test-results/2026-06-04_04-15/events.jsonl",
+    "bytes": 146040
+  },
+  {
+    "path": "load-test-results/2026-06-04_04-15/players.json",
+    "bytes": 48370
+  },
+  {
+    "path": "load-test-results/2026-06-04_04-15/rating.json",
+    "bytes": 1154
+  },
+  {
+    "path": "load-test-results/2026-06-04_04-15/server-metrics.json",
+    "bytes": 90094
+  },
+  {
+    "path": "load-test-results/2026-06-04_04-15/summary.json",
+    "bytes": 1216
+  },
+  {
+    "path": "load-test-results/2026-06-04_04-15/summary.md",
+    "bytes": 1617
+  },
+  {
+    "path": "load-test-results/2026-06-04_04-17/economy.json",
+    "bytes": 846
+  },
+  {
+    "path": "load-test-results/2026-06-04_04-17/errors.json",
+    "bytes": 212010
+  },
+  {
+    "path": "load-test-results/2026-06-04_04-17/events.jsonl",
+    "bytes": 285502
+  },
+  {
+    "path": "load-test-results/2026-06-04_04-17/players.json",
+    "bytes": 30346
+  },
+  {
+    "path": "load-test-results/2026-06-04_04-17/rating.json",
+    "bytes": 1154
+  },
+  {
+    "path": "load-test-results/2026-06-04_04-17/server-metrics.json",
+    "bytes": 230390
+  },
+  {
+    "path": "load-test-results/2026-06-04_04-17/summary.json",
+    "bytes": 1362
+  },
+  {
+    "path": "load-test-results/2026-06-04_04-17/summary.md",
+    "bytes": 1722
+  },
+  {
+    "path": "load-test-results/2026-06-04_04-19/events.jsonl",
+    "bytes": 80467
+  },
+  {
+    "path": "load-test-results/2026-06-04_04-22/events.jsonl",
+    "bytes": 119276
+  },
+  {
+    "path": "load-test-results/2026-06-04_04-26/events.jsonl",
+    "bytes": 198337
+  },
+  {
+    "path": "load-test-results/2026-06-04_05-13/events.jsonl",
+    "bytes": 320292
+  },
+  {
+    "path": "load-test-results/2026-06-04_05-27/economy.json",
+    "bytes": 844
+  },
+  {
+    "path": "load-test-results/2026-06-04_05-27/errors.json",
+    "bytes": 1441
+  },
+  {
+    "path": "load-test-results/2026-06-04_05-27/events.jsonl",
+    "bytes": 135431
+  },
+  {
+    "path": "load-test-results/2026-06-04_05-27/players.json",
+    "bytes": 1027
+  },
+  {
+    "path": "load-test-results/2026-06-04_05-27/rating.json",
+    "bytes": 1154
+  },
+  {
+    "path": "load-test-results/2026-06-04_05-27/server-metrics.json",
+    "bytes": 1687
+  },
+  {
+    "path": "load-test-results/2026-06-04_05-27/summary.json",
+    "bytes": 1209
+  },
+  {
+    "path": "load-test-results/2026-06-04_05-27/summary.md",
+    "bytes": 1578
+  },
+  {
+    "path": "load-test-results/2026-06-04_05-29/events.jsonl",
+    "bytes": 3676
+  },
+  {
+    "path": "load-test-results/2026-06-04_05-30/economy.json",
+    "bytes": 844
+  },
+  {
+    "path": "load-test-results/2026-06-04_05-30/errors.json",
+    "bytes": 1441
+  },
+  {
+    "path": "load-test-results/2026-06-04_05-30/events.jsonl",
+    "bytes": 52133
+  },
+  {
+    "path": "load-test-results/2026-06-04_05-30/players.json",
+    "bytes": 1027
+  },
+  {
+    "path": "load-test-results/2026-06-04_05-30/rating.json",
+    "bytes": 1154
+  },
+  {
+    "path": "load-test-results/2026-06-04_05-30/server-metrics.json",
+    "bytes": 1687
+  },
+  {
+    "path": "load-test-results/2026-06-04_05-30/summary.json",
+    "bytes": 1210
+  },
+  {
+    "path": "load-test-results/2026-06-04_05-30/summary.md",
+    "bytes": 1579
+  },
+  {
+    "path": "load-test-results/2026-06-04_05-31/economy.json",
+    "bytes": 844
+  },
+  {
+    "path": "load-test-results/2026-06-04_05-31/errors.json",
+    "bytes": 1441
+  },
+  {
+    "path": "load-test-results/2026-06-04_05-31/events.jsonl",
+    "bytes": 95486
+  },
+  {
+    "path": "load-test-results/2026-06-04_05-31/players.json",
+    "bytes": 1027
+  },
+  {
+    "path": "load-test-results/2026-06-04_05-31/rating.json",
+    "bytes": 1154
+  },
+  {
+    "path": "load-test-results/2026-06-04_05-31/server-metrics.json",
+    "bytes": 1687
+  },
+  {
+    "path": "load-test-results/2026-06-04_05-31/summary.json",
+    "bytes": 1209
+  },
+  {
+    "path": "load-test-results/2026-06-04_05-31/summary.md",
+    "bytes": 1578
+  },
+  {
+    "path": "load-test-results/2026-06-04_05-32/economy.json",
+    "bytes": 848
+  },
+  {
+    "path": "load-test-results/2026-06-04_05-32/errors.json",
+    "bytes": 526
+  },
+  {
+    "path": "load-test-results/2026-06-04_05-32/events.jsonl",
+    "bytes": 130806
+  },
+  {
+    "path": "load-test-results/2026-06-04_05-32/players.json",
+    "bytes": 850
+  },
+  {
+    "path": "load-test-results/2026-06-04_05-32/rating.json",
+    "bytes": 1154
+  },
+  {
+    "path": "load-test-results/2026-06-04_05-32/server-metrics.json",
+    "bytes": 698
+  },
+  {
+    "path": "load-test-results/2026-06-04_05-32/summary.json",
+    "bytes": 1156
+  },
+  {
+    "path": "load-test-results/2026-06-04_05-32/summary.md",
+    "bytes": 1562
+  },
+  {
+    "path": "load-test-results/2026-06-04_05-36/economy.json",
+    "bytes": 847
+  },
+  {
+    "path": "load-test-results/2026-06-04_05-36/errors.json",
+    "bytes": 2
+  },
+  {
+    "path": "load-test-results/2026-06-04_05-36/events.jsonl",
+    "bytes": 208636
+  },
+  {
+    "path": "load-test-results/2026-06-04_05-36/players.json",
+    "bytes": 850
+  },
+  {
+    "path": "load-test-results/2026-06-04_05-36/rating.json",
+    "bytes": 1154
+  },
+  {
+    "path": "load-test-results/2026-06-04_05-36/server-metrics.json",
+    "bytes": 124
+  },
+  {
+    "path": "load-test-results/2026-06-04_05-36/summary.json",
+    "bytes": 1156
+  },
+  {
+    "path": "load-test-results/2026-06-04_05-36/summary.md",
+    "bytes": 1561
+  },
+  {
+    "path": "load-test-results/2026-06-04_12-16/economy.json",
+    "bytes": 842
+  },
+  {
+    "path": "load-test-results/2026-06-04_12-16/errors.json",
+    "bytes": 2
+  },
+  {
+    "path": "load-test-results/2026-06-04_12-16/events.jsonl",
+    "bytes": 165147
+  },
+  {
+    "path": "load-test-results/2026-06-04_12-16/players.json",
+    "bytes": 850
+  },
+  {
+    "path": "load-test-results/2026-06-04_12-16/rating.json",
+    "bytes": 1154
+  },
+  {
+    "path": "load-test-results/2026-06-04_12-16/server-metrics.json",
+    "bytes": 124
+  },
+  {
+    "path": "load-test-results/2026-06-04_12-16/summary.json",
+    "bytes": 1069
+  },
+  {
+    "path": "load-test-results/2026-06-04_12-16/summary.md",
+    "bytes": 1520
+  },
+  {
+    "path": "load-test-results/2026-06-04_12-20/economy.json",
+    "bytes": 1682
+  },
+  {
+    "path": "load-test-results/2026-06-04_12-20/errors.json",
+    "bytes": 2
+  },
+  {
+    "path": "load-test-results/2026-06-04_12-20/events.jsonl",
+    "bytes": 181225
+  },
+  {
+    "path": "load-test-results/2026-06-04_12-20/players.json",
+    "bytes": 1696
+  },
+  {
+    "path": "load-test-results/2026-06-04_12-20/rating.json",
+    "bytes": 2306
+  },
+  {
+    "path": "load-test-results/2026-06-04_12-20/server-metrics.json",
+    "bytes": 124
+  },
+  {
+    "path": "load-test-results/2026-06-04_12-20/summary.json",
+    "bytes": 1070
+  },
+  {
+    "path": "load-test-results/2026-06-04_12-20/summary.md",
+    "bytes": 1522
+  },
+  {
+    "path": "load-test-results/2026-06-04_12-46/economy.json",
+    "bytes": 842
+  },
+  {
+    "path": "load-test-results/2026-06-04_12-46/errors.json",
+    "bytes": 2
+  },
+  {
+    "path": "load-test-results/2026-06-04_12-46/events.jsonl",
+    "bytes": 149127
+  },
+  {
+    "path": "load-test-results/2026-06-04_12-46/players.json",
+    "bytes": 850
+  },
+  {
+    "path": "load-test-results/2026-06-04_12-46/rating.json",
+    "bytes": 1158
+  },
+  {
+    "path": "load-test-results/2026-06-04_12-46/server-metrics.json",
+    "bytes": 124
+  },
+  {
+    "path": "load-test-results/2026-06-04_12-46/summary.json",
+    "bytes": 1071
+  },
+  {
+    "path": "load-test-results/2026-06-04_12-46/summary.md",
+    "bytes": 1528
+  },
+  {
+    "path": "load-test-results/2026-06-04_12-51/economy.json",
+    "bytes": 842
+  },
+  {
+    "path": "load-test-results/2026-06-04_12-51/errors.json",
+    "bytes": 2
+  },
+  {
+    "path": "load-test-results/2026-06-04_12-51/events.jsonl",
+    "bytes": 201832
+  },
+  {
+    "path": "load-test-results/2026-06-04_12-51/players.json",
+    "bytes": 850
+  },
+  {
+    "path": "load-test-results/2026-06-04_12-51/rating.json",
+    "bytes": 1156
+  },
+  {
+    "path": "load-test-results/2026-06-04_12-51/server-metrics.json",
+    "bytes": 124
+  },
+  {
+    "path": "load-test-results/2026-06-04_12-51/summary.json",
+    "bytes": 1070
+  },
+  {
+    "path": "load-test-results/2026-06-04_12-51/summary.md",
+    "bytes": 1524
+  },
+  {
+    "path": "load-test-results/2026-06-04_13-03/economy.json",
+    "bytes": 839
+  },
+  {
+    "path": "load-test-results/2026-06-04_13-03/errors.json",
+    "bytes": 2
+  },
+  {
+    "path": "load-test-results/2026-06-04_13-03/events.jsonl",
+    "bytes": 393395
+  },
+  {
+    "path": "load-test-results/2026-06-04_13-03/players.json",
+    "bytes": 850
+  },
+  {
+    "path": "load-test-results/2026-06-04_13-03/rating.json",
+    "bytes": 1288
+  },
+  {
+    "path": "load-test-results/2026-06-04_13-03/server-metrics.json",
+    "bytes": 124
+  },
+  {
+    "path": "load-test-results/2026-06-04_13-03/summary.json",
+    "bytes": 1213
+  },
+  {
+    "path": "load-test-results/2026-06-04_13-03/summary.md",
+    "bytes": 1708
+  },
+  {
+    "path": "load-test-results/2026-06-04_14-56/economy.json",
+    "bytes": 1680
+  },
+  {
+    "path": "load-test-results/2026-06-04_14-56/errors.json",
+    "bytes": 2
+  },
+  {
+    "path": "load-test-results/2026-06-04_14-56/events.jsonl",
+    "bytes": 143707
+  },
+  {
+    "path": "load-test-results/2026-06-04_14-56/players.json",
+    "bytes": 1692
+  },
+  {
+    "path": "load-test-results/2026-06-04_14-56/rating.json",
+    "bytes": 2569
+  },
+  {
+    "path": "load-test-results/2026-06-04_14-56/server-metrics.json",
+    "bytes": 124
+  },
+  {
+    "path": "load-test-results/2026-06-04_14-56/summary.json",
+    "bytes": 1215
+  },
+  {
+    "path": "load-test-results/2026-06-04_14-56/summary.md",
+    "bytes": 1704
+  },
+  {
+    "path": "load-test-results/2026-06-04_15-03/economy.json",
+    "bytes": 4125
+  },
+  {
+    "path": "load-test-results/2026-06-04_15-03/errors.json",
+    "bytes": 2
+  },
+  {
+    "path": "load-test-results/2026-06-04_15-03/events.jsonl",
+    "bytes": 573993
+  },
+  {
+    "path": "load-test-results/2026-06-04_15-03/players.json",
+    "bytes": 4238
+  },
+  {
+    "path": "load-test-results/2026-06-04_15-03/rating.json",
+    "bytes": 6432
+  },
+  {
+    "path": "load-test-results/2026-06-04_15-03/server-metrics.json",
+    "bytes": 125
+  },
+  {
+    "path": "load-test-results/2026-06-04_15-03/summary.json",
+    "bytes": 2301
+  },
+  {
+    "path": "load-test-results/2026-06-04_15-03/summary.md",
+    "bytes": 2695
+  },
+  {
+    "path": "load-test-results/2026-06-04_15-26/economy.json",
+    "bytes": 1676
+  },
+  {
+    "path": "load-test-results/2026-06-04_15-26/errors.json",
+    "bytes": 2
+  },
+  {
+    "path": "load-test-results/2026-06-04_15-26/events.jsonl",
+    "bytes": 214084
+  },
+  {
+    "path": "load-test-results/2026-06-04_15-26/players.json",
+    "bytes": 1692
+  },
+  {
+    "path": "load-test-results/2026-06-04_15-26/rating.json",
+    "bytes": 2567
+  },
+  {
+    "path": "load-test-results/2026-06-04_15-26/server-metrics.json",
+    "bytes": 124
+  },
+  {
+    "path": "load-test-results/2026-06-04_15-26/summary.json",
+    "bytes": 2293
+  },
+  {
+    "path": "load-test-results/2026-06-04_15-26/summary.md",
+    "bytes": 2677
+  },
+  {
+    "path": "load-test-results/2026-06-04_15-35/economy.json",
+    "bytes": 1679
+  },
+  {
+    "path": "load-test-results/2026-06-04_15-35/errors.json",
+    "bytes": 2
+  },
+  {
+    "path": "load-test-results/2026-06-04_15-35/events.jsonl",
+    "bytes": 191625
+  },
+  {
+    "path": "load-test-results/2026-06-04_15-35/players.json",
+    "bytes": 1696
+  },
+  {
+    "path": "load-test-results/2026-06-04_15-35/rating.json",
+    "bytes": 2570
+  },
+  {
+    "path": "load-test-results/2026-06-04_15-35/server-metrics.json",
+    "bytes": 124
+  },
+  {
+    "path": "load-test-results/2026-06-04_15-35/summary.json",
+    "bytes": 1215
+  },
+  {
+    "path": "load-test-results/2026-06-04_15-35/summary.md",
+    "bytes": 1709
+  },
+  {
+    "path": "load-test-results/2026-06-04_15-47/economy.json",
+    "bytes": 4118
+  },
+  {
+    "path": "load-test-results/2026-06-04_15-47/errors.json",
+    "bytes": 2
+  },
+  {
+    "path": "load-test-results/2026-06-04_15-47/events.jsonl",
+    "bytes": 626984
+  },
+  {
+    "path": "load-test-results/2026-06-04_15-47/players.json",
+    "bytes": 4240
+  },
+  {
+    "path": "load-test-results/2026-06-04_15-47/rating.json",
+    "bytes": 6429
+  },
+  {
+    "path": "load-test-results/2026-06-04_15-47/server-metrics.json",
+    "bytes": 125
+  },
+  {
+    "path": "load-test-results/2026-06-04_15-47/summary.json",
+    "bytes": 2300
+  },
+  {
+    "path": "load-test-results/2026-06-04_15-47/summary.md",
+    "bytes": 2692
+  },
+  {
+    "path": "load-test-results/2026-06-04_16-18/events.jsonl",
+    "bytes": 139878
+  },
+  {
+    "path": "load-test-results/2026-06-04_16-20/events.jsonl",
+    "bytes": 161287
+  },
+  {
+    "path": "load-test-results/2026-06-04_16-23/events.jsonl",
+    "bytes": 107162
+  },
+  {
+    "path": "load-test-results/regular-flow/2026-06-04_15-44/events.jsonl",
+    "bytes": 92060
+  },
+  {
+    "path": "manifest.json",
+    "bytes": 424
+  },
+  {
+    "path": "mobile-auth-complete.html",
+    "bytes": 1970
+  },
+  {
+    "path": "network_animation_fix_log.md",
+    "bytes": 7342
+  },
+  {
+    "path": "package-lock.json",
+    "bytes": 363047
+  },
+  {
+    "path": "package.json",
+    "bytes": 2573
+  },
+  {
+    "path": "packages/db/.env.example",
+    "bytes": 89
+  },
+  {
+    "path": "packages/db/README.md",
+    "bytes": 463
+  },
+  {
+    "path": "packages/db/package.json",
+    "bytes": 319
+  },
+  {
+    "path": "packages/db/prisma/migrations/20260507_000001_initial_platform/migration.sql",
+    "bytes": 11276
+  },
+  {
+    "path": "packages/db/prisma/migrations/20260508_000002_economy/migration.sql",
+    "bytes": 14290
+  },
+  {
+    "path": "packages/db/prisma/migrations/20260508_000003_social/migration.sql",
+    "bytes": 3414
+  },
+  {
+    "path": "packages/db/prisma/migrations/20260513_000004_player_avatar_url/migration.sql",
+    "bytes": 64
+  },
+  {
+    "path": "packages/db/prisma/migrations/20260513_000005_gifts/migration.sql",
+    "bytes": 3510
+  },
+  {
+    "path": "packages/db/prisma/migrations/20260515_000006_gift_ledger_types/migration.sql",
+    "bytes": 194
+  },
+  {
+    "path": "packages/db/prisma/migrations/20260515_000007_table_skins/migration.sql",
+    "bytes": 98
+  },
+  {
+    "path": "packages/db/prisma/migrations/20260518_000008_hardening/migration.sql",
+    "bytes": 3343
+  },
+  {
+    "path": "packages/db/prisma/migrations/20260518_000009_leaderboard_index/migration.sql",
+    "bytes": 168
+  },
+  {
+    "path": "packages/db/prisma/migrations/20260518_000010_system_audit_log/migration.sql",
+    "bytes": 1261
+  },
+  {
+    "path": "packages/db/prisma/migrations/20260603_000011_add_direct_messages/migration.sql",
+    "bytes": 1031
+  },
+  {
+    "path": "packages/db/prisma/migrations/20260603_000012_add_inbox_messages/migration.sql",
+    "bytes": 839
+  },
+  {
+    "path": "packages/db/prisma/migrations/20260612_000013_add_play_invite_reservation/migration.sql",
+    "bytes": 1473
+  },
+  {
+    "path": "packages/db/prisma/migrations/20260612_000014_add_play_invite_room_ready/migration.sql",
+    "bytes": 532
+  },
+  {
+    "path": "packages/db/prisma/migrations/20260625_000015_add_feedback/migration.sql",
+    "bytes": 1077
+  },
+  {
+    "path": "packages/db/prisma/migrations/20260626_000016_split_rating_by_mode/migration.sql",
+    "bytes": 1682
+  },
+  {
+    "path": "packages/db/prisma/migrations/20260626_000017_daily_rewards_config/migration.sql",
+    "bytes": 211
+  },
+  {
+    "path": "packages/db/prisma/migrations/20260811_000018_update_cosmetic_and_gift_prices/migration.sql",
+    "bytes": 591
+  },
+  {
+    "path": "packages/db/prisma/migrations/migration_lock.toml",
+    "bytes": 24
+  },
+  {
+    "path": "packages/db/prisma/schema.prisma",
+    "bytes": 26192
+  },
+  {
+    "path": "packages/db/scripts/bootstrap-admin-user.mjs",
+    "bytes": 2785
+  },
+  {
+    "path": "packages/db/scripts/bootstrap-economy-and-rating.mjs",
+    "bytes": 6833
+  },
+  {
+    "path": "packages/db/scripts/clear_messages.mjs",
+    "bytes": 849
+  },
+  {
+    "path": "packages/db/scripts/import-legacy-accounts.mjs",
+    "bytes": 7461
+  },
+  {
+    "path": "packages/db/scripts/promote-user-to-admin.mjs",
+    "bytes": 829
+  },
+  {
+    "path": "packages/db/scripts/reset-to-admin-only.mjs",
+    "bytes": 4389
+  },
+  {
+    "path": "packages/shared/package.json",
+    "bytes": 197
+  },
+  {
+    "path": "packages/shared/src/index.js",
+    "bytes": 34
+  },
+  {
+    "path": "packages/shared/src/index.ts",
+    "bytes": 174
+  },
+  {
+    "path": "packages/shared/src/legacy-auth.d.ts",
+    "bytes": 502
+  },
+  {
+    "path": "packages/shared/src/legacy-auth.js",
+    "bytes": 1721
+  },
+  {
+    "path": "playwright.config.mjs",
+    "bytes": 454
+  },
+  {
+    "path": "privacy.html",
+    "bytes": 12909
+  },
+  {
+    "path": "query-db.mjs",
+    "bytes": 751
+  },
+  {
+    "path": "scripts/build-apk.ps1",
+    "bytes": 2582
+  },
+  {
+    "path": "scripts/check-mojibake.mjs",
+    "bytes": 2956
+  },
+  {
+    "path": "scripts/gcloud/deploy-from-git.sh",
+    "bytes": 160
+  },
+  {
+    "path": "scripts/gcloud/deploy-from-ide.ps1",
+    "bytes": 2090
+  },
+  {
+    "path": "scripts/gcloud/import-google-oauth.ps1",
+    "bytes": 1874
+  },
+  {
+    "path": "scripts/gcloud/install-nginx-config.sh",
+    "bytes": 262
+  },
+  {
+    "path": "scripts/gcloud/nginx-domino2.conf",
+    "bytes": 2471
+  },
+  {
+    "path": "scripts/gcloud/provision-platform-remote.sh",
+    "bytes": 1215
+  },
+  {
+    "path": "scripts/gcloud/provision-platform.sh",
+    "bytes": 730
+  },
+  {
+    "path": "scripts/gcloud/refresh-platform-env.sh",
+    "bytes": 577
+  },
+  {
+    "path": "scripts/gcloud/update-server.ps1",
+    "bytes": 1416
+  },
+  {
+    "path": "scripts/gcloud/update-server.sh",
+    "bytes": 7773
+  },
+  {
+    "path": "scripts/load/full-game-load-test.mjs",
+    "bytes": 8765
+  },
+  {
+    "path": "scripts/load/grant-loadtest-coins.mjs",
+    "bytes": 947
+  },
+  {
+    "path": "scripts/load/list-players.mjs",
+    "bytes": 2713
+  },
+  {
+    "path": "scripts/load/load-test-client.mjs",
+    "bytes": 24887
+  },
+  {
+    "path": "scripts/load/load-test-config.mjs",
+    "bytes": 5681
+  },
+  {
+    "path": "scripts/load/load-test-reporter.mjs",
+    "bytes": 15965
+  },
+  {
+    "path": "scripts/load/load-test.test.mjs",
+    "bytes": 9514
+  },
+  {
+    "path": "scripts/load/run-queries.mjs",
+    "bytes": 2257
+  },
+  {
+    "path": "scripts/loadtest-20-economy-rating.mjs",
+    "bytes": 7599
+  },
+  {
+    "path": "scripts/loadtest-20-full.mjs",
+    "bytes": 11798
+  },
+  {
+    "path": "scripts/loadtest-online-20.mjs",
+    "bytes": 8338
+  },
+  {
+    "path": "scripts/loadtest-stress.mjs",
+    "bytes": 11080
+  },
+  {
+    "path": "scripts/sql/bootstrap-platform.sql",
+    "bytes": 528
+  },
+  {
+    "path": "scripts/sync-www.ps1",
+    "bytes": 851
+  },
+  {
+    "path": "server/BOT_TAKEOVER_ANALYSIS.md",
+    "bytes": 19475
+  },
+  {
+    "path": "server/BOT_TAKEOVER_INTEGRATION.md",
+    "bytes": 7286
+  },
+  {
+    "path": "server/DominoRoom.js",
+    "bytes": 185136
+  },
+  {
+    "path": "server/RECONNECT_RESTORE_NOTES.md",
+    "bytes": 4520
+  },
+  {
+    "path": "server/REFACTORING_STATUS.md",
+    "bytes": 3495
+  },
+  {
+    "path": "server/accountStore.js",
+    "bytes": 14595
+  },
+  {
+    "path": "server/ai.js",
+    "bytes": 5845
+  },
+  {
+    "path": "server/board.js",
+    "bytes": 61
+  },
+  {
+    "path": "server/botTakeover.js",
+    "bytes": 9302
+  },
+  {
+    "path": "server/dominoProof.js",
+    "bytes": 1701
+  },
+  {
+    "path": "server/economyClient.js",
+    "bytes": 947
+  },
+  {
+    "path": "server/economyConfig.js",
+    "bytes": 1970
+  },
+  {
+    "path": "server/economyParticipants.js",
+    "bytes": 2449
+  },
+  {
+    "path": "server/economyService.js",
+    "bytes": 17642
+  },
+  {
+    "path": "server/health.js",
+    "bytes": 1090
+  },
+  {
+    "path": "server/index.js",
+    "bytes": 13385
+  },
+  {
+    "path": "server/instrument.js",
+    "bytes": 931
+  },
+  {
+    "path": "server/joinRateLimit.js",
+    "bytes": 1020
+  },
+  {
+    "path": "server/livePresence.js",
+    "bytes": 16768
+  },
+  {
+    "path": "server/matchResultPayload.js",
+    "bytes": 4777
+  },
+  {
+    "path": "server/model.js",
+    "bytes": 61
+  },
+  {
+    "path": "server/package-lock.json",
+    "bytes": 76148
+  },
+  {
+    "path": "server/package.json",
+    "bytes": 1324
+  },
+  {
+    "path": "server/platformAuth.js",
+    "bytes": 1511
+  },
+  {
+    "path": "server/roomConfig.js",
+    "bytes": 2287
+  },
+  {
+    "path": "server/roomIdentity.js",
+    "bytes": 2319
+  },
+  {
+    "path": "server/roomPresence.js",
+    "bytes": 1458
+  },
+  {
+    "path": "server/roomRegistry.js",
+    "bytes": 3877
+  },
+  {
+    "path": "server/roomRestore.js",
+    "bytes": 2132
+  },
+  {
+    "path": "server/roomRestoreLookup.js",
+    "bytes": 1059
+  },
+  {
+    "path": "server/roomSnapshot.js",
+    "bytes": 1595
+  },
+  {
+    "path": "server/roomStatePayload.js",
+    "bytes": 9047
+  },
+  {
+    "path": "server/schema/GameState.js",
+    "bytes": 3555
+  },
+  {
+    "path": "server/schemaStateSnapshot.js",
+    "bytes": 5563
+  },
+  {
+    "path": "server/signedRequest.js",
+    "bytes": 317
+  },
+  {
+    "path": "server/test/board.test.js",
+    "bytes": 14041
+  },
+  {
+    "path": "server/test/disconnect-grace.test.js",
+    "bytes": 27990
+  },
+  {
+    "path": "server/test/domino-room.test.js",
+    "bytes": 66416
+  },
+  {
+    "path": "server/test/economy-client.test.js",
+    "bytes": 3885
+  },
+  {
+    "path": "server/test/economy-config.test.js",
+    "bytes": 2129
+  },
+  {
+    "path": "server/test/economy-participants.test.js",
+    "bytes": 4832
+  },
+  {
+    "path": "server/test/economy-service.test.js",
+    "bytes": 34909
+  },
+  {
+    "path": "server/test/game-mode-routing.test.js",
+    "bytes": 2966
+  },
+  {
+    "path": "server/test/health.test.js",
+    "bytes": 1537
+  },
+  {
+    "path": "server/test/join-rate-limit.test.js",
+    "bytes": 1183
+  },
+  {
+    "path": "server/test/last-move-reveal-ux.test.js",
+    "bytes": 6307
+  },
+  {
+    "path": "server/test/live-presence-timing.test.js",
+    "bytes": 1150
+  },
+  {
+    "path": "server/test/match-recording.test.js",
+    "bytes": 5470
+  },
+  {
+    "path": "server/test/match-result-payload.test.js",
+    "bytes": 7959
+  },
+  {
+    "path": "server/test/model.test.js",
+    "bytes": 1056
+  },
+  {
+    "path": "server/test/open-room-client-flow.test.js",
+    "bytes": 17577
+  },
+  {
+    "path": "server/test/rating.test.js",
+    "bytes": 1171
+  },
+  {
+    "path": "server/test/restore-lookup.test.js",
+    "bytes": 5572
+  },
+  {
+    "path": "server/test/result-overlay-test.test.js",
+    "bytes": 1799
+  },
+  {
+    "path": "server/test/room-config.test.js",
+    "bytes": 2036
+  },
+  {
+    "path": "server/test/room-identity.test.js",
+    "bytes": 3781
+  },
+  {
+    "path": "server/test/room-presence.test.js",
+    "bytes": 2619
+  },
+  {
+    "path": "server/test/room-registry.test.js",
+    "bytes": 689
+  },
+  {
+    "path": "server/test/room-restore-lookup.test.js",
+    "bytes": 2842
+  },
+  {
+    "path": "server/test/room-restore.test.js",
+    "bytes": 8272
+  },
+  {
+    "path": "server/test/room-seat-selection.test.js",
+    "bytes": 20464
+  },
+  {
+    "path": "server/test/room-state-payload.test.js",
+    "bytes": 10747
+  },
+  {
+    "path": "server/test/rulesets.test.js",
+    "bytes": 9455
+  },
+  {
+    "path": "server/test/schema-state-snapshot.test.js",
+    "bytes": 12088
+  },
+  {
+    "path": "server/test/security-secret.test.js",
+    "bytes": 2189
+  },
+  {
+    "path": "server/test/signed-request.test.js",
+    "bytes": 1051
+  },
+  {
+    "path": "server/test/solo-bazaar-button.test.js",
+    "bytes": 2430
+  },
+  {
+    "path": "server/test/stake-table-sanity.test.js",
+    "bytes": 1113
+  },
+  {
+    "path": "server/test/tempo-ux.test.js",
+    "bytes": 695
+  },
+  {
+    "path": "server/test/translation-sync.test.js",
+    "bytes": 4814
+  },
+  {
+    "path": "server/test/turn-timeout-forfeit-flow.test.js",
+    "bytes": 6733
+  },
+  {
+    "path": "server/test/voice-safety.test.js",
+    "bytes": 4301
+  },
+  {
+    "path": "shared/domino-board-core.cjs",
+    "bytes": 19875
+  },
+  {
+    "path": "shared/domino-model-core.cjs",
+    "bytes": 4242
+  },
+  {
+    "path": "shared/domino-rulesets.cjs",
+    "bytes": 26749
+  },
+  {
+    "path": "social-friends-mobile.png",
+    "bytes": 139515
+  },
+  {
+    "path": "social-hub-mobile.png",
+    "bytes": 135541
+  },
+  {
+    "path": "social-mail-mobile.png",
+    "bytes": 141111
+  },
+  {
+    "path": "sw.js",
+    "bytes": 4923
+  },
+  {
+    "path": "terms.html",
+    "bytes": 2114
+  },
+  {
+    "path": "test-results/.last-run.json",
+    "bytes": 45
+  },
+  {
+    "path": "www/assets/cosmetics/table/table_skin_01.webp",
+    "bytes": 622330
+  },
+  {
+    "path": "www/assets/cosmetics/table/table_skin_02.webp",
+    "bytes": 683572
+  },
+  {
+    "path": "www/assets/cosmetics/table/table_skin_03.webp",
+    "bytes": 730840
+  },
+  {
+    "path": "www/assets/cosmetics/table/table_skin_04.webp",
+    "bytes": 408934
+  },
+  {
+    "path": "www/assets/cosmetics/table/table_skin_05.webp",
+    "bytes": 1697924
+  },
+  {
+    "path": "www/assets/cosmetics/table/table_skin_06.webp",
+    "bytes": 13660
+  },
+  {
+    "path": "www/assets/cosmetics/table/table_skin_07.webp",
+    "bytes": 211834
+  },
+  {
+    "path": "www/assets/cosmetics/table/table_skin_08.webp",
+    "bytes": 211106
+  },
+  {
+    "path": "www/assets/cosmetics/table/table_skin_09.webp",
+    "bytes": 234578
+  },
+  {
+    "path": "www/assets/gift/gift_001.png",
+    "bytes": 251764
+  },
+  {
+    "path": "www/assets/gift/gift_001_anim.webm",
+    "bytes": 217855
+  },
+  {
+    "path": "www/assets/gift/gift_002.png",
+    "bytes": 168874
+  },
+  {
+    "path": "www/assets/gift/gift_002_anim.webm",
+    "bytes": 342033
+  },
+  {
+    "path": "www/assets/gift/gift_003.png",
+    "bytes": 332188
+  },
+  {
+    "path": "www/assets/gift/gift_003_anim.webm",
+    "bytes": 452841
+  },
+  {
+    "path": "www/assets/gift/gift_004.png",
+    "bytes": 246432
+  },
+  {
+    "path": "www/assets/gift/gift_004_anim.webm",
+    "bytes": 365313
+  },
+  {
+    "path": "www/assets/gift/gift_005.png",
+    "bytes": 316329
+  },
+  {
+    "path": "www/assets/gift/gift_005_anim.webm",
+    "bytes": 344244
+  },
+  {
+    "path": "www/assets/gift/gift_006.png",
+    "bytes": 259670
+  },
+  {
+    "path": "www/assets/gift/gift_006_anim.webm",
+    "bytes": 345479
+  },
+  {
+    "path": "www/assets/gift/gift_007.png",
+    "bytes": 207670
+  },
+  {
+    "path": "www/assets/gift/gift_007_anim.webm",
+    "bytes": 336919
+  },
+  {
+    "path": "www/assets/gift/gift_008.png",
+    "bytes": 264284
+  },
+  {
+    "path": "www/assets/gift/gift_008_anim.webm",
+    "bytes": 339992
+  },
+  {
+    "path": "www/assets/gift/gift_009.png",
+    "bytes": 334225
+  },
+  {
+    "path": "www/assets/gift/gift_009_anim.webm",
+    "bytes": 401668
+  },
+  {
+    "path": "www/assets/gift/gift_010.png",
+    "bytes": 297652
+  },
+  {
+    "path": "www/assets/gift/gift_010_anim.webm",
+    "bytes": 344391
+  },
+  {
+    "path": "www/assets/gift/gift_011.png",
+    "bytes": 341832
+  },
+  {
+    "path": "www/assets/gift/gift_011_anim.webm",
+    "bytes": 344162
+  },
+  {
+    "path": "www/assets/gift/gift_012.png",
+    "bytes": 117381
+  },
+  {
+    "path": "www/assets/gift/gift_012_anim.webm",
+    "bytes": 347630
+  },
+  {
+    "path": "www/assets/icon.png",
+    "bytes": 716927
+  },
+  {
+    "path": "www/assets/logo.png",
+    "bytes": 547690
+  },
+  {
+    "path": "www/assets/reactions/1F48B.svg",
+    "bytes": 2996
+  },
+  {
+    "path": "www/assets/reactions/1F609.svg",
+    "bytes": 1508
+  },
+  {
+    "path": "www/assets/reactions/1F618.svg",
+    "bytes": 2410
+  },
+  {
+    "path": "www/assets/reactions/1F62D.svg",
+    "bytes": 2114
+  },
+  {
+    "path": "www/assets/reactions/1F62E-200D-1F4A8.svg",
+    "bytes": 3168
+  },
+  {
+    "path": "www/assets/reactions/1F634.svg",
+    "bytes": 3461
+  },
+  {
+    "path": "www/assets/reactions/1F914.svg",
+    "bytes": 1826
+  },
+  {
+    "path": "www/assets/reactions/1F923.svg",
+    "bytes": 2738
+  },
+  {
+    "path": "www/assets/reactions/1F929.svg",
+    "bytes": 2947
+  },
+  {
+    "path": "www/assets/reactions/1F92C.svg",
+    "bytes": 3865
+  },
+  {
+    "path": "www/assets/sounds/menu music/Majestic Menu Lounge.mp3",
+    "bytes": 2440367
+  },
+  {
+    "path": "www/assets/sounds/playlist game/Baku Breeze Lounge.mp3",
+    "bytes": 2469551
+  },
+  {
+    "path": "www/assets/sounds/playlist game/Legacy of the Tiles.mp3",
+    "bytes": 2722223
+  },
+  {
+    "path": "www/auth-complete.html",
+    "bytes": 9100
+  },
+  {
+    "path": "www/css/style.css",
+    "bytes": 195464
+  },
+  {
+    "path": "www/delete-account.html",
+    "bytes": 5601
+  },
+  {
+    "path": "www/index.html",
+    "bytes": 49399
+  },
+  {
+    "path": "www/js/account.js",
+    "bytes": 44908
+  },
+  {
+    "path": "www/js/ai.js",
+    "bytes": 6756
+  },
+  {
+    "path": "www/js/app.js",
+    "bytes": 1011943
+  },
+  {
+    "path": "www/js/board.js",
+    "bytes": 19509
+  },
+  {
+    "path": "www/js/endpoints.js",
+    "bytes": 296
+  },
+  {
+    "path": "www/js/konvaBoardRenderer.js",
+    "bytes": 50026
+  },
+  {
+    "path": "www/js/model.js",
+    "bytes": 2981
+  },
+  {
+    "path": "www/js/network.js",
+    "bytes": 34711
+  },
+  {
+    "path": "www/js/renderer.js",
+    "bytes": 61907
+  },
+  {
+    "path": "www/js/sounds.js",
+    "bytes": 8185
+  },
+  {
+    "path": "www/js/splash.js",
+    "bytes": 3128
+  },
+  {
+    "path": "www/js/translations.js",
+    "bytes": 115128
+  },
+  {
+    "path": "www/js/vendor/colyseus.js",
+    "bytes": 438839
+  },
+  {
+    "path": "www/js/vendor/gsap.min.js",
+    "bytes": 72927
+  },
+  {
+    "path": "www/js/vendor/konva.min.js",
+    "bytes": 185931
+  },
+  {
+    "path": "www/js/vendor/localforage.min.js",
+    "bytes": 29703
+  },
+  {
+    "path": "www/js/vendor/socket.io.min.js",
+    "bytes": 46822
+  },
+  {
+    "path": "www/js/voice.js",
+    "bytes": 34877
+  },
+  {
+    "path": "www/manifest.json",
+    "bytes": 424
+  },
+  {
+    "path": "www/mobile-auth-complete.html",
+    "bytes": 1970
+  },
+  {
+    "path": "www/privacy.html",
+    "bytes": 12909
+  },
+  {
+    "path": "www/shared/domino-board-core.cjs",
+    "bytes": 19875
+  },
+  {
+    "path": "www/shared/domino-model-core.cjs",
+    "bytes": 4242
+  },
+  {
+    "path": "www/shared/domino-rulesets.cjs",
+    "bytes": 26749
+  },
+  {
+    "path": "www/sw.js",
+    "bytes": 4923
+  },
+  {
+    "path": "www/terms.html",
+    "bytes": 2114
+  }
+]

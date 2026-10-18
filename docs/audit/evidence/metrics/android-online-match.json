@@ -1,0 +1,3609 @@
+{
+  "harnessVersion": 3,
+  "scope": "Actual Android audit WebView + local SDK peer; real optimistic online play path and pointer events on draw/pass controls, animations, network, stake200. Automatic legal choices; not a test of human touch accuracy. No production accounts.",
+  "actions": [
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 1.0926669999998921
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 48.81245800000033
+    },
+    {
+      "actor": "peer",
+      "action": "draw",
+      "accepted": true,
+      "reason": "",
+      "ms": 1.3839590000006865
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 1.0806659999998374
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 132.3513750000002
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 1.1069169999991573
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 75.94495800000004
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 1.6373750000002474
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 76.00604199999907
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 1.0524999999997817
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 84.65041699999892
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 0.8344170000000304
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 63.20495800000026
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 1.024083000000246
+    },
+    {
+      "actor": "phone",
+      "action": "draw",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 56.47679100000096
+    },
+    {
+      "actor": "phone",
+      "action": "draw",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 49.56237499999952
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 126.78600000000006
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "ms": 2.569541000000754
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 0.5741250000010041
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 131.78808300000128
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 0.8670830000010028
+    },
+    {
+      "actor": "phone",
+      "action": "draw",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 50.459333000002516
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 91.06429199999911
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 1.2729589999980817
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 130.87941599999976
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 1.1647499999999127
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 93.68133300000045
+    },
+    {
+      "actor": "peer",
+      "action": "draw",
+      "accepted": true,
+      "reason": "",
+      "ms": 0.7117499999985739
+    },
+    {
+      "actor": "peer",
+      "action": "draw",
+      "accepted": true,
+      "reason": "",
+      "ms": 0.6859999999978754
+    },
+    {
+      "actor": "peer",
+      "action": "draw",
+      "accepted": true,
+      "reason": "",
+      "ms": 1.046875
+    },
+    {
+      "actor": "peer",
+      "action": "draw",
+      "accepted": true,
+      "reason": "",
+      "ms": 1.0657499999979336
+    },
+    {
+      "actor": "peer",
+      "action": "draw",
+      "accepted": true,
+      "reason": "",
+      "ms": 0.8399580000004789
+    },
+    {
+      "actor": "peer",
+      "action": "draw",
+      "accepted": true,
+      "reason": "",
+      "ms": 1.147291999997833
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 0.9007499999970605
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 93.88116699999955
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 2.5082500000025902
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 106.21683299999859
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 1.6633750000000873
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 158.2620420000021
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 0.9252909999995609
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "timeout": false,
+      "ms": 74.7378749999989
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 92.91729100000157
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 0.6240419999994629
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 79.01337500000227
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 0.8202090000013413
+    },
+    {
+      "actor": "phone",
+      "action": "draw",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 124.83124999999927
+    },
+    {
+      "actor": "phone",
+      "action": "draw",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 129.27224999999817
+    },
+    {
+      "actor": "phone",
+      "action": "draw",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 50.04516700000022
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 66.06608300000153
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 1.0423749999972642
+    },
+    {
+      "actor": "phone",
+      "action": "draw",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 95.72283299999981
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 87.36812500000087
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 0.6832500000018626
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 106.55258299999696
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 1.169792000000598
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 191.07450000000244
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 0.8328750000000582
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 141.09679199999664
+    },
+    {
+      "actor": "peer",
+      "action": "draw",
+      "accepted": true,
+      "reason": "",
+      "ms": 0.7661670000015874
+    },
+    {
+      "actor": "peer",
+      "action": "draw",
+      "accepted": true,
+      "reason": "",
+      "ms": 1.1252089999979944
+    },
+    {
+      "actor": "peer",
+      "action": "draw",
+      "accepted": true,
+      "reason": "",
+      "ms": 1.112208999998984
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 1.1952080000046408
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 68.48795799999789
+    },
+    {
+      "actor": "peer",
+      "action": "draw",
+      "accepted": true,
+      "reason": "",
+      "ms": 0.7725839999984601
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 1.8201249999983702
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 155.33754100000078
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 1.0666249999994761
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 52.856542000001355
+    },
+    {
+      "actor": "peer",
+      "action": "draw",
+      "accepted": true,
+      "reason": "",
+      "ms": 1.2150830000027781
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 1.331958000002487
+    },
+    {
+      "actor": "phone",
+      "action": "draw",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 86.04766699999891
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 101.21104199999536
+    },
+    {
+      "actor": "peer",
+      "action": "draw",
+      "accepted": true,
+      "reason": "",
+      "ms": 1.1785000000018044
+    },
+    {
+      "actor": "peer",
+      "action": "draw",
+      "accepted": true,
+      "reason": "",
+      "ms": 0.6425420000014128
+    },
+    {
+      "actor": "peer",
+      "action": "draw",
+      "accepted": true,
+      "reason": "",
+      "ms": 1.1003330000021379
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 1.6679580000054557
+    },
+    {
+      "actor": "phone",
+      "action": "draw",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 88.79437499999767
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "timeout": false,
+      "ms": 116.48716699999932
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 129.56483400000434
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 1.2958329999964917
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 116.43712499999674
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 1.468458000003011
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 175.58770899999945
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 1.303583000000799
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 100.67679199999839
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 1.203457999996317
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 100.26279200000135
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 0.9754590000011376
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 68.68129200000112
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 2.1663750000006985
+    },
+    {
+      "actor": "phone",
+      "action": "draw",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 95.58191699999588
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 142.1695830000026
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "ms": 0.9429579999996349
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 1.2362910000010743
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 70.10912500000268
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 1.3985830000019632
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 68.1630839999998
+    },
+    {
+      "actor": "peer",
+      "action": "draw",
+      "accepted": true,
+      "reason": "",
+      "ms": 1.0132079999966663
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 1.31970800000272
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 139.01929099999688
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 0.9385409999958938
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 130.41791700000613
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 1.6471670000028098
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 81.89195800000016
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 1.6109169999981532
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 120.53454199999396
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 1.3165829999998095
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "timeout": false,
+      "ms": 184.82450000000244
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 89.43020800000522
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 0.7258750000037253
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 89.42958299999736
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 0.732665999996243
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 113.23233299999993
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 0.6937499999985448
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 96.67391700000007
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 0.84870800000499
+    },
+    {
+      "actor": "phone",
+      "action": "draw",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 41.43962499999907
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 91.65333399999508
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 0.39320800000132294
+    },
+    {
+      "actor": "phone",
+      "action": "draw",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 33.45470799999748
+    },
+    {
+      "actor": "phone",
+      "action": "draw",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 49.40779199999815
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 72.62599999999657
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 0.6992090000057942
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 86.77670900000521
+    },
+    {
+      "actor": "peer",
+      "action": "draw",
+      "accepted": true,
+      "reason": "",
+      "ms": 0.7572919999947771
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 1.3452500000057626
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 94.52962499999558
+    },
+    {
+      "actor": "peer",
+      "action": "draw",
+      "accepted": true,
+      "reason": "",
+      "ms": 1.175915999992867
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 1.1411669999943115
+    },
+    {
+      "actor": "phone",
+      "action": "draw",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 77.45583299999998
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 104.1030000000028
+    },
+    {
+      "actor": "peer",
+      "action": "draw",
+      "accepted": true,
+      "reason": "",
+      "ms": 0.7804160000086995
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 1.0942919999943115
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 85.13458399999945
+    },
+    {
+      "actor": "peer",
+      "action": "draw",
+      "accepted": true,
+      "reason": "",
+      "ms": 0.41820800000277814
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 0.8032919999968726
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "timeout": false,
+      "ms": 67.99324999999953
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 51.56108400000085
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 1.0449579999985872
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 99.36629099999845
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 1.3591670000023441
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 93.99041600000055
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 1.065083000008599
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 152.7335000000021
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 0.9947920000122394
+    },
+    {
+      "actor": "phone",
+      "action": "draw",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 64.20124999999825
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 143.17333400000643
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 1.1937500000058208
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 167.74733299999207
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 1.0608750000101281
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 106.36304099998961
+    },
+    {
+      "actor": "peer",
+      "action": "draw",
+      "accepted": true,
+      "reason": "",
+      "ms": 1.3049170000012964
+    },
+    {
+      "actor": "peer",
+      "action": "draw",
+      "accepted": true,
+      "reason": "",
+      "ms": 0.7712920000049053
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 0.7858340000093449
+    },
+    {
+      "actor": "phone",
+      "action": "draw",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 100.17104200000176
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 81.51808300000266
+    },
+    {
+      "actor": "peer",
+      "action": "draw",
+      "accepted": true,
+      "reason": "",
+      "ms": 0.6696249999949941
+    },
+    {
+      "actor": "peer",
+      "action": "draw",
+      "accepted": true,
+      "reason": "",
+      "ms": 0.5472079999890411
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 1.5215830000088317
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "timeout": false,
+      "ms": 118.81070800000452
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 76.69595900000422
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 0.7486669999925653
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 144.72283299999253
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 1.3180839999986347
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 92.31079099999624
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 1.767374999995809
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 120.24512500000128
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 0.8958330000023125
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 97.41608300000371
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 1.472875000006752
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 107.55420899999444
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 1.1684999999997672
+    },
+    {
+      "actor": "phone",
+      "action": "draw",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 121.6571249999979
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 125.028999999995
+    },
+    {
+      "actor": "peer",
+      "action": "draw",
+      "accepted": true,
+      "reason": "",
+      "ms": 0.6319579999981215
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 1.0712910000002012
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "timeout": false,
+      "ms": 164.47745799999393
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 92.76720899999782
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 0.9724169999972219
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 187.21641700000328
+    },
+    {
+      "actor": "peer",
+      "action": "draw",
+      "accepted": true,
+      "reason": "",
+      "ms": 0.9803749999991851
+    },
+    {
+      "actor": "peer",
+      "action": "draw",
+      "accepted": true,
+      "reason": "",
+      "ms": 0.8460000000050059
+    },
+    {
+      "actor": "peer",
+      "action": "draw",
+      "accepted": true,
+      "reason": "",
+      "ms": 0.6470419999968726
+    },
+    {
+      "actor": "peer",
+      "action": "draw",
+      "accepted": true,
+      "reason": "",
+      "ms": 0.6690830000006827
+    },
+    {
+      "actor": "peer",
+      "action": "draw",
+      "accepted": true,
+      "reason": "",
+      "ms": 1.027165999999852
+    },
+    {
+      "actor": "peer",
+      "action": "draw",
+      "accepted": true,
+      "reason": "",
+      "ms": 0.761917000010726
+    },
+    {
+      "actor": "peer",
+      "action": "draw",
+      "accepted": true,
+      "reason": "",
+      "ms": 0.5634169999975711
+    },
+    {
+      "actor": "peer",
+      "action": "draw",
+      "accepted": true,
+      "reason": "",
+      "ms": 0.45645800000056624
+    },
+    {
+      "actor": "peer",
+      "action": "draw",
+      "accepted": true,
+      "reason": "",
+      "ms": 0.8313329999946291
+    },
+    {
+      "actor": "peer",
+      "action": "draw",
+      "accepted": true,
+      "reason": "",
+      "ms": 0.3879999999917345
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 0.79483299999265
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 149.4704170000041
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 0.6084580000024289
+    },
+    {
+      "actor": "phone",
+      "action": "draw",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 97.4909159999952
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 80.81483400000434
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 1.0661669999972219
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 59.592875000002095
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 0.815667000002577
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 111.05679100000998
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 1.0091249999968568
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 101.28845800001
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 1.875291999996989
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "timeout": false,
+      "ms": 147.6512909999874
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 115.52104099999997
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 0.9199170000065351
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 131.6025410000002
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 0.7332919999898877
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 147.48574999999255
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 0.8032919999968726
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 138.1242920000077
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 0.6790420000033919
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 142.97566599999845
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 0.9632500000006985
+    },
+    {
+      "actor": "phone",
+      "action": "draw",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 86.91924999999173
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 133.21129199999268
+    },
+    {
+      "actor": "peer",
+      "action": "draw",
+      "accepted": true,
+      "reason": "",
+      "ms": 0.7493749999994179
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 1.7412919999915175
+    },
+    {
+      "actor": "phone",
+      "action": "draw",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 163.40462499999558
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 142.36512500001118
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 1.1264999999984866
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 190.4895419999957
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "ms": 0.8204170000099111
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 2.101041999994777
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 63.59616699999606
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 1.171042000001762
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 182.56641600000148
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 1.906749999994645
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 179.04149999999208
+    },
+    {
+      "actor": "peer",
+      "action": "draw",
+      "accepted": true,
+      "reason": "",
+      "ms": 0.4242499999963911
+    },
+    {
+      "actor": "peer",
+      "action": "draw",
+      "accepted": true,
+      "reason": "",
+      "ms": 0.5680829999910202
+    },
+    {
+      "actor": "peer",
+      "action": "draw",
+      "accepted": true,
+      "reason": "",
+      "ms": 0.823792000010144
+    },
+    {
+      "actor": "peer",
+      "action": "draw",
+      "accepted": true,
+      "reason": "",
+      "ms": 0.730334000007133
+    },
+    {
+      "actor": "peer",
+      "action": "draw",
+      "accepted": true,
+      "reason": "",
+      "ms": 1.1407920000056038
+    },
+    {
+      "actor": "peer",
+      "action": "draw",
+      "accepted": true,
+      "reason": "",
+      "ms": 0.4334999999991851
+    },
+    {
+      "actor": "peer",
+      "action": "draw",
+      "accepted": true,
+      "reason": "",
+      "ms": 1.1792089999944437
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 0.8290830000041751
+    },
+    {
+      "actor": "phone",
+      "action": "draw",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 60.68050000000221
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 78.66716599999927
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 0.9417919999978039
+    },
+    {
+      "actor": "phone",
+      "action": "draw",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 42.02300000000105
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 140.60125000000698
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 4.3130419999943115
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 107.57137499999953
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 1.5281249999970896
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 194.5047909999994
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 0.882540999999037
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 201.65529199999582
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 0.93895799999882
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "timeout": false,
+      "ms": 117.272959000009
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 95.6083340000041
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 1.4313339999935124
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 66.42895800000406
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 0.7335420000017621
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 148.78941700000723
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 1.0659579999919515
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 64.50112499999523
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 2.0906249999970896
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 72.24541699999827
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 1.31395799999882
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 64.38375000000815
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 1.2454580000048736
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "timeout": false,
+      "ms": 127.81591599999228
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 62.33854099999007
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 0.9224580000009155
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 190.78129199999967
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 0.8499169999995502
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 134.30979100000695
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 0.9876250000088476
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 150.22929200000362
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 0.9456249999930151
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 123.67279100000451
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 0.5183330000145361
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 89.10216599999694
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 1.0929590000014286
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "timeout": false,
+      "ms": 197.39449999999488
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 174.38591599999927
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 0.7868749999906868
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 119.68124999999418
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 0.5678750000079162
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 111.3171250000014
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 0.6951249999983702
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 116.24895800001104
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 0.9298340000095777
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 107.00700000001234
+    },
+    {
+      "actor": "peer",
+      "action": "draw",
+      "accepted": true,
+      "reason": "",
+      "ms": 1.050874999986263
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 3.244208999996772
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 72.88979200000176
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 1.000125000020489
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "timeout": false,
+      "ms": 146.35541599997669
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 126.19083300000057
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 1.5066250000090804
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 159.0350000000035
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 1.9027080000087153
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 62.28887499999837
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 1.3699170000036247
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 60.082041000016034
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 0.7044580000219867
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 333.2195000000065
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 2.294458000018494
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 204.7175419999985
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 0.9962919999961741
+    },
+    {
+      "actor": "phone",
+      "action": "draw",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 49.35687499999767
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 138.86429200001294
+    },
+    {
+      "actor": "peer",
+      "action": "draw",
+      "accepted": true,
+      "reason": "",
+      "ms": 0.6032919999852311
+    },
+    {
+      "actor": "peer",
+      "action": "draw",
+      "accepted": true,
+      "reason": "",
+      "ms": 0.8354999999864958
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 0.45491700002457947
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "timeout": false,
+      "ms": 148.82033300001058
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 82.99183400001493
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 0.8607079999928828
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 55.37799999999697
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 1.441292000003159
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 121.52087500001653
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 2.1875829999917187
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 177.03812499999185
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 1.0979999999981374
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 107.35583399998723
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 0.7111670000012964
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 55.45041700001457
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 2.109666999982437
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "timeout": false,
+      "ms": 126.2941249999858
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 76.8545420000155
+    },
+    {
+      "actor": "peer",
+      "action": "draw",
+      "accepted": true,
+      "reason": "",
+      "ms": 0.423291999992216
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 0.7837920000019949
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 112.27370900000096
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 1.5002090000198223
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 100.55875000002561
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 0.4673340000153985
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 164.5527080000029
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 1.254625000001397
+    },
+    {
+      "actor": "phone",
+      "action": "draw",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 131.69383399997605
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 148.78812499999185
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 1.0528749999939464
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 111.36833300002036
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 0.7840830000059213
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 103.60737499999232
+    },
+    {
+      "actor": "peer",
+      "action": "draw",
+      "accepted": true,
+      "reason": "",
+      "ms": 5.929000000003725
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 1.2884170000033919
+    },
+    {
+      "actor": "phone",
+      "action": "draw",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 110.26579199999105
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 151.61391699998057
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "ms": 2.1592079999973066
+    },
+    {
+      "actor": "phone",
+      "action": "draw",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 58.250582999986364
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "accepted": true,
+      "reason": "",
+      "timeout": false,
+      "ms": 105.9443339999998
+    },
+    {
+      "actor": "peer",
+      "action": "play",
+      "accepted": true,
+      "ms": 113.90808299998753
+    }
+  ],
+  "events": [
+    {
+      "type": "deal_end",
+      "fish": false,
+      "winner": 1
+    },
+    {
+      "type": "deal_end",
+      "fish": false,
+      "winner": 0
+    },
+    {
+      "type": "deal_end",
+      "fish": true,
+      "winner": 0
+    },
+    {
+      "type": "deal_end",
+      "fish": false,
+      "winner": 1
+    },
+    {
+      "type": "deal_end",
+      "fish": false,
+      "winner": 0
+    },
+    {
+      "type": "deal_end",
+      "fish": false,
+      "winner": 0
+    },
+    {
+      "type": "deal_end",
+      "fish": false,
+      "winner": 0
+    },
+    {
+      "type": "deal_end",
+      "fish": false,
+      "winner": 0
+    },
+    {
+      "type": "deal_end",
+      "fish": false,
+      "winner": 0
+    },
+    {
+      "type": "deal_end",
+      "fish": false,
+      "winner": 1
+    },
+    {
+      "type": "deal_end",
+      "fish": false,
+      "winner": 0
+    },
+    {
+      "type": "deal_end",
+      "fish": false,
+      "winner": 0
+    },
+    {
+      "type": "deal_end",
+      "fish": false,
+      "winner": 0
+    },
+    {
+      "type": "deal_end",
+      "fish": false,
+      "winner": 0
+    },
+    {
+      "type": "deal_end",
+      "fish": false,
+      "winner": 0
+    },
+    {
+      "type": "deal_end",
+      "fish": false,
+      "winner": 0
+    },
+    {
+      "type": "round_end",
+      "payload": {
+        "winnerIndex": 0,
+        "wins": 1,
+        "isInstantWin": false,
+        "isMatchOver": true,
+        "matchRound": 1,
+        "isTeamMode": false,
+        "teamScores": [
+          0,
+          0
+        ],
+        "teamRoundWins": [
+          0,
+          0
+        ],
+        "players": [
+          {
+            "name": "AuditPhone",
+            "score": 375,
+            "roundWins": 1,
+            "isWinner": true
+          },
+          {
+            "name": "AuditPeer",
+            "score": 255,
+            "roundWins": 0,
+            "isWinner": false
+          }
+        ],
+        "economy": {
+          "stakeKey": "stake_200",
+          "stakeAmount": 200,
+          "bankAmount": 400,
+          "commission": 20,
+          "payout": 180,
+          "winners": 1,
+          "result": "win",
+          "reservations": [
+            {
+              "playerId": "cmvd255op0001t0ni17ngvl51",
+              "userId": "audit-device-mvd255o6-AuditPhone",
+              "wallet": {
+                "id": "cmvd255op0002t0ni84so9ebk",
+                "playerId": "cmvd255op0001t0ni17ngvl51",
+                "balance": 9580,
+                "reserved": 0,
+                "lifetimeEarned": 1180,
+                "lifetimeSpent": 1600,
+                "createdAt": "2026-10-17T23:58:42.697Z",
+                "updatedAt": "2026-10-18T00:34:58.212Z"
+              },
+              "payout": 180
+            },
+            {
+              "playerId": "cmvd255p20004t0nievmmogig",
+              "userId": "audit-device-mvd255o6-AuditPeer",
+              "wallet": {
+                "id": "cmvd255p20005t0nia1689atv",
+                "playerId": "cmvd255p20004t0nievmmogig",
+                "balance": 12040,
+                "reserved": 0,
+                "lifetimeEarned": 2240,
+                "lifetimeSpent": 200,
+                "createdAt": "2026-10-17T23:58:42.710Z",
+                "updatedAt": "2026-10-18T00:34:58.216Z"
+              },
+              "payout": 0
+            }
+          ]
+        },
+        "finishInfo": {
+          "actorIndex": 1,
+          "winnerIndex": 1,
+          "finishKind": "tile",
+          "tileCount": 1,
+          "action": "play",
+          "fish": false,
+          "tableScoreDelta": 0,
+          "handBonus": 0
+        }
+      }
+    }
+  ],
+  "checkpoints": [
+    {
+      "actions": 10,
+      "boardSame": true,
+      "total": 28,
+      "uniqueVisible": true,
+      "serverTurn": 0,
+      "clientTurn": 0
+    },
+    {
+      "actions": 20,
+      "boardSame": true,
+      "total": 28,
+      "uniqueVisible": true,
+      "serverTurn": 1,
+      "clientTurn": 1
+    },
+    {
+      "actions": 30,
+      "boardSame": true,
+      "total": 28,
+      "uniqueVisible": true,
+      "serverTurn": 1,
+      "clientTurn": 1
+    },
+    {
+      "actions": 40,
+      "boardSame": true,
+      "total": 28,
+      "uniqueVisible": true,
+      "serverTurn": 0,
+      "clientTurn": 0
+    },
+    {
+      "actions": 50,
+      "boardSame": true,
+      "total": 28,
+      "uniqueVisible": true,
+      "serverTurn": 0,
+      "clientTurn": 0
+    },
+    {
+      "actions": 60,
+      "boardSame": true,
+      "total": 28,
+      "uniqueVisible": true,
+      "serverTurn": 1,
+      "clientTurn": 1
+    },
+    {
+      "actions": 70,
+      "boardSame": true,
+      "total": 28,
+      "uniqueVisible": true,
+      "serverTurn": 0,
+      "clientTurn": 0
+    },
+    {
+      "actions": 80,
+      "boardSame": true,
+      "total": 28,
+      "uniqueVisible": true,
+      "serverTurn": 0,
+      "clientTurn": 0
+    },
+    {
+      "actions": 90,
+      "boardSame": true,
+      "total": 28,
+      "uniqueVisible": true,
+      "serverTurn": 0,
+      "clientTurn": 0
+    },
+    {
+      "actions": 100,
+      "boardSame": true,
+      "total": 28,
+      "uniqueVisible": true,
+      "serverTurn": 1,
+      "clientTurn": 1
+    },
+    {
+      "actions": 110,
+      "boardSame": true,
+      "total": 28,
+      "uniqueVisible": true,
+      "serverTurn": 0,
+      "clientTurn": 0
+    },
+    {
+      "actions": 120,
+      "boardSame": true,
+      "total": 28,
+      "uniqueVisible": true,
+      "serverTurn": 0,
+      "clientTurn": 0
+    },
+    {
+      "actions": 130,
+      "boardSame": true,
+      "total": 28,
+      "uniqueVisible": true,
+      "serverTurn": 0,
+      "clientTurn": 0
+    },
+    {
+      "actions": 140,
+      "boardSame": true,
+      "total": 28,
+      "uniqueVisible": true,
+      "serverTurn": 1,
+      "clientTurn": 1
+    },
+    {
+      "actions": 150,
+      "boardSame": true,
+      "total": 28,
+      "uniqueVisible": true,
+      "serverTurn": 0,
+      "clientTurn": 0
+    },
+    {
+      "actions": 160,
+      "boardSame": true,
+      "total": 28,
+      "uniqueVisible": true,
+      "serverTurn": 0,
+      "clientTurn": 0
+    },
+    {
+      "actions": 170,
+      "boardSame": true,
+      "total": 28,
+      "uniqueVisible": true,
+      "serverTurn": 0,
+      "clientTurn": 0
+    },
+    {
+      "actions": 180,
+      "boardSame": true,
+      "total": 28,
+      "uniqueVisible": true,
+      "serverTurn": 1,
+      "clientTurn": 1
+    },
+    {
+      "actions": 190,
+      "boardSame": true,
+      "total": 28,
+      "uniqueVisible": true,
+      "serverTurn": 1,
+      "clientTurn": 1
+    },
+    {
+      "actions": 200,
+      "boardSame": true,
+      "total": 28,
+      "uniqueVisible": true,
+      "serverTurn": 0,
+      "clientTurn": 0
+    },
+    {
+      "actions": 210,
+      "boardSame": true,
+      "total": 28,
+      "uniqueVisible": true,
+      "serverTurn": 1,
+      "clientTurn": 1
+    },
+    {
+      "actions": 220,
+      "boardSame": true,
+      "total": 28,
+      "uniqueVisible": true,
+      "serverTurn": 0,
+      "clientTurn": 0
+    },
+    {
+      "actions": 230,
+      "boardSame": true,
+      "total": 28,
+      "uniqueVisible": true,
+      "serverTurn": 1,
+      "clientTurn": 1
+    },
+    {
+      "actions": 240,
+      "boardSame": true,
+      "total": 28,
+      "uniqueVisible": true,
+      "serverTurn": 0,
+      "clientTurn": 0
+    },
+    {
+      "actions": 250,
+      "boardSame": true,
+      "total": 28,
+      "uniqueVisible": true,
+      "serverTurn": 1,
+      "clientTurn": 1
+    },
+    {
+      "actions": 260,
+      "boardSame": true,
+      "total": 28,
+      "uniqueVisible": true,
+      "serverTurn": 1,
+      "clientTurn": 1
+    },
+    {
+      "actions": 270,
+      "boardSame": true,
+      "total": 28,
+      "uniqueVisible": true,
+      "serverTurn": 0,
+      "clientTurn": 0
+    },
+    {
+      "actions": 280,
+      "boardSame": true,
+      "total": 28,
+      "uniqueVisible": true,
+      "serverTurn": 1,
+      "clientTurn": 1
+    },
+    {
+      "actions": 290,
+      "boardSame": true,
+      "total": 28,
+      "uniqueVisible": true,
+      "serverTurn": 1,
+      "clientTurn": 1
+    },
+    {
+      "actions": 300,
+      "boardSame": true,
+      "total": 28,
+      "uniqueVisible": true,
+      "serverTurn": 1,
+      "clientTurn": 1
+    },
+    {
+      "actions": 310,
+      "boardSame": true,
+      "total": 28,
+      "uniqueVisible": true,
+      "serverTurn": 1,
+      "clientTurn": 1
+    },
+    {
+      "actions": 320,
+      "boardSame": true,
+      "total": 28,
+      "uniqueVisible": true,
+      "serverTurn": 0,
+      "clientTurn": 0
+    },
+    {
+      "actions": 330,
+      "boardSame": true,
+      "total": 28,
+      "uniqueVisible": true,
+      "serverTurn": 0,
+      "clientTurn": 0
+    },
+    {
+      "actions": 340,
+      "boardSame": true,
+      "total": 28,
+      "uniqueVisible": true,
+      "serverTurn": 0,
+      "clientTurn": 0
+    }
+  ],
+  "errors": [],
+  "roomId": "icwVIOzbG",
+  "initial": {
+    "roomId": "icwVIOzbG",
+    "roomCode": "R8NE",
+    "roomVisibility": "closed",
+    "gameMode": "telefon",
+    "matchState": null,
+    "playerOrder": [
+      "pjFKvDS9N",
+      "DHav-v6TK"
+    ],
+    "players": [
+      {
+        "sessionId": "pjFKvDS9N",
+        "index": 0,
+        "name": "AuditPhone",
+        "userId": "audit-device-mvd255o6-AuditPhone",
+        "avatarUrl": "",
+        "score": 0,
+        "roundWins": 0,
+        "handCount": 7,
+        "isConnected": true,
+        "isBot": false,
+        "seatIndex": 0,
+        "controller": "human",
+        "takeoverActive": false,
+        "takeoverReason": ""
+      },
+      {
+        "sessionId": "DHav-v6TK",
+        "index": 1,
+        "name": "AuditPeer",
+        "userId": "audit-device-mvd255o6-AuditPeer",
+        "avatarUrl": "",
+        "score": 0,
+        "roundWins": 0,
+        "handCount": 7,
+        "isConnected": true,
+        "isBot": false,
+        "seatIndex": 1,
+        "controller": "human",
+        "takeoverActive": false,
+        "takeoverReason": ""
+      }
+    ],
+    "currentPlayerIndex": 1,
+    "boneyardCount": 14,
+    "gameActive": true,
+    "matchRound": 1,
+    "deal": 1,
+    "board": {
+      "nodes": [],
+      "openEnds": [],
+      "crossNodeId": null,
+      "crossSidesClosed": 0,
+      "startAxis": "horizontal",
+      "telephoneEnabled": true,
+      "scoringEnabled": true
+    },
+    "isTeamMode": false,
+    "playerCount": 2,
+    "turnDeadlineAt": 1792283567202,
+    "turnVersion": 1,
+    "lastMoveRevealPending": false,
+    "finishInfo": null,
+    "matchOver": false,
+    "gameOverReason": "",
+    "gameOverPlayerName": "",
+    "gameOverWinnerIndex": -1,
+    "gameOverSummaryJson": "",
+    "teamScores": [
+      0,
+      0
+    ],
+    "teamRoundWins": [
+      0,
+      0
+    ],
+    "stakeKey": "stake_200",
+    "bankAmount": 400,
+    "turnDurationMs": 30000,
+    "serverNow": 1792283537337,
+    "selfHand": [
+      {
+        "a": 4,
+        "b": 4,
+        "id": "4-4"
+      },
+      {
+        "a": 1,
+        "b": 1,
+        "id": "1-1"
+      },
+      {
+        "a": 0,
+        "b": 1,
+        "id": "0-1"
+      },
+      {
+        "a": 2,
+        "b": 3,
+        "id": "2-3"
+      },
+      {
+        "a": 0,
+        "b": 6,
+        "id": "0-6"
+      },
+      {
+        "a": 1,
+        "b": 4,
+        "id": "1-4"
+      },
+      {
+        "a": 0,
+        "b": 5,
+        "id": "0-5"
+      }
+    ],
+    "turnInfo": {
+      "validMoves": [
+        {
+          "tileIndex": 3,
+          "openEndIndex": -1
+        }
+      ],
+      "goshaCombo": null
+    }
+  },
+  "startedAt": "2026-10-18T00:32:17.338Z",
+  "surfaceLayer": "az.simplesoft.dominotelefon.audit/az.simplesoft.dominotelefon.MainActivity#47305",
+  "midCapture": true,
+  "final": {
+    "winnerIndex": 0,
+    "wins": 1,
+    "isInstantWin": false,
+    "isMatchOver": true,
+    "matchRound": 1,
+    "isTeamMode": false,
+    "teamScores": [
+      0,
+      0
+    ],
+    "teamRoundWins": [
+      0,
+      0
+    ],
+    "players": [
+      {
+        "name": "AuditPhone",
+        "score": 375,
+        "roundWins": 1,
+        "isWinner": true
+      },
+      {
+        "name": "AuditPeer",
+        "score": 255,
+        "roundWins": 0,
+        "isWinner": false
+      }
+    ],
+    "economy": {
+      "stakeKey": "stake_200",
+      "stakeAmount": 200,
+      "bankAmount": 400,
+      "commission": 20,
+      "payout": 180,
+      "winners": 1,
+      "result": "win",
+      "reservations": [
+        {
+          "playerId": "cmvd255op0001t0ni17ngvl51",
+          "userId": "audit-device-mvd255o6-AuditPhone",
+          "wallet": {
+            "id": "cmvd255op0002t0ni84so9ebk",
+            "playerId": "cmvd255op0001t0ni17ngvl51",
+            "balance": 9580,
+            "reserved": 0,
+            "lifetimeEarned": 1180,
+            "lifetimeSpent": 1600,
+            "createdAt": "2026-10-17T23:58:42.697Z",
+            "updatedAt": "2026-10-18T00:34:58.212Z"
+          },
+          "payout": 180
+        },
+        {
+          "playerId": "cmvd255p20004t0nievmmogig",
+          "userId": "audit-device-mvd255o6-AuditPeer",
+          "wallet": {
+            "id": "cmvd255p20005t0nia1689atv",
+            "playerId": "cmvd255p20004t0nievmmogig",
+            "balance": 12040,
+            "reserved": 0,
+            "lifetimeEarned": 2240,
+            "lifetimeSpent": 200,
+            "createdAt": "2026-10-17T23:58:42.710Z",
+            "updatedAt": "2026-10-18T00:34:58.216Z"
+          },
+          "payout": 0
+        }
+      ]
+    },
+    "finishInfo": {
+      "actorIndex": 1,
+      "winnerIndex": 1,
+      "finishKind": "tile",
+      "tileCount": 1,
+      "action": "play",
+      "fish": false,
+      "tableScoreDelta": 0,
+      "handBonus": 0
+    }
+  },
+  "durationMs": 161272.838667,
+  "last": {
+    "roomId": "icwVIOzbG",
+    "roomCode": "R8NE",
+    "roomVisibility": "closed",
+    "gameMode": "telefon",
+    "matchState": null,
+    "playerOrder": [
+      "pjFKvDS9N",
+      "DHav-v6TK"
+    ],
+    "players": [
+      {
+        "sessionId": "pjFKvDS9N",
+        "index": 0,
+        "name": "AuditPhone",
+        "userId": "audit-device-mvd255o6-AuditPhone",
+        "avatarUrl": "",
+        "score": 375,
+        "roundWins": 1,
+        "handCount": 1,
+        "isConnected": true,
+        "isBot": false,
+        "seatIndex": 0,
+        "controller": "human",
+        "takeoverActive": false,
+        "takeoverReason": ""
+      },
+      {
+        "sessionId": "DHav-v6TK",
+        "index": 1,
+        "name": "AuditPeer",
+        "userId": "audit-device-mvd255o6-AuditPeer",
+        "avatarUrl": "",
+        "score": 255,
+        "roundWins": 0,
+        "handCount": 0,
+        "isConnected": true,
+        "isBot": false,
+        "seatIndex": 1,
+        "controller": "human",
+        "takeoverActive": false,
+        "takeoverReason": ""
+      }
+    ],
+    "currentPlayerIndex": 1,
+    "boneyardCount": 9,
+    "gameActive": false,
+    "matchRound": 2,
+    "deal": 17,
+    "board": {
+      "nodes": [
+        {
+          "tile": {
+            "a": 4,
+            "b": 4
+          },
+          "x": 0,
+          "y": 0,
+          "orientation": "vertical",
+          "displayA": 4,
+          "displayB": 4,
+          "connections": {
+            "left": 1,
+            "right": 4,
+            "top": 8
+          }
+        },
+        {
+          "tile": {
+            "a": 0,
+            "b": 4
+          },
+          "x": -52,
+          "y": 0,
+          "orientation": "horizontal",
+          "displayA": 0,
+          "displayB": 4,
+          "connections": {
+            "right": 0,
+            "left": 2
+          }
+        },
+        {
+          "tile": {
+            "a": 0,
+            "b": 6
+          },
+          "x": -120,
+          "y": 0,
+          "orientation": "horizontal",
+          "displayA": 6,
+          "displayB": 0,
+          "connections": {
+            "right": 1,
+            "left": 3
+          }
+        },
+        {
+          "tile": {
+            "a": 1,
+            "b": 6
+          },
+          "x": -188,
+          "y": 0,
+          "orientation": "horizontal",
+          "displayA": 1,
+          "displayB": 6,
+          "connections": {
+            "right": 2,
+            "left": 6
+          }
+        },
+        {
+          "tile": {
+            "a": 2,
+            "b": 4
+          },
+          "x": 52,
+          "y": 0,
+          "orientation": "horizontal",
+          "displayA": 4,
+          "displayB": 2,
+          "connections": {
+            "left": 0,
+            "right": 5
+          }
+        },
+        {
+          "tile": {
+            "a": 2,
+            "b": 2
+          },
+          "x": 104,
+          "y": 0,
+          "orientation": "vertical",
+          "displayA": 2,
+          "displayB": 2,
+          "connections": {
+            "left": 4,
+            "right": 7
+          }
+        },
+        {
+          "tile": {
+            "a": 1,
+            "b": 2
+          },
+          "x": -256,
+          "y": 0,
+          "orientation": "horizontal",
+          "displayA": 2,
+          "displayB": 1,
+          "connections": {
+            "right": 3,
+            "left": 13
+          }
+        },
+        {
+          "tile": {
+            "a": 0,
+            "b": 2
+          },
+          "x": 156,
+          "y": 0,
+          "orientation": "horizontal",
+          "displayA": 2,
+          "displayB": 0,
+          "connections": {
+            "left": 5,
+            "right": 9
+          }
+        },
+        {
+          "tile": {
+            "a": 4,
+            "b": 5
+          },
+          "x": 0,
+          "y": -68,
+          "orientation": "vertical",
+          "displayA": 5,
+          "displayB": 4,
+          "connections": {
+            "bottom": 0,
+            "top": 10
+          }
+        },
+        {
+          "tile": {
+            "a": 0,
+            "b": 5
+          },
+          "x": 224,
+          "y": 0,
+          "orientation": "horizontal",
+          "displayA": 0,
+          "displayB": 5,
+          "connections": {
+            "left": 7,
+            "right": 12
+          }
+        },
+        {
+          "tile": {
+            "a": 5,
+            "b": 6
+          },
+          "x": 0,
+          "y": -136,
+          "orientation": "vertical",
+          "displayA": 6,
+          "displayB": 5,
+          "connections": {
+            "bottom": 8,
+            "top": 11
+          }
+        },
+        {
+          "tile": {
+            "a": 6,
+            "b": 6
+          },
+          "x": 0,
+          "y": -188,
+          "orientation": "horizontal",
+          "displayA": 6,
+          "displayB": 6,
+          "connections": {
+            "bottom": 10
+          }
+        },
+        {
+          "tile": {
+            "a": 5,
+            "b": 5
+          },
+          "x": 276,
+          "y": 0,
+          "orientation": "vertical",
+          "displayA": 5,
+          "displayB": 5,
+          "connections": {
+            "left": 9,
+            "bottom": 14
+          }
+        },
+        {
+          "tile": {
+            "a": 2,
+            "b": 5
+          },
+          "x": -308,
+          "y": -16.5,
+          "orientation": "vertical",
+          "displayA": 5,
+          "displayB": 2,
+          "connections": {
+            "right": 6
+          }
+        },
+        {
+          "tile": {
+            "a": 3,
+            "b": 5
+          },
+          "x": 276,
+          "y": 68,
+          "orientation": "vertical",
+          "displayA": 5,
+          "displayB": 3,
+          "connections": {
+            "top": 12,
+            "bottom": 15
+          }
+        },
+        {
+          "tile": {
+            "a": 1,
+            "b": 3
+          },
+          "x": 276,
+          "y": 136,
+          "orientation": "vertical",
+          "displayA": 3,
+          "displayB": 1,
+          "connections": {
+            "top": 14,
+            "bottom": 16
+          }
+        },
+        {
+          "tile": {
+            "a": 1,
+            "b": 1
+          },
+          "x": 276,
+          "y": 188,
+          "orientation": "horizontal",
+          "displayA": 1,
+          "displayB": 1,
+          "connections": {
+            "top": 15,
+            "bottom": 17
+          }
+        },
+        {
+          "tile": {
+            "a": 0,
+            "b": 1
+          },
+          "x": 276,
+          "y": 240,
+          "orientation": "vertical",
+          "displayA": 1,
+          "displayB": 0,
+          "connections": {
+            "top": 16
+          }
+        }
+      ],
+      "openEnds": [
+        {
+          "nodeId": 0,
+          "side": "bottom",
+          "value": 4,
+          "growthDir": "bottom"
+        },
+        {
+          "nodeId": 11,
+          "side": "top",
+          "value": 6,
+          "growthDir": "top"
+        },
+        {
+          "nodeId": 13,
+          "side": "top",
+          "value": 5,
+          "growthDir": "top"
+        },
+        {
+          "nodeId": 17,
+          "side": "bottom",
+          "value": 0,
+          "growthDir": "bottom"
+        }
+      ],
+      "crossNodeId": 0,
+      "crossSidesClosed": 3,
+      "startAxis": "horizontal",
+      "telephoneEnabled": true,
+      "scoringEnabled": true
+    },
+    "isTeamMode": false,
+    "playerCount": 2,
+    "turnDeadlineAt": 0,
+    "turnVersion": 41,
+    "lastMoveRevealPending": false,
+    "finishInfo": {
+      "actorIndex": 1,
+      "winnerIndex": 1,
+      "finishKind": "tile",
+      "tileCount": 1,
+      "action": "play",
+      "fish": false,
+      "tableScoreDelta": 0,
+      "handBonus": 0
+    },
+    "matchOver": false,
+    "gameOverReason": "",
+    "gameOverPlayerName": "",
+    "gameOverWinnerIndex": -1,
+    "gameOverSummaryJson": "",
+    "teamScores": [
+      0,
+      0
+    ],
+    "teamRoundWins": [
+      0,
+      0
+    ],
+    "stakeKey": "stake_200",
+    "bankAmount": 0,
+    "turnDurationMs": 30000,
+    "serverNow": 1792283698651,
+    "selfHand": [],
+    "turnInfo": {
+      "validMoves": [],
+      "goshaCombo": null
+    }
+  },
+  "frames": {
+    "rafSamples": 6041,
+    "rafRate": 36.20291852695292,
+    "rafP95Ms": 50,
+    "surfacePresentSamples": 5702,
+    "surfacePresentRate": 34.513413499315845,
+    "surfaceIntervalP95Ms": 50.007154,
+    "note": "Presentation intervals include pauses/results and do not isolate animation-only jank. One debug WebView, not Play release FPS."
+  }
+}

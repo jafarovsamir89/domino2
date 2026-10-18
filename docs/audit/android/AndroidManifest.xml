@@ -1,0 +1,13 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+    <application
+        android:label="Domino Audit"
+        android:usesCleartextTraffic="true"
+        android:networkSecurityConfig="@xml/audit_network_security_config"
+        tools:replace="android:label,android:usesCleartextTraffic,android:networkSecurityConfig">
+        <activity
+            android:name="az.simplesoft.dominotelefon.MainActivity"
+            android:label="Domino Audit"
+            tools:replace="android:label" />
+    </application>
+</manifest>

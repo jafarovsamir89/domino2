@@ -1,0 +1,200 @@
+{
+  "scope": "Real phone, isolated debug app, local fixture; solo background only; not Play OAuth or production online",
+  "rows": [
+    {
+      "seconds": 5,
+      "before": {
+        "active": true,
+        "turn": 3,
+        "inProgress": false,
+        "roundOver": false,
+        "board": 0,
+        "hands": [
+          7,
+          7,
+          7,
+          7
+        ],
+        "boneyard": 0,
+        "matchId": "solo-8c3331b9-fb7d-4298-950c-4bbc3cff55c2",
+        "visibility": "visible",
+        "total": 28
+      },
+      "after": {
+        "active": true,
+        "turn": 0,
+        "inProgress": false,
+        "roundOver": false,
+        "board": 1,
+        "hands": [
+          7,
+          7,
+          7,
+          6
+        ],
+        "boneyard": 0,
+        "matchId": "solo-8c3331b9-fb7d-4298-950c-4bbc3cff55c2",
+        "visibility": "visible",
+        "total": 28
+      },
+      "menuResponds": true,
+      "launch": "Starting: Intent { cmp=az.simplesoft.dominotelefon.audit/az.simplesoft.dominotelefon.MainActivity }\nWarning: Activity not started, its current task has been brought to the front\nStatus: ok\nLaunchState: HOT\nActivity: az.simplesoft.dominotelefon.audit/az.simplesoft.dominotelefon.MainActivity\nTotalTime: 137\nWaitTime: 156\nComplete\n"
+    },
+    {
+      "seconds": 15,
+      "before": {
+        "active": true,
+        "turn": 0,
+        "inProgress": false,
+        "roundOver": false,
+        "board": 1,
+        "hands": [
+          7,
+          7,
+          7,
+          6
+        ],
+        "boneyard": 0,
+        "matchId": "solo-8c3331b9-fb7d-4298-950c-4bbc3cff55c2",
+        "visibility": "visible",
+        "total": 28
+      },
+      "after": {
+        "active": true,
+        "turn": 0,
+        "inProgress": false,
+        "roundOver": false,
+        "board": 1,
+        "hands": [
+          7,
+          7,
+          7,
+          6
+        ],
+        "boneyard": 0,
+        "matchId": "solo-8c3331b9-fb7d-4298-950c-4bbc3cff55c2",
+        "visibility": "visible",
+        "total": 28
+      },
+      "menuResponds": true,
+      "launch": "Starting: Intent { cmp=az.simplesoft.dominotelefon.audit/az.simplesoft.dominotelefon.MainActivity }\nWarning: Activity not started, its current task has been brought to the front\nStatus: ok\nLaunchState: HOT\nActivity: az.simplesoft.dominotelefon.audit/az.simplesoft.dominotelefon.MainActivity\nTotalTime: 117\nWaitTime: 127\nComplete\n"
+    },
+    {
+      "seconds": 30,
+      "before": {
+        "active": true,
+        "turn": 0,
+        "inProgress": false,
+        "roundOver": false,
+        "board": 1,
+        "hands": [
+          7,
+          7,
+          7,
+          6
+        ],
+        "boneyard": 0,
+        "matchId": "solo-8c3331b9-fb7d-4298-950c-4bbc3cff55c2",
+        "visibility": "visible",
+        "total": 28
+      },
+      "after": {
+        "active": true,
+        "turn": 0,
+        "inProgress": false,
+        "roundOver": false,
+        "board": 2,
+        "hands": [
+          7,
+          7,
+          6,
+          6
+        ],
+        "boneyard": 0,
+        "matchId": "solo-8c3331b9-fb7d-4298-950c-4bbc3cff55c2",
+        "visibility": "visible",
+        "total": 28
+      },
+      "menuResponds": true,
+      "launch": "Starting: Intent { cmp=az.simplesoft.dominotelefon.audit/az.simplesoft.dominotelefon.MainActivity }\nWarning: Activity not started, its current task has been brought to the front\nStatus: ok\nLaunchState: HOT\nActivity: az.simplesoft.dominotelefon.audit/az.simplesoft.dominotelefon.MainActivity\nTotalTime: 158\nWaitTime: 167\nComplete\n"
+    },
+    {
+      "seconds": 60,
+      "before": {
+        "active": true,
+        "turn": 0,
+        "inProgress": false,
+        "roundOver": false,
+        "board": 2,
+        "hands": [
+          7,
+          7,
+          6,
+          6
+        ],
+        "boneyard": 0,
+        "matchId": "solo-8c3331b9-fb7d-4298-950c-4bbc3cff55c2",
+        "visibility": "visible",
+        "total": 28
+      },
+      "after": {
+        "active": true,
+        "turn": 0,
+        "inProgress": false,
+        "roundOver": true,
+        "board": 2,
+        "hands": [
+          7,
+          7,
+          6,
+          6
+        ],
+        "boneyard": 0,
+        "matchId": "solo-8c3331b9-fb7d-4298-950c-4bbc3cff55c2",
+        "visibility": "visible",
+        "total": 28
+      },
+      "menuResponds": true,
+      "launch": "Starting: Intent { cmp=az.simplesoft.dominotelefon.audit/az.simplesoft.dominotelefon.MainActivity }\nWarning: Activity not started, its current task has been brought to the front\nStatus: ok\nLaunchState: HOT\nActivity: az.simplesoft.dominotelefon.audit/az.simplesoft.dominotelefon.MainActivity\nTotalTime: 136\nWaitTime: 146\nComplete\n"
+    },
+    {
+      "seconds": 120,
+      "before": {
+        "active": true,
+        "turn": 2,
+        "inProgress": false,
+        "roundOver": false,
+        "board": 0,
+        "hands": [
+          7,
+          7,
+          7,
+          7
+        ],
+        "boneyard": 0,
+        "matchId": "solo-8c3331b9-fb7d-4298-950c-4bbc3cff55c2",
+        "visibility": "visible",
+        "total": 28
+      },
+      "after": {
+        "active": true,
+        "turn": 0,
+        "inProgress": false,
+        "roundOver": false,
+        "board": 3,
+        "hands": [
+          7,
+          6,
+          6,
+          6
+        ],
+        "boneyard": 0,
+        "matchId": "solo-8c3331b9-fb7d-4298-950c-4bbc3cff55c2",
+        "visibility": "visible",
+        "total": 28
+      },
+      "menuResponds": true,
+      "launch": "Starting: Intent { cmp=az.simplesoft.dominotelefon.audit/az.simplesoft.dominotelefon.MainActivity }\nWarning: Activity not started, its current task has been brought to the front\nStatus: ok\nLaunchState: HOT\nActivity: az.simplesoft.dominotelefon.audit/az.simplesoft.dominotelefon.MainActivity\nTotalTime: 130\nWaitTime: 140\nComplete\n"
+    }
+  ]
+}

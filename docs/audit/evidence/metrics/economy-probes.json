@@ -1,0 +1,106 @@
+{
+  "run": "mvcxrido",
+  "database": "127.0.0.1:55439/domino_audit",
+  "probes": [
+    {
+      "name": "fresh_migration_daily_bonus",
+      "error": "Quest not found"
+    },
+    {
+      "name": "parallel_daily_x2_without_ad_proof",
+      "normalReward": 200,
+      "baseReward": 200,
+      "credited": 1800,
+      "expectedMaximum": 400,
+      "results": [
+        {
+          "status": "fulfilled",
+          "claimed": true,
+          "reward": 200
+        },
+        {
+          "status": "fulfilled",
+          "claimed": true,
+          "reward": 200
+        },
+        {
+          "status": "fulfilled",
+          "claimed": true,
+          "reward": 200
+        },
+        {
+          "status": "fulfilled",
+          "claimed": true,
+          "reward": 200
+        },
+        {
+          "status": "fulfilled",
+          "claimed": true,
+          "reward": 200
+        },
+        {
+          "status": "fulfilled",
+          "claimed": true,
+          "reward": 200
+        },
+        {
+          "status": "fulfilled",
+          "claimed": true,
+          "reward": 200
+        },
+        {
+          "status": "fulfilled",
+          "claimed": true,
+          "reward": 200
+        }
+      ]
+    },
+    {
+      "name": "direct_x2_without_ad",
+      "claimed": true,
+      "multiplier": 2,
+      "reward": 400,
+      "adFlag": "unset"
+    },
+    {
+      "name": "stale_match_settles_new_reservation",
+      "reserve": {
+        "ok": true,
+        "stakeKey": "stake_50",
+        "roomId": "audit-room-mvcxrido",
+        "reserved": 100,
+        "participants": 2,
+        "commissionBps": 1000
+      },
+      "settlement": {
+        "ok": true,
+        "settled": 2,
+        "commission": 5,
+        "payout": 45
+      },
+      "rows": [
+        {
+          "matchId": "old-match-A",
+          "status": "settled",
+          "stakeAmount": 50
+        },
+        {
+          "matchId": "old-match-A",
+          "status": "settled",
+          "stakeAmount": 50
+        }
+      ]
+    },
+    {
+      "name": "bootstrap_overwrites_admin_stake",
+      "requested": {
+        "isActive": false,
+        "commissionBps": 250
+      },
+      "actual": {
+        "isActive": true,
+        "commissionBps": 1000
+      }
+    }
+  ]
+}

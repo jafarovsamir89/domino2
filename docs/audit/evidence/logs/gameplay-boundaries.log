@@ -1,0 +1,25 @@
+ℹ️  optional .env file not found: .env.development, .env
+[
+  {
+    name: 'real_blocked_101_state_replay',
+    conforms: false,
+    error: undefined
+  },
+  {
+    name: '101_initial_deal_without_positive_double',
+    conforms: false,
+    error: undefined
+  },
+  { name: '101_threshold_12_then_1', conforms: true, error: undefined },
+  { name: '101_tie_carry_14', conforms: true, error: undefined },
+  {
+    name: 'telefon_instant_flag_named_contract',
+    conforms: true,
+    error: undefined
+  },
+  {
+    name: 'classic101_board_configuration',
+    conforms: true,
+    error: undefined
+  }
+]

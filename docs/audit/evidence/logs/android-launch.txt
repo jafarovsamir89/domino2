@@ -1,0 +1,7 @@
+Starting: Intent { cmp=az.simplesoft.dominotelefon.audit/az.simplesoft.dominotelefon.MainActivity }
+Status: ok
+LaunchState: COLD
+Activity: az.simplesoft.dominotelefon.audit/az.simplesoft.dominotelefon.MainActivity
+TotalTime: 2312
+WaitTime: 2342
+Complete

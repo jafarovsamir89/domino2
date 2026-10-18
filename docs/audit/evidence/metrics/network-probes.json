@@ -1,0 +1,706 @@
+{
+  "base": "http://127.0.0.1:4567",
+  "probes": [
+    {
+      "name": "foreign_restoreSessionId",
+      "victimSession": "lfplbC49L",
+      "attackerSession": "G7DxBCtS9",
+      "roomId": "8qqD5NlVk",
+      "attackerEvents": [
+        {
+          "type": "full_state",
+          "payload": {
+            "roomId": "8qqD5NlVk",
+            "roomCode": "WCZM",
+            "roomVisibility": "closed",
+            "gameMode": "telefon",
+            "matchState": null,
+            "playerOrder": [
+              "G7DxBCtS9"
+            ],
+            "players": [
+              {
+                "sessionId": "G7DxBCtS9",
+                "index": 0,
+                "name": "attacker",
+                "userId": "audit-net-attacker",
+                "avatarUrl": "",
+                "score": 0,
+                "roundWins": 0,
+                "handCount": 0,
+                "isConnected": true,
+                "isBot": false,
+                "seatIndex": 0,
+                "controller": "human",
+                "takeoverActive": false,
+                "takeoverReason": ""
+              }
+            ],
+            "currentPlayerIndex": 0,
+            "boneyardCount": 0,
+            "gameActive": false,
+            "matchRound": 1,
+            "deal": 1,
+            "board": {
+              "nodes": [],
+              "openEnds": [],
+              "crossNodeId": null,
+              "crossSidesClosed": 0,
+              "startAxis": "horizontal",
+              "telephoneEnabled": true,
+              "scoringEnabled": true
+            },
+            "isTeamMode": false,
+            "playerCount": 4,
+            "turnDeadlineAt": 0,
+            "turnVersion": 1,
+            "lastMoveRevealPending": false,
+            "finishInfo": null,
+            "matchOver": false,
+            "gameOverReason": "",
+            "gameOverPlayerName": "",
+            "gameOverWinnerIndex": -1,
+            "gameOverSummaryJson": "",
+            "teamScores": [
+              0,
+              0
+            ],
+            "teamRoundWins": [
+              0,
+              0
+            ],
+            "stakeKey": "free",
+            "bankAmount": 0,
+            "turnDurationMs": 30000,
+            "serverNow": 1792274185330,
+            "selfHand": [],
+            "turnInfo": {
+              "validMoves": [],
+              "goshaCombo": null
+            }
+          }
+        },
+        {
+          "type": "msg",
+          "payload": {
+            "key": "msg-player-rejoined-room",
+            "values": {
+              "player": "attacker"
+            },
+            "time": 1500
+          }
+        },
+        {
+          "type": "room_state",
+          "payload": {
+            "roomId": "8qqD5NlVk",
+            "roomCode": "WCZM",
+            "roomVisibility": "closed",
+            "matchState": null,
+            "roomPhase": "lobby",
+            "roomMode": "ffa",
+            "gameMode": "telefon",
+            "scoreMode": "solo",
+            "stakeKey": "free",
+            "stakeAmount": 0,
+            "bankAmount": 0,
+            "requiredStakeAmount": 0,
+            "turnDeadlineAt": 0,
+            "turnDurationMs": 30000,
+            "serverNow": 1792274185314,
+            "turnVersion": 1,
+            "currentPlayers": 1,
+            "humanPlayers": 1,
+            "humanSeats": 4,
+            "aiCount": 0,
+            "totalPlayers": 4,
+            "isTeamMode": false,
+            "gameActive": false,
+            "matchOver": false,
+            "gameOverReason": "",
+            "timeoutForfeitPending": false,
+            "timeoutLoserIndex": -1,
+            "timeoutLoserName": "",
+            "continueExpiresAt": 0,
+            "finishInfo": null,
+            "seatSelectionRequired": true,
+            "hostName": "attacker",
+            "players": [
+              {
+                "sessionId": "G7DxBCtS9",
+                "index": 0,
+                "name": "attacker",
+                "userId": "audit-net-attacker",
+                "playerId": "audit-net-p-attacker",
+                "avatarUrl": "",
+                "isConnected": true,
+                "isBot": false,
+                "controller": "human",
+                "takeoverActive": false,
+                "takeoverReason": "",
+                "seatIndex": 0,
+                "seatNumber": 1,
+                "voiceEnabled": false
+              }
+            ],
+            "roomStart": {
+              "roomMode": "ffa",
+              "gameMode": "telefon",
+              "isTeamMode": false,
+              "maxPlayers": 4,
+              "occupiedSeats": 1,
+              "humanCount": 1,
+              "botCount": 0,
+              "readyPlayersCount": 1,
+              "botsReadyCount": 0,
+              "pendingInvitesCount": 0,
+              "joinedInviteCount": 0,
+              "lastAutoStartCheckAt": 1792274184957,
+              "lastAutoStartBlockedReason": "waiting-for-human",
+              "lastAutoStartTriggeredAt": 0
+            },
+            "teamScores": [],
+            "teamRoundWins": [],
+            "teams": []
+          }
+        },
+        {
+          "type": "full_state",
+          "payload": {
+            "roomId": "8qqD5NlVk",
+            "roomCode": "WCZM",
+            "roomVisibility": "closed",
+            "gameMode": "telefon",
+            "matchState": null,
+            "playerOrder": [
+              "G7DxBCtS9"
+            ],
+            "players": [
+              {
+                "sessionId": "G7DxBCtS9",
+                "index": 0,
+                "name": "attacker",
+                "userId": "audit-net-attacker",
+                "avatarUrl": "",
+                "score": 0,
+                "roundWins": 0,
+                "handCount": 0,
+                "isConnected": true,
+                "isBot": false,
+                "seatIndex": 0,
+                "controller": "human",
+                "takeoverActive": false,
+                "takeoverReason": ""
+              }
+            ],
+            "currentPlayerIndex": 0,
+            "boneyardCount": 0,
+            "gameActive": false,
+            "matchRound": 1,
+            "deal": 1,
+            "board": {
+              "nodes": [],
+              "openEnds": [],
+              "crossNodeId": null,
+              "crossSidesClosed": 0,
+              "startAxis": "horizontal",
+              "telephoneEnabled": true,
+              "scoringEnabled": true
+            },
+            "isTeamMode": false,
+            "playerCount": 4,
+            "turnDeadlineAt": 0,
+            "turnVersion": 1,
+            "lastMoveRevealPending": false,
+            "finishInfo": null,
+            "matchOver": false,
+            "gameOverReason": "",
+            "gameOverPlayerName": "",
+            "gameOverWinnerIndex": -1,
+            "gameOverSummaryJson": "",
+            "teamScores": [
+              0,
+              0
+            ],
+            "teamRoundWins": [
+              0,
+              0
+            ],
+            "stakeKey": "free",
+            "bankAmount": 0,
+            "turnDurationMs": 30000,
+            "serverNow": 1792274185316,
+            "selfHand": [],
+            "turnInfo": {
+              "validMoves": [],
+              "goshaCombo": null
+            }
+          }
+        },
+        {
+          "type": "room_state",
+          "payload": {
+            "roomId": "8qqD5NlVk",
+            "roomCode": "WCZM",
+            "roomVisibility": "closed",
+            "matchState": null,
+            "roomPhase": "lobby",
+            "roomMode": "ffa",
+            "gameMode": "telefon",
+            "scoreMode": "solo",
+            "stakeKey": "free",
+            "stakeAmount": 0,
+            "bankAmount": 0,
+            "requiredStakeAmount": 0,
+            "turnDeadlineAt": 0,
+            "turnDurationMs": 30000,
+            "serverNow": 1792274185331,
+            "turnVersion": 1,
+            "currentPlayers": 1,
+            "humanPlayers": 1,
+            "humanSeats": 4,
+            "aiCount": 0,
+            "totalPlayers": 4,
+            "isTeamMode": false,
+            "gameActive": false,
+            "matchOver": false,
+            "gameOverReason": "",
+            "timeoutForfeitPending": false,
+            "timeoutLoserIndex": -1,
+            "timeoutLoserName": "",
+            "continueExpiresAt": 0,
+            "finishInfo": null,
+            "seatSelectionRequired": true,
+            "hostName": "attacker",
+            "players": [
+              {
+                "sessionId": "G7DxBCtS9",
+                "index": 0,
+                "name": "attacker",
+                "userId": "audit-net-attacker",
+                "playerId": "audit-net-p-attacker",
+                "avatarUrl": "",
+                "isConnected": true,
+                "isBot": false,
+                "controller": "human",
+                "takeoverActive": false,
+                "takeoverReason": "",
+                "seatIndex": 0,
+                "seatNumber": 1,
+                "voiceEnabled": false
+              }
+            ],
+            "roomStart": {
+              "roomMode": "ffa",
+              "gameMode": "telefon",
+              "isTeamMode": false,
+              "maxPlayers": 4,
+              "occupiedSeats": 1,
+              "humanCount": 1,
+              "botCount": 0,
+              "readyPlayersCount": 1,
+              "botsReadyCount": 0,
+              "pendingInvitesCount": 0,
+              "joinedInviteCount": 0,
+              "lastAutoStartCheckAt": 1792274185316,
+              "lastAutoStartBlockedReason": "waiting-for-human",
+              "lastAutoStartTriggeredAt": 0
+            },
+            "teamScores": [],
+            "teamRoundWins": [],
+            "teams": []
+          }
+        },
+        {
+          "type": "full_state",
+          "payload": {
+            "roomId": "8qqD5NlVk",
+            "roomCode": "WCZM",
+            "roomVisibility": "closed",
+            "gameMode": "telefon",
+            "matchState": null,
+            "playerOrder": [
+              "G7DxBCtS9"
+            ],
+            "players": [
+              {
+                "sessionId": "G7DxBCtS9",
+                "index": 0,
+                "name": "attacker",
+                "userId": "audit-net-attacker",
+                "avatarUrl": "",
+                "score": 0,
+                "roundWins": 0,
+                "handCount": 0,
+                "isConnected": true,
+                "isBot": false,
+                "seatIndex": 0,
+                "controller": "human",
+                "takeoverActive": false,
+                "takeoverReason": ""
+              }
+            ],
+            "currentPlayerIndex": 0,
+            "boneyardCount": 0,
+            "gameActive": false,
+            "matchRound": 1,
+            "deal": 1,
+            "board": {
+              "nodes": [],
+              "openEnds": [],
+              "crossNodeId": null,
+              "crossSidesClosed": 0,
+              "startAxis": "horizontal",
+              "telephoneEnabled": true,
+              "scoringEnabled": true
+            },
+            "isTeamMode": false,
+            "playerCount": 4,
+            "turnDeadlineAt": 0,
+            "turnVersion": 1,
+            "lastMoveRevealPending": false,
+            "finishInfo": null,
+            "matchOver": false,
+            "gameOverReason": "",
+            "gameOverPlayerName": "",
+            "gameOverWinnerIndex": -1,
+            "gameOverSummaryJson": "",
+            "teamScores": [
+              0,
+              0
+            ],
+            "teamRoundWins": [
+              0,
+              0
+            ],
+            "stakeKey": "free",
+            "bankAmount": 0,
+            "turnDurationMs": 30000,
+            "serverNow": 1792274185331,
+            "selfHand": [],
+            "turnInfo": {
+              "validMoves": [],
+              "goshaCombo": null
+            }
+          }
+        }
+      ],
+      "victimEvents": [
+        {
+          "type": "full_state",
+          "payload": {
+            "roomId": "8qqD5NlVk",
+            "roomCode": "WCZM",
+            "roomVisibility": "closed",
+            "gameMode": "telefon",
+            "matchState": null,
+            "playerOrder": [
+              "lfplbC49L"
+            ],
+            "players": [
+              {
+                "sessionId": "lfplbC49L",
+                "index": 0,
+                "name": "victim",
+                "userId": "audit-net-victim",
+                "avatarUrl": "",
+                "score": 0,
+                "roundWins": 0,
+                "handCount": 0,
+                "isConnected": true,
+                "isBot": false,
+                "seatIndex": 0,
+                "controller": "human",
+                "takeoverActive": false,
+                "takeoverReason": ""
+              }
+            ],
+            "currentPlayerIndex": 0,
+            "boneyardCount": 0,
+            "gameActive": false,
+            "matchRound": 1,
+            "deal": 1,
+            "board": {
+              "nodes": [],
+              "openEnds": [],
+              "crossNodeId": null,
+              "crossSidesClosed": 0,
+              "startAxis": "horizontal",
+              "telephoneEnabled": true,
+              "scoringEnabled": true
+            },
+            "isTeamMode": false,
+            "playerCount": 4,
+            "turnDeadlineAt": 0,
+            "turnVersion": 1,
+            "lastMoveRevealPending": false,
+            "finishInfo": null,
+            "matchOver": false,
+            "gameOverReason": "",
+            "gameOverPlayerName": "",
+            "gameOverWinnerIndex": -1,
+            "gameOverSummaryJson": "",
+            "teamScores": [
+              0,
+              0
+            ],
+            "teamRoundWins": [
+              0,
+              0
+            ],
+            "stakeKey": "free",
+            "bankAmount": 0,
+            "turnDurationMs": 30000,
+            "serverNow": 1792274184967,
+            "selfHand": [],
+            "turnInfo": {
+              "validMoves": [],
+              "goshaCombo": null
+            }
+          }
+        },
+        {
+          "type": "msg",
+          "payload": {
+            "key": "msg-player-joined-room",
+            "values": {
+              "player": "victim"
+            },
+            "time": 1500
+          }
+        },
+        {
+          "type": "room_state",
+          "payload": {
+            "roomId": "8qqD5NlVk",
+            "roomCode": "WCZM",
+            "roomVisibility": "closed",
+            "matchState": null,
+            "roomPhase": "lobby",
+            "roomMode": "ffa",
+            "gameMode": "telefon",
+            "scoreMode": "solo",
+            "stakeKey": "free",
+            "stakeAmount": 0,
+            "bankAmount": 0,
+            "requiredStakeAmount": 0,
+            "turnDeadlineAt": 0,
+            "turnDurationMs": 30000,
+            "serverNow": 1792274184956,
+            "turnVersion": 1,
+            "currentPlayers": 1,
+            "humanPlayers": 1,
+            "humanSeats": 4,
+            "aiCount": 0,
+            "totalPlayers": 4,
+            "isTeamMode": false,
+            "gameActive": false,
+            "matchOver": false,
+            "gameOverReason": "",
+            "timeoutForfeitPending": false,
+            "timeoutLoserIndex": -1,
+            "timeoutLoserName": "",
+            "continueExpiresAt": 0,
+            "finishInfo": null,
+            "seatSelectionRequired": true,
+            "hostName": "victim",
+            "players": [
+              {
+                "sessionId": "lfplbC49L",
+                "index": 0,
+                "name": "victim",
+                "userId": "audit-net-victim",
+                "playerId": "audit-net-p-victim",
+                "avatarUrl": "",
+                "isConnected": true,
+                "isBot": false,
+                "controller": "human",
+                "takeoverActive": false,
+                "takeoverReason": "",
+                "seatIndex": 0,
+                "seatNumber": 1,
+                "voiceEnabled": false
+              }
+            ],
+            "roomStart": {
+              "roomMode": "ffa",
+              "gameMode": "telefon",
+              "isTeamMode": false,
+              "maxPlayers": 4,
+              "occupiedSeats": 1,
+              "humanCount": 1,
+              "botCount": 0,
+              "readyPlayersCount": 1,
+              "botsReadyCount": 0,
+              "pendingInvitesCount": 0,
+              "joinedInviteCount": 0,
+              "lastAutoStartCheckAt": 0,
+              "lastAutoStartBlockedReason": null,
+              "lastAutoStartTriggeredAt": 0
+            },
+            "teamScores": [],
+            "teamRoundWins": [],
+            "teams": []
+          }
+        },
+        {
+          "type": "msg",
+          "payload": {
+            "key": "msg-player-rejoined-room",
+            "values": {
+              "player": "attacker"
+            },
+            "time": 1500
+          }
+        },
+        {
+          "type": "room_state",
+          "payload": {
+            "roomId": "8qqD5NlVk",
+            "roomCode": "WCZM",
+            "roomVisibility": "closed",
+            "matchState": null,
+            "roomPhase": "lobby",
+            "roomMode": "ffa",
+            "gameMode": "telefon",
+            "scoreMode": "solo",
+            "stakeKey": "free",
+            "stakeAmount": 0,
+            "bankAmount": 0,
+            "requiredStakeAmount": 0,
+            "turnDeadlineAt": 0,
+            "turnDurationMs": 30000,
+            "serverNow": 1792274185314,
+            "turnVersion": 1,
+            "currentPlayers": 1,
+            "humanPlayers": 1,
+            "humanSeats": 4,
+            "aiCount": 0,
+            "totalPlayers": 4,
+            "isTeamMode": false,
+            "gameActive": false,
+            "matchOver": false,
+            "gameOverReason": "",
+            "timeoutForfeitPending": false,
+            "timeoutLoserIndex": -1,
+            "timeoutLoserName": "",
+            "continueExpiresAt": 0,
+            "finishInfo": null,
+            "seatSelectionRequired": true,
+            "hostName": "attacker",
+            "players": [
+              {
+                "sessionId": "G7DxBCtS9",
+                "index": 0,
+                "name": "attacker",
+                "userId": "audit-net-attacker",
+                "playerId": "audit-net-p-attacker",
+                "avatarUrl": "",
+                "isConnected": true,
+                "isBot": false,
+                "controller": "human",
+                "takeoverActive": false,
+                "takeoverReason": "",
+                "seatIndex": 0,
+                "seatNumber": 1,
+                "voiceEnabled": false
+              }
+            ],
+            "roomStart": {
+              "roomMode": "ffa",
+              "gameMode": "telefon",
+              "isTeamMode": false,
+              "maxPlayers": 4,
+              "occupiedSeats": 1,
+              "humanCount": 1,
+              "botCount": 0,
+              "readyPlayersCount": 1,
+              "botsReadyCount": 0,
+              "pendingInvitesCount": 0,
+              "joinedInviteCount": 0,
+              "lastAutoStartCheckAt": 1792274184957,
+              "lastAutoStartBlockedReason": "waiting-for-human",
+              "lastAutoStartTriggeredAt": 0
+            },
+            "teamScores": [],
+            "teamRoundWins": [],
+            "teams": []
+          }
+        }
+      ]
+    },
+    {
+      "name": "voice_default_config",
+      "response": {
+        "iceServers": [],
+        "iceTransportPolicy": "all",
+        "iceCandidatePoolSize": 2,
+        "hasTurn": false
+      }
+    },
+    {
+      "name": "public_presence",
+      "response": {
+        "items": [
+          {
+            "sessionId": "G7DxBCtS9",
+            "userId": "audit-net-attacker",
+            "playerId": "audit-net-p-attacker",
+            "displayName": "attacker",
+            "provider": "platform",
+            "isConnected": true,
+            "isPlaying": false,
+            "roomId": "8qqD5NlVk",
+            "roomCode": "WCZM",
+            "role": "player",
+            "joinedAt": "2026-10-17T21:56:25.297Z",
+            "updatedAt": "2026-10-17T21:56:25.314Z"
+          }
+        ],
+        "counts": {
+          "total": 1,
+          "connected": 1,
+          "authenticatedConnected": 1,
+          "guestConnected": 0,
+          "authenticatedPlaying": 0,
+          "rooms": 1
+        },
+        "rooms": [
+          {
+            "roomId": "8qqD5NlVk",
+            "roomCode": "WCZM",
+            "gameMode": "telefon",
+            "roomMode": "ffa",
+            "roomVisibility": "closed",
+            "stakeKey": "free",
+            "stakeAmount": 0,
+            "humanSeats": 4,
+            "totalPlayers": 5,
+            "gameActive": false,
+            "connectedPlayers": 1,
+            "authenticatedPlayers": 1,
+            "openSeats": 3,
+            "joinable": true,
+            "isTeamMode": false,
+            "aiCount": 0,
+            "hostName": "attacker",
+            "players": [
+              {
+                "sessionId": "G7DxBCtS9",
+                "userId": "audit-net-attacker",
+                "playerId": "audit-net-p-attacker",
+                "displayName": "attacker",
+                "provider": "platform",
+                "isConnected": true,
+                "isPlaying": false,
+                "roomCode": "WCZM",
+                "role": "player",
+                "joinedAt": "2026-10-17T21:56:25.297Z"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

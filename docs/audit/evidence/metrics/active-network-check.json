@@ -1,0 +1,590 @@
+{
+  "scope": "One local host, actual WebSocket commands in free 4-human classic101 rooms. Synthetic identities; no wallet/settlement verification. Stream delay/jitter/bandwidth, not packet loss. Load generator shares host with server.",
+  "conditions": [
+    {
+      "name": "baseline",
+      "delay": 0,
+      "jitter": 0,
+      "bytesPerSecond": 0,
+      "commands": 12,
+      "accepted": 12,
+      "rejections": [],
+      "syncP95": 3.3958330000000387,
+      "commandReplyP50": 2.3981669999998303,
+      "commandReplyP95": 3.892417000000023,
+      "cycleP95": 9.448707999999897,
+      "check": {
+        "samePublicState": true,
+        "visibleUniqueTiles": 28,
+        "boneyard": 0,
+        "total": 28
+      },
+      "errors": []
+    },
+    {
+      "name": "75ms_each_way_jitter25",
+      "delay": 75,
+      "jitter": 25,
+      "bytesPerSecond": 0,
+      "commands": 12,
+      "accepted": 12,
+      "rejections": [],
+      "syncP95": 179.0431669999998,
+      "commandReplyP50": 157.57587499999954,
+      "commandReplyP95": 182.6167090000008,
+      "cycleP95": 498.85254199999963,
+      "check": {
+        "samePublicState": true,
+        "visibleUniqueTiles": 28,
+        "boneyard": 0,
+        "total": 28
+      },
+      "errors": []
+    },
+    {
+      "name": "200ms_each_way_jitter50",
+      "delay": 200,
+      "jitter": 50,
+      "bytesPerSecond": 0,
+      "commands": 12,
+      "accepted": 12,
+      "rejections": [],
+      "syncP95": 458.7510000000002,
+      "commandReplyP50": 438.05612499999916,
+      "commandReplyP95": 470.518250000001,
+      "cycleP95": 1331.7212080000027,
+      "check": {
+        "samePublicState": true,
+        "visibleUniqueTiles": 28,
+        "boneyard": 0,
+        "total": 28
+      },
+      "errors": []
+    },
+    {
+      "name": "16KiB_per_second_each_way",
+      "delay": 40,
+      "jitter": 10,
+      "bytesPerSecond": 16384,
+      "commands": 12,
+      "accepted": 12,
+      "rejections": [],
+      "syncP95": 500.14391700000124,
+      "commandReplyP50": 85.71433400000387,
+      "commandReplyP95": 95.62241700000595,
+      "cycleP95": 737.6335000000036,
+      "check": {
+        "samePublicState": true,
+        "visibleUniqueTiles": 28,
+        "boneyard": 0,
+        "total": 28
+      },
+      "errors": []
+    }
+  ],
+  "load": [
+    {
+      "clients": 20,
+      "rooms": 5,
+      "durationMs": 45196.27716600001,
+      "targetDurationMs": 45000,
+      "actions": 624,
+      "actionsPerSecond": 13.806442440709102,
+      "commandP50": 1.2165840000016033,
+      "commandP95": 3.7148329999981797,
+      "commandP99": 5.873249999996915,
+      "idlePolls": 486,
+      "rejected": {},
+      "errors": [],
+      "stateCheckpointsPassed": 5,
+      "stateCheckpointsTotal": 5,
+      "process": [
+        {
+          "elapsedMs": 5001.473416000001,
+          "ps": "126896   7.0"
+        },
+        {
+          "elapsedMs": 10001.399666000005,
+          "ps": "126272   1.2"
+        },
+        {
+          "elapsedMs": 15001.79275,
+          "ps": "129168  10.4"
+        },
+        {
+          "elapsedMs": 20002.970041,
+          "ps": "121920   2.4"
+        },
+        {
+          "elapsedMs": 25004.419499999996,
+          "ps": "152592   5.1"
+        },
+        {
+          "elapsedMs": 30005.115750000004,
+          "ps": "149840   1.6"
+        },
+        {
+          "elapsedMs": 35005.87837500001,
+          "ps": "163824   5.8"
+        },
+        {
+          "elapsedMs": 40006.81375000001,
+          "ps": "151872   4.3"
+        },
+        {
+          "elapsedMs": 45008.011875000004,
+          "ps": "165536   4.1"
+        }
+      ]
+    },
+    {
+      "clients": 100,
+      "rooms": 25,
+      "durationMs": 45130.255208999995,
+      "targetDurationMs": 45000,
+      "actions": 3132,
+      "actionsPerSecond": 69.39911808389569,
+      "commandP50": 0.9032500000030268,
+      "commandP95": 3.768458999998984,
+      "commandP99": 7.762875000000349,
+      "idlePolls": 2418,
+      "rejected": {},
+      "errors": [],
+      "stateCheckpointsPassed": 25,
+      "stateCheckpointsTotal": 25,
+      "process": [
+        {
+          "elapsedMs": 5001.446208999987,
+          "ps": "193504  19.5"
+        },
+        {
+          "elapsedMs": 10001.015041999999,
+          "ps": "206768  13.1"
+        },
+        {
+          "elapsedMs": 15002.202874999988,
+          "ps": "202352  16.4"
+        },
+        {
+          "elapsedMs": 20003.381834,
+          "ps": "217088  15.1"
+        },
+        {
+          "elapsedMs": 25003.585292000003,
+          "ps": "219312   9.0"
+        },
+        {
+          "elapsedMs": 30004.981708999985,
+          "ps": "224096   5.6"
+        },
+        {
+          "elapsedMs": 35005.925334,
+          "ps": "214576  10.9"
+        },
+        {
+          "elapsedMs": 40005.554917,
+          "ps": "212736   8.9"
+        },
+        {
+          "elapsedMs": 45006.185958999995,
+          "ps": "209760  15.6"
+        }
+      ]
+    },
+    {
+      "clients": 200,
+      "rooms": 50,
+      "durationMs": 45240.272375,
+      "targetDurationMs": 45000,
+      "actions": 6069,
+      "actionsPerSecond": 134.1503822524681,
+      "commandP50": 0.8019579999963753,
+      "commandP95": 4.112542000017129,
+      "commandP99": 11.767958000011276,
+      "idlePolls": 5038,
+      "rejected": {},
+      "errors": [],
+      "stateCheckpointsPassed": 50,
+      "stateCheckpointsTotal": 50,
+      "process": [
+        {
+          "elapsedMs": 5000.540750000015,
+          "ps": "228688  21.0"
+        },
+        {
+          "elapsedMs": 10001.310916999995,
+          "ps": "223168  10.2"
+        },
+        {
+          "elapsedMs": 15002.522792000003,
+          "ps": "246848  32.7"
+        },
+        {
+          "elapsedMs": 20003.374624999997,
+          "ps": "247712  16.1"
+        },
+        {
+          "elapsedMs": 25002.898749999993,
+          "ps": "249184  24.3"
+        },
+        {
+          "elapsedMs": 30003.929292000015,
+          "ps": "252480  13.2"
+        },
+        {
+          "elapsedMs": 35005.29820799999,
+          "ps": "221904  23.9"
+        },
+        {
+          "elapsedMs": 40006.673666999995,
+          "ps": "237344  12.1"
+        },
+        {
+          "elapsedMs": 45006.69162500001,
+          "ps": "236672  23.0"
+        }
+      ]
+    }
+  ],
+  "redisFault": [
+    {
+      "phase": "paused",
+      "durationMs": 10149.058625000005,
+      "attempts": [
+        {
+          "action": "play",
+          "kind": "ack",
+          "accepted": true,
+          "reason": "",
+          "replyMs": 1.2918749999953434,
+          "cycleMs": 2.389374999998836
+        },
+        {
+          "action": "play",
+          "kind": "ack",
+          "accepted": true,
+          "reason": "",
+          "replyMs": 1.1989580000226852,
+          "cycleMs": 2.9752499999885913
+        },
+        {
+          "action": "play",
+          "kind": "ack",
+          "accepted": true,
+          "reason": "",
+          "replyMs": 2.2737079999933485,
+          "cycleMs": 3.311249999998836
+        },
+        {
+          "action": "play",
+          "kind": "ack",
+          "accepted": true,
+          "reason": "",
+          "replyMs": 0.9745830000028946,
+          "cycleMs": 2.585624999977881
+        },
+        {
+          "action": "play",
+          "kind": "ack",
+          "accepted": true,
+          "reason": "",
+          "replyMs": 0.918666999990819,
+          "cycleMs": 2.161292000004323
+        },
+        {
+          "action": "play",
+          "kind": "ack",
+          "accepted": true,
+          "reason": "",
+          "replyMs": 1.141165999986697,
+          "cycleMs": 2.283624999981839
+        },
+        {
+          "action": "pass",
+          "kind": "ack",
+          "accepted": true,
+          "reason": "",
+          "replyMs": 1.265666000021156,
+          "cycleMs": 2.2951670000038575
+        },
+        {
+          "action": "play",
+          "kind": "ack",
+          "accepted": true,
+          "reason": "",
+          "replyMs": 1.830500000010943,
+          "cycleMs": 5.634000000020023
+        },
+        {
+          "action": "play",
+          "kind": "ack",
+          "accepted": true,
+          "reason": "",
+          "replyMs": 0.9831249999988358,
+          "cycleMs": 2.2078329999931157
+        },
+        {
+          "action": "play",
+          "kind": "ack",
+          "accepted": true,
+          "reason": "",
+          "replyMs": 0.4736669999838341,
+          "cycleMs": 1.2027909999887925
+        },
+        {
+          "action": "play",
+          "kind": "ack",
+          "accepted": true,
+          "reason": "",
+          "replyMs": 1.0213329999824055,
+          "cycleMs": 1.8583330000110436
+        },
+        {
+          "action": "play",
+          "kind": "ack",
+          "accepted": true,
+          "reason": "",
+          "replyMs": 1.4862499999871943,
+          "cycleMs": 4.207084000023315
+        },
+        {
+          "action": "play",
+          "kind": "ack",
+          "accepted": true,
+          "reason": "",
+          "replyMs": 1.6867500000225846,
+          "cycleMs": 3.9936670000024606
+        },
+        {
+          "action": "play",
+          "kind": "ack",
+          "accepted": true,
+          "reason": "",
+          "replyMs": 1.5777499999967404,
+          "cycleMs": 3.5246250000200234
+        },
+        {
+          "action": "play",
+          "kind": "ack",
+          "accepted": true,
+          "reason": "",
+          "replyMs": 1.1405420000082813,
+          "cycleMs": 2.046042000001762
+        },
+        {
+          "action": "pass",
+          "kind": "ack",
+          "accepted": true,
+          "reason": "",
+          "replyMs": 0.9229999999806751,
+          "cycleMs": 2.318542000022717
+        },
+        {
+          "action": "play",
+          "kind": "ack",
+          "accepted": true,
+          "reason": "",
+          "replyMs": 0.43258299998706207,
+          "cycleMs": 1.2445829999924172
+        },
+        {
+          "action": "pass",
+          "kind": "ack",
+          "accepted": true,
+          "reason": "",
+          "replyMs": 0.8705840000184253,
+          "cycleMs": 3.184624999994412
+        },
+        {
+          "action": "play",
+          "kind": "ack",
+          "accepted": true,
+          "reason": "",
+          "replyMs": 1.3836670000164304,
+          "cycleMs": 2.3337919999903534
+        },
+        {
+          "action": "play",
+          "kind": "ack",
+          "accepted": true,
+          "reason": "",
+          "replyMs": 1.4895419999957085,
+          "cycleMs": 3.8068330000096466
+        },
+        {
+          "action": "play",
+          "kind": "ack",
+          "accepted": true,
+          "reason": "",
+          "replyMs": 1.3401250000169966,
+          "cycleMs": 3.0027079999854323
+        },
+        {
+          "action": "pass",
+          "kind": "ack",
+          "accepted": true,
+          "reason": "",
+          "replyMs": 0.9834579999733251,
+          "cycleMs": 2.6361249999899883
+        },
+        {
+          "action": "pass",
+          "kind": "ack",
+          "accepted": true,
+          "reason": "",
+          "replyMs": 0.9660839999851305,
+          "cycleMs": 2.4677080000110436
+        },
+        {
+          "action": "play",
+          "kind": "ack",
+          "accepted": true,
+          "reason": "",
+          "replyMs": 0.6885829999810085,
+          "cycleMs": 3.0093749999941792
+        },
+        {
+          "action": "pass",
+          "kind": "ack",
+          "accepted": true,
+          "reason": "",
+          "replyMs": 1.7982499999925494,
+          "cycleMs": 3.4020420000015292
+        },
+        {
+          "action": "pass",
+          "kind": "ack",
+          "accepted": true,
+          "reason": "",
+          "replyMs": 0.9052920000103768,
+          "cycleMs": 3.1434170000138693
+        },
+        {
+          "action": "pass",
+          "kind": "ack",
+          "accepted": true,
+          "reason": "",
+          "replyMs": 0.43104199998197146,
+          "cycleMs": 0.9060829999798443
+        },
+        {
+          "action": "play",
+          "kind": "ack",
+          "accepted": true,
+          "reason": "",
+          "replyMs": 1.1322919999947771,
+          "cycleMs": 2.782166999997571
+        },
+        {
+          "action": "pass",
+          "kind": "ack",
+          "accepted": true,
+          "reason": "",
+          "replyMs": 0.8730829999840353,
+          "cycleMs": 2.6034579999977723
+        },
+        {
+          "action": "pass",
+          "kind": "ack",
+          "accepted": true,
+          "reason": "",
+          "replyMs": 0.5449999999837019,
+          "cycleMs": 1.5028330000059213
+        },
+        {
+          "action": "play",
+          "kind": "ack",
+          "accepted": true,
+          "reason": "",
+          "replyMs": 1.5888749999867287,
+          "cycleMs": 2.702833000017563
+        },
+        {
+          "action": "play",
+          "kind": "deal_end",
+          "accepted": true,
+          "replyMs": 1.421667000016896,
+          "cycleMs": 3.027208999992581
+        },
+        {
+          "idle": true
+        },
+        {
+          "idle": true
+        },
+        {
+          "idle": true
+        },
+        {
+          "idle": true
+        },
+        {
+          "idle": true
+        },
+        {
+          "idle": true
+        },
+        {
+          "idle": true
+        },
+        {
+          "idle": true
+        },
+        {
+          "idle": true
+        },
+        {
+          "idle": true
+        },
+        {
+          "idle": true
+        },
+        {
+          "idle": true
+        },
+        {
+          "idle": true
+        },
+        {
+          "idle": true
+        },
+        {
+          "idle": true
+        },
+        {
+          "idle": true
+        },
+        {
+          "idle": true
+        },
+        {
+          "idle": true
+        }
+      ],
+      "before": {
+        "samePublicState": true,
+        "visibleUniqueTiles": 28,
+        "boneyard": 0,
+        "total": 28
+      }
+    },
+    {
+      "phase": "resumed",
+      "state": {
+        "samePublicState": true,
+        "visibleUniqueTiles": 28,
+        "boneyard": 0,
+        "total": 28
+      },
+      "command": {
+        "action": "play",
+        "kind": "ack",
+        "accepted": true,
+        "reason": "",
+        "replyMs": 3.767541999986861,
+        "cycleMs": 6.545083000004524
+      }
+    }
+  ],
+  "errors": []
+}

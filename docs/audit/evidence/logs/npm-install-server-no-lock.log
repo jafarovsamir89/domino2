@@ -1,0 +1,13 @@
+npm warn deprecated uuid@8.3.2: uuid@10 and below is no longer supported.  For ESM codebases, update to uuid@latest.  For CommonJS codebases, use uuid@11 (but be aware this version will likely be deprecated in 2028).
+
+added 182 packages, and audited 183 packages in 51s
+
+40 packages are looking for funding
+  run `npm fund` for details
+
+8 vulnerabilities (5 low, 3 moderate)
+
+To address all issues (including breaking changes), run:
+  npm audit fix --force
+
+Run `npm audit` for details.

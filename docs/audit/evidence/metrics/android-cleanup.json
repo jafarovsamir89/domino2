@@ -1,0 +1,178 @@
+{
+  "scope": "Only own audit app and test mappings. Original Play app unchanged. TalkBack not enabled.",
+  "originalSystemSettings": {
+    "accelerometer_rotation": "0",
+    "user_rotation": "0",
+    "font_scale": "1.0"
+  },
+  "afterSystemSettings": {
+    "accelerometer_rotation": "0",
+    "user_rotation": "0",
+    "font_scale": "1.0"
+  },
+  "recordAudio": [
+    "android.permission.RECORD_AUDIO: granted=false, flags=[ USER_SENSITIVE_WHEN_GRANTED|USER_SENSITIVE_WHEN_DENIED]"
+  ],
+  "commands": [
+    {
+      "args": [
+        "shell",
+        "am",
+        "force-stop",
+        "az.simplesoft.dominotelefon.audit"
+      ],
+      "exit": 0,
+      "output": ""
+    },
+    {
+      "args": [
+        "shell",
+        "settings",
+        "put",
+        "system",
+        "accelerometer_rotation",
+        "0"
+      ],
+      "exit": 0,
+      "output": ""
+    },
+    {
+      "args": [
+        "shell",
+        "settings",
+        "put",
+        "system",
+        "user_rotation",
+        "0"
+      ],
+      "exit": 0,
+      "output": ""
+    },
+    {
+      "args": [
+        "shell",
+        "settings",
+        "put",
+        "system",
+        "font_scale",
+        "1.0"
+      ],
+      "exit": 0,
+      "output": ""
+    },
+    {
+      "args": [
+        "shell",
+        "pm",
+        "revoke",
+        "az.simplesoft.dominotelefon.audit",
+        "android.permission.RECORD_AUDIO"
+      ],
+      "exit": 0,
+      "output": ""
+    },
+    {
+      "args": [
+        "shell",
+        "pm",
+        "clear-permission-flags",
+        "az.simplesoft.dominotelefon.audit",
+        "android.permission.RECORD_AUDIO",
+        "user-set",
+        "user-fixed"
+      ],
+      "exit": 0,
+      "output": ""
+    },
+    {
+      "args": [
+        "reverse",
+        "--remove",
+        "tcp:4174"
+      ],
+      "exit": 0,
+      "output": ""
+    },
+    {
+      "args": [
+        "reverse",
+        "--remove",
+        "tcp:4300"
+      ],
+      "exit": 0,
+      "output": ""
+    },
+    {
+      "args": [
+        "reverse",
+        "--remove",
+        "tcp:4567"
+      ],
+      "exit": 0,
+      "output": ""
+    },
+    {
+      "args": [
+        "forward",
+        "--remove",
+        "tcp:9222"
+      ],
+      "exit": 0,
+      "output": ""
+    },
+    {
+      "args": [
+        "shell",
+        "rm",
+        "-f",
+        "/sdcard/domino-audit-window.xml",
+        "/sdcard/domino-audit-screen.png"
+      ],
+      "exit": 0,
+      "output": ""
+    },
+    {
+      "args": [
+        "shell",
+        "settings",
+        "get",
+        "system",
+        "accelerometer_rotation"
+      ],
+      "exit": 0,
+      "output": "0"
+    },
+    {
+      "args": [
+        "shell",
+        "settings",
+        "get",
+        "system",
+        "user_rotation"
+      ],
+      "exit": 0,
+      "output": "0"
+    },
+    {
+      "args": [
+        "shell",
+        "settings",
+        "get",
+        "system",
+        "font_scale"
+      ],
+      "exit": 0,
+      "output": "1.0"
+    },
+    {
+      "args": [
+        "shell",
+        "dumpsys",
+        "package",
+        "az.simplesoft.dominotelefon.audit"
+      ],
+      "exit": 0,
+      "output": "record_audio_line_only: android.permission.RECORD_AUDIO: granted=false, flags=[ USER_SENSITIVE_WHEN_GRANTED|USER_SENSITIVE_WHEN_DENIED]"
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+[
+  {
+    "library": "base/lib/arm64-v8a/libdatastore_shared_counter.so",
+    "ptLoadAlign": [
+      16384,
+      16384,
+      16384
+    ],
+    "atLeast16KB": true
+  },
+  {
+    "library": "base/lib/armeabi-v7a/libdatastore_shared_counter.so",
+    "ptLoadAlign": [
+      16384,
+      16384
+    ],
+    "atLeast16KB": true
+  },
+  {
+    "library": "base/lib/x86/libdatastore_shared_counter.so",
+    "ptLoadAlign": [
+      16384,
+      16384
+    ],
+    "atLeast16KB": true
+  },
+  {
+    "library": "base/lib/x86_64/libdatastore_shared_counter.so",
+    "ptLoadAlign": [
+      16384,
+      16384
+    ],
+    "atLeast16KB": true
+  }
+]

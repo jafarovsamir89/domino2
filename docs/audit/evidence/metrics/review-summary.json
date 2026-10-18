@@ -1,0 +1,25 @@
+{
+  "retrievedAt": "2026-10-17T21:59:26.011238+00:00",
+  "locale": "en_US",
+  "sampling": "60 newest accessible reviews per app; convenience sample; keyword multi-label mentions, not verified defects or negative-only sentiment",
+  "n": 600,
+  "counts": {
+    "advertising": 82,
+    "payment_coins": 53,
+    "fairness_bots": 36,
+    "stability": 36,
+    "social": 14,
+    "rules": 40,
+    "positive_enjoyment": 166
+  },
+  "negativeCounts": {
+    "advertising": 54,
+    "payment_coins": 32,
+    "fairness_bots": 30,
+    "stability": 25,
+    "social": 4,
+    "rules": 24,
+    "positive_enjoyment": 26
+  },
+  "errors": []
+}

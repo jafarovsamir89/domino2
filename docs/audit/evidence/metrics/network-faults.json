@@ -1,0 +1,106 @@
+{
+  "scope": "Loopback, one host, free 4-player rooms, sync burst (not sustained active-match capacity)",
+  "faults": [
+    {
+      "name": "active_before_shutdown",
+      "gameActive": true,
+      "selfHand": [
+        {
+          "a": 1,
+          "b": 1,
+          "id": "1-1"
+        },
+        {
+          "a": 5,
+          "b": 5,
+          "id": "5-5"
+        },
+        {
+          "a": 0,
+          "b": 5,
+          "id": "0-5"
+        },
+        {
+          "a": 2,
+          "b": 4,
+          "id": "2-4"
+        },
+        {
+          "a": 3,
+          "b": 3,
+          "id": "3-3"
+        },
+        {
+          "a": 0,
+          "b": 2,
+          "id": "0-2"
+        },
+        {
+          "a": 2,
+          "b": 3,
+          "id": "2-3"
+        }
+      ],
+      "exists": "1"
+    },
+    {
+      "name": "active_after_graceful_shutdown",
+      "exists": "0"
+    },
+    {
+      "name": "active_restore",
+      "ok": false,
+      "error": "restore_snapshot_not_found"
+    },
+    {
+      "name": "reconnect",
+      "seconds": 5,
+      "ok": true,
+      "sameSession": true,
+      "handSame": true,
+      "gameActive": true,
+      "reason": "",
+      "matchOver": false,
+      "handCount": 7
+    },
+    {
+      "name": "reconnect",
+      "seconds": 15,
+      "ok": true,
+      "sameSession": true,
+      "handSame": true,
+      "gameActive": true,
+      "reason": "",
+      "matchOver": false,
+      "handCount": 7
+    },
+    {
+      "name": "reconnect",
+      "seconds": 30,
+      "ok": true,
+      "sameSession": true,
+      "handSame": true,
+      "gameActive": false,
+      "reason": "",
+      "matchOver": false,
+      "handCount": 7
+    },
+    {
+      "name": "reconnect",
+      "seconds": 60,
+      "ok": false,
+      "error": "room \"yUiQDqHUN\" has been disposed."
+    },
+    {
+      "name": "reconnect",
+      "seconds": 120,
+      "ok": true,
+      "sameSession": true,
+      "handSame": true,
+      "gameActive": true,
+      "reason": "",
+      "matchOver": false,
+      "handCount": 7
+    }
+  ]
+}

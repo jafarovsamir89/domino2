@@ -1,0 +1,775 @@
+{
+  "scope": "Actual Android audit WebView + local SDK peer; real client playTile/controls, animations, network, stake200. Automatic legal choices; not a test of human touch accuracy. No production accounts.",
+  "actions": [
+    {
+      "actor": "phone",
+      "action": "play",
+      "ms": 450.0501669999994
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "ms": 385.28362500000003
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "ms": 32.752292000001034
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "ms": 59.093417000000045
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "ms": 33.20395899999858
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "ms": 53.55162500000006
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "ms": 39.63891599999988
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "ms": 43.57708400000047
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "ms": 51.352458999999726
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "ms": 33.08495799999946
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "ms": 47.76745800000026
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "ms": 40.71337499999936
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "ms": 41.97916699999951
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "ms": 43.52600000000166
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "ms": 30.601666999998997
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "ms": 37.03137500000048
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "ms": 28.072041999999783
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "ms": 28.350750000001426
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "ms": 31.10124999999971
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "ms": 33.47650000000067
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "ms": 40.46129199999996
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "ms": 24.142791999998735
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "ms": 36.55174999999872
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "ms": 27.421125000000757
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "ms": 25.110250000001543
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "ms": 27.16599999999744
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "ms": 34.76199999999881
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "ms": 26.8526669999992
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "ms": 110.28045799999745
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "ms": 42.565207999999984
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "ms": 42.53220800000054
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "ms": 40.0926670000008
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "ms": 47.62341599999854
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "ms": 38.06791699999667
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "ms": 39.35762500000055
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "ms": 45.82041599999866
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "ms": 32.250833000001876
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "ms": 29.55595899999753
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "ms": 23.45441700000083
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "ms": 32.16450000000259
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "ms": 34.75487499999872
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "ms": 37.47724999999991
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "ms": 26.613792000000103
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "ms": 32.96858400000201
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "ms": 39.29633399999875
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "ms": 26.475125000000844
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "ms": 30.18433399999776
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "ms": 38.731041999999434
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "ms": 35.9943749999984
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "ms": 41.3460840000007
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "ms": 40.88879100000122
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "ms": 45.14325000000099
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "ms": 45.7221669999999
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "ms": 48.343957999997656
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "ms": 29.367833000000246
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "ms": 35.098250000002736
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "ms": 46.60541699999885
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "ms": 29.320457999998325
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "ms": 33.72691699999996
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "ms": 42.93804100000125
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "ms": 45.71245800000179
+    },
+    {
+      "actor": "phone",
+      "action": "play",
+      "ms": 29.689417000001413
+    }
+  ],
+  "events": [
+    {
+      "type": "round_end",
+      "payload": {
+        "winnerIndex": 1,
+        "wins": 2,
+        "isInstantWin": false,
+        "isMatchOver": false,
+        "matchRound": 1,
+        "isTeamMode": false,
+        "teamScores": [
+          0,
+          0
+        ],
+        "teamRoundWins": [
+          0,
+          0
+        ],
+        "players": [
+          {
+            "name": "AuditPhone",
+            "score": 0,
+            "roundWins": 0,
+            "isWinner": false
+          },
+          {
+            "name": "AuditPeer",
+            "score": 0,
+            "roundWins": 2,
+            "isWinner": true
+          }
+        ],
+        "economy": {
+          "ok": true,
+          "settled": 2,
+          "stakeKey": "stake_200",
+          "bank": 400,
+          "winnerBank": 200,
+          "loserBank": 200,
+          "commission": 20,
+          "payout": 180,
+          "winners": 1,
+          "result": "loss",
+          "reservations": [
+            {
+              "playerId": "cmvd255op0001t0ni17ngvl51",
+              "userId": "audit-device-mvd255o6-AuditPhone",
+              "wallet": {
+                "id": "cmvd255op0002t0ni84so9ebk",
+                "playerId": "cmvd255op0001t0ni17ngvl51",
+                "balance": 9600,
+                "reserved": 0,
+                "lifetimeEarned": 1000,
+                "lifetimeSpent": 1400,
+                "createdAt": "2026-10-17T23:58:42.697Z",
+                "updatedAt": "2026-10-18T00:25:42.958Z"
+              },
+              "payout": 0
+            },
+            {
+              "playerId": "cmvd255p20004t0nievmmogig",
+              "userId": "audit-device-mvd255o6-AuditPeer",
+              "wallet": {
+                "id": "cmvd255p20005t0nia1689atv",
+                "playerId": "cmvd255p20004t0nievmmogig",
+                "balance": 12060,
+                "reserved": 0,
+                "lifetimeEarned": 2060,
+                "lifetimeSpent": 0,
+                "createdAt": "2026-10-17T23:58:42.710Z",
+                "updatedAt": "2026-10-18T00:25:42.965Z"
+              },
+              "payout": 180
+            }
+          ]
+        },
+        "finishKind": "timeout_forfeit",
+        "forfeitReason": "turn_timeout",
+        "timeoutLoserIndex": 0,
+        "timeoutLoserSessionId": "08dHE3wnS",
+        "timeoutLoserName": "AuditPhone",
+        "stakeKey": "stake_200",
+        "requiredStakeAmount": 200,
+        "finishInfo": null,
+        "canContinueSessionId": "08dHE3wnS",
+        "continueExpiresAt": 1792283172968
+      }
+    }
+  ],
+  "checkpoints": [
+    {
+      "actions": 10,
+      "boardSame": true,
+      "total": 26,
+      "uniqueVisible": true,
+      "serverTurn": 0,
+      "clientTurn": 0
+    },
+    {
+      "actions": 20,
+      "boardSame": true,
+      "total": 26,
+      "uniqueVisible": true,
+      "serverTurn": 0,
+      "clientTurn": 0
+    },
+    {
+      "actions": 30,
+      "boardSame": true,
+      "total": 26,
+      "uniqueVisible": true,
+      "serverTurn": 0,
+      "clientTurn": 0
+    },
+    {
+      "actions": 40,
+      "boardSame": true,
+      "total": 26,
+      "uniqueVisible": true,
+      "serverTurn": 0,
+      "clientTurn": 0
+    },
+    {
+      "actions": 50,
+      "boardSame": true,
+      "total": 26,
+      "uniqueVisible": true,
+      "serverTurn": 0,
+      "clientTurn": 0
+    },
+    {
+      "actions": 60,
+      "boardSame": true,
+      "total": 26,
+      "uniqueVisible": true,
+      "serverTurn": 0,
+      "clientTurn": 0
+    }
+  ],
+  "errors": [
+    {
+      "checkpoint": {
+        "actions": 10,
+        "boardSame": true,
+        "total": 26,
+        "uniqueVisible": true,
+        "serverTurn": 0,
+        "clientTurn": 0
+      }
+    },
+    {
+      "checkpoint": {
+        "actions": 20,
+        "boardSame": true,
+        "total": 26,
+        "uniqueVisible": true,
+        "serverTurn": 0,
+        "clientTurn": 0
+      }
+    },
+    {
+      "checkpoint": {
+        "actions": 30,
+        "boardSame": true,
+        "total": 26,
+        "uniqueVisible": true,
+        "serverTurn": 0,
+        "clientTurn": 0
+      }
+    },
+    {
+      "checkpoint": {
+        "actions": 40,
+        "boardSame": true,
+        "total": 26,
+        "uniqueVisible": true,
+        "serverTurn": 0,
+        "clientTurn": 0
+      }
+    },
+    {
+      "checkpoint": {
+        "actions": 50,
+        "boardSame": true,
+        "total": 26,
+        "uniqueVisible": true,
+        "serverTurn": 0,
+        "clientTurn": 0
+      }
+    },
+    {
+      "checkpoint": {
+        "actions": 60,
+        "boardSame": true,
+        "total": 26,
+        "uniqueVisible": true,
+        "serverTurn": 0,
+        "clientTurn": 0
+      }
+    }
+  ],
+  "roomId": "EKZ510fGc",
+  "initial": {
+    "roomId": "EKZ510fGc",
+    "roomCode": "YDUF",
+    "roomVisibility": "closed",
+    "gameMode": "telefon",
+    "matchState": null,
+    "playerOrder": [
+      "08dHE3wnS",
+      "Z0DQAZOZ4"
+    ],
+    "players": [
+      {
+        "sessionId": "08dHE3wnS",
+        "index": 0,
+        "name": "AuditPhone",
+        "userId": "audit-device-mvd255o6-AuditPhone",
+        "avatarUrl": "",
+        "score": 0,
+        "roundWins": 0,
+        "handCount": 7,
+        "isConnected": true,
+        "isBot": false,
+        "seatIndex": 0,
+        "controller": "human",
+        "takeoverActive": false,
+        "takeoverReason": ""
+      },
+      {
+        "sessionId": "Z0DQAZOZ4",
+        "index": 1,
+        "name": "AuditPeer",
+        "userId": "audit-device-mvd255o6-AuditPeer",
+        "avatarUrl": "",
+        "score": 0,
+        "roundWins": 0,
+        "handCount": 7,
+        "isConnected": true,
+        "isBot": false,
+        "seatIndex": 1,
+        "controller": "human",
+        "takeoverActive": false,
+        "takeoverReason": ""
+      }
+    ],
+    "currentPlayerIndex": 0,
+    "boneyardCount": 14,
+    "gameActive": true,
+    "matchRound": 1,
+    "deal": 1,
+    "board": {
+      "nodes": [],
+      "openEnds": [],
+      "crossNodeId": null,
+      "crossSidesClosed": 0,
+      "startAxis": "horizontal",
+      "telephoneEnabled": true,
+      "scoringEnabled": true
+    },
+    "isTeamMode": false,
+    "playerCount": 2,
+    "turnDeadlineAt": 1792283142925,
+    "turnVersion": 1,
+    "lastMoveRevealPending": false,
+    "finishInfo": null,
+    "matchOver": false,
+    "gameOverReason": "",
+    "gameOverPlayerName": "",
+    "gameOverWinnerIndex": -1,
+    "gameOverSummaryJson": "",
+    "teamScores": [
+      0,
+      0
+    ],
+    "teamRoundWins": [
+      0,
+      0
+    ],
+    "stakeKey": "stake_200",
+    "bankAmount": 400,
+    "turnDurationMs": 30000,
+    "serverNow": 1792283113038,
+    "selfHand": [
+      {
+        "a": 1,
+        "b": 1,
+        "id": "1-1"
+      },
+      {
+        "a": 1,
+        "b": 3,
+        "id": "1-3"
+      },
+      {
+        "a": 1,
+        "b": 4,
+        "id": "1-4"
+      },
+      {
+        "a": 1,
+        "b": 5,
+        "id": "1-5"
+      },
+      {
+        "a": 1,
+        "b": 6,
+        "id": "1-6"
+      },
+      {
+        "a": 2,
+        "b": 2,
+        "id": "2-2"
+      },
+      {
+        "a": 0,
+        "b": 0,
+        "id": "0-0"
+      }
+    ],
+    "turnInfo": {
+      "validMoves": [],
+      "goshaCombo": null
+    }
+  },
+  "startedAt": "2026-10-18T00:25:13.038Z",
+  "surfaceLayer": "az.simplesoft.dominotelefon.audit/az.simplesoft.dominotelefon.MainActivity#47305",
+  "durationMs": 59988.788958000005,
+  "last": {
+    "roomId": "EKZ510fGc",
+    "roomCode": "YDUF",
+    "roomVisibility": "closed",
+    "gameMode": "telefon",
+    "matchState": null,
+    "playerOrder": [
+      "08dHE3wnS",
+      "Z0DQAZOZ4"
+    ],
+    "players": [
+      {
+        "sessionId": "08dHE3wnS",
+        "index": 0,
+        "name": "AuditPhone",
+        "userId": "audit-device-mvd255o6-AuditPhone",
+        "avatarUrl": "",
+        "score": 0,
+        "roundWins": 0,
+        "handCount": 7,
+        "isConnected": false,
+        "isBot": false,
+        "seatIndex": 0,
+        "controller": "human",
+        "takeoverActive": false,
+        "takeoverReason": ""
+      },
+      {
+        "sessionId": "Z0DQAZOZ4",
+        "index": 1,
+        "name": "AuditPeer",
+        "userId": "audit-device-mvd255o6-AuditPeer",
+        "avatarUrl": "",
+        "score": 0,
+        "roundWins": 2,
+        "handCount": 7,
+        "isConnected": true,
+        "isBot": false,
+        "seatIndex": 1,
+        "controller": "human",
+        "takeoverActive": false,
+        "takeoverReason": ""
+      }
+    ],
+    "currentPlayerIndex": 0,
+    "boneyardCount": 14,
+    "gameActive": false,
+    "matchRound": 2,
+    "deal": 1,
+    "board": {
+      "nodes": [],
+      "openEnds": [],
+      "crossNodeId": null,
+      "crossSidesClosed": 0,
+      "startAxis": "horizontal",
+      "telephoneEnabled": true,
+      "scoringEnabled": true
+    },
+    "isTeamMode": false,
+    "playerCount": 2,
+    "turnDeadlineAt": 0,
+    "turnVersion": 1,
+    "lastMoveRevealPending": false,
+    "finishInfo": null,
+    "matchOver": true,
+    "gameOverReason": "timeout-forfeit-room-closed",
+    "gameOverPlayerName": "",
+    "gameOverWinnerIndex": -1,
+    "gameOverSummaryJson": "",
+    "teamScores": [
+      0,
+      0
+    ],
+    "teamRoundWins": [
+      0,
+      0
+    ],
+    "stakeKey": "stake_200",
+    "bankAmount": 0,
+    "turnDurationMs": 30000,
+    "serverNow": 1792283173032,
+    "selfHand": [
+      {
+        "a": 1,
+        "b": 1,
+        "id": "1-1"
+      },
+      {
+        "a": 1,
+        "b": 3,
+        "id": "1-3"
+      },
+      {
+        "a": 1,
+        "b": 4,
+        "id": "1-4"
+      },
+      {
+        "a": 1,
+        "b": 5,
+        "id": "1-5"
+      },
+      {
+        "a": 1,
+        "b": 6,
+        "id": "1-6"
+      },
+      {
+        "a": 2,
+        "b": 2,
+        "id": "2-2"
+      },
+      {
+        "a": 0,
+        "b": 0,
+        "id": "0-0"
+      }
+    ],
+    "turnInfo": {
+      "validMoves": [],
+      "goshaCombo": null
+    }
+  },
+  "frames": {
+    "rafSamples": 2885,
+    "rafRate": 46.01483607633328,
+    "rafP95Ms": 33.40000000002328,
+    "surfacePresentSamples": 2571,
+    "surfacePresentRate": 41.66607657153274,
+    "surfaceIntervalP95Ms": 33.352077,
+    "note": "Presentation intervals include pauses/results and do not isolate animation-only jank. One debug WebView, not Play release FPS."
+  }
+}

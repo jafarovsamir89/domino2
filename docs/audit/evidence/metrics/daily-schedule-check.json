@@ -1,0 +1,249 @@
+{
+  "scope": "30 consecutive normal daily claims with explicit now argument; synthetic profile in existing local audit DB. No rewarded upgrades, concurrency or production traffic.",
+  "claims": [
+    {
+      "day": 1,
+      "claimed": true,
+      "reward": 200,
+      "baseReward": 200,
+      "streakDay": 1,
+      "balance": 1200
+    },
+    {
+      "day": 2,
+      "claimed": true,
+      "reward": 300,
+      "baseReward": 300,
+      "streakDay": 2,
+      "balance": 1500
+    },
+    {
+      "day": 3,
+      "claimed": true,
+      "reward": 350,
+      "baseReward": 350,
+      "streakDay": 3,
+      "balance": 1850
+    },
+    {
+      "day": 4,
+      "claimed": true,
+      "reward": 400,
+      "baseReward": 400,
+      "streakDay": 4,
+      "balance": 2250
+    },
+    {
+      "day": 5,
+      "claimed": true,
+      "reward": 800,
+      "baseReward": 800,
+      "streakDay": 5,
+      "balance": 3050
+    },
+    {
+      "day": 6,
+      "claimed": true,
+      "reward": 1000,
+      "baseReward": 1000,
+      "streakDay": 6,
+      "balance": 4050
+    },
+    {
+      "day": 7,
+      "claimed": true,
+      "reward": 2000,
+      "baseReward": 2000,
+      "streakDay": 7,
+      "balance": 6050
+    },
+    {
+      "day": 8,
+      "claimed": true,
+      "reward": 2000,
+      "baseReward": 2000,
+      "streakDay": 7,
+      "balance": 8050
+    },
+    {
+      "day": 9,
+      "claimed": true,
+      "reward": 2000,
+      "baseReward": 2000,
+      "streakDay": 7,
+      "balance": 10050
+    },
+    {
+      "day": 10,
+      "claimed": true,
+      "reward": 2000,
+      "baseReward": 2000,
+      "streakDay": 7,
+      "balance": 12050
+    },
+    {
+      "day": 11,
+      "claimed": true,
+      "reward": 2000,
+      "baseReward": 2000,
+      "streakDay": 7,
+      "balance": 14050
+    },
+    {
+      "day": 12,
+      "claimed": true,
+      "reward": 2000,
+      "baseReward": 2000,
+      "streakDay": 7,
+      "balance": 16050
+    },
+    {
+      "day": 13,
+      "claimed": true,
+      "reward": 2000,
+      "baseReward": 2000,
+      "streakDay": 7,
+      "balance": 18050
+    },
+    {
+      "day": 14,
+      "claimed": true,
+      "reward": 2000,
+      "baseReward": 2000,
+      "streakDay": 7,
+      "balance": 20050
+    },
+    {
+      "day": 15,
+      "claimed": true,
+      "reward": 2000,
+      "baseReward": 2000,
+      "streakDay": 7,
+      "balance": 22050
+    },
+    {
+      "day": 16,
+      "claimed": true,
+      "reward": 2000,
+      "baseReward": 2000,
+      "streakDay": 7,
+      "balance": 24050
+    },
+    {
+      "day": 17,
+      "claimed": true,
+      "reward": 2000,
+      "baseReward": 2000,
+      "streakDay": 7,
+      "balance": 26050
+    },
+    {
+      "day": 18,
+      "claimed": true,
+      "reward": 2000,
+      "baseReward": 2000,
+      "streakDay": 7,
+      "balance": 28050
+    },
+    {
+      "day": 19,
+      "claimed": true,
+      "reward": 2000,
+      "baseReward": 2000,
+      "streakDay": 7,
+      "balance": 30050
+    },
+    {
+      "day": 20,
+      "claimed": true,
+      "reward": 2000,
+      "baseReward": 2000,
+      "streakDay": 7,
+      "balance": 32050
+    },
+    {
+      "day": 21,
+      "claimed": true,
+      "reward": 2000,
+      "baseReward": 2000,
+      "streakDay": 7,
+      "balance": 34050
+    },
+    {
+      "day": 22,
+      "claimed": true,
+      "reward": 2000,
+      "baseReward": 2000,
+      "streakDay": 7,
+      "balance": 36050
+    },
+    {
+      "day": 23,
+      "claimed": true,
+      "reward": 2000,
+      "baseReward": 2000,
+      "streakDay": 7,
+      "balance": 38050
+    },
+    {
+      "day": 24,
+      "claimed": true,
+      "reward": 2000,
+      "baseReward": 2000,
+      "streakDay": 7,
+      "balance": 40050
+    },
+    {
+      "day": 25,
+      "claimed": true,
+      "reward": 2000,
+      "baseReward": 2000,
+      "streakDay": 7,
+      "balance": 42050
+    },
+    {
+      "day": 26,
+      "claimed": true,
+      "reward": 2000,
+      "baseReward": 2000,
+      "streakDay": 7,
+      "balance": 44050
+    },
+    {
+      "day": 27,
+      "claimed": true,
+      "reward": 2000,
+      "baseReward": 2000,
+      "streakDay": 7,
+      "balance": 46050
+    },
+    {
+      "day": 28,
+      "claimed": true,
+      "reward": 2000,
+      "baseReward": 2000,
+      "streakDay": 7,
+      "balance": 48050
+    },
+    {
+      "day": 29,
+      "claimed": true,
+      "reward": 2000,
+      "baseReward": 2000,
+      "streakDay": 7,
+      "balance": 50050
+    },
+    {
+      "day": 30,
+      "claimed": true,
+      "reward": 2000,
+      "baseReward": 2000,
+      "streakDay": 7,
+      "balance": 52050
+    }
+  ],
+  "totalDailyMinted": 51050,
+  "statusAfterGap": {
+    "streakDay": 1
+  }
+}

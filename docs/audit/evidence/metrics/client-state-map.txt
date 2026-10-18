@@ -1,0 +1,121 @@
+371:        this.turnInProgress=false; // Guard against double-turn bug
+375:        this._turnCycleId = 0;
+681:        this._pendingOptimisticPlayActionId = '';
+749:        this.pendingOnlineAction = null;
+750:        this.pendingOnlineActionTimer = null;
+764:        this._watchdogId = setInterval(() => {
+765:            if (this.turnInProgress && Date.now() - this.lastTurnStartTime > 6000) {
+767:                this.turnInProgress = false;
+2717:        this._socialDebugPanelRefreshTimer = setInterval(() => this.renderSocialDebugPanel(), 2500);
+7687:        this.dailyBonusTickerId = setInterval(() => {
+8003:        document.addEventListener('visibilitychange', () => {
+8882:        this._openRoomsRefreshId = window.setInterval(() => {
+11010:        this.turnInProgress = true;
+11021:                this.turnInProgress = false;
+11032:    scheduleTurnAdvance(delay = this.postMoveAdvanceMs, turnCycleId = this._turnCycleId) {
+11037:            this.turnInProgress = false;
+11044:            if (turnCycleId !== this._turnCycleId) return;
+11047:            this.turnInProgress = false;
+11077:        this._socialHubRefreshInterval = window.setInterval(async () => {
+11200:        this._gameInviteRefreshId = window.setInterval(() => {
+12364:        this._voiceTimerInterval = setInterval(() => {
+13207:        this._turnTimerTickId = setInterval(() => this.updateTurnTimerHud(), 200);
+13345:        this._coinShopTickId = window.setInterval(() => {
+15652:        if (this.pendingOnlineActionTimer) {
+15653:            clearTimeout(this.pendingOnlineActionTimer);
+15654:            this.pendingOnlineActionTimer = null;
+15656:        const pending = this.pendingOnlineAction;
+15657:        this.pendingOnlineAction = null;
+15666:        this._pendingOptimisticPlayActionId = '';
+15672:        this.turnInProgress = false;
+15696:        if (this.pendingOnlineAction) {
+15743:        this.turnInProgress = false;
+15748:        this._pendingOptimisticPlayActionId = '';
+15757:        this.pendingOnlineAction = action;
+15758:        this.pendingOnlineActionTimer = setTimeout(() => {
+15766:        const pending = this.pendingOnlineAction;
+15814:        this.turnInProgress = true;
+15818:            this._pendingOptimisticPlayActionId = String(actionId || '').trim();
+15819:            const raf = typeof requestAnimationFrame === 'function'
+15820:                ? requestAnimationFrame.bind(window)
+15854:        this.turnInProgress = false;
+17177:                requestAnimationFrame(() => {
+17178:                    requestAnimationFrame(() => {
+17472:        this._turnCycleId += 1;
+17473:        const turnCycleId = this._turnCycleId;
+17476:        this.board=new Board(); this.board.startAxis = getBoardStartAxis(); this.configureBoardForCurrentMode(this.board); this.selectedTileIndex=-1; this.roundOver=false; this.gameActive=true; this.turnInProgress=false;
+17526:                if (turnCycleId !== this._turnCycleId) return;
+17540:                    if (turnCycleId !== this._turnCycleId) return;
+17544:                    this.turnInProgress = false;
+17570:                            if (turnCycleId !== this._turnCycleId) return;
+17580:    get turnInProgress() { return this._turnInProgress; }
+17581:    set turnInProgress(v) { this._turnInProgress = v; if (v) this.lastTurnStartTime = Date.now(); }
+17718:        this.renderer.drawBtn.disabled = connectionLost || waitingOpenRoom || !myTurn || localBotControlled || canPlay || emptyBoneyard || this.postMoveWindowActive || this.turnInProgress || this.lastMoveRevealPending;
+17719:        this.renderer.passBtn.disabled = connectionLost || waitingOpenRoom || !myTurn || localBotControlled || canPlay || !emptyBoneyard || this.postMoveWindowActive || this.turnInProgress || this.lastMoveRevealPending;
+18029:            requestAnimationFrame(() => heroStage.classList.add('is-flipping'));
+18239:        if (this.pendingOnlineAction) return true;
+18622:        this._realtimeRenderRafId = requestAnimationFrame(() => {
+18861:        this.renderer.drawBtn.disabled = connectionLost || waitingOpenRoom || !myTurn || canPlay || emptyBoneyard || this.postMoveWindowActive || this.turnInProgress || this.lastMoveRevealPending;
+18862:        this.renderer.passBtn.disabled = connectionLost || waitingOpenRoom || !myTurn || canPlay || !emptyBoneyard || this.postMoveWindowActive || this.turnInProgress || this.lastMoveRevealPending;
+18961:        const pending = this.pendingOnlineAction;
+19058:        this.turnInProgress = false;
+19123:            this._pendingOptimisticPlayActionId = '';
+19240:            this.turnInProgress = false;
+19358:            this.turnInProgress = false;
+19665:            if (this.turnInProgress) return;
+19666:            this.turnInProgress = true;
+19669:                this.turnInProgress = false;
+19676:        if(!this.goshaCombo||!this.gameActive||this.turnInProgress) return;
+19682:        this.turnInProgress=true; this.playSound('gosha');
+19693:                this.turnInProgress=false;
+19718:        this.turnInProgress=false;
+19720:        this.scheduleTurnAdvance(advanceDelay, this._turnCycleId);
+19733:            if (this.turnInProgress) return;
+19734:            this.turnInProgress = true;
+19737:                this.turnInProgress = false;
+19762:            void this.runClassic101BotDrawSequence(pi, this._turnCycleId);
+19770:    async runClassic101BotDrawSequence(pi, turnCycleId = this._turnCycleId) {
+19775:            turnCycleId === this._turnCycleId &&
+19782:                this.turnInProgress = false;
+19794:            turnCycleId !== this._turnCycleId ||
+19799:            this.turnInProgress = false;
+19803:            this.turnInProgress = false;
+19810:            this.turnInProgress = false;
+19814:        this.turnInProgress = false;
+19823:            if (turnCycleId !== this._turnCycleId) return;
+19837:            if (this.turnInProgress) return;
+19838:            this.turnInProgress = true;
+19841:                this.turnInProgress = false;
+19848:        if(!this.gameActive||this.turnInProgress||this.postMoveWindowActive) return;
+19868:        this.turnInProgress=true;
+19870:        this._turnAdvanceTimeout = setTimeout(()=>{this.turnInProgress=false;this.advanceTurn();}, 300);
+19909:        if(this.turnInProgress) return;
+19912:        this.turnInProgress=true;
+19913:        const turnCycleId = this._turnCycleId;
+19916:        if(!tile){this.turnInProgress=false;return;}
+19917:        if(!this.board.isEmpty && !this.board.openEnds[oei]){this.turnInProgress=false;return;}
+19921:                this.turnInProgress = false;
+19944:                requestAnimationFrame(() => {
+19945:                    requestAnimationFrame(() => {
+19963:                turnInProgress: this.turnInProgress
+19993:        if(roundEnd?.dealEnd && !roundEnd?.fish){ this.delayLastMoveSettlement(()=>{ if (turnCycleId !== this._turnCycleId) return; this.endDeal(pi,false); }, LAST_MOVE_REVEAL_DELAY_MS, this.inferFinalInfoFromLocalMove(pi, false, false, false)); return true;}
+19994:        if(roundEnd?.dealEnd && roundEnd?.fish){ this.delayLastMoveSettlement(()=>{ if (turnCycleId !== this._turnCycleId) return; this.endDeal(Number.isInteger(Number(roundEnd?.winnerIndex)) ? Number(roundEnd.winnerIndex) : this.findFishWinner(),true); }, LAST_MOVE_REVEAL_DELAY_MS, this.inferFinalInfoFromLocalMove(pi, false, true, false)); return true;}
+19996:        this.turnInProgress=false;
+20007:            this.turnInProgress = false;
+20036:                this.turnInProgress=true;
+20037:                setTimeout(()=>{this.turnInProgress=false;this.advanceTurn();},1000);
+20059:            turnInProgress: this.turnInProgress
+20067:            const turnCycleId = this._turnCycleId;
+20076:                if (turnCycleId !== this._turnCycleId) return;
+20083:        if(!this.gameActive||this.turnInProgress||this.matchOver||this.roundOver) return;
+20089:        this.turnInProgress = true;
+20090:        const turnCycleId = this._turnCycleId;
+20092:        if (turnCycleId !== this._turnCycleId) return;
+20097:            this.turnInProgress = false;
+20106:                if (turnCycleId !== this._turnCycleId) return;
+20116:            this.turnInProgress = false;
+20125:                if (turnCycleId !== this._turnCycleId) return;
+20133:            this.turnInProgress = false;
+20139:                turnInProgress: this.turnInProgress
+20143:            this.turnInProgress = false;
+20174:        this.gameActive=false;this.lastDealWinner=wi;this.turnInProgress=false;this.clearTurnTimers();let bonus=0;

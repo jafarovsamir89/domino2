@@ -1,0 +1,3 @@
+# Preserve the complete audit evidence in Git for another checkout.
+# Override the repository-wide *.log exclusion for these audit logs only.
+!logs/*.log

@@ -1,0 +1,41 @@
+{
+  "numberedReports": 17,
+  "mainReports": 24,
+  "comparisonParts": 21,
+  "masterTopRows": 30,
+  "brokenLocalLinks": [],
+  "invalidJson": [],
+  "backlog": {
+    "count": 42,
+    "counts": {
+      "P0": 9,
+      "P1": 23,
+      "P2": 5,
+      "P3": 5
+    },
+    "personDaysRange": [
+      93,
+      177
+    ],
+    "uniqueIds": true
+  },
+  "android": {
+    "accepted": 343,
+    "checkpoints": 34,
+    "stateMismatches": 0,
+    "errors": []
+  },
+  "soak": {
+    "recordedActionsLowerBound": 123075,
+    "settledMatches": 453,
+    "reconciled": true,
+    "reserved": 0
+  },
+  "sourceChanges": "Audit deliverables are confined to docs/audit; product source remains at the audited baseline.",
+  "remediationPlan": {
+    "cards": 42,
+    "uniqueIds": true,
+    "missing": [],
+    "unexpected": []
+  }
+}

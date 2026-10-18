@@ -1,0 +1,41 @@
+npm error code EUSAGE
+npm error
+npm error `npm ci` can only install packages when your package.json and package-lock.json or npm-shrinkwrap.json are in sync. Please update your lock file with `npm install` before continuing.
+npm error
+npm error Missing: @sentry/node@10.76.2 from lock file
+npm error Missing: @opentelemetry/api@1.9.1 from lock file
+npm error Missing: @opentelemetry/instrumentation@0.220.0 from lock file
+npm error Missing: @opentelemetry/sdk-trace-base@2.12.0 from lock file
+npm error Missing: @sentry/conventions@0.16.0 from lock file
+npm error Missing: @sentry/core@10.76.2 from lock file
+npm error Missing: @sentry/node-core@10.76.2 from lock file
+npm error Missing: @sentry/opentelemetry@10.76.2 from lock file
+npm error Missing: @opentelemetry/core@2.12.0 from lock file
+npm error Missing: @sentry/server-utils@10.76.2 from lock file
+npm error Missing: import-in-the-middle@3.5.2 from lock file
+npm error Missing: @opentelemetry/semantic-conventions@1.43.0 from lock file
+npm error Missing: @opentelemetry/api-logs@0.220.0 from lock file
+npm error Missing: require-in-the-middle@8.0.1 from lock file
+npm error Missing: @opentelemetry/resources@2.12.0 from lock file
+npm error Missing: @opentelemetry/sdk-trace@2.12.0 from lock file
+npm error Missing: cjs-module-lexer@2.3.0 from lock file
+npm error Missing: es-module-lexer@3.0.4 from lock file
+npm error
+npm error Clean install a project
+npm error
+npm error Usage:
+npm error npm ci
+npm error
+npm error Options:
+npm error [--install-strategy <hoisted|nested|shallow|linked>] [--legacy-bundling]
+npm error [--global-style] [--omit <dev|optional|peer> [--omit <dev|optional|peer> ...]]
+npm error [--include <prod|dev|optional|peer> [--include <prod|dev|optional|peer> ...]]
+npm error [--strict-peer-deps] [--foreground-scripts] [--ignore-scripts] [--no-audit]
+npm error [--no-bin-links] [--no-fund] [--dry-run]
+npm error [-w|--workspace <workspace-name> [-w|--workspace <workspace-name> ...]]
+npm error [--workspaces] [--include-workspace-root] [--install-links]
+npm error
+npm error aliases: clean-install, ic, install-clean, isntall-clean
+npm error
+npm error Run "npm help ci" for more info
+npm error A complete log of this run can be found in: /Users/macbookair/.npm/_logs/2026-10-17T21_51_28_184Z-debug-0.log

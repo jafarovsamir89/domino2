@@ -1,0 +1,10 @@
+com.LoopGames.Domino 60
+air.com.jogatina.domino.android 60
+com.flyclops.domino.android 60
+com.beachbum.domino 60
+ru.skillcap.dominoes 60
+loppipoppi.dominoes 60
+com.playvalve.dominoes 60
+com.screenshake.dominodreams 60
+com.neptune.dominogl 60
+com.tappaz.dominoes.free.game.reef.adventure.domino.ocean.fishes 60

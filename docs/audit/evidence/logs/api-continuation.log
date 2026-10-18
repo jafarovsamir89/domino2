@@ -1,0 +1,1472 @@
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [NestFactory] Starting Nest application...
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [InstanceLoader] SentryModule dependencies initialized +41ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [InstanceLoader] PrismaModule dependencies initialized +0ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [InstanceLoader] ConfigHostModule dependencies initialized +4ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [InstanceLoader] RealtimeModule dependencies initialized +4ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [InstanceLoader] ConfigModule dependencies initialized +0ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [InstanceLoader] AppModule dependencies initialized +0ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [InstanceLoader] HealthModule dependencies initialized +0ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [InstanceLoader] AuthModule dependencies initialized +0ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [InstanceLoader] PlayersModule dependencies initialized +0ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [InstanceLoader] SocialRealtimeModule dependencies initialized +1ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [InstanceLoader] EconomyModule dependencies initialized +0ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [InstanceLoader] LeaderboardModule dependencies initialized +0ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [InstanceLoader] SocialModule dependencies initialized +0ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [InstanceLoader] AdminModule dependencies initialized +0ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [InstanceLoader] MatchesModule dependencies initialized +0ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [RoutesResolver] HealthController {/api/health}: +9ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [RouterExplorer] Mapped {/api/health, GET} route +2ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [RoutesResolver] AuthController {/api}: +0ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [RouterExplorer] Mapped {/api/platform/status, GET} route +0ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [RouterExplorer] Mapped {/api/platform/session, GET} route +0ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [RouterExplorer] Mapped {/api/platform/game-token, GET} route +1ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [RouterExplorer] Mapped {/api/platform/mobile-google-sign-in, POST} route +0ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [RouterExplorer] Mapped {/api/me, GET} route +0ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [RouterExplorer] Mapped {/api/me, PATCH} route +0ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [RouterExplorer] Mapped {/api/me/avatar, PATCH} route +0ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [RoutesResolver] EconomyController {/api}: +0ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [RouterExplorer] Mapped {/api/economy/config, GET} route +0ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [RouterExplorer] Mapped {/api/economy/stakes, GET} route +1ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [RouterExplorer] Mapped {/api/economy/cosmetics/table-skins, GET} route +0ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [RouterExplorer] Mapped {/api/economy/cosmetics/table-skins/purchase, POST} route +0ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [RouterExplorer] Mapped {/api/economy/cosmetics/table-skins/equip, POST} route +0ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [RouterExplorer] Mapped {/api/economy/cosmetics/table-skins/equip-default, POST} route +0ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [RouterExplorer] Mapped {/api/economy/coin-shop/status, GET} route +0ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [RouterExplorer] Mapped {/api/economy/coin-shop/video-reward, POST} route +1ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [RouterExplorer] Mapped {/api/economy/me/wallet, GET} route +0ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [RouterExplorer] Mapped {/api/economy/daily-bonus/status, GET} route +0ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [RouterExplorer] Mapped {/api/economy/daily-bonus/claim, POST} route +0ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [RouterExplorer] Mapped {/api/economy/matches/reserve, POST} route +0ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [RouterExplorer] Mapped {/api/economy/matches/settle, POST} route +0ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [RouterExplorer] Mapped {/api/economy/solo/reserve, POST} route +0ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [RouterExplorer] Mapped {/api/economy/solo/settle, POST} route +0ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [RouterExplorer] Mapped {/api/admin/economy/overview, GET} route +0ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [RouterExplorer] Mapped {/api/admin/economy/stakes/reconcile-stale-reserved, POST} route +0ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [RouterExplorer] Mapped {/api/admin/economy/wallets, GET} route +1ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [RouterExplorer] Mapped {/api/admin/economy/wallets/:playerId, GET} route +0ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [RouterExplorer] Mapped {/api/admin/economy/wallets/:playerId/grant, POST} route +0ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [RouterExplorer] Mapped {/api/admin/economy/wallets/:playerId/spend, POST} route +0ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [RouterExplorer] Mapped {/api/admin/economy/stakes, GET} route +0ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [RouterExplorer] Mapped {/api/admin/economy/stakes, POST} route +0ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [RouterExplorer] Mapped {/api/admin/economy/stakes/:id, PATCH} route +0ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [RouterExplorer] Mapped {/api/admin/economy/config, PATCH} route +0ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [RoutesResolver] PlayersController {/api/players}: +0ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [RouterExplorer] Mapped {/api/players/:id, GET} route +0ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [RoutesResolver] LeaderboardController {/api/leaderboard}: +0ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [RouterExplorer] Mapped {/api/leaderboard, GET} route +1ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [RoutesResolver] MatchesController {/api}: +0ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [RouterExplorer] Mapped {/api/platform/matches, POST} route +0ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [RoutesResolver] RealtimeController {/api/realtime}: +0ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [RouterExplorer] Mapped {/api/realtime/summary, GET} route +0ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [RouterExplorer] Mapped {/api/realtime/sessions/:sessionId, GET} route +0ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [RouterExplorer] Mapped {/api/realtime/heartbeat, POST} route +0ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [RoutesResolver] SocialController {/api/social}: +0ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [RouterExplorer] Mapped {/api/social/sse, GET} route +0ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [RouterExplorer] Mapped {/api/social/friends, GET} route +0ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [RouterExplorer] Mapped {/api/social/players/search, GET} route +0ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [RouterExplorer] Mapped {/api/social/players/:id/profile, GET} route +0ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [RouterExplorer] Mapped {/api/social/players/:id/moderation, GET} route +0ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [RouterExplorer] Mapped {/api/social/messages, GET} route +0ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [RouterExplorer] Mapped {/api/social/inbox, GET} route +1ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [RouterExplorer] Mapped {/api/social/summary, GET} route +0ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [RouterExplorer] Mapped {/api/social/friends/request, POST} route +0ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [RouterExplorer] Mapped {/api/social/feedback, POST} route +0ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [RouterExplorer] Mapped {/api/social/reports, POST} route +0ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [RouterExplorer] Mapped {/api/social/friends/:id/accept, POST} route +0ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [RouterExplorer] Mapped {/api/social/friends/:id/decline, POST} route +0ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [RouterExplorer] Mapped {/api/social/friends/:id/cancel, POST} route +0ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [RouterExplorer] Mapped {/api/social/friends/:id/remove, POST} route +0ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [RouterExplorer] Mapped {/api/social/players/:id/block, POST} route +0ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [RouterExplorer] Mapped {/api/social/players/:id/block, DELETE} route +0ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [RouterExplorer] Mapped {/api/social/invitations, GET} route +0ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [RouterExplorer] Mapped {/api/social/play-invites, GET} route +0ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [RouterExplorer] Mapped {/api/social/gifts/catalog, GET} route +0ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [RouterExplorer] Mapped {/api/social/gifts/inventory, GET} route +1ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [RouterExplorer] Mapped {/api/social/gifts/history, GET} route +0ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [RouterExplorer] Mapped {/api/social/gifts/send, POST} route +0ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [RouterExplorer] Mapped {/api/social/inbox/:id/read, POST} route +0ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [RouterExplorer] Mapped {/api/social/inbox/:id/claim, POST} route +0ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [RouterExplorer] Mapped {/api/social/inbox/:id/delete, POST} route +0ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [RouterExplorer] Mapped {/api/social/messages/:playerId, GET} route +0ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [RouterExplorer] Mapped {/api/social/messages/:playerId/read, POST} route +0ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [RouterExplorer] Mapped {/api/social/messages/:playerId, POST} route +0ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [RouterExplorer] Mapped {/api/social/messages/:playerId/delete, POST} route +0ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [RouterExplorer] Mapped {/api/social/gifts/exchange, POST} route +0ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [RouterExplorer] Mapped {/api/social/rooms/:roomId/invite, POST} route +0ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [RouterExplorer] Mapped {/api/social/play-invites, POST} route +0ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [RouterExplorer] Mapped {/api/social/play-invites/:id/accept, POST} route +0ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [RouterExplorer] Mapped {/api/social/play-invites/:id/decline, POST} route +0ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [RouterExplorer] Mapped {/api/social/play-invites/:id/cancel, POST} route +1ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [RouterExplorer] Mapped {/api/social/play-invites/attach-room, POST} route +0ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [RouterExplorer] Mapped {/api/social/play-invites/:id/joined, POST} route +0ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [RouterExplorer] Mapped {/api/social/play-invites/:id/failed-to-join, POST} route +0ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [RouterExplorer] Mapped {/api/social/invitations/:id/accept, POST} route +0ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [RouterExplorer] Mapped {/api/social/invitations/:id/decline, POST} route +0ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [RouterExplorer] Mapped {/api/social/invitations/:id/cancel, POST} route +0ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [RouterExplorer] Mapped {/api/social/fcm/register, POST} route +0ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [RouterExplorer] Mapped {/api/social/fcm/unregister, POST} route +0ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [RoutesResolver] AdminController {/api/admin}: +0ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [RouterExplorer] Mapped {/api/admin/overview, GET} route +0ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [RouterExplorer] Mapped {/api/admin/players, GET} route +0ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [RouterExplorer] Mapped {/api/admin/players/:id, GET} route +0ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [RouterExplorer] Mapped {/api/admin/reports, GET} route +0ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [RouterExplorer] Mapped {/api/admin/feedback, GET} route +0ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [RouterExplorer] Mapped {/api/admin/bans, GET} route +0ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [RouterExplorer] Mapped {/api/admin/audit-logs, GET} route +0ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [RouterExplorer] Mapped {/api/admin/system-audit-logs, GET} route +0ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [RouterExplorer] Mapped {/api/admin/players/:id/ban, POST} route +1ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [RouterExplorer] Mapped {/api/admin/bans/:id/revoke, PATCH} route +0ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [RouterExplorer] Mapped {/api/admin/reports/:id, PATCH} route +0ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [RouterExplorer] Mapped {/api/admin/feedback/:id, PATCH} route +0ms
+[Nest] 25616  - 10/17/2026, 4:12:46 PM     LOG [NestApplication] Nest application successfully started +2ms
+[SocialService Purge] Purged 0 room invitations, 0 play invites, 0 inbox notifications and 0 hidden chat markers.
+[Nest] 25616  - 10/17/2026, 4:22:49 PM   ERROR [ExceptionsHandler] PrismaClientKnownRequestError: 
+Invalid `prisma.player.upsert()` invocation:
+
+
+Foreign key constraint violated on the constraint: `Player_userId_fkey`
+    at ei.handleRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:7268)
+    at ei.handleAndLogRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6593)
+    at ei.request (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6300)
+    at async a (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:9551)
+    at async file:///Users/macbookair/Documents/domino/apps/api/dist/src/modules/matches/matches.service.js:303:32
+    at async Proxy._transactionWithCallback (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:8120) {
+  code: 'P2003',
+  meta: {
+    modelName: 'Player',
+    constraint: 'Player_userId_fkey'
+  },
+  clientVersion: '6.19.3'
+}
+[Nest] 25616  - 10/17/2026, 4:22:58 PM   ERROR [ExceptionsHandler] PrismaClientKnownRequestError: 
+Invalid `prisma.player.upsert()` invocation:
+
+
+Foreign key constraint violated on the constraint: `Player_userId_fkey`
+    at ei.handleRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:7268)
+    at ei.handleAndLogRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6593)
+    at ei.request (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6300)
+    at async a (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:9551)
+    at async file:///Users/macbookair/Documents/domino/apps/api/dist/src/modules/matches/matches.service.js:303:32
+    at async Proxy._transactionWithCallback (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:8120) {
+  code: 'P2003',
+  meta: {
+    modelName: 'Player',
+    constraint: 'Player_userId_fkey'
+  },
+  clientVersion: '6.19.3'
+}
+[Nest] 25616  - 10/17/2026, 4:23:18 PM   ERROR [ExceptionsHandler] PrismaClientKnownRequestError: 
+Invalid `prisma.player.upsert()` invocation:
+
+
+Foreign key constraint violated on the constraint: `Player_userId_fkey`
+    at ei.handleRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:7268)
+    at ei.handleAndLogRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6593)
+    at ei.request (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6300)
+    at async a (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:9551)
+    at async file:///Users/macbookair/Documents/domino/apps/api/dist/src/modules/matches/matches.service.js:303:32
+    at async Proxy._transactionWithCallback (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:8120) {
+  code: 'P2003',
+  meta: {
+    modelName: 'Player',
+    constraint: 'Player_userId_fkey'
+  },
+  clientVersion: '6.19.3'
+}
+[Nest] 25616  - 10/17/2026, 4:23:19 PM   ERROR [ExceptionsHandler] PrismaClientKnownRequestError: 
+Invalid `prisma.player.upsert()` invocation:
+
+
+Foreign key constraint violated on the constraint: `Player_userId_fkey`
+    at ei.handleRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:7268)
+    at ei.handleAndLogRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6593)
+    at ei.request (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6300)
+    at async a (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:9551)
+    at async file:///Users/macbookair/Documents/domino/apps/api/dist/src/modules/matches/matches.service.js:303:32
+    at async Proxy._transactionWithCallback (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:8120) {
+  code: 'P2003',
+  meta: {
+    modelName: 'Player',
+    constraint: 'Player_userId_fkey'
+  },
+  clientVersion: '6.19.3'
+}
+[Nest] 25616  - 10/17/2026, 4:23:24 PM   ERROR [ExceptionsHandler] PrismaClientKnownRequestError: 
+Invalid `prisma.player.upsert()` invocation:
+
+
+Foreign key constraint violated on the constraint: `Player_userId_fkey`
+    at ei.handleRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:7268)
+    at ei.handleAndLogRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6593)
+    at ei.request (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6300)
+    at async a (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:9551)
+    at async file:///Users/macbookair/Documents/domino/apps/api/dist/src/modules/matches/matches.service.js:303:32
+    at async Proxy._transactionWithCallback (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:8120) {
+  code: 'P2003',
+  meta: {
+    modelName: 'Player',
+    constraint: 'Player_userId_fkey'
+  },
+  clientVersion: '6.19.3'
+}
+[Nest] 25616  - 10/17/2026, 4:23:29 PM   ERROR [ExceptionsHandler] PrismaClientKnownRequestError: 
+Invalid `prisma.player.upsert()` invocation:
+
+
+Foreign key constraint violated on the constraint: `Player_userId_fkey`
+    at ei.handleRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:7268)
+    at ei.handleAndLogRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6593)
+    at ei.request (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6300)
+    at async a (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:9551)
+    at async file:///Users/macbookair/Documents/domino/apps/api/dist/src/modules/matches/matches.service.js:303:32
+    at async Proxy._transactionWithCallback (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:8120) {
+  code: 'P2003',
+  meta: {
+    modelName: 'Player',
+    constraint: 'Player_userId_fkey'
+  },
+  clientVersion: '6.19.3'
+}
+[Nest] 25616  - 10/17/2026, 4:23:33 PM   ERROR [ExceptionsHandler] PrismaClientKnownRequestError: 
+Invalid `prisma.player.upsert()` invocation:
+
+
+Foreign key constraint violated on the constraint: `Player_userId_fkey`
+    at ei.handleRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:7268)
+    at ei.handleAndLogRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6593)
+    at ei.request (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6300)
+    at async a (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:9551)
+    at async file:///Users/macbookair/Documents/domino/apps/api/dist/src/modules/matches/matches.service.js:303:32
+    at async Proxy._transactionWithCallback (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:8120) {
+  code: 'P2003',
+  meta: {
+    modelName: 'Player',
+    constraint: 'Player_userId_fkey'
+  },
+  clientVersion: '6.19.3'
+}
+[Nest] 25616  - 10/17/2026, 4:23:34 PM   ERROR [ExceptionsHandler] PrismaClientKnownRequestError: 
+Invalid `prisma.player.upsert()` invocation:
+
+
+Foreign key constraint violated on the constraint: `Player_userId_fkey`
+    at ei.handleRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:7268)
+    at ei.handleAndLogRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6593)
+    at ei.request (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6300)
+    at async a (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:9551)
+    at async file:///Users/macbookair/Documents/domino/apps/api/dist/src/modules/matches/matches.service.js:303:32
+    at async Proxy._transactionWithCallback (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:8120) {
+  code: 'P2003',
+  meta: {
+    modelName: 'Player',
+    constraint: 'Player_userId_fkey'
+  },
+  clientVersion: '6.19.3'
+}
+[Nest] 25616  - 10/17/2026, 4:23:39 PM   ERROR [ExceptionsHandler] PrismaClientKnownRequestError: 
+Invalid `prisma.player.upsert()` invocation:
+
+
+Foreign key constraint violated on the constraint: `Player_userId_fkey`
+    at ei.handleRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:7268)
+    at ei.handleAndLogRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6593)
+    at ei.request (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6300)
+    at async a (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:9551)
+    at async file:///Users/macbookair/Documents/domino/apps/api/dist/src/modules/matches/matches.service.js:303:32
+    at async Proxy._transactionWithCallback (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:8120) {
+  code: 'P2003',
+  meta: {
+    modelName: 'Player',
+    constraint: 'Player_userId_fkey'
+  },
+  clientVersion: '6.19.3'
+}
+[Nest] 25616  - 10/17/2026, 4:23:44 PM   ERROR [ExceptionsHandler] PrismaClientKnownRequestError: 
+Invalid `prisma.player.upsert()` invocation:
+
+
+Foreign key constraint violated on the constraint: `Player_userId_fkey`
+    at ei.handleRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:7268)
+    at ei.handleAndLogRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6593)
+    at ei.request (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6300)
+    at async a (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:9551)
+    at async file:///Users/macbookair/Documents/domino/apps/api/dist/src/modules/matches/matches.service.js:303:32
+    at async Proxy._transactionWithCallback (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:8120) {
+  code: 'P2003',
+  meta: {
+    modelName: 'Player',
+    constraint: 'Player_userId_fkey'
+  },
+  clientVersion: '6.19.3'
+}
+[Nest] 25616  - 10/17/2026, 4:23:49 PM   ERROR [ExceptionsHandler] PrismaClientKnownRequestError: 
+Invalid `prisma.player.upsert()` invocation:
+
+
+Foreign key constraint violated on the constraint: `Player_userId_fkey`
+    at ei.handleRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:7268)
+    at ei.handleAndLogRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6593)
+    at ei.request (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6300)
+    at async a (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:9551)
+    at async file:///Users/macbookair/Documents/domino/apps/api/dist/src/modules/matches/matches.service.js:303:32
+    at async Proxy._transactionWithCallback (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:8120) {
+  code: 'P2003',
+  meta: {
+    modelName: 'Player',
+    constraint: 'Player_userId_fkey'
+  },
+  clientVersion: '6.19.3'
+}
+[Nest] 25616  - 10/17/2026, 4:23:54 PM   ERROR [ExceptionsHandler] PrismaClientKnownRequestError: 
+Invalid `prisma.player.upsert()` invocation:
+
+
+Foreign key constraint violated on the constraint: `Player_userId_fkey`
+    at ei.handleRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:7268)
+    at ei.handleAndLogRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6593)
+    at ei.request (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6300)
+    at async a (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:9551)
+    at async file:///Users/macbookair/Documents/domino/apps/api/dist/src/modules/matches/matches.service.js:303:32
+    at async Proxy._transactionWithCallback (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:8120) {
+  code: 'P2003',
+  meta: {
+    modelName: 'Player',
+    constraint: 'Player_userId_fkey'
+  },
+  clientVersion: '6.19.3'
+}
+[Nest] 25616  - 10/17/2026, 4:23:59 PM   ERROR [ExceptionsHandler] PrismaClientKnownRequestError: 
+Invalid `prisma.player.upsert()` invocation:
+
+
+Foreign key constraint violated on the constraint: `Player_userId_fkey`
+    at ei.handleRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:7268)
+    at ei.handleAndLogRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6593)
+    at ei.request (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6300)
+    at async a (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:9551)
+    at async file:///Users/macbookair/Documents/domino/apps/api/dist/src/modules/matches/matches.service.js:303:32
+    at async Proxy._transactionWithCallback (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:8120) {
+  code: 'P2003',
+  meta: {
+    modelName: 'Player',
+    constraint: 'Player_userId_fkey'
+  },
+  clientVersion: '6.19.3'
+}
+[Nest] 25616  - 10/17/2026, 4:24:04 PM   ERROR [ExceptionsHandler] PrismaClientKnownRequestError: 
+Invalid `prisma.player.upsert()` invocation:
+
+
+Foreign key constraint violated on the constraint: `Player_userId_fkey`
+    at ei.handleRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:7268)
+    at ei.handleAndLogRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6593)
+    at ei.request (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6300)
+    at async a (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:9551)
+    at async file:///Users/macbookair/Documents/domino/apps/api/dist/src/modules/matches/matches.service.js:303:32
+    at async Proxy._transactionWithCallback (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:8120) {
+  code: 'P2003',
+  meta: {
+    modelName: 'Player',
+    constraint: 'Player_userId_fkey'
+  },
+  clientVersion: '6.19.3'
+}
+[Nest] 25616  - 10/17/2026, 4:24:05 PM   ERROR [ExceptionsHandler] PrismaClientKnownRequestError: 
+Invalid `prisma.player.upsert()` invocation:
+
+
+Foreign key constraint violated on the constraint: `Player_userId_fkey`
+    at ei.handleRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:7268)
+    at ei.handleAndLogRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6593)
+    at ei.request (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6300)
+    at async a (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:9551)
+    at async file:///Users/macbookair/Documents/domino/apps/api/dist/src/modules/matches/matches.service.js:303:32
+    at async Proxy._transactionWithCallback (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:8120) {
+  code: 'P2003',
+  meta: {
+    modelName: 'Player',
+    constraint: 'Player_userId_fkey'
+  },
+  clientVersion: '6.19.3'
+}
+[Nest] 25616  - 10/17/2026, 4:24:05 PM   ERROR [ExceptionsHandler] PrismaClientKnownRequestError: 
+Invalid `prisma.player.upsert()` invocation:
+
+
+Foreign key constraint violated on the constraint: `Player_userId_fkey`
+    at ei.handleRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:7268)
+    at ei.handleAndLogRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6593)
+    at ei.request (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6300)
+    at async a (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:9551)
+    at async file:///Users/macbookair/Documents/domino/apps/api/dist/src/modules/matches/matches.service.js:303:32
+    at async Proxy._transactionWithCallback (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:8120) {
+  code: 'P2003',
+  meta: {
+    modelName: 'Player',
+    constraint: 'Player_userId_fkey'
+  },
+  clientVersion: '6.19.3'
+}
+[Nest] 25616  - 10/17/2026, 4:24:06 PM   ERROR [ExceptionsHandler] PrismaClientKnownRequestError: 
+Invalid `prisma.player.upsert()` invocation:
+
+
+Foreign key constraint violated on the constraint: `Player_userId_fkey`
+    at ei.handleRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:7268)
+    at ei.handleAndLogRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6593)
+    at ei.request (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6300)
+    at async a (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:9551)
+    at async file:///Users/macbookair/Documents/domino/apps/api/dist/src/modules/matches/matches.service.js:303:32
+    at async Proxy._transactionWithCallback (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:8120) {
+  code: 'P2003',
+  meta: {
+    modelName: 'Player',
+    constraint: 'Player_userId_fkey'
+  },
+  clientVersion: '6.19.3'
+}
+[Nest] 25616  - 10/17/2026, 4:24:09 PM   ERROR [ExceptionsHandler] PrismaClientKnownRequestError: 
+Invalid `prisma.player.upsert()` invocation:
+
+
+Foreign key constraint violated on the constraint: `Player_userId_fkey`
+    at ei.handleRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:7268)
+    at ei.handleAndLogRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6593)
+    at ei.request (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6300)
+    at async a (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:9551)
+    at async file:///Users/macbookair/Documents/domino/apps/api/dist/src/modules/matches/matches.service.js:303:32
+    at async Proxy._transactionWithCallback (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:8120) {
+  code: 'P2003',
+  meta: {
+    modelName: 'Player',
+    constraint: 'Player_userId_fkey'
+  },
+  clientVersion: '6.19.3'
+}
+[Nest] 25616  - 10/17/2026, 4:24:10 PM   ERROR [ExceptionsHandler] PrismaClientKnownRequestError: 
+Invalid `prisma.player.upsert()` invocation:
+
+
+Foreign key constraint violated on the constraint: `Player_userId_fkey`
+    at ei.handleRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:7268)
+    at ei.handleAndLogRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6593)
+    at ei.request (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6300)
+    at async a (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:9551)
+    at async file:///Users/macbookair/Documents/domino/apps/api/dist/src/modules/matches/matches.service.js:303:32
+    at async Proxy._transactionWithCallback (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:8120) {
+  code: 'P2003',
+  meta: {
+    modelName: 'Player',
+    constraint: 'Player_userId_fkey'
+  },
+  clientVersion: '6.19.3'
+}
+[Nest] 25616  - 10/17/2026, 4:24:10 PM   ERROR [ExceptionsHandler] PrismaClientKnownRequestError: 
+Invalid `prisma.player.upsert()` invocation:
+
+
+Foreign key constraint violated on the constraint: `Player_userId_fkey`
+    at ei.handleRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:7268)
+    at ei.handleAndLogRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6593)
+    at ei.request (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6300)
+    at async a (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:9551)
+    at async file:///Users/macbookair/Documents/domino/apps/api/dist/src/modules/matches/matches.service.js:303:32
+    at async Proxy._transactionWithCallback (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:8120) {
+  code: 'P2003',
+  meta: {
+    modelName: 'Player',
+    constraint: 'Player_userId_fkey'
+  },
+  clientVersion: '6.19.3'
+}
+[Nest] 25616  - 10/17/2026, 4:24:11 PM   ERROR [ExceptionsHandler] PrismaClientKnownRequestError: 
+Invalid `prisma.player.upsert()` invocation:
+
+
+Foreign key constraint violated on the constraint: `Player_userId_fkey`
+    at ei.handleRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:7268)
+    at ei.handleAndLogRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6593)
+    at ei.request (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6300)
+    at async a (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:9551)
+    at async file:///Users/macbookair/Documents/domino/apps/api/dist/src/modules/matches/matches.service.js:303:32
+    at async Proxy._transactionWithCallback (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:8120) {
+  code: 'P2003',
+  meta: {
+    modelName: 'Player',
+    constraint: 'Player_userId_fkey'
+  },
+  clientVersion: '6.19.3'
+}
+[Nest] 25616  - 10/17/2026, 4:24:14 PM   ERROR [ExceptionsHandler] PrismaClientKnownRequestError: 
+Invalid `prisma.player.upsert()` invocation:
+
+
+Foreign key constraint violated on the constraint: `Player_userId_fkey`
+    at ei.handleRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:7268)
+    at ei.handleAndLogRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6593)
+    at ei.request (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6300)
+    at async a (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:9551)
+    at async file:///Users/macbookair/Documents/domino/apps/api/dist/src/modules/matches/matches.service.js:303:32
+    at async Proxy._transactionWithCallback (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:8120) {
+  code: 'P2003',
+  meta: {
+    modelName: 'Player',
+    constraint: 'Player_userId_fkey'
+  },
+  clientVersion: '6.19.3'
+}
+[Nest] 25616  - 10/17/2026, 4:24:15 PM   ERROR [ExceptionsHandler] PrismaClientKnownRequestError: 
+Invalid `prisma.player.upsert()` invocation:
+
+
+Foreign key constraint violated on the constraint: `Player_userId_fkey`
+    at ei.handleRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:7268)
+    at ei.handleAndLogRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6593)
+    at ei.request (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6300)
+    at async a (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:9551)
+    at async file:///Users/macbookair/Documents/domino/apps/api/dist/src/modules/matches/matches.service.js:303:32
+    at async Proxy._transactionWithCallback (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:8120) {
+  code: 'P2003',
+  meta: {
+    modelName: 'Player',
+    constraint: 'Player_userId_fkey'
+  },
+  clientVersion: '6.19.3'
+}
+[Nest] 25616  - 10/17/2026, 4:24:15 PM   ERROR [ExceptionsHandler] PrismaClientKnownRequestError: 
+Invalid `prisma.player.upsert()` invocation:
+
+
+Foreign key constraint violated on the constraint: `Player_userId_fkey`
+    at ei.handleRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:7268)
+    at ei.handleAndLogRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6593)
+    at ei.request (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6300)
+    at async a (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:9551)
+    at async file:///Users/macbookair/Documents/domino/apps/api/dist/src/modules/matches/matches.service.js:303:32
+    at async Proxy._transactionWithCallback (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:8120) {
+  code: 'P2003',
+  meta: {
+    modelName: 'Player',
+    constraint: 'Player_userId_fkey'
+  },
+  clientVersion: '6.19.3'
+}
+[Nest] 25616  - 10/17/2026, 4:24:15 PM   ERROR [ExceptionsHandler] PrismaClientKnownRequestError: 
+Invalid `prisma.player.upsert()` invocation:
+
+
+Foreign key constraint violated on the constraint: `Player_userId_fkey`
+    at ei.handleRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:7268)
+    at ei.handleAndLogRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6593)
+    at ei.request (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6300)
+    at async a (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:9551)
+    at async file:///Users/macbookair/Documents/domino/apps/api/dist/src/modules/matches/matches.service.js:303:32
+    at async Proxy._transactionWithCallback (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:8120) {
+  code: 'P2003',
+  meta: {
+    modelName: 'Player',
+    constraint: 'Player_userId_fkey'
+  },
+  clientVersion: '6.19.3'
+}
+[Nest] 25616  - 10/17/2026, 4:24:16 PM   ERROR [ExceptionsHandler] PrismaClientKnownRequestError: 
+Invalid `prisma.player.upsert()` invocation:
+
+
+Foreign key constraint violated on the constraint: `Player_userId_fkey`
+    at ei.handleRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:7268)
+    at ei.handleAndLogRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6593)
+    at ei.request (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6300)
+    at async a (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:9551)
+    at async file:///Users/macbookair/Documents/domino/apps/api/dist/src/modules/matches/matches.service.js:303:32
+    at async Proxy._transactionWithCallback (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:8120) {
+  code: 'P2003',
+  meta: {
+    modelName: 'Player',
+    constraint: 'Player_userId_fkey'
+  },
+  clientVersion: '6.19.3'
+}
+[Nest] 25616  - 10/17/2026, 4:24:16 PM   ERROR [ExceptionsHandler] PrismaClientKnownRequestError: 
+Invalid `prisma.player.upsert()` invocation:
+
+
+Foreign key constraint violated on the constraint: `Player_userId_fkey`
+    at ei.handleRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:7268)
+    at ei.handleAndLogRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6593)
+    at ei.request (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6300)
+    at async a (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:9551)
+    at async file:///Users/macbookair/Documents/domino/apps/api/dist/src/modules/matches/matches.service.js:303:32
+    at async Proxy._transactionWithCallback (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:8120) {
+  code: 'P2003',
+  meta: {
+    modelName: 'Player',
+    constraint: 'Player_userId_fkey'
+  },
+  clientVersion: '6.19.3'
+}
+[Nest] 25616  - 10/17/2026, 4:24:16 PM   ERROR [ExceptionsHandler] PrismaClientKnownRequestError: 
+Invalid `prisma.player.upsert()` invocation:
+
+
+Foreign key constraint violated on the constraint: `Player_userId_fkey`
+    at ei.handleRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:7268)
+    at ei.handleAndLogRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6593)
+    at ei.request (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6300)
+    at async a (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:9551)
+    at async file:///Users/macbookair/Documents/domino/apps/api/dist/src/modules/matches/matches.service.js:303:32
+    at async Proxy._transactionWithCallback (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:8120) {
+  code: 'P2003',
+  meta: {
+    modelName: 'Player',
+    constraint: 'Player_userId_fkey'
+  },
+  clientVersion: '6.19.3'
+}
+[Nest] 25616  - 10/17/2026, 4:24:19 PM   ERROR [ExceptionsHandler] PrismaClientKnownRequestError: 
+Invalid `prisma.player.upsert()` invocation:
+
+
+Foreign key constraint violated on the constraint: `Player_userId_fkey`
+    at ei.handleRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:7268)
+    at ei.handleAndLogRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6593)
+    at ei.request (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6300)
+    at async a (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:9551)
+    at async file:///Users/macbookair/Documents/domino/apps/api/dist/src/modules/matches/matches.service.js:303:32
+    at async Proxy._transactionWithCallback (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:8120) {
+  code: 'P2003',
+  meta: {
+    modelName: 'Player',
+    constraint: 'Player_userId_fkey'
+  },
+  clientVersion: '6.19.3'
+}
+[Nest] 25616  - 10/17/2026, 4:24:19 PM   ERROR [ExceptionsHandler] PrismaClientKnownRequestError: 
+Invalid `prisma.player.upsert()` invocation:
+
+
+Foreign key constraint violated on the constraint: `Player_userId_fkey`
+    at ei.handleRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:7268)
+    at ei.handleAndLogRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6593)
+    at ei.request (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6300)
+    at async a (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:9551)
+    at async file:///Users/macbookair/Documents/domino/apps/api/dist/src/modules/matches/matches.service.js:303:32
+    at async Proxy._transactionWithCallback (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:8120) {
+  code: 'P2003',
+  meta: {
+    modelName: 'Player',
+    constraint: 'Player_userId_fkey'
+  },
+  clientVersion: '6.19.3'
+}
+[Nest] 25616  - 10/17/2026, 4:24:19 PM   ERROR [ExceptionsHandler] PrismaClientKnownRequestError: 
+Invalid `prisma.player.upsert()` invocation:
+
+
+Foreign key constraint violated on the constraint: `Player_userId_fkey`
+    at ei.handleRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:7268)
+    at ei.handleAndLogRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6593)
+    at ei.request (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6300)
+    at async a (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:9551)
+    at async file:///Users/macbookair/Documents/domino/apps/api/dist/src/modules/matches/matches.service.js:303:32
+    at async Proxy._transactionWithCallback (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:8120) {
+  code: 'P2003',
+  meta: {
+    modelName: 'Player',
+    constraint: 'Player_userId_fkey'
+  },
+  clientVersion: '6.19.3'
+}
+[Nest] 25616  - 10/17/2026, 4:24:19 PM   ERROR [ExceptionsHandler] PrismaClientKnownRequestError: 
+Invalid `prisma.player.upsert()` invocation:
+
+
+Foreign key constraint violated on the constraint: `Player_userId_fkey`
+    at ei.handleRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:7268)
+    at ei.handleAndLogRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6593)
+    at ei.request (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6300)
+    at async a (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:9551)
+    at async file:///Users/macbookair/Documents/domino/apps/api/dist/src/modules/matches/matches.service.js:303:32
+    at async Proxy._transactionWithCallback (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:8120) {
+  code: 'P2003',
+  meta: {
+    modelName: 'Player',
+    constraint: 'Player_userId_fkey'
+  },
+  clientVersion: '6.19.3'
+}
+[Nest] 25616  - 10/17/2026, 4:24:19 PM   ERROR [ExceptionsHandler] PrismaClientKnownRequestError: 
+Invalid `prisma.player.upsert()` invocation:
+
+
+Foreign key constraint violated on the constraint: `Player_userId_fkey`
+    at ei.handleRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:7268)
+    at ei.handleAndLogRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6593)
+    at ei.request (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6300)
+    at async a (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:9551)
+    at async file:///Users/macbookair/Documents/domino/apps/api/dist/src/modules/matches/matches.service.js:303:32
+    at async Proxy._transactionWithCallback (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:8120) {
+  code: 'P2003',
+  meta: {
+    modelName: 'Player',
+    constraint: 'Player_userId_fkey'
+  },
+  clientVersion: '6.19.3'
+}
+[Nest] 25616  - 10/17/2026, 4:24:19 PM   ERROR [ExceptionsHandler] PrismaClientKnownRequestError: 
+Invalid `prisma.player.upsert()` invocation:
+
+
+Foreign key constraint violated on the constraint: `Player_userId_fkey`
+    at ei.handleRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:7268)
+    at ei.handleAndLogRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6593)
+    at ei.request (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6300)
+    at async a (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:9551)
+    at async file:///Users/macbookair/Documents/domino/apps/api/dist/src/modules/matches/matches.service.js:303:32
+    at async Proxy._transactionWithCallback (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:8120) {
+  code: 'P2003',
+  meta: {
+    modelName: 'Player',
+    constraint: 'Player_userId_fkey'
+  },
+  clientVersion: '6.19.3'
+}
+[Nest] 25616  - 10/17/2026, 4:24:20 PM   ERROR [ExceptionsHandler] PrismaClientKnownRequestError: 
+Invalid `prisma.player.upsert()` invocation:
+
+
+Foreign key constraint violated on the constraint: `Player_userId_fkey`
+    at ei.handleRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:7268)
+    at ei.handleAndLogRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6593)
+    at ei.request (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6300)
+    at async a (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:9551)
+    at async file:///Users/macbookair/Documents/domino/apps/api/dist/src/modules/matches/matches.service.js:303:32
+    at async Proxy._transactionWithCallback (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:8120) {
+  code: 'P2003',
+  meta: {
+    modelName: 'Player',
+    constraint: 'Player_userId_fkey'
+  },
+  clientVersion: '6.19.3'
+}
+[Nest] 25616  - 10/17/2026, 4:24:20 PM   ERROR [ExceptionsHandler] PrismaClientKnownRequestError: 
+Invalid `prisma.player.upsert()` invocation:
+
+
+Foreign key constraint violated on the constraint: `Player_userId_fkey`
+    at ei.handleRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:7268)
+    at ei.handleAndLogRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6593)
+    at ei.request (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6300)
+    at async a (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:9551)
+    at async file:///Users/macbookair/Documents/domino/apps/api/dist/src/modules/matches/matches.service.js:303:32
+    at async Proxy._transactionWithCallback (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:8120) {
+  code: 'P2003',
+  meta: {
+    modelName: 'Player',
+    constraint: 'Player_userId_fkey'
+  },
+  clientVersion: '6.19.3'
+}
+[Nest] 25616  - 10/17/2026, 4:24:20 PM   ERROR [ExceptionsHandler] PrismaClientKnownRequestError: 
+Invalid `prisma.player.upsert()` invocation:
+
+
+Foreign key constraint violated on the constraint: `Player_userId_fkey`
+    at ei.handleRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:7268)
+    at ei.handleAndLogRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6593)
+    at ei.request (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6300)
+    at async a (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:9551)
+    at async file:///Users/macbookair/Documents/domino/apps/api/dist/src/modules/matches/matches.service.js:303:32
+    at async Proxy._transactionWithCallback (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:8120) {
+  code: 'P2003',
+  meta: {
+    modelName: 'Player',
+    constraint: 'Player_userId_fkey'
+  },
+  clientVersion: '6.19.3'
+}
+[Nest] 25616  - 10/17/2026, 4:24:21 PM   ERROR [ExceptionsHandler] PrismaClientKnownRequestError: 
+Invalid `prisma.player.upsert()` invocation:
+
+
+Foreign key constraint violated on the constraint: `Player_userId_fkey`
+    at ei.handleRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:7268)
+    at ei.handleAndLogRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6593)
+    at ei.request (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6300)
+    at async a (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:9551)
+    at async file:///Users/macbookair/Documents/domino/apps/api/dist/src/modules/matches/matches.service.js:303:32
+    at async Proxy._transactionWithCallback (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:8120) {
+  code: 'P2003',
+  meta: {
+    modelName: 'Player',
+    constraint: 'Player_userId_fkey'
+  },
+  clientVersion: '6.19.3'
+}
+[Nest] 25616  - 10/17/2026, 4:24:21 PM   ERROR [ExceptionsHandler] PrismaClientKnownRequestError: 
+Invalid `prisma.player.upsert()` invocation:
+
+
+Foreign key constraint violated on the constraint: `Player_userId_fkey`
+    at ei.handleRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:7268)
+    at ei.handleAndLogRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6593)
+    at ei.request (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6300)
+    at async a (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:9551)
+    at async file:///Users/macbookair/Documents/domino/apps/api/dist/src/modules/matches/matches.service.js:303:32
+    at async Proxy._transactionWithCallback (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:8120) {
+  code: 'P2003',
+  meta: {
+    modelName: 'Player',
+    constraint: 'Player_userId_fkey'
+  },
+  clientVersion: '6.19.3'
+}
+[Nest] 25616  - 10/17/2026, 4:24:21 PM   ERROR [ExceptionsHandler] PrismaClientKnownRequestError: 
+Invalid `prisma.player.upsert()` invocation:
+
+
+Foreign key constraint violated on the constraint: `Player_userId_fkey`
+    at ei.handleRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:7268)
+    at ei.handleAndLogRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6593)
+    at ei.request (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6300)
+    at async a (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:9551)
+    at async file:///Users/macbookair/Documents/domino/apps/api/dist/src/modules/matches/matches.service.js:303:32
+    at async Proxy._transactionWithCallback (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:8120) {
+  code: 'P2003',
+  meta: {
+    modelName: 'Player',
+    constraint: 'Player_userId_fkey'
+  },
+  clientVersion: '6.19.3'
+}
+[Nest] 25616  - 10/17/2026, 4:24:24 PM   ERROR [ExceptionsHandler] PrismaClientKnownRequestError: 
+Invalid `prisma.player.upsert()` invocation:
+
+
+Foreign key constraint violated on the constraint: `Player_userId_fkey`
+    at ei.handleRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:7268)
+    at ei.handleAndLogRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6593)
+    at ei.request (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6300)
+    at async a (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:9551)
+    at async file:///Users/macbookair/Documents/domino/apps/api/dist/src/modules/matches/matches.service.js:303:32
+    at async Proxy._transactionWithCallback (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:8120) {
+  code: 'P2003',
+  meta: {
+    modelName: 'Player',
+    constraint: 'Player_userId_fkey'
+  },
+  clientVersion: '6.19.3'
+}
+[Nest] 25616  - 10/17/2026, 4:24:25 PM   ERROR [ExceptionsHandler] PrismaClientKnownRequestError: 
+Invalid `prisma.player.upsert()` invocation:
+
+
+Foreign key constraint violated on the constraint: `Player_userId_fkey`
+    at ei.handleRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:7268)
+    at ei.handleAndLogRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6593)
+    at ei.request (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6300)
+    at async a (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:9551)
+    at async file:///Users/macbookair/Documents/domino/apps/api/dist/src/modules/matches/matches.service.js:303:32
+    at async Proxy._transactionWithCallback (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:8120) {
+  code: 'P2003',
+  meta: {
+    modelName: 'Player',
+    constraint: 'Player_userId_fkey'
+  },
+  clientVersion: '6.19.3'
+}
+[Nest] 25616  - 10/17/2026, 4:24:25 PM   ERROR [ExceptionsHandler] PrismaClientKnownRequestError: 
+Invalid `prisma.player.upsert()` invocation:
+
+
+Foreign key constraint violated on the constraint: `Player_userId_fkey`
+    at ei.handleRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:7268)
+    at ei.handleAndLogRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6593)
+    at ei.request (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6300)
+    at async a (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:9551)
+    at async file:///Users/macbookair/Documents/domino/apps/api/dist/src/modules/matches/matches.service.js:303:32
+    at async Proxy._transactionWithCallback (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:8120) {
+  code: 'P2003',
+  meta: {
+    modelName: 'Player',
+    constraint: 'Player_userId_fkey'
+  },
+  clientVersion: '6.19.3'
+}
+[Nest] 25616  - 10/17/2026, 4:24:25 PM   ERROR [ExceptionsHandler] PrismaClientKnownRequestError: 
+Invalid `prisma.player.upsert()` invocation:
+
+
+Foreign key constraint violated on the constraint: `Player_userId_fkey`
+    at ei.handleRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:7268)
+    at ei.handleAndLogRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6593)
+    at ei.request (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6300)
+    at async a (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:9551)
+    at async file:///Users/macbookair/Documents/domino/apps/api/dist/src/modules/matches/matches.service.js:303:32
+    at async Proxy._transactionWithCallback (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:8120) {
+  code: 'P2003',
+  meta: {
+    modelName: 'Player',
+    constraint: 'Player_userId_fkey'
+  },
+  clientVersion: '6.19.3'
+}
+[Nest] 25616  - 10/17/2026, 4:24:26 PM   ERROR [ExceptionsHandler] PrismaClientKnownRequestError: 
+Invalid `prisma.player.upsert()` invocation:
+
+
+Foreign key constraint violated on the constraint: `Player_userId_fkey`
+    at ei.handleRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:7268)
+    at ei.handleAndLogRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6593)
+    at ei.request (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6300)
+    at async a (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:9551)
+    at async file:///Users/macbookair/Documents/domino/apps/api/dist/src/modules/matches/matches.service.js:303:32
+    at async Proxy._transactionWithCallback (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:8120) {
+  code: 'P2003',
+  meta: {
+    modelName: 'Player',
+    constraint: 'Player_userId_fkey'
+  },
+  clientVersion: '6.19.3'
+}
+[Nest] 25616  - 10/17/2026, 4:24:26 PM   ERROR [ExceptionsHandler] PrismaClientKnownRequestError: 
+Invalid `prisma.player.upsert()` invocation:
+
+
+Foreign key constraint violated on the constraint: `Player_userId_fkey`
+    at ei.handleRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:7268)
+    at ei.handleAndLogRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6593)
+    at ei.request (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6300)
+    at async a (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:9551)
+    at async file:///Users/macbookair/Documents/domino/apps/api/dist/src/modules/matches/matches.service.js:303:32
+    at async Proxy._transactionWithCallback (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:8120) {
+  code: 'P2003',
+  meta: {
+    modelName: 'Player',
+    constraint: 'Player_userId_fkey'
+  },
+  clientVersion: '6.19.3'
+}
+[Nest] 25616  - 10/17/2026, 4:24:26 PM   ERROR [ExceptionsHandler] PrismaClientKnownRequestError: 
+Invalid `prisma.player.upsert()` invocation:
+
+
+Foreign key constraint violated on the constraint: `Player_userId_fkey`
+    at ei.handleRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:7268)
+    at ei.handleAndLogRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6593)
+    at ei.request (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6300)
+    at async a (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:9551)
+    at async file:///Users/macbookair/Documents/domino/apps/api/dist/src/modules/matches/matches.service.js:303:32
+    at async Proxy._transactionWithCallback (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:8120) {
+  code: 'P2003',
+  meta: {
+    modelName: 'Player',
+    constraint: 'Player_userId_fkey'
+  },
+  clientVersion: '6.19.3'
+}
+[Nest] 25616  - 10/17/2026, 4:24:29 PM   ERROR [ExceptionsHandler] PrismaClientKnownRequestError: 
+Invalid `prisma.player.upsert()` invocation:
+
+
+Foreign key constraint violated on the constraint: `Player_userId_fkey`
+    at ei.handleRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:7268)
+    at ei.handleAndLogRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6593)
+    at ei.request (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6300)
+    at async a (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:9551)
+    at async file:///Users/macbookair/Documents/domino/apps/api/dist/src/modules/matches/matches.service.js:303:32
+    at async Proxy._transactionWithCallback (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:8120) {
+  code: 'P2003',
+  meta: {
+    modelName: 'Player',
+    constraint: 'Player_userId_fkey'
+  },
+  clientVersion: '6.19.3'
+}
+[Nest] 25616  - 10/17/2026, 4:24:30 PM   ERROR [ExceptionsHandler] PrismaClientKnownRequestError: 
+Invalid `prisma.player.upsert()` invocation:
+
+
+Foreign key constraint violated on the constraint: `Player_userId_fkey`
+    at ei.handleRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:7268)
+    at ei.handleAndLogRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6593)
+    at ei.request (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6300)
+    at async a (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:9551)
+    at async file:///Users/macbookair/Documents/domino/apps/api/dist/src/modules/matches/matches.service.js:303:32
+    at async Proxy._transactionWithCallback (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:8120) {
+  code: 'P2003',
+  meta: {
+    modelName: 'Player',
+    constraint: 'Player_userId_fkey'
+  },
+  clientVersion: '6.19.3'
+}
+[Nest] 25616  - 10/17/2026, 4:24:30 PM   ERROR [ExceptionsHandler] PrismaClientKnownRequestError: 
+Invalid `prisma.player.upsert()` invocation:
+
+
+Foreign key constraint violated on the constraint: `Player_userId_fkey`
+    at ei.handleRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:7268)
+    at ei.handleAndLogRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6593)
+    at ei.request (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6300)
+    at async a (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:9551)
+    at async file:///Users/macbookair/Documents/domino/apps/api/dist/src/modules/matches/matches.service.js:303:32
+    at async Proxy._transactionWithCallback (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:8120) {
+  code: 'P2003',
+  meta: {
+    modelName: 'Player',
+    constraint: 'Player_userId_fkey'
+  },
+  clientVersion: '6.19.3'
+}
+[Nest] 25616  - 10/17/2026, 4:24:30 PM   ERROR [ExceptionsHandler] PrismaClientKnownRequestError: 
+Invalid `prisma.player.upsert()` invocation:
+
+
+Foreign key constraint violated on the constraint: `Player_userId_fkey`
+    at ei.handleRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:7268)
+    at ei.handleAndLogRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6593)
+    at ei.request (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6300)
+    at async a (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:9551)
+    at async file:///Users/macbookair/Documents/domino/apps/api/dist/src/modules/matches/matches.service.js:303:32
+    at async Proxy._transactionWithCallback (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:8120) {
+  code: 'P2003',
+  meta: {
+    modelName: 'Player',
+    constraint: 'Player_userId_fkey'
+  },
+  clientVersion: '6.19.3'
+}
+[Nest] 25616  - 10/17/2026, 4:24:31 PM   ERROR [ExceptionsHandler] PrismaClientKnownRequestError: 
+Invalid `prisma.player.upsert()` invocation:
+
+
+Foreign key constraint violated on the constraint: `Player_userId_fkey`
+    at ei.handleRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:7268)
+    at ei.handleAndLogRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6593)
+    at ei.request (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6300)
+    at async a (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:9551)
+    at async file:///Users/macbookair/Documents/domino/apps/api/dist/src/modules/matches/matches.service.js:303:32
+    at async Proxy._transactionWithCallback (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:8120) {
+  code: 'P2003',
+  meta: {
+    modelName: 'Player',
+    constraint: 'Player_userId_fkey'
+  },
+  clientVersion: '6.19.3'
+}
+[Nest] 25616  - 10/17/2026, 4:24:31 PM   ERROR [ExceptionsHandler] PrismaClientKnownRequestError: 
+Invalid `prisma.player.upsert()` invocation:
+
+
+Foreign key constraint violated on the constraint: `Player_userId_fkey`
+    at ei.handleRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:7268)
+    at ei.handleAndLogRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6593)
+    at ei.request (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6300)
+    at async a (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:9551)
+    at async file:///Users/macbookair/Documents/domino/apps/api/dist/src/modules/matches/matches.service.js:303:32
+    at async Proxy._transactionWithCallback (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:8120) {
+  code: 'P2003',
+  meta: {
+    modelName: 'Player',
+    constraint: 'Player_userId_fkey'
+  },
+  clientVersion: '6.19.3'
+}
+[Nest] 25616  - 10/17/2026, 4:24:31 PM   ERROR [ExceptionsHandler] PrismaClientKnownRequestError: 
+Invalid `prisma.player.upsert()` invocation:
+
+
+Foreign key constraint violated on the constraint: `Player_userId_fkey`
+    at ei.handleRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:7268)
+    at ei.handleAndLogRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6593)
+    at ei.request (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6300)
+    at async a (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:9551)
+    at async file:///Users/macbookair/Documents/domino/apps/api/dist/src/modules/matches/matches.service.js:303:32
+    at async Proxy._transactionWithCallback (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:8120) {
+  code: 'P2003',
+  meta: {
+    modelName: 'Player',
+    constraint: 'Player_userId_fkey'
+  },
+  clientVersion: '6.19.3'
+}
+[Nest] 25616  - 10/17/2026, 4:24:34 PM   ERROR [ExceptionsHandler] PrismaClientKnownRequestError: 
+Invalid `prisma.player.upsert()` invocation:
+
+
+Foreign key constraint violated on the constraint: `Player_userId_fkey`
+    at ei.handleRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:7268)
+    at ei.handleAndLogRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6593)
+    at ei.request (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6300)
+    at async a (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:9551)
+    at async file:///Users/macbookair/Documents/domino/apps/api/dist/src/modules/matches/matches.service.js:303:32
+    at async Proxy._transactionWithCallback (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:8120) {
+  code: 'P2003',
+  meta: {
+    modelName: 'Player',
+    constraint: 'Player_userId_fkey'
+  },
+  clientVersion: '6.19.3'
+}
+[Nest] 25616  - 10/17/2026, 4:24:35 PM   ERROR [ExceptionsHandler] PrismaClientKnownRequestError: 
+Invalid `prisma.player.upsert()` invocation:
+
+
+Foreign key constraint violated on the constraint: `Player_userId_fkey`
+    at ei.handleRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:7268)
+    at ei.handleAndLogRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6593)
+    at ei.request (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6300)
+    at async a (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:9551)
+    at async file:///Users/macbookair/Documents/domino/apps/api/dist/src/modules/matches/matches.service.js:303:32
+    at async Proxy._transactionWithCallback (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:8120) {
+  code: 'P2003',
+  meta: {
+    modelName: 'Player',
+    constraint: 'Player_userId_fkey'
+  },
+  clientVersion: '6.19.3'
+}
+[Nest] 25616  - 10/17/2026, 4:24:35 PM   ERROR [ExceptionsHandler] PrismaClientKnownRequestError: 
+Invalid `prisma.player.upsert()` invocation:
+
+
+Foreign key constraint violated on the constraint: `Player_userId_fkey`
+    at ei.handleRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:7268)
+    at ei.handleAndLogRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6593)
+    at ei.request (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6300)
+    at async a (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:9551)
+    at async file:///Users/macbookair/Documents/domino/apps/api/dist/src/modules/matches/matches.service.js:303:32
+    at async Proxy._transactionWithCallback (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:8120) {
+  code: 'P2003',
+  meta: {
+    modelName: 'Player',
+    constraint: 'Player_userId_fkey'
+  },
+  clientVersion: '6.19.3'
+}
+[Nest] 25616  - 10/17/2026, 4:24:35 PM   ERROR [ExceptionsHandler] PrismaClientKnownRequestError: 
+Invalid `prisma.player.upsert()` invocation:
+
+
+Foreign key constraint violated on the constraint: `Player_userId_fkey`
+    at ei.handleRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:7268)
+    at ei.handleAndLogRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6593)
+    at ei.request (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6300)
+    at async a (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:9551)
+    at async file:///Users/macbookair/Documents/domino/apps/api/dist/src/modules/matches/matches.service.js:303:32
+    at async Proxy._transactionWithCallback (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:8120) {
+  code: 'P2003',
+  meta: {
+    modelName: 'Player',
+    constraint: 'Player_userId_fkey'
+  },
+  clientVersion: '6.19.3'
+}
+[Nest] 25616  - 10/17/2026, 4:24:36 PM   ERROR [ExceptionsHandler] PrismaClientKnownRequestError: 
+Invalid `prisma.player.upsert()` invocation:
+
+
+Foreign key constraint violated on the constraint: `Player_userId_fkey`
+    at ei.handleRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:7268)
+    at ei.handleAndLogRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6593)
+    at ei.request (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6300)
+    at async a (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:9551)
+    at async file:///Users/macbookair/Documents/domino/apps/api/dist/src/modules/matches/matches.service.js:303:32
+    at async Proxy._transactionWithCallback (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:8120) {
+  code: 'P2003',
+  meta: {
+    modelName: 'Player',
+    constraint: 'Player_userId_fkey'
+  },
+  clientVersion: '6.19.3'
+}
+[Nest] 25616  - 10/17/2026, 4:24:36 PM   ERROR [ExceptionsHandler] PrismaClientKnownRequestError: 
+Invalid `prisma.player.upsert()` invocation:
+
+
+Foreign key constraint violated on the constraint: `Player_userId_fkey`
+    at ei.handleRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:7268)
+    at ei.handleAndLogRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6593)
+    at ei.request (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6300)
+    at async a (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:9551)
+    at async file:///Users/macbookair/Documents/domino/apps/api/dist/src/modules/matches/matches.service.js:303:32
+    at async Proxy._transactionWithCallback (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:8120) {
+  code: 'P2003',
+  meta: {
+    modelName: 'Player',
+    constraint: 'Player_userId_fkey'
+  },
+  clientVersion: '6.19.3'
+}
+[Nest] 25616  - 10/17/2026, 4:24:36 PM   ERROR [ExceptionsHandler] PrismaClientKnownRequestError: 
+Invalid `prisma.player.upsert()` invocation:
+
+
+Foreign key constraint violated on the constraint: `Player_userId_fkey`
+    at ei.handleRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:7268)
+    at ei.handleAndLogRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6593)
+    at ei.request (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6300)
+    at async a (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:9551)
+    at async file:///Users/macbookair/Documents/domino/apps/api/dist/src/modules/matches/matches.service.js:303:32
+    at async Proxy._transactionWithCallback (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:8120) {
+  code: 'P2003',
+  meta: {
+    modelName: 'Player',
+    constraint: 'Player_userId_fkey'
+  },
+  clientVersion: '6.19.3'
+}
+[Nest] 25616  - 10/17/2026, 4:24:39 PM   ERROR [ExceptionsHandler] PrismaClientKnownRequestError: 
+Invalid `prisma.player.upsert()` invocation:
+
+
+Foreign key constraint violated on the constraint: `Player_userId_fkey`
+    at ei.handleRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:7268)
+    at ei.handleAndLogRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6593)
+    at ei.request (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6300)
+    at async a (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:9551)
+    at async file:///Users/macbookair/Documents/domino/apps/api/dist/src/modules/matches/matches.service.js:303:32
+    at async Proxy._transactionWithCallback (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:8120) {
+  code: 'P2003',
+  meta: {
+    modelName: 'Player',
+    constraint: 'Player_userId_fkey'
+  },
+  clientVersion: '6.19.3'
+}
+[Nest] 25616  - 10/17/2026, 4:24:40 PM   ERROR [ExceptionsHandler] PrismaClientKnownRequestError: 
+Invalid `prisma.player.upsert()` invocation:
+
+
+Foreign key constraint violated on the constraint: `Player_userId_fkey`
+    at ei.handleRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:7268)
+    at ei.handleAndLogRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6593)
+    at ei.request (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6300)
+    at async a (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:9551)
+    at async file:///Users/macbookair/Documents/domino/apps/api/dist/src/modules/matches/matches.service.js:303:32
+    at async Proxy._transactionWithCallback (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:8120) {
+  code: 'P2003',
+  meta: {
+    modelName: 'Player',
+    constraint: 'Player_userId_fkey'
+  },
+  clientVersion: '6.19.3'
+}
+[Nest] 25616  - 10/17/2026, 4:24:40 PM   ERROR [ExceptionsHandler] PrismaClientKnownRequestError: 
+Invalid `prisma.player.upsert()` invocation:
+
+
+Foreign key constraint violated on the constraint: `Player_userId_fkey`
+    at ei.handleRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:7268)
+    at ei.handleAndLogRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6593)
+    at ei.request (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6300)
+    at async a (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:9551)
+    at async file:///Users/macbookair/Documents/domino/apps/api/dist/src/modules/matches/matches.service.js:303:32
+    at async Proxy._transactionWithCallback (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:8120) {
+  code: 'P2003',
+  meta: {
+    modelName: 'Player',
+    constraint: 'Player_userId_fkey'
+  },
+  clientVersion: '6.19.3'
+}
+[Nest] 25616  - 10/17/2026, 4:24:40 PM   ERROR [ExceptionsHandler] PrismaClientKnownRequestError: 
+Invalid `prisma.player.upsert()` invocation:
+
+
+Foreign key constraint violated on the constraint: `Player_userId_fkey`
+    at ei.handleRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:7268)
+    at ei.handleAndLogRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6593)
+    at ei.request (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6300)
+    at async a (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:9551)
+    at async file:///Users/macbookair/Documents/domino/apps/api/dist/src/modules/matches/matches.service.js:303:32
+    at async Proxy._transactionWithCallback (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:8120) {
+  code: 'P2003',
+  meta: {
+    modelName: 'Player',
+    constraint: 'Player_userId_fkey'
+  },
+  clientVersion: '6.19.3'
+}
+[Nest] 25616  - 10/17/2026, 4:24:41 PM   ERROR [ExceptionsHandler] PrismaClientKnownRequestError: 
+Invalid `prisma.player.upsert()` invocation:
+
+
+Foreign key constraint violated on the constraint: `Player_userId_fkey`
+    at ei.handleRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:7268)
+    at ei.handleAndLogRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6593)
+    at ei.request (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6300)
+    at async a (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:9551)
+    at async file:///Users/macbookair/Documents/domino/apps/api/dist/src/modules/matches/matches.service.js:303:32
+    at async Proxy._transactionWithCallback (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:8120) {
+  code: 'P2003',
+  meta: {
+    modelName: 'Player',
+    constraint: 'Player_userId_fkey'
+  },
+  clientVersion: '6.19.3'
+}
+[Nest] 25616  - 10/17/2026, 4:24:41 PM   ERROR [ExceptionsHandler] PrismaClientKnownRequestError: 
+Invalid `prisma.player.upsert()` invocation:
+
+
+Foreign key constraint violated on the constraint: `Player_userId_fkey`
+    at ei.handleRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:7268)
+    at ei.handleAndLogRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6593)
+    at ei.request (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6300)
+    at async a (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:9551)
+    at async file:///Users/macbookair/Documents/domino/apps/api/dist/src/modules/matches/matches.service.js:303:32
+    at async Proxy._transactionWithCallback (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:8120) {
+  code: 'P2003',
+  meta: {
+    modelName: 'Player',
+    constraint: 'Player_userId_fkey'
+  },
+  clientVersion: '6.19.3'
+}
+[Nest] 25616  - 10/17/2026, 4:24:41 PM   ERROR [ExceptionsHandler] PrismaClientKnownRequestError: 
+Invalid `prisma.player.upsert()` invocation:
+
+
+Foreign key constraint violated on the constraint: `Player_userId_fkey`
+    at ei.handleRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:7268)
+    at ei.handleAndLogRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6593)
+    at ei.request (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6300)
+    at async a (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:9551)
+    at async file:///Users/macbookair/Documents/domino/apps/api/dist/src/modules/matches/matches.service.js:303:32
+    at async Proxy._transactionWithCallback (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:8120) {
+  code: 'P2003',
+  meta: {
+    modelName: 'Player',
+    constraint: 'Player_userId_fkey'
+  },
+  clientVersion: '6.19.3'
+}
+[Nest] 25616  - 10/17/2026, 4:24:44 PM   ERROR [ExceptionsHandler] PrismaClientKnownRequestError: 
+Invalid `prisma.player.upsert()` invocation:
+
+
+Foreign key constraint violated on the constraint: `Player_userId_fkey`
+    at ei.handleRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:7268)
+    at ei.handleAndLogRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6593)
+    at ei.request (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6300)
+    at async a (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:9551)
+    at async file:///Users/macbookair/Documents/domino/apps/api/dist/src/modules/matches/matches.service.js:303:32
+    at async Proxy._transactionWithCallback (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:8120) {
+  code: 'P2003',
+  meta: {
+    modelName: 'Player',
+    constraint: 'Player_userId_fkey'
+  },
+  clientVersion: '6.19.3'
+}
+[Nest] 25616  - 10/17/2026, 4:24:45 PM   ERROR [ExceptionsHandler] PrismaClientKnownRequestError: 
+Invalid `prisma.player.upsert()` invocation:
+
+
+Foreign key constraint violated on the constraint: `Player_userId_fkey`
+    at ei.handleRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:7268)
+    at ei.handleAndLogRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6593)
+    at ei.request (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6300)
+    at async a (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:9551)
+    at async file:///Users/macbookair/Documents/domino/apps/api/dist/src/modules/matches/matches.service.js:303:32
+    at async Proxy._transactionWithCallback (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:8120) {
+  code: 'P2003',
+  meta: {
+    modelName: 'Player',
+    constraint: 'Player_userId_fkey'
+  },
+  clientVersion: '6.19.3'
+}
+[Nest] 25616  - 10/17/2026, 4:24:45 PM   ERROR [ExceptionsHandler] PrismaClientKnownRequestError: 
+Invalid `prisma.player.upsert()` invocation:
+
+
+Foreign key constraint violated on the constraint: `Player_userId_fkey`
+    at ei.handleRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:7268)
+    at ei.handleAndLogRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6593)
+    at ei.request (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6300)
+    at async a (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:9551)
+    at async file:///Users/macbookair/Documents/domino/apps/api/dist/src/modules/matches/matches.service.js:303:32
+    at async Proxy._transactionWithCallback (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:8120) {
+  code: 'P2003',
+  meta: {
+    modelName: 'Player',
+    constraint: 'Player_userId_fkey'
+  },
+  clientVersion: '6.19.3'
+}
+[Nest] 25616  - 10/17/2026, 4:24:45 PM   ERROR [ExceptionsHandler] PrismaClientKnownRequestError: 
+Invalid `prisma.player.upsert()` invocation:
+
+
+Foreign key constraint violated on the constraint: `Player_userId_fkey`
+    at ei.handleRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:7268)
+    at ei.handleAndLogRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6593)
+    at ei.request (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6300)
+    at async a (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:9551)
+    at async file:///Users/macbookair/Documents/domino/apps/api/dist/src/modules/matches/matches.service.js:303:32
+    at async Proxy._transactionWithCallback (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:8120) {
+  code: 'P2003',
+  meta: {
+    modelName: 'Player',
+    constraint: 'Player_userId_fkey'
+  },
+  clientVersion: '6.19.3'
+}
+[Nest] 25616  - 10/17/2026, 4:24:46 PM   ERROR [ExceptionsHandler] PrismaClientKnownRequestError: 
+Invalid `prisma.player.upsert()` invocation:
+
+
+Foreign key constraint violated on the constraint: `Player_userId_fkey`
+    at ei.handleRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:7268)
+    at ei.handleAndLogRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6593)
+    at ei.request (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6300)
+    at async a (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:9551)
+    at async file:///Users/macbookair/Documents/domino/apps/api/dist/src/modules/matches/matches.service.js:303:32
+    at async Proxy._transactionWithCallback (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:8120) {
+  code: 'P2003',
+  meta: {
+    modelName: 'Player',
+    constraint: 'Player_userId_fkey'
+  },
+  clientVersion: '6.19.3'
+}
+[Nest] 25616  - 10/17/2026, 4:24:46 PM   ERROR [ExceptionsHandler] PrismaClientKnownRequestError: 
+Invalid `prisma.player.upsert()` invocation:
+
+
+Foreign key constraint violated on the constraint: `Player_userId_fkey`
+    at ei.handleRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:7268)
+    at ei.handleAndLogRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6593)
+    at ei.request (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6300)
+    at async a (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:9551)
+    at async file:///Users/macbookair/Documents/domino/apps/api/dist/src/modules/matches/matches.service.js:303:32
+    at async Proxy._transactionWithCallback (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:8120) {
+  code: 'P2003',
+  meta: {
+    modelName: 'Player',
+    constraint: 'Player_userId_fkey'
+  },
+  clientVersion: '6.19.3'
+}
+[Nest] 25616  - 10/17/2026, 4:24:46 PM   ERROR [ExceptionsHandler] PrismaClientKnownRequestError: 
+Invalid `prisma.player.upsert()` invocation:
+
+
+Foreign key constraint violated on the constraint: `Player_userId_fkey`
+    at ei.handleRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:7268)
+    at ei.handleAndLogRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6593)
+    at ei.request (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6300)
+    at async a (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:9551)
+    at async file:///Users/macbookair/Documents/domino/apps/api/dist/src/modules/matches/matches.service.js:303:32
+    at async Proxy._transactionWithCallback (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:8120) {
+  code: 'P2003',
+  meta: {
+    modelName: 'Player',
+    constraint: 'Player_userId_fkey'
+  },
+  clientVersion: '6.19.3'
+}

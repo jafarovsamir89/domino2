@@ -1,0 +1,6 @@
+Warning: Detected unsettled top-level await at file:///Users/macbookair/Documents/domino/docs/audit/evidence/scripts/network-faults.mjs:16
+ const waits=[5,15,30,60,120];await Promise.all(waits.map(async sec=>{const rs=await makeRoom('reconnect'+sec),r=rs[0],s=await sync(r),rt=r.reconnectionToken;const hand=s.payload.selfHand;const sid=r.sessionId;r.reconnection.enabled=false;r.connection.close(3001,'audit_network_drop');await sleep(sec*1000);try{const rr=listen(await new Client(base).reconnect(rt));const f=(await sync(rr)).payload;out.faults.push({name:'reconnect',seconds:sec,ok:true,sameSession:sid===rr.sessionId,handSame:JSON.stringify(hand)===JSON.stringify(f.selfHand),gameActive:f.gameActive,reason:f.gameOverReason,matchOver:f.matchOver,handCount:f.selfHand.length})}catch(e){out.faults.push({name:'reconnect',seconds:sec,ok:false,error:e.message})}fs.writeFileSync('docs/audit/evidence/metrics/network-faults.json',JSON.stringify(out,null,2));await Promise.allSettled(rs.map(r=>r.leave()))}));
+                              ^
+
+
+

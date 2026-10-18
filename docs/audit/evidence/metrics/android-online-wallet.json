@@ -1,0 +1,107 @@
+{
+  "roomId": "icwVIOzbG",
+  "stakes": [
+    {
+      "id": "cmvd3cc2x1vbyt0mqmhp920y5",
+      "roomId": "icwVIOzbG",
+      "matchId": "icwVIOzbG:match:mvd3cc21:9wshyzd4",
+      "playerId": "cmvd255op0001t0ni17ngvl51",
+      "stakeTableId": "cmvcxq8pp0007t0t0u50n4akg",
+      "stakeAmount": 200,
+      "commissionBps": 1000,
+      "commissionAmount": 20,
+      "status": "settled",
+      "reservedAt": "2026-10-18T00:32:17.194Z",
+      "settledAt": "2026-10-18T00:34:58.213Z",
+      "refundedAt": null,
+      "createdAt": "2026-10-18T00:32:17.194Z",
+      "updatedAt": "2026-10-18T00:34:58.213Z"
+    },
+    {
+      "id": "cmvd3cc331vc6t0mqq6ldtvfn",
+      "roomId": "icwVIOzbG",
+      "matchId": "icwVIOzbG:match:mvd3cc21:9wshyzd4",
+      "playerId": "cmvd255p20004t0nievmmogig",
+      "stakeTableId": "cmvcxq8pp0007t0t0u50n4akg",
+      "stakeAmount": 200,
+      "commissionBps": 1000,
+      "commissionAmount": 20,
+      "status": "settled",
+      "reservedAt": "2026-10-18T00:32:17.200Z",
+      "settledAt": "2026-10-18T00:34:58.217Z",
+      "refundedAt": null,
+      "createdAt": "2026-10-18T00:32:17.200Z",
+      "updatedAt": "2026-10-18T00:34:58.218Z"
+    }
+  ],
+  "ledger": [
+    {
+      "id": "cmvd3fsbl208kt0mqoedj3nqe",
+      "playerId": "cmvd255op0001t0ni17ngvl51",
+      "type": "release",
+      "amount": 200,
+      "balanceBefore": 9200,
+      "balanceAfter": 9400,
+      "reservedBefore": 200,
+      "reservedAfter": 0,
+      "referenceType": "match_settle",
+      "referenceId": "icwVIOzbG:match:mvd3cc21:9wshyzd4",
+      "idempotencyKey": "icwVIOzbG:icwVIOzbG:match:mvd3cc21:9wshyzd4:cmvd255op0001t0ni17ngvl51:cmvcxq8pp0007t0t0u50n4akg:release",
+      "note": "200 coins",
+      "payloadJson": {
+        "result": "win",
+        "roomId": "icwVIOzbG",
+        "matchId": "icwVIOzbG:match:mvd3cc21:9wshyzd4",
+        "stakeKey": "stake_200"
+      },
+      "createdByUserId": null,
+      "createdAt": "2026-10-18T00:34:58.210Z"
+    },
+    {
+      "id": "cmvd3fsbo208qt0mqiwi5o406",
+      "playerId": "cmvd255op0001t0ni17ngvl51",
+      "type": "payout",
+      "amount": 180,
+      "balanceBefore": 9400,
+      "balanceAfter": 9580,
+      "reservedBefore": 0,
+      "reservedAfter": 0,
+      "referenceType": "match_settle",
+      "referenceId": "icwVIOzbG:match:mvd3cc21:9wshyzd4",
+      "idempotencyKey": "icwVIOzbG:icwVIOzbG:match:mvd3cc21:9wshyzd4:cmvd255op0001t0ni17ngvl51:cmvcxq8pp0007t0t0u50n4akg:payout",
+      "note": "200 coins",
+      "payloadJson": {
+        "result": "win",
+        "roomId": "icwVIOzbG",
+        "matchId": "icwVIOzbG:match:mvd3cc21:9wshyzd4",
+        "stakeKey": "stake_200",
+        "payoutShare": 180
+      },
+      "createdByUserId": null,
+      "createdAt": "2026-10-18T00:34:58.212Z"
+    },
+    {
+      "id": "cmvd3fsbs208yt0mqiof1xgjl",
+      "playerId": "cmvd255p20004t0nievmmogig",
+      "type": "spend",
+      "amount": 0,
+      "balanceBefore": 12040,
+      "balanceAfter": 12040,
+      "reservedBefore": 200,
+      "reservedAfter": 0,
+      "referenceType": "match_settle",
+      "referenceId": "icwVIOzbG:match:mvd3cc21:9wshyzd4",
+      "idempotencyKey": "icwVIOzbG:icwVIOzbG:match:mvd3cc21:9wshyzd4:cmvd255p20004t0nievmmogig:cmvcxq8pp0007t0t0u50n4akg:consume",
+      "note": "200 coins",
+      "payloadJson": {
+        "result": "win",
+        "roomId": "icwVIOzbG",
+        "matchId": "icwVIOzbG:match:mvd3cc21:9wshyzd4",
+        "stakeKey": "stake_200",
+        "consumedAmount": 200
+      },
+      "createdByUserId": null,
+      "createdAt": "2026-10-18T00:34:58.217Z"
+    }
+  ]
+}

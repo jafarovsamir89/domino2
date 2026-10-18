@@ -1,0 +1,13 @@
+import fs from 'node:fs';import {execFileSync} from 'node:child_process';import {chromium} from '@playwright/test';
+const b=await chromium.connectOverCDP('http://127.0.0.1:9222'),p=b.contexts()[0].pages()[0];const c=await p.context().newCDPSession(p);const out={note:'Same debug WebView, 28-tile synthetic field, sequential interventions; exploratory single run, not isolated causal proof',rows:[]};
+try{
+ out.animations=await p.evaluate(()=>document.getAnimations().map(a=>({name:a.animationName,target:a.effect?.target?.id||a.effect?.target?.className,state:a.playState})));
+ for(const variant of ['baseline','actual_pixel_ratio_1_25','flat_background','no_css_animation_or_blur']){
+ await p.evaluate(async variant=>{const k=window.game.renderer._konvaBoardRenderer;if(variant==='actual_pixel_ratio_1_25'){k.layer.getCanvas().setPixelRatio(1.25);k.layer.getHitCanvas().setPixelRatio(1);k.layer.draw()}if(variant==='flat_background')document.querySelector('#game-screen').style.background='#16452d';if(variant==='no_css_animation_or_blur'){const s=document.createElement('style');s.textContent='*,*::before,*::after{animation:none!important;backdrop-filter:none!important;filter:none!important;box-shadow:none!important}';document.head.append(s)}},variant);
+ await p.waitForTimeout(500);
+ const r=await p.evaluate(async()=>{const samples=[];let start=performance.now(),last=start;const g=window.game,k=g.renderer._konvaBoardRenderer;let timer=setInterval(()=>void k.animateTileTravel(String(g.board.nodes.at(-1).tile.id),{left:180,top:650,width:28,height:54},null),650);await new Promise(resolve=>{function f(t){samples.push(t-last);last=t;if(t-start<6500)requestAnimationFrame(f);else resolve()}requestAnimationFrame(f)});clearInterval(timer);samples.sort((a,b)=>a-b);return{fps:samples.length*1000/(last-start),p95:samples[Math.floor(samples.length*.95)],canvas:[k.layer.getCanvas().width,k.layer.getCanvas().height],intendedPixelRatio:k.stage.getAttr('pixelRatio'),actualPixelRatio:k.layer.getCanvas().getPixelRatio()}});
+ out.rows.push({variant,...r});fs.writeFileSync('docs/audit/evidence/metrics/android-ab.json',JSON.stringify(out,null,2));
+ execFileSync('adb',['shell','screencap','-p','/sdcard/domino-audit-screen.png']);execFileSync('adb',['pull','/sdcard/domino-audit-screen.png',`docs/audit/evidence/screenshots/android-native-${variant}.png`]);
+ fs.writeFileSync(`docs/audit/evidence/metrics/android-memory-${variant}.txt`,execFileSync('adb',['shell','dumpsys','meminfo','az.simplesoft.dominotelefon.audit']));
+ }
+}catch(e){out.error=e.stack}finally{fs.writeFileSync('docs/audit/evidence/metrics/android-ab.json',JSON.stringify(out,null,2));await b.close()}

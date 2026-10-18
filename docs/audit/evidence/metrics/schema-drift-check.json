@@ -1,0 +1,190 @@
+{
+  "scope": "18 repository migrations applied; daily_login data fixture exists, no schema repair applied. Read-only schema and API probes; synthetic accounts.",
+  "migrationFiles": [
+    {
+      "name": "20260507_000001_initial_platform",
+      "sha256": "39a928fde76ed9ec1ab39ac29592a872a290f6ae4bb9448ecb7749b28495c58a"
+    },
+    {
+      "name": "20260508_000002_economy",
+      "sha256": "4b6b0ed808681034a5712644e06b960bb3d600395815395cf4e3f72daa1f0059"
+    },
+    {
+      "name": "20260508_000003_social",
+      "sha256": "7cff8e158498915f18962371c2074ffed330679139803fbba42032d9832c6e7d"
+    },
+    {
+      "name": "20260513_000004_player_avatar_url",
+      "sha256": "f72492c2c5373cd2699208dd38407eb841fcf112d54f2ec38be9a485a8d8daa8"
+    },
+    {
+      "name": "20260513_000005_gifts",
+      "sha256": "878c9d67b352753ca7f90b0d5fc91ce696e24f59bbaa6f989afb24a4ec61ac9d"
+    },
+    {
+      "name": "20260515_000006_gift_ledger_types",
+      "sha256": "a7b306d06ad03c0a4b370cc4d6c7a7526738696062f3d32095ddee193943f69e"
+    },
+    {
+      "name": "20260515_000007_table_skins",
+      "sha256": "abf59300884dd553a43975042fe0f8fda92494b6db0d9464e057f1ed7c0b6949"
+    },
+    {
+      "name": "20260518_000008_hardening",
+      "sha256": "5e576d63989467c33e4d81190f1414843950418c118b22825ee8854d9871b39e"
+    },
+    {
+      "name": "20260518_000009_leaderboard_index",
+      "sha256": "87457a848ee2ed18da70d5b1f4ce7fe478f84127898ba8d4adf1754b8000ee5b"
+    },
+    {
+      "name": "20260518_000010_system_audit_log",
+      "sha256": "a4d79ec72e0059d695f40740af1575471dfb8e81049f413128311c24570c9ba4"
+    },
+    {
+      "name": "20260603_000011_add_direct_messages",
+      "sha256": "47cff2c6fd9c9f82b0b666de901d880422df6560cfdea9e683cdd7251ad9a4b8"
+    },
+    {
+      "name": "20260603_000012_add_inbox_messages",
+      "sha256": "86e27f7028f365989fd859849b8d5675b70f07eafc97c9e16ea3658b7deee839"
+    },
+    {
+      "name": "20260612_000013_add_play_invite_reservation",
+      "sha256": "2fb962fcbc00e7ee3714b8fc330b8dc775a8834b84c6d89665aa043451d3d14b"
+    },
+    {
+      "name": "20260612_000014_add_play_invite_room_ready",
+      "sha256": "05fd56229052ab4a4d62cfb79049e20f673f23300bbacfb9d5f295c1654874da"
+    },
+    {
+      "name": "20260625_000015_add_feedback",
+      "sha256": "1a68a64cc7deeb0415fd15c2e854ee3d51c959a65163275e328d5015dcf42fe3"
+    },
+    {
+      "name": "20260626_000016_split_rating_by_mode",
+      "sha256": "d4c8d547115a6ed13f1044e316f41b18f3ac511fc22501e2c01ec45e3df50aee"
+    },
+    {
+      "name": "20260626_000017_daily_rewards_config",
+      "sha256": "b80dd2da2f3da86d7acc54f16deda24a3889d7c936efee1fcbcd38adcd49b689"
+    },
+    {
+      "name": "20260811_000018_update_cosmetic_and_gift_prices",
+      "sha256": "bfcdbf9809f957cf8942eebe8e14dd4434c275dda320fef17730a91cbc2333a6"
+    }
+  ],
+  "applied": [
+    {
+      "migration_name": "20260507_000001_initial_platform",
+      "applied": true
+    },
+    {
+      "migration_name": "20260508_000002_economy",
+      "applied": true
+    },
+    {
+      "migration_name": "20260508_000003_social",
+      "applied": true
+    },
+    {
+      "migration_name": "20260513_000004_player_avatar_url",
+      "applied": true
+    },
+    {
+      "migration_name": "20260513_000005_gifts",
+      "applied": true
+    },
+    {
+      "migration_name": "20260515_000006_gift_ledger_types",
+      "applied": true
+    },
+    {
+      "migration_name": "20260515_000007_table_skins",
+      "applied": true
+    },
+    {
+      "migration_name": "20260518_000008_hardening",
+      "applied": true
+    },
+    {
+      "migration_name": "20260518_000009_leaderboard_index",
+      "applied": true
+    },
+    {
+      "migration_name": "20260518_000010_system_audit_log",
+      "applied": true
+    },
+    {
+      "migration_name": "20260603_000011_add_direct_messages",
+      "applied": true
+    },
+    {
+      "migration_name": "20260603_000012_add_inbox_messages",
+      "applied": true
+    },
+    {
+      "migration_name": "20260612_000013_add_play_invite_reservation",
+      "applied": true
+    },
+    {
+      "migration_name": "20260612_000014_add_play_invite_room_ready",
+      "applied": true
+    },
+    {
+      "migration_name": "20260625_000015_add_feedback",
+      "applied": true
+    },
+    {
+      "migration_name": "20260626_000016_split_rating_by_mode",
+      "applied": true
+    },
+    {
+      "migration_name": "20260626_000017_daily_rewards_config",
+      "applied": true
+    },
+    {
+      "migration_name": "20260811_000018_update_cosmetic_and_gift_prices",
+      "applied": true
+    }
+  ],
+  "chatColumns": [
+    {
+      "table_name": "DirectMessage",
+      "column_name": "createdAt"
+    },
+    {
+      "table_name": "DirectMessage",
+      "column_name": "id"
+    },
+    {
+      "table_name": "DirectMessage",
+      "column_name": "readAt"
+    },
+    {
+      "table_name": "DirectMessage",
+      "column_name": "receiverPlayerId"
+    },
+    {
+      "table_name": "DirectMessage",
+      "column_name": "senderPlayerId"
+    },
+    {
+      "table_name": "DirectMessage",
+      "column_name": "text"
+    }
+  ],
+  "sql": "-- AlterEnum\nALTER TYPE \"CoinLedgerType\" ADD VALUE 'consume';\n\n-- DropIndex\nDROP INDEX \"CatalogPrice_currency_idx\";\n\n-- DropIndex\nDROP INDEX \"CatalogPrice_productId_idx\";\n\n-- DropIndex\nDROP INDEX \"Order_playerId_idx\";\n\n-- DropIndex\nDROP INDEX \"Payment_orderId_idx\";\n\n-- AlterTable\nALTER TABLE \"DirectMessage\" ADD COLUMN     \"clientMessageId\" TEXT;\n\n-- CreateTable\nCREATE TABLE \"direct_message_thread\" (\n    \"playerAId\" TEXT NOT NULL,\n    \"playerBId\" TEXT NOT NULL,\n    \"lastMessageId\" TEXT,\n    \"lastMessageAt\" TIMESTAMP(3),\n    \"unreadCountA\" INTEGER NOT NULL DEFAULT 0,\n    \"unreadCountB\" INTEGER NOT NULL DEFAULT 0\n);\n\n-- CreateTable\nCREATE TABLE \"fcm_token\" (\n    \"id\" TEXT NOT NULL,\n    \"playerId\" TEXT NOT NULL,\n    \"token\" TEXT NOT NULL,\n    \"createdAt\" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,\n    \"updatedAt\" TIMESTAMP(3) NOT NULL,\n\n    CONSTRAINT \"fcm_token_pkey\" PRIMARY KEY (\"id\")\n);\n\n-- CreateIndex\nCREATE INDEX \"direct_message_thread_playerAId_lastMessageAt_idx\" ON \"direct_message_thread\"(\"playerAId\", \"lastMessageAt\");\n\n-- CreateIndex\nCREATE INDEX \"direct_message_thread_playerBId_lastMessageAt_idx\" ON \"direct_message_thread\"(\"playerBId\", \"lastMessageAt\");\n\n-- CreateIndex\nCREATE UNIQUE INDEX \"direct_message_thread_playerAId_playerBId_key\" ON \"direct_message_thread\"(\"playerAId\", \"playerBId\");\n\n-- CreateIndex\nCREATE UNIQUE INDEX \"fcm_token_token_key\" ON \"fcm_token\"(\"token\");\n\n-- CreateIndex\nCREATE INDEX \"fcm_token_playerId_idx\" ON \"fcm_token\"(\"playerId\");\n\n-- CreateIndex\nCREATE INDEX \"DirectMessage_receiverPlayerId_readAt_idx\" ON \"DirectMessage\"(\"receiverPlayerId\", \"readAt\");\n\n-- CreateIndex\nCREATE INDEX \"DirectMessage_createdAt_idx\" ON \"DirectMessage\"(\"createdAt\");\n\n-- CreateIndex\nCREATE UNIQUE INDEX \"DirectMessage_senderPlayerId_clientMessageId_key\" ON \"DirectMessage\"(\"senderPlayerId\", \"clientMessageId\");\n\n-- CreateIndex\nCREATE INDEX \"Order_playerId_status_idx\" ON \"Order\"(\"playerId\", \"status\");\n\n-- CreateIndex\nCREATE INDEX \"Payment_orderId_status_idx\" ON \"Payment\"(\"orderId\", \"status\");\n\n-- CreateIndex\nCREATE INDEX \"PlayerBan_playerId_idx\" ON \"PlayerBan\"(\"playerId\");\n\n-- CreateIndex\nCREATE INDEX \"PlayerReport_targetPlayerId_status_idx\" ON \"PlayerReport\"(\"targetPlayerId\", \"status\");\n\n-- CreateIndex\nCREATE INDEX \"PlayerReport_reporterPlayerId_idx\" ON \"PlayerReport\"(\"reporterPlayerId\");\n\n-- CreateIndex\nCREATE INDEX \"PlayerReport_matchId_idx\" ON \"PlayerReport\"(\"matchId\");\n\n-- AddForeignKey\nALTER TABLE \"direct_message_thread\" ADD CONSTRAINT \"direct_message_thread_playerAId_fkey\" FOREIGN KEY (\"playerAId\") REFERENCES \"Player\"(\"id\") ON DELETE CASCADE ON UPDATE CASCADE;\n\n-- AddForeignKey\nALTER TABLE \"direct_message_thread\" ADD CONSTRAINT \"direct_message_thread_playerBId_fkey\" FOREIGN KEY (\"playerBId\") REFERENCES \"Player\"(\"id\") ON DELETE CASCADE ON UPDATE CASCADE;\n\n-- AddForeignKey\nALTER TABLE \"direct_message_thread\" ADD CONSTRAINT \"direct_message_thread_lastMessageId_fkey\" FOREIGN KEY (\"lastMessageId\") REFERENCES \"DirectMessage\"(\"id\") ON DELETE SET NULL ON UPDATE CASCADE;\n\n-- AddForeignKey\nALTER TABLE \"fcm_token\" ADD CONSTRAINT \"fcm_token_playerId_fkey\" FOREIGN KEY (\"playerId\") REFERENCES \"Player\"(\"id\") ON DELETE CASCADE ON UPDATE CASCADE;\n\n",
+  "readMessages": {
+    "httpStatus": 500,
+    "body": {
+      "statusCode": 500,
+      "message": "Internal server error"
+    }
+  },
+  "missing": {
+    "clientMessageId": true,
+    "directMessageThread": true,
+    "fcmTokenTable": true
+  }
+}

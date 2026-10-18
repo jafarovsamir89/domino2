@@ -1,0 +1,310 @@
+[
+  {
+    "path": "js/translations.js",
+    "www": "same"
+  },
+  {
+    "path": "js/ai.js",
+    "www": "same"
+  },
+  {
+    "path": "js/konvaBoardRenderer.js",
+    "www": "same"
+  },
+  {
+    "path": "js/renderer.js",
+    "www": "same"
+  },
+  {
+    "path": "js/board.js",
+    "www": "same"
+  },
+  {
+    "path": "js/sounds.js",
+    "www": "same"
+  },
+  {
+    "path": "js/account.js",
+    "www": "same"
+  },
+  {
+    "path": "js/splash.js",
+    "www": "same"
+  },
+  {
+    "path": "js/endpoints.js",
+    "www": "same"
+  },
+  {
+    "path": "js/voice.js",
+    "www": "same"
+  },
+  {
+    "path": "js/model.js",
+    "www": "same"
+  },
+  {
+    "path": "js/network.js",
+    "www": "same"
+  },
+  {
+    "path": "js/app.js",
+    "www": "same"
+  },
+  {
+    "path": "js/vendor/gsap.min.js",
+    "www": "same"
+  },
+  {
+    "path": "js/vendor/socket.io.min.js",
+    "www": "same"
+  },
+  {
+    "path": "js/vendor/colyseus.js",
+    "www": "same"
+  },
+  {
+    "path": "js/vendor/konva.min.js",
+    "www": "same"
+  },
+  {
+    "path": "js/vendor/localforage.min.js",
+    "www": "same"
+  },
+  {
+    "path": "css/style.css",
+    "www": "same"
+  },
+  {
+    "path": "shared/domino-model-core.cjs",
+    "www": "same"
+  },
+  {
+    "path": "shared/domino-rulesets.cjs",
+    "www": "same"
+  },
+  {
+    "path": "shared/domino-board-core.cjs",
+    "www": "same"
+  },
+  {
+    "path": "assets/icon.png",
+    "www": "same"
+  },
+  {
+    "path": "assets/logo.png",
+    "www": "same"
+  },
+  {
+    "path": "assets/reactions/1F48B.svg",
+    "www": "same"
+  },
+  {
+    "path": "assets/reactions/1F914.svg",
+    "www": "same"
+  },
+  {
+    "path": "assets/reactions/1F929.svg",
+    "www": "same"
+  },
+  {
+    "path": "assets/reactions/1F618.svg",
+    "www": "same"
+  },
+  {
+    "path": "assets/reactions/1F609.svg",
+    "www": "same"
+  },
+  {
+    "path": "assets/reactions/1F634.svg",
+    "www": "same"
+  },
+  {
+    "path": "assets/reactions/1F62D.svg",
+    "www": "same"
+  },
+  {
+    "path": "assets/reactions/1F62E-200D-1F4A8.svg",
+    "www": "same"
+  },
+  {
+    "path": "assets/reactions/1F923.svg",
+    "www": "same"
+  },
+  {
+    "path": "assets/reactions/1F92C.svg",
+    "www": "same"
+  },
+  {
+    "path": "assets/cosmetics/table/table_skin_09.webp",
+    "www": "same"
+  },
+  {
+    "path": "assets/cosmetics/table/table_skin_05.webp",
+    "www": "same"
+  },
+  {
+    "path": "assets/cosmetics/table/table_skin_04.webp",
+    "www": "same"
+  },
+  {
+    "path": "assets/cosmetics/table/table_skin_08.webp",
+    "www": "same"
+  },
+  {
+    "path": "assets/cosmetics/table/table_skin_03.webp",
+    "www": "same"
+  },
+  {
+    "path": "assets/cosmetics/table/table_skin_02.webp",
+    "www": "same"
+  },
+  {
+    "path": "assets/cosmetics/table/table_skin_01.webp",
+    "www": "same"
+  },
+  {
+    "path": "assets/cosmetics/table/table_skin_07.webp",
+    "www": "same"
+  },
+  {
+    "path": "assets/cosmetics/table/table_skin_06.webp",
+    "www": "same"
+  },
+  {
+    "path": "assets/gift/gift_012_anim.webm",
+    "www": "same"
+  },
+  {
+    "path": "assets/gift/gift_006_anim.webm",
+    "www": "same"
+  },
+  {
+    "path": "assets/gift/gift_001.png",
+    "www": "same"
+  },
+  {
+    "path": "assets/gift/gift_007_anim.webm",
+    "www": "same"
+  },
+  {
+    "path": "assets/gift/gift_002.png",
+    "www": "same"
+  },
+  {
+    "path": "assets/gift/gift_003.png",
+    "www": "same"
+  },
+  {
+    "path": "assets/gift/gift_001_anim.webm",
+    "www": "same"
+  },
+  {
+    "path": "assets/gift/gift_007.png",
+    "www": "same"
+  },
+  {
+    "path": "assets/gift/gift_012.png",
+    "www": "same"
+  },
+  {
+    "path": "assets/gift/gift_006.png",
+    "www": "same"
+  },
+  {
+    "path": "assets/gift/gift_010.png",
+    "www": "same"
+  },
+  {
+    "path": "assets/gift/gift_004.png",
+    "www": "same"
+  },
+  {
+    "path": "assets/gift/gift_005.png",
+    "www": "same"
+  },
+  {
+    "path": "assets/gift/gift_011.png",
+    "www": "same"
+  },
+  {
+    "path": "assets/gift/gift_008.png",
+    "www": "same"
+  },
+  {
+    "path": "assets/gift/gift_010_anim.webm",
+    "www": "same"
+  },
+  {
+    "path": "assets/gift/gift_004_anim.webm",
+    "www": "same"
+  },
+  {
+    "path": "assets/gift/gift_009.png",
+    "www": "same"
+  },
+  {
+    "path": "assets/gift/gift_009_anim.webm",
+    "www": "same"
+  },
+  {
+    "path": "assets/gift/gift_002_anim.webm",
+    "www": "same"
+  },
+  {
+    "path": "assets/gift/gift_005_anim.webm",
+    "www": "same"
+  },
+  {
+    "path": "assets/gift/gift_011_anim.webm",
+    "www": "same"
+  },
+  {
+    "path": "assets/gift/gift_008_anim.webm",
+    "www": "same"
+  },
+  {
+    "path": "assets/gift/gift_003_anim.webm",
+    "www": "same"
+  },
+  {
+    "path": "assets/sounds/playlist game/Baku Breeze Lounge.mp3",
+    "www": "same"
+  },
+  {
+    "path": "assets/sounds/playlist game/Legacy of the Tiles.mp3",
+    "www": "same"
+  },
+  {
+    "path": "assets/sounds/menu music/Majestic Menu Lounge.mp3",
+    "www": "same"
+  },
+  {
+    "path": "index.html",
+    "www": "same"
+  },
+  {
+    "path": "sw.js",
+    "www": "same"
+  },
+  {
+    "path": "manifest.json",
+    "www": "same"
+  },
+  {
+    "path": "privacy.html",
+    "www": "same"
+  },
+  {
+    "path": "terms.html",
+    "www": "same"
+  },
+  {
+    "path": "auth-complete.html",
+    "www": "same"
+  },
+  {
+    "path": "mobile-auth-complete.html",
+    "www": "same"
+  }
+]

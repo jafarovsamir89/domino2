@@ -1,0 +1,242 @@
+[
+  {
+    "branch": "origin/add-sentry-monitoring",
+    "sha": "a8e9723d3001e89ed8d7be8828e25a278157a1e6",
+    "release_only_branch_only": "66\t1",
+    "last_commit": "2026-06-27 feat(observability): integrate Sentry into game server and platform API"
+  },
+  {
+    "branch": "origin/codex/online-group-menu",
+    "sha": "a0d7fb1679b7b95d5c53a3a7bd69bd3bc9f1980b",
+    "release_only_branch_only": "32\t1",
+    "last_commit": "2026-06-30 ui(start): group online room buttons under one menu"
+  },
+  {
+    "branch": "origin/codex/social-realtime-audit",
+    "sha": "2291e656ff75fdd6464321be7e06be99ddcb5c59",
+    "release_only_branch_only": "274\t0",
+    "last_commit": "2026-06-10 social realtime audit"
+  },
+  {
+    "branch": "origin/debug/browser-social-realtime-production",
+    "sha": "01a297d417405f554421e7b5534abb55b48ba1d8",
+    "release_only_branch_only": "269\t0",
+    "last_commit": "2026-06-10 sync mirrored sw assets"
+  },
+  {
+    "branch": "origin/debug/social-invite-chat-badge-production-trace",
+    "sha": "a81a6cc94609c8dac8c079f8d4c6d61803b57acf",
+    "release_only_branch_only": "260\t0",
+    "last_commit": "2026-06-11 Add social invite production trace panel"
+  },
+  {
+    "branch": "origin/feature/bot-takeover",
+    "sha": "d7194116060f0e749666085c21827c0063e2e1d2",
+    "release_only_branch_only": "114\t0",
+    "last_commit": "2026-06-24 Complete bot takeover integration"
+  },
+  {
+    "branch": "origin/feature/contextual-room-invites",
+    "sha": "163b1c306c982dd3f62f316f5bcb48750b4c286c",
+    "release_only_branch_only": "240\t0",
+    "last_commit": "2026-06-12 Move game invites into room context"
+  },
+  {
+    "branch": "origin/feature/daily-bonus-rewarded-x2",
+    "sha": "ada8cbff605a7182cfda2a83efbe9cb30af79db0",
+    "release_only_branch_only": "247\t0",
+    "last_commit": "2026-06-12 Add rewarded x2 daily bonus claim"
+  },
+  {
+    "branch": "origin/feature/play-invite-reservation-stage-1",
+    "sha": "4bbd9f60dd0a0b029991f3846b5c43262de73f9f",
+    "release_only_branch_only": "257\t0",
+    "last_commit": "2026-06-12 Add play invite reservation stage 1"
+  },
+  {
+    "branch": "origin/feature/seat-picker-room-bound-invite",
+    "sha": "f78eff5215b193df3547b8a361413287f9b8e19a",
+    "release_only_branch_only": "236\t0",
+    "last_commit": "2026-06-13 Add seat picker room-bound invite action"
+  },
+  {
+    "branch": "origin/feature/vertical-board-start-experiment",
+    "sha": "8b1c5317c281c18b3d320a048568b8b486db39f4",
+    "release_only_branch_only": "158\t0",
+    "last_commit": "2026-06-21 feat: implement vertical starting axis option for domino board layout"
+  },
+  {
+    "branch": "origin/fix/daily-bonus-7day-cycle",
+    "sha": "fc68bcdaeb2aecfbc54e17f1ca06c6aa6ed1cad1",
+    "release_only_branch_only": "32\t1",
+    "last_commit": "2026-06-30 fix(economy): cycle daily bonus streak after max day"
+  },
+  {
+    "branch": "origin/fix/play-invite-accept-room-ready-stage-2",
+    "sha": "4b4ce769d4da07993498f070410ed7af91067272",
+    "release_only_branch_only": "255\t0",
+    "last_commit": "2026-06-12 Add play invite room-ready flow"
+  },
+  {
+    "branch": "origin/fix/play-invite-polish-cancel-expiry",
+    "sha": "dfbb127486eef58564ca06ec3d059eae48a77f3e",
+    "release_only_branch_only": "253\t0",
+    "last_commit": "2026-06-12 Polish play invite cancel and expiry"
+  },
+  {
+    "branch": "origin/fix/private-2v2-seat-picker",
+    "sha": "2bd3a66d8d5429cedc1bf90ce97ce9fae09ef3a4",
+    "release_only_branch_only": "242\t0",
+    "last_commit": "2026-06-12 Fix private 2v2 seat picker visibility"
+  },
+  {
+    "branch": "origin/fix/social-chat-invites-delivery",
+    "sha": "8f292fa9dad3d6c05c6649a87bd290b76cd3c51e",
+    "release_only_branch_only": "264\t0",
+    "last_commit": "2026-06-11 fix: stabilize social chat and invite delivery"
+  },
+  {
+    "branch": "origin/fix/social-invite-root-cause-chat-polish",
+    "sha": "a43839ec81f6d2df72d246265b531c40f28f7f4b",
+    "release_only_branch_only": "262\t0",
+    "last_commit": "2026-06-11 fix: trace social invites and polish chat switching"
+  },
+  {
+    "branch": "origin/fix/social-realtime-stabilization",
+    "sha": "a3889e453e27a9bbc986b1e16017a33efa3fed45",
+    "release_only_branch_only": "273\t0",
+    "last_commit": "2026-06-10 stabilize social realtime ui"
+  },
+  {
+    "branch": "origin/fix/social-socket-autostart",
+    "sha": "6732b477523ff4f547ffbbd962f7c5dd63cb08ab",
+    "release_only_branch_only": "267\t0",
+    "last_commit": "2026-06-10 fix social socket autostart"
+  },
+  {
+    "branch": "origin/hotfix/2v2-runtime-team-mode-and-seat-picker-close",
+    "sha": "bce877150725a0d5127a7997cbeeba0c744f9ef7",
+    "release_only_branch_only": "230\t0",
+    "last_commit": "2026-06-13 Fix 2v2 room runtime team mode and seat picker close"
+  },
+  {
+    "branch": "origin/hotfix/2v2-team-mode-after-seat-picker-invite",
+    "sha": "152e246b87552778b991de79b389ce20c45bde82",
+    "release_only_branch_only": "232\t0",
+    "last_commit": "2026-06-13 Preserve team mode for 2v2 room invites"
+  },
+  {
+    "branch": "origin/hotfix/accidental-disconnect-reconnect-grace",
+    "sha": "6a63eb449f92d8be0772d0844ee5e7091add1ce5",
+    "release_only_branch_only": "209\t0",
+    "last_commit": "2026-06-15 Fix accidental disconnect reconnect grace"
+  },
+  {
+    "branch": "origin/hotfix/contextual-room-invite-existing-room",
+    "sha": "964c532eacde7cd6e103731743c0c2cc98b1d76e",
+    "release_only_branch_only": "238\t0",
+    "last_commit": "2026-06-13 Fix contextual room invite room binding"
+  },
+  {
+    "branch": "origin/hotfix/daily-bonus-x2-button-visible",
+    "sha": "b785570d28febc050553e2d34cdb2987012fd0db",
+    "release_only_branch_only": "245\t0",
+    "last_commit": "2026-06-12 Show daily bonus x2 button"
+  },
+  {
+    "branch": "origin/hotfix/exact-waiting-room-layout-and-seat-picker-close",
+    "sha": "51d6a16aea2a7840f0da36737c687e5a74f0e75b",
+    "release_only_branch_only": "218\t0",
+    "last_commit": "2026-06-13 Tighten waiting room layout and seat picker close flow"
+  },
+  {
+    "branch": "origin/hotfix/move-hints-block-profile-clicks",
+    "sha": "42d33cb60d7bcfb894dcc5335603edf6fdfd120b",
+    "release_only_branch_only": "227\t0",
+    "last_commit": "2026-06-13 Block profile clicks during move hints"
+  },
+  {
+    "branch": "origin/hotfix/play-invite-no-auto-cancel-after-accept",
+    "sha": "8a3c5315782f8a384bcb50a56e685381170e3076",
+    "release_only_branch_only": "251\t0",
+    "last_commit": "2026-06-12 Fix play invite auto-cancel after accept"
+  },
+  {
+    "branch": "origin/hotfix/reconnect-grace-timer-no-immediate-gameover",
+    "sha": "d1102e67d1cbe7e52ef8a5ce7df340ed7632b464",
+    "release_only_branch_only": "207\t0",
+    "last_commit": "2026-06-15 Fix reconnect grace timer and resume flow"
+  },
+  {
+    "branch": "origin/hotfix/reconnect-restore-turn-and-controls",
+    "sha": "45053fab69367ca8f8a664fbcacb4d12b4c1f57d",
+    "release_only_branch_only": "205\t0",
+    "last_commit": "2026-06-15 Fix reconnect restore turn and controls"
+  },
+  {
+    "branch": "origin/hotfix/reconnect-server-authoritative-actions",
+    "sha": "f8ef94b0452d582119b3fc81547d7e1ea9a49927",
+    "release_only_branch_only": "201\t0",
+    "last_commit": "2026-06-15 fix: resolve reconnect controls blocking and suppress redundant connection-lost warning popups"
+  },
+  {
+    "branch": "origin/hotfix/resume-session-banner-and-grace-time",
+    "sha": "f192116a74d381498e6b1bf8d65d8b4794fe49f6",
+    "release_only_branch_only": "211\t0",
+    "last_commit": "2026-06-15 Fix resume session banner and reconnect grace"
+  },
+  {
+    "branch": "origin/hotfix/room-start-profile-close-waiting-ui-polish",
+    "sha": "ae6fdc2dff06d5842d75a1221bce615ac09a4bef",
+    "release_only_branch_only": "223\t0",
+    "last_commit": "2026-06-13 Fix room auto-start and waiting room polish"
+  },
+  {
+    "branch": "origin/hotfix/seat-picker-close-stop-immediate-propagation",
+    "sha": "39dc6fd816dd81e2f10f4e7449ddd4816cfaaa4e",
+    "release_only_branch_only": "216\t0",
+    "last_commit": "2026-06-13 Prevent seat picker close click from bubbling"
+  },
+  {
+    "branch": "origin/hotfix/seat-picker-room-invite-context-reference",
+    "sha": "20a12a81f85ca6c69bf896fb7a8780fa34433434",
+    "release_only_branch_only": "234\t0",
+    "last_commit": "2026-06-13 Fix seat picker room invite context reference"
+  },
+  {
+    "branch": "origin/hotfix/strict-waiting-room-ui-and-seat-picker-close",
+    "sha": "1326255432362b571389fc071b1428559187288d",
+    "release_only_branch_only": "220\t0",
+    "last_commit": "2026-06-13 Fix waiting room row layout and seat picker close"
+  },
+  {
+    "branch": "origin/hotfix/team-hud-balance-gate-profile-modal",
+    "sha": "9a10ee213f02a3fea8eab9eac6545619f1ac9f25",
+    "release_only_branch_only": "225\t0",
+    "last_commit": "2026-06-13 Harden team HUD and wallet gate flows"
+  },
+  {
+    "branch": "origin/hotfix/vertical-start-horizontal-first-double",
+    "sha": "fe3cffed3ab9a67448a4112d80f61cc29e8ae07d",
+    "release_only_branch_only": "156\t0",
+    "last_commit": "2026-06-21 feat: Add UX round stages visual banners and player closeout threat indicators"
+  },
+  {
+    "branch": "origin/main",
+    "sha": "2ac6aafde4a2e386846ddef66eda557e8788bf3c",
+    "release_only_branch_only": "65\t0",
+    "last_commit": "2026-06-27 feat(observability): integrate Sentry into game server & platform API (#2)"
+  },
+  {
+    "branch": "origin/release/online-and-daily-bonus",
+    "sha": "7d4ba5a6e9eb9bf655d6cc722bac0d7fc61fdff5",
+    "release_only_branch_only": "32\t1",
+    "last_commit": "2026-06-30 integrate: online room group menu + daily bonus 7-day cycle"
+  },
+  {
+    "branch": "origin/release/play-prep",
+    "sha": "508932ebeb45cde744e3e1dbd92bc5592ca66093",
+    "release_only_branch_only": "0\t0",
+    "last_commit": "2026-08-11 chore(android): bump release to versionCode 24"
+  }
+]

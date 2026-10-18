@@ -1,0 +1,603 @@
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [NestFactory] Starting Nest application...
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [InstanceLoader] SentryModule dependencies initialized +34ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [InstanceLoader] PrismaModule dependencies initialized +0ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [InstanceLoader] ConfigHostModule dependencies initialized +3ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [InstanceLoader] RealtimeModule dependencies initialized +2ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [InstanceLoader] ConfigModule dependencies initialized +0ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [InstanceLoader] AppModule dependencies initialized +0ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [InstanceLoader] HealthModule dependencies initialized +0ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [InstanceLoader] AuthModule dependencies initialized +0ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [InstanceLoader] PlayersModule dependencies initialized +0ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [InstanceLoader] SocialRealtimeModule dependencies initialized +1ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [InstanceLoader] EconomyModule dependencies initialized +0ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [InstanceLoader] LeaderboardModule dependencies initialized +0ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [InstanceLoader] SocialModule dependencies initialized +0ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [InstanceLoader] AdminModule dependencies initialized +0ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [InstanceLoader] MatchesModule dependencies initialized +0ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [RoutesResolver] HealthController {/api/health}: +6ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [RouterExplorer] Mapped {/api/health, GET} route +1ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [RoutesResolver] AuthController {/api}: +0ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [RouterExplorer] Mapped {/api/platform/status, GET} route +1ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [RouterExplorer] Mapped {/api/platform/session, GET} route +0ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [RouterExplorer] Mapped {/api/platform/game-token, GET} route +0ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [RouterExplorer] Mapped {/api/platform/mobile-google-sign-in, POST} route +0ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [RouterExplorer] Mapped {/api/me, GET} route +0ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [RouterExplorer] Mapped {/api/me, PATCH} route +0ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [RouterExplorer] Mapped {/api/me/avatar, PATCH} route +0ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [RoutesResolver] EconomyController {/api}: +0ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [RouterExplorer] Mapped {/api/economy/config, GET} route +0ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [RouterExplorer] Mapped {/api/economy/stakes, GET} route +0ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [RouterExplorer] Mapped {/api/economy/cosmetics/table-skins, GET} route +1ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [RouterExplorer] Mapped {/api/economy/cosmetics/table-skins/purchase, POST} route +0ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [RouterExplorer] Mapped {/api/economy/cosmetics/table-skins/equip, POST} route +0ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [RouterExplorer] Mapped {/api/economy/cosmetics/table-skins/equip-default, POST} route +0ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [RouterExplorer] Mapped {/api/economy/coin-shop/status, GET} route +0ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [RouterExplorer] Mapped {/api/economy/coin-shop/video-reward, POST} route +0ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [RouterExplorer] Mapped {/api/economy/me/wallet, GET} route +0ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [RouterExplorer] Mapped {/api/economy/daily-bonus/status, GET} route +0ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [RouterExplorer] Mapped {/api/economy/daily-bonus/claim, POST} route +0ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [RouterExplorer] Mapped {/api/economy/matches/reserve, POST} route +0ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [RouterExplorer] Mapped {/api/economy/matches/settle, POST} route +0ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [RouterExplorer] Mapped {/api/economy/solo/reserve, POST} route +0ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [RouterExplorer] Mapped {/api/economy/solo/settle, POST} route +0ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [RouterExplorer] Mapped {/api/admin/economy/overview, GET} route +0ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [RouterExplorer] Mapped {/api/admin/economy/stakes/reconcile-stale-reserved, POST} route +0ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [RouterExplorer] Mapped {/api/admin/economy/wallets, GET} route +0ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [RouterExplorer] Mapped {/api/admin/economy/wallets/:playerId, GET} route +1ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [RouterExplorer] Mapped {/api/admin/economy/wallets/:playerId/grant, POST} route +0ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [RouterExplorer] Mapped {/api/admin/economy/wallets/:playerId/spend, POST} route +0ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [RouterExplorer] Mapped {/api/admin/economy/stakes, GET} route +0ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [RouterExplorer] Mapped {/api/admin/economy/stakes, POST} route +0ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [RouterExplorer] Mapped {/api/admin/economy/stakes/:id, PATCH} route +0ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [RouterExplorer] Mapped {/api/admin/economy/config, PATCH} route +0ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [RoutesResolver] PlayersController {/api/players}: +0ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [RouterExplorer] Mapped {/api/players/:id, GET} route +0ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [RoutesResolver] LeaderboardController {/api/leaderboard}: +0ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [RouterExplorer] Mapped {/api/leaderboard, GET} route +0ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [RoutesResolver] MatchesController {/api}: +0ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [RouterExplorer] Mapped {/api/platform/matches, POST} route +0ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [RoutesResolver] RealtimeController {/api/realtime}: +0ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [RouterExplorer] Mapped {/api/realtime/summary, GET} route +0ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [RouterExplorer] Mapped {/api/realtime/sessions/:sessionId, GET} route +0ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [RouterExplorer] Mapped {/api/realtime/heartbeat, POST} route +0ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [RoutesResolver] SocialController {/api/social}: +1ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [RouterExplorer] Mapped {/api/social/sse, GET} route +0ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [RouterExplorer] Mapped {/api/social/friends, GET} route +0ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [RouterExplorer] Mapped {/api/social/players/search, GET} route +0ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [RouterExplorer] Mapped {/api/social/players/:id/profile, GET} route +0ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [RouterExplorer] Mapped {/api/social/players/:id/moderation, GET} route +0ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [RouterExplorer] Mapped {/api/social/messages, GET} route +0ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [RouterExplorer] Mapped {/api/social/inbox, GET} route +0ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [RouterExplorer] Mapped {/api/social/summary, GET} route +0ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [RouterExplorer] Mapped {/api/social/friends/request, POST} route +0ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [RouterExplorer] Mapped {/api/social/feedback, POST} route +0ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [RouterExplorer] Mapped {/api/social/reports, POST} route +0ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [RouterExplorer] Mapped {/api/social/friends/:id/accept, POST} route +0ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [RouterExplorer] Mapped {/api/social/friends/:id/decline, POST} route +0ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [RouterExplorer] Mapped {/api/social/friends/:id/cancel, POST} route +0ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [RouterExplorer] Mapped {/api/social/friends/:id/remove, POST} route +0ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [RouterExplorer] Mapped {/api/social/players/:id/block, POST} route +0ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [RouterExplorer] Mapped {/api/social/players/:id/block, DELETE} route +0ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [RouterExplorer] Mapped {/api/social/invitations, GET} route +0ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [RouterExplorer] Mapped {/api/social/play-invites, GET} route +1ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [RouterExplorer] Mapped {/api/social/gifts/catalog, GET} route +0ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [RouterExplorer] Mapped {/api/social/gifts/inventory, GET} route +0ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [RouterExplorer] Mapped {/api/social/gifts/history, GET} route +0ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [RouterExplorer] Mapped {/api/social/gifts/send, POST} route +0ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [RouterExplorer] Mapped {/api/social/inbox/:id/read, POST} route +0ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [RouterExplorer] Mapped {/api/social/inbox/:id/claim, POST} route +0ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [RouterExplorer] Mapped {/api/social/inbox/:id/delete, POST} route +0ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [RouterExplorer] Mapped {/api/social/messages/:playerId, GET} route +0ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [RouterExplorer] Mapped {/api/social/messages/:playerId/read, POST} route +0ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [RouterExplorer] Mapped {/api/social/messages/:playerId, POST} route +0ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [RouterExplorer] Mapped {/api/social/messages/:playerId/delete, POST} route +0ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [RouterExplorer] Mapped {/api/social/gifts/exchange, POST} route +0ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [RouterExplorer] Mapped {/api/social/rooms/:roomId/invite, POST} route +0ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [RouterExplorer] Mapped {/api/social/play-invites, POST} route +0ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [RouterExplorer] Mapped {/api/social/play-invites/:id/accept, POST} route +0ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [RouterExplorer] Mapped {/api/social/play-invites/:id/decline, POST} route +0ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [RouterExplorer] Mapped {/api/social/play-invites/:id/cancel, POST} route +0ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [RouterExplorer] Mapped {/api/social/play-invites/attach-room, POST} route +1ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [RouterExplorer] Mapped {/api/social/play-invites/:id/joined, POST} route +0ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [RouterExplorer] Mapped {/api/social/play-invites/:id/failed-to-join, POST} route +0ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [RouterExplorer] Mapped {/api/social/invitations/:id/accept, POST} route +0ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [RouterExplorer] Mapped {/api/social/invitations/:id/decline, POST} route +0ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [RouterExplorer] Mapped {/api/social/invitations/:id/cancel, POST} route +0ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [RouterExplorer] Mapped {/api/social/fcm/register, POST} route +0ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [RouterExplorer] Mapped {/api/social/fcm/unregister, POST} route +0ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [RoutesResolver] AdminController {/api/admin}: +0ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [RouterExplorer] Mapped {/api/admin/overview, GET} route +0ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [RouterExplorer] Mapped {/api/admin/players, GET} route +0ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [RouterExplorer] Mapped {/api/admin/players/:id, GET} route +0ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [RouterExplorer] Mapped {/api/admin/reports, GET} route +0ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [RouterExplorer] Mapped {/api/admin/feedback, GET} route +0ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [RouterExplorer] Mapped {/api/admin/bans, GET} route +0ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [RouterExplorer] Mapped {/api/admin/audit-logs, GET} route +0ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [RouterExplorer] Mapped {/api/admin/system-audit-logs, GET} route +0ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [RouterExplorer] Mapped {/api/admin/players/:id/ban, POST} route +0ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [RouterExplorer] Mapped {/api/admin/bans/:id/revoke, PATCH} route +0ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [RouterExplorer] Mapped {/api/admin/reports/:id, PATCH} route +0ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [RouterExplorer] Mapped {/api/admin/feedback/:id, PATCH} route +0ms
+[Nest] 34514  - 10/17/2026, 4:58:20 PM     LOG [NestApplication] Nest application successfully started +4ms
+[SocialService Purge] Purged 0 room invitations, 0 play invites, 0 inbox notifications and 0 hidden chat markers.
+[Nest] 34514  - 10/17/2026, 5:13:06 PM   ERROR [ExceptionsHandler] PrismaClientKnownRequestError: 
+Invalid `prisma.directMessage.findMany()` invocation:
+
+
+The column `DirectMessage.clientMessageId` does not exist in the current database.
+    at ei.handleRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:7268)
+    at ei.handleAndLogRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6593)
+    at ei.request (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6300)
+    at async a (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:9551)
+    at async SocialService.getDirectMessages (file:///Users/macbookair/Documents/domino/apps/api/dist/src/modules/social/social.service.js:1504:22) {
+  code: 'P2022',
+  meta: {
+    modelName: 'DirectMessage',
+    column: 'DirectMessage.clientMessageId'
+  },
+  clientVersion: '6.19.3'
+}
+[Nest] 34514  - 10/17/2026, 5:13:06 PM   ERROR [ExceptionsHandler] PrismaClientKnownRequestError: 
+Invalid `prisma.directMessageThread.updateMany()` invocation:
+
+
+The table `public.direct_message_thread` does not exist in the current database.
+    at ei.handleRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:7268)
+    at ei.handleAndLogRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6593)
+    at ei.request (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6300)
+    at async a (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:9551) {
+  code: 'P2021',
+  meta: {
+    modelName: 'DirectMessageThread',
+    table: 'public.direct_message_thread'
+  },
+  clientVersion: '6.19.3'
+}
+[Nest] 34514  - 10/17/2026, 5:13:06 PM   ERROR [ExceptionsHandler] PrismaClientKnownRequestError: 
+Invalid `prisma.directMessageThread.findMany()` invocation:
+
+
+The table `public.direct_message_thread` does not exist in the current database.
+    at ei.handleRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:7268)
+    at ei.handleAndLogRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6593)
+    at ei.request (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6300)
+    at async a (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:9551)
+    at async SocialService.getMessageThreads (file:///Users/macbookair/Documents/domino/apps/api/dist/src/modules/social/social.service.js:1289:25) {
+  code: 'P2021',
+  meta: {
+    modelName: 'DirectMessageThread',
+    table: 'public.direct_message_thread'
+  },
+  clientVersion: '6.19.3'
+}
+[Nest] 34514  - 10/17/2026, 5:13:34 PM   ERROR [ExceptionsHandler] PrismaClientKnownRequestError: 
+Invalid `prisma.directMessage.findMany()` invocation:
+
+
+The column `DirectMessage.clientMessageId` does not exist in the current database.
+    at ei.handleRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:7268)
+    at ei.handleAndLogRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6593)
+    at ei.request (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6300)
+    at async a (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:9551)
+    at async SocialService.getDirectMessages (file:///Users/macbookair/Documents/domino/apps/api/dist/src/modules/social/social.service.js:1504:22) {
+  code: 'P2022',
+  meta: {
+    modelName: 'DirectMessage',
+    column: 'DirectMessage.clientMessageId'
+  },
+  clientVersion: '6.19.3'
+}
+[Nest] 34514  - 10/17/2026, 5:13:34 PM   ERROR [ExceptionsHandler] PrismaClientKnownRequestError: 
+Invalid `prisma.directMessageThread.updateMany()` invocation:
+
+
+The table `public.direct_message_thread` does not exist in the current database.
+    at ei.handleRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:7268)
+    at ei.handleAndLogRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6593)
+    at ei.request (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6300)
+    at async a (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:9551) {
+  code: 'P2021',
+  meta: {
+    modelName: 'DirectMessageThread',
+    table: 'public.direct_message_thread'
+  },
+  clientVersion: '6.19.3'
+}
+[Nest] 34514  - 10/17/2026, 5:13:49 PM   ERROR [ExceptionsHandler] PrismaClientKnownRequestError: 
+Invalid `prisma.directMessage.findUnique()` invocation:
+
+
+The column `DirectMessage.clientMessageId` does not exist in the current database.
+    at ei.handleRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:7268)
+    at ei.handleAndLogRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6593)
+    at ei.request (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6300)
+    at async a (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:9551)
+    at async SocialService.sendDirectMessageForPlayer (file:///Users/macbookair/Documents/domino/apps/api/dist/src/modules/social/social.service.js:1571:30) {
+  code: 'P2022',
+  meta: {
+    modelName: 'DirectMessage',
+    column: 'DirectMessage.clientMessageId'
+  },
+  clientVersion: '6.19.3'
+}
+[Nest] 34514  - 10/17/2026, 5:13:50 PM   ERROR [ExceptionsHandler] PrismaClientKnownRequestError: 
+Invalid `prisma.directMessage.findMany()` invocation:
+
+
+The column `DirectMessage.clientMessageId` does not exist in the current database.
+    at ei.handleRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:7268)
+    at ei.handleAndLogRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6593)
+    at ei.request (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6300)
+    at async a (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:9551)
+    at async SocialService.getDirectMessages (file:///Users/macbookair/Documents/domino/apps/api/dist/src/modules/social/social.service.js:1504:22) {
+  code: 'P2022',
+  meta: {
+    modelName: 'DirectMessage',
+    column: 'DirectMessage.clientMessageId'
+  },
+  clientVersion: '6.19.3'
+}
+[Nest] 34514  - 10/17/2026, 5:13:50 PM   ERROR [ExceptionsHandler] PrismaClientKnownRequestError: 
+Invalid `prisma.directMessage.findUnique()` invocation:
+
+
+The column `DirectMessage.clientMessageId` does not exist in the current database.
+    at ei.handleRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:7268)
+    at ei.handleAndLogRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6593)
+    at ei.request (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6300)
+    at async a (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:9551)
+    at async SocialService.sendDirectMessageForPlayer (file:///Users/macbookair/Documents/domino/apps/api/dist/src/modules/social/social.service.js:1571:30) {
+  code: 'P2022',
+  meta: {
+    modelName: 'DirectMessage',
+    column: 'DirectMessage.clientMessageId'
+  },
+  clientVersion: '6.19.3'
+}
+[Nest] 34514  - 10/17/2026, 5:14:04 PM   ERROR [ExceptionsHandler] PrismaClientKnownRequestError: 
+Invalid `prisma.directMessage.findMany()` invocation:
+
+
+The column `DirectMessage.clientMessageId` does not exist in the current database.
+    at ei.handleRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:7268)
+    at ei.handleAndLogRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6593)
+    at ei.request (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6300)
+    at async a (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:9551)
+    at async SocialService.getDirectMessages (file:///Users/macbookair/Documents/domino/apps/api/dist/src/modules/social/social.service.js:1504:22) {
+  code: 'P2022',
+  meta: {
+    modelName: 'DirectMessage',
+    column: 'DirectMessage.clientMessageId'
+  },
+  clientVersion: '6.19.3'
+}
+[Nest] 34514  - 10/17/2026, 5:14:04 PM   ERROR [ExceptionsHandler] PrismaClientKnownRequestError: 
+Invalid `prisma.directMessageThread.updateMany()` invocation:
+
+
+The table `public.direct_message_thread` does not exist in the current database.
+    at ei.handleRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:7268)
+    at ei.handleAndLogRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6593)
+    at ei.request (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6300)
+    at async a (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:9551) {
+  code: 'P2021',
+  meta: {
+    modelName: 'DirectMessageThread',
+    table: 'public.direct_message_thread'
+  },
+  clientVersion: '6.19.3'
+}
+[Nest] 34514  - 10/17/2026, 5:14:34 PM   ERROR [ExceptionsHandler] PrismaClientKnownRequestError: 
+Invalid `prisma.directMessage.findMany()` invocation:
+
+
+The column `DirectMessage.clientMessageId` does not exist in the current database.
+    at ei.handleRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:7268)
+    at ei.handleAndLogRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6593)
+    at ei.request (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6300)
+    at async a (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:9551)
+    at async SocialService.getDirectMessages (file:///Users/macbookair/Documents/domino/apps/api/dist/src/modules/social/social.service.js:1504:22) {
+  code: 'P2022',
+  meta: {
+    modelName: 'DirectMessage',
+    column: 'DirectMessage.clientMessageId'
+  },
+  clientVersion: '6.19.3'
+}
+[Nest] 34514  - 10/17/2026, 5:14:34 PM   ERROR [ExceptionsHandler] PrismaClientKnownRequestError: 
+Invalid `prisma.directMessageThread.updateMany()` invocation:
+
+
+The table `public.direct_message_thread` does not exist in the current database.
+    at ei.handleRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:7268)
+    at ei.handleAndLogRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6593)
+    at ei.request (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6300)
+    at async a (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:9551) {
+  code: 'P2021',
+  meta: {
+    modelName: 'DirectMessageThread',
+    table: 'public.direct_message_thread'
+  },
+  clientVersion: '6.19.3'
+}
+[Nest] 34514  - 10/17/2026, 5:15:04 PM   ERROR [ExceptionsHandler] PrismaClientKnownRequestError: 
+Invalid `prisma.directMessageThread.updateMany()` invocation:
+
+
+The table `public.direct_message_thread` does not exist in the current database.
+    at ei.handleRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:7268)
+    at ei.handleAndLogRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6593)
+    at ei.request (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6300)
+    at async a (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:9551) {
+  code: 'P2021',
+  meta: {
+    modelName: 'DirectMessageThread',
+    table: 'public.direct_message_thread'
+  },
+  clientVersion: '6.19.3'
+}
+[Nest] 34514  - 10/17/2026, 5:15:04 PM   ERROR [ExceptionsHandler] PrismaClientKnownRequestError: 
+Invalid `prisma.directMessage.findMany()` invocation:
+
+
+The column `DirectMessage.clientMessageId` does not exist in the current database.
+    at ei.handleRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:7268)
+    at ei.handleAndLogRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6593)
+    at ei.request (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6300)
+    at async a (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:9551)
+    at async SocialService.getDirectMessages (file:///Users/macbookair/Documents/domino/apps/api/dist/src/modules/social/social.service.js:1504:22) {
+  code: 'P2022',
+  meta: {
+    modelName: 'DirectMessage',
+    column: 'DirectMessage.clientMessageId'
+  },
+  clientVersion: '6.19.3'
+}
+[Nest] 34514  - 10/17/2026, 5:15:34 PM   ERROR [ExceptionsHandler] PrismaClientKnownRequestError: 
+Invalid `prisma.directMessage.findMany()` invocation:
+
+
+The column `DirectMessage.clientMessageId` does not exist in the current database.
+    at ei.handleRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:7268)
+    at ei.handleAndLogRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6593)
+    at ei.request (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6300)
+    at async a (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:9551)
+    at async SocialService.getDirectMessages (file:///Users/macbookair/Documents/domino/apps/api/dist/src/modules/social/social.service.js:1504:22) {
+  code: 'P2022',
+  meta: {
+    modelName: 'DirectMessage',
+    column: 'DirectMessage.clientMessageId'
+  },
+  clientVersion: '6.19.3'
+}
+[Nest] 34514  - 10/17/2026, 5:15:34 PM   ERROR [ExceptionsHandler] PrismaClientKnownRequestError: 
+Invalid `prisma.directMessageThread.updateMany()` invocation:
+
+
+The table `public.direct_message_thread` does not exist in the current database.
+    at ei.handleRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:7268)
+    at ei.handleAndLogRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6593)
+    at ei.request (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6300)
+    at async a (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:9551) {
+  code: 'P2021',
+  meta: {
+    modelName: 'DirectMessageThread',
+    table: 'public.direct_message_thread'
+  },
+  clientVersion: '6.19.3'
+}
+[Nest] 34514  - 10/17/2026, 5:16:04 PM   ERROR [ExceptionsHandler] PrismaClientKnownRequestError: 
+Invalid `prisma.directMessage.findMany()` invocation:
+
+
+The column `DirectMessage.clientMessageId` does not exist in the current database.
+    at ei.handleRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:7268)
+    at ei.handleAndLogRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6593)
+    at ei.request (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6300)
+    at async a (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:9551)
+    at async SocialService.getDirectMessages (file:///Users/macbookair/Documents/domino/apps/api/dist/src/modules/social/social.service.js:1504:22) {
+  code: 'P2022',
+  meta: {
+    modelName: 'DirectMessage',
+    column: 'DirectMessage.clientMessageId'
+  },
+  clientVersion: '6.19.3'
+}
+[Nest] 34514  - 10/17/2026, 5:16:04 PM   ERROR [ExceptionsHandler] PrismaClientKnownRequestError: 
+Invalid `prisma.directMessageThread.updateMany()` invocation:
+
+
+The table `public.direct_message_thread` does not exist in the current database.
+    at ei.handleRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:7268)
+    at ei.handleAndLogRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6593)
+    at ei.request (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6300)
+    at async a (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:9551) {
+  code: 'P2021',
+  meta: {
+    modelName: 'DirectMessageThread',
+    table: 'public.direct_message_thread'
+  },
+  clientVersion: '6.19.3'
+}
+[Nest] 34514  - 10/17/2026, 5:16:15 PM   ERROR [ExceptionsHandler] PrismaClientKnownRequestError: 
+Invalid `prisma.directMessage.findMany()` invocation:
+
+
+The column `DirectMessage.clientMessageId` does not exist in the current database.
+    at ei.handleRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:7268)
+    at ei.handleAndLogRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6593)
+    at ei.request (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6300)
+    at async a (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:9551)
+    at async SocialService.getDirectMessages (file:///Users/macbookair/Documents/domino/apps/api/dist/src/modules/social/social.service.js:1504:22) {
+  code: 'P2022',
+  meta: {
+    modelName: 'DirectMessage',
+    column: 'DirectMessage.clientMessageId'
+  },
+  clientVersion: '6.19.3'
+}
+[Nest] 34514  - 10/17/2026, 5:16:15 PM   ERROR [ExceptionsHandler] PrismaClientKnownRequestError: 
+Invalid `prisma.directMessageThread.updateMany()` invocation:
+
+
+The table `public.direct_message_thread` does not exist in the current database.
+    at ei.handleRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:7268)
+    at ei.handleAndLogRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6593)
+    at ei.request (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6300)
+    at async a (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:9551) {
+  code: 'P2021',
+  meta: {
+    modelName: 'DirectMessageThread',
+    table: 'public.direct_message_thread'
+  },
+  clientVersion: '6.19.3'
+}
+[Nest] 34514  - 10/17/2026, 5:16:34 PM   ERROR [ExceptionsHandler] PrismaClientKnownRequestError: 
+Invalid `prisma.directMessage.findMany()` invocation:
+
+
+The column `DirectMessage.clientMessageId` does not exist in the current database.
+    at ei.handleRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:7268)
+    at ei.handleAndLogRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6593)
+    at ei.request (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6300)
+    at async a (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:9551)
+    at async SocialService.getDirectMessages (file:///Users/macbookair/Documents/domino/apps/api/dist/src/modules/social/social.service.js:1504:22) {
+  code: 'P2022',
+  meta: {
+    modelName: 'DirectMessage',
+    column: 'DirectMessage.clientMessageId'
+  },
+  clientVersion: '6.19.3'
+}
+[Nest] 34514  - 10/17/2026, 5:16:34 PM   ERROR [ExceptionsHandler] PrismaClientKnownRequestError: 
+Invalid `prisma.directMessageThread.updateMany()` invocation:
+
+
+The table `public.direct_message_thread` does not exist in the current database.
+    at ei.handleRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:7268)
+    at ei.handleAndLogRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6593)
+    at ei.request (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6300)
+    at async a (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:9551) {
+  code: 'P2021',
+  meta: {
+    modelName: 'DirectMessageThread',
+    table: 'public.direct_message_thread'
+  },
+  clientVersion: '6.19.3'
+}
+[Nest] 34514  - 10/17/2026, 5:17:04 PM   ERROR [ExceptionsHandler] PrismaClientKnownRequestError: 
+Invalid `prisma.directMessage.findMany()` invocation:
+
+
+The column `DirectMessage.clientMessageId` does not exist in the current database.
+    at ei.handleRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:7268)
+    at ei.handleAndLogRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6593)
+    at ei.request (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6300)
+    at async a (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:9551)
+    at async SocialService.getDirectMessages (file:///Users/macbookair/Documents/domino/apps/api/dist/src/modules/social/social.service.js:1504:22) {
+  code: 'P2022',
+  meta: {
+    modelName: 'DirectMessage',
+    column: 'DirectMessage.clientMessageId'
+  },
+  clientVersion: '6.19.3'
+}
+[Nest] 34514  - 10/17/2026, 5:17:04 PM   ERROR [ExceptionsHandler] PrismaClientKnownRequestError: 
+Invalid `prisma.directMessageThread.updateMany()` invocation:
+
+
+The table `public.direct_message_thread` does not exist in the current database.
+    at ei.handleRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:7268)
+    at ei.handleAndLogRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6593)
+    at ei.request (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6300)
+    at async a (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:9551) {
+  code: 'P2021',
+  meta: {
+    modelName: 'DirectMessageThread',
+    table: 'public.direct_message_thread'
+  },
+  clientVersion: '6.19.3'
+}
+[Nest] 34514  - 10/17/2026, 5:17:34 PM   ERROR [ExceptionsHandler] PrismaClientKnownRequestError: 
+Invalid `prisma.directMessage.findMany()` invocation:
+
+
+The column `DirectMessage.clientMessageId` does not exist in the current database.
+    at ei.handleRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:7268)
+    at ei.handleAndLogRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6593)
+    at ei.request (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6300)
+    at async a (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:9551)
+    at async SocialService.getDirectMessages (file:///Users/macbookair/Documents/domino/apps/api/dist/src/modules/social/social.service.js:1504:22) {
+  code: 'P2022',
+  meta: {
+    modelName: 'DirectMessage',
+    column: 'DirectMessage.clientMessageId'
+  },
+  clientVersion: '6.19.3'
+}
+[Nest] 34514  - 10/17/2026, 5:17:34 PM   ERROR [ExceptionsHandler] PrismaClientKnownRequestError: 
+Invalid `prisma.directMessageThread.updateMany()` invocation:
+
+
+The table `public.direct_message_thread` does not exist in the current database.
+    at ei.handleRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:7268)
+    at ei.handleAndLogRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6593)
+    at ei.request (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6300)
+    at async a (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:9551) {
+  code: 'P2021',
+  meta: {
+    modelName: 'DirectMessageThread',
+    table: 'public.direct_message_thread'
+  },
+  clientVersion: '6.19.3'
+}
+[Nest] 34514  - 10/17/2026, 5:18:04 PM   ERROR [ExceptionsHandler] PrismaClientKnownRequestError: 
+Invalid `prisma.directMessage.findMany()` invocation:
+
+
+The column `DirectMessage.clientMessageId` does not exist in the current database.
+    at ei.handleRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:7268)
+    at ei.handleAndLogRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6593)
+    at ei.request (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6300)
+    at async a (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:9551)
+    at async SocialService.getDirectMessages (file:///Users/macbookair/Documents/domino/apps/api/dist/src/modules/social/social.service.js:1504:22) {
+  code: 'P2022',
+  meta: {
+    modelName: 'DirectMessage',
+    column: 'DirectMessage.clientMessageId'
+  },
+  clientVersion: '6.19.3'
+}
+[Nest] 34514  - 10/17/2026, 5:18:04 PM   ERROR [ExceptionsHandler] PrismaClientKnownRequestError: 
+Invalid `prisma.directMessageThread.updateMany()` invocation:
+
+
+The table `public.direct_message_thread` does not exist in the current database.
+    at ei.handleRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:7268)
+    at ei.handleAndLogRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6593)
+    at ei.request (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6300)
+    at async a (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:9551) {
+  code: 'P2021',
+  meta: {
+    modelName: 'DirectMessageThread',
+    table: 'public.direct_message_thread'
+  },
+  clientVersion: '6.19.3'
+}
+[Nest] 34514  - 10/17/2026, 5:29:04 PM   ERROR [ExceptionsHandler] PrismaClientKnownRequestError: 
+Invalid `prisma.directMessage.findMany()` invocation:
+
+
+The column `DirectMessage.clientMessageId` does not exist in the current database.
+    at ei.handleRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:7268)
+    at ei.handleAndLogRequestError (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6593)
+    at ei.request (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:121:6300)
+    at async a (/Users/macbookair/Documents/domino/node_modules/@prisma/client/runtime/library.js:130:9551)
+    at async SocialService.getDirectMessages (file:///Users/macbookair/Documents/domino/apps/api/dist/src/modules/social/social.service.js:1504:22) {
+  code: 'P2022',
+  meta: {
+    modelName: 'DirectMessage',
+    column: 'DirectMessage.clientMessageId'
+  },
+  clientVersion: '6.19.3'
+}

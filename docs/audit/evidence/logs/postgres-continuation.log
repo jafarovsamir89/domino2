@@ -1,0 +1,252 @@
+2026-10-17 16:08:23.157 PDT [24838] LOG:  starting PostgreSQL 14.20 (Homebrew) on aarch64-apple-darwin24.6.0, compiled by Apple clang version 17.0.0 (clang-1700.4.4.1), 64-bit
+2026-10-17 16:08:23.158 PDT [24838] LOG:  listening on IPv4 address "127.0.0.1", port 55439
+2026-10-17 16:08:23.158 PDT [24838] LOG:  listening on Unix socket "/tmp/.s.PGSQL.55439"
+2026-10-17 16:08:23.166 PDT [24839] LOG:  database system was shut down at 2026-10-17 15:54:30 PDT
+2026-10-17 16:08:23.171 PDT [24838] LOG:  database system is ready to accept connections
+2026-10-17 16:22:49.941 PDT [26999] ERROR:  insert or update on table "Player" violates foreign key constraint "Player_userId_fkey"
+2026-10-17 16:22:49.941 PDT [26999] DETAIL:  Key (userId)=(audit-active-0) is not present in table "user".
+2026-10-17 16:22:49.941 PDT [26999] STATEMENT:  INSERT INTO "public"."Player" ("id","userId","displayName","isGuest","createdAt","updatedAt") VALUES ($1,$2,$3,$4,$5,$6) RETURNING "public"."Player"."id"
+2026-10-17 16:22:58.104 PDT [26999] ERROR:  insert or update on table "Player" violates foreign key constraint "Player_userId_fkey"
+2026-10-17 16:22:58.104 PDT [26999] DETAIL:  Key (userId)=(audit-active-4) is not present in table "user".
+2026-10-17 16:22:58.104 PDT [26999] STATEMENT:  INSERT INTO "public"."Player" ("id","userId","displayName","isGuest","createdAt","updatedAt") VALUES ($1,$2,$3,$4,$5,$6) RETURNING "public"."Player"."id"
+2026-10-17 16:23:18.954 PDT [26999] ERROR:  insert or update on table "Player" violates foreign key constraint "Player_userId_fkey"
+2026-10-17 16:23:18.954 PDT [26999] DETAIL:  Key (userId)=(audit-active-8) is not present in table "user".
+2026-10-17 16:23:18.954 PDT [26999] STATEMENT:  INSERT INTO "public"."Player" ("id","userId","displayName","isGuest","createdAt","updatedAt") VALUES ($1,$2,$3,$4,$5,$6) RETURNING "public"."Player"."id"
+2026-10-17 16:23:19.818 PDT [26999] ERROR:  insert or update on table "Player" violates foreign key constraint "Player_userId_fkey"
+2026-10-17 16:23:19.818 PDT [26999] DETAIL:  Key (userId)=(audit-active-36) is not present in table "user".
+2026-10-17 16:23:19.818 PDT [26999] STATEMENT:  INSERT INTO "public"."Player" ("id","userId","displayName","isGuest","createdAt","updatedAt") VALUES ($1,$2,$3,$4,$5,$6) RETURNING "public"."Player"."id"
+2026-10-17 16:23:24.830 PDT [27006] ERROR:  insert or update on table "Player" violates foreign key constraint "Player_userId_fkey"
+2026-10-17 16:23:24.830 PDT [27006] DETAIL:  Key (userId)=(audit-active-36) is not present in table "user".
+2026-10-17 16:23:24.830 PDT [27006] STATEMENT:  INSERT INTO "public"."Player" ("id","userId","displayName","isGuest","createdAt","updatedAt") VALUES ($1,$2,$3,$4,$5,$6) RETURNING "public"."Player"."id"
+2026-10-17 16:23:29.842 PDT [27006] ERROR:  insert or update on table "Player" violates foreign key constraint "Player_userId_fkey"
+2026-10-17 16:23:29.842 PDT [27006] DETAIL:  Key (userId)=(audit-active-36) is not present in table "user".
+2026-10-17 16:23:29.842 PDT [27006] STATEMENT:  INSERT INTO "public"."Player" ("id","userId","displayName","isGuest","createdAt","updatedAt") VALUES ($1,$2,$3,$4,$5,$6) RETURNING "public"."Player"."id"
+2026-10-17 16:23:33.384 PDT [27006] ERROR:  insert or update on table "Player" violates foreign key constraint "Player_userId_fkey"
+2026-10-17 16:23:33.384 PDT [27006] DETAIL:  Key (userId)=(audit-active-12) is not present in table "user".
+2026-10-17 16:23:33.384 PDT [27006] STATEMENT:  INSERT INTO "public"."Player" ("id","userId","displayName","isGuest","createdAt","updatedAt") VALUES ($1,$2,$3,$4,$5,$6) RETURNING "public"."Player"."id"
+2026-10-17 16:23:34.854 PDT [27006] ERROR:  insert or update on table "Player" violates foreign key constraint "Player_userId_fkey"
+2026-10-17 16:23:34.854 PDT [27006] DETAIL:  Key (userId)=(audit-active-36) is not present in table "user".
+2026-10-17 16:23:34.854 PDT [27006] STATEMENT:  INSERT INTO "public"."Player" ("id","userId","displayName","isGuest","createdAt","updatedAt") VALUES ($1,$2,$3,$4,$5,$6) RETURNING "public"."Player"."id"
+2026-10-17 16:23:39.864 PDT [27006] ERROR:  insert or update on table "Player" violates foreign key constraint "Player_userId_fkey"
+2026-10-17 16:23:39.864 PDT [27006] DETAIL:  Key (userId)=(audit-active-36) is not present in table "user".
+2026-10-17 16:23:39.864 PDT [27006] STATEMENT:  INSERT INTO "public"."Player" ("id","userId","displayName","isGuest","createdAt","updatedAt") VALUES ($1,$2,$3,$4,$5,$6) RETURNING "public"."Player"."id"
+2026-10-17 16:23:44.871 PDT [27006] ERROR:  insert or update on table "Player" violates foreign key constraint "Player_userId_fkey"
+2026-10-17 16:23:44.871 PDT [27006] DETAIL:  Key (userId)=(audit-active-36) is not present in table "user".
+2026-10-17 16:23:44.871 PDT [27006] STATEMENT:  INSERT INTO "public"."Player" ("id","userId","displayName","isGuest","createdAt","updatedAt") VALUES ($1,$2,$3,$4,$5,$6) RETURNING "public"."Player"."id"
+2026-10-17 16:23:49.879 PDT [27006] ERROR:  insert or update on table "Player" violates foreign key constraint "Player_userId_fkey"
+2026-10-17 16:23:49.879 PDT [27006] DETAIL:  Key (userId)=(audit-active-36) is not present in table "user".
+2026-10-17 16:23:49.879 PDT [27006] STATEMENT:  INSERT INTO "public"."Player" ("id","userId","displayName","isGuest","createdAt","updatedAt") VALUES ($1,$2,$3,$4,$5,$6) RETURNING "public"."Player"."id"
+2026-10-17 16:23:54.893 PDT [27006] ERROR:  insert or update on table "Player" violates foreign key constraint "Player_userId_fkey"
+2026-10-17 16:23:54.893 PDT [27006] DETAIL:  Key (userId)=(audit-active-36) is not present in table "user".
+2026-10-17 16:23:54.893 PDT [27006] STATEMENT:  INSERT INTO "public"."Player" ("id","userId","displayName","isGuest","createdAt","updatedAt") VALUES ($1,$2,$3,$4,$5,$6) RETURNING "public"."Player"."id"
+2026-10-17 16:23:59.907 PDT [27006] ERROR:  insert or update on table "Player" violates foreign key constraint "Player_userId_fkey"
+2026-10-17 16:23:59.907 PDT [27006] DETAIL:  Key (userId)=(audit-active-36) is not present in table "user".
+2026-10-17 16:23:59.907 PDT [27006] STATEMENT:  INSERT INTO "public"."Player" ("id","userId","displayName","isGuest","createdAt","updatedAt") VALUES ($1,$2,$3,$4,$5,$6) RETURNING "public"."Player"."id"
+2026-10-17 16:24:04.913 PDT [27006] ERROR:  insert or update on table "Player" violates foreign key constraint "Player_userId_fkey"
+2026-10-17 16:24:04.913 PDT [27006] DETAIL:  Key (userId)=(audit-active-36) is not present in table "user".
+2026-10-17 16:24:04.913 PDT [27006] STATEMENT:  INSERT INTO "public"."Player" ("id","userId","displayName","isGuest","createdAt","updatedAt") VALUES ($1,$2,$3,$4,$5,$6) RETURNING "public"."Player"."id"
+2026-10-17 16:24:05.454 PDT [27006] ERROR:  insert or update on table "Player" violates foreign key constraint "Player_userId_fkey"
+2026-10-17 16:24:05.454 PDT [27006] DETAIL:  Key (userId)=(audit-active-179) is not present in table "user".
+2026-10-17 16:24:05.454 PDT [27006] STATEMENT:  INSERT INTO "public"."Player" ("id","userId","displayName","isGuest","createdAt","updatedAt") VALUES ($1,$2,$3,$4,$5,$6) RETURNING "public"."Player"."id"
+2026-10-17 16:24:05.874 PDT [27006] ERROR:  insert or update on table "Player" violates foreign key constraint "Player_userId_fkey"
+2026-10-17 16:24:05.874 PDT [27006] DETAIL:  Key (userId)=(audit-active-239) is not present in table "user".
+2026-10-17 16:24:05.874 PDT [27006] STATEMENT:  INSERT INTO "public"."Player" ("id","userId","displayName","isGuest","createdAt","updatedAt") VALUES ($1,$2,$3,$4,$5,$6) RETURNING "public"."Player"."id"
+2026-10-17 16:24:06.072 PDT [27006] ERROR:  insert or update on table "Player" violates foreign key constraint "Player_userId_fkey"
+2026-10-17 16:24:06.072 PDT [27006] DETAIL:  Key (userId)=(audit-active-256) is not present in table "user".
+2026-10-17 16:24:06.072 PDT [27006] STATEMENT:  INSERT INTO "public"."Player" ("id","userId","displayName","isGuest","createdAt","updatedAt") VALUES ($1,$2,$3,$4,$5,$6) RETURNING "public"."Player"."id"
+2026-10-17 16:24:09.919 PDT [27006] ERROR:  insert or update on table "Player" violates foreign key constraint "Player_userId_fkey"
+2026-10-17 16:24:09.919 PDT [27006] DETAIL:  Key (userId)=(audit-active-36) is not present in table "user".
+2026-10-17 16:24:09.919 PDT [27006] STATEMENT:  INSERT INTO "public"."Player" ("id","userId","displayName","isGuest","createdAt","updatedAt") VALUES ($1,$2,$3,$4,$5,$6) RETURNING "public"."Player"."id"
+2026-10-17 16:24:10.463 PDT [27006] ERROR:  insert or update on table "Player" violates foreign key constraint "Player_userId_fkey"
+2026-10-17 16:24:10.463 PDT [27006] DETAIL:  Key (userId)=(audit-active-179) is not present in table "user".
+2026-10-17 16:24:10.463 PDT [27006] STATEMENT:  INSERT INTO "public"."Player" ("id","userId","displayName","isGuest","createdAt","updatedAt") VALUES ($1,$2,$3,$4,$5,$6) RETURNING "public"."Player"."id"
+2026-10-17 16:24:10.881 PDT [27006] ERROR:  insert or update on table "Player" violates foreign key constraint "Player_userId_fkey"
+2026-10-17 16:24:10.881 PDT [27006] DETAIL:  Key (userId)=(audit-active-239) is not present in table "user".
+2026-10-17 16:24:10.881 PDT [27006] STATEMENT:  INSERT INTO "public"."Player" ("id","userId","displayName","isGuest","createdAt","updatedAt") VALUES ($1,$2,$3,$4,$5,$6) RETURNING "public"."Player"."id"
+2026-10-17 16:24:11.079 PDT [27006] ERROR:  insert or update on table "Player" violates foreign key constraint "Player_userId_fkey"
+2026-10-17 16:24:11.079 PDT [27006] DETAIL:  Key (userId)=(audit-active-256) is not present in table "user".
+2026-10-17 16:24:11.079 PDT [27006] STATEMENT:  INSERT INTO "public"."Player" ("id","userId","displayName","isGuest","createdAt","updatedAt") VALUES ($1,$2,$3,$4,$5,$6) RETURNING "public"."Player"."id"
+2026-10-17 16:24:14.935 PDT [27006] ERROR:  insert or update on table "Player" violates foreign key constraint "Player_userId_fkey"
+2026-10-17 16:24:14.935 PDT [27006] DETAIL:  Key (userId)=(audit-active-36) is not present in table "user".
+2026-10-17 16:24:14.935 PDT [27006] STATEMENT:  INSERT INTO "public"."Player" ("id","userId","displayName","isGuest","createdAt","updatedAt") VALUES ($1,$2,$3,$4,$5,$6) RETURNING "public"."Player"."id"
+2026-10-17 16:24:15.477 PDT [27006] ERROR:  insert or update on table "Player" violates foreign key constraint "Player_userId_fkey"
+2026-10-17 16:24:15.477 PDT [27006] DETAIL:  Key (userId)=(audit-active-179) is not present in table "user".
+2026-10-17 16:24:15.477 PDT [27006] STATEMENT:  INSERT INTO "public"."Player" ("id","userId","displayName","isGuest","createdAt","updatedAt") VALUES ($1,$2,$3,$4,$5,$6) RETURNING "public"."Player"."id"
+2026-10-17 16:24:15.865 PDT [27006] ERROR:  insert or update on table "Player" violates foreign key constraint "Player_userId_fkey"
+2026-10-17 16:24:15.865 PDT [27006] DETAIL:  Key (userId)=(audit-active-277) is not present in table "user".
+2026-10-17 16:24:15.865 PDT [27006] STATEMENT:  INSERT INTO "public"."Player" ("id","userId","displayName","isGuest","createdAt","updatedAt") VALUES ($1,$2,$3,$4,$5,$6) RETURNING "public"."Player"."id"
+2026-10-17 16:24:15.885 PDT [27006] ERROR:  insert or update on table "Player" violates foreign key constraint "Player_userId_fkey"
+2026-10-17 16:24:15.885 PDT [27006] DETAIL:  Key (userId)=(audit-active-239) is not present in table "user".
+2026-10-17 16:24:15.885 PDT [27006] STATEMENT:  INSERT INTO "public"."Player" ("id","userId","displayName","isGuest","createdAt","updatedAt") VALUES ($1,$2,$3,$4,$5,$6) RETURNING "public"."Player"."id"
+2026-10-17 16:24:16.015 PDT [27006] ERROR:  insert or update on table "Player" violates foreign key constraint "Player_userId_fkey"
+2026-10-17 16:24:16.015 PDT [27006] DETAIL:  Key (userId)=(audit-active-299) is not present in table "user".
+2026-10-17 16:24:16.015 PDT [27006] STATEMENT:  INSERT INTO "public"."Player" ("id","userId","displayName","isGuest","createdAt","updatedAt") VALUES ($1,$2,$3,$4,$5,$6) RETURNING "public"."Player"."id"
+2026-10-17 16:24:16.085 PDT [27006] ERROR:  insert or update on table "Player" violates foreign key constraint "Player_userId_fkey"
+2026-10-17 16:24:16.085 PDT [27006] DETAIL:  Key (userId)=(audit-active-256) is not present in table "user".
+2026-10-17 16:24:16.085 PDT [27006] STATEMENT:  INSERT INTO "public"."Player" ("id","userId","displayName","isGuest","createdAt","updatedAt") VALUES ($1,$2,$3,$4,$5,$6) RETURNING "public"."Player"."id"
+2026-10-17 16:24:16.168 PDT [27006] ERROR:  insert or update on table "Player" violates foreign key constraint "Player_userId_fkey"
+2026-10-17 16:24:16.168 PDT [27006] DETAIL:  Key (userId)=(audit-active-140) is not present in table "user".
+2026-10-17 16:24:16.168 PDT [27006] STATEMENT:  INSERT INTO "public"."Player" ("id","userId","displayName","isGuest","createdAt","updatedAt") VALUES ($1,$2,$3,$4,$5,$6) RETURNING "public"."Player"."id"
+2026-10-17 16:24:19.858 PDT [27006] ERROR:  insert or update on table "Player" violates foreign key constraint "Player_userId_fkey"
+2026-10-17 16:24:19.858 PDT [27006] DETAIL:  Key (userId)=(audit-active-16) is not present in table "user".
+2026-10-17 16:24:19.858 PDT [27006] STATEMENT:  INSERT INTO "public"."Player" ("id","userId","displayName","isGuest","createdAt","updatedAt") VALUES ($1,$2,$3,$4,$5,$6) RETURNING "public"."Player"."id"
+2026-10-17 16:24:19.862 PDT [27006] ERROR:  insert or update on table "Player" violates foreign key constraint "Player_userId_fkey"
+2026-10-17 16:24:19.862 PDT [27006] DETAIL:  Key (userId)=(audit-active-17) is not present in table "user".
+2026-10-17 16:24:19.862 PDT [27006] STATEMENT:  INSERT INTO "public"."Player" ("id","userId","displayName","isGuest","createdAt","updatedAt") VALUES ($1,$2,$3,$4,$5,$6) RETURNING "public"."Player"."id"
+2026-10-17 16:24:19.868 PDT [27262] ERROR:  insert or update on table "Player" violates foreign key constraint "Player_userId_fkey"
+2026-10-17 16:24:19.868 PDT [27262] DETAIL:  Key (userId)=(audit-active-18) is not present in table "user".
+2026-10-17 16:24:19.868 PDT [27262] STATEMENT:  INSERT INTO "public"."Player" ("id","userId","displayName","isGuest","createdAt","updatedAt") VALUES ($1,$2,$3,$4,$5,$6) RETURNING "public"."Player"."id"
+2026-10-17 16:24:19.869 PDT [27006] ERROR:  insert or update on table "Player" violates foreign key constraint "Player_userId_fkey"
+2026-10-17 16:24:19.869 PDT [27006] DETAIL:  Key (userId)=(audit-active-20) is not present in table "user".
+2026-10-17 16:24:19.869 PDT [27006] STATEMENT:  INSERT INTO "public"."Player" ("id","userId","displayName","isGuest","createdAt","updatedAt") VALUES ($1,$2,$3,$4,$5,$6) RETURNING "public"."Player"."id"
+2026-10-17 16:24:19.870 PDT [27004] ERROR:  insert or update on table "Player" violates foreign key constraint "Player_userId_fkey"
+2026-10-17 16:24:19.870 PDT [27004] DETAIL:  Key (userId)=(audit-active-19) is not present in table "user".
+2026-10-17 16:24:19.870 PDT [27004] STATEMENT:  INSERT INTO "public"."Player" ("id","userId","displayName","isGuest","createdAt","updatedAt") VALUES ($1,$2,$3,$4,$5,$6) RETURNING "public"."Player"."id"
+2026-10-17 16:24:19.941 PDT [27004] ERROR:  insert or update on table "Player" violates foreign key constraint "Player_userId_fkey"
+2026-10-17 16:24:19.941 PDT [27004] DETAIL:  Key (userId)=(audit-active-36) is not present in table "user".
+2026-10-17 16:24:19.941 PDT [27004] STATEMENT:  INSERT INTO "public"."Player" ("id","userId","displayName","isGuest","createdAt","updatedAt") VALUES ($1,$2,$3,$4,$5,$6) RETURNING "public"."Player"."id"
+2026-10-17 16:24:20.485 PDT [27004] ERROR:  insert or update on table "Player" violates foreign key constraint "Player_userId_fkey"
+2026-10-17 16:24:20.485 PDT [27004] DETAIL:  Key (userId)=(audit-active-179) is not present in table "user".
+2026-10-17 16:24:20.485 PDT [27004] STATEMENT:  INSERT INTO "public"."Player" ("id","userId","displayName","isGuest","createdAt","updatedAt") VALUES ($1,$2,$3,$4,$5,$6) RETURNING "public"."Player"."id"
+2026-10-17 16:24:20.872 PDT [27004] ERROR:  insert or update on table "Player" violates foreign key constraint "Player_userId_fkey"
+2026-10-17 16:24:20.872 PDT [27004] DETAIL:  Key (userId)=(audit-active-277) is not present in table "user".
+2026-10-17 16:24:20.872 PDT [27004] STATEMENT:  INSERT INTO "public"."Player" ("id","userId","displayName","isGuest","createdAt","updatedAt") VALUES ($1,$2,$3,$4,$5,$6) RETURNING "public"."Player"."id"
+2026-10-17 16:24:20.891 PDT [27004] ERROR:  insert or update on table "Player" violates foreign key constraint "Player_userId_fkey"
+2026-10-17 16:24:20.891 PDT [27004] DETAIL:  Key (userId)=(audit-active-239) is not present in table "user".
+2026-10-17 16:24:20.891 PDT [27004] STATEMENT:  INSERT INTO "public"."Player" ("id","userId","displayName","isGuest","createdAt","updatedAt") VALUES ($1,$2,$3,$4,$5,$6) RETURNING "public"."Player"."id"
+2026-10-17 16:24:21.020 PDT [27004] ERROR:  insert or update on table "Player" violates foreign key constraint "Player_userId_fkey"
+2026-10-17 16:24:21.020 PDT [27004] DETAIL:  Key (userId)=(audit-active-299) is not present in table "user".
+2026-10-17 16:24:21.020 PDT [27004] STATEMENT:  INSERT INTO "public"."Player" ("id","userId","displayName","isGuest","createdAt","updatedAt") VALUES ($1,$2,$3,$4,$5,$6) RETURNING "public"."Player"."id"
+2026-10-17 16:24:21.090 PDT [27004] ERROR:  insert or update on table "Player" violates foreign key constraint "Player_userId_fkey"
+2026-10-17 16:24:21.090 PDT [27004] DETAIL:  Key (userId)=(audit-active-256) is not present in table "user".
+2026-10-17 16:24:21.090 PDT [27004] STATEMENT:  INSERT INTO "public"."Player" ("id","userId","displayName","isGuest","createdAt","updatedAt") VALUES ($1,$2,$3,$4,$5,$6) RETURNING "public"."Player"."id"
+2026-10-17 16:24:21.172 PDT [27004] ERROR:  insert or update on table "Player" violates foreign key constraint "Player_userId_fkey"
+2026-10-17 16:24:21.172 PDT [27004] DETAIL:  Key (userId)=(audit-active-140) is not present in table "user".
+2026-10-17 16:24:21.172 PDT [27004] STATEMENT:  INSERT INTO "public"."Player" ("id","userId","displayName","isGuest","createdAt","updatedAt") VALUES ($1,$2,$3,$4,$5,$6) RETURNING "public"."Player"."id"
+2026-10-17 16:24:24.947 PDT [27004] ERROR:  insert or update on table "Player" violates foreign key constraint "Player_userId_fkey"
+2026-10-17 16:24:24.947 PDT [27004] DETAIL:  Key (userId)=(audit-active-36) is not present in table "user".
+2026-10-17 16:24:24.947 PDT [27004] STATEMENT:  INSERT INTO "public"."Player" ("id","userId","displayName","isGuest","createdAt","updatedAt") VALUES ($1,$2,$3,$4,$5,$6) RETURNING "public"."Player"."id"
+2026-10-17 16:24:25.600 PDT [27010] ERROR:  insert or update on table "Player" violates foreign key constraint "Player_userId_fkey"
+2026-10-17 16:24:25.600 PDT [27010] DETAIL:  Key (userId)=(audit-active-179) is not present in table "user".
+2026-10-17 16:24:25.600 PDT [27010] STATEMENT:  INSERT INTO "public"."Player" ("id","userId","displayName","isGuest","createdAt","updatedAt") VALUES ($1,$2,$3,$4,$5,$6) RETURNING "public"."Player"."id"
+2026-10-17 16:24:25.880 PDT [27263] ERROR:  insert or update on table "Player" violates foreign key constraint "Player_userId_fkey"
+2026-10-17 16:24:25.880 PDT [27263] DETAIL:  Key (userId)=(audit-active-277) is not present in table "user".
+2026-10-17 16:24:25.880 PDT [27263] STATEMENT:  INSERT INTO "public"."Player" ("id","userId","displayName","isGuest","createdAt","updatedAt") VALUES ($1,$2,$3,$4,$5,$6) RETURNING "public"."Player"."id"
+2026-10-17 16:24:25.897 PDT [27263] ERROR:  insert or update on table "Player" violates foreign key constraint "Player_userId_fkey"
+2026-10-17 16:24:25.897 PDT [27263] DETAIL:  Key (userId)=(audit-active-239) is not present in table "user".
+2026-10-17 16:24:25.897 PDT [27263] STATEMENT:  INSERT INTO "public"."Player" ("id","userId","displayName","isGuest","createdAt","updatedAt") VALUES ($1,$2,$3,$4,$5,$6) RETURNING "public"."Player"."id"
+2026-10-17 16:24:26.031 PDT [27263] ERROR:  insert or update on table "Player" violates foreign key constraint "Player_userId_fkey"
+2026-10-17 16:24:26.031 PDT [27263] DETAIL:  Key (userId)=(audit-active-299) is not present in table "user".
+2026-10-17 16:24:26.031 PDT [27263] STATEMENT:  INSERT INTO "public"."Player" ("id","userId","displayName","isGuest","createdAt","updatedAt") VALUES ($1,$2,$3,$4,$5,$6) RETURNING "public"."Player"."id"
+2026-10-17 16:24:26.100 PDT [27263] ERROR:  insert or update on table "Player" violates foreign key constraint "Player_userId_fkey"
+2026-10-17 16:24:26.100 PDT [27263] DETAIL:  Key (userId)=(audit-active-256) is not present in table "user".
+2026-10-17 16:24:26.100 PDT [27263] STATEMENT:  INSERT INTO "public"."Player" ("id","userId","displayName","isGuest","createdAt","updatedAt") VALUES ($1,$2,$3,$4,$5,$6) RETURNING "public"."Player"."id"
+2026-10-17 16:24:26.180 PDT [27263] ERROR:  insert or update on table "Player" violates foreign key constraint "Player_userId_fkey"
+2026-10-17 16:24:26.180 PDT [27263] DETAIL:  Key (userId)=(audit-active-140) is not present in table "user".
+2026-10-17 16:24:26.180 PDT [27263] STATEMENT:  INSERT INTO "public"."Player" ("id","userId","displayName","isGuest","createdAt","updatedAt") VALUES ($1,$2,$3,$4,$5,$6) RETURNING "public"."Player"."id"
+2026-10-17 16:24:29.954 PDT [27263] ERROR:  insert or update on table "Player" violates foreign key constraint "Player_userId_fkey"
+2026-10-17 16:24:29.954 PDT [27263] DETAIL:  Key (userId)=(audit-active-36) is not present in table "user".
+2026-10-17 16:24:29.954 PDT [27263] STATEMENT:  INSERT INTO "public"."Player" ("id","userId","displayName","isGuest","createdAt","updatedAt") VALUES ($1,$2,$3,$4,$5,$6) RETURNING "public"."Player"."id"
+2026-10-17 16:24:30.663 PDT [27263] ERROR:  insert or update on table "Player" violates foreign key constraint "Player_userId_fkey"
+2026-10-17 16:24:30.663 PDT [27263] DETAIL:  Key (userId)=(audit-active-179) is not present in table "user".
+2026-10-17 16:24:30.663 PDT [27263] STATEMENT:  INSERT INTO "public"."Player" ("id","userId","displayName","isGuest","createdAt","updatedAt") VALUES ($1,$2,$3,$4,$5,$6) RETURNING "public"."Player"."id"
+2026-10-17 16:24:30.888 PDT [27263] ERROR:  insert or update on table "Player" violates foreign key constraint "Player_userId_fkey"
+2026-10-17 16:24:30.888 PDT [27263] DETAIL:  Key (userId)=(audit-active-277) is not present in table "user".
+2026-10-17 16:24:30.888 PDT [27263] STATEMENT:  INSERT INTO "public"."Player" ("id","userId","displayName","isGuest","createdAt","updatedAt") VALUES ($1,$2,$3,$4,$5,$6) RETURNING "public"."Player"."id"
+2026-10-17 16:24:30.903 PDT [27263] ERROR:  insert or update on table "Player" violates foreign key constraint "Player_userId_fkey"
+2026-10-17 16:24:30.903 PDT [27263] DETAIL:  Key (userId)=(audit-active-239) is not present in table "user".
+2026-10-17 16:24:30.903 PDT [27263] STATEMENT:  INSERT INTO "public"."Player" ("id","userId","displayName","isGuest","createdAt","updatedAt") VALUES ($1,$2,$3,$4,$5,$6) RETURNING "public"."Player"."id"
+2026-10-17 16:24:31.040 PDT [27263] ERROR:  insert or update on table "Player" violates foreign key constraint "Player_userId_fkey"
+2026-10-17 16:24:31.040 PDT [27263] DETAIL:  Key (userId)=(audit-active-299) is not present in table "user".
+2026-10-17 16:24:31.040 PDT [27263] STATEMENT:  INSERT INTO "public"."Player" ("id","userId","displayName","isGuest","createdAt","updatedAt") VALUES ($1,$2,$3,$4,$5,$6) RETURNING "public"."Player"."id"
+2026-10-17 16:24:31.105 PDT [27263] ERROR:  insert or update on table "Player" violates foreign key constraint "Player_userId_fkey"
+2026-10-17 16:24:31.105 PDT [27263] DETAIL:  Key (userId)=(audit-active-256) is not present in table "user".
+2026-10-17 16:24:31.105 PDT [27263] STATEMENT:  INSERT INTO "public"."Player" ("id","userId","displayName","isGuest","createdAt","updatedAt") VALUES ($1,$2,$3,$4,$5,$6) RETURNING "public"."Player"."id"
+2026-10-17 16:24:31.188 PDT [27263] ERROR:  insert or update on table "Player" violates foreign key constraint "Player_userId_fkey"
+2026-10-17 16:24:31.188 PDT [27263] DETAIL:  Key (userId)=(audit-active-140) is not present in table "user".
+2026-10-17 16:24:31.188 PDT [27263] STATEMENT:  INSERT INTO "public"."Player" ("id","userId","displayName","isGuest","createdAt","updatedAt") VALUES ($1,$2,$3,$4,$5,$6) RETURNING "public"."Player"."id"
+2026-10-17 16:24:34.963 PDT [27263] ERROR:  insert or update on table "Player" violates foreign key constraint "Player_userId_fkey"
+2026-10-17 16:24:34.963 PDT [27263] DETAIL:  Key (userId)=(audit-active-36) is not present in table "user".
+2026-10-17 16:24:34.963 PDT [27263] STATEMENT:  INSERT INTO "public"."Player" ("id","userId","displayName","isGuest","createdAt","updatedAt") VALUES ($1,$2,$3,$4,$5,$6) RETURNING "public"."Player"."id"
+2026-10-17 16:24:35.672 PDT [27263] ERROR:  insert or update on table "Player" violates foreign key constraint "Player_userId_fkey"
+2026-10-17 16:24:35.672 PDT [27263] DETAIL:  Key (userId)=(audit-active-179) is not present in table "user".
+2026-10-17 16:24:35.672 PDT [27263] STATEMENT:  INSERT INTO "public"."Player" ("id","userId","displayName","isGuest","createdAt","updatedAt") VALUES ($1,$2,$3,$4,$5,$6) RETURNING "public"."Player"."id"
+2026-10-17 16:24:35.901 PDT [27263] ERROR:  insert or update on table "Player" violates foreign key constraint "Player_userId_fkey"
+2026-10-17 16:24:35.901 PDT [27263] DETAIL:  Key (userId)=(audit-active-277) is not present in table "user".
+2026-10-17 16:24:35.901 PDT [27263] STATEMENT:  INSERT INTO "public"."Player" ("id","userId","displayName","isGuest","createdAt","updatedAt") VALUES ($1,$2,$3,$4,$5,$6) RETURNING "public"."Player"."id"
+2026-10-17 16:24:35.907 PDT [27263] ERROR:  insert or update on table "Player" violates foreign key constraint "Player_userId_fkey"
+2026-10-17 16:24:35.907 PDT [27263] DETAIL:  Key (userId)=(audit-active-239) is not present in table "user".
+2026-10-17 16:24:35.907 PDT [27263] STATEMENT:  INSERT INTO "public"."Player" ("id","userId","displayName","isGuest","createdAt","updatedAt") VALUES ($1,$2,$3,$4,$5,$6) RETURNING "public"."Player"."id"
+2026-10-17 16:24:36.047 PDT [27263] ERROR:  insert or update on table "Player" violates foreign key constraint "Player_userId_fkey"
+2026-10-17 16:24:36.047 PDT [27263] DETAIL:  Key (userId)=(audit-active-299) is not present in table "user".
+2026-10-17 16:24:36.047 PDT [27263] STATEMENT:  INSERT INTO "public"."Player" ("id","userId","displayName","isGuest","createdAt","updatedAt") VALUES ($1,$2,$3,$4,$5,$6) RETURNING "public"."Player"."id"
+2026-10-17 16:24:36.110 PDT [27263] ERROR:  insert or update on table "Player" violates foreign key constraint "Player_userId_fkey"
+2026-10-17 16:24:36.110 PDT [27263] DETAIL:  Key (userId)=(audit-active-256) is not present in table "user".
+2026-10-17 16:24:36.110 PDT [27263] STATEMENT:  INSERT INTO "public"."Player" ("id","userId","displayName","isGuest","createdAt","updatedAt") VALUES ($1,$2,$3,$4,$5,$6) RETURNING "public"."Player"."id"
+2026-10-17 16:24:36.200 PDT [27263] ERROR:  insert or update on table "Player" violates foreign key constraint "Player_userId_fkey"
+2026-10-17 16:24:36.200 PDT [27263] DETAIL:  Key (userId)=(audit-active-140) is not present in table "user".
+2026-10-17 16:24:36.200 PDT [27263] STATEMENT:  INSERT INTO "public"."Player" ("id","userId","displayName","isGuest","createdAt","updatedAt") VALUES ($1,$2,$3,$4,$5,$6) RETURNING "public"."Player"."id"
+2026-10-17 16:24:39.970 PDT [27263] ERROR:  insert or update on table "Player" violates foreign key constraint "Player_userId_fkey"
+2026-10-17 16:24:39.970 PDT [27263] DETAIL:  Key (userId)=(audit-active-36) is not present in table "user".
+2026-10-17 16:24:39.970 PDT [27263] STATEMENT:  INSERT INTO "public"."Player" ("id","userId","displayName","isGuest","createdAt","updatedAt") VALUES ($1,$2,$3,$4,$5,$6) RETURNING "public"."Player"."id"
+2026-10-17 16:24:40.682 PDT [27263] ERROR:  insert or update on table "Player" violates foreign key constraint "Player_userId_fkey"
+2026-10-17 16:24:40.682 PDT [27263] DETAIL:  Key (userId)=(audit-active-179) is not present in table "user".
+2026-10-17 16:24:40.682 PDT [27263] STATEMENT:  INSERT INTO "public"."Player" ("id","userId","displayName","isGuest","createdAt","updatedAt") VALUES ($1,$2,$3,$4,$5,$6) RETURNING "public"."Player"."id"
+2026-10-17 16:24:40.912 PDT [27263] ERROR:  insert or update on table "Player" violates foreign key constraint "Player_userId_fkey"
+2026-10-17 16:24:40.912 PDT [27263] DETAIL:  Key (userId)=(audit-active-277) is not present in table "user".
+2026-10-17 16:24:40.912 PDT [27263] STATEMENT:  INSERT INTO "public"."Player" ("id","userId","displayName","isGuest","createdAt","updatedAt") VALUES ($1,$2,$3,$4,$5,$6) RETURNING "public"."Player"."id"
+2026-10-17 16:24:40.921 PDT [27008] ERROR:  insert or update on table "Player" violates foreign key constraint "Player_userId_fkey"
+2026-10-17 16:24:40.921 PDT [27008] DETAIL:  Key (userId)=(audit-active-239) is not present in table "user".
+2026-10-17 16:24:40.921 PDT [27008] STATEMENT:  INSERT INTO "public"."Player" ("id","userId","displayName","isGuest","createdAt","updatedAt") VALUES ($1,$2,$3,$4,$5,$6) RETURNING "public"."Player"."id"
+2026-10-17 16:24:41.055 PDT [27008] ERROR:  insert or update on table "Player" violates foreign key constraint "Player_userId_fkey"
+2026-10-17 16:24:41.055 PDT [27008] DETAIL:  Key (userId)=(audit-active-299) is not present in table "user".
+2026-10-17 16:24:41.055 PDT [27008] STATEMENT:  INSERT INTO "public"."Player" ("id","userId","displayName","isGuest","createdAt","updatedAt") VALUES ($1,$2,$3,$4,$5,$6) RETURNING "public"."Player"."id"
+2026-10-17 16:24:41.117 PDT [27008] ERROR:  insert or update on table "Player" violates foreign key constraint "Player_userId_fkey"
+2026-10-17 16:24:41.117 PDT [27008] DETAIL:  Key (userId)=(audit-active-256) is not present in table "user".
+2026-10-17 16:24:41.117 PDT [27008] STATEMENT:  INSERT INTO "public"."Player" ("id","userId","displayName","isGuest","createdAt","updatedAt") VALUES ($1,$2,$3,$4,$5,$6) RETURNING "public"."Player"."id"
+2026-10-17 16:24:41.210 PDT [27008] ERROR:  insert or update on table "Player" violates foreign key constraint "Player_userId_fkey"
+2026-10-17 16:24:41.210 PDT [27008] DETAIL:  Key (userId)=(audit-active-140) is not present in table "user".
+2026-10-17 16:24:41.210 PDT [27008] STATEMENT:  INSERT INTO "public"."Player" ("id","userId","displayName","isGuest","createdAt","updatedAt") VALUES ($1,$2,$3,$4,$5,$6) RETURNING "public"."Player"."id"
+2026-10-17 16:24:44.978 PDT [27008] ERROR:  insert or update on table "Player" violates foreign key constraint "Player_userId_fkey"
+2026-10-17 16:24:44.978 PDT [27008] DETAIL:  Key (userId)=(audit-active-36) is not present in table "user".
+2026-10-17 16:24:44.978 PDT [27008] STATEMENT:  INSERT INTO "public"."Player" ("id","userId","displayName","isGuest","createdAt","updatedAt") VALUES ($1,$2,$3,$4,$5,$6) RETURNING "public"."Player"."id"
+2026-10-17 16:24:45.690 PDT [27008] ERROR:  insert or update on table "Player" violates foreign key constraint "Player_userId_fkey"
+2026-10-17 16:24:45.690 PDT [27008] DETAIL:  Key (userId)=(audit-active-179) is not present in table "user".
+2026-10-17 16:24:45.690 PDT [27008] STATEMENT:  INSERT INTO "public"."Player" ("id","userId","displayName","isGuest","createdAt","updatedAt") VALUES ($1,$2,$3,$4,$5,$6) RETURNING "public"."Player"."id"
+2026-10-17 16:24:45.922 PDT [27008] ERROR:  insert or update on table "Player" violates foreign key constraint "Player_userId_fkey"
+2026-10-17 16:24:45.922 PDT [27008] DETAIL:  Key (userId)=(audit-active-277) is not present in table "user".
+2026-10-17 16:24:45.922 PDT [27008] STATEMENT:  INSERT INTO "public"."Player" ("id","userId","displayName","isGuest","createdAt","updatedAt") VALUES ($1,$2,$3,$4,$5,$6) RETURNING "public"."Player"."id"
+2026-10-17 16:24:45.926 PDT [27008] ERROR:  insert or update on table "Player" violates foreign key constraint "Player_userId_fkey"
+2026-10-17 16:24:45.926 PDT [27008] DETAIL:  Key (userId)=(audit-active-239) is not present in table "user".
+2026-10-17 16:24:45.926 PDT [27008] STATEMENT:  INSERT INTO "public"."Player" ("id","userId","displayName","isGuest","createdAt","updatedAt") VALUES ($1,$2,$3,$4,$5,$6) RETURNING "public"."Player"."id"
+2026-10-17 16:24:46.060 PDT [27008] ERROR:  insert or update on table "Player" violates foreign key constraint "Player_userId_fkey"
+2026-10-17 16:24:46.060 PDT [27008] DETAIL:  Key (userId)=(audit-active-299) is not present in table "user".
+2026-10-17 16:24:46.060 PDT [27008] STATEMENT:  INSERT INTO "public"."Player" ("id","userId","displayName","isGuest","createdAt","updatedAt") VALUES ($1,$2,$3,$4,$5,$6) RETURNING "public"."Player"."id"
+2026-10-17 16:24:46.122 PDT [27008] ERROR:  insert or update on table "Player" violates foreign key constraint "Player_userId_fkey"
+2026-10-17 16:24:46.122 PDT [27008] DETAIL:  Key (userId)=(audit-active-256) is not present in table "user".
+2026-10-17 16:24:46.122 PDT [27008] STATEMENT:  INSERT INTO "public"."Player" ("id","userId","displayName","isGuest","createdAt","updatedAt") VALUES ($1,$2,$3,$4,$5,$6) RETURNING "public"."Player"."id"
+2026-10-17 16:24:46.216 PDT [27008] ERROR:  insert or update on table "Player" violates foreign key constraint "Player_userId_fkey"
+2026-10-17 16:24:46.216 PDT [27008] DETAIL:  Key (userId)=(audit-active-140) is not present in table "user".
+2026-10-17 16:24:46.216 PDT [27008] STATEMENT:  INSERT INTO "public"."Player" ("id","userId","displayName","isGuest","createdAt","updatedAt") VALUES ($1,$2,$3,$4,$5,$6) RETURNING "public"."Player"."id"
+2026-10-17 16:27:59.737 PDT [24838] LOG:  received fast shutdown request
+2026-10-17 16:27:59.737 PDT [24838] LOG:  aborting any active transactions
+2026-10-17 16:27:59.738 PDT [27006] FATAL:  terminating connection due to administrator command
+2026-10-17 16:27:59.738 PDT [27009] FATAL:  terminating connection due to administrator command
+2026-10-17 16:27:59.738 PDT [27261] FATAL:  terminating connection due to administrator command
+2026-10-17 16:27:59.738 PDT [27008] FATAL:  terminating connection due to administrator command
+2026-10-17 16:27:59.738 PDT [27001] FATAL:  terminating connection due to administrator command
+2026-10-17 16:27:59.738 PDT [27262] FATAL:  terminating connection due to administrator command
+2026-10-17 16:27:59.738 PDT [27007] FATAL:  terminating connection due to administrator command
+2026-10-17 16:27:59.738 PDT [27003] FATAL:  terminating connection due to administrator command
+2026-10-17 16:27:59.738 PDT [27000] FATAL:  terminating connection due to administrator command
+2026-10-17 16:27:59.739 PDT [27004] FATAL:  terminating connection due to administrator command
+2026-10-17 16:27:59.739 PDT [27010] FATAL:  terminating connection due to administrator command
+2026-10-17 16:27:59.739 PDT [26999] FATAL:  terminating connection due to administrator command
+2026-10-17 16:27:59.738 PDT [27260] FATAL:  terminating connection due to administrator command
+2026-10-17 16:27:59.739 PDT [27002] FATAL:  terminating connection due to administrator command
+2026-10-17 16:27:59.738 PDT [26998] FATAL:  terminating connection due to administrator command
+2026-10-17 16:27:59.738 PDT [27005] FATAL:  terminating connection due to administrator command
+2026-10-17 16:27:59.739 PDT [27263] FATAL:  terminating connection due to administrator command
+2026-10-17 16:27:59.742 PDT [24838] LOG:  background worker "logical replication launcher" (PID 24845) exited with exit code 1
+2026-10-17 16:27:59.743 PDT [24840] LOG:  shutting down
+2026-10-17 16:27:59.750 PDT [24838] LOG:  database system is shut down

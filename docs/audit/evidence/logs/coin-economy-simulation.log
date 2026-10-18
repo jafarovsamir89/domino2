@@ -1,0 +1,25 @@
+Saved 24 scenario/horizon cells; 40000 trajectories
+[
+  {
+    policy: 'current_saturating_7',
+    dailyMint30: 51050,
+    balance30: 52050,
+    firstSkinAffordable: 2,
+    allSkinsAffordable: 10
+  },
+  {
+    policy: 'counterfactual_repeating_7',
+    dailyMint30: 20700,
+    balance30: 21700,
+    firstSkinAffordable: 2,
+    allSkinsAffordable: 18
+  }
+]
+current_saturating_7 novice { median: 1770, min50: 0, preferred: 0, skins: 2.0792 }
+current_saturating_7 regular { median: 7180, min50: 0.1278, preferred: 0.2002, skins: 2.3404 }
+current_saturating_7 active { median: 63250, min50: 0.44, preferred: 0.8374, skins: 3.3352 }
+current_saturating_7 payer_future { median: 850, min50: 0.3386, preferred: 0.9404, skins: 1.2664 }
+counterfactual_repeating_7 novice { median: 1720, min50: 0, preferred: 0, skins: 2.0792 }
+counterfactual_repeating_7 regular { median: 2940, min50: 0.1456, preferred: 0.2238, skins: 2.1826 }
+counterfactual_repeating_7 active { median: 39500, min50: 0.511, preferred: 0.845, skins: 3.032 }
+counterfactual_repeating_7 payer_future { median: 650, min50: 0.5108, preferred: 0.9668, skins: 0.8716 }

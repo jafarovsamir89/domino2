@@ -1,0 +1,3777 @@
+{
+  "scope": "One actual Android; isolated debug package, local source/API and synthetic user. Production package untouched.",
+  "rows": [
+    {
+      "case": "normal_solo_and_menu",
+      "state": {
+        "mode": "telefon",
+        "active": true,
+        "turn": 0,
+        "human": 0,
+        "inProgress": false,
+        "postMove": false,
+        "roundOver": false,
+        "matchOver": false,
+        "board": {
+          "nodes": [
+            {
+              "tile": {
+                "a": 2,
+                "b": 3
+              },
+              "x": 0,
+              "y": 0,
+              "orientation": "horizontal",
+              "displayA": 2,
+              "displayB": 3,
+              "connections": {}
+            }
+          ],
+          "openEnds": [
+            {
+              "nodeId": 0,
+              "side": "left",
+              "value": 2,
+              "growthDir": "left"
+            },
+            {
+              "nodeId": 0,
+              "side": "right",
+              "value": 3,
+              "growthDir": "right"
+            }
+          ],
+          "crossNodeId": null,
+          "crossSidesClosed": 0,
+          "startAxis": "horizontal",
+          "telephoneEnabled": true,
+          "scoringEnabled": true
+        },
+        "hands": [
+          [
+            {
+              "a": 0,
+              "b": 0
+            },
+            {
+              "a": 2,
+              "b": 2
+            },
+            {
+              "a": 4,
+              "b": 5
+            },
+            {
+              "a": 5,
+              "b": 6
+            },
+            {
+              "a": 3,
+              "b": 4
+            },
+            {
+              "a": 2,
+              "b": 6
+            },
+            {
+              "a": 1,
+              "b": 4
+            }
+          ],
+          [
+            {
+              "a": 5,
+              "b": 5
+            },
+            {
+              "a": 1,
+              "b": 2
+            },
+            {
+              "a": 3,
+              "b": 6
+            },
+            {
+              "a": 1,
+              "b": 5
+            },
+            {
+              "a": 2,
+              "b": 4
+            },
+            {
+              "a": 0,
+              "b": 2
+            },
+            {
+              "a": 1,
+              "b": 6
+            }
+          ],
+          [
+            {
+              "a": 2,
+              "b": 5
+            },
+            {
+              "a": 0,
+              "b": 5
+            },
+            {
+              "a": 1,
+              "b": 3
+            },
+            {
+              "a": 3,
+              "b": 5
+            },
+            {
+              "a": 3,
+              "b": 3
+            },
+            {
+              "a": 0,
+              "b": 3
+            }
+          ],
+          [
+            {
+              "a": 1,
+              "b": 1
+            },
+            {
+              "a": 6,
+              "b": 6
+            },
+            {
+              "a": 4,
+              "b": 4
+            },
+            {
+              "a": 0,
+              "b": 1
+            },
+            {
+              "a": 0,
+              "b": 6
+            },
+            {
+              "a": 0,
+              "b": 4
+            },
+            {
+              "a": 4,
+              "b": 6
+            }
+          ]
+        ],
+        "boneyard": [],
+        "scores": [
+          0,
+          0,
+          0,
+          15
+        ],
+        "matchId": "solo-f498a431-b48a-43cf-8bd5-fa39eba42759",
+        "total": 28,
+        "screen": [
+          "game-screen",
+          "menu-screen"
+        ],
+        "validMoves": [
+          {
+            "tileIndex": 1,
+            "openEndIndex": 0
+          },
+          {
+            "tileIndex": 4,
+            "openEndIndex": 1
+          },
+          {
+            "tileIndex": 5,
+            "openEndIndex": 0
+          }
+        ]
+      },
+      "menuResponsive": true
+    },
+    {
+      "case": "before_process_death",
+      "pid": "29907",
+      "state": {
+        "mode": "telefon",
+        "active": true,
+        "turn": 0,
+        "human": 0,
+        "inProgress": false,
+        "postMove": false,
+        "roundOver": false,
+        "matchOver": false,
+        "board": {
+          "nodes": [
+            {
+              "tile": {
+                "a": 2,
+                "b": 3
+              },
+              "x": 0,
+              "y": 0,
+              "orientation": "horizontal",
+              "displayA": 2,
+              "displayB": 3,
+              "connections": {}
+            }
+          ],
+          "openEnds": [
+            {
+              "nodeId": 0,
+              "side": "left",
+              "value": 2,
+              "growthDir": "left"
+            },
+            {
+              "nodeId": 0,
+              "side": "right",
+              "value": 3,
+              "growthDir": "right"
+            }
+          ],
+          "crossNodeId": null,
+          "crossSidesClosed": 0,
+          "startAxis": "horizontal",
+          "telephoneEnabled": true,
+          "scoringEnabled": true
+        },
+        "hands": [
+          [
+            {
+              "a": 6,
+              "b": 6
+            },
+            {
+              "a": 0,
+              "b": 4
+            },
+            {
+              "a": 5,
+              "b": 5
+            },
+            {
+              "a": 1,
+              "b": 3
+            },
+            {
+              "a": 0,
+              "b": 0
+            },
+            {
+              "a": 2,
+              "b": 6
+            },
+            {
+              "a": 4,
+              "b": 5
+            }
+          ],
+          [
+            {
+              "a": 0,
+              "b": 6
+            },
+            {
+              "a": 1,
+              "b": 6
+            },
+            {
+              "a": 0,
+              "b": 5
+            },
+            {
+              "a": 2,
+              "b": 2
+            },
+            {
+              "a": 0,
+              "b": 3
+            },
+            {
+              "a": 1,
+              "b": 1
+            },
+            {
+              "a": 4,
+              "b": 6
+            }
+          ],
+          [
+            {
+              "a": 3,
+              "b": 5
+            },
+            {
+              "a": 3,
+              "b": 3
+            },
+            {
+              "a": 3,
+              "b": 4
+            },
+            {
+              "a": 0,
+              "b": 2
+            },
+            {
+              "a": 1,
+              "b": 4
+            },
+            {
+              "a": 1,
+              "b": 5
+            },
+            {
+              "a": 2,
+              "b": 5
+            }
+          ],
+          [
+            {
+              "a": 3,
+              "b": 6
+            },
+            {
+              "a": 2,
+              "b": 4
+            },
+            {
+              "a": 0,
+              "b": 1
+            },
+            {
+              "a": 1,
+              "b": 2
+            },
+            {
+              "a": 5,
+              "b": 6
+            },
+            {
+              "a": 4,
+              "b": 4
+            }
+          ]
+        ],
+        "boneyard": [],
+        "scores": [
+          0,
+          0,
+          0,
+          15
+        ],
+        "matchId": "solo-f498a431-b48a-43cf-8bd5-fa39eba42759",
+        "total": 28,
+        "screen": [
+          "game-screen",
+          "menu-screen"
+        ],
+        "validMoves": [
+          {
+            "tileIndex": 3,
+            "openEndIndex": 1
+          },
+          {
+            "tileIndex": 5,
+            "openEndIndex": 0
+          }
+        ]
+      }
+    },
+    {
+      "case": "process_restart",
+      "oldPid": "29907",
+      "newPid": "29907",
+      "aliveBeforeRestart": "29907",
+      "resumeVisible": false,
+      "restart": "Starting: Intent { cmp=az.simplesoft.dominotelefon.audit/az.simplesoft.dominotelefon.MainActivity }\nWarning: Activity not started, its current task has been brought to the front\nStatus: ok\nLaunchState: HOT\nActivity: az.simplesoft.dominotelefon.audit/az.simplesoft.dominotelefon.MainActivity\nTotalTime: 151\nWaitTime: 158\nComplete\n",
+      "killAttempt": "run-as kill returned unknown pid; process loss was not controlled by that signal"
+    },
+    {
+      "case": "force_stop_relaunch",
+      "stopped": true,
+      "newProcess": true,
+      "resumeVisible": true,
+      "restart": "Starting: Intent { cmp=az.simplesoft.dominotelefon.audit/az.simplesoft.dominotelefon.MainActivity }\nStatus: ok\nLaunchState: COLD\nActivity: az.simplesoft.dominotelefon.audit/az.simplesoft.dominotelefon.MainActivity\nTotalTime: 1306\nWaitTime: 1311\nComplete\n",
+      "before": {
+        "mode": "telefon",
+        "active": true,
+        "turn": 0,
+        "human": 0,
+        "inProgress": false,
+        "postMove": false,
+        "roundOver": false,
+        "matchOver": false,
+        "board": {
+          "nodes": [
+            {
+              "tile": {
+                "a": 2,
+                "b": 3
+              },
+              "x": 0,
+              "y": 0,
+              "orientation": "horizontal",
+              "displayA": 2,
+              "displayB": 3,
+              "connections": {
+                "right": 1,
+                "left": 2
+              }
+            },
+            {
+              "tile": {
+                "a": 3,
+                "b": 3
+              },
+              "x": 52,
+              "y": 0,
+              "orientation": "vertical",
+              "displayA": 3,
+              "displayB": 3,
+              "connections": {
+                "left": 0
+              }
+            },
+            {
+              "tile": {
+                "a": 2,
+                "b": 4
+              },
+              "x": -68,
+              "y": 0,
+              "orientation": "horizontal",
+              "displayA": 4,
+              "displayB": 2,
+              "connections": {
+                "right": 0
+              }
+            }
+          ],
+          "openEnds": [
+            {
+              "nodeId": 1,
+              "side": "right",
+              "value": 3,
+              "growthDir": "right"
+            },
+            {
+              "nodeId": 2,
+              "side": "left",
+              "value": 4,
+              "growthDir": "left"
+            }
+          ],
+          "crossNodeId": null,
+          "crossSidesClosed": 0,
+          "startAxis": "horizontal",
+          "telephoneEnabled": true,
+          "scoringEnabled": true
+        },
+        "hands": [
+          [
+            {
+              "a": 2,
+              "b": 2
+            },
+            {
+              "a": 4,
+              "b": 4
+            },
+            {
+              "a": 1,
+              "b": 1
+            },
+            {
+              "a": 2,
+              "b": 5
+            },
+            {
+              "a": 0,
+              "b": 6
+            },
+            {
+              "a": 0,
+              "b": 3
+            },
+            {
+              "a": 5,
+              "b": 6
+            }
+          ],
+          [
+            {
+              "a": 0,
+              "b": 2
+            },
+            {
+              "a": 6,
+              "b": 6
+            },
+            {
+              "a": 5,
+              "b": 5
+            },
+            {
+              "a": 1,
+              "b": 4
+            },
+            {
+              "a": 1,
+              "b": 6
+            },
+            {
+              "a": 3,
+              "b": 4
+            }
+          ],
+          [
+            {
+              "a": 1,
+              "b": 2
+            },
+            {
+              "a": 1,
+              "b": 5
+            },
+            {
+              "a": 0,
+              "b": 1
+            },
+            {
+              "a": 0,
+              "b": 5
+            },
+            {
+              "a": 1,
+              "b": 3
+            },
+            {
+              "a": 4,
+              "b": 5
+            }
+          ],
+          [
+            {
+              "a": 3,
+              "b": 6
+            },
+            {
+              "a": 0,
+              "b": 4
+            },
+            {
+              "a": 2,
+              "b": 6
+            },
+            {
+              "a": 0,
+              "b": 0
+            },
+            {
+              "a": 3,
+              "b": 5
+            },
+            {
+              "a": 4,
+              "b": 6
+            }
+          ]
+        ],
+        "boneyard": [],
+        "scores": [
+          0,
+          0,
+          0,
+          25
+        ],
+        "matchId": "solo-f498a431-b48a-43cf-8bd5-fa39eba42759",
+        "total": 28,
+        "screen": [
+          "game-screen",
+          "menu-screen"
+        ],
+        "validMoves": [
+          {
+            "tileIndex": 1,
+            "openEndIndex": 1
+          },
+          {
+            "tileIndex": 5,
+            "openEndIndex": 0
+          }
+        ]
+      }
+    },
+    {
+      "case": "resume_after_force_stop",
+      "sameGameplayState": false,
+      "before": {
+        "mode": "telefon",
+        "active": true,
+        "turn": 0,
+        "human": 0,
+        "inProgress": false,
+        "postMove": false,
+        "roundOver": false,
+        "matchOver": false,
+        "board": {
+          "nodes": [
+            {
+              "tile": {
+                "a": 2,
+                "b": 3
+              },
+              "x": 0,
+              "y": 0,
+              "orientation": "horizontal",
+              "displayA": 2,
+              "displayB": 3,
+              "connections": {
+                "right": 1,
+                "left": 2
+              }
+            },
+            {
+              "tile": {
+                "a": 3,
+                "b": 3
+              },
+              "x": 52,
+              "y": 0,
+              "orientation": "vertical",
+              "displayA": 3,
+              "displayB": 3,
+              "connections": {
+                "left": 0
+              }
+            },
+            {
+              "tile": {
+                "a": 2,
+                "b": 4
+              },
+              "x": -68,
+              "y": 0,
+              "orientation": "horizontal",
+              "displayA": 4,
+              "displayB": 2,
+              "connections": {
+                "right": 0
+              }
+            }
+          ],
+          "openEnds": [
+            {
+              "nodeId": 1,
+              "side": "right",
+              "value": 3,
+              "growthDir": "right"
+            },
+            {
+              "nodeId": 2,
+              "side": "left",
+              "value": 4,
+              "growthDir": "left"
+            }
+          ],
+          "crossNodeId": null,
+          "crossSidesClosed": 0,
+          "startAxis": "horizontal",
+          "telephoneEnabled": true,
+          "scoringEnabled": true
+        },
+        "hands": [
+          [
+            {
+              "a": 2,
+              "b": 2
+            },
+            {
+              "a": 4,
+              "b": 4
+            },
+            {
+              "a": 1,
+              "b": 1
+            },
+            {
+              "a": 2,
+              "b": 5
+            },
+            {
+              "a": 0,
+              "b": 6
+            },
+            {
+              "a": 0,
+              "b": 3
+            },
+            {
+              "a": 5,
+              "b": 6
+            }
+          ],
+          [
+            {
+              "a": 0,
+              "b": 2
+            },
+            {
+              "a": 6,
+              "b": 6
+            },
+            {
+              "a": 5,
+              "b": 5
+            },
+            {
+              "a": 1,
+              "b": 4
+            },
+            {
+              "a": 1,
+              "b": 6
+            },
+            {
+              "a": 3,
+              "b": 4
+            }
+          ],
+          [
+            {
+              "a": 1,
+              "b": 2
+            },
+            {
+              "a": 1,
+              "b": 5
+            },
+            {
+              "a": 0,
+              "b": 1
+            },
+            {
+              "a": 0,
+              "b": 5
+            },
+            {
+              "a": 1,
+              "b": 3
+            },
+            {
+              "a": 4,
+              "b": 5
+            }
+          ],
+          [
+            {
+              "a": 3,
+              "b": 6
+            },
+            {
+              "a": 0,
+              "b": 4
+            },
+            {
+              "a": 2,
+              "b": 6
+            },
+            {
+              "a": 0,
+              "b": 0
+            },
+            {
+              "a": 3,
+              "b": 5
+            },
+            {
+              "a": 4,
+              "b": 6
+            }
+          ]
+        ],
+        "boneyard": [],
+        "scores": [
+          0,
+          0,
+          0,
+          25
+        ],
+        "matchId": "solo-f498a431-b48a-43cf-8bd5-fa39eba42759",
+        "total": 28,
+        "screen": [
+          "game-screen",
+          "menu-screen"
+        ],
+        "validMoves": [
+          {
+            "tileIndex": 1,
+            "openEndIndex": 1
+          },
+          {
+            "tileIndex": 5,
+            "openEndIndex": 0
+          }
+        ]
+      },
+      "after": {
+        "mode": "telefon",
+        "active": true,
+        "turn": 0,
+        "human": 0,
+        "inProgress": false,
+        "postMove": false,
+        "roundOver": false,
+        "matchOver": false,
+        "board": {
+          "nodes": [],
+          "openEnds": [],
+          "crossNodeId": null,
+          "crossSidesClosed": 0,
+          "startAxis": "horizontal",
+          "telephoneEnabled": true,
+          "scoringEnabled": true
+        },
+        "hands": [
+          [
+            {
+              "a": 3,
+              "b": 4
+            },
+            {
+              "a": 2,
+              "b": 4
+            },
+            {
+              "a": 0,
+              "b": 6
+            },
+            {
+              "a": 0,
+              "b": 3
+            },
+            {
+              "a": 1,
+              "b": 2
+            },
+            {
+              "a": 3,
+              "b": 6
+            },
+            {
+              "a": 2,
+              "b": 3
+            }
+          ],
+          [
+            {
+              "a": 3,
+              "b": 3
+            },
+            {
+              "a": 1,
+              "b": 3
+            },
+            {
+              "a": 6,
+              "b": 6
+            },
+            {
+              "a": 5,
+              "b": 6
+            },
+            {
+              "a": 4,
+              "b": 5
+            },
+            {
+              "a": 4,
+              "b": 4
+            },
+            {
+              "a": 3,
+              "b": 5
+            }
+          ],
+          [
+            {
+              "a": 1,
+              "b": 1
+            },
+            {
+              "a": 2,
+              "b": 2
+            },
+            {
+              "a": 5,
+              "b": 5
+            },
+            {
+              "a": 0,
+              "b": 1
+            },
+            {
+              "a": 2,
+              "b": 6
+            },
+            {
+              "a": 0,
+              "b": 5
+            },
+            {
+              "a": 1,
+              "b": 4
+            }
+          ],
+          [
+            {
+              "a": 0,
+              "b": 0
+            },
+            {
+              "a": 0,
+              "b": 4
+            },
+            {
+              "a": 0,
+              "b": 2
+            },
+            {
+              "a": 2,
+              "b": 5
+            },
+            {
+              "a": 4,
+              "b": 6
+            },
+            {
+              "a": 1,
+              "b": 5
+            },
+            {
+              "a": 1,
+              "b": 6
+            }
+          ]
+        ],
+        "boneyard": [],
+        "scores": [
+          0,
+          0,
+          0,
+          25
+        ],
+        "matchId": "solo-f498a431-b48a-43cf-8bd5-fa39eba42759",
+        "total": 28,
+        "screen": [
+          "game-screen"
+        ],
+        "validMoves": [
+          {
+            "tileIndex": 0,
+            "openEndIndex": -1
+          },
+          {
+            "tileIndex": 1,
+            "openEndIndex": -1
+          },
+          {
+            "tileIndex": 2,
+            "openEndIndex": -1
+          },
+          {
+            "tileIndex": 3,
+            "openEndIndex": -1
+          },
+          {
+            "tileIndex": 4,
+            "openEndIndex": -1
+          },
+          {
+            "tileIndex": 5,
+            "openEndIndex": -1
+          },
+          {
+            "tileIndex": 6,
+            "openEndIndex": -1
+          }
+        ]
+      }
+    },
+    {
+      "case": "controlled_before_force_stop",
+      "timersPausedForComparison": true,
+      "state": {
+        "mode": "telefon",
+        "active": true,
+        "turn": 0,
+        "human": 0,
+        "inProgress": false,
+        "postMove": false,
+        "roundOver": false,
+        "matchOver": false,
+        "board": {
+          "nodes": [
+            {
+              "tile": {
+                "a": 2,
+                "b": 3
+              },
+              "x": 0,
+              "y": 0,
+              "orientation": "horizontal",
+              "displayA": 2,
+              "displayB": 3,
+              "connections": {}
+            }
+          ],
+          "openEnds": [
+            {
+              "nodeId": 0,
+              "side": "left",
+              "value": 2,
+              "growthDir": "left"
+            },
+            {
+              "nodeId": 0,
+              "side": "right",
+              "value": 3,
+              "growthDir": "right"
+            }
+          ],
+          "crossNodeId": null,
+          "crossSidesClosed": 0,
+          "startAxis": "horizontal",
+          "telephoneEnabled": true,
+          "scoringEnabled": true
+        },
+        "hands": [
+          [
+            {
+              "a": 3,
+              "b": 3
+            },
+            {
+              "a": 5,
+              "b": 6
+            },
+            {
+              "a": 4,
+              "b": 6
+            },
+            {
+              "a": 0,
+              "b": 4
+            },
+            {
+              "a": 0,
+              "b": 5
+            },
+            {
+              "a": 2,
+              "b": 2
+            },
+            {
+              "a": 1,
+              "b": 4
+            }
+          ],
+          [
+            {
+              "a": 0,
+              "b": 0
+            },
+            {
+              "a": 0,
+              "b": 6
+            },
+            {
+              "a": 3,
+              "b": 4
+            },
+            {
+              "a": 0,
+              "b": 1
+            },
+            {
+              "a": 1,
+              "b": 1
+            },
+            {
+              "a": 4,
+              "b": 4
+            },
+            {
+              "a": 2,
+              "b": 6
+            }
+          ],
+          [
+            {
+              "a": 6,
+              "b": 6
+            },
+            {
+              "a": 2,
+              "b": 4
+            },
+            {
+              "a": 0,
+              "b": 3
+            },
+            {
+              "a": 0,
+              "b": 2
+            },
+            {
+              "a": 1,
+              "b": 3
+            },
+            {
+              "a": 1,
+              "b": 6
+            },
+            {
+              "a": 3,
+              "b": 6
+            }
+          ],
+          [
+            {
+              "a": 2,
+              "b": 5
+            },
+            {
+              "a": 1,
+              "b": 2
+            },
+            {
+              "a": 3,
+              "b": 5
+            },
+            {
+              "a": 1,
+              "b": 5
+            },
+            {
+              "a": 5,
+              "b": 5
+            },
+            {
+              "a": 4,
+              "b": 5
+            }
+          ]
+        ],
+        "boneyard": [],
+        "scores": [
+          0,
+          0,
+          0,
+          25
+        ],
+        "matchId": "solo-f498a431-b48a-43cf-8bd5-fa39eba42759",
+        "total": 28,
+        "screen": [
+          "game-screen"
+        ],
+        "validMoves": [
+          {
+            "tileIndex": 0,
+            "openEndIndex": 1
+          },
+          {
+            "tileIndex": 5,
+            "openEndIndex": 0
+          }
+        ]
+      },
+      "persisted": {
+        "kind": "solo",
+        "sessionId": "solo-f498a431-b48a-43cf-8bd5-fa39eba42759",
+        "roomId": null,
+        "roomCode": null,
+        "reconnectionToken": "",
+        "playerName": "AuditPhone",
+        "playerCount": 4,
+        "onlinePlayerCount": 2,
+        "onlineAiCount": 0,
+        "onlineEconomyMode": "coins",
+        "onlineStakeKey": "stake_200",
+        "soloEconomyMode": "free",
+        "soloStakeKey": "free",
+        "difficulty": "medium",
+        "gameMode": "telefon",
+        "mode": "telefon",
+        "isTeamMode": false,
+        "humanPlayerIndex": 0,
+        "playerNames": [
+          "AuditPhone",
+          "AI 1",
+          "AI 2",
+          "AI 3"
+        ],
+        "scores": [
+          0,
+          0,
+          0,
+          25
+        ],
+        "roundWins": [
+          0,
+          2,
+          8,
+          0
+        ],
+        "teamScores": [
+          0,
+          0
+        ],
+        "teamRoundWins": [
+          0,
+          0
+        ],
+        "currentPlayer": 0,
+        "matchRound": 6,
+        "deal": 1,
+        "selectedTileIndex": -1,
+        "gameActive": true,
+        "roundOver": false,
+        "matchOver": false,
+        "lastDealWinner": null,
+        "turnDeadlineAt": 0,
+        "dlossThreshold": 255,
+        "instantWinEnabled": true,
+        "board": {
+          "nodes": [
+            {
+              "tile": {
+                "a": 2,
+                "b": 3
+              },
+              "x": 0,
+              "y": 0,
+              "orientation": "horizontal",
+              "displayA": 2,
+              "displayB": 3,
+              "connections": {}
+            }
+          ],
+          "openEnds": [
+            {
+              "nodeId": 0,
+              "side": "left",
+              "value": 2,
+              "growthDir": "left"
+            },
+            {
+              "nodeId": 0,
+              "side": "right",
+              "value": 3,
+              "growthDir": "right"
+            }
+          ],
+          "crossNodeId": null,
+          "crossSidesClosed": 0,
+          "startAxis": "horizontal",
+          "telephoneEnabled": true,
+          "scoringEnabled": true
+        },
+        "hands": [
+          [
+            {
+              "a": 3,
+              "b": 3
+            },
+            {
+              "a": 5,
+              "b": 6
+            },
+            {
+              "a": 4,
+              "b": 6
+            },
+            {
+              "a": 0,
+              "b": 4
+            },
+            {
+              "a": 0,
+              "b": 5
+            },
+            {
+              "a": 2,
+              "b": 2
+            },
+            {
+              "a": 1,
+              "b": 4
+            }
+          ],
+          [
+            {
+              "a": 0,
+              "b": 0
+            },
+            {
+              "a": 0,
+              "b": 6
+            },
+            {
+              "a": 3,
+              "b": 4
+            },
+            {
+              "a": 0,
+              "b": 1
+            },
+            {
+              "a": 1,
+              "b": 1
+            },
+            {
+              "a": 4,
+              "b": 4
+            },
+            {
+              "a": 2,
+              "b": 6
+            }
+          ],
+          [
+            {
+              "a": 6,
+              "b": 6
+            },
+            {
+              "a": 2,
+              "b": 4
+            },
+            {
+              "a": 0,
+              "b": 3
+            },
+            {
+              "a": 0,
+              "b": 2
+            },
+            {
+              "a": 1,
+              "b": 3
+            },
+            {
+              "a": 1,
+              "b": 6
+            },
+            {
+              "a": 3,
+              "b": 6
+            }
+          ],
+          [
+            {
+              "a": 2,
+              "b": 5
+            },
+            {
+              "a": 1,
+              "b": 2
+            },
+            {
+              "a": 3,
+              "b": 5
+            },
+            {
+              "a": 1,
+              "b": 5
+            },
+            {
+              "a": 5,
+              "b": 5
+            },
+            {
+              "a": 4,
+              "b": 5
+            }
+          ]
+        ],
+        "boneyard": [],
+        "matchRuleState": null,
+        "createdAt": "2026-10-18T00:02:28.542Z"
+      }
+    },
+    {
+      "case": "controlled_resume_after_force_stop",
+      "sameCoreState": true,
+      "before": {
+        "mode": "telefon",
+        "active": true,
+        "turn": 0,
+        "human": 0,
+        "inProgress": false,
+        "postMove": false,
+        "roundOver": false,
+        "matchOver": false,
+        "board": {
+          "nodes": [
+            {
+              "tile": {
+                "a": 2,
+                "b": 3
+              },
+              "x": 0,
+              "y": 0,
+              "orientation": "horizontal",
+              "displayA": 2,
+              "displayB": 3,
+              "connections": {}
+            }
+          ],
+          "openEnds": [
+            {
+              "nodeId": 0,
+              "side": "left",
+              "value": 2,
+              "growthDir": "left"
+            },
+            {
+              "nodeId": 0,
+              "side": "right",
+              "value": 3,
+              "growthDir": "right"
+            }
+          ],
+          "crossNodeId": null,
+          "crossSidesClosed": 0,
+          "startAxis": "horizontal",
+          "telephoneEnabled": true,
+          "scoringEnabled": true
+        },
+        "hands": [
+          [
+            {
+              "a": 3,
+              "b": 3
+            },
+            {
+              "a": 5,
+              "b": 6
+            },
+            {
+              "a": 4,
+              "b": 6
+            },
+            {
+              "a": 0,
+              "b": 4
+            },
+            {
+              "a": 0,
+              "b": 5
+            },
+            {
+              "a": 2,
+              "b": 2
+            },
+            {
+              "a": 1,
+              "b": 4
+            }
+          ],
+          [
+            {
+              "a": 0,
+              "b": 0
+            },
+            {
+              "a": 0,
+              "b": 6
+            },
+            {
+              "a": 3,
+              "b": 4
+            },
+            {
+              "a": 0,
+              "b": 1
+            },
+            {
+              "a": 1,
+              "b": 1
+            },
+            {
+              "a": 4,
+              "b": 4
+            },
+            {
+              "a": 2,
+              "b": 6
+            }
+          ],
+          [
+            {
+              "a": 6,
+              "b": 6
+            },
+            {
+              "a": 2,
+              "b": 4
+            },
+            {
+              "a": 0,
+              "b": 3
+            },
+            {
+              "a": 0,
+              "b": 2
+            },
+            {
+              "a": 1,
+              "b": 3
+            },
+            {
+              "a": 1,
+              "b": 6
+            },
+            {
+              "a": 3,
+              "b": 6
+            }
+          ],
+          [
+            {
+              "a": 2,
+              "b": 5
+            },
+            {
+              "a": 1,
+              "b": 2
+            },
+            {
+              "a": 3,
+              "b": 5
+            },
+            {
+              "a": 1,
+              "b": 5
+            },
+            {
+              "a": 5,
+              "b": 5
+            },
+            {
+              "a": 4,
+              "b": 5
+            }
+          ]
+        ],
+        "boneyard": [],
+        "scores": [
+          0,
+          0,
+          0,
+          25
+        ],
+        "matchId": "solo-f498a431-b48a-43cf-8bd5-fa39eba42759",
+        "total": 28,
+        "screen": [
+          "game-screen"
+        ],
+        "validMoves": [
+          {
+            "tileIndex": 0,
+            "openEndIndex": 1
+          },
+          {
+            "tileIndex": 5,
+            "openEndIndex": 0
+          }
+        ]
+      },
+      "after": {
+        "mode": "telefon",
+        "active": true,
+        "turn": 0,
+        "human": 0,
+        "inProgress": false,
+        "postMove": false,
+        "roundOver": false,
+        "matchOver": false,
+        "board": {
+          "nodes": [
+            {
+              "tile": {
+                "a": 2,
+                "b": 3
+              },
+              "x": 0,
+              "y": 0,
+              "orientation": "horizontal",
+              "displayA": 2,
+              "displayB": 3,
+              "connections": {}
+            }
+          ],
+          "openEnds": [
+            {
+              "nodeId": 0,
+              "side": "left",
+              "value": 2,
+              "growthDir": "left"
+            },
+            {
+              "nodeId": 0,
+              "side": "right",
+              "value": 3,
+              "growthDir": "right"
+            }
+          ],
+          "crossNodeId": null,
+          "crossSidesClosed": 0,
+          "startAxis": "horizontal",
+          "telephoneEnabled": true,
+          "scoringEnabled": true
+        },
+        "hands": [
+          [
+            {
+              "a": 3,
+              "b": 3
+            },
+            {
+              "a": 5,
+              "b": 6
+            },
+            {
+              "a": 4,
+              "b": 6
+            },
+            {
+              "a": 0,
+              "b": 4
+            },
+            {
+              "a": 0,
+              "b": 5
+            },
+            {
+              "a": 2,
+              "b": 2
+            },
+            {
+              "a": 1,
+              "b": 4
+            }
+          ],
+          [
+            {
+              "a": 0,
+              "b": 0
+            },
+            {
+              "a": 0,
+              "b": 6
+            },
+            {
+              "a": 3,
+              "b": 4
+            },
+            {
+              "a": 0,
+              "b": 1
+            },
+            {
+              "a": 1,
+              "b": 1
+            },
+            {
+              "a": 4,
+              "b": 4
+            },
+            {
+              "a": 2,
+              "b": 6
+            }
+          ],
+          [
+            {
+              "a": 6,
+              "b": 6
+            },
+            {
+              "a": 2,
+              "b": 4
+            },
+            {
+              "a": 0,
+              "b": 3
+            },
+            {
+              "a": 0,
+              "b": 2
+            },
+            {
+              "a": 1,
+              "b": 3
+            },
+            {
+              "a": 1,
+              "b": 6
+            },
+            {
+              "a": 3,
+              "b": 6
+            }
+          ],
+          [
+            {
+              "a": 2,
+              "b": 5
+            },
+            {
+              "a": 1,
+              "b": 2
+            },
+            {
+              "a": 3,
+              "b": 5
+            },
+            {
+              "a": 1,
+              "b": 5
+            },
+            {
+              "a": 5,
+              "b": 5
+            },
+            {
+              "a": 4,
+              "b": 5
+            }
+          ]
+        ],
+        "boneyard": [],
+        "scores": [
+          0,
+          0,
+          0,
+          25
+        ],
+        "matchId": "solo-f498a431-b48a-43cf-8bd5-fa39eba42759",
+        "total": 28,
+        "screen": [
+          "game-screen"
+        ],
+        "validMoves": [
+          {
+            "tileIndex": 0,
+            "openEndIndex": 1
+          },
+          {
+            "tileIndex": 5,
+            "openEndIndex": 0
+          }
+        ]
+      }
+    },
+    {
+      "case": "rotation_request",
+      "requestedLandscape": true,
+      "result": {
+        "width": 839,
+        "height": 343,
+        "orientation": "landscape-primary",
+        "total": 28
+      },
+      "restored": true
+    },
+    {
+      "case": "menu_timer_initial",
+      "state": {
+        "mode": "telefon",
+        "active": true,
+        "turn": 0,
+        "human": 0,
+        "inProgress": false,
+        "postMove": false,
+        "roundOver": false,
+        "matchOver": false,
+        "board": {
+          "nodes": [
+            {
+              "tile": {
+                "a": 2,
+                "b": 3
+              },
+              "x": 0,
+              "y": 0,
+              "orientation": "horizontal",
+              "displayA": 2,
+              "displayB": 3,
+              "connections": {}
+            }
+          ],
+          "openEnds": [
+            {
+              "nodeId": 0,
+              "side": "left",
+              "value": 2,
+              "growthDir": "left"
+            },
+            {
+              "nodeId": 0,
+              "side": "right",
+              "value": 3,
+              "growthDir": "right"
+            }
+          ],
+          "crossNodeId": null,
+          "crossSidesClosed": 0,
+          "startAxis": "horizontal",
+          "telephoneEnabled": true,
+          "scoringEnabled": true
+        },
+        "hands": [
+          [
+            {
+              "a": 3,
+              "b": 3
+            },
+            {
+              "a": 5,
+              "b": 6
+            },
+            {
+              "a": 4,
+              "b": 6
+            },
+            {
+              "a": 0,
+              "b": 4
+            },
+            {
+              "a": 0,
+              "b": 5
+            },
+            {
+              "a": 2,
+              "b": 2
+            },
+            {
+              "a": 1,
+              "b": 4
+            }
+          ],
+          [
+            {
+              "a": 0,
+              "b": 0
+            },
+            {
+              "a": 0,
+              "b": 6
+            },
+            {
+              "a": 3,
+              "b": 4
+            },
+            {
+              "a": 0,
+              "b": 1
+            },
+            {
+              "a": 1,
+              "b": 1
+            },
+            {
+              "a": 4,
+              "b": 4
+            },
+            {
+              "a": 2,
+              "b": 6
+            }
+          ],
+          [
+            {
+              "a": 6,
+              "b": 6
+            },
+            {
+              "a": 2,
+              "b": 4
+            },
+            {
+              "a": 0,
+              "b": 3
+            },
+            {
+              "a": 0,
+              "b": 2
+            },
+            {
+              "a": 1,
+              "b": 3
+            },
+            {
+              "a": 1,
+              "b": 6
+            },
+            {
+              "a": 3,
+              "b": 6
+            }
+          ],
+          [
+            {
+              "a": 2,
+              "b": 5
+            },
+            {
+              "a": 1,
+              "b": 2
+            },
+            {
+              "a": 3,
+              "b": 5
+            },
+            {
+              "a": 1,
+              "b": 5
+            },
+            {
+              "a": 5,
+              "b": 5
+            },
+            {
+              "a": 4,
+              "b": 5
+            }
+          ]
+        ],
+        "boneyard": [],
+        "scores": [
+          0,
+          0,
+          0,
+          25
+        ],
+        "matchId": "solo-f498a431-b48a-43cf-8bd5-fa39eba42759",
+        "total": 28,
+        "screen": [
+          "game-screen",
+          "menu-screen"
+        ],
+        "validMoves": [
+          {
+            "tileIndex": 0,
+            "openEndIndex": 1
+          },
+          {
+            "tileIndex": 5,
+            "openEndIndex": 0
+          }
+        ]
+      },
+      "timer": {
+        "deadline": 0,
+        "now": 1792282075158,
+        "timer": null,
+        "current": 0,
+        "roundWins": [
+          0,
+          2,
+          8,
+          0
+        ]
+      }
+    },
+    {
+      "case": "menu_wait_32s",
+      "before": {
+        "mode": "telefon",
+        "active": true,
+        "turn": 0,
+        "human": 0,
+        "inProgress": false,
+        "postMove": false,
+        "roundOver": false,
+        "matchOver": false,
+        "board": {
+          "nodes": [
+            {
+              "tile": {
+                "a": 2,
+                "b": 3
+              },
+              "x": 0,
+              "y": 0,
+              "orientation": "horizontal",
+              "displayA": 2,
+              "displayB": 3,
+              "connections": {}
+            }
+          ],
+          "openEnds": [
+            {
+              "nodeId": 0,
+              "side": "left",
+              "value": 2,
+              "growthDir": "left"
+            },
+            {
+              "nodeId": 0,
+              "side": "right",
+              "value": 3,
+              "growthDir": "right"
+            }
+          ],
+          "crossNodeId": null,
+          "crossSidesClosed": 0,
+          "startAxis": "horizontal",
+          "telephoneEnabled": true,
+          "scoringEnabled": true
+        },
+        "hands": [
+          [
+            {
+              "a": 3,
+              "b": 3
+            },
+            {
+              "a": 5,
+              "b": 6
+            },
+            {
+              "a": 4,
+              "b": 6
+            },
+            {
+              "a": 0,
+              "b": 4
+            },
+            {
+              "a": 0,
+              "b": 5
+            },
+            {
+              "a": 2,
+              "b": 2
+            },
+            {
+              "a": 1,
+              "b": 4
+            }
+          ],
+          [
+            {
+              "a": 0,
+              "b": 0
+            },
+            {
+              "a": 0,
+              "b": 6
+            },
+            {
+              "a": 3,
+              "b": 4
+            },
+            {
+              "a": 0,
+              "b": 1
+            },
+            {
+              "a": 1,
+              "b": 1
+            },
+            {
+              "a": 4,
+              "b": 4
+            },
+            {
+              "a": 2,
+              "b": 6
+            }
+          ],
+          [
+            {
+              "a": 6,
+              "b": 6
+            },
+            {
+              "a": 2,
+              "b": 4
+            },
+            {
+              "a": 0,
+              "b": 3
+            },
+            {
+              "a": 0,
+              "b": 2
+            },
+            {
+              "a": 1,
+              "b": 3
+            },
+            {
+              "a": 1,
+              "b": 6
+            },
+            {
+              "a": 3,
+              "b": 6
+            }
+          ],
+          [
+            {
+              "a": 2,
+              "b": 5
+            },
+            {
+              "a": 1,
+              "b": 2
+            },
+            {
+              "a": 3,
+              "b": 5
+            },
+            {
+              "a": 1,
+              "b": 5
+            },
+            {
+              "a": 5,
+              "b": 5
+            },
+            {
+              "a": 4,
+              "b": 5
+            }
+          ]
+        ],
+        "boneyard": [],
+        "scores": [
+          0,
+          0,
+          0,
+          25
+        ],
+        "matchId": "solo-f498a431-b48a-43cf-8bd5-fa39eba42759",
+        "total": 28,
+        "screen": [
+          "game-screen",
+          "menu-screen"
+        ],
+        "validMoves": [
+          {
+            "tileIndex": 0,
+            "openEndIndex": 1
+          },
+          {
+            "tileIndex": 5,
+            "openEndIndex": 0
+          }
+        ]
+      },
+      "after": {
+        "mode": "telefon",
+        "active": true,
+        "turn": 0,
+        "human": 0,
+        "inProgress": false,
+        "postMove": false,
+        "roundOver": false,
+        "matchOver": false,
+        "board": {
+          "nodes": [
+            {
+              "tile": {
+                "a": 2,
+                "b": 3
+              },
+              "x": 0,
+              "y": 0,
+              "orientation": "horizontal",
+              "displayA": 2,
+              "displayB": 3,
+              "connections": {}
+            }
+          ],
+          "openEnds": [
+            {
+              "nodeId": 0,
+              "side": "left",
+              "value": 2,
+              "growthDir": "left"
+            },
+            {
+              "nodeId": 0,
+              "side": "right",
+              "value": 3,
+              "growthDir": "right"
+            }
+          ],
+          "crossNodeId": null,
+          "crossSidesClosed": 0,
+          "startAxis": "horizontal",
+          "telephoneEnabled": true,
+          "scoringEnabled": true
+        },
+        "hands": [
+          [
+            {
+              "a": 3,
+              "b": 3
+            },
+            {
+              "a": 5,
+              "b": 6
+            },
+            {
+              "a": 4,
+              "b": 6
+            },
+            {
+              "a": 0,
+              "b": 4
+            },
+            {
+              "a": 0,
+              "b": 5
+            },
+            {
+              "a": 2,
+              "b": 2
+            },
+            {
+              "a": 1,
+              "b": 4
+            }
+          ],
+          [
+            {
+              "a": 0,
+              "b": 0
+            },
+            {
+              "a": 0,
+              "b": 6
+            },
+            {
+              "a": 3,
+              "b": 4
+            },
+            {
+              "a": 0,
+              "b": 1
+            },
+            {
+              "a": 1,
+              "b": 1
+            },
+            {
+              "a": 4,
+              "b": 4
+            },
+            {
+              "a": 2,
+              "b": 6
+            }
+          ],
+          [
+            {
+              "a": 6,
+              "b": 6
+            },
+            {
+              "a": 2,
+              "b": 4
+            },
+            {
+              "a": 0,
+              "b": 3
+            },
+            {
+              "a": 0,
+              "b": 2
+            },
+            {
+              "a": 1,
+              "b": 3
+            },
+            {
+              "a": 1,
+              "b": 6
+            },
+            {
+              "a": 3,
+              "b": 6
+            }
+          ],
+          [
+            {
+              "a": 2,
+              "b": 5
+            },
+            {
+              "a": 1,
+              "b": 2
+            },
+            {
+              "a": 3,
+              "b": 5
+            },
+            {
+              "a": 1,
+              "b": 5
+            },
+            {
+              "a": 5,
+              "b": 5
+            },
+            {
+              "a": 4,
+              "b": 5
+            }
+          ]
+        ],
+        "boneyard": [],
+        "scores": [
+          0,
+          0,
+          0,
+          25
+        ],
+        "matchId": "solo-f498a431-b48a-43cf-8bd5-fa39eba42759",
+        "total": 28,
+        "screen": [
+          "game-screen",
+          "menu-screen"
+        ],
+        "validMoves": [
+          {
+            "tileIndex": 0,
+            "openEndIndex": 1
+          },
+          {
+            "tileIndex": 5,
+            "openEndIndex": 0
+          }
+        ]
+      },
+      "beforeTimer": {
+        "deadline": 0,
+        "now": 1792282075158,
+        "timer": null,
+        "current": 0,
+        "roundWins": [
+          0,
+          2,
+          8,
+          0
+        ]
+      },
+      "afterTimer": {
+        "menuVisible": true,
+        "deadline": 0,
+        "now": 1792282108022,
+        "roundWins": [
+          0,
+          2,
+          8,
+          0
+        ]
+      }
+    },
+    {
+      "case": "fresh_menu_live_timer_before",
+      "state": {
+        "mode": "telefon",
+        "active": true,
+        "turn": 0,
+        "human": 0,
+        "inProgress": false,
+        "postMove": false,
+        "roundOver": false,
+        "matchOver": false,
+        "board": {
+          "nodes": [
+            {
+              "tile": {
+                "a": 2,
+                "b": 3
+              },
+              "x": 0,
+              "y": 0,
+              "orientation": "horizontal",
+              "displayA": 2,
+              "displayB": 3,
+              "connections": {
+                "right": 1
+              }
+            },
+            {
+              "tile": {
+                "a": 3,
+                "b": 5
+              },
+              "x": 68,
+              "y": 0,
+              "orientation": "horizontal",
+              "displayA": 3,
+              "displayB": 5,
+              "connections": {
+                "left": 0,
+                "right": 2
+              }
+            },
+            {
+              "tile": {
+                "a": 5,
+                "b": 6
+              },
+              "x": 136,
+              "y": 0,
+              "orientation": "horizontal",
+              "displayA": 5,
+              "displayB": 6,
+              "connections": {
+                "left": 1
+              }
+            }
+          ],
+          "openEnds": [
+            {
+              "nodeId": 0,
+              "side": "left",
+              "value": 2,
+              "growthDir": "left"
+            },
+            {
+              "nodeId": 2,
+              "side": "right",
+              "value": 6,
+              "growthDir": "right"
+            }
+          ],
+          "crossNodeId": null,
+          "crossSidesClosed": 0,
+          "startAxis": "horizontal",
+          "telephoneEnabled": true,
+          "scoringEnabled": true
+        },
+        "hands": [
+          [
+            {
+              "a": 2,
+              "b": 4
+            },
+            {
+              "a": 0,
+              "b": 5
+            },
+            {
+              "a": 0,
+              "b": 3
+            },
+            {
+              "a": 1,
+              "b": 3
+            },
+            {
+              "a": 0,
+              "b": 0
+            },
+            {
+              "a": 0,
+              "b": 4
+            },
+            {
+              "a": 6,
+              "b": 6
+            }
+          ],
+          [
+            {
+              "a": 3,
+              "b": 6
+            },
+            {
+              "a": 4,
+              "b": 6
+            },
+            {
+              "a": 2,
+              "b": 6
+            },
+            {
+              "a": 1,
+              "b": 4
+            },
+            {
+              "a": 0,
+              "b": 1
+            },
+            {
+              "a": 0,
+              "b": 2
+            }
+          ],
+          [
+            {
+              "a": 5,
+              "b": 5
+            },
+            {
+              "a": 2,
+              "b": 2
+            },
+            {
+              "a": 1,
+              "b": 2
+            },
+            {
+              "a": 2,
+              "b": 5
+            },
+            {
+              "a": 3,
+              "b": 4
+            },
+            {
+              "a": 4,
+              "b": 4
+            }
+          ],
+          [
+            {
+              "a": 0,
+              "b": 6
+            },
+            {
+              "a": 3,
+              "b": 3
+            },
+            {
+              "a": 4,
+              "b": 5
+            },
+            {
+              "a": 1,
+              "b": 1
+            },
+            {
+              "a": 1,
+              "b": 5
+            },
+            {
+              "a": 1,
+              "b": 6
+            }
+          ]
+        ],
+        "boneyard": [],
+        "scores": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "matchId": "solo-169270dd-459b-4286-9868-664e02163a4d",
+        "total": 28,
+        "screen": [
+          "game-screen",
+          "menu-screen"
+        ],
+        "validMoves": [
+          {
+            "tileIndex": 0,
+            "openEndIndex": 0
+          },
+          {
+            "tileIndex": 6,
+            "openEndIndex": 1
+          }
+        ]
+      },
+      "timer": {
+        "deadline": 1792282167569,
+        "now": 1792282138317,
+        "timeoutId": 317,
+        "roundWins": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "quitDialogs": [
+        "Если вы выйдете сейчас, текущая игра будет потеряна и этот матч на монеты засчитается как поражение. Продолжить?"
+      ]
+    },
+    {
+      "case": "fresh_menu_actual_elapsed",
+      "before": {
+        "mode": "telefon",
+        "active": true,
+        "turn": 0,
+        "human": 0,
+        "inProgress": false,
+        "postMove": false,
+        "roundOver": false,
+        "matchOver": false,
+        "board": {
+          "nodes": [
+            {
+              "tile": {
+                "a": 2,
+                "b": 3
+              },
+              "x": 0,
+              "y": 0,
+              "orientation": "horizontal",
+              "displayA": 2,
+              "displayB": 3,
+              "connections": {
+                "right": 1
+              }
+            },
+            {
+              "tile": {
+                "a": 3,
+                "b": 5
+              },
+              "x": 68,
+              "y": 0,
+              "orientation": "horizontal",
+              "displayA": 3,
+              "displayB": 5,
+              "connections": {
+                "left": 0,
+                "right": 2
+              }
+            },
+            {
+              "tile": {
+                "a": 5,
+                "b": 6
+              },
+              "x": 136,
+              "y": 0,
+              "orientation": "horizontal",
+              "displayA": 5,
+              "displayB": 6,
+              "connections": {
+                "left": 1
+              }
+            }
+          ],
+          "openEnds": [
+            {
+              "nodeId": 0,
+              "side": "left",
+              "value": 2,
+              "growthDir": "left"
+            },
+            {
+              "nodeId": 2,
+              "side": "right",
+              "value": 6,
+              "growthDir": "right"
+            }
+          ],
+          "crossNodeId": null,
+          "crossSidesClosed": 0,
+          "startAxis": "horizontal",
+          "telephoneEnabled": true,
+          "scoringEnabled": true
+        },
+        "hands": [
+          [
+            {
+              "a": 2,
+              "b": 4
+            },
+            {
+              "a": 0,
+              "b": 5
+            },
+            {
+              "a": 0,
+              "b": 3
+            },
+            {
+              "a": 1,
+              "b": 3
+            },
+            {
+              "a": 0,
+              "b": 0
+            },
+            {
+              "a": 0,
+              "b": 4
+            },
+            {
+              "a": 6,
+              "b": 6
+            }
+          ],
+          [
+            {
+              "a": 3,
+              "b": 6
+            },
+            {
+              "a": 4,
+              "b": 6
+            },
+            {
+              "a": 2,
+              "b": 6
+            },
+            {
+              "a": 1,
+              "b": 4
+            },
+            {
+              "a": 0,
+              "b": 1
+            },
+            {
+              "a": 0,
+              "b": 2
+            }
+          ],
+          [
+            {
+              "a": 5,
+              "b": 5
+            },
+            {
+              "a": 2,
+              "b": 2
+            },
+            {
+              "a": 1,
+              "b": 2
+            },
+            {
+              "a": 2,
+              "b": 5
+            },
+            {
+              "a": 3,
+              "b": 4
+            },
+            {
+              "a": 4,
+              "b": 4
+            }
+          ],
+          [
+            {
+              "a": 0,
+              "b": 6
+            },
+            {
+              "a": 3,
+              "b": 3
+            },
+            {
+              "a": 4,
+              "b": 5
+            },
+            {
+              "a": 1,
+              "b": 1
+            },
+            {
+              "a": 1,
+              "b": 5
+            },
+            {
+              "a": 1,
+              "b": 6
+            }
+          ]
+        ],
+        "boneyard": [],
+        "scores": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "matchId": "solo-169270dd-459b-4286-9868-664e02163a4d",
+        "total": 28,
+        "screen": [
+          "game-screen",
+          "menu-screen"
+        ],
+        "validMoves": [
+          {
+            "tileIndex": 0,
+            "openEndIndex": 0
+          },
+          {
+            "tileIndex": 6,
+            "openEndIndex": 1
+          }
+        ]
+      },
+      "after": {
+        "mode": "telefon",
+        "active": true,
+        "turn": 0,
+        "human": 0,
+        "inProgress": false,
+        "postMove": false,
+        "roundOver": false,
+        "matchOver": false,
+        "board": {
+          "nodes": [
+            {
+              "tile": {
+                "a": 2,
+                "b": 3
+              },
+              "x": 0,
+              "y": 0,
+              "orientation": "horizontal",
+              "displayA": 2,
+              "displayB": 3,
+              "connections": {}
+            }
+          ],
+          "openEnds": [
+            {
+              "nodeId": 0,
+              "side": "left",
+              "value": 2,
+              "growthDir": "left"
+            },
+            {
+              "nodeId": 0,
+              "side": "right",
+              "value": 3,
+              "growthDir": "right"
+            }
+          ],
+          "crossNodeId": null,
+          "crossSidesClosed": 0,
+          "startAxis": "horizontal",
+          "telephoneEnabled": true,
+          "scoringEnabled": true
+        },
+        "hands": [
+          [
+            {
+              "a": 0,
+              "b": 0
+            },
+            {
+              "a": 1,
+              "b": 2
+            },
+            {
+              "a": 4,
+              "b": 4
+            },
+            {
+              "a": 2,
+              "b": 5
+            },
+            {
+              "a": 5,
+              "b": 6
+            },
+            {
+              "a": 2,
+              "b": 4
+            },
+            {
+              "a": 3,
+              "b": 3
+            }
+          ],
+          [
+            {
+              "a": 2,
+              "b": 2
+            },
+            {
+              "a": 0,
+              "b": 5
+            },
+            {
+              "a": 0,
+              "b": 1
+            },
+            {
+              "a": 1,
+              "b": 1
+            },
+            {
+              "a": 6,
+              "b": 6
+            },
+            {
+              "a": 5,
+              "b": 5
+            },
+            {
+              "a": 0,
+              "b": 6
+            }
+          ],
+          [
+            {
+              "a": 1,
+              "b": 5
+            },
+            {
+              "a": 1,
+              "b": 3
+            },
+            {
+              "a": 1,
+              "b": 4
+            },
+            {
+              "a": 4,
+              "b": 6
+            },
+            {
+              "a": 1,
+              "b": 6
+            },
+            {
+              "a": 4,
+              "b": 5
+            },
+            {
+              "a": 3,
+              "b": 4
+            }
+          ],
+          [
+            {
+              "a": 3,
+              "b": 6
+            },
+            {
+              "a": 2,
+              "b": 6
+            },
+            {
+              "a": 0,
+              "b": 3
+            },
+            {
+              "a": 0,
+              "b": 4
+            },
+            {
+              "a": 0,
+              "b": 2
+            },
+            {
+              "a": 3,
+              "b": 5
+            }
+          ]
+        ],
+        "boneyard": [],
+        "scores": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "matchId": "solo-169270dd-459b-4286-9868-664e02163a4d",
+        "total": 28,
+        "screen": [
+          "game-screen",
+          "menu-screen"
+        ],
+        "validMoves": [
+          {
+            "tileIndex": 1,
+            "openEndIndex": 0
+          },
+          {
+            "tileIndex": 3,
+            "openEndIndex": 0
+          },
+          {
+            "tileIndex": 5,
+            "openEndIndex": 0
+          },
+          {
+            "tileIndex": 6,
+            "openEndIndex": 1
+          }
+        ]
+      },
+      "beforeTimer": {
+        "deadline": 1792282167569,
+        "now": 1792282138317,
+        "timeoutId": 317,
+        "roundWins": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "afterTimer": {
+        "menuVisible": true,
+        "deadline": 1792282206909,
+        "now": 1792282188638,
+        "roundWins": [
+          0,
+          2,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "case": "font_scale_1_3",
+      "result": {
+        "viewport": {
+          "w": 392,
+          "h": 823
+        },
+        "scroll": {
+          "w": 392,
+          "h": 823
+        },
+        "modal": {
+          "x": 0,
+          "y": 0,
+          "w": 392.727294921875,
+          "h": 822.9091186523438
+        },
+        "visibleButtons": [
+          {
+            "id": "solo-modal-close",
+            "text": "×",
+            "rect": {
+              "x": 306,
+              "y": 145.5056915283203,
+              "w": 40,
+              "h": 40
+            }
+          },
+          {
+            "id": "",
+            "text": "2",
+            "rect": {
+              "x": 46.72727584838867,
+              "y": 295.7670593261719,
+              "w": 94.42045593261719,
+              "h": 44
+            }
+          },
+          {
+            "id": "",
+            "text": "3",
+            "rect": {
+              "x": 149.14773559570312,
+              "y": 295.7670593261719,
+              "w": 94.42613983154297,
+              "h": 44
+            }
+          },
+          {
+            "id": "",
+            "text": "4",
+            "rect": {
+              "x": 251.57386779785156,
+              "y": 295.7670593261719,
+              "w": 94.42613983154297,
+              "h": 44
+            }
+          },
+          {
+            "id": "",
+            "text": "Легко",
+            "rect": {
+              "x": 46.72727584838867,
+              "y": 376.9488830566406,
+              "w": 93.97159576416016,
+              "h": 44
+            }
+          },
+          {
+            "id": "",
+            "text": "Средне",
+            "rect": {
+              "x": 148.69886779785156,
+              "y": 376.9488830566406,
+              "w": 93.9772720336914,
+              "h": 44
+            }
+          },
+          {
+            "id": "",
+            "text": "Сложно",
+            "rect": {
+              "x": 250.6761474609375,
+              "y": 376.9488830566406,
+              "w": 95.32386779785156,
+              "h": 44
+            }
+          },
+          {
+            "id": "start-game-btn",
+            "text": "Начать игру",
+            "rect": {
+              "x": 46.72727584838867,
+              "y": 631.4034423828125,
+              "w": 299.2727355957031,
+              "h": 50
+            }
+          }
+        ]
+      }
+    },
+    {
+      "case": "friend_request_sent",
+      "peerFriends": {
+        "status": 200,
+        "body": {
+          "accepted": [],
+          "incoming": [
+            {
+              "id": "cmvd2mk1b0l7it0mq39rsndd3",
+              "status": "pending",
+              "note": null,
+              "createdAt": "2026-10-18T00:12:14.447Z",
+              "updatedAt": "2026-10-18T00:12:14.447Z",
+              "respondedAt": null,
+              "relation": "incoming",
+              "friend": {
+                "id": "cmvd255op0001t0ni17ngvl51",
+                "displayName": "AuditPhone",
+                "avatarSeed": null,
+                "avatarUrl": null,
+                "isGuest": false,
+                "createdAt": "2026-10-17T23:58:42.697Z"
+              }
+            }
+          ],
+          "outgoing": [],
+          "items": [
+            {
+              "id": "cmvd2mk1b0l7it0mq39rsndd3",
+              "status": "pending",
+              "note": null,
+              "createdAt": "2026-10-18T00:12:14.447Z",
+              "updatedAt": "2026-10-18T00:12:14.447Z",
+              "respondedAt": null,
+              "relation": "incoming",
+              "friend": {
+                "id": "cmvd255op0001t0ni17ngvl51",
+                "displayName": "AuditPhone",
+                "avatarSeed": null,
+                "avatarUrl": null,
+                "isGuest": false,
+                "createdAt": "2026-10-17T23:58:42.697Z"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "case": "friend_accept_visible",
+      "accepted": {
+        "status": 201,
+        "body": {
+          "item": {
+            "id": "cmvd2mk1b0l7it0mq39rsndd3",
+            "status": "accepted",
+            "note": null,
+            "createdAt": "2026-10-18T00:12:14.447Z",
+            "updatedAt": "2026-10-18T00:12:26.665Z",
+            "respondedAt": "2026-10-18T00:12:26.665Z",
+            "relation": "accepted",
+            "friend": {
+              "id": "cmvd255op0001t0ni17ngvl51",
+              "displayName": "AuditPhone",
+              "avatarSeed": null,
+              "avatarUrl": null,
+              "isGuest": false,
+              "createdAt": "2026-10-17T23:58:42.697Z"
+            }
+          }
+        }
+      },
+      "phoneText": "Сообщения\n11 000\n+\n1 000\n×\nДрузья\nПочта\nДРУЗЬЯ (0)\nСортировка: Недавние\n▼\nЗАПРОСЫ В ДРУЗЬЯ\nA\nAuditPeer\nОтправлено\nCancel\nПока нет друзей"
+    },
+    {
+      "case": "friend_accept_live_refresh",
+      "friendLiveUpdate": true
+    },
+    {
+      "case": "direct_messages_roundtrip",
+      "peerMessages": {
+        "status": 500,
+        "body": {
+          "statusCode": 500,
+          "message": "Internal server error"
+        }
+      },
+      "peerReply": {
+        "status": 500,
+        "body": {
+          "statusCode": 500,
+          "message": "Internal server error"
+        }
+      }
+    },
+    {
+      "case": "buy_and_send_gift",
+      "before": {
+        "phoneBalance": 11000,
+        "peerInventory": {
+          "status": 200,
+          "body": {
+            "items": [],
+            "summary": {
+              "unique": 0,
+              "quantity": 0,
+              "exchangeValue": 0
+            }
+          }
+        }
+      },
+      "after": {
+        "peerInventory": {
+          "status": 200,
+          "body": {
+            "items": [
+              {
+                "id": "cmvd2rclv0tkvt0mqq1aauoko",
+                "playerId": "cmvd255p20004t0nievmmogig",
+                "giftCatalogId": "cmvcxxl6v0019t0t3s8wddr6h",
+                "quantity": 1,
+                "receivedCount": 1,
+                "sentCount": 0,
+                "exchangedCount": 0,
+                "lastReceivedAt": "2026-10-18T00:15:58.099Z",
+                "lastSentAt": null,
+                "createdAt": "2026-10-18T00:15:58.100Z",
+                "updatedAt": "2026-10-18T00:15:58.100Z",
+                "catalog": {
+                  "id": "cmvcxxl6v0019t0t3s8wddr6h",
+                  "key": "gift_001",
+                  "name": "Gift 001",
+                  "description": "Gift asset gift_001",
+                  "assetKey": "gift_001",
+                  "coinCost": 1000,
+                  "exchangeRateBps": 7000,
+                  "exchangeValue": 700,
+                  "rarity": "common",
+                  "sortOrder": 1,
+                  "isActive": true,
+                  "createdAt": "2026-10-17T22:00:51.079Z",
+                  "updatedAt": "2026-10-18T00:15:59.123Z"
+                }
+              }
+            ],
+            "summary": {
+              "unique": 1,
+              "quantity": 1,
+              "exchangeValue": 700
+            }
+          }
+        },
+        "peerHistory": {
+          "status": 200,
+          "body": {
+            "sent": [],
+            "received": [
+              {
+                "id": "cmvd2rcly0tkxt0mql6rb6jf4",
+                "senderPlayerId": "cmvd255op0001t0ni17ngvl51",
+                "recipientPlayerId": "cmvd255p20004t0nievmmogig",
+                "giftCatalogId": "cmvcxxl6v0019t0t3s8wddr6h",
+                "giftKey": "gift_001",
+                "giftName": "Gift 001",
+                "assetKey": "gift_001",
+                "coinCost": 1000,
+                "exchangeValue": 700,
+                "contextType": "chat",
+                "contextId": "cmvd255p20004t0nievmmogig",
+                "note": "Gift 001",
+                "status": "sent",
+                "createdAt": "2026-10-18T00:15:58.103Z",
+                "updatedAt": "2026-10-18T00:15:58.103Z",
+                "sender": {
+                  "id": "cmvd255op0001t0ni17ngvl51",
+                  "displayName": "AuditPhone",
+                  "avatarSeed": null,
+                  "avatarUrl": null,
+                  "isGuest": false,
+                  "createdAt": "2026-10-17T23:58:42.697Z"
+                },
+                "recipient": {
+                  "id": "cmvd255p20004t0nievmmogig",
+                  "displayName": "AuditPeer",
+                  "avatarSeed": null,
+                  "avatarUrl": null,
+                  "isGuest": false,
+                  "createdAt": "2026-10-17T23:58:42.710Z"
+                }
+              }
+            ],
+            "items": [
+              {
+                "id": "cmvd2rcly0tkxt0mql6rb6jf4",
+                "senderPlayerId": "cmvd255op0001t0ni17ngvl51",
+                "recipientPlayerId": "cmvd255p20004t0nievmmogig",
+                "giftCatalogId": "cmvcxxl6v0019t0t3s8wddr6h",
+                "giftKey": "gift_001",
+                "giftName": "Gift 001",
+                "assetKey": "gift_001",
+                "coinCost": 1000,
+                "exchangeValue": 700,
+                "contextType": "chat",
+                "contextId": "cmvd255p20004t0nievmmogig",
+                "note": "Gift 001",
+                "status": "sent",
+                "createdAt": "2026-10-18T00:15:58.103Z",
+                "updatedAt": "2026-10-18T00:15:58.103Z",
+                "sender": {
+                  "id": "cmvd255op0001t0ni17ngvl51",
+                  "displayName": "AuditPhone",
+                  "avatarSeed": null,
+                  "avatarUrl": null,
+                  "isGuest": false,
+                  "createdAt": "2026-10-17T23:58:42.697Z"
+                },
+                "recipient": {
+                  "id": "cmvd255p20004t0nievmmogig",
+                  "displayName": "AuditPeer",
+                  "avatarSeed": null,
+                  "avatarUrl": null,
+                  "isGuest": false,
+                  "createdAt": "2026-10-17T23:58:42.710Z"
+                }
+              }
+            ]
+          }
+        },
+        "phone": {
+          "balance": 10000,
+          "text": "ПОЛУЧАТЕЛЬ\nA\nAuditPeer\nGift 001\ncommon • возврат 700\n1000 монет\nGift 002\ncommon • возврат 700\n1000 монет\nGift 003\ncommon • возврат 700\n1000 монет\nGift 004\ncommon • возврат 700\n1000 монет\nGift 005\ncommon • возврат 700\n1000 монет\nGift 006\ncommon • возврат 700\n1000 монет\nGift 007\nrare • возврат 700\n1000 монет\nGift 008\nrare • возврат 700\n1000 монет\nGift 009\nrare • возврат 700\n1000 монет\nGift 010\nrare • возврат 700\n1000 монет\nGift 011\nepic • возврат 700\n1000 монет\nGift 012\nepic • возврат 700\n1000 монет\nИГРОКИ\n0\n×\nA\nAuditPeer\nНе в сети\n🎁\nПрофиль\n18 октября\nТест аудита: сообщение с телефона\n04:13\n⚠️\n😊"
+        }
+      }
+    },
+    {
+      "case": "gift_exchange",
+      "exchanged": {
+        "status": 201,
+        "body": {
+          "ok": true,
+          "wallet": {
+            "id": "cmvd255p20005t0nia1689atv",
+            "playerId": "cmvd255p20004t0nievmmogig",
+            "balance": 11700,
+            "reserved": 0,
+            "lifetimeEarned": 1700,
+            "lifetimeSpent": 0,
+            "createdAt": "2026-10-17T23:58:42.710Z",
+            "updatedAt": "2026-10-18T00:17:02.351Z"
+          },
+          "gift": {
+            "id": "cmvd2sq6n0w3ut0mqv2cp32s2",
+            "senderPlayerId": "cmvd255p20004t0nievmmogig",
+            "recipientPlayerId": "cmvd255p20004t0nievmmogig",
+            "giftCatalogId": "cmvcxxl6v0019t0t3s8wddr6h",
+            "giftKey": "gift_001",
+            "giftName": "Gift 001",
+            "assetKey": "gift_001",
+            "coinCost": 1000,
+            "exchangeValue": 700,
+            "contextType": "exchange",
+            "contextId": "cmvd2rclv0tkvt0mqq1aauoko",
+            "note": null,
+            "status": "exchanged",
+            "createdAt": "2026-10-18T00:17:02.352Z",
+            "updatedAt": "2026-10-18T00:17:02.352Z",
+            "sender": {
+              "id": "cmvd255p20004t0nievmmogig",
+              "displayName": "AuditPeer",
+              "avatarSeed": null,
+              "avatarUrl": null,
+              "isGuest": false,
+              "createdAt": "2026-10-17T23:58:42.710Z"
+            },
+            "recipient": {
+              "id": "cmvd255p20004t0nievmmogig",
+              "displayName": "AuditPeer",
+              "avatarSeed": null,
+              "avatarUrl": null,
+              "isGuest": false,
+              "createdAt": "2026-10-17T23:58:42.710Z"
+            }
+          },
+          "inventory": {
+            "id": "cmvd2rclv0tkvt0mqq1aauoko",
+            "playerId": "cmvd255p20004t0nievmmogig",
+            "giftCatalogId": "cmvcxxl6v0019t0t3s8wddr6h",
+            "quantity": 0,
+            "receivedCount": 1,
+            "sentCount": 0,
+            "exchangedCount": 1,
+            "lastReceivedAt": "2026-10-18T00:15:58.099Z",
+            "lastSentAt": null,
+            "createdAt": "2026-10-18T00:15:58.100Z",
+            "updatedAt": "2026-10-18T00:17:02.348Z",
+            "catalog": {
+              "id": "cmvcxxl6v0019t0t3s8wddr6h",
+              "key": "gift_001",
+              "name": "Gift 001",
+              "description": "Gift asset gift_001",
+              "assetKey": "gift_001",
+              "coinCost": 1000,
+              "exchangeRateBps": 7000,
+              "exchangeValue": 700,
+              "rarity": "common",
+              "sortOrder": 1,
+              "isActive": true,
+              "createdAt": "2026-10-17T22:00:51.079Z",
+              "updatedAt": "2026-10-18T00:17:02.340Z"
+            }
+          }
+        }
+      },
+      "afterExchange": {
+        "status": 200,
+        "body": {
+          "items": [],
+          "summary": {
+            "unique": 0,
+            "quantity": 0,
+            "exchangeValue": 0
+          }
+        }
+      }
+    },
+    {
+      "case": "microphone_deny",
+      "result": {
+        "ok": true,
+        "tracks": [
+          {
+            "kind": "audio",
+            "state": "live"
+          }
+        ],
+        "stopped": true
+      },
+      "scope": "getUserMedia acquisition only; no recording sent or saved"
+    },
+    {
+      "case": "microphone_acquisition_positive",
+      "result": {
+        "ok": true,
+        "tracks": [
+          {
+            "kind": "audio",
+            "state": "live"
+          }
+        ],
+        "stopped": true
+      },
+      "note": "Initial intended deny tap did not produce a denial; that attempt is not counted as a deny test."
+    },
+    {
+      "case": "microphone_deny_atomic",
+      "nativeDenyButtonObserved": true,
+      "result": {
+        "ok": false,
+        "error": "NotAllowedError",
+        "message": "Permission denied"
+      }
+    },
+    {
+      "case": "room_invite_created",
+      "incomingRoom": {
+        "status": 200,
+        "body": {
+          "incoming": [],
+          "sent": [],
+          "items": []
+        }
+      },
+      "incomingPlay": {
+        "status": 200,
+        "body": {
+          "incoming": [
+            {
+              "id": "cmvd2xe2l140qt0mqb06e84n4",
+              "roomId": "ZO64DraEu",
+              "roomCode": "V6HH",
+              "stakeKey": "stake_200",
+              "stakeAmount": 0,
+              "humanSeats": 2,
+              "totalPlayers": 2,
+              "isTeamMode": false,
+              "status": "pending",
+              "kind": "play",
+              "note": "play-invite",
+              "createdAt": "2026-10-18T00:20:39.933Z",
+              "updatedAt": "2026-10-18T00:20:39.933Z",
+              "respondedAt": null,
+              "expiresAt": "2026-10-18T00:25:39.931Z",
+              "inviter": {
+                "id": "cmvd255op0001t0ni17ngvl51",
+                "displayName": "AuditPhone",
+                "avatarSeed": null,
+                "avatarUrl": null,
+                "isGuest": false,
+                "createdAt": "2026-10-17T23:58:42.697Z"
+              },
+              "invitee": {
+                "id": "cmvd255p20004t0nievmmogig",
+                "displayName": "AuditPeer",
+                "avatarSeed": null,
+                "avatarUrl": null,
+                "isGuest": false,
+                "createdAt": "2026-10-17T23:58:42.710Z"
+              }
+            }
+          ],
+          "outgoing": [],
+          "waiting": [],
+          "acceptedWaiting": [],
+          "items": [
+            {
+              "id": "cmvd2xe2l140qt0mqb06e84n4",
+              "roomId": "ZO64DraEu",
+              "roomCode": "V6HH",
+              "stakeKey": "stake_200",
+              "stakeAmount": 0,
+              "humanSeats": 2,
+              "totalPlayers": 2,
+              "isTeamMode": false,
+              "status": "pending",
+              "kind": "play",
+              "note": "play-invite",
+              "createdAt": "2026-10-18T00:20:39.933Z",
+              "updatedAt": "2026-10-18T00:20:39.933Z",
+              "respondedAt": null,
+              "expiresAt": "2026-10-18T00:25:39.931Z",
+              "inviter": {
+                "id": "cmvd255op0001t0ni17ngvl51",
+                "displayName": "AuditPhone",
+                "avatarSeed": null,
+                "avatarUrl": null,
+                "isGuest": false,
+                "createdAt": "2026-10-17T23:58:42.697Z"
+              },
+              "invitee": {
+                "id": "cmvd255p20004t0nievmmogig",
+                "displayName": "AuditPeer",
+                "avatarSeed": null,
+                "avatarUrl": null,
+                "isGuest": false,
+                "createdAt": "2026-10-17T23:58:42.710Z"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "case": "invite_join_and_online_start",
+      "acceptedPlay": {
+        "status": 201,
+        "body": {
+          "item": {
+            "id": "cmvd2xe2l140qt0mqb06e84n4",
+            "roomId": "ZO64DraEu",
+            "roomCode": "V6HH",
+            "stakeKey": "stake_200",
+            "stakeAmount": 0,
+            "humanSeats": 2,
+            "totalPlayers": 2,
+            "isTeamMode": false,
+            "status": "accepted",
+            "kind": "play",
+            "note": "play-invite",
+            "createdAt": "2026-10-18T00:20:39.933Z",
+            "updatedAt": "2026-10-18T00:21:06.153Z",
+            "respondedAt": "2026-10-18T00:21:06.152Z",
+            "expiresAt": null,
+            "inviter": {
+              "id": "cmvd255op0001t0ni17ngvl51",
+              "displayName": "AuditPhone",
+              "avatarSeed": null,
+              "avatarUrl": null,
+              "isGuest": false,
+              "createdAt": "2026-10-17T23:58:42.697Z"
+            },
+            "invitee": {
+              "id": "cmvd255p20004t0nievmmogig",
+              "displayName": "AuditPeer",
+              "avatarSeed": null,
+              "avatarUrl": null,
+              "isGuest": false,
+              "createdAt": "2026-10-17T23:58:42.710Z"
+            }
+          }
+        }
+      },
+      "peerInitial": {
+        "roomId": "ZO64DraEu",
+        "roomCode": "V6HH",
+        "roomVisibility": "closed",
+        "gameMode": "telefon",
+        "matchState": null,
+        "playerOrder": [
+          "aBXtA4LKV",
+          "OJ1JzDG3a"
+        ],
+        "players": [
+          {
+            "sessionId": "aBXtA4LKV",
+            "index": 0,
+            "name": "AuditPhone",
+            "userId": "audit-device-mvd255o6-AuditPhone",
+            "avatarUrl": "",
+            "score": 0,
+            "roundWins": 0,
+            "handCount": 7,
+            "isConnected": true,
+            "isBot": false,
+            "seatIndex": 0,
+            "controller": "human",
+            "takeoverActive": false,
+            "takeoverReason": ""
+          },
+          {
+            "sessionId": "OJ1JzDG3a",
+            "index": 1,
+            "name": "AuditPeer",
+            "userId": "audit-device-mvd255o6-AuditPeer",
+            "avatarUrl": "",
+            "score": 0,
+            "roundWins": 0,
+            "handCount": 7,
+            "isConnected": true,
+            "isBot": false,
+            "seatIndex": 1,
+            "controller": "human",
+            "takeoverActive": false,
+            "takeoverReason": ""
+          }
+        ],
+        "currentPlayerIndex": 0,
+        "boneyardCount": 14,
+        "gameActive": true,
+        "matchRound": 1,
+        "deal": 1,
+        "board": {
+          "nodes": [],
+          "openEnds": [],
+          "crossNodeId": null,
+          "crossSidesClosed": 0,
+          "startAxis": "horizontal",
+          "telephoneEnabled": true,
+          "scoringEnabled": true
+        },
+        "isTeamMode": false,
+        "playerCount": 2,
+        "turnDeadlineAt": 1792282896780,
+        "turnVersion": 1,
+        "lastMoveRevealPending": false,
+        "finishInfo": null,
+        "matchOver": false,
+        "gameOverReason": "",
+        "gameOverPlayerName": "",
+        "gameOverWinnerIndex": -1,
+        "gameOverSummaryJson": "",
+        "teamScores": [
+          0,
+          0
+        ],
+        "teamRoundWins": [
+          0,
+          0
+        ],
+        "stakeKey": "stake_200",
+        "bankAmount": 400,
+        "turnDurationMs": 30000,
+        "serverNow": 1792282866889,
+        "selfHand": [
+          {
+            "a": 2,
+            "b": 4,
+            "id": "2-4"
+          },
+          {
+            "a": 0,
+            "b": 1,
+            "id": "0-1"
+          },
+          {
+            "a": 3,
+            "b": 4,
+            "id": "3-4"
+          },
+          {
+            "a": 0,
+            "b": 0,
+            "id": "0-0"
+          },
+          {
+            "a": 0,
+            "b": 5,
+            "id": "0-5"
+          },
+          {
+            "a": 0,
+            "b": 6,
+            "id": "0-6"
+          },
+          {
+            "a": 1,
+            "b": 4,
+            "id": "1-4"
+          }
+        ],
+        "turnInfo": {
+          "validMoves": [],
+          "goshaCombo": null
+        }
+      }
+    },
+    {
+      "case": "old_room_disposed_after_idle",
+      "peerNoLongerSyncs": true,
+      "note": "Idle setup room was not used for gameplay/FPS measurements."
+    }
+  ],
+  "screenshots": [
+    "device-02-fresh-main",
+    "device-03-solo-settings",
+    "device-04-solo-table"
+  ],
+  "errors": []
+}

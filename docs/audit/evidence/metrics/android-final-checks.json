@@ -1,0 +1,964 @@
+{
+  "scope": "Five cold force-stop launches and five HOME returns of debug audit WebView on one charging Android. Local USB reverse. UI proxy is splash gone + initialized game/profile, not measured human first interaction or Play release TTI.",
+  "launches": [
+    {
+      "kind": "cold_force_stop",
+      "sample": 1,
+      "pid": "12147",
+      "nativeLaunchMs": 1833,
+      "observedReadyMs": 9065.649749999999,
+      "documentMs": 7698.20000000298,
+      "launch": "Starting: Intent { cmp=az.simplesoft.dominotelefon.audit/az.simplesoft.dominotelefon.MainActivity }\nStatus: ok\nLaunchState: COLD\nActivity: az.simplesoft.dominotelefon.audit/az.simplesoft.dominotelefon.MainActivity\nTotalTime: 1833\nWaitTime: 1841\nComplete\n"
+    },
+    {
+      "kind": "cold_force_stop",
+      "sample": 2,
+      "pid": "13033",
+      "nativeLaunchMs": 1106,
+      "observedReadyMs": 7688.793790999998,
+      "documentMs": 6720.899999991059,
+      "launch": "Starting: Intent { cmp=az.simplesoft.dominotelefon.audit/az.simplesoft.dominotelefon.MainActivity }\nStatus: ok\nLaunchState: COLD\nActivity: az.simplesoft.dominotelefon.audit/az.simplesoft.dominotelefon.MainActivity\nTotalTime: 1106\nWaitTime: 1121\nComplete\n"
+    },
+    {
+      "kind": "cold_force_stop",
+      "sample": 3,
+      "pid": "13295",
+      "nativeLaunchMs": 1116,
+      "observedReadyMs": 7625.383292000002,
+      "documentMs": 6641.79999999702,
+      "launch": "Starting: Intent { cmp=az.simplesoft.dominotelefon.audit/az.simplesoft.dominotelefon.MainActivity }\nStatus: ok\nLaunchState: COLD\nActivity: az.simplesoft.dominotelefon.audit/az.simplesoft.dominotelefon.MainActivity\nTotalTime: 1116\nWaitTime: 1149\nComplete\n"
+    },
+    {
+      "kind": "cold_force_stop",
+      "sample": 4,
+      "pid": "13531",
+      "nativeLaunchMs": 1094,
+      "observedReadyMs": 7579.849917,
+      "documentMs": 6633,
+      "launch": "Starting: Intent { cmp=az.simplesoft.dominotelefon.audit/az.simplesoft.dominotelefon.MainActivity }\nStatus: ok\nLaunchState: COLD\nActivity: az.simplesoft.dominotelefon.audit/az.simplesoft.dominotelefon.MainActivity\nTotalTime: 1094\nWaitTime: 1098\nComplete\n"
+    },
+    {
+      "kind": "cold_force_stop",
+      "sample": 5,
+      "pid": "13770",
+      "nativeLaunchMs": 1147,
+      "observedReadyMs": 7719.843249999998,
+      "documentMs": 6716.100000008941,
+      "launch": "Starting: Intent { cmp=az.simplesoft.dominotelefon.audit/az.simplesoft.dominotelefon.MainActivity }\nStatus: ok\nLaunchState: COLD\nActivity: az.simplesoft.dominotelefon.audit/az.simplesoft.dominotelefon.MainActivity\nTotalTime: 1147\nWaitTime: 1153\nComplete\n"
+    },
+    {
+      "kind": "warm_home_return",
+      "sample": 1,
+      "nativeLaunchMs": 126,
+      "observedReadyMs": 433.2536659999969,
+      "launch": "Starting: Intent { cmp=az.simplesoft.dominotelefon.audit/az.simplesoft.dominotelefon.MainActivity }\nWarning: Activity not started, its current task has been brought to the front\nStatus: ok\nLaunchState: HOT\nActivity: az.simplesoft.dominotelefon.audit/az.simplesoft.dominotelefon.MainActivity\nTotalTime: 126\nWaitTime: 132\nComplete\n"
+    },
+    {
+      "kind": "warm_home_return",
+      "sample": 2,
+      "nativeLaunchMs": 112,
+      "observedReadyMs": 241.90054200000304,
+      "launch": "Starting: Intent { cmp=az.simplesoft.dominotelefon.audit/az.simplesoft.dominotelefon.MainActivity }\nWarning: Activity not started, its current task has been brought to the front\nStatus: ok\nLaunchState: HOT\nActivity: az.simplesoft.dominotelefon.audit/az.simplesoft.dominotelefon.MainActivity\nTotalTime: 112\nWaitTime: 123\nComplete\n"
+    },
+    {
+      "kind": "warm_home_return",
+      "sample": 3,
+      "nativeLaunchMs": 85,
+      "observedReadyMs": 301.96783299999515,
+      "launch": "Starting: Intent { cmp=az.simplesoft.dominotelefon.audit/az.simplesoft.dominotelefon.MainActivity }\nWarning: Activity not started, its current task has been brought to the front\nStatus: ok\nLaunchState: HOT\nActivity: az.simplesoft.dominotelefon.audit/az.simplesoft.dominotelefon.MainActivity\nTotalTime: 85\nWaitTime: 94\nComplete\n"
+    },
+    {
+      "kind": "warm_home_return",
+      "sample": 4,
+      "nativeLaunchMs": 68,
+      "observedReadyMs": 205.74395899999945,
+      "launch": "Starting: Intent { cmp=az.simplesoft.dominotelefon.audit/az.simplesoft.dominotelefon.MainActivity }\nWarning: Activity not started, its current task has been brought to the front\nStatus: ok\nLaunchState: HOT\nActivity: az.simplesoft.dominotelefon.audit/az.simplesoft.dominotelefon.MainActivity\nTotalTime: 68\nWaitTime: 77\nComplete\n"
+    },
+    {
+      "kind": "warm_home_return",
+      "sample": 5,
+      "nativeLaunchMs": 77,
+      "observedReadyMs": 225.7537089999969,
+      "launch": "Starting: Intent { cmp=az.simplesoft.dominotelefon.audit/az.simplesoft.dominotelefon.MainActivity }\nWarning: Activity not started, its current task has been brought to the front\nStatus: ok\nLaunchState: HOT\nActivity: az.simplesoft.dominotelefon.audit/az.simplesoft.dominotelefon.MainActivity\nTotalTime: 77\nWaitTime: 84\nComplete\n"
+    }
+  ],
+  "errors": [],
+  "accessibility": {
+    "fixture": "Natural human turn, legal moves available, timer then cleared for stable inspection. No TalkBack speech test.",
+    "dom": {
+      "turn": 0,
+      "human": 0,
+      "validMoves": 3,
+      "blocked": false,
+      "hand": [
+        {
+          "tag": "DIV",
+          "role": null,
+          "label": null,
+          "tabIndex": -1,
+          "text": "",
+          "classes": "tile vertical playable"
+        },
+        {
+          "tag": "DIV",
+          "role": null,
+          "label": null,
+          "tabIndex": -1,
+          "text": "",
+          "classes": "tile vertical"
+        },
+        {
+          "tag": "DIV",
+          "role": null,
+          "label": null,
+          "tabIndex": -1,
+          "text": "",
+          "classes": "tile vertical"
+        },
+        {
+          "tag": "DIV",
+          "role": null,
+          "label": null,
+          "tabIndex": -1,
+          "text": "",
+          "classes": "tile vertical playable"
+        },
+        {
+          "tag": "DIV",
+          "role": null,
+          "label": null,
+          "tabIndex": -1,
+          "text": "",
+          "classes": "tile vertical"
+        },
+        {
+          "tag": "DIV",
+          "role": null,
+          "label": null,
+          "tabIndex": -1,
+          "text": "",
+          "classes": "tile vertical"
+        },
+        {
+          "tag": "DIV",
+          "role": null,
+          "label": null,
+          "tabIndex": -1,
+          "text": "",
+          "classes": "tile vertical playable"
+        }
+      ],
+      "canvas": [
+        {
+          "label": null,
+          "role": null
+        }
+      ]
+    },
+    "tabSequence": [
+      {
+        "id": "menu-btn",
+        "tag": "BUTTON"
+      },
+      {
+        "id": "",
+        "tag": "BUTTON"
+      },
+      {
+        "id": "",
+        "tag": "BODY"
+      },
+      {
+        "id": "menu-btn",
+        "tag": "BUTTON"
+      },
+      {
+        "id": "",
+        "tag": "BUTTON"
+      },
+      {
+        "id": "",
+        "tag": "BODY"
+      },
+      {
+        "id": "menu-btn",
+        "tag": "BUTTON"
+      },
+      {
+        "id": "",
+        "tag": "BUTTON"
+      },
+      {
+        "id": "",
+        "tag": "BODY"
+      },
+      {
+        "id": "menu-btn",
+        "tag": "BUTTON"
+      },
+      {
+        "id": "",
+        "tag": "BUTTON"
+      },
+      {
+        "id": "",
+        "tag": "BODY"
+      },
+      {
+        "id": "menu-btn",
+        "tag": "BUTTON"
+      },
+      {
+        "id": "",
+        "tag": "BUTTON"
+      },
+      {
+        "id": "",
+        "tag": "BODY"
+      },
+      {
+        "id": "menu-btn",
+        "tag": "BUTTON"
+      },
+      {
+        "id": "",
+        "tag": "BUTTON"
+      },
+      {
+        "id": "",
+        "tag": "BODY"
+      }
+    ],
+    "webAx": [
+      {
+        "role": "RootWebArea",
+        "name": "Telefon - Domino"
+      },
+      {
+        "role": "generic",
+        "name": ""
+      },
+      {
+        "role": "status",
+        "name": ""
+      },
+      {
+        "role": "generic",
+        "name": ""
+      },
+      {
+        "role": "generic",
+        "name": ""
+      },
+      {
+        "role": "generic",
+        "name": ""
+      },
+      {
+        "role": "generic",
+        "name": ""
+      },
+      {
+        "role": "generic",
+        "name": ""
+      },
+      {
+        "role": "generic",
+        "name": ""
+      },
+      {
+        "role": "generic",
+        "name": ""
+      },
+      {
+        "role": "generic",
+        "name": ""
+      },
+      {
+        "role": "generic",
+        "name": ""
+      },
+      {
+        "role": "generic",
+        "name": ""
+      },
+      {
+        "role": "generic",
+        "name": ""
+      },
+      {
+        "role": "generic",
+        "name": ""
+      },
+      {
+        "role": "generic",
+        "name": ""
+      },
+      {
+        "role": "generic",
+        "name": ""
+      },
+      {
+        "role": "button",
+        "name": "Купить подарок"
+      },
+      {
+        "role": "button",
+        "name": "Pause"
+      },
+      {
+        "role": "generic",
+        "name": ""
+      },
+      {
+        "role": "generic",
+        "name": ""
+      },
+      {
+        "role": "generic",
+        "name": ""
+      },
+      {
+        "role": "generic",
+        "name": ""
+      },
+      {
+        "role": "generic",
+        "name": ""
+      },
+      {
+        "role": "generic",
+        "name": ""
+      },
+      {
+        "role": "button",
+        "name": "БАЗАР"
+      },
+      {
+        "role": "button",
+        "name": "ПАС"
+      },
+      {
+        "role": "StaticText",
+        "name": "ДРУЗЬЯ"
+      },
+      {
+        "role": "StaticText",
+        "name": "Нет доступного получателя"
+      },
+      {
+        "role": "StaticText",
+        "name": "У вас нет полученных подарков. Вы можете купить подарок за монеты."
+      },
+      {
+        "role": "StaticText",
+        "name": "Купить подарок"
+      },
+      {
+        "role": "generic",
+        "name": ""
+      },
+      {
+        "role": "generic",
+        "name": ""
+      },
+      {
+        "role": "generic",
+        "name": ""
+      },
+      {
+        "role": "generic",
+        "name": ""
+      },
+      {
+        "role": "generic",
+        "name": ""
+      },
+      {
+        "role": "generic",
+        "name": ""
+      },
+      {
+        "role": "generic",
+        "name": ""
+      },
+      {
+        "role": "generic",
+        "name": ""
+      },
+      {
+        "role": "generic",
+        "name": ""
+      },
+      {
+        "role": "generic",
+        "name": ""
+      },
+      {
+        "role": "generic",
+        "name": ""
+      },
+      {
+        "role": "generic",
+        "name": ""
+      },
+      {
+        "role": "generic",
+        "name": ""
+      },
+      {
+        "role": "generic",
+        "name": ""
+      },
+      {
+        "role": "generic",
+        "name": ""
+      },
+      {
+        "role": "StaticText",
+        "name": "БАЗАР"
+      },
+      {
+        "role": "StaticText",
+        "name": "ПАС"
+      },
+      {
+        "role": "StaticText",
+        "name": "AuditPhone:"
+      },
+      {
+        "role": "StaticText",
+        "name": "0"
+      },
+      {
+        "role": "StaticText",
+        "name": "0"
+      },
+      {
+        "role": "StaticText",
+        "name": "AI:"
+      },
+      {
+        "role": "StaticText",
+        "name": "0"
+      },
+      {
+        "role": "StaticText",
+        "name": "0"
+      },
+      {
+        "role": "StaticText",
+        "name": "AI:"
+      },
+      {
+        "role": "StaticText",
+        "name": "0"
+      },
+      {
+        "role": "StaticText",
+        "name": "0"
+      },
+      {
+        "role": "StaticText",
+        "name": "AI:"
+      },
+      {
+        "role": "StaticText",
+        "name": "0"
+      },
+      {
+        "role": "StaticText",
+        "name": "0"
+      },
+      {
+        "role": "StaticText",
+        "name": "AI"
+      },
+      {
+        "role": "StaticText",
+        "name": "AI"
+      },
+      {
+        "role": "StaticText",
+        "name": "AI"
+      },
+      {
+        "role": "generic",
+        "name": ""
+      },
+      {
+        "role": "generic",
+        "name": ""
+      },
+      {
+        "role": "Canvas",
+        "name": ""
+      }
+    ]
+  },
+  "audio": {
+    "muted": true,
+    "scoreOscillatorsCreated": 3,
+    "originalMuted": false,
+    "note": "Generated Web Audio nodes only; no claim of acoustic loudness, focus behavior or licensed content.",
+    "foreground": {
+      "visibility": "visible",
+      "tracks": [
+        {
+          "paused": false,
+          "time": 0.389244,
+          "volume": 0.15
+        }
+      ]
+    },
+    "background": {
+      "visibility": "visible",
+      "tracks": [
+        {
+          "paused": false,
+          "time": 2.635047,
+          "volume": 0.15
+        }
+      ]
+    },
+    "returned": {
+      "visibility": "visible",
+      "tracks": [
+        {
+          "paused": false,
+          "time": 3.524854,
+          "volume": 0.15
+        }
+      ]
+    },
+    "lifecycleNote": "HTMLMediaElement state/time proxy only. Native focus interruption/call/Bluetooth and acoustic output not measured."
+  },
+  "finishedAt": "2026-10-18T00:36:55.304Z",
+  "accessibilityInitial": {
+    "fixture": "4-player solo, timer cleared only for stable inspection; no TalkBack speech/listening test",
+    "webAx": [
+      {
+        "role": "RootWebArea",
+        "name": "Telefon - Domino"
+      },
+      {
+        "role": "generic",
+        "name": ""
+      },
+      {
+        "role": "status",
+        "name": ""
+      },
+      {
+        "role": "generic",
+        "name": ""
+      },
+      {
+        "role": "generic",
+        "name": ""
+      },
+      {
+        "role": "generic",
+        "name": ""
+      },
+      {
+        "role": "generic",
+        "name": ""
+      },
+      {
+        "role": "generic",
+        "name": ""
+      },
+      {
+        "role": "generic",
+        "name": ""
+      },
+      {
+        "role": "generic",
+        "name": ""
+      },
+      {
+        "role": "generic",
+        "name": ""
+      },
+      {
+        "role": "generic",
+        "name": ""
+      },
+      {
+        "role": "generic",
+        "name": ""
+      },
+      {
+        "role": "button",
+        "name": "Pause"
+      },
+      {
+        "role": "generic",
+        "name": ""
+      },
+      {
+        "role": "generic",
+        "name": ""
+      },
+      {
+        "role": "generic",
+        "name": ""
+      },
+      {
+        "role": "generic",
+        "name": ""
+      },
+      {
+        "role": "generic",
+        "name": ""
+      },
+      {
+        "role": "generic",
+        "name": ""
+      },
+      {
+        "role": "generic",
+        "name": ""
+      },
+      {
+        "role": "button",
+        "name": "БАЗАР"
+      },
+      {
+        "role": "button",
+        "name": "ПАС"
+      },
+      {
+        "role": "generic",
+        "name": ""
+      },
+      {
+        "role": "generic",
+        "name": ""
+      },
+      {
+        "role": "generic",
+        "name": ""
+      },
+      {
+        "role": "generic",
+        "name": ""
+      },
+      {
+        "role": "generic",
+        "name": ""
+      },
+      {
+        "role": "generic",
+        "name": ""
+      },
+      {
+        "role": "generic",
+        "name": ""
+      },
+      {
+        "role": "generic",
+        "name": ""
+      },
+      {
+        "role": "generic",
+        "name": ""
+      },
+      {
+        "role": "generic",
+        "name": ""
+      },
+      {
+        "role": "generic",
+        "name": ""
+      },
+      {
+        "role": "generic",
+        "name": ""
+      },
+      {
+        "role": "generic",
+        "name": ""
+      },
+      {
+        "role": "generic",
+        "name": ""
+      },
+      {
+        "role": "generic",
+        "name": ""
+      },
+      {
+        "role": "generic",
+        "name": ""
+      },
+      {
+        "role": "generic",
+        "name": ""
+      },
+      {
+        "role": "StaticText",
+        "name": "БАЗАР"
+      },
+      {
+        "role": "StaticText",
+        "name": "ПАС"
+      },
+      {
+        "role": "StaticText",
+        "name": "AuditPhone:"
+      },
+      {
+        "role": "StaticText",
+        "name": "0"
+      },
+      {
+        "role": "StaticText",
+        "name": "0"
+      },
+      {
+        "role": "StaticText",
+        "name": "AI:"
+      },
+      {
+        "role": "StaticText",
+        "name": "0"
+      },
+      {
+        "role": "StaticText",
+        "name": "0"
+      },
+      {
+        "role": "StaticText",
+        "name": "AI:"
+      },
+      {
+        "role": "StaticText",
+        "name": "0"
+      },
+      {
+        "role": "StaticText",
+        "name": "0"
+      },
+      {
+        "role": "StaticText",
+        "name": "AI:"
+      },
+      {
+        "role": "StaticText",
+        "name": "10"
+      },
+      {
+        "role": "StaticText",
+        "name": "0"
+      },
+      {
+        "role": "StaticText",
+        "name": "AI"
+      },
+      {
+        "role": "StaticText",
+        "name": "AI"
+      },
+      {
+        "role": "StaticText",
+        "name": "AI"
+      },
+      {
+        "role": "generic",
+        "name": ""
+      },
+      {
+        "role": "generic",
+        "name": ""
+      },
+      {
+        "role": "generic",
+        "name": ""
+      },
+      {
+        "role": "Canvas",
+        "name": ""
+      },
+      {
+        "role": "StaticText",
+        "name": "A"
+      }
+    ],
+    "dom": {
+      "hand": [
+        {
+          "tag": "DIV",
+          "role": null,
+          "label": null,
+          "tabIndex": -1,
+          "text": ""
+        },
+        {
+          "tag": "DIV",
+          "role": null,
+          "label": null,
+          "tabIndex": -1,
+          "text": ""
+        },
+        {
+          "tag": "DIV",
+          "role": null,
+          "label": null,
+          "tabIndex": -1,
+          "text": ""
+        },
+        {
+          "tag": "DIV",
+          "role": null,
+          "label": null,
+          "tabIndex": -1,
+          "text": ""
+        },
+        {
+          "tag": "DIV",
+          "role": null,
+          "label": null,
+          "tabIndex": -1,
+          "text": ""
+        },
+        {
+          "tag": "DIV",
+          "role": null,
+          "label": null,
+          "tabIndex": -1,
+          "text": ""
+        },
+        {
+          "tag": "DIV",
+          "role": null,
+          "label": null,
+          "tabIndex": -1,
+          "text": ""
+        }
+      ],
+      "canvas": [
+        {
+          "label": null,
+          "role": null
+        }
+      ],
+      "controls": [
+        {
+          "id": "menu-btn",
+          "label": "Pause",
+          "text": "",
+          "width": 36,
+          "height": 36
+        },
+        {
+          "id": "draw-btn",
+          "label": null,
+          "text": "БАЗАР",
+          "width": 145.1306915283203,
+          "height": 32.3636360168457
+        },
+        {
+          "id": "pass-btn",
+          "label": null,
+          "text": "ПАС",
+          "width": 145.13636779785156,
+          "height": 32.3636360168457
+        }
+      ]
+    },
+    "tabSequence": [
+      {
+        "id": "menu-btn",
+        "tag": "BUTTON",
+        "role": null
+      },
+      {
+        "id": "",
+        "tag": "BUTTON",
+        "role": null
+      },
+      {
+        "id": "",
+        "tag": "BODY",
+        "role": null
+      },
+      {
+        "id": "menu-btn",
+        "tag": "BUTTON",
+        "role": null
+      },
+      {
+        "id": "",
+        "tag": "BUTTON",
+        "role": null
+      },
+      {
+        "id": "",
+        "tag": "BODY",
+        "role": null
+      },
+      {
+        "id": "menu-btn",
+        "tag": "BUTTON",
+        "role": null
+      },
+      {
+        "id": "",
+        "tag": "BUTTON",
+        "role": null
+      },
+      {
+        "id": "",
+        "tag": "BODY",
+        "role": null
+      },
+      {
+        "id": "menu-btn",
+        "tag": "BUTTON",
+        "role": null
+      },
+      {
+        "id": "",
+        "tag": "BUTTON",
+        "role": null
+      },
+      {
+        "id": "",
+        "tag": "BODY",
+        "role": null
+      },
+      {
+        "id": "menu-btn",
+        "tag": "BUTTON",
+        "role": null
+      },
+      {
+        "id": "",
+        "tag": "BUTTON",
+        "role": null
+      },
+      {
+        "id": "",
+        "tag": "BODY",
+        "role": null
+      },
+      {
+        "id": "menu-btn",
+        "tag": "BUTTON",
+        "role": null
+      },
+      {
+        "id": "",
+        "tag": "BUTTON",
+        "role": null
+      },
+      {
+        "id": "",
+        "tag": "BODY",
+        "role": null
+      }
+    ]
+  }
+}

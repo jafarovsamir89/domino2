@@ -1,0 +1,43 @@
+{
+  "scope": "Local game4583/Redis56380. HTTP health during the companion harness SIGSTOP. Client deadline1500ms; no production calls.",
+  "before": [
+    {
+      "path": "/health",
+      "ms": 46.35487499999999,
+      "httpStatus": 200,
+      "body": "Domino Telefon Server is running!"
+    },
+    {
+      "path": "/health/ready",
+      "ms": 14.40825000000001,
+      "httpStatus": 200,
+      "body": "{\"service\":\"domino2-server\",\"redis\":\"ready\",\"status\":\"ok\"}"
+    }
+  ],
+  "during": [
+    {
+      "path": "/health",
+      "ms": 1507.452084,
+      "error": "TimeoutError"
+    },
+    {
+      "path": "/health/ready",
+      "ms": 1507.7257499999996,
+      "error": "TimeoutError"
+    }
+  ],
+  "after": [
+    {
+      "path": "/health",
+      "ms": 2.283832999999504,
+      "httpStatus": 200,
+      "body": "Domino Telefon Server is running!"
+    },
+    {
+      "path": "/health/ready",
+      "ms": 2.1298750000005384,
+      "httpStatus": 200,
+      "body": "{\"service\":\"domino2-server\",\"redis\":\"ready\",\"status\":\"ok\"}"
+    }
+  ]
+}

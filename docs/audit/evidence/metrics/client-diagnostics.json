@@ -1,0 +1,16 @@
+{
+  "staleAnimation": {
+    "cycleBefore": 1,
+    "cycleAfter": 2,
+    "scoresAfterReset": [
+      10,
+      0
+    ],
+    "expectedScore": 0,
+    "method": "Controlled invalidation of turn cycle during awaited tile travel; emulates reset without navigation"
+  },
+  "mute": {
+    "muted": true,
+    "oscillatorsStarted": 3
+  }
+}

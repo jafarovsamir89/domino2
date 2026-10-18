@@ -1,0 +1,84 @@
+{
+  "scope": "Loopback, one host, free 4-player rooms, sync burst (not sustained active-match capacity)",
+  "levels": [
+    {
+      "requested": 10,
+      "actual": 10,
+      "seconds": 1.267172333,
+      "joinP95": 30.38808400000005,
+      "syncP50": 2.594583000000057,
+      "syncP95": 2.938957999999957,
+      "syncP99": 2.938957999999957,
+      "payloadMean": 1835.2,
+      "activeResponses": 8,
+      "errors": [],
+      "process": "PID    RSS  %CPU\n20491 126400   2.9"
+    },
+    {
+      "requested": 50,
+      "actual": 50,
+      "seconds": 1.276118958,
+      "joinP95": 11.70724999999993,
+      "syncP50": 2.097291999999925,
+      "syncP95": 4.026875000000018,
+      "syncP99": 4.104417000000012,
+      "payloadMean": 1952.84,
+      "activeResponses": 48,
+      "errors": [],
+      "process": "PID    RSS  %CPU\n20491 140576   1.6"
+    },
+    {
+      "requested": 100,
+      "actual": 100,
+      "seconds": 1.305331209,
+      "joinP95": 15.059208000000126,
+      "syncP50": 3.8189170000005106,
+      "syncP95": 6.782000000000153,
+      "syncP99": 7.024707999999919,
+      "payloadMean": 1953.56,
+      "activeResponses": 96,
+      "errors": [],
+      "process": "PID    RSS  %CPU\n20491 148816   1.8"
+    },
+    {
+      "requested": 200,
+      "actual": 200,
+      "seconds": 1.3767667090000004,
+      "joinP95": 11.629500000000007,
+      "syncP50": 6.667042000000038,
+      "syncP95": 12.710124999999607,
+      "syncP99": 13.178291999999601,
+      "payloadMean": 1971.905,
+      "activeResponses": 196,
+      "errors": [],
+      "process": "PID    RSS  %CPU\n20491 155760   3.2"
+    },
+    {
+      "requested": 500,
+      "actual": 500,
+      "seconds": 1.6872240419999998,
+      "joinP95": 11.70849999999973,
+      "syncP50": 17.98408399999971,
+      "syncP95": 31.102791000000252,
+      "syncP99": 32.353416999999354,
+      "payloadMean": 1982.912,
+      "activeResponses": 496,
+      "errors": [],
+      "process": "PID    RSS  %CPU\n20491 227328  12.4"
+    },
+    {
+      "requested": 1000,
+      "actual": 1000,
+      "seconds": 2.01630175,
+      "joinP95": 13.417957999999999,
+      "syncP50": 28.04399999999987,
+      "syncP95": 54.304667000000336,
+      "syncP99": 56.28312499999993,
+      "payloadMean": 1986.581,
+      "activeResponses": 996,
+      "errors": [],
+      "process": "PID    RSS  %CPU\n20491 280320  16.9"
+    }
+  ],
+  "faults": []
+}

@@ -1,0 +1,88 @@
+{
+  "seed": "0xabcdef (deck only; AI uses crypto random)",
+  "scope": "1800 standalone deals; board/scoring parity and tile invariants; not full matches, sockets, regional rule correctness or population win rate",
+  "durationMs": 2363.598542,
+  "movesChecked": 36343,
+  "rows": [
+    {
+      "mode": "telefon",
+      "count": 2,
+      "deals": 300,
+      "winsByDifficulty": {
+        "easy": 90,
+        "medium": 101,
+        "hard": 104
+      },
+      "steps": 5793,
+      "fish": 5,
+      "maxSteps": 43
+    },
+    {
+      "mode": "telefon",
+      "count": 3,
+      "deals": 300,
+      "winsByDifficulty": {
+        "easy": 94,
+        "medium": 88,
+        "hard": 109
+      },
+      "steps": 6931,
+      "fish": 9,
+      "maxSteps": 39
+    },
+    {
+      "mode": "telefon",
+      "count": 4,
+      "deals": 300,
+      "winsByDifficulty": {
+        "easy": 73,
+        "medium": 96,
+        "hard": 111
+      },
+      "steps": 7688,
+      "fish": 20,
+      "maxSteps": 30
+    },
+    {
+      "mode": "classic101",
+      "count": 2,
+      "deals": 300,
+      "winsByDifficulty": {
+        "easy": 71,
+        "medium": 108,
+        "hard": 103
+      },
+      "steps": 7596,
+      "fish": 18,
+      "maxSteps": 47
+    },
+    {
+      "mode": "classic101",
+      "count": 3,
+      "deals": 300,
+      "winsByDifficulty": {
+        "easy": 67,
+        "medium": 97,
+        "hard": 96
+      },
+      "steps": 8144,
+      "fish": 40,
+      "maxSteps": 46
+    },
+    {
+      "mode": "classic101",
+      "count": 4,
+      "deals": 300,
+      "winsByDifficulty": {
+        "easy": 59,
+        "medium": 93,
+        "hard": 103
+      },
+      "steps": 7907,
+      "fish": 45,
+      "maxSteps": 36
+    }
+  ],
+  "failures": [],
+  "disabledInstantWinStillWins": true
+}

@@ -1,0 +1,946 @@
+{
+  "scope": "Monte Carlo cash-flow model for four assumed player behaviours. Not an integration test, production population, retention forecast or closed-world money-supply model. Payer is prospective because IAP is disabled.",
+  "config": {
+    "starter": 1000,
+    "dailyRewards": [
+      200,
+      300,
+      350,
+      400,
+      800,
+      1000,
+      2000
+    ],
+    "skinPrice": 1500,
+    "giftPrice": 1000,
+    "giftExchangeRateBps": 7000,
+    "skinsAvailable": 8,
+    "minimumStake": 50,
+    "commissionBps": 1000
+  },
+  "profiles": [
+    {
+      "key": "novice",
+      "name": "Новичок",
+      "activeProbability": 0.6,
+      "settlementsPerActiveDay": 4,
+      "players": 2,
+      "winProbability": 0.35,
+      "stake": 50,
+      "giftEveryActiveDays": 7,
+      "cosmeticEveryActiveDays": 7,
+      "bankrollFloorStakes": 5,
+      "topUpCoinsPer30Days": 0
+    },
+    {
+      "key": "regular",
+      "name": "Обычный",
+      "activeProbability": 0.8,
+      "settlementsPerActiveDay": 10,
+      "players": 4,
+      "winProbability": 0.25,
+      "stake": 100,
+      "giftEveryActiveDays": 4,
+      "cosmeticEveryActiveDays": 7,
+      "bankrollFloorStakes": 5,
+      "topUpCoinsPer30Days": 0
+    },
+    {
+      "key": "active",
+      "name": "Активный",
+      "activeProbability": 0.95,
+      "settlementsPerActiveDay": 30,
+      "players": 4,
+      "winProbability": 0.3,
+      "stake": 500,
+      "giftEveryActiveDays": 2,
+      "cosmeticEveryActiveDays": 7,
+      "bankrollFloorStakes": 5,
+      "topUpCoinsPer30Days": 0
+    },
+    {
+      "key": "payer_future",
+      "name": "Покупатель — будущая монетизация",
+      "activeProbability": 0.9,
+      "settlementsPerActiveDay": 20,
+      "players": 4,
+      "winProbability": 0.25,
+      "stake": 1000,
+      "giftEveryActiveDays": 1,
+      "cosmeticEveryActiveDays": 7,
+      "bankrollFloorStakes": 5,
+      "topUpCoinsPer30Days": 12000
+    }
+  ],
+  "trialsPerProfile": 5000,
+  "seed": "Integer-mixed indexed random variables from seed0x800cafe; fixed activity/outcome draws for each profile/trial/day/round across policy variants",
+  "policies": {
+    "current_saturating_7": "Actual observed policy: cap streak at day7 until an inactivity gap.",
+    "counterfactual_repeating_7": "Unimplemented proposed sensitivity only:7-day repeating cycle."
+  },
+  "constraints": [
+    "Gift cost is sender outflow; recipient may later exchange70%, so full price is not global monetary destruction.",
+    "Wins/losses use assumed probabilities against unmodelled opponents. Do not add profile cash flows into an economy-wide inflation rate.",
+    "No reward abuse, ads or incoming gifts included. Fresh daily quest fixture is assumed present.",
+    "A blocked preferred stake is different from cash below minimum50. No automatic fallback table is simulated.",
+    "Eligibility/activity is a behaviour assumption; not measured user retention."
+  ],
+  "pureSchedules": [
+    {
+      "policy": "current_saturating_7",
+      "dailyMint30": 51050,
+      "balance30": 52050,
+      "firstSkinAffordable": 2,
+      "allSkinsAffordable": 10
+    },
+    {
+      "policy": "counterfactual_repeating_7",
+      "dailyMint30": 20700,
+      "balance30": 21700,
+      "firstSkinAffordable": 2,
+      "allSkinsAffordable": 18
+    }
+  ],
+  "rows": [
+    {
+      "policy": "current_saturating_7",
+      "profile": "novice",
+      "day": 7,
+      "trials": 5000,
+      "balanceP10": 1380,
+      "balanceMedian": 1865,
+      "balanceP90": 2905,
+      "meanActiveDays": 4.5872,
+      "preferredStakeBlockedProbability": 0,
+      "belowMinimumStakeEverProbability": 0,
+      "meanSkinsOwned": 0.0498,
+      "mean_daily": 1439.84,
+      "mean_topUps": 0,
+      "mean_winnings": 288.99,
+      "mean_losses": 596.34,
+      "mean_skins": 74.7,
+      "mean_gifts": 49.8,
+      "mean_settlements": 18.3488,
+      "mean_unplayedPreferred": 0,
+      "firstSkinAffordable": {
+        "reachedProbability": 0.8078,
+        "medianDayConditional": 4
+      },
+      "firstGiftAffordable": {
+        "reachedProbability": 1,
+        "medianDayConditional": 1
+      },
+      "firstSkinBought": {
+        "reachedProbability": 0.0498,
+        "medianDayConditional": 7
+      },
+      "meanDailyMintPerActiveDay": 313.88210673177537,
+      "meanNetGamePerActiveDay": -67.00165678409488
+    },
+    {
+      "policy": "current_saturating_7",
+      "profile": "novice",
+      "day": 30,
+      "trials": 5000,
+      "balanceP10": 790,
+      "balanceMedian": 1770,
+      "balanceP90": 6020,
+      "meanActiveDays": 18.382,
+      "preferredStakeBlockedProbability": 0,
+      "belowMinimumStakeEverProbability": 0,
+      "meanSkinsOwned": 2.0792,
+      "mean_daily": 6973.49,
+      "mean_topUps": 0,
+      "mean_winnings": 1161.603,
+      "mean_losses": 2385.73,
+      "mean_skins": 3118.8,
+      "mean_gifts": 946.6,
+      "mean_settlements": 73.528,
+      "mean_unplayedPreferred": 0,
+      "firstSkinAffordable": {
+        "reachedProbability": 1,
+        "medianDayConditional": 5
+      },
+      "firstGiftAffordable": {
+        "reachedProbability": 1,
+        "medianDayConditional": 1
+      },
+      "firstSkinBought": {
+        "reachedProbability": 0.9966,
+        "medianDayConditional": 11
+      },
+      "meanDailyMintPerActiveDay": 379.3651398106843,
+      "meanNetGamePerActiveDay": -66.59378740071809
+    },
+    {
+      "policy": "current_saturating_7",
+      "profile": "novice",
+      "day": 90,
+      "trials": 5000,
+      "balanceP10": 840,
+      "balanceMedian": 2510,
+      "balanceP90": 10345,
+      "meanActiveDays": 54.3864,
+      "preferredStakeBlockedProbability": 0,
+      "belowMinimumStakeEverProbability": 0,
+      "meanSkinsOwned": 6.8016,
+      "mean_daily": 21554.92,
+      "mean_topUps": 0,
+      "mean_winnings": 3432.303,
+      "mean_losses": 7063.61,
+      "mean_skins": 10202.4,
+      "mean_gifts": 4327.2,
+      "mean_settlements": 217.5456,
+      "mean_unplayedPreferred": 0,
+      "firstSkinAffordable": {
+        "reachedProbability": 1,
+        "medianDayConditional": 5
+      },
+      "firstGiftAffordable": {
+        "reachedProbability": 1,
+        "medianDayConditional": 1
+      },
+      "firstSkinBought": {
+        "reachedProbability": 1,
+        "medianDayConditional": 11
+      },
+      "meanDailyMintPerActiveDay": 396.329229366165,
+      "meanNetGamePerActiveDay": -66.76865907653384
+    },
+    {
+      "policy": "current_saturating_7",
+      "profile": "regular",
+      "day": 7,
+      "trials": 5000,
+      "balanceP10": 580,
+      "balanceMedian": 2000,
+      "balanceP90": 3950,
+      "meanActiveDays": 5.798,
+      "preferredStakeBlockedProbability": 0.1038,
+      "belowMinimumStakeEverProbability": 0.0566,
+      "meanSkinsOwned": 0.2664,
+      "mean_daily": 2594.52,
+      "mean_topUps": 0,
+      "mean_winnings": 3855.006,
+      "mean_losses": 4287.5,
+      "mean_skins": 399.6,
+      "mean_gifts": 621.6,
+      "mean_settlements": 57.1528,
+      "mean_unplayedPreferred": 0.8272,
+      "firstSkinAffordable": {
+        "reachedProbability": 0.8438,
+        "medianDayConditional": 3
+      },
+      "firstGiftAffordable": {
+        "reachedProbability": 0.93,
+        "medianDayConditional": 1
+      },
+      "firstSkinBought": {
+        "reachedProbability": 0.2664,
+        "medianDayConditional": 7
+      },
+      "meanDailyMintPerActiveDay": 447.4853397723353,
+      "meanNetGamePerActiveDay": -74.59365298378754
+    },
+    {
+      "policy": "current_saturating_7",
+      "profile": "regular",
+      "day": 30,
+      "trials": 5000,
+      "balanceP10": 1400,
+      "balanceMedian": 7180,
+      "balanceP90": 18780,
+      "meanActiveDays": 24.1686,
+      "preferredStakeBlockedProbability": 0.2002,
+      "belowMinimumStakeEverProbability": 0.1278,
+      "meanSkinsOwned": 2.3404,
+      "mean_daily": 17748.46,
+      "mean_topUps": 0,
+      "mean_winnings": 16183.584,
+      "mean_losses": 17935.48,
+      "mean_skins": 3510.6,
+      "mean_gifts": 4688,
+      "mean_settlements": 239.294,
+      "mean_unplayedPreferred": 2.392,
+      "firstSkinAffordable": {
+        "reachedProbability": 0.9994,
+        "medianDayConditional": 3
+      },
+      "firstGiftAffordable": {
+        "reachedProbability": 1,
+        "medianDayConditional": 2
+      },
+      "firstSkinBought": {
+        "reachedProbability": 0.9634,
+        "medianDayConditional": 9
+      },
+      "meanDailyMintPerActiveDay": 734.3602856599058,
+      "meanNetGamePerActiveDay": -72.48644935991322
+    },
+    {
+      "policy": "current_saturating_7",
+      "profile": "regular",
+      "day": 90,
+      "trials": 5000,
+      "balanceP10": 7760,
+      "balanceMedian": 23530,
+      "balanceP90": 44810,
+      "meanActiveDays": 72.1672,
+      "preferredStakeBlockedProbability": 0.2308,
+      "belowMinimumStakeEverProbability": 0.1534,
+      "meanSkinsOwned": 7.7798,
+      "mean_daily": 57448.26,
+      "mean_topUps": 0,
+      "mean_winnings": 48589.47,
+      "mean_losses": 53871.56,
+      "mean_skins": 11669.7,
+      "mean_gifts": 16343.6,
+      "mean_settlements": 718.6766,
+      "mean_unplayedPreferred": 2.9954,
+      "firstSkinAffordable": {
+        "reachedProbability": 1,
+        "medianDayConditional": 3
+      },
+      "firstGiftAffordable": {
+        "reachedProbability": 1,
+        "medianDayConditional": 2
+      },
+      "firstSkinBought": {
+        "reachedProbability": 1,
+        "medianDayConditional": 9
+      },
+      "meanDailyMintPerActiveDay": 796.0439091443205,
+      "meanNetGamePerActiveDay": -73.19239211165178
+    },
+    {
+      "policy": "current_saturating_7",
+      "profile": "active",
+      "day": 7,
+      "trials": 5000,
+      "balanceP10": 150,
+      "balanceMedian": 5900,
+      "balanceP90": 22600,
+      "meanActiveDays": 6.688,
+      "preferredStakeBlockedProbability": 0.8298,
+      "belowMinimumStakeEverProbability": 0.4006,
+      "meanSkinsOwned": 0.4862,
+      "mean_daily": 4214.68,
+      "mean_topUps": 0,
+      "mean_winnings": 38191.23,
+      "mean_losses": 32881.7,
+      "mean_skins": 729.3,
+      "mean_gifts": 1047.8,
+      "mean_settlements": 94.0532,
+      "mean_unplayedPreferred": 106.5868,
+      "firstSkinAffordable": {
+        "reachedProbability": 0.7282,
+        "medianDayConditional": 4
+      },
+      "firstGiftAffordable": {
+        "reachedProbability": 0.7348,
+        "medianDayConditional": 4
+      },
+      "firstSkinBought": {
+        "reachedProbability": 0.4862,
+        "medianDayConditional": 7
+      },
+      "meanDailyMintPerActiveDay": 630.1854066985646,
+      "meanNetGamePerActiveDay": 793.8890550239244
+    },
+    {
+      "policy": "current_saturating_7",
+      "profile": "active",
+      "day": 30,
+      "trials": 5000,
+      "balanceP10": 30100,
+      "balanceMedian": 63250,
+      "balanceP90": 97600,
+      "meanActiveDays": 28.5476,
+      "preferredStakeBlockedProbability": 0.8374,
+      "belowMinimumStakeEverProbability": 0.44,
+      "meanSkinsOwned": 3.3352,
+      "mean_daily": 39203.15,
+      "mean_topUps": 0,
+      "mean_winnings": 289594.17,
+      "mean_losses": 249953.8,
+      "mean_skins": 5002.8,
+      "mean_gifts": 11246,
+      "mean_settlements": 714.4218,
+      "mean_unplayedPreferred": 142.0062,
+      "firstSkinAffordable": {
+        "reachedProbability": 0.9994,
+        "medianDayConditional": 6
+      },
+      "firstGiftAffordable": {
+        "reachedProbability": 0.9996,
+        "medianDayConditional": 5
+      },
+      "firstSkinBought": {
+        "reachedProbability": 0.9944,
+        "medianDayConditional": 8
+      },
+      "meanDailyMintPerActiveDay": 1373.255545124634,
+      "meanNetGamePerActiveDay": 1388.571018229203
+    },
+    {
+      "policy": "current_saturating_7",
+      "profile": "active",
+      "day": 90,
+      "trials": 5000,
+      "balanceP10": 152100,
+      "balanceMedian": 214100,
+      "balanceP90": 274550,
+      "meanActiveDays": 85.558,
+      "preferredStakeBlockedProbability": 0.8374,
+      "belowMinimumStakeEverProbability": 0.4404,
+      "meanSkinsOwned": 7.9988,
+      "mean_daily": 130375.15,
+      "mean_topUps": 0,
+      "mean_winnings": 982336.14,
+      "mean_losses": 848194.8,
+      "mean_skins": 11998.2,
+      "mean_gifts": 39712.6,
+      "mean_settlements": 2424.046,
+      "mean_unplayedPreferred": 142.694,
+      "firstSkinAffordable": {
+        "reachedProbability": 1,
+        "medianDayConditional": 6
+      },
+      "firstGiftAffordable": {
+        "reachedProbability": 1,
+        "medianDayConditional": 5
+      },
+      "firstSkinBought": {
+        "reachedProbability": 1,
+        "medianDayConditional": 8
+      },
+      "meanDailyMintPerActiveDay": 1523.8218518431938,
+      "meanNetGamePerActiveDay": 1567.8409967507416
+    },
+    {
+      "policy": "current_saturating_7",
+      "profile": "payer_future",
+      "day": 7,
+      "trials": 5000,
+      "balanceP10": 150,
+      "balanceMedian": 850,
+      "balanceP90": 21950,
+      "meanActiveDays": 6.4032,
+      "preferredStakeBlockedProbability": 0.6928,
+      "belowMinimumStakeEverProbability": 0.048,
+      "meanSkinsOwned": 0.2034,
+      "mean_daily": 3587.6,
+      "mean_topUps": 12000,
+      "mean_winnings": 56292.3,
+      "mean_losses": 62566.6,
+      "mean_skins": 305.1,
+      "mean_gifts": 3060,
+      "mean_settlements": 83.4156,
+      "mean_unplayedPreferred": 44.6484,
+      "firstSkinAffordable": {
+        "reachedProbability": 0.9154,
+        "medianDayConditional": 1
+      },
+      "firstGiftAffordable": {
+        "reachedProbability": 0.9162,
+        "medianDayConditional": 1
+      },
+      "firstSkinBought": {
+        "reachedProbability": 0.2034,
+        "medianDayConditional": 7
+      },
+      "meanDailyMintPerActiveDay": 560.2823588205897,
+      "meanNetGamePerActiveDay": -979.8694402798594
+    },
+    {
+      "policy": "current_saturating_7",
+      "profile": "payer_future",
+      "day": 30,
+      "trials": 5000,
+      "balanceP10": 150,
+      "balanceMedian": 850,
+      "balanceP90": 29450,
+      "meanActiveDays": 27.1296,
+      "preferredStakeBlockedProbability": 0.9404,
+      "belowMinimumStakeEverProbability": 0.3386,
+      "meanSkinsOwned": 1.2664,
+      "mean_daily": 30231.78,
+      "mean_topUps": 12000,
+      "mean_winnings": 199630.98,
+      "mean_losses": 221493.6,
+      "mean_skins": 1899.6,
+      "mean_gifts": 10520.2,
+      "mean_settlements": 295.431,
+      "mean_unplayedPreferred": 247.161,
+      "firstSkinAffordable": {
+        "reachedProbability": 0.9886,
+        "medianDayConditional": 1
+      },
+      "firstGiftAffordable": {
+        "reachedProbability": 0.9896,
+        "medianDayConditional": 1
+      },
+      "firstSkinBought": {
+        "reachedProbability": 0.6756,
+        "medianDayConditional": 14
+      },
+      "meanDailyMintPerActiveDay": 1114.3466914366595,
+      "meanNetGamePerActiveDay": -805.8585456475582
+    },
+    {
+      "policy": "current_saturating_7",
+      "profile": "payer_future",
+      "day": 90,
+      "trials": 5000,
+      "balanceP10": 200,
+      "balanceMedian": 950,
+      "balanceP90": 41500,
+      "meanActiveDays": 81.106,
+      "preferredStakeBlockedProbability": 0.9872,
+      "belowMinimumStakeEverProbability": 0.6558,
+      "meanSkinsOwned": 5.0918,
+      "mean_daily": 99076.07,
+      "mean_topUps": 33592.8,
+      "mean_winnings": 671590.98,
+      "mean_losses": 745431,
+      "mean_skins": 7637.7,
+      "mean_gifts": 38570.4,
+      "mean_settlements": 994.1684,
+      "mean_unplayedPreferred": 627.9516,
+      "firstSkinAffordable": {
+        "reachedProbability": 1,
+        "medianDayConditional": 1
+      },
+      "firstGiftAffordable": {
+        "reachedProbability": 1,
+        "medianDayConditional": 1
+      },
+      "firstSkinBought": {
+        "reachedProbability": 0.9854,
+        "medianDayConditional": 17
+      },
+      "meanDailyMintPerActiveDay": 1221.5627697087764,
+      "meanNetGamePerActiveDay": -910.4137794984345
+    },
+    {
+      "policy": "counterfactual_repeating_7",
+      "profile": "novice",
+      "day": 7,
+      "trials": 5000,
+      "balanceP10": 1380,
+      "balanceMedian": 1865,
+      "balanceP90": 2905,
+      "meanActiveDays": 4.5872,
+      "preferredStakeBlockedProbability": 0,
+      "belowMinimumStakeEverProbability": 0,
+      "meanSkinsOwned": 0.0498,
+      "mean_daily": 1439.84,
+      "mean_topUps": 0,
+      "mean_winnings": 288.99,
+      "mean_losses": 596.34,
+      "mean_skins": 74.7,
+      "mean_gifts": 49.8,
+      "mean_settlements": 18.3488,
+      "mean_unplayedPreferred": 0,
+      "firstSkinAffordable": {
+        "reachedProbability": 0.8078,
+        "medianDayConditional": 4
+      },
+      "firstGiftAffordable": {
+        "reachedProbability": 1,
+        "medianDayConditional": 1
+      },
+      "firstSkinBought": {
+        "reachedProbability": 0.0498,
+        "medianDayConditional": 7
+      },
+      "meanDailyMintPerActiveDay": 313.88210673177537,
+      "meanNetGamePerActiveDay": -67.00165678409488
+    },
+    {
+      "policy": "counterfactual_repeating_7",
+      "profile": "novice",
+      "day": 30,
+      "trials": 5000,
+      "balanceP10": 780,
+      "balanceMedian": 1720,
+      "balanceP90": 3860,
+      "meanActiveDays": 18.382,
+      "preferredStakeBlockedProbability": 0,
+      "belowMinimumStakeEverProbability": 0,
+      "meanSkinsOwned": 2.0792,
+      "mean_daily": 6332.81,
+      "mean_topUps": 0,
+      "mean_winnings": 1161.603,
+      "mean_losses": 2385.73,
+      "mean_skins": 3118.8,
+      "mean_gifts": 946,
+      "mean_settlements": 73.528,
+      "mean_unplayedPreferred": 0,
+      "firstSkinAffordable": {
+        "reachedProbability": 1,
+        "medianDayConditional": 5
+      },
+      "firstGiftAffordable": {
+        "reachedProbability": 1,
+        "medianDayConditional": 1
+      },
+      "firstSkinBought": {
+        "reachedProbability": 0.9966,
+        "medianDayConditional": 11
+      },
+      "meanDailyMintPerActiveDay": 344.5114786203895,
+      "meanNetGamePerActiveDay": -66.59378740071809
+    },
+    {
+      "policy": "counterfactual_repeating_7",
+      "profile": "novice",
+      "day": 90,
+      "trials": 5000,
+      "balanceP10": 770,
+      "balanceMedian": 1850,
+      "balanceP90": 4445,
+      "meanActiveDays": 54.3864,
+      "preferredStakeBlockedProbability": 0,
+      "belowMinimumStakeEverProbability": 0,
+      "meanSkinsOwned": 6.7674,
+      "mean_daily": 19166.98,
+      "mean_topUps": 0,
+      "mean_winnings": 3432.303,
+      "mean_losses": 7063.61,
+      "mean_skins": 10151.1,
+      "mean_gifts": 4084.4,
+      "mean_settlements": 217.5456,
+      "mean_unplayedPreferred": 0,
+      "firstSkinAffordable": {
+        "reachedProbability": 1,
+        "medianDayConditional": 5
+      },
+      "firstGiftAffordable": {
+        "reachedProbability": 1,
+        "medianDayConditional": 1
+      },
+      "firstSkinBought": {
+        "reachedProbability": 1,
+        "medianDayConditional": 11
+      },
+      "meanDailyMintPerActiveDay": 352.42229675065823,
+      "meanNetGamePerActiveDay": -66.76865907653384
+    },
+    {
+      "policy": "counterfactual_repeating_7",
+      "profile": "regular",
+      "day": 7,
+      "trials": 5000,
+      "balanceP10": 580,
+      "balanceMedian": 2000,
+      "balanceP90": 3950,
+      "meanActiveDays": 5.798,
+      "preferredStakeBlockedProbability": 0.1038,
+      "belowMinimumStakeEverProbability": 0.0566,
+      "meanSkinsOwned": 0.2664,
+      "mean_daily": 2594.52,
+      "mean_topUps": 0,
+      "mean_winnings": 3855.006,
+      "mean_losses": 4287.5,
+      "mean_skins": 399.6,
+      "mean_gifts": 621.6,
+      "mean_settlements": 57.1528,
+      "mean_unplayedPreferred": 0.8272,
+      "firstSkinAffordable": {
+        "reachedProbability": 0.8438,
+        "medianDayConditional": 3
+      },
+      "firstGiftAffordable": {
+        "reachedProbability": 0.93,
+        "medianDayConditional": 1
+      },
+      "firstSkinBought": {
+        "reachedProbability": 0.2664,
+        "medianDayConditional": 7
+      },
+      "meanDailyMintPerActiveDay": 447.4853397723353,
+      "meanNetGamePerActiveDay": -74.59365298378754
+    },
+    {
+      "policy": "counterfactual_repeating_7",
+      "profile": "regular",
+      "day": 30,
+      "trials": 5000,
+      "balanceP10": 970,
+      "balanceMedian": 2940,
+      "balanceP90": 6190,
+      "meanActiveDays": 24.1686,
+      "preferredStakeBlockedProbability": 0.2238,
+      "belowMinimumStakeEverProbability": 0.1456,
+      "meanSkinsOwned": 2.1826,
+      "mean_daily": 11883.95,
+      "mean_topUps": 0,
+      "mean_winnings": 16167.114,
+      "mean_losses": 17917.06,
+      "mean_skins": 3273.9,
+      "mean_gifts": 4542.6,
+      "mean_settlements": 239.0488,
+      "mean_unplayedPreferred": 2.6372,
+      "firstSkinAffordable": {
+        "reachedProbability": 0.9994,
+        "medianDayConditional": 3
+      },
+      "firstGiftAffordable": {
+        "reachedProbability": 1,
+        "medianDayConditional": 2
+      },
+      "firstSkinBought": {
+        "reachedProbability": 0.956,
+        "medianDayConditional": 9
+      },
+      "meanDailyMintPerActiveDay": 491.71031834694605,
+      "meanNetGamePerActiveDay": -72.40576615939698
+    },
+    {
+      "policy": "counterfactual_repeating_7",
+      "profile": "regular",
+      "day": 90,
+      "trials": 5000,
+      "balanceP10": 1420,
+      "balanceMedian": 5210,
+      "balanceP90": 11520,
+      "meanActiveDays": 72.1672,
+      "preferredStakeBlockedProbability": 0.3346,
+      "belowMinimumStakeEverProbability": 0.2344,
+      "meanSkinsOwned": 7.442,
+      "mean_daily": 36748.5,
+      "mean_topUps": 0,
+      "mean_winnings": 48478.986,
+      "mean_losses": 53752.52,
+      "mean_skins": 11163,
+      "mean_gifts": 15332.6,
+      "mean_settlements": 717.077,
+      "mean_unplayedPreferred": 4.595,
+      "firstSkinAffordable": {
+        "reachedProbability": 1,
+        "medianDayConditional": 3
+      },
+      "firstGiftAffordable": {
+        "reachedProbability": 1,
+        "medianDayConditional": 2
+      },
+      "firstSkinBought": {
+        "reachedProbability": 1,
+        "medianDayConditional": 9
+      },
+      "meanDailyMintPerActiveDay": 509.2133268299172,
+      "meanNetGamePerActiveDay": -73.07383409637619
+    },
+    {
+      "policy": "counterfactual_repeating_7",
+      "profile": "active",
+      "day": 7,
+      "trials": 5000,
+      "balanceP10": 150,
+      "balanceMedian": 5900,
+      "balanceP90": 22600,
+      "meanActiveDays": 6.688,
+      "preferredStakeBlockedProbability": 0.8298,
+      "belowMinimumStakeEverProbability": 0.4006,
+      "meanSkinsOwned": 0.4862,
+      "mean_daily": 4214.68,
+      "mean_topUps": 0,
+      "mean_winnings": 38191.23,
+      "mean_losses": 32881.7,
+      "mean_skins": 729.3,
+      "mean_gifts": 1047.8,
+      "mean_settlements": 94.0532,
+      "mean_unplayedPreferred": 106.5868,
+      "firstSkinAffordable": {
+        "reachedProbability": 0.7282,
+        "medianDayConditional": 4
+      },
+      "firstGiftAffordable": {
+        "reachedProbability": 0.7348,
+        "medianDayConditional": 4
+      },
+      "firstSkinBought": {
+        "reachedProbability": 0.4862,
+        "medianDayConditional": 7
+      },
+      "meanDailyMintPerActiveDay": 630.1854066985646,
+      "meanNetGamePerActiveDay": 793.8890550239244
+    },
+    {
+      "policy": "counterfactual_repeating_7",
+      "profile": "active",
+      "day": 30,
+      "trials": 5000,
+      "balanceP10": 6400,
+      "balanceMedian": 39500,
+      "balanceP90": 72950,
+      "meanActiveDays": 28.5476,
+      "preferredStakeBlockedProbability": 0.845,
+      "belowMinimumStakeEverProbability": 0.511,
+      "meanSkinsOwned": 3.032,
+      "mean_daily": 18182.02,
+      "mean_topUps": 0,
+      "mean_winnings": 260601.84,
+      "mean_losses": 225008.1,
+      "mean_skins": 4548,
+      "mean_gifts": 9879.2,
+      "mean_settlements": 643.0546,
+      "mean_unplayedPreferred": 213.3734,
+      "firstSkinAffordable": {
+        "reachedProbability": 0.994,
+        "medianDayConditional": 6
+      },
+      "firstGiftAffordable": {
+        "reachedProbability": 0.9948,
+        "medianDayConditional": 5
+      },
+      "firstSkinBought": {
+        "reachedProbability": 0.9656,
+        "medianDayConditional": 7
+      },
+      "meanDailyMintPerActiveDay": 636.9018761647214,
+      "meanNetGamePerActiveDay": 1246.8207485042522
+    },
+    {
+      "policy": "counterfactual_repeating_7",
+      "profile": "active",
+      "day": 90,
+      "trials": 5000,
+      "balanceP10": 78750,
+      "balanceMedian": 136500,
+      "balanceP90": 193400,
+      "meanActiveDays": 85.558,
+      "preferredStakeBlockedProbability": 0.8458,
+      "belowMinimumStakeEverProbability": 0.518,
+      "meanSkinsOwned": 7.9486,
+      "mean_daily": 56341.92,
+      "mean_topUps": 0,
+      "mean_winnings": 944109.27,
+      "mean_losses": 815286.7,
+      "mean_skins": 11922.9,
+      "mean_gifts": 37871.4,
+      "mean_settlements": 2329.9136,
+      "mean_unplayedPreferred": 236.8264,
+      "firstSkinAffordable": {
+        "reachedProbability": 1,
+        "medianDayConditional": 6
+      },
+      "firstGiftAffordable": {
+        "reachedProbability": 1,
+        "medianDayConditional": 5
+      },
+      "firstSkinBought": {
+        "reachedProbability": 1,
+        "medianDayConditional": 8
+      },
+      "meanDailyMintPerActiveDay": 658.5231071320039,
+      "meanNetGamePerActiveDay": 1505.6753313541697
+    },
+    {
+      "policy": "counterfactual_repeating_7",
+      "profile": "payer_future",
+      "day": 7,
+      "trials": 5000,
+      "balanceP10": 150,
+      "balanceMedian": 850,
+      "balanceP90": 21950,
+      "meanActiveDays": 6.4032,
+      "preferredStakeBlockedProbability": 0.6928,
+      "belowMinimumStakeEverProbability": 0.048,
+      "meanSkinsOwned": 0.2034,
+      "mean_daily": 3587.6,
+      "mean_topUps": 12000,
+      "mean_winnings": 56292.3,
+      "mean_losses": 62566.6,
+      "mean_skins": 305.1,
+      "mean_gifts": 3060,
+      "mean_settlements": 83.4156,
+      "mean_unplayedPreferred": 44.6484,
+      "firstSkinAffordable": {
+        "reachedProbability": 0.9154,
+        "medianDayConditional": 1
+      },
+      "firstGiftAffordable": {
+        "reachedProbability": 0.9162,
+        "medianDayConditional": 1
+      },
+      "firstSkinBought": {
+        "reachedProbability": 0.2034,
+        "medianDayConditional": 7
+      },
+      "meanDailyMintPerActiveDay": 560.2823588205897,
+      "meanNetGamePerActiveDay": -979.8694402798594
+    },
+    {
+      "policy": "counterfactual_repeating_7",
+      "profile": "payer_future",
+      "day": 30,
+      "trials": 5000,
+      "balanceP10": 100,
+      "balanceMedian": 650,
+      "balanceP90": 14300,
+      "meanActiveDays": 27.1296,
+      "preferredStakeBlockedProbability": 0.9668,
+      "belowMinimumStakeEverProbability": 0.5108,
+      "meanSkinsOwned": 0.8716,
+      "mean_daily": 15971.31,
+      "mean_topUps": 12000,
+      "mean_winnings": 147055.5,
+      "mean_losses": 163055.2,
+      "mean_skins": 1307.4,
+      "mean_gifts": 7616.2,
+      "mean_settlements": 217.5202,
+      "mean_unplayedPreferred": 325.0718,
+      "firstSkinAffordable": {
+        "reachedProbability": 0.9704,
+        "medianDayConditional": 1
+      },
+      "firstGiftAffordable": {
+        "reachedProbability": 0.9716,
+        "medianDayConditional": 1
+      },
+      "firstSkinBought": {
+        "reachedProbability": 0.5304,
+        "medianDayConditional": 8
+      },
+      "meanDailyMintPerActiveDay": 588.7042197452229,
+      "meanNetGamePerActiveDay": -589.7506782259971
+    },
+    {
+      "policy": "counterfactual_repeating_7",
+      "profile": "payer_future",
+      "day": 90,
+      "trials": 5000,
+      "balanceP10": 100,
+      "balanceMedian": 650,
+      "balanceP90": 17050,
+      "meanActiveDays": 81.106,
+      "preferredStakeBlockedProbability": 0.9974,
+      "belowMinimumStakeEverProbability": 0.8662,
+      "meanSkinsOwned": 3.2874,
+      "mean_daily": 49246.84,
+      "mean_topUps": 33592.8,
+      "mean_winnings": 454883.58,
+      "mean_losses": 504549.6,
+      "mean_skins": 4931.1,
+      "mean_gifts": 24379.8,
+      "mean_settlements": 673.025,
+      "mean_unplayedPreferred": 949.095,
+      "firstSkinAffordable": {
+        "reachedProbability": 1,
+        "medianDayConditional": 1
+      },
+      "firstGiftAffordable": {
+        "reachedProbability": 1,
+        "medianDayConditional": 1
+      },
+      "firstSkinBought": {
+        "reachedProbability": 0.935,
+        "medianDayConditional": 23
+      },
+      "meanDailyMintPerActiveDay": 607.1910832737406,
+      "meanNetGamePerActiveDay": -612.3593815500699
+    }
+  ]
+}

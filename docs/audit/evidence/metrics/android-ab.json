@@ -1,0 +1,71 @@
+{
+  "note": "Same debug WebView, 28-tile synthetic field, sequential interventions; exploratory single run, not isolated causal proof",
+  "rows": [
+    {
+      "variant": "baseline",
+      "fps": 24.929265121935806,
+      "p95": 66.69999999998254,
+      "canvas": [
+        1078,
+        1625.25
+      ],
+      "intendedPixelRatio": 1.25,
+      "actualPixelRatio": 2.75
+    },
+    {
+      "variant": "actual_pixel_ratio_1_25",
+      "fps": 24.972805687013008,
+      "p95": 66.60000000000582,
+      "canvas": [
+        490,
+        738.75
+      ],
+      "intendedPixelRatio": 1.25,
+      "actualPixelRatio": 1.25
+    },
+    {
+      "variant": "flat_background",
+      "fps": 24.744866592893175,
+      "p95": 66.70000000001164,
+      "canvas": [
+        490,
+        738.75
+      ],
+      "intendedPixelRatio": 1.25,
+      "actualPixelRatio": 1.25
+    },
+    {
+      "variant": "no_css_animation_or_blur",
+      "fps": 54.52897715919571,
+      "p95": 33.30000000001746,
+      "canvas": [
+        490,
+        738.75
+      ],
+      "intendedPixelRatio": 1.25,
+      "actualPixelRatio": 1.25
+    }
+  ],
+  "animations": [
+    {
+      "name": "activeTurnPulse",
+      "target": "opp-top",
+      "state": "running"
+    },
+    {
+      "name": "tileGlow",
+      "target": "tile vertical playable",
+      "state": "running"
+    },
+    {
+      "name": "tileGlow",
+      "target": "tile vertical playable",
+      "state": "running"
+    },
+    {
+      "name": "tileGlow",
+      "target": "tile vertical playable",
+      "state": "running"
+    }
+  ]
+}

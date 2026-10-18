@@ -1,0 +1,79 @@
+[Sentry] SENTRY_DSN not set — monitoring disabled
+ℹ️  optional .env file not found: .env.development, .env
+[ROOM] PLATFORM_API_URL resolved: http://127.0.0.1:4300
+[GameServer] Listening on http://localhost:4583
+
+   ___      _                                    ___   _ _____
+  / __\___ | |_   _ ___  ___ _   _ ___   __   __/ _ \ / |___  |
+ / /  / _ \| | | | / __|/ _ \ | | / __|  \ \ / / | | || |  / /
+/ /__| (_) | | |_| \__ \  __/ |_| \__ \   \ V /| |_| || | / /
+\____/\___/|_|\__, |___/\___|\__,_|___/    \_/  \___(_)_|/_/
+              |___/
+
+             · Multiplayer Framework for Node.js ·
+
+💖 Consider becoming a Sponsor on GitHub → https://github.com/sponsors/endel
+🌟 Give us a star on GitHub → https://github.com/colyseus/colyseus
+☁️  Deploy and scale your project on Colyseus Cloud → https://cloud.colyseus.io
+
+[Redis] Live presence connect failed: Redis is already connecting/connected
+[Redis] Live presence connect failed: Redis is already connecting/connected
+[FM-SRV 1792279522698] syncState includeBoardJson=true
+[FM-SRV 1792279522700] syncState includeBoardJson=true
+[FM-SRV 1792279522893] gameDelta isFinalMove=false
+[FM-SRV 1792279522894] syncState includeBoardJson=true
+[FM-SRV 1792279523104] gameDelta isFinalMove=false
+[FM-SRV 1792279523104] syncState includeBoardJson=true
+[FM-SRV 1792279523310] gameDelta isFinalMove=false
+[FM-SRV 1792279523310] syncState includeBoardJson=true
+[FM-SRV 1792279523515] gameDelta isFinalMove=false
+[FM-SRV 1792279523515] syncState includeBoardJson=true
+[FM-SRV 1792279523722] gameDelta isFinalMove=false
+[FM-SRV 1792279523722] syncState includeBoardJson=true
+[FM-SRV 1792279523929] gameDelta isFinalMove=false
+[FM-SRV 1792279523929] syncState includeBoardJson=true
+[FM-SRV 1792279524136] gameDelta isFinalMove=false
+[FM-SRV 1792279524136] syncState includeBoardJson=true
+[FM-SRV 1792279524341] gameDelta isFinalMove=false
+[FM-SRV 1792279524342] syncState includeBoardJson=true
+[FM-SRV 1792279524547] gameDelta isFinalMove=false
+[FM-SRV 1792279524547] syncState includeBoardJson=true
+[FM-SRV 1792279524754] syncState includeBoardJson=true
+[FM-SRV 1792279524959] gameDelta isFinalMove=false
+[FM-SRV 1792279524959] syncState includeBoardJson=true
+[FM-SRV 1792279525163] gameDelta isFinalMove=false
+[FM-SRV 1792279525163] syncState includeBoardJson=true
+[FM-SRV 1792279525370] gameDelta isFinalMove=false
+[FM-SRV 1792279525370] syncState includeBoardJson=true
+[FM-SRV 1792279525575] gameDelta isFinalMove=false
+[FM-SRV 1792279525576] syncState includeBoardJson=true
+[FM-SRV 1792279525781] gameDelta isFinalMove=false
+[FM-SRV 1792279525782] syncState includeBoardJson=true
+[FM-SRV 1792279525988] gameDelta isFinalMove=false
+[FM-SRV 1792279525988] syncState includeBoardJson=true
+[FM-SRV 1792279526195] gameDelta isFinalMove=false
+[FM-SRV 1792279526195] syncState includeBoardJson=true
+[FM-SRV 1792279526402] gameDelta isFinalMove=false
+[FM-SRV 1792279526403] syncState includeBoardJson=true
+[FM-SRV 1792279526609] syncState includeBoardJson=true
+[FM-SRV 1792279526814] gameDelta isFinalMove=false
+[FM-SRV 1792279526814] syncState includeBoardJson=true
+[FM-SRV 1792279527018] gameDelta isFinalMove=false
+[FM-SRV 1792279527018] syncState includeBoardJson=true
+[FM-SRV 1792279527223] gameDelta isFinalMove=false
+[FM-SRV 1792279527223] syncState includeBoardJson=true
+[FM-SRV 1792279527427] gameDelta isFinalMove=false
+[FM-SRV 1792279527427] syncState includeBoardJson=true
+[FM-SRV 1792279527630] gameDelta isFinalMove=false
+[FM-SRV 1792279527631] syncState includeBoardJson=true
+[FM-SRV 1792279527834] syncState includeBoardJson=true
+[FM-SRV 1792279528041] syncState includeBoardJson=true
+[FM-SRV 1792279528245] gameDelta isFinalMove=false
+[FM-SRV 1792279528246] syncState includeBoardJson=true
+[FM-SRV 1792279528450] gameDelta isFinalMove=true
+[FM-SRV 1792279528450] end immediate
+[FM-SRV 1792279528451] syncState includeBoardJson=false
+[FM-SRV 1792279533453] syncState includeBoardJson=true
+[FM-SRV 1792279533454] syncState includeBoardJson=true
+[FM-SRV 1792279534406] gameDelta isFinalMove=false
+[FM-SRV 1792279534406] syncState includeBoardJson=true

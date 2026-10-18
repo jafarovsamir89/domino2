@@ -1,0 +1,12 @@
+// Local audit package only. Paths resolve relative to any repository checkout.
+allprojects { project ->
+    project.afterEvaluate {
+        if (project.path == ':app') {
+            def auditDirectory = new File(project.rootProject.projectDir, '../docs/audit/android')
+            project.android.buildTypes.debug.applicationIdSuffix = '.audit'
+            project.android.sourceSets.debug.manifest.srcFile(new File(auditDirectory, 'AndroidManifest.xml'))
+            project.android.sourceSets.debug.assets.srcDirs += [new File(auditDirectory, 'assets')]
+            project.android.sourceSets.debug.res.srcDirs += [new File(auditDirectory, 'res')]
+        }
+    }
+}

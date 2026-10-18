@@ -1,0 +1,376 @@
+[Sentry] SENTRY_DSN not set — monitoring disabled
+ℹ️  optional .env file not found: .env.development, .env
+[GameServer] REDIS_URI not set, using local presence and driver
+[ROOM] PLATFORM_API_URL resolved: http://127.0.0.1:4300
+[GameServer] Listening on http://localhost:4567
+
+   ___      _                                    ___   _ _____
+  / __\___ | |_   _ ___  ___ _   _ ___   __   __/ _ \ / |___  |
+ / /  / _ \| | | | / __|/ _ \ | | / __|  \ \ / / | | || |  / /
+/ /__| (_) | | |_| \__ \  __/ |_| \__ \   \ V /| |_| || | / /
+\____/\___/|_|\__, |___/\___|\__,_|___/    \_/  \___(_)_|/_/
+              |___/
+
+             · Multiplayer Framework for Node.js ·
+
+💖 Consider becoming a Sponsor on GitHub → https://github.com/sponsors/endel
+🌟 Give us a star on GitHub → https://github.com/colyseus/colyseus
+☁️  Deploy and scale your project on Colyseus Cloud → https://cloud.colyseus.io
+
+[ROOM_DEBUG] create {
+  roomId: '8qqD5NlVk',
+  roomCode: 'WCZM',
+  roomVisibility: 'closed',
+  stakeKey: 'free',
+  totalPlayers: 4,
+  aiCount: 0,
+  humanSeats: 4,
+  maxClients: 4,
+  roomMode: 'ffa',
+  isTeamMode: false
+}
+[ROOM] Created room 8qqD5NlVk (code WCZM), humanSeats=4, totalPlayers=4, aiCount=0, teamMode=false
+[ROOM] Client lfplbC49L joining with name: victim
+[ROOM_DEBUG] join:start {
+  roomId: '8qqD5NlVk',
+  roomCode: 'WCZM',
+  sessionId: 'lfplbC49L',
+  clientsLength: 1,
+  playerOrder: [],
+  totalPlayers: 4,
+  aiCount: 0,
+  humanSeats: 4,
+  maxClients: 4
+}
+[ROOM_DEBUG] join:identity {
+  sessionId: 'lfplbC49L',
+  hasUserId: true,
+  hasPlayerId: true,
+  hasAuthToken: true,
+  provider: 'platform',
+  displayName: 'victim'
+}
+[ROOM] Current player count: 1 / 4
+[ROOM_DEBUG] room_state {
+  roomId: '8qqD5NlVk',
+  roomCode: 'WCZM',
+  gameActive: false,
+  seatSelectionRequired: true,
+  currentPlayers: 1,
+  humanPlayers: 1,
+  humanSeats: 4,
+  aiCount: 0,
+  totalPlayers: 4,
+  players: [
+    {
+      sessionId: 'lfplbC49L',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: true
+    }
+  ]
+}
+[ROOM_DEBUG] autostart:decision {
+  roomId: '8qqD5NlVk',
+  roomCode: 'WCZM',
+  roomMode: 'ffa',
+  isTeamMode: false,
+  totalPlayers: 4,
+  maxPlayers: 4,
+  maxClients: 4,
+  clientsLength: 1,
+  aiCount: 0,
+  gameActive: false,
+  gameStarting: false,
+  matchFinished: false,
+  readyPlayersCount: 1,
+  botsReadyCount: 0,
+  humanCount: 1,
+  botCount: 0,
+  occupiedSeats: 1,
+  botIdsLength: 0,
+  playerOrder: [ 'lfplbC49L' ],
+  players: [
+    {
+      sessionId: 'lfplbC49L',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: true
+    }
+  ],
+  blockedReason: 'waiting-for-human',
+  decision: 'wait',
+  reason: 'waiting-for-human'
+}
+[ROOM_DEBUG] join:assigned {
+  sessionId: 'lfplbC49L',
+  seatIndex: 0,
+  isHost: true,
+  playerOrder: [ 'lfplbC49L' ],
+  connectedHumans: 1,
+  readyHumans: 1,
+  seatedHumans: 1
+}
+[ROOM] Client G7DxBCtS9 joining with name: attacker
+[ROOM_DEBUG] join:start {
+  roomId: '8qqD5NlVk',
+  roomCode: 'WCZM',
+  sessionId: 'G7DxBCtS9',
+  clientsLength: 2,
+  playerOrder: [ 'lfplbC49L' ],
+  totalPlayers: 4,
+  aiCount: 0,
+  humanSeats: 4,
+  maxClients: 4
+}
+[ROOM_DEBUG] join:identity {
+  sessionId: 'G7DxBCtS9',
+  hasUserId: true,
+  hasPlayerId: true,
+  hasAuthToken: true,
+  provider: 'platform',
+  displayName: 'attacker'
+}
+[ROOM] Current player count: 2 / 4
+[ROOM_DEBUG] room_state {
+  roomId: '8qqD5NlVk',
+  roomCode: 'WCZM',
+  gameActive: false,
+  seatSelectionRequired: true,
+  currentPlayers: 1,
+  humanPlayers: 1,
+  humanSeats: 4,
+  aiCount: 0,
+  totalPlayers: 4,
+  players: [
+    {
+      sessionId: 'G7DxBCtS9',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: true
+    }
+  ]
+}
+[ROOM_DEBUG] autostart:decision {
+  roomId: '8qqD5NlVk',
+  roomCode: 'WCZM',
+  roomMode: 'ffa',
+  isTeamMode: false,
+  totalPlayers: 4,
+  maxPlayers: 4,
+  maxClients: 4,
+  clientsLength: 2,
+  aiCount: 0,
+  gameActive: false,
+  gameStarting: false,
+  matchFinished: false,
+  readyPlayersCount: 1,
+  botsReadyCount: 0,
+  humanCount: 1,
+  botCount: 0,
+  occupiedSeats: 1,
+  botIdsLength: 0,
+  playerOrder: [ 'G7DxBCtS9' ],
+  players: [
+    {
+      sessionId: 'G7DxBCtS9',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: true
+    }
+  ],
+  blockedReason: 'waiting-for-human',
+  decision: 'wait',
+  reason: 'waiting-for-human'
+}
+[ROOM_DEBUG] join:assigned {
+  sessionId: 'G7DxBCtS9',
+  seatIndex: 0,
+  isHost: true,
+  playerOrder: [ 'G7DxBCtS9' ],
+  connectedHumans: 1,
+  readyHumans: 1,
+  seatedHumans: 1
+}
+[ROOM_DEBUG] leave:start {
+  roomId: '8qqD5NlVk',
+  roomCode: 'WCZM',
+  sessionId: 'lfplbC49L',
+  consented: 4000,
+  playerOrder: [ 'G7DxBCtS9' ],
+  players: [
+    {
+      sessionId: 'G7DxBCtS9',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: true
+    }
+  ]
+}
+[ROOM_DEBUG] leave:explicit {
+  roomId: '8qqD5NlVk',
+  roomCode: 'WCZM',
+  sessionId: 'lfplbC49L',
+  playerName: 'Player'
+}
+[ROOM_DEBUG] leave:waiting_reconnect {
+  roomId: '8qqD5NlVk',
+  roomCode: 'WCZM',
+  sessionId: 'lfplbC49L',
+  reason: 'accidental_disconnect',
+  graceStartedAt: 1792274185826,
+  graceExpiresAt: 1792274305826,
+  graceMs: 120000
+}
+[ROOM_DEBUG] room_state {
+  roomId: '8qqD5NlVk',
+  roomCode: 'WCZM',
+  gameActive: false,
+  seatSelectionRequired: true,
+  currentPlayers: 1,
+  humanPlayers: 1,
+  humanSeats: 4,
+  aiCount: 0,
+  totalPlayers: 4,
+  players: [
+    {
+      sessionId: 'G7DxBCtS9',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: true
+    }
+  ]
+}
+[ROOM_DEBUG] leave:start {
+  roomId: '8qqD5NlVk',
+  roomCode: 'WCZM',
+  sessionId: 'G7DxBCtS9',
+  consented: 4000,
+  playerOrder: [ 'G7DxBCtS9' ],
+  players: [
+    {
+      sessionId: 'G7DxBCtS9',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: true
+    }
+  ]
+}
+[ROOM_DEBUG] leave:explicit {
+  roomId: '8qqD5NlVk',
+  roomCode: 'WCZM',
+  sessionId: 'G7DxBCtS9',
+  playerName: 'attacker'
+}
+[ROOM_DEBUG] leave:waiting_reconnect {
+  roomId: '8qqD5NlVk',
+  roomCode: 'WCZM',
+  sessionId: 'G7DxBCtS9',
+  reason: 'accidental_disconnect',
+  graceStartedAt: 1792274185827,
+  graceExpiresAt: 1792274305827,
+  graceMs: 120000
+}
+[ROOM_DEBUG] room_state {
+  roomId: '8qqD5NlVk',
+  roomCode: 'WCZM',
+  gameActive: false,
+  seatSelectionRequired: true,
+  currentPlayers: 0,
+  humanPlayers: 0,
+  humanSeats: 4,
+  aiCount: 0,
+  totalPlayers: 4,
+  players: [
+    {
+      sessionId: 'G7DxBCtS9',
+      isBot: false,
+      isConnected: false,
+      seatIndex: 0,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: true
+    }
+  ]
+}
+[ROOM_DEBUG] leave:grace_timeout {
+  roomId: '8qqD5NlVk',
+  roomCode: 'WCZM',
+  sessionId: 'lfplbC49L',
+  playerName: 'Player',
+  expiresAt: 1792274305826
+}
+[ROOM_DEBUG] room_state {
+  roomId: '8qqD5NlVk',
+  roomCode: 'WCZM',
+  gameActive: false,
+  seatSelectionRequired: true,
+  currentPlayers: 0,
+  humanPlayers: 0,
+  humanSeats: 4,
+  aiCount: 0,
+  totalPlayers: 4,
+  players: [
+    {
+      sessionId: 'G7DxBCtS9',
+      isBot: false,
+      isConnected: false,
+      seatIndex: 0,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: true
+    }
+  ]
+}
+[ROOM_DEBUG] leave:allow_reconnection_rejected {
+  roomId: '8qqD5NlVk',
+  roomCode: 'WCZM',
+  sessionId: 'lfplbC49L',
+  reason: 'allowReconnection_failed'
+}
+[ROOM_DEBUG] leave:grace_timeout {
+  roomId: '8qqD5NlVk',
+  roomCode: 'WCZM',
+  sessionId: 'G7DxBCtS9',
+  playerName: 'attacker',
+  expiresAt: 1792274305827
+}
+[ROOM_DEBUG] room_state {
+  roomId: '8qqD5NlVk',
+  roomCode: 'WCZM',
+  gameActive: false,
+  seatSelectionRequired: true,
+  currentPlayers: 0,
+  humanPlayers: 0,
+  humanSeats: 4,
+  aiCount: 0,
+  totalPlayers: 4,
+  players: []
+}
+[ROOM_DEBUG] leave:allow_reconnection_rejected {
+  roomId: '8qqD5NlVk',
+  roomCode: 'WCZM',
+  sessionId: 'G7DxBCtS9',
+  reason: 'allowReconnection_failed'
+}

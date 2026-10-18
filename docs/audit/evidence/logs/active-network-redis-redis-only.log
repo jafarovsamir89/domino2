@@ -1,0 +1,12 @@
+31639:C 17 Oct 2026 16:25:18.298 * oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo
+31639:C 17 Oct 2026 16:25:18.298 * Redis version=8.10.2, bits=64, commit=508932eb, modified=0, pid=31639, just started
+31639:C 17 Oct 2026 16:25:18.298 * Configuration loaded
+31639:M 17 Oct 2026 16:25:18.299 * monotonic clock: ARM CNTVCT @ 24 ticks/us
+31639:M 17 Oct 2026 16:25:18.299 * Running mode=standalone, port=56380.
+31639:M 17 Oct 2026 16:25:18.299 # WARNING: The TCP backlog setting of 511 cannot be enforced because kern.ipc.somaxconn is set to the lower value of 128.
+31639:M 17 Oct 2026 16:25:18.299 * Server initialized
+31639:M 17 Oct 2026 16:25:18.299 * Ready to accept connections tcp
+31639:M 17 Oct 2026 16:25:18.299 # WARNING: Redis does not require authentication. Redis will accept connections from any local client.
+31639:signal-handler (1792279534) Received SIGTERM scheduling shutdown...
+31639:M 17 Oct 2026 16:25:34.515 * User requested shutdown...
+31639:M 17 Oct 2026 16:25:34.515 # Redis is now ready to exit, bye bye...

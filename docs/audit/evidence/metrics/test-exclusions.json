@@ -1,0 +1,9 @@
+[
+  "server/test/last-move-reveal-ux.test.js",
+  "server/test/solo-bazaar-button.test.js",
+  "server/test/turn-timeout-forfeit-flow.test.js",
+  "server/test/game-mode-routing.test.js",
+  "server/test/result-overlay-test.test.js",
+  "server/test/open-room-client-flow.test.js",
+  "server/test/disconnect-grace.test.js"
+]

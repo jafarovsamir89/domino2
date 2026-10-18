@@ -1,0 +1,4 @@
+ /dev/null => .tmp/play-installed-web/cordova.js     |  0
+ .../play-installed-web/cordova_plugins.js           |  0
+ {www => .tmp/play-installed-web}/privacy.html       | 21 ++++++++-------------
+ 3 files changed, 8 insertions(+), 13 deletions(-)

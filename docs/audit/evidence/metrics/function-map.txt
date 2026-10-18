@@ -1,0 +1,213 @@
+apps/api/src/modules/social/social.service.ts:248:  subscribeToLiveEvents(listener: (event: SocialLiveEvent) => void) {
+apps/api/src/modules/social/social.service.ts:265:  subscribeToSocialEvents(headers: IncomingHttpHeaders): Observable<MessageEvent> {
+apps/api/src/modules/social/social.service.ts:327:  async purgeExpiredSocialData() {
+apps/api/src/modules/social/social.service.ts:1229:  async getFriends(headers: IncomingHttpHeaders) {
+apps/api/src/modules/social/social.service.ts:1311:  async markInboxRead(headers: IncomingHttpHeaders, id: string) {
+apps/api/src/modules/social/social.service.ts:1349:  async markDirectMessageThreadRead(headers: IncomingHttpHeaders, playerId: string) {
+apps/api/src/modules/social/social.service.ts:1387:  async claimInboxMessage(headers: IncomingHttpHeaders, id: string) {
+apps/api/src/modules/social/social.service.ts:1411:  async deleteInboxMessage(headers: IncomingHttpHeaders, id: string) {
+apps/api/src/modules/social/social.service.ts:1428:  async getSocialSummary(headers: IncomingHttpHeaders) {
+apps/api/src/modules/social/social.service.ts:1485:  async searchPlayers(headers: IncomingHttpHeaders, query?: string) {
+apps/api/src/modules/social/social.service.ts:1584:  async getPlayerProfile(headers: IncomingHttpHeaders, id: string) {
+apps/api/src/modules/social/social.service.ts:1653:  async getMessageThreads(headers: IncomingHttpHeaders) {
+apps/api/src/modules/social/social.service.ts:1706:  async deleteMessageThread(headers: IncomingHttpHeaders, playerId: string) {
+apps/api/src/modules/social/social.service.ts:1936:  async sendDirectMessage(headers: IncomingHttpHeaders, playerId: string, body: { text?: string }) {
+apps/api/src/modules/social/social.service.ts:2080:  async acceptFriend(headers: IncomingHttpHeaders, id: string) {
+apps/api/src/modules/social/social.service.ts:2115:  async declineFriend(headers: IncomingHttpHeaders, id: string) {
+apps/api/src/modules/social/social.service.ts:2143:  async cancelFriendRequest(headers: IncomingHttpHeaders, id: string) {
+apps/api/src/modules/social/social.service.ts:2183:  async removeFriend(headers: IncomingHttpHeaders, id: string) {
+apps/api/src/modules/social/social.service.ts:2206:  async blockPlayer(headers: IncomingHttpHeaders, targetPlayerIdInput: string) {
+apps/api/src/modules/social/social.service.ts:2252:  async unblockPlayer(headers: IncomingHttpHeaders, targetPlayerIdInput: string) {
+apps/api/src/modules/social/social.service.ts:2337:  async getPlayerModeration(headers: IncomingHttpHeaders, id: string) {
+apps/api/src/modules/social/social.service.ts:2359:  async getRoomInvitations(headers: IncomingHttpHeaders) {
+apps/api/src/modules/social/social.service.ts:2400:  async getPlayInvites(headers: IncomingHttpHeaders) {
+apps/api/src/modules/social/social.service.ts:2734:  async getGiftCatalog(headers: IncomingHttpHeaders) {
+apps/api/src/modules/social/social.service.ts:2747:  async getGiftInventory(headers: IncomingHttpHeaders) {
+apps/api/src/modules/social/social.service.ts:2774:  async getGiftHistory(headers: IncomingHttpHeaders) {
+apps/api/src/modules/social/social.service.ts:3269:  async acceptPlayInvite(headers: IncomingHttpHeaders, id: string) {
+apps/api/src/modules/social/social.service.ts:3371:  async declinePlayInvite(headers: IncomingHttpHeaders, id: string) {
+apps/api/src/modules/social/social.service.ts:3439:  async cancelPlayInvite(headers: IncomingHttpHeaders, id: string) {
+apps/api/src/modules/social/social.service.ts:3690:  async acceptRoomInvitation(headers: IncomingHttpHeaders, id: string) {
+apps/api/src/modules/social/social.service.ts:3816:  async declineRoomInvitation(headers: IncomingHttpHeaders, id: string) {
+apps/api/src/modules/social/social.service.ts:3878:  async cancelRoomInvitation(headers: IncomingHttpHeaders, id: string) {
+apps/api/src/modules/social/social.service.ts:3932:  isPlayerOnline(playerId: string): boolean {
+apps/api/src/modules/social/social.service.ts:3942:  async sendFcmPushNotification(playerId: string, senderDisplayName: string, text: string) {
+apps/api/src/modules/economy/economy.service.ts:956:  async getPublicConfig() {
+apps/api/src/modules/economy/economy.service.ts:996:  async getCoinShopStatus(headers: IncomingHttpHeaders) {
+apps/api/src/modules/economy/economy.service.ts:1046:  async claimCoinShopVideoReward(headers: IncomingHttpHeaders) {
+apps/api/src/modules/economy/economy.service.ts:1125:  async getWallet(headers: IncomingHttpHeaders) {
+apps/api/src/modules/economy/economy.service.ts:1158:  async getAdminOverview(headers: IncomingHttpHeaders) {
+apps/api/src/modules/economy/economy.service.ts:1183:  async listAdminWallets(headers: IncomingHttpHeaders, query?: string, limit?: string, offset?: string) {
+apps/api/src/modules/economy/economy.service.ts:1238:  async getAdminWallet(headers: IncomingHttpHeaders, playerId: string) {
+apps/api/src/modules/economy/economy.service.ts:1304:  async listPublicStakes() {
+apps/api/src/modules/economy/economy.service.ts:1313:  async listPublicQuests(headers: IncomingHttpHeaders) {
+apps/api/src/modules/economy/economy.service.ts:1439:  async getDailyBonusStatus(headers: IncomingHttpHeaders, now = new Date()) {
+apps/api/src/modules/economy/economy.service.ts:1606:  async advanceQuest(headers: IncomingHttpHeaders, questKey: string, amount = 1) {
+apps/api/src/modules/economy/economy.service.ts:1620:  async claimQuestReward(headers: IncomingHttpHeaders, questKey: string) {
+apps/api/src/modules/economy/economy.service.ts:1695:  async purchaseCosmetic(headers: IncomingHttpHeaders, productKey: string, quantity = 1) {
+apps/api/src/modules/economy/economy.service.ts:1796:  async reserveMatchStake(token: string, payload: ReservePayload = {}) {
+apps/api/src/modules/economy/economy.service.ts:1939:  async settleMatchStake(token: string, payload: SettlePayload = {}) {
+apps/api/src/modules/economy/economy.service.ts:2513:  async getMatchStakeOverview(headers: IncomingHttpHeaders) {
+apps/api/src/modules/economy/economy.service.ts:2673:  async listAdminQuests(headers: IncomingHttpHeaders) {
+apps/api/src/modules/economy/economy.service.ts:2688:  async listAdminTournaments(headers: IncomingHttpHeaders) {
+apps/api/src/modules/economy/economy.service.ts:2710:  async upsertStakeTable(headers: IncomingHttpHeaders, payload: EconomyStakeTablePayload) {
+apps/api/src/modules/economy/economy.service.ts:2761:  async upsertQuest(headers: IncomingHttpHeaders, payload: EconomyQuestPayload) {
+apps/api/src/modules/economy/economy.service.ts:2812:  async upsertTournament(headers: IncomingHttpHeaders, payload: EconomyTournamentPayload) {
+apps/api/src/modules/economy/economy.service.ts:2871:  async updateEconomyConfig(headers: IncomingHttpHeaders, payload: EconomyConfigPayload) {
+apps/api/src/modules/economy/economy.service.ts:2903:  async listCatalog(headers: IncomingHttpHeaders) {
+apps/api/src/modules/economy/economy.service.ts:2916:  async listTableSkins(headers: IncomingHttpHeaders) {
+apps/api/src/modules/economy/economy.service.ts:3079:  async purchaseTableSkin(headers: IncomingHttpHeaders, key: string) {
+apps/api/src/modules/economy/economy.service.ts:3093:  async equipDefaultTableSkin(headers: IncomingHttpHeaders) {
+apps/api/src/modules/economy/economy.service.ts:3112:  async equipTableSkin(headers: IncomingHttpHeaders, key: string) {
+apps/api/src/modules/economy/economy.service.ts:3149:  async grantCoins(headers: IncomingHttpHeaders, playerId: string, payload: EconomyGrantPayload) {
+apps/api/src/modules/economy/economy.service.ts:3192:  async spendCoins(headers: IncomingHttpHeaders, playerId: string, payload: EconomyGrantPayload) {
+server/DominoRoom.js:91:    getActiveRuleset() {
+server/DominoRoom.js:99:    parseMatchStateSnapshot(matchState) {
+server/DominoRoom.js:118:    createMatchStateForCurrentMode(playerCount = this.totalPlayers, isTeamMode = isRoomTeamMode(this)) {
+server/DominoRoom.js:124:    configureBoardForCurrentMode(board = this.internalBoard) {
+server/DominoRoom.js:131:    normalizeMatchStateForCurrentMode(matchState = this.matchState, playerCount = this.totalPlayers, isTeamMode = isRoomTeamMode(this)) {
+server/DominoRoom.js:138:    syncMatchStateToSchema() {
+server/DominoRoom.js:148:    syncClassic101ScoresFromMatchState(matchState = this.matchState) {
+server/DominoRoom.js:174:    async onCreate(options = {}) {
+server/DominoRoom.js:356:    attachStateCollections() {
+server/DominoRoom.js:386:    onAuth(client, options, context) {
+server/DominoRoom.js:402:    findReusableSessionId(options = {}, identity = {}) {
+server/DominoRoom.js:427:    getPendingDisconnectEntry(sessionId) {
+server/DominoRoom.js:433:    clearPendingDisconnect(sessionId) {
+server/DominoRoom.js:444:    getPendingDisconnectSafeEntries() {
+server/DominoRoom.js:456:    getCurrentPlayerReconnectHold() {
+server/DominoRoom.js:474:    isCurrentPlayerDisconnectedOrReconnecting() {
+server/DominoRoom.js:478:    pauseTurnTimerForReconnect({ sessionId = "", playerName = "", expiresAt = 0, source = "reconnect" } = {}) {
+server/DominoRoom.js:498:    resumeTurnTimerAfterReconnect({ sessionId = "", source = "reconnect" } = {}) {
+server/DominoRoom.js:519:    sendReconnectRestoreState(sessionId, { source = "reconnect" } = {}) {
+server/DominoRoom.js:682:    completeReconnectGrace(sessionId, nextSessionId = sessionId, { source = "reconnect" } = {}) {
+server/DominoRoom.js:796:    async finalizeReconnectTimeout(sessionId) {
+server/DominoRoom.js:884:    getPlayerSeatIndex(sessionId) {
+server/DominoRoom.js:890:    isSeatAvailable(seatIndex, ignoreSessionId = "") {
+server/DominoRoom.js:904:    getFirstAvailableSeatIndex() {
+server/DominoRoom.js:911:    rebuildPlayerOrderBySeats() {
+server/DominoRoom.js:930:    countSeatedHumanPlayers() {
+server/DominoRoom.js:942:    countConnectedHumanPlayers() {
+server/DominoRoom.js:952:    countReadyHumanPlayers() {
+server/DominoRoom.js:964:    getPlayerForTurnIndex(playerIndex) {
+server/DominoRoom.js:972:    isSeatUnderBotTakeover(player) {
+server/DominoRoom.js:976:    isSeatDrivenByBot(player) {
+server/DominoRoom.js:980:    canUseBotTakeoverForSeat(player, { sessionId = "", reason = TAKEOVER_REASON.DISCONNECT } = {}) {
+server/DominoRoom.js:990:    hasConnectedHumanController() {
+server/DominoRoom.js:1002:    getAllAbsentPlayerRows() {
+server/DominoRoom.js:1014:    async endMatchAllAbsent() {
+server/DominoRoom.js:1047:    onBotTakeoverActivated(player) {
+server/DominoRoom.js:1061:    onHumanControlResumed(player) {
+server/DominoRoom.js:1075:    getAutoStartState() {
+server/DominoRoom.js:1124:    async closeWaitingOpenRoom(reason = "host_left") {
+server/DominoRoom.js:1166:    areAllHumanPlayersSeated() {
+server/DominoRoom.js:1171:    setPlayerSeat(sessionId, seatIndex) {
+server/DominoRoom.js:1186:    maybeAutoStartGame() {
+server/DominoRoom.js:1257:    hasRestoredMatchInProgress() {
+server/DominoRoom.js:1265:    registerLivePlayer(sessionId, identity, player, joinedAt = null) {
+server/DominoRoom.js:1277:    onJoin(client, options, auth) {
+server/DominoRoom.js:1425:    onDispose() {
+server/DominoRoom.js:1458:    ensureBotPlayers() {
+server/DominoRoom.js:1523:    async onLeave(client, consented) {
+server/DominoRoom.js:1687:    async startGame({ allowAlreadyStarting = false } = {}) {
+server/DominoRoom.js:1797:    handleChooseSeat(client, message = {}) {
+server/DominoRoom.js:1832:    async startDeal() {
+server/DominoRoom.js:1996:    async startRound() {
+server/DominoRoom.js:2019:    clearTurnTimer() {
+server/DominoRoom.js:2029:    bumpTurnVersion() {
+server/DominoRoom.js:2035:    clearTurnAdvanceTimer() {
+server/DominoRoom.js:2043:    clearLastMoveRevealTimer() {
+server/DominoRoom.js:2051:    clearNextDealTimer() {
+server/DominoRoom.js:2058:    scheduleNextDeal(delay = 900) {
+server/DominoRoom.js:2072:    scheduleNextRound(delay = 900) {
+server/DominoRoom.js:2086:    clearTimeoutForfeitState() {
+server/DominoRoom.js:2095:    scheduleLastMoveSettlement(callback, delay = LAST_MOVE_REVEAL_DELAY_MS) {
+server/DominoRoom.js:2108:    scheduleTurnAdvance(delay = this.turnAdvanceMs) {
+server/DominoRoom.js:2123:    shouldOpenGoshaChainWindow(pi) {
+server/DominoRoom.js:2131:    scheduleTurnTimer() {
+server/DominoRoom.js:2173:    findTimeoutWinner(timeoutIndex) {
+server/DominoRoom.js:2204:    handleTurnTimeout() {
+server/DominoRoom.js:2227:    async reserveEconomyStake() {
+server/DominoRoom.js:2231:    buildTimeoutForfeitPending({ loserSessionId, loserIndex, loserName, winnerIndex, economySummary, bankAmount, requiredStakeAmount } = {}) {
+server/DominoRoom.js:2248:    clearTimeoutForfeitTimer() {
+server/DominoRoom.js:2255:    async closeTimeoutForfeitRoom() {
+server/DominoRoom.js:2293:    async endRoundByTimeoutForfeit({ loserIndex, winnerIndex } = {}) {
+server/DominoRoom.js:2404:    sendTimeoutContinueResult(client, payload = {}) {
+server/DominoRoom.js:2414:    async handleTimeoutContinue(client) {
+server/DominoRoom.js:2477:    scheduleBotTurn(delay = BOT_THINK_DELAY_MS) {
+server/DominoRoom.js:2486:    runBotTurn() {
+server/DominoRoom.js:2531:    getPlayerIndex(client) {
+server/DominoRoom.js:2535:    getTeamMembers(teamIndex) {
+server/DominoRoom.js:2544:    getTeamPartnerIndex(playerIndex) {
+server/DominoRoom.js:2552:    getTeamDisplayName(teamIndex) {
+server/DominoRoom.js:2561:    getTeamHandPoints(teamIndex) {
+server/DominoRoom.js:2564:    getOpeningScoreContext(pi) {
+server/DominoRoom.js:2571:    getOpeningMoveRequirement() {
+server/DominoRoom.js:2592:    getValidMovesForPlayer(pi) {
+server/DominoRoom.js:2608:    shouldRedealOpeningHands(hands = []) {
+server/DominoRoom.js:2612:    updateSchemaState({ includeBoardJson = false } = {}) {
+server/DominoRoom.js:2623:    buildTurnInfoForPlayer(playerIndex) {
+server/DominoRoom.js:2635:    sendTurnInfoToPlayerIndex(playerIndex) {
+server/DominoRoom.js:2645:    sendHandToClient(client, playerIndex = this.getPlayerIndex(client)) {
+server/DominoRoom.js:2652:    buildPlayerSyncRows() {
+server/DominoRoom.js:2674:    buildPublicPlayerStats() {
+server/DominoRoom.js:2685:    syncPublicPlayerStatsToState() {
+server/DominoRoom.js:2697:    buildFullStatePayloadForClient(client) {
+server/DominoRoom.js:2738:    sendFullState(client) {
+server/DominoRoom.js:2744:    sendRoomStateToClient(client) {
+server/DominoRoom.js:2759:    handleSyncRequest(client) {
+server/DominoRoom.js:2778:    handleResumeControl(client) {
+server/DominoRoom.js:2789:    broadcastFullState({ includeRoomState = false } = {}) {
+server/DominoRoom.js:2803:    buildGameDeltaPayload(base = {}) {
+server/DominoRoom.js:2834:    broadcastGameDelta(base = {}) {
+server/DominoRoom.js:2840:    sendActionAck(client, payload = {}) {
+server/DominoRoom.js:2856:    syncState({ includeBoardJson = true } = {}) {
+server/DominoRoom.js:2867:    broadcastRoomState() {
+server/DominoRoom.js:2897:    getPlatformMatchIdentity() {
+server/DominoRoom.js:2906:    getPlayerIdentityForSession(sessionId) {
+server/DominoRoom.js:2916:    getVoiceModerationCacheKey(senderPlayerId, targetPlayerId) {
+server/DominoRoom.js:2920:    async canRelayVoiceBetweenSessions(senderSessionId, targetSessionId) {
+server/DominoRoom.js:2961:    async relayVoiceSignal(client, message = {}) {
+server/DominoRoom.js:3011:    async recordPlatformMatch(payload) {
+server/DominoRoom.js:3039:    clearMatchRecordingRetryTimer() {
+server/DominoRoom.js:3046:    clearEconomySettlementRetryTimer() {
+server/DominoRoom.js:3053:    beginPendingEconomySettlement() {
+server/DominoRoom.js:3063:    resolvePendingEconomySettlement() {
+server/DominoRoom.js:3074:    scheduleEconomySettlementRetry() {
+server/DominoRoom.js:3090:    async retryPendingEconomySettlement() {
+server/DominoRoom.js:3108:    scheduleMatchRecordingRetry() {
+server/DominoRoom.js:3124:    async retryPendingMatchRecording() {
+server/DominoRoom.js:3170:    async settleForfeitStake(leavingSessionId) {
+server/DominoRoom.js:3174:    async recordForfeitMatchResult(leavingSessionId) {
+server/DominoRoom.js:3236:    async settleEconomyRound(wi, isInstantWin, players, wins, options = {}) {
+server/DominoRoom.js:3240:    async recordMatchResult(wi, isInstantWin, players, wins, options = {}) {
+server/DominoRoom.js:3299:    validateClientAction(client, message = {}, { allowTurnAdvancePending = false } = {}) {
+server/DominoRoom.js:3317:    handlePlay(client, message = {}) {
+server/DominoRoom.js:3343:    handleDraw(client, message = {}) {
+server/DominoRoom.js:3368:    handlePass(client, message = {}) {
+server/DominoRoom.js:3393:    handleGosha(client, message = {}) {
+server/DominoRoom.js:3430:    performPlay(pi, tileIndex, openEndIndex, isBot = false, meta = {}) {
+server/DominoRoom.js:3550:    performDraw(pi, isBot = false, meta = {}) {
+server/DominoRoom.js:3588:    performPass(pi, isBot = false, meta = {}) {
+server/DominoRoom.js:3619:    performGosha(pi, combo, isBot = false, meta = {}) {
+server/DominoRoom.js:3728:    handleNextDeal(client) {
+server/DominoRoom.js:3745:    handleReaction(client, message) {
+server/DominoRoom.js:3758:    handleGift(client, message) {
+server/DominoRoom.js:3777:    handleVoiceSignal(client, message = {}) {
+server/DominoRoom.js:3798:    advanceTurn() {
+server/DominoRoom.js:3816:    applyScore(pi, score) {
+server/DominoRoom.js:3830:    addScore(pi, score, { broadcast = true, scoreSource = "table" } = {}) {
+server/DominoRoom.js:3857:    findFishWinner() {
+server/DominoRoom.js:3869:    endDeal(wi, fish) {
+server/DominoRoom.js:3952:    async endRound(wi, isInstantWin) {
+server/DominoRoom.js:4056:    async loadCustomStateForRestore(options = {}) {
+server/DominoRoom.js:4060:    buildSchemaStateSnapshot() {
+server/DominoRoom.js:4068:    replaceSchemaArray(target, values = []) {
+server/DominoRoom.js:4075:    restoreSchemaState(snapshot = {}) {
+server/DominoRoom.js:4136:    restoreTile(tile) {
+server/DominoRoom.js:4141:    buildCustomStateSnapshot() {
+server/DominoRoom.js:4186:    applyCustomStateSnapshot(data = {}) {
+server/DominoRoom.js:4304:    async saveCustomStateToRedis() {
+server/DominoRoom.js:4322:    onCacheRoom() {
+server/DominoRoom.js:4326:    onRestoreRoom(cachedData) {
+server/DominoRoom.js:4337:    async onBeforeShutdown() {

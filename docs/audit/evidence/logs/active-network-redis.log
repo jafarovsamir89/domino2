@@ -1,0 +1,12 @@
+26687:C 17 Oct 2026 16:20:48.139 * oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo
+26687:C 17 Oct 2026 16:20:48.139 * Redis version=8.10.2, bits=64, commit=508932eb, modified=0, pid=26687, just started
+26687:C 17 Oct 2026 16:20:48.139 * Configuration loaded
+26687:M 17 Oct 2026 16:20:48.139 * monotonic clock: ARM CNTVCT @ 24 ticks/us
+26687:M 17 Oct 2026 16:20:48.139 * Running mode=standalone, port=56380.
+26687:M 17 Oct 2026 16:20:48.139 # WARNING: The TCP backlog setting of 511 cannot be enforced because kern.ipc.somaxconn is set to the lower value of 128.
+26687:M 17 Oct 2026 16:20:48.140 * Server initialized
+26687:M 17 Oct 2026 16:20:48.140 * Ready to accept connections tcp
+26687:M 17 Oct 2026 16:20:48.140 # WARNING: Redis does not require authentication. Redis will accept connections from any local client.
+26687:signal-handler (1792279489) Received SIGTERM scheduling shutdown...
+26687:M 17 Oct 2026 16:24:49.935 * User requested shutdown...
+26687:M 17 Oct 2026 16:24:49.935 # Redis is now ready to exit, bye bye...

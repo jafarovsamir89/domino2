@@ -1,0 +1,149 @@
+{
+  "scope": "Literal expected outcomes plus replay of a real 28-tile fish state. No network or UI execution.",
+  "cases": [
+    {
+      "name": "real_blocked_101_state_replay",
+      "tiles": 28,
+      "blocked": true,
+      "rawHandPoints": [
+        0,
+        50
+      ],
+      "literalExpectedScores": [
+        129,
+        0
+      ],
+      "literalExpectedFinished": true,
+      "actualScores": [
+        79,
+        0
+      ],
+      "actualFinished": false,
+      "conforms": false
+    },
+    {
+      "name": "101_initial_deal_without_positive_double",
+      "seed": 225,
+      "run": {
+        "ok": false,
+        "reason": "opening_player_missing",
+        "seed": 225,
+        "actions": 0,
+        "deals": 1,
+        "difficulties": [
+          "medium",
+          "medium"
+        ],
+        "count": 2,
+        "team": false,
+        "mode": "classic101"
+      },
+      "initial": {
+        "mode": "classic101",
+        "team": false,
+        "hands": [
+          [
+            "3-6",
+            "0-3",
+            "1-5",
+            "0-4",
+            "5-6",
+            "2-6",
+            "1-4"
+          ],
+          [
+            "2-3",
+            "0-1",
+            "1-6",
+            "4-5",
+            "0-2",
+            "3-5",
+            "0-5"
+          ]
+        ],
+        "boneyard": [
+          "0-0",
+          "0-6",
+          "2-2",
+          "2-4",
+          "6-6",
+          "5-5",
+          "2-5",
+          "1-1",
+          "3-4",
+          "1-2",
+          "4-6",
+          "4-4",
+          "3-3",
+          "1-3"
+        ],
+        "board": {
+          "nodes": [],
+          "openEnds": [],
+          "crossNodeId": null,
+          "crossSidesClosed": 0,
+          "startAxis": "horizontal",
+          "telephoneEnabled": false,
+          "scoringEnabled": false
+        },
+        "matchState": {
+          "mode": "classic101",
+          "carryPoints": 0,
+          "thresholdBypassNext": false,
+          "sides": [
+            {
+              "scored": 0,
+              "pending": 0,
+              "enteredBoard": false,
+              "missStreak": 0
+            },
+            {
+              "scored": 0,
+              "pending": 0,
+              "enteredBoard": false,
+              "missStreak": 0
+            }
+          ]
+        },
+        "currentPlayer": -1,
+        "scores": [
+          0,
+          0
+        ]
+      },
+      "ruleRequiresDrawToOpen": true,
+      "conforms": false
+    },
+    {
+      "name": "101_threshold_12_then_1",
+      "conforms": true,
+      "first": {
+        "scored": 0,
+        "pending": 12
+      },
+      "second": {
+        "scored": 13,
+        "pending": 0
+      }
+    },
+    {
+      "name": "101_tie_carry_14",
+      "conforms": true,
+      "carry": 14,
+      "thresholdBypassNext": true,
+      "note": "Pure ruleset fixture; full-set replay above covers room integration"
+    },
+    {
+      "name": "telefon_instant_flag_named_contract",
+      "conforms": true,
+      "note": "Correctly named input passes; actual caller mismatch remains R-08"
+    },
+    {
+      "name": "classic101_board_configuration",
+      "conforms": true,
+      "teamSides": 2,
+      "telephone": false,
+      "scoring": false
+    }
+  ]
+}

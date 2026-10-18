@@ -1,0 +1,108 @@
+{
+  "target": "android",
+  "date": "2026-10-17T22:13:50.800Z",
+  "method": "Controlled board animation, not whole-game FPS. Same local HTTP fixture; debug WebView for Android; no production traffic.",
+  "rows": [
+    {
+      "cpuThrottle": 1,
+      "tiles": 5,
+      "frames": 155,
+      "elapsedMs": 6508.700000008941,
+      "rafFps": 23.814279349146076,
+      "frameP50": 33.400000000000546,
+      "frameP95": 66.69999999999982,
+      "frameP99": 101.10000000000036,
+      "over25ms": 139,
+      "longTasks": [
+        {
+          "start": 5586.0999999940395,
+          "duration": 84
+        }
+      ],
+      "renderP95": 1.2999999970197678,
+      "jsHeap": 14300000,
+      "viewport": [
+        392,
+        823
+      ],
+      "dpr": 2.75
+    },
+    {
+      "cpuThrottle": 1,
+      "tiles": 10,
+      "frames": 156,
+      "elapsedMs": 6537.60000001192,
+      "rafFps": 23.861967694523305,
+      "frameP50": 48.20000000000073,
+      "frameP95": 50.80000000000291,
+      "frameP99": 69.09999999999854,
+      "over25ms": 149,
+      "longTasks": [],
+      "renderP95": 1.2999999970197678,
+      "jsHeap": 14300000,
+      "viewport": [
+        392,
+        822
+      ],
+      "dpr": 2.75
+    },
+    {
+      "cpuThrottle": 1,
+      "tiles": 20,
+      "frames": 169,
+      "elapsedMs": 6511.9000000000015,
+      "rafFps": 25.952486985365248,
+      "frameP50": 33.39999999999782,
+      "frameP95": 66.59999999999854,
+      "frameP99": 116.70000000000437,
+      "over25ms": 138,
+      "longTasks": [],
+      "renderP95": 1.2000000029802322,
+      "jsHeap": 14300000,
+      "viewport": [
+        392,
+        822
+      ],
+      "dpr": 2.75
+    },
+    {
+      "cpuThrottle": 1,
+      "tiles": 28,
+      "frames": 164,
+      "elapsedMs": 6514.200000005963,
+      "rafFps": 25.175769856597874,
+      "frameP50": 33.400000000001455,
+      "frameP95": 66.59999999999854,
+      "frameP99": 68.80000000000291,
+      "over25ms": 146,
+      "longTasks": [
+        {
+          "start": 42073.29999999702,
+          "duration": 50
+        }
+      ],
+      "renderP95": 1.5,
+      "jsHeap": 14300000,
+      "viewport": [
+        392,
+        822
+      ],
+      "dpr": 2.75
+    }
+  ],
+  "errors": [],
+  "heap100IdenticalRenders": {
+    "before": {
+      "usedSize": 7412796,
+      "totalSize": 8224768,
+      "embedderHeapUsedSize": 4757960,
+      "backingStorageSize": 7388218
+    },
+    "after": {
+      "usedSize": 7426068,
+      "totalSize": 7962624,
+      "embedderHeapUsedSize": 4687064,
+      "backingStorageSize": 7388218
+    }
+  }
+}

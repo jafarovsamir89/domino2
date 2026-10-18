@@ -1,0 +1,250 @@
+{
+  "target": "desktop",
+  "date": "2026-10-17T22:13:32.152Z",
+  "method": "Controlled board animation, not whole-game FPS. Same local HTTP fixture; debug WebView for Android; no production traffic.",
+  "rows": [
+    {
+      "cpuThrottle": 1,
+      "tiles": 5,
+      "frames": 391,
+      "elapsedMs": 6512.700000095367,
+      "rafFps": 60.036543982415054,
+      "frameP50": 16.69999999999891,
+      "frameP95": 17.600000000000364,
+      "frameP99": 17.700000000000728,
+      "over25ms": 0,
+      "longTasks": [],
+      "renderP95": 1.2000000476837158,
+      "jsHeap": 14300000,
+      "viewport": [
+        390,
+        844
+      ],
+      "dpr": 1
+    },
+    {
+      "cpuThrottle": 1,
+      "tiles": 10,
+      "frames": 391,
+      "elapsedMs": 6503.500000023843,
+      "rafFps": 60.12147305275106,
+      "frameP50": 16.69999999999709,
+      "frameP95": 17.600000000002183,
+      "frameP99": 17.700000000000728,
+      "over25ms": 0,
+      "longTasks": [],
+      "renderP95": 0.20000004768371582,
+      "jsHeap": 14300000,
+      "viewport": [
+        390,
+        844
+      ],
+      "dpr": 1
+    },
+    {
+      "cpuThrottle": 1,
+      "tiles": 20,
+      "frames": 391,
+      "elapsedMs": 6505.300000047682,
+      "rafFps": 60.104837593521296,
+      "frameP50": 16.69999999999709,
+      "frameP95": 17.599999999998545,
+      "frameP99": 17.69999999999709,
+      "over25ms": 0,
+      "longTasks": [],
+      "renderP95": 0.20000004768371582,
+      "jsHeap": 14300000,
+      "viewport": [
+        390,
+        844
+      ],
+      "dpr": 1
+    },
+    {
+      "cpuThrottle": 1,
+      "tiles": 28,
+      "frames": 391,
+      "elapsedMs": 6513.6000000953645,
+      "rafFps": 60.02824858669176,
+      "frameP50": 16.69999999999709,
+      "frameP95": 17.600000000002183,
+      "frameP99": 17.700000000000728,
+      "over25ms": 0,
+      "longTasks": [],
+      "renderP95": 0.5,
+      "jsHeap": 14300000,
+      "viewport": [
+        390,
+        844
+      ],
+      "dpr": 1
+    },
+    {
+      "cpuThrottle": 4,
+      "tiles": 5,
+      "frames": 391,
+      "elapsedMs": 6504.5999999999985,
+      "rafFps": 60.11130584509426,
+      "frameP50": 16.69999999999709,
+      "frameP95": 17.599999999998545,
+      "frameP99": 17.69999999999709,
+      "over25ms": 0,
+      "longTasks": [],
+      "renderP95": 0.8999999761581421,
+      "jsHeap": 14300000,
+      "viewport": [
+        390,
+        844
+      ],
+      "dpr": 1
+    },
+    {
+      "cpuThrottle": 4,
+      "tiles": 10,
+      "frames": 391,
+      "elapsedMs": 6514.000000047687,
+      "rafFps": 60.024562480371145,
+      "frameP50": 16.69999999999709,
+      "frameP95": 17.599999999998545,
+      "frameP99": 17.700000000004366,
+      "over25ms": 0,
+      "longTasks": [],
+      "renderP95": 0.5,
+      "jsHeap": 14300000,
+      "viewport": [
+        390,
+        844
+      ],
+      "dpr": 1
+    },
+    {
+      "cpuThrottle": 4,
+      "tiles": 20,
+      "frames": 391,
+      "elapsedMs": 6510.200000047684,
+      "rafFps": 60.05959878300761,
+      "frameP50": 16.69999999999709,
+      "frameP95": 17.599999999998545,
+      "frameP99": 17.700000000004366,
+      "over25ms": 0,
+      "longTasks": [],
+      "renderP95": 0.5,
+      "jsHeap": 14300000,
+      "viewport": [
+        390,
+        844
+      ],
+      "dpr": 1
+    },
+    {
+      "cpuThrottle": 4,
+      "tiles": 28,
+      "frames": 392,
+      "elapsedMs": 6503.200000047684,
+      "rafFps": 60.278016975815866,
+      "frameP50": 16.69999999999709,
+      "frameP95": 17.599999999998545,
+      "frameP99": 17.69999999999709,
+      "over25ms": 0,
+      "longTasks": [],
+      "renderP95": 0.5,
+      "jsHeap": 14300000,
+      "viewport": [
+        390,
+        844
+      ],
+      "dpr": 1
+    },
+    {
+      "cpuThrottle": 6,
+      "tiles": 5,
+      "frames": 391,
+      "elapsedMs": 6503.400000071531,
+      "rafFps": 60.12239751448463,
+      "frameP50": 16.69999999999709,
+      "frameP95": 17.60000000000582,
+      "frameP99": 17.69999999999709,
+      "over25ms": 0,
+      "longTasks": [],
+      "renderP95": 0.5,
+      "jsHeap": 14300000,
+      "viewport": [
+        390,
+        844
+      ],
+      "dpr": 1
+    },
+    {
+      "cpuThrottle": 6,
+      "tiles": 10,
+      "frames": 391,
+      "elapsedMs": 6508.3000000476895,
+      "rafFps": 60.07713227680576,
+      "frameP50": 16.69999999999709,
+      "frameP95": 17.60000000000582,
+      "frameP99": 17.69999999999709,
+      "over25ms": 0,
+      "longTasks": [],
+      "renderP95": 1.1999999284744263,
+      "jsHeap": 14300000,
+      "viewport": [
+        390,
+        844
+      ],
+      "dpr": 1
+    },
+    {
+      "cpuThrottle": 6,
+      "tiles": 20,
+      "frames": 391,
+      "elapsedMs": 6500.500000023836,
+      "rafFps": 60.14921929060323,
+      "frameP50": 16.69999999999709,
+      "frameP95": 17.59999999999127,
+      "frameP99": 17.69999999999709,
+      "over25ms": 0,
+      "longTasks": [],
+      "renderP95": 0.6000000238418579,
+      "jsHeap": 14300000,
+      "viewport": [
+        390,
+        844
+      ],
+      "dpr": 1
+    },
+    {
+      "cpuThrottle": 6,
+      "tiles": 28,
+      "frames": 391,
+      "elapsedMs": 6514.699999999997,
+      "rafFps": 60.01811288317193,
+      "frameP50": 16.69999999999709,
+      "frameP95": 17.60000000000582,
+      "frameP99": 17.70000000001164,
+      "over25ms": 1,
+      "longTasks": [],
+      "renderP95": 1.8000000715255737,
+      "jsHeap": 14300000,
+      "viewport": [
+        390,
+        844
+      ],
+      "dpr": 1
+    }
+  ],
+  "errors": [],
+  "heap100IdenticalRenders": {
+    "before": {
+      "usedSize": 6528496,
+      "totalSize": 7438336,
+      "embedderHeapUsedSize": 5196232,
+      "backingStorageSize": 7301719
+    },
+    "after": {
+      "usedSize": 6148264,
+      "totalSize": 6914048,
+      "embedderHeapUsedSize": 4759584,
+      "backingStorageSize": 7301676
+    }
+  }
+}

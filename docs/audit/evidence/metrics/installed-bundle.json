@@ -1,0 +1,557 @@
+{
+  "versionCode": 24,
+  "versionName": "1.20",
+  "installer": "com.android.vending",
+  "files": [
+    {
+      "path": "www/index.html",
+      "same": false,
+      "local": "7982f75a155f45a0134faaea896f9ba6b4bf8a7e2a5191894524d8df334f31a4",
+      "installed": "4e83e6a008f2ede955c6c5b934b15f7f25f2b30ebd6ba479ec39f1374fb41561",
+      "sameNormalizedNewlines": true
+    },
+    {
+      "path": "www/delete-account.html",
+      "same": true,
+      "local": "d5815cb42dacfc4286dfd976343e13d87e1aab4d98b50cb52d8e4bdec9d8f0fc",
+      "installed": "d5815cb42dacfc4286dfd976343e13d87e1aab4d98b50cb52d8e4bdec9d8f0fc",
+      "sameNormalizedNewlines": true
+    },
+    {
+      "path": "www/terms.html",
+      "same": true,
+      "local": "fc084114ddf8a358570ec1d8d80f218ee940b01e3e4d4a93ff26527cf78483f7",
+      "installed": "fc084114ddf8a358570ec1d8d80f218ee940b01e3e4d4a93ff26527cf78483f7",
+      "sameNormalizedNewlines": true
+    },
+    {
+      "path": "www/mobile-auth-complete.html",
+      "same": true,
+      "local": "7d901018b1199d4c72670d366d4386acf60aaadc4874c715b4d9d99657be5364",
+      "installed": "7d901018b1199d4c72670d366d4386acf60aaadc4874c715b4d9d99657be5364",
+      "sameNormalizedNewlines": true
+    },
+    {
+      "path": "www/auth-complete.html",
+      "same": true,
+      "local": "3a49721bb1b3f6f261ae31ef3e18f1cfb9db169f6de18c69e878c8559ac4639a",
+      "installed": "3a49721bb1b3f6f261ae31ef3e18f1cfb9db169f6de18c69e878c8559ac4639a",
+      "sameNormalizedNewlines": true
+    },
+    {
+      "path": "www/manifest.json",
+      "same": true,
+      "local": "59903f57e2b089f74de3f2a42bdb0ab0a9c1388d56322cd09cea519047486463",
+      "installed": "59903f57e2b089f74de3f2a42bdb0ab0a9c1388d56322cd09cea519047486463",
+      "sameNormalizedNewlines": true
+    },
+    {
+      "path": "www/sw.js",
+      "same": false,
+      "local": "7fa5aac34af0fbcbc6df9c1a79d84200aafac55613faa72ecb3b9eba96382636",
+      "installed": "f3e63a67098f4d9e3009096af9128da20b986914214d5ea2eb4bd1e4e4d305ba",
+      "sameNormalizedNewlines": true
+    },
+    {
+      "path": "www/privacy.html",
+      "same": false,
+      "local": "f84631decb270d9bb9bd0ceb770500e98fbd7929ebdb465acb99bf04ee79e76b",
+      "installed": "438d5d7116ac126ff88b0914551c7459ff13bb2a2c9b70694c34bece20d4ee3d",
+      "sameNormalizedNewlines": false
+    },
+    {
+      "path": "www/css/style.css",
+      "same": false,
+      "local": "ecee75d1c2163a881f791bafa3c429033b924c361b4a086975f738f043bb524b",
+      "installed": "e4701325ae22ad1af55185d9261d7157d41a50f907fdf13d1257a2cf3dd2e4e6",
+      "sameNormalizedNewlines": true
+    },
+    {
+      "path": "www/js/translations.js",
+      "same": false,
+      "local": "40e4fc5c893ad834745e402713d73005905c637481137487ac6e63d7d8cea108",
+      "installed": "7939b0fbb23e69bd55f9510fd6b7f480e69c678b935c3c5fc35ca10fa54a856d",
+      "sameNormalizedNewlines": true
+    },
+    {
+      "path": "www/js/ai.js",
+      "same": true,
+      "local": "f213597c7023b452d5ab11d714e1c0ee22f1e365491cf85b7d07c24fbcc5ba8f",
+      "installed": "f213597c7023b452d5ab11d714e1c0ee22f1e365491cf85b7d07c24fbcc5ba8f",
+      "sameNormalizedNewlines": true
+    },
+    {
+      "path": "www/js/konvaBoardRenderer.js",
+      "same": true,
+      "local": "14853a16a8598bdaf7476b392a0c42b084984a20af6610e014962cb384628fee",
+      "installed": "14853a16a8598bdaf7476b392a0c42b084984a20af6610e014962cb384628fee",
+      "sameNormalizedNewlines": true
+    },
+    {
+      "path": "www/js/renderer.js",
+      "same": false,
+      "local": "54223df95661e38b968fa1ae0e2221b032103e670040f27cd0fecfa03c949865",
+      "installed": "d8aaaababc810722b96b80ac2a9fb2b429c6def55f1316b92e068a9711f42123",
+      "sameNormalizedNewlines": true
+    },
+    {
+      "path": "www/js/board.js",
+      "same": false,
+      "local": "748bf09166e8b3871d627367cf55f9adad3389b5a5b068a25ba35078117b0eb3",
+      "installed": "c2caca323233a42819cf2c8f1fb5d4aa3ec4d8bfe3c43649802e9a10521a2f67",
+      "sameNormalizedNewlines": true
+    },
+    {
+      "path": "www/js/sounds.js",
+      "same": true,
+      "local": "a327955ec8d2456910c7c8f244acf58b57ee37c2ae23ab179a5595b377fc60a0",
+      "installed": "a327955ec8d2456910c7c8f244acf58b57ee37c2ae23ab179a5595b377fc60a0",
+      "sameNormalizedNewlines": true
+    },
+    {
+      "path": "www/js/account.js",
+      "same": false,
+      "local": "5de0311da731334a74a7dede8560ae10d0ffb839adb6b86697dd1ebd2696a8d0",
+      "installed": "f0e2d8c4ecc39617468e30dde6bc99ce94927f59ffe2449867187fb48b171b38",
+      "sameNormalizedNewlines": true
+    },
+    {
+      "path": "www/js/splash.js",
+      "same": true,
+      "local": "d8cd49ed86527f4fa0e166631c16c18f11ff93544b7ea84a5ab3c2eb29dd3231",
+      "installed": "d8cd49ed86527f4fa0e166631c16c18f11ff93544b7ea84a5ab3c2eb29dd3231",
+      "sameNormalizedNewlines": true
+    },
+    {
+      "path": "www/js/endpoints.js",
+      "same": true,
+      "local": "1fc7f8597ea5b0facfa109711a5c57711efb548fab78cca796dcf5d75e4d5a68",
+      "installed": "1fc7f8597ea5b0facfa109711a5c57711efb548fab78cca796dcf5d75e4d5a68",
+      "sameNormalizedNewlines": true
+    },
+    {
+      "path": "www/js/voice.js",
+      "same": true,
+      "local": "c69388430dedb925eefa4d4d392c794c44fa6a7e4e0e4bd8b5ccdced08a75eb8",
+      "installed": "c69388430dedb925eefa4d4d392c794c44fa6a7e4e0e4bd8b5ccdced08a75eb8",
+      "sameNormalizedNewlines": true
+    },
+    {
+      "path": "www/js/model.js",
+      "same": true,
+      "local": "a5f4e9aecefe56d651a20e879bdfee3cdfb781af50cbcbfb97813dbc098a10aa",
+      "installed": "a5f4e9aecefe56d651a20e879bdfee3cdfb781af50cbcbfb97813dbc098a10aa",
+      "sameNormalizedNewlines": true
+    },
+    {
+      "path": "www/js/network.js",
+      "same": false,
+      "local": "aa1c5fd4851766debb210448d6ecfcf96381e688b15176a124119cb831ad4bb7",
+      "installed": "36cebd7c6f055de3db5f00996baa9ea163894230badd18c611634635ea16e6eb",
+      "sameNormalizedNewlines": true
+    },
+    {
+      "path": "www/js/app.js",
+      "same": false,
+      "local": "6c2ff6051c15307e9c5989f38ab4afccf3516d32a464c72a0f6b8379b1451563",
+      "installed": "61e66e54660519c7ca6993bc303491ee2bb5924b79c809fbab434e4807222b83",
+      "sameNormalizedNewlines": true
+    },
+    {
+      "path": "www/js/vendor/gsap.min.js",
+      "same": true,
+      "local": "92bb9a96476f983d212a2bc4f54c889039c1696dd4461d40a736860938570fbb",
+      "installed": "92bb9a96476f983d212a2bc4f54c889039c1696dd4461d40a736860938570fbb",
+      "sameNormalizedNewlines": true
+    },
+    {
+      "path": "www/js/vendor/socket.io.min.js",
+      "same": true,
+      "local": "7bcff1b4f1442787ff11dfc510dedb8de16502ff5c987c4bbeb477605f76d9a0",
+      "installed": "7bcff1b4f1442787ff11dfc510dedb8de16502ff5c987c4bbeb477605f76d9a0",
+      "sameNormalizedNewlines": true
+    },
+    {
+      "path": "www/js/vendor/colyseus.js",
+      "same": false,
+      "local": "7f0ea4c595143ace519c691ec1b01ce2e0c5a941fad4ee3f6eb8db02406ed185",
+      "installed": "3fe2be0d9af4daf0f0c1db79355433ad951b9daafc3766d9329924d2cfd33d14",
+      "sameNormalizedNewlines": true
+    },
+    {
+      "path": "www/js/vendor/konva.min.js",
+      "same": true,
+      "local": "f17dfd9abb8c95953f09893cfefaaf9e09b9205012f6a2e3976dc946c89f6d7d",
+      "installed": "f17dfd9abb8c95953f09893cfefaaf9e09b9205012f6a2e3976dc946c89f6d7d",
+      "sameNormalizedNewlines": true
+    },
+    {
+      "path": "www/js/vendor/localforage.min.js",
+      "same": true,
+      "local": "cc168d95fb927d46b1043726cfe13998e08902ff63f24330e2bb2290109ed145",
+      "installed": "cc168d95fb927d46b1043726cfe13998e08902ff63f24330e2bb2290109ed145",
+      "sameNormalizedNewlines": true
+    },
+    {
+      "path": "www/shared/domino-model-core.cjs",
+      "same": true,
+      "local": "3d173cb68d5f5f626bd859f2c2d370382e14b0e95aa4dc1a63df4ea8b4b259f9",
+      "installed": "3d173cb68d5f5f626bd859f2c2d370382e14b0e95aa4dc1a63df4ea8b4b259f9",
+      "sameNormalizedNewlines": true
+    },
+    {
+      "path": "www/shared/domino-rulesets.cjs",
+      "same": true,
+      "local": "cac5fb68ce54a663497e11133e9803759d4904f73bf1f6dd551a6cb6024881de",
+      "installed": "cac5fb68ce54a663497e11133e9803759d4904f73bf1f6dd551a6cb6024881de",
+      "sameNormalizedNewlines": true
+    },
+    {
+      "path": "www/shared/domino-board-core.cjs",
+      "same": false,
+      "local": "0be1acae6f3676c87f48d5ce87176ccbec98d4126ebc1aef91693e43c41e70f0",
+      "installed": "add559544c42d0aee11ecc76c8eeb2146cc0b8aaf4c671fa70af1d8685274cfd",
+      "sameNormalizedNewlines": true
+    },
+    {
+      "path": "www/assets/icon.png",
+      "same": true,
+      "local": "1d018ca8a8b586b8de1dc74d23aaf303de5378ba82ab49203afd9f5bb3c6aa16",
+      "installed": "1d018ca8a8b586b8de1dc74d23aaf303de5378ba82ab49203afd9f5bb3c6aa16",
+      "sameNormalizedNewlines": true
+    },
+    {
+      "path": "www/assets/logo.png",
+      "same": true,
+      "local": "dd001d2c4526eb8f2e07edf1b7383a83760711f17152ad743b6328771e057988",
+      "installed": "dd001d2c4526eb8f2e07edf1b7383a83760711f17152ad743b6328771e057988",
+      "sameNormalizedNewlines": true
+    },
+    {
+      "path": "www/assets/reactions/1F48B.svg",
+      "same": true,
+      "local": "3f4492e92ca44c33d63e3c7bb46bf82dcb3c21eff689a924832378ac909d0fe9",
+      "installed": "3f4492e92ca44c33d63e3c7bb46bf82dcb3c21eff689a924832378ac909d0fe9",
+      "sameNormalizedNewlines": true
+    },
+    {
+      "path": "www/assets/reactions/1F914.svg",
+      "same": true,
+      "local": "eadd96d61939689ac418e26c2852cc681a4cab336ba2ae5514d9495879ee172f",
+      "installed": "eadd96d61939689ac418e26c2852cc681a4cab336ba2ae5514d9495879ee172f",
+      "sameNormalizedNewlines": true
+    },
+    {
+      "path": "www/assets/reactions/1F929.svg",
+      "same": true,
+      "local": "53703fcbad8489be11a84ca2f3388b830ea8ce07b34484a4350e4bf88dda3045",
+      "installed": "53703fcbad8489be11a84ca2f3388b830ea8ce07b34484a4350e4bf88dda3045",
+      "sameNormalizedNewlines": true
+    },
+    {
+      "path": "www/assets/reactions/1F618.svg",
+      "same": true,
+      "local": "d4511cfcb8467294fa1f0f1c3f5c1aee2c9a05b585bb8e57e4952462cccf280a",
+      "installed": "d4511cfcb8467294fa1f0f1c3f5c1aee2c9a05b585bb8e57e4952462cccf280a",
+      "sameNormalizedNewlines": true
+    },
+    {
+      "path": "www/assets/reactions/1F609.svg",
+      "same": true,
+      "local": "b10a41cb753d20dee1acf9f4c501d5aa5e763313a5ce8b9d3ae6b15949076f4d",
+      "installed": "b10a41cb753d20dee1acf9f4c501d5aa5e763313a5ce8b9d3ae6b15949076f4d",
+      "sameNormalizedNewlines": true
+    },
+    {
+      "path": "www/assets/reactions/1F634.svg",
+      "same": true,
+      "local": "3b5daab4b59ce4573dfd7fa2909fc4a29a3a4420b6aa2e3145e92de187fcda46",
+      "installed": "3b5daab4b59ce4573dfd7fa2909fc4a29a3a4420b6aa2e3145e92de187fcda46",
+      "sameNormalizedNewlines": true
+    },
+    {
+      "path": "www/assets/reactions/1F62D.svg",
+      "same": true,
+      "local": "3fe2965c4152511cf92a19efc5ea7c111abf40dd7776315e1fc9a3b759b23db0",
+      "installed": "3fe2965c4152511cf92a19efc5ea7c111abf40dd7776315e1fc9a3b759b23db0",
+      "sameNormalizedNewlines": true
+    },
+    {
+      "path": "www/assets/reactions/1F62E-200D-1F4A8.svg",
+      "same": true,
+      "local": "98bb87b74eec5b58578c6783d562a439232e5f12cfb989672bac8dabbc11050a",
+      "installed": "98bb87b74eec5b58578c6783d562a439232e5f12cfb989672bac8dabbc11050a",
+      "sameNormalizedNewlines": true
+    },
+    {
+      "path": "www/assets/reactions/1F923.svg",
+      "same": true,
+      "local": "c43248a757954f172fec996cd603235300ef2ec4c295aff5972b8f826b03b8db",
+      "installed": "c43248a757954f172fec996cd603235300ef2ec4c295aff5972b8f826b03b8db",
+      "sameNormalizedNewlines": true
+    },
+    {
+      "path": "www/assets/reactions/1F92C.svg",
+      "same": true,
+      "local": "1728918014453551091d0c24140b18fc9294edf97687dbf0097ec4e4c9552a5e",
+      "installed": "1728918014453551091d0c24140b18fc9294edf97687dbf0097ec4e4c9552a5e",
+      "sameNormalizedNewlines": true
+    },
+    {
+      "path": "www/assets/cosmetics/table/table_skin_09.webp",
+      "same": true,
+      "local": "14d57c4a89a79f6b2fd2fc73e55ebc7ec244805ff77bd9b66a28292364c31a84",
+      "installed": "14d57c4a89a79f6b2fd2fc73e55ebc7ec244805ff77bd9b66a28292364c31a84",
+      "sameNormalizedNewlines": true
+    },
+    {
+      "path": "www/assets/cosmetics/table/table_skin_05.webp",
+      "same": true,
+      "local": "986eb716351767317cbd0316094cf5e7279d0a16f89d6734ed4a5f8423ec79ab",
+      "installed": "986eb716351767317cbd0316094cf5e7279d0a16f89d6734ed4a5f8423ec79ab",
+      "sameNormalizedNewlines": true
+    },
+    {
+      "path": "www/assets/cosmetics/table/table_skin_04.webp",
+      "same": true,
+      "local": "b08e63b489f8b4370fc4d8cfe841cf32836d67782b710c0f6755f933e8091c54",
+      "installed": "b08e63b489f8b4370fc4d8cfe841cf32836d67782b710c0f6755f933e8091c54",
+      "sameNormalizedNewlines": true
+    },
+    {
+      "path": "www/assets/cosmetics/table/table_skin_08.webp",
+      "same": true,
+      "local": "4f26448b869552ad1e4a33d3cc4abb087ed4e57d971d940cf14df824d8820ea5",
+      "installed": "4f26448b869552ad1e4a33d3cc4abb087ed4e57d971d940cf14df824d8820ea5",
+      "sameNormalizedNewlines": true
+    },
+    {
+      "path": "www/assets/cosmetics/table/table_skin_03.webp",
+      "same": true,
+      "local": "2888d866afc826adf442b338e3cd8dcde9186ec30c1079584439aca5949d945a",
+      "installed": "2888d866afc826adf442b338e3cd8dcde9186ec30c1079584439aca5949d945a",
+      "sameNormalizedNewlines": true
+    },
+    {
+      "path": "www/assets/cosmetics/table/table_skin_02.webp",
+      "same": true,
+      "local": "064636d6410fc25c59b277cd7ff50d8e384bba490054409983805eeb7df35ee8",
+      "installed": "064636d6410fc25c59b277cd7ff50d8e384bba490054409983805eeb7df35ee8",
+      "sameNormalizedNewlines": true
+    },
+    {
+      "path": "www/assets/cosmetics/table/table_skin_01.webp",
+      "same": true,
+      "local": "0a901cbdde5fe283798b3e65ddb9fe3c35905ba325d8b923f1b10fe3aca23b4e",
+      "installed": "0a901cbdde5fe283798b3e65ddb9fe3c35905ba325d8b923f1b10fe3aca23b4e",
+      "sameNormalizedNewlines": true
+    },
+    {
+      "path": "www/assets/cosmetics/table/table_skin_07.webp",
+      "same": true,
+      "local": "2785355fd5c38d7efb319f4cf871f800932687ad53d94c7f7e1afda8a42ac81e",
+      "installed": "2785355fd5c38d7efb319f4cf871f800932687ad53d94c7f7e1afda8a42ac81e",
+      "sameNormalizedNewlines": true
+    },
+    {
+      "path": "www/assets/cosmetics/table/table_skin_06.webp",
+      "same": true,
+      "local": "f6ee5c5d863dd437ec97d50b1f0e67d726391d3e7fb6d3f5dfd2831c2c192d8e",
+      "installed": "f6ee5c5d863dd437ec97d50b1f0e67d726391d3e7fb6d3f5dfd2831c2c192d8e",
+      "sameNormalizedNewlines": true
+    },
+    {
+      "path": "www/assets/gift/gift_012_anim.webm",
+      "same": true,
+      "local": "b4b091b6f1b4329dd4fd114e30389df583e608357488adf03f3f321d902f7e29",
+      "installed": "b4b091b6f1b4329dd4fd114e30389df583e608357488adf03f3f321d902f7e29",
+      "sameNormalizedNewlines": true
+    },
+    {
+      "path": "www/assets/gift/gift_006_anim.webm",
+      "same": true,
+      "local": "4ab5660906be3ca51bc11e6fcd81a159e5b48fd42bd5ed36bb6e8589d3ba0830",
+      "installed": "4ab5660906be3ca51bc11e6fcd81a159e5b48fd42bd5ed36bb6e8589d3ba0830",
+      "sameNormalizedNewlines": true
+    },
+    {
+      "path": "www/assets/gift/gift_001.png",
+      "same": true,
+      "local": "8f17b34ee3e1d27633a9f8eaf041845a37937632e5c5040e8d4d96eeb456b83c",
+      "installed": "8f17b34ee3e1d27633a9f8eaf041845a37937632e5c5040e8d4d96eeb456b83c",
+      "sameNormalizedNewlines": true
+    },
+    {
+      "path": "www/assets/gift/gift_007_anim.webm",
+      "same": true,
+      "local": "3a9b094aa36862db1f805f3a18e5f403bd0406fce7eeddb25ad79b2f6d182ec7",
+      "installed": "3a9b094aa36862db1f805f3a18e5f403bd0406fce7eeddb25ad79b2f6d182ec7",
+      "sameNormalizedNewlines": true
+    },
+    {
+      "path": "www/assets/gift/gift_002.png",
+      "same": true,
+      "local": "c2488255c82a9556a7903a2a652f8f14b58d3113ab5b3c70b6bd208d40ba0220",
+      "installed": "c2488255c82a9556a7903a2a652f8f14b58d3113ab5b3c70b6bd208d40ba0220",
+      "sameNormalizedNewlines": true
+    },
+    {
+      "path": "www/assets/gift/gift_003.png",
+      "same": true,
+      "local": "939395c3e0dba0a7e2cb57e01b9fdff52f2cbe40be79506682807cd5bcf9eb52",
+      "installed": "939395c3e0dba0a7e2cb57e01b9fdff52f2cbe40be79506682807cd5bcf9eb52",
+      "sameNormalizedNewlines": true
+    },
+    {
+      "path": "www/assets/gift/gift_001_anim.webm",
+      "same": true,
+      "local": "483452fc5c9766418a44741bfb33d906ecf45893b5cb636113a29d9253e3ea39",
+      "installed": "483452fc5c9766418a44741bfb33d906ecf45893b5cb636113a29d9253e3ea39",
+      "sameNormalizedNewlines": true
+    },
+    {
+      "path": "www/assets/gift/gift_007.png",
+      "same": true,
+      "local": "ae3e7eda302cd59ce355058e2141ddaa10029265b90a79531ce83cb47473c449",
+      "installed": "ae3e7eda302cd59ce355058e2141ddaa10029265b90a79531ce83cb47473c449",
+      "sameNormalizedNewlines": true
+    },
+    {
+      "path": "www/assets/gift/gift_012.png",
+      "same": true,
+      "local": "4bfe9d11684e2fcbadb68e6b2c6c5d0b2da1180b34500899349daa36f4533747",
+      "installed": "4bfe9d11684e2fcbadb68e6b2c6c5d0b2da1180b34500899349daa36f4533747",
+      "sameNormalizedNewlines": true
+    },
+    {
+      "path": "www/assets/gift/gift_006.png",
+      "same": true,
+      "local": "dc2ef27eb0559f6a1b67352dfdfbe708bd26a477796cabe6a7f4304f8d818350",
+      "installed": "dc2ef27eb0559f6a1b67352dfdfbe708bd26a477796cabe6a7f4304f8d818350",
+      "sameNormalizedNewlines": true
+    },
+    {
+      "path": "www/assets/gift/gift_010.png",
+      "same": true,
+      "local": "c8ed6636fd0d8f7b4930e98fef7dbf7d73ecf10e2fd715367c183dd0184cb332",
+      "installed": "c8ed6636fd0d8f7b4930e98fef7dbf7d73ecf10e2fd715367c183dd0184cb332",
+      "sameNormalizedNewlines": true
+    },
+    {
+      "path": "www/assets/gift/gift_004.png",
+      "same": true,
+      "local": "d1f5bc47b8825f5e353bd667e013d0debe53645e02eb6f488e60f33629ef1f5c",
+      "installed": "d1f5bc47b8825f5e353bd667e013d0debe53645e02eb6f488e60f33629ef1f5c",
+      "sameNormalizedNewlines": true
+    },
+    {
+      "path": "www/assets/gift/gift_005.png",
+      "same": true,
+      "local": "b4b815ad234fefd3ee9924ec7812a2d308a661151668204fdf53c61d9657a7af",
+      "installed": "b4b815ad234fefd3ee9924ec7812a2d308a661151668204fdf53c61d9657a7af",
+      "sameNormalizedNewlines": true
+    },
+    {
+      "path": "www/assets/gift/gift_011.png",
+      "same": true,
+      "local": "ac6c0ef1838886ca3d3c9b3ec9db5673b6b974ca7715377d81a0309b02564c6b",
+      "installed": "ac6c0ef1838886ca3d3c9b3ec9db5673b6b974ca7715377d81a0309b02564c6b",
+      "sameNormalizedNewlines": true
+    },
+    {
+      "path": "www/assets/gift/gift_008.png",
+      "same": true,
+      "local": "012e1cf97a72598ecf47f3f9e0a3d115ccc1b4714f41f6dac02b2f7d49453117",
+      "installed": "012e1cf97a72598ecf47f3f9e0a3d115ccc1b4714f41f6dac02b2f7d49453117",
+      "sameNormalizedNewlines": true
+    },
+    {
+      "path": "www/assets/gift/gift_010_anim.webm",
+      "same": true,
+      "local": "ac1db0658ee6ca2bf8763ec231bd9a2cff0e461424a3cdf19c55aff59bf8ed10",
+      "installed": "ac1db0658ee6ca2bf8763ec231bd9a2cff0e461424a3cdf19c55aff59bf8ed10",
+      "sameNormalizedNewlines": true
+    },
+    {
+      "path": "www/assets/gift/gift_004_anim.webm",
+      "same": true,
+      "local": "51559fd27b1807703b60df1a829e0dbe4c41e37b159542d4db4c9b793b6584c8",
+      "installed": "51559fd27b1807703b60df1a829e0dbe4c41e37b159542d4db4c9b793b6584c8",
+      "sameNormalizedNewlines": true
+    },
+    {
+      "path": "www/assets/gift/gift_009.png",
+      "same": true,
+      "local": "f6ba56f7f7014fda54d51d84513b2ef8c4ab0ce1c4559f2234f321c6ce0c1731",
+      "installed": "f6ba56f7f7014fda54d51d84513b2ef8c4ab0ce1c4559f2234f321c6ce0c1731",
+      "sameNormalizedNewlines": true
+    },
+    {
+      "path": "www/assets/gift/gift_009_anim.webm",
+      "same": true,
+      "local": "17fa1e53c2b2aaf668ec7278b851b9575aeeef4cfb7fda84dfabacdcf6daa503",
+      "installed": "17fa1e53c2b2aaf668ec7278b851b9575aeeef4cfb7fda84dfabacdcf6daa503",
+      "sameNormalizedNewlines": true
+    },
+    {
+      "path": "www/assets/gift/gift_002_anim.webm",
+      "same": true,
+      "local": "e96b9cc7eacfd757d3fc738e6ad4dce8ad9cba4cee070d7ebbb3768e93752c77",
+      "installed": "e96b9cc7eacfd757d3fc738e6ad4dce8ad9cba4cee070d7ebbb3768e93752c77",
+      "sameNormalizedNewlines": true
+    },
+    {
+      "path": "www/assets/gift/gift_005_anim.webm",
+      "same": true,
+      "local": "845d886baf117fb7eaaacd62589ce58537eb6389026cdb5126ac4ffdb2befd1c",
+      "installed": "845d886baf117fb7eaaacd62589ce58537eb6389026cdb5126ac4ffdb2befd1c",
+      "sameNormalizedNewlines": true
+    },
+    {
+      "path": "www/assets/gift/gift_011_anim.webm",
+      "same": true,
+      "local": "5e96fddae524ab62c728fc6da9ea03baee0a62ad4b323c312a79a0ecea7dc281",
+      "installed": "5e96fddae524ab62c728fc6da9ea03baee0a62ad4b323c312a79a0ecea7dc281",
+      "sameNormalizedNewlines": true
+    },
+    {
+      "path": "www/assets/gift/gift_008_anim.webm",
+      "same": true,
+      "local": "b9d56daef280c161ebbe50cec109d701ab4d7e0da88a525cc4e07738ea29f222",
+      "installed": "b9d56daef280c161ebbe50cec109d701ab4d7e0da88a525cc4e07738ea29f222",
+      "sameNormalizedNewlines": true
+    },
+    {
+      "path": "www/assets/gift/gift_003_anim.webm",
+      "same": true,
+      "local": "051f8609a460256b7b243a86ed76fbf3597ad37606c4b7c4ccdfad9cf14c1939",
+      "installed": "051f8609a460256b7b243a86ed76fbf3597ad37606c4b7c4ccdfad9cf14c1939",
+      "sameNormalizedNewlines": true
+    },
+    {
+      "path": "www/assets/sounds/playlist game/Baku Breeze Lounge.mp3",
+      "same": true,
+      "local": "05b9496b62bcbef1fc4b2a4126ef840c769ee7897380a77539e50a7d7b5d04fa",
+      "installed": "05b9496b62bcbef1fc4b2a4126ef840c769ee7897380a77539e50a7d7b5d04fa",
+      "sameNormalizedNewlines": true
+    },
+    {
+      "path": "www/assets/sounds/playlist game/Legacy of the Tiles.mp3",
+      "same": true,
+      "local": "7ed9bb89f6df620c16691469d495eb12d5cfe0f7d74d1145666145f7fa63cfc7",
+      "installed": "7ed9bb89f6df620c16691469d495eb12d5cfe0f7d74d1145666145f7fa63cfc7",
+      "sameNormalizedNewlines": true
+    },
+    {
+      "path": "www/assets/sounds/menu music/Majestic Menu Lounge.mp3",
+      "same": true,
+      "local": "5871bfa230e17d0f1e7fcabec286aa29d8318e1b09774ef85163398cb4b78fd6",
+      "installed": "5871bfa230e17d0f1e7fcabec286aa29d8318e1b09774ef85163398cb4b78fd6",
+      "sameNormalizedNewlines": true
+    }
+  ],
+  "missing": [
+    "assets/public/cordova.js",
+    "assets/public/cordova_plugins.js"
+  ]
+}

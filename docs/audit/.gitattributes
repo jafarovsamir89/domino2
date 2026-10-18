@@ -1,0 +1,11 @@
+# Preserve checksums across checkouts, including Windows with autocrlf enabled.
+* -text
+
+# Captured output is evidence, not source code to reformat or review as a patch.
+evidence/logs/** -diff -whitespace
+evidence/traces/** -diff -whitespace
+evidence/initial-playwright-results/** -diff -whitespace
+evidence/playwright-results/** -diff -whitespace
+evidence/legacy-e2e-captures/** -diff -whitespace
+evidence/metrics/*.txt -whitespace
+evidence/metrics/schema-drift.sql -whitespace

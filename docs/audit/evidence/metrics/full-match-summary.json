@@ -1,0 +1,289 @@
+{
+  "scope": "Summary of headless current-engine matches. Paired-seed bootstrap5000resamples; confidence intervals describe this benchmark, not human-player win rates.",
+  "attempted": 1280,
+  "completed": 1280,
+  "totalActions": 328977,
+  "totalDeals": 14256,
+  "gosha": 691,
+  "matrix": [
+    {
+      "mode": "telefon",
+      "count": 2,
+      "team": false,
+      "attempted": 40,
+      "completed": 40,
+      "rejectedOpenings": 0,
+      "meanActions": 202.35,
+      "maxActions": 263,
+      "meanDeals": 10.8,
+      "gosha": 44,
+      "draws": 1482,
+      "passes": 12,
+      "meanComputeMs": 14.35669177500001,
+      "meanAiMsPerMatch": 3.0154142999998768,
+      "immediatePointsMissed": 0,
+      "immediateChoiceSamples": 4978,
+      "fishStateMismatches": 0
+    },
+    {
+      "mode": "telefon",
+      "count": 3,
+      "team": false,
+      "attempted": 40,
+      "completed": 40,
+      "rejectedOpenings": 0,
+      "meanActions": 199.9,
+      "maxActions": 251,
+      "meanDeals": 8.775,
+      "gosha": 71,
+      "draws": 960,
+      "passes": 59,
+      "meanComputeMs": 16.81916764999999,
+      "meanAiMsPerMatch": 3.993893924999969,
+      "immediatePointsMissed": 0,
+      "immediateChoiceSamples": 5683,
+      "fishStateMismatches": 0
+    },
+    {
+      "mode": "telefon",
+      "count": 4,
+      "team": false,
+      "attempted": 40,
+      "completed": 40,
+      "rejectedOpenings": 0,
+      "meanActions": 193.5,
+      "maxActions": 281,
+      "meanDeals": 7.8,
+      "gosha": 72,
+      "draws": 0,
+      "passes": 400,
+      "meanComputeMs": 17.13024577500001,
+      "meanAiMsPerMatch": 4.438770600000294,
+      "immediatePointsMissed": 0,
+      "immediateChoiceSamples": 6431,
+      "fishStateMismatches": 0
+    },
+    {
+      "mode": "telefon",
+      "count": 4,
+      "team": true,
+      "attempted": 40,
+      "completed": 40,
+      "rejectedOpenings": 0,
+      "meanActions": 118.475,
+      "maxActions": 159,
+      "meanDeals": 4.775,
+      "gosha": 47,
+      "draws": 0,
+      "passes": 247,
+      "meanComputeMs": 10.946903025000017,
+      "meanAiMsPerMatch": 2.674879125000109,
+      "immediatePointsMissed": 0,
+      "immediateChoiceSamples": 3874,
+      "fishStateMismatches": 0
+    },
+    {
+      "mode": "classic101",
+      "count": 2,
+      "team": false,
+      "attempted": 40,
+      "completed": 40,
+      "rejectedOpenings": 0,
+      "meanActions": 295.775,
+      "maxActions": 598,
+      "meanDeals": 11.975,
+      "gosha": 0,
+      "draws": 3306,
+      "passes": 98,
+      "meanComputeMs": 13.323265599999946,
+      "meanAiMsPerMatch": 1.9000376750003056,
+      "immediatePointsMissed": 0,
+      "immediateChoiceSamples": 0,
+      "fishStateMismatches": 34
+    },
+    {
+      "mode": "classic101",
+      "count": 3,
+      "team": false,
+      "attempted": 40,
+      "completed": 40,
+      "rejectedOpenings": 0,
+      "meanActions": 259.1,
+      "maxActions": 483,
+      "meanDeals": 9.525,
+      "gosha": 0,
+      "draws": 2069,
+      "passes": 363,
+      "meanComputeMs": 11.568652049999992,
+      "meanAiMsPerMatch": 1.9983088499999098,
+      "immediatePointsMissed": 0,
+      "immediateChoiceSamples": 0,
+      "fishStateMismatches": 44
+    },
+    {
+      "mode": "classic101",
+      "count": 4,
+      "team": false,
+      "attempted": 40,
+      "completed": 40,
+      "rejectedOpenings": 0,
+      "meanActions": 359.475,
+      "maxActions": 610,
+      "meanDeals": 13.825,
+      "gosha": 0,
+      "draws": 0,
+      "passes": 1668,
+      "meanComputeMs": 17.567464525000027,
+      "meanAiMsPerMatch": 3.6437297500005115,
+      "immediatePointsMissed": 0,
+      "immediateChoiceSamples": 0,
+      "fishStateMismatches": 90
+    },
+    {
+      "mode": "classic101",
+      "count": 4,
+      "team": true,
+      "attempted": 40,
+      "completed": 40,
+      "rejectedOpenings": 0,
+      "meanActions": 403.65,
+      "maxActions": 581,
+      "meanDeals": 15.55,
+      "gosha": 0,
+      "draws": 0,
+      "passes": 1897,
+      "meanComputeMs": 18.519734449999987,
+      "meanAiMsPerMatch": 3.885284974997944,
+      "immediatePointsMissed": 0,
+      "immediateChoiceSamples": 0,
+      "fishStateMismatches": 107
+    }
+  ],
+  "tournament": [
+    {
+      "mode": "telefon",
+      "pair": [
+        "easy",
+        "medium"
+      ],
+      "validGames": 160,
+      "pairedSeeds": 80,
+      "winsA": 65,
+      "winsB": 95,
+      "winRateA": 0.40625,
+      "pairedBootstrap95": [
+        0.33125,
+        0.48125
+      ],
+      "meanActions": 206.88125,
+      "meanDeals": 10.89375,
+      "meanComputeMs": 10.25719271875002,
+      "modelMinutesAt1_5secPerActionPlus5secPerDeal": 5.996510416666666
+    },
+    {
+      "mode": "telefon",
+      "pair": [
+        "easy",
+        "hard"
+      ],
+      "validGames": 160,
+      "pairedSeeds": 80,
+      "winsA": 70,
+      "winsB": 90,
+      "winRateA": 0.4375,
+      "pairedBootstrap95": [
+        0.375,
+        0.5
+      ],
+      "meanActions": 211.20625,
+      "meanDeals": 10.69375,
+      "meanComputeMs": 10.76299663750001,
+      "modelMinutesAt1_5secPerActionPlus5secPerDeal": 6.087968750000001
+    },
+    {
+      "mode": "telefon",
+      "pair": [
+        "medium",
+        "hard"
+      ],
+      "validGames": 160,
+      "pairedSeeds": 80,
+      "winsA": 70,
+      "winsB": 90,
+      "winRateA": 0.4375,
+      "pairedBootstrap95": [
+        0.36875,
+        0.50625
+      ],
+      "meanActions": 204.9125,
+      "meanDeals": 10.89375,
+      "meanComputeMs": 10.555496068750063,
+      "modelMinutesAt1_5secPerActionPlus5secPerDeal": 5.947291666666667
+    },
+    {
+      "mode": "classic101",
+      "pair": [
+        "easy",
+        "medium"
+      ],
+      "validGames": 160,
+      "pairedSeeds": 80,
+      "winsA": 32,
+      "winsB": 128,
+      "winRateA": 0.2,
+      "pairedBootstrap95": [
+        0.1375,
+        0.25625
+      ],
+      "meanActions": 296.35625,
+      "meanDeals": 11.70625,
+      "meanComputeMs": 11.19305959999998,
+      "modelMinutesAt1_5secPerActionPlus5secPerDeal": 8.30109375
+    },
+    {
+      "mode": "classic101",
+      "pair": [
+        "easy",
+        "hard"
+      ],
+      "validGames": 160,
+      "pairedSeeds": 80,
+      "winsA": 24,
+      "winsB": 136,
+      "winRateA": 0.15,
+      "pairedBootstrap95": [
+        0.1,
+        0.2
+      ],
+      "meanActions": 301.69375,
+      "meanDeals": 11.54375,
+      "meanComputeMs": 13.43726385624999,
+      "modelMinutesAt1_5secPerActionPlus5secPerDeal": 8.420989583333334
+    },
+    {
+      "mode": "classic101",
+      "pair": [
+        "medium",
+        "hard"
+      ],
+      "validGames": 160,
+      "pairedSeeds": 80,
+      "winsA": 70,
+      "winsB": 90,
+      "winRateA": 0.4375,
+      "pairedBootstrap95": [
+        0.36875,
+        0.50625
+      ],
+      "meanActions": 327,
+      "meanDeals": 12.6125,
+      "meanComputeMs": 16.787993756249897,
+      "modelMinutesAt1_5secPerActionPlus5secPerDeal": 9.142708333333333
+    }
+  ],
+  "diagnostics": {
+    "fishStateMismatch": 904,
+    "emptyOpening": 0
+  },
+  "caveat": "101 outcomes reflect the current fish-state defect; benchmark is not validation of intended101rules. Model minutes are arithmetic from assumed delays, not observed wall-clock gameplay."
+}

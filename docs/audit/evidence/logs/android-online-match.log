@@ -1,0 +1,1 @@
+{"actions":343,"durationMs":161272.838667,"final":true,"errors":[],"frames":{"rafSamples":6041,"rafRate":36.20291852695292,"rafP95Ms":50,"surfacePresentSamples":5702,"surfacePresentRate":34.513413499315845,"surfaceIntervalP95Ms":50.007154,"note":"Presentation intervals include pauses/results and do not isolate animation-only jank. One debug WebView, not Play release FPS."}}

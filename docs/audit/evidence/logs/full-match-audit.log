@@ -1,0 +1,16 @@
+ℹ️  optional .env file not found: .env.development, .env
+Matrix telefon/2/false: 40/40
+Matrix telefon/3/false: 40/40
+Matrix telefon/4/false: 40/40
+Matrix telefon/4/true: 40/40
+Matrix classic101/2/false: 40/40
+Matrix classic101/3/false: 40/40
+Matrix classic101/4/false: 40/40
+Matrix classic101/4/true: 40/40
+Tournament telefon/easy,medium: 65:95, excluded 0
+Tournament telefon/easy,hard: 70:90, excluded 0
+Tournament telefon/medium,hard: 70:90, excluded 0
+Tournament classic101/easy,medium: 32:128, excluded 0
+Tournament classic101/easy,hard: 24:136, excluded 0
+Tournament classic101/medium,hard: 70:90, excluded 0
+Saved full-match audit. Failures: 0 fish state mismatches: 904 missing openings: 0

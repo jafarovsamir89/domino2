@@ -1,0 +1,3768 @@
+✔ board serializes and restores without losing structure (1.684958ms)
+✔ cloneBoard and reconstructBoard preserve the board snapshot (0.5785ms)
+✔ board flags disable Telefon scoring and cross logic in classic101 (0.217459ms)
+✔ getGoshaCombo keeps the full score for a double gosha sequence (0.841958ms)
+✔ opening [5|5] stops giving 10 points after 300 score (0.098334ms)
+✔ placeTile rejects tiles that do not match the selected open end (1.746917ms)
+✔ placeTile keeps legal 0/3 placements on the 0 end and exposes 3 as the next open end (0.304ms)
+✔ default board keeps Telefon scoring and cross behavior (0.199125ms)
+✔ client board round-trip keeps classic101 flags and stays two-ended across serialization (44.453625ms)
+✔ client board keeps Telefon cross behavior by default (1.5275ms)
+✔ hand with five different doubles is invalid for opening deal (0.136708ms)
+✔ Default horizontal mode layout behavior (0.104958ms)
+✔ Vertical mode layout behavior for normal tile (0.06725ms)
+✔ Vertical mode layout behavior for first double/gosha (0.108666ms)
+✔ Subsequent moves and score calculation after first double in vertical mode (0.153875ms)
+✔ telephone snake avoids self-intersection when right and bottom branches grow together (4.213917ms)
+✔ telephone snake remains collision-free for varied 28-tile move orders (134.868167ms)
+✔ client and shared board engines choose identical collision-free coordinates (13.649708ms)
+ℹ️  optional .env file not found: .env.development, .env
+[ROOM_DEBUG] leave:start {
+  roomId: '',
+  roomCode: '',
+  sessionId: 'session-1',
+  consented: false,
+  playerOrder: [ 'session-1' ],
+  players: [
+    {
+      sessionId: 'session-1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: -1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[ROOM_DEBUG] leave:explicit {
+  roomId: '',
+  roomCode: '',
+  sessionId: 'session-1',
+  playerName: 'Alice'
+}
+[ROOM_DEBUG] turnTimerPausedForReconnect {
+  roomId: '',
+  roomCode: '',
+  sessionId: 'session-1',
+  playerName: 'Alice',
+  expiresAt: 1792274147295,
+  source: 'accidental_disconnect'
+}
+[ROOM_DEBUG] leave:waiting_reconnect {
+  roomId: '',
+  roomCode: '',
+  sessionId: 'session-1',
+  reason: 'accidental_disconnect',
+  graceStartedAt: 1792274027295,
+  graceExpiresAt: 1792274147295,
+  graceMs: 120000
+}
+[ROOM_DEBUG] leave:reconnected {
+  roomId: '',
+  roomCode: '',
+  sessionId: 'session-1',
+  nextSessionId: 'session-1',
+  reconnectSuccessAt: 1792274027296,
+  source: 'allowReconnection',
+  players: [
+    {
+      sessionId: 'session-1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: -1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[ROOM_DEBUG] leave:start {
+  roomId: '',
+  roomCode: '',
+  sessionId: 'session-1',
+  consented: true,
+  playerOrder: [ 'session-1' ],
+  players: [
+    {
+      sessionId: 'session-1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: -1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[ROOM_DEBUG] leave:explicit {
+  roomId: '',
+  roomCode: '',
+  sessionId: 'session-1',
+  playerName: 'Alice'
+}
+[ROOM_DEBUG] leave:removed {
+  roomId: '',
+  roomCode: '',
+  sessionId: 'session-1',
+  reason: 'explicit leave',
+  explicitLeave: true
+}
+[ROOM_DEBUG] leave:start {
+  roomId: '',
+  roomCode: '',
+  sessionId: 'session-1',
+  consented: false,
+  playerOrder: [ 'session-1' ],
+  players: [
+    {
+      sessionId: 'session-1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: -1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[ROOM_DEBUG] leave:explicit {
+  roomId: '',
+  roomCode: '',
+  sessionId: 'session-1',
+  playerName: 'Alice'
+}
+[ROOM_DEBUG] turnTimerPausedForReconnect {
+  roomId: '',
+  roomCode: '',
+  sessionId: 'session-1',
+  playerName: 'Alice',
+  expiresAt: 1792274147305,
+  source: 'accidental_disconnect'
+}
+[ROOM_DEBUG] leave:waiting_reconnect {
+  roomId: '',
+  roomCode: '',
+  sessionId: 'session-1',
+  reason: 'accidental_disconnect',
+  graceStartedAt: 1792274027305,
+  graceExpiresAt: 1792274147305,
+  graceMs: 120000
+}
+[ROOM_DEBUG] leave:grace_timeout {
+  roomId: '',
+  roomCode: '',
+  sessionId: 'session-1',
+  playerName: 'Alice',
+  expiresAt: 1792274147305
+}
+[ROOM_DEBUG] leave:start {
+  roomId: '',
+  roomCode: '',
+  sessionId: 'session-1',
+  consented: false,
+  playerOrder: [ 'session-1' ],
+  players: [
+    {
+      sessionId: 'session-1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: -1,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    }
+  ]
+}
+[ROOM_DEBUG] leave:explicit {
+  roomId: '',
+  roomCode: '',
+  sessionId: 'session-1',
+  playerName: 'Alice'
+}
+[ROOM_DEBUG] turnTimerPausedForReconnect {
+  roomId: '',
+  roomCode: '',
+  sessionId: 'session-1',
+  playerName: 'Alice',
+  expiresAt: 1792274147307,
+  source: 'accidental_disconnect'
+}
+[ROOM_DEBUG] leave:waiting_reconnect {
+  roomId: '',
+  roomCode: '',
+  sessionId: 'session-1',
+  reason: 'accidental_disconnect',
+  graceStartedAt: 1792274027307,
+  graceExpiresAt: 1792274147307,
+  graceMs: 120000
+}
+[ROOM_DEBUG] leave:grace_timeout {
+  roomId: '',
+  roomCode: '',
+  sessionId: 'session-1',
+  playerName: 'Alice',
+  expiresAt: 1792274147307
+}
+[ROOM] Forfeit settlement did not complete; notifying the player that support may be needed.
+[ROOM_DEBUG] leave:start {
+  roomId: '',
+  roomCode: '',
+  sessionId: 'session-1',
+  consented: false,
+  playerOrder: [ 'session-1' ],
+  players: [
+    {
+      sessionId: 'session-1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: -1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[ROOM_DEBUG] leave:explicit {
+  roomId: '',
+  roomCode: '',
+  sessionId: 'session-1',
+  playerName: 'Alice'
+}
+[ROOM_DEBUG] leave:waiting_reconnect {
+  roomId: '',
+  roomCode: '',
+  sessionId: 'session-1',
+  reason: 'accidental_disconnect',
+  graceStartedAt: 1792274027308,
+  graceExpiresAt: 1792274147308,
+  graceMs: 120000
+}
+[ROOM_DEBUG] leave:grace_timeout {
+  roomId: '',
+  roomCode: '',
+  sessionId: 'session-1',
+  playerName: 'Alice',
+  expiresAt: 1792274147308
+}
+[ROOM_DEBUG] leave:grace_timeout {
+  roomId: '',
+  roomCode: '',
+  sessionId: 'session-1',
+  playerName: 'Alice',
+  expiresAt: 1792274027311
+}
+[CLIENT_DEBUG] network:leaveRoom {
+  hasRoom: true,
+  explicit: true,
+  manualLeaveRequested: false,
+  reconnectInProgress: false
+}
+[CLIENT_DEBUG] network:leaveRoom {
+  hasRoom: true,
+  explicit: false,
+  manualLeaveRequested: false,
+  reconnectInProgress: false
+}
+[ROOM_DEBUG] turnTimerPausedForReconnect {
+  roomId: '',
+  roomCode: '',
+  sessionId: 'session-1',
+  playerName: 'Alice',
+  expiresAt: 1792274147325,
+  source: 'scheduleTurnTimer'
+}
+[ROOM_DEBUG] leave:reconnected {
+  roomId: '',
+  roomCode: '',
+  sessionId: 'session-1',
+  nextSessionId: 'session-1',
+  reconnectSuccessAt: 1792274027385,
+  source: 'join',
+  players: [
+    {
+      sessionId: 'session-1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: -1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[ROOM_DEBUG] turnTimerResumedAfterReconnect { roomId: '', roomCode: '', sessionId: 'session-1', source: 'join' }
+[ROOM_DEBUG] leave:reconnected {
+  roomId: '',
+  roomCode: '',
+  sessionId: 'session-1',
+  nextSessionId: 'session-1',
+  reconnectSuccessAt: 1792274027399,
+  source: 'reconnect',
+  players: [
+    {
+      sessionId: 'session-1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: -1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[ROOM_DEBUG] turnTimerResumedAfterReconnect {
+  roomId: '',
+  roomCode: '',
+  sessionId: 'session-1',
+  source: 'reconnect'
+}
+[ROOM_DEBUG] leave:reconnected {
+  roomId: '',
+  roomCode: '',
+  sessionId: 'session-1',
+  nextSessionId: 'session-1',
+  reconnectSuccessAt: 1792274027400,
+  source: 'reconnect',
+  players: [
+    {
+      sessionId: 'session-1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: -1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[ROOM_DEBUG] leave:reconnected {
+  roomId: '',
+  roomCode: '',
+  sessionId: 'session-1',
+  nextSessionId: 'session-2',
+  reconnectSuccessAt: 1792274027400,
+  source: 'join',
+  players: [
+    {
+      sessionId: 'session-2',
+      isBot: false,
+      isConnected: true,
+      seatIndex: -1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+✔ accidental disconnect during an active game uses reconnect grace and keeps the match alive (18.540459ms)
+✔ explicit leave marker for an active game ends the match immediately (0.532833ms)
+✔ grace timeout triggers a disconnect forfeit (0.5305ms)
+✖ disconnect keeps live presence offline during grace and removes it after timeout (2.348209ms)
+✖ grace timeout starts bot takeover instead of forfeit when the feature is enabled (3.55975ms)
+✖ explicit leave stays a forfeit and never starts bot takeover (4.543959ms)
+✔ NetworkManager explicit leave sends the marker before room.leave (2.537458ms)
+✔ NetworkManager sends resume_control when reclaim is requested (2.787041ms)
+✔ non-explicit leave does not send the explicit leave marker (0.244333ms)
+✔ beforeunload and visibility handlers do not send explicit leave (3.041125ms)
+✔ current-player reconnect grace pauses the turn timer and restores full state on reconnect (60.176041ms)
+✔ handleTurnTimeout ignores a reconnect-hold current player (0.158458ms)
+✔ client reconnect restore clears stale turn state and requests sync (13.039458ms)
+✔ validateClientAction rejects if player.isConnected === false (0.161667ms)
+✔ validateClientAction rejects if pendingDisconnects.has(sessionId) (0.075666ms)
+✔ validateClientAction rejects when the seat is under bot takeover (0.075958ms)
+✔ reconnect current player resumes fresh turnDeadlineAt (0.339834ms)
+✔ sendReconnectRestoreState sends full_state after turn timer resumed (0.567208ms)
+✖ reusable session restore sends full_state to new sessionId (0.353209ms)
+✔ network.sendPlay returns null if navigator.onLine === false (0.365875ms)
+✔ client check app.js authoritative reconnect logic via static source scan (7.595542ms)
+✔ client validMoves reconstruction fallback on state update (0.140834ms)
+✔ team takeover bot prefers the partner-friendly move when takeover is active (0.583917ms)
+ℹ Error: Test "grace timeout starts bot takeover instead of forfeit when the feature is enabled" at server/test/disconnect-grace.test.js:191:1 generated asynchronous activity after the test ended. This activity created the error "TypeError: Cannot read private member #_roomId from an object whose class did not declare it" and would have caused the test to fail, but instead triggered an unhandledRejection event.
+ℹ️  optional .env file not found: .env.development, .env
+[ROOM_DEBUG] create {
+  roomId: 'room-team',
+  roomCode: 'DLG7',
+  roomVisibility: 'open',
+  stakeKey: 'stake_200',
+  totalPlayers: 4,
+  aiCount: 2,
+  humanSeats: 2,
+  maxClients: 2,
+  roomMode: 'team',
+  isTeamMode: true
+}
+[ROOM] Created room room-team (code DLG7), humanSeats=2, totalPlayers=4, aiCount=2, teamMode=true
+[ROOM_DEBUG] create {
+  roomId: 'room-mode',
+  roomCode: 'PWT9',
+  roomVisibility: 'open',
+  stakeKey: 'stake_200',
+  totalPlayers: 2,
+  aiCount: 0,
+  humanSeats: 2,
+  maxClients: 2,
+  roomMode: 'ffa',
+  isTeamMode: false
+}
+[ROOM] Created room room-mode (code PWT9), humanSeats=2, totalPlayers=2, aiCount=0, teamMode=false
+[ROOM] Client session-1 joining with name: Alice
+[ROOM_DEBUG] join:start {
+  roomId: 'room-mode-test',
+  roomCode: undefined,
+  sessionId: 'session-1',
+  clientsLength: 0,
+  playerOrder: [],
+  totalPlayers: undefined,
+  aiCount: undefined,
+  humanSeats: undefined,
+  maxClients: undefined
+}
+[ROOM_DEBUG] create {
+  roomId: 'restored-room',
+  roomCode: 'REST',
+  roomVisibility: 'open',
+  stakeKey: 'stake_500',
+  totalPlayers: 2,
+  aiCount: 0,
+  humanSeats: 2,
+  maxClients: 2,
+  roomMode: 'ffa',
+  isTeamMode: false
+}
+[ROOM] Created room restored-room (code REST), humanSeats=2, totalPlayers=2, aiCount=0, teamMode=false
+[ROOM_DEBUG] startDeal:enter {
+  roomId: 'room-low',
+  roomCode: undefined,
+  stakeKey: 'stake_200',
+  currentDealMatchId: undefined,
+  matchRound: 1,
+  playerOrder: [],
+  players: []
+}
+[ROOM_DEBUG] reserve:before {
+  roomId: 'room-low',
+  roomCode: undefined,
+  stakeKey: 'stake_200',
+  currentDealMatchId: 'room-low:round:1',
+  humans: []
+}
+[ROOM_DEBUG] reserve:result {
+  roomId: 'room-low',
+  roomCode: undefined,
+  ok: false,
+  reason: 'Insufficient coins for Alice',
+  status: '',
+  messageKey: ''
+}
+[ROOM_DEBUG] startDeal:reserve_failed {
+  roomId: 'room-low',
+  roomCode: undefined,
+  roomVisibility: undefined,
+  reason: 'insufficient coins for alice',
+  message: 'room-closed-insufficient-coins',
+  willSendRoomClosed: true
+}
+[ROOM_DEBUG] startDeal:enter {
+  roomId: 'room-bank',
+  roomCode: undefined,
+  stakeKey: 'stake_200',
+  currentDealMatchId: undefined,
+  matchRound: 1,
+  playerOrder: [],
+  players: []
+}
+[ROOM_DEBUG] leave:start {
+  roomId: '',
+  roomCode: '',
+  sessionId: 'session-1',
+  consented: false,
+  playerOrder: [ 'session-1' ],
+  players: [
+    {
+      sessionId: 'session-1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: -1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[ROOM_DEBUG] leave:explicit {
+  roomId: '',
+  roomCode: '',
+  sessionId: 'session-1',
+  playerName: 'Alice'
+}
+[ROOM_DEBUG] leave:waiting_reconnect {
+  roomId: '',
+  roomCode: '',
+  sessionId: 'session-1',
+  reason: 'accidental_disconnect',
+  graceStartedAt: 1792274027324,
+  graceExpiresAt: 1792274147324,
+  graceMs: 120000
+}
+[ROOM_DEBUG] leave:grace_timeout {
+  roomId: '',
+  roomCode: '',
+  sessionId: 'session-1',
+  playerName: 'Alice',
+  expiresAt: 1792274147324
+}
+[ROOM_DEBUG] leave:allow_reconnection_rejected {
+  roomId: '',
+  roomCode: '',
+  sessionId: 'session-1',
+  reason: 'reconnect failed'
+}
+[ROOM] Forfeit settlement did not complete; notifying the player that support may be needed.
+[ROOM_DEBUG] leave:start {
+  roomId: '',
+  roomCode: '',
+  sessionId: 'session-1',
+  consented: false,
+  playerOrder: [ 'session-1', 'session-2' ],
+  players: [
+    {
+      sessionId: 'session-1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: -1,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: true
+    },
+    {
+      sessionId: 'session-2',
+      isBot: false,
+      isConnected: true,
+      seatIndex: -1,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: true
+    }
+  ]
+}
+[ROOM_DEBUG] leave:explicit {
+  roomId: '',
+  roomCode: '',
+  sessionId: 'session-1',
+  playerName: 'Alice'
+}
+[ROOM_DEBUG] leave:waiting_reconnect {
+  roomId: '',
+  roomCode: '',
+  sessionId: 'session-1',
+  reason: 'accidental_disconnect',
+  graceStartedAt: 1792274027326,
+  graceExpiresAt: 1792274147326,
+  graceMs: 120000
+}
+[ROOM_DEBUG] leave:grace_timeout {
+  roomId: '',
+  roomCode: '',
+  sessionId: 'session-1',
+  playerName: 'Alice',
+  expiresAt: 1792274147326
+}
+[ROOM_DEBUG] leave:allow_reconnection_rejected {
+  roomId: '',
+  roomCode: '',
+  sessionId: 'session-1',
+  reason: 'reconnect failed'
+}
+[ROOM_DEBUG] startGame:enter {
+  roomId: 'room-fresh',
+  roomCode: 'FRESH',
+  gameActive: false,
+  gameStarting: undefined,
+  matchFinished: false,
+  playerOrder: [ 'host', 'guest' ],
+  players: [
+    {
+      sessionId: 'host',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 'guest',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    }
+  ]
+}
+[ROOM_DEBUG] startGame:pending_match_recording {
+  roomId: 'room-fresh',
+  roomCode: 'FRESH',
+  reason: 'pending_match_recording'
+}
+[ROOM] Previous match recording is still pending; continuing with the new game start.
+[ROOM_DEBUG] startGame:beforeBots {
+  roomId: 'room-fresh',
+  roomCode: 'FRESH',
+  playerOrder: [ 'host', 'guest' ],
+  players: [
+    {
+      sessionId: 'host',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 'guest',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    }
+  ]
+}
+[ROOM_DEBUG] startGame:afterBots {
+  roomId: 'room-fresh',
+  roomCode: 'FRESH',
+  playerOrder: [ 'host', 'guest' ],
+  players: [
+    {
+      sessionId: 'host',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 'guest',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792274027329] gameDelta isFinalMove=false
+[FM-SRV 1792274027331] gameDelta isFinalMove=false
+[FM-SRV 1792274027337] gameDelta isFinalMove=false
+[FM-SRV 1792274027338] gameDelta isFinalMove=true
+[FM-SRV 1792274027338] end immediate
+[FM-SRV 1792274027338] gameDelta isFinalMove=true
+[FM-SRV 1792274027338] end immediate
+[FM-SRV 1792274027338] syncState includeBoardJson=true
+[ROOM_DEBUG] startDeal:enter {
+  roomId: 'room-live',
+  roomCode: 'LIVE',
+  stakeKey: 'free',
+  currentDealMatchId: undefined,
+  matchRound: 1,
+  playerOrder: [],
+  players: []
+}
+✔ generateRoomCode returns compact upper-case codes (1.771375ms)
+✔ sanitizeName strips unsafe characters and trims length (2.365959ms)
+✔ room payloads include server clock metadata and turn timer state (0.81325ms)
+✔ onCreate treats roomMode team as team mode even when isTeamMode is omitted (49.902333ms)
+✔ onCreate normalizes gameMode and selects the matching ruleset (0.693166ms)
+✔ onJoin rejects clients that ask for a different gameMode than the room (1.362792ms)
+✔ handleNextDeal only advances for the host during pending transitions (0.174042ms)
+✔ custom snapshots strip auth tokens from persisted identities (18.020958ms)
+✔ onCreate restores room identity and snapshot state without mutating the source snapshot (1.309208ms)
+✔ startDeal maps low balance reserve failures to the insufficient-coins room message (0.965208ms)
+✔ startDeal keeps the reserved bank across deals inside the same round (0.281834ms)
+✔ applyCustomStateSnapshot tolerates empty and partial snapshots and keeps fallbacks (0.362625ms)
+✔ forfeit settle replay does not settle the same room twice (0.963708ms)
+✔ onLeave shows a support warning when forfeit settlement fails (1.319ms)
+✔ onLeave records a forfeit match after successful settlement (1.892959ms)
+✔ startGame does not block a fresh match when a stale recording is still pending (0.631416ms)
+✔ turnVersion rejects stale replayed turn actions (0.210834ms)
+✔ sync requests return both room state and full state to the same client (0.113458ms)
+✔ addScore updates team totals and emits a game delta (0.190625ms)
+✔ performPlay broadcasts the board delta before any score popup and includes score data in the play delta (0.662542ms)
+✔ classic101 performPlay keeps in-play score at zero and hides gosha (2.756875ms)
+✔ classic101 buildTurnInfoForPlayer hides gosha combos (0.16525ms)
+✔ classic101 syncMatchStateToSchema mirrors scoreboard into visible scores (0.452625ms)
+✔ endDeal awards full opponent hands on fish and caps hand bonuses at 300 (1.445833ms)
+✔ performDraw broadcasts a draw delta and keeps public hand counts in sync (0.783542ms)
+✔ syncPublicPlayerStatsToState copies live hand lengths into schema players (0.654583ms)
+✔ performPlay rejects a tile that does not match the selected open end and keeps the board unchanged (0.151583ms)
+✔ performPlay keeps legal 0/3 placement on open end 0 and turns the new open end to 3 (1.904792ms)
+✔ opening move requirement forces 3|2 on the first deal and rejects any other opening tile (0.386208ms)
+✔ opening move requirement falls back to the smallest double when 3|2 is not dealt (0.229042ms)
+✔ startDeal turn_info sends only the required opening move on an empty board (0.303208ms)
+✔ runBotTurn uses only the required opening move on the first deal (0.213625ms)
+✔ after the opening move, valid moves return to normal board behavior (0.12825ms)
+✔ startDeal snapshot restore keeps a playable turn state (4.61375ms)
+✔ classic101 custom snapshots round-trip matchState and board flags (1.172208ms)
+✔ postEconomyRequest posts JSON to the resolved economy URL (29.279375ms)
+✔ postEconomyRequest adds Authorization when authToken is provided (0.417541ms)
+✔ postEconomyRequest does not add Authorization when authToken is missing (0.246292ms)
+✔ postReserveEconomyMatch calls the reserve endpoint (0.277292ms)
+✔ postSettleEconomyMatch calls the settle endpoint (0.873791ms)
+✔ economy helpers return the same response object (0.567542ms)
+✔ normalizePlatformApiUrl returns the default when empty (1.490291ms)
+✔ normalizePlatformApiUrl removes a single trailing slash (0.084125ms)
+✔ buildEconomyUrl builds the reserve endpoint (0.073458ms)
+✔ buildEconomyUrl builds the settle endpoint (0.06625ms)
+✔ probePlatformApiUrl flags html health responses as invalid (1.077625ms)
+✔ getSessionIdentities builds entries in player order and filters missing identities (18.064625ms)
+✔ hasUnlinkedHuman matches the current room guard (0.149417ms)
+✔ buildReserveParticipants keeps ffa shape (0.145125ms)
+✔ buildReserveParticipants keeps team shape (0.09075ms)
+✔ buildWinnerUserIds keeps ffa winner selection (0.12875ms)
+✔ buildWinnerUserIds keeps team winner selection (0.07ms)
+✔ buildForfeitWinnerUserIds excludes the leaving player and team (0.265083ms)
+[ROOM] Economy reserve validation failed: {
+  status: 400,
+  contentType: 'application/json; charset=utf-8',
+  preview: '{"message":["property integrityScope should not exist","property proof should not exist","participants.0.property teamIndex should not exist"],"error":"Bad Request","statusCode":400}',
+  message: [
+    'property integrityScope should not exist',
+    'property proof should not exist',
+    'participants.0.property teamIndex should not exist'
+  ]
+}
+[ROOM] Economy reserve failed: {
+  status: 404,
+  contentType: 'text/html; charset=utf-8',
+  preview: '<!DOCTYPE html><html><body>Domino2 Admin 404: This page could not be found</body></html>'
+}
+[ROOM] Economy reserve failed: { status: 500, contentType: '', preview: 'reserve failed' }
+[ROOM] Economy reserve rejected: { status: 200, contentType: '', preview: '', reason: 'rejected' }
+[ROOM] Economy reserve error: Error: boom
+    at global.fetch (/Users/macbookair/Documents/domino/server/test/economy-service.test.js:473:15)
+    at postEconomyRequest (/Users/macbookair/Documents/domino/server/economyClient.js:4:12)
+    at postReserveEconomyMatch (/Users/macbookair/Documents/domino/server/economyClient.js:15:12)
+    at reserveEconomyStakeForRoom (/Users/macbookair/Documents/domino/server/economyService.js:155:32)
+    at TestContext.<anonymous> (/Users/macbookair/Documents/domino/server/test/economy-service.test.js:477:30)
+    at Test.runInAsyncScope (node:async_hooks:226:14)
+    at Test.run (node:internal/test_runner/test:1118:25)
+    at Test.processPendingSubtests (node:internal/test_runner/test:787:18)
+    at Test.postRun (node:internal/test_runner/test:1247:19)
+    at Test.run (node:internal/test_runner/test:1175:12)
+[ROOM] Failed to settle round stake: Error: settle failed
+    at settleEconomyRoundForRoom (/Users/macbookair/Documents/domino/server/economyService.js:301:19)
+    at async TestContext.<anonymous> (/Users/macbookair/Documents/domino/server/test/economy-service.test.js:647:24)
+    at async Test.run (node:internal/test_runner/test:1125:7)
+    at async Test.processPendingSubtests (node:internal/test_runner/test:787:7)
+[ROOM] Failed to settle round stake: Error: settle unavailable
+    at settleEconomyRoundForRoom (/Users/macbookair/Documents/domino/server/economyService.js:301:19)
+    at async TestContext.<anonymous> (/Users/macbookair/Documents/domino/server/test/economy-service.test.js:684:24)
+    at async Test.run (node:internal/test_runner/test:1125:7)
+    at async Test.processPendingSubtests (node:internal/test_runner/test:787:7)
+[ROOM] Failed to settle round stake: Error: boom
+    at global.fetch (/Users/macbookair/Documents/domino/server/test/economy-service.test.js:752:15)
+    at postEconomyRequest (/Users/macbookair/Documents/domino/server/economyClient.js:4:12)
+    at postSettleEconomyMatch (/Users/macbookair/Documents/domino/server/economyClient.js:19:12)
+    at settleEconomyRoundForRoom (/Users/macbookair/Documents/domino/server/economyService.js:283:32)
+    at TestContext.<anonymous> (/Users/macbookair/Documents/domino/server/test/economy-service.test.js:756:30)
+    at Test.runInAsyncScope (node:async_hooks:226:14)
+    at Test.run (node:internal/test_runner/test:1118:25)
+    at Test.processPendingSubtests (node:internal/test_runner/test:787:18)
+    at Test.postRun (node:internal/test_runner/test:1247:19)
+    at Test.run (node:internal/test_runner/test:1175:12)
+[ROOM] Failed to settle forfeit stake: Error: settle failed
+    at settleForfeitStakeForRoom (/Users/macbookair/Documents/domino/server/economyService.js:407:19)
+    at async TestContext.<anonymous> (/Users/macbookair/Documents/domino/server/test/economy-service.test.js:920:24)
+    at async Test.run (node:internal/test_runner/test:1125:7)
+    at async Test.processPendingSubtests (node:internal/test_runner/test:787:7)
+[ROOM] Failed to settle forfeit stake: Error: boom
+    at global.fetch (/Users/macbookair/Documents/domino/server/test/economy-service.test.js:936:15)
+    at postEconomyRequest (/Users/macbookair/Documents/domino/server/economyClient.js:4:12)
+    at postSettleEconomyMatch (/Users/macbookair/Documents/domino/server/economyClient.js:19:12)
+    at settleForfeitStakeForRoom (/Users/macbookair/Documents/domino/server/economyService.js:389:32)
+    at TestContext.<anonymous> (/Users/macbookair/Documents/domino/server/test/economy-service.test.js:940:30)
+    at Test.runInAsyncScope (node:async_hooks:226:14)
+    at Test.run (node:internal/test_runner/test:1118:25)
+    at Test.processPendingSubtests (node:internal/test_runner/test:787:18)
+    at Test.postRun (node:internal/test_runner/test:1247:19)
+    at Test.run (node:internal/test_runner/test:1175:12)
+✔ reserveEconomyStakeForRoom handles the free stake path (5.301125ms)
+✔ reserveEconomyStakeForRoom returns missing_platform_identity when there is no platform identity (0.125208ms)
+✔ reserveEconomyStakeForRoom blocks unlinked humans and resets stake fields (0.218458ms)
+✔ reserveEconomyStakeForRoom returns no-op when there are no participants (0.125167ms)
+✔ reserveEconomyStakeForRoom updates room fields on success (0.978541ms)
+✔ settleEconomyRoundForRoom forwards authToken to the settle request (0.478584ms)
+✔ settleForfeitStakeForRoom forwards authToken to the settle request (0.346333ms)
+✔ reserveEconomyStakeForRoom maps DTO validation errors to a safe reason (8.827458ms)
+✔ reserveEconomyStakeForRoom includes teamIndex in the signed reserve body for team rooms (2.737833ms)
+✔ reserveEconomyStakeForRoom returns a safe reason for html 404 responses (1.00275ms)
+✔ reserveEconomyStakeForRoom returns reserve_failed when response is not ok (0.275291ms)
+✔ reserveEconomyStakeForRoom returns reserve_failed when body is rejected (0.228041ms)
+✔ reserveEconomyStakeForRoom returns reserve_error on transport failure (0.732916ms)
+✔ settleEconomyRoundForRoom handles the free stake path (0.073709ms)
+✔ settleEconomyRoundForRoom returns null when there is no platform identity (0.058583ms)
+✔ settleEconomyRoundForRoom updates room fields on success in ffa (0.266291ms)
+✔ settleEconomyRoundForRoom sends the correct winnerUserIds in team mode (0.236ms)
+✔ settleEconomyRoundForRoom returns refund summary when response is not ok (0.268916ms)
+✔ settleEconomyRoundForRoom stores a retry state when settlement fails (0.232375ms)
+✔ settleEconomyRoundForRoom returns refund summary when the response body is rejected (0.13325ms)
+✔ settleEconomyRoundForRoom returns refund summary on transport failure (0.183ms)
+✔ settleForfeitStakeForRoom returns false when forfeitSettlementMade is true (0.077417ms)
+✔ settleForfeitStakeForRoom returns false when currentDealStakeKey is free (0.043834ms)
+✔ settleForfeitStakeForRoom returns false when there is no platform identity (0.065541ms)
+✔ settleForfeitStakeForRoom returns false when leaving session is missing (22.852708ms)
+✔ settleForfeitStakeForRoom returns false when leaving identity has no userId (0.30525ms)
+✔ settleForfeitStakeForRoom updates flags and request payload on success in ffa (2.631875ms)
+✔ settleForfeitStakeForRoom excludes the leaving team in team mode (0.216791ms)
+✔ settleForfeitStakeForRoom returns false when response is not ok (0.312ms)
+✔ settleForfeitStakeForRoom returns false on transport failure (0.250042ms)
+✔ normalizeGameMode maps classic101 aliases and defaults to telefon (2.829458ms)
+✔ open rooms are filtered by gameMode without mixing classic101 and telefon (121.169542ms)
+✔ readiness health reports degraded when Redis is not configured outside production (2.607666ms)
+✔ readiness health reports unhealthy when Redis is unavailable in production (0.266292ms)
+✔ readiness health reports ok when Redis is ready (0.095042ms)
+✔ join rate limit blocks the ninth join within the window (1ms)
+✔ join rate limit resets after the window passes (0.101084ms)
+✖ server keeps the final board on game_delta and omits it from the immediate result sync (9.867209ms)
+✔ presence stale threshold follows disconnect grace (2.638875ms)
+✔ presence heartbeat refreshes updatedAt even with an empty payload (0.233416ms)
+ℹ️  optional .env file not found: .env.development, .env
+[ROOM] Failed to record platform match: Error: temporary failure
+    at DominoRoom.recordPlatformMatch (/Users/macbookair/Documents/domino/server/DominoRoom.js:3029:23)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async DominoRoom.recordMatchResult (/Users/macbookair/Documents/domino/server/DominoRoom.js:3273:30)
+    at async TestContext.<anonymous> (/Users/macbookair/Documents/domino/server/test/match-recording.test.js:62:23)
+    at async Test.run (node:internal/test_runner/test:1125:7)
+    at async startSubtestAfterBootstrap (node:internal/test_runner/harness:358:3)
+[ROOM] Failed to record match: Error: Platform match recording failed
+    at DominoRoom.recordMatchResult (/Users/macbookair/Documents/domino/server/DominoRoom.js:3275:23)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async TestContext.<anonymous> (/Users/macbookair/Documents/domino/server/test/match-recording.test.js:62:23)
+    at async Test.run (node:internal/test_runner/test:1125:7)
+    at async startSubtestAfterBootstrap (node:internal/test_runner/harness:358:3)
+✔ recordMatchResult retries a failed platform match recording without marking the match recorded (12.603583ms)
+✔ recordMatchResult handles payloads without userIds without breaking the room (0.183084ms)
+✔ recordMatchResult forwards classic101 dry-win metadata (1.902541ms)
+✔ buildWinnerKey keeps ffa and team formats (5.317333ms)
+✔ buildMatchTeams returns empty list for ffa and two team shells for team mode (1.071667ms)
+✔ buildMatchParticipantRows keeps ffa shape and skips players without userId (0.261875ms)
+✔ buildMatchParticipantRows keeps team shape (0.128709ms)
+✔ buildMatchParticipantRows keeps takeover humans human and supports draw outcome (0.123833ms)
+✔ buildPlatformMatchPayload fills team memberIds and keeps payload shape (0.258125ms)
+✔ buildPlatformMatchPayload keeps ffa payload mode and result (0.11375ms)
+✔ buildPlatformMatchPayload marks all_absent as draw and clears winner key (0.101584ms)
+✔ buildPlatformMatchPayload forwards classic101 dry-win flag (0.108458ms)
+✔ getHandSize keeps the classic 7-tile opening hand (0.864542ms)
+✔ roundTo5 rounds up to the next multiple of five (0.08575ms)
+✔ handPoints gives 10 for the final zero double (0.110125ms)
+✔ determineFirstPlayer prioritizes 3|2, then smallest double, then fallback (0.117ms)
+✔ client opens seat picker for team rooms regardless of visibility (10.710792ms)
+✔ client keeps team runtime and seat picker close flow explicit (8.056709ms)
+✔ client uses open-room waiting banner and returns room_closed players to open rooms (10.437792ms)
+✔ gift picker keeps room, chat, and social recipients separate (8.933542ms)
+✔ client renders waiting room rows in a strict single-line format (11.003541ms)
+✔ client blocks profile clicks while move hints are active and exposes safe debug state (7.242167ms)
+✔ client moves play invite entry points into room context (10.485708ms)
+✔ client exposes team hud wallet gate and profile close debug hooks (6.467625ms)
+✖ client renders bazaar draw state from live solo hands and keeps multiplayer cache isolated (10.722042ms)
+✔ client friends page no longer appends an undefined invite button (15.344708ms)
+✔ legacy rating baseline matches the platform baseline (0.990625ms)
+✔ legacy rating reacts to match outcomes (0.140458ms)
+✔ legacy title tiers match the platform tiers (0.107791ms)
+ℹ️  optional .env file not found: .env.development, .env
+[ROOM] Redis restore error SyntaxError: Expected property name or '}' in JSON at position 1 (line 1 column 2)
+    at JSON.parse (<anonymous>)
+    at loadCustomStateSnapshotForRestore (/Users/macbookair/Documents/domino/server/roomRestoreLookup.js:18:33)
+[ROOM] Redis restore error Error: redis unavailable
+    at Object.connect (/Users/macbookair/Documents/domino/server/test/restore-lookup.test.js:117:19)
+    at FakeRedis.connect (/Users/macbookair/Documents/domino/server/test/restore-lookup.test.js:22:43)
+    at loadCustomStateSnapshotForRestore (/Users/macbookair/Documents/domino/server/roomRestoreLookup.js:13:25)
+    at DominoRoom.loadCustomStateForRestore (/Users/macbookair/Documents/domino/server/DominoRoom.js:4057:16)
+    at /Users/macbookair/Documents/domino/server/test/restore-lookup.test.js:122:37
+    at withDominoRoomStub (/Users/macbookair/Documents/domino/server/test/restore-lookup.test.js:44:22)
+    at TestContext.<anonymous> (/Users/macbookair/Documents/domino/server/test/restore-lookup.test.js:114:11)
+    at async Test.run (node:internal/test_runner/test:1125:7)
+    at async Test.processPendingSubtests (node:internal/test_runner/test:787:7)
+✔ loadCustomStateForRestore returns the room-id snapshot when Redis has the room key (260.518916ms)
+✔ loadCustomStateForRestore returns the room-code snapshot when Redis has the code key (0.512042ms)
+✔ loadCustomStateForRestore skips snapshots whose roomCode does not match the requested code (0.310292ms)
+✔ loadCustomStateForRestore returns null for invalid JSON and Redis errors (1.997ms)
+✔ loadCustomStateForRestore returns null when no restore keys are provided (0.289708ms)
+✔ findReusableSessionId only falls back to userId during an explicit restore request (0.349167ms)
+✔ result modal test overlay class is present only on final result screens (2.226ms)
+✔ generateRoomCode returns 4 chars from the allowed alphabet (1.698792ms)
+✔ normalizeRoomVisibility returns only open or closed (0.163167ms)
+✔ normalizeStakeKey defaults to stake_200 (0.080417ms)
+✔ normalizePlayerCount clamps team and non-team modes (0.100834ms)
+✔ normalizeAiCount stays within bounds (0.117667ms)
+✔ normalizeInstantWinEnabled preserves current behavior (0.074791ms)
+✔ normalizeAiDifficulty defaults to medium (0.061875ms)
+✔ normalizeAuthToken reads identity authToken before options authToken (0.941833ms)
+✔ room identity helpers preserve current fallback behavior (0.1285ms)
+✔ getFirstNameDisplayName returns the first token safely (0.977166ms)
+✔ buildRoomIdentity sanitizes, trims, preserves existing fields, and does not mutate inputs (1.09725ms)
+✔ getFirstNameDisplayName falls back for undefined-like tokens (0.083125ms)
+✔ buildLivePlayerPayload uses team mode and host fallback correctly (18.362209ms)
+✔ buildLivePlayerPayload uses ffa mode and preserves current fallbacks (2.487167ms)
+✔ room registry remembers, resolves, and forgets mappings locally (1.221667ms)
+[ROOM] Redis restore error SyntaxError: Expected property name or '}' in JSON at position 1 (line 1 column 2)
+    at JSON.parse (<anonymous>)
+    at loadCustomStateSnapshotForRestore (/Users/macbookair/Documents/domino/server/roomRestoreLookup.js:18:33)
+    at async TestContext.<anonymous> (/Users/macbookair/Documents/domino/server/test/room-restore-lookup.test.js:54:21)
+    at async Test.run (node:internal/test_runner/test:1125:7)
+    at async Test.processPendingSubtests (node:internal/test_runner/test:787:7)
+[ROOM] Redis restore error Error: redis unavailable
+    at Object.connect (/Users/macbookair/Documents/domino/server/test/room-restore-lookup.test.js:68:23)
+    at loadCustomStateSnapshotForRestore (/Users/macbookair/Documents/domino/server/roomRestoreLookup.js:13:25)
+    at TestContext.<anonymous> (/Users/macbookair/Documents/domino/server/test/room-restore-lookup.test.js:64:26)
+    at async Test.run (node:internal/test_runner/test:1125:7)
+    at async Test.processPendingSubtests (node:internal/test_runner/test:787:7)
+✔ loadCustomStateSnapshotForRestore returns null when redis is missing or no restore keys are provided (1.023625ms)
+✔ loadCustomStateSnapshotForRestore prefers roomId then roomCode and respects roomCode matching (1.052625ms)
+✔ loadCustomStateSnapshotForRestore returns null on invalid JSON or redis errors (1.745625ms)
+✔ buildRestoredRoomMetadata falls back to room values when data fields are missing (2.297458ms)
+✔ buildRestoredRoomMetadata normalizes visibility and economy reservation state (0.157084ms)
+✔ buildRestoredRoomMetadata keeps botIds and playerMissingSuits fallbacks without mutation (0.230917ms)
+ℹ️  optional .env file not found: .env.development, .env
+[ROOM] Client host joining with name: Host
+[ROOM_DEBUG] join:start {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  sessionId: 'host',
+  clientsLength: 1,
+  playerOrder: [],
+  totalPlayers: 4,
+  aiCount: 0,
+  humanSeats: 4,
+  maxClients: 4
+}
+[ROOM_DEBUG] join:identity {
+  sessionId: 'host',
+  hasUserId: true,
+  hasPlayerId: true,
+  hasAuthToken: false,
+  provider: 'platform',
+  displayName: 'Host'
+}
+[ROOM] Current player count: 1 / 4
+[ROOM_DEBUG] join:assigned {
+  sessionId: 'host',
+  seatIndex: 0,
+  isHost: true,
+  playerOrder: [ 'host' ],
+  connectedHumans: 1,
+  readyHumans: 1,
+  seatedHumans: 1
+}
+[ROOM] Client host joining with name: Host
+[ROOM_DEBUG] join:start {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  sessionId: 'host',
+  clientsLength: 1,
+  playerOrder: [],
+  totalPlayers: 2,
+  aiCount: 0,
+  humanSeats: 2,
+  maxClients: 2
+}
+[ROOM_DEBUG] join:identity {
+  sessionId: 'host',
+  hasUserId: true,
+  hasPlayerId: true,
+  hasAuthToken: false,
+  provider: 'platform',
+  displayName: 'Host'
+}
+[ROOM] Current player count: 1 / 2
+[ROOM_DEBUG] autostart:decision {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  roomMode: 'ffa',
+  isTeamMode: false,
+  totalPlayers: 2,
+  maxPlayers: 2,
+  maxClients: 2,
+  clientsLength: 1,
+  aiCount: 0,
+  gameActive: false,
+  gameStarting: undefined,
+  matchFinished: false,
+  readyPlayersCount: 1,
+  botsReadyCount: 0,
+  humanCount: 1,
+  botCount: 0,
+  occupiedSeats: 1,
+  botIdsLength: 0,
+  playerOrder: [ 'host' ],
+  players: [
+    {
+      sessionId: 'host',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    }
+  ],
+  blockedReason: 'waiting-for-human',
+  decision: 'wait',
+  reason: 'waiting-for-human'
+}
+[ROOM_DEBUG] join:assigned {
+  sessionId: 'host',
+  seatIndex: 0,
+  isHost: true,
+  playerOrder: [ 'host' ],
+  connectedHumans: 1,
+  readyHumans: 1,
+  seatedHumans: 1
+}
+[ROOM] Client guest joining with name: Guest
+[ROOM_DEBUG] join:start {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  sessionId: 'guest',
+  clientsLength: 1,
+  playerOrder: [ 'host' ],
+  totalPlayers: 2,
+  aiCount: 0,
+  humanSeats: 2,
+  maxClients: 2
+}
+[ROOM_DEBUG] join:identity {
+  sessionId: 'guest',
+  hasUserId: true,
+  hasPlayerId: true,
+  hasAuthToken: false,
+  provider: 'platform',
+  displayName: 'Guest'
+}
+[ROOM] Current player count: 1 / 2
+[ROOM_DEBUG] autostart:decision {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  roomMode: 'ffa',
+  isTeamMode: false,
+  totalPlayers: 2,
+  maxPlayers: 2,
+  maxClients: 2,
+  clientsLength: 1,
+  aiCount: 0,
+  gameActive: false,
+  gameStarting: undefined,
+  matchFinished: false,
+  readyPlayersCount: 2,
+  botsReadyCount: 0,
+  humanCount: 2,
+  botCount: 0,
+  occupiedSeats: 2,
+  botIdsLength: 0,
+  playerOrder: [ 'host', 'guest' ],
+  players: [
+    {
+      sessionId: 'host',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 'guest',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    }
+  ],
+  blockedReason: null,
+  decision: 'start',
+  reason: 'start'
+}
+[ROOM] Room full. Starting game...
+[ROOM_DEBUG] join:assigned {
+  sessionId: 'guest',
+  seatIndex: 1,
+  isHost: false,
+  playerOrder: [ 'host', 'guest' ],
+  connectedHumans: 2,
+  readyHumans: 2,
+  seatedHumans: 2
+}
+✔ host joins Seat 1 automatically (7.38125ms)
+[ROOM] Client host joining with name: Host
+[ROOM_DEBUG] join:start {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  sessionId: 'host',
+  clientsLength: 1,
+  playerOrder: [],
+  totalPlayers: 4,
+  aiCount: 0,
+  humanSeats: 4,
+  maxClients: 4
+}
+[ROOM_DEBUG] join:identity {
+  sessionId: 'host',
+  hasUserId: true,
+  hasPlayerId: true,
+  hasAuthToken: false,
+  provider: 'platform',
+  displayName: 'Host'
+}
+[ROOM] Current player count: 1 / 4
+[ROOM_DEBUG] join:assigned {
+  sessionId: 'host',
+  seatIndex: 0,
+  isHost: true,
+  playerOrder: [ 'host' ],
+  connectedHumans: 1,
+  readyHumans: 1,
+  seatedHumans: 1
+}
+[ROOM] Client guest-a joining with name: Alice
+[ROOM_DEBUG] join:start {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  sessionId: 'guest-a',
+  clientsLength: 2,
+  playerOrder: [ 'host' ],
+  totalPlayers: 4,
+  aiCount: 0,
+  humanSeats: 4,
+  maxClients: 4
+}
+[ROOM_DEBUG] join:identity {
+  sessionId: 'guest-a',
+  hasUserId: true,
+  hasPlayerId: true,
+  hasAuthToken: false,
+  provider: 'platform',
+  displayName: 'Alice'
+}
+[ROOM] Current player count: 2 / 4
+[ROOM_DEBUG] join:assigned {
+  sessionId: 'guest-a',
+  seatIndex: -1,
+  isHost: false,
+  playerOrder: [ 'host', 'guest-a' ],
+  connectedHumans: 2,
+  readyHumans: 1,
+  seatedHumans: 1
+}
+[ROOM] Client guest-b joining with name: Bob
+[ROOM_DEBUG] join:start {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  sessionId: 'guest-b',
+  clientsLength: 3,
+  playerOrder: [ 'host', 'guest-a' ],
+  totalPlayers: 4,
+  aiCount: 0,
+  humanSeats: 4,
+  maxClients: 4
+}
+[ROOM_DEBUG] join:identity {
+  sessionId: 'guest-b',
+  hasUserId: true,
+  hasPlayerId: true,
+  hasAuthToken: false,
+  provider: 'platform',
+  displayName: 'Bob'
+}
+[ROOM] Current player count: 3 / 4
+[ROOM_DEBUG] join:assigned {
+  sessionId: 'guest-b',
+  seatIndex: -1,
+  isHost: false,
+  playerOrder: [ 'host', 'guest-a', 'guest-b' ],
+  connectedHumans: 3,
+  readyHumans: 1,
+  seatedHumans: 1
+}
+[ROOM] Client host joining with name: Host
+[ROOM_DEBUG] join:start {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  sessionId: 'host',
+  clientsLength: 1,
+  playerOrder: [],
+  totalPlayers: 4,
+  aiCount: 0,
+  humanSeats: 4,
+  maxClients: 4
+}
+[ROOM_DEBUG] join:identity {
+  sessionId: 'host',
+  hasUserId: true,
+  hasPlayerId: true,
+  hasAuthToken: false,
+  provider: 'platform',
+  displayName: 'Host'
+}
+[ROOM] Current player count: 1 / 4
+[ROOM_DEBUG] join:assigned {
+  sessionId: 'host',
+  seatIndex: 0,
+  isHost: true,
+  playerOrder: [ 'host' ],
+  connectedHumans: 1,
+  readyHumans: 1,
+  seatedHumans: 1
+}
+[ROOM] Client guest-a joining with name: Alice
+[ROOM_DEBUG] join:start {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  sessionId: 'guest-a',
+  clientsLength: 2,
+  playerOrder: [ 'host' ],
+  totalPlayers: 4,
+  aiCount: 0,
+  humanSeats: 4,
+  maxClients: 4
+}
+[ROOM_DEBUG] join:identity {
+  sessionId: 'guest-a',
+  hasUserId: true,
+  hasPlayerId: true,
+  hasAuthToken: false,
+  provider: 'platform',
+  displayName: 'Alice'
+}
+[ROOM] Current player count: 2 / 4
+[ROOM_DEBUG] join:assigned {
+  sessionId: 'guest-a',
+  seatIndex: -1,
+  isHost: false,
+  playerOrder: [ 'host', 'guest-a' ],
+  connectedHumans: 2,
+  readyHumans: 1,
+  seatedHumans: 1
+}
+[ROOM] Client guest-b joining with name: Bob
+[ROOM_DEBUG] join:start {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  sessionId: 'guest-b',
+  clientsLength: 3,
+  playerOrder: [ 'host', 'guest-a' ],
+  totalPlayers: 4,
+  aiCount: 0,
+  humanSeats: 4,
+  maxClients: 4
+}
+[ROOM_DEBUG] join:identity {
+  sessionId: 'guest-b',
+  hasUserId: true,
+  hasPlayerId: true,
+  hasAuthToken: false,
+  provider: 'platform',
+  displayName: 'Bob'
+}
+[ROOM] Current player count: 3 / 4
+[ROOM_DEBUG] join:assigned {
+  sessionId: 'guest-b',
+  seatIndex: -1,
+  isHost: false,
+  playerOrder: [ 'host', 'guest-a', 'guest-b' ],
+  connectedHumans: 3,
+  readyHumans: 1,
+  seatedHumans: 1
+}
+[ROOM] Client host joining with name: Host
+[ROOM_DEBUG] join:start {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  sessionId: 'host',
+  clientsLength: 1,
+  playerOrder: [],
+  totalPlayers: 4,
+  aiCount: 0,
+  humanSeats: 4,
+  maxClients: 4
+}
+[ROOM_DEBUG] join:identity {
+  sessionId: 'host',
+  hasUserId: true,
+  hasPlayerId: true,
+  hasAuthToken: false,
+  provider: 'platform',
+  displayName: 'Host'
+}
+[ROOM] Current player count: 1 / 4
+[ROOM_DEBUG] autostart:decision {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  roomMode: 'team',
+  isTeamMode: true,
+  totalPlayers: 4,
+  maxPlayers: 4,
+  maxClients: 4,
+  clientsLength: 1,
+  aiCount: 0,
+  gameActive: false,
+  gameStarting: undefined,
+  matchFinished: false,
+  readyPlayersCount: 1,
+  botsReadyCount: 0,
+  humanCount: 1,
+  botCount: 0,
+  occupiedSeats: 1,
+  botIdsLength: 0,
+  playerOrder: [ 'host' ],
+  players: [
+    {
+      sessionId: 'host',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    }
+  ],
+  blockedReason: 'waiting-for-human',
+  decision: 'wait',
+  reason: 'waiting-for-human'
+}
+[ROOM_DEBUG] join:assigned {
+  sessionId: 'host',
+  seatIndex: 0,
+  isHost: true,
+  playerOrder: [ 'host' ],
+  connectedHumans: 1,
+  readyHumans: 1,
+  seatedHumans: 1
+}
+[ROOM] Client guest-a joining with name: Alice
+[ROOM_DEBUG] join:start {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  sessionId: 'guest-a',
+  clientsLength: 2,
+  playerOrder: [ 'host' ],
+  totalPlayers: 4,
+  aiCount: 0,
+  humanSeats: 4,
+  maxClients: 4
+}
+[ROOM_DEBUG] join:identity {
+  sessionId: 'guest-a',
+  hasUserId: true,
+  hasPlayerId: true,
+  hasAuthToken: false,
+  provider: 'platform',
+  displayName: 'Alice'
+}
+[ROOM] Current player count: 2 / 4
+[ROOM_DEBUG] autostart:decision {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  roomMode: 'team',
+  isTeamMode: true,
+  totalPlayers: 4,
+  maxPlayers: 4,
+  maxClients: 4,
+  clientsLength: 2,
+  aiCount: 0,
+  gameActive: false,
+  gameStarting: undefined,
+  matchFinished: false,
+  readyPlayersCount: 1,
+  botsReadyCount: 0,
+  humanCount: 2,
+  botCount: 0,
+  occupiedSeats: 1,
+  botIdsLength: 0,
+  playerOrder: [ 'host', 'guest-a' ],
+  players: [
+    {
+      sessionId: 'host',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 'guest-a',
+      isBot: false,
+      isConnected: true,
+      seatIndex: -1,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    }
+  ],
+  blockedReason: 'waiting-for-human',
+  decision: 'wait',
+  reason: 'waiting-for-human'
+}
+[ROOM_DEBUG] join:assigned {
+  sessionId: 'guest-a',
+  seatIndex: -1,
+  isHost: false,
+  playerOrder: [ 'host', 'guest-a' ],
+  connectedHumans: 2,
+  readyHumans: 1,
+  seatedHumans: 1
+}
+[ROOM] Client guest-b joining with name: Bob
+[ROOM_DEBUG] join:start {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  sessionId: 'guest-b',
+  clientsLength: 3,
+  playerOrder: [ 'host', 'guest-a' ],
+  totalPlayers: 4,
+  aiCount: 0,
+  humanSeats: 4,
+  maxClients: 4
+}
+[ROOM_DEBUG] join:identity {
+  sessionId: 'guest-b',
+  hasUserId: true,
+  hasPlayerId: true,
+  hasAuthToken: false,
+  provider: 'platform',
+  displayName: 'Bob'
+}
+[ROOM] Current player count: 3 / 4
+[ROOM_DEBUG] autostart:decision {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  roomMode: 'team',
+  isTeamMode: true,
+  totalPlayers: 4,
+  maxPlayers: 4,
+  maxClients: 4,
+  clientsLength: 3,
+  aiCount: 0,
+  gameActive: false,
+  gameStarting: undefined,
+  matchFinished: false,
+  readyPlayersCount: 1,
+  botsReadyCount: 0,
+  humanCount: 3,
+  botCount: 0,
+  occupiedSeats: 1,
+  botIdsLength: 0,
+  playerOrder: [ 'host', 'guest-a', 'guest-b' ],
+  players: [
+    {
+      sessionId: 'host',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 'guest-a',
+      isBot: false,
+      isConnected: true,
+      seatIndex: -1,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 'guest-b',
+      isBot: false,
+      isConnected: true,
+      seatIndex: -1,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    }
+  ],
+  blockedReason: 'waiting-for-human',
+  decision: 'wait',
+  reason: 'waiting-for-human'
+}
+[ROOM_DEBUG] join:assigned {
+  sessionId: 'guest-b',
+  seatIndex: -1,
+  isHost: false,
+  playerOrder: [ 'host', 'guest-a', 'guest-b' ],
+  connectedHumans: 3,
+  readyHumans: 1,
+  seatedHumans: 1
+}
+[ROOM] Client guest-c joining with name: Carol
+[ROOM_DEBUG] join:start {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  sessionId: 'guest-c',
+  clientsLength: 4,
+  playerOrder: [ 'host', 'guest-a', 'guest-b' ],
+  totalPlayers: 4,
+  aiCount: 0,
+  humanSeats: 4,
+  maxClients: 4
+}
+[ROOM_DEBUG] join:identity {
+  sessionId: 'guest-c',
+  hasUserId: true,
+  hasPlayerId: true,
+  hasAuthToken: false,
+  provider: 'platform',
+  displayName: 'Carol'
+}
+[ROOM] Current player count: 4 / 4
+[ROOM_DEBUG] autostart:decision {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  roomMode: 'team',
+  isTeamMode: true,
+  totalPlayers: 4,
+  maxPlayers: 4,
+  maxClients: 4,
+  clientsLength: 4,
+  aiCount: 0,
+  gameActive: false,
+  gameStarting: undefined,
+  matchFinished: false,
+  readyPlayersCount: 1,
+  botsReadyCount: 0,
+  humanCount: 4,
+  botCount: 0,
+  occupiedSeats: 1,
+  botIdsLength: 0,
+  playerOrder: [ 'host', 'guest-a', 'guest-b', 'guest-c' ],
+  players: [
+    {
+      sessionId: 'host',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 'guest-a',
+      isBot: false,
+      isConnected: true,
+      seatIndex: -1,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 'guest-b',
+      isBot: false,
+      isConnected: true,
+      seatIndex: -1,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 'guest-c',
+      isBot: false,
+      isConnected: true,
+      seatIndex: -1,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    }
+  ],
+  blockedReason: 'waiting-for-seat',
+  decision: 'wait',
+  reason: 'waiting-for-seat'
+}
+[ROOM_DEBUG] join:assigned {
+  sessionId: 'guest-c',
+  seatIndex: -1,
+  isHost: false,
+  playerOrder: [ 'host', 'guest-a', 'guest-b', 'guest-c' ],
+  connectedHumans: 4,
+  readyHumans: 1,
+  seatedHumans: 1
+}
+[ROOM_DEBUG] autostart:decision {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  roomMode: 'team',
+  isTeamMode: true,
+  totalPlayers: 4,
+  maxPlayers: 4,
+  maxClients: 4,
+  clientsLength: 4,
+  aiCount: 0,
+  gameActive: false,
+  gameStarting: undefined,
+  matchFinished: false,
+  readyPlayersCount: 2,
+  botsReadyCount: 0,
+  humanCount: 4,
+  botCount: 0,
+  occupiedSeats: 2,
+  botIdsLength: 0,
+  playerOrder: [ 'host', 'guest-a', 'guest-b', 'guest-c' ],
+  players: [
+    {
+      sessionId: 'host',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 'guest-a',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 'guest-b',
+      isBot: false,
+      isConnected: true,
+      seatIndex: -1,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 'guest-c',
+      isBot: false,
+      isConnected: true,
+      seatIndex: -1,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    }
+  ],
+  blockedReason: 'waiting-for-seat',
+  decision: 'wait',
+  reason: 'waiting-for-seat'
+}
+[ROOM_DEBUG] autostart:decision {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  roomMode: 'team',
+  isTeamMode: true,
+  totalPlayers: 4,
+  maxPlayers: 4,
+  maxClients: 4,
+  clientsLength: 4,
+  aiCount: 0,
+  gameActive: false,
+  gameStarting: undefined,
+  matchFinished: false,
+  readyPlayersCount: 3,
+  botsReadyCount: 0,
+  humanCount: 4,
+  botCount: 0,
+  occupiedSeats: 3,
+  botIdsLength: 0,
+  playerOrder: [ 'host', 'guest-a', 'guest-b', 'guest-c' ],
+  players: [
+    {
+      sessionId: 'host',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 'guest-a',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 'guest-b',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 2,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 'guest-c',
+      isBot: false,
+      isConnected: true,
+      seatIndex: -1,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    }
+  ],
+  blockedReason: 'waiting-for-seat',
+  decision: 'wait',
+  reason: 'waiting-for-seat'
+}
+[ROOM_DEBUG] autostart:decision {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  roomMode: 'team',
+  isTeamMode: true,
+  totalPlayers: 4,
+  maxPlayers: 4,
+  maxClients: 4,
+  clientsLength: 4,
+  aiCount: 0,
+  gameActive: false,
+  gameStarting: undefined,
+  matchFinished: false,
+  readyPlayersCount: 4,
+  botsReadyCount: 0,
+  humanCount: 4,
+  botCount: 0,
+  occupiedSeats: 4,
+  botIdsLength: 0,
+  playerOrder: [ 'host', 'guest-a', 'guest-b', 'guest-c' ],
+  players: [
+    {
+      sessionId: 'host',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 'guest-a',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 'guest-b',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 2,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 'guest-c',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 3,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    }
+  ],
+  blockedReason: null,
+  decision: 'start',
+  reason: 'start'
+}
+✔ 1v1 online auto-starts without seat selection (652.7095ms)
+✔ a player can choose Seat 3 and playerOrder follows seat order (0.734917ms)
+✔ two players cannot choose the same seat (0.448542ms)
+[ROOM] Client host joining with name: Host
+[ROOM_DEBUG] join:start {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  sessionId: 'host',
+  clientsLength: 1,
+  playerOrder: [],
+  totalPlayers: 2,
+  aiCount: 0,
+  humanSeats: 2,
+  maxClients: 2
+}
+[ROOM_DEBUG] join:identity {
+  sessionId: 'host',
+  hasUserId: true,
+  hasPlayerId: true,
+  hasAuthToken: false,
+  provider: 'platform',
+  displayName: 'Host'
+}
+[ROOM] Current player count: 1 / 2
+[ROOM_DEBUG] autostart:decision {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  roomMode: 'ffa',
+  isTeamMode: false,
+  totalPlayers: 2,
+  maxPlayers: 2,
+  maxClients: 2,
+  clientsLength: 1,
+  aiCount: 0,
+  gameActive: false,
+  gameStarting: undefined,
+  matchFinished: false,
+  readyPlayersCount: 1,
+  botsReadyCount: 0,
+  humanCount: 1,
+  botCount: 0,
+  occupiedSeats: 1,
+  botIdsLength: 0,
+  playerOrder: [ 'host' ],
+  players: [
+    {
+      sessionId: 'host',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    }
+  ],
+  blockedReason: 'waiting-for-human',
+  decision: 'wait',
+  reason: 'waiting-for-human'
+}
+[ROOM_DEBUG] join:assigned {
+  sessionId: 'host',
+  seatIndex: 0,
+  isHost: true,
+  playerOrder: [ 'host' ],
+  connectedHumans: 1,
+  readyHumans: 1,
+  seatedHumans: 1
+}
+[ROOM] Client guest joining with name: Guest
+[ROOM_DEBUG] join:start {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  sessionId: 'guest',
+  clientsLength: 1,
+  playerOrder: [ 'host' ],
+  totalPlayers: 2,
+  aiCount: 0,
+  humanSeats: 2,
+  maxClients: 2
+}
+[ROOM_DEBUG] join:identity {
+  sessionId: 'guest',
+  hasUserId: true,
+  hasPlayerId: true,
+  hasAuthToken: false,
+  provider: 'platform',
+  displayName: 'Guest'
+}
+[ROOM] Current player count: 1 / 2
+[ROOM_DEBUG] autostart:decision {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  roomMode: 'ffa',
+  isTeamMode: false,
+  totalPlayers: 2,
+  maxPlayers: 2,
+  maxClients: 2,
+  clientsLength: 1,
+  aiCount: 0,
+  gameActive: false,
+  gameStarting: undefined,
+  matchFinished: false,
+  readyPlayersCount: 2,
+  botsReadyCount: 0,
+  humanCount: 2,
+  botCount: 0,
+  occupiedSeats: 2,
+  botIdsLength: 0,
+  playerOrder: [ 'host', 'guest' ],
+  players: [
+    {
+      sessionId: 'host',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 'guest',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    }
+  ],
+  blockedReason: null,
+  decision: 'start',
+  reason: 'start'
+}
+[ROOM] Room full. Starting game...
+[ROOM_DEBUG] join:assigned {
+  sessionId: 'guest',
+  seatIndex: 1,
+  isHost: false,
+  playerOrder: [ 'host', 'guest' ],
+  connectedHumans: 2,
+  readyHumans: 2,
+  seatedHumans: 2
+}
+✔ startGame is called only once after the final seat is selected (652.778666ms)
+[ROOM] Client host joining with name: Host
+[ROOM_DEBUG] join:start {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  sessionId: 'host',
+  clientsLength: 1,
+  playerOrder: [],
+  totalPlayers: 4,
+  aiCount: 2,
+  humanSeats: 2,
+  maxClients: 2
+}
+[ROOM_DEBUG] join:identity {
+  sessionId: 'host',
+  hasUserId: true,
+  hasPlayerId: true,
+  hasAuthToken: false,
+  provider: 'platform',
+  displayName: 'Host'
+}
+[ROOM] Current player count: 1 / 2
+[ROOM_DEBUG] autostart:decision {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  roomMode: 'ffa',
+  isTeamMode: false,
+  totalPlayers: 4,
+  maxPlayers: 4,
+  maxClients: 2,
+  clientsLength: 1,
+  aiCount: 2,
+  gameActive: false,
+  gameStarting: undefined,
+  matchFinished: false,
+  readyPlayersCount: 1,
+  botsReadyCount: 0,
+  humanCount: 1,
+  botCount: 0,
+  occupiedSeats: 1,
+  botIdsLength: 0,
+  playerOrder: [ 'host' ],
+  players: [
+    {
+      sessionId: 'host',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    }
+  ],
+  blockedReason: 'waiting-for-human',
+  decision: 'wait',
+  reason: 'waiting-for-human'
+}
+[ROOM_DEBUG] join:assigned {
+  sessionId: 'host',
+  seatIndex: 0,
+  isHost: true,
+  playerOrder: [ 'host' ],
+  connectedHumans: 1,
+  readyHumans: 1,
+  seatedHumans: 1
+}
+[ROOM] Client guest joining with name: Guest
+[ROOM_DEBUG] join:start {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  sessionId: 'guest',
+  clientsLength: 1,
+  playerOrder: [ 'host' ],
+  totalPlayers: 4,
+  aiCount: 2,
+  humanSeats: 2,
+  maxClients: 2
+}
+[ROOM_DEBUG] join:identity {
+  sessionId: 'guest',
+  hasUserId: true,
+  hasPlayerId: true,
+  hasAuthToken: false,
+  provider: 'platform',
+  displayName: 'Guest'
+}
+[ROOM] Current player count: 1 / 2
+[ROOM_DEBUG] autostart:decision {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  roomMode: 'ffa',
+  isTeamMode: false,
+  totalPlayers: 4,
+  maxPlayers: 4,
+  maxClients: 2,
+  clientsLength: 1,
+  aiCount: 2,
+  gameActive: false,
+  gameStarting: undefined,
+  matchFinished: false,
+  readyPlayersCount: 2,
+  botsReadyCount: 0,
+  humanCount: 2,
+  botCount: 0,
+  occupiedSeats: 2,
+  botIdsLength: 0,
+  playerOrder: [ 'host', 'guest' ],
+  players: [
+    {
+      sessionId: 'host',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 'guest',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    }
+  ],
+  blockedReason: null,
+  decision: 'start',
+  reason: 'start'
+}
+[ROOM] Room full. Starting game...
+[ROOM_DEBUG] join:assigned {
+  sessionId: 'guest',
+  seatIndex: 1,
+  isHost: false,
+  playerOrder: [ 'host', 'guest' ],
+  connectedHumans: 2,
+  readyHumans: 2,
+  seatedHumans: 2
+}
+✔ maybeAutoStartGame does not rely on clients length when humans are already ready (651.285208ms)
+[ROOM] Client host joining with name: Host
+[ROOM_DEBUG] join:start {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  sessionId: 'host',
+  clientsLength: 1,
+  playerOrder: [],
+  totalPlayers: 2,
+  aiCount: 0,
+  humanSeats: 2,
+  maxClients: 2
+}
+[ROOM_DEBUG] join:identity {
+  sessionId: 'host',
+  hasUserId: true,
+  hasPlayerId: true,
+  hasAuthToken: false,
+  provider: 'platform',
+  displayName: 'Host'
+}
+[ROOM] Current player count: 1 / 2
+[ROOM_DEBUG] autostart:decision {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  roomMode: 'ffa',
+  isTeamMode: false,
+  totalPlayers: 2,
+  maxPlayers: 2,
+  maxClients: 2,
+  clientsLength: 1,
+  aiCount: 0,
+  gameActive: false,
+  gameStarting: undefined,
+  matchFinished: false,
+  readyPlayersCount: 1,
+  botsReadyCount: 0,
+  humanCount: 1,
+  botCount: 0,
+  occupiedSeats: 1,
+  botIdsLength: 0,
+  playerOrder: [ 'host' ],
+  players: [
+    {
+      sessionId: 'host',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    }
+  ],
+  blockedReason: 'waiting-for-human',
+  decision: 'wait',
+  reason: 'waiting-for-human'
+}
+[ROOM_DEBUG] join:assigned {
+  sessionId: 'host',
+  seatIndex: 0,
+  isHost: true,
+  playerOrder: [ 'host' ],
+  connectedHumans: 1,
+  readyHumans: 1,
+  seatedHumans: 1
+}
+[ROOM] Client host joining with name: Host
+[ROOM_DEBUG] join:start {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  sessionId: 'host',
+  clientsLength: 1,
+  playerOrder: [],
+  totalPlayers: 4,
+  aiCount: 0,
+  humanSeats: 4,
+  maxClients: 4
+}
+[ROOM_DEBUG] join:identity {
+  sessionId: 'host',
+  hasUserId: true,
+  hasPlayerId: true,
+  hasAuthToken: false,
+  provider: 'platform',
+  displayName: 'Host'
+}
+[ROOM] Current player count: 1 / 4
+[ROOM_DEBUG] join:assigned {
+  sessionId: 'host',
+  seatIndex: 0,
+  isHost: true,
+  playerOrder: [ 'host' ],
+  connectedHumans: 1,
+  readyHumans: 1,
+  seatedHumans: 1
+}
+[ROOM] Client guest-a joining with name: Alice
+[ROOM_DEBUG] join:start {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  sessionId: 'guest-a',
+  clientsLength: 2,
+  playerOrder: [ 'host' ],
+  totalPlayers: 4,
+  aiCount: 0,
+  humanSeats: 4,
+  maxClients: 4
+}
+[ROOM_DEBUG] join:identity {
+  sessionId: 'guest-a',
+  hasUserId: true,
+  hasPlayerId: true,
+  hasAuthToken: false,
+  provider: 'platform',
+  displayName: 'Alice'
+}
+[ROOM] Current player count: 2 / 4
+[ROOM_DEBUG] join:assigned {
+  sessionId: 'guest-a',
+  seatIndex: 1,
+  isHost: false,
+  playerOrder: [ 'host', 'guest-a' ],
+  connectedHumans: 2,
+  readyHumans: 2,
+  seatedHumans: 2
+}
+[ROOM_DEBUG] leave:start {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  sessionId: 'host',
+  consented: true,
+  playerOrder: [ 'host', 'guest-a' ],
+  players: [
+    {
+      sessionId: 'host',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 'guest-a',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    }
+  ]
+}
+[ROOM_DEBUG] leave:explicit {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  sessionId: 'host',
+  playerName: 'Host'
+}
+[ROOM_DEBUG] leave:removed {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  sessionId: 'host',
+  reason: 'explicit leave',
+  explicitLeave: true
+}
+[ROOM] Client host joining with name: Host
+[ROOM_DEBUG] join:start {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  sessionId: 'host',
+  clientsLength: 1,
+  playerOrder: [],
+  totalPlayers: 4,
+  aiCount: 0,
+  humanSeats: 4,
+  maxClients: 4
+}
+[ROOM_DEBUG] join:identity {
+  sessionId: 'host',
+  hasUserId: true,
+  hasPlayerId: true,
+  hasAuthToken: false,
+  provider: 'platform',
+  displayName: 'Host'
+}
+[ROOM] Current player count: 1 / 4
+[ROOM_DEBUG] join:assigned {
+  sessionId: 'host',
+  seatIndex: 0,
+  isHost: true,
+  playerOrder: [ 'host' ],
+  connectedHumans: 1,
+  readyHumans: 1,
+  seatedHumans: 1
+}
+[ROOM_DEBUG] leave:start {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  sessionId: 'host',
+  consented: false,
+  playerOrder: [ 'host' ],
+  players: [
+    {
+      sessionId: 'host',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    }
+  ]
+}
+[ROOM_DEBUG] leave:close_empty_waiting_open_room {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  sessionId: 'host',
+  hadExplicitMarker: false,
+  reason: 'empty_open_room'
+}
+[ROOM] Client host joining with name: Host
+[ROOM_DEBUG] join:start {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  sessionId: 'host',
+  clientsLength: 1,
+  playerOrder: [],
+  totalPlayers: 2,
+  aiCount: 0,
+  humanSeats: 2,
+  maxClients: 2
+}
+[ROOM_DEBUG] join:identity {
+  sessionId: 'host',
+  hasUserId: true,
+  hasPlayerId: true,
+  hasAuthToken: false,
+  provider: 'platform',
+  displayName: 'Host'
+}
+[ROOM] Current player count: 1 / 2
+[ROOM_DEBUG] join:assigned {
+  sessionId: 'host',
+  seatIndex: 0,
+  isHost: true,
+  playerOrder: [ 'host' ],
+  connectedHumans: 1,
+  readyHumans: 1,
+  seatedHumans: 1
+}
+[ROOM] Client guest joining with name: Guest
+[ROOM_DEBUG] join:start {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  sessionId: 'guest',
+  clientsLength: 2,
+  playerOrder: [ 'host' ],
+  totalPlayers: 2,
+  aiCount: 0,
+  humanSeats: 2,
+  maxClients: 2
+}
+[ROOM_DEBUG] join:identity {
+  sessionId: 'guest',
+  hasUserId: true,
+  hasPlayerId: true,
+  hasAuthToken: false,
+  provider: 'platform',
+  displayName: 'Guest'
+}
+[ROOM] Current player count: 2 / 2
+[ROOM_DEBUG] join:assigned {
+  sessionId: 'guest',
+  seatIndex: 1,
+  isHost: false,
+  playerOrder: [ 'host', 'guest' ],
+  connectedHumans: 2,
+  readyHumans: 2,
+  seatedHumans: 2
+}
+[ROOM] Client host joining with name: Host
+[ROOM_DEBUG] join:start {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  sessionId: 'host',
+  clientsLength: 1,
+  playerOrder: [],
+  totalPlayers: 4,
+  aiCount: 0,
+  humanSeats: 4,
+  maxClients: 4
+}
+[ROOM_DEBUG] join:identity {
+  sessionId: 'host',
+  hasUserId: true,
+  hasPlayerId: true,
+  hasAuthToken: false,
+  provider: 'platform',
+  displayName: 'Host'
+}
+[ROOM] Current player count: 1 / 4
+[ROOM_DEBUG] join:assigned {
+  sessionId: 'host',
+  seatIndex: 0,
+  isHost: true,
+  playerOrder: [ 'host' ],
+  connectedHumans: 1,
+  readyHumans: 1,
+  seatedHumans: 1
+}
+[ROOM] Client guest joining with name: Guest
+[ROOM_DEBUG] join:start {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  sessionId: 'guest',
+  clientsLength: 2,
+  playerOrder: [ 'host' ],
+  totalPlayers: 4,
+  aiCount: 0,
+  humanSeats: 4,
+  maxClients: 4
+}
+[ROOM_DEBUG] join:identity {
+  sessionId: 'guest',
+  hasUserId: true,
+  hasPlayerId: true,
+  hasAuthToken: false,
+  provider: 'platform',
+  displayName: 'Guest'
+}
+[ROOM] Current player count: 2 / 4
+[ROOM_DEBUG] join:assigned {
+  sessionId: 'guest',
+  seatIndex: -1,
+  isHost: false,
+  playerOrder: [ 'host', 'guest' ],
+  connectedHumans: 2,
+  readyHumans: 1,
+  seatedHumans: 1
+}
+[ROOM] Client host joining with name: Host
+[ROOM_DEBUG] join:start {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  sessionId: 'host',
+  clientsLength: 1,
+  playerOrder: [],
+  totalPlayers: 4,
+  aiCount: 0,
+  humanSeats: 4,
+  maxClients: 4
+}
+[ROOM_DEBUG] join:identity {
+  sessionId: 'host',
+  hasUserId: true,
+  hasPlayerId: true,
+  hasAuthToken: false,
+  provider: 'platform',
+  displayName: 'Host'
+}
+[ROOM] Current player count: 1 / 4
+[ROOM_DEBUG] join:assigned {
+  sessionId: 'host',
+  seatIndex: 0,
+  isHost: true,
+  playerOrder: [ 'host' ],
+  connectedHumans: 1,
+  readyHumans: 1,
+  seatedHumans: 1
+}
+[ROOM] Client guest-a joining with name: Alice
+[ROOM_DEBUG] join:start {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  sessionId: 'guest-a',
+  clientsLength: 2,
+  playerOrder: [ 'host' ],
+  totalPlayers: 4,
+  aiCount: 0,
+  humanSeats: 4,
+  maxClients: 4
+}
+[ROOM_DEBUG] join:identity {
+  sessionId: 'guest-a',
+  hasUserId: true,
+  hasPlayerId: true,
+  hasAuthToken: false,
+  provider: 'platform',
+  displayName: 'Alice'
+}
+[ROOM] Current player count: 2 / 4
+[ROOM_DEBUG] join:assigned {
+  sessionId: 'guest-a',
+  seatIndex: -1,
+  isHost: false,
+  playerOrder: [ 'host', 'guest-a' ],
+  connectedHumans: 2,
+  readyHumans: 1,
+  seatedHumans: 1
+}
+[ROOM] Client guest-b joining with name: Bob
+[ROOM_DEBUG] join:start {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  sessionId: 'guest-b',
+  clientsLength: 3,
+  playerOrder: [ 'host', 'guest-a' ],
+  totalPlayers: 4,
+  aiCount: 0,
+  humanSeats: 4,
+  maxClients: 4
+}
+[ROOM_DEBUG] join:identity {
+  sessionId: 'guest-b',
+  hasUserId: true,
+  hasPlayerId: true,
+  hasAuthToken: false,
+  provider: 'platform',
+  displayName: 'Bob'
+}
+[ROOM] Current player count: 3 / 4
+[ROOM_DEBUG] join:assigned {
+  sessionId: 'guest-b',
+  seatIndex: -1,
+  isHost: false,
+  playerOrder: [ 'host', 'guest-a', 'guest-b' ],
+  connectedHumans: 3,
+  readyHumans: 1,
+  seatedHumans: 1
+}
+[ROOM] Client guest-c joining with name: Carol
+[ROOM_DEBUG] join:start {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  sessionId: 'guest-c',
+  clientsLength: 4,
+  playerOrder: [ 'host', 'guest-a', 'guest-b' ],
+  totalPlayers: 4,
+  aiCount: 0,
+  humanSeats: 4,
+  maxClients: 4
+}
+[ROOM_DEBUG] join:identity {
+  sessionId: 'guest-c',
+  hasUserId: true,
+  hasPlayerId: true,
+  hasAuthToken: false,
+  provider: 'platform',
+  displayName: 'Carol'
+}
+[ROOM] Current player count: 4 / 4
+[ROOM_DEBUG] join:assigned {
+  sessionId: 'guest-c',
+  seatIndex: -1,
+  isHost: false,
+  playerOrder: [ 'host', 'guest-a', 'guest-b', 'guest-c' ],
+  connectedHumans: 4,
+  readyHumans: 1,
+  seatedHumans: 1
+}
+[ROOM] Client host joining with name: Host
+[ROOM_DEBUG] join:start {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  sessionId: 'host',
+  clientsLength: 1,
+  playerOrder: [],
+  totalPlayers: 4,
+  aiCount: 0,
+  humanSeats: 4,
+  maxClients: 4
+}
+[ROOM_DEBUG] join:identity {
+  sessionId: 'host',
+  hasUserId: true,
+  hasPlayerId: true,
+  hasAuthToken: false,
+  provider: 'platform',
+  displayName: 'Host'
+}
+[ROOM] Current player count: 1 / 4
+[ROOM_DEBUG] join:assigned {
+  sessionId: 'host',
+  seatIndex: 0,
+  isHost: true,
+  playerOrder: [ 'host' ],
+  connectedHumans: 1,
+  readyHumans: 1,
+  seatedHumans: 1
+}
+[ROOM] Client guest joining with name: Guest
+[ROOM_DEBUG] join:start {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  sessionId: 'guest',
+  clientsLength: 2,
+  playerOrder: [ 'host' ],
+  totalPlayers: 4,
+  aiCount: 0,
+  humanSeats: 4,
+  maxClients: 4
+}
+[ROOM_DEBUG] join:identity {
+  sessionId: 'guest',
+  hasUserId: true,
+  hasPlayerId: true,
+  hasAuthToken: false,
+  provider: 'platform',
+  displayName: 'Guest'
+}
+[ROOM] Current player count: 2 / 4
+[ROOM_DEBUG] join:assigned {
+  sessionId: 'guest',
+  seatIndex: -1,
+  isHost: false,
+  playerOrder: [ 'host', 'guest' ],
+  connectedHumans: 2,
+  readyHumans: 1,
+  seatedHumans: 1
+}
+[ROOM_DEBUG] leave:start {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  sessionId: 'guest',
+  consented: true,
+  playerOrder: [ 'host', 'guest' ],
+  players: [
+    {
+      sessionId: 'host',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 'guest',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 2,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    }
+  ]
+}
+[ROOM_DEBUG] leave:explicit {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  sessionId: 'guest',
+  playerName: 'Guest'
+}
+[ROOM_DEBUG] leave:removed {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  sessionId: 'guest',
+  reason: 'explicit leave',
+  explicitLeave: true
+}
+[ROOM] Client host joining with name: Host
+[ROOM_DEBUG] join:start {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  sessionId: 'host',
+  clientsLength: 1,
+  playerOrder: [],
+  totalPlayers: 4,
+  aiCount: 0,
+  humanSeats: 4,
+  maxClients: 4
+}
+[ROOM_DEBUG] join:identity {
+  sessionId: 'host',
+  hasUserId: true,
+  hasPlayerId: true,
+  hasAuthToken: false,
+  provider: 'platform',
+  displayName: 'Host'
+}
+[ROOM] Current player count: 1 / 4
+[ROOM_DEBUG] join:assigned {
+  sessionId: 'host',
+  seatIndex: 0,
+  isHost: true,
+  playerOrder: [ 'host' ],
+  connectedHumans: 1,
+  readyHumans: 1,
+  seatedHumans: 1
+}
+[ROOM] Client guest joining with name: Guest
+[ROOM_DEBUG] join:start {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  sessionId: 'guest',
+  clientsLength: 2,
+  playerOrder: [ 'host' ],
+  totalPlayers: 4,
+  aiCount: 0,
+  humanSeats: 4,
+  maxClients: 4
+}
+[ROOM_DEBUG] join:identity {
+  sessionId: 'guest',
+  hasUserId: true,
+  hasPlayerId: true,
+  hasAuthToken: false,
+  provider: 'platform',
+  displayName: 'Guest'
+}
+[ROOM] Current player count: 2 / 4
+[ROOM_DEBUG] join:assigned {
+  sessionId: 'guest',
+  seatIndex: -1,
+  isHost: false,
+  playerOrder: [ 'host', 'guest' ],
+  connectedHumans: 2,
+  readyHumans: 1,
+  seatedHumans: 1
+}
+[ROOM_DEBUG] leave:start {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  sessionId: 'guest',
+  consented: false,
+  playerOrder: [ 'host', 'guest' ],
+  players: [
+    {
+      sessionId: 'host',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 'guest',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 2,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    }
+  ]
+}
+[ROOM_DEBUG] leave:explicit {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  sessionId: 'guest',
+  playerName: 'Guest'
+}
+[ROOM_DEBUG] leave:waiting_reconnect {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  sessionId: 'guest',
+  reason: 'accidental_disconnect',
+  graceStartedAt: 1792274030681,
+  graceExpiresAt: 1792274150681,
+  graceMs: 120000
+}
+[ROOM_DEBUG] leave:reconnected {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  sessionId: 'guest',
+  nextSessionId: 'guest',
+  reconnectSuccessAt: 1792274030682,
+  source: 'allowReconnection',
+  players: [
+    {
+      sessionId: 'host',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 'guest',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 2,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    }
+  ]
+}
+[ROOM_DEBUG] leave:allow_reconnection_rejected {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  sessionId: 'guest',
+  reason: "Cannot read properties of undefined (reading 'length')"
+}
+[ROOM] Client host joining with name: Host
+[ROOM_DEBUG] join:start {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  sessionId: 'host',
+  clientsLength: 1,
+  playerOrder: [],
+  totalPlayers: 4,
+  aiCount: 2,
+  humanSeats: 2,
+  maxClients: 2
+}
+[ROOM_DEBUG] join:identity {
+  sessionId: 'host',
+  hasUserId: true,
+  hasPlayerId: true,
+  hasAuthToken: false,
+  provider: 'platform',
+  displayName: 'Host'
+}
+[ROOM] Current player count: 1 / 2
+[ROOM_DEBUG] join:assigned {
+  sessionId: 'host',
+  seatIndex: 0,
+  isHost: true,
+  playerOrder: [ 'host' ],
+  connectedHumans: 1,
+  readyHumans: 1,
+  seatedHumans: 1
+}
+[ROOM] Client guest joining with name: Guest
+[ROOM_DEBUG] join:start {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  sessionId: 'guest',
+  clientsLength: 2,
+  playerOrder: [ 'host' ],
+  totalPlayers: 4,
+  aiCount: 2,
+  humanSeats: 2,
+  maxClients: 2
+}
+[ROOM_DEBUG] join:identity {
+  sessionId: 'guest',
+  hasUserId: true,
+  hasPlayerId: true,
+  hasAuthToken: false,
+  provider: 'platform',
+  displayName: 'Guest'
+}
+[ROOM] Current player count: 2 / 2
+[ROOM_DEBUG] join:assigned {
+  sessionId: 'guest',
+  seatIndex: -1,
+  isHost: false,
+  playerOrder: [ 'host', 'guest' ],
+  connectedHumans: 2,
+  readyHumans: 1,
+  seatedHumans: 1
+}
+[ROOM_DEBUG] bots:ensure {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  aiCount: 2,
+  existingBotIds: [],
+  occupiedSeats: [ 0, 2 ],
+  freeSeats: [ 1, 3 ]
+}
+[ROOM_DEBUG] bots:added { botId: 'bot-0', seatIndex: 1 }
+[ROOM_DEBUG] bots:added { botId: 'bot-1', seatIndex: 3 }
+[ROOM_DEBUG] bots:final {
+  playerOrder: [ 'host', 'bot-0', 'guest', 'bot-1' ],
+  botIds: [ 'bot-0', 'bot-1' ],
+  players: [
+    {
+      sessionId: 'host',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 'bot-0',
+      isBot: true,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 'guest',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 2,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 'bot-1',
+      isBot: true,
+      isConnected: true,
+      seatIndex: 3,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[ROOM] Client host joining with name: Host
+[ROOM_DEBUG] join:start {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  sessionId: 'host',
+  clientsLength: 1,
+  playerOrder: [],
+  totalPlayers: 4,
+  aiCount: 2,
+  humanSeats: 2,
+  maxClients: 2
+}
+[ROOM_DEBUG] join:identity {
+  sessionId: 'host',
+  hasUserId: true,
+  hasPlayerId: true,
+  hasAuthToken: false,
+  provider: 'platform',
+  displayName: 'Host'
+}
+[ROOM] Current player count: 1 / 2
+[ROOM_DEBUG] join:assigned {
+  sessionId: 'host',
+  seatIndex: 0,
+  isHost: true,
+  playerOrder: [ 'host' ],
+  connectedHumans: 1,
+  readyHumans: 1,
+  seatedHumans: 1
+}
+[ROOM] Client guest joining with name: Guest
+[ROOM_DEBUG] join:start {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  sessionId: 'guest',
+  clientsLength: 2,
+  playerOrder: [ 'host' ],
+  totalPlayers: 4,
+  aiCount: 2,
+  humanSeats: 2,
+  maxClients: 2
+}
+[ROOM_DEBUG] join:identity {
+  sessionId: 'guest',
+  hasUserId: true,
+  hasPlayerId: true,
+  hasAuthToken: false,
+  provider: 'platform',
+  displayName: 'Guest'
+}
+[ROOM] Current player count: 2 / 2
+[ROOM_DEBUG] join:assigned {
+  sessionId: 'guest',
+  seatIndex: -1,
+  isHost: false,
+  playerOrder: [ 'host', 'guest' ],
+  connectedHumans: 2,
+  readyHumans: 1,
+  seatedHumans: 1
+}
+[ROOM_DEBUG] startGame:enter {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  gameActive: false,
+  gameStarting: undefined,
+  matchFinished: false,
+  playerOrder: [ 'host', 'guest' ],
+  players: [
+    {
+      sessionId: 'host',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 'guest',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 2,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    }
+  ]
+}
+[ROOM_DEBUG] startGame:beforeBots {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  playerOrder: [ 'host', 'guest' ],
+  players: [
+    {
+      sessionId: 'host',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 'guest',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 2,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    }
+  ]
+}
+[ROOM_DEBUG] bots:ensure {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  aiCount: 2,
+  existingBotIds: [],
+  occupiedSeats: [ 0, 2 ],
+  freeSeats: [ 1, 3 ]
+}
+[ROOM_DEBUG] bots:added { botId: 'bot-0', seatIndex: 1 }
+[ROOM_DEBUG] bots:added { botId: 'bot-1', seatIndex: 3 }
+[ROOM_DEBUG] bots:final {
+  playerOrder: [ 'host', 'bot-0', 'guest', 'bot-1' ],
+  botIds: [ 'bot-0', 'bot-1' ],
+  players: [
+    {
+      sessionId: 'host',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 'bot-0',
+      isBot: true,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 'guest',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 2,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 'bot-1',
+      isBot: true,
+      isConnected: true,
+      seatIndex: 3,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[ROOM_DEBUG] startGame:afterBots {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  playerOrder: [ 'host', 'bot-0', 'guest', 'bot-1' ],
+  players: [
+    {
+      sessionId: 'host',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 'bot-0',
+      isBot: true,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 'guest',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 2,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 'bot-1',
+      isBot: true,
+      isConnected: true,
+      seatIndex: 3,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[ROOM] Client host joining with name: Host
+[ROOM_DEBUG] join:start {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  sessionId: 'host',
+  clientsLength: 1,
+  playerOrder: [],
+  totalPlayers: 4,
+  aiCount: 0,
+  humanSeats: 4,
+  maxClients: 4
+}
+[ROOM_DEBUG] join:identity {
+  sessionId: 'host',
+  hasUserId: true,
+  hasPlayerId: true,
+  hasAuthToken: false,
+  provider: 'platform',
+  displayName: 'Host'
+}
+[ROOM] Current player count: 1 / 4
+[ROOM_DEBUG] join:assigned {
+  sessionId: 'host',
+  seatIndex: 0,
+  isHost: true,
+  playerOrder: [ 'host' ],
+  connectedHumans: 1,
+  readyHumans: 1,
+  seatedHumans: 1
+}
+[ROOM] Client guest-a joining with name: Alice
+[ROOM_DEBUG] join:start {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  sessionId: 'guest-a',
+  clientsLength: 2,
+  playerOrder: [ 'host' ],
+  totalPlayers: 4,
+  aiCount: 0,
+  humanSeats: 4,
+  maxClients: 4
+}
+[ROOM_DEBUG] join:identity {
+  sessionId: 'guest-a',
+  hasUserId: true,
+  hasPlayerId: true,
+  hasAuthToken: false,
+  provider: 'platform',
+  displayName: 'Alice'
+}
+[ROOM] Current player count: 2 / 4
+[ROOM_DEBUG] join:assigned {
+  sessionId: 'guest-a',
+  seatIndex: -1,
+  isHost: false,
+  playerOrder: [ 'host', 'guest-a' ],
+  connectedHumans: 2,
+  readyHumans: 1,
+  seatedHumans: 1
+}
+[ROOM] Client guest-b joining with name: Bob
+[ROOM_DEBUG] join:start {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  sessionId: 'guest-b',
+  clientsLength: 3,
+  playerOrder: [ 'host', 'guest-a' ],
+  totalPlayers: 4,
+  aiCount: 0,
+  humanSeats: 4,
+  maxClients: 4
+}
+[ROOM_DEBUG] join:identity {
+  sessionId: 'guest-b',
+  hasUserId: true,
+  hasPlayerId: true,
+  hasAuthToken: false,
+  provider: 'platform',
+  displayName: 'Bob'
+}
+[ROOM] Current player count: 3 / 4
+[ROOM_DEBUG] join:assigned {
+  sessionId: 'guest-b',
+  seatIndex: -1,
+  isHost: false,
+  playerOrder: [ 'host', 'guest-a', 'guest-b' ],
+  connectedHumans: 3,
+  readyHumans: 1,
+  seatedHumans: 1
+}
+[ROOM] Client guest-c joining with name: Carol
+[ROOM_DEBUG] join:start {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  sessionId: 'guest-c',
+  clientsLength: 4,
+  playerOrder: [ 'host', 'guest-a', 'guest-b' ],
+  totalPlayers: 4,
+  aiCount: 0,
+  humanSeats: 4,
+  maxClients: 4
+}
+[ROOM_DEBUG] join:identity {
+  sessionId: 'guest-c',
+  hasUserId: true,
+  hasPlayerId: true,
+  hasAuthToken: false,
+  provider: 'platform',
+  displayName: 'Carol'
+}
+[ROOM] Current player count: 4 / 4
+[ROOM_DEBUG] join:assigned {
+  sessionId: 'guest-c',
+  seatIndex: -1,
+  isHost: false,
+  playerOrder: [ 'host', 'guest-a', 'guest-b', 'guest-c' ],
+  connectedHumans: 4,
+  readyHumans: 1,
+  seatedHumans: 1
+}
+[ROOM_DEBUG] startGame:enter {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  gameActive: false,
+  gameStarting: undefined,
+  matchFinished: false,
+  playerOrder: [ 'host', 'guest-a', 'guest-b', 'guest-c' ],
+  players: [
+    {
+      sessionId: 'host',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 'guest-a',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 'guest-b',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 2,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 'guest-c',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 3,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    }
+  ]
+}
+[ROOM_DEBUG] startGame:beforeBots {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  playerOrder: [ 'host', 'guest-a', 'guest-b', 'guest-c' ],
+  players: [
+    {
+      sessionId: 'host',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 'guest-a',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 'guest-b',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 2,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 'guest-c',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 3,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    }
+  ]
+}
+[ROOM_DEBUG] startGame:afterBots {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  playerOrder: [ 'host', 'guest-a', 'guest-b', 'guest-c' ],
+  players: [
+    {
+      sessionId: 'host',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 'guest-a',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 'guest-b',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 2,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 'guest-c',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 3,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    }
+  ]
+}
+[ROOM_DEBUG] startDeal:enter {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  stakeKey: 'free',
+  currentDealMatchId: '',
+  matchRound: 1,
+  playerOrder: [ 'host', 'guest-a', 'guest-b', 'guest-c' ],
+  players: [
+    {
+      sessionId: 'host',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 'guest-a',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 'guest-b',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 2,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 'guest-c',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 3,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    }
+  ]
+}
+[ROOM] Client host joining with name: Host
+[ROOM_DEBUG] join:start {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  sessionId: 'host',
+  clientsLength: 1,
+  playerOrder: [],
+  totalPlayers: 2,
+  aiCount: 0,
+  humanSeats: 2,
+  maxClients: 2
+}
+[ROOM_DEBUG] join:identity {
+  sessionId: 'host',
+  hasUserId: true,
+  hasPlayerId: true,
+  hasAuthToken: false,
+  provider: 'platform',
+  displayName: 'Host'
+}
+[ROOM] Current player count: 1 / 2
+[ROOM_DEBUG] join:assigned {
+  sessionId: 'host',
+  seatIndex: 0,
+  isHost: true,
+  playerOrder: [ 'host' ],
+  connectedHumans: 1,
+  readyHumans: 1,
+  seatedHumans: 1
+}
+[ROOM] Client guest joining with name: Guest
+[ROOM_DEBUG] join:start {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  sessionId: 'guest',
+  clientsLength: 2,
+  playerOrder: [ 'host' ],
+  totalPlayers: 2,
+  aiCount: 0,
+  humanSeats: 2,
+  maxClients: 2
+}
+[ROOM_DEBUG] join:identity {
+  sessionId: 'guest',
+  hasUserId: true,
+  hasPlayerId: true,
+  hasAuthToken: false,
+  provider: 'platform',
+  displayName: 'Guest'
+}
+[ROOM] Current player count: 2 / 2
+[ROOM_DEBUG] join:assigned {
+  sessionId: 'guest',
+  seatIndex: 1,
+  isHost: false,
+  playerOrder: [ 'host', 'guest' ],
+  connectedHumans: 2,
+  readyHumans: 2,
+  seatedHumans: 2
+}
+[ROOM_DEBUG] startGame:enter {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  gameActive: false,
+  gameStarting: undefined,
+  matchFinished: false,
+  playerOrder: [ 'host', 'guest' ],
+  players: [
+    {
+      sessionId: 'host',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 'guest',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    }
+  ]
+}
+[ROOM_DEBUG] startGame:beforeBots {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  playerOrder: [ 'host', 'guest' ],
+  players: [
+    {
+      sessionId: 'host',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 'guest',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    }
+  ]
+}
+[ROOM_DEBUG] startGame:afterBots {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  playerOrder: [ 'host', 'guest' ],
+  players: [
+    {
+      sessionId: 'host',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 'guest',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    }
+  ]
+}
+[ROOM_DEBUG] startDeal:enter {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  stakeKey: 'stake_200',
+  currentDealMatchId: '',
+  matchRound: 1,
+  playerOrder: [ 'host', 'guest' ],
+  players: [
+    {
+      sessionId: 'host',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 'guest',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    }
+  ]
+}
+[ROOM_DEBUG] reserve:before {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  stakeKey: 'stake_200',
+  currentDealMatchId: 'room-seat:round:1',
+  humans: [
+    {
+      sessionId: 'host',
+      seatIndex: 0,
+      isBot: false,
+      isConnected: true,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 'guest',
+      seatIndex: 1,
+      isBot: false,
+      isConnected: true,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    }
+  ]
+}
+[ROOM_DEBUG] reserve:result {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  ok: false,
+  reason: 'insufficient_coins',
+  status: '',
+  messageKey: ''
+}
+[ROOM_DEBUG] startDeal:reserve_failed {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  roomVisibility: 'open',
+  reason: 'insufficient_coins',
+  message: 'room-closed-insufficient-coins',
+  willSendRoomClosed: false
+}
+✔ ffa room auto-starts with bots once human seats are filled (652.01975ms)
+✔ open ffa room reports waiting state until the final human joins (0.370542ms)
+✔ open waiting room host explicit leave keeps the room when another connected human remains (1.654458ms)
+✔ open waiting room last connected human leave closes the room before start (1.115709ms)
+✔ closing a waiting open room removes it from registry and open rooms listing (9.178459ms)
+✔ open rooms listing hides rooms with no connected players (0.177083ms)
+✔ updateSchemaState syncs player handCount fields from live hands (0.375959ms)
+✔ seat cannot be changed after the game starts (0.191666ms)
+✔ team mode pairs Seat 1 + Seat 3 and Seat 2 + Seat 4 (0.316667ms)
+✔ leaving before the game starts frees the seat (0.258458ms)
+✔ reconnect before the game starts keeps the seat (0.896ms)
+✔ bots fill remaining seats without stealing human seats (0.36425ms)
+✔ startGame includes bots in playerOrder and reaches startDeal with four players (0.531916ms)
+✔ open room starts without closing after seats are chosen (1.110834ms)
+✔ open room keeps waiting when stake reserve fails at start (0.498458ms)
+✔ buildRoomStatePlayers builds rows in player order with current fallbacks (5.886083ms)
+✔ buildRoomStatePlayers keeps fallback values for missing players (0.137917ms)
+✔ buildRoomStatePlayers falls back when identity name is undefined-like (0.11675ms)
+✔ buildRoomStatePayload preserves room_state fields and currentPlayers logic (1.463792ms)
+✔ buildRoomStatePayload uses connected human count when the game is inactive (1.061667ms)
+✔ buildRoomStatePayload exposes timeout forfeit state (0.385209ms)
+✔ telefon ruleset keeps the classic first-player order (5.87675ms)
+✔ telefon opening score keeps [5|5] at 10 below 300 and 0 at 300+ (0.624417ms)
+✔ telefon scoreDuringPlay keeps the board score on 5-multiples and telephone cross cases (7.847541ms)
+✔ telefon handPoints keeps the zero double bonus (0.279667ms)
+✔ telefon resolveBlocked picks the lowest hand points winner on a blocked board (0.256833ms)
+✔ classic101 opens with the youngest double and raw scoring rules (0.34725ms)
+✔ classic101 awards raw points, handles fish, threshold entry, and dry wins (5.243875ms)
+ℹ️  optional .env file not found: .env.development, .env
+✔ buildSchemaStateSnapshotData returns the expected snapshot shape (2.193041ms)
+✔ buildSchemaStateSnapshotData keeps fallback values for missing players (0.144833ms)
+✔ normalizeRestoredPlayerOrder prefers snapshot order and falls back to player row session ids (0.116583ms)
+✔ buildRestoredPlayerRows sanitizes names and normalizes raw values (0.745542ms)
+✔ buildRestoredSchemaStateData applies current fallbacks and does not mutate inputs (0.291833ms)
+✔ server auth token verification uses the dev fallback secret outside production (4.998084ms)
+✔ server auth token verification rejects weak secrets in production (0.297167ms)
+✔ buildSignedRequestBody adds integrityScope and proof without mutating payload (2.231583ms)
+✔ solo bazaar UI uses multiplayer-gated connectionLost in both app copies (9.886416ms)
+✔ solo bazaar draw button stays enabled when the human has no play and boneyard has tiles (0.178708ms)
+✔ client stake keys are a safe subset of backend supported stake keys (6.669875ms)
+✔ tempo UX constants keep bots readable and round summaries visible long enough (6.750625ms)
+✔ translation source files contain reconnect and forfeit keys in all locales (3.776917ms)
+ℹ️  optional .env file not found: .env.development, .env
+✔ endRoundByTimeoutForfeit broadcasts timeout forfeit state and arms continue expiry (2.09075ms)
+✖ handleTimeoutContinue only accepts the timeout loser and starts the next round on success (3.962083ms)
+✔ handleTimeoutContinue closes the room when the continue window expires (0.579209ms)
+✔ voice stun config does not contain invalid transport query strings (1.331958ms)
+✔ voice syncRoomState and ensurePeer fail soft when RTCPeerConnection throws (5.586ms)
+ℹ tests 243
+ℹ suites 0
+ℹ pass 236
+ℹ fail 7
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 4038.304083
+
+✖ failing tests:
+
+test at server/test/disconnect-grace.test.js:164:1
+✖ disconnect keeps live presence offline during grace and removes it after timeout (2.348209ms)
+  TypeError: Cannot read private member #_roomId from an object whose class did not declare it
+      at get roomId (/Users/macbookair/Documents/domino/server/node_modules/@colyseus/core/build/Room.cjs:302:17)
+      at DominoRoom.recordForfeitMatchResult (/Users/macbookair/Documents/domino/server/DominoRoom.js:3185:69)
+      at DominoRoom.finalizeReconnectTimeout (/Users/macbookair/Documents/domino/server/DominoRoom.js:865:20)
+      at async TestContext.<anonymous> (/Users/macbookair/Documents/domino/server/test/disconnect-grace.test.js:185:5)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7)
+
+test at server/test/disconnect-grace.test.js:191:1
+✖ grace timeout starts bot takeover instead of forfeit when the feature is enabled (3.55975ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  false !== true
+  
+      at TestContext.<anonymous> (/Users/macbookair/Documents/domino/server/test/disconnect-grace.test.js:212:16)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at server/test/disconnect-grace.test.js:222:1
+✖ explicit leave stays a forfeit and never starts bot takeover (4.543959ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + undefined
+  - 'human'
+  
+      at TestContext.<anonymous> (/Users/macbookair/Documents/domino/server/test/disconnect-grace.test.js:254:16)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: 'human',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at server/test/disconnect-grace.test.js:576:1
+✖ reusable session restore sends full_state to new sessionId (0.353209ms)
+  TypeError: Cannot read properties of undefined (reading 'length')
+      at DominoRoom.updateSchemaState (/Users/macbookair/Documents/domino/server/DominoRoom.js:2617:50)
+      at DominoRoom.broadcastFullState (/Users/macbookair/Documents/domino/server/DominoRoom.js:2790:14)
+      at DominoRoom.completeReconnectGrace (/Users/macbookair/Documents/domino/server/DominoRoom.js:786:18)
+      at TestContext.<anonymous> (/Users/macbookair/Documents/domino/server/test/disconnect-grace.test.js:599:28)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:787:18)
+      at Test.postRun (node:internal/test_runner/test:1247:19)
+      at Test.run (node:internal/test_runner/test:1175:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7)
+
+test at server/test/last-move-reveal-ux.test.js:29:1
+✖ server keeps the final board on game_delta and omits it from the immediate result sync (9.867209ms)
+  AssertionError [ERR_ASSERTION]: syncState should accept an includeBoardJson switch
+  
+  false !== true
+  
+      at TestContext.<anonymous> (/Users/macbookair/Documents/domino/server/test/last-move-reveal-ux.test.js:41:12)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.start (node:internal/test_runner/test:1015:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:358:17) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at server/test/open-room-client-flow.test.js:360:1
+✖ client renders bazaar draw state from live solo hands and keeps multiplayer cache isolated (10.722042ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  false !== true
+  
+      at TestContext.<anonymous> (/Users/macbookair/Documents/domino/server/test/open-room-client-flow.test.js:383:16)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:787:18)
+      at Test.postRun (node:internal/test_runner/test:1247:19)
+      at Test.run (node:internal/test_runner/test:1175:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at server/test/turn-timeout-forfeit-flow.test.js:60:1
+✖ handleTimeoutContinue only accepts the timeout loser and starts the next round on success (3.962083ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + undefined
+  - 'continue_in_progress'
+  
+      at TestContext.<anonymous> (/Users/macbookair/Documents/domino/server/test/turn-timeout-forfeit-flow.test.js:118:12)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: 'continue_in_progress',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
