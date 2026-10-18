@@ -266,7 +266,7 @@ Status: **fixed locally, S016**. Liveness/readiness bypass application Redis rat
 
 #### R-13 · P1 · Применить реальный canvas pixel ratio
 
-Статус: **открыто**. Основание: измерено; [доказательства](03_PERFORMANCE_FPS.md).
+Статус: **исправлено локально, S022**. Ratio применяется к настоящему scene canvas (mobile≤1,25/desktop≤2), hit canvas=1; resize/DPR сбрасывает подпись и перерисовывает поле.8реальных Konva browser tests на Node25/22 и Android portrait/landscape/return прошли:491×748portrait,ratio1,25, точность координат<1px,касание подсказки. [Проверки](../remediation/evidence/session-022/summary.json). Выигрыш общей RAM/FPS этим не обещается; production/Play не менялись.
 
 - **Изменение:** Применить quality pixel ratio к реальным Konva scene/hit canvas, а не только к атрибуту Stage. Проверить фактические размеры buffer, DPR, поворот и точность выбора костяшек.
 - **Где:** `js/konvaBoardRenderer.js:238–246`.

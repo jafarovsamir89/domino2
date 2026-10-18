@@ -1,0 +1,24 @@
+✔ js/konvaBoardRenderer.js: DPR observer rearms and removes its previous listener (2.021542ms)
+✔ www/js/konvaBoardRenderer.js: DPR observer rearms and removes its previous listener (0.900708ms)
+✔ js/app.js: a reset during tile travel prevents the old score/advance/unlock (12.696ms)
+✔ js/app.js: replacing board/hands without a cycle change also invalidates old work (3.487334ms)
+✔ js/app.js: a current animation completes its move exactly once (3.107792ms)
+✔ js/app.js: an old rejected animation cannot unlock a replacement turn (3.255167ms)
+✔ js/app.js: queued animation frames do not run against a replacement board (2.923708ms)
+✔ js/app.js: old 101 draw continuation cannot unlock a new turn (3.740042ms)
+✔ www/js/app.js: a reset during tile travel prevents the old score/advance/unlock (16.581875ms)
+✔ www/js/app.js: replacing board/hands without a cycle change also invalidates old work (5.1715ms)
+✔ www/js/app.js: a current animation completes its move exactly once (7.649375ms)
+✔ www/js/app.js: an old rejected animation cannot unlock a replacement turn (3.676542ms)
+✔ www/js/app.js: queued animation frames do not run against a replacement board (3.75675ms)
+✔ www/js/app.js: old 101 draw continuation cannot unlock a new turn (3.205542ms)
+✔ js/konvaBoardRenderer.js: cancelling an actual Konva travel settles it once and destroys the tween (3.326833ms)
+✔ www/js/konvaBoardRenderer.js: cancelling an actual Konva travel settles it once and destroys the tween (0.850875ms)
+ℹ tests 16
+ℹ suites 0
+ℹ pass 16
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 170.730959

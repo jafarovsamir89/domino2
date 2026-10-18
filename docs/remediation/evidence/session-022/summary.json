@@ -1,0 +1,26 @@
+{
+  "session": "S022",
+  "task": "R-13",
+  "status": "fixed-locally",
+  "details": "Actual sceneCanvas quality uses mobile cap1.25/desktop2; hitCanvas stays1. No global Konva pixelRatio mutation. Canvas resize invalidates cached signature and redraws; DPR media/resize/device-pixel-box observers removed on teardown. Actual Konva browser tests4DPRprofiles x web/www x5/10/20/28tiles, size/DPR changes, pixel readback and coordinate tap pass8/8 Node25/22. Observer/cancellation16pass. Physical Android portrait/landscape/return ratios1.25, buffer491x748 portrait, hit1, coordinate error<1px, native taps pass; three clarity captures visually reviewed.",
+  "checks": [
+    "s022-canvas-baseline.json",
+    "s022-canvas-verified.json",
+    "s022-canvas-node22.json",
+    "s022-observer.json",
+    "s022-source-final.json",
+    "s022-android-verified.json",
+    "android-canvas.json"
+  ],
+  "excluded": [
+    "Initial geometry harness inspected an intro-animation scale; reduced-motion isolates steady geometry",
+    "CDP desktop DPR emulation changes values without a native monitor event; tested next ordinary render and real observer callback separately",
+    "Initial pixel readback was before Konva batchDraw frame; final waits2rAF, does not force direct draw",
+    "Initial screencap hit default1MiB host buffer; raised binary capture buffer"
+  ],
+  "limits": [
+    "One Android audit package/debug WebView, synthetic renderer fixture",
+    "Scene backing-store pixel reduction is not a promise of proportional total RAM/FPS gain",
+    "No production/Play changes"
+  ]
+}

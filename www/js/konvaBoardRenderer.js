@@ -235,16 +235,14 @@ export class KonvaBoardRenderer {
 
         const width = Math.max(1, this.containerEl.clientWidth || 1);
         const height = Math.max(1, this.containerEl.clientHeight || 1);
-        const pixelRatio = Math.min(window.devicePixelRatio || 1, this.lowPowerMode ? 1.25 : MAX_PIXEL_RATIO);
-
         this.stage = new Konva.Stage({
             container: this.stageHostEl,
             width,
-            height,
-            pixelRatio
+            height
         });
         this.layer = new Konva.Layer({ listening: false });
         this.stage.add(this.layer);
+        this.syncCanvasPixelRatio();
 
         if (window.ResizeObserver) {
             this.resizeObserver = new ResizeObserver(() => {
@@ -255,14 +253,15 @@ export class KonvaBoardRenderer {
                     }
                 }, 50);
             });
-            this.resizeObserver.observe(this.containerEl);
-        } else {
-            window.addEventListener('resize', this._handleWindowResize = () => {
-                if (this.lastBoard) {
-                    this.render(this.lastBoard, { ...this.lastContext, force: true, resized: true });
-                }
-            });
+            try {
+                this.resizeObserver.observe(this.containerEl, { box: 'device-pixel-content-box' });
+            } catch (_) {
+                this.resizeObserver.observe(this.containerEl);
+            }
         }
+        // A display/DPR change can leave the container's CSS size unchanged.
+        window.addEventListener('resize', this._handleWindowResize = () => this.refreshCanvasSize());
+        this.observeDevicePixelRatio();
 
         this.enabled = true;
         this.log('mounted');
@@ -271,6 +270,9 @@ export class KonvaBoardRenderer {
 
     destroy() {
         this.cancelTileTravels();
+        clearTimeout(this._resizeTimer);
+        this._resizeTimer = null;
+        this.removeDevicePixelRatioObserver();
         if (this._visibilityRetryTimer) {
             clearTimeout(this._visibilityRetryTimer);
             this._visibilityRetryTimer = null;
@@ -319,12 +321,54 @@ export class KonvaBoardRenderer {
 
     syncStageSize() {
         if (!this.stage || !this.containerEl) return { width: 1, height: 1 };
+        this.syncCanvasPixelRatio();
         const width = Math.max(1, this.containerEl.clientWidth || 1);
         const height = Math.max(1, this.containerEl.clientHeight || 1);
         if (this.stage.width() !== width || this.stage.height() !== height) {
             this.stage.size({ width, height });
         }
         return { width, height };
+    }
+
+    syncCanvasPixelRatio() {
+        if (!this.layer) return;
+        const dpr = Number(window.devicePixelRatio);
+        const ratio = Math.min(Number.isFinite(dpr) && dpr > 0 ? dpr : 1, this.lowPowerMode ? 1.25 : MAX_PIXEL_RATIO);
+        let changed = false;
+        for (const [canvas, target] of [[this.layer.getCanvas(), ratio], [this.layer.getHitCanvas(), 1]]) {
+            if (canvas.getPixelRatio() === target) continue;
+            canvas.setPixelRatio(target);
+            changed = true;
+        }
+        // Retain a diagnostic attr, but apply quality to the actual canvas above.
+        this.stage?.setAttr('pixelRatio', ratio);
+        // setPixelRatio clears the backing store, even if layout/signature is unchanged.
+        if (changed) this.lastSignature = '';
+    }
+
+    refreshCanvasSize() {
+        if (this.lastBoard) this.render(this.lastBoard, { ...this.lastContext, force: true, resized: true });
+        else { this.syncStageSize(); this.layer?.batchDraw(); }
+    }
+
+    removeDevicePixelRatioObserver() {
+        const media = this._dprMedia;
+        if (media?.removeEventListener) media.removeEventListener('change', this._handleDprChange);
+        else media?.removeListener?.(this._handleDprChange);
+        this._dprMedia = null;
+        this._handleDprChange = null;
+    }
+
+    observeDevicePixelRatio() {
+        this.removeDevicePixelRatioObserver();
+        if (!window.matchMedia) return;
+        this._dprMedia = window.matchMedia(`(resolution: ${window.devicePixelRatio || 1}dppx)`);
+        this._handleDprChange = () => {
+            this.refreshCanvasSize();
+            this.observeDevicePixelRatio();
+        };
+        if (this._dprMedia.addEventListener) this._dprMedia.addEventListener('change', this._handleDprChange);
+        else this._dprMedia.addListener?.(this._handleDprChange);
     }
 
     buildLayout(board) {

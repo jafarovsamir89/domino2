@@ -1,0 +1,19 @@
+{
+  "label": "s022-canvas-verified",
+  "command": [
+    "npx",
+    "playwright",
+    "test",
+    "e2e/renderer-quality.spec.mjs"
+  ],
+  "cwd": ".tmp/remediation-s022/clean",
+  "startedAt": "2026-10-18T23:52:04.414Z",
+  "finishedAt": "2026-10-18T23:52:08.562Z",
+  "durationMs": 4148,
+  "exitCode": 0,
+  "signal": null,
+  "timedOut": false,
+  "error": null,
+  "log": "docs/remediation/evidence/session-022/s022-canvas-verified.log",
+  "environment": "Fresh allowlist, synthetic local API/DB, optional Redis disabled, no inherited secrets or copied .env"
+}

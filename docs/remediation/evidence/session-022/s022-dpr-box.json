@@ -1,0 +1,21 @@
+{
+  "label": "s022-dpr-box",
+  "command": [
+    "npx",
+    "playwright",
+    "test",
+    "e2e/renderer-quality.spec.mjs",
+    "-g",
+    "desktop3"
+  ],
+  "cwd": ".tmp/remediation-s022/clean",
+  "startedAt": "2026-10-18T23:50:36.190Z",
+  "finishedAt": "2026-10-18T23:50:48.441Z",
+  "durationMs": 12251,
+  "exitCode": 1,
+  "signal": null,
+  "timedOut": false,
+  "error": null,
+  "log": "docs/remediation/evidence/session-022/s022-dpr-box.log",
+  "environment": "Fresh allowlist, synthetic local API/DB, optional Redis disabled, no inherited secrets or copied .env"
+}

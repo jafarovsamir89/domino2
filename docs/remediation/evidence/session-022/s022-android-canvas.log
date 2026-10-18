@@ -1,0 +1,50 @@
+node:internal/child_process:1103
+    result.error = new ErrnoException(result.error, 'spawnSync ' + options.file);
+                   ^
+
+<ref *1> Error: spawnSync adb ENOBUFS
+    at Object.spawnSync (node:internal/child_process:1103:20)
+    at spawnSync (node:child_process:911:24)
+    at execFileSync (node:child_process:954:15)
+    at file:///Users/macbookair/Documents/domino/docs/remediation/scripts/device-canvas.mjs:6:284 {
+  errno: -55,
+  code: 'ENOBUFS',
+  syscall: 'spawnSync adb',
+  path: 'adb',
+  spawnargs: [ 'exec-out', 'screencap', '-p' ],
+  error: [Circular *1],
+  status: null,
+  signal: 'SIGTERM',
+  output: [
+    null,
+    Buffer(1058378) [Uint8Array] [
+      137,  80,  78,  71,  13,  10,  26,  10,   0,   0,   0,  13,
+       73,  72,  68,  82,   0,   0,   4,  56,   0,   0,   9,  96,
+        8,   6,   0,   0,   0, 109,  26, 135, 213,   0,   0,   0,
+        1, 115,  82,  71,  66,   0, 174, 206,  28, 233,   0,   0,
+        0,   4, 115,  66,  73,  84,   8,   8,   8,   8, 124,   8,
+      100, 136,   0,   0,  32,   0,  73,  68,  65,  84, 120, 156,
+      236, 189, 123, 116,  93,  87, 125, 239, 251, 157,  91,  79,
+      111, 201, 239, 216, 114,  82,  26,   7,  43,  33,  52,  52,
+       86, 218, 144,   2,
+      ... 1058278 more items
+    ],
+    Buffer(0) [Uint8Array] []
+  ],
+  pid: 81740,
+  stdout: Buffer(1058378) [Uint8Array] [
+    137,  80,  78,  71,  13,  10,  26,  10,   0,   0,   0,  13,
+     73,  72,  68,  82,   0,   0,   4,  56,   0,   0,   9,  96,
+      8,   6,   0,   0,   0, 109,  26, 135, 213,   0,   0,   0,
+      1, 115,  82,  71,  66,   0, 174, 206,  28, 233,   0,   0,
+      0,   4, 115,  66,  73,  84,   8,   8,   8,   8, 124,   8,
+    100, 136,   0,   0,  32,   0,  73,  68,  65,  84, 120, 156,
+    236, 189, 123, 116,  93,  87, 125, 239, 251, 157,  91,  79,
+    111, 201, 239, 216, 114,  82,  26,   7,  43,  33,  52,  52,
+     86, 218, 144,   2,
+    ... 1058278 more items
+  ],
+  stderr: Buffer(0) [Uint8Array] []
+}
+
+Node.js v25.6.0

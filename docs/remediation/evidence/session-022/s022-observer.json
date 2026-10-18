@@ -1,0 +1,19 @@
+{
+  "label": "s022-observer",
+  "command": [
+    "node",
+    "--test",
+    "test/canvas-dpr-observer.test.js",
+    "test/stale-async-turn.test.js"
+  ],
+  "cwd": ".tmp/remediation-s022/clean/server",
+  "startedAt": "2026-10-18T23:51:24.050Z",
+  "finishedAt": "2026-10-18T23:51:24.295Z",
+  "durationMs": 245,
+  "exitCode": 0,
+  "signal": null,
+  "timedOut": false,
+  "error": null,
+  "log": "docs/remediation/evidence/session-022/s022-observer.log",
+  "environment": "Fresh allowlist, synthetic local API/DB, optional Redis disabled, no inherited secrets or copied .env"
+}

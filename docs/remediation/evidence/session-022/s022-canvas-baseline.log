@@ -1,0 +1,92 @@
+
+Running 8 tests using 1 worker
+(node:80843) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+·F(node:80883) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+F(node:80890) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+··F(node:80899) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+F(node:80906) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+·
+
+  1) e2e/renderer-quality.spec.mjs:5:2 › real Canvas buffers and arrow coordinates: desktop3 ───────
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: 2
+    Received: 3
+
+      11 |    for(const count of [5,10,20,28]){
+      12 |     const result=await page.evaluate(count=>{const k=qualityRenderer,board=makeQualityBoard(count);k.render(board,{force:true});const canvas=k.layer.getCanvas(),hit=k.layer.getHitCanvas(),host=k.rootEl.getBoundingClientRect();const entries=[...k.tileGroupsById].map(([id,e])=>{const box=e.tile.getClientRect({relativeTo:k.stage,skipShadow:true,skipStroke:true});const reported=k.getTileRect(id);return {actual:{left:box.x+host.left,top:box.y+host.top,width:box.width,height:box.height},reported}});k.syncPlayableOpenEndHighlights(board.openEnds,[0],null,index=>qualityChosen.push(index));return {sceneRatio:canvas.getPixelRatio(),hitRatio:hit.getPixelRatio(),width:canvas._canvas.width,height:canvas._canvas.height,hitWidth:hit._canvas.width,stageWidth:k.stage.width(),stageHeight:k.stage.height(),entries};},count);
+    > 13 |     expect(result.sceneRatio).toBe(profile.ratio);expect(result.hitRatio).toBe(1);expect(Math.abs(result.width-result.stageWidth*profile.ratio)).toBeLessThan(1);expect(Math.abs(result.height-result.stageHeight*profile.ratio)).toBeLessThan(1);expect(result.hitWidth).toBe(result.stageWidth);
+         |                               ^
+      14 |     for(const entry of result.entries)for(const key of ['left','top','width','height'])expect(Math.abs(entry.actual[key]-entry.reported[key])).toBeLessThan(1);
+      15 |     const button=await page.locator('#quality-host .konva-open-end-highlight').boundingBox();await page.mouse.click(button.x+button.width/2,button.y+button.height/2);expect(await page.evaluate(()=>qualityChosen.at(-1))).toBe(0);
+      16 |    }
+        at /Users/macbookair/Documents/domino/.tmp/remediation-s022/clean/e2e/renderer-quality.spec.mjs:13:31
+
+    Error Context: test-results/renderer-quality-real-Canv-ca6cf--arrow-coordinates-desktop3/error-context.md
+
+  2) e2e/renderer-quality.spec.mjs:5:2 › real Canvas buffers and arrow coordinates: android275 ─────
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: 1.25
+    Received: 2.75
+
+      11 |    for(const count of [5,10,20,28]){
+      12 |     const result=await page.evaluate(count=>{const k=qualityRenderer,board=makeQualityBoard(count);k.render(board,{force:true});const canvas=k.layer.getCanvas(),hit=k.layer.getHitCanvas(),host=k.rootEl.getBoundingClientRect();const entries=[...k.tileGroupsById].map(([id,e])=>{const box=e.tile.getClientRect({relativeTo:k.stage,skipShadow:true,skipStroke:true});const reported=k.getTileRect(id);return {actual:{left:box.x+host.left,top:box.y+host.top,width:box.width,height:box.height},reported}});k.syncPlayableOpenEndHighlights(board.openEnds,[0],null,index=>qualityChosen.push(index));return {sceneRatio:canvas.getPixelRatio(),hitRatio:hit.getPixelRatio(),width:canvas._canvas.width,height:canvas._canvas.height,hitWidth:hit._canvas.width,stageWidth:k.stage.width(),stageHeight:k.stage.height(),entries};},count);
+    > 13 |     expect(result.sceneRatio).toBe(profile.ratio);expect(result.hitRatio).toBe(1);expect(Math.abs(result.width-result.stageWidth*profile.ratio)).toBeLessThan(1);expect(Math.abs(result.height-result.stageHeight*profile.ratio)).toBeLessThan(1);expect(result.hitWidth).toBe(result.stageWidth);
+         |                               ^
+      14 |     for(const entry of result.entries)for(const key of ['left','top','width','height'])expect(Math.abs(entry.actual[key]-entry.reported[key])).toBeLessThan(1);
+      15 |     const button=await page.locator('#quality-host .konva-open-end-highlight').boundingBox();await page.mouse.click(button.x+button.width/2,button.y+button.height/2);expect(await page.evaluate(()=>qualityChosen.at(-1))).toBe(0);
+      16 |    }
+        at /Users/macbookair/Documents/domino/.tmp/remediation-s022/clean/e2e/renderer-quality.spec.mjs:13:31
+
+    Error Context: test-results/renderer-quality-real-Canv-f2e23-rrow-coordinates-android275/error-context.md
+
+  3) e2e/renderer-quality.spec.mjs:5:2 › www/real Canvas buffers and arrow coordinates: desktop3 ───
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: 2
+    Received: 3
+
+      11 |    for(const count of [5,10,20,28]){
+      12 |     const result=await page.evaluate(count=>{const k=qualityRenderer,board=makeQualityBoard(count);k.render(board,{force:true});const canvas=k.layer.getCanvas(),hit=k.layer.getHitCanvas(),host=k.rootEl.getBoundingClientRect();const entries=[...k.tileGroupsById].map(([id,e])=>{const box=e.tile.getClientRect({relativeTo:k.stage,skipShadow:true,skipStroke:true});const reported=k.getTileRect(id);return {actual:{left:box.x+host.left,top:box.y+host.top,width:box.width,height:box.height},reported}});k.syncPlayableOpenEndHighlights(board.openEnds,[0],null,index=>qualityChosen.push(index));return {sceneRatio:canvas.getPixelRatio(),hitRatio:hit.getPixelRatio(),width:canvas._canvas.width,height:canvas._canvas.height,hitWidth:hit._canvas.width,stageWidth:k.stage.width(),stageHeight:k.stage.height(),entries};},count);
+    > 13 |     expect(result.sceneRatio).toBe(profile.ratio);expect(result.hitRatio).toBe(1);expect(Math.abs(result.width-result.stageWidth*profile.ratio)).toBeLessThan(1);expect(Math.abs(result.height-result.stageHeight*profile.ratio)).toBeLessThan(1);expect(result.hitWidth).toBe(result.stageWidth);
+         |                               ^
+      14 |     for(const entry of result.entries)for(const key of ['left','top','width','height'])expect(Math.abs(entry.actual[key]-entry.reported[key])).toBeLessThan(1);
+      15 |     const button=await page.locator('#quality-host .konva-open-end-highlight').boundingBox();await page.mouse.click(button.x+button.width/2,button.y+button.height/2);expect(await page.evaluate(()=>qualityChosen.at(-1))).toBe(0);
+      16 |    }
+        at /Users/macbookair/Documents/domino/.tmp/remediation-s022/clean/e2e/renderer-quality.spec.mjs:13:31
+
+    Error Context: test-results/renderer-quality-www-real--afce0--arrow-coordinates-desktop3/error-context.md
+
+  4) e2e/renderer-quality.spec.mjs:5:2 › www/real Canvas buffers and arrow coordinates: android275 ─
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: 1.25
+    Received: 2.75
+
+      11 |    for(const count of [5,10,20,28]){
+      12 |     const result=await page.evaluate(count=>{const k=qualityRenderer,board=makeQualityBoard(count);k.render(board,{force:true});const canvas=k.layer.getCanvas(),hit=k.layer.getHitCanvas(),host=k.rootEl.getBoundingClientRect();const entries=[...k.tileGroupsById].map(([id,e])=>{const box=e.tile.getClientRect({relativeTo:k.stage,skipShadow:true,skipStroke:true});const reported=k.getTileRect(id);return {actual:{left:box.x+host.left,top:box.y+host.top,width:box.width,height:box.height},reported}});k.syncPlayableOpenEndHighlights(board.openEnds,[0],null,index=>qualityChosen.push(index));return {sceneRatio:canvas.getPixelRatio(),hitRatio:hit.getPixelRatio(),width:canvas._canvas.width,height:canvas._canvas.height,hitWidth:hit._canvas.width,stageWidth:k.stage.width(),stageHeight:k.stage.height(),entries};},count);
+    > 13 |     expect(result.sceneRatio).toBe(profile.ratio);expect(result.hitRatio).toBe(1);expect(Math.abs(result.width-result.stageWidth*profile.ratio)).toBeLessThan(1);expect(Math.abs(result.height-result.stageHeight*profile.ratio)).toBeLessThan(1);expect(result.hitWidth).toBe(result.stageWidth);
+         |                               ^
+      14 |     for(const entry of result.entries)for(const key of ['left','top','width','height'])expect(Math.abs(entry.actual[key]-entry.reported[key])).toBeLessThan(1);
+      15 |     const button=await page.locator('#quality-host .konva-open-end-highlight').boundingBox();await page.mouse.click(button.x+button.width/2,button.y+button.height/2);expect(await page.evaluate(()=>qualityChosen.at(-1))).toBe(0);
+      16 |    }
+        at /Users/macbookair/Documents/domino/.tmp/remediation-s022/clean/e2e/renderer-quality.spec.mjs:13:31
+
+    Error Context: test-results/renderer-quality-www-real--14bd7-rrow-coordinates-android275/error-context.md
+
+  4 failed
+    e2e/renderer-quality.spec.mjs:5:2 › real Canvas buffers and arrow coordinates: desktop3 ────────
+    e2e/renderer-quality.spec.mjs:5:2 › real Canvas buffers and arrow coordinates: android275 ──────
+    e2e/renderer-quality.spec.mjs:5:2 › www/real Canvas buffers and arrow coordinates: desktop3 ────
+    e2e/renderer-quality.spec.mjs:5:2 › www/real Canvas buffers and arrow coordinates: android275 ──
+  4 passed (4.6s)

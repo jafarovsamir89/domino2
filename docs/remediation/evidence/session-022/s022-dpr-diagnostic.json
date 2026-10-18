@@ -1,0 +1,21 @@
+{
+  "label": "s022-dpr-diagnostic",
+  "command": [
+    "npx",
+    "playwright",
+    "test",
+    "e2e/renderer-quality.spec.mjs",
+    "-g",
+    "desktop3"
+  ],
+  "cwd": ".tmp/remediation-s022/clean",
+  "startedAt": "2026-10-18T23:49:54.928Z",
+  "finishedAt": "2026-10-18T23:50:07.232Z",
+  "durationMs": 12304,
+  "exitCode": 1,
+  "signal": null,
+  "timedOut": false,
+  "error": null,
+  "log": "docs/remediation/evidence/session-022/s022-dpr-diagnostic.log",
+  "environment": "Fresh allowlist, synthetic local API/DB, optional Redis disabled, no inherited secrets or copied .env"
+}

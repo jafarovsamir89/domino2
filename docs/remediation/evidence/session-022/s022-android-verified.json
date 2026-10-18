@@ -1,0 +1,17 @@
+{
+  "label": "s022-android-verified",
+  "command": [
+    "node",
+    "/Users/macbookair/Documents/domino/docs/remediation/scripts/device-canvas.mjs"
+  ],
+  "cwd": ".tmp/remediation-s022/clean",
+  "startedAt": "2026-10-18T23:52:58.342Z",
+  "finishedAt": "2026-10-18T23:53:15.142Z",
+  "durationMs": 16800,
+  "exitCode": 0,
+  "signal": null,
+  "timedOut": false,
+  "error": null,
+  "log": "docs/remediation/evidence/session-022/s022-android-verified.log",
+  "environment": "Fresh allowlist, synthetic local API/DB, optional Redis disabled, no inherited secrets or copied .env"
+}

@@ -1,0 +1,19 @@
+{
+  "label": "s022-canvas-final",
+  "command": [
+    "npx",
+    "playwright",
+    "test",
+    "e2e/renderer-quality.spec.mjs"
+  ],
+  "cwd": ".tmp/remediation-s022/clean",
+  "startedAt": "2026-10-18T23:51:22.941Z",
+  "finishedAt": "2026-10-18T23:51:28.088Z",
+  "durationMs": 5147,
+  "exitCode": 1,
+  "signal": null,
+  "timedOut": false,
+  "error": null,
+  "log": "docs/remediation/evidence/session-022/s022-canvas-final.log",
+  "environment": "Fresh allowlist, synthetic local API/DB, optional Redis disabled, no inherited secrets or copied .env"
+}
