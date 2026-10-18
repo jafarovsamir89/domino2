@@ -1,0 +1,18 @@
+{
+  "label": "s007-fish-before",
+  "command": [
+    "node",
+    "--test",
+    "test/classic101-blocked-state.test.js"
+  ],
+  "cwd": ".tmp/remediation-s007/clean/server",
+  "startedAt": "2026-10-18T22:16:30.470Z",
+  "finishedAt": "2026-10-18T22:16:30.791Z",
+  "durationMs": 321,
+  "exitCode": 1,
+  "signal": null,
+  "timedOut": false,
+  "error": null,
+  "log": "docs/remediation/evidence/session-007/s007-fish-before.log",
+  "environment": "Fresh allowlist, synthetic local API/DB, optional Redis disabled, no inherited secrets or copied .env"
+}

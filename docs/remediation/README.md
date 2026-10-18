@@ -53,3 +53,7 @@ node docs/remediation/scripts/run-check.mjs s002-api .tmp/remediation-s002/clean
 ```
 
 `prepare-checkout` копирует текущие tracked/staged файлы без `.env`, node_modules и тяжёлых evidence, отказывается перезаписывать существующую копию. Новые исходники сначала добавить в index или явно перенести в копию. `run-check` формирует окружение без наследования боевых секретов, задаёт локальные endpoints и отключает optional Redis. Префикс `s002-` выбирает `evidence/session-002` и соответствующий temporary checkout; для следующего пакета менять номер. Это unit/build wrapper, не запуск production и не полноценный staging bootstrap.
+
+## S007: рыба в101
+
+**R-31 исправлен локально:**79+50=129, одинфинал; carry/tie/2v2 проверены. [Проверки](evidence/session-007/summary.json). Локально7/42, R-25partial. В текущем пакете осталосьR-32.

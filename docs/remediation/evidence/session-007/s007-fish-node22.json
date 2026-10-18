@@ -1,0 +1,25 @@
+{
+  "label": "s007-fish-node22",
+  "command": [
+    "npm",
+    "exec",
+    "--yes",
+    "--package=node@22.14.0",
+    "--package=npm@10.9.2",
+    "--",
+    "node",
+    "--test",
+    "test/classic101-blocked-state.test.js",
+    "test/rulesets.test.js"
+  ],
+  "cwd": ".tmp/remediation-s007/clean/server",
+  "startedAt": "2026-10-18T22:16:56.561Z",
+  "finishedAt": "2026-10-18T22:16:57.894Z",
+  "durationMs": 1333,
+  "exitCode": 0,
+  "signal": null,
+  "timedOut": false,
+  "error": null,
+  "log": "docs/remediation/evidence/session-007/s007-fish-node22.log",
+  "environment": "Fresh allowlist, synthetic local API/DB, optional Redis disabled, no inherited secrets or copied .env"
+}

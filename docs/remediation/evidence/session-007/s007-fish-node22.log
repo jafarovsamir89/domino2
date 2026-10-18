@@ -1,0 +1,328 @@
+TAP version 13
+# ℹ️  optional .env file not found: .env.test, .env
+# [ROOM_DEBUG] create {
+#   roomId: 'regression-101-1',
+#   roomCode: 'PSWW',
+#   roomVisibility: 'closed',
+#   stakeKey: 'free',
+#   totalPlayers: 2,
+#   aiCount: 0,
+#   humanSeats: 2,
+#   maxClients: 2,
+#   roomMode: 'ffa',
+#   isTeamMode: false
+# }
+# [ROOM] Created room regression-101-1 (code PSWW), humanSeats=2, totalPlayers=2, aiCount=0, teamMode=false
+# [FM-SRV 1792361817822] syncState includeBoardJson=true
+# [ROOM_DEBUG] room_state {
+#   roomId: 'regression-101-1',
+#   roomCode: 'PSWW',
+#   gameActive: false,
+#   seatSelectionRequired: false,
+#   currentPlayers: 2,
+#   humanPlayers: 2,
+#   humanSeats: 2,
+#   aiCount: 0,
+#   totalPlayers: 2,
+#   players: [
+#     {
+#       sessionId: 's0',
+#       isBot: false,
+#       isConnected: true,
+#       seatIndex: 0,
+#       hasUserId: false,
+#       hasPlayerId: false,
+#       hasAuthToken: false
+#     },
+#     {
+#       sessionId: 's1',
+#       isBot: false,
+#       isConnected: true,
+#       seatIndex: 1,
+#       hasUserId: false,
+#       hasPlayerId: false,
+#       hasAuthToken: false
+#     }
+#   ]
+# }
+# [FM-SRV 1792361817824] syncState includeBoardJson=false
+# [ROOM_DEBUG] room_state {
+#   roomId: 'regression-101-1',
+#   roomCode: 'PSWW',
+#   gameActive: false,
+#   seatSelectionRequired: false,
+#   currentPlayers: 2,
+#   humanPlayers: 2,
+#   humanSeats: 2,
+#   aiCount: 0,
+#   totalPlayers: 2,
+#   players: [
+#     {
+#       sessionId: 's0',
+#       isBot: false,
+#       isConnected: true,
+#       seatIndex: 0,
+#       hasUserId: false,
+#       hasPlayerId: false,
+#       hasAuthToken: false
+#     },
+#     {
+#       sessionId: 's1',
+#       isBot: false,
+#       isConnected: true,
+#       seatIndex: 1,
+#       hasUserId: false,
+#       hasPlayerId: false,
+#       hasAuthToken: false
+#     }
+#   ]
+# }
+# [ROOM_DEBUG] create {
+#   roomId: 'regression-101-2',
+#   roomCode: '5PAG',
+#   roomVisibility: 'closed',
+#   stakeKey: 'free',
+#   totalPlayers: 2,
+#   aiCount: 0,
+#   humanSeats: 2,
+#   maxClients: 2,
+#   roomMode: 'ffa',
+#   isTeamMode: false
+# }
+# [ROOM] Created room regression-101-2 (code 5PAG), humanSeats=2, totalPlayers=2, aiCount=0, teamMode=false
+# [FM-SRV 1792361817826] syncState includeBoardJson=false
+# [ROOM_DEBUG] room_state {
+#   roomId: 'regression-101-2',
+#   roomCode: '5PAG',
+#   gameActive: false,
+#   seatSelectionRequired: false,
+#   currentPlayers: 2,
+#   humanPlayers: 2,
+#   humanSeats: 2,
+#   aiCount: 0,
+#   totalPlayers: 2,
+#   players: [
+#     {
+#       sessionId: 's0',
+#       isBot: false,
+#       isConnected: true,
+#       seatIndex: 0,
+#       hasUserId: false,
+#       hasPlayerId: false,
+#       hasAuthToken: false
+#     },
+#     {
+#       sessionId: 's1',
+#       isBot: false,
+#       isConnected: true,
+#       seatIndex: 1,
+#       hasUserId: false,
+#       hasPlayerId: false,
+#       hasAuthToken: false
+#     }
+#   ]
+# }
+# [FM-SRV 1792361817826] syncState includeBoardJson=false
+# [ROOM_DEBUG] room_state {
+#   roomId: 'regression-101-2',
+#   roomCode: '5PAG',
+#   gameActive: false,
+#   seatSelectionRequired: false,
+#   currentPlayers: 2,
+#   humanPlayers: 2,
+#   humanSeats: 2,
+#   aiCount: 0,
+#   totalPlayers: 2,
+#   players: [
+#     {
+#       sessionId: 's0',
+#       isBot: false,
+#       isConnected: true,
+#       seatIndex: 0,
+#       hasUserId: false,
+#       hasPlayerId: false,
+#       hasAuthToken: false
+#     },
+#     {
+#       sessionId: 's1',
+#       isBot: false,
+#       isConnected: true,
+#       seatIndex: 1,
+#       hasUserId: false,
+#       hasPlayerId: false,
+#       hasAuthToken: false
+#     }
+#   ]
+# }
+# [ROOM_DEBUG] create {
+#   roomId: 'regression-101-3',
+#   roomCode: '4457',
+#   roomVisibility: 'closed',
+#   stakeKey: 'free',
+#   totalPlayers: 4,
+#   aiCount: 0,
+#   humanSeats: 4,
+#   maxClients: 4,
+#   roomMode: 'team',
+#   isTeamMode: true
+# }
+# [ROOM] Created room regression-101-3 (code 4457), humanSeats=4, totalPlayers=4, aiCount=0, teamMode=true
+# [FM-SRV 1792361817827] syncState includeBoardJson=true
+# [ROOM_DEBUG] room_state {
+#   roomId: 'regression-101-3',
+#   roomCode: '4457',
+#   gameActive: false,
+#   seatSelectionRequired: false,
+#   currentPlayers: 4,
+#   humanPlayers: 4,
+#   humanSeats: 4,
+#   aiCount: 0,
+#   totalPlayers: 4,
+#   players: [
+#     {
+#       sessionId: 's0',
+#       isBot: false,
+#       isConnected: true,
+#       seatIndex: 0,
+#       hasUserId: false,
+#       hasPlayerId: false,
+#       hasAuthToken: false
+#     },
+#     {
+#       sessionId: 's1',
+#       isBot: false,
+#       isConnected: true,
+#       seatIndex: 1,
+#       hasUserId: false,
+#       hasPlayerId: false,
+#       hasAuthToken: false
+#     },
+#     {
+#       sessionId: 's2',
+#       isBot: false,
+#       isConnected: true,
+#       seatIndex: 2,
+#       hasUserId: false,
+#       hasPlayerId: false,
+#       hasAuthToken: false
+#     },
+#     {
+#       sessionId: 's3',
+#       isBot: false,
+#       isConnected: true,
+#       seatIndex: 3,
+#       hasUserId: false,
+#       hasPlayerId: false,
+#       hasAuthToken: false
+#     }
+#   ]
+# }
+# [FM-SRV 1792361817827] syncState includeBoardJson=false
+# [ROOM_DEBUG] room_state {
+#   roomId: 'regression-101-3',
+#   roomCode: '4457',
+#   gameActive: false,
+#   seatSelectionRequired: false,
+#   currentPlayers: 4,
+#   humanPlayers: 4,
+#   humanSeats: 4,
+#   aiCount: 0,
+#   totalPlayers: 4,
+#   players: [
+#     {
+#       sessionId: 's0',
+#       isBot: false,
+#       isConnected: true,
+#       seatIndex: 0,
+#       hasUserId: false,
+#       hasPlayerId: false,
+#       hasAuthToken: false
+#     },
+#     {
+#       sessionId: 's1',
+#       isBot: false,
+#       isConnected: true,
+#       seatIndex: 1,
+#       hasUserId: false,
+#       hasPlayerId: false,
+#       hasAuthToken: false
+#     },
+#     {
+#       sessionId: 's2',
+#       isBot: false,
+#       isConnected: true,
+#       seatIndex: 2,
+#       hasUserId: false,
+#       hasPlayerId: false,
+#       hasAuthToken: false
+#     },
+#     {
+#       sessionId: 's3',
+#       isBot: false,
+#       isConnected: true,
+#       seatIndex: 3,
+#       hasUserId: false,
+#       hasPlayerId: false,
+#       hasAuthToken: false
+#     }
+#   ]
+# }
+# Subtest: real 28-tile fish applies 79+50=129 once before final scoring and settlement
+ok 1 - real 28-tile fish applies 79+50=129 once before final scoring and settlement
+  ---
+  duration_ms: 6.548458
+  ...
+# Subtest: 101 tie carry is applied once and consumed by the following fish
+ok 2 - 101 tie carry is applied once and consumed by the following fish
+  ---
+  duration_ms: 1.299167
+  ...
+# Subtest: 101 team fish updates both members and ends exactly once at 111
+ok 3 - 101 team fish updates both members and ends exactly once at 111
+  ---
+  duration_ms: 1.322041
+  ...
+# Subtest: telefon ruleset keeps the classic first-player order
+ok 4 - telefon ruleset keeps the classic first-player order
+  ---
+  duration_ms: 1.559209
+  ...
+# Subtest: telefon opening score keeps [5|5] at 10 below 300 and 0 at 300+
+ok 5 - telefon opening score keeps [5|5] at 10 below 300 and 0 at 300+
+  ---
+  duration_ms: 0.126417
+  ...
+# Subtest: telefon scoreDuringPlay keeps the board score on 5-multiples and telephone cross cases
+ok 6 - telefon scoreDuringPlay keeps the board score on 5-multiples and telephone cross cases
+  ---
+  duration_ms: 3.896042
+  ...
+# Subtest: telefon handPoints keeps the zero double bonus
+ok 7 - telefon handPoints keeps the zero double bonus
+  ---
+  duration_ms: 0.379875
+  ...
+# Subtest: telefon resolveBlocked picks the lowest hand points winner on a blocked board
+ok 8 - telefon resolveBlocked picks the lowest hand points winner on a blocked board
+  ---
+  duration_ms: 0.672667
+  ...
+# Subtest: classic101 opens with the youngest double and raw scoring rules
+ok 9 - classic101 opens with the youngest double and raw scoring rules
+  ---
+  duration_ms: 1.585833
+  ...
+# Subtest: classic101 awards raw points, handles fish, threshold entry, and dry wins
+ok 10 - classic101 awards raw points, handles fish, threshold entry, and dry wins
+  ---
+  duration_ms: 3.258625
+  ...
+1..10
+# tests 10
+# suites 0
+# pass 10
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 361.592875

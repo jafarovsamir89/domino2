@@ -1,0 +1,279 @@
+ℹ️  optional .env file not found: .env.test, .env
+[ROOM_DEBUG] create {
+  roomId: 'regression-101-1',
+  roomCode: 'MDYZ',
+  roomVisibility: 'closed',
+  stakeKey: 'free',
+  totalPlayers: 2,
+  aiCount: 0,
+  humanSeats: 2,
+  maxClients: 2,
+  roomMode: 'ffa',
+  isTeamMode: false
+}
+[ROOM] Created room regression-101-1 (code MDYZ), humanSeats=2, totalPlayers=2, aiCount=0, teamMode=false
+[FM-SRV 1792361802768] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-1',
+  roomCode: 'MDYZ',
+  gameActive: false,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792361802769] syncState includeBoardJson=false
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-1',
+  roomCode: 'MDYZ',
+  gameActive: false,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[ROOM_DEBUG] create {
+  roomId: 'regression-101-2',
+  roomCode: 'WYUV',
+  roomVisibility: 'closed',
+  stakeKey: 'free',
+  totalPlayers: 2,
+  aiCount: 0,
+  humanSeats: 2,
+  maxClients: 2,
+  roomMode: 'ffa',
+  isTeamMode: false
+}
+[ROOM] Created room regression-101-2 (code WYUV), humanSeats=2, totalPlayers=2, aiCount=0, teamMode=false
+[FM-SRV 1792361802773] syncState includeBoardJson=false
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-2',
+  roomCode: 'WYUV',
+  gameActive: false,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792361802773] syncState includeBoardJson=false
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-2',
+  roomCode: 'WYUV',
+  gameActive: false,
+  seatSelectionRequired: false,
+  currentPlayers: 2,
+  humanPlayers: 2,
+  humanSeats: 2,
+  aiCount: 0,
+  totalPlayers: 2,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[ROOM_DEBUG] create {
+  roomId: 'regression-101-3',
+  roomCode: 'PN65',
+  roomVisibility: 'closed',
+  stakeKey: 'free',
+  totalPlayers: 4,
+  aiCount: 0,
+  humanSeats: 4,
+  maxClients: 4,
+  roomMode: 'team',
+  isTeamMode: true
+}
+[ROOM] Created room regression-101-3 (code PN65), humanSeats=4, totalPlayers=4, aiCount=0, teamMode=true
+[FM-SRV 1792361802774] syncState includeBoardJson=true
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-3',
+  roomCode: 'PN65',
+  gameActive: false,
+  seatSelectionRequired: false,
+  currentPlayers: 4,
+  humanPlayers: 4,
+  humanSeats: 4,
+  aiCount: 0,
+  totalPlayers: 4,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's2',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 2,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's3',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 3,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1792361802774] syncState includeBoardJson=false
+[ROOM_DEBUG] room_state {
+  roomId: 'regression-101-3',
+  roomCode: 'PN65',
+  gameActive: false,
+  seatSelectionRequired: false,
+  currentPlayers: 4,
+  humanPlayers: 4,
+  humanSeats: 4,
+  aiCount: 0,
+  totalPlayers: 4,
+  players: [
+    {
+      sessionId: 's0',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's2',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 2,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 's3',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 3,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+✔ real 28-tile fish applies 79+50=129 once before final scoring and settlement (8.326792ms)
+✔ 101 tie carry is applied once and consumed by the following fish (1.051292ms)
+✔ 101 team fish updates both members and ends exactly once at 111 (0.954375ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 196.473

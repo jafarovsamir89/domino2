@@ -1,0 +1,12 @@
+{
+  "session": "S007", "task": "R-31", "parentCommit": "fd86a81", "status": "fixed-locally",
+  "changes": ["Apply classic101 blocked matchState before endDeal/scoring", "Ignore turn advance after deal or match ends to prevent repeated awards"],
+  "checks": {
+    "before": {"command": "s007-fish-before.json", "pass": 0, "fail": 3},
+    "after": {"command": "s007-fish-after.json", "pass": 3, "fail": 0},
+    "node22WithRulesets": {"command": "s007-fish-node22.json", "pass": 10, "fail": 0},
+    "fullServer": {"command": "s007-server-full.json", "tests": 279, "pass": 272, "fail": 7}
+  },
+  "coverage": ["Historical actual28-tile fish:79+50=129, one final/settlement/record", "Tie carry14 applied once, next fish awards17", "2v2 fish90+21=111, both team members updated, one final", "Actual constructor/schema and real endDeal/endRound, monetary I/O stubbed"],
+  "limits": ["Same seven old server failures remain; R-25 partial", "No production/Play changes; monetary API integration covered separately by R-03", "Shared scoring rules unchanged"]
+}

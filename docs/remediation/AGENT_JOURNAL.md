@@ -1,6 +1,6 @@
 # Agent journal — текущее состояние
 
-Обновлено18.10.2026. Текущий пакет из трёх: S006/R-03 закрыт локально; далее S007/R-31 и S008/R-32.
+Обновлено18.10.2026. Текущий пакет из трёх: S006/R-03 и S007/R-31 закрыты локально; далее S008/R-32.
 
 ## Миссия и ограничения
 
@@ -8,7 +8,7 @@
 
 ## Git и готовность
 
-Ветка fix/audit-foundation. S0019f1380a, S00230596eb, S0038c69090, S0043b5d3d7, S00546cc8c7 опубликованы. S006 checkpoint subject: fix(economy): bind reservation lifecycle to its match. Проверить фактический git status/log перед продолжением. Локально закрыты6/42: R-06,R-05,R-07,R-02,R-08,R-03. R-25partial,35open. No deploy/PR/Play edits.
+Ветка fix/audit-foundation. S0019f1380a, S00230596eb, S0038c69090, S0043b5d3d7, S00546cc8c7 опубликованы. S006 checkpoint subject: fix(economy): bind reservation lifecycle to its match. Проверить фактический git status/log перед продолжением. Локально закрыты7/42: R-06,R-05,R-07,R-02,R-08,R-03,R-31. R-25partial,34open. No deploy/PR/Play edits.
 
 ## Проверенные пакеты
 
@@ -25,7 +25,7 @@
 
 ## Следующие два пункта
 
-R-31: server.advanceTurn вызывает classic101.resolveBlocked, но игнорирует возвращённый matchState перед endDeal. performPlay уже применяет roundEnd.matchState. Нужны behavioral real-room79+50=129/одинфинал, tie/carry/2v2 и отсутствие повторного начисления. Golden 28tile fixture в docs/audit/evidence/metrics/full-match-audit.json diagnostics.fishStateMismatch.examples[0]. Исторический harness full-match-audit.cjs экспортирует makeRoom, но меняет global timers/random; не запускать записывающий audit main. Сохранить исторические evidence.
+R-31 закрыт локально S007. Checkpoint subject: fix(rules): apply blocked 101 state once before settlement. Evidence session-007/summary.json. До0/3, после3/3; Node22+rulesets10/10; server272/279, те же7fail. Golden79+50=129/1final/1settlement, tiecarry14→17, team90+21=111 проверены. Реальный constructor/schema, сеть/денежныйI/O заменены spies. Применение blocked.matchState перед endDeal, guardinactive/finished от дубля. Историческая причина: server.advanceTurn вызывал classic101.resolveBlocked, но игнорирует возвращённый matchState перед endDeal. performPlay уже применяет roundEnd.matchState. Нужны behavioral real-room79+50=129/одинфинал, tie/carry/2v2 и отсутствие повторного начисления. Golden 28tile fixture в docs/audit/evidence/metrics/full-match-audit.json diagnostics.fishStateMismatch.examples[0]. Исторический harness full-match-audit.cjs экспортирует makeRoom, но меняет global timers/random; не запускать записывающий audit main. Сохранить исторические evidence.
 
 R-32: startDeal при отсутствии lastDealWinner получает determineFirstPlayer.player=-1/drawToOpen:true, но не вызывает ruleset.drawToOpen. Shared метод уже мутирует hands/boneyard и возвращает found/player/tileIndex. Seed225 из аудита; проверить допустимый игрок,28unique tiles, schema/full_state/snapshot согласованность, обычные openings и last winner не изменены. No live clients/Android changes.
 

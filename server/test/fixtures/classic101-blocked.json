@@ -1,0 +1,315 @@
+{
+  "source": "Historical audit full-match-audit.json fishStateMismatch.examples[0], seed 7356707",
+  "before": {
+    "mode": "classic101",
+    "carryPoints": 0,
+    "thresholdBypassNext": false,
+    "sides": [
+      {
+        "scored": 79,
+        "pending": 0,
+        "enteredBoard": true,
+        "missStreak": 0
+      },
+      {
+        "scored": 0,
+        "pending": 0,
+        "enteredBoard": false,
+        "missStreak": 0
+      }
+    ]
+  },
+  "hands": [
+    [
+      "0-0"
+    ],
+    [
+      "1-2",
+      "4-5",
+      "3-5",
+      "1-3",
+      "1-5",
+      "1-1",
+      "1-4",
+      "3-3",
+      "0-2",
+      "0-5"
+    ]
+  ],
+  "board": {
+    "nodes": [
+      {
+        "tile": {
+          "a": 6,
+          "b": 6
+        },
+        "x": 0,
+        "y": 0,
+        "orientation": "vertical",
+        "displayA": 6,
+        "displayB": 6,
+        "connections": {
+          "left": 1,
+          "right": 3
+        }
+      },
+      {
+        "tile": {
+          "a": 4,
+          "b": 6
+        },
+        "x": -52,
+        "y": 0,
+        "orientation": "horizontal",
+        "displayA": 4,
+        "displayB": 6,
+        "connections": {
+          "right": 0,
+          "left": 2
+        }
+      },
+      {
+        "tile": {
+          "a": 4,
+          "b": 4
+        },
+        "x": -104,
+        "y": 0,
+        "orientation": "vertical",
+        "displayA": 4,
+        "displayB": 4,
+        "connections": {
+          "right": 1,
+          "left": 5
+        }
+      },
+      {
+        "tile": {
+          "a": 2,
+          "b": 6
+        },
+        "x": 52,
+        "y": 0,
+        "orientation": "horizontal",
+        "displayA": 6,
+        "displayB": 2,
+        "connections": {
+          "left": 0,
+          "right": 4
+        }
+      },
+      {
+        "tile": {
+          "a": 2,
+          "b": 5
+        },
+        "x": 120,
+        "y": 0,
+        "orientation": "horizontal",
+        "displayA": 2,
+        "displayB": 5,
+        "connections": {
+          "left": 3,
+          "right": 6
+        }
+      },
+      {
+        "tile": {
+          "a": 3,
+          "b": 4
+        },
+        "x": -156,
+        "y": 0,
+        "orientation": "horizontal",
+        "displayA": 3,
+        "displayB": 4,
+        "connections": {
+          "right": 2,
+          "left": 7
+        }
+      },
+      {
+        "tile": {
+          "a": 5,
+          "b": 5
+        },
+        "x": 172,
+        "y": 0,
+        "orientation": "vertical",
+        "displayA": 5,
+        "displayB": 5,
+        "connections": {
+          "left": 4,
+          "right": 8
+        }
+      },
+      {
+        "tile": {
+          "a": 2,
+          "b": 3
+        },
+        "x": -224,
+        "y": 0,
+        "orientation": "horizontal",
+        "displayA": 2,
+        "displayB": 3,
+        "connections": {
+          "right": 5,
+          "left": 9
+        }
+      },
+      {
+        "tile": {
+          "a": 5,
+          "b": 6
+        },
+        "x": 224,
+        "y": 0,
+        "orientation": "horizontal",
+        "displayA": 5,
+        "displayB": 6,
+        "connections": {
+          "left": 6,
+          "right": 10
+        }
+      },
+      {
+        "tile": {
+          "a": 2,
+          "b": 2
+        },
+        "x": -276,
+        "y": 0,
+        "orientation": "vertical",
+        "displayA": 2,
+        "displayB": 2,
+        "connections": {
+          "right": 7,
+          "top": 11
+        }
+      },
+      {
+        "tile": {
+          "a": 3,
+          "b": 6
+        },
+        "x": 276,
+        "y": 16.5,
+        "orientation": "vertical",
+        "displayA": 6,
+        "displayB": 3,
+        "connections": {
+          "left": 8,
+          "bottom": 12
+        }
+      },
+      {
+        "tile": {
+          "a": 2,
+          "b": 4
+        },
+        "x": -276,
+        "y": -68,
+        "orientation": "vertical",
+        "displayA": 4,
+        "displayB": 2,
+        "connections": {
+          "bottom": 9,
+          "top": 13
+        }
+      },
+      {
+        "tile": {
+          "a": 0,
+          "b": 3
+        },
+        "x": 276,
+        "y": 84.5,
+        "orientation": "vertical",
+        "displayA": 3,
+        "displayB": 0,
+        "connections": {
+          "top": 10,
+          "bottom": 15
+        }
+      },
+      {
+        "tile": {
+          "a": 0,
+          "b": 4
+        },
+        "x": -276,
+        "y": -136,
+        "orientation": "vertical",
+        "displayA": 0,
+        "displayB": 4,
+        "connections": {
+          "bottom": 11,
+          "top": 14
+        }
+      },
+      {
+        "tile": {
+          "a": 0,
+          "b": 6
+        },
+        "x": -276,
+        "y": -204,
+        "orientation": "vertical",
+        "displayA": 6,
+        "displayB": 0,
+        "connections": {
+          "bottom": 13
+        }
+      },
+      {
+        "tile": {
+          "a": 0,
+          "b": 1
+        },
+        "x": 276,
+        "y": 152.5,
+        "orientation": "vertical",
+        "displayA": 0,
+        "displayB": 1,
+        "connections": {
+          "top": 12,
+          "bottom": 16
+        }
+      },
+      {
+        "tile": {
+          "a": 1,
+          "b": 6
+        },
+        "x": 276,
+        "y": 220.5,
+        "orientation": "vertical",
+        "displayA": 1,
+        "displayB": 6,
+        "connections": {
+          "top": 15
+        }
+      }
+    ],
+    "openEnds": [
+      {
+        "nodeId": 14,
+        "side": "top",
+        "value": 6,
+        "growthDir": "top"
+      },
+      {
+        "nodeId": 16,
+        "side": "bottom",
+        "value": 6,
+        "growthDir": "bottom"
+      }
+    ],
+    "crossNodeId": null,
+    "crossSidesClosed": 0,
+    "startAxis": "horizontal",
+    "telephoneEnabled": false,
+    "scoringEnabled": false
+  }
+}

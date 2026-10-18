@@ -135,3 +135,13 @@
 No migration: reused current row сохраняет схему, replay отсекается существующей immutable ledger history (indexed referenceType/referenceId плюс JSON room/match); initial/replay keys сохранены совместимыми. Roomlock1464091703, ReadCommitted/maxWait/timeout30s; wallets сортируются для lock order. Legacy null-match funds не переназначаются, future existing reconciliation отдельно. Production не трогали; свойPG остановлен s006-pg-stop. Будущий rollout требует убрать старые API instances. Evidence: session-006/summary.json.
 
 Для владельца: результат старой партии больше не может списать/вернуть монеты новой; повторные запросы безопасны. Размеры ставок и политика выигрыша не менялись. Локально6/42, R-25partial. Продолжаем R-31/R-32 в этом же заходе.
+
+## S007/R-31 — очки рыбы в101
+
+S006 commitfd86a81 опубликован. Готова isolated server copy/clean npmci. Новые behavioral tests используют настоящий DominoRoom constructor/schema/onCreate, renderer/network заменены локальными event sinks, monetary settlement только spy. Golden fixture извлечена как данные из historical28-tile audit без перезаписи старых evidence. До3/3fail:79осталось79вместо129, tiecarry0вместо14, team90вместо111.
+
+Причина: advanceTurn вызывал resolveBlocked, но не применял возвращённый matchState. Исправление: применить/синхронизировать state до endDeal; guard inactive/finished предотвращает повторное применение при очередном callback. endDeal не пересчитывает101award, только синхронизирует уже применённое состояние. Проверяются129/одинфинал/одинsettlement, tiecarry14→17следующаярыба,2v2score111иобаучастника. Ruleset/размерыочков не меняются.
+
+### S007.1 — итог
+
+Behavioral3/3pass, Node22+rulesets10/10; fullserver272/279, те же7failure names,0newfailures. Сеть/API/production не вызывались, golden28tilesfixture сохранена отдельно от historical audit. Нормальный ruleset не менялся. Для владельца: очки рыбы больше не теряются, финал/settlement не повторяется. Локально7/42, R-25partial. Продолжаем третий пункт R-32.

@@ -3796,6 +3796,7 @@ class DominoRoom extends Room {
     }
 
     advanceTurn() {
+        if (!this.state.gameActive || this.matchFinished) return;
         this.clearTurnAdvanceTimer();
         const blocked = this.getActiveRuleset().resolveBlocked({
             board: this.internalBoard,
@@ -3806,6 +3807,10 @@ class DominoRoom extends Room {
             getTeamMembers: this.getTeamMembers.bind(this)
         });
         if (blocked?.blocked) {
+            if (this.gameMode === "classic101" && blocked.matchState) {
+                this.matchState = this.normalizeMatchStateForCurrentMode(blocked.matchState);
+                this.syncMatchStateToSchema();
+            }
             this.endDeal(Number.isInteger(Number(blocked?.winnerIndex)) ? Number(blocked.winnerIndex) : this.findFishWinner(), true);
             return;
         }
