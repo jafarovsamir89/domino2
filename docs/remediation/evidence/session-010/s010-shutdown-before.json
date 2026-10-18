@@ -1,0 +1,18 @@
+{
+  "label": "s010-shutdown-before",
+  "command": [
+    "node",
+    "/Users/macbookair/Documents/domino/docs/remediation/scripts/verify-shutdown.mjs",
+    "/Users/macbookair/Documents/domino/docs/remediation/scripts/shutdown-fixture.cjs"
+  ],
+  "cwd": ".tmp/remediation-s010/clean",
+  "startedAt": "2026-10-18T22:40:54.014Z",
+  "finishedAt": "2026-10-18T22:40:54.354Z",
+  "durationMs": 340,
+  "exitCode": 1,
+  "signal": null,
+  "timedOut": false,
+  "error": null,
+  "log": "docs/remediation/evidence/session-010/s010-shutdown-before.log",
+  "environment": "Fresh allowlist, synthetic local API/DB, optional Redis disabled, no inherited secrets or copied .env"
+}

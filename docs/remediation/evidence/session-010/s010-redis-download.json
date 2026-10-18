@@ -1,0 +1,20 @@
+{
+  "label": "s010-redis-download",
+  "command": [
+    "curl",
+    "-fsSL",
+    "-o",
+    "../redis.tar.gz",
+    "https://download.redis.io/releases/redis-7.4.11.tar.gz"
+  ],
+  "cwd": ".tmp/remediation-s010/clean",
+  "startedAt": "2026-10-18T22:36:58.038Z",
+  "finishedAt": "2026-10-18T22:36:59.493Z",
+  "durationMs": 1455,
+  "exitCode": 0,
+  "signal": null,
+  "timedOut": false,
+  "error": null,
+  "log": "docs/remediation/evidence/session-010/s010-redis-download.log",
+  "environment": "Fresh allowlist, synthetic local API/DB, optional Redis disabled, no inherited secrets or copied .env"
+}

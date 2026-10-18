@@ -1,0 +1,18 @@
+{
+  "label": "s010-redis-tags",
+  "command": [
+    "curl",
+    "-fsSL",
+    "https://api.github.com/repos/redis/redis/tags?per_page=100"
+  ],
+  "cwd": ".tmp/remediation-s010/clean",
+  "startedAt": "2026-10-18T22:36:41.909Z",
+  "finishedAt": "2026-10-18T22:36:42.754Z",
+  "durationMs": 845,
+  "exitCode": 0,
+  "signal": null,
+  "timedOut": false,
+  "error": null,
+  "log": "docs/remediation/evidence/session-010/s010-redis-tags.log",
+  "environment": "Fresh allowlist, synthetic local API/DB, optional Redis disabled, no inherited secrets or copied .env"
+}

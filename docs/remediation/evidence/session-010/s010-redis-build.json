@@ -1,0 +1,24 @@
+{
+  "label": "s010-redis-build",
+  "command": [
+    "make",
+    "-C",
+    "../redis-src",
+    "-j",
+    "4",
+    "redis-server",
+    "redis-cli",
+    "MALLOC=libc",
+    "BUILD_TLS=no"
+  ],
+  "cwd": ".tmp/remediation-s010/clean",
+  "startedAt": "2026-10-18T22:37:08.511Z",
+  "finishedAt": "2026-10-18T22:37:25.531Z",
+  "durationMs": 17020,
+  "exitCode": 0,
+  "signal": null,
+  "timedOut": false,
+  "error": null,
+  "log": "docs/remediation/evidence/session-010/s010-redis-build.log",
+  "environment": "Fresh allowlist, synthetic local API/DB, optional Redis disabled, no inherited secrets or copied .env"
+}

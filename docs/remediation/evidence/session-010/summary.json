@@ -1,0 +1,32 @@
+{
+  "session": "S010",
+  "task": "R-04",
+  "status": "fixed-locally",
+  "checks": {
+    "red": "s010-shutdown-repro.json",
+    "realRedisNode25": "s010-shutdown-verified.json",
+    "realRedisNode22": "s010-shutdown-node22.json",
+    "targetedNode22": {
+      "pass": 21,
+      "fail": 0
+    },
+    "fullServer": {
+      "pass": 291,
+      "fail": 7
+    },
+    "source": "s010-source-check.json"
+  },
+  "assertions": [
+    "hands/bazaar/turn/match/version preserved",
+    "shutdown0 financialcalls; restored final1 syntheticfinancialcall; shutdownstill1",
+    "remaining turn excludes downtime",
+    "ordinary disposal deletes snapshot and registry"
+  ],
+  "limits": [
+    "SIGTERM only; R29 abrupt kill/outbox separate",
+    "Redis must be configured and durable in deployment",
+    "seven old server failures unchanged",
+    "no production/Play changes"
+  ],
+  "redis": "temporary source build 7.4.11, source checksum redis-source.json; stopped after checks"
+}

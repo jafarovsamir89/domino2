@@ -1,0 +1,20 @@
+{
+  "label": "s010-redis-hashes",
+  "command": [
+    "curl",
+    "-fsSL",
+    "-o",
+    "../redis-hashes.txt",
+    "https://raw.githubusercontent.com/redis/redis-hashes/master/README"
+  ],
+  "cwd": ".tmp/remediation-s010/clean",
+  "startedAt": "2026-10-18T22:36:59.179Z",
+  "finishedAt": "2026-10-18T22:36:59.658Z",
+  "durationMs": 479,
+  "exitCode": 0,
+  "signal": null,
+  "timedOut": false,
+  "error": null,
+  "log": "docs/remediation/evidence/session-010/s010-redis-hashes.log",
+  "environment": "Fresh allowlist, synthetic local API/DB, optional Redis disabled, no inherited secrets or copied .env"
+}

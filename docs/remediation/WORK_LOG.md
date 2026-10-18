@@ -167,3 +167,11 @@ Initialbefore4/5, after5/5. Дополнительно проверены пол
 До9regressions2pass/7fail: чужая identity могла восстановить место. Теперь проверяется platform identity+user/player ownership до mutation/hand; supplied room/code/match сверяется, occupied target запрещён. Клиент+www сохраняют matchId, оба payload его передают. Legacy snapshots без matchId допускают только владельца. Targeted24/24 Node25/22; sourcecheckpass; full295tests288pass7fail — те же исходные7. Два старых assertions обновлены: wrongowner больше не allowed, payload теперь содержит matchId. Промежуточный misplaced fixture исправлен, не засчитан успешным прогоном. Evidence session-009/summary.json.
 
 Для владельца: сохранённое место и костяшки получает только их владелец; свой возврат сохраняет игру. Локально9/42, R25partial. Продолжаем R04; production/Play не менялись.
+
+### S010/R-04 — завершено локально
+
+Real Redis7.4.11 из official source/hash во временной .tmp, без global/plugin установки. Red s010-shutdown-repro: snapshot послеSIGTERM/onDispose отсутствует. После: version1+paused remaining turn, guards messages/onLeave/reconnectcatch, остановка timers, serialized atomic dual-key Redis save; shutdown cleanup сохраняет snapshot/registry, ordinary cleanup awaitудаляет. Registry connection promise исправляет concurrent connect и late write послеforget.
+
+Real Colyseus MatchMaker lifecycle в subprocess: SIGTERM→snapshot TTL/room+code keys→restart после задержки→те же руки/базар/turn1/version17/match; downtime не расходует оставшиеся20s.0settlement приshutdown,1приactual endRound послеrestore через synthetic fetch, повторныйshutdown не добавляет. Ordinary thirdprocessdisconnect удаляет обеsnapshotkeys+registry. Node25/22pass. Lifecycle+ownership+restore21/21Node22; fullserver291/298, те же7старыхfail; sourcecheckpass. s010-shutdown-before исключён (fixture принимал посторонний IPC message заready), s010-shutdown-final выявил registry connect race и теперьисправлен. Redis остановлен послеdrill. R29durableoutbox/abruptkill отдельно, это не гарантия сохранения приSIGKILL/потереRedis.
+
+Для владельца: при штатном перезапуске сервера партия сохраняется; остановка не считается уходом игрока с поражением. Локально10/42, R25partial,31open. ПродолжаемR09.

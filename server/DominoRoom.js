@@ -324,19 +324,19 @@ class DominoRoom extends Room {
             isTeamMode: isRoomTeamMode(this)
         });
 
-        this.onMessage("play", (client, message) => this.handlePlay(client, message));
-        this.onMessage("draw", (client, message) => this.handleDraw(client, message));
-        this.onMessage("pass", (client, message) => this.handlePass(client, message));
-        this.onMessage("gosha", (client, message) => this.handleGosha(client, message));
-        this.onMessage("next_deal", (client) => this.handleNextDeal(client));
-        this.onMessage("choose_seat", (client, message) => this.handleChooseSeat(client, message));
-        this.onMessage("reaction", (client, message) => this.handleReaction(client, message));
-        this.onMessage("gift", (client, message) => this.handleGift(client, message));
-        this.onMessage("voice_signal", (client, message) => this.handleVoiceSignal(client, message));
-        this.onMessage("timeout_continue", (client) => this.handleTimeoutContinue(client));
-        this.onMessage("sync_request", (client) => this.handleSyncRequest(client));
-        this.onMessage("resume_control", (client) => this.handleResumeControl(client));
-        this.onMessage("explicit_leave", (client, message = {}) => {
+        this.onGameMessage("play", (client, message) => this.handlePlay(client, message));
+        this.onGameMessage("draw", (client, message) => this.handleDraw(client, message));
+        this.onGameMessage("pass", (client, message) => this.handlePass(client, message));
+        this.onGameMessage("gosha", (client, message) => this.handleGosha(client, message));
+        this.onGameMessage("next_deal", (client) => this.handleNextDeal(client));
+        this.onGameMessage("choose_seat", (client, message) => this.handleChooseSeat(client, message));
+        this.onGameMessage("reaction", (client, message) => this.handleReaction(client, message));
+        this.onGameMessage("gift", (client, message) => this.handleGift(client, message));
+        this.onGameMessage("voice_signal", (client, message) => this.handleVoiceSignal(client, message));
+        this.onGameMessage("timeout_continue", (client) => this.handleTimeoutContinue(client));
+        this.onGameMessage("sync_request", (client) => this.handleSyncRequest(client));
+        this.onGameMessage("resume_control", (client) => this.handleResumeControl(client));
+        this.onGameMessage("explicit_leave", (client, message = {}) => {
             this.explicitLeaveSessionIds.add(client.sessionId);
             debugLog("[ROOM_DEBUG] explicit_leave", {
                 roomId: this.roomId,
@@ -351,6 +351,12 @@ class DominoRoom extends Room {
         }
 
         debugLog(`[ROOM] Created room ${this.roomId} (code ${this.roomCode}), humanSeats=${this.humanSeats}, totalPlayers=${this.totalPlayers}, aiCount=${this.aiCount}, teamMode=${this.state.isTeamMode}`);
+    }
+
+    onGameMessage(type, handler) {
+        this.onMessage(type, (...args) => {
+            if (!this.shuttingDown) return handler(...args);
+        });
     }
 
     attachStateCollections() {
@@ -1444,19 +1450,20 @@ class DominoRoom extends Room {
         });
     }
 
-    onDispose() {
-        if (this.roomCode) {
-            void forgetRoom(this.roomCode, this.roomId);
+    async onDispose() {
+        if (this.snapshotWritePromise) await this.snapshotWritePromise;
+        if (!this.shuttingDown && this.roomCode) {
+            await forgetRoom(this.roomCode, this.roomId);
         }
         removeRoomPlayers(this.roomId);
         if (this.presenceInterval) {
             clearInterval(this.presenceInterval);
             this.presenceInterval = null;
         }
-        if (redis && this.roomId) {
-            void redis.del(`domino:custom:${this.roomId}`).catch(() => {});
+        if (!this.shuttingDown && redis && this.roomId) {
+            await redis.del(`domino:custom:${this.roomId}`).catch(() => {});
             if (this.roomCode) {
-                void redis.del(`domino:custom:code:${this.roomCode}`).catch(() => {});
+                await redis.del(`domino:custom:code:${this.roomCode}`).catch(() => {});
             }
         }
         this.botTimer && clearTimeout(this.botTimer);
@@ -1543,6 +1550,7 @@ class DominoRoom extends Room {
     }
 
     async onLeave(client, consented) {
+        if (this.shuttingDown) return;
         if (this.voiceEnabledBySessionId) {
             this.voiceEnabledBySessionId.delete(client.sessionId);
         }
@@ -1638,6 +1646,7 @@ class DominoRoom extends Room {
 
             throw new Error("explicit leave");
         } catch (e) {
+            if (this.shuttingDown) return;
             debugLog("[ROOM_DEBUG] leave:removed", {
                 roomId,
                 roomCode,
@@ -3103,6 +3112,7 @@ class DominoRoom extends Room {
     }
 
     scheduleEconomySettlementRetry() {
+        if (this.shuttingDown) return;
         const pending = this.pendingEconomySettlementState;
         if (!pending || this.economySettlementRetryTimer) {
             return;
@@ -3137,6 +3147,7 @@ class DominoRoom extends Room {
     }
 
     scheduleMatchRecordingRetry() {
+        if (this.shuttingDown) return;
         if (this.matchRecorded || this.matchRecordRetryTimer || !this.pendingMatchRecording) {
             return;
         }
@@ -4178,6 +4189,8 @@ class DominoRoom extends Room {
         const identityBySessionId = buildSnapshotIdentityEntries(this.identityBySessionId);
 
         return {
+            snapshotVersion: 1,
+            shutdownTurnRemainingMs: this.shutdownTurnRemainingMs ?? null,
             roomId: this.roomId,
             roomCode: this.roomCode,
             roomMode: this.roomMode,
@@ -4325,6 +4338,10 @@ class DominoRoom extends Room {
             this.playerMissingSuits.push(new Set());
         }
         this.ensureBotPlayers();
+        if (this.state.gameActive && Number.isFinite(data.shutdownTurnRemainingMs)) {
+            this.state.turnDeadlineAt = Date.now() + Math.max(0, Math.min(TURN_TIMEOUT_MS, data.shutdownTurnRemainingMs));
+            this.turnDeadlineAt = this.state.turnDeadlineAt;
+        }
         if (this.state.gameActive && this.state.turnDeadlineAt) {
             if (this.turnTimer) clearTimeout(this.turnTimer);
             const remaining = Math.max(0, Number(this.state.turnDeadlineAt) - Date.now());
@@ -4337,22 +4354,28 @@ class DominoRoom extends Room {
         }
     }
 
-    async saveCustomStateToRedis() {
+    saveCustomStateToRedis({ final = false } = {}) {
+        if (this.shuttingDown && !final) return this.snapshotWritePromise || Promise.resolve(false);
         const roomId = getSafeRoomId(this);
-        if (!roomId || !redis) return;
-        try {
-            if (redis.status !== "ready") {
-                await redis.connect();
+        if (!roomId || !redis) return Promise.resolve(false);
+        // Capture before yielding; serialize writes so an older save cannot win.
+        const snapshot = JSON.stringify(this.buildCustomStateSnapshot());
+        const roomCode = this.roomCode;
+        this.snapshotWritePromise = Promise.resolve(this.snapshotWritePromise).then(async () => {
+            try {
+                if (redis.status === "wait" || redis.status === "end") await redis.connect();
+                const transaction = redis.multi().setex(`domino:custom:${roomId}`, CUSTOM_STATE_TTL, snapshot);
+                if (roomCode) transaction.setex(`domino:custom:code:${roomCode}`, CUSTOM_STATE_TTL, snapshot);
+                const results = await transaction.exec();
+                if (!results || results.some(([error]) => error)) throw new Error("snapshot_write_failed");
+                if (roomCode) await rememberRoom(roomCode, roomId);
+                return true;
+            } catch (e) {
+                console.error("[ROOM] Snapshot persistence failed", e);
+                return false;
             }
-            const snapshot = JSON.stringify(this.buildCustomStateSnapshot());
-            await redis.setex(`domino:custom:${roomId}`, CUSTOM_STATE_TTL, snapshot);
-            if (this.roomCode) {
-                await redis.setex(`domino:custom:code:${this.roomCode}`, CUSTOM_STATE_TTL, snapshot);
-                await rememberRoom(this.roomCode, roomId);
-            }
-        } catch (e) {
-            console.error("Redis error", e);
-        }
+        });
+        return this.snapshotWritePromise;
     }
 
     onCacheRoom() {
@@ -4371,9 +4394,26 @@ class DominoRoom extends Room {
     }
 
     async onBeforeShutdown() {
-        this.clearMatchRecordingRetryTimer();
-        await this.saveCustomStateToRedis();
-        return this.disconnect();
+        if (this.shutdownPromise) return this.shutdownPromise;
+        this.shuttingDown = true;
+        this.shutdownTurnRemainingMs = this.state?.turnDeadlineAt
+            ? Math.max(0, Number(this.state.turnDeadlineAt) - Date.now()) : null;
+        // Stop gameplay without clearing the deadline that belongs in the snapshot.
+        for (const key of ["botTimer", "turnTimer", "turnAdvanceTimer", "lastMoveRevealTimer", "nextDealTimer", "autoStartTimer", "timeoutContinueTimer", "economySettlementRetryTimer", "matchRecordRetryTimer"]) {
+            if (this[key]) clearTimeout(this[key]);
+            this[key] = null;
+        }
+        for (const timer of this.pendingDisconnectTimers?.values?.() || []) clearTimeout(timer);
+        this.clock.clear();
+        this.shutdownPromise = (async () => {
+            const saved = await this.saveCustomStateToRedis({ final: true });
+            if (!saved && (this.state?.gameActive || this.pendingEconomySettlementState || this.pendingMatchRecording)) {
+                console.error(`[ROOM] Shutdown snapshot unavailable for ${this.roomId}; retaining any previous snapshot`);
+            }
+            // Colyseus waits for disposal, not this hook's returned promise.
+            await this.disconnect();
+        })().catch(error => console.error("[ROOM] Shutdown failed", error));
+        return this.shutdownPromise;
     }
 }
 

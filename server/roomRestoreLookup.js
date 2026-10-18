@@ -16,6 +16,9 @@ async function loadCustomStateSnapshotForRestore({ redis, options = {} }) {
             const raw = await redis.get(key);
             if (!raw) continue;
             const parsed = JSON.parse(raw);
+            if (parsed.snapshotVersion != null && parsed.snapshotVersion !== 1) continue;
+            if (restoreRoomId && parsed.roomId !== restoreRoomId) continue;
+            if (options.restoreMatchId && String(parsed.matchRecordId || parsed.currentDealMatchId || "") !== String(options.restoreMatchId).trim()) continue;
             if (!restoreRoomCode || String(parsed.roomCode || "").toUpperCase() === restoreRoomCode) {
                 return parsed;
             }

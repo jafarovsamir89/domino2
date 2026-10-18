@@ -1,0 +1,18 @@
+ℹ️  optional .env file not found: .env.test, .env
+{"shutdown":true,"settlements":0}
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: shutdown snapshot must survive onDispose
+    at file:///Users/macbookair/Documents/domino/docs/remediation/scripts/verify-shutdown.mjs:7:162
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5) {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: null,
+  expected: true,
+  operator: '==',
+  diff: 'simple'
+}
+
+Node.js v25.6.0

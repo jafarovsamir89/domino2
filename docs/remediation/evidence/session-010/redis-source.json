@@ -1,0 +1,7 @@
+{
+  "version": "7.4.11",
+  "url": "https://download.redis.io/releases/redis-7.4.11.tar.gz",
+  "officialChecksum": "hash redis-7.4.11.tar.gz sha256 3c266ece0abd54ed3b1c912c6eb86b7508cf382cb690ee6649d3843f018f6357 http://download.redis.io/releases/redis-7.4.11.tar.gz",
+  "sha256": "3c266ece0abd54ed3b1c912c6eb86b7508cf382cb690ee6649d3843f018f6357",
+  "purpose": "Temporary loopback regression tool only, not a Codex plugin or product dependency"
+}

@@ -31,11 +31,27 @@ function getRoomKey(roomId) {
     return `domino:room:id:${roomId}`;
 }
 
+let redisConnectionPromise = null;
+
 async function getRedisClient() {
     if (!redis) return null;
     try {
         if (redis.status !== "ready") {
-            await redis.connect();
+            if (!redisConnectionPromise) {
+                redisConnectionPromise = (redis.status === "wait" || redis.status === "end")
+                    ? redis.connect()
+                    : new Promise((resolve, reject) => {
+                        const cleanup = () => { redis.off("ready", onReady); redis.off("error", onError); };
+                        const onReady = () => { cleanup(); resolve(); };
+                        const onError = (error) => { cleanup(); reject(error); };
+                        redis.once("ready", onReady);
+                        redis.once("error", onError);
+                    });
+            }
+            const connecting = redisConnectionPromise;
+            try { await connecting; } finally {
+                if (redisConnectionPromise === connecting) redisConnectionPromise = null;
+            }
         }
         return redis;
     } catch (err) {

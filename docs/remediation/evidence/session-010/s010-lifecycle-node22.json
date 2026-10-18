@@ -1,0 +1,27 @@
+{
+  "label": "s010-lifecycle-node22",
+  "command": [
+    "npm",
+    "exec",
+    "--yes",
+    "--package=node@22.14.0",
+    "--package=npm@10.9.2",
+    "--",
+    "node",
+    "--test",
+    "test/shutdown-lifecycle.test.js",
+    "test/restore-ownership.test.js",
+    "test/restore-lookup.test.js",
+    "test/room-restore.test.js"
+  ],
+  "cwd": ".tmp/remediation-s010/clean/server",
+  "startedAt": "2026-10-18T22:42:27.496Z",
+  "finishedAt": "2026-10-18T22:42:28.560Z",
+  "durationMs": 1064,
+  "exitCode": 0,
+  "signal": null,
+  "timedOut": false,
+  "error": null,
+  "log": "docs/remediation/evidence/session-010/s010-lifecycle-node22.log",
+  "environment": "Fresh allowlist, synthetic local API/DB, optional Redis disabled, no inherited secrets or copied .env"
+}

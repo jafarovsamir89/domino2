@@ -105,7 +105,7 @@ R-25 относится к этапу 0, но окончательно закр�
 
 #### R-04 · P0 · Сохранить snapshots при shutdown
 
-Статус: **открыто**. Основание: воспроизведено; [доказательства](05_MULTIPLAYER_RECONNECT.md).
+Статус: **исправлено локально, S010**. Shutdown сохраняет versioned snapshot и registry, останавливает таймеры/входящие действия; onLeave не трактует остановку как forfeit. Последовательные Redis writes и обычный cleanup проверены. Real local Redis SIGTERM→restart на Node25/22 сохраняет hand/turn/version/match;0shutdown settlement/1final. [Проверки](../remediation/evidence/session-010/summary.json). Durable outbox/abrupt kill относятся к R-29; production/Play не обновлялись.
 
 - **Изменение:** Разделить штатное завершение комнаты и shutdown процесса. Сохранить активные snapshots перед остановкой, не удалять их общим cleanup; восстановление сверяет принадлежность и версию матча.
 - **Где:** `DominoRoom.js:1425,4337`.

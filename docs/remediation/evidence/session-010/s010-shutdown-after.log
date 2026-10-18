@@ -1,0 +1,8 @@
+ℹ️  optional .env file not found: .env.test, .env
+{"shutdown":true,"settlements":0}
+ℹ️  optional .env file not found: .env.test, .env
+[Redis] Room registry connect failed: Redis is already connecting/connected
+{"restored":true,"turn":1,"turnVersion":17,"match":"shutdown-match","settlements":0}
+[Redis] Room registry connect failed: Redis is already connecting/connected
+{"shutdown":true,"settlements":0}
+SIGTERM snapshot and restore passed

@@ -1,0 +1,18 @@
+{
+  "label": "s010-shutdown-after",
+  "command": [
+    "node",
+    "/Users/macbookair/Documents/domino/docs/remediation/scripts/verify-shutdown.mjs",
+    "/Users/macbookair/Documents/domino/docs/remediation/scripts/shutdown-fixture.cjs"
+  ],
+  "cwd": ".tmp/remediation-s010/clean",
+  "startedAt": "2026-10-18T22:41:25.451Z",
+  "finishedAt": "2026-10-18T22:41:28.338Z",
+  "durationMs": 2887,
+  "exitCode": 0,
+  "signal": null,
+  "timedOut": false,
+  "error": null,
+  "log": "docs/remediation/evidence/session-010/s010-shutdown-after.log",
+  "environment": "Fresh allowlist, synthetic local API/DB, optional Redis disabled, no inherited secrets or copied .env"
+}

@@ -1,0 +1,11 @@
+ℹ️  optional .env file not found: .env.test, .env
+file:///Users/macbookair/Documents/domino/docs/remediation/scripts/verify-shutdown.mjs:6
+async function run(mode){const child=fork(fixture,[mode],{env:{...process.env,REDIS_URI:'redis://127.0.0.1:56379/10'},stdio:['ignore','inherit','inherit','ipc']});const done=new Promise((r,j)=>{child.on('exit',c=>c===0?r():j(Error(mode+' exit '+c)));child.on('error',j)});const deadline=setTimeout(()=>child.kill('SIGKILL'),20000);try{await new Promise((r,j)=>{child.once('message',r);child.once('exit',c=>j(Error('before ready '+c)))});child.kill('SIGTERM');await done;}finally{clearTimeout(deadline)}}
+                                                                                                                                                                                                                                 ^
+
+Error: save exit null
+    at ChildProcess.<anonymous> (file:///Users/macbookair/Documents/domino/docs/remediation/scripts/verify-shutdown.mjs:6:226)
+    at ChildProcess.emit (node:events:520:22)
+    at ChildProcess._handle.onexit (node:internal/child_process:293:12)
+
+Node.js v25.6.0

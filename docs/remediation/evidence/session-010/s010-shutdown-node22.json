@@ -1,0 +1,24 @@
+{
+  "label": "s010-shutdown-node22",
+  "command": [
+    "npm",
+    "exec",
+    "--yes",
+    "--package=node@22.14.0",
+    "--package=npm@10.9.2",
+    "--",
+    "node",
+    "/Users/macbookair/Documents/domino/docs/remediation/scripts/verify-shutdown.mjs",
+    "/Users/macbookair/Documents/domino/docs/remediation/scripts/shutdown-fixture.cjs"
+  ],
+  "cwd": ".tmp/remediation-s010/clean",
+  "startedAt": "2026-10-18T22:43:25.578Z",
+  "finishedAt": "2026-10-18T22:43:29.072Z",
+  "durationMs": 3494,
+  "exitCode": 0,
+  "signal": null,
+  "timedOut": false,
+  "error": null,
+  "log": "docs/remediation/evidence/session-010/s010-shutdown-node22.log",
+  "environment": "Fresh allowlist, synthetic local API/DB, optional Redis disabled, no inherited secrets or copied .env"
+}

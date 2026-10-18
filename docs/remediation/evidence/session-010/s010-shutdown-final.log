@@ -1,0 +1,36 @@
+ℹ️  optional .env file not found: .env.test, .env
+{"shutdown":true,"settlements":0}
+ℹ️  optional .env file not found: .env.test, .env
+[Redis] Room registry connect failed: Redis is already connecting/connected
+[FM-SRV 1792363347109] syncState includeBoardJson=true
+[FM-SRV 1792363347129] syncState includeBoardJson=false
+[Redis] Live presence connect failed: Redis is already connecting/connected
+{"restored":true,"turn":1,"turnVersion":17,"match":"shutdown-match","settlements":1}
+[Redis] Room registry connect failed: Redis is already connecting/connected
+[Redis] Room registry connect failed: Redis is already connecting/connected
+[Redis] Room registry connect failed: Redis is already connecting/connected
+{"shutdown":true,"settlements":1}
+ℹ️  optional .env file not found: .env.test, .env
+[Redis] Room registry connect failed: Redis is already connecting/connected
+[Redis] Room registry connect failed: Redis is already connecting/connected
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
++ actual - expected
+
++ 'J_sCEzhGl'
+- null
+
+    at file:///Users/macbookair/Documents/domino/docs/remediation/scripts/verify-shutdown.mjs:7:822
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5) {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: 'J_sCEzhGl',
+  expected: null,
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v25.6.0
