@@ -337,7 +337,7 @@ var NetworkManager = globalThis.NetworkManager || class NetworkManager {
         if (!id) return null;
         const endpoint = this.getGameHttpBase().replace(/\/$/, '');
         try {
-            const response = await fetch(`${endpoint}/room-code/${encodeURIComponent(id)}`);
+            const response = await fetch(`${endpoint}/room-code/${encodeURIComponent(id)}`, { headers: { Authorization: `Bearer ${this.game.account?.getRoomAuthToken?.() || ""}` } });
             if (!response.ok) return null;
             const data = await response.json();
             return data?.roomCode || null;

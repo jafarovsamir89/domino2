@@ -1,0 +1,18 @@
+{
+  "session": "S016",
+  "task": "R-39",
+  "status": "fixed-locally",
+  "checks": {
+    "unit": "s016-health-verified.json",
+    "node22": "s016-node22.json",
+    "redis": "s016-real-redis-health.json",
+    "redisNode22": "s016-redis-node22.json",
+    "fullServer": "s016-server-full.json"
+  },
+  "details": "Liveness/readiness bypass application Redis rate limiter. Readiness requires PING,750ms deadline, shared in-flight probe prevents queue growth. Real owned Redis pause: liveness under500ms, readiness503 under1000ms, recovery200 and exact room/snapshot preserved on Node25/22. Own Redis stopped. Initial recovery fixture was corrected to await completion of its released PING before probing recovery.",
+  "benefit": "A Redis interruption no longer makes the running game server appear dead; readiness reports the actual problem and recovers.",
+  "limits": [
+    "No production/Play deployment",
+    "Same original server failure set; R25 partial"
+  ]
+}

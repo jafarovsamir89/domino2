@@ -1,0 +1,39 @@
+✖ public summary allows public profile fields but no session/user/private room identifiers (1.797666ms)
+✖ open-room discovery cannot reveal closed rooms even with visibility=all/closed (14.140166ms)
+✔ internal live session remains available for verified owner restore (0.157542ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 1
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 139.61075
+
+✖ failing tests:
+
+test at test/public-presence.test.js:5:1
+✖ public summary allows public profile fields but no session/user/private room identifiers (1.797666ms)
+  TypeError: presence.getPublicLiveSummary is not a function
+      at TestContext.<anonymous> (/Users/macbookair/Documents/domino/.tmp/remediation-s015/clean/server/test/public-presence.test.js:5:143)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.start (node:internal/test_runner/test:1015:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:358:17)
+
+test at test/public-presence.test.js:6:1
+✖ open-room discovery cannot reveal closed rooms even with visibility=all/closed (14.140166ms)
+  AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:
+  
+    assert(!text.includes('PRIVATE-CODE'))
+  
+      at TestContext.<anonymous> (/Users/macbookair/Documents/domino/.tmp/remediation-s015/clean/server/test/public-presence.test.js:6:259)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }

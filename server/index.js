@@ -12,7 +12,7 @@ const { RedisPresence } = require("@colyseus/redis-presence");
 const { RedisDriver } = require("@colyseus/redis-driver");
 const DominoRoom = require("./DominoRoom");
 const { resolvePlatformApiUrl, probePlatformApiUrl } = require("./economyConfig");
-const { getLiveSummary, getOpenRooms, getLiveSession } = require("./livePresence");
+const { getLiveSummary, getPublicLiveSummary, getOpenRooms, getLiveSession } = require("./livePresence");
 const { resolveRoomIdByCode, resolveRoomCodeById } = require("./roomRegistry");
 const { buildReadinessHealth } = require("./health");
 
@@ -194,6 +194,15 @@ app.use(cors({
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization", "Accept", "Origin"]
 }));
+// Health probes must not wait for the Redis-backed application rate limiter.
+app.get(["/health", "/health/live"], (req, res) => {
+    res.send("Domino Telefon Server is running!");
+});
+app.get("/health/ready", async (req, res) => {
+    const health = await buildReadinessHealth({ redis, isProduction });
+    res.status(health.httpStatus).json(health.payload);
+});
+
 app.use(createRateLimiter(300, 60 * 1000, "game"));
 app.use(express.json({ limit: "2mb" }));
 
@@ -229,15 +238,6 @@ function legacyAuthGone(res) {
         error: "Legacy auth has been removed. Use the platform login at /login."
     });
 }
-
-app.get("/health", (req, res) => {
-    res.send("Domino Telefon Server is running!");
-});
-
-app.get("/health/ready", async (req, res) => {
-    const health = await buildReadinessHealth({ redis, isProduction });
-    res.status(health.httpStatus).json(health.payload);
-});
 
 app.post("/api/auth/guest", (req, res) => {
     legacyAuthGone(res);
@@ -293,6 +293,11 @@ app.get("/room-code/:roomId", (req, res) => {
             res.status(400).json({ error: "Missing roomId" });
             return;
         }
+        const summary = await getLiveSummary();
+        const room = summary.rooms.find(entry => entry.roomId === roomId);
+        const identity = require("./platformAuth").verifyGameToken(String(req.headers.authorization || "").replace(/^Bearer\s+/i, ""));
+        const ownsRoom = identity && summary.players.some(player => player.roomId === roomId && player.userId === identity.userId);
+        if (room?.roomVisibility !== "open" && !ownsRoom) { res.status(404).json({ error: "Room not found" }); return; }
         const roomCode = await resolveRoomCodeById(roomId);
         if (!roomCode) {
             res.status(404).json({ error: "Room not found" });
@@ -306,11 +311,11 @@ app.get("/room-code/:roomId", (req, res) => {
 });
 
 app.get("/api/realtime/summary", async (req, res) => {
-    res.json(await getLiveSummary());
+    res.json(await getPublicLiveSummary());
 });
 
 app.get("/api/realtime/players", async (req, res) => {
-    const summary = await getLiveSummary();
+    const summary = await getPublicLiveSummary();
     res.json({
         items: summary.players,
         counts: summary.counts,
@@ -325,7 +330,15 @@ app.get("/api/realtime/sessions/:sessionId", async (req, res) => {
         return;
     }
 
-    const item = await getLiveSession(sessionId);
+    const identity = require("./platformAuth").verifyGameToken(String(req.headers.authorization || "").replace(/^Bearer\s+/i, ""));
+    if (req.headers.authorization && !identity) { res.status(401).json({ error: "Login required" }); return; }
+    const session = await getLiveSession(sessionId);
+    // Legacy clients already hold the unlisted session capability. Keep the
+    // minimal room-id probe for resume, but never disclose its code or session ID.
+    const item = !session || (identity && session.userId !== identity.userId) ? null : {
+        roomId: session.roomId, isConnected: session.isConnected !== false, isPlaying: Boolean(session.isPlaying),
+        ...(identity ? { roomCode: session.roomCode, displayName: session.displayName } : {})
+    };
     res.json({ item });
 });
 

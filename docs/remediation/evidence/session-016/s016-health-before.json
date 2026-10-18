@@ -1,0 +1,18 @@
+{
+  "label": "s016-health-before",
+  "command": [
+    "node",
+    "--test",
+    "test/health-deadline.test.js"
+  ],
+  "cwd": ".tmp/remediation-s016/clean/server",
+  "startedAt": "2026-10-18T23:02:50.993Z",
+  "finishedAt": "2026-10-18T23:02:51.174Z",
+  "durationMs": 181,
+  "exitCode": 1,
+  "signal": null,
+  "timedOut": false,
+  "error": null,
+  "log": "docs/remediation/evidence/session-016/s016-health-before.log",
+  "environment": "Fresh allowlist, synthetic local API/DB, optional Redis disabled, no inherited secrets or copied .env"
+}

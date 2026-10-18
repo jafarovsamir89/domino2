@@ -289,7 +289,7 @@ export class RealtimeService {
 
     const rooms = Array.from(roomsMap.values()).sort((a, b) => b.connectedPlayers - a.connectedPlayers);
 
-    return {
+    const summary = {
       counts: {
         total: players.length,
         connected: connectedPlayers.length,
@@ -317,5 +317,10 @@ export class RealtimeService {
         })),
       rooms
     };
+    // Client heartbeat rooms have no verified public visibility. Publish counts only.
+    return { counts: summary.counts, rooms: [], players: summary.players.map(player => ({
+      displayName: player.displayName, provider: player.provider,
+      isConnected: player.isConnected, isPlaying: player.isPlaying
+    })) };
   }
 }

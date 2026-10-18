@@ -428,6 +428,26 @@ async function getLiveSummary() {
   };
 }
 
+function toPublicPlayer(player) {
+  return { playerId: player.playerId || null, displayName: player.displayName || "Player",
+    isConnected: player.isConnected !== false, isPlaying: Boolean(player.isPlaying) };
+}
+
+function toPublicRoom(room) {
+  return { roomId: room.roomId, roomCode: room.roomCode, gameMode: room.gameMode,
+    roomMode: room.roomMode, roomVisibility: "open", stakeKey: room.stakeKey,
+    stakeAmount: room.stakeAmount, humanSeats: room.humanSeats, totalPlayers: room.totalPlayers,
+    connectedPlayers: room.connectedPlayers, aiCount: room.aiCount, isTeamMode: room.isTeamMode,
+    gameActive: room.gameActive, openSeats: room.openSeats, joinable: room.joinable,
+    hostName: room.hostName, players: (room.players || []).map(toPublicPlayer) };
+}
+
+async function getPublicLiveSummary() {
+  const summary = await getLiveSummary();
+  return { counts: summary.counts, players: summary.players.map(toPublicPlayer),
+    rooms: summary.rooms.filter(room => room.roomVisibility === "open").map(toPublicRoom) };
+}
+
 async function getOpenRooms(filters = {}) {
   const summary = await getLiveSummary();
   const search = String(filters.search || filters.q || "").trim().toLowerCase();
@@ -445,6 +465,7 @@ async function getOpenRooms(filters = {}) {
   const limit = Math.max(1, Number(filters.limit || 24));
 
   const items = summary.rooms.filter((room) => {
+    if (room.roomVisibility !== "open") return false;
     if (room.connectedPlayers < 1) return false;
     if (joinableOnly && !room.joinable) return false;
     if (visibility !== "all" && String(room.roomVisibility || "closed").toLowerCase() !== visibility) return false;
@@ -466,7 +487,7 @@ async function getOpenRooms(filters = {}) {
       if (!haystack.includes(search)) return false;
     }
     return true;
-  }).slice(0, limit);
+  }).slice(0, limit).map(toPublicRoom);
 
   return {
     items,
@@ -482,6 +503,7 @@ module.exports = {
   removeRoomPlayers,
   listLivePlayers,
   getLiveSummary,
+  getPublicLiveSummary,
   getOpenRooms,
   getRoomSnapshot,
   isStale

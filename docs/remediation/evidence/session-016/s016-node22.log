@@ -1,0 +1,321 @@
+TAP version 13
+# Subtest: ready client must answer PING rather than only have a ready socket
+ok 1 - ready client must answer PING rather than only have a ready socket
+  ---
+  duration_ms: 0.914375
+  ...
+# Subtest: stalled Redis readiness is bounded and can recover
+ok 2 - stalled Redis readiness is bounded and can recover
+  ---
+  duration_ms: 51.90375
+  ...
+# Subtest: readiness health reports degraded when Redis is not configured outside production
+ok 3 - readiness health reports degraded when Redis is not configured outside production
+  ---
+  duration_ms: 0.855042
+  ...
+# Subtest: readiness health reports unhealthy when Redis is unavailable in production
+ok 4 - readiness health reports unhealthy when Redis is unavailable in production
+  ---
+  duration_ms: 0.3645
+  ...
+# Subtest: readiness health reports ok when Redis is ready
+ok 5 - readiness health reports ok when Redis is ready
+  ---
+  duration_ms: 0.158333
+  ...
+# Subtest: public summary allows public profile fields but no session/user/private room identifiers
+ok 6 - public summary allows public profile fields but no session/user/private room identifiers
+  ---
+  duration_ms: 21.115875
+  ...
+# Subtest: open-room discovery cannot reveal closed rooms even with visibility=all/closed
+ok 7 - open-room discovery cannot reveal closed rooms even with visibility=all/closed
+  ---
+  duration_ms: 0.582
+  ...
+# Subtest: internal live session remains available for verified owner restore
+ok 8 - internal live session remains available for verified owner restore
+  ---
+  duration_ms: 0.159416
+  ...
+# ℹ️  optional .env file not found: .env.test, .env
+# [ROOM_DEBUG] create {
+#   roomId: 'regression-101-1',
+#   roomCode: 'USQG',
+#   roomVisibility: 'closed',
+#   stakeKey: 'free',
+#   totalPlayers: 2,
+#   aiCount: 0,
+#   humanSeats: 2,
+#   maxClients: 2,
+#   roomMode: 'ffa',
+#   isTeamMode: false
+# }
+# [ROOM] Created room regression-101-1 (code USQG), humanSeats=2, totalPlayers=2, aiCount=0, teamMode=false
+# [ROOM] Client new joining with name: undefined
+# [ROOM_DEBUG] join:start {
+#   roomId: 'regression-101-1',
+#   roomCode: 'USQG',
+#   sessionId: 'new',
+#   clientsLength: 0,
+#   playerOrder: [ 's0', 's1' ],
+#   totalPlayers: 2,
+#   aiCount: 0,
+#   humanSeats: 2,
+#   maxClients: 2
+# }
+# [ROOM_DEBUG] create {
+#   roomId: 'regression-101-2',
+#   roomCode: 'YC9B',
+#   roomVisibility: 'closed',
+#   stakeKey: 'free',
+#   totalPlayers: 2,
+#   aiCount: 0,
+#   humanSeats: 2,
+#   maxClients: 2,
+#   roomMode: 'ffa',
+#   isTeamMode: false
+# }
+# [ROOM] Created room regression-101-2 (code YC9B), humanSeats=2, totalPlayers=2, aiCount=0, teamMode=false
+# [ROOM] Client new joining with name: undefined
+# [ROOM_DEBUG] join:start {
+#   roomId: 'regression-101-2',
+#   roomCode: 'YC9B',
+#   sessionId: 'new',
+#   clientsLength: 0,
+#   playerOrder: [ 's0', 's1' ],
+#   totalPlayers: 2,
+#   aiCount: 0,
+#   humanSeats: 2,
+#   maxClients: 2
+# }
+# [ROOM_DEBUG] create {
+#   roomId: 'regression-101-3',
+#   roomCode: 'Q52F',
+#   roomVisibility: 'closed',
+#   stakeKey: 'free',
+#   totalPlayers: 2,
+#   aiCount: 0,
+#   humanSeats: 2,
+#   maxClients: 2,
+#   roomMode: 'ffa',
+#   isTeamMode: false
+# }
+# [ROOM] Created room regression-101-3 (code Q52F), humanSeats=2, totalPlayers=2, aiCount=0, teamMode=false
+# [ROOM] Client new joining with name: undefined
+# [ROOM_DEBUG] join:start {
+#   roomId: 'regression-101-3',
+#   roomCode: 'Q52F',
+#   sessionId: 'new',
+#   clientsLength: 0,
+#   playerOrder: [ 's0', 's1' ],
+#   totalPlayers: 2,
+#   aiCount: 0,
+#   humanSeats: 2,
+#   maxClients: 2
+# }
+# [ROOM_DEBUG] create {
+#   roomId: 'regression-101-4',
+#   roomCode: '3D9N',
+#   roomVisibility: 'closed',
+#   stakeKey: 'free',
+#   totalPlayers: 2,
+#   aiCount: 0,
+#   humanSeats: 2,
+#   maxClients: 2,
+#   roomMode: 'ffa',
+#   isTeamMode: false
+# }
+# [ROOM] Created room regression-101-4 (code 3D9N), humanSeats=2, totalPlayers=2, aiCount=0, teamMode=false
+# [ROOM] Client new joining with name: undefined
+# [ROOM_DEBUG] join:start {
+#   roomId: 'regression-101-4',
+#   roomCode: '3D9N',
+#   sessionId: 'new',
+#   clientsLength: 0,
+#   playerOrder: [ 's0', 's1' ],
+#   totalPlayers: 2,
+#   aiCount: 0,
+#   humanSeats: 2,
+#   maxClients: 2
+# }
+# [ROOM_DEBUG] create {
+#   roomId: 'regression-101-5',
+#   roomCode: '33K9',
+#   roomVisibility: 'closed',
+#   stakeKey: 'free',
+#   totalPlayers: 2,
+#   aiCount: 0,
+#   humanSeats: 2,
+#   maxClients: 2,
+#   roomMode: 'ffa',
+#   isTeamMode: false
+# }
+# [ROOM] Created room regression-101-5 (code 33K9), humanSeats=2, totalPlayers=2, aiCount=0, teamMode=false
+# [ROOM_DEBUG] create {
+#   roomId: 'regression-101-6',
+#   roomCode: 'MJ7G',
+#   roomVisibility: 'closed',
+#   stakeKey: 'free',
+#   totalPlayers: 2,
+#   aiCount: 0,
+#   humanSeats: 2,
+#   maxClients: 2,
+#   roomMode: 'ffa',
+#   isTeamMode: false
+# }
+# [ROOM] Created room regression-101-6 (code MJ7G), humanSeats=2, totalPlayers=2, aiCount=0, teamMode=false
+# [ROOM_DEBUG] create {
+#   roomId: 'regression-101-7',
+#   roomCode: 'LLGF',
+#   roomVisibility: 'closed',
+#   stakeKey: 'free',
+#   totalPlayers: 2,
+#   aiCount: 0,
+#   humanSeats: 2,
+#   maxClients: 2,
+#   roomMode: 'ffa',
+#   isTeamMode: false
+# }
+# [ROOM] Created room regression-101-7 (code LLGF), humanSeats=2, totalPlayers=2, aiCount=0, teamMode=false
+# [ROOM_DEBUG] create {
+#   roomId: 'regression-101-8',
+#   roomCode: 'BQZY',
+#   roomVisibility: 'closed',
+#   stakeKey: 'free',
+#   totalPlayers: 2,
+#   aiCount: 0,
+#   humanSeats: 2,
+#   maxClients: 2,
+#   roomMode: 'ffa',
+#   isTeamMode: false
+# }
+# [ROOM] Created room regression-101-8 (code BQZY), humanSeats=2, totalPlayers=2, aiCount=0, teamMode=false
+# [ROOM] Client new joining with name: undefined
+# [ROOM_DEBUG] join:start {
+#   roomId: 'regression-101-8',
+#   roomCode: 'BQZY',
+#   sessionId: 'new',
+#   clientsLength: 0,
+#   playerOrder: [ 's0', 's1' ],
+#   totalPlayers: 2,
+#   aiCount: 0,
+#   humanSeats: 2,
+#   maxClients: 2
+# }
+# [ROOM_DEBUG] join:identity {
+#   sessionId: 'new',
+#   hasUserId: true,
+#   hasPlayerId: true,
+#   hasAuthToken: false,
+#   provider: 'platform',
+#   displayName: 'Owner'
+# }
+# [ROOM] Current player count: 0 / 2
+# [ROOM_DEBUG] join:assigned {
+#   sessionId: 'new',
+#   seatIndex: 0,
+#   isHost: true,
+#   playerOrder: [ 'new', 's1' ],
+#   connectedHumans: 2,
+#   readyHumans: 2,
+#   seatedHumans: 2
+# }
+# [ROOM_DEBUG] create {
+#   roomId: 'regression-101-9',
+#   roomCode: '77NF',
+#   roomVisibility: 'closed',
+#   stakeKey: 'free',
+#   totalPlayers: 2,
+#   aiCount: 0,
+#   humanSeats: 2,
+#   maxClients: 2,
+#   roomMode: 'ffa',
+#   isTeamMode: false
+# }
+# [ROOM] Created room regression-101-9 (code 77NF), humanSeats=2, totalPlayers=2, aiCount=0, teamMode=false
+# [ROOM] Client new joining with name: undefined
+# [ROOM_DEBUG] join:start {
+#   roomId: 'regression-101-9',
+#   roomCode: '77NF',
+#   sessionId: 'new',
+#   clientsLength: 0,
+#   playerOrder: [ 's0', 's1' ],
+#   totalPlayers: 2,
+#   aiCount: 0,
+#   humanSeats: 2,
+#   maxClients: 2
+# }
+# [ROOM_DEBUG] join:identity {
+#   sessionId: 'new',
+#   hasUserId: true,
+#   hasPlayerId: true,
+#   hasAuthToken: false,
+#   provider: 'platform',
+#   displayName: 'Owner'
+# }
+# [ROOM] Current player count: 0 / 2
+# [ROOM_DEBUG] join:assigned {
+#   sessionId: 'new',
+#   seatIndex: 0,
+#   isHost: true,
+#   playerOrder: [ 'new', 's1' ],
+#   connectedHumans: 2,
+#   readyHumans: 2,
+#   seatedHumans: 2
+# }
+# Subtest: explicit restore rejects mismatching owner {"userId":"other"} before mutation or hand delivery
+ok 9 - explicit restore rejects mismatching owner {"userId":"other"} before mutation or hand delivery
+  ---
+  duration_ms: 4.669208
+  ...
+# Subtest: explicit restore rejects mismatching owner {"playerId":"other"} before mutation or hand delivery
+ok 10 - explicit restore rejects mismatching owner {"playerId":"other"} before mutation or hand delivery
+  ---
+  duration_ms: 2.931916
+  ...
+# Subtest: explicit restore rejects mismatching owner {"provider":"guest"} before mutation or hand delivery
+ok 11 - explicit restore rejects mismatching owner {"provider":"guest"} before mutation or hand delivery
+  ---
+  duration_ms: 1.125125
+  ...
+# Subtest: explicit restore rejects mismatching owner {"userId":""} before mutation or hand delivery
+ok 12 - explicit restore rejects mismatching owner {"userId":""} before mutation or hand delivery
+  ---
+  duration_ms: 0.71775
+  ...
+# Subtest: restore rejects stale context {"restoreRoomId":"other"}
+ok 13 - restore rejects stale context {"restoreRoomId":"other"}
+  ---
+  duration_ms: 0.777417
+  ...
+# Subtest: restore rejects stale context {"restoreRoomCode":"OTHER"}
+ok 14 - restore rejects stale context {"restoreRoomCode":"OTHER"}
+  ---
+  duration_ms: 0.643959
+  ...
+# Subtest: restore rejects stale context {"restoreMatchId":"old-match"}
+ok 15 - restore rejects stale context {"restoreMatchId":"old-match"}
+  ---
+  duration_ms: 0.453916
+  ...
+# Subtest: owner restore preserves hand and seat, snapshot=false
+ok 16 - owner restore preserves hand and seat, snapshot=false
+  ---
+  duration_ms: 1.75225
+  ...
+# Subtest: owner restore preserves hand and seat, snapshot=true
+ok 17 - owner restore preserves hand and seat, snapshot=true
+  ---
+  duration_ms: 3.738333
+  ...
+1..17
+# tests 17
+# suites 0
+# pass 17
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 252.159792

@@ -1,0 +1,18 @@
+{
+  "label": "s016-real-redis-health",
+  "command": [
+    "node",
+    "/Users/macbookair/Documents/domino/docs/remediation/scripts/verify-health-isolation.mjs",
+    "/Users/macbookair/Documents/domino/docs/remediation/scripts/health-http-preload.cjs"
+  ],
+  "cwd": ".tmp/remediation-s016/clean",
+  "startedAt": "2026-10-18T23:04:23.079Z",
+  "finishedAt": "2026-10-18T23:04:24.610Z",
+  "durationMs": 1531,
+  "exitCode": 0,
+  "signal": null,
+  "timedOut": false,
+  "error": null,
+  "log": "docs/remediation/evidence/session-016/s016-real-redis-health.log",
+  "environment": "Fresh allowlist, synthetic local API/DB, optional Redis disabled, no inherited secrets or copied .env"
+}

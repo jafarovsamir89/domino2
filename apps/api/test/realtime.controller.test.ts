@@ -55,3 +55,16 @@ test("RealtimeController heartbeat accepts a valid auth token", async () => {
   assert.ok(result.item);
   assert.equal(result.item?.sessionId, "session-1");
 });
+
+test("public session status does not expose private identifiers",async()=>{
+ const controller=new RealtimeController({getSession:async()=>({sessionId:"secret-session",roomCode:"SECRET",roomId:"secret-room",displayName:"Synthetic",isConnected:true,isPlaying:true})} as any);
+ const response=await controller.getSession("secret-session");
+ assert.deepEqual(response,{item:{displayName:"Synthetic",isConnected:true,isPlaying:true}});
+});
+
+test("platform public summary contains no private room or session identifiers",async()=>{
+ const {RealtimeService}=await import("../src/modules/realtime/realtime.service.js");
+ const service=new RealtimeService();
+ await service.heartbeat({sessionId:"private-summary-test",displayName:"Synthetic",roomId:"private-room",roomCode:"SECRET",provider:"platform",isConnected:true,isPlaying:true});
+ try{const summary=await service.summary();const serialized=JSON.stringify(summary);assert(!serialized.includes("private-summary-test"));assert(!serialized.includes("private-room"));assert(!serialized.includes("SECRET"));assert(summary.players.some(p=>p.displayName==="Synthetic"));}finally{service.clear("private-summary-test");}
+});

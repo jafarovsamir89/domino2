@@ -1,0 +1,2715 @@
+✔ normalizeGameMode maps classic101 aliases and defaults to telefon (0.918625ms)
+✔ open rooms are filtered by gameMode without mixing classic101 and telefon (9.633666ms)
+✖ public summary allows public profile fields but no session/user/private room identifiers (1.843334ms)
+✖ open-room discovery cannot reveal closed rooms even with visibility=all/closed (14.973125ms)
+✔ internal live session remains available for verified owner restore (0.206625ms)
+ℹ️  optional .env file not found: .env.test, .env
+[ROOM] Client host joining with name: Host
+[ROOM_DEBUG] join:start {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  sessionId: 'host',
+  clientsLength: 1,
+  playerOrder: [],
+  totalPlayers: 4,
+  aiCount: 0,
+  humanSeats: 4,
+  maxClients: 4
+}
+[ROOM_DEBUG] join:identity {
+  sessionId: 'host',
+  hasUserId: true,
+  hasPlayerId: true,
+  hasAuthToken: false,
+  provider: 'platform',
+  displayName: 'Host'
+}
+[ROOM] Current player count: 1 / 4
+[ROOM_DEBUG] join:assigned {
+  sessionId: 'host',
+  seatIndex: 0,
+  isHost: true,
+  playerOrder: [ 'host' ],
+  connectedHumans: 1,
+  readyHumans: 1,
+  seatedHumans: 1
+}
+[ROOM] Client host joining with name: Host
+[ROOM_DEBUG] join:start {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  sessionId: 'host',
+  clientsLength: 1,
+  playerOrder: [],
+  totalPlayers: 2,
+  aiCount: 0,
+  humanSeats: 2,
+  maxClients: 2
+}
+[ROOM_DEBUG] join:identity {
+  sessionId: 'host',
+  hasUserId: true,
+  hasPlayerId: true,
+  hasAuthToken: false,
+  provider: 'platform',
+  displayName: 'Host'
+}
+[ROOM] Current player count: 1 / 2
+[ROOM_DEBUG] autostart:decision {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  roomMode: 'ffa',
+  isTeamMode: false,
+  totalPlayers: 2,
+  maxPlayers: 2,
+  maxClients: 2,
+  clientsLength: 1,
+  aiCount: 0,
+  gameActive: false,
+  gameStarting: undefined,
+  matchFinished: false,
+  readyPlayersCount: 1,
+  botsReadyCount: 0,
+  humanCount: 1,
+  botCount: 0,
+  occupiedSeats: 1,
+  botIdsLength: 0,
+  playerOrder: [ 'host' ],
+  players: [
+    {
+      sessionId: 'host',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    }
+  ],
+  blockedReason: 'waiting-for-human',
+  decision: 'wait',
+  reason: 'waiting-for-human'
+}
+[ROOM_DEBUG] join:assigned {
+  sessionId: 'host',
+  seatIndex: 0,
+  isHost: true,
+  playerOrder: [ 'host' ],
+  connectedHumans: 1,
+  readyHumans: 1,
+  seatedHumans: 1
+}
+[ROOM] Client guest joining with name: Guest
+[ROOM_DEBUG] join:start {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  sessionId: 'guest',
+  clientsLength: 1,
+  playerOrder: [ 'host' ],
+  totalPlayers: 2,
+  aiCount: 0,
+  humanSeats: 2,
+  maxClients: 2
+}
+[ROOM_DEBUG] join:identity {
+  sessionId: 'guest',
+  hasUserId: true,
+  hasPlayerId: true,
+  hasAuthToken: false,
+  provider: 'platform',
+  displayName: 'Guest'
+}
+[ROOM] Current player count: 1 / 2
+[ROOM_DEBUG] autostart:decision {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  roomMode: 'ffa',
+  isTeamMode: false,
+  totalPlayers: 2,
+  maxPlayers: 2,
+  maxClients: 2,
+  clientsLength: 1,
+  aiCount: 0,
+  gameActive: false,
+  gameStarting: undefined,
+  matchFinished: false,
+  readyPlayersCount: 2,
+  botsReadyCount: 0,
+  humanCount: 2,
+  botCount: 0,
+  occupiedSeats: 2,
+  botIdsLength: 0,
+  playerOrder: [ 'host', 'guest' ],
+  players: [
+    {
+      sessionId: 'host',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 'guest',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    }
+  ],
+  blockedReason: null,
+  decision: 'start',
+  reason: 'start'
+}
+[ROOM] Room full. Starting game...
+[ROOM_DEBUG] join:assigned {
+  sessionId: 'guest',
+  seatIndex: 1,
+  isHost: false,
+  playerOrder: [ 'host', 'guest' ],
+  connectedHumans: 2,
+  readyHumans: 2,
+  seatedHumans: 2
+}
+✔ host joins Seat 1 automatically (4.368208ms)
+[ROOM] Client host joining with name: Host
+[ROOM_DEBUG] join:start {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  sessionId: 'host',
+  clientsLength: 1,
+  playerOrder: [],
+  totalPlayers: 4,
+  aiCount: 0,
+  humanSeats: 4,
+  maxClients: 4
+}
+[ROOM_DEBUG] join:identity {
+  sessionId: 'host',
+  hasUserId: true,
+  hasPlayerId: true,
+  hasAuthToken: false,
+  provider: 'platform',
+  displayName: 'Host'
+}
+[ROOM] Current player count: 1 / 4
+[ROOM_DEBUG] join:assigned {
+  sessionId: 'host',
+  seatIndex: 0,
+  isHost: true,
+  playerOrder: [ 'host' ],
+  connectedHumans: 1,
+  readyHumans: 1,
+  seatedHumans: 1
+}
+[ROOM] Client guest-a joining with name: Alice
+[ROOM_DEBUG] join:start {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  sessionId: 'guest-a',
+  clientsLength: 2,
+  playerOrder: [ 'host' ],
+  totalPlayers: 4,
+  aiCount: 0,
+  humanSeats: 4,
+  maxClients: 4
+}
+[ROOM_DEBUG] join:identity {
+  sessionId: 'guest-a',
+  hasUserId: true,
+  hasPlayerId: true,
+  hasAuthToken: false,
+  provider: 'platform',
+  displayName: 'Alice'
+}
+[ROOM] Current player count: 2 / 4
+[ROOM_DEBUG] join:assigned {
+  sessionId: 'guest-a',
+  seatIndex: -1,
+  isHost: false,
+  playerOrder: [ 'host', 'guest-a' ],
+  connectedHumans: 2,
+  readyHumans: 1,
+  seatedHumans: 1
+}
+[ROOM] Client guest-b joining with name: Bob
+[ROOM_DEBUG] join:start {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  sessionId: 'guest-b',
+  clientsLength: 3,
+  playerOrder: [ 'host', 'guest-a' ],
+  totalPlayers: 4,
+  aiCount: 0,
+  humanSeats: 4,
+  maxClients: 4
+}
+[ROOM_DEBUG] join:identity {
+  sessionId: 'guest-b',
+  hasUserId: true,
+  hasPlayerId: true,
+  hasAuthToken: false,
+  provider: 'platform',
+  displayName: 'Bob'
+}
+[ROOM] Current player count: 3 / 4
+[ROOM_DEBUG] join:assigned {
+  sessionId: 'guest-b',
+  seatIndex: -1,
+  isHost: false,
+  playerOrder: [ 'host', 'guest-a', 'guest-b' ],
+  connectedHumans: 3,
+  readyHumans: 1,
+  seatedHumans: 1
+}
+[ROOM] Client host joining with name: Host
+[ROOM_DEBUG] join:start {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  sessionId: 'host',
+  clientsLength: 1,
+  playerOrder: [],
+  totalPlayers: 4,
+  aiCount: 0,
+  humanSeats: 4,
+  maxClients: 4
+}
+[ROOM_DEBUG] join:identity {
+  sessionId: 'host',
+  hasUserId: true,
+  hasPlayerId: true,
+  hasAuthToken: false,
+  provider: 'platform',
+  displayName: 'Host'
+}
+[ROOM] Current player count: 1 / 4
+[ROOM_DEBUG] join:assigned {
+  sessionId: 'host',
+  seatIndex: 0,
+  isHost: true,
+  playerOrder: [ 'host' ],
+  connectedHumans: 1,
+  readyHumans: 1,
+  seatedHumans: 1
+}
+[ROOM] Client guest-a joining with name: Alice
+[ROOM_DEBUG] join:start {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  sessionId: 'guest-a',
+  clientsLength: 2,
+  playerOrder: [ 'host' ],
+  totalPlayers: 4,
+  aiCount: 0,
+  humanSeats: 4,
+  maxClients: 4
+}
+[ROOM_DEBUG] join:identity {
+  sessionId: 'guest-a',
+  hasUserId: true,
+  hasPlayerId: true,
+  hasAuthToken: false,
+  provider: 'platform',
+  displayName: 'Alice'
+}
+[ROOM] Current player count: 2 / 4
+[ROOM_DEBUG] join:assigned {
+  sessionId: 'guest-a',
+  seatIndex: -1,
+  isHost: false,
+  playerOrder: [ 'host', 'guest-a' ],
+  connectedHumans: 2,
+  readyHumans: 1,
+  seatedHumans: 1
+}
+[ROOM] Client guest-b joining with name: Bob
+[ROOM_DEBUG] join:start {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  sessionId: 'guest-b',
+  clientsLength: 3,
+  playerOrder: [ 'host', 'guest-a' ],
+  totalPlayers: 4,
+  aiCount: 0,
+  humanSeats: 4,
+  maxClients: 4
+}
+[ROOM_DEBUG] join:identity {
+  sessionId: 'guest-b',
+  hasUserId: true,
+  hasPlayerId: true,
+  hasAuthToken: false,
+  provider: 'platform',
+  displayName: 'Bob'
+}
+[ROOM] Current player count: 3 / 4
+[ROOM_DEBUG] join:assigned {
+  sessionId: 'guest-b',
+  seatIndex: -1,
+  isHost: false,
+  playerOrder: [ 'host', 'guest-a', 'guest-b' ],
+  connectedHumans: 3,
+  readyHumans: 1,
+  seatedHumans: 1
+}
+[ROOM] Client host joining with name: Host
+[ROOM_DEBUG] join:start {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  sessionId: 'host',
+  clientsLength: 1,
+  playerOrder: [],
+  totalPlayers: 4,
+  aiCount: 0,
+  humanSeats: 4,
+  maxClients: 4
+}
+[ROOM_DEBUG] join:identity {
+  sessionId: 'host',
+  hasUserId: true,
+  hasPlayerId: true,
+  hasAuthToken: false,
+  provider: 'platform',
+  displayName: 'Host'
+}
+[ROOM] Current player count: 1 / 4
+[ROOM_DEBUG] autostart:decision {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  roomMode: 'team',
+  isTeamMode: true,
+  totalPlayers: 4,
+  maxPlayers: 4,
+  maxClients: 4,
+  clientsLength: 1,
+  aiCount: 0,
+  gameActive: false,
+  gameStarting: undefined,
+  matchFinished: false,
+  readyPlayersCount: 1,
+  botsReadyCount: 0,
+  humanCount: 1,
+  botCount: 0,
+  occupiedSeats: 1,
+  botIdsLength: 0,
+  playerOrder: [ 'host' ],
+  players: [
+    {
+      sessionId: 'host',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    }
+  ],
+  blockedReason: 'waiting-for-human',
+  decision: 'wait',
+  reason: 'waiting-for-human'
+}
+[ROOM_DEBUG] join:assigned {
+  sessionId: 'host',
+  seatIndex: 0,
+  isHost: true,
+  playerOrder: [ 'host' ],
+  connectedHumans: 1,
+  readyHumans: 1,
+  seatedHumans: 1
+}
+[ROOM] Client guest-a joining with name: Alice
+[ROOM_DEBUG] join:start {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  sessionId: 'guest-a',
+  clientsLength: 2,
+  playerOrder: [ 'host' ],
+  totalPlayers: 4,
+  aiCount: 0,
+  humanSeats: 4,
+  maxClients: 4
+}
+[ROOM_DEBUG] join:identity {
+  sessionId: 'guest-a',
+  hasUserId: true,
+  hasPlayerId: true,
+  hasAuthToken: false,
+  provider: 'platform',
+  displayName: 'Alice'
+}
+[ROOM] Current player count: 2 / 4
+[ROOM_DEBUG] autostart:decision {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  roomMode: 'team',
+  isTeamMode: true,
+  totalPlayers: 4,
+  maxPlayers: 4,
+  maxClients: 4,
+  clientsLength: 2,
+  aiCount: 0,
+  gameActive: false,
+  gameStarting: undefined,
+  matchFinished: false,
+  readyPlayersCount: 1,
+  botsReadyCount: 0,
+  humanCount: 2,
+  botCount: 0,
+  occupiedSeats: 1,
+  botIdsLength: 0,
+  playerOrder: [ 'host', 'guest-a' ],
+  players: [
+    {
+      sessionId: 'host',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 'guest-a',
+      isBot: false,
+      isConnected: true,
+      seatIndex: -1,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    }
+  ],
+  blockedReason: 'waiting-for-human',
+  decision: 'wait',
+  reason: 'waiting-for-human'
+}
+[ROOM_DEBUG] join:assigned {
+  sessionId: 'guest-a',
+  seatIndex: -1,
+  isHost: false,
+  playerOrder: [ 'host', 'guest-a' ],
+  connectedHumans: 2,
+  readyHumans: 1,
+  seatedHumans: 1
+}
+[ROOM] Client guest-b joining with name: Bob
+[ROOM_DEBUG] join:start {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  sessionId: 'guest-b',
+  clientsLength: 3,
+  playerOrder: [ 'host', 'guest-a' ],
+  totalPlayers: 4,
+  aiCount: 0,
+  humanSeats: 4,
+  maxClients: 4
+}
+[ROOM_DEBUG] join:identity {
+  sessionId: 'guest-b',
+  hasUserId: true,
+  hasPlayerId: true,
+  hasAuthToken: false,
+  provider: 'platform',
+  displayName: 'Bob'
+}
+[ROOM] Current player count: 3 / 4
+[ROOM_DEBUG] autostart:decision {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  roomMode: 'team',
+  isTeamMode: true,
+  totalPlayers: 4,
+  maxPlayers: 4,
+  maxClients: 4,
+  clientsLength: 3,
+  aiCount: 0,
+  gameActive: false,
+  gameStarting: undefined,
+  matchFinished: false,
+  readyPlayersCount: 1,
+  botsReadyCount: 0,
+  humanCount: 3,
+  botCount: 0,
+  occupiedSeats: 1,
+  botIdsLength: 0,
+  playerOrder: [ 'host', 'guest-a', 'guest-b' ],
+  players: [
+    {
+      sessionId: 'host',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 'guest-a',
+      isBot: false,
+      isConnected: true,
+      seatIndex: -1,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 'guest-b',
+      isBot: false,
+      isConnected: true,
+      seatIndex: -1,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    }
+  ],
+  blockedReason: 'waiting-for-human',
+  decision: 'wait',
+  reason: 'waiting-for-human'
+}
+[ROOM_DEBUG] join:assigned {
+  sessionId: 'guest-b',
+  seatIndex: -1,
+  isHost: false,
+  playerOrder: [ 'host', 'guest-a', 'guest-b' ],
+  connectedHumans: 3,
+  readyHumans: 1,
+  seatedHumans: 1
+}
+[ROOM] Client guest-c joining with name: Carol
+[ROOM_DEBUG] join:start {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  sessionId: 'guest-c',
+  clientsLength: 4,
+  playerOrder: [ 'host', 'guest-a', 'guest-b' ],
+  totalPlayers: 4,
+  aiCount: 0,
+  humanSeats: 4,
+  maxClients: 4
+}
+[ROOM_DEBUG] join:identity {
+  sessionId: 'guest-c',
+  hasUserId: true,
+  hasPlayerId: true,
+  hasAuthToken: false,
+  provider: 'platform',
+  displayName: 'Carol'
+}
+[ROOM] Current player count: 4 / 4
+[ROOM_DEBUG] autostart:decision {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  roomMode: 'team',
+  isTeamMode: true,
+  totalPlayers: 4,
+  maxPlayers: 4,
+  maxClients: 4,
+  clientsLength: 4,
+  aiCount: 0,
+  gameActive: false,
+  gameStarting: undefined,
+  matchFinished: false,
+  readyPlayersCount: 1,
+  botsReadyCount: 0,
+  humanCount: 4,
+  botCount: 0,
+  occupiedSeats: 1,
+  botIdsLength: 0,
+  playerOrder: [ 'host', 'guest-a', 'guest-b', 'guest-c' ],
+  players: [
+    {
+      sessionId: 'host',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 'guest-a',
+      isBot: false,
+      isConnected: true,
+      seatIndex: -1,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 'guest-b',
+      isBot: false,
+      isConnected: true,
+      seatIndex: -1,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 'guest-c',
+      isBot: false,
+      isConnected: true,
+      seatIndex: -1,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    }
+  ],
+  blockedReason: 'waiting-for-seat',
+  decision: 'wait',
+  reason: 'waiting-for-seat'
+}
+[ROOM_DEBUG] join:assigned {
+  sessionId: 'guest-c',
+  seatIndex: -1,
+  isHost: false,
+  playerOrder: [ 'host', 'guest-a', 'guest-b', 'guest-c' ],
+  connectedHumans: 4,
+  readyHumans: 1,
+  seatedHumans: 1
+}
+[ROOM_DEBUG] autostart:decision {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  roomMode: 'team',
+  isTeamMode: true,
+  totalPlayers: 4,
+  maxPlayers: 4,
+  maxClients: 4,
+  clientsLength: 4,
+  aiCount: 0,
+  gameActive: false,
+  gameStarting: undefined,
+  matchFinished: false,
+  readyPlayersCount: 2,
+  botsReadyCount: 0,
+  humanCount: 4,
+  botCount: 0,
+  occupiedSeats: 2,
+  botIdsLength: 0,
+  playerOrder: [ 'host', 'guest-a', 'guest-b', 'guest-c' ],
+  players: [
+    {
+      sessionId: 'host',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 'guest-a',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 'guest-b',
+      isBot: false,
+      isConnected: true,
+      seatIndex: -1,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 'guest-c',
+      isBot: false,
+      isConnected: true,
+      seatIndex: -1,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    }
+  ],
+  blockedReason: 'waiting-for-seat',
+  decision: 'wait',
+  reason: 'waiting-for-seat'
+}
+[ROOM_DEBUG] autostart:decision {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  roomMode: 'team',
+  isTeamMode: true,
+  totalPlayers: 4,
+  maxPlayers: 4,
+  maxClients: 4,
+  clientsLength: 4,
+  aiCount: 0,
+  gameActive: false,
+  gameStarting: undefined,
+  matchFinished: false,
+  readyPlayersCount: 3,
+  botsReadyCount: 0,
+  humanCount: 4,
+  botCount: 0,
+  occupiedSeats: 3,
+  botIdsLength: 0,
+  playerOrder: [ 'host', 'guest-a', 'guest-b', 'guest-c' ],
+  players: [
+    {
+      sessionId: 'host',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 'guest-a',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 'guest-b',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 2,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 'guest-c',
+      isBot: false,
+      isConnected: true,
+      seatIndex: -1,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    }
+  ],
+  blockedReason: 'waiting-for-seat',
+  decision: 'wait',
+  reason: 'waiting-for-seat'
+}
+[ROOM_DEBUG] autostart:decision {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  roomMode: 'team',
+  isTeamMode: true,
+  totalPlayers: 4,
+  maxPlayers: 4,
+  maxClients: 4,
+  clientsLength: 4,
+  aiCount: 0,
+  gameActive: false,
+  gameStarting: undefined,
+  matchFinished: false,
+  readyPlayersCount: 4,
+  botsReadyCount: 0,
+  humanCount: 4,
+  botCount: 0,
+  occupiedSeats: 4,
+  botIdsLength: 0,
+  playerOrder: [ 'host', 'guest-a', 'guest-b', 'guest-c' ],
+  players: [
+    {
+      sessionId: 'host',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 'guest-a',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 'guest-b',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 2,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 'guest-c',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 3,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    }
+  ],
+  blockedReason: null,
+  decision: 'start',
+  reason: 'start'
+}
+✔ 1v1 online auto-starts without seat selection (654.727958ms)
+✔ a player can choose Seat 3 and playerOrder follows seat order (2.195792ms)
+✔ two players cannot choose the same seat (1.739917ms)
+[ROOM] Client host joining with name: Host
+[ROOM_DEBUG] join:start {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  sessionId: 'host',
+  clientsLength: 1,
+  playerOrder: [],
+  totalPlayers: 2,
+  aiCount: 0,
+  humanSeats: 2,
+  maxClients: 2
+}
+[ROOM_DEBUG] join:identity {
+  sessionId: 'host',
+  hasUserId: true,
+  hasPlayerId: true,
+  hasAuthToken: false,
+  provider: 'platform',
+  displayName: 'Host'
+}
+[ROOM] Current player count: 1 / 2
+[ROOM_DEBUG] autostart:decision {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  roomMode: 'ffa',
+  isTeamMode: false,
+  totalPlayers: 2,
+  maxPlayers: 2,
+  maxClients: 2,
+  clientsLength: 1,
+  aiCount: 0,
+  gameActive: false,
+  gameStarting: undefined,
+  matchFinished: false,
+  readyPlayersCount: 1,
+  botsReadyCount: 0,
+  humanCount: 1,
+  botCount: 0,
+  occupiedSeats: 1,
+  botIdsLength: 0,
+  playerOrder: [ 'host' ],
+  players: [
+    {
+      sessionId: 'host',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    }
+  ],
+  blockedReason: 'waiting-for-human',
+  decision: 'wait',
+  reason: 'waiting-for-human'
+}
+[ROOM_DEBUG] join:assigned {
+  sessionId: 'host',
+  seatIndex: 0,
+  isHost: true,
+  playerOrder: [ 'host' ],
+  connectedHumans: 1,
+  readyHumans: 1,
+  seatedHumans: 1
+}
+[ROOM] Client guest joining with name: Guest
+[ROOM_DEBUG] join:start {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  sessionId: 'guest',
+  clientsLength: 1,
+  playerOrder: [ 'host' ],
+  totalPlayers: 2,
+  aiCount: 0,
+  humanSeats: 2,
+  maxClients: 2
+}
+[ROOM_DEBUG] join:identity {
+  sessionId: 'guest',
+  hasUserId: true,
+  hasPlayerId: true,
+  hasAuthToken: false,
+  provider: 'platform',
+  displayName: 'Guest'
+}
+[ROOM] Current player count: 1 / 2
+[ROOM_DEBUG] autostart:decision {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  roomMode: 'ffa',
+  isTeamMode: false,
+  totalPlayers: 2,
+  maxPlayers: 2,
+  maxClients: 2,
+  clientsLength: 1,
+  aiCount: 0,
+  gameActive: false,
+  gameStarting: undefined,
+  matchFinished: false,
+  readyPlayersCount: 2,
+  botsReadyCount: 0,
+  humanCount: 2,
+  botCount: 0,
+  occupiedSeats: 2,
+  botIdsLength: 0,
+  playerOrder: [ 'host', 'guest' ],
+  players: [
+    {
+      sessionId: 'host',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 'guest',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    }
+  ],
+  blockedReason: null,
+  decision: 'start',
+  reason: 'start'
+}
+[ROOM] Room full. Starting game...
+[ROOM_DEBUG] join:assigned {
+  sessionId: 'guest',
+  seatIndex: 1,
+  isHost: false,
+  playerOrder: [ 'host', 'guest' ],
+  connectedHumans: 2,
+  readyHumans: 2,
+  seatedHumans: 2
+}
+✔ startGame is called only once after the final seat is selected (655.091458ms)
+[ROOM] Client host joining with name: Host
+[ROOM_DEBUG] join:start {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  sessionId: 'host',
+  clientsLength: 1,
+  playerOrder: [],
+  totalPlayers: 4,
+  aiCount: 2,
+  humanSeats: 2,
+  maxClients: 2
+}
+[ROOM_DEBUG] join:identity {
+  sessionId: 'host',
+  hasUserId: true,
+  hasPlayerId: true,
+  hasAuthToken: false,
+  provider: 'platform',
+  displayName: 'Host'
+}
+[ROOM] Current player count: 1 / 2
+[ROOM_DEBUG] autostart:decision {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  roomMode: 'ffa',
+  isTeamMode: false,
+  totalPlayers: 4,
+  maxPlayers: 4,
+  maxClients: 2,
+  clientsLength: 1,
+  aiCount: 2,
+  gameActive: false,
+  gameStarting: undefined,
+  matchFinished: false,
+  readyPlayersCount: 1,
+  botsReadyCount: 0,
+  humanCount: 1,
+  botCount: 0,
+  occupiedSeats: 1,
+  botIdsLength: 0,
+  playerOrder: [ 'host' ],
+  players: [
+    {
+      sessionId: 'host',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    }
+  ],
+  blockedReason: 'waiting-for-human',
+  decision: 'wait',
+  reason: 'waiting-for-human'
+}
+[ROOM_DEBUG] join:assigned {
+  sessionId: 'host',
+  seatIndex: 0,
+  isHost: true,
+  playerOrder: [ 'host' ],
+  connectedHumans: 1,
+  readyHumans: 1,
+  seatedHumans: 1
+}
+[ROOM] Client guest joining with name: Guest
+[ROOM_DEBUG] join:start {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  sessionId: 'guest',
+  clientsLength: 1,
+  playerOrder: [ 'host' ],
+  totalPlayers: 4,
+  aiCount: 2,
+  humanSeats: 2,
+  maxClients: 2
+}
+[ROOM_DEBUG] join:identity {
+  sessionId: 'guest',
+  hasUserId: true,
+  hasPlayerId: true,
+  hasAuthToken: false,
+  provider: 'platform',
+  displayName: 'Guest'
+}
+[ROOM] Current player count: 1 / 2
+[ROOM_DEBUG] autostart:decision {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  roomMode: 'ffa',
+  isTeamMode: false,
+  totalPlayers: 4,
+  maxPlayers: 4,
+  maxClients: 2,
+  clientsLength: 1,
+  aiCount: 2,
+  gameActive: false,
+  gameStarting: undefined,
+  matchFinished: false,
+  readyPlayersCount: 2,
+  botsReadyCount: 0,
+  humanCount: 2,
+  botCount: 0,
+  occupiedSeats: 2,
+  botIdsLength: 0,
+  playerOrder: [ 'host', 'guest' ],
+  players: [
+    {
+      sessionId: 'host',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 'guest',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    }
+  ],
+  blockedReason: null,
+  decision: 'start',
+  reason: 'start'
+}
+[ROOM] Room full. Starting game...
+[ROOM_DEBUG] join:assigned {
+  sessionId: 'guest',
+  seatIndex: 1,
+  isHost: false,
+  playerOrder: [ 'host', 'guest' ],
+  connectedHumans: 2,
+  readyHumans: 2,
+  seatedHumans: 2
+}
+✔ maybeAutoStartGame does not rely on clients length when humans are already ready (653.697875ms)
+[ROOM] Client host joining with name: Host
+[ROOM_DEBUG] join:start {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  sessionId: 'host',
+  clientsLength: 1,
+  playerOrder: [],
+  totalPlayers: 2,
+  aiCount: 0,
+  humanSeats: 2,
+  maxClients: 2
+}
+[ROOM_DEBUG] join:identity {
+  sessionId: 'host',
+  hasUserId: true,
+  hasPlayerId: true,
+  hasAuthToken: false,
+  provider: 'platform',
+  displayName: 'Host'
+}
+[ROOM] Current player count: 1 / 2
+[ROOM_DEBUG] autostart:decision {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  roomMode: 'ffa',
+  isTeamMode: false,
+  totalPlayers: 2,
+  maxPlayers: 2,
+  maxClients: 2,
+  clientsLength: 1,
+  aiCount: 0,
+  gameActive: false,
+  gameStarting: undefined,
+  matchFinished: false,
+  readyPlayersCount: 1,
+  botsReadyCount: 0,
+  humanCount: 1,
+  botCount: 0,
+  occupiedSeats: 1,
+  botIdsLength: 0,
+  playerOrder: [ 'host' ],
+  players: [
+    {
+      sessionId: 'host',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    }
+  ],
+  blockedReason: 'waiting-for-human',
+  decision: 'wait',
+  reason: 'waiting-for-human'
+}
+[ROOM_DEBUG] join:assigned {
+  sessionId: 'host',
+  seatIndex: 0,
+  isHost: true,
+  playerOrder: [ 'host' ],
+  connectedHumans: 1,
+  readyHumans: 1,
+  seatedHumans: 1
+}
+[ROOM] Client host joining with name: Host
+[ROOM_DEBUG] join:start {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  sessionId: 'host',
+  clientsLength: 1,
+  playerOrder: [],
+  totalPlayers: 4,
+  aiCount: 0,
+  humanSeats: 4,
+  maxClients: 4
+}
+[ROOM_DEBUG] join:identity {
+  sessionId: 'host',
+  hasUserId: true,
+  hasPlayerId: true,
+  hasAuthToken: false,
+  provider: 'platform',
+  displayName: 'Host'
+}
+[ROOM] Current player count: 1 / 4
+[ROOM_DEBUG] join:assigned {
+  sessionId: 'host',
+  seatIndex: 0,
+  isHost: true,
+  playerOrder: [ 'host' ],
+  connectedHumans: 1,
+  readyHumans: 1,
+  seatedHumans: 1
+}
+[ROOM] Client guest-a joining with name: Alice
+[ROOM_DEBUG] join:start {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  sessionId: 'guest-a',
+  clientsLength: 2,
+  playerOrder: [ 'host' ],
+  totalPlayers: 4,
+  aiCount: 0,
+  humanSeats: 4,
+  maxClients: 4
+}
+[ROOM_DEBUG] join:identity {
+  sessionId: 'guest-a',
+  hasUserId: true,
+  hasPlayerId: true,
+  hasAuthToken: false,
+  provider: 'platform',
+  displayName: 'Alice'
+}
+[ROOM] Current player count: 2 / 4
+[ROOM_DEBUG] join:assigned {
+  sessionId: 'guest-a',
+  seatIndex: 1,
+  isHost: false,
+  playerOrder: [ 'host', 'guest-a' ],
+  connectedHumans: 2,
+  readyHumans: 2,
+  seatedHumans: 2
+}
+[ROOM_DEBUG] leave:start {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  sessionId: 'host',
+  consented: true,
+  playerOrder: [ 'host', 'guest-a' ],
+  players: [
+    {
+      sessionId: 'host',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 'guest-a',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    }
+  ]
+}
+[ROOM_DEBUG] leave:explicit {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  sessionId: 'host',
+  playerName: 'Host'
+}
+[ROOM_DEBUG] leave:removed {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  sessionId: 'host',
+  reason: 'explicit leave',
+  explicitLeave: true
+}
+[ROOM] Client host joining with name: Host
+[ROOM_DEBUG] join:start {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  sessionId: 'host',
+  clientsLength: 1,
+  playerOrder: [],
+  totalPlayers: 4,
+  aiCount: 0,
+  humanSeats: 4,
+  maxClients: 4
+}
+[ROOM_DEBUG] join:identity {
+  sessionId: 'host',
+  hasUserId: true,
+  hasPlayerId: true,
+  hasAuthToken: false,
+  provider: 'platform',
+  displayName: 'Host'
+}
+[ROOM] Current player count: 1 / 4
+[ROOM_DEBUG] join:assigned {
+  sessionId: 'host',
+  seatIndex: 0,
+  isHost: true,
+  playerOrder: [ 'host' ],
+  connectedHumans: 1,
+  readyHumans: 1,
+  seatedHumans: 1
+}
+[ROOM_DEBUG] leave:start {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  sessionId: 'host',
+  consented: false,
+  playerOrder: [ 'host' ],
+  players: [
+    {
+      sessionId: 'host',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    }
+  ]
+}
+[ROOM_DEBUG] leave:close_empty_waiting_open_room {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  sessionId: 'host',
+  hadExplicitMarker: false,
+  reason: 'empty_open_room'
+}
+[ROOM] Client host joining with name: Host
+[ROOM_DEBUG] join:start {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  sessionId: 'host',
+  clientsLength: 1,
+  playerOrder: [],
+  totalPlayers: 2,
+  aiCount: 0,
+  humanSeats: 2,
+  maxClients: 2
+}
+[ROOM_DEBUG] join:identity {
+  sessionId: 'host',
+  hasUserId: true,
+  hasPlayerId: true,
+  hasAuthToken: false,
+  provider: 'platform',
+  displayName: 'Host'
+}
+[ROOM] Current player count: 1 / 2
+[ROOM_DEBUG] join:assigned {
+  sessionId: 'host',
+  seatIndex: 0,
+  isHost: true,
+  playerOrder: [ 'host' ],
+  connectedHumans: 1,
+  readyHumans: 1,
+  seatedHumans: 1
+}
+[ROOM] Client guest joining with name: Guest
+[ROOM_DEBUG] join:start {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  sessionId: 'guest',
+  clientsLength: 2,
+  playerOrder: [ 'host' ],
+  totalPlayers: 2,
+  aiCount: 0,
+  humanSeats: 2,
+  maxClients: 2
+}
+[ROOM_DEBUG] join:identity {
+  sessionId: 'guest',
+  hasUserId: true,
+  hasPlayerId: true,
+  hasAuthToken: false,
+  provider: 'platform',
+  displayName: 'Guest'
+}
+[ROOM] Current player count: 2 / 2
+[ROOM_DEBUG] join:assigned {
+  sessionId: 'guest',
+  seatIndex: 1,
+  isHost: false,
+  playerOrder: [ 'host', 'guest' ],
+  connectedHumans: 2,
+  readyHumans: 2,
+  seatedHumans: 2
+}
+[ROOM] Client host joining with name: Host
+[ROOM_DEBUG] join:start {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  sessionId: 'host',
+  clientsLength: 1,
+  playerOrder: [],
+  totalPlayers: 4,
+  aiCount: 0,
+  humanSeats: 4,
+  maxClients: 4
+}
+[ROOM_DEBUG] join:identity {
+  sessionId: 'host',
+  hasUserId: true,
+  hasPlayerId: true,
+  hasAuthToken: false,
+  provider: 'platform',
+  displayName: 'Host'
+}
+[ROOM] Current player count: 1 / 4
+[ROOM_DEBUG] join:assigned {
+  sessionId: 'host',
+  seatIndex: 0,
+  isHost: true,
+  playerOrder: [ 'host' ],
+  connectedHumans: 1,
+  readyHumans: 1,
+  seatedHumans: 1
+}
+[ROOM] Client guest joining with name: Guest
+[ROOM_DEBUG] join:start {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  sessionId: 'guest',
+  clientsLength: 2,
+  playerOrder: [ 'host' ],
+  totalPlayers: 4,
+  aiCount: 0,
+  humanSeats: 4,
+  maxClients: 4
+}
+[ROOM_DEBUG] join:identity {
+  sessionId: 'guest',
+  hasUserId: true,
+  hasPlayerId: true,
+  hasAuthToken: false,
+  provider: 'platform',
+  displayName: 'Guest'
+}
+[ROOM] Current player count: 2 / 4
+[ROOM_DEBUG] join:assigned {
+  sessionId: 'guest',
+  seatIndex: -1,
+  isHost: false,
+  playerOrder: [ 'host', 'guest' ],
+  connectedHumans: 2,
+  readyHumans: 1,
+  seatedHumans: 1
+}
+[ROOM] Client host joining with name: Host
+[ROOM_DEBUG] join:start {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  sessionId: 'host',
+  clientsLength: 1,
+  playerOrder: [],
+  totalPlayers: 4,
+  aiCount: 0,
+  humanSeats: 4,
+  maxClients: 4
+}
+[ROOM_DEBUG] join:identity {
+  sessionId: 'host',
+  hasUserId: true,
+  hasPlayerId: true,
+  hasAuthToken: false,
+  provider: 'platform',
+  displayName: 'Host'
+}
+[ROOM] Current player count: 1 / 4
+[ROOM_DEBUG] join:assigned {
+  sessionId: 'host',
+  seatIndex: 0,
+  isHost: true,
+  playerOrder: [ 'host' ],
+  connectedHumans: 1,
+  readyHumans: 1,
+  seatedHumans: 1
+}
+[ROOM] Client guest-a joining with name: Alice
+[ROOM_DEBUG] join:start {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  sessionId: 'guest-a',
+  clientsLength: 2,
+  playerOrder: [ 'host' ],
+  totalPlayers: 4,
+  aiCount: 0,
+  humanSeats: 4,
+  maxClients: 4
+}
+[ROOM_DEBUG] join:identity {
+  sessionId: 'guest-a',
+  hasUserId: true,
+  hasPlayerId: true,
+  hasAuthToken: false,
+  provider: 'platform',
+  displayName: 'Alice'
+}
+[ROOM] Current player count: 2 / 4
+[ROOM_DEBUG] join:assigned {
+  sessionId: 'guest-a',
+  seatIndex: -1,
+  isHost: false,
+  playerOrder: [ 'host', 'guest-a' ],
+  connectedHumans: 2,
+  readyHumans: 1,
+  seatedHumans: 1
+}
+[ROOM] Client guest-b joining with name: Bob
+[ROOM_DEBUG] join:start {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  sessionId: 'guest-b',
+  clientsLength: 3,
+  playerOrder: [ 'host', 'guest-a' ],
+  totalPlayers: 4,
+  aiCount: 0,
+  humanSeats: 4,
+  maxClients: 4
+}
+[ROOM_DEBUG] join:identity {
+  sessionId: 'guest-b',
+  hasUserId: true,
+  hasPlayerId: true,
+  hasAuthToken: false,
+  provider: 'platform',
+  displayName: 'Bob'
+}
+[ROOM] Current player count: 3 / 4
+[ROOM_DEBUG] join:assigned {
+  sessionId: 'guest-b',
+  seatIndex: -1,
+  isHost: false,
+  playerOrder: [ 'host', 'guest-a', 'guest-b' ],
+  connectedHumans: 3,
+  readyHumans: 1,
+  seatedHumans: 1
+}
+[ROOM] Client guest-c joining with name: Carol
+[ROOM_DEBUG] join:start {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  sessionId: 'guest-c',
+  clientsLength: 4,
+  playerOrder: [ 'host', 'guest-a', 'guest-b' ],
+  totalPlayers: 4,
+  aiCount: 0,
+  humanSeats: 4,
+  maxClients: 4
+}
+[ROOM_DEBUG] join:identity {
+  sessionId: 'guest-c',
+  hasUserId: true,
+  hasPlayerId: true,
+  hasAuthToken: false,
+  provider: 'platform',
+  displayName: 'Carol'
+}
+[ROOM] Current player count: 4 / 4
+[ROOM_DEBUG] join:assigned {
+  sessionId: 'guest-c',
+  seatIndex: -1,
+  isHost: false,
+  playerOrder: [ 'host', 'guest-a', 'guest-b', 'guest-c' ],
+  connectedHumans: 4,
+  readyHumans: 1,
+  seatedHumans: 1
+}
+[ROOM] Client host joining with name: Host
+[ROOM_DEBUG] join:start {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  sessionId: 'host',
+  clientsLength: 1,
+  playerOrder: [],
+  totalPlayers: 4,
+  aiCount: 0,
+  humanSeats: 4,
+  maxClients: 4
+}
+[ROOM_DEBUG] join:identity {
+  sessionId: 'host',
+  hasUserId: true,
+  hasPlayerId: true,
+  hasAuthToken: false,
+  provider: 'platform',
+  displayName: 'Host'
+}
+[ROOM] Current player count: 1 / 4
+[ROOM_DEBUG] join:assigned {
+  sessionId: 'host',
+  seatIndex: 0,
+  isHost: true,
+  playerOrder: [ 'host' ],
+  connectedHumans: 1,
+  readyHumans: 1,
+  seatedHumans: 1
+}
+[ROOM] Client guest joining with name: Guest
+[ROOM_DEBUG] join:start {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  sessionId: 'guest',
+  clientsLength: 2,
+  playerOrder: [ 'host' ],
+  totalPlayers: 4,
+  aiCount: 0,
+  humanSeats: 4,
+  maxClients: 4
+}
+[ROOM_DEBUG] join:identity {
+  sessionId: 'guest',
+  hasUserId: true,
+  hasPlayerId: true,
+  hasAuthToken: false,
+  provider: 'platform',
+  displayName: 'Guest'
+}
+[ROOM] Current player count: 2 / 4
+[ROOM_DEBUG] join:assigned {
+  sessionId: 'guest',
+  seatIndex: -1,
+  isHost: false,
+  playerOrder: [ 'host', 'guest' ],
+  connectedHumans: 2,
+  readyHumans: 1,
+  seatedHumans: 1
+}
+[ROOM_DEBUG] leave:start {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  sessionId: 'guest',
+  consented: true,
+  playerOrder: [ 'host', 'guest' ],
+  players: [
+    {
+      sessionId: 'host',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 'guest',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 2,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    }
+  ]
+}
+[ROOM_DEBUG] leave:explicit {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  sessionId: 'guest',
+  playerName: 'Guest'
+}
+[ROOM_DEBUG] leave:removed {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  sessionId: 'guest',
+  reason: 'explicit leave',
+  explicitLeave: true
+}
+[ROOM] Client host joining with name: Host
+[ROOM_DEBUG] join:start {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  sessionId: 'host',
+  clientsLength: 1,
+  playerOrder: [],
+  totalPlayers: 4,
+  aiCount: 0,
+  humanSeats: 4,
+  maxClients: 4
+}
+[ROOM_DEBUG] join:identity {
+  sessionId: 'host',
+  hasUserId: true,
+  hasPlayerId: true,
+  hasAuthToken: false,
+  provider: 'platform',
+  displayName: 'Host'
+}
+[ROOM] Current player count: 1 / 4
+[ROOM_DEBUG] join:assigned {
+  sessionId: 'host',
+  seatIndex: 0,
+  isHost: true,
+  playerOrder: [ 'host' ],
+  connectedHumans: 1,
+  readyHumans: 1,
+  seatedHumans: 1
+}
+[ROOM] Client guest joining with name: Guest
+[ROOM_DEBUG] join:start {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  sessionId: 'guest',
+  clientsLength: 2,
+  playerOrder: [ 'host' ],
+  totalPlayers: 4,
+  aiCount: 0,
+  humanSeats: 4,
+  maxClients: 4
+}
+[ROOM_DEBUG] join:identity {
+  sessionId: 'guest',
+  hasUserId: true,
+  hasPlayerId: true,
+  hasAuthToken: false,
+  provider: 'platform',
+  displayName: 'Guest'
+}
+[ROOM] Current player count: 2 / 4
+[ROOM_DEBUG] join:assigned {
+  sessionId: 'guest',
+  seatIndex: -1,
+  isHost: false,
+  playerOrder: [ 'host', 'guest' ],
+  connectedHumans: 2,
+  readyHumans: 1,
+  seatedHumans: 1
+}
+[ROOM_DEBUG] leave:start {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  sessionId: 'guest',
+  consented: false,
+  playerOrder: [ 'host', 'guest' ],
+  players: [
+    {
+      sessionId: 'host',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 'guest',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 2,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    }
+  ]
+}
+[ROOM_DEBUG] leave:explicit {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  sessionId: 'guest',
+  playerName: 'Guest'
+}
+[ROOM_DEBUG] leave:waiting_reconnect {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  sessionId: 'guest',
+  reason: 'accidental_disconnect',
+  graceStartedAt: 1792364435878,
+  graceExpiresAt: 1792364555878,
+  graceMs: 120000
+}
+[ROOM_DEBUG] leave:reconnected {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  sessionId: 'guest',
+  nextSessionId: 'guest',
+  reconnectSuccessAt: 1792364435879,
+  source: 'allowReconnection',
+  players: [
+    {
+      sessionId: 'host',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 'guest',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 2,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    }
+  ]
+}
+[ROOM_DEBUG] leave:allow_reconnection_rejected {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  sessionId: 'guest',
+  reason: "Cannot read properties of undefined (reading 'length')"
+}
+[ROOM] Client host joining with name: Host
+[ROOM_DEBUG] join:start {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  sessionId: 'host',
+  clientsLength: 1,
+  playerOrder: [],
+  totalPlayers: 4,
+  aiCount: 2,
+  humanSeats: 2,
+  maxClients: 2
+}
+[ROOM_DEBUG] join:identity {
+  sessionId: 'host',
+  hasUserId: true,
+  hasPlayerId: true,
+  hasAuthToken: false,
+  provider: 'platform',
+  displayName: 'Host'
+}
+[ROOM] Current player count: 1 / 2
+[ROOM_DEBUG] join:assigned {
+  sessionId: 'host',
+  seatIndex: 0,
+  isHost: true,
+  playerOrder: [ 'host' ],
+  connectedHumans: 1,
+  readyHumans: 1,
+  seatedHumans: 1
+}
+[ROOM] Client guest joining with name: Guest
+[ROOM_DEBUG] join:start {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  sessionId: 'guest',
+  clientsLength: 2,
+  playerOrder: [ 'host' ],
+  totalPlayers: 4,
+  aiCount: 2,
+  humanSeats: 2,
+  maxClients: 2
+}
+[ROOM_DEBUG] join:identity {
+  sessionId: 'guest',
+  hasUserId: true,
+  hasPlayerId: true,
+  hasAuthToken: false,
+  provider: 'platform',
+  displayName: 'Guest'
+}
+[ROOM] Current player count: 2 / 2
+[ROOM_DEBUG] join:assigned {
+  sessionId: 'guest',
+  seatIndex: -1,
+  isHost: false,
+  playerOrder: [ 'host', 'guest' ],
+  connectedHumans: 2,
+  readyHumans: 1,
+  seatedHumans: 1
+}
+[ROOM_DEBUG] bots:ensure {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  aiCount: 2,
+  existingBotIds: [],
+  occupiedSeats: [ 0, 2 ],
+  freeSeats: [ 1, 3 ]
+}
+[ROOM_DEBUG] bots:added { botId: 'bot-0', seatIndex: 1 }
+[ROOM_DEBUG] bots:added { botId: 'bot-1', seatIndex: 3 }
+[ROOM_DEBUG] bots:final {
+  playerOrder: [ 'host', 'bot-0', 'guest', 'bot-1' ],
+  botIds: [ 'bot-0', 'bot-1' ],
+  players: [
+    {
+      sessionId: 'host',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 'bot-0',
+      isBot: true,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 'guest',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 2,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 'bot-1',
+      isBot: true,
+      isConnected: true,
+      seatIndex: 3,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[ROOM] Client host joining with name: Host
+[ROOM_DEBUG] join:start {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  sessionId: 'host',
+  clientsLength: 1,
+  playerOrder: [],
+  totalPlayers: 4,
+  aiCount: 2,
+  humanSeats: 2,
+  maxClients: 2
+}
+[ROOM_DEBUG] join:identity {
+  sessionId: 'host',
+  hasUserId: true,
+  hasPlayerId: true,
+  hasAuthToken: false,
+  provider: 'platform',
+  displayName: 'Host'
+}
+[ROOM] Current player count: 1 / 2
+[ROOM_DEBUG] join:assigned {
+  sessionId: 'host',
+  seatIndex: 0,
+  isHost: true,
+  playerOrder: [ 'host' ],
+  connectedHumans: 1,
+  readyHumans: 1,
+  seatedHumans: 1
+}
+[ROOM] Client guest joining with name: Guest
+[ROOM_DEBUG] join:start {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  sessionId: 'guest',
+  clientsLength: 2,
+  playerOrder: [ 'host' ],
+  totalPlayers: 4,
+  aiCount: 2,
+  humanSeats: 2,
+  maxClients: 2
+}
+[ROOM_DEBUG] join:identity {
+  sessionId: 'guest',
+  hasUserId: true,
+  hasPlayerId: true,
+  hasAuthToken: false,
+  provider: 'platform',
+  displayName: 'Guest'
+}
+[ROOM] Current player count: 2 / 2
+[ROOM_DEBUG] join:assigned {
+  sessionId: 'guest',
+  seatIndex: -1,
+  isHost: false,
+  playerOrder: [ 'host', 'guest' ],
+  connectedHumans: 2,
+  readyHumans: 1,
+  seatedHumans: 1
+}
+[ROOM_DEBUG] startGame:enter {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  gameActive: false,
+  gameStarting: undefined,
+  matchFinished: false,
+  playerOrder: [ 'host', 'guest' ],
+  players: [
+    {
+      sessionId: 'host',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 'guest',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 2,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    }
+  ]
+}
+[ROOM_DEBUG] startGame:beforeBots {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  playerOrder: [ 'host', 'guest' ],
+  players: [
+    {
+      sessionId: 'host',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 'guest',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 2,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    }
+  ]
+}
+[ROOM_DEBUG] bots:ensure {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  aiCount: 2,
+  existingBotIds: [],
+  occupiedSeats: [ 0, 2 ],
+  freeSeats: [ 1, 3 ]
+}
+[ROOM_DEBUG] bots:added { botId: 'bot-0', seatIndex: 1 }
+[ROOM_DEBUG] bots:added { botId: 'bot-1', seatIndex: 3 }
+[ROOM_DEBUG] bots:final {
+  playerOrder: [ 'host', 'bot-0', 'guest', 'bot-1' ],
+  botIds: [ 'bot-0', 'bot-1' ],
+  players: [
+    {
+      sessionId: 'host',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 'bot-0',
+      isBot: true,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 'guest',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 2,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 'bot-1',
+      isBot: true,
+      isConnected: true,
+      seatIndex: 3,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[ROOM_DEBUG] startGame:afterBots {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  playerOrder: [ 'host', 'bot-0', 'guest', 'bot-1' ],
+  players: [
+    {
+      sessionId: 'host',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 'bot-0',
+      isBot: true,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 'guest',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 2,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 'bot-1',
+      isBot: true,
+      isConnected: true,
+      seatIndex: 3,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[ROOM] Client host joining with name: Host
+[ROOM_DEBUG] join:start {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  sessionId: 'host',
+  clientsLength: 1,
+  playerOrder: [],
+  totalPlayers: 4,
+  aiCount: 0,
+  humanSeats: 4,
+  maxClients: 4
+}
+[ROOM_DEBUG] join:identity {
+  sessionId: 'host',
+  hasUserId: true,
+  hasPlayerId: true,
+  hasAuthToken: false,
+  provider: 'platform',
+  displayName: 'Host'
+}
+[ROOM] Current player count: 1 / 4
+[ROOM_DEBUG] join:assigned {
+  sessionId: 'host',
+  seatIndex: 0,
+  isHost: true,
+  playerOrder: [ 'host' ],
+  connectedHumans: 1,
+  readyHumans: 1,
+  seatedHumans: 1
+}
+[ROOM] Client guest-a joining with name: Alice
+[ROOM_DEBUG] join:start {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  sessionId: 'guest-a',
+  clientsLength: 2,
+  playerOrder: [ 'host' ],
+  totalPlayers: 4,
+  aiCount: 0,
+  humanSeats: 4,
+  maxClients: 4
+}
+[ROOM_DEBUG] join:identity {
+  sessionId: 'guest-a',
+  hasUserId: true,
+  hasPlayerId: true,
+  hasAuthToken: false,
+  provider: 'platform',
+  displayName: 'Alice'
+}
+[ROOM] Current player count: 2 / 4
+[ROOM_DEBUG] join:assigned {
+  sessionId: 'guest-a',
+  seatIndex: -1,
+  isHost: false,
+  playerOrder: [ 'host', 'guest-a' ],
+  connectedHumans: 2,
+  readyHumans: 1,
+  seatedHumans: 1
+}
+[ROOM] Client guest-b joining with name: Bob
+[ROOM_DEBUG] join:start {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  sessionId: 'guest-b',
+  clientsLength: 3,
+  playerOrder: [ 'host', 'guest-a' ],
+  totalPlayers: 4,
+  aiCount: 0,
+  humanSeats: 4,
+  maxClients: 4
+}
+[ROOM_DEBUG] join:identity {
+  sessionId: 'guest-b',
+  hasUserId: true,
+  hasPlayerId: true,
+  hasAuthToken: false,
+  provider: 'platform',
+  displayName: 'Bob'
+}
+[ROOM] Current player count: 3 / 4
+[ROOM_DEBUG] join:assigned {
+  sessionId: 'guest-b',
+  seatIndex: -1,
+  isHost: false,
+  playerOrder: [ 'host', 'guest-a', 'guest-b' ],
+  connectedHumans: 3,
+  readyHumans: 1,
+  seatedHumans: 1
+}
+[ROOM] Client guest-c joining with name: Carol
+[ROOM_DEBUG] join:start {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  sessionId: 'guest-c',
+  clientsLength: 4,
+  playerOrder: [ 'host', 'guest-a', 'guest-b' ],
+  totalPlayers: 4,
+  aiCount: 0,
+  humanSeats: 4,
+  maxClients: 4
+}
+[ROOM_DEBUG] join:identity {
+  sessionId: 'guest-c',
+  hasUserId: true,
+  hasPlayerId: true,
+  hasAuthToken: false,
+  provider: 'platform',
+  displayName: 'Carol'
+}
+[ROOM] Current player count: 4 / 4
+[ROOM_DEBUG] join:assigned {
+  sessionId: 'guest-c',
+  seatIndex: -1,
+  isHost: false,
+  playerOrder: [ 'host', 'guest-a', 'guest-b', 'guest-c' ],
+  connectedHumans: 4,
+  readyHumans: 1,
+  seatedHumans: 1
+}
+[ROOM_DEBUG] startGame:enter {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  gameActive: false,
+  gameStarting: undefined,
+  matchFinished: false,
+  playerOrder: [ 'host', 'guest-a', 'guest-b', 'guest-c' ],
+  players: [
+    {
+      sessionId: 'host',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 'guest-a',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 'guest-b',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 2,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 'guest-c',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 3,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    }
+  ]
+}
+[ROOM_DEBUG] startGame:beforeBots {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  playerOrder: [ 'host', 'guest-a', 'guest-b', 'guest-c' ],
+  players: [
+    {
+      sessionId: 'host',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 'guest-a',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 'guest-b',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 2,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 'guest-c',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 3,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    }
+  ]
+}
+[ROOM_DEBUG] startGame:afterBots {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  playerOrder: [ 'host', 'guest-a', 'guest-b', 'guest-c' ],
+  players: [
+    {
+      sessionId: 'host',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 'guest-a',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 'guest-b',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 2,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 'guest-c',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 3,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    }
+  ]
+}
+[ROOM_DEBUG] startDeal:enter {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  stakeKey: 'free',
+  currentDealMatchId: '',
+  matchRound: 1,
+  playerOrder: [ 'host', 'guest-a', 'guest-b', 'guest-c' ],
+  players: [
+    {
+      sessionId: 'host',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 'guest-a',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 'guest-b',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 2,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 'guest-c',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 3,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    }
+  ]
+}
+[ROOM] Client host joining with name: Host
+[ROOM_DEBUG] join:start {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  sessionId: 'host',
+  clientsLength: 1,
+  playerOrder: [],
+  totalPlayers: 2,
+  aiCount: 0,
+  humanSeats: 2,
+  maxClients: 2
+}
+[ROOM_DEBUG] join:identity {
+  sessionId: 'host',
+  hasUserId: true,
+  hasPlayerId: true,
+  hasAuthToken: false,
+  provider: 'platform',
+  displayName: 'Host'
+}
+[ROOM] Current player count: 1 / 2
+[ROOM_DEBUG] join:assigned {
+  sessionId: 'host',
+  seatIndex: 0,
+  isHost: true,
+  playerOrder: [ 'host' ],
+  connectedHumans: 1,
+  readyHumans: 1,
+  seatedHumans: 1
+}
+[ROOM] Client guest joining with name: Guest
+[ROOM_DEBUG] join:start {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  sessionId: 'guest',
+  clientsLength: 2,
+  playerOrder: [ 'host' ],
+  totalPlayers: 2,
+  aiCount: 0,
+  humanSeats: 2,
+  maxClients: 2
+}
+[ROOM_DEBUG] join:identity {
+  sessionId: 'guest',
+  hasUserId: true,
+  hasPlayerId: true,
+  hasAuthToken: false,
+  provider: 'platform',
+  displayName: 'Guest'
+}
+[ROOM] Current player count: 2 / 2
+[ROOM_DEBUG] join:assigned {
+  sessionId: 'guest',
+  seatIndex: 1,
+  isHost: false,
+  playerOrder: [ 'host', 'guest' ],
+  connectedHumans: 2,
+  readyHumans: 2,
+  seatedHumans: 2
+}
+[ROOM_DEBUG] startGame:enter {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  gameActive: false,
+  gameStarting: undefined,
+  matchFinished: false,
+  playerOrder: [ 'host', 'guest' ],
+  players: [
+    {
+      sessionId: 'host',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 'guest',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    }
+  ]
+}
+[ROOM_DEBUG] startGame:beforeBots {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  playerOrder: [ 'host', 'guest' ],
+  players: [
+    {
+      sessionId: 'host',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 'guest',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    }
+  ]
+}
+[ROOM_DEBUG] startGame:afterBots {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  playerOrder: [ 'host', 'guest' ],
+  players: [
+    {
+      sessionId: 'host',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 'guest',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    }
+  ]
+}
+[ROOM_DEBUG] startDeal:enter {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  stakeKey: 'stake_200',
+  currentDealMatchId: '',
+  matchRound: 1,
+  playerOrder: [ 'host', 'guest' ],
+  players: [
+    {
+      sessionId: 'host',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 'guest',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    }
+  ]
+}
+[ROOM_DEBUG] reserve:before {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  stakeKey: 'stake_200',
+  currentDealMatchId: 'room-seat:round:1',
+  humans: [
+    {
+      sessionId: 'host',
+      seatIndex: 0,
+      isBot: false,
+      isConnected: true,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 'guest',
+      seatIndex: 1,
+      isBot: false,
+      isConnected: true,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    }
+  ]
+}
+[ROOM_DEBUG] reserve:result {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  ok: false,
+  reason: 'insufficient_coins',
+  status: '',
+  messageKey: ''
+}
+[ROOM_DEBUG] startDeal:reserve_failed {
+  roomId: 'room-seat',
+  roomCode: 'SEAT',
+  roomVisibility: 'open',
+  reason: 'insufficient_coins',
+  message: 'room-closed-insufficient-coins',
+  willSendRoomClosed: false
+}
+✔ ffa room auto-starts with bots once human seats are filled (653.046292ms)
+✔ open ffa room reports waiting state until the final human joins (1.936208ms)
+✔ open waiting room host explicit leave keeps the room when another connected human remains (6.412333ms)
+✔ open waiting room last connected human leave closes the room before start (1.745083ms)
+✔ closing a waiting open room removes it from registry and open rooms listing (21.602208ms)
+✔ open rooms listing hides rooms with no connected players (0.276917ms)
+✔ updateSchemaState syncs player handCount fields from live hands (0.692916ms)
+✔ seat cannot be changed after the game starts (0.320083ms)
+✔ team mode pairs Seat 1 + Seat 3 and Seat 2 + Seat 4 (0.593458ms)
+✔ leaving before the game starts frees the seat (0.49325ms)
+✔ reconnect before the game starts keeps the seat (1.76925ms)
+✔ bots fill remaining seats without stealing human seats (0.735583ms)
+✔ startGame includes bots in playerOrder and reaches startDeal with four players (1.036708ms)
+✔ open room starts without closing after seats are chosen (2.104583ms)
+✔ open room keeps waiting when stake reserve fails at start (1.092209ms)
+ℹ tests 26
+ℹ suites 0
+ℹ pass 24
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2953.791792
+
+✖ failing tests:
+
+test at test/public-presence.test.js:5:1
+✖ public summary allows public profile fields but no session/user/private room identifiers (1.843334ms)
+  TypeError: presence.getPublicLiveSummary is not a function
+      at TestContext.<anonymous> (/Users/macbookair/Documents/domino/.tmp/remediation-s015/clean/server/test/public-presence.test.js:5:143)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.start (node:internal/test_runner/test:1015:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:358:17)
+
+test at test/public-presence.test.js:6:1
+✖ open-room discovery cannot reveal closed rooms even with visibility=all/closed (14.973125ms)
+  AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:
+  
+    assert(!text.includes('PRIVATE-CODE'))
+  
+      at TestContext.<anonymous> (/Users/macbookair/Documents/domino/.tmp/remediation-s015/clean/server/test/public-presence.test.js:6:259)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }

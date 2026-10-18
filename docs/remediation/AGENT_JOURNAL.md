@@ -1,10 +1,11 @@
+<!-- Active batch S014-S021: R27,R11,R39,R41,R16,R17,R40,R19; 0/8 completed. -->
 # Agent journal - current handoff
 
 Updated 2026-10-18. Latest five-item batch S009-S013 finished. Read this, WORK_LOG.md, then the next cards in docs/audit/REMEDIATION_PLAN.md.
 
 ## Authorization and operating rules
 
-User owns Domino, deployed with about50 users. Continue in batches of5 items; explain each completed item in simple Russian. Keep this useful short handoff and append-only work log. Local code/fixes/tests and pushing feature branch are authorized. Production deployment, production migrations, real wallet edits, installed Play package changes need a direct user instruction. Do not load/copy/print real .env or tokens. No Codex plugin installation without confirmation; none installed. No agents requested for this batch.
+User owns Domino, deployed with about50 users. Continue in batches of8 items; explain each completed item in simple Russian. Keep this useful short handoff and append-only work log. Local code/fixes/tests and pushing feature branch are authorized. Production deployment, production migrations, real wallet edits, installed Play package changes need a direct user instruction. Do not load/copy/print real .env or tokens. No Codex plugin installation without confirmation; none installed. No agents requested for this batch.
 
 ## Git and status
 
@@ -37,3 +38,5 @@ Audit docs: after changes run node docs/audit/evidence/scripts/validate-audit.mj
 ## Exact next action
 
 Inspect clean status/latest pushed commit, then read R27 and begin current-advisory/reachability triage before choosing patched dependency versions. Remaining P0 R27 needs compatible update and OAuth/navigation regression; browse official sources/current advisories. Proposed next five cards: R27,R41,R16,R17,R40 (R17 depends R16, R40 depends both). R41 fresh+upgrade migration checks must avoid reset/db push. R25 old failures do not block adding focused regressions; do not weaken assertions. Keep batch5, per-item journal/commit/push and simple Russian benefit explanation. R09 SSV needs later external acceptance; do not silently enable x2. R29 remains a separate durable outbox/fault-drill card after R03/R04.
+
+Active eight-item batch: R11/S015 and R39/S016 completed locally;2/8. Combined server routes checkpoint follows (same index.js touched by both). API142/142 Node25/22, real HTTP redaction/legacy-own-resume and real Redis paused/recovery verified. R27/S014 candidate dependencies updated only isolated clone; critical0, residual high4 build/config warnings to classify; no lock copied yet. R41/S017 new additive migration+schema index alignment in working tree, PG55439 running; drift/API checks running. R16/R17/R40/R19 not yet implemented. Phone promised reconnect, last inventory empty.

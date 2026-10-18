@@ -167,14 +167,14 @@ export default async function DashboardPage() {
         <Panel title="Realtime players">
           {mergedRealtime?.players.length ? (
             <div style={liveListStyle}>
-              {mergedRealtime.players.map((player) => (
-                <article key={player.sessionId} style={liveCardStyle}>
+              {mergedRealtime.players.map((player, index) => (
+                <article key={player.playerId || `${player.displayName}:${index}`} style={liveCardStyle}>
                   <div style={liveCardHeaderStyle}>
                     <strong>{player.displayName}</strong>
                     <span style={liveBadgeStyle}>{player.isPlaying ? "Playing" : "Connected"}</span>
                   </div>
                   <div style={liveMetaStyle}>
-                    <span>{player.roomCode ?? player.roomId ?? "no room"}</span>
+                    <span>{player.roomCode ?? player.roomId ?? "Private location"}</span>
                     <span>{player.provider}</span>
                     <span>{player.role}</span>
                   </div>

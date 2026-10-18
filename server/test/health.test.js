@@ -14,9 +14,7 @@ test("readiness health reports unhealthy when Redis is unavailable in production
     const health = await buildReadinessHealth({
         redis: {
             status: "connecting",
-            connect: async () => {
-                throw new Error("redis down");
-            }
+            ping: async () => { throw new Error("redis down"); }
         },
         isProduction: true
     });
@@ -32,9 +30,7 @@ test("readiness health reports ok when Redis is ready", async () => {
     const health = await buildReadinessHealth({
         redis: {
             status: "connecting",
-            connect: async () => {
-                connected = true;
-            }
+            ping: async () => { connected = true; return "PONG"; }
         },
         isProduction: true
     });

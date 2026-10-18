@@ -1,0 +1,13 @@
+✔ ready client must answer PING rather than only have a ready socket (1.204625ms)
+✔ stalled Redis readiness is bounded and can recover (51.855333ms)
+✔ readiness health reports degraded when Redis is not configured outside production (0.942958ms)
+✔ readiness health reports unhealthy when Redis is unavailable in production (0.502875ms)
+✔ readiness health reports ok when Redis is ready (0.116083ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 134.721042

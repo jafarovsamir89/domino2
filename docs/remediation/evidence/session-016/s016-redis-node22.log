@@ -1,0 +1,19 @@
+[Sentry] SENTRY_DSN not set — monitoring disabled
+ℹ️  optional .env file not found: .env.test, .env
+[ROOM] PLATFORM_API_URL resolved: http://127.0.0.1:4300
+[GameServer] Listening on http://localhost:0
+
+   ___      _                                    ___   _ _____
+  / __\___ | |_   _ ___  ___ _   _ ___   __   __/ _ \ / |___  |
+ / /  / _ \| | | | / __|/ _ \ | | / __|  \ \ / / | | || |  / /
+/ /__| (_) | | |_| \__ \  __/ |_| \__ \   \ V /| |_| || | / /
+\____/\___/|_|\__, |___/\___|\__,_|___/    \_/  \___(_)_|/_/
+              |___/
+
+             · Multiplayer Framework for Node.js ·
+
+💖 Consider becoming a Sponsor on GitHub → https://github.com/sponsors/endel
+🌟 Give us a star on GitHub → https://github.com/colyseus/colyseus
+☁️  Deploy and scale your project on Colyseus Cloud → https://cloud.colyseus.io
+
+{"livenessMs":[1.3118330000000356,1.0492079999999646,1.2951669999999922,1.3662499999999795,0.8448750000000018],"readinessMs":752.3092080000001,"stalledStatus":503,"recoveredStatus":200,"additionalProbes":20,"snapshotUnchanged":true,"roomUnchanged":true}

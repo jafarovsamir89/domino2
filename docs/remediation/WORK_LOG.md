@@ -203,3 +203,19 @@ Fresh real migrated PG on Node25 and22: actual EconomyService reserve/settle -> 
 Plain benefit: returning your own stake no longer looks like a loss; the screen shows the actual profit/loss and repeated notifications cannot count it twice.
 
 Batch S009-S013 handled R01/R04/R09/R12/R42. Four cards closed locally; R09 local unverified-path fix is complete while external verified-ad/SSV acceptance stays deferred. Accurate overall status:12 cards closed locally, R09 local safeguard complete/external acceptance pending, R25 partial,28 untouched open cards. Earlier counts11/12 "local scopes" included R09 disabled-path work and must not be read as full ad integration. No production/Play deployment, migrations or live wallet edits. New checkpoint subject: fix(ui): reconcile coin totals with per-player settlement receipts.
+
+## Eight-item batch S014-S021
+
+User requests8 items per turn. Start clean92fe188,12locallyclosed/R09externalpending/R25partial/28open. Selected R27(dependency triage),R11(public presence),R39(health),R41(forward migrations),R16(stale async turn),R17(phase recovery),R40(solo pause),R19(audio controls), in dependency order for client trio. No production/Play edits. ADB currently has no devices; optional request sent to reconnect, continue independent local work. S014 fresh copy/root ci and audit collected.
+
+### S015/R-11 completed locally
+
+Public game/platform summaries redact session/user/private room codes; public discovery cannot opt into closed rooms. Authenticated owners can inspect their own room code; legacy clients with an unlisted session retain only the minimal room-id resume probe. Private code reverse lookup requires membership. Client headers updated, admin keys no longer depend on sessions. Initial API attempt reused only root dependencies and selected TS6 instead of nested TS5; rerun uses the complete unchanged S013 dependency layout.
+
+Checks: {"apiNode25And22":{"pass":142,"fail":0},"presenceAndRooms":"s015-presence-verified.json","http":"s015-http-final.json","fullServer":"s015-server-full.json"}. Benefit: Lists no longer expose closed room codes or game session identifiers; own resume and public room discovery remain available.
+
+### S016/R-39 completed locally
+
+Liveness/readiness bypass application Redis rate limiter. Readiness requires PING,750ms deadline, shared in-flight probe prevents queue growth. Real owned Redis pause: liveness under500ms, readiness503 under1000ms, recovery200 and exact room/snapshot preserved on Node25/22. Own Redis stopped. Initial recovery fixture was corrected to await completion of its released PING before probing recovery.
+
+Checks: {"unit":"s016-health-verified.json","node22":"s016-node22.json","redis":"s016-real-redis-health.json","redisNode22":"s016-redis-node22.json","fullServer":"s016-server-full.json"}. Benefit: A Redis interruption no longer makes the running game server appear dead; readiness reports the actual problem and recovers.

@@ -563,7 +563,7 @@ export class AccountClient {
         const key = String(sessionId || "").trim();
         if (!key) return null;
         try {
-            const data = await this.request(`/realtime/sessions/${encodeURIComponent(key)}`);
+            const data = await this.request(`/realtime/sessions/${encodeURIComponent(key)}`, { headers: { Authorization: `Bearer ${this.getStoredToken()}` } });
             return data?.item || null;
         } catch {
             return null;

@@ -1,0 +1,24 @@
+{
+  "label": "s016-redis-node22",
+  "command": [
+    "npm",
+    "exec",
+    "--yes",
+    "--package=node@22.14.0",
+    "--package=npm@10.9.2",
+    "--",
+    "node",
+    "/Users/macbookair/Documents/domino/docs/remediation/scripts/verify-health-isolation.mjs",
+    "/Users/macbookair/Documents/domino/docs/remediation/scripts/health-http-preload.cjs"
+  ],
+  "cwd": ".tmp/remediation-s016/clean",
+  "startedAt": "2026-10-18T23:05:22.215Z",
+  "finishedAt": "2026-10-18T23:05:23.985Z",
+  "durationMs": 1770,
+  "exitCode": 0,
+  "signal": null,
+  "timedOut": false,
+  "error": null,
+  "log": "docs/remediation/evidence/session-016/s016-redis-node22.log",
+  "environment": "Fresh allowlist, synthetic local API/DB, optional Redis disabled, no inherited secrets or copied .env"
+}

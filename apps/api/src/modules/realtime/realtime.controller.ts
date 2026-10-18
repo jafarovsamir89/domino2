@@ -15,7 +15,9 @@ export class RealtimeController {
 
   @Get("sessions/:sessionId")
   async getSession(@Param("sessionId") sessionId: string) {
-    return { item: await this.realtimeService.getSession(sessionId) };
+    const entry = await this.realtimeService.getSession(sessionId);
+    return { item: entry ? { displayName: entry.displayName, isConnected: entry.isConnected,
+      isPlaying: entry.isPlaying } : null };
   }
 
   @Post("heartbeat")

@@ -1,0 +1,32 @@
+✔ ready client must answer PING rather than only have a ready socket (1.237791ms)
+✖ stalled Redis readiness is bounded and can recover (52.470417ms)
+✔ readiness health reports degraded when Redis is not configured outside production (0.863417ms)
+✔ readiness health reports unhealthy when Redis is unavailable in production (0.508416ms)
+✔ readiness health reports ok when Redis is ready (0.112708ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 4
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 160.007125
+
+✖ failing tests:
+
+test at test/health-deadline.test.js:3:1
+✖ stalled Redis readiness is bounded and can recover (52.470417ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  503 !== 200
+  
+      at TestContext.<anonymous> (/Users/macbookair/Documents/domino/.tmp/remediation-s016/clean/server/test/health-deadline.test.js:3:365)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 503,
+    expected: 200,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

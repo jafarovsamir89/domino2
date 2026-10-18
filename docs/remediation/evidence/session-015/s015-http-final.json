@@ -1,0 +1,18 @@
+{
+  "label": "s015-http-final",
+  "command": [
+    "node",
+    "/Users/macbookair/Documents/domino/docs/remediation/scripts/verify-public-presence.mjs",
+    "/Users/macbookair/Documents/domino/docs/remediation/scripts/presence-http-preload.cjs"
+  ],
+  "cwd": ".tmp/remediation-s015/clean",
+  "startedAt": "2026-10-18T23:06:57.647Z",
+  "finishedAt": "2026-10-18T23:06:58.269Z",
+  "durationMs": 622,
+  "exitCode": 0,
+  "signal": null,
+  "timedOut": false,
+  "error": null,
+  "log": "docs/remediation/evidence/session-015/s015-http-final.log",
+  "environment": "Fresh allowlist, synthetic local API/DB, optional Redis disabled, no inherited secrets or copied .env"
+}

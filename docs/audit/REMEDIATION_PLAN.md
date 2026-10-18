@@ -244,7 +244,7 @@ Status: **fixed locally, S013**. API emits versioned per-player stake/returnedSt
 
 #### R-11 · P1 · Минимизировать public presence
 
-Статус: **открыто**. Основание: воспроизведено; [доказательства](07_SECURITY_ANTICHEAT.md).
+Status: **fixed locally, S015**. Public game/platform summaries redact session/user/private room codes; public discovery cannot opt into closed rooms. Authenticated owners can inspect their own room code; legacy clients with an unlisted session retain only the minimal room-id resume probe. Private code reverse lookup requires membership. Client headers updated, admin keys no longer depend on sessions. Initial API attempt reused only root dependencies and selected TS6 instead of nested TS5; rerun uses the complete unchanged S013 dependency layout. [Evidence](../remediation/evidence/session-015/summary.json). No production/Play deployment.
 
 - **Изменение:** Оставить в публичной выдаче только необходимые поля присутствия. Закрытые коды комнат и session identifiers не должны попадать в общий список.
 - **Где:** `server/index.js:/api/realtime/players;livePresence.js`.
@@ -253,7 +253,7 @@ Status: **fixed locally, S013**. API emits versioned per-player stake/returnedSt
 
 #### R-39 · P1 · Отвязать liveness от зависания Redis
 
-Статус: **открыто**. Основание: воспроизведено: оба health timeout1500 мс; [доказательства](05_MULTIPLAYER_RECONNECT.md).
+Status: **fixed locally, S016**. Liveness/readiness bypass application Redis rate limiter. Readiness requires PING,750ms deadline, shared in-flight probe prevents queue growth. Real owned Redis pause: liveness under500ms, readiness503 under1000ms, recovery200 and exact room/snapshot preserved on Node25/22. Own Redis stopped. Initial recovery fixture was corrected to await completion of its released PING before probing recovery. [Evidence](../remediation/evidence/session-016/summary.json). No production/Play deployment.
 
 - **Изменение:** Вынести liveness из пути ожидания Redis rate limiter; readiness проверяет зависимости с ограниченным временем. При паузе Redis liveness отвечает, readiness возвращает контролируемое 503, после восстановления возвращается 200.
 - **Где:** `server/index.js:197,233;server/health.js`.
