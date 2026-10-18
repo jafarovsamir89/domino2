@@ -477,6 +477,21 @@ export class EconomyService implements OnModuleInit {
       }
     });
 
+    // Daily claim records progress here; it must exist on a freshly migrated DB.
+    // The daily bonus itself already pays the reward, so this adds no payout.
+    await db.coinQuest.upsert({
+      where: { key: "daily_login" },
+      update: {},
+      create: {
+        key: "daily_login",
+        title: "Daily login",
+        rewardAmount: 0,
+        maxProgress: 1,
+        period: "daily",
+        isActive: true
+      }
+    });
+
     for (const stake of DEFAULT_STAKES) {
       await db.coinStakeTable.upsert({
         where: { key: stake.key },

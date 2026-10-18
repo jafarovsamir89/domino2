@@ -1,0 +1,13 @@
+{
+  "database": "domino_remediation_s003_after",
+  "manualQuestSeed": false,
+  "firstReward": 200,
+  "repeatClaimed": false,
+  "nextDayReward": 300,
+  "balance": 1500,
+  "claimCount": 2,
+  "ledgerCount": 2,
+  "additionalQuestReward": 0,
+  "questProgress": "completed",
+  "restartPreservesOwnerQuest": true
+}

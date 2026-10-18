@@ -1,0 +1,23 @@
+{
+  "label": "s003-createdb-after",
+  "command": [
+    "/opt/homebrew/Cellar/postgresql@14/14.20/bin/createdb",
+    "-h",
+    "127.0.0.1",
+    "-p",
+    "55439",
+    "-U",
+    "domino_remediation",
+    "domino_remediation_s003_after"
+  ],
+  "cwd": ".tmp/remediation-s003/clean",
+  "startedAt": "2026-10-18T21:55:28.948Z",
+  "finishedAt": "2026-10-18T21:55:29.011Z",
+  "durationMs": 63,
+  "exitCode": 0,
+  "signal": null,
+  "timedOut": false,
+  "error": null,
+  "log": "docs/remediation/evidence/session-003/s003-createdb-after.log",
+  "environment": "Fresh allowlist, synthetic local API/DB, optional Redis disabled, no inherited secrets or copied .env"
+}

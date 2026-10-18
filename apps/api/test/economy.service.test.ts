@@ -15,6 +15,7 @@ function bootstrapFixture() {
   const config = { key: "default", dailyRewards: [11, 22], matchCommissionBps: 250 };
   const stakes = new Map<string, any>();
   const products = new Map<string, any>();
+  const quests = new Map<string, any>();
   const prices = new Map<string, any>();
   let priceId = 0;
   const writes: string[] = [];
@@ -35,6 +36,10 @@ function bootstrapFixture() {
       findMany: async () => [...stakes.values()].filter(row => row.isActive)
     },
     catalogProduct: { upsert: upsert(products, "product") },
+    coinQuest: {
+      upsert: upsert(quests, "quest"),
+      findUnique: async ({ where }: any) => quests.get(where.key) || null
+    },
     catalogPrice: {
       findFirst: async ({ where }: any) => [...prices.values()].find(row => row.productId === where.productId && row.currency === where.currency) || null,
       create: async ({ data }: any) => {
@@ -48,8 +53,8 @@ function bootstrapFixture() {
     $queryRaw: async () => [{ locked: 1 }],
     $transaction: async (run: any) => run(db)
   };
-  const snapshot = () => structuredClone({ config, stakes: [...stakes.values()], products: [...products.values()], prices: [...prices.values()] });
-  return { db, config, stakes, products, prices, writes, snapshot };
+  const snapshot = () => structuredClone({ config, stakes: [...stakes.values()], products: [...products.values()], prices: [...prices.values()], quests: [...quests.values()] });
+  return { db, config, stakes, products, prices, quests, writes, snapshot };
 }
 
 function customizeBootstrap(fixture: ReturnType<typeof bootstrapFixture>) {
@@ -108,11 +113,28 @@ test("fresh startup creates missing defaults once and restores only missing pric
   assert.equal(fixture.prices.size, 8);
 });
 
+test("startup seeds required daily login progress without an extra reward and preserves owner changes", async () => {
+  const fixture = bootstrapFixture();
+  const service = new EconomyService(fixture.db, {} as any);
+  await service.onModuleInit();
+  const quest = await fixture.db.coinQuest.findUnique({ where: { key: "daily_login" } });
+  assert.ok(quest, "daily claims require a daily_login quest on a fresh database");
+  assert.equal(quest.isActive, true);
+  assert.equal(quest.maxProgress, 1);
+  assert.equal(quest.rewardAmount, 0);
+  assert.equal(quest.period, "daily");
+  Object.assign(quest, { title: "Owner title", rewardAmount: 17, maxProgress: 3, isActive: false });
+  const before = fixture.snapshot();
+  await service.onModuleInit();
+  assert.deepEqual(fixture.snapshot(), before);
+});
+
 test("bootstrap prices every paid table skin at 1500 coins", async () => {
   const createdPrices: number[] = [];
   const prismaMock = {
     coinEconomyConfig: { upsert: async () => ({ key: "default" }) },
     coinStakeTable: { upsert: async () => null },
+    coinQuest: { upsert: async () => null },
     catalogProduct: {
       upsert: async ({ where }: any) => ({ id: `catalog:${where.key}`, key: where.key })
     },

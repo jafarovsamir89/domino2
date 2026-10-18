@@ -1,0 +1,23 @@
+{
+  "label": "s003-createdb-before",
+  "command": [
+    "/opt/homebrew/Cellar/postgresql@14/14.20/bin/createdb",
+    "-h",
+    "127.0.0.1",
+    "-p",
+    "55439",
+    "-U",
+    "domino_remediation",
+    "domino_remediation_s003_before"
+  ],
+  "cwd": ".tmp/remediation-s003/clean",
+  "startedAt": "2026-10-18T21:55:27.797Z",
+  "finishedAt": "2026-10-18T21:55:27.923Z",
+  "durationMs": 126,
+  "exitCode": 0,
+  "signal": null,
+  "timedOut": false,
+  "error": null,
+  "log": "docs/remediation/evidence/session-003/s003-createdb-before.log",
+  "environment": "Fresh allowlist, synthetic local API/DB, optional Redis disabled, no inherited secrets or copied .env"
+}

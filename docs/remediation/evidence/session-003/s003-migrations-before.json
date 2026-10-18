@@ -1,0 +1,19 @@
+{
+  "label": "s003-migrations-before",
+  "command": [
+    "node",
+    "--input-type=module",
+    "-e",
+    "process.env.DATABASE_URL=\"postgresql://domino_remediation@127.0.0.1:55439/domino_remediation_s003_before?schema=public\"; const {execFileSync}=await import(\"node:child_process\"); execFileSync(\"npm\",[\"run\",\"migrate:deploy\",\"-w\",\"@domino2/db\"],{stdio:\"inherit\",env:process.env});"
+  ],
+  "cwd": ".tmp/remediation-s003/clean",
+  "startedAt": "2026-10-18T21:55:28.000Z",
+  "finishedAt": "2026-10-18T21:55:28.872Z",
+  "durationMs": 872,
+  "exitCode": 0,
+  "signal": null,
+  "timedOut": false,
+  "error": null,
+  "log": "docs/remediation/evidence/session-003/s003-migrations-before.log",
+  "environment": "Fresh allowlist, synthetic local API/DB, optional Redis disabled, no inherited secrets or copied .env"
+}

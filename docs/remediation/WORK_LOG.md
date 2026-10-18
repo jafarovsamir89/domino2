@@ -65,3 +65,19 @@
 - Простое объяснение владельцу: заданные цены, комиссии и отключённые столы больше не сбрасываются от просмотра настроек или перезапуска. На рабочий сервер это ещё не установлено.
 - R-05 локально закрыт. Общий итог2/42, R-25partial. R-07 seed/R-41schema drift не закрыты этим пакетом. Browser/server matrix повторять без причины не нужно.
 - Следом S003/R-07: daily claim использует обязательный daily_login, которого нет после fresh migrations. Изучить контракт, воспроизвести без ручного quest, добавить идемпотентный seed в startup и проверить реальное начисление. PG этого пакета пока запущен исключительно локально для следующей проверки; перед финальной передачей остановить собственный кластер через pg_ctl -D .tmp/remediation-s002/pg -m fast -w stop.
+
+## S003 — 18.10.2026 — R-07, daily на fresh database
+
+Начало после опубликованного S002 commit30596eb, чистая ветка fix/audit-foundation. Fresh checkout `.tmp/remediation-s003/clean`, clean npm ci passed. Используется только собственный PG S002loopback55439. Созданы отдельные synthetic DB `domino_remediation_s003_before`/`after`, все18 migrations применились без schema repair.
+
+До правки: новый unit regression даёт130/131, единственный fail — отсутствующий daily_login после startup. Реальный normal daily claim после fresh migrations+startup падает `Quest not found` (`s003-daily-before`), ручного seed нет. Existing MockDb заранее содержал quest, поэтому старый suite этот дефект не видел.
+
+Исправление: startup initializer создаёт missing daily_login, update{} сохраняет owner changes. maxProgress1, active true, period daily; rewardAmount0 — ежедневные монеты выплачиваются существующим daily bonus, дополнительную награду не вводим. Historical audit fixtures использовали такой же нулевой quest reward. Существующие inactive quest не включать принудительно; R-07 устраняет отсутствие записи, не меняет админ-политику отключения/вознаграждений. R-02parallel/R-09x2 не входят в этот пакет.
+
+### S003.1 — завершение
+
+- Unit suite до130/131, после131/131 на Node25.6 и22.14; root source check pass. Real PG после18freshmigrations: startup без ручного quest, normal daily200, repeat same date claimedfalse/без начисления, следующий день300. Synthetic balance1000→1500,2claims/2daily ledger entries, progress completed, extraquestreward0.
+- Повторный startup сохраняет title/description/reward17/maxProgress3/inactive/timestamps, дубликатов quest нет. Не считать existing disabled daily_login работающим daily: поведение отключённой админом записи не менялось.
+- Полные команды и логи — `evidence/session-003/summary.json`. Только synthetic player/email @example.invalid, никаких real profiles/production endpoints. Собственный PG .tmp/remediation-s002/pg штатно остановлен (`s003-pg-stop`); временные DB остаются для повторного анализа, .env не копировались.
+- Для владельца: ежедневный бонус теперь работает и на новой базе без ручного добавления служебной записи; суммы выплат остались прежними. На действующий сервер изменения не устанавливались.
+- Итог3/42локально закрыты (R-06,R-05,R-07), R-25partial,38open. Следующий пакет S004/R-02: сначала failing100parallel/retry для ежедневного начисления и upgrade, затем атомарная проверка+изменение claim+wallet; не смешивать с решением о рекламном x2 (R-09) или изменением суммы наград. Проверки R-25/E2E и schema drift R-41 остаются открыты.

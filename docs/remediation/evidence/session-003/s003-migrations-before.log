@@ -1,0 +1,79 @@
+
+> @domino2/db@0.1.0 migrate:deploy
+> prisma migrate deploy
+
+Prisma schema loaded from prisma/schema.prisma
+Datasource "db": PostgreSQL database "domino_remediation_s003_before", schema "public" at "127.0.0.1:55439"
+
+18 migrations found in prisma/migrations
+
+Applying migration `20260507_000001_initial_platform`
+Applying migration `20260508_000002_economy`
+Applying migration `20260508_000003_social`
+Applying migration `20260513_000004_player_avatar_url`
+Applying migration `20260513_000005_gifts`
+Applying migration `20260515_000006_gift_ledger_types`
+Applying migration `20260515_000007_table_skins`
+Applying migration `20260518_000008_hardening`
+Applying migration `20260518_000009_leaderboard_index`
+Applying migration `20260518_000010_system_audit_log`
+Applying migration `20260603_000011_add_direct_messages`
+Applying migration `20260603_000012_add_inbox_messages`
+Applying migration `20260612_000013_add_play_invite_reservation`
+Applying migration `20260612_000014_add_play_invite_room_ready`
+Applying migration `20260625_000015_add_feedback`
+Applying migration `20260626_000016_split_rating_by_mode`
+Applying migration `20260626_000017_daily_rewards_config`
+Applying migration `20260811_000018_update_cosmetic_and_gift_prices`
+
+┌─────────────────────────────────────────────────────────┐
+│  Update available 6.19.3 -> 8.0.0-rc.23                 │
+│                                                         │
+│  This is a major update - please follow the guide at    │
+│  https://pris.ly/d/major-version-upgrade                │
+│                                                         │
+│  Run the following to update                            │
+│    npm i --save-dev prisma@latest                       │
+│    npm i @prisma/client@latest                          │
+└─────────────────────────────────────────────────────────┘
+The following migration(s) have been applied:
+
+migrations/
+  └─ 20260507_000001_initial_platform/
+    └─ migration.sql
+  └─ 20260508_000002_economy/
+    └─ migration.sql
+  └─ 20260508_000003_social/
+    └─ migration.sql
+  └─ 20260513_000004_player_avatar_url/
+    └─ migration.sql
+  └─ 20260513_000005_gifts/
+    └─ migration.sql
+  └─ 20260515_000006_gift_ledger_types/
+    └─ migration.sql
+  └─ 20260515_000007_table_skins/
+    └─ migration.sql
+  └─ 20260518_000008_hardening/
+    └─ migration.sql
+  └─ 20260518_000009_leaderboard_index/
+    └─ migration.sql
+  └─ 20260518_000010_system_audit_log/
+    └─ migration.sql
+  └─ 20260603_000011_add_direct_messages/
+    └─ migration.sql
+  └─ 20260603_000012_add_inbox_messages/
+    └─ migration.sql
+  └─ 20260612_000013_add_play_invite_reservation/
+    └─ migration.sql
+  └─ 20260612_000014_add_play_invite_room_ready/
+    └─ migration.sql
+  └─ 20260625_000015_add_feedback/
+    └─ migration.sql
+  └─ 20260626_000016_split_rating_by_mode/
+    └─ migration.sql
+  └─ 20260626_000017_daily_rewards_config/
+    └─ migration.sql
+  └─ 20260811_000018_update_cosmetic_and_gift_prices/
+    └─ migration.sql
+      
+All migrations have been successfully applied.

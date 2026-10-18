@@ -154,7 +154,7 @@ R-25 относится к этапу 0, но окончательно закр�
 
 #### R-07 · P1 · Fresh database daily quest seed
 
-Статус: **открыто**. Основание: воспроизведено; [доказательства](08_ECONOMY_BALANCE.md).
+Статус: **исправлено локально, S003**. В `fix/audit-foundation` startup создаёт missing daily_login без дополнительной награды и сохраняет existing admin edits. Fresh18migrations→startup→normal daily прошёл без ручного seed:200монет первый день,0повторного начисления,300следующий; до правки Quest not found. API131/131 на Node25/22. [Проверки](../remediation/evidence/session-003/summary.json). Production не обновлялся. Основание: воспроизведено; [исторические доказательства](08_ECONOMY_BALANCE.md).
 
 - **Изменение:** Создать необходимые daily quest справочники в повторяемом bootstrap/migration. Проверить пустую БД без ручного добавления daily_login.
 - **Где:** `apps/api/src/modules/economy/economy.service.ts:1586,3240;prisma migrations`.

@@ -1,0 +1,17 @@
+{
+  "label": "s003-root-ci",
+  "command": [
+    "npm",
+    "ci"
+  ],
+  "cwd": ".tmp/remediation-s003/clean",
+  "startedAt": "2026-10-18T21:54:44.286Z",
+  "finishedAt": "2026-10-18T21:54:53.802Z",
+  "durationMs": 9516,
+  "exitCode": 0,
+  "signal": null,
+  "timedOut": false,
+  "error": null,
+  "log": "docs/remediation/evidence/session-003/s003-root-ci.log",
+  "environment": "Fresh allowlist, synthetic local API/DB, optional Redis disabled, no inherited secrets or copied .env"
+}

@@ -1,0 +1,18 @@
+{
+  "label": "s003-daily-after",
+  "command": [
+    "node",
+    "/Users/macbookair/Documents/domino/docs/remediation/scripts/verify-fresh-daily.mjs",
+    "domino_remediation_s003_after"
+  ],
+  "cwd": ".tmp/remediation-s003/clean",
+  "startedAt": "2026-10-18T21:55:55.415Z",
+  "finishedAt": "2026-10-18T21:55:55.833Z",
+  "durationMs": 418,
+  "exitCode": 0,
+  "signal": null,
+  "timedOut": false,
+  "error": null,
+  "log": "docs/remediation/evidence/session-003/s003-daily-after.log",
+  "environment": "Fresh allowlist, synthetic local API/DB, optional Redis disabled, no inherited secrets or copied .env"
+}

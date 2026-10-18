@@ -1,0 +1,16 @@
+{"database":"domino_remediation_s003_before","error":"Quest not found"}
+file:///Users/macbookair/Documents/domino/.tmp/remediation-s003/clean/apps/api/dist/src/modules/economy/economy.service.js:2631
+            throw new BadRequestException("Quest not found");
+                  ^
+
+BadRequestException: Quest not found
+    at EconomyService.advanceQuestProgressInternal (file:///Users/macbookair/Documents/domino/.tmp/remediation-s003/clean/apps/api/dist/src/modules/economy/economy.service.js:2631:19)
+    at async file:///Users/macbookair/Documents/domino/.tmp/remediation-s003/clean/apps/api/dist/src/modules/economy/economy.service.js:1251:13
+    at async Proxy._transactionWithCallback (/Users/macbookair/Documents/domino/.tmp/remediation-s003/clean/node_modules/@prisma/client/runtime/library.js:130:8120)
+    at async file:///Users/macbookair/Documents/domino/docs/remediation/scripts/verify-fresh-daily.mjs:22:17 {
+  response: { message: 'Quest not found', error: 'Bad Request', statusCode: 400 },
+  status: 400,
+  options: {}
+}
+
+Node.js v25.6.0
