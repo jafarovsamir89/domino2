@@ -668,3 +668,33 @@ test("solo stake reserve and settle are disabled for coin staking", async () => 
   assert.equal(settle.reason, "solo_stakes_disabled");
   assert.equal(wallets.get("player-solo"), undefined);
 });
+
+for (const scenario of ["win", "loss", "draw", "refund", "team", "zero-profit-winner"]) {
+  test(`per-player settlement receipt agrees with wallet plus reserved delta: ${scenario}`, async () => {
+    const {service,wallets,ledgerEntries}=makeEconomyHarness();
+    const count=scenario==="team"?4:2;
+    if(scenario==="zero-profit-winner"){
+      (await service.prisma.coinStakeTable.findUnique({where:{key:"stake_50"}})).commissionBps=10000;
+    }
+    const participants=Array.from({length:count},(_,i)=>({playerId:`receipt-p${i}`,userId:`receipt-u${i}`,displayName:`Synthetic ${i}`}));
+    const token=createGameToken({userId:participants[0].userId,playerId:participants[0].playerId,displayName:"Synthetic",role:"player",sessionId:"receipt-session",provider:"better-auth",issuedAt:Date.now(),expiresAt:Date.now()+60000});
+    const context={roomId:`receipt-room-${scenario}`,matchId:`receipt-match-${scenario}`,stakeKey:"stake_50"};
+    await service.reserveMatchStake(token,withProof({...context,participants},"economy.reserve"));
+    const before=participants.map(p=>({...wallets.get(p.playerId)!}));
+    const result=scenario==="draw"||scenario==="refund"||scenario==="loss"?scenario:"win";
+    const winners=scenario==="team"?[participants[0].playerId,participants[2].playerId]:[participants[0].playerId];
+    const settled=await service.settleMatchStake(token,withProof({...context,result,winnerPlayerIds:winners},"economy.settle"));
+    assert.equal(settled.receiptVersion,1);assert.equal(settled.matchId,context.matchId);assert.equal(settled.roomId,context.roomId);
+    assert.equal(new Set(settled.reservations.map((r:any)=>r.settlementId)).size,count);
+    for(let i=0;i<count;i++){
+      const receipt=settled.reservations.find((r:any)=>r.playerId===participants[i].playerId),after=wallets.get(participants[i].playerId)!;
+      assert.equal(receipt.receiptVersion,1);assert.equal(receipt.stakeAmount,50);assert.equal(receipt.net,after.balance+after.reserved-before[i].balance-before[i].reserved);
+      assert.equal(receipt.net,receipt.returnedStake+receipt.winnings-receipt.stakeAmount);
+      assert.equal(receipt.returnedStake,scenario==="draw"||scenario==="refund"||winners.includes(participants[i].playerId)?50:0);
+      if(scenario==="zero-profit-winner")assert.equal(receipt.winnings,0);
+    }
+    const snapshot=JSON.stringify({wallets:[...wallets],ledgerEntries});
+    const repeated=await service.settleMatchStake(token,withProof({...context,result,winnerPlayerIds:winners},"economy.settle"));
+    assert.equal(repeated.skipped,true);assert.equal(JSON.stringify({wallets:[...wallets],ledgerEntries}),snapshot);
+  });
+}

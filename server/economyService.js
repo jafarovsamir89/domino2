@@ -307,6 +307,12 @@ async function settleEconomyRoundForRoom(room, winnerIndex, options = {}) {
 
         const settlement = economyResponse.json;
         const summary = settlement?.ok ? {
+            ...(settlement.receiptVersion === 1 ? {
+                receiptVersion: 1,
+                settlementId: settlement.settlementId,
+                roomId: settlement.roomId,
+                matchId: settlement.matchId
+            } : {}),
             stakeKey: room.currentDealStakeKey,
             stakeAmount: room.currentDealStakeAmount,
             bankAmount: Math.max(0, settlement.bank || room.currentDealBankAmount || 0),

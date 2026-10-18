@@ -217,7 +217,7 @@ Status: **fixed locally, S012**. Server AI receives only its own hand and public
 
 #### R-42 · P1 · Сверять итог монет UI с фактическим settlement
 
-Статус: **открыто**. Основание: воспроизведено: UI −20 при фактических +180; [доказательства](SINGLE_ANDROID_AUDIT.md).
+Status: **fixed locally, S013**. API emits versioned per-player stake/returnedStake/winnings/net receipts with stable IDs. Room forwards them; web/www count consumed stake as loss and profit as winnings, persist totals and ignore repeated IDs. Real PostgreSQL -> API -> room helper -> actual client/renderer agrees with wallet+reserved and ledger delta for win/loss/draw/refund/2v2/forfeit/zero-profit winner on Node25/22. API140/140; client18/18; full server320/327, same seven original failures. [Evidence](../remediation/evidence/session-013/summary.json). Legacy/missing receipts hide incomplete totals; no production/Play deployment.
 
 - **Изменение:** Учитывать возврат собственного reserve отдельно от чистого выигрыша в online summary. Контроль: UI−20 при фактических+180; ledger вернул 200 и начислил 180. Предпочесть явный per-player settlement contract и защиту от повторного события.
 - **Где:** `js/app.js:19417;js/renderer.js:1376–1383;apps/api/src/modules/economy/economy.service.ts:2074–2116`.

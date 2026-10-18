@@ -1,0 +1,24 @@
+✔ js/app.js: win summary uses actual loss/profit and ignores repeated settlement (13.054583ms)
+✔ js/app.js: loss summary uses actual loss/profit and ignores repeated settlement (3.832708ms)
+✔ js/app.js: draw summary uses actual loss/profit and ignores repeated settlement (3.217167ms)
+✔ js/app.js: refund summary uses actual loss/profit and ignores repeated settlement (3.471042ms)
+✔ js/app.js: team-win summary uses actual loss/profit and ignores repeated settlement (3.189083ms)
+✔ js/app.js: zero-profit-win summary uses actual loss/profit and ignores repeated settlement (3.71175ms)
+✔ js/app.js: receipts accumulate across matches and survive a local resume snapshot (7.31525ms)
+✔ js/app.js: absent own receipt and malformed math never change monetary totals (3.961708ms)
+✔ www/js/app.js: win summary uses actual loss/profit and ignores repeated settlement (10.682833ms)
+✔ www/js/app.js: loss summary uses actual loss/profit and ignores repeated settlement (3.247125ms)
+✔ www/js/app.js: draw summary uses actual loss/profit and ignores repeated settlement (3.140791ms)
+✔ www/js/app.js: refund summary uses actual loss/profit and ignores repeated settlement (3.292ms)
+✔ www/js/app.js: team-win summary uses actual loss/profit and ignores repeated settlement (3.707708ms)
+✔ www/js/app.js: zero-profit-win summary uses actual loss/profit and ignores repeated settlement (3.05725ms)
+✔ www/js/app.js: receipts accumulate across matches and survive a local resume snapshot (5.339ms)
+✔ www/js/app.js: absent own receipt and malformed math never change monetary totals (3.303ms)
+ℹ tests 16
+ℹ suites 0
+ℹ pass 16
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 167.762334

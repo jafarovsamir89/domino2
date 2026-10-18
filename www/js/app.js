@@ -435,7 +435,7 @@ class DominoGame {
         this.openingRequiredPlayerIndex = -1;
         this.lastShownStageKey = '';
         this.lastResultStageKey = '';
-        this.onlineCoinSummary = { spent: 0, won: 0 };
+        this.resetOnlineCoinSummary();
         this.currentRoomState = null;
         this.botTakeoverUi = null;
         this.seatSelectionUi = null;
@@ -13467,7 +13467,20 @@ class DominoGame {
     }
 
     resetOnlineCoinSummary() {
-        this.onlineCoinSummary = { spent: 0, won: 0 };
+        this.onlineCoinSummary = { spent: 0, won: 0, returned: 0, staked: 0, receiptIds: [], complete: true };
+    }
+
+    getOnlineCoinSummaryForDisplay() {
+        const summary = this.onlineCoinSummary;
+        return summary?.complete !== false && summary?.receiptIds?.length ? { ...summary } : null;
+    }
+
+    restoreOnlineCoinSummary(summary) {
+        this.resetOnlineCoinSummary();
+        if (!summary || !['spent', 'won', 'returned', 'staked'].every(key => Number.isSafeInteger(summary[key]) && summary[key] >= 0)
+            || !Array.isArray(summary.receiptIds) || !summary.receiptIds.every(id => typeof id === 'string' && id)) return;
+        this.onlineCoinSummary = { spent: summary.spent, won: summary.won, returned: summary.returned,
+            staked: summary.staked, receiptIds: [...new Set(summary.receiptIds)], complete: summary.complete !== false };
     }
 
     buildGameResumeSnapshot() {
@@ -13493,6 +13506,7 @@ class DominoGame {
             onlineAiCount: this.onlineAiCount,
             onlineEconomyMode: this.onlineEconomyMode,
             onlineStakeKey: this.onlineStakeKey,
+            onlineCoinSummary: isOnline ? { ...this.onlineCoinSummary, receiptIds: [...(this.onlineCoinSummary?.receiptIds || [])] } : null,
             soloEconomyMode: this.soloEconomyMode,
             soloStakeKey: this.soloStakeKey,
             difficulty: this.difficulty,
@@ -13682,6 +13696,7 @@ class DominoGame {
                 this.onlinePlayerCount = snapshot.onlinePlayerCount || this.onlinePlayerCount;
                 this.onlineAiCount = snapshot.onlineAiCount || this.onlineAiCount;
                 this.currentMatchStartedAt = snapshot.createdAt || this.currentMatchStartedAt;
+                this.restoreOnlineCoinSummary(snapshot.onlineCoinSummary);
                 await this.network.resumeRoom(token, snapshot);
                 this.currentMatchSessionId = snapshot.sessionId || this.currentMatchSessionId;
                 this.showStartModal(null);
@@ -19404,21 +19419,41 @@ class DominoGame {
     }
 
     applyOnlineEconomySettlement(economy) {
-        if (!this.network.isMultiplayer || this.onlineEconomyMode !== 'coins' || !economy) return;
-        const stakeAmount = Math.max(0, Number(economy.stakeAmount || 0));
-        const reservations = Array.isArray(economy.reservations) ? economy.reservations : [];
+        if (!this.network.isMultiplayer || this.onlineEconomyMode !== 'coins' || !economy) return false;
+        const currentRoomId = String(this.network.room?.roomId || this.network.room?.id || '').trim();
+        if (economy.roomId && currentRoomId && economy.roomId !== currentRoomId) return false;
         const myUserId = String(
             this.accountProfile?.profile?.userId ||
             this.accountDetails?.user?.id ||
-            this.account?.getStoredProfile?.()?.userId ||
-            ''
+            this.account?.getStoredProfile?.()?.userId || ''
         ).trim();
-        const myReservation = reservations.find((entry) => String(entry?.userId || '').trim() === myUserId);
-        const myPayout = Math.max(0, Number(myReservation?.payout ?? 0));
-        if (stakeAmount > 0) {
-            this.onlineCoinSummary.spent += stakeAmount;
-            this.onlineCoinSummary.won += myPayout;
+        if (!myUserId) return false;
+        const receipts = Array.isArray(economy.reservations) ? economy.reservations : [];
+        const receipt = receipts.find(entry => String(entry?.userId || '').trim() === myUserId);
+        if (!this.onlineCoinSummary) this.resetOnlineCoinSummary();
+        // Legacy/failed settlements do not prove a wallet delta. Hide an incomplete
+        // total instead of interpreting a missing receipt as a lost stake.
+        if (!receipt || receipt.receiptVersion !== 1) {
+            if (Number(economy.stakeAmount) > 0) this.onlineCoinSummary.complete = false;
+            return false;
         }
+        const { stakeAmount, returnedStake, winnings, net } = receipt;
+        const id = String(receipt.settlementId || '').trim();
+        if (!id || ![stakeAmount, returnedStake, winnings, net].every(Number.isSafeInteger)
+            || stakeAmount < 0 || returnedStake < 0 || returnedStake > stakeAmount || winnings < 0
+            || net !== returnedStake + winnings - stakeAmount) {
+            this.onlineCoinSummary.complete = false;
+            return false;
+        }
+        const ids = this.onlineCoinSummary.receiptIds || (this.onlineCoinSummary.receiptIds = []);
+        if (ids.includes(id)) return false;
+        ids.push(id);
+        // Only consumed stake is a loss; returning one's own reserve is not profit.
+        this.onlineCoinSummary.spent += stakeAmount - returnedStake;
+        this.onlineCoinSummary.won += winnings;
+        this.onlineCoinSummary.returned = Number(this.onlineCoinSummary.returned || 0) + returnedStake;
+        this.onlineCoinSummary.staked = Number(this.onlineCoinSummary.staked || 0) + stakeAmount;
+        return true;
     }
 
     onNetworkRoundEnd(data) {
@@ -20323,7 +20358,7 @@ class DominoGame {
         const newGameBtn = document.getElementById('new-game-btn');
         if (newGameBtn) newGameBtn.style.display = '';
         const economySummary = this.network.isMultiplayer
-            ? (this.onlineEconomyMode === 'coins' ? { ...this.onlineCoinSummary } : null)
+            ? (this.onlineEconomyMode === 'coins' ? this.getOnlineCoinSummaryForDisplay() : null)
             : (this.soloEconomyMode === 'coins' ? { ...this.coinMatchSummary } : null);
         const isTeamMode = this.resolveRoomModeState(this.currentRoomState, null).isTeamMode;
         const forcedWinner = Number.isInteger(Number(winnerIndex)) ? Number(winnerIndex) : null;
@@ -20371,7 +20406,7 @@ class DominoGame {
             ? (payload.teamScores?.[0] >= payload.teamScores?.[1] ? this.getTeamDisplayName(0) : this.getTeamDisplayName(1))
             : (payload.values?.player || this.t('online-room-closed'));
         const economySummary = this.network.isMultiplayer
-            ? (this.onlineEconomyMode === 'coins' ? { ...this.onlineCoinSummary } : null)
+            ? (this.onlineEconomyMode === 'coins' ? this.getOnlineCoinSummaryForDisplay() : null)
             : (this.soloEconomyMode === 'coins' ? { ...this.coinMatchSummary } : null);
         this.renderer.renderGameOver(winnerLabel, players, economySummary, { titleText });
         const newGameBtn = document.getElementById('new-game-btn');

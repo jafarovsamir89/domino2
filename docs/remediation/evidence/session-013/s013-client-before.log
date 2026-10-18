@@ -1,0 +1,360 @@
+✖ js/app.js: win summary uses actual loss/profit and ignores repeated settlement (11.902584ms)
+✖ js/app.js: loss summary uses actual loss/profit and ignores repeated settlement (3.172166ms)
+✖ js/app.js: draw summary uses actual loss/profit and ignores repeated settlement (2.608167ms)
+✖ js/app.js: refund summary uses actual loss/profit and ignores repeated settlement (2.899458ms)
+✖ js/app.js: team-win summary uses actual loss/profit and ignores repeated settlement (2.533041ms)
+✖ js/app.js: zero-profit-win summary uses actual loss/profit and ignores repeated settlement (2.781292ms)
+✖ js/app.js: receipts accumulate across matches and survive a local resume snapshot (2.633875ms)
+✖ js/app.js: absent own receipt and malformed math never change monetary totals (2.824917ms)
+✖ www/js/app.js: win summary uses actual loss/profit and ignores repeated settlement (10.453167ms)
+✖ www/js/app.js: loss summary uses actual loss/profit and ignores repeated settlement (3.714708ms)
+✖ www/js/app.js: draw summary uses actual loss/profit and ignores repeated settlement (2.672625ms)
+✖ www/js/app.js: refund summary uses actual loss/profit and ignores repeated settlement (2.439791ms)
+✖ www/js/app.js: team-win summary uses actual loss/profit and ignores repeated settlement (2.399542ms)
+✖ www/js/app.js: zero-profit-win summary uses actual loss/profit and ignores repeated settlement (2.389667ms)
+✖ www/js/app.js: receipts accumulate across matches and survive a local resume snapshot (2.923833ms)
+✖ www/js/app.js: absent own receipt and malformed math never change monetary totals (2.506625ms)
+ℹ tests 16
+ℹ suites 0
+ℹ pass 0
+ℹ fail 16
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 150.36525
+
+✖ failing tests:
+
+test at test/settlement-summary.test.js:15:3
+✖ js/app.js: win summary uses actual loss/profit and ignores repeated settlement (11.902584ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  -20 !== 180
+  
+      at TestContext.<anonymous> (/Users/macbookair/Documents/domino/.tmp/remediation-s013/clean/server/test/settlement-summary.test.js:17:11)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.start (node:internal/test_runner/test:1015:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:358:17) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: -20,
+    expected: 180,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test/settlement-summary.test.js:15:3
+✖ js/app.js: loss summary uses actual loss/profit and ignores repeated settlement (3.172166ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  undefined !== 0
+  
+      at TestContext.<anonymous> (/Users/macbookair/Documents/domino/.tmp/remediation-s013/clean/server/test/settlement-summary.test.js:17:90)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:787:18)
+      at Test.postRun (node:internal/test_runner/test:1247:19)
+      at Test.run (node:internal/test_runner/test:1175:12)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:358:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test/settlement-summary.test.js:15:3
+✖ js/app.js: draw summary uses actual loss/profit and ignores repeated settlement (2.608167ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  undefined !== 200
+  
+      at TestContext.<anonymous> (/Users/macbookair/Documents/domino/.tmp/remediation-s013/clean/server/test/settlement-summary.test.js:17:90)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:787:18)
+      at Test.postRun (node:internal/test_runner/test:1247:19)
+      at Test.run (node:internal/test_runner/test:1175:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: 200,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test/settlement-summary.test.js:15:3
+✖ js/app.js: refund summary uses actual loss/profit and ignores repeated settlement (2.899458ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  undefined !== 200
+  
+      at TestContext.<anonymous> (/Users/macbookair/Documents/domino/.tmp/remediation-s013/clean/server/test/settlement-summary.test.js:17:90)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:787:18)
+      at Test.postRun (node:internal/test_runner/test:1247:19)
+      at Test.run (node:internal/test_runner/test:1175:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: 200,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test/settlement-summary.test.js:15:3
+✖ js/app.js: team-win summary uses actual loss/profit and ignores repeated settlement (2.533041ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  -20 !== 180
+  
+      at TestContext.<anonymous> (/Users/macbookair/Documents/domino/.tmp/remediation-s013/clean/server/test/settlement-summary.test.js:17:11)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:787:18)
+      at Test.postRun (node:internal/test_runner/test:1247:19)
+      at Test.run (node:internal/test_runner/test:1175:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: -20,
+    expected: 180,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test/settlement-summary.test.js:15:3
+✖ js/app.js: zero-profit-win summary uses actual loss/profit and ignores repeated settlement (2.781292ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  undefined !== 200
+  
+      at TestContext.<anonymous> (/Users/macbookair/Documents/domino/.tmp/remediation-s013/clean/server/test/settlement-summary.test.js:17:90)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:787:18)
+      at Test.postRun (node:internal/test_runner/test:1247:19)
+      at Test.run (node:internal/test_runner/test:1175:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: 200,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test/settlement-summary.test.js:22:2
+✖ js/app.js: receipts accumulate across matches and survive a local resume snapshot (2.633875ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  -220 !== -20
+  
+      at TestContext.<anonymous> (/Users/macbookair/Documents/domino/.tmp/remediation-s013/clean/server/test/settlement-summary.test.js:24:10)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:787:18)
+      at Test.postRun (node:internal/test_runner/test:1247:19)
+      at Test.run (node:internal/test_runner/test:1175:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: -220,
+    expected: -20,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test/settlement-summary.test.js:28:2
+✖ js/app.js: absent own receipt and malformed math never change monetary totals (2.824917ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  200 !== 0
+  
+      at TestContext.<anonymous> (/Users/macbookair/Documents/domino/.tmp/remediation-s013/clean/server/test/settlement-summary.test.js:29:106)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:787:18)
+      at Test.postRun (node:internal/test_runner/test:1247:19)
+      at Test.run (node:internal/test_runner/test:1175:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 200,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test/settlement-summary.test.js:15:3
+✖ www/js/app.js: win summary uses actual loss/profit and ignores repeated settlement (10.453167ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  -20 !== 180
+  
+      at TestContext.<anonymous> (/Users/macbookair/Documents/domino/.tmp/remediation-s013/clean/server/test/settlement-summary.test.js:17:11)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:787:18)
+      at Test.postRun (node:internal/test_runner/test:1247:19)
+      at Test.run (node:internal/test_runner/test:1175:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: -20,
+    expected: 180,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test/settlement-summary.test.js:15:3
+✖ www/js/app.js: loss summary uses actual loss/profit and ignores repeated settlement (3.714708ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  undefined !== 0
+  
+      at TestContext.<anonymous> (/Users/macbookair/Documents/domino/.tmp/remediation-s013/clean/server/test/settlement-summary.test.js:17:90)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:787:18)
+      at Test.postRun (node:internal/test_runner/test:1247:19)
+      at Test.run (node:internal/test_runner/test:1175:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test/settlement-summary.test.js:15:3
+✖ www/js/app.js: draw summary uses actual loss/profit and ignores repeated settlement (2.672625ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  undefined !== 200
+  
+      at TestContext.<anonymous> (/Users/macbookair/Documents/domino/.tmp/remediation-s013/clean/server/test/settlement-summary.test.js:17:90)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:787:18)
+      at Test.postRun (node:internal/test_runner/test:1247:19)
+      at Test.run (node:internal/test_runner/test:1175:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: 200,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test/settlement-summary.test.js:15:3
+✖ www/js/app.js: refund summary uses actual loss/profit and ignores repeated settlement (2.439791ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  undefined !== 200
+  
+      at TestContext.<anonymous> (/Users/macbookair/Documents/domino/.tmp/remediation-s013/clean/server/test/settlement-summary.test.js:17:90)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:787:18)
+      at Test.postRun (node:internal/test_runner/test:1247:19)
+      at Test.run (node:internal/test_runner/test:1175:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: 200,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test/settlement-summary.test.js:15:3
+✖ www/js/app.js: team-win summary uses actual loss/profit and ignores repeated settlement (2.399542ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  -20 !== 180
+  
+      at TestContext.<anonymous> (/Users/macbookair/Documents/domino/.tmp/remediation-s013/clean/server/test/settlement-summary.test.js:17:11)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:787:18)
+      at Test.postRun (node:internal/test_runner/test:1247:19)
+      at Test.run (node:internal/test_runner/test:1175:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: -20,
+    expected: 180,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test/settlement-summary.test.js:15:3
+✖ www/js/app.js: zero-profit-win summary uses actual loss/profit and ignores repeated settlement (2.389667ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  undefined !== 200
+  
+      at TestContext.<anonymous> (/Users/macbookair/Documents/domino/.tmp/remediation-s013/clean/server/test/settlement-summary.test.js:17:90)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:787:18)
+      at Test.postRun (node:internal/test_runner/test:1247:19)
+      at Test.run (node:internal/test_runner/test:1175:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: 200,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test/settlement-summary.test.js:22:2
+✖ www/js/app.js: receipts accumulate across matches and survive a local resume snapshot (2.923833ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  -220 !== -20
+  
+      at TestContext.<anonymous> (/Users/macbookair/Documents/domino/.tmp/remediation-s013/clean/server/test/settlement-summary.test.js:24:10)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:787:18)
+      at Test.postRun (node:internal/test_runner/test:1247:19)
+      at Test.run (node:internal/test_runner/test:1175:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: -220,
+    expected: -20,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test/settlement-summary.test.js:28:2
+✖ www/js/app.js: absent own receipt and malformed math never change monetary totals (2.506625ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  200 !== 0
+  
+      at TestContext.<anonymous> (/Users/macbookair/Documents/domino/.tmp/remediation-s013/clean/server/test/settlement-summary.test.js:29:106)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:787:18)
+      at Test.postRun (node:internal/test_runner/test:1247:19)
+      at Test.run (node:internal/test_runner/test:1175:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 200,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

@@ -1,0 +1,60 @@
+{
+  "session": "S013",
+  "task": "R-42",
+  "status": "fixed-locally",
+  "before": {
+    "api": {
+      "pass": 134,
+      "fail": 6
+    },
+    "client": {
+      "pass": 0,
+      "fail": 16
+    }
+  },
+  "after": {
+    "apiNode25And22": {
+      "pass": 140,
+      "fail": 0
+    },
+    "clientNode22": {
+      "pass": 18,
+      "fail": 0
+    },
+    "fullServer": {
+      "tests": 327,
+      "pass": 320,
+      "fail": 7
+    },
+    "sourceCheck": "s013-source-check.json"
+  },
+  "realPG": {
+    "commands": [
+      "s013-real-pg-ui.json",
+      "s013-pg-ui-node22.json"
+    ],
+    "scenarios": [
+      "win (winner+180, loser-200)",
+      "draw (0)",
+      "refund (0)",
+      "2v2 (winners+180, losers-200)",
+      "forfeit (winner+180, loser-200)",
+      "100% commission winner (0), loser-200"
+    ],
+    "comparison": "receipt.net == wallet(balance+reserved) delta == settlement ledger delta == real client/renderer UI delta",
+    "duplicateEventsPerPlayerPerAsset": 20,
+    "assets": [
+      "js/app.js",
+      "www/js/app.js"
+    ]
+  },
+  "failureComparison": "failure-delta.json",
+  "limits": [
+    "No installed Android/browser visual check; actual classes run in VM with a minimal DOM",
+    "Legacy/missing/malformed receipts are not guessed; incomplete monetary total is hidden",
+    "API settled=0 replay behavior remains; durable result outbox/response-loss R29 separate",
+    "Same seven old server failures; full CI not green",
+    "No deployment or production wallet changes"
+  ],
+  "services": "Own Redis and PG stopped"
+}

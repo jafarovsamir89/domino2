@@ -2090,6 +2090,12 @@ export class EconomyService implements OnModuleInit {
             playerId: reservation.playerId,
             userId: reservation.player.userId || null,
             wallet: updated,
+            receiptVersion: 1,
+            settlementId: JSON.stringify(["online", roomId, matchId, stakeTable.id, reservation.playerId]),
+            stakeAmount: reservation.stakeAmount,
+            returnedStake: reservation.stakeAmount,
+            winnings: 0,
+            net: 0,
             payout: reservation.stakeAmount
           });
         } else if (isWinner) {
@@ -2135,6 +2141,12 @@ export class EconomyService implements OnModuleInit {
             playerId: reservation.playerId,
             userId: reservation.player.userId || null,
             wallet: updated,
+            receiptVersion: 1,
+            settlementId: JSON.stringify(["online", roomId, matchId, stakeTable.id, reservation.playerId]),
+            stakeAmount: reservation.stakeAmount,
+            returnedStake: reservation.stakeAmount,
+            winnings: payoutShare,
+            net: payoutShare,
             payout: payoutShare
           });
           void released;
@@ -2160,6 +2172,12 @@ export class EconomyService implements OnModuleInit {
             playerId: reservation.playerId,
             userId: reservation.player.userId || null,
             wallet: consumed,
+            receiptVersion: 1,
+            settlementId: JSON.stringify(["online", roomId, matchId, stakeTable.id, reservation.playerId]),
+            stakeAmount: reservation.stakeAmount,
+            returnedStake: 0,
+            winnings: 0,
+            net: -reservation.stakeAmount,
             payout: 0
           });
         }
@@ -2178,6 +2196,10 @@ export class EconomyService implements OnModuleInit {
       return {
         ok: true,
         settled: settled.length,
+        receiptVersion: 1,
+        settlementId: JSON.stringify(["online", roomId, matchId, stakeTable.id]),
+        roomId,
+        matchId,
         stakeKey,
         bank,
         winnerBank,

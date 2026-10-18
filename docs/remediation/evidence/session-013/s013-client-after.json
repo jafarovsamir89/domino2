@@ -1,0 +1,18 @@
+{
+  "label": "s013-client-after",
+  "command": [
+    "node",
+    "--test",
+    "test/settlement-summary.test.js"
+  ],
+  "cwd": ".tmp/remediation-s013/clean/server",
+  "startedAt": "2026-10-18T22:50:53.074Z",
+  "finishedAt": "2026-10-18T22:50:53.313Z",
+  "durationMs": 239,
+  "exitCode": 0,
+  "signal": null,
+  "timedOut": false,
+  "error": null,
+  "log": "docs/remediation/evidence/session-013/s013-client-after.log",
+  "environment": "Fresh allowlist, synthetic local API/DB, optional Redis disabled, no inherited secrets or copied .env"
+}
