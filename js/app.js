@@ -7316,7 +7316,7 @@ class DominoGame {
     }
 
     getDailyBonusRewardedAdProvider() {
-        if (!this.isRewardedAdsEnabled()) return null;
+        if (!this.isRewardedAdsEnabled() || this.dailyBonusState.status?.rewardedAvailable !== true) return null;
         return window.__dominoRewardedAdProvider
             || window.dominoRewardedAdProvider
             || window.rewardedAdProvider
@@ -7562,7 +7562,7 @@ class DominoGame {
             return;
         }
 
-        const doubleAvailable = this.isRewardedAdsEnabled() && Boolean(status && status.doubleClaimAvailable);
+        const doubleAvailable = this.isRewardedAdsEnabled() && status?.rewardedAvailable === true && Boolean(status.doubleClaimAvailable);
 
         if (amountEl) {
             amountEl.textContent = `+${baseRewardAmount}`;

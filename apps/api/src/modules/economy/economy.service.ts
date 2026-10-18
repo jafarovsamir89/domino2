@@ -1391,9 +1391,7 @@ export class EconomyService implements OnModuleInit {
     if (existingClaim) {
       claimedToday = true;
       streakDay = existingClaim.streakDay;
-      const baseReward = getRewardForStreak(streakDay);
-      const doubleClaimAvailable = existingClaim.amount === baseReward;
-      claimable = doubleClaimAvailable;
+      claimable = false;
       todayAmount = existingClaim.amount;
       lastClaimAt = existingClaim.createdAt;
     } else {
@@ -1408,14 +1406,15 @@ export class EconomyService implements OnModuleInit {
     const tomorrowAmount = getRewardForStreak(tomorrowStreakDay);
     const nextClaimAt = getNextBakuMidnight(now);
 
-    const baseReward = getRewardForStreak(streakDay);
-    const doubleClaimAvailable = Boolean(existingClaim && existingClaim.amount === baseReward);
+    // A client ad-completed flag is not a server-verified reward entitlement.
+    const doubleClaimAvailable = false;
 
     return {
       claimable,
       canClaim: claimable,
       claimedToday,
       doubleClaimAvailable,
+      rewardedAvailable: false,
       claimDate: existingClaim?.claimDate ?? claimDate,
       dailyBonusDateKey: claimDate,
       timezone: BAKU_TIME_ZONE,
@@ -1475,10 +1474,16 @@ export class EconomyService implements OnModuleInit {
     const body = hasDateArg ? {} : (bodyOrNow || {});
     const now = hasDateArg ? bodyOrNow : (maybeNow || new Date());
     const claimMode = normalizeDailyBonusClaimMode((body as DailyBonusClaimPayload)?.claimMode);
-    const multiplier = claimMode === "rewarded_x2" ? 2 : 1;
+    const multiplier = 1;
     const profile = await this.authService.getCurrentProfile(headers);
     if (!profile?.player) {
       throw new UnauthorizedException("Login required");
+    }
+
+    // Keep this unavailable until a server-verified, single-use ad entitlement
+    // exists. Client callbacks and request fields cannot authorize extra coins.
+    if (claimMode === "rewarded_x2") {
+      throw new ForbiddenException("rewarded_daily_unavailable");
     }
 
     const config = await this.getConfig();
@@ -1505,46 +1510,6 @@ export class EconomyService implements OnModuleInit {
       });
       if (existing) {
         const rewardSchedule = buildDailyRewardSchedule(config);
-        const baseReward = getRewardAmountForDay(rewardSchedule, existing.streakDay);
-        if (claimMode === "rewarded_x2" && existing.amount === baseReward) {
-          const extraReward = baseReward;
-          const updatedClaim = await tx.coinDailyBonusClaim.update({
-            where: { id: existing.id },
-            data: { amount: baseReward * 2 }
-          });
-          const wallet = await this.creditWallet(
-            tx,
-            profile.player.id,
-            extraReward,
-            "daily_bonus",
-            "daily_bonus",
-            claimDate,
-            {
-              idempotencyKey: `daily_bonus:${profile.player.id}:${claimDate}:upgrade`,
-              note: `Daily claim for ${claimDate} (rewarded x2 upgrade)`,
-              payloadJson: {
-                claimMode,
-                baseReward,
-                multiplier: 2,
-                reward: baseReward * 2,
-                streakDay: existing.streakDay,
-                claimDate
-              }
-            }
-          );
-          const status = await this.buildDailyBonusStatus(tx, profile.player.id, config, now);
-          return {
-            claimed: true,
-            claimMode,
-            baseReward,
-            multiplier: 2,
-            reward: extraReward,
-            claim: updatedClaim,
-            wallet,
-            dailyBonus: status
-          };
-        }
-
         const status = await this.buildDailyBonusStatus(tx, profile.player.id, config, now);
         const wallet = await this.ensureWallet(tx, profile.player.id);
         return {
@@ -1573,7 +1538,7 @@ export class EconomyService implements OnModuleInit {
         claimDate,
         {
           idempotencyKey: `daily_bonus:${profile.player.id}:${claimDate}:initial`,
-          note: `Daily claim for ${claimDate}${claimMode === "rewarded_x2" ? " (rewarded x2)" : ""}`,
+          note: `Daily claim for ${claimDate}`,
           payloadJson: {
             claimMode,
             baseReward,

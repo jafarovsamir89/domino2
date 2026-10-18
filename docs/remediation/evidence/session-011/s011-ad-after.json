@@ -1,0 +1,19 @@
+{
+  "label": "s011-ad-after",
+  "command": [
+    "npm",
+    "--prefix",
+    "apps/api",
+    "test"
+  ],
+  "cwd": ".tmp/remediation-s011/clean",
+  "startedAt": "2026-10-18T22:44:22.075Z",
+  "finishedAt": "2026-10-18T22:44:27.385Z",
+  "durationMs": 5310,
+  "exitCode": 0,
+  "signal": null,
+  "timedOut": false,
+  "error": null,
+  "log": "docs/remediation/evidence/session-011/s011-ad-after.log",
+  "environment": "Fresh allowlist, synthetic local API/DB, optional Redis disabled, no inherited secrets or copied .env"
+}

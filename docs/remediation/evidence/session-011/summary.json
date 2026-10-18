@@ -1,0 +1,44 @@
+{
+  "session": "S011",
+  "task": "R-09",
+  "status": "local-unverified-path-disabled; external-SSV-deferred",
+  "before": {
+    "tests": 134,
+    "pass": 128,
+    "fail": 6
+  },
+  "afterNode25And22": {
+    "tests": 134,
+    "pass": 134,
+    "fail": 0
+  },
+  "clientVM": {
+    "tests": 4,
+    "pass": 4
+  },
+  "realPGNode25And22": {
+    "scenarios": 4,
+    "requestsEach": 100,
+    "rejected": [
+      0,
+      100,
+      100,
+      50
+    ],
+    "finalBalanceEach": 200,
+    "claimAndLedgerEach": 1
+  },
+  "checks": [
+    "s011-api-node22.json",
+    "s011-real-pg.json",
+    "s011-pg-node22.json",
+    "s011-client-capability.json",
+    "s011-source-check.json"
+  ],
+  "limits": [
+    "No verified ad entitlement integration; x2 unavailable",
+    "SSV positive-event and replay acceptance deferred",
+    "No production/Play deployment",
+    "S004 historical x2-upgrade tests superseded; normal serialization remains"
+  ]
+}

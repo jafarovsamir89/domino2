@@ -1,0 +1,36 @@
+
+> @domino2/api@0.1.0 pretest
+> node -e "require('fs').rmSync('dist',{recursive:true,force:true})"
+
+
+> @domino2/api@0.1.0 test
+> npm run build && node --test dist/test/chatModeration.test.js dist/test/realtime.helpers.test.js dist/test/player-ranking.test.js dist/test/economy.service.test.js dist/test/economy.settlement.test.js dist/test/leaderboard.service.test.js dist/test/players.service.test.js dist/test/auth.service.test.js dist/test/realtime.controller.test.js dist/test/social.service.test.js dist/test/social-realtime.gateway.test.js dist/test/health.controller.test.js dist/test/admin.service.test.js dist/test/validation.pipe.test.js dist/test/auth.secret-guard.test.js dist/test/matches.service.test.js
+
+
+> @domino2/api@0.1.0 prebuild
+> cd ../.. && npm run generate -w @domino2/db
+
+
+> @domino2/db@0.1.0 generate
+> prisma generate
+
+Prisma schema loaded from prisma/schema.prisma
+
+✔ Generated Prisma Client (v6.19.3) to ./../../node_modules/@prisma/client in 181ms
+
+Start by importing your Prisma Client (See: https://pris.ly/d/importing-client)
+
+Tip: Want to turn off tips and other hints? https://pris.ly/tip-4-nohints
+
+
+> @domino2/api@0.1.0 build
+> tsc -p tsconfig.json
+
+test/economy.service.test.ts(665,34): error TS2339: Property 'rewardedAvailable' does not exist on type '{ claimable: boolean; canClaim: boolean; claimedToday: boolean; doubleClaimAvailable: boolean; claimDate: string; dailyBonusDateKey: string; timezone: string; streakDay: number; todayAmount: number; ... 8 more ...; lastClaimDateKey: string | null; }'.
+npm error Lifecycle script `build` failed with error:
+npm error code 2
+npm error path /Users/macbookair/Documents/domino/.tmp/remediation-s011/clean/apps/api
+npm error workspace @domino2/api@0.1.0
+npm error location /Users/macbookair/Documents/domino/.tmp/remediation-s011/clean/apps/api
+npm error command failed
+npm error command sh -c tsc -p tsconfig.json

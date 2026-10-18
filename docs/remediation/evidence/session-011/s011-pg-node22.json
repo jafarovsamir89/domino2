@@ -1,0 +1,24 @@
+{
+  "label": "s011-pg-node22",
+  "command": [
+    "npm",
+    "exec",
+    "--yes",
+    "--package=node@22.14.0",
+    "--package=npm@10.9.2",
+    "--",
+    "node",
+    "/Users/macbookair/Documents/domino/docs/remediation/scripts/verify-unverified-daily.mjs",
+    "domino_remediation_s011_node22"
+  ],
+  "cwd": ".tmp/remediation-s011/clean",
+  "startedAt": "2026-10-18T22:45:34.844Z",
+  "finishedAt": "2026-10-18T22:45:37.045Z",
+  "durationMs": 2201,
+  "exitCode": 0,
+  "signal": null,
+  "timedOut": false,
+  "error": null,
+  "log": "docs/remediation/evidence/session-011/s011-pg-node22.log",
+  "environment": "Fresh allowlist, synthetic local API/DB, optional Redis disabled, no inherited secrets or copied .env"
+}
