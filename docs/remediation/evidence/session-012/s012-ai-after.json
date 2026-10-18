@@ -1,0 +1,18 @@
+{
+  "label": "s012-ai-after",
+  "command": [
+    "node",
+    "--test",
+    "test/ai-public-information.test.js"
+  ],
+  "cwd": ".tmp/remediation-s012/clean/server",
+  "startedAt": "2026-10-18T22:47:00.209Z",
+  "finishedAt": "2026-10-18T22:47:00.466Z",
+  "durationMs": 257,
+  "exitCode": 0,
+  "signal": null,
+  "timedOut": false,
+  "error": null,
+  "log": "docs/remediation/evidence/session-012/s012-ai-after.log",
+  "environment": "Fresh allowlist, synthetic local API/DB, optional Redis disabled, no inherited secrets or copied .env"
+}

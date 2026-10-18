@@ -1,0 +1,159 @@
+TAP version 13
+# ℹ️  optional .env file not found: .env.test, .env
+# [ROOM_DEBUG] create {
+#   roomId: 'regression-101-1',
+#   roomCode: 'N587',
+#   roomVisibility: 'closed',
+#   stakeKey: 'free',
+#   totalPlayers: 4,
+#   aiCount: 0,
+#   humanSeats: 4,
+#   maxClients: 4,
+#   roomMode: 'team',
+#   isTeamMode: true
+# }
+# [ROOM] Created room regression-101-1 (code N587), humanSeats=4, totalPlayers=4, aiCount=0, teamMode=true
+# [ROOM_DEBUG] create {
+#   roomId: 'regression-101-2',
+#   roomCode: 'BTNR',
+#   roomVisibility: 'closed',
+#   stakeKey: 'free',
+#   totalPlayers: 4,
+#   aiCount: 0,
+#   humanSeats: 4,
+#   maxClients: 4,
+#   roomMode: 'team',
+#   isTeamMode: true
+# }
+# [ROOM] Created room regression-101-2 (code BTNR), humanSeats=4, totalPlayers=4, aiCount=0, teamMode=true
+# [ROOM_DEBUG] create {
+#   roomId: 'regression-101-3',
+#   roomCode: 'MJ9N',
+#   roomVisibility: 'closed',
+#   stakeKey: 'free',
+#   totalPlayers: 4,
+#   aiCount: 0,
+#   humanSeats: 4,
+#   maxClients: 4,
+#   roomMode: 'team',
+#   isTeamMode: true
+# }
+# [ROOM] Created room regression-101-3 (code MJ9N), humanSeats=4, totalPlayers=4, aiCount=0, teamMode=true
+# [ROOM_DEBUG] create {
+#   roomId: 'regression-101-4',
+#   roomCode: 'QF6Q',
+#   roomVisibility: 'closed',
+#   stakeKey: 'free',
+#   totalPlayers: 4,
+#   aiCount: 0,
+#   humanSeats: 4,
+#   maxClients: 4,
+#   roomMode: 'team',
+#   isTeamMode: true
+# }
+# [ROOM] Created room regression-101-4 (code QF6Q), humanSeats=4, totalPlayers=4, aiCount=0, teamMode=true
+# [ROOM_DEBUG] create {
+#   roomId: 'regression-101-5',
+#   roomCode: 'J3PR',
+#   roomVisibility: 'closed',
+#   stakeKey: 'free',
+#   totalPlayers: 4,
+#   aiCount: 0,
+#   humanSeats: 4,
+#   maxClients: 4,
+#   roomMode: 'team',
+#   isTeamMode: true
+# }
+# [ROOM] Created room regression-101-5 (code J3PR), humanSeats=4, totalPlayers=4, aiCount=0, teamMode=true
+# [ROOM_DEBUG] create {
+#   roomId: 'regression-101-6',
+#   roomCode: 'FR3U',
+#   roomVisibility: 'closed',
+#   stakeKey: 'free',
+#   totalPlayers: 4,
+#   aiCount: 0,
+#   humanSeats: 4,
+#   maxClients: 4,
+#   roomMode: 'team',
+#   isTeamMode: true
+# }
+# [ROOM] Created room regression-101-6 (code FR3U), humanSeats=4, totalPlayers=4, aiCount=0, teamMode=true
+# Subtest: runBotTurn sends public counts and own hand only (takeover=false)
+ok 1 - runBotTurn sends public counts and own hand only (takeover=false)
+  ---
+  duration_ms: 3.276667
+  ...
+# Subtest: runBotTurn sends public counts and own hand only (takeover=true)
+ok 2 - runBotTurn sends public counts and own hand only (takeover=true)
+  ---
+  duration_ms: 0.626459
+  ...
+# Subtest: paired hidden worlds give identical team takeover decisions (easy)
+ok 3 - paired hidden worlds give identical team takeover decisions (easy)
+  ---
+  duration_ms: 0.850083
+  ...
+# Subtest: paired hidden worlds give identical team takeover decisions (medium)
+ok 4 - paired hidden worlds give identical team takeover decisions (medium)
+  ---
+  duration_ms: 0.72675
+  ...
+# Subtest: paired hidden worlds give identical team takeover decisions (hard)
+ok 5 - paired hidden worlds give identical team takeover decisions (hard)
+  ---
+  duration_ms: 0.8735
+  ...
+# Subtest: public observed missing suits can change a team decision
+ok 6 - public observed missing suits can change a team decision
+  ---
+  duration_ms: 0.643709
+  ...
+# Subtest: AI rejects a raw hidden-hand/bazaar input contract
+ok 7 - AI rejects a raw hidden-hand/bazaar input contract
+  ---
+  duration_ms: 0.368417
+  ...
+# Subtest: telefon ruleset keeps the classic first-player order
+ok 8 - telefon ruleset keeps the classic first-player order
+  ---
+  duration_ms: 1.368084
+  ...
+# Subtest: telefon opening score keeps [5|5] at 10 below 300 and 0 at 300+
+ok 9 - telefon opening score keeps [5|5] at 10 below 300 and 0 at 300+
+  ---
+  duration_ms: 0.109459
+  ...
+# Subtest: telefon scoreDuringPlay keeps the board score on 5-multiples and telephone cross cases
+ok 10 - telefon scoreDuringPlay keeps the board score on 5-multiples and telephone cross cases
+  ---
+  duration_ms: 2.68175
+  ...
+# Subtest: telefon handPoints keeps the zero double bonus
+ok 11 - telefon handPoints keeps the zero double bonus
+  ---
+  duration_ms: 0.133167
+  ...
+# Subtest: telefon resolveBlocked picks the lowest hand points winner on a blocked board
+ok 12 - telefon resolveBlocked picks the lowest hand points winner on a blocked board
+  ---
+  duration_ms: 0.426083
+  ...
+# Subtest: classic101 opens with the youngest double and raw scoring rules
+ok 13 - classic101 opens with the youngest double and raw scoring rules
+  ---
+  duration_ms: 0.461666
+  ...
+# Subtest: classic101 awards raw points, handles fish, threshold entry, and dry wins
+ok 14 - classic101 awards raw points, handles fish, threshold entry, and dry wins
+  ---
+  duration_ms: 1.297708
+  ...
+1..14
+# tests 14
+# suites 0
+# pass 14
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 255.253917

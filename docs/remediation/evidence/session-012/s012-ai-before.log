@@ -1,0 +1,290 @@
+ℹ️  optional .env file not found: .env.test, .env
+[ROOM_DEBUG] create {
+  roomId: 'regression-101-1',
+  roomCode: 'TUWX',
+  roomVisibility: 'closed',
+  stakeKey: 'free',
+  totalPlayers: 4,
+  aiCount: 0,
+  humanSeats: 4,
+  maxClients: 4,
+  roomMode: 'team',
+  isTeamMode: true
+}
+[ROOM] Created room regression-101-1 (code TUWX), humanSeats=4, totalPlayers=4, aiCount=0, teamMode=true
+[ROOM_DEBUG] create {
+  roomId: 'regression-101-2',
+  roomCode: 'XS5A',
+  roomVisibility: 'closed',
+  stakeKey: 'free',
+  totalPlayers: 4,
+  aiCount: 0,
+  humanSeats: 4,
+  maxClients: 4,
+  roomMode: 'team',
+  isTeamMode: true
+}
+[ROOM] Created room regression-101-2 (code XS5A), humanSeats=4, totalPlayers=4, aiCount=0, teamMode=true
+[ROOM_DEBUG] create {
+  roomId: 'regression-101-3',
+  roomCode: 'MPBN',
+  roomVisibility: 'closed',
+  stakeKey: 'free',
+  totalPlayers: 4,
+  aiCount: 0,
+  humanSeats: 4,
+  maxClients: 4,
+  roomMode: 'team',
+  isTeamMode: true
+}
+[ROOM] Created room regression-101-3 (code MPBN), humanSeats=4, totalPlayers=4, aiCount=0, teamMode=true
+[ROOM_DEBUG] create {
+  roomId: 'regression-101-4',
+  roomCode: 'CSGH',
+  roomVisibility: 'closed',
+  stakeKey: 'free',
+  totalPlayers: 4,
+  aiCount: 0,
+  humanSeats: 4,
+  maxClients: 4,
+  roomMode: 'team',
+  isTeamMode: true
+}
+[ROOM] Created room regression-101-4 (code CSGH), humanSeats=4, totalPlayers=4, aiCount=0, teamMode=true
+[ROOM_DEBUG] create {
+  roomId: 'regression-101-5',
+  roomCode: 'ZMWG',
+  roomVisibility: 'closed',
+  stakeKey: 'free',
+  totalPlayers: 4,
+  aiCount: 0,
+  humanSeats: 4,
+  maxClients: 4,
+  roomMode: 'team',
+  isTeamMode: true
+}
+[ROOM] Created room regression-101-5 (code ZMWG), humanSeats=4, totalPlayers=4, aiCount=0, teamMode=true
+[ROOM_DEBUG] create {
+  roomId: 'regression-101-6',
+  roomCode: 'GR7Q',
+  roomVisibility: 'closed',
+  stakeKey: 'free',
+  totalPlayers: 4,
+  aiCount: 0,
+  humanSeats: 4,
+  maxClients: 4,
+  roomMode: 'team',
+  isTeamMode: true
+}
+[ROOM] Created room regression-101-6 (code GR7Q), humanSeats=4, totalPlayers=4, aiCount=0, teamMode=true
+✖ runBotTurn sends public counts and own hand only (takeover=false) (6.172875ms)
+✖ runBotTurn sends public counts and own hand only (takeover=true) (2.314791ms)
+✖ paired hidden worlds give identical team takeover decisions (easy) (0.888916ms)
+✖ paired hidden worlds give identical team takeover decisions (medium) (0.482917ms)
+✖ paired hidden worlds give identical team takeover decisions (hard) (0.491ms)
+✖ public observed missing suits can change a team decision (0.497333ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 0
+ℹ fail 6
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 250.790708
+
+✖ failing tests:
+
+test at test/ai-public-information.test.js:19:2
+✖ runBotTurn sends public counts and own hand only (takeover=false) (6.172875ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+    [
+  +   [
+  +     Tile {
+  +       a: 1,
+  +       b: 1,
+  +       id: '1-1'
+  +     },
+  +     Tile {
+  +       a: 2,
+  +       b: 2,
+  +       id: '2-2'
+  +     }
+  +   ],
+  +   [
+  +     Tile {
+  +       a: 5,
+  +       b: 5,
+  +       id: '5-5'
+  +     }
+  +   ],
+  +   [
+  +     Tile {
+  +       a: 3,
+  +       b: 3,
+  +       id: '3-3'
+  +     }
+  +   ],
+  +   [
+  +     Tile {
+  +       a: 6,
+  +       b: 6,
+  +       id: '6-6'
+  +     }
+  +   ]
+  -   2,
+  -   1,
+  -   1,
+  -   1
+    ]
+  
+      at bot.chooseMove (/Users/macbookair/Documents/domino/.tmp/remediation-s012/clean/server/test/ai-public-information.test.js:22:51)
+      at DominoRoom.runBotTurn (/Users/macbookair/Documents/domino/.tmp/remediation-s012/clean/server/DominoRoom.js:2555:26)
+      at TestContext.<anonymous> (/Users/macbookair/Documents/domino/.tmp/remediation-s012/clean/server/test/ai-public-information.test.js:24:32)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:358:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [ [ [Object], [Object] ], [ [Object] ], [ [Object] ], [ [Object] ] ],
+    expected: [ 2, 1, 1, 1 ],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at test/ai-public-information.test.js:19:2
+✖ runBotTurn sends public counts and own hand only (takeover=true) (2.314791ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+    [
+  +   [
+  +     Tile {
+  +       a: 1,
+  +       b: 1,
+  +       id: '1-1'
+  +     },
+  +     Tile {
+  +       a: 2,
+  +       b: 2,
+  +       id: '2-2'
+  +     }
+  +   ],
+  +   [
+  +     Tile {
+  +       a: 5,
+  +       b: 5,
+  +       id: '5-5'
+  +     }
+  +   ],
+  +   [
+  +     Tile {
+  +       a: 3,
+  +       b: 3,
+  +       id: '3-3'
+  +     }
+  +   ],
+  +   [
+  +     Tile {
+  +       a: 6,
+  +       b: 6,
+  +       id: '6-6'
+  +     }
+  +   ]
+  -   2,
+  -   1,
+  -   1,
+  -   1
+    ]
+  
+      at bot.chooseMove (/Users/macbookair/Documents/domino/.tmp/remediation-s012/clean/server/test/ai-public-information.test.js:22:51)
+      at DominoRoom.runBotTurn (/Users/macbookair/Documents/domino/.tmp/remediation-s012/clean/server/DominoRoom.js:2555:26)
+      at TestContext.<anonymous> (/Users/macbookair/Documents/domino/.tmp/remediation-s012/clean/server/test/ai-public-information.test.js:24:32)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [ [ [Object], [Object] ], [ [Object] ], [ [Object] ], [ [Object] ] ],
+    expected: [ 2, 1, 1, 1 ],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at test/ai-public-information.test.js:28:2
+✖ paired hidden worlds give identical team takeover decisions (easy) (0.888916ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  0 !== 1
+  
+      at TestContext.<anonymous> (/Users/macbookair/Documents/domino/.tmp/remediation-s012/clean/server/test/ai-public-information.test.js:32:59)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 0,
+    expected: 1,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test/ai-public-information.test.js:28:2
+✖ paired hidden worlds give identical team takeover decisions (medium) (0.482917ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  0 !== 1
+  
+      at TestContext.<anonymous> (/Users/macbookair/Documents/domino/.tmp/remediation-s012/clean/server/test/ai-public-information.test.js:32:59)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 0,
+    expected: 1,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test/ai-public-information.test.js:28:2
+✖ paired hidden worlds give identical team takeover decisions (hard) (0.491ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  0 !== 1
+  
+      at TestContext.<anonymous> (/Users/macbookair/Documents/domino/.tmp/remediation-s012/clean/server/test/ai-public-information.test.js:32:59)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 0,
+    expected: 1,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test/ai-public-information.test.js:35:1
+✖ public observed missing suits can change a team decision (0.497333ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+    [
+      0,
+  +   0
+  -   1
+    ]
+  
+      at TestContext.<anonymous> (/Users/macbookair/Documents/domino/.tmp/remediation-s012/clean/server/test/ai-public-information.test.js:39:9)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [ 0, 0 ],
+    expected: [ 0, 1 ],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }

@@ -682,7 +682,7 @@ test("client validMoves reconstruction fallback on state update", () => {
     assert.deepEqual(clientApp.validMoves, [{ tileIndex: 0, openEndIndex: 0 }]);
 });
 
-test("team takeover bot prefers the partner-friendly move when takeover is active", () => {
+test("team takeover bot uses public missing-suit evidence to help its partner", () => {
     const ai = new AIPlayer(0, "medium");
     ai.params = { ...ai.params, scoreW: 0, doubleB: 0, totalW: 0.5, futureW: 0, goOut: 0, handP: 0, rand: 0, blockW: 0 };
     ai.simulateMove = (_board, tile) => {
@@ -709,28 +709,16 @@ test("team takeover bot prefers the partner-friendly move when takeover is activ
             }
         }
     ];
-    const partnerHand = [
-        {
-            total: 5,
-            isDouble: false,
-            hasValue(value) {
-                return value === 3;
-            }
-        }
-    ];
-    const otherHands = [
-        hand,
-        [],
-        partnerHand,
-        []
-    ];
+    const handCounts = [hand.length, 0, 1, 0];
+    // The partner has publicly passed on both ends of the second candidate.
+    const missingSuits = [new Set(), new Set(), new Set([8, 9]), new Set()];
     const validMoves = [
         { tileIndex: 0, openEndIndex: 0 },
         { tileIndex: 1, openEndIndex: 0 }
     ];
 
-    const soloChoice = ai.chooseMove(board, hand, validMoves, [0, 0, 0, 0], otherHands, [], null, null);
-    const teamChoice = ai.chooseMove(board, hand, validMoves, [0, 0, 0, 0], otherHands, [], null, {
+    const soloChoice = ai.chooseMove(board, hand, validMoves, [0, 0, 0, 0], handCounts, 0, missingSuits, null);
+    const teamChoice = ai.chooseMove(board, hand, validMoves, [0, 0, 0, 0], handCounts, 0, missingSuits, {
         isTeamMode: true,
         partnerIndex: 2
     });

@@ -2533,7 +2533,6 @@ class DominoRoom extends Room {
         const isTakeoverSeat = this.isSeatUnderBotTakeover(currentPlayer);
         const aiKey = isTakeoverSeat ? `takeover:${sessionId}` : sessionId;
         const aiDifficulty = isTakeoverSeat ? (BOT_TAKEOVER_CONFIG.botDifficulty || this.aiDifficulty) : this.aiDifficulty;
-        // TODO: team-mode takeover currently reuses the solo AI heuristics for v1.
         const bot = this.aiPlayers.get(aiKey) || new AIPlayer(pi, aiDifficulty);
         this.aiPlayers.set(aiKey, bot);
         const hand = this.hands[pi];
@@ -2552,7 +2551,9 @@ class DominoRoom extends Room {
         }
 
         const moves = this.getValidMovesForPlayer(pi);
-        const move = bot.chooseMove(this.internalBoard, hand, moves, this.state.players, this.hands, this.boneyard, this.playerMissingSuits, teamContext);
+        const handCounts = this.hands.map(cards => cards.length);
+        const scores = Array.from(this.state.playerOrder, sid => Number(this.state.players.get(sid)?.score || 0));
+        const move = bot.chooseMove(this.internalBoard, hand, moves, scores, handCounts, this.boneyard.length, this.playerMissingSuits, teamContext);
         if (move) {
             this.performPlay(pi, move.tileIndex, move.openEndIndex, true);
             return;

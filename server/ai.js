@@ -19,14 +19,18 @@ class AIPlayer {
         this.params = DIFF[difficulty] || DIFF.medium;
     }
 
-    chooseMove(board, hand, validMoves, scores, allHands, boneyard, missingSuits = null, teamContext = null) {
+    chooseMove(board, hand, validMoves, scores, handCounts, boneyardCount, missingSuits = null, teamContext = null) {
+        if (!Array.isArray(handCounts) || !handCounts.every(count => Number.isInteger(count) && count >= 0)
+            || !Number.isInteger(boneyardCount) || boneyardCount < 0) {
+            throw new TypeError("AI requires public hand counts and bazaar count");
+        }
         if (validMoves.length === 0) return null;
         if (validMoves.length === 1) return validMoves[0];
 
         let bestMove = validMoves[0];
         let bestScore = -Infinity;
         for (const move of validMoves) {
-            const score = this.evaluateMove(board, hand, move, scores, allHands, boneyard, missingSuits, teamContext);
+            const score = this.evaluateMove(board, hand, move, scores, handCounts, boneyardCount, missingSuits, teamContext);
             if (score > bestScore) {
                 bestScore = score;
                 bestMove = move;
@@ -35,7 +39,7 @@ class AIPlayer {
         return bestMove;
     }
 
-    evaluateMove(board, hand, move, scores, allHands, boneyard, missingSuits, teamContext) {
+    evaluateMove(board, hand, move, scores, handCounts, boneyardCount, missingSuits, teamContext) {
         const P = this.params;
         const tile = hand[move.tileIndex];
         let score = 0;
@@ -64,9 +68,9 @@ class AIPlayer {
 
         // Hard: estimate blocking potential using tracked missing suits.
         if (P.blockW > 0) {
-            if (this.difficulty === "hard" && Array.isArray(missingSuits) && missingSuits.length === allHands.length) {
-                const opponentIndexes = allHands.map((_, i) => i).filter((i) => i !== this.playerIndex);
-                const nextPlayer = (this.playerIndex + 1) % allHands.length;
+            if (this.difficulty === "hard" && Array.isArray(missingSuits) && missingSuits.length === handCounts.length) {
+                const opponentIndexes = handCounts.map((_, i) => i).filter((i) => i !== this.playerIndex);
+                const nextPlayer = (this.playerIndex + 1) % handCounts.length;
                 let fullyBlockedOpponents = 0;
 
                 for (const idx of opponentIndexes) {
@@ -89,9 +93,9 @@ class AIPlayer {
                 }
             } else {
                 let totalOpponentTiles = 0;
-                for (let i = 0; i < allHands.length; i++) {
+                for (let i = 0; i < handCounts.length; i++) {
                     if (i === this.playerIndex) continue;
-                    totalOpponentTiles += allHands[i].length;
+                    totalOpponentTiles += handCounts[i];
                 }
                 const uniqueEndValues = new Set(openEndValues).size;
                 const estimatedOptions = totalOpponentTiles * uniqueEndValues * (2 / 7);
@@ -99,17 +103,17 @@ class AIPlayer {
             }
         }
 
-        if (teamContext?.isTeamMode && Number.isInteger(Number(teamContext.partnerIndex)) && Array.isArray(allHands)) {
+        if (teamContext?.isTeamMode && Number.isInteger(Number(teamContext.partnerIndex)) && Array.isArray(handCounts)) {
             const partnerIndex = Number(teamContext.partnerIndex);
-            const partnerHand = allHands[partnerIndex] || [];
-            const partnerHasPlay = partnerHand.some((partnerTile) => openEndValues.some((value) => partnerTile?.hasValue?.(value)));
+            // Possibility based on visible counts and suits revealed by passes/draws.
+            // Never inspect partner/opponent tiles, even for team takeover.
+            const mayHavePlay = (index) => handCounts[index] > 0
+                && openEndValues.some(value => !missingSuits?.[index]?.has(value));
+            const partnerHasPlay = mayHavePlay(partnerIndex);
             let opponentPressure = 0;
-
-            for (let i = 0; i < allHands.length; i++) {
+            for (let i = 0; i < handCounts.length; i++) {
                 if (i === this.playerIndex || i === partnerIndex) continue;
-                const opponentHand = allHands[i] || [];
-                const opponentHasPlay = opponentHand.some((opponentTile) => openEndValues.some((value) => opponentTile?.hasValue?.(value)));
-                if (opponentHasPlay) opponentPressure++;
+                if (mayHavePlay(i)) opponentPressure++;
             }
 
             if (partnerHasPlay) {

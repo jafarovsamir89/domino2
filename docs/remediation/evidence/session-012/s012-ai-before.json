@@ -1,0 +1,18 @@
+{
+  "label": "s012-ai-before",
+  "command": [
+    "node",
+    "--test",
+    "test/ai-public-information.test.js"
+  ],
+  "cwd": ".tmp/remediation-s012/clean/server",
+  "startedAt": "2026-10-18T22:46:41.756Z",
+  "finishedAt": "2026-10-18T22:46:42.077Z",
+  "durationMs": 321,
+  "exitCode": 1,
+  "signal": null,
+  "timedOut": false,
+  "error": null,
+  "log": "docs/remediation/evidence/session-012/s012-ai-before.log",
+  "environment": "Fresh allowlist, synthetic local API/DB, optional Redis disabled, no inherited secrets or copied .env"
+}

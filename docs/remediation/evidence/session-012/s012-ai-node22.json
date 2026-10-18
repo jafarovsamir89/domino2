@@ -1,0 +1,25 @@
+{
+  "label": "s012-ai-node22",
+  "command": [
+    "npm",
+    "exec",
+    "--yes",
+    "--package=node@22.14.0",
+    "--package=npm@10.9.2",
+    "--",
+    "node",
+    "--test",
+    "test/ai-public-information.test.js",
+    "test/rulesets.test.js"
+  ],
+  "cwd": ".tmp/remediation-s012/clean/server",
+  "startedAt": "2026-10-18T22:47:32.027Z",
+  "finishedAt": "2026-10-18T22:47:32.911Z",
+  "durationMs": 884,
+  "exitCode": 0,
+  "signal": null,
+  "timedOut": false,
+  "error": null,
+  "log": "docs/remediation/evidence/session-012/s012-ai-node22.log",
+  "environment": "Fresh allowlist, synthetic local API/DB, optional Redis disabled, no inherited secrets or copied .env"
+}

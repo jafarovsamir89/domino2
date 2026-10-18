@@ -1,0 +1,17 @@
+{
+  "label": "s012-server-final",
+  "command": [
+    "npm",
+    "test"
+  ],
+  "cwd": ".tmp/remediation-s012/clean/server",
+  "startedAt": "2026-10-18T22:47:32.986Z",
+  "finishedAt": "2026-10-18T22:47:37.293Z",
+  "durationMs": 4307,
+  "exitCode": 1,
+  "signal": null,
+  "timedOut": false,
+  "error": null,
+  "log": "docs/remediation/evidence/session-012/s012-server-final.log",
+  "environment": "Fresh allowlist, synthetic local API/DB, optional Redis disabled, no inherited secrets or copied .env"
+}

@@ -1,0 +1,93 @@
+ℹ️  optional .env file not found: .env.test, .env
+[ROOM_DEBUG] create {
+  roomId: 'regression-101-1',
+  roomCode: 'AV57',
+  roomVisibility: 'closed',
+  stakeKey: 'free',
+  totalPlayers: 4,
+  aiCount: 0,
+  humanSeats: 4,
+  maxClients: 4,
+  roomMode: 'team',
+  isTeamMode: true
+}
+[ROOM] Created room regression-101-1 (code AV57), humanSeats=4, totalPlayers=4, aiCount=0, teamMode=true
+[ROOM_DEBUG] create {
+  roomId: 'regression-101-2',
+  roomCode: 'PU2R',
+  roomVisibility: 'closed',
+  stakeKey: 'free',
+  totalPlayers: 4,
+  aiCount: 0,
+  humanSeats: 4,
+  maxClients: 4,
+  roomMode: 'team',
+  isTeamMode: true
+}
+[ROOM] Created room regression-101-2 (code PU2R), humanSeats=4, totalPlayers=4, aiCount=0, teamMode=true
+[ROOM_DEBUG] create {
+  roomId: 'regression-101-3',
+  roomCode: 'N289',
+  roomVisibility: 'closed',
+  stakeKey: 'free',
+  totalPlayers: 4,
+  aiCount: 0,
+  humanSeats: 4,
+  maxClients: 4,
+  roomMode: 'team',
+  isTeamMode: true
+}
+[ROOM] Created room regression-101-3 (code N289), humanSeats=4, totalPlayers=4, aiCount=0, teamMode=true
+[ROOM_DEBUG] create {
+  roomId: 'regression-101-4',
+  roomCode: '2RXU',
+  roomVisibility: 'closed',
+  stakeKey: 'free',
+  totalPlayers: 4,
+  aiCount: 0,
+  humanSeats: 4,
+  maxClients: 4,
+  roomMode: 'team',
+  isTeamMode: true
+}
+[ROOM] Created room regression-101-4 (code 2RXU), humanSeats=4, totalPlayers=4, aiCount=0, teamMode=true
+[ROOM_DEBUG] create {
+  roomId: 'regression-101-5',
+  roomCode: 'Q68Y',
+  roomVisibility: 'closed',
+  stakeKey: 'free',
+  totalPlayers: 4,
+  aiCount: 0,
+  humanSeats: 4,
+  maxClients: 4,
+  roomMode: 'team',
+  isTeamMode: true
+}
+[ROOM] Created room regression-101-5 (code Q68Y), humanSeats=4, totalPlayers=4, aiCount=0, teamMode=true
+[ROOM_DEBUG] create {
+  roomId: 'regression-101-6',
+  roomCode: 'Q5MQ',
+  roomVisibility: 'closed',
+  stakeKey: 'free',
+  totalPlayers: 4,
+  aiCount: 0,
+  humanSeats: 4,
+  maxClients: 4,
+  roomMode: 'team',
+  isTeamMode: true
+}
+[ROOM] Created room regression-101-6 (code Q5MQ), humanSeats=4, totalPlayers=4, aiCount=0, teamMode=true
+✔ runBotTurn sends public counts and own hand only (takeover=false) (5.147583ms)
+✔ runBotTurn sends public counts and own hand only (takeover=true) (2.090958ms)
+✔ paired hidden worlds give identical team takeover decisions (easy) (0.970084ms)
+✔ paired hidden worlds give identical team takeover decisions (medium) (0.460209ms)
+✔ paired hidden worlds give identical team takeover decisions (hard) (0.46825ms)
+✔ public observed missing suits can change a team decision (0.462209ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 6
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 186.703375
