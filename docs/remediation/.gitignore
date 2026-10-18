@@ -1,0 +1,2 @@
+# Share selected remediation execution logs; never include local secrets/fixtures.
+!evidence/**/*.log

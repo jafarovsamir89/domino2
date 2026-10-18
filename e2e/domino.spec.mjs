@@ -1,5 +1,5 @@
 import fs from "node:fs";
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures.mjs";
 
 const KONVA_SCREENSHOT_DIR = "C:/Users/user/.codex/attachments/konva-parity";
 

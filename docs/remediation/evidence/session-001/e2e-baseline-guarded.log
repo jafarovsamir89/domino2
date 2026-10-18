@@ -1,0 +1,1673 @@
+{
+  "config": {
+    "configFile": "/Users/macbookair/Documents/domino/.tmp/remediation-s001/clean/playwright.config.mjs",
+    "rootDir": "/Users/macbookair/Documents/domino/.tmp/remediation-s001/clean/e2e",
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/Users/macbookair/Documents/domino/.tmp/remediation-s001/clean/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "/Users/macbookair/Documents/domino/.tmp/remediation-s001/clean/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.60.0",
+    "workers": 1,
+    "webServer": {
+      "command": "node e2e/static-server.cjs",
+      "port": 4173,
+      "reuseExistingServer": false,
+      "timeout": 120000
+    }
+  },
+  "suites": [
+    {
+      "title": "domino.spec.mjs",
+      "file": "domino.spec.mjs",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "start screen loads and stays within mobile viewport",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 6284,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveCount\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('script[src*=\"js/app.js?v=social-live-1\"]')\nExpected: \u001b[32m1\u001b[39m\nReceived: \u001b[31m0\u001b[39m\nTimeout:  5000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveCount\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('script[src*=\"js/app.js?v=social-live-1\"]')\u001b[22m\n\u001b[2m    14 × locator resolved to 0 elements\u001b[22m\n\u001b[2m       - unexpected value \"0\"\u001b[22m\n",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveCount\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('script[src*=\"js/app.js?v=social-live-1\"]')\nExpected: \u001b[32m1\u001b[39m\nReceived: \u001b[31m0\u001b[39m\nTimeout:  5000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveCount\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('script[src*=\"js/app.js?v=social-live-1\"]')\u001b[22m\n\u001b[2m    14 × locator resolved to 0 elements\u001b[22m\n\u001b[2m       - unexpected value \"0\"\u001b[22m\n\n    at /Users/macbookair/Documents/domino/.tmp/remediation-s001/clean/e2e/domino.spec.mjs:155:74",
+                    "location": {
+                      "file": "/Users/macbookair/Documents/domino/.tmp/remediation-s001/clean/e2e/domino.spec.mjs",
+                      "column": 74,
+                      "line": 155
+                    },
+                    "snippet": "  153 |   await page.goto(\"/index.html\");\n  154 |\n> 155 |   await expect(page.locator('script[src*=\"js/app.js?v=social-live-1\"]')).toHaveCount(1);\n      |                                                                          ^\n  156 |   await expect(page.locator('script[src*=\"js/network.js?v=social-live-1\"]')).toHaveCount(1);\n  157 |   await expect(page.locator(\"#start-screen\")).toHaveClass(/active/);\n  158 |   await expect(page.locator(\"#account-btn\")).toHaveClass(/start-profile-btn/);"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/Users/macbookair/Documents/domino/.tmp/remediation-s001/clean/e2e/domino.spec.mjs",
+                        "column": 74,
+                        "line": 155
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveCount\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('script[src*=\"js/app.js?v=social-live-1\"]')\nExpected: \u001b[32m1\u001b[39m\nReceived: \u001b[31m0\u001b[39m\nTimeout:  5000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveCount\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('script[src*=\"js/app.js?v=social-live-1\"]')\u001b[22m\n\u001b[2m    14 × locator resolved to 0 elements\u001b[22m\n\u001b[2m       - unexpected value \"0\"\u001b[22m\n\n\n  153 |   await page.goto(\"/index.html\");\n  154 |\n> 155 |   await expect(page.locator('script[src*=\"js/app.js?v=social-live-1\"]')).toHaveCount(1);\n      |                                                                          ^\n  156 |   await expect(page.locator('script[src*=\"js/network.js?v=social-live-1\"]')).toHaveCount(1);\n  157 |   await expect(page.locator(\"#start-screen\")).toHaveClass(/active/);\n  158 |   await expect(page.locator(\"#account-btn\")).toHaveClass(/start-profile-btn/);\n    at /Users/macbookair/Documents/domino/.tmp/remediation-s001/clean/e2e/domino.spec.mjs:155:74"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-18T21:32:08.450Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/Users/macbookair/Documents/domino/.tmp/remediation-s001/clean/test-results/domino-start-screen-loads-and-stays-within-mobile-viewport/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/Users/macbookair/Documents/domino/.tmp/remediation-s001/clean/e2e/domino.spec.mjs",
+                    "column": 74,
+                    "line": 155
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "0bfb9ec04ba021061999-bbd54b1e8bf67bf741d7",
+          "file": "domino.spec.mjs",
+          "line": 152,
+          "column": 1
+        },
+        {
+          "title": "solo telefon starts without calling disabled stake endpoints",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 6377,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-18T21:32:15.651Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "0bfb9ec04ba021061999-ddcea20191f8f9d674f2",
+          "file": "domino.spec.mjs",
+          "line": 178,
+          "column": 3
+        },
+        {
+          "title": "solo telefon starts a fresh match after both win and loss",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 6366,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-18T21:32:22.237Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "0bfb9ec04ba021061999-7066a70cf066f06016a4",
+          "file": "domino.spec.mjs",
+          "line": 206,
+          "column": 3
+        },
+        {
+          "title": "solo classic101 starts without calling disabled stake endpoints",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 6219,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-18T21:32:28.610Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "0bfb9ec04ba021061999-b8d771d3434dc0984d51",
+          "file": "domino.spec.mjs",
+          "line": 178,
+          "column": 3
+        },
+        {
+          "title": "solo classic101 starts a fresh match after both win and loss",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 6364,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-18T21:32:34.839Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "0bfb9ec04ba021061999-5037b83753bf6ba3971a",
+          "file": "domino.spec.mjs",
+          "line": 206,
+          "column": 3
+        },
+        {
+          "title": "Konva is enabled by default, mounts a canvas board, and clears the placeholder after the first move",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 6282,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-18T21:32:41.210Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "0bfb9ec04ba021061999-0ff233183ed285055cab",
+          "file": "domino.spec.mjs",
+          "line": 260,
+          "column": 1
+        },
+        {
+          "title": "Konva query flag 0 forces DOM board and stores false",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 6204,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-18T21:32:47.498Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "0bfb9ec04ba021061999-d545e46535f0fd374cad",
+          "file": "domino.spec.mjs",
+          "line": 295,
+          "column": 1
+        },
+        {
+          "title": "Konva query flag 1 forces Konva board and stores true",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 6245,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-18T21:32:53.708Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "0bfb9ec04ba021061999-3308e27597cb1cdd5c22",
+          "file": "domino.spec.mjs",
+          "line": 326,
+          "column": 1
+        },
+        {
+          "title": "Konva realtime scheduler batches duplicate delta renders and keeps signatures stable",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 6248,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-18T21:32:59.958Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "0bfb9ec04ba021061999-b2f683847b8c053c2a75",
+          "file": "domino.spec.mjs",
+          "line": 400,
+          "column": 1
+        },
+        {
+          "title": "Konva game_delta play renders the board before the score popup",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 6253,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-18T21:33:06.213Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "0bfb9ec04ba021061999-89700d8c2e3a2933ffd2",
+          "file": "domino.spec.mjs",
+          "line": 515,
+          "column": 1
+        },
+        {
+          "title": "Konva game_delta draw updates opponent hand count without redrawing the board",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 6169,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-18T21:33:12.477Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "0bfb9ec04ba021061999-266219198a872970098d",
+          "file": "domino.spec.mjs",
+          "line": 605,
+          "column": 1
+        },
+        {
+          "title": "Konva rollback clears pending optimistic play without ReferenceError",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 6119,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-18T21:33:18.653Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "0bfb9ec04ba021061999-bdabf2b19696e9e133c8",
+          "file": "domino.spec.mjs",
+          "line": 666,
+          "column": 1
+        },
+        {
+          "title": "Konva local addScore triggers score feedback once",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 6157,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-18T21:33:24.777Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "0bfb9ec04ba021061999-deb96d898af09eb4f8fd",
+          "file": "domino.spec.mjs",
+          "line": 719,
+          "column": 1
+        },
+        {
+          "title": "Konva local score feedback plays sound once and shows popup once",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 6083,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-18T21:33:30.942Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "0bfb9ec04ba021061999-910ab8c9e0cb3b315756",
+          "file": "domino.spec.mjs",
+          "line": 750,
+          "column": 1
+        },
+        {
+          "title": "Konva travel animation stays opaque and does not blink on rerender",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 6336,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-18T21:33:37.035Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "0bfb9ec04ba021061999-5b75bee15c0cec9accfa",
+          "file": "domino.spec.mjs",
+          "line": 785,
+          "column": 1
+        },
+        {
+          "title": "Konva scheduleRealtimeRender defaults to all false flags",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 6045,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-18T21:33:43.379Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "0bfb9ec04ba021061999-a03152f21d9a98ca6984",
+          "file": "domino.spec.mjs",
+          "line": 867,
+          "column": 1
+        },
+        {
+          "title": "Konva open-end highlights stay clear of tile bodies on stretched boards",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 6069,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-18T21:33:49.432Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "0bfb9ec04ba021061999-52eee034a27729e5f609",
+          "file": "domino.spec.mjs",
+          "line": 902,
+          "column": 1
+        },
+        {
+          "title": "Konva top open-end highlight stays centered without stage clamping",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 6112,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-18T21:33:55.507Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "0bfb9ec04ba021061999-448dcd8c8a08446ecde3",
+          "file": "domino.spec.mjs",
+          "line": 991,
+          "column": 1
+        },
+        {
+          "title": "Konva tile rects stay in viewport coordinates and source rect is excluded from collision",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 6024,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeCloseTo\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m, \u001b[22mprecision\u001b[2m)\u001b[22m\n\nExpected: \u001b[32m157.6015625\u001b[39m\nReceived: \u001b[31m176.3\u001b[39m\n\nExpected precision:    1\nExpected difference: < \u001b[32m0.05\u001b[39m\nReceived difference:   \u001b[31m18.69843750000001\u001b[39m",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeCloseTo\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m, \u001b[22mprecision\u001b[2m)\u001b[22m\n\nExpected: \u001b[32m157.6015625\u001b[39m\nReceived: \u001b[31m176.3\u001b[39m\n\nExpected precision:    1\nExpected difference: < \u001b[32m0.05\u001b[39m\nReceived difference:   \u001b[31m18.69843750000001\u001b[39m\n    at /Users/macbookair/Documents/domino/.tmp/remediation-s001/clean/e2e/domino.spec.mjs:1147:32",
+                    "location": {
+                      "file": "/Users/macbookair/Documents/domino/.tmp/remediation-s001/clean/e2e/domino.spec.mjs",
+                      "column": 32,
+                      "line": 1147
+                    },
+                    "snippet": "  1145 |   expect(result.tileRect).not.toBeNull();\n  1146 |   expect(result.tileElRect).not.toBeNull();\n> 1147 |   expect(result.tileRect.left).toBeCloseTo(result.tileElRect.left, 1);\n       |                                ^\n  1148 |   expect(result.tileRect.top).toBeCloseTo(result.tileElRect.top, 1);\n  1149 |   expect(result.tileRect.centerX).toBeCloseTo(result.tileElRect.left + result.tileElRect.width / 2, 1);\n  1150 |   expect(result.tileRect.centerY).toBeCloseTo(result.tileElRect.top + result.tileElRect.height / 2, 1);"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/Users/macbookair/Documents/domino/.tmp/remediation-s001/clean/e2e/domino.spec.mjs",
+                        "column": 32,
+                        "line": 1147
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeCloseTo\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m, \u001b[22mprecision\u001b[2m)\u001b[22m\n\nExpected: \u001b[32m157.6015625\u001b[39m\nReceived: \u001b[31m176.3\u001b[39m\n\nExpected precision:    1\nExpected difference: < \u001b[32m0.05\u001b[39m\nReceived difference:   \u001b[31m18.69843750000001\u001b[39m\n\n  1145 |   expect(result.tileRect).not.toBeNull();\n  1146 |   expect(result.tileElRect).not.toBeNull();\n> 1147 |   expect(result.tileRect.left).toBeCloseTo(result.tileElRect.left, 1);\n       |                                ^\n  1148 |   expect(result.tileRect.top).toBeCloseTo(result.tileElRect.top, 1);\n  1149 |   expect(result.tileRect.centerX).toBeCloseTo(result.tileElRect.left + result.tileElRect.width / 2, 1);\n  1150 |   expect(result.tileRect.centerY).toBeCloseTo(result.tileElRect.top + result.tileElRect.height / 2, 1);\n    at /Users/macbookair/Documents/domino/.tmp/remediation-s001/clean/e2e/domino.spec.mjs:1147:32"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-18T21:34:01.625Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/Users/macbookair/Documents/domino/.tmp/remediation-s001/clean/test-results/domino-Konva-tile-rects-st-40f9a--is-excluded-from-collision/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/Users/macbookair/Documents/domino/.tmp/remediation-s001/clean/e2e/domino.spec.mjs",
+                    "column": 32,
+                    "line": 1147
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "0bfb9ec04ba021061999-756e6d363abfb5199c7b",
+          "file": "domino.spec.mjs",
+          "line": 1075,
+          "column": 1
+        },
+        {
+          "title": "Konva arrow axes stay locked and emergency fallback only shifts when normal candidates fail",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 6038,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-18T21:34:08.084Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "0bfb9ec04ba021061999-08283cb8791d3f6d785a",
+          "file": "domino.spec.mjs",
+          "line": 1158,
+          "column": 1
+        },
+        {
+          "title": "Konva open-end hints sit lower and arrow buttons match the CSS size",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 6718,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-18T21:34:14.245Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "0bfb9ec04ba021061999-c249175c3a776f7fb67c",
+          "file": "domino.spec.mjs",
+          "line": 1282,
+          "column": 1
+        },
+        {
+          "title": "bank HUD stays visible across consecutive deals in the same round",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 6271,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-18T21:34:20.972Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "0bfb9ec04ba021061999-610a400a1f7a1dfddaf3",
+          "file": "domino.spec.mjs",
+          "line": 1479,
+          "column": 1
+        },
+        {
+          "title": "Konva board parity keeps DOM palette, geometry, and overlays aligned",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 7493,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-18T21:34:27.249Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "0bfb9ec04ba021061999-a10101604615e7589cc4",
+          "file": "domino.spec.mjs",
+          "line": 1527,
+          "column": 1
+        },
+        {
+          "title": "guest start screen hides auth-only top buttons and keeps language visible",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 710,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-18T21:34:34.749Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "0bfb9ec04ba021061999-a9dbcea773ee20951acc",
+          "file": "domino.spec.mjs",
+          "line": 1735,
+          "column": 1
+        },
+        {
+          "title": "authenticated profile shows four stats cards without Xal and leaderboard uses Reyting",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 11091,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('#player-profile-invite-btn')\nExpected: visible\nReceived: hidden\nTimeout:  5000ms\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('#player-profile-invite-btn')\u001b[22m\n\u001b[2m    14 × locator resolved to <button disabled hidden=\"\" type=\"button\" title=\"Invite\" data-i18n=\"friend-invite\" id=\"player-profile-invite-btn\" class=\"btn btn-action btn-strong\">Invite</button>\u001b[22m\n\u001b[2m       - unexpected value \"hidden\"\u001b[22m\n",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('#player-profile-invite-btn')\nExpected: visible\nReceived: hidden\nTimeout:  5000ms\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('#player-profile-invite-btn')\u001b[22m\n\u001b[2m    14 × locator resolved to <button disabled hidden=\"\" type=\"button\" title=\"Invite\" data-i18n=\"friend-invite\" id=\"player-profile-invite-btn\" class=\"btn btn-action btn-strong\">Invite</button>\u001b[22m\n\u001b[2m       - unexpected value \"hidden\"\u001b[22m\n\n    at /Users/macbookair/Documents/domino/.tmp/remediation-s001/clean/e2e/domino.spec.mjs:2265:60",
+                    "location": {
+                      "file": "/Users/macbookair/Documents/domino/.tmp/remediation-s001/clean/e2e/domino.spec.mjs",
+                      "column": 60,
+                      "line": 2265
+                    },
+                    "snippet": "  2263 |     game.renderPlayerProfileModal?.();\n  2264 |   });\n> 2265 |   await expect(page.locator(\"#player-profile-invite-btn\")).toBeVisible();\n       |                                                            ^\n  2266 |   await expect(page.locator(\"#player-profile-message-btn\")).toBeVisible();\n  2267 |   await page.locator(\"#player-profile-message-btn\").click();\n  2268 |"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/Users/macbookair/Documents/domino/.tmp/remediation-s001/clean/e2e/domino.spec.mjs",
+                        "column": 60,
+                        "line": 2265
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('#player-profile-invite-btn')\nExpected: visible\nReceived: hidden\nTimeout:  5000ms\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('#player-profile-invite-btn')\u001b[22m\n\u001b[2m    14 × locator resolved to <button disabled hidden=\"\" type=\"button\" title=\"Invite\" data-i18n=\"friend-invite\" id=\"player-profile-invite-btn\" class=\"btn btn-action btn-strong\">Invite</button>\u001b[22m\n\u001b[2m       - unexpected value \"hidden\"\u001b[22m\n\n\n  2263 |     game.renderPlayerProfileModal?.();\n  2264 |   });\n> 2265 |   await expect(page.locator(\"#player-profile-invite-btn\")).toBeVisible();\n       |                                                            ^\n  2266 |   await expect(page.locator(\"#player-profile-message-btn\")).toBeVisible();\n  2267 |   await page.locator(\"#player-profile-message-btn\").click();\n  2268 |\n    at /Users/macbookair/Documents/domino/.tmp/remediation-s001/clean/e2e/domino.spec.mjs:2265:60"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-18T21:34:35.465Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/Users/macbookair/Documents/domino/.tmp/remediation-s001/clean/test-results/domino-authenticated-profi-b829d-nd-leaderboard-uses-Reyting/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/Users/macbookair/Documents/domino/.tmp/remediation-s001/clean/e2e/domino.spec.mjs",
+                    "column": 60,
+                    "line": 2265
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "0bfb9ec04ba021061999-94c32152658b8d357c9b",
+          "file": "domino.spec.mjs",
+          "line": 1750,
+          "column": 1
+        },
+        {
+          "title": "invite polling catches incoming room invitations without SSE",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 3,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 5628,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m2\u001b[39m\nReceived:    \u001b[31m0\u001b[39m\n\nCall Log:\n- Timeout 5000ms exceeded while waiting on the predicate",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m2\u001b[39m\nReceived:    \u001b[31m0\u001b[39m\n\nCall Log:\n- Timeout 5000ms exceeded while waiting on the predicate\n    at /Users/macbookair/Documents/domino/.tmp/remediation-s001/clean/e2e/domino.spec.mjs:2491:66",
+                    "location": {
+                      "file": "/Users/macbookair/Documents/domino/.tmp/remediation-s001/clean/e2e/domino.spec.mjs",
+                      "column": 66,
+                      "line": 2491
+                    },
+                    "snippet": "  2489 |   });\n  2490 |\n> 2491 |   await expect.poll(() => inviteRequestCount, { timeout: 5000 }).toBeGreaterThanOrEqual(2);\n       |                                                                  ^\n  2492 |   await expect(page.locator(\"#open-social-btn .start-social-badge\")).toHaveText(\"1\");\n  2493 |   await page.locator(\"#open-social-btn\").click();\n  2494 |   await expect(page.locator(\"#social-invites-incoming-list .friend-card\")).toHaveCount(1);"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/Users/macbookair/Documents/domino/.tmp/remediation-s001/clean/e2e/domino.spec.mjs",
+                        "column": 66,
+                        "line": 2491
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m2\u001b[39m\nReceived:    \u001b[31m0\u001b[39m\n\nCall Log:\n- Timeout 5000ms exceeded while waiting on the predicate\n\n  2489 |   });\n  2490 |\n> 2491 |   await expect.poll(() => inviteRequestCount, { timeout: 5000 }).toBeGreaterThanOrEqual(2);\n       |                                                                  ^\n  2492 |   await expect(page.locator(\"#open-social-btn .start-social-badge\")).toHaveText(\"1\");\n  2493 |   await page.locator(\"#open-social-btn\").click();\n  2494 |   await expect(page.locator(\"#social-invites-incoming-list .friend-card\")).toHaveCount(1);\n    at /Users/macbookair/Documents/domino/.tmp/remediation-s001/clean/e2e/domino.spec.mjs:2491:66"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-18T21:34:47.007Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/Users/macbookair/Documents/domino/.tmp/remediation-s001/clean/test-results/domino-invite-polling-catc-a2718-oom-invitations-without-SSE/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/Users/macbookair/Documents/domino/.tmp/remediation-s001/clean/e2e/domino.spec.mjs",
+                    "column": 66,
+                    "line": 2491
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "0bfb9ec04ba021061999-820c3e9f078b0677fe60",
+          "file": "domino.spec.mjs",
+          "line": 2347,
+          "column": 1
+        },
+        {
+          "title": "open rooms modal uses a standard title bar and close button",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 4,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 5971,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-18T21:34:53.142Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "0bfb9ec04ba021061999-d493d71e5830db9559e7",
+          "file": "domino.spec.mjs",
+          "line": 2497,
+          "column": 1
+        },
+        {
+          "title": "closed and open rooms create flows use contextual visibility without toggle UI",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 4,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 5697,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).not.\u001b[22mtoHaveClass\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: locator('#open-rooms-menu-ui')\nExpected pattern: not \u001b[32m/is-hidden/\u001b[39m\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"not toHaveClass\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('#open-rooms-menu-ui')\u001b[22m\n",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).not.\u001b[22mtoHaveClass\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: locator('#open-rooms-menu-ui')\nExpected pattern: not \u001b[32m/is-hidden/\u001b[39m\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"not toHaveClass\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('#open-rooms-menu-ui')\u001b[22m\n\n    at /Users/macbookair/Documents/domino/.tmp/remediation-s001/clean/e2e/domino.spec.mjs:2526:57",
+                    "location": {
+                      "file": "/Users/macbookair/Documents/domino/.tmp/remediation-s001/clean/e2e/domino.spec.mjs",
+                      "column": 57,
+                      "line": 2526
+                    },
+                    "snippet": "  2524 |   await page.evaluate(() => document.getElementById(\"open-rooms-btn\")?.click());\n  2525 |   await expect(page.locator(\"#open-rooms-modal\")).toHaveClass(/active/);\n> 2526 |   await expect(page.locator(\"#open-rooms-menu-ui\")).not.toHaveClass(/is-hidden/);\n       |                                                         ^\n  2527 |   await expect(page.locator(\"#open-rooms-list-ui\")).toHaveClass(/is-hidden/);\n  2528 |   await expect(page.locator(\"#open-rooms-create-btn\")).toBeVisible();\n  2529 |   await expect(page.locator(\"#open-rooms-join-btn\")).toBeVisible();"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/Users/macbookair/Documents/domino/.tmp/remediation-s001/clean/e2e/domino.spec.mjs",
+                        "column": 57,
+                        "line": 2526
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).not.\u001b[22mtoHaveClass\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: locator('#open-rooms-menu-ui')\nExpected pattern: not \u001b[32m/is-hidden/\u001b[39m\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"not toHaveClass\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('#open-rooms-menu-ui')\u001b[22m\n\n\n  2524 |   await page.evaluate(() => document.getElementById(\"open-rooms-btn\")?.click());\n  2525 |   await expect(page.locator(\"#open-rooms-modal\")).toHaveClass(/active/);\n> 2526 |   await expect(page.locator(\"#open-rooms-menu-ui\")).not.toHaveClass(/is-hidden/);\n       |                                                         ^\n  2527 |   await expect(page.locator(\"#open-rooms-list-ui\")).toHaveClass(/is-hidden/);\n  2528 |   await expect(page.locator(\"#open-rooms-create-btn\")).toBeVisible();\n  2529 |   await expect(page.locator(\"#open-rooms-join-btn\")).toBeVisible();\n    at /Users/macbookair/Documents/domino/.tmp/remediation-s001/clean/e2e/domino.spec.mjs:2526:57"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-18T21:34:59.233Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/Users/macbookair/Documents/domino/.tmp/remediation-s001/clean/test-results/domino-closed-and-open-roo-b7127-isibility-without-toggle-UI/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/Users/macbookair/Documents/domino/.tmp/remediation-s001/clean/e2e/domino.spec.mjs",
+                    "column": 57,
+                    "line": 2526
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "0bfb9ec04ba021061999-37aeb87600ae40b2dcf6",
+          "file": "domino.spec.mjs",
+          "line": 2511,
+          "column": 1
+        },
+        {
+          "title": "solo and online modals keep header title separate from description",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 5,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 985,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-18T21:35:05.347Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "0bfb9ec04ba021061999-2ad526f12c645db789e5",
+          "file": "domino.spec.mjs",
+          "line": 2546,
+          "column": 1
+        },
+        {
+          "title": "in-game pause menu keeps only continue and exit and round summary hides winner hand details",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 5,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 5680,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoContainText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: locator('#menu-screen')\nTimeout: 5000ms\nExpected pattern: \u001b[32m/Davam et|Продолжить|Continue/\u001b[39m\nReceived string:  \u001b[31m\"·········\u001b[39m\n\u001b[31m            Menu\u001b[39m\n\u001b[31m            Resume·············\u001b[39m\n\u001b[31m            Next track\u001b[39m\n\u001b[31m            Mute / Unmute\u001b[39m\n\u001b[31m            Quit\u001b[39m\n\u001b[31m            Все права защищены © SimpleSoft - Domino ver 1.33·········\u001b[39m\n\u001b[31m    \"\u001b[39m\n\nCall log:\n\u001b[2m  - Expect \"toContainText\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('#menu-screen')\u001b[22m\n\u001b[2m    14 × locator resolved to <div id=\"menu-screen\" class=\"screen overlay active\">…</div>\u001b[22m\n\u001b[2m       - unexpected value \"\u001b[22m\n\u001b[2m        \u001b[22m\n\u001b[2m            Menu\u001b[22m\n\u001b[2m            Resume\u001b[22m\n\u001b[2m            \u001b[22m\n\u001b[2m            Next track\u001b[22m\n\u001b[2m            Mute / Unmute\u001b[22m\n\u001b[2m            Quit\u001b[22m\n\u001b[2m            Все права защищены © SimpleSoft - Domino ver 1.33\u001b[22m\n\u001b[2m        \u001b[22m\n\u001b[2m    \"\u001b[22m\n",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoContainText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: locator('#menu-screen')\nTimeout: 5000ms\nExpected pattern: \u001b[32m/Davam et|Продолжить|Continue/\u001b[39m\nReceived string:  \u001b[31m\"·········\u001b[39m\n\u001b[31m            Menu\u001b[39m\n\u001b[31m            Resume·············\u001b[39m\n\u001b[31m            Next track\u001b[39m\n\u001b[31m            Mute / Unmute\u001b[39m\n\u001b[31m            Quit\u001b[39m\n\u001b[31m            Все права защищены © SimpleSoft - Domino ver 1.33·········\u001b[39m\n\u001b[31m    \"\u001b[39m\n\nCall log:\n\u001b[2m  - Expect \"toContainText\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('#menu-screen')\u001b[22m\n\u001b[2m    14 × locator resolved to <div id=\"menu-screen\" class=\"screen overlay active\">…</div>\u001b[22m\n\u001b[2m       - unexpected value \"\u001b[22m\n\u001b[2m        \u001b[22m\n\u001b[2m            Menu\u001b[22m\n\u001b[2m            Resume\u001b[22m\n\u001b[2m            \u001b[22m\n\u001b[2m            Next track\u001b[22m\n\u001b[2m            Mute / Unmute\u001b[22m\n\u001b[2m            Quit\u001b[22m\n\u001b[2m            Все права защищены © SimpleSoft - Domino ver 1.33\u001b[22m\n\u001b[2m        \u001b[22m\n\u001b[2m    \"\u001b[22m\n\n    at /Users/macbookair/Documents/domino/.tmp/remediation-s001/clean/e2e/domino.spec.mjs:2573:46",
+                    "location": {
+                      "file": "/Users/macbookair/Documents/domino/.tmp/remediation-s001/clean/e2e/domino.spec.mjs",
+                      "column": 46,
+                      "line": 2573
+                    },
+                    "snippet": "  2571 |   await expect(page.locator(\"#menu-screen .menu-panel .btn-menu\")).toHaveCount(4);\n  2572 |   await expect(page.locator(\"#menu-screen\")).not.toContainText(/Profile|Профиль|Coin|Coins|Магазин|Skin|Скины/i);\n> 2573 |   await expect(page.locator(\"#menu-screen\")).toContainText(/Davam et|Продолжить|Continue/);\n       |                                              ^\n  2574 |   await expect(page.locator(\"#menu-screen\")).toContainText(/Çıxış|Выход|Exit/);\n  2575 |\n  2576 |   await page.evaluate(async () => {"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/Users/macbookair/Documents/domino/.tmp/remediation-s001/clean/e2e/domino.spec.mjs",
+                        "column": 46,
+                        "line": 2573
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoContainText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: locator('#menu-screen')\nTimeout: 5000ms\nExpected pattern: \u001b[32m/Davam et|Продолжить|Continue/\u001b[39m\nReceived string:  \u001b[31m\"·········\u001b[39m\n\u001b[31m            Menu\u001b[39m\n\u001b[31m            Resume·············\u001b[39m\n\u001b[31m            Next track\u001b[39m\n\u001b[31m            Mute / Unmute\u001b[39m\n\u001b[31m            Quit\u001b[39m\n\u001b[31m            Все права защищены © SimpleSoft - Domino ver 1.33·········\u001b[39m\n\u001b[31m    \"\u001b[39m\n\nCall log:\n\u001b[2m  - Expect \"toContainText\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('#menu-screen')\u001b[22m\n\u001b[2m    14 × locator resolved to <div id=\"menu-screen\" class=\"screen overlay active\">…</div>\u001b[22m\n\u001b[2m       - unexpected value \"\u001b[22m\n\u001b[2m        \u001b[22m\n\u001b[2m            Menu\u001b[22m\n\u001b[2m            Resume\u001b[22m\n\u001b[2m            \u001b[22m\n\u001b[2m            Next track\u001b[22m\n\u001b[2m            Mute / Unmute\u001b[22m\n\u001b[2m            Quit\u001b[22m\n\u001b[2m            Все права защищены © SimpleSoft - Domino ver 1.33\u001b[22m\n\u001b[2m        \u001b[22m\n\u001b[2m    \"\u001b[22m\n\n\n  2571 |   await expect(page.locator(\"#menu-screen .menu-panel .btn-menu\")).toHaveCount(4);\n  2572 |   await expect(page.locator(\"#menu-screen\")).not.toContainText(/Profile|Профиль|Coin|Coins|Магазин|Skin|Скины/i);\n> 2573 |   await expect(page.locator(\"#menu-screen\")).toContainText(/Davam et|Продолжить|Continue/);\n       |                                              ^\n  2574 |   await expect(page.locator(\"#menu-screen\")).toContainText(/Çıxış|Выход|Exit/);\n  2575 |\n  2576 |   await page.evaluate(async () => {\n    at /Users/macbookair/Documents/domino/.tmp/remediation-s001/clean/e2e/domino.spec.mjs:2573:46"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-18T21:35:06.447Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/Users/macbookair/Documents/domino/.tmp/remediation-s001/clean/test-results/domino-in-game-pause-menu--ff7fd-y-hides-winner-hand-details/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/Users/macbookair/Documents/domino/.tmp/remediation-s001/clean/e2e/domino.spec.mjs",
+                    "column": 46,
+                    "line": 2573
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "0bfb9ec04ba021061999-1e409ca0e577e98a6bce",
+          "file": "domino.spec.mjs",
+          "line": 2562,
+          "column": 1
+        },
+        {
+          "title": "reconnect banner appears during network reconnect and clears on recovery",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 6,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 727,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-18T21:35:12.515Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "0bfb9ec04ba021061999-5de6c79ba616840c3119",
+          "file": "domino.spec.mjs",
+          "line": 2625,
+          "column": 1
+        },
+        {
+          "title": "renderer setTableSkin stays silent unless debug logging is enabled",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 6,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 722,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-18T21:35:13.356Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "0bfb9ec04ba021061999-7e7cbee667e220aaa5b3",
+          "file": "domino.spec.mjs",
+          "line": 2653,
+          "column": 1
+        },
+        {
+          "title": "turn timer uses synced server clock and does not restart on the same deadline",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 6,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 669,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-18T21:35:14.084Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "0bfb9ec04ba021061999-86fe10864905bdbb6d1d",
+          "file": "domino.spec.mjs",
+          "line": 2670,
+          "column": 1
+        },
+        {
+          "title": "expired seat reservation reconnect falls back to snapshot restore without retry spam",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 6,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 678,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\nExpected: \u001b[32mArrayContaining [\"clear-token\", \"clear-state\", \"restore-empty\"]\u001b[39m\nReceived: \u001b[31m[\"restore-token\"]\u001b[39m",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\nExpected: \u001b[32mArrayContaining [\"clear-token\", \"clear-state\", \"restore-empty\"]\u001b[39m\nReceived: \u001b[31m[\"restore-token\"]\u001b[39m\n    at /Users/macbookair/Documents/domino/.tmp/remediation-s001/clean/e2e/domino.spec.mjs:2791:24",
+                    "location": {
+                      "file": "/Users/macbookair/Documents/domino/.tmp/remediation-s001/clean/e2e/domino.spec.mjs",
+                      "column": 24,
+                      "line": 2791
+                    },
+                    "snippet": "  2789 |\n  2790 |   expect(result.roomId).toBe(\"restored-room\");\n> 2791 |   expect(result.calls).toEqual(expect.arrayContaining([\"clear-token\", \"clear-state\", \"restore-empty\"]));\n       |                        ^\n  2792 |   expect(result.calls).not.toContain(\"failed\");\n  2793 |   expect(result.reconnectAttempt).toBe(0);\n  2794 |   expect(result.storedToken).toBe(\"\");"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/Users/macbookair/Documents/domino/.tmp/remediation-s001/clean/e2e/domino.spec.mjs",
+                        "column": 24,
+                        "line": 2791
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\nExpected: \u001b[32mArrayContaining [\"clear-token\", \"clear-state\", \"restore-empty\"]\u001b[39m\nReceived: \u001b[31m[\"restore-token\"]\u001b[39m\n\n  2789 |\n  2790 |   expect(result.roomId).toBe(\"restored-room\");\n> 2791 |   expect(result.calls).toEqual(expect.arrayContaining([\"clear-token\", \"clear-state\", \"restore-empty\"]));\n       |                        ^\n  2792 |   expect(result.calls).not.toContain(\"failed\");\n  2793 |   expect(result.reconnectAttempt).toBe(0);\n  2794 |   expect(result.storedToken).toBe(\"\");\n    at /Users/macbookair/Documents/domino/.tmp/remediation-s001/clean/e2e/domino.spec.mjs:2791:24"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-18T21:35:14.759Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/Users/macbookair/Documents/domino/.tmp/remediation-s001/clean/test-results/domino-expired-seat-reserv-7090a--restore-without-retry-spam/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/Users/macbookair/Documents/domino/.tmp/remediation-s001/clean/e2e/domino.spec.mjs",
+                    "column": 24,
+                    "line": 2791
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "0bfb9ec04ba021061999-1d9c7c5c92707747f900",
+          "file": "domino.spec.mjs",
+          "line": 2735,
+          "column": 1
+        },
+        {
+          "title": "resume banner renders stored session state",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 7,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 720,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-18T21:35:15.840Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "0bfb9ec04ba021061999-4f88f07c7ab57261527e",
+          "file": "domino.spec.mjs",
+          "line": 2797,
+          "column": 1
+        },
+        {
+          "title": "team score names open the player profile modal above the table",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 7,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 696,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-18T21:35:16.680Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "0bfb9ec04ba021061999-240f350a36ab704b55c7",
+          "file": "domino.spec.mjs",
+          "line": 2818,
+          "column": 1
+        },
+        {
+          "title": "game invite attaches the resolved room code instead of the room id",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 7,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 712,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeTruthy\u001b[2m()\u001b[22m\n\nReceived: \u001b[31mnull\u001b[39m",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeTruthy\u001b[2m()\u001b[22m\n\nReceived: \u001b[31mnull\u001b[39m\n    at /Users/macbookair/Documents/domino/.tmp/remediation-s001/clean/e2e/domino.spec.mjs:2888:19",
+                    "location": {
+                      "file": "/Users/macbookair/Documents/domino/.tmp/remediation-s001/clean/e2e/domino.spec.mjs",
+                      "column": 19,
+                      "line": 2888
+                    },
+                    "snippet": "  2886 |   });\n  2887 |\n> 2888 |   expect(payload).toBeTruthy();\n       |                   ^\n  2889 |   expect(payload.roomCode).toBe(\"ABCD\");\n  2890 | });\n  2891 |"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/Users/macbookair/Documents/domino/.tmp/remediation-s001/clean/e2e/domino.spec.mjs",
+                        "column": 19,
+                        "line": 2888
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeTruthy\u001b[2m()\u001b[22m\n\nReceived: \u001b[31mnull\u001b[39m\n\n  2886 |   });\n  2887 |\n> 2888 |   expect(payload).toBeTruthy();\n       |                   ^\n  2889 |   expect(payload.roomCode).toBe(\"ABCD\");\n  2890 | });\n  2891 |\n    at /Users/macbookair/Documents/domino/.tmp/remediation-s001/clean/e2e/domino.spec.mjs:2888:19"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-18T21:35:17.383Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/Users/macbookair/Documents/domino/.tmp/remediation-s001/clean/test-results/domino-game-invite-attache-ce7c6-code-instead-of-the-room-id/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/Users/macbookair/Documents/domino/.tmp/remediation-s001/clean/e2e/domino.spec.mjs",
+                    "column": 19,
+                    "line": 2888
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "0bfb9ec04ba021061999-580d71b0e38aabfb531a",
+          "file": "domino.spec.mjs",
+          "line": 2855,
+          "column": 1
+        },
+        {
+          "title": "daily bonus flow: visible only when authed, handles status loading and claim successfully",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 8,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 5987,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).not.\u001b[22mtoHaveClass\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: locator('#daily-bonus-card')\nExpected pattern: not \u001b[32m/is-hidden/\u001b[39m\nReceived string: \u001b[31m\"daily-bonus-card \u001b[7mis-hidden\u001b[27m\"\u001b[39m\nTimeout: 5000ms\n\nCall log:\n\u001b[2m  - Expect \"not toHaveClass\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('#daily-bonus-card')\u001b[22m\n\u001b[2m    14 × locator resolved to <section id=\"daily-bonus-card\" class=\"daily-bonus-card is-hidden\">…</section>\u001b[22m\n\u001b[2m       - unexpected value \"daily-bonus-card is-hidden\"\u001b[22m\n",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).not.\u001b[22mtoHaveClass\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: locator('#daily-bonus-card')\nExpected pattern: not \u001b[32m/is-hidden/\u001b[39m\nReceived string: \u001b[31m\"daily-bonus-card \u001b[7mis-hidden\u001b[27m\"\u001b[39m\nTimeout: 5000ms\n\nCall log:\n\u001b[2m  - Expect \"not toHaveClass\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('#daily-bonus-card')\u001b[22m\n\u001b[2m    14 × locator resolved to <section id=\"daily-bonus-card\" class=\"daily-bonus-card is-hidden\">…</section>\u001b[22m\n\u001b[2m       - unexpected value \"daily-bonus-card is-hidden\"\u001b[22m\n\n    at /Users/macbookair/Documents/domino/.tmp/remediation-s001/clean/e2e/domino.spec.mjs:3012:26",
+                    "location": {
+                      "file": "/Users/macbookair/Documents/domino/.tmp/remediation-s001/clean/e2e/domino.spec.mjs",
+                      "column": 26,
+                      "line": 3012
+                    },
+                    "snippet": "  3010 |   await page.goto(\"/index.html\");\n  3011 |   const card = page.locator(\"#daily-bonus-card\");\n> 3012 |   await expect(card).not.toHaveClass(/is-hidden/);\n       |                          ^\n  3013 |   await expect(page.locator(\"#daily-bonus-amount\")).toContainText(\"+350\");\n  3014 |\n  3015 |   const claimBtn = page.locator(\"#daily-bonus-claim-btn\");"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/Users/macbookair/Documents/domino/.tmp/remediation-s001/clean/e2e/domino.spec.mjs",
+                        "column": 26,
+                        "line": 3012
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).not.\u001b[22mtoHaveClass\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: locator('#daily-bonus-card')\nExpected pattern: not \u001b[32m/is-hidden/\u001b[39m\nReceived string: \u001b[31m\"daily-bonus-card \u001b[7mis-hidden\u001b[27m\"\u001b[39m\nTimeout: 5000ms\n\nCall log:\n\u001b[2m  - Expect \"not toHaveClass\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('#daily-bonus-card')\u001b[22m\n\u001b[2m    14 × locator resolved to <section id=\"daily-bonus-card\" class=\"daily-bonus-card is-hidden\">…</section>\u001b[22m\n\u001b[2m       - unexpected value \"daily-bonus-card is-hidden\"\u001b[22m\n\n\n  3010 |   await page.goto(\"/index.html\");\n  3011 |   const card = page.locator(\"#daily-bonus-card\");\n> 3012 |   await expect(card).not.toHaveClass(/is-hidden/);\n       |                          ^\n  3013 |   await expect(page.locator(\"#daily-bonus-amount\")).toContainText(\"+350\");\n  3014 |\n  3015 |   const claimBtn = page.locator(\"#daily-bonus-claim-btn\");\n    at /Users/macbookair/Documents/domino/.tmp/remediation-s001/clean/e2e/domino.spec.mjs:3012:26"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-18T21:35:18.500Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/Users/macbookair/Documents/domino/.tmp/remediation-s001/clean/test-results/domino-daily-bonus-flow-vi-5f966-ding-and-claim-successfully/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/Users/macbookair/Documents/domino/.tmp/remediation-s001/clean/e2e/domino.spec.mjs",
+                    "column": 26,
+                    "line": 3012
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "0bfb9ec04ba021061999-7431a4f8f663031b54f3",
+          "file": "domino.spec.mjs",
+          "line": 2892,
+          "column": 1
+        },
+        {
+          "title": "capture screenshots for review",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 9,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3474,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-18T21:35:25.044Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "0bfb9ec04ba021061999-1692a8ef8f796c854c94",
+          "file": "domino.spec.mjs",
+          "line": 3033,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-18T21:32:07.265Z",
+    "duration": 201396.06999999998,
+    "expected": 30,
+    "skipped": 0,
+    "unexpected": 9,
+    "flaky": 0
+  }
+}

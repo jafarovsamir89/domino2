@@ -1,0 +1,117 @@
+{
+  "config": {
+    "configFile": "/Users/macbookair/Documents/domino/.tmp/remediation-s001/clean/playwright.config.mjs",
+    "rootDir": "/Users/macbookair/Documents/domino/.tmp/remediation-s001/clean/e2e",
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/Users/macbookair/Documents/domino/.tmp/remediation-s001/clean/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "/Users/macbookair/Documents/domino/.tmp/remediation-s001/clean/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.60.0",
+    "workers": 1,
+    "webServer": {
+      "command": "node e2e/static-server.cjs",
+      "port": 4173,
+      "reuseExistingServer": false,
+      "timeout": 120000
+    }
+  },
+  "suites": [
+    {
+      "title": "network-boundary.spec.mjs",
+      "file": "network-boundary.spec.mjs",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "local tests block unmocked external HTTP and WebSocket traffic",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1291,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-18T21:31:14.789Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "blocked-external-requests",
+                      "contentType": "application/json",
+                      "body": "WwogIHsKICAgICJ0cmFuc3BvcnQiOiAiaHR0cCIsCiAgICAibWV0aG9kIjogIlBPU1QiLAogICAgIm9yaWdpbiI6ICJodHRwczovL3JlbWVkaWF0aW9uLW5ldHdvcmstdGVzdC5pbnZhbGlkIiwKICAgICJwYXRoIjogIi9uby1uZXR3b3JrIgogIH0sCiAgewogICAgInRyYW5zcG9ydCI6ICJ3ZWJzb2NrZXQiLAogICAgIm9yaWdpbiI6ICJ3c3M6Ly9yZW1lZGlhdGlvbi1uZXR3b3JrLXRlc3QuaW52YWxpZCIsCiAgICAicGF0aCI6ICIvbm8tbmV0d29yayIKICB9Cl0="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "e7daff74676ba407a945-4f245721f1e048480627",
+          "file": "network-boundary.spec.mjs",
+          "line": 3,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-18T21:31:13.935Z",
+    "duration": 2751.993,
+    "expected": 1,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

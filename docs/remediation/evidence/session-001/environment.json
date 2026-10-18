@@ -1,0 +1,13 @@
+{
+  "baselineCommit": "e56d80d275bbef929251203dc1d463da4fe574a0",
+  "branch": "fix/audit-foundation",
+  "initialRuntime": {
+    "node": "v25.6.0",
+    "npm": "11.8.0"
+  },
+  "trackedFilesCopied": 700,
+  "cleanCopy": ".tmp/remediation-s001/clean",
+  "envFilesCopied": [],
+  "productionCallsAuthorized": false,
+  "userReportedActiveUsersApprox": 50
+}

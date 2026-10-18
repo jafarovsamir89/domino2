@@ -1,5 +1,7 @@
 # Начало работы с другого компьютера
 
+Исправления начаты: текущее состояние и рабочая ветка — в [журнале агента](../remediation/AGENT_JOURNAL.md), ход проверок — в [журнале работ](../remediation/WORK_LOG.md). Исторические материалы ниже описывают audit baseline; для продолжения активной работы сначала читать журналы.
+
 Все отчёты, план, audit scripts, JSON-метрики, SQL diff, скриншоты, CPU profiles и логи находятся в этой папке и включены в Git. Архив из `.tmp` скачивать отдельно не требуется. Исходный код игры находится в том же репозитории.
 
 ## Получить файлы
@@ -7,7 +9,7 @@
 Для нового checkout:
 
 ```sh
-git clone --branch release/play-prep https://github.com/jafarovsamir89/domino2.git
+git clone --branch fix/audit-foundation https://github.com/jafarovsamir89/domino2.git
 cd domino2
 ```
 
@@ -15,7 +17,7 @@ cd domino2
 
 ```sh
 git fetch origin
-git switch release/play-prep
+git switch fix/audit-foundation
 git pull --ff-only
 ```
 
@@ -43,4 +45,4 @@ git pull --ff-only
 node docs/audit/evidence/scripts/verify-manifest.mjs
 ```
 
-Ожидаемый результат — пустой список `problems`. Проверка использует только встроенные модули Node, поэтому `npm ci` для неё не требуется. Созданный на этом компьютере коммит содержит материалы аудита и план; реализация42исправлений ещё не началась.
+Ожидаемый результат — пустой список `problems`. Проверка использует только встроенные модули Node, поэтому `npm ci` для неё не требуется. Эта папка содержит материалы исходного аудита; актуальная реализация исправлений и checks ведутся отдельно в `docs/remediation`.

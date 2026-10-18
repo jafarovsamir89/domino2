@@ -1,0 +1,697 @@
+TAP version 13
+# Subtest: board serializes and restores without losing structure
+ok 1 - board serializes and restores without losing structure
+  ---
+  duration_ms: 7.156333
+  type: 'test'
+  ...
+# Subtest: cloneBoard and reconstructBoard preserve the board snapshot
+ok 2 - cloneBoard and reconstructBoard preserve the board snapshot
+  ---
+  duration_ms: 0.161833
+  type: 'test'
+  ...
+# Subtest: board flags disable Telefon scoring and cross logic in classic101
+ok 3 - board flags disable Telefon scoring and cross logic in classic101
+  ---
+  duration_ms: 0.180167
+  type: 'test'
+  ...
+# Subtest: getGoshaCombo keeps the full score for a double gosha sequence
+ok 4 - getGoshaCombo keeps the full score for a double gosha sequence
+  ---
+  duration_ms: 1.762042
+  type: 'test'
+  ...
+# Subtest: opening [5|5] stops giving 10 points after 300 score
+ok 5 - opening [5|5] stops giving 10 points after 300 score
+  ---
+  duration_ms: 0.387209
+  type: 'test'
+  ...
+# Subtest: placeTile rejects tiles that do not match the selected open end
+ok 6 - placeTile rejects tiles that do not match the selected open end
+  ---
+  duration_ms: 2.535083
+  type: 'test'
+  ...
+# Subtest: placeTile keeps legal 0/3 placements on the 0 end and exposes 3 as the next open end
+ok 7 - placeTile keeps legal 0/3 placements on the 0 end and exposes 3 as the next open end
+  ---
+  duration_ms: 0.172334
+  type: 'test'
+  ...
+# Subtest: default board keeps Telefon scoring and cross behavior
+ok 8 - default board keeps Telefon scoring and cross behavior
+  ---
+  duration_ms: 0.081708
+  type: 'test'
+  ...
+# Subtest: client board round-trip keeps classic101 flags and stays two-ended across serialization
+ok 9 - client board round-trip keeps classic101 flags and stays two-ended across serialization
+  ---
+  duration_ms: 8.427041
+  type: 'test'
+  ...
+# Subtest: client board keeps Telefon cross behavior by default
+ok 10 - client board keeps Telefon cross behavior by default
+  ---
+  duration_ms: 1.4975
+  type: 'test'
+  ...
+# Subtest: hand with five different doubles is invalid for opening deal
+ok 11 - hand with five different doubles is invalid for opening deal
+  ---
+  duration_ms: 0.110667
+  type: 'test'
+  ...
+# Subtest: Default horizontal mode layout behavior
+ok 12 - Default horizontal mode layout behavior
+  ---
+  duration_ms: 0.103875
+  type: 'test'
+  ...
+# Subtest: Vertical mode layout behavior for normal tile
+ok 13 - Vertical mode layout behavior for normal tile
+  ---
+  duration_ms: 0.067209
+  type: 'test'
+  ...
+# Subtest: Vertical mode layout behavior for first double/gosha
+ok 14 - Vertical mode layout behavior for first double/gosha
+  ---
+  duration_ms: 0.536625
+  type: 'test'
+  ...
+# Subtest: Subsequent moves and score calculation after first double in vertical mode
+ok 15 - Subsequent moves and score calculation after first double in vertical mode
+  ---
+  duration_ms: 0.358584
+  type: 'test'
+  ...
+# Subtest: telephone snake avoids self-intersection when right and bottom branches grow together
+ok 16 - telephone snake avoids self-intersection when right and bottom branches grow together
+  ---
+  duration_ms: 3.705625
+  type: 'test'
+  ...
+# Subtest: telephone snake remains collision-free for varied 28-tile move orders
+ok 17 - telephone snake remains collision-free for varied 28-tile move orders
+  ---
+  duration_ms: 46.968792
+  type: 'test'
+  ...
+# Subtest: client and shared board engines choose identical collision-free coordinates
+ok 18 - client and shared board engines choose identical collision-free coordinates
+  ---
+  duration_ms: 3.842167
+  type: 'test'
+  ...
+# ℹ️  optional .env file not found: .env.test, .env
+# [ROOM_DEBUG] leave:start {
+#   roomId: '',
+#   roomCode: '',
+#   sessionId: 'session-1',
+#   consented: false,
+#   playerOrder: [ 'session-1' ],
+#   players: [
+#     {
+#       sessionId: 'session-1',
+#       isBot: false,
+#       isConnected: true,
+#       seatIndex: -1,
+#       hasUserId: false,
+#       hasPlayerId: false,
+#       hasAuthToken: false
+#     }
+#   ]
+# }
+# [ROOM_DEBUG] leave:explicit {
+#   roomId: '',
+#   roomCode: '',
+#   sessionId: 'session-1',
+#   playerName: 'Alice'
+# }
+# [ROOM_DEBUG] turnTimerPausedForReconnect {
+#   roomId: '',
+#   roomCode: '',
+#   sessionId: 'session-1',
+#   playerName: 'Alice',
+#   expiresAt: 1792359264974,
+#   source: 'accidental_disconnect'
+# }
+# [ROOM_DEBUG] leave:waiting_reconnect {
+#   roomId: '',
+#   roomCode: '',
+#   sessionId: 'session-1',
+#   reason: 'accidental_disconnect',
+#   graceStartedAt: 1792359144974,
+#   graceExpiresAt: 1792359264974,
+#   graceMs: 120000
+# }
+# [ROOM_DEBUG] leave:reconnected {
+#   roomId: '',
+#   roomCode: '',
+#   sessionId: 'session-1',
+#   nextSessionId: 'session-1',
+#   reconnectSuccessAt: 1792359144980,
+#   source: 'allowReconnection',
+#   players: [
+#     {
+#       sessionId: 'session-1',
+#       isBot: false,
+#       isConnected: true,
+#       seatIndex: -1,
+#       hasUserId: false,
+#       hasPlayerId: false,
+#       hasAuthToken: false
+#     }
+#   ]
+# }
+# [ROOM_DEBUG] leave:start {
+#   roomId: '',
+#   roomCode: '',
+#   sessionId: 'session-1',
+#   consented: true,
+#   playerOrder: [ 'session-1' ],
+#   players: [
+#     {
+#       sessionId: 'session-1',
+#       isBot: false,
+#       isConnected: true,
+#       seatIndex: -1,
+#       hasUserId: false,
+#       hasPlayerId: false,
+#       hasAuthToken: false
+#     }
+#   ]
+# }
+# [ROOM_DEBUG] leave:explicit {
+#   roomId: '',
+#   roomCode: '',
+#   sessionId: 'session-1',
+#   playerName: 'Alice'
+# }
+# [ROOM_DEBUG] leave:removed {
+#   roomId: '',
+#   roomCode: '',
+#   sessionId: 'session-1',
+#   reason: 'explicit leave',
+#   explicitLeave: true
+# }
+# [ROOM_DEBUG] leave:start {
+#   roomId: '',
+#   roomCode: '',
+#   sessionId: 'session-1',
+#   consented: false,
+#   playerOrder: [ 'session-1' ],
+#   players: [
+#     {
+#       sessionId: 'session-1',
+#       isBot: false,
+#       isConnected: true,
+#       seatIndex: -1,
+#       hasUserId: false,
+#       hasPlayerId: false,
+#       hasAuthToken: false
+#     }
+#   ]
+# }
+# [ROOM_DEBUG] leave:explicit {
+#   roomId: '',
+#   roomCode: '',
+#   sessionId: 'session-1',
+#   playerName: 'Alice'
+# }
+# [ROOM_DEBUG] turnTimerPausedForReconnect {
+#   roomId: '',
+#   roomCode: '',
+#   sessionId: 'session-1',
+#   playerName: 'Alice',
+#   expiresAt: 1792359264986,
+#   source: 'accidental_disconnect'
+# }
+# [ROOM_DEBUG] leave:waiting_reconnect {
+#   roomId: '',
+#   roomCode: '',
+#   sessionId: 'session-1',
+#   reason: 'accidental_disconnect',
+#   graceStartedAt: 1792359144986,
+#   graceExpiresAt: 1792359264986,
+#   graceMs: 120000
+# }
+# [ROOM_DEBUG] leave:grace_timeout {
+#   roomId: '',
+#   roomCode: '',
+#   sessionId: 'session-1',
+#   playerName: 'Alice',
+#   expiresAt: 1792359264986
+# }
+# [ROOM_DEBUG] leave:start {
+#   roomId: '',
+#   roomCode: '',
+#   sessionId: 'session-1',
+#   consented: false,
+#   playerOrder: [ 'session-1' ],
+#   players: [
+#     {
+#       sessionId: 'session-1',
+#       isBot: false,
+#       isConnected: true,
+#       seatIndex: -1,
+#       hasUserId: true,
+#       hasPlayerId: true,
+#       hasAuthToken: false
+#     }
+#   ]
+# }
+# [ROOM_DEBUG] leave:explicit {
+#   roomId: '',
+#   roomCode: '',
+#   sessionId: 'session-1',
+#   playerName: 'Alice'
+# }
+# [ROOM_DEBUG] turnTimerPausedForReconnect {
+#   roomId: '',
+#   roomCode: '',
+#   sessionId: 'session-1',
+#   playerName: 'Alice',
+#   expiresAt: 1792359264991,
+#   source: 'accidental_disconnect'
+# }
+# [ROOM_DEBUG] leave:waiting_reconnect {
+#   roomId: '',
+#   roomCode: '',
+#   sessionId: 'session-1',
+#   reason: 'accidental_disconnect',
+#   graceStartedAt: 1792359144991,
+#   graceExpiresAt: 1792359264991,
+#   graceMs: 120000
+# }
+# [ROOM_DEBUG] leave:grace_timeout {
+#   roomId: '',
+#   roomCode: '',
+#   sessionId: 'session-1',
+#   playerName: 'Alice',
+#   expiresAt: 1792359264991
+# }
+# [Redis] Live presence connect failed: Redis is already connecting/connected
+# [Redis] Live presence connect failed: Redis is already connecting/connected
+# [ROOM] Forfeit settlement did not complete; notifying the player that support may be needed.
+# [ROOM_DEBUG] leave:start {
+#   roomId: '',
+#   roomCode: '',
+#   sessionId: 'session-1',
+#   consented: false,
+#   playerOrder: [ 'session-1' ],
+#   players: [
+#     {
+#       sessionId: 'session-1',
+#       isBot: false,
+#       isConnected: true,
+#       seatIndex: -1,
+#       hasUserId: false,
+#       hasPlayerId: false,
+#       hasAuthToken: false
+#     }
+#   ]
+# }
+# [ROOM_DEBUG] leave:explicit {
+#   roomId: '',
+#   roomCode: '',
+#   sessionId: 'session-1',
+#   playerName: 'Alice'
+# }
+# [ROOM_DEBUG] leave:waiting_reconnect {
+#   roomId: '',
+#   roomCode: '',
+#   sessionId: 'session-1',
+#   reason: 'accidental_disconnect',
+#   graceStartedAt: 1792359144992,
+#   graceExpiresAt: 1792359264992,
+#   graceMs: 120000
+# }
+# [ROOM_DEBUG] leave:grace_timeout {
+#   roomId: '',
+#   roomCode: '',
+#   sessionId: 'session-1',
+#   playerName: 'Alice',
+#   expiresAt: 1792359264992
+# }
+# [ROOM_DEBUG] leave:grace_timeout {
+#   roomId: '',
+#   roomCode: '',
+#   sessionId: 'session-1',
+#   playerName: 'Alice',
+#   expiresAt: 1792359144992
+# }
+# [CLIENT_DEBUG] network:leaveRoom {
+#   hasRoom: true,
+#   explicit: true,
+#   manualLeaveRequested: false,
+#   reconnectInProgress: false
+# }
+# [CLIENT_DEBUG] network:leaveRoom {
+#   hasRoom: true,
+#   explicit: false,
+#   manualLeaveRequested: false,
+#   reconnectInProgress: false
+# }
+# [ROOM_DEBUG] turnTimerPausedForReconnect {
+#   roomId: '',
+#   roomCode: '',
+#   sessionId: 'session-1',
+#   playerName: 'Alice',
+#   expiresAt: 1792359264999,
+#   source: 'scheduleTurnTimer'
+# }
+# [ROOM_DEBUG] leave:reconnected {
+#   roomId: '',
+#   roomCode: '',
+#   sessionId: 'session-1',
+#   nextSessionId: 'session-1',
+#   reconnectSuccessAt: 1792359145000,
+#   source: 'join',
+#   players: [
+#     {
+#       sessionId: 'session-1',
+#       isBot: false,
+#       isConnected: true,
+#       seatIndex: -1,
+#       hasUserId: false,
+#       hasPlayerId: false,
+#       hasAuthToken: false
+#     }
+#   ]
+# }
+# [ROOM_DEBUG] turnTimerResumedAfterReconnect { roomId: '', roomCode: '', sessionId: 'session-1', source: 'join' }
+# [ROOM_DEBUG] leave:reconnected {
+#   roomId: '',
+#   roomCode: '',
+#   sessionId: 'session-1',
+#   nextSessionId: 'session-1',
+#   reconnectSuccessAt: 1792359145006,
+#   source: 'reconnect',
+#   players: [
+#     {
+#       sessionId: 'session-1',
+#       isBot: false,
+#       isConnected: true,
+#       seatIndex: -1,
+#       hasUserId: false,
+#       hasPlayerId: false,
+#       hasAuthToken: false
+#     }
+#   ]
+# }
+# [ROOM_DEBUG] turnTimerResumedAfterReconnect {
+#   roomId: '',
+#   roomCode: '',
+#   sessionId: 'session-1',
+#   source: 'reconnect'
+# }
+# [ROOM_DEBUG] leave:reconnected {
+#   roomId: '',
+#   roomCode: '',
+#   sessionId: 'session-1',
+#   nextSessionId: 'session-1',
+#   reconnectSuccessAt: 1792359145007,
+#   source: 'reconnect',
+#   players: [
+#     {
+#       sessionId: 'session-1',
+#       isBot: false,
+#       isConnected: true,
+#       seatIndex: -1,
+#       hasUserId: false,
+#       hasPlayerId: false,
+#       hasAuthToken: false
+#     }
+#   ]
+# }
+# [ROOM_DEBUG] leave:reconnected {
+#   roomId: '',
+#   roomCode: '',
+#   sessionId: 'session-1',
+#   nextSessionId: 'session-2',
+#   reconnectSuccessAt: 1792359145007,
+#   source: 'join',
+#   players: [
+#     {
+#       sessionId: 'session-2',
+#       isBot: false,
+#       isConnected: true,
+#       seatIndex: -1,
+#       hasUserId: false,
+#       hasPlayerId: false,
+#       hasAuthToken: false
+#     }
+#   ]
+# }
+# [Redis] Live presence connect failed: Redis is already connecting/connected
+# Subtest: accidental disconnect during an active game uses reconnect grace and keeps the match alive
+ok 19 - accidental disconnect during an active game uses reconnect grace and keeps the match alive
+  ---
+  duration_ms: 12.0075
+  type: 'test'
+  ...
+# Subtest: explicit leave marker for an active game ends the match immediately
+ok 20 - explicit leave marker for an active game ends the match immediately
+  ---
+  duration_ms: 1.573875
+  type: 'test'
+  ...
+# Subtest: grace timeout triggers a disconnect forfeit
+ok 21 - grace timeout triggers a disconnect forfeit
+  ---
+  duration_ms: 0.559292
+  type: 'test'
+  ...
+# Subtest: disconnect keeps live presence offline during grace and removes it after timeout
+not ok 22 - disconnect keeps live presence offline during grace and removes it after timeout
+  ---
+  duration_ms: 5.494791
+  type: 'test'
+  location: '/Users/macbookair/Documents/domino/.tmp/remediation-s001/clean/server/test/disconnect-grace.test.js:164:1'
+  failureType: 'testCodeFailure'
+  error: 'Cannot read private member #_roomId from an object whose class did not declare it'
+  code: 'ERR_TEST_FAILURE'
+  name: 'TypeError'
+  stack: |-
+    get roomId (/Users/macbookair/Documents/domino/.tmp/remediation-s001/clean/server/node_modules/@colyseus/core/build/Room.cjs:301:17)
+    DominoRoom.recordForfeitMatchResult (/Users/macbookair/Documents/domino/.tmp/remediation-s001/clean/server/DominoRoom.js:3185:69)
+    DominoRoom.finalizeReconnectTimeout (/Users/macbookair/Documents/domino/.tmp/remediation-s001/clean/server/DominoRoom.js:865:20)
+    async TestContext.<anonymous> (/Users/macbookair/Documents/domino/.tmp/remediation-s001/clean/server/test/disconnect-grace.test.js:185:5)
+    async Test.run (node:internal/test_runner/test:1125:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:787:7)
+  ...
+# Subtest: grace timeout starts bot takeover instead of forfeit when the feature is enabled
+not ok 23 - grace timeout starts bot takeover instead of forfeit when the feature is enabled
+  ---
+  duration_ms: 1.152208
+  type: 'test'
+  location: '/Users/macbookair/Documents/domino/.tmp/remediation-s001/clean/server/test/disconnect-grace.test.js:191:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    false !== true
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/Users/macbookair/Documents/domino/.tmp/remediation-s001/clean/server/test/disconnect-grace.test.js:212:16)
+    async Test.run (node:internal/test_runner/test:1125:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:787:7)
+  ...
+# Subtest: explicit leave stays a forfeit and never starts bot takeover
+not ok 24 - explicit leave stays a forfeit and never starts bot takeover
+  ---
+  duration_ms: 0.249833
+  type: 'test'
+  location: '/Users/macbookair/Documents/domino/.tmp/remediation-s001/clean/server/test/disconnect-grace.test.js:222:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+    
+    + undefined
+    - 'human'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'human'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (/Users/macbookair/Documents/domino/.tmp/remediation-s001/clean/server/test/disconnect-grace.test.js:254:16)
+    async Test.run (node:internal/test_runner/test:1125:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:787:7)
+  ...
+# Subtest: NetworkManager explicit leave sends the marker before room.leave
+ok 25 - NetworkManager explicit leave sends the marker before room.leave
+  ---
+  duration_ms: 0.933875
+  type: 'test'
+  ...
+# Subtest: NetworkManager sends resume_control when reclaim is requested
+ok 26 - NetworkManager sends resume_control when reclaim is requested
+  ---
+  duration_ms: 0.886959
+  type: 'test'
+  ...
+# Subtest: non-explicit leave does not send the explicit leave marker
+ok 27 - non-explicit leave does not send the explicit leave marker
+  ---
+  duration_ms: 0.152959
+  type: 'test'
+  ...
+# Subtest: beforeunload and visibility handlers do not send explicit leave
+ok 28 - beforeunload and visibility handlers do not send explicit leave
+  ---
+  duration_ms: 3.069458
+  type: 'test'
+  ...
+# Subtest: current-player reconnect grace pauses the turn timer and restores full state on reconnect
+ok 29 - current-player reconnect grace pauses the turn timer and restores full state on reconnect
+  ---
+  duration_ms: 2.504209
+  type: 'test'
+  ...
+# Subtest: handleTurnTimeout ignores a reconnect-hold current player
+ok 30 - handleTurnTimeout ignores a reconnect-hold current player
+  ---
+  duration_ms: 0.224667
+  type: 'test'
+  ...
+# Subtest: client reconnect restore clears stale turn state and requests sync
+ok 31 - client reconnect restore clears stale turn state and requests sync
+  ---
+  duration_ms: 4.315625
+  type: 'test'
+  ...
+# Subtest: validateClientAction rejects if player.isConnected === false
+ok 32 - validateClientAction rejects if player.isConnected === false
+  ---
+  duration_ms: 0.15175
+  type: 'test'
+  ...
+# Subtest: validateClientAction rejects if pendingDisconnects.has(sessionId)
+ok 33 - validateClientAction rejects if pendingDisconnects.has(sessionId)
+  ---
+  duration_ms: 0.083125
+  type: 'test'
+  ...
+# Subtest: validateClientAction rejects when the seat is under bot takeover
+ok 34 - validateClientAction rejects when the seat is under bot takeover
+  ---
+  duration_ms: 0.060041
+  type: 'test'
+  ...
+# Subtest: reconnect current player resumes fresh turnDeadlineAt
+ok 35 - reconnect current player resumes fresh turnDeadlineAt
+  ---
+  duration_ms: 0.277583
+  type: 'test'
+  ...
+# Subtest: sendReconnectRestoreState sends full_state after turn timer resumed
+ok 36 - sendReconnectRestoreState sends full_state after turn timer resumed
+  ---
+  duration_ms: 0.143959
+  type: 'test'
+  ...
+# Subtest: reusable session restore sends full_state to new sessionId
+not ok 37 - reusable session restore sends full_state to new sessionId
+  ---
+  duration_ms: 0.313083
+  type: 'test'
+  location: '/Users/macbookair/Documents/domino/.tmp/remediation-s001/clean/server/test/disconnect-grace.test.js:576:1'
+  failureType: 'testCodeFailure'
+  error: "Cannot read properties of undefined (reading 'length')"
+  code: 'ERR_TEST_FAILURE'
+  name: 'TypeError'
+  stack: |-
+    DominoRoom.updateSchemaState (/Users/macbookair/Documents/domino/.tmp/remediation-s001/clean/server/DominoRoom.js:2617:50)
+    DominoRoom.broadcastFullState (/Users/macbookair/Documents/domino/.tmp/remediation-s001/clean/server/DominoRoom.js:2790:14)
+    DominoRoom.completeReconnectGrace (/Users/macbookair/Documents/domino/.tmp/remediation-s001/clean/server/DominoRoom.js:786:18)
+    TestContext.<anonymous> (/Users/macbookair/Documents/domino/.tmp/remediation-s001/clean/server/test/disconnect-grace.test.js:599:28)
+    Test.runInAsyncScope (node:async_hooks:226:14)
+    Test.run (node:internal/test_runner/test:1118:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:787:18)
+    Test.postRun (node:internal/test_runner/test:1247:19)
+    Test.run (node:internal/test_runner/test:1175:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:787:7)
+  ...
+# Subtest: network.sendPlay returns null if navigator.onLine === false
+ok 38 - network.sendPlay returns null if navigator.onLine === false
+  ---
+  duration_ms: 0.307291
+  type: 'test'
+  ...
+# Subtest: client check app.js authoritative reconnect logic via static source scan
+ok 39 - client check app.js authoritative reconnect logic via static source scan
+  ---
+  duration_ms: 5.860916
+  type: 'test'
+  ...
+# Subtest: client validMoves reconstruction fallback on state update
+ok 40 - client validMoves reconstruction fallback on state update
+  ---
+  duration_ms: 0.122542
+  type: 'test'
+  ...
+# Subtest: team takeover bot prefers the partner-friendly move when takeover is active
+ok 41 - team takeover bot prefers the partner-friendly move when takeover is active
+  ---
+  duration_ms: 1.147958
+  type: 'test'
+  ...
+# [Redis] Live presence unavailable: connect ECONNREFUSED 127.0.0.1:56379
+# [Redis] Live presence connect failed: Connection is closed.
+# [Redis] Live presence unavailable: connect ECONNREFUSED 127.0.0.1:56379
+# [Redis] Live presence unavailable: connect ECONNREFUSED 127.0.0.1:56379
+# [Redis] Live presence unavailable: connect ECONNREFUSED 127.0.0.1:56379
+# [Redis] Live presence unavailable: connect ECONNREFUSED 127.0.0.1:56379
+# [Redis] Live presence unavailable: connect ECONNREFUSED 127.0.0.1:56379
+# [Redis] Live presence unavailable: connect ECONNREFUSED 127.0.0.1:56379
+# [Redis] Live presence unavailable: connect ECONNREFUSED 127.0.0.1:56379
+# [Redis] Live presence unavailable: connect ECONNREFUSED 127.0.0.1:56379
+# [Redis] Live presence unavailable: connect ECONNREFUSED 127.0.0.1:56379
+# [Redis] Live presence unavailable: connect ECONNREFUSED 127.0.0.1:56379
+# [Redis] Live presence unavailable: connect ECONNREFUSED 127.0.0.1:56379
+# [Redis] Live presence unavailable: connect ECONNREFUSED 127.0.0.1:56379
+# [Redis] Live presence unavailable: connect ECONNREFUSED 127.0.0.1:56379
+# [Redis] Live presence unavailable: connect ECONNREFUSED 127.0.0.1:56379
+# [Redis] Live presence unavailable: connect ECONNREFUSED 127.0.0.1:56379
+# [Redis] Live presence unavailable: connect ECONNREFUSED 127.0.0.1:56379
+# [Redis] Live presence unavailable: connect ECONNREFUSED 127.0.0.1:56379
+# [Redis] Live presence unavailable: connect ECONNREFUSED 127.0.0.1:56379
+# [Redis] Live presence unavailable: connect ECONNREFUSED 127.0.0.1:56379
+# [Redis] Live presence unavailable: connect ECONNREFUSED 127.0.0.1:56379
+# [Redis] Live presence unavailable: connect ECONNREFUSED 127.0.0.1:56379
+# [Redis] Live presence unavailable: connect ECONNREFUSED 127.0.0.1:56379
+# [Redis] Live presence unavailable: connect ECONNREFUSED 127.0.0.1:56379
+# [Redis] Live presence unavailable: connect ECONNREFUSED 127.0.0.1:56379
+# [Redis] Live presence unavailable: connect ECONNREFUSED 127.0.0.1:56379
+# [Redis] Live presence unavailable: connect ECONNREFUSED 127.0.0.1:56379
+# [Redis] Live presence unavailable: connect ECONNREFUSED 127.0.0.1:56379
+# [Redis] Live presence unavailable: connect ECONNREFUSED 127.0.0.1:56379
+# [Redis] Live presence unavailable: connect ECONNREFUSED 127.0.0.1:56379
+# [Redis] Live presence unavailable: connect ECONNREFUSED 127.0.0.1:56379
+# [Redis] Live presence unavailable: connect ECONNREFUSED 127.0.0.1:56379
+# [Redis] Live presence unavailable: connect ECONNREFUSED 127.0.0.1:56379
+# [Redis] Live presence unavailable: connect ECONNREFUSED 127.0.0.1:56379
+# [Redis] Live presence unavailable: connect ECONNREFUSED 127.0.0.1:56379
+# [Redis] Live presence unavailable: connect ECONNREFUSED 127.0.0.1:56379
+# [Redis] Live presence unavailable: connect ECONNREFUSED 127.0.0.1:56379
+# [Redis] Live presence unavailable: connect ECONNREFUSED 127.0.0.1:56379
+# [Redis] Live presence unavailable: connect ECONNREFUSED 127.0.0.1:56379
+# [Redis] Live presence unavailable: connect ECONNREFUSED 127.0.0.1:56379
+# [Redis] Live presence unavailable: connect ECONNREFUSED 127.0.0.1:56379
+# [Redis] Live presence unavailable: connect ECONNREFUSED 127.0.0.1:56379
+# [Redis] Live presence unavailable: connect ECONNREFUSED 127.0.0.1:56379
+# [Redis] Live presence unavailable: connect ECONNREFUSED 127.0.0.1:56379
+# [Redis] Live presence unavailable: connect ECONNREFUSED 127.0.0.1:56379
+# [Redis] Live presence unavailable: connect ECONNREFUSED 127.0.0.1:56379

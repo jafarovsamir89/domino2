@@ -1,0 +1,67 @@
+{
+  "scope": "Original 39 E2E cases with network boundary; no application assertions changed",
+  "stats": {
+    "startTime": "2026-10-18T21:32:07.265Z",
+    "duration": 201396.06999999998,
+    "expected": 30,
+    "skipped": 0,
+    "unexpected": 9,
+    "flaky": 0
+  },
+  "failures": [
+    {
+      "title": "domino.spec.mjs / start screen loads and stays within mobile viewport",
+      "status": "unexpected",
+      "line": 152,
+      "message": "Error: expect(locator).toHaveCount(expected) failed\n\nLocator:  locator('script[src*=\"js/app.js?v=social-live-1\"]')\nExpected: 1\nReceived: 0\nTimeout:  5000ms\n\nCall log:\n  - Expect \"toHaveCount\" with timeout 5000ms\n  - waiting for locator('script[src*=\"js/app.js?v=social-live-1\"]')\n    14 × locator resolved to 0 elements\n       - unexpected value \"0\"\n"
+    },
+    {
+      "title": "domino.spec.mjs / Konva tile rects stay in viewport coordinates and source rect is excluded from collision",
+      "status": "unexpected",
+      "line": 1075,
+      "message": "Error: expect(received).toBeCloseTo(expected, precision)\n\nExpected: 157.6015625\nReceived: 176.3\n\nExpected precision:    1\nExpected difference: < 0.05\nReceived difference:   18.69843750000001"
+    },
+    {
+      "title": "domino.spec.mjs / authenticated profile shows four stats cards without Xal and leaderboard uses Reyting",
+      "status": "unexpected",
+      "line": 1750,
+      "message": "Error: expect(locator).toBeVisible() failed\n\nLocator:  locator('#player-profile-invite-btn')\nExpected: visible\nReceived: hidden\nTimeout:  5000ms\n\nCall log:\n  - Expect \"toBeVisible\" with timeout 5000ms\n  - waiting for locator('#player-profile-invite-btn')\n    14 × locator resolved to <button disabled hidden=\"\" type=\"button\" title=\"Invite\" data-i18n=\"friend-invite\" id=\"player-profile-invite-btn\" class=\"btn btn-action btn-strong\">Invite</button>\n       - unexpected value \"hidden\"\n"
+    },
+    {
+      "title": "domino.spec.mjs / invite polling catches incoming room invitations without SSE",
+      "status": "unexpected",
+      "line": 2347,
+      "message": "Error: expect(received).toBeGreaterThanOrEqual(expected)\n\nExpected: >= 2\nReceived:    0\n\nCall Log:\n- Timeout 5000ms exceeded while waiting on the predicate"
+    },
+    {
+      "title": "domino.spec.mjs / closed and open rooms create flows use contextual visibility without toggle UI",
+      "status": "unexpected",
+      "line": 2511,
+      "message": "Error: expect(locator).not.toHaveClass(expected) failed\n\nLocator: locator('#open-rooms-menu-ui')\nExpected pattern: not /is-hidden/\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n  - Expect \"not toHaveClass\" with timeout 5000ms\n  - waiting for locator('#open-rooms-menu-ui')\n"
+    },
+    {
+      "title": "domino.spec.mjs / in-game pause menu keeps only continue and exit and round summary hides winner hand details",
+      "status": "unexpected",
+      "line": 2562,
+      "message": "Error: expect(locator).toContainText(expected) failed\n\nLocator: locator('#menu-screen')\nTimeout: 5000ms\nExpected pattern: /Davam et|Продолжить|Continue/\nReceived string:  \"·········\n            Menu\n            Resume·············\n            Next track\n            Mute / Unmute\n            Quit\n            Все права защищены © SimpleSoft - Domino ver 1.33·········\n    \"\n\nCall log:\n  - Expect \"toContainText\" with timeout 5000ms\n  - waiting for locator('#menu-screen')\n    14 × locator resolved to <div id=\"menu-screen\" class=\"screen overlay active\">…</div>\n       - unexpected value \"\n        \n            Menu\n            Resume\n            \n            Next track\n            Mute / Unmute\n            Quit\n            Все права защищены © SimpleSoft - Domino ver 1.33\n        \n    \"\n"
+    },
+    {
+      "title": "domino.spec.mjs / expired seat reservation reconnect falls back to snapshot restore without retry spam",
+      "status": "unexpected",
+      "line": 2735,
+      "message": "Error: expect(received).toEqual(expected) // deep equality\n\nExpected: ArrayContaining [\"clear-token\", \"clear-state\", \"restore-empty\"]\nReceived: [\"restore-token\"]"
+    },
+    {
+      "title": "domino.spec.mjs / game invite attaches the resolved room code instead of the room id",
+      "status": "unexpected",
+      "line": 2855,
+      "message": "Error: expect(received).toBeTruthy()\n\nReceived: null"
+    },
+    {
+      "title": "domino.spec.mjs / daily bonus flow: visible only when authed, handles status loading and claim successfully",
+      "status": "unexpected",
+      "line": 2892,
+      "message": "Error: expect(locator).not.toHaveClass(expected) failed\n\nLocator: locator('#daily-bonus-card')\nExpected pattern: not /is-hidden/\nReceived string: \"daily-bonus-card is-hidden\"\nTimeout: 5000ms\n\nCall log:\n  - Expect \"not toHaveClass\" with timeout 5000ms\n  - waiting for locator('#daily-bonus-card')\n    14 × locator resolved to <section id=\"daily-bonus-card\" class=\"daily-bonus-card is-hidden\">…</section>\n       - unexpected value \"daily-bonus-card is-hidden\"\n"
+    }
+  ]
+}

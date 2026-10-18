@@ -1,0 +1,22 @@
+{
+  "label": "e2e-baseline-guarded",
+  "command": [
+    "npm",
+    "exec",
+    "--",
+    "playwright",
+    "test",
+    "e2e/domino.spec.mjs",
+    "--reporter=json",
+    "--workers=1"
+  ],
+  "cwd": ".tmp/remediation-s001/clean",
+  "startedAt": "2026-10-18T21:32:06.001Z",
+  "finishedAt": "2026-10-18T21:35:28.679Z",
+  "durationMs": 202678,
+  "exitCode": 1,
+  "signal": null,
+  "error": null,
+  "log": "docs/remediation/evidence/session-001/e2e-baseline-guarded.log",
+  "environment": "Fresh allowlist, explicit synthetic local API/DB/Redis, no inherited secrets or copied .env"
+}

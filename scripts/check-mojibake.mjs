@@ -6,6 +6,7 @@ const rootDir = process.cwd();
 const includeExts = new Set(['.js', '.ts', '.tsx', '.jsx', '.json', '.html', '.css', '.md', '.mjs', '.cjs']);
 const skipDirs = new Set([
   '.git',
+  '.tmp',
   'node_modules',
   'coverage',
   'dist',

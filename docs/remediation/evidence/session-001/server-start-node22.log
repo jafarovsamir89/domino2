@@ -1,0 +1,41 @@
+LOCAL_SERVER_STDOUT
+[Sentry] SENTRY_DSN not set — monitoring disabled
+ℹ️  optional .env file not found: .env.test, .env
+[ROOM] PLATFORM_API_URL resolved: http://127.0.0.1:4300
+[GameServer] Listening on http://localhost:65309
+
+   ___      _                                    ___   _ _____
+  / __\___ | |_   _ ___  ___ _   _ ___   __   __/ _ \ / |___  |
+ / /  / _ \| | | | / __|/ _ \ | | / __|  \ \ / / | | || |  / /
+/ /__| (_) | | |_| \__ \  __/ |_| \__ \   \ V /| |_| || | / /
+\____/\___/|_|\__, |___/\___|\__,_|___/    \_/  \___(_)_|/_/
+              |___/
+
+             · Multiplayer Framework for Node.js ·
+
+💖 Consider becoming a Sponsor on GitHub → https://github.com/sponsors/endel
+🌟 Give us a star on GitHub → https://github.com/colyseus/colyseus
+☁️  Deploy and scale your project on Colyseus Cloud → https://cloud.colyseus.io
+
+
+LOCAL_SERVER_STDERR
+[GameServer] REDIS_URI not set, using local presence and driver
+
+node:internal/modules/run_main:122
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+
+404 !== 200
+
+    at file:///Users/macbookair/Documents/domino/docs/remediation/scripts/server-start-smoke.mjs:19:10
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5) {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: 404,
+  expected: 200,
+  operator: 'strictEqual'
+}
+
+Node.js v22.14.0

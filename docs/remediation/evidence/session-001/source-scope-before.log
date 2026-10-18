@@ -1,0 +1,24 @@
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Generated temporary files must not fail the application source check: [mojibake-check] Suspicious encoding patterns detected:
+- .tmp/generated/copied-source.js:1:4 -> "Г§"
+[mojibake-check] Fix the source strings before syncing or deploying.
+
+
+1 !== 0
+
+    at file:///Users/macbookair/Documents/domino/docs/remediation/scripts/verify-source-check.mjs:14:28
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:655:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5) {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: 1,
+  expected: 0,
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v25.6.0

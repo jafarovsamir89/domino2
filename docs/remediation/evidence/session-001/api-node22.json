@@ -1,0 +1,25 @@
+{
+  "label": "api-node22",
+  "command": [
+    "npm",
+    "exec",
+    "--yes",
+    "--package=node@22.14.0",
+    "--package=npm@10.9.2",
+    "--",
+    "npm",
+    "--prefix",
+    "apps/api",
+    "test"
+  ],
+  "cwd": ".tmp/remediation-s001/node22",
+  "startedAt": "2026-10-18T21:35:53.506Z",
+  "finishedAt": "2026-10-18T21:36:01.885Z",
+  "durationMs": 8379,
+  "exitCode": 0,
+  "signal": null,
+  "timedOut": false,
+  "error": null,
+  "log": "docs/remediation/evidence/session-001/api-node22.log",
+  "environment": "Fresh allowlist, synthetic local API/DB, optional Redis disabled, no inherited secrets or copied .env"
+}

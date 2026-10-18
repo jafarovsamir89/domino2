@@ -1,0 +1,20 @@
+// Record a local remediation check without inheriting production credentials.
+import fs from 'node:fs';
+import path from 'node:path';
+import {spawn} from 'node:child_process';
+const [label,cwdArg,separator,command,...args]=process.argv.slice(2);
+if(!/^[a-z0-9-]+$/.test(label||'')||separator!=='--'||!command)throw Error('Usage: node run-check.mjs LABEL CWD -- COMMAND [ARGS]');
+const root=process.cwd(),cwd=path.resolve(root,cwdArg);
+const session=label.match(/^s(\d{3})-/)?.[1]||'001';
+if(!cwd.startsWith(path.join(root,'.tmp/remediation-s'+session)+path.sep))throw Error('Checks require the matching isolated remediation copy');
+const output=path.join(root,'docs/remediation/evidence/session-'+session);fs.mkdirSync(output,{recursive:true});
+const env={};for(const name of ['PATH','HOME','USERPROFILE','APPDATA','LOCALAPPDATA','SystemRoot','COMSPEC','PATHEXT','TMPDIR','TEMP','TMP'])if(process.env[name])env[name]=process.env[name];
+Object.assign(env,{CI:'1',NODE_ENV:'test',NO_COLOR:'1',NEXT_TELEMETRY_DISABLED:'1',OTEL_SDK_DISABLED:'true',SENTRY_DSN:'',SENTRY_DSN_GAME:'',BETTER_AUTH_SECRET:'remediation-local-only-not-a-production-secret-2026',DOMINO_SERVER_SECRET:'remediation-local-only-not-a-production-secret-2026',DATABASE_URL:'postgresql://domino_remediation@127.0.0.1:55439/domino_remediation?schema=public',PLATFORM_API_URL:'http://127.0.0.1:4300',BETTER_AUTH_URL:'http://127.0.0.1:4300',PUBLIC_APP_ORIGIN:'http://127.0.0.1:4173',GAME_WEB_URL:'http://127.0.0.1:4173',REDIS_URI:'',npm_config_audit:'false',npm_config_fund:'false'});
+const log=path.join(output,label+'.log'),fd=fs.openSync(log,'w'),started=Date.now();
+const child=spawn(command,args,{cwd,env,stdio:['ignore',fd,fd],detached:process.platform!=='win32'});
+let timedOut=false;
+const stop=()=>{if(child.pid){try{if(process.platform==='win32')child.kill('SIGTERM');else process.kill(-child.pid,'SIGTERM')}catch{}}};
+const timeout=setTimeout(()=>{timedOut=true;stop()},600000);
+process.once('SIGTERM',stop);process.once('SIGINT',stop);
+let error=null;child.on('error',e=>{error=e.message});
+child.on('close',(code,signal)=>{clearTimeout(timeout);fs.closeSync(fd);const result={label,command:[command,...args],cwd:path.relative(root,cwd),startedAt:new Date(started).toISOString(),finishedAt:new Date().toISOString(),durationMs:Date.now()-started,exitCode:code,signal,timedOut,error,log:path.relative(root,log),environment:'Fresh allowlist, synthetic local API/DB, optional Redis disabled, no inherited secrets or copied .env'};fs.writeFileSync(path.join(output,label+'.json'),JSON.stringify(result,null,2)+'\n');console.log(JSON.stringify(result));process.exitCode=code??1});

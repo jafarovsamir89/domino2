@@ -1,0 +1,8 @@
+{
+  "reason": "Unit-only run inherited an explicit unused local Redis URI; retry clients kept processes alive. Redis was never production. Discard these runs and repeat with optional Redis disabled.",
+  "recordingParents": [
+    43704,
+    44365
+  ],
+  "stoppedChildProcesses": 15
+}

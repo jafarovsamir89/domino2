@@ -1,0 +1,109 @@
+{
+  "session": "S001",
+  "date": "2026-10-18",
+  "branch": "fix/audit-foundation",
+  "baselineCommit": "e56d80d275bbef929251203dc1d463da4fe574a0",
+  "production": {
+    "userReportedUsersApprox": 50,
+    "deployedByThisSession": false,
+    "productionDatabaseUsed": false
+  },
+  "tasks": {
+    "R-06": {
+      "status": "locally_fixed",
+      "cleanInstallNode25": true,
+      "cleanInstallNode22": true,
+      "existingLockedVersionsChanged": 0
+    },
+    "R-25": {
+      "status": "partial",
+      "discoveryFiles": 37,
+      "previouslySkippedFilesNowIncluded": 7,
+      "fullCiGateComplete": false
+    }
+  },
+  "checks": {
+    "legacyServer": {
+      "tests": 201,
+      "pass": 201,
+      "fail": 0
+    },
+    "fullServer": {
+      "tests": 243,
+      "pass": 236,
+      "fail": 7
+    },
+    "fullServerNode22": {
+      "tests": 243,
+      "pass": 236,
+      "fail": 7
+    },
+    "api": {
+      "tests": 127,
+      "pass": 127,
+      "fail": 0
+    },
+    "apiNode22": {
+      "tests": 127,
+      "pass": 127,
+      "fail": 0
+    },
+    "e2eOriginalCases": {
+      "startTime": "2026-10-18T21:32:07.265Z",
+      "duration": 201396.06999999998,
+      "expected": 30,
+      "skipped": 0,
+      "unexpected": 9,
+      "flaky": 0
+    },
+    "e2eFailureSetUnchanged": true,
+    "networkBoundary": {
+      "tests": 1,
+      "pass": 1,
+      "fail": 0
+    },
+    "discoveryProbe": {
+      "newTestAutoDiscovered": true,
+      "nestedCommonJsAndEsmDiscovered": true,
+      "nonTestFixtureIgnored": true,
+      "failureExitPropagated": true,
+      "node": "v25.6.0"
+    },
+    "lockfilesNotMutatedByCi": [
+      {
+        "file": "package-lock.json",
+        "cleanMatchesWorking": true,
+        "node22MatchesWorking": true
+      },
+      {
+        "file": "server/package-lock.json",
+        "cleanMatchesWorking": true,
+        "node22MatchesWorking": true
+      }
+    ],
+    "serverStartupNode22": {
+      "node": "v22.14.0",
+      "health": 200,
+      "ready": 200,
+      "readiness": {
+        "service": "domino2-server",
+        "redis": "not_configured",
+        "status": "degraded"
+      },
+      "mode": "local in-memory, API loopback, no production credentials"
+    },
+    "sourceCheckScope": {
+      "temporaryArtifactsIgnored": true,
+      "realApplicationEncodingErrorStillRejected": true
+    },
+    "finalWorkingTreeSyntax": "passed after excluding only .tmp generated copies"
+  },
+  "invalidAttempts": [
+    "server-default-baseline",
+    "server-full-baseline",
+    "server-start-node22"
+  ],
+  "invalidAttemptReason": "Unused local Redis URI kept retry handles alive; stopped own children and reran unit checks with Redis disabled",
+  "nextTask": "R-05: regression for preservation of existing economy config/stakes/catalog prices, then minimal create-only bootstrap change; all checks local",
+  "startupRetryNote": "First helper used /ready; corrected to actual /health/ready. Final health and readiness checks passed on isolated server."
+}

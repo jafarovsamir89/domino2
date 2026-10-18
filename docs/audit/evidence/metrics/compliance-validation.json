@@ -31,7 +31,7 @@
     "reconciled": true,
     "reserved": 0
   },
-  "sourceChanges": "Audit deliverables are confined to docs/audit; product source remains at the audited baseline.",
+  "sourceChanges": "Historical audit baseline: 508932e. Ongoing implementation and current checks are tracked separately in docs/remediation/WORK_LOG.md.",
   "remediationPlan": {
     "cards": 42,
     "uniqueIds": true,
