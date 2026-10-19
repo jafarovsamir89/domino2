@@ -1,6 +1,6 @@
 # Agent journal: current handoff
 
-Updated2026-10-18. Read this first, then append-only WORK_LOG.md and docs/audit/REMEDIATION_PLAN.md. Latest user instruction is two more items (overrides earlier batches of8), with a simple Russian explanation for each result. S022-S023 / R13-R14 are finished locally; final checkpoint subject is fix(ui): reduce persistent game effects with Android frame evidence. Obtain its hash from git log after push.
+Updated2026-10-19. Read this first, then append-only WORK_LOG.md and docs/audit/REMEDIATION_PLAN.md. Latest user instruction is two more items (overrides earlier batches of8), with a simple Russian explanation for each result. S022-S023 / R13-R14 finished and pushed eb8b21e. Active next batch S024/R29 durable outbox + S025/R15 bounded startup; two cards, R10 not selected yet. No production changes.
 
 ## Authorization
 
@@ -57,3 +57,7 @@ After audit-plan edits run validate-audit.mjs, update existing347SHA256 manifest
 ## Exact next action
 
 Finish/confirm final R14 docs/evidence push, clean status and origin match; then this two-item batch is done. On the next authorized continuation, first unhandled high-priority card is R29 durable outbox/reconciliation (depends R03/R04, locally done). No R29 changes exist in this batch. Read its acceptance plus server/economyService.js and result-delivery flow, start with guarded synthetic response-loss/restart regression proving no lost/double settlement. Ordinary retry alone is insufficient. R10 revocation and R15/R23/R21 are other candidates; consult dependencies and latest user batch-size instruction. Keep R09/R19 external and R25 acceptance limits explicit. Do not deploy because local cards are closed.
+
+Active S024: inspect settlement intent/worker durability and token-expiry-independent signed reconciliation; begin response-loss/restart tests. S025 afterwards. No implementation yet.
+
+S024/R29 locally complete: persistent fsynced per-match monetary intent/receipt, worker at real server startup, signed reconcile scope independent of bearer; production requires ECONOMY_OUTBOX_DIR absolute persistent volume and API-first rollout. Read session024/OUTBOX_OPERATIONS.md before any future deploy. API148both runtimes,focused47,full390/397same7; realPG3faults/restart/20duplicates/new-match isolation Node25/22 and actual index startup Node22 pass. No loss-of-volume/statistics/UIreceipt guarantees.22/42closed. S025 startup code/testing active, phone unavailable and user says continue without it; don't mark physical cold/warm acceptance done.

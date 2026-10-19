@@ -1,3 +1,4 @@
+const { getSettlementOutbox } = require("./settlementOutbox");
 const { buildSignedRequestBody } = require("./signedRequest");
 const { postReserveEconomyMatch, postSettleEconomyMatch } = require("./economyClient");
 const { getSessionIdentities, hasUnlinkedHuman, buildReserveParticipants, buildWinnerUserIds, buildForfeitWinnerUserIds } = require("./economyParticipants");
@@ -266,6 +267,10 @@ async function settleEconomyRoundForRoom(room, winnerIndex, options = {}) {
 
     const normalizedMatchOutcome = String(options?.matchOutcome || "normal").trim().toLowerCase() || "normal";
     const matchId = resolveCanonicalEconomyMatchId(room, options?.matchId);
+    const stakeKey = String(options?.stakeKey || room.currentDealStakeKey);
+    const stakeAmount = room.currentDealStakeAmount;
+    const bankAmount = room.currentDealBankAmount;
+    const ownsRoomResult = () => resolveCanonicalEconomyMatchId(room) === matchId;
     const isRefundOutcome = normalizedMatchOutcome === "all_absent" || normalizedMatchOutcome === "draw" || normalizedMatchOutcome === "refund";
     const providedWinnerUserIds = Array.isArray(options?.winnerUserIds) ? options.winnerUserIds : [];
     const winnerUserIds = isRefundOutcome
@@ -280,32 +285,21 @@ async function settleEconomyRoundForRoom(room, winnerIndex, options = {}) {
             });
 
     try {
-        const response = await postSettleEconomyMatch({
-            baseUrl: process.env.PLATFORM_API_URL,
-            authToken: platformIdentity.authToken,
-            body: buildSignedRequestBody("economy.settle", {
-                roomId: room.roomId,
-                matchId,
-                stakeKey: room.currentDealStakeKey,
-                result: winnerUserIds.length ? "win" : "refund",
-                winnerUserIds
-            })
+        const intent = {
+            roomId: room.roomId, matchId, stakeKey,
+            result: winnerUserIds.length ? "win" : "refund", winnerUserIds
+        };
+        const settlementResponse = await getSettlementOutbox().submit(intent, async (payload) => {
+            const response = await postSettleEconomyMatch({
+                baseUrl: process.env.PLATFORM_API_URL,
+                authToken: platformIdentity.authToken,
+                body: buildSignedRequestBody("economy.settle", payload)
+            });
+            const parsed = await readEconomyResponse(response);
+            if (!response.ok || parsed.json?.ok !== true) throw new Error("settlement_not_acknowledged");
+            return parsed.json;
         });
-        const economyResponse = await readEconomyResponse(response);
-
-        if (!response.ok) {
-            if (isDtoValidationErrorPayload(economyResponse.json)) {
-                const validationMessages = summarizeValidationMessages(economyResponse.json.message);
-                throw new Error(`Economy validation failed: ${validationMessages.join("; ") || "Bad Request"}`);
-            }
-            throw new Error(
-                economyResponse.isHtml
-                    ? `Round settle failed with ${response.status} (${economyResponse.contentType || "unknown"}): ${economyResponse.preview}`
-                    : economyResponse.text || `Round settle failed with ${response.status}`
-            );
-        }
-
-        const settlement = economyResponse.json;
+        const settlement = settlementResponse;
         const summary = settlement?.ok ? {
             ...(settlement.receiptVersion === 1 ? {
                 receiptVersion: 1,
@@ -313,9 +307,9 @@ async function settleEconomyRoundForRoom(room, winnerIndex, options = {}) {
                 roomId: settlement.roomId,
                 matchId: settlement.matchId
             } : {}),
-            stakeKey: room.currentDealStakeKey,
-            stakeAmount: room.currentDealStakeAmount,
-            bankAmount: Math.max(0, settlement.bank || room.currentDealBankAmount || 0),
+            stakeKey,
+            stakeAmount,
+            bankAmount: Math.max(0, settlement.bank || bankAmount || 0),
             commission: Math.max(0, settlement.commission || 0),
             payout: Math.max(0, settlement.payout || 0),
             winners: Math.max(0, settlement.winners || 0),
@@ -323,6 +317,7 @@ async function settleEconomyRoundForRoom(room, winnerIndex, options = {}) {
             reservations: Array.isArray(settlement.reservations) ? settlement.reservations : []
         } : buildRefundLikeSummary(room);
 
+        if (!ownsRoomResult()) return summary;
         room.currentDealBankAmount = 0;
         room.currentDealStakeAmount = 0;
         room.currentDealStakeKey = room.currentStakeKey;
@@ -339,11 +334,12 @@ async function settleEconomyRoundForRoom(room, winnerIndex, options = {}) {
         return summary;
     } catch (error) {
         console.warn("[ROOM] Failed to settle round stake:", error);
+        if (!ownsRoomResult()) return null;
         room.pendingEconomySettlementState = {
             kind: "round",
             roomId: room.roomId,
             matchId,
-            stakeKey: room.currentDealStakeKey,
+            stakeKey,
             winnerIndex: Number.isInteger(Number(winnerIndex)) ? Number(winnerIndex) : 0,
             matchOutcome: normalizedMatchOutcome,
             winnerUserIds,
@@ -390,34 +386,26 @@ async function settleForfeitStakeForRoom(room, leavingSessionId, options = {}) {
             leavingIndex
         });
     const matchId = resolveCanonicalEconomyMatchId(room, options?.matchId);
+    const stakeKey = String(options?.stakeKey || room.currentDealStakeKey);
+    const ownsRoomResult = () => resolveCanonicalEconomyMatchId(room) === matchId;
 
     try {
-        const response = await postSettleEconomyMatch({
-            baseUrl: process.env.PLATFORM_API_URL,
-            authToken: platformIdentity.authToken,
-            body: buildSignedRequestBody("economy.settle", {
-                roomId: room.roomId,
-                matchId,
-                stakeKey: room.currentDealStakeKey,
-                result: winnerUserIds.length ? "loss" : "refund",
-                winnerUserIds
-            })
+        const intent = {
+            roomId: room.roomId, matchId, stakeKey,
+            result: winnerUserIds.length ? "loss" : "refund", winnerUserIds
+        };
+        const settlementResponse = await getSettlementOutbox().submit(intent, async (payload) => {
+            const response = await postSettleEconomyMatch({
+                baseUrl: process.env.PLATFORM_API_URL,
+                authToken: platformIdentity.authToken,
+                body: buildSignedRequestBody("economy.settle", payload)
+            });
+            const parsed = await readEconomyResponse(response);
+            if (!response.ok || parsed.json?.ok !== true) throw new Error("settlement_not_acknowledged");
+            return parsed.json;
         });
-        const economyResponse = await readEconomyResponse(response);
-
-        if (!response.ok) {
-            if (isDtoValidationErrorPayload(economyResponse.json)) {
-                const validationMessages = summarizeValidationMessages(economyResponse.json.message);
-                throw new Error(`Economy validation failed: ${validationMessages.join("; ") || "Bad Request"}`);
-            }
-            throw new Error(
-                economyResponse.isHtml
-                    ? `Stake forfeit settle failed with ${response.status} (${economyResponse.contentType || "unknown"}): ${economyResponse.preview}`
-                    : economyResponse.text || `Stake forfeit settle failed with ${response.status}`
-            );
-        }
-
-        const summary = economyResponse.json;
+        const summary = settlementResponse;
+        if (!ownsRoomResult()) return summary;
         room.forfeitSettlementMade = true;
         room.pendingEconomySettlementState = null;
         if (typeof room.resolvePendingEconomySettlement === "function") {
@@ -431,11 +419,12 @@ async function settleForfeitStakeForRoom(room, leavingSessionId, options = {}) {
         return summary;
     } catch (error) {
         console.warn("[ROOM] Failed to settle forfeit stake:", error);
+        if (!ownsRoomResult()) return false;
         room.pendingEconomySettlementState = {
             kind: "forfeit",
             roomId: room.roomId,
             matchId,
-            stakeKey: room.currentDealStakeKey,
+            stakeKey,
             leavingSessionId,
             winnerUserIds,
             retryCount: Number(room.pendingEconomySettlementState?.retryCount || 0) + 1,

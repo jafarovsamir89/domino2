@@ -1,0 +1,22 @@
+{
+  "label": "s024-pg-stop",
+  "command": [
+    "/opt/homebrew/Cellar/postgresql@14/14.20/bin/pg_ctl",
+    "-D",
+    "/Users/macbookair/Documents/domino/.tmp/remediation-s002/pg",
+    "-m",
+    "fast",
+    "-w",
+    "stop"
+  ],
+  "cwd": ".tmp/remediation-s024/clean",
+  "startedAt": "2026-10-19T07:25:06.814Z",
+  "finishedAt": "2026-10-19T07:25:06.928Z",
+  "durationMs": 114,
+  "exitCode": 0,
+  "signal": null,
+  "timedOut": false,
+  "error": null,
+  "log": "docs/remediation/evidence/session-024/s024-pg-stop.log",
+  "environment": "Fresh allowlist, synthetic local API/DB, optional Redis disabled, no inherited secrets or copied .env"
+}

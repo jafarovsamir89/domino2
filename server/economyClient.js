@@ -3,6 +3,7 @@ const { buildEconomyUrl } = require("./economyConfig");
 async function postEconomyRequest({ baseUrl, path, body, authToken, fetchImpl = fetch } = {}) {
     return fetchImpl(buildEconomyUrl(baseUrl, path), {
         method: "POST",
+        signal: AbortSignal.timeout(5000),
         headers: {
             "content-type": "application/json",
             ...(authToken ? { Authorization: `Bearer ${authToken}` } : {})

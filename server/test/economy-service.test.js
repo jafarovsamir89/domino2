@@ -1,6 +1,11 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
 
+const fs = require('node:fs'), os = require('node:os'), path = require('node:path');
+let outboxDirectory;
+test.beforeEach(() => { outboxDirectory=fs.mkdtempSync(path.join(os.tmpdir(),'domino-service-outbox-')); process.env.ECONOMY_OUTBOX_DIR=outboxDirectory; });
+test.afterEach(() => { fs.rmSync(outboxDirectory,{recursive:true,force:true}); delete process.env.ECONOMY_OUTBOX_DIR; });
+
 process.env.DOMINO_SERVER_SECRET ||= "b7f4c2d9a1e8f6c3b5a7d0e9f1c4b8a6d2e7f9c1";
 process.env.BETTER_AUTH_SECRET ||= process.env.DOMINO_SERVER_SECRET;
 
@@ -730,9 +735,11 @@ test("settleEconomyRoundForRoom returns refund summary when the response body is
             result: "refund",
             reservations: []
         });
-        assert.equal(room.currentDealBankAmount, 0);
-        assert.equal(room.currentDealStakeAmount, 0);
-        assert.equal(room.currentDealStakeKey, "stake_500");
+        assert.equal(room.currentDealBankAmount, 500);
+        assert.equal(room.currentDealStakeAmount, 250);
+        assert.equal(room.currentDealStakeKey, "stake_200");
+        assert.equal(room.pendingEconomySettlementState?.kind, "round");
+        assert.equal(fs.readdirSync(outboxDirectory).filter(n=>n.endsWith(".receipt.json")).length, 0);
         assert.deepEqual(room.lastRoundEconomySummary, result);
     } finally {
         global.fetch = originalFetch;
@@ -946,4 +953,19 @@ test("settleForfeitStakeForRoom returns false on transport failure", async () =>
     } finally {
         global.fetch = originalFetch;
     }
+});
+
+for (const reject of [false,true]) test(`late settlement ${reject?'failure':'success'} cannot clear replacement match bank/pending`, async () => {
+    const room=createSettleRoom();let release;
+    const original=global.fetch;
+    global.fetch=()=>new Promise(r=>release=r);
+    try {
+        const pending=settleEconomyRoundForRoom(room,0);
+        room.matchRecordId="replacement";room.currentDealStakeAmount=900;room.currentDealBankAmount=1800;
+        room.pendingEconomySettlementState={matchId:"replacement",kind:"round"};
+        release(new Response(JSON.stringify(reject?{ok:false}:{ok:true,settled:2}),{headers:{'content-type':'application/json'}}));
+        await pending;
+        assert.equal(room.currentDealBankAmount,1800);assert.equal(room.currentDealStakeAmount,900);
+        assert.equal(room.pendingEconomySettlementState.matchId,"replacement");
+    } finally {global.fetch=original;}
 });

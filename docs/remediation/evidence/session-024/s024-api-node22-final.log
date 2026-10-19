@@ -1,0 +1,806 @@
+
+> @domino2/api@0.1.0 pretest
+> node -e "require('fs').rmSync('dist',{recursive:true,force:true})"
+
+
+> @domino2/api@0.1.0 test
+> npm run build && node --test dist/test/chatModeration.test.js dist/test/realtime.helpers.test.js dist/test/player-ranking.test.js dist/test/economy.service.test.js dist/test/economy.settlement.test.js dist/test/leaderboard.service.test.js dist/test/players.service.test.js dist/test/auth.service.test.js dist/test/realtime.controller.test.js dist/test/social.service.test.js dist/test/social-realtime.gateway.test.js dist/test/health.controller.test.js dist/test/admin.service.test.js dist/test/validation.pipe.test.js dist/test/auth.secret-guard.test.js dist/test/matches.service.test.js
+
+
+> @domino2/api@0.1.0 prebuild
+> cd ../.. && npm run generate -w @domino2/db
+
+
+> @domino2/db@0.1.0 generate
+> prisma generate
+
+Prisma schema loaded from prisma/schema.prisma
+
+✔ Generated Prisma Client (v6.19.3) to ./../../../../remediation-s014/final/node_modules/@prisma/client in 228ms
+
+Start by importing your Prisma Client (See: https://pris.ly/d/importing-client)
+
+Tip: Want to turn off tips and other hints? https://pris.ly/tip-4-nohints
+
+
+> @domino2/api@0.1.0 build
+> tsc -p tsconfig.json
+
+TAP version 13
+# Subtest: AdminService.listSystemAuditLogs filters by action and entity type
+ok 1 - AdminService.listSystemAuditLogs filters by action and entity type
+  ---
+  duration_ms: 375.941416
+  ...
+# Subtest: AdminService.listFeedback filters by status and query
+ok 2 - AdminService.listFeedback filters by status and query
+  ---
+  duration_ms: 0.462084
+  ...
+# Subtest: AdminService.resolveFeedback updates feedback and records an audit log
+ok 3 - AdminService.resolveFeedback updates feedback and records an audit log
+  ---
+  duration_ms: 0.576458
+  ...
+# Subtest: production rejects weak auth secrets
+ok 4 - production rejects weak auth secrets
+  ---
+  duration_ms: 97.215583
+  ...
+# Subtest: development fallback secrets keep auth and proof signing working
+ok 5 - development fallback secrets keep auth and proof signing working
+  ---
+  duration_ms: 2.0245
+  ...
+# Subtest: AuthService.getCurrentProfile filters recent matches by gameMode and exposes gameMode on each item
+ok 6 - AuthService.getCurrentProfile filters recent matches by gameMode and exposes gameMode on each item
+  ---
+  duration_ms: 4.863917
+  ...
+# Subtest: AuthService.getCurrentProfile keeps default history behavior when no mode is passed
+ok 7 - AuthService.getCurrentProfile keeps default history behavior when no mode is passed
+  ---
+  duration_ms: 1.089625
+  ...
+# Subtest: AuthService.getCurrentProfile accepts platform game bearer tokens when cookies are unavailable
+ok 8 - AuthService.getCurrentProfile accepts platform game bearer tokens when cookies are unavailable
+  ---
+  duration_ms: 1.900083
+  ...
+# Subtest: AuthService.updateCurrentProfileAvatar rejects non-image https URLs
+ok 9 - AuthService.updateCurrentProfileAvatar rejects non-image https URLs
+  ---
+  duration_ms: 2.184042
+  ...
+# Subtest: AuthService.updateCurrentProfileAvatar rejects oversized image URLs
+ok 10 - AuthService.updateCurrentProfileAvatar rejects oversized image URLs
+  ---
+  duration_ms: 0.441959
+  ...
+# Subtest: maskProfanity handles inflections, suffixes, separators and leetspeak
+ok 11 - maskProfanity handles inflections, suffixes, separators and leetspeak
+  ---
+  duration_ms: 0.864875
+  ...
+# Subtest: maskProfanity leaves clean text alone and avoids false positives
+ok 12 - maskProfanity leaves clean text alone and avoids false positives
+  ---
+  duration_ms: 1.993084
+  ...
+# Subtest: public economy reads preserve customized defaults and perform no configuration writes
+ok 13 - public economy reads preserve customized defaults and perform no configuration writes
+  ---
+  duration_ms: 277.480792
+  ...
+# Subtest: startup preserves owner settings and existing inactive prices across restarts
+ok 14 - startup preserves owner settings and existing inactive prices across restarts
+  ---
+  duration_ms: 1.653208
+  ...
+# Subtest: fresh startup creates missing defaults once and restores only missing prices
+ok 15 - fresh startup creates missing defaults once and restores only missing prices
+  ---
+  duration_ms: 2.512625
+  ...
+# Subtest: startup seeds required daily login progress without an extra reward and preserves owner changes
+ok 16 - startup seeds required daily login progress without an extra reward and preserves owner changes
+  ---
+  duration_ms: 1.917834
+  ...
+# Subtest: bootstrap prices every paid table skin at 1500 coins
+ok 17 - bootstrap prices every paid table skin at 1500 coins
+  ---
+  duration_ms: 1.105416
+  ...
+# Subtest: getPublicConfig hides the free table from the public stake list
+ok 18 - getPublicConfig hides the free table from the public stake list
+  ---
+  duration_ms: 0.209333
+  ...
+# Subtest: getPublicConfig exposes the new coin shop reward and packs
+ok 19 - getPublicConfig exposes the new coin shop reward and packs
+  ---
+  duration_ms: 0.273625
+  ...
+# Subtest: Daily Bonus - configured dailyRewards control the schedule and extend with streak bonus
+ok 20 - Daily Bonus - configured dailyRewards control the schedule and extend with streak bonus
+  ---
+  duration_ms: 7.241292
+  ...
+# Subtest: Economy config update stores dailyRewards arrays
+ok 21 - Economy config update stores dailyRewards arrays
+  ---
+  duration_ms: 0.563208
+  ...
+# Subtest: Daily Bonus - Unauthenticated status returns 401
+ok 22 - Daily Bonus - Unauthenticated status returns 401
+  ---
+  duration_ms: 2.419208
+  ...
+# Subtest: Daily Bonus - Authenticated status returns claimable true if no claim today
+ok 23 - Daily Bonus - Authenticated status returns claimable true if no claim today
+  ---
+  duration_ms: 2.071917
+  ...
+# Subtest: Daily Bonus - Claim credits wallet and advances quest
+ok 24 - Daily Bonus - Claim credits wallet and advances quest
+  ---
+  duration_ms: 3.04475
+  ...
+# Subtest: Daily Bonus - unverified x2 rejects forged client completion without any grant
+ok 25 - Daily Bonus - unverified x2 rejects forged client completion without any grant
+  ---
+  duration_ms: 0.212125
+  ...
+# Subtest: Daily Bonus - Client amount is ignored
+ok 26 - Daily Bonus - Client amount is ignored
+  ---
+  duration_ms: 1.026625
+  ...
+# Subtest: Daily Bonus - Second claim same day returns claimed false
+ok 27 - Daily Bonus - Second claim same day returns claimed false
+  ---
+  duration_ms: 2.113416
+  ...
+# Subtest: Daily Bonus - normal claim cannot be upgraded without verified entitlement
+ok 28 - Daily Bonus - normal claim cannot be upgraded without verified entitlement
+  ---
+  duration_ms: 1.047666
+  ...
+# Subtest: Daily Bonus - rejected x2 does not consume the normal daily reward
+ok 29 - Daily Bonus - rejected x2 does not consume the normal daily reward
+  ---
+  duration_ms: 1.008959
+  ...
+# Subtest: Daily Bonus - Previous day claim increases streak
+ok 30 - Daily Bonus - Previous day claim increases streak
+  ---
+  duration_ms: 8.846666
+  ...
+# Subtest: Daily Bonus - After next Baku midnight claim is allowed
+ok 31 - Daily Bonus - After next Baku midnight claim is allowed
+  ---
+  duration_ms: 1.852917
+  ...
+# Subtest: Daily Bonus - Missing previous day resets streak to 1
+ok 32 - Daily Bonus - Missing previous day resets streak to 1
+  ---
+  duration_ms: 0.446708
+  ...
+# Subtest: Daily Bonus - Streak capped at dailyMaxStreak
+ok 33 - Daily Bonus - Streak capped at dailyMaxStreak
+  ---
+  duration_ms: 0.438125
+  ...
+# Subtest: Daily Bonus - Baku helpers resolve date keys and next midnight
+ok 34 - Daily Bonus - Baku helpers resolve date keys and next midnight
+  ---
+  duration_ms: 0.307667
+  ...
+# Subtest: Daily Bonus - repeated unverified x2 requests never change the granted daily reward
+ok 35 - Daily Bonus - repeated unverified x2 requests never change the granted daily reward
+  ---
+  duration_ms: 2.136209
+  ...
+# Subtest: Daily Bonus - ledger keys distinguish normal grants by player/date and preserve retries
+ok 36 - Daily Bonus - ledger keys distinguish normal grants by player/date and preserve retries
+  ---
+  duration_ms: 7.043167
+  ...
+# Subtest: reconcileStaleReservedStakes refunds only stale rows and keeps fresh reservations untouched
+ok 37 - reconcileStaleReservedStakes refunds only stale rows and keeps fresh reservations untouched
+  ---
+  duration_ms: 0.650916
+  ...
+# Subtest: reconcileStaleReservedStakes treats an existing refund idempotency key as already closed
+ok 38 - reconcileStaleReservedStakes treats an existing refund idempotency key as already closed
+  ---
+  duration_ms: 0.154584
+  ...
+# Subtest: late settlement and refund from match A leave match B reservations untouched
+ok 39 - late settlement and refund from match A leave match B reservations untouched
+  ---
+  duration_ms: 323.244125
+  ...
+# Subtest: paid match requests without match identity cannot change wallets
+ok 40 - paid match requests without match identity cannot change wallets
+  ---
+  duration_ms: 0.508417
+  ...
+# Subtest: online stake reserve and settle keep the bank and payout balanced
+ok 41 - online stake reserve and settle keep the bank and payout balanced
+  ---
+  duration_ms: 2.223833
+  ...
+# Subtest: online stake reserve normalizes low balance errors to insufficient_coins
+ok 42 - online stake reserve normalizes low balance errors to insufficient_coins
+  ---
+  duration_ms: 0.664083
+  ...
+# Subtest: online stake reserve rejects an invalid proof
+ok 43 - online stake reserve rejects an invalid proof
+  ---
+  duration_ms: 0.271792
+  ...
+# Subtest: online stake reserve is idempotent for the same room and match
+ok 44 - online stake reserve is idempotent for the same room and match
+  ---
+  duration_ms: 2.821833
+  ...
+# Subtest: online stake settle is idempotent for the same match
+ok 45 - online stake settle is idempotent for the same match
+  ---
+  duration_ms: 2.112542
+  ...
+# Subtest: forfeit-settle replay does not pay the bank twice
+ok 46 - forfeit-settle replay does not pay the bank twice
+  ---
+  duration_ms: 2.182583
+  ...
+# Subtest: online stake reserve deduplicates repeated participants
+ok 47 - online stake reserve deduplicates repeated participants
+  ---
+  duration_ms: 0.726583
+  ...
+# Subtest: online team stake settle splits the losing bank across winners
+ok 48 - online team stake settle splits the losing bank across winners
+  ---
+  duration_ms: 1.740625
+  ...
+# Subtest: solo stake reserve and settle are disabled for coin staking
+ok 49 - solo stake reserve and settle are disabled for coin staking
+  ---
+  duration_ms: 1.029208
+  ...
+# Subtest: per-player settlement receipt agrees with wallet plus reserved delta: win
+ok 50 - per-player settlement receipt agrees with wallet plus reserved delta: win
+  ---
+  duration_ms: 3.475166
+  ...
+# Subtest: per-player settlement receipt agrees with wallet plus reserved delta: loss
+ok 51 - per-player settlement receipt agrees with wallet plus reserved delta: loss
+  ---
+  duration_ms: 0.484208
+  ...
+# Subtest: per-player settlement receipt agrees with wallet plus reserved delta: draw
+ok 52 - per-player settlement receipt agrees with wallet plus reserved delta: draw
+  ---
+  duration_ms: 0.528666
+  ...
+# Subtest: per-player settlement receipt agrees with wallet plus reserved delta: refund
+ok 53 - per-player settlement receipt agrees with wallet plus reserved delta: refund
+  ---
+  duration_ms: 0.394542
+  ...
+# Subtest: per-player settlement receipt agrees with wallet plus reserved delta: team
+ok 54 - per-player settlement receipt agrees with wallet plus reserved delta: team
+  ---
+  duration_ms: 0.496625
+  ...
+# Subtest: per-player settlement receipt agrees with wallet plus reserved delta: zero-profit-winner
+ok 55 - per-player settlement receipt agrees with wallet plus reserved delta: zero-profit-winner
+  ---
+  duration_ms: 0.290667
+  ...
+# Subtest: reconciliation rejects unsigned server proof before DB access
+ok 56 - reconciliation rejects unsigned server proof before DB access
+  ---
+  duration_ms: 0.134041
+  ...
+# Subtest: reconciliation rejects wrong-scope server proof before DB access
+ok 57 - reconciliation rejects wrong-scope server proof before DB access
+  ---
+  duration_ms: 0.050375
+  ...
+# Subtest: reconciliation rejects altered server proof before DB access
+ok 58 - reconciliation rejects altered server proof before DB access
+  ---
+  duration_ms: 0.052625
+  ...
+# Subtest: server reconciliation settles after token expiry and duplicate cannot change the outcome
+not ok 59 - server reconciliation settles after token expiry and duplicate cannot change the outcome
+  ---
+  duration_ms: 0.95975
+  location: '/Users/macbookair/Documents/domino/.tmp/remediation-s024/clean/apps/api/dist/test/economy.settlement.test.js:653:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+    
+    + undefined
+    - true
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///Users/macbookair/Documents/domino/.tmp/remediation-s024/clean/apps/api/dist/test/economy.settlement.test.js:666:12)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+# Subtest: reconciliation never acknowledges an unknown/unreserved result (stake_50)
+ok 60 - reconciliation never acknowledges an unknown/unreserved result (stake_50)
+  ---
+  duration_ms: 0.140208
+  ...
+# Subtest: reconciliation never acknowledges an unknown/unreserved result (nonexistent-stake)
+ok 61 - reconciliation never acknowledges an unknown/unreserved result (nonexistent-stake)
+  ---
+  duration_ms: 0.068
+  ...
+# Subtest: HealthController reports database and redis status
+ok 62 - HealthController reports database and redis status
+  ---
+  duration_ms: 0.49225
+  ...
+# Subtest: LeaderboardService uses mode stats ordering and defaults to telefon
+ok 63 - LeaderboardService uses mode stats ordering and defaults to telefon
+  ---
+  duration_ms: 233.961042
+  ...
+# Subtest: LeaderboardService weekly leaderboard filters by match gameMode
+ok 64 - LeaderboardService weekly leaderboard filters by match gameMode
+  ---
+  duration_ms: 1.07425
+  ...
+# Subtest: LeaderboardService friends leaderboard uses mode stats and fills missing rows with the starting rating
+ok 65 - LeaderboardService friends leaderboard uses mode stats and fills missing rows with the starting rating
+  ---
+  duration_ms: 0.859375
+  ...
+# Subtest: 1v1 human vs human updates ELO, wins, losses, and matchesPlayed
+ok 66 - 1v1 human vs human updates ELO, wins, losses, and matchesPlayed
+  ---
+  duration_ms: 226.153458
+  ...
+# Subtest: human vs bot stays unranked and does not create player stats
+ok 67 - human vs bot stays unranked and does not create player stats
+  ---
+  duration_ms: 0.687125
+  ...
+# Subtest: ranked wins against low-history opponents do not award positive Elo
+ok 68 - ranked wins against low-history opponents do not award positive Elo
+  ---
+  duration_ms: 0.716833
+  ...
+# Subtest: classic101 matches update mode stats only and keep legacy telefon stats untouched
+ok 69 - classic101 matches update mode stats only and keep legacy telefon stats untouched
+  ---
+  duration_ms: 1.08325
+  ...
+# Subtest: same pair repeated more than three times per day does not change Elo
+ok 70 - same pair repeated more than three times per day does not change Elo
+  ---
+  duration_ms: 2.624625
+  ...
+# Subtest: team mode ranks humans while ignoring bots
+ok 71 - team mode ranks humans while ignoring bots
+  ---
+  duration_ms: 1.490083
+  ...
+# Subtest: duplicate sourceMatchId does not update ELO twice
+ok 72 - duplicate sourceMatchId does not update ELO twice
+  ---
+  duration_ms: 0.983083
+  ...
+# Subtest: forfeit 1v1 applies an extra penalty to the leaving player
+ok 73 - forfeit 1v1 applies an extra penalty to the leaving player
+  ---
+  duration_ms: 0.541125
+  ...
+# Subtest: forfeit team applies the penalty only to the leaving player
+ok 74 - forfeit team applies the penalty only to the leaving player
+  ---
+  duration_ms: 0.823041
+  ...
+# Subtest: calculatePlayerRating returns the stored elo baseline for empty stats
+ok 75 - calculatePlayerRating returns the stored elo baseline for empty stats
+  ---
+  duration_ms: 0.58025
+  ...
+# Subtest: normalizeEloRating clamps the rating range
+ok 76 - normalizeEloRating clamps the rating range
+  ---
+  duration_ms: 0.118541
+  ...
+# Subtest: calculateEloExpectedScore is symmetric around equal ratings
+ok 77 - calculateEloExpectedScore is symmetric around equal ratings
+  ---
+  duration_ms: 0.107125
+  ...
+# Subtest: calculateEloDelta uses provisional k factor for new players
+ok 78 - calculateEloDelta uses provisional k factor for new players
+  ---
+  duration_ms: 0.633792
+  ...
+# Subtest: calculateEloDelta switches to standard k after enough matches
+ok 79 - calculateEloDelta switches to standard k after enough matches
+  ---
+  duration_ms: 0.144583
+  ...
+# Subtest: calculateEloUpdate applies penalties and clamps results
+ok 80 - calculateEloUpdate applies penalties and clamps results
+  ---
+  duration_ms: 0.069458
+  ...
+# Subtest: getPlayerRatingTitleCode still maps tiers for compatibility
+ok 81 - getPlayerRatingTitleCode still maps tiers for compatibility
+  ---
+  duration_ms: 0.130333
+  ...
+# Subtest: PlayersService.getById redacts wallet details from public output
+ok 82 - PlayersService.getById redacts wallet details from public output
+  ---
+  duration_ms: 2.085708
+  ...
+# Subtest: PlayersService.getById fills missing mode ratings with the starting value
+ok 83 - PlayersService.getById fills missing mode ratings with the starting value
+  ---
+  duration_ms: 1.088542
+  ...
+# Subtest: RealtimeController heartbeat rejects requests without a valid auth token
+ok 84 - RealtimeController heartbeat rejects requests without a valid auth token
+  ---
+  duration_ms: 2.0575
+  ...
+# Subtest: RealtimeController heartbeat accepts a valid auth token
+ok 85 - RealtimeController heartbeat accepts a valid auth token
+  ---
+  duration_ms: 1.024458
+  ...
+# Subtest: public session status does not expose private identifiers
+ok 86 - public session status does not expose private identifiers
+  ---
+  duration_ms: 0.634125
+  ...
+# Subtest: platform public summary contains no private room or session identifiers
+ok 87 - platform public summary contains no private room or session identifiers
+  ---
+  duration_ms: 0.986417
+  ...
+# Subtest: normalizePresenceEntry keeps platform provider and trims room data
+ok 88 - normalizePresenceEntry keeps platform provider and trims room data
+  ---
+  duration_ms: 1.161958
+  ...
+# Subtest: isStalePresenceEntry flags old or invalid timestamps
+ok 89 - isStalePresenceEntry flags old or invalid timestamps
+  ---
+  duration_ms: 0.089709
+  ...
+# Subtest: social realtime gateway accepts valid token, marks presence online, and broadcasts presence snapshots
+ok 90 - social realtime gateway accepts valid token, marks presence online, and broadcasts presence snapshots
+  ---
+  duration_ms: 12.109542
+  ...
+# Subtest: social realtime gateway rejects invalid token
+ok 91 - social realtime gateway rejects invalid token
+  ---
+  duration_ms: 0.588916
+  ...
+# Subtest: dm:send uses live socket delivery and invite:create pushes invite updates
+ok 92 - dm:send uses live socket delivery and invite:create pushes invite updates
+  ---
+  duration_ms: 0.82925
+  ...
+# Subtest: play-invite:create and play-invite:accept emit play invite socket events
+ok 93 - play-invite:create and play-invite:accept emit play invite socket events
+  ---
+  duration_ms: 0.861875
+  ...
+# Subtest: play-invite:cancel emits play invite socket events
+ok 94 - play-invite:cancel emits play invite socket events
+  ---
+  duration_ms: 0.52175
+  ...
+# Subtest: play-invite room-ready and joined live events map to socket events
+ok 95 - play-invite room-ready and joined live events map to socket events
+  ---
+  duration_ms: 0.184834
+  ...
+# Subtest: presence:update toggles in_game and offline states
+ok 96 - presence:update toggles in_game and offline states
+  ---
+  duration_ms: 0.654333
+  ...
+# Subtest: acceptFriend only allows the addressee to accept a request
+ok 97 - acceptFriend only allows the addressee to accept a request
+  ---
+  duration_ms: 7.042292
+  ...
+# Subtest: submitFeedback stores player-linked feedback with metadata
+ok 98 - submitFeedback stores player-linked feedback with metadata
+  ---
+  duration_ms: 0.310125
+  ...
+# [SocialService] Failed to send FCM push notification: Cannot read properties of undefined (reading 'findMany')
+# [SocialService] Failed to send FCM push notification: Cannot read properties of undefined (reading 'findMany')
+# [SocialService] Failed to send FCM push notification: Cannot read properties of undefined (reading 'findMany')
+# [SocialService] Failed to send FCM push notification: Cannot read properties of undefined (reading 'findMany')
+# Subtest: subscribeToSocialEvents emits heartbeat and clears the interval on cleanup
+ok 99 - subscribeToSocialEvents emits heartbeat and clears the interval on cleanup
+  ---
+  duration_ms: 4.372334
+  ...
+# Subtest: getPlayerProfile resolves profiles by userId when playerId is not provided
+ok 100 - getPlayerProfile resolves profiles by userId when playerId is not provided
+  ---
+  duration_ms: 0.527583
+  ...
+# Subtest: searchPlayers returns friendship status and friendship id
+ok 101 - searchPlayers returns friendship status and friendship id
+  ---
+  duration_ms: 0.397083
+  ...
+# Subtest: blockPlayer creates a blocked connection without prior friendship
+ok 102 - blockPlayer creates a blocked connection without prior friendship
+  ---
+  duration_ms: 0.393
+  ...
+# Subtest: sendDirectMessageForPlayer rejects blocked pairs
+ok 103 - sendDirectMessageForPlayer rejects blocked pairs
+  ---
+  duration_ms: 0.833083
+  ...
+# Subtest: reportPlayer stores moderation reports
+ok 104 - reportPlayer stores moderation reports
+  ---
+  duration_ms: 0.401833
+  ...
+# Subtest: cancelFriendRequest allows the requester to cancel a pending request
+ok 105 - cancelFriendRequest allows the requester to cancel a pending request
+  ---
+  duration_ms: 0.599
+  ...
+# Subtest: inviteFriendToRoom refreshes an existing pending invite after a unique constraint race
+ok 106 - inviteFriendToRoom refreshes an existing pending invite after a unique constraint race
+  ---
+  duration_ms: 0.963417
+  ...
+# Subtest: inviteFriendToRoom updates an accepted invite when the room is linked later
+ok 107 - inviteFriendToRoom updates an accepted invite when the room is linked later
+  ---
+  duration_ms: 0.358458
+  ...
+# Subtest: inviteFriendToRoom defaults invite expiration to about 5 minutes
+ok 108 - inviteFriendToRoom defaults invite expiration to about 5 minutes
+  ---
+  duration_ms: 0.252042
+  ...
+# Subtest: acceptRoomInvitation returns room_not_available for expired invites and marks them expired
+ok 109 - acceptRoomInvitation returns room_not_available for expired invites and marks them expired
+  ---
+  duration_ms: 0.237541
+  ...
+# Subtest: acceptRoomInvitation returns join payload when roomCode is available
+ok 110 - acceptRoomInvitation returns join payload when roomCode is available
+  ---
+  duration_ms: 0.277708
+  ...
+# Subtest: acceptRoomInvitation blocks invitees without enough coins
+ok 111 - acceptRoomInvitation blocks invitees without enough coins
+  ---
+  duration_ms: 0.132291
+  ...
+# Subtest: getRoomInvitations returns incoming and sent invites separately
+ok 112 - getRoomInvitations returns incoming and sent invites separately
+  ---
+  duration_ms: 0.885375
+  ...
+# Subtest: cancelRoomInvitation allows the inviter to cancel pending sent invites
+ok 113 - cancelRoomInvitation allows the inviter to cancel pending sent invites
+  ---
+  duration_ms: 0.715792
+  ...
+# Subtest: cancelRoomInvitation rejects an invitee trying to cancel someone else's invite
+ok 114 - cancelRoomInvitation rejects an invitee trying to cancel someone else's invite
+  ---
+  duration_ms: 0.588334
+  ...
+# Subtest: createPlayInvite creates a play invite without roomId
+ok 115 - createPlayInvite creates a play invite without roomId
+  ---
+  duration_ms: 0.762666
+  ...
+# Subtest: createPlayInvite preserves roomContext roomId and roomCode
+ok 116 - createPlayInvite preserves roomContext roomId and roomCode
+  ---
+  duration_ms: 0.434333
+  ...
+# Subtest: getPlayInvites returns incoming, outgoing and waiting invites
+ok 117 - getPlayInvites returns incoming, outgoing and waiting invites
+  ---
+  duration_ms: 0.344584
+  ...
+# Subtest: attachPlayInviteRoom sets roomId and emits room-ready to invitee
+ok 118 - attachPlayInviteRoom sets roomId and emits room-ready to invitee
+  ---
+  duration_ms: 0.571833
+  ...
+# Subtest: attachPlayInviteRoom ignores pending declined and cancelled invites
+ok 119 - attachPlayInviteRoom ignores pending declined and cancelled invites
+  ---
+  duration_ms: 0.768583
+  ...
+# Subtest: acceptPlayInvite changes status to accepted
+ok 120 - acceptPlayInvite changes status to accepted
+  ---
+  duration_ms: 0.307375
+  ...
+# Subtest: acceptPlayInvite preserves room context for room-bound invites
+ok 121 - acceptPlayInvite preserves room context for room-bound invites
+  ---
+  duration_ms: 0.226292
+  ...
+# Subtest: acceptPlayInvite blocks invitees without enough coins for room-bound play invites
+ok 122 - acceptPlayInvite blocks invitees without enough coins for room-bound play invites
+  ---
+  duration_ms: 0.137959
+  ...
+# Subtest: declinePlayInvite changes status to declined
+ok 123 - declinePlayInvite changes status to declined
+  ---
+  duration_ms: 0.227
+  ...
+# Subtest: cancelPlayInvite allows inviter to cancel a pending play invite
+ok 124 - cancelPlayInvite allows inviter to cancel a pending play invite
+  ---
+  duration_ms: 0.334542
+  ...
+# Subtest: cancelPlayInvite allows invitee to leave an accepted waiting play invite
+ok 125 - cancelPlayInvite allows invitee to leave an accepted waiting play invite
+  ---
+  duration_ms: 0.152208
+  ...
+# Subtest: cancelPlayInvite allows inviter to cancel an accepted waiting play invite
+ok 126 - cancelPlayInvite allows inviter to cancel an accepted waiting play invite
+  ---
+  duration_ms: 0.212791
+  ...
+# Subtest: sendDirectMessage rejects messaging yourself
+ok 127 - sendDirectMessage rejects messaging yourself
+  ---
+  duration_ms: 0.197167
+  ...
+# Subtest: sendDirectMessage rejects empty and overlong text
+ok 128 - sendDirectMessage rejects empty and overlong text
+  ---
+  duration_ms: 0.277542
+  ...
+# Subtest: sendDirectMessage creates a message between two players
+ok 129 - sendDirectMessage creates a message between two players
+  ---
+  duration_ms: 0.857375
+  ...
+# Subtest: sendDirectMessage clears hidden thread markers and emits full SSE payload
+ok 130 - sendDirectMessage clears hidden thread markers and emits full SSE payload
+  ---
+  duration_ms: 0.427917
+  ...
+# Subtest: sendDirectMessage restores hidden/deleted threads after a new incoming message
+ok 131 - sendDirectMessage restores hidden/deleted threads after a new incoming message
+  ---
+  duration_ms: 0.339208
+  ...
+# Subtest: getDirectMessages returns the newest page of messages first
+ok 132 - getDirectMessages returns the newest page of messages first
+  ---
+  duration_ms: 0.411208
+  ...
+# Subtest: getMessageThreads returns only the current player's conversations with unread counts
+ok 133 - getMessageThreads returns only the current player's conversations with unread counts
+  ---
+  duration_ms: 0.332167
+  ...
+# Subtest: getMessageThreads hides threads that the player archived
+ok 134 - getMessageThreads hides threads that the player archived
+  ---
+  duration_ms: 0.214792
+  ...
+# Subtest: getInbox returns inbox items and unread count
+ok 135 - getInbox returns inbox items and unread count
+  ---
+  duration_ms: 0.32925
+  ...
+# Subtest: markDirectMessageThreadRead marks the matching direct message rows as read
+ok 136 - markDirectMessageThreadRead marks the matching direct message rows as read
+  ---
+  duration_ms: 0.198166
+  ...
+# Subtest: markInboxRead claimInboxMessage and deleteInboxMessage update inbox state
+ok 137 - markInboxRead claimInboxMessage and deleteInboxMessage update inbox state
+  ---
+  duration_ms: 0.341458
+  ...
+# Subtest: deleteMessageThread hides a conversation and clears inbox rows for that thread
+ok 138 - deleteMessageThread hides a conversation and clears inbox rows for that thread
+  ---
+  duration_ms: 0.191708
+  ...
+# Subtest: getSocialSummary counts inbox chats invites and friend requests
+ok 139 - getSocialSummary counts inbox chats invites and friend requests
+  ---
+  duration_ms: 0.23725
+  ...
+# Subtest: gift seed catalog prices every gift at 1000 coins
+ok 140 - gift seed catalog prices every gift at 1000 coins
+  ---
+  duration_ms: 0.219959
+  ...
+# Subtest: sendGift creates an inbox notification for the recipient
+ok 141 - sendGift creates an inbox notification for the recipient
+  ---
+  duration_ms: 0.798083
+  ...
+# Subtest: sendDirectMessage emits live events for socket subscribers
+ok 142 - sendDirectMessage emits live events for socket subscribers
+  ---
+  duration_ms: 0.697083
+  ...
+# Subtest: sendDirectMessageForPlayer masks profanity and rate limits floods
+ok 143 - sendDirectMessageForPlayer masks profanity and rate limits floods
+  ---
+  duration_ms: 1.011167
+  ...
+# Subtest: ValidationPipe rejects unknown properties on DTO payloads
+ok 144 - ValidationPipe rejects unknown properties on DTO payloads
+  ---
+  duration_ms: 2.372917
+  ...
+# Subtest: ValidationPipe accepts a valid heartbeat DTO payload
+ok 145 - ValidationPipe accepts a valid heartbeat DTO payload
+  ---
+  duration_ms: 1.054167
+  ...
+# Subtest: ValidationPipe accepts signed economy reserve payload fields
+ok 146 - ValidationPipe accepts signed economy reserve payload fields
+  ---
+  duration_ms: 0.49275
+  ...
+# Subtest: ValidationPipe accepts signed economy settle payload fields
+ok 147 - ValidationPipe accepts signed economy settle payload fields
+  ---
+  duration_ms: 0.784292
+  ...
+# Subtest: ValidationPipe accepts signed platform match payload fields
+ok 148 - ValidationPipe accepts signed platform match payload fields
+  ---
+  duration_ms: 0.591666
+  ...
+1..148
+# tests 148
+# suites 0
+# pass 147
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1933.106458
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /Users/macbookair/Documents/domino/.tmp/remediation-s024/clean/apps/api
+npm error workspace @domino2/api@0.1.0
+npm error location /Users/macbookair/Documents/domino/.tmp/remediation-s024/clean/apps/api
+npm error command failed
+npm error command sh -c npm run build && node --test dist/test/chatModeration.test.js dist/test/realtime.helpers.test.js dist/test/player-ranking.test.js dist/test/economy.service.test.js dist/test/economy.settlement.test.js dist/test/leaderboard.service.test.js dist/test/players.service.test.js dist/test/auth.service.test.js dist/test/realtime.controller.test.js dist/test/social.service.test.js dist/test/social-realtime.gateway.test.js dist/test/health.controller.test.js dist/test/admin.service.test.js dist/test/validation.pipe.test.js dist/test/auth.secret-guard.test.js dist/test/matches.service.test.js

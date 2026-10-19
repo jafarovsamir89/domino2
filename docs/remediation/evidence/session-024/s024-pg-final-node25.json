@@ -1,0 +1,18 @@
+{
+  "label": "s024-pg-final-node25",
+  "command": [
+    "node",
+    "/Users/macbookair/Documents/domino/docs/remediation/scripts/verify-settlement-pg.mjs",
+    "domino_remediation_s024_proof25"
+  ],
+  "cwd": ".tmp/remediation-s024/clean",
+  "startedAt": "2026-10-19T07:24:58.368Z",
+  "finishedAt": "2026-10-19T07:25:06.749Z",
+  "durationMs": 8381,
+  "exitCode": 0,
+  "signal": null,
+  "timedOut": false,
+  "error": null,
+  "log": "docs/remediation/evidence/session-024/s024-pg-final-node25.log",
+  "environment": "Fresh allowlist, synthetic local API/DB, optional Redis disabled, no inherited secrets or copied .env"
+}

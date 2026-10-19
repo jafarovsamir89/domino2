@@ -16,6 +16,8 @@ const { getLiveSummary, getPublicLiveSummary, getOpenRooms, getLiveSession } = r
 const { resolveRoomIdByCode, resolveRoomCodeById } = require("./roomRegistry");
 const { buildReadinessHealth } = require("./health");
 
+const { startSettlementReconciler } = require("./settlementOutbox");
+
 const port = process.env.PORT || 2567;
 const redisUrl = process.env.REDIS_URI || "";
 const isProduction = process.env.NODE_ENV === "production";
@@ -391,7 +393,9 @@ if (process.env.DOMINO_DEBUG_LOGS === "true") {
     }, 5000);
 }
 
+let stopSettlementReconciler = () => {};
 const shutdown = async () => {
+    stopSettlementReconciler();
     try {
         await gameServer.gracefullyShutdown();
     } catch (err) {
@@ -404,6 +408,7 @@ process.once("SIGINT", shutdown);
 process.once("SIGTERM", shutdown);
 
 if (require.main === module) {
+    stopSettlementReconciler = startSettlementReconciler();
     gameServer.listen(port);
     console.info(`[GameServer] Listening on http://localhost:${port}`);
 }

@@ -10,8 +10,16 @@ const { Tile } = require("../model");
 const { getRuleset } = require("../../shared/domino-rulesets.cjs");
 const { resetJoinRateLimits } = require("../joinRateLimit");
 
+const fs = require('node:fs'), os = require('node:os'), path = require('node:path');
+let outboxDirectory;
 test.beforeEach(() => {
     resetJoinRateLimits();
+    outboxDirectory = fs.mkdtempSync(path.join(os.tmpdir(), 'domino-room-outbox-'));
+    process.env.ECONOMY_OUTBOX_DIR = outboxDirectory;
+});
+test.afterEach(() => {
+    fs.rmSync(outboxDirectory, { recursive: true, force: true });
+    delete process.env.ECONOMY_OUTBOX_DIR;
 });
 
 test("generateRoomCode returns compact upper-case codes", () => {

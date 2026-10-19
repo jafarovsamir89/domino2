@@ -58,5 +58,6 @@ function verifyDominoPayload(payload, proof) {
 
 module.exports = {
     signDominoPayload,
+    stableStringify,
     verifyDominoPayload
 };

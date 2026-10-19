@@ -1,0 +1,51 @@
+{
+  "session": "S024",
+  "task": "R-29",
+  "status": "fixed-locally",
+  "scope": "Monetary settlement; no production deployment",
+  "checks": {
+    "apiNode25": {
+      "pass": 148,
+      "total": 148
+    },
+    "apiNode22": {
+      "pass": 148,
+      "total": 148
+    },
+    "focusedNode22": {
+      "pass": 47,
+      "total": 47
+    },
+    "serverNode22": {
+      "pass": 390,
+      "total": 397,
+      "sameOldFailures": 7
+    },
+    "pgFaultsNode25": "s024-pg-faults-complete.json",
+    "pgFaultsNode22": "s024-pg-node22-verified.json",
+    "realServerStartupNode22": "s024-startup-pg-node22.json",
+    "finalPgProofNode22": "s024-pg-final-proof.json",
+    "finalPgProofNode25": "s024-pg-final-node25.json"
+  },
+  "faults": [
+    "kill before API commit",
+    "kill after API commit with response loss",
+    "5second hung HTTP timeout then kill",
+    "restart without a live room/player bearer",
+    "20duplicate replays and next-match protection"
+  ],
+  "limits": [
+    "Requires explicit absolute ECONOMY_OUTBOX_DIR on a persistent local volume in production",
+    "No protection against volume destruction or crash before result is calculated/persisted",
+    "Financial delivery only; lost UI event/initial full receipt and independent match-stat recording not guaranteed",
+    "Unresolved/corrupt records retained, completed retention manual; monitor capacity and pending errors",
+    "API must be updated before game server; old API retains pending replays, never deletes intent"
+  ],
+  "excludedAttempts": [
+    "Initial PG child fixture omitted platform provider and correctly produced refund; fixture fixed, final independent fresh DBs pass",
+    "First Node22 PG launch overlapped API dist rebuild; missing-module harness error, sequential rerun passes",
+    "Repeated old room test reused durable default fixture receipt; now each test has fresh ephemeral outbox, assertions retained",
+    "Interim API replay mock omitted settlement payloadJson; mock corrected to retain/query actual ledger metadata, real PG verifies proof lookup."
+  ],
+  "changes": "Unknown/unreserved result is never acknowledged as skipped without exact room/match/stake ledger proof; incompatible/missing-stake responses remain pending."
+}

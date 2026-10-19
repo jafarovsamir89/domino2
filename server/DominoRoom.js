@@ -1472,6 +1472,7 @@ class DominoRoom extends Room {
         this.clearNextDealTimer();
         this.clearTurnTimer();
         this.clearMatchRecordingRetryTimer();
+        this.clearEconomySettlementRetryTimer();
         if (this.pendingDisconnectTimers instanceof Map) {
             for (const timer of this.pendingDisconnectTimers.values()) {
                 clearTimeout(timer);
@@ -3137,12 +3138,14 @@ class DominoRoom extends Room {
         if (pending.kind === "forfeit") {
             return settleForfeitStakeForRoom(this, pending.leavingSessionId, {
                 matchId: pending.matchId,
+                stakeKey: pending.stakeKey,
                 winnerUserIds: Array.isArray(pending.winnerUserIds) ? pending.winnerUserIds : []
             });
         }
         return settleEconomyRoundForRoom(this, Number(pending.winnerIndex || 0), {
             matchOutcome: pending.matchOutcome || "normal",
             matchId: pending.matchId,
+            stakeKey: pending.stakeKey,
             winnerUserIds: Array.isArray(pending.winnerUserIds) ? pending.winnerUserIds : []
         });
     }

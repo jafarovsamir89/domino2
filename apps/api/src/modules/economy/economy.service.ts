@@ -1947,8 +1947,18 @@ export class EconomyService implements OnModuleInit {
   }
 
   async settleMatchStake(token: string, payload: SettlePayload = {}) {
-    const claims = verifyGameToken(token);
-    if (!claims) {
+    return this.applyMatchSettlement(token, payload, false);
+  }
+
+  // A committed game result remains payable after logout/expiry/room destruction.
+  // Only this dedicated server-proof scope authorizes token-independent replay.
+  async reconcileMatchStake(payload: SettlePayload = {}) {
+    return this.applyMatchSettlement("", payload, true);
+  }
+
+  private async applyMatchSettlement(token: string, payload: SettlePayload, reconciliation: boolean) {
+    const claims = reconciliation ? null : verifyGameToken(token);
+    if (!reconciliation && !claims) {
       return {
         ok: false,
         reason: "invalid_token"
@@ -1968,7 +1978,7 @@ export class EconomyService implements OnModuleInit {
         reason: "missing_room"
       };
     }
-    if (!verifySignedRequest(payload as Record<string, unknown>, "economy.settle")) {
+    if (!verifySignedRequest(payload as Record<string, unknown>, reconciliation ? "economy.reconcile" : "economy.settle")) {
       return {
         ok: false,
         reason: "invalid_proof"
@@ -1980,6 +1990,7 @@ export class EconomyService implements OnModuleInit {
       where: { key: stakeKey }
     });
     if (!stakeTable || stakeKey === "free") {
+      if (reconciliation) return { ok: false, reason: "stake_unavailable" };
       return {
         ok: true,
         settled: 0,
@@ -2019,6 +2030,21 @@ export class EconomyService implements OnModuleInit {
         : [];
 
       if (!reservations.length) {
+        if (reconciliation) {
+          const committed = await tx.coinLedgerEntry.findFirst({
+            where: {
+              referenceType: "match_settle",
+              referenceId: matchId,
+              payloadJson: { path: ["roomId"], equals: roomId },
+              AND: [
+                { payloadJson: { path: ["matchId"], equals: matchId } },
+                { payloadJson: { path: ["stakeKey"], equals: stakeKey } }
+              ]
+            }
+          });
+          // An unknown reservation is not evidence that credit was delivered.
+          if (!committed) return { ok: false, reason: "settlement_not_found", settled: 0 };
+        }
         return {
           ok: true,
           settled: 0,

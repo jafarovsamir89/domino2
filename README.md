@@ -62,6 +62,10 @@ The goal of the game is to score points by making the sum of all open ends of th
    npm run apk:debug
    ```
 
+### Paid-game result storage
+
+Production game-server startup now requires `ECONOMY_OUTBOX_DIR`, an absolute path on a persistent local volume. Preserve that volume across restarts, container replacement and rollbacks. Deploy the matching Platform API first; never discard unresolved result files. See [outbox operations and acceptance limits](docs/remediation/evidence/session-024/OUTBOX_OPERATIONS.md). This repository change does not deploy either service.
+
 ### Running the Platform Services
 The platform uses npm workspaces. You can run the various components from the root:
 - **Start Local Database:** `npm run platform:db` (starts PostgreSQL via Docker)

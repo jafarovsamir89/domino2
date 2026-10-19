@@ -1,0 +1,25 @@
+{
+  "label": "s024-server-verified",
+  "command": [
+    "npm",
+    "exec",
+    "--yes",
+    "--package=node@22.14.0",
+    "--package=npm@10.9.2",
+    "--",
+    "npm",
+    "--prefix",
+    "server",
+    "test"
+  ],
+  "cwd": ".tmp/remediation-s024/clean",
+  "startedAt": "2026-10-19T07:17:46.382Z",
+  "finishedAt": "2026-10-19T07:17:51.031Z",
+  "durationMs": 4649,
+  "exitCode": 1,
+  "signal": null,
+  "timedOut": false,
+  "error": null,
+  "log": "docs/remediation/evidence/session-024/s024-server-verified.log",
+  "environment": "Fresh allowlist, synthetic local API/DB, optional Redis disabled, no inherited secrets or copied .env"
+}

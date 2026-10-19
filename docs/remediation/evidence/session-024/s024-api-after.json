@@ -1,0 +1,20 @@
+{
+  "label": "s024-api-after",
+  "command": [
+    "npm",
+    "run",
+    "test",
+    "-w",
+    "@domino2/api"
+  ],
+  "cwd": ".tmp/remediation-s024/clean",
+  "startedAt": "2026-10-19T07:09:27.311Z",
+  "finishedAt": "2026-10-19T07:09:33.292Z",
+  "durationMs": 5981,
+  "exitCode": 0,
+  "signal": null,
+  "timedOut": false,
+  "error": null,
+  "log": "docs/remediation/evidence/session-024/s024-api-after.log",
+  "environment": "Fresh allowlist, synthetic local API/DB, optional Redis disabled, no inherited secrets or copied .env"
+}

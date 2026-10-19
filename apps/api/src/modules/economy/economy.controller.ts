@@ -109,6 +109,11 @@ export class EconomyController {
     return this.economyService.settleMatchStake(token, body || {});
   }
 
+  @Post("economy/matches/reconcile")
+  async reconcileMatchStake(@Body() body: EconomySettleMatchDto) {
+    return this.economyService.reconcileMatchStake(body || {});
+  }
+
   @Post("economy/solo/reserve")
   async reserveSoloMatchStake(
     @Headers("authorization") authorization: string | undefined,

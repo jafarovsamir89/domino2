@@ -40,7 +40,12 @@ function makeEconomyHarness() {
       findUnique: async ({ where }: any) => stakes.get(where.key) || null
     },
     coinLedgerEntry: {
-      findFirst: async ({ where }: any) => ledgerEntries.find(row => row.referenceType === where.referenceType && row.payloadJson?.roomId === where.payloadJson.equals && row.payloadJson?.matchId === where.AND[0].payloadJson.equals) || null,
+      findFirst: async ({ where }: any) => ledgerEntries.find(row =>
+        row.referenceType === where.referenceType &&
+        (!where.referenceId || (typeof where.referenceId === "string" ? row.referenceId === where.referenceId : where.referenceId.in.includes(row.referenceId))) &&
+        row.payloadJson?.[where.payloadJson.path[0]] === where.payloadJson.equals &&
+        where.AND.every((condition:any) => row.payloadJson?.[condition.payloadJson.path[0]] === condition.payloadJson.equals)
+      ) || null,
       findUnique: async ({ where }: any) => ledgerEntries.find(row => row.idempotencyKey === where.idempotencyKey) || null
     },
     coinMatchStake: {
@@ -183,6 +188,7 @@ function makeEconomyHarness() {
       amount,
       referenceType,
       referenceId,
+      payloadJson: extras.payloadJson,
       idempotencyKey: extras?.idempotencyKey ?? null,
       balanceBefore: before.balance,
       balanceAfter: wallet.balance,
@@ -202,6 +208,7 @@ function makeEconomyHarness() {
       amount,
       referenceType,
       referenceId,
+      payloadJson: extras.payloadJson,
       idempotencyKey: extras?.idempotencyKey ?? null,
       balanceBefore: before.balance,
       balanceAfter: wallet.balance,
@@ -229,6 +236,7 @@ function makeEconomyHarness() {
       amount,
       referenceType,
       referenceId,
+      payloadJson: extras.payloadJson,
       idempotencyKey: extras?.idempotencyKey ?? null,
       balanceBefore: before.balance,
       balanceAfter: wallet.balance,
@@ -696,5 +704,40 @@ for (const scenario of ["win", "loss", "draw", "refund", "team", "zero-profit-wi
     const snapshot=JSON.stringify({wallets:[...wallets],ledgerEntries});
     const repeated=await service.settleMatchStake(token,withProof({...context,result,winnerPlayerIds:winners},"economy.settle"));
     assert.equal(repeated.skipped,true);assert.equal(JSON.stringify({wallets:[...wallets],ledgerEntries}),snapshot);
+  });
+}
+
+for (const invalid of ["unsigned", "wrong-scope", "altered"]) {
+  test(`reconciliation rejects ${invalid} server proof before DB access`, async () => {
+    const service=new EconomyService({} as any, {} as any);
+    const body:any=withProof({roomId:"r",matchId:"m",stakeKey:"stake_50",result:"win",winnerUserIds:["u"]}, invalid==="wrong-scope"?"economy.settle":"economy.reconcile");
+    if(invalid==="unsigned")delete body.proof;
+    if(invalid==="altered")body.winnerUserIds=["other"];
+    assert.equal((await service.reconcileMatchStake(body)).reason,"invalid_proof");
+  });
+}
+
+test("server reconciliation settles after token expiry and duplicate cannot change the outcome", async () => {
+  const {service,wallets,ledgerEntries}=makeEconomyHarness();
+  const context={roomId:"reconcile-room",matchId:"reconcile-match",stakeKey:"stake_50"};
+  const participants=[{playerId:"rp0",userId:"ru0",displayName:"One"},{playerId:"rp1",userId:"ru1",displayName:"Two"}];
+  const token=createGameToken({userId:"ru0",playerId:"rp0",displayName:"One",role:"player",sessionId:"deleted-session",provider:"better-auth",issuedAt:Date.now(),expiresAt:Date.now()+60000});
+  assert.equal((await service.reserveMatchStake(token,withProof({...context,participants},"economy.reserve"))).ok,true);
+  const expired=createGameToken({userId:"ru0",playerId:"rp0",displayName:"One",role:"player",sessionId:"deleted-session",provider:"better-auth",issuedAt:Date.now()-120000,expiresAt:Date.now()-1});
+  const body={...context,result:"win",winnerUserIds:["ru0"]};
+  assert.equal((await service.settleMatchStake(expired,withProof(body,"economy.settle"))).reason,"invalid_token");
+  assert.equal((await service.reconcileMatchStake(withProof(body,"economy.reconcile"))).ok,true);
+  assert.equal(wallets.get("rp0")?.balance,245);assert.equal(wallets.get("rp1")?.balance,150);
+  const snapshot=JSON.stringify({wallets:[...wallets],ledgerEntries});
+  assert.equal((await service.reconcileMatchStake(withProof({...body,result:"refund",winnerUserIds:[]},"economy.reconcile"))).skipped,true);
+  assert.equal(JSON.stringify({wallets:[...wallets],ledgerEntries}),snapshot);
+});
+
+for(const stakeKey of ["stake_50","nonexistent-stake"]) {
+  test(`reconciliation never acknowledges an unknown/unreserved result (${stakeKey})`, async()=>{
+    const {service}=makeEconomyHarness();
+    const result=await service.reconcileMatchStake(withProof({roomId:"unknown-room",matchId:"unknown-match",stakeKey,result:"win",winnerUserIds:["u"]},"economy.reconcile"));
+    assert.equal(result.ok,false);
+    assert.equal(result.reason,stakeKey==="stake_50"?"settlement_not_found":"stake_unavailable");
   });
 }

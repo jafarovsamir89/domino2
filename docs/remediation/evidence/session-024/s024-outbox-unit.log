@@ -1,0 +1,111 @@
+✔ postEconomyRequest posts JSON to the resolved economy URL (1.976292ms)
+✔ postEconomyRequest adds Authorization when authToken is provided (0.142416ms)
+✔ postEconomyRequest does not add Authorization when authToken is missing (0.101375ms)
+✔ postReserveEconomyMatch calls the reserve endpoint (0.105625ms)
+✔ postSettleEconomyMatch calls the settle endpoint (0.100416ms)
+✔ economy helpers return the same response object (0.077ms)
+[ROOM] Economy reserve validation failed: {
+  status: 400,
+  contentType: 'application/json; charset=utf-8',
+  preview: '{"message":["property integrityScope should not exist","property proof should not exist","participants.0.property teamIndex should not exist"],"error":"Bad Request","statusCode":400}',
+  message: [
+    'property integrityScope should not exist',
+    'property proof should not exist',
+    'participants.0.property teamIndex should not exist'
+  ]
+}
+[ROOM] Economy reserve failed: {
+  status: 404,
+  contentType: 'text/html; charset=utf-8',
+  preview: '<!DOCTYPE html><html><body>Domino2 Admin 404: This page could not be found</body></html>'
+}
+[ROOM] Economy reserve failed: { status: 500, contentType: '', preview: 'reserve failed' }
+[ROOM] Economy reserve rejected: { status: 200, contentType: '', preview: '', reason: 'rejected' }
+[ROOM] Economy reserve error: Error: boom
+    at global.fetch (/Users/macbookair/Documents/domino/.tmp/remediation-s024/clean/server/test/economy-service.test.js:478:15)
+    at postEconomyRequest (/Users/macbookair/Documents/domino/.tmp/remediation-s024/clean/server/economyClient.js:4:12)
+    at postReserveEconomyMatch (/Users/macbookair/Documents/domino/.tmp/remediation-s024/clean/server/economyClient.js:16:12)
+    at reserveEconomyStakeForRoom (/Users/macbookair/Documents/domino/.tmp/remediation-s024/clean/server/economyService.js:156:32)
+    at TestContext.<anonymous> (/Users/macbookair/Documents/domino/.tmp/remediation-s024/clean/server/test/economy-service.test.js:482:30)
+    at Test.runInAsyncScope (node:async_hooks:226:14)
+    at Test.run (node:internal/test_runner/test:1118:25)
+    at async Test.processPendingSubtests (node:internal/test_runner/test:787:7)
+[ROOM] Failed to settle round stake: Error: settlement_not_acknowledged
+    at /Users/macbookair/Documents/domino/.tmp/remediation-s024/clean/server/economyService.js:295:65
+    at async /Users/macbookair/Documents/domino/.tmp/remediation-s024/clean/server/settlementOutbox.js:76:30
+[ROOM] Failed to settle round stake: Error: settlement_not_acknowledged
+    at /Users/macbookair/Documents/domino/.tmp/remediation-s024/clean/server/economyService.js:295:65
+    at async /Users/macbookair/Documents/domino/.tmp/remediation-s024/clean/server/settlementOutbox.js:76:30
+[ROOM] Failed to settle round stake: Error: settlement_not_acknowledged
+    at /Users/macbookair/Documents/domino/.tmp/remediation-s024/clean/server/economyService.js:295:65
+    at async /Users/macbookair/Documents/domino/.tmp/remediation-s024/clean/server/settlementOutbox.js:76:30
+[ROOM] Failed to settle round stake: Error: boom
+    at global.fetch (/Users/macbookair/Documents/domino/.tmp/remediation-s024/clean/server/test/economy-service.test.js:759:15)
+    at postEconomyRequest (/Users/macbookair/Documents/domino/.tmp/remediation-s024/clean/server/economyClient.js:4:12)
+    at postSettleEconomyMatch (/Users/macbookair/Documents/domino/.tmp/remediation-s024/clean/server/economyClient.js:20:12)
+    at /Users/macbookair/Documents/domino/.tmp/remediation-s024/clean/server/economyService.js:289:36
+    at /Users/macbookair/Documents/domino/.tmp/remediation-s024/clean/server/settlementOutbox.js:76:36
+    at SettlementOutbox.deliver (/Users/macbookair/Documents/domino/.tmp/remediation-s024/clean/server/settlementOutbox.js:81:11)
+    at SettlementOutbox.submit (/Users/macbookair/Documents/domino/.tmp/remediation-s024/clean/server/settlementOutbox.js:89:21)
+    at settleEconomyRoundForRoom (/Users/macbookair/Documents/domino/.tmp/remediation-s024/clean/server/economyService.js:288:64)
+    at TestContext.<anonymous> (/Users/macbookair/Documents/domino/.tmp/remediation-s024/clean/server/test/economy-service.test.js:763:30)
+    at Test.runInAsyncScope (node:async_hooks:226:14)
+[ROOM] Failed to settle forfeit stake: Error: settlement_not_acknowledged
+    at /Users/macbookair/Documents/domino/.tmp/remediation-s024/clean/server/economyService.js:396:65
+    at async /Users/macbookair/Documents/domino/.tmp/remediation-s024/clean/server/settlementOutbox.js:76:30
+[ROOM] Failed to settle forfeit stake: Error: boom
+    at global.fetch (/Users/macbookair/Documents/domino/.tmp/remediation-s024/clean/server/test/economy-service.test.js:943:15)
+    at postEconomyRequest (/Users/macbookair/Documents/domino/.tmp/remediation-s024/clean/server/economyClient.js:4:12)
+    at postSettleEconomyMatch (/Users/macbookair/Documents/domino/.tmp/remediation-s024/clean/server/economyClient.js:20:12)
+    at /Users/macbookair/Documents/domino/.tmp/remediation-s024/clean/server/economyService.js:390:36
+    at /Users/macbookair/Documents/domino/.tmp/remediation-s024/clean/server/settlementOutbox.js:76:36
+    at SettlementOutbox.deliver (/Users/macbookair/Documents/domino/.tmp/remediation-s024/clean/server/settlementOutbox.js:81:11)
+    at SettlementOutbox.submit (/Users/macbookair/Documents/domino/.tmp/remediation-s024/clean/server/settlementOutbox.js:89:21)
+    at settleForfeitStakeForRoom (/Users/macbookair/Documents/domino/.tmp/remediation-s024/clean/server/economyService.js:389:64)
+    at TestContext.<anonymous> (/Users/macbookair/Documents/domino/.tmp/remediation-s024/clean/server/test/economy-service.test.js:947:30)
+    at Test.runInAsyncScope (node:async_hooks:226:14)
+✔ reserveEconomyStakeForRoom handles the free stake path (4.673583ms)
+✔ reserveEconomyStakeForRoom returns missing_platform_identity when there is no platform identity (1.2455ms)
+✔ reserveEconomyStakeForRoom blocks unlinked humans and resets stake fields (3.863583ms)
+✔ reserveEconomyStakeForRoom returns no-op when there are no participants (0.841625ms)
+✔ reserveEconomyStakeForRoom updates room fields on success (6.873208ms)
+✔ settleEconomyRoundForRoom forwards authToken to the settle request (41.284458ms)
+✔ settleForfeitStakeForRoom forwards authToken to the settle request (42.853417ms)
+✔ reserveEconomyStakeForRoom maps DTO validation errors to a safe reason (5.314042ms)
+✔ reserveEconomyStakeForRoom includes teamIndex in the signed reserve body for team rooms (5.024041ms)
+✔ reserveEconomyStakeForRoom returns a safe reason for html 404 responses (1.117ms)
+✔ reserveEconomyStakeForRoom returns reserve_failed when response is not ok (3.29625ms)
+✔ reserveEconomyStakeForRoom returns reserve_failed when body is rejected (0.922333ms)
+✔ reserveEconomyStakeForRoom returns reserve_error on transport failure (4.421834ms)
+✔ settleEconomyRoundForRoom handles the free stake path (3.897041ms)
+✔ settleEconomyRoundForRoom returns null when there is no platform identity (3.01475ms)
+✔ settleEconomyRoundForRoom updates room fields on success in ffa (43.124375ms)
+✔ settleEconomyRoundForRoom sends the correct winnerUserIds in team mode (43.811584ms)
+✔ settleEconomyRoundForRoom returns refund summary when response is not ok (23.640125ms)
+✔ settleEconomyRoundForRoom stores a retry state when settlement fails (19.779958ms)
+✔ settleEconomyRoundForRoom returns refund summary when the response body is rejected (29.793916ms)
+✔ settleEconomyRoundForRoom returns refund summary on transport failure (27.324792ms)
+✔ settleForfeitStakeForRoom returns false when forfeitSettlementMade is true (1.015709ms)
+✔ settleForfeitStakeForRoom returns false when currentDealStakeKey is free (4.610791ms)
+✔ settleForfeitStakeForRoom returns false when there is no platform identity (4.582458ms)
+✔ settleForfeitStakeForRoom returns false when leaving session is missing (4.111542ms)
+✔ settleForfeitStakeForRoom returns false when leaving identity has no userId (0.869958ms)
+✔ settleForfeitStakeForRoom updates flags and request payload on success in ffa (42.21425ms)
+✔ settleForfeitStakeForRoom excludes the leaving team in team mode (33.72325ms)
+✔ settleForfeitStakeForRoom returns false when response is not ok (16.550833ms)
+✔ settleForfeitStakeForRoom returns false on transport failure (14.506041ms)
+✔ intent exists before transport, has restrictive permissions and contains no bearer (49.108917ms)
+✔ transport failure survives a fresh store, response rejection is never acknowledged (53.74125ms)
+✔ response loss after commit replays once by match, and ack is reused without HTTP (59.011458ms)
+✔ concurrent submissions share delivery and conflicting winner/refund cannot replace durable intent (73.345083ms)
+✔ unwritable storage never sends settlement and corrupt intent is retained (20.818417ms)
+✔ invalid intents and free games never create payable files (3.492958ms)
+✔ bounded reconciliation rotates so permanent rejection cannot starve later results (138.758667ms)
+ℹ tests 43
+ℹ suites 0
+ℹ pass 43
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 545.018459

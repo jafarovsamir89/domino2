@@ -1,0 +1,25 @@
+{
+  "label": "s024-server-node22",
+  "command": [
+    "npm",
+    "exec",
+    "--yes",
+    "--package=node@22.14.0",
+    "--package=npm@10.9.2",
+    "--",
+    "npm",
+    "--prefix",
+    "server",
+    "test"
+  ],
+  "cwd": ".tmp/remediation-s024/clean",
+  "startedAt": "2026-10-19T07:12:38.741Z",
+  "finishedAt": "2026-10-19T07:12:43.799Z",
+  "durationMs": 5058,
+  "exitCode": 1,
+  "signal": null,
+  "timedOut": false,
+  "error": null,
+  "log": "docs/remediation/evidence/session-024/s024-server-node22.log",
+  "environment": "Fresh allowlist, synthetic local API/DB, optional Redis disabled, no inherited secrets or copied .env"
+}
