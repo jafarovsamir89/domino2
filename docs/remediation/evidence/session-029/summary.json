@@ -1,0 +1,37 @@
+{
+  "session": "S029",
+  "date": "2026-10-19",
+  "cards": [
+    {
+      "id": "R-23",
+      "status": "partial",
+      "checks": {
+        "androidChromeAt393CssPx": "pass",
+        "androidChromeAt320CssPx": "pass",
+        "handHorizontalSwipeRevealsLastTile": "pass",
+        "talkBackAnnouncementsAndTileFocus": "not-accepted"
+      }
+    }
+  ],
+  "device": {
+    "model": "2201117SG",
+    "android": "13",
+    "apiLevel": 33,
+    "chrome": "155.0.8059.84",
+    "normalDisplay": "1080x2400",
+    "testDisplay": "880x2400 at unchanged 440 dpi"
+  },
+  "testScope": "Current tracked source in Android Chrome via ADB reverse to a localhost-only preview with synthetic API responses and a localhost-only Content Security Policy. Not the installed Play app or Capacitor WebView.",
+  "productionRequests": false,
+  "playAppChanged": false,
+  "displayRestored": true,
+  "talkBackRestoredToInitialDisabledState": true,
+  "adbMappingsRemoved": true,
+  "evidence": [
+    "android-393px.jpg",
+    "android-320px-before-scroll.jpg",
+    "android-320px-after-scroll.jpg"
+  ],
+  "fullyClosedCards": 22,
+  "totalCards": 42
+}

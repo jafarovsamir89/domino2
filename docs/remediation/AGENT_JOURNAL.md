@@ -1,6 +1,6 @@
 # Agent journal: current handoff
 
-Updated 2026-10-19 after S028. Read this, then append-only WORK_LOG.md and docs/audit/REMEDIATION_PLAN.md. Latest request completed two more points, R-20 and R-22, partially locally. Keep explaining each result simply in Russian. The user previously said to continue without the Android phone; don't claim phone/browser acceptance unless performed. S026/R10/R18 and S027/R21/R23 acceptance remains as recorded below. Latest details: `evidence/session-028/LOCAL_SOLO_LOCALIZATION_RESULTS.md`.
+Updated 2026-10-19 after S029. Read this, then append-only WORK_LOG.md and docs/audit/REMEDIATION_PLAN.md. Latest physical-device acceptance is partial R-23: actual Android Chrome at 320 CSS px retained full-size dominoes and a horizontal swipe revealed the last tile. TalkBack announcement/focus acceptance remains open. Test used a disposable localhost-only preview with synthetic API responses, not the installed audit/Play package or native WebView. Original device display and TalkBack state restored; ADB mappings removed. Details: `evidence/session-029/ANDROID_ACCESSIBILITY_RESULTS.md`. Continue explaining each result simply in Russian. Latest implementation batches remain S026/S027/S028; reports below retain their status.
 
 ## Authorization and Git
 
