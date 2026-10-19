@@ -27,13 +27,13 @@ git pull --ff-only
 2. [AGENT_JOURNAL.md](AGENT_JOURNAL.md) — актуальный контекст, решения, ограничения и следующий шаг.
 3. [WORK_LOG.md](WORK_LOG.md) — история действий и проверок; дополнять, не переписывать.
 4. [REMEDIATION_PLAN.md](../audit/REMEDIATION_PLAN.md) — единый план из 42 карточек.
-5. [Последний результат](BATCH_024_025.md).
+5. [Результат S026: R-10 и R-18](evidence/session-026/SECURITY_REALTIME_RESULTS.md).
 
-На момент передачи закрыты локально **22/42 карточки**. R-09/R-15/R-19/R-25 имеют оставшийся объём; ещё 16 открыты. Последние изменения: `85b10a5` — сохранение денежного итога; `f6a395e` — запуск без обязательной паузы. Следующие коммиты передачи меняют документацию.
+Полностью закрыты локально **22/42 карточки**. R-09/R-15/R-19/R-25 имеют оставшийся объём. R-10/R-18 получили локальные изменения S026, но пока остаются частичными: не проверены активная партия после отзыва, устройство и NAT/TURN. Последние продуктовые изменения: `85b10a5` — сохранение денежного итога; `f6a395e` — запуск без обязательной паузы; S026 проверен по исходникам и API типам, Android compile требует JDK21, функциональные тесты отложены.
 
 Проверено: API **148/148** на Node 22/25; server **390/397** и E2E **53/62** содержат прежние 7/9 падений. Новые 10 браузерных сценариев запуска прошли. Это не полностью зелёный набор. Точные имена и доказательства: [failure-delta.json](evidence/session-025/failure-delta.json), [проверки R-29](evidence/session-024/summary.json), [проверки R-15](evidence/session-025/summary.json).
 
-Следующий кандидат после поручения продолжить — **R-10: срок действия и отзыв игрового допуска при logout/ban/delete**. Сначала прочитать карточку и существующие auth/session пути, сформулировать SLA и регрессионные проверки. Код этого пункта ещё не изменён. Последний размер рабочего пакета — два пункта.
+Следующий шаг — завершить приёмку S026: использовать JDK21 для Android compile; проверить синтетические состояния game token (valid/expired/logout/ban/delete); выбрать и проверить политику для уже начатой партии после отзыва. Для R-18 проверить разрешение микрофона на Android и ICE через Wi-Fi/LTE с relay-only TURN. Функциональные проверки ещё не выполнены. Последний размер пакета — два пункта.
 
 Телефонные замеры запуска R-15 и внешняя приёмка звука R-19 остаются открытыми. Владелец разрешил продолжать без телефона; не блокировать этим независимую работу и не выдавать браузерные результаты за Android.
 
@@ -44,13 +44,13 @@ git pull --ff-only
 Из корня checkout создать новую изолированную копию без `.env`, затем установить обе группы зависимостей из lockfiles:
 
 ```sh
-node docs/remediation/scripts/prepare-checkout.mjs .tmp/remediation-s026/clean
-node docs/remediation/scripts/run-check.mjs s026-root-ci .tmp/remediation-s026/clean -- npm ci
-node docs/remediation/scripts/run-check.mjs s026-server-ci .tmp/remediation-s026/clean -- npm --prefix server ci
-node docs/remediation/scripts/run-check.mjs s026-source .tmp/remediation-s026/clean -- npm run check
+node docs/remediation/scripts/prepare-checkout.mjs .tmp/remediation-s027/clean
+node docs/remediation/scripts/run-check.mjs s027-root-ci .tmp/remediation-s027/clean -- npm ci
+node docs/remediation/scripts/run-check.mjs s027-server-ci .tmp/remediation-s027/clean -- npm --prefix server ci
+node docs/remediation/scripts/run-check.mjs s027-source .tmp/remediation-s027/clean -- npm run check
 ```
 
-Путь должен быть новым. Если S026 уже занят, выбрать следующий свободный номер и одинаково изменить пути/метки. `run-check.mjs` даёт дочернему процессу только разрешённые переменные и синтетические localhost endpoints. Проверять exitCode каждого шага перед следующим.
+Путь должен быть новым. Если S027 уже занят, выбрать следующий свободный номер и одинаково изменить пути/метки. `run-check.mjs` даёт дочернему процессу только разрешённые переменные и синтетические localhost endpoints. Проверять exitCode каждого шага перед следующим.
 
 Для новых E2E установить соответствующий lockfile Chromium обычной командой Playwright в этой копии. Это зависимость тестового инструмента, не плагин Codex. API имеет отдельные workspace-зависимости и TS5; не подменять их одним чужим root node_modules. Не запускать API rebuild одновременно со скриптами, импортирующими его dist.
 
@@ -66,4 +66,4 @@ PostgreSQL/Redis нужны только соответствующим пров
 
 ## Сообщение для нового агента
 
-> Продолжи исправления Domino в ветке fix/audit-foundation. Сначала прочитай AGENTS.md, docs/remediation/CONTINUE_ON_NEW_COMPUTER.md и указанные там журналы и план. Игра работает на сервере, около 50 пользователей: изменения готовим и проверяем локально, без production-деплоя. Следующий кандидат R-10; работай пакетами по два пункта, веди журналы и объясняй результаты простым русским языком. Физический Android пока недоступен; его отложенные проверки не считать выполненными.
+> Продолжи исправления Domino в ветке fix/audit-foundation. Сначала прочитай AGENTS.md, docs/remediation/CONTINUE_ON_NEW_COMPUTER.md и указанные там журналы и план. Игра работает на сервере, около 50 пользователей: изменения готовим и проверяем локально, без production-деплоя. Сначала продолжи приёмку частичных R-10/R-18 по шагам в журнале и `evidence/session-026/SECURITY_REALTIME_RESULTS.md`; затем выбери следующие два пункта. Веди журналы и объясняй результат простым русским языком. Физический Android/NAT acceptance пока не считать выполненным.

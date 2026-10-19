@@ -20,6 +20,43 @@ export class AuthService {
 
   constructor(private readonly prisma: PrismaService) {}
 
+  async validateGameToken(tokenInput?: string) {
+    const token = String(tokenInput || "").trim();
+    const claims = verifyGameToken(token);
+    if (!claims?.sessionId) {
+      throw new UnauthorizedException("Game access revoked");
+    }
+
+    const now = new Date();
+    const [session, player, activeBan] = await Promise.all([
+      this.prisma.session.findUnique({
+        where: { id: claims.sessionId },
+        select: { id: true, userId: true, expiresAt: true }
+      }),
+      this.prisma.player.findUnique({
+        where: { id: claims.playerId },
+        select: { id: true, userId: true }
+      }),
+      this.prisma.playerBan.findFirst({
+        where: {
+          playerId: claims.playerId,
+          revokedAt: null,
+          OR: [{ expiresAt: null }, { expiresAt: { gt: now } }]
+        },
+        select: { id: true }
+      })
+    ]);
+
+    if (
+      !session || session.userId !== claims.userId || session.expiresAt <= now ||
+      !player || player.userId !== claims.userId || activeBan
+    ) {
+      throw new UnauthorizedException("Game access revoked");
+    }
+
+    return { valid: true, expiresAt: claims.expiresAt };
+  }
+
   getStatus() {
     return {
       provider: "better-auth",
@@ -368,7 +405,7 @@ export class AuthService {
         sessionId: profile.session.id,
         provider: "better-auth",
         issuedAt: Date.now(),
-        expiresAt: Date.now() + 1000 * 60 * 60 * 12
+        expiresAt: Date.now() + 1000 * 60 * 5
       }),
       sessionToken: String(profile.session.token || "").trim() || null,
       user: profile.user,
@@ -482,7 +519,7 @@ export class AuthService {
         sessionId: profile.session.id,
         provider: "better-auth",
         issuedAt: Date.now(),
-        expiresAt: Date.now() + 1000 * 60 * 60 * 12
+        expiresAt: Date.now() + 1000 * 60 * 5
       }),
       sessionToken: String(profile.session.token || "").trim() || null,
       user: profile.user,

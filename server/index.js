@@ -46,15 +46,18 @@ function parseJsonIceServers(raw) {
     if (!raw) return [];
     try {
         const parsed = JSON.parse(raw);
-        if (!Array.isArray(parsed)) return [];
-        return parsed
-            .filter((entry) => entry && Array.isArray(entry.urls) && entry.urls.length > 0)
-            .map((entry) => ({
-                urls: entry.urls.map((url) => String(url || "").trim()).filter(Boolean),
-                username: entry.username ? String(entry.username).trim() : undefined,
-                credential: entry.credential ? String(entry.credential).trim() : undefined
-            }))
-            .filter((entry) => entry.urls.length > 0);
+        const entries = Array.isArray(parsed) ? parsed : [parsed];
+        return entries.map((entry) => {
+            const rawUrls = typeof entry === "string" ? entry : entry?.urls;
+            const urls = (Array.isArray(rawUrls) ? rawUrls : [rawUrls])
+                .map((url) => String(url || "").trim())
+                .filter((url) => /^(stun|stuns|turn|turns):/i.test(url));
+            return {
+                urls,
+                username: typeof entry === "object" && entry?.username ? String(entry.username).trim() : undefined,
+                credential: typeof entry === "object" && entry?.credential ? String(entry.credential).trim() : undefined
+            };
+        }).filter((entry) => entry.urls.length > 0);
     } catch (err) {
         console.warn("[Voice] Invalid VOICE_ICE_SERVERS_JSON:", err.message);
         return [];
@@ -84,7 +87,8 @@ function buildVoiceConfig() {
     const deduped = [];
     const seen = new Set();
     for (const server of servers) {
-        const urls = Array.isArray(server.urls) ? server.urls.map((url) => String(url || "").trim()).filter(Boolean) : [];
+        const rawUrls = Array.isArray(server.urls) ? server.urls : [server.urls];
+        const urls = rawUrls.map((url) => String(url || "").trim()).filter((url) => /^(stun|stuns|turn|turns):/i.test(url));
         if (!urls.length) continue;
         const key = JSON.stringify({
             urls,
@@ -353,7 +357,7 @@ app.get("/api/voice/config", (req, res) => {
     res.json({
         ...voiceConfig,
         hasTurn: voiceConfig.iceServers.some((server) =>
-            Array.isArray(server.urls) && server.urls.some((url) => String(url).startsWith("turn:"))
+            Array.isArray(server.urls) && server.urls.some((url) => /^turns?:/i.test(String(url)))
         )
     });
 });

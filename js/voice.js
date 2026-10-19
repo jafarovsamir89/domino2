@@ -783,9 +783,9 @@ export class VoiceChatManager {
             const normalized = {
                 iceServers: config.iceServers
                     .map((server) => ({
-                        urls: Array.isArray(server?.urls)
-                            ? server.urls.map((url) => String(url || "").trim()).filter(Boolean)
-                            : [],
+                        urls: (Array.isArray(server?.urls) ? server.urls : [server?.urls])
+                            .map((url) => String(url || "").trim())
+                            .filter((url) => /^(stun|stuns|turn|turns):/i.test(url)),
                         ...(server?.username ? { username: String(server.username).trim() } : {}),
                         ...(server?.credential ? { credential: String(server.credential).trim() } : {})
                     }))

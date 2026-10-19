@@ -23,6 +23,11 @@ export class AuthController {
     return this.authService.mintGameToken(req.headers, mode || gameMode || undefined);
   }
 
+  @Post("platform/game-token/validate")
+  async validateGameToken(@Body("token") token?: string) {
+    return this.authService.validateGameToken(token);
+  }
+
   @Post("platform/mobile-google-sign-in")
   async mobileGoogleSignIn(@Body() body: { idToken?: string; mode?: string; gameMode?: string }) {
     return this.authService.signInWithGoogleIdToken(body?.idToken, body?.mode || body?.gameMode || undefined);

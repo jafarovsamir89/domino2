@@ -1,6 +1,6 @@
 # Agent journal: current handoff
 
-Updated 2026-10-19. Read this, then append-only WORK_LOG.md and docs/audit/REMEDIATION_PLAN.md. Latest request is commit/push and a portable handoff for another computer; no new implementation batch is authorized by that request. S024/R29 and S025/R15 local work is done; R15 physical acceptance remains explicitly deferred by the user (ADB empty, answer: continue without the phone). Explain each result simply in Russian. Do not start another batch automatically.
+Updated 2026-10-19 after S026. Read this, then append-only WORK_LOG.md and docs/audit/REMEDIATION_PLAN.md. Latest request completed two more points, R-10 and R-18, partially locally. Keep explaining each result simply in Russian. The user previously said to continue without the Android phone; don't ask again or claim phone/NAT acceptance. S024/R29 and S025/R15 code/browser work remains as recorded below; R15 physical acceptance is still open.
 
 ## Authorization and Git
 
@@ -47,6 +47,14 @@ prepare-checkout.mjs copies tracked/staged working contents, skips .env/dependen
 
 After audit-plan edits run validate-audit.mjs, update only existing347SHA manifest entries and verify-manifest.mjs. Preserve original audit evidence. Matching app root/www assets must stay byte-identical.
 
+## S026 current status — R-10 and R-18 partial
+
+- R-10 shortens both minted game-token TTLs from12h to5min. New API `POST /api/platform/game-token/validate` verifies token signature/expiry, extant session, player/user relationship and active player ban. Colyseus calls it on join/reconnect with a3s timeout; a failure denies new admission. No per-move DB/API request.
+- Existing seats are not actively disconnected after logout/ban/delete. Keep R-10 partial until a safe active-match policy is chosen and tested; a 5-minute token alone does not eject a current room participant. API must be deployed before game server because old API returns404 and the server fails closed.
+- R-18 parses ICE URLs as strings or arrays and restricts to stun/stuns/turn/turns. Client js/www accept both. Android audio permission now allows only exact HTTPS `localhost` and `gamed.simplesoft.az` origins, rechecks after the system prompt, and denies pending permission on Activity destruction.
+- `npm run check`, JS syntax, API TypeScript `--noEmit`, and `git diff --check` passed. Android compile could not finish: local Temurin17 while Android sources require Java21. No functional tests or device/NAT checks were run; see `evidence/session-026/SECURITY_REALTIME_RESULTS.md`.
+- Overall **22/42 fully closed**; R-10/R-18 are modified but are not counted as closed. R09/R15/R19/R25 remain partial; the other open scopes remain as plan.
+
 ## Exact next action
 
-Implementation checkpoints 85b10a5 and f6a395e are pushed; this turn only prepares the portable documentation handoff. Confirm its push and clean status, then stop. On the next continuation first candidate is R10 game-admission revocation contract (logout/ban/delete SLA and live-room checks, without a DB request per move); read its card and auth/session implementations before editing. R15 phone cold/warm/offline acceptance can be done when the device returns; user explicitly deferred it now, do not block unrelated work. R09/R19/R25 scopes remain open. Production rollout is a separate directly authorized action, with R29 persistent-volume/API-order prerequisites above.
+Continue R-10/R-18 acceptance in a fresh local proof session: find a local JDK21 and compile Android; add/run synthetic API/server checks for valid, expired, logged-out, banned and deleted-user tokens; separately decide whether active rooms continue, forfeit, or transition safely after revocation. Then validate microphone permission for allowed/denied/navigation cases on Android and test ICE across Wi-Fi/LTE including relay-only TURN. Preserve the three-second fail-closed API join behavior and ensure API rollout precedes game-server rollout. Do not deploy to production or Play. R15 physical cold/warm/offline startup acceptance is still deferred; proceed with independent code tasks while the device is unavailable.

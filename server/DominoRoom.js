@@ -5,6 +5,7 @@ const { Board, cloneBoard } = require("./board");
 const { AIPlayer } = require("./ai");
 const { Tile, createFullSet, shuffle, getHandSize, determineFirstPlayer, handPoints, getOpeningPlayScore, hasInvalidOpeningHand, roundTo5 } = require("./model");
 const { verifyGameToken } = require("./platformAuth");
+const { resolvePlatformApiUrl } = require("./economyConfig");
 const { buildSignedRequestBody } = require("./signedRequest");
 const { generateRoomCode, normalizeRoomVisibility, normalizeRoomMode, normalizeGameMode, normalizeStakeKey, normalizePlayerCount, normalizeAiCount, normalizeDlossThreshold, normalizeInstantWinEnabled, normalizeAiDifficulty, DISCONNECT_GRACE_SECONDS } = require("./roomConfig");
 const { normalizeAuthToken, buildRoomIdentity, getFirstNameDisplayName } = require("./roomIdentity");
@@ -389,10 +390,27 @@ class DominoRoom extends Room {
         this.state.teamRoundWins = this._teamRoundWins;
     }
 
-    onAuth(client, options, context) {
+    async onAuth(client, options, context) {
         const token = String(context?.token || options?.authToken || options?._authToken || "").trim();
         const platformIdentity = verifyGameToken(token);
         if (platformIdentity) {
+            let validationResponse;
+            try {
+                validationResponse = await fetch(`${resolvePlatformApiUrl()}/api/platform/game-token/validate`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json", Accept: "application/json" },
+                    body: JSON.stringify({ token }),
+                    signal: AbortSignal.timeout(3000)
+                });
+            } catch {
+                throw new ServerError(503, "auth_validation_unavailable");
+            }
+            if (validationResponse.status >= 500) {
+                throw new ServerError(503, "auth_validation_unavailable");
+            }
+            if (!validationResponse.ok) {
+                throw new ServerError(401, "auth_required");
+            }
             return {
                 provider: "platform",
                 authToken: token,
