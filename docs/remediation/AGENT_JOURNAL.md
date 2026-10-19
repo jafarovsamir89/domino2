@@ -1,6 +1,6 @@
 # Agent journal: current handoff
 
-Updated 2026-10-19 after S026. Read this, then append-only WORK_LOG.md and docs/audit/REMEDIATION_PLAN.md. Latest request completed two more points, R-10 and R-18, partially locally. Keep explaining each result simply in Russian. The user previously said to continue without the Android phone; don't ask again or claim phone/NAT acceptance. S024/R29 and S025/R15 code/browser work remains as recorded below; R15 physical acceptance is still open.
+Updated 2026-10-19 after S027. Read this, then append-only WORK_LOG.md and docs/audit/REMEDIATION_PLAN.md. Latest request completed two more points, R-21 and R-23, partially locally. Keep explaining each result simply in Russian. The user previously said to continue without the Android phone; don't ask again or claim phone/TalkBack acceptance. S026/R10/R18 acceptance remains as recorded below. Latest details: `evidence/session-027/ACCESSIBILITY_DELETION_RESULTS.md`.
 
 ## Authorization and Git
 
@@ -54,6 +54,13 @@ After audit-plan edits run validate-audit.mjs, update only existing347SHA manife
 - R-18 parses ICE URLs as strings or arrays and restricts to stun/stuns/turn/turns. Client js/www accept both. Android audio permission now allows only exact HTTPS `localhost` and `gamed.simplesoft.az` origins, rechecks after the system prompt, and denies pending permission on Activity destruction.
 - `npm run check`, JS syntax, API TypeScript `--noEmit`, and `git diff --check` passed. Android compile could not finish: local Temurin17 while Android sources require Java21. No functional tests or device/NAT checks were run; see `evidence/session-026/SECURITY_REALTIME_RESULTS.md`.
 - Overall **22/42 fully closed**; R-10/R-18 are modified but are not counted as closed. R09/R15/R19/R25 remain partial; the other open scopes remain as plan.
+
+## S027 current status — R-21 and R-23 partial
+
+- R-21 now has a visible link in the account profile to `delete-account.html#request`; the page offers a mailto request with a prepared subject/body, asks for a request from the connected email, and explains that the email is not automatic deletion. No backend deletion flow was added. Owner must confirm mailbox handling, retention/deletion policy and Google Play Console/Data Safety alignment before publishing; do not claim account deletion is automated.
+- R-23 hand tiles are named localized buttons with index, values and playable state. Delegated click supports keyboard activation. Touch areas are 44×66 CSS px; narrow mobile hand stays full size and scrolls horizontally. Ambiguous-end choices have accessible names, visible focus, keyboard click and Escape cancellation; focus returns to the tile. Konva retains visual pointer markers and has a DOM keyboard alternative.
+- Root and `www` copies are byte-identical for six pairs. `npm run check`, renderer/translations syntax, and `git diff --check` passed. Product tests and live/browser/device checks were not run. Android TalkBack and actual 320px layout acceptance remain open, so neither card counts as fully closed. Report: `evidence/session-027/ACCESSIBILITY_DELETION_RESULTS.md`.
+- Total remains **22/42 fully closed**. No production or Play change.
 
 ## Exact next action
 

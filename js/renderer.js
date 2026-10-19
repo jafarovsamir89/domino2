@@ -957,7 +957,13 @@ export class Renderer {
 
     showArrowChoices(board, matchingEnds, onChoose, onCancel) {
         this.removeArrows();
-        if (this.shouldUseKonvaBoard()) {
+        const useKonva = this.shouldUseKonvaBoard();
+        const returnFocus = document.activeElement;
+        const restoreFocus = () => {
+            if (returnFocus?.isConnected) returnFocus.focus();
+            else this.handEl?.querySelector('button.hand-tile:not([aria-disabled="true"])')?.focus();
+        };
+        if (useKonva) {
             const validIndexes = Array.isArray(matchingEnds) ? matchingEnds.map((value) => Number(value)).filter(Number.isFinite) : [];
             if (!validIndexes.length) {
                 onCancel?.();
@@ -967,47 +973,71 @@ export class Renderer {
                 board?.openEnds || [],
                 validIndexes,
                 null,
-                (openEndIndex) => onChoose?.(openEndIndex),
-                () => onCancel?.()
+                (openEndIndex) => {
+                    this.removeArrows();
+                    onChoose?.(openEndIndex);
+                    restoreFocus();
+                },
+                () => {
+                    this.removeArrows();
+                    onCancel?.();
+                    restoreFocus();
+                }
             );
-            return;
         }
         const gs = document.getElementById('game-screen');
         const arrowSymbols = { left: '\u2190', right: '\u2192', top: '\u2191', bottom: '\u2193' };
-        const tapEvent = window.PointerEvent ? 'pointerup' : 'click';
         const buttonSize = this.getArrowButtonSize();
         const tileRects = this.collectBoardTileRects();
         const overlay = document.createElement('div');
         overlay.id = 'arrow-overlay';
-        overlay.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;z-index:100;background:rgba(0,0,0,0.04);';
-
-        overlay.addEventListener(tapEvent, (e) => {
+        overlay.setAttribute('role', 'group');
+        overlay.setAttribute('aria-label', this.app?.t?.('accessibility-choose-end-group') || 'Choose where to place the tile');
+        if (useKonva) overlay.className = 'arrow-overlay-a11y';
+        else overlay.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;z-index:100;background:rgba(0,0,0,0.04);';
+        overlay.addEventListener('click', (e) => {
             if (e.target === overlay) {
                 this.removeArrows();
                 onCancel();
+                restoreFocus();
+            }
+        });
+        overlay.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape') {
+                event.preventDefault();
+                this.removeArrows();
+                onCancel();
+                restoreFocus();
             }
         });
 
         for (const ei of matchingEnds) {
             const oe = board.openEnds[ei];
             const btn = document.createElement('button');
+            btn.type = 'button';
             btn.className = 'arrow-btn';
             btn.textContent = arrowSymbols[oe.side] || '?';
             btn.classList.add(`arrow-${oe.side || 'bottom'}`);
-            btn.title = this.app.format('arrow-place-to', { value: oe.value });
-            const rawPoint = this.getBoardOpenEndChoicePoint(oe, { buttonSize });
-            const point = rawPoint ? this.adjustArrowPointForCollision(rawPoint, buttonSize, tileRects, oe.side) : null;
-            if (!point) continue;
-            const gsRect = gs.getBoundingClientRect();
-            const ax = point.x - gsRect.left;
-            const ay = point.y - gsRect.top;
-            if (!Number.isFinite(ax) || !Number.isFinite(ay)) continue;
-            btn.style.cssText += `position:absolute;left:${ax}px;top:${ay}px;width:${buttonSize}px;height:${buttonSize}px;transform:translate(-50%,-50%);`;
+            const label = this.app?.format?.('accessibility-choose-end', { arrow: btn.textContent, value: oe.value })
+                || `Place ${btn.textContent} on ${oe.value}`;
+            btn.title = label;
+            btn.setAttribute('aria-label', label);
+            if (!useKonva) {
+                const rawPoint = this.getBoardOpenEndChoicePoint(oe, { buttonSize });
+                const point = rawPoint ? this.adjustArrowPointForCollision(rawPoint, buttonSize, tileRects, oe.side) : null;
+                if (!point) continue;
+                const gsRect = gs.getBoundingClientRect();
+                const ax = point.x - gsRect.left;
+                const ay = point.y - gsRect.top;
+                if (!Number.isFinite(ax) || !Number.isFinite(ay)) continue;
+                btn.style.cssText += `position:absolute;left:${ax}px;top:${ay}px;width:${buttonSize}px;height:${buttonSize}px;transform:translate(-50%,-50%);`;
+            }
 
-            btn.addEventListener(tapEvent, (e) => {
+            btn.addEventListener('click', (e) => {
                 e.stopPropagation();
                 this.removeArrows();
                 onChoose(ei);
+                restoreFocus();
             });
             overlay.appendChild(btn);
         }
@@ -1016,6 +1046,7 @@ export class Renderer {
             return;
         }
         gs.appendChild(overlay);
+        overlay.querySelector('button')?.focus();
     }
 
     removeArrows() {
@@ -1025,6 +1056,7 @@ export class Renderer {
     }
     renderHand(hand, validMoves = [], sel = -1, isCurrent = false) {
         this.handEl.innerHTML = '';
+        this.handEl.setAttribute('aria-label', this.app?.t?.('accessibility-your-hand') || 'Your hand');
         if (isCurrent) this.handEl.parentElement.classList.add('active-turn');
         else this.handEl.parentElement.classList.remove('active-turn');
 
@@ -1041,11 +1073,28 @@ export class Renderer {
         for (let i = 0; i < tiles.length; i++) {
             const t = tiles[i];
             if (!t || typeof t.a !== 'number' || typeof t.b !== 'number') continue;
-            const el = this.createTileEl(t.a, t.b, 'vertical', false, t.id);
-            if (validMoves.some(m => m.tileIndex === i)) {
-                el.classList.add('playable');
-                el.dataset.handIndex = i;
-            }
+            const face = this.createTileEl(t.a, t.b, 'vertical', false, t.id);
+            const el = document.createElement('button');
+            el.type = 'button';
+            el.className = `${face.className} hand-tile`;
+            if (t.id) el.dataset.tileId = t.id;
+            el.append(...Array.from(face.childNodes));
+            const hasLegalMove = validMoves.some(m => m.tileIndex === i);
+            const isPlayable = hasLegalMove && this.app?.isInputBlockedByStage?.() !== true;
+            const status = this.app?.t?.(isPlayable ? 'accessibility-tile-playable' : 'accessibility-tile-not-playable')
+                || (isPlayable ? 'playable' : 'not playable now');
+            const ariaLabel = this.app?.format?.('accessibility-hand-tile', {
+                index: i + 1,
+                count: tiles.length,
+                a: t.a,
+                b: t.b,
+                status
+            }) || `Tile ${i + 1} of ${tiles.length}: ${t.a} and ${t.b}. ${status}`;
+            el.setAttribute('aria-label', ariaLabel);
+            el.setAttribute('aria-disabled', String(!isPlayable));
+            el.setAttribute('aria-pressed', String(i === sel));
+            el.dataset.handIndex = String(i);
+            if (hasLegalMove) el.classList.add('playable');
             if (i === sel) el.classList.add('selected');
             this.handEl.appendChild(el);
         }

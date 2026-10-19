@@ -562,6 +562,9 @@
                             <div class="account-profile-meta" id="account-profile-meta" data-i18n="account-guest-profile">Qonaq profil</div>
                         </div>
                     </div>
+                    <div class="account-deletion-actions">
+                        <a class="account-delete-request-link" href="delete-account.html#request" target="_blank" rel="noopener noreferrer" data-i18n="account-delete-request">Request account deletion</a>
+                    </div>
                     <div class="account-profile-tabs" id="account-profile-tabs">
                         <button type="button" class="account-profile-tab" data-profile-tab="skins" data-i18n="account-skins-vault">Table skins</button>
                         <button type="button" class="account-profile-tab" data-profile-tab="gifts" data-i18n="account-gift-vault">Gift vault</button>
@@ -664,7 +667,7 @@
         </div>
 
         <div class="hand-container">
-            <div class="hand" id="player-hand"></div>
+            <div class="hand" id="player-hand" role="group" aria-label="Your hand"></div>
         </div>
 
         <div class="action-bar">

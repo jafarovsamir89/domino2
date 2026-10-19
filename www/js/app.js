@@ -16157,9 +16157,11 @@ class DominoGame {
         setupReviewMode('round-end-screen');
         setupReviewMode('game-over-screen');
 
-        this.bindTap(this.renderer.handEl, e => {
-            const el = e.target.closest('.tile.playable');
-            if (el) this.onHandTileClick(parseInt(el.dataset.handIndex));
+        this.renderer.handEl?.addEventListener('click', e => {
+            const el = e.target.closest('button.hand-tile.playable');
+            if (el && el.getAttribute('aria-disabled') !== 'true') {
+                this.onHandTileClick(Number(el.dataset.handIndex));
+            }
         });
         this.setupReactionUI();
         this.setupGiftUI();

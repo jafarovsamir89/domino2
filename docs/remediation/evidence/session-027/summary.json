@@ -1,0 +1,31 @@
+{
+  "session": "S027",
+  "date": "2026-10-19",
+  "cards": {
+    "R-21": "partial-local",
+    "R-23": "partial-local"
+  },
+  "fullyClosedCards": 22,
+  "totalCards": 42,
+  "productionDeployed": false,
+  "playStoreChanged": false,
+  "checks": {
+    "npmRunCheck": "passed",
+    "rendererSyntax": "passed",
+    "translationsSyntax": "passed",
+    "gitDiffCheck": "passed",
+    "rootWwwByteParity": "passed for six file pairs",
+    "productTests": "not run",
+    "androidTalkBack": "not run"
+  },
+  "remainingAcceptance": {
+    "R-21": [
+      "Confirm support mailbox handling and owner-approved deletion/retention policy",
+      "Verify published account deletion URL and disclosures in Google Play Console"
+    ],
+    "R-23": [
+      "Check actual hand layout and horizontal scrolling at 320 CSS px",
+      "Verify keyboard focus and TalkBack announcement on Android"
+    ]
+  }
+}
