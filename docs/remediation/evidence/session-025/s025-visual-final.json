@@ -1,0 +1,19 @@
+{
+  "label": "s025-visual-final",
+  "command": [
+    "node",
+    "/Users/macbookair/Documents/domino/docs/remediation/scripts/measure-startup.mjs",
+    "candidate",
+    "screenshots"
+  ],
+  "cwd": ".tmp/remediation-s025/clean",
+  "startedAt": "2026-10-19T07:23:34.816Z",
+  "finishedAt": "2026-10-19T07:23:36.784Z",
+  "durationMs": 1968,
+  "exitCode": 0,
+  "signal": null,
+  "timedOut": false,
+  "error": null,
+  "log": "docs/remediation/evidence/session-025/s025-visual-final.log",
+  "environment": "Fresh allowlist, synthetic local API/DB, optional Redis disabled, no inherited secrets or copied .env"
+}

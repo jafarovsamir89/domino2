@@ -1,0 +1,18 @@
+{
+  "label": "s025-browser-metrics-baseline",
+  "command": [
+    "node",
+    "/Users/macbookair/Documents/domino/docs/remediation/scripts/measure-startup.mjs",
+    "baseline"
+  ],
+  "cwd": ".tmp/remediation-s025/baseline",
+  "startedAt": "2026-10-19T07:17:47.597Z",
+  "finishedAt": "2026-10-19T07:18:07.939Z",
+  "durationMs": 20342,
+  "exitCode": 0,
+  "signal": null,
+  "timedOut": false,
+  "error": null,
+  "log": "docs/remediation/evidence/session-025/s025-browser-metrics-baseline.log",
+  "environment": "Fresh allowlist, synthetic local API/DB, optional Redis disabled, no inherited secrets or copied .env"
+}

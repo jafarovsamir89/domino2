@@ -1,0 +1,62 @@
+
+Running 8 tests using 1 worker
+(node:86930) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+···F(node:87067) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+···F
+
+  1) e2e/startup.spec.mjs:47:2 › missing app module exposes retry without hiding failed startup ────
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: locator('#startup-error')
+    Expected: visible
+    Timeout: 9000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" locator('#startup-error') with timeout 9000ms
+      - waiting for locator('#startup-error')
+
+
+      47 |  test(`${prefix}missing app module exposes retry without hiding failed startup`,async({page})=>{
+      48 |   await page.route('**/js/app.js',r=>r.abort());await page.goto('/'+prefix+'index.html',{waitUntil:'domcontentloaded'});
+    > 49 |   await expect(page.locator('#startup-error')).toBeVisible({timeout:9000});
+         |                                                ^
+      50 |   await expect(page.locator('#startup-error button')).toHaveAccessibleName(/Повторить|Retry|Yenidən/);
+      51 |   await expect(page.locator('#splash-screen')).toBeVisible();
+      52 |  });
+        at /Users/macbookair/Documents/domino/.tmp/remediation-s025/clean/e2e/startup.spec.mjs:49:48
+
+    Error Context: test-results/startup-missing-app-module-d674c-thout-hiding-failed-startup/error-context.md
+
+  2) e2e/startup.spec.mjs:47:2 › www/missing app module exposes retry without hiding failed startup 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: locator('#startup-error')
+    Expected: visible
+    Timeout: 9000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" locator('#startup-error') with timeout 9000ms
+      - waiting for locator('#startup-error')
+
+
+      47 |  test(`${prefix}missing app module exposes retry without hiding failed startup`,async({page})=>{
+      48 |   await page.route('**/js/app.js',r=>r.abort());await page.goto('/'+prefix+'index.html',{waitUntil:'domcontentloaded'});
+    > 49 |   await expect(page.locator('#startup-error')).toBeVisible({timeout:9000});
+         |                                                ^
+      50 |   await expect(page.locator('#startup-error button')).toHaveAccessibleName(/Повторить|Retry|Yenidən/);
+      51 |   await expect(page.locator('#splash-screen')).toBeVisible();
+      52 |  });
+        at /Users/macbookair/Documents/domino/.tmp/remediation-s025/clean/e2e/startup.spec.mjs:49:48
+
+    Error Context: test-results/startup-www-missing-app-mo-ca346-thout-hiding-failed-startup/error-context.md
+
+  2 failed
+    e2e/startup.spec.mjs:47:2 › missing app module exposes retry without hiding failed startup ─────
+    e2e/startup.spec.mjs:47:2 › www/missing app module exposes retry without hiding failed startup ─
+  6 passed (40.0s)

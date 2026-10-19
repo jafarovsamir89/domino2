@@ -1,0 +1,223 @@
+
+Running 8 tests using 1 worker
+(node:87011) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+F(node:87023) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+F(node:87030) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+F(node:87040) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+F(node:87192) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+F(node:87207) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+F(node:87217) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+F(node:87234) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+F
+
+  1) e2e/startup.spec.mjs:21:2 › cold/warm startup becomes interactive without minimum delay or window load 
+
+    Error: expect(locator).toHaveCount(expected) failed
+
+    Locator:  locator('#splash-screen')
+    Expected: 0
+    Received: 1
+    Timeout:  3000ms
+
+    Call log:
+      - Expect "toHaveCount" locator('#splash-screen') with timeout 3000ms
+      - waiting for locator('#splash-screen')
+        10 × locator resolved to 1 element
+           - unexpected value "1"
+
+
+      23 |   await page.addInitScript(()=>document.addEventListener('DOMContentLoaded',()=>{const image=new Image();image.src='/startup-stalled.png';document.body.append(image);window.addEventListener('load',()=>window.startupLoadFired=true)}));
+      24 |   await page.goto('/'+prefix+'index.html',{waitUntil:'domcontentloaded'});
+    > 25 |   await expect(page.locator('#splash-screen')).toHaveCount(0,{timeout:3000});
+         |                                                ^
+      26 |   expect(await page.evaluate(()=>window.startupLoadFired)).toBeFalsy();
+      27 |   await page.locator('#open-solo-modal-btn').click();await expect(page.locator('#start-game-btn')).toBeVisible();
+      28 |   await page.evaluate(()=>sessionStorage.setItem('startup-test-delay','600'));
+        at /Users/macbookair/Documents/domino/.tmp/remediation-s025/baseline/e2e/startup.spec.mjs:25:48
+
+    Error Context: test-results/startup-cold-warm-startup--5261d-inimum-delay-or-window-load/error-context.md
+
+  2) e2e/startup.spec.mjs:34:2 › offline bootstrap shows a readable notice and retry ───────────────
+
+    Error: expect(locator).toHaveCount(expected) failed
+
+    Locator:  locator('#splash-screen')
+    Expected: 0
+    Received: 1
+    Timeout:  3000ms
+
+    Call log:
+      - Expect "toHaveCount" locator('#splash-screen') with timeout 3000ms
+      - waiting for locator('#splash-screen')
+        10 × locator resolved to 1 element
+           - unexpected value "1"
+
+
+      34 |  test(`${prefix}offline bootstrap shows a readable notice and retry`,async({page})=>{
+      35 |   await setup(page,'offline');await page.goto('/'+prefix+'index.html',{waitUntil:'domcontentloaded'});
+    > 36 |   await expect(page.locator('#splash-screen')).toHaveCount(0,{timeout:3000});
+         |                                                ^
+      37 |   await expect(page.locator('#startup-network-note')).toBeVisible();
+      38 |   await expect(page.locator('#startup-network-note button')).toHaveAccessibleName('Повторить');
+      39 |   await page.evaluate(()=>window.dispatchEvent(new Event('online')));await expect(page.locator('#startup-network-note')).toHaveCount(0);
+        at /Users/macbookair/Documents/domino/.tmp/remediation-s025/baseline/e2e/startup.spec.mjs:36:48
+
+    Error Context: test-results/startup-offline-bootstrap-shows-a-readable-notice-and-retry/error-context.md
+
+  3) e2e/startup.spec.mjs:41:2 › hung account request is bounded and cannot leave auth spinner forever 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: true
+    Received: false
+
+      42 |   await setup(page,'hang');await page.goto('/'+prefix+'index.html',{waitUntil:'domcontentloaded'});
+      43 |   await expect(page.locator('#splash-screen')).toHaveCount(0,{timeout:7500});
+    > 44 |   expect(await page.evaluate(()=>game.authResolved)).toBe(true);
+         |                                                      ^
+      45 |   await expect(page.locator('#startup-network-note')).toBeVisible();
+      46 |  });
+      47 |  test(`${prefix}missing app module exposes retry without hiding failed startup`,async({page})=>{
+        at /Users/macbookair/Documents/domino/.tmp/remediation-s025/baseline/e2e/startup.spec.mjs:44:54
+
+    Error Context: test-results/startup-hung-account-reque-1a768--leave-auth-spinner-forever/error-context.md
+
+  4) e2e/startup.spec.mjs:47:2 › missing app module exposes retry without hiding failed startup ────
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: locator('#startup-error')
+    Expected: visible
+    Timeout: 9000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" locator('#startup-error') with timeout 9000ms
+      - waiting for locator('#startup-error')
+
+
+      47 |  test(`${prefix}missing app module exposes retry without hiding failed startup`,async({page})=>{
+      48 |   await page.route('**/js/app.js',r=>r.abort());await page.goto('/'+prefix+'index.html',{waitUntil:'domcontentloaded'});
+    > 49 |   await expect(page.locator('#startup-error')).toBeVisible({timeout:9000});
+         |                                                ^
+      50 |   await expect(page.locator('#startup-error button')).toHaveAccessibleName(/Повторить|Retry|Yenidən/);
+      51 |   await expect(page.locator('#splash-screen')).toBeVisible();
+      52 |  });
+        at /Users/macbookair/Documents/domino/.tmp/remediation-s025/baseline/e2e/startup.spec.mjs:49:48
+
+    Error Context: test-results/startup-missing-app-module-d674c-thout-hiding-failed-startup/error-context.md
+
+  5) e2e/startup.spec.mjs:21:2 › www/cold/warm startup becomes interactive without minimum delay or window load 
+
+    Error: expect(locator).toHaveCount(expected) failed
+
+    Locator:  locator('#splash-screen')
+    Expected: 0
+    Received: 1
+    Timeout:  3000ms
+
+    Call log:
+      - Expect "toHaveCount" locator('#splash-screen') with timeout 3000ms
+      - waiting for locator('#splash-screen')
+        10 × locator resolved to 1 element
+           - unexpected value "1"
+
+
+      23 |   await page.addInitScript(()=>document.addEventListener('DOMContentLoaded',()=>{const image=new Image();image.src='/startup-stalled.png';document.body.append(image);window.addEventListener('load',()=>window.startupLoadFired=true)}));
+      24 |   await page.goto('/'+prefix+'index.html',{waitUntil:'domcontentloaded'});
+    > 25 |   await expect(page.locator('#splash-screen')).toHaveCount(0,{timeout:3000});
+         |                                                ^
+      26 |   expect(await page.evaluate(()=>window.startupLoadFired)).toBeFalsy();
+      27 |   await page.locator('#open-solo-modal-btn').click();await expect(page.locator('#start-game-btn')).toBeVisible();
+      28 |   await page.evaluate(()=>sessionStorage.setItem('startup-test-delay','600'));
+        at /Users/macbookair/Documents/domino/.tmp/remediation-s025/baseline/e2e/startup.spec.mjs:25:48
+
+    Error Context: test-results/startup-www-cold-warm-star-a1ce1-inimum-delay-or-window-load/error-context.md
+
+  6) e2e/startup.spec.mjs:34:2 › www/offline bootstrap shows a readable notice and retry ───────────
+
+    Error: expect(locator).toHaveCount(expected) failed
+
+    Locator:  locator('#splash-screen')
+    Expected: 0
+    Received: 1
+    Timeout:  3000ms
+
+    Call log:
+      - Expect "toHaveCount" locator('#splash-screen') with timeout 3000ms
+      - waiting for locator('#splash-screen')
+        10 × locator resolved to 1 element
+           - unexpected value "1"
+
+
+      34 |  test(`${prefix}offline bootstrap shows a readable notice and retry`,async({page})=>{
+      35 |   await setup(page,'offline');await page.goto('/'+prefix+'index.html',{waitUntil:'domcontentloaded'});
+    > 36 |   await expect(page.locator('#splash-screen')).toHaveCount(0,{timeout:3000});
+         |                                                ^
+      37 |   await expect(page.locator('#startup-network-note')).toBeVisible();
+      38 |   await expect(page.locator('#startup-network-note button')).toHaveAccessibleName('Повторить');
+      39 |   await page.evaluate(()=>window.dispatchEvent(new Event('online')));await expect(page.locator('#startup-network-note')).toHaveCount(0);
+        at /Users/macbookair/Documents/domino/.tmp/remediation-s025/baseline/e2e/startup.spec.mjs:36:48
+
+    Error Context: test-results/startup-www-offline-bootst-82a17-a-readable-notice-and-retry/error-context.md
+
+  7) e2e/startup.spec.mjs:41:2 › www/hung account request is bounded and cannot leave auth spinner forever 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: true
+    Received: false
+
+      42 |   await setup(page,'hang');await page.goto('/'+prefix+'index.html',{waitUntil:'domcontentloaded'});
+      43 |   await expect(page.locator('#splash-screen')).toHaveCount(0,{timeout:7500});
+    > 44 |   expect(await page.evaluate(()=>game.authResolved)).toBe(true);
+         |                                                      ^
+      45 |   await expect(page.locator('#startup-network-note')).toBeVisible();
+      46 |  });
+      47 |  test(`${prefix}missing app module exposes retry without hiding failed startup`,async({page})=>{
+        at /Users/macbookair/Documents/domino/.tmp/remediation-s025/baseline/e2e/startup.spec.mjs:44:54
+
+    Error Context: test-results/startup-www-hung-account-r-db798--leave-auth-spinner-forever/error-context.md
+
+  8) e2e/startup.spec.mjs:47:2 › www/missing app module exposes retry without hiding failed startup 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: locator('#startup-error')
+    Expected: visible
+    Timeout: 9000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" locator('#startup-error') with timeout 9000ms
+      - waiting for locator('#startup-error')
+
+
+      47 |  test(`${prefix}missing app module exposes retry without hiding failed startup`,async({page})=>{
+      48 |   await page.route('**/js/app.js',r=>r.abort());await page.goto('/'+prefix+'index.html',{waitUntil:'domcontentloaded'});
+    > 49 |   await expect(page.locator('#startup-error')).toBeVisible({timeout:9000});
+         |                                                ^
+      50 |   await expect(page.locator('#startup-error button')).toHaveAccessibleName(/Повторить|Retry|Yenidən/);
+      51 |   await expect(page.locator('#splash-screen')).toBeVisible();
+      52 |  });
+        at /Users/macbookair/Documents/domino/.tmp/remediation-s025/baseline/e2e/startup.spec.mjs:49:48
+
+    Error Context: test-results/startup-www-missing-app-mo-ca346-thout-hiding-failed-startup/error-context.md
+
+  8 failed
+    e2e/startup.spec.mjs:21:2 › cold/warm startup becomes interactive without minimum delay or window load 
+    e2e/startup.spec.mjs:34:2 › offline bootstrap shows a readable notice and retry ────────────────
+    e2e/startup.spec.mjs:41:2 › hung account request is bounded and cannot leave auth spinner forever 
+    e2e/startup.spec.mjs:47:2 › missing app module exposes retry without hiding failed startup ─────
+    e2e/startup.spec.mjs:21:2 › www/cold/warm startup becomes interactive without minimum delay or window load 
+    e2e/startup.spec.mjs:34:2 › www/offline bootstrap shows a readable notice and retry ────────────
+    e2e/startup.spec.mjs:41:2 › www/hung account request is bounded and cannot leave auth spinner forever 
+    e2e/startup.spec.mjs:47:2 › www/missing app module exposes retry without hiding failed startup ─

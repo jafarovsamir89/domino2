@@ -1,0 +1,32 @@
+{
+  "phone": "No ADB device; user deferred, no phone changes",
+  "postgres": "Owned55439 stopped; session024/s024-pg-stop.json",
+  "previews": "Owned ephemeral4173/4176/4177 and port0 worker processes exited; run metadata records completion",
+  "redis": "Not started in this batch",
+  "unrelatedPreview4174": "Retained",
+  "productionChanged": false,
+  "playPackageChanged": false,
+  "pluginsInstalled": false,
+  "verifiedOwnedPorts": [
+    {
+      "port": 4173,
+      "noListener": true
+    },
+    {
+      "port": 4176,
+      "noListener": true
+    },
+    {
+      "port": 4177,
+      "noListener": true
+    },
+    {
+      "port": 4300,
+      "noListener": true
+    },
+    {
+      "port": 55439,
+      "noListener": true
+    }
+  ]
+}

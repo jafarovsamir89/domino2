@@ -465,6 +465,9 @@ export class AccountClient {
     }
 
     async syncPlatformSession(mode = null) {
+        const controller = new AbortController();
+        const deadline = setTimeout(() => controller.abort(), 6000);
+        this.sessionSyncFailed = false;
         try {
             const token = this.getPlatformAuthToken();
             const selectedMode = String(mode || "").trim();
@@ -475,6 +478,7 @@ export class AccountClient {
             const query = params.toString();
             const response = await fetch(`${this.platformApiBase}/platform/game-token${query ? `?${query}` : ""}`, {
                 method: "GET",
+                signal: controller.signal,
                 credentials: "include",
                 headers: {
                     "Content-Type": "application/json",
@@ -483,6 +487,7 @@ export class AccountClient {
             });
 
             if (!response.ok) {
+                this.sessionSyncFailed = response.status >= 500 || response.status === 429;
                 return null;
             }
 
@@ -499,7 +504,10 @@ export class AccountClient {
             this.setStoredProfile(normalized.profile);
             return normalized;
         } catch {
+            this.sessionSyncFailed = true;
             return null;
+        } finally {
+            clearTimeout(deadline);
         }
     }
 

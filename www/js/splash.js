@@ -1,17 +1,8 @@
 (function () {
-    const SPLASH_KEY = 'dominoSplashShown';
-    const MIN_VISIBLE_MS = 5500;
+    const MAX_STARTUP_MS = 8000;
     const splash = document.getElementById('splash-screen');
 
     if (!splash) return;
-
-    try {
-        if (sessionStorage.getItem(SPLASH_KEY) === '1') {
-            splash.remove();
-            return;
-        }
-        sessionStorage.setItem(SPLASH_KEY, '1');
-    } catch (_) {}
 
     const pipLayouts = {
         0: [],
@@ -68,37 +59,67 @@
 
     splash.querySelectorAll('.splash-tile').forEach(buildTile);
 
-    const startedAt = performance.now();
-    let loadReady = document.readyState === 'complete';
     let removed = false;
-
+    let hideTimer = null;
+    const language = (() => {
+        try { return localStorage.getItem('domino-lang') || navigator.language.slice(0, 2); }
+        catch { return navigator.language.slice(0, 2); }
+    })();
+    const text = language === 'ru'
+        ? { error: 'Не удалось загрузить игру. Проверьте соединение и повторите.', network: 'Нет связи с сервером. Доступные локальные функции можно использовать.', retry: 'Повторить' }
+        : language === 'az'
+            ? { error: 'Oyun yüklənmədi. Bağlantını yoxlayıb yenidən cəhd edin.', network: 'Serverlə əlaqə yoxdur. Mövcud yerli funksiyalardan istifadə edə bilərsiniz.', retry: 'Yenidən cəhd et' }
+            : { error: 'The game could not load. Check your connection and retry.', network: 'Cannot reach the server. Available local features can still be used.', retry: 'Retry' };
+    const panel = (id, message) => {
+        const node = document.createElement('div');
+        node.id = id;
+        node.setAttribute('role', 'status');
+        const label = document.createElement('p');
+        label.textContent = message;
+        const retry = document.createElement('button');
+        retry.type = 'button';
+        retry.textContent = text.retry;
+        retry.addEventListener('click', () => location.reload());
+        node.append(label, retry);
+        return node;
+    };
+    const showError = () => {
+        if (removed || document.getElementById('startup-error')) return;
+        splash.classList.add('has-startup-error');
+        splash.append(panel('startup-error', text.error));
+        performance.mark('domino-startup-error');
+    };
     const removeSplash = () => {
         if (removed) return;
         removed = true;
+        clearTimeout(deadline);
+        cancelAnimationFrame(hideTimer);
+        window.removeEventListener('domino:startup-ready', tryHide);
+        window.removeEventListener('error', onError, true);
         splash.remove();
+        performance.mark('domino-startup-interactive');
+        if (window.__dominoStartupConnectionUnavailable || navigator.onLine === false) {
+            const screen = document.getElementById('start-screen');
+            const host = screen?.querySelector('.start-shell');
+            if (host && !document.getElementById('startup-network-note')) {
+                screen.classList.add('has-startup-notice');
+                host.prepend(panel('startup-network-note', text.network));
+            }
+        }
     };
-
-    const hideSplash = () => {
-        if (!splash.isConnected) return;
+    const tryHide = () => {
+        if (removed || !window.__dominoUiReady || !window.__dominoAccountReady) return;
         splash.setAttribute('aria-hidden', 'true');
         splash.classList.add('is-hidden');
-        splash.addEventListener('transitionend', removeSplash, { once: true });
-        window.setTimeout(removeSplash, 700);
+        // Readiness, not optional images/fonts/window.load or a session marker, owns the splash.
+        hideTimer = requestAnimationFrame(removeSplash);
     };
-
-    const tryHide = () => {
-        if (!loadReady || removed) return;
-        const elapsed = performance.now() - startedAt;
-        const delay = Math.max(0, MIN_VISIBLE_MS - elapsed);
-        window.setTimeout(hideSplash, delay);
+    const onError = event => {
+        if ((event.target?.tagName === 'SCRIPT' && event.target.type === 'module')
+            || /\/js\/app\.js(?:$|[?:])/.test(event.filename || '')) showError();
     };
-
-    if (loadReady) {
-        tryHide();
-    } else {
-        window.addEventListener('load', () => {
-            loadReady = true;
-            tryHide();
-        }, { once: true });
-    }
+    const deadline = window.setTimeout(showError, MAX_STARTUP_MS);
+    window.addEventListener('domino:startup-ready', tryHide);
+    window.addEventListener('error', onError, true);
+    tryHide();
 })();

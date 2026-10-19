@@ -1460,12 +1460,15 @@ class DominoGame {
             }
         } finally {
             this.authResolved = true;
+            window.__dominoAccountReady = true;
+            window.__dominoStartupConnectionUnavailable = Boolean(this.account.sessionSyncFailed);
             const startScreen = document.getElementById('start-screen');
             if (startScreen) startScreen.classList.remove('auth-checking');
             try {
                 sessionStorage.removeItem('dominoAuthPending');
             } catch (_) {}
             this.syncStartAuthGate();
+            window.dispatchEvent(new Event('domino:startup-ready'));
         }
     }
 
@@ -20670,6 +20673,9 @@ class DominoGame {
 let game = null;
 game = new DominoGame();
 window.game = game;
+window.__dominoUiReady = true;
+performance.mark('domino-ui-ready');
+window.dispatchEvent(new Event('domino:startup-ready'));
 window.__dominoSocialRealtimeStatus = () => window.game?.getSocialRealtimeStatus?.() || null;
 window.__dominoClearAppCacheAndReload = async () => {
     try {

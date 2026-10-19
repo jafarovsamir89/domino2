@@ -1,0 +1,14 @@
+{
+  "medianVerifiedModalOpenMs": {
+    "baseline": {
+      "cold": 6352.699999928474,
+      "warm": 117
+    },
+    "candidate": {
+      "cold": 151.39999997615814,
+      "warm": 113.5
+    }
+  },
+  "scope": "Synthetic desktop Chromium;3 new-context cold / same-context warm pairs; NOT Android or OS cold-cache metrics",
+  "methodLimit": "Probe awaits removal of splash DOM before clicking solo/opening modal. Upper bound of demonstrated interactivity, not earliest possible input: old CSS disables pointer-events before its700ms fallback removes DOM."
+}

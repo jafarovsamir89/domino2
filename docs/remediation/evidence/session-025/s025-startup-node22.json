@@ -1,0 +1,26 @@
+{
+  "label": "s025-startup-node22",
+  "command": [
+    "npm",
+    "exec",
+    "--yes",
+    "--package=node@22.14.0",
+    "--package=npm@10.9.2",
+    "--",
+    "npx",
+    "playwright",
+    "test",
+    "e2e/startup.spec.mjs",
+    "--workers=2"
+  ],
+  "cwd": ".tmp/remediation-s025/clean",
+  "startedAt": "2026-10-19T07:18:29.244Z",
+  "finishedAt": "2026-10-19T07:19:12.879Z",
+  "durationMs": 43635,
+  "exitCode": 0,
+  "signal": null,
+  "timedOut": false,
+  "error": null,
+  "log": "docs/remediation/evidence/session-025/s025-startup-node22.log",
+  "environment": "Fresh allowlist, synthetic local API/DB, optional Redis disabled, no inherited secrets or copied .env"
+}

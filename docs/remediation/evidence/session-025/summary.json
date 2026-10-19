@@ -1,0 +1,46 @@
+{
+  "session": "S025",
+  "task": "R-15",
+  "status": "code-and-browser-verified-physical-acceptance-deferred",
+  "userDecision": "ADB had no devices; user explicitly asked to continue without the phone",
+  "changes": [
+    "No 5.5second minimum, session marker or window.load gate",
+    "Readiness requires actual controls and resolved account bootstrap",
+    "6second abort on account sync;8second recoverable critical-load error, retry/recovery",
+    "AZ/RU/EN notices;320px in-flow notice does not cover sign-in; web/www parity"
+  ],
+  "checks": {
+    "browserNode22": {
+      "pass": 10,
+      "total": 10,
+      "evidence": "s025-startup-node22-final.json"
+    },
+    "browserNode25": "All10new cases pass inside full E2E run",
+    "e2eNode25": {
+      "pass": 53,
+      "total": 62,
+      "sameOldFailures": 9
+    },
+    "serverNode22": {
+      "pass": 390,
+      "total": 397,
+      "sameOldFailures": 7
+    },
+    "source": "s025-source-final.json",
+    "visual": "s025-visual-final.json"
+  },
+  "measurements": "timing-summary.json; desktop headless synthetic API,3cold/warm pairs, waits for splash DOM removal before verified modal click (upper bound), not earliest input or Android cold/warm",
+  "remaining": [
+    "Same physical Android cold/warm/offline interactive timings",
+    "No native app/release timing or production network performance claimed"
+  ],
+  "excluded": [
+    "First baseline run overlapped local copy update near its end; isolated baseline retained, final cold-only baseline uses immutable eb8b21e sources",
+    "First candidate collided on existing4173; rerun after completion passed",
+    "Blocked-module fixture initially omitted app.js query suffix, so it did not actually block the app; corrected pattern, final recovery/deadline tests pass",
+    "Initial offline notice overlaid legal text at320px; moved into normal layout and verified geometry/screenshot",
+    "Initial timing/screenshot refinements retained in run logs; final numbers in timing-summary.json; not a lab speed guarantee"
+  ],
+  "productionChanged": false,
+  "playPackageChanged": false
+}

@@ -1,0 +1,22 @@
+{
+  "label": "s025-startup-before-isolated",
+  "command": [
+    "npx",
+    "playwright",
+    "test",
+    "--config",
+    "playwright.baseline.config.mjs",
+    "e2e/startup.spec.mjs",
+    "--workers=2"
+  ],
+  "cwd": ".tmp/remediation-s025/baseline",
+  "startedAt": "2026-10-19T07:15:24.711Z",
+  "finishedAt": "2026-10-19T07:16:19.718Z",
+  "durationMs": 55007,
+  "exitCode": 1,
+  "signal": null,
+  "timedOut": false,
+  "error": null,
+  "log": "docs/remediation/evidence/session-025/s025-startup-before-isolated.log",
+  "environment": "Fresh allowlist, synthetic local API/DB, optional Redis disabled, no inherited secrets or copied .env"
+}

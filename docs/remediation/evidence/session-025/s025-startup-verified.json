@@ -1,0 +1,20 @@
+{
+  "label": "s025-startup-verified",
+  "command": [
+    "npx",
+    "playwright",
+    "test",
+    "e2e/startup.spec.mjs",
+    "--workers=2"
+  ],
+  "cwd": ".tmp/remediation-s025/clean",
+  "startedAt": "2026-10-19T07:15:22.947Z",
+  "finishedAt": "2026-10-19T07:16:03.550Z",
+  "durationMs": 40603,
+  "exitCode": 1,
+  "signal": null,
+  "timedOut": false,
+  "error": null,
+  "log": "docs/remediation/evidence/session-025/s025-startup-verified.log",
+  "environment": "Fresh allowlist, synthetic local API/DB, optional Redis disabled, no inherited secrets or copied .env"
+}

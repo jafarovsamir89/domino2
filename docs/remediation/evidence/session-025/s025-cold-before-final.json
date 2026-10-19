@@ -1,0 +1,23 @@
+{
+  "label": "s025-cold-before-final",
+  "command": [
+    "npx",
+    "playwright",
+    "test",
+    "--config",
+    "playwright.baseline.config.mjs",
+    "e2e/startup.spec.mjs",
+    "--grep",
+    "cold/warm"
+  ],
+  "cwd": ".tmp/remediation-s025/baseline",
+  "startedAt": "2026-10-19T07:26:33.516Z",
+  "finishedAt": "2026-10-19T07:26:43.147Z",
+  "durationMs": 9631,
+  "exitCode": 1,
+  "signal": null,
+  "timedOut": false,
+  "error": null,
+  "log": "docs/remediation/evidence/session-025/s025-cold-before-final.log",
+  "environment": "Fresh allowlist, synthetic local API/DB, optional Redis disabled, no inherited secrets or copied .env"
+}

@@ -1,0 +1,42 @@
+{
+  "variant": "baseline",
+  "scope": "Headless Chromium390x844 synthetic API,3cold/warm pairs; NOT Android/WebView timings. No artificial network throttling. Cold means new browser context, not OS disk-cache purge.",
+  "rows": [
+    {
+      "block": 0,
+      "state": "cold",
+      "uiReadyMs": 169,
+      "actualModalInteractiveMs": 6379.699999928474
+    },
+    {
+      "block": 0,
+      "state": "warm",
+      "uiReadyMs": 73.20000004768372,
+      "actualModalInteractiveMs": 114.90000009536743
+    },
+    {
+      "block": 1,
+      "state": "cold",
+      "uiReadyMs": 95.10000002384186,
+      "actualModalInteractiveMs": 6347.600000023842
+    },
+    {
+      "block": 1,
+      "state": "warm",
+      "uiReadyMs": 66.30000007152557,
+      "actualModalInteractiveMs": 117
+    },
+    {
+      "block": 2,
+      "state": "cold",
+      "uiReadyMs": 89.19999992847443,
+      "actualModalInteractiveMs": 6352.699999928474
+    },
+    {
+      "block": 2,
+      "state": "warm",
+      "uiReadyMs": 67,
+      "actualModalInteractiveMs": 118.70000004768372
+    }
+  ]
+}
