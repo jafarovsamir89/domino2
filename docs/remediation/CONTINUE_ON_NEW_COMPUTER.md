@@ -27,14 +27,15 @@ git pull --ff-only
 2. [AGENT_JOURNAL.md](AGENT_JOURNAL.md) — актуальный контекст, решения, ограничения и следующий шаг.
 3. [WORK_LOG.md](WORK_LOG.md) — история действий и проверок; дополнять, не переписывать.
 4. [REMEDIATION_PLAN.md](../audit/REMEDIATION_PLAN.md) — единый план из 42 карточек.
-5. [Последний результат S027: R-21 и R-23](evidence/session-027/ACCESSIBILITY_DELETION_RESULTS.md).
-6. [Предыдущий результат S026: R-10 и R-18](evidence/session-026/SECURITY_REALTIME_RESULTS.md).
+5. [Последний результат S028: R-20 и R-22](evidence/session-028/LOCAL_SOLO_LOCALIZATION_RESULTS.md).
+6. [Результат S027: R-21 и R-23](evidence/session-027/ACCESSIBILITY_DELETION_RESULTS.md).
+7. [Предыдущий результат S026: R-10 и R-18](evidence/session-026/SECURITY_REALTIME_RESULTS.md).
 
-Полностью закрыты локально **22/42 карточки**. R-09/R-15/R-19/R-25 имеют оставшийся объём. R-10/R-18 частичны по S026. R-21/R-23 частичны по S027: локальный профиль теперь показывает путь удаления, а костяшки и выбор стороны доступны клавиатуре; ещё нужны владелец/Console review и Android TalkBack/320px приёмка. См. S027. Предыдущие продуктовые изменения: `85b10a5` — сохранение денежного итога; `f6a395e` — запуск без обязательной паузы. S026: Android compile требует JDK21, функциональные проверки отложены.
+Полностью закрыты локально **22/42 карточки**. R-09/R-15/R-19/R-25 имеют оставшийся объём. R-20/R-22 частичны по S028: бесплатный solo доступен гостю после startup account-readiness; онлайн остаётся gated; видимые подарки/редкость локализованы AZ/RU/EN. Ещё нужна браузерная/Android приёмка и полный localization review/TR pilot. R-21/R-23 частичны по S027, R-10/R-18 по S026. Предыдущие продуктовые изменения: `85b10a5` — сохранение денежного итога; `f6a395e` — запуск без обязательной паузы. S026: Android compile требует JDK21, функциональные проверки отложены.
 
 Проверено: API **148/148** на Node 22/25; server **390/397** и E2E **53/62** содержат прежние 7/9 падений. Новые 10 браузерных сценариев запуска прошли. Это не полностью зелёный набор. Точные имена и доказательства: [failure-delta.json](evidence/session-025/failure-delta.json), [проверки R-29](evidence/session-024/summary.json), [проверки R-15](evidence/session-025/summary.json).
 
-Следующий шаг — завершить приёмку S026: использовать JDK21 для Android compile; проверить синтетические состояния game token (valid/expired/logout/ban/delete); выбрать и проверить политику для уже начатой партии после отзыва. Для R-18 проверить разрешение микрофона на Android и ICE через Wi-Fi/LTE с relay-only TURN. По S027 подтвердить у владельца mailbox/deletion/retention policy и Google Play Console, а затем проверить 320px и TalkBack на Android. S027 статические проверки pass; продуктовые тесты не запускались. Последний размер пакета — два пункта.
+Следующий шаг — проверить guest solo start/resume и online/coin denial в изолированном браузере; проверить 320px/TalkBack на Android при наличии устройства; запросить владельческий/Console review для S027 до публикации. Параллельно продолжить S026: JDK21 Android compile, synthetic token states and active-room policy, mic/NAT/TURN. S028 static checks pass; product/E2E tests were not run. Последний размер пакета — два пункта.
 
 Телефонные замеры запуска R-15 и внешняя приёмка звука R-19 остаются открытыми. Владелец разрешил продолжать без телефона; не блокировать этим независимую работу и не выдавать браузерные результаты за Android.
 
@@ -67,4 +68,4 @@ PostgreSQL/Redis нужны только соответствующим пров
 
 ## Сообщение для нового агента
 
-> Продолжи исправления Domino в ветке fix/audit-foundation. Сначала прочитай AGENTS.md, docs/remediation/CONTINUE_ON_NEW_COMPUTER.md и указанные там журналы и план. Игра работает на сервере, около 50 пользователей: изменения готовим и проверяем локально, без production-деплоя. При наличии Android проверь S027: TalkBack/320px для R-23; по R-21 владелец должен подтвердить mailbox/deletion/retention policy и Google Play Console. Затем продолжи приёмку частичных R-10/R-18 по `evidence/session-026/SECURITY_REALTIME_RESULTS.md`: JDK21, синтетические token boundary cases и политика уже начатой партии, затем mic/NAT/TURN проверки. Веди журналы и объясняй результат простым русским языком. Не считать физическую приёмку выполненной без реальных проверок.
+> Продолжи исправления Domino в ветке fix/audit-foundation. Сначала прочитай AGENTS.md, docs/remediation/CONTINUE_ON_NEW_COMPUTER.md и указанные там журналы и план. Игра работает на сервере, около 50 пользователей: изменения готовим локально, без production-деплоя. Сначала проверь S028 guest solo start/resume и online/coin denial изолированным браузером, затем продолжи приёмку частичных R-20/R-22. При наличии Android проверь S027 TalkBack/320px для R-23; по R-21 владелец должен подтвердить mailbox/deletion/retention policy и Google Play Console. Продолжи S026 по `evidence/session-026/SECURITY_REALTIME_RESULTS.md`: JDK21, синтетические token cases и политика уже начатой партии, затем mic/NAT/TURN. Веди журналы и объясняй результат простым русским языком. Не считать приёмку выполненной без реальных проверок.

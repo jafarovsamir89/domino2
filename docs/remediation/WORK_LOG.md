@@ -333,3 +333,14 @@ Correction to S024 prose above: API148/146 was a documentation typo; final resul
 **Проверка:** `npm run check`, `node --check js/renderer.js`, `node --check js/translations.js`, `git diff --check` прошли. Шесть root/www пар совпадают побайтно. Продуктовые тесты, браузер и Android/TalkBack не запускались. Полный отчёт: `evidence/session-027/ACCESSIBILITY_DELETION_RESULTS.md`; summary — `summary.json`.
 
 Для пользователя: теперь можно найти, как попросить удалить аккаунт, а игру можно выбирать с клавиатуры/экранного диктора. Запрос пока отправляется вручную по email, и речь TalkBack нужно проверить на телефоне. Общий статус остаётся 22/42 полностью закрытыми; R21/R23 пока не добавлены к числу завершённых.
+# S028 — 2026-10-19 — R-20 и R-22, локальная доработка
+
+Поручение пользователя: продолжить и сделать ещё два пункта. Ветка `fix/audit-foundation`, перед началом чистый HEAD `3828192`. Выбраны бесплатная solo без обязательного аккаунта и целевые пробелы AZ/RU/EN локализации. Production/Play не менялись.
+
+**R-20:** на гостевой стартовой странице теперь остаётся кнопка бесплатной solo и краткая AZ/RU/EN подсказка. Online/coin/магазинные действия остаются скрытыми; обработчик solo пропускает auth только для `free`, проверка для других режимов сохранена. Старт solo без зарегистрированного профиля не дёргает повторный profile refresh, prepare stake разрешает бесплатный режим без токена, а гостевой local solo больше не публикует local-presence heartbeat. Подлинность online всё ещё требует аккаунт. Статус частичный: startup account readiness пока остаётся предварительным условием; browser/Android/E2E не проверены.
+
+**R-22:** добавлены локальные подписи AZ/RU/EN для возврата в игру, гостевой free-solo поясняющей строки, 12 placeholder gift names, rarity common/rare/epic, inventory quantity/empty state/shop controls. Исправлена подпись RU количества ботов; AZ — `Botların sayı`. Raw API gift key/name/rarity больше не видны на целевых UI карточках; outgoing note/event остаётся canonical. Полный language sweep, long-label/plural review и TR native-speaker pilot остаются открытыми.
+
+**Проверка:** `npm run check`, `node --check js/app.js`, `node --check js/translations.js`, статическая проверка ключей AZ/EN/RU и `git diff --check` прошли. Root/www парность проверена после копирования. Продуктовые/E2E тесты, живой браузер и Android не запускались. Полный отчёт: `evidence/session-028/LOCAL_SOLO_LOCALIZATION_RESULTS.md`, summary: `summary.json`.
+
+Для владельца: теперь можно запустить бесплатную игру с ботами без регистрации, при этом онлайн и монетные действия не открываются гостю. В разделе подарков вместо технических английских слов появились переводы. На экране входа по-прежнему выполняется стартовая проверка аккаунта; игру на телефоне и перевод человеком ещё не проверяли. Общий статус остаётся 22/42 закрытыми полностью; R20/R22 пока частичные.

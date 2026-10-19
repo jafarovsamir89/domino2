@@ -1,0 +1,32 @@
+{
+  "session": "S028",
+  "date": "2026-10-19",
+  "cards": {
+    "R-20": "partial-local",
+    "R-22": "partial-local"
+  },
+  "fullyClosedCards": 22,
+  "totalCards": 42,
+  "productionDeployed": false,
+  "playStoreChanged": false,
+  "checks": {
+    "npmRunCheck": "passed",
+    "rootAppAndTranslationsSyntax": "passed",
+    "localizedKeyCoverage": "passed for AZ/EN/RU and 12 gift IDs",
+    "gitDiffCheck": "passed",
+    "productTests": "not run",
+    "browserAndAndroidAcceptance": "not run"
+  },
+  "remainingAcceptance": {
+    "R-20": [
+      "Verify guest free solo starts and resumes without account credentials",
+      "Verify guest cannot enter online or coin flows",
+      "Measure remaining initial account-readiness delay and decide whether solo can start earlier"
+    ],
+    "R-22": [
+      "Review all screens for mixed languages and raw translation keys",
+      "Check long labels and plural forms at narrow widths",
+      "Native-speaker review and separate Turkish pilot"
+    ]
+  }
+}

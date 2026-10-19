@@ -878,7 +878,26 @@ html[data-domino-start-mode="classic101"] #start-screen .start-hero-face-back {
 }
 
 #start-screen.auth-required .start-actions {
+    display: flex;
+    justify-content: center;
+}
+
+#start-screen.auth-required .start-actions > :not(#open-solo-modal-btn) {
+    display: none !important;
+}
+
+#start-screen .guest-solo-note {
     display: none;
+}
+
+#start-screen.auth-required .guest-solo-note {
+    display: block;
+    width: min(100% - 32px, 560px);
+    margin: 12px auto 0;
+    color: var(--text-dim);
+    font-size: 0.86rem;
+    line-height: 1.45;
+    text-align: center;
 }
 
 #start-screen.auth-required #start-mode-hero,

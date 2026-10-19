@@ -1,6 +1,6 @@
 # Agent journal: current handoff
 
-Updated 2026-10-19 after S027. Read this, then append-only WORK_LOG.md and docs/audit/REMEDIATION_PLAN.md. Latest request completed two more points, R-21 and R-23, partially locally. Keep explaining each result simply in Russian. The user previously said to continue without the Android phone; don't ask again or claim phone/TalkBack acceptance. S026/R10/R18 acceptance remains as recorded below. Latest details: `evidence/session-027/ACCESSIBILITY_DELETION_RESULTS.md`.
+Updated 2026-10-19 after S028. Read this, then append-only WORK_LOG.md and docs/audit/REMEDIATION_PLAN.md. Latest request completed two more points, R-20 and R-22, partially locally. Keep explaining each result simply in Russian. The user previously said to continue without the Android phone; don't claim phone/browser acceptance unless performed. S026/R10/R18 and S027/R21/R23 acceptance remains as recorded below. Latest details: `evidence/session-028/LOCAL_SOLO_LOCALIZATION_RESULTS.md`.
 
 ## Authorization and Git
 
@@ -62,6 +62,12 @@ After audit-plan edits run validate-audit.mjs, update only existing347SHA manife
 - Root and `www` copies are byte-identical for six pairs. `npm run check`, renderer/translations syntax, and `git diff --check` passed. Product tests and live/browser/device checks were not run. Android TalkBack and actual 320px layout acceptance remain open, so neither card counts as fully closed. Report: `evidence/session-027/ACCESSIBILITY_DELETION_RESULTS.md`.
 - Total remains **22/42 fully closed**. No production or Play change.
 
+## S028 current status — R-20 and R-22 partial
+
+- R-20 guest home now exposes a solo-only button and AZ/RU/EN copy explaining free solo vs account-only online/coin features. Free solo bypasses account-token checks, account refresh and guest presence heartbeats. Online handlers remain account-gated. Initial `bootstrapAccount` readiness still gates the screen, so “solo before auth” is not complete; no browser/Android/E2E acceptance was run. Current solo economy selector remains hardcoded to free. Report: `evidence/session-028/LOCAL_SOLO_LOCALIZATION_RESULTS.md`.
+- R-22 visible dynamic gift strings now localize known `gift_001`–`gift_012` labels, `common/rare/epic`, inventory quantity, empty-state and catalog/inventory controls for AZ/RU/EN. `resume-session-return` is in the primary translation source; Russian bot-count label is translated. Canonical outgoing gift name/payload stays unchanged. This is not a full-screen language audit; narrow-width/native-speaker/Turkish checks are open.
+- `npm run check`, root app/translation syntax, targeted locale-key presence and `git diff --check` pass after root/www parity. Product tests, browser and device acceptance were not run. Overall remains **22/42 fully closed**; no production/Play changes.
+
 ## Exact next action
 
-Continue R-10/R-18 acceptance in a fresh local proof session: find a local JDK21 and compile Android; add/run synthetic API/server checks for valid, expired, logged-out, banned and deleted-user tokens; separately decide whether active rooms continue, forfeit, or transition safely after revocation. Then validate microphone permission for allowed/denied/navigation cases on Android and test ICE across Wi-Fi/LTE including relay-only TURN. Preserve the three-second fail-closed API join behavior and ensure API rollout precedes game-server rollout. Do not deploy to production or Play. R15 physical cold/warm/offline startup acceptance is still deferred; proceed with independent code tasks while the device is unavailable.
+Continue acceptance of partial cards without delaying unrelated local fixes: for S028 verify guest solo start/resume and online/coin blocking in isolated browser; then inspect the remaining account-readiness delay and all locales at narrow widths. For S027 verify TalkBack/320px when device is available and get owner/Console deletion-policy review before publication. Continue S026 with JDK21 Android compile and synthetic valid/expired/logout/ban/delete token checks; choose active-room revocation policy, then mic allow/deny and Wi-Fi/LTE relay-only NAT checks. Preserve fail-closed auth and API-first rollout. Do not deploy to production or Play. R15 Android startup and R19 external audio acceptance remain deferred.

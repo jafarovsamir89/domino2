@@ -1164,11 +1164,10 @@ class DominoGame {
         document.getElementById('start-game-btn')?.addEventListener('click', async () => {
             const name = this.requirePlayerName('solo');
             if (!name) return;
-            const profile = await this.requireRegisteredAccount('account-registration-required');
-            if (!profile) return;
+            const soloSelection = this.readSoloEconomySelectionFromUi();
+            if (soloSelection.mode !== 'free' && !await this.requireRegisteredAccount('account-registration-required')) return;
             this.playerName = name;
             this.isTeamMode = false;
-            const soloSelection = this.readSoloEconomySelectionFromUi();
             this.soloEconomyMode = soloSelection.mode;
             this.soloStakeKey = soloSelection.stakeKey;
             this.syncSoloOptions();
@@ -10323,7 +10322,7 @@ class DominoGame {
     }
 
     async syncLocalPresence(force = false) {
-        if (this.network.isMultiplayer) return;
+        if (this.network.isMultiplayer || !this.hasAuthenticatedAccount()) return;
         const localSessionId = this.getActivePresenceSessionId()
             || this.account?.getOrCreateLocalGameSessionId?.()
             || this.accountProfile?.sessionId
@@ -10364,7 +10363,7 @@ class DominoGame {
     async clearLocalPresence() {
         this.localPresenceLastSentAt = 0;
         this.localPresenceClearQueued = false;
-        if (this.network.isMultiplayer) return;
+        if (this.network.isMultiplayer || !this.hasAuthenticatedAccount()) return;
         const localSessionId = this.getActivePresenceSessionId()
             || this.account?.getOrCreateLocalGameSessionId?.()
             || this.accountProfile?.sessionId
@@ -16556,7 +16555,7 @@ class DominoGame {
             buyBtn.className = 'btn btn-secondary';
             buyBtn.style.padding = '6px 12px';
             buyBtn.style.fontSize = '0.85em';
-            buyBtn.textContent = 'Купить подарок';
+            buyBtn.textContent = this.t('gift-buy');
             buyBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
                 this.giftPickerMode = 'catalog';
@@ -16569,7 +16568,7 @@ class DominoGame {
             vaultBtn.className = 'btn btn-secondary';
             vaultBtn.style.padding = '6px 12px';
             vaultBtn.style.fontSize = '0.85em';
-            vaultBtn.textContent = 'Подарки из инвентаря';
+            vaultBtn.textContent = this.t('gift-picker-inventory');
             vaultBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
                 this.giftPickerMode = 'inventory';
@@ -16591,13 +16590,13 @@ class DominoGame {
                 const desc = document.createElement('div');
                 desc.className = 'modal-desc';
                 desc.style.marginBottom = '15px';
-                desc.textContent = 'У вас нет полученных подарков. Вы можете купить подарок за монеты.';
+                desc.textContent = this.t('gift-inventory-empty-desc');
                 noGiftsContainer.appendChild(desc);
 
                 const buyBtn = document.createElement('button');
                 buyBtn.type = 'button';
                 buyBtn.className = 'btn btn-primary';
-                buyBtn.textContent = 'Купить подарок';
+                buyBtn.textContent = this.t('gift-buy');
                 buyBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
                     this.giftPickerMode = 'catalog';
@@ -16619,19 +16618,19 @@ class DominoGame {
                     
                     const name = document.createElement('div');
                     name.className = 'gift-choice-name';
-                    name.textContent = gift.name;
+                    name.textContent = this.getLocalizedGiftName(gift);
                     
                     const meta = document.createElement('div');
                     meta.className = 'gift-choice-meta';
                     meta.textContent = this.format('gift-choice-meta', {
-                        rarity: gift.rarity || 'common',
+                        rarity: this.getLocalizedGiftRarity(gift.rarity),
                         exchangeValue: gift.exchangeValue || 0
                     });
                     
                     const count = document.createElement('div');
                     count.className = 'gift-choice-cost';
                     count.style.color = 'var(--color-primary, #00C853)';
-                    count.textContent = `Количество: ${item.quantity}`;
+                    count.textContent = this.format('gift-inventory-count', { quantity: item.quantity });
                     
                     card.appendChild(visual);
                     card.appendChild(name);
@@ -16670,12 +16669,12 @@ class DominoGame {
                     
                     const name = document.createElement('div');
                     name.className = 'gift-choice-name';
-                    name.textContent = gift.name;
+                    name.textContent = this.getLocalizedGiftName(gift);
                     
                     const meta = document.createElement('div');
                     meta.className = 'gift-choice-meta';
                     meta.textContent = this.format('gift-choice-meta', {
-                        rarity: gift.rarity || 'common',
+                        rarity: this.getLocalizedGiftRarity(gift.rarity),
                         exchangeValue: gift.exchangeValue || 0
                     });
                     
@@ -16939,10 +16938,9 @@ class DominoGame {
             copy.className = 'gift-inventory-copy';
             const name = document.createElement('div');
             name.className = 'gift-inventory-name';
-            name.textContent = item.catalog?.name || item.catalog?.key || this.t('gift-button');
+            name.textContent = this.getLocalizedGiftName(item.catalog);
             const meta = document.createElement('div');
             meta.className = 'gift-inventory-meta';
-            meta.textContent = `${item.quantity || 0} pcs вЂў back ${item.catalog?.exchangeValue || 0}`;
             copy.appendChild(name);
             copy.appendChild(meta);
             top.appendChild(thumb);
@@ -16951,7 +16949,6 @@ class DominoGame {
             actions.className = 'gift-inventory-actions';
             const cost = document.createElement('span');
             cost.className = 'gift-cost-chip';
-            cost.textContent = `${Math.max(0, item.catalog?.exchangeValue || 0)} coins`;
             meta.textContent = this.format('gift-inventory-meta', {
                 quantity: item.quantity || 0,
                 exchangeValue: item.catalog?.exchangeValue || 0
@@ -17083,6 +17080,23 @@ class DominoGame {
     }
     getGiftAssetKey(gift) {
         return String(gift?.assetKey || gift?.key || 'gift_001').trim() || 'gift_001';
+    }
+    getLocalizedGiftName(gift) {
+        const giftKey = String(gift?.key || gift?.assetKey || gift?.giftKey || '').trim().toLowerCase();
+        const match = giftKey.match(/^gift_(\d{3})$/);
+        if (match) {
+            const key = `gift-name-${match[1]}`;
+            const translated = this.t(key);
+            if (translated !== key) return translated;
+        }
+        return String(gift?.name || gift?.key || this.t('gift-button'));
+    }
+    getLocalizedGiftRarity(rarity) {
+        const normalized = String(rarity || 'common').trim().toLowerCase();
+        if (['common', 'rare', 'epic'].includes(normalized)) {
+            return this.t(`gift-rarity-${normalized}`);
+        }
+        return String(rarity || this.t('gift-rarity-common'));
     }
     getGiftAssetVersionSuffix() {
         const version = encodeURIComponent(DOMINO_CLIENT_BUILD.cacheFixVersion || DOMINO_CLIENT_BUILD.socialRealtimeDebugVersion || '');
@@ -17265,7 +17279,7 @@ class DominoGame {
         const resolvedOptions = typeof size === 'number' ? options : (size || {});
         const rawAssetKey = String(gift?.assetKey || gift?.key || 'gift_001').trim() || 'gift_001';
         const assetKey = rawAssetKey.replace(/\.(png|webp|gif|svg|webm|mp4)$/i, '');
-        const label = String(gift?.name || gift?.key || 'Gift').trim() || 'Gift';
+        const label = this.getLocalizedGiftName(gift);
         const safeLabel = label
             .replace(/&/g, '&amp;')
             .replace(/"/g, '&quot;')
@@ -17320,7 +17334,7 @@ class DominoGame {
             video.poster = this.getGiftPreviewAssetPath(gift) || this.getGiftStillAssetPath(gift);
             video.dataset.giftOriginalSrc = animatedPath;
             video.dataset.giftFallbackSrc = this.getGiftStillAssetPath(gift);
-            video.dataset.giftFallbackLabel = String(gift?.name || gift?.key || 'Gift').trim() || 'Gift';
+            video.dataset.giftFallbackLabel = this.getLocalizedGiftName(gift);
             video.setAttribute('playsinline', '');
             video.setAttribute('webkit-playsinline', '');
             video.setAttribute('muted', '');
@@ -17328,7 +17342,7 @@ class DominoGame {
             video.setAttribute('loop', '');
             video.setAttribute('disablepictureinpicture', '');
             video.setAttribute('disableremoteplayback', '');
-            video.setAttribute('aria-label', String(gift?.name || gift?.key || 'Gift').trim() || 'Gift');
+            video.setAttribute('aria-label', this.getLocalizedGiftName(gift));
             video.setAttribute('aria-hidden', 'true');
             icon.appendChild(video);
             const startVideo = () => {
@@ -17376,10 +17390,10 @@ class DominoGame {
         label.className = 'gift-burst-label';
         label.textContent = `${senderName || 'Player'} -> ${recipientName || 'Player'}`;
         burst.appendChild(label);
-        if (gift?.name) {
+        if (gift?.name || gift?.key || gift?.giftKey || gift?.assetKey) {
             const chip = document.createElement('div');
             chip.className = 'gift-burst-chip';
-            chip.textContent = gift.name;
+            chip.textContent = this.getLocalizedGiftName(gift);
             burst.appendChild(chip);
         }
         this.reactionStage.appendChild(burst);
@@ -17573,7 +17587,7 @@ class DominoGame {
         const dlossInput = parseInt(document.getElementById('dloss-setting').value, 10);
         this.dlossThreshold = isNaN(dlossInput) ? 255 : dlossInput;
 
-        await this.loadAccountProfile();
+        if (this.hasAuthenticatedAccount()) await this.loadAccountProfile();
         const stakePreparation = await this.prepareSoloEconomyStake();
         if (!stakePreparation?.ok) {
             document.getElementById('game-screen').classList.remove('active');
@@ -17600,19 +17614,25 @@ class DominoGame {
     }
 
     async prepareSoloEconomyStake() {
-        await this.loadAccountProfile();
-        const token = this.account?.getRoomAuthToken?.();
-        if (!token) {
-            await this.requireRegisteredAccount('account-registration-required');
-            return { ok: false, reason: 'auth_required' };
+        const selection = this.readSoloEconomySelectionFromUi();
+        if (selection.mode !== 'free') {
+            if (!this.hasAuthenticatedAccount()) {
+                await this.requireRegisteredAccount('account-registration-required');
+                return { ok: false, reason: 'auth_required' };
+            }
+            await this.loadAccountProfile();
+            if (!this.account?.getRoomAuthToken?.()) {
+                await this.requireRegisteredAccount('account-registration-required');
+                return { ok: false, reason: 'auth_required' };
+            }
         }
 
-        this.soloStakeKey = 'free';
-        this.soloEconomyMode = 'free';
-        this.activeMatchEconomyMode = 'free';
-        this.activeMatchStakeKey = 'free';
+        this.soloStakeKey = selection.stakeKey;
+        this.soloEconomyMode = selection.mode;
+        this.activeMatchEconomyMode = selection.mode;
+        this.activeMatchStakeKey = selection.stakeKey;
         this.syncSoloOptions();
-        return { ok: true, mode: 'free', stakeKey: 'free' };
+        return { ok: true, mode: selection.mode, stakeKey: selection.stakeKey };
     }
     async reserveSoloRoundStake() {
         this.currentRoundStakeKey = 'free';
@@ -17968,7 +17988,7 @@ class DominoGame {
             "label-online": { az: "Bağlı otaqlar", en: "Private rooms" },
             "label-online-help": { az: "Create a room or join with a code", en: "Create a room or join with a code" },
             "label-online-players": { az: "Room size", en: "Room size" },
-            "label-ai-slots": { az: "AI slots", en: "AI slots" },
+            "label-ai-slots": { az: "Botların sayı", en: "AI slots", ru: "Количество ботов" },
             "label-mode": { az: "Mode", en: "Mode" },
             "mode-ffa": { az: "Free for all", en: "Free for all" },
             "mode-team": { az: "2 vs 2", en: "2 vs 2" },
@@ -18056,7 +18076,7 @@ class DominoGame {
             "online-room-status-connecting": { az: "Connecting...", en: "Connecting..." },
             "online-room-status-joined": { az: "Connected. Waiting for the room to fill", en: "Connected. Waiting for the room to fill" },
             "online-room-status-error": { az: "Error", en: "Error" },
-            "online-room-cancel": { az: "Cancel", en: "Cancel" },
+            "online-room-cancel": { az: "Ləğv et", en: "Cancel", ru: "Отмена" },
             "online-room-back": { az: "Back", en: "Back" },
             "online-room-code-placeholder": { az: "ABCD", en: "ABCD" },
             "online-room-create-hint": { az: "Share the room code with a friend", en: "Share the room code with a friend" },
