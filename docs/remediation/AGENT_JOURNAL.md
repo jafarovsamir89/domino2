@@ -1,12 +1,12 @@
 # Agent journal: current handoff
 
-Updated 2026-10-19. Read this, then append-only WORK_LOG.md and docs/audit/REMEDIATION_PLAN.md. Latest request was two more items. S024/R29 and S025/R15 local work is done; R15 physical acceptance remains explicitly deferred by the user (ADB empty, answer: continue without the phone). Explain each result simply in Russian. Do not start another batch automatically.
+Updated 2026-10-19. Read this, then append-only WORK_LOG.md and docs/audit/REMEDIATION_PLAN.md. Latest request is commit/push and a portable handoff for another computer; no new implementation batch is authorized by that request. S024/R29 and S025/R15 local work is done; R15 physical acceptance remains explicitly deferred by the user (ADB empty, answer: continue without the phone). Explain each result simply in Russian. Do not start another batch automatically.
 
 ## Authorization and Git
 
 Owner's deployed Domino has about50 users. Local fixes, synthetic tests, separate .audit Android app and feature-branch commits/push authorized. Production deploy/migrations, real wallet edits or installed Play package changes require direct instruction. No Codex plugins installed or agents spawned; neither requested. No .env/real tokens/signing keys/production data in tests or Git.
 
-Branch fix/audit-foundation, origin https://github.com/jafarovsamir89/domino2. S022/S023 pushed eb8b21e. S024 monetary outbox checkpoint85b10a5. S025 final subject fix(startup): replace splash delay with bounded readiness and retry; get hash from git log after push. Confirm clean status/origin match before continuation.
+Branch fix/audit-foundation, origin https://github.com/jafarovsamir89/domino2. S022/S023 pushed eb8b21e. S024 monetary outbox checkpoint85b10a5. S025 startup checkpoint f6a395e is pushed and verified. Portable setup and a ready-to-paste agent prompt: CONTINUE_ON_NEW_COMPUTER.md. Confirm clean status/origin match before continuation.
 
 22/42 cards closed locally: R01,R02,R03,R04,R05,R06,R07,R08,R11,R12,R13,R14,R16,R17,R27,R29,R31,R32,R39,R40,R41,R42. Remaining scope: R09 verified-ad/SSV (unverified x2 disabled), R15 same-device Android startup acceptance, R19 external call/Bluetooth/audio-focus, R25 old failures/CI.16other cards open. No production release or all-green CI claim.
 
@@ -39,7 +39,7 @@ No broad test repeats needed absent new source changes. Seven/nine old failures 
 
 ## Environment and cleanup
 
-Main node_modules old. Reuse .tmp/remediation-s014/final verified updated root/server + nested apps/api dependencies in clean copies; do not reinstall unnecessarily. S024/clean and S025/clean use symlinks. S025/baseline has immutable eb8b21e startup sources; leave it baseline. API tests rebuild/remove dist: do NOT run PG imports concurrently with that rebuild. Root API requires nested TS5; root-only picks TS6 and false baseUrl failure.
+On another computer, follow CONTINUE_ON_NEW_COMPUTER.md: ignored .tmp caches and symlinks are NOT in Git. Install fresh from both lockfiles in a new isolated copy; do not look for the old Mac paths. On this original machine, main node_modules are old. Reuse .tmp/remediation-s014/final verified updated root/server + nested apps/api dependencies in clean copies; do not reinstall unnecessarily. S024/clean and S025/clean use symlinks. S025/baseline has immutable eb8b21e startup sources; leave it baseline. API tests rebuild/remove dist: do NOT run PG imports concurrently with that rebuild. Root API requires nested TS5; root-only picks TS6 and false baseUrl failure.
 
 Owned PostgreSQL14.20 .tmp/remediation-s002/pg,127.0.0.1:55439 STOPPED (session024/s024-pg-stop.json). Synthetic drill DBs are used, not fresh. Redis not started. Owned ephemeral previews4173/4176/4177 and port0 game workers exited; unrelated user4174 retained. Phone absent, no ADB/Play changes. No plugins installed. Source scripts/test outputs are guarded localhost and synthetic identities only.
 
@@ -49,4 +49,4 @@ After audit-plan edits run validate-audit.mjs, update only existing347SHA manife
 
 ## Exact next action
 
-Confirm final two checkpoints pushed and clean status, then batch finished. On the next continuation first candidate is R10 game-admission revocation contract (logout/ban/delete SLA and live-room checks, without a DB request per move); read its card and auth/session implementations before editing. R15 phone cold/warm/offline acceptance can be done when the device returns; user explicitly deferred it now, do not block unrelated work. R09/R19/R25 scopes remain open. Production rollout is a separate directly authorized action, with R29 persistent-volume/API-order prerequisites above.
+Implementation checkpoints 85b10a5 and f6a395e are pushed; this turn only prepares the portable documentation handoff. Confirm its push and clean status, then stop. On the next continuation first candidate is R10 game-admission revocation contract (logout/ban/delete SLA and live-room checks, without a DB request per move); read its card and auth/session implementations before editing. R15 phone cold/warm/offline acceptance can be done when the device returns; user explicitly deferred it now, do not block unrelated work. R09/R19/R25 scopes remain open. Production rollout is a separate directly authorized action, with R29 persistent-volume/API-order prerequisites above.

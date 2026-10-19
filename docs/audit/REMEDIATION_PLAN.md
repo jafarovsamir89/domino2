@@ -226,7 +226,7 @@ Status: **fixed locally, S013**. API emits versioned per-player stake/returnedSt
 
 #### R-29 · P1 · Durable outbox и reconciliation результата
 
-Статус: **исправлено локально, S024**. Неизменяемый fsynced intent до HTTP, отдельный receipt после ok, фоновая reconciliation при запуске без живой комнаты/токена игрока. Fresh PostgreSQL: kill до/после commit, потерянный ответ, timeout, restart,20дублей и новый match проверены на Node25/22; настоящий server startup replay — Node22. API148/146, server390/397 — прежние7падений. [Приёмка](../remediation/evidence/session-024/summary.json), [обязательный постоянный том и границы](../remediation/evidence/session-024/OUTBOX_OPERATIONS.md). Production не менялся. Отдельная статистика/утраченное UI-событие не входят в гарантию денежной доставки.
+Статус: **исправлено локально, S024**. Неизменяемый fsynced intent до HTTP, отдельный receipt после ok, фоновая reconciliation при запуске без живой комнаты/токена игрока. Fresh PostgreSQL: kill до/после commit, потерянный ответ, timeout, restart,20дублей и новый match проверены на Node25/22; настоящий server startup replay — Node22. API148/148, server390/397 — прежние7падений. [Приёмка](../remediation/evidence/session-024/summary.json), [обязательный постоянный том и границы](../remediation/evidence/session-024/OUTBOX_OPERATIONS.md). Production не менялся. Отдельная статистика/утраченное UI-событие не входят в гарантию денежной доставки.
 
 - **Изменение:** Сохранить результат до уничтожения room/process и доставлять его повторяемо через durable outbox/reconciliation. Начать с локальных сбоя API/процесса и проверки одного итога. Обычный 30-минутный soak не закрыл этот fault drill.
 - **Где:** `DominoRoom.js:3108–3164,4337`.
