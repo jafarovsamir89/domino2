@@ -275,6 +275,64 @@ test("AuthService.getCurrentProfile accepts platform game bearer tokens when coo
   assert.equal(result.session.token, "session-token-db");
 });
 
+test("AuthService.validateGameToken accepts only a live matching session, player, and unbanned account", async () => {
+  const claims = {
+    userId: "user-validate",
+    playerId: "player-validate",
+    displayName: "Validation Player",
+    role: "player",
+    sessionId: "session-validate",
+    provider: "better-auth" as const,
+    issuedAt: Date.now(),
+    expiresAt: Date.now() + 60_000
+  };
+  const token = createGameToken(claims);
+  const liveSession = {
+    id: claims.sessionId,
+    userId: claims.userId,
+    expiresAt: new Date(Date.now() + 60_000)
+  };
+  const matchingPlayer = { id: claims.playerId, userId: claims.userId };
+
+  const makeService = (records: { session?: any; player?: any; ban?: any }) => {
+    const queries = { session: 0, player: 0, ban: 0 };
+    const service = new AuthService({
+      session: { findUnique: async () => { queries.session++; return records.session ?? null; } },
+      player: { findUnique: async () => { queries.player++; return records.player ?? null; } },
+      playerBan: { findFirst: async (query: any) => {
+        queries.ban++;
+        assert.equal(query.where.playerId, claims.playerId);
+        assert.equal(query.where.revokedAt, null);
+        assert.equal(query.where.OR[0].expiresAt, null);
+        assert.ok(query.where.OR[1].expiresAt.gt instanceof Date);
+        return records.ban ?? null;
+      } }
+    } as any);
+    return { service, queries };
+  };
+
+  const valid = makeService({ session: liveSession, player: matchingPlayer });
+  assert.deepEqual(await valid.service.validateGameToken(token), { valid: true, expiresAt: claims.expiresAt });
+  assert.deepEqual(valid.queries, { session: 1, player: 1, ban: 1 });
+
+  for (const [name, records] of [
+    ["missing session", { session: null, player: matchingPlayer }],
+    ["expired session", { session: { ...liveSession, expiresAt: new Date(Date.now() - 1) }, player: matchingPlayer }],
+    ["wrong session owner", { session: { ...liveSession, userId: "different-user" }, player: matchingPlayer }],
+    ["deleted player", { session: liveSession, player: null }],
+    ["wrong player owner", { session: liveSession, player: { ...matchingPlayer, userId: "different-user" } }],
+    ["active ban", { session: liveSession, player: matchingPlayer, ban: { id: "active-ban" } }]
+  ] as const) {
+    const rejected = makeService(records);
+    await assert.rejects(rejected.service.validateGameToken(token), (error: any) => error?.getStatus?.() === 401, name);
+  }
+
+  const expiredToken = createGameToken({ ...claims, expiresAt: Date.now() - 1 });
+  const expired = makeService({ session: liveSession, player: matchingPlayer });
+  await assert.rejects(expired.service.validateGameToken(expiredToken), (error: any) => error?.getStatus?.() === 401);
+  assert.deepEqual(expired.queries, { session: 0, player: 0, ban: 0 });
+});
+
 test("AuthService.updateCurrentProfileAvatar rejects non-image https URLs", async () => {
   const originalFetch = global.fetch;
   const prismaMock = {

@@ -1,6 +1,6 @@
 # Agent journal: current handoff
 
-Updated 2026-10-19 after S029. Read this, then append-only WORK_LOG.md and docs/audit/REMEDIATION_PLAN.md. Latest physical-device acceptance is partial R-23: actual Android Chrome at 320 CSS px retained full-size dominoes and a horizontal swipe revealed the last tile. TalkBack announcement/focus acceptance remains open. Test used a disposable localhost-only preview with synthetic API responses, not the installed audit/Play package or native WebView. Original device display and TalkBack state restored; ADB mappings removed. Details: `evidence/session-029/ANDROID_ACCESSIBILITY_RESULTS.md`. Continue explaining each result simply in Russian. Latest implementation batches remain S026/S027/S028; reports below retain their status.
+Updated 2026-10-19 after S030. Read this, then append-only WORK_LOG.md and docs/audit/REMEDIATION_PLAN.md. Latest code work strengthens partial R-10 and R-18 with regression tests and extracts the ICE config builder into a pure module. `evidence/session-030/SECURITY_VOICE_REGRESSION_RESULTS.md`. Device acceptance S029 is partial R-23: Android Chrome at 320 CSS px keeps full-size dominoes and a horizontal swipe reveals the last tile; TalkBack speech/focus remains open. S029 used a disposable localhost-only synthetic preview, not the installed audit/Play package or native WebView. Device display/TalkBack state was restored and mappings removed. Keep explaining each result simply in Russian. Total remains 22/42 fully closed; no production or Play changes.
 
 ## Authorization and Git
 
@@ -68,6 +68,18 @@ After audit-plan edits run validate-audit.mjs, update only existing347SHA manife
 - R-22 visible dynamic gift strings now localize known `gift_001`–`gift_012` labels, `common/rare/epic`, inventory quantity, empty-state and catalog/inventory controls for AZ/RU/EN. `resume-session-return` is in the primary translation source; Russian bot-count label is translated. Canonical outgoing gift name/payload stays unchanged. This is not a full-screen language audit; narrow-width/native-speaker/Turkish checks are open.
 - `npm run check`, root app/translation syntax, targeted locale-key presence and `git diff --check` pass after root/www parity. Product tests, browser and device acceptance were not run. Overall remains **22/42 fully closed**; no production/Play changes.
 
+## S029 current status — R-23 Android Chrome layout partial
+
+- Actual connected Android Chrome opened current tracked assets through a temporary localhost-only preview with synthetic API responses. At 320 CSS px dominoes retained their touch size and horizontal swipe revealed the final tile; normal 393px layout also captured.
+- This is browser-based Android evidence, not the installed Capacitor WebView or audit APK. TalkBack's first-run guide interrupted speech/focus acceptance; service and display size were restored. No production calls or Play changes.
+- Report and three visual captures: `evidence/session-029/ANDROID_ACCESSIBILITY_RESULTS.md`. R-23 remains partial; total still22/42.
+
+## S030 current status — R-10 and R-18 regression coverage
+
+- R-10 API validation tests now cover a live matching signed token/session/player and rejects expired token, missing/expired session, owner mismatch, deleted/mismatched player and active ban. Expired-token rejection is confirmed to happen before DB calls. Auth service tests6/6 and TypeScript compile pass.
+- R-18 moved the same ICE config builder to `server/voice-config.js` and added direct tests for accepted URL shapes/schemes, TURN credentials, bad JSON/schemes, deduplication and bounds. Focused server voice tests4/4 pass; root `npm run check` and syntax checks pass.
+- Both cards remain partial: Colyseus join boundary and active-game policy remain for R-10; Android Java21 build/origin prompt, real microphone UI and Wi-Fi/LTE/TURN remain for R-18. No microphone prompt or production/Play request. Report: `evidence/session-030/SECURITY_VOICE_REGRESSION_RESULTS.md`.
+
 ## Exact next action
 
-Continue acceptance of partial cards without delaying unrelated local fixes: for S028 verify guest solo start/resume and online/coin blocking in isolated browser; then inspect the remaining account-readiness delay and all locales at narrow widths. For S027 verify TalkBack/320px when device is available and get owner/Console deletion-policy review before publication. Continue S026 with JDK21 Android compile and synthetic valid/expired/logout/ban/delete token checks; choose active-room revocation policy, then mic allow/deny and Wi-Fi/LTE relay-only NAT checks. Preserve fail-closed auth and API-first rollout. Do not deploy to production or Play. R15 Android startup and R19 external audio acceptance remain deferred.
+Continue R-10/R-18: add a synthetic game-server join-boundary test and test API timeout/fail-closed behavior; resolve the active-match revocation policy before changing it. If needed, prepare a temporary JDK21 toolchain for the isolated audit APK, retaining localhost-only endpoints; do not install the production package. Then test native trusted/untrusted origin permission flow only in `.audit` and only with synthetic UI, and check Wi-Fi/LTE relay-only behavior if a second local test client/network is available. Preserve API-first rollout. Separately, R-23 still needs a clean TalkBack pass; S029 proves the 320px layout/swipe only. R-20 guest start/resume and online/coin blocking still need isolated browser acceptance. Do not deploy to production or Play. R15 Android startup and R19 external audio acceptance remain deferred.

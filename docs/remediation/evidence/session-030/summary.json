@@ -1,0 +1,43 @@
+{
+  "session": "S030",
+  "date": "2026-10-19",
+  "cards": [
+    {
+      "id": "R-10",
+      "status": "partial",
+      "newRegressionCoverage": [
+        "valid signed token and matching live session/player",
+        "expired signed token denied before database lookups",
+        "missing and expired session",
+        "session owner mismatch",
+        "deleted and mismatched player",
+        "active player ban"
+      ],
+      "remaining": ["Colyseus join boundary", "active match policy after logout/ban/delete", "JDK21 Android build"]
+    },
+    {
+      "id": "R-18",
+      "status": "partial",
+      "newRegressionCoverage": [
+        "string and legacy-array ICE URLs",
+        "STUN/STUNS/TURN/TURNS schemes and credentials",
+        "invalid scheme and JSON handling",
+        "deduplication and candidate-pool bounds"
+      ],
+      "remaining": ["native origin/microphone permission UI", "Wi-Fi/LTE", "relay-only TURN"]
+    }
+  ],
+  "verification": {
+    "rootCheck": "pass",
+    "serverVoiceFocusedTests": "4/4 pass",
+    "apiTypeScriptNoEmit": "pass",
+    "apiAuthServiceTests": "6/6 pass",
+    "changedJavaScriptSyntax": "pass",
+    "diffCheck": "pass"
+  },
+  "productionRequests": false,
+  "playAppChanged": false,
+  "microphonePermissionRequested": false,
+  "fullyClosedCards": 22,
+  "totalCards": 42
+}

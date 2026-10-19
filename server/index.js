@@ -15,6 +15,7 @@ const { resolvePlatformApiUrl, probePlatformApiUrl } = require("./economyConfig"
 const { getLiveSummary, getPublicLiveSummary, getOpenRooms, getLiveSession } = require("./livePresence");
 const { resolveRoomIdByCode, resolveRoomCodeById } = require("./roomRegistry");
 const { buildReadinessHealth } = require("./health");
+const { buildVoiceConfig } = require("./voice-config");
 
 const { startSettlementReconciler } = require("./settlementOutbox");
 
@@ -42,76 +43,7 @@ if (redis) {
     });
 }
 
-function parseJsonIceServers(raw) {
-    if (!raw) return [];
-    try {
-        const parsed = JSON.parse(raw);
-        const entries = Array.isArray(parsed) ? parsed : [parsed];
-        return entries.map((entry) => {
-            const rawUrls = typeof entry === "string" ? entry : entry?.urls;
-            const urls = (Array.isArray(rawUrls) ? rawUrls : [rawUrls])
-                .map((url) => String(url || "").trim())
-                .filter((url) => /^(stun|stuns|turn|turns):/i.test(url));
-            return {
-                urls,
-                username: typeof entry === "object" && entry?.username ? String(entry.username).trim() : undefined,
-                credential: typeof entry === "object" && entry?.credential ? String(entry.credential).trim() : undefined
-            };
-        }).filter((entry) => entry.urls.length > 0);
-    } catch (err) {
-        console.warn("[Voice] Invalid VOICE_ICE_SERVERS_JSON:", err.message);
-        return [];
-    }
-}
-
-function buildVoiceConfig() {
-    const defaultIceServers = [
-        { urls: "stun:stun.l.google.com:19302" }
-    ];
-    const servers = [...defaultIceServers, ...parseJsonIceServers(process.env.VOICE_ICE_SERVERS_JSON || "")];
-    const turnUrls = String(process.env.VOICE_TURN_URLS || process.env.TURN_URLS || "")
-        .split(",")
-        .map((value) => value.trim())
-        .filter(Boolean);
-    const turnUsername = String(process.env.VOICE_TURN_USERNAME || process.env.TURN_USERNAME || "").trim();
-    const turnCredential = String(process.env.VOICE_TURN_CREDENTIAL || process.env.TURN_CREDENTIAL || "").trim();
-
-    if (turnUrls.length > 0) {
-        servers.push({
-            urls: turnUrls,
-            ...(turnUsername ? { username: turnUsername } : {}),
-            ...(turnCredential ? { credential: turnCredential } : {})
-        });
-    }
-
-    const deduped = [];
-    const seen = new Set();
-    for (const server of servers) {
-        const rawUrls = Array.isArray(server.urls) ? server.urls : [server.urls];
-        const urls = rawUrls.map((url) => String(url || "").trim()).filter((url) => /^(stun|stuns|turn|turns):/i.test(url));
-        if (!urls.length) continue;
-        const key = JSON.stringify({
-            urls,
-            username: server.username || "",
-            credential: server.credential || ""
-        });
-        if (seen.has(key)) continue;
-        seen.add(key);
-        deduped.push({
-            urls,
-            ...(server.username ? { username: server.username } : {}),
-            ...(server.credential ? { credential: server.credential } : {})
-        });
-    }
-
-    return {
-        iceServers: deduped,
-        iceTransportPolicy: String(process.env.VOICE_ICE_TRANSPORT_POLICY || "").trim() || "all",
-        iceCandidatePoolSize: Math.max(0, Math.min(8, Number(process.env.VOICE_ICE_CANDIDATE_POOL_SIZE || 2) || 2))
-    };
-}
-
-const voiceConfig = buildVoiceConfig();
+const voiceConfig = buildVoiceConfig(process.env);
 
 async function getRedisClient() {
     if (!redis) return null;

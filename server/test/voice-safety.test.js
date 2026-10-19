@@ -2,6 +2,43 @@ const test = require("node:test");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
+const { buildVoiceConfig, parseJsonIceServers } = require("../voice-config");
+
+test("voice ICE configuration accepts string and legacy URL arrays and keeps TURN credentials", () => {
+    const config = buildVoiceConfig({
+        VOICE_ICE_SERVERS_JSON: JSON.stringify([
+            "stuns:stun.example.invalid:5349",
+            { urls: ["turns:turn.example.invalid:5349", "https://invalid.example/"], username: " test-user ", credential: " test-secret " }
+        ]),
+        VOICE_ICE_TRANSPORT_POLICY: "relay",
+        VOICE_ICE_CANDIDATE_POOL_SIZE: "4"
+    });
+
+    assert.deepEqual(config.iceServers, [
+        { urls: ["stun:stun.l.google.com:19302"] },
+        { urls: ["stuns:stun.example.invalid:5349"] },
+        { urls: ["turns:turn.example.invalid:5349"], username: "test-user", credential: "test-secret" }
+    ]);
+    assert.equal(config.iceTransportPolicy, "relay");
+    assert.equal(config.iceCandidatePoolSize, 4);
+});
+
+test("voice ICE configuration filters invalid URLs, deduplicates and bounds pool size", () => {
+    const config = buildVoiceConfig({
+        VOICE_ICE_SERVERS_JSON: JSON.stringify([
+            { urls: ["https://invalid.example/", "turn:relay.example.invalid:3478"] },
+            { urls: ["turn:relay.example.invalid:3478"] }
+        ]),
+        VOICE_ICE_CANDIDATE_POOL_SIZE: "99"
+    });
+
+    assert.deepEqual(config.iceServers, [
+        { urls: ["stun:stun.l.google.com:19302"] },
+        { urls: ["turn:relay.example.invalid:3478"] }
+    ]);
+    assert.equal(config.iceCandidatePoolSize, 8);
+    assert.deepEqual(parseJsonIceServers("not-json"), []);
+});
 
 test("voice stun config does not contain invalid transport query strings", () => {
     const files = [
