@@ -1,0 +1,44 @@
+{
+  "checks": [
+    {
+      "label": "stop-audit-package-only",
+      "ok": true
+    },
+    {
+      "label": "forward9227",
+      "ok": true,
+      "alreadyAbsent": true
+    },
+    {
+      "label": "forward9228",
+      "ok": true,
+      "alreadyAbsent": true
+    },
+    {
+      "label": "forward9229",
+      "ok": true,
+      "alreadyAbsent": true
+    },
+    {
+      "label": "forward9230",
+      "ok": true,
+      "alreadyAbsent": true
+    },
+    {
+      "label": "remove-reverse4175",
+      "ok": true
+    },
+    {
+      "label": "remove-owned-probe-trace",
+      "ok": true
+    }
+  ],
+  "rotation": {
+    "auto": "0",
+    "value": "0"
+  },
+  "productionChanged": false,
+  "playPackageChanged": false,
+  "rawTraces": ".tmp only",
+  "tool": "Official Perfetto cache, no Codex plugins installed"
+}

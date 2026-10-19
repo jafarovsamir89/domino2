@@ -1,0 +1,80 @@
+{
+  "session": "S023",
+  "task": "R-14",
+  "status": "fixed-locally",
+  "changes": [
+    "Static outlined playable/active-turn cues instead of infinite shadow animations",
+    "No backdrop blur on permanent hand/header/DOM arrow",
+    "Smaller end-marker shadow, no inline filter;2short fades, none under reduced-motion"
+  ],
+  "checks": [
+    "s023-effects-baseline.json",
+    "s023-paint-isolated.json",
+    "effects-ab.json",
+    "effects-paint.json",
+    "isolated-summary.json",
+    "s023-product-android.json",
+    "product-ab.json",
+    "product-summary.json",
+    "trace-provenance.json",
+    "s023-android-marker.json",
+    "s023-effects-final.json",
+    "s023-effects-node22-isolated.json",
+    "s023-source.json",
+    "s023-server-full.json",
+    "s023-e2e-full.json",
+    "failure-delta.json",
+    "cleanup.json"
+  ],
+  "perf": {
+    "baseline": {
+      "medianRafRate": 23.60658996593934,
+      "medianRafIntervalP95Ms": 83.30000000000291,
+      "medianNativeRate": 23.442842909455294,
+      "medianNativeIntervalP95Ms": 83.307769,
+      "medianFrameTimelineDurationP95Ms": 130.886538,
+      "frameTimelineSamples": 551,
+      "janky": 551
+    },
+    "candidate": {
+      "medianRafRate": 54.08376113213671,
+      "medianRafIntervalP95Ms": 33.30000000000109,
+      "medianNativeRate": 50.85268114557313,
+      "medianNativeIntervalP95Ms": 33.326154,
+      "medianFrameTimelineDurationP95Ms": 17.112308,
+      "frameTimelineSamples": 1211,
+      "janky": 5
+    }
+  },
+  "regressions": {
+    "newBrowser": {
+      "pass": 12,
+      "total": 12,
+      "node": "25 and22"
+    },
+    "server": {
+      "pass": 379,
+      "total": 386,
+      "sameOldFailures": 7
+    },
+    "e2e": {
+      "pass": 43,
+      "total": 52,
+      "sameOldFailures": 9
+    }
+  },
+  "limits": [
+    "One Android debug audit app with synthetic renderer workload, not a legal35tile game",
+    "FrameTimeline duration p95<20ms in3candidate windows; rAF/presentation interval p95 still~33ms, stable60FPS not claimed",
+    "No battery/release/multi-device/long thermal acceptance",
+    "Raw system traces retained in.tmp; only app-filtered CSV and summaries in Git",
+    "No production/Play/wallet changes"
+  ],
+  "excluded": [
+    "First shadow_only diagnostic removed filter too; additional pure shadow-only/filter-only series removes attribution ambiguity",
+    "Initial style fixture used wrong hand ID and omitted diagnostic button stacking; final actual-coordinate tap passes",
+    "First Node22browser run collided on4173; final alternate4176pass",
+    "Initial post-probe reused old diagnostic marker callback; final clears it and validates a fresh callback",
+    "Initial Perfetto probe config lacked whitespace accepted by Android parser; formatted minimal config succeeded"
+  ]
+}

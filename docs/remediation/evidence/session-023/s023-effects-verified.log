@@ -1,0 +1,89 @@
+
+Running 4 tests using 1 worker
+(node:82609) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+F(node:82621) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+F(node:82626) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+F(node:82632) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+F
+
+  1) e2e/game-effects.spec.mjs:2:67 › move cues stay visible without recurring paint effects (desktop) 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: 1
+    Received: 0
+
+       7 |   const styles=await page.evaluate(()=>{const p=getComputedStyle(document.getElementById('effect-playable')),b=getComputedStyle(document.getElementById('effect-blocked')),h=getComputedStyle(document.querySelector('.hand-container')),a=getComputedStyle(document.getElementById('effect-arrow'));return {playableAnimation:p.animationName,blockedBorder:b.borderColor,playableBorder:p.borderColor,outline:p.outlineStyle,turnOutline:h.outlineStyle,headerBlur:getComputedStyle(document.querySelector('.game-header')).backdropFilter,handBlur:h.backdropFilter,arrowFilter:a.filter,arrowIterations:a.animationIterationCount}});
+       8 |   expect(styles.playableAnimation).toBe('none');expect(styles.outline).toBe('solid');expect(styles.playableBorder).not.toBe(styles.blockedBorder);expect(styles.turnOutline).toBe('solid');expect(styles.headerBlur).toBe('none');expect(styles.handBlur).toBe('none');expect(styles.arrowFilter).toBe('none');expect(Number(styles.arrowIterations)).toBeLessThanOrEqual(2);
+    >  9 |   await page.waitForTimeout(1550);const arrow=page.locator('#effect-arrow');await expect(arrow).toBeVisible();const box=await arrow.boundingBox();await page.mouse.click(box.x+box.width/2,box.y+box.height/2);expect(await page.evaluate(()=>effectTaps)).toBe(1);
+         |                                                                                                                                                                                                                                                            ^
+      10 |   await page.emulateMedia({reducedMotion:'reduce'});expect(await arrow.evaluate(el=>getComputedStyle(el).animationName)).toBe('none');await expect(arrow).toBeVisible();
+      11 |  }finally{await context.close()}
+      12 | });
+        at /Users/macbookair/Documents/domino/.tmp/remediation-s023/clean/e2e/game-effects.spec.mjs:9:252
+
+    Error Context: test-results/game-effects-move-cues-sta-e62dc-ring-paint-effects-desktop-/error-context.md
+
+  2) e2e/game-effects.spec.mjs:2:67 › move cues stay visible without recurring paint effects (mobile) 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: 1
+    Received: 0
+
+       7 |   const styles=await page.evaluate(()=>{const p=getComputedStyle(document.getElementById('effect-playable')),b=getComputedStyle(document.getElementById('effect-blocked')),h=getComputedStyle(document.querySelector('.hand-container')),a=getComputedStyle(document.getElementById('effect-arrow'));return {playableAnimation:p.animationName,blockedBorder:b.borderColor,playableBorder:p.borderColor,outline:p.outlineStyle,turnOutline:h.outlineStyle,headerBlur:getComputedStyle(document.querySelector('.game-header')).backdropFilter,handBlur:h.backdropFilter,arrowFilter:a.filter,arrowIterations:a.animationIterationCount}});
+       8 |   expect(styles.playableAnimation).toBe('none');expect(styles.outline).toBe('solid');expect(styles.playableBorder).not.toBe(styles.blockedBorder);expect(styles.turnOutline).toBe('solid');expect(styles.headerBlur).toBe('none');expect(styles.handBlur).toBe('none');expect(styles.arrowFilter).toBe('none');expect(Number(styles.arrowIterations)).toBeLessThanOrEqual(2);
+    >  9 |   await page.waitForTimeout(1550);const arrow=page.locator('#effect-arrow');await expect(arrow).toBeVisible();const box=await arrow.boundingBox();await page.mouse.click(box.x+box.width/2,box.y+box.height/2);expect(await page.evaluate(()=>effectTaps)).toBe(1);
+         |                                                                                                                                                                                                                                                            ^
+      10 |   await page.emulateMedia({reducedMotion:'reduce'});expect(await arrow.evaluate(el=>getComputedStyle(el).animationName)).toBe('none');await expect(arrow).toBeVisible();
+      11 |  }finally{await context.close()}
+      12 | });
+        at /Users/macbookair/Documents/domino/.tmp/remediation-s023/clean/e2e/game-effects.spec.mjs:9:252
+
+    Error Context: test-results/game-effects-move-cues-sta-131f2-rring-paint-effects-mobile-/error-context.md
+
+  3) e2e/game-effects.spec.mjs:2:67 › www/move cues stay visible without recurring paint effects (desktop) 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: 1
+    Received: 0
+
+       7 |   const styles=await page.evaluate(()=>{const p=getComputedStyle(document.getElementById('effect-playable')),b=getComputedStyle(document.getElementById('effect-blocked')),h=getComputedStyle(document.querySelector('.hand-container')),a=getComputedStyle(document.getElementById('effect-arrow'));return {playableAnimation:p.animationName,blockedBorder:b.borderColor,playableBorder:p.borderColor,outline:p.outlineStyle,turnOutline:h.outlineStyle,headerBlur:getComputedStyle(document.querySelector('.game-header')).backdropFilter,handBlur:h.backdropFilter,arrowFilter:a.filter,arrowIterations:a.animationIterationCount}});
+       8 |   expect(styles.playableAnimation).toBe('none');expect(styles.outline).toBe('solid');expect(styles.playableBorder).not.toBe(styles.blockedBorder);expect(styles.turnOutline).toBe('solid');expect(styles.headerBlur).toBe('none');expect(styles.handBlur).toBe('none');expect(styles.arrowFilter).toBe('none');expect(Number(styles.arrowIterations)).toBeLessThanOrEqual(2);
+    >  9 |   await page.waitForTimeout(1550);const arrow=page.locator('#effect-arrow');await expect(arrow).toBeVisible();const box=await arrow.boundingBox();await page.mouse.click(box.x+box.width/2,box.y+box.height/2);expect(await page.evaluate(()=>effectTaps)).toBe(1);
+         |                                                                                                                                                                                                                                                            ^
+      10 |   await page.emulateMedia({reducedMotion:'reduce'});expect(await arrow.evaluate(el=>getComputedStyle(el).animationName)).toBe('none');await expect(arrow).toBeVisible();
+      11 |  }finally{await context.close()}
+      12 | });
+        at /Users/macbookair/Documents/domino/.tmp/remediation-s023/clean/e2e/game-effects.spec.mjs:9:252
+
+    Error Context: test-results/game-effects-www-move-cues-4d384-ring-paint-effects-desktop-/error-context.md
+
+  4) e2e/game-effects.spec.mjs:2:67 › www/move cues stay visible without recurring paint effects (mobile) 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: 1
+    Received: 0
+
+       7 |   const styles=await page.evaluate(()=>{const p=getComputedStyle(document.getElementById('effect-playable')),b=getComputedStyle(document.getElementById('effect-blocked')),h=getComputedStyle(document.querySelector('.hand-container')),a=getComputedStyle(document.getElementById('effect-arrow'));return {playableAnimation:p.animationName,blockedBorder:b.borderColor,playableBorder:p.borderColor,outline:p.outlineStyle,turnOutline:h.outlineStyle,headerBlur:getComputedStyle(document.querySelector('.game-header')).backdropFilter,handBlur:h.backdropFilter,arrowFilter:a.filter,arrowIterations:a.animationIterationCount}});
+       8 |   expect(styles.playableAnimation).toBe('none');expect(styles.outline).toBe('solid');expect(styles.playableBorder).not.toBe(styles.blockedBorder);expect(styles.turnOutline).toBe('solid');expect(styles.headerBlur).toBe('none');expect(styles.handBlur).toBe('none');expect(styles.arrowFilter).toBe('none');expect(Number(styles.arrowIterations)).toBeLessThanOrEqual(2);
+    >  9 |   await page.waitForTimeout(1550);const arrow=page.locator('#effect-arrow');await expect(arrow).toBeVisible();const box=await arrow.boundingBox();await page.mouse.click(box.x+box.width/2,box.y+box.height/2);expect(await page.evaluate(()=>effectTaps)).toBe(1);
+         |                                                                                                                                                                                                                                                            ^
+      10 |   await page.emulateMedia({reducedMotion:'reduce'});expect(await arrow.evaluate(el=>getComputedStyle(el).animationName)).toBe('none');await expect(arrow).toBeVisible();
+      11 |  }finally{await context.close()}
+      12 | });
+        at /Users/macbookair/Documents/domino/.tmp/remediation-s023/clean/e2e/game-effects.spec.mjs:9:252
+
+    Error Context: test-results/game-effects-www-move-cues-d5bd5-rring-paint-effects-mobile-/error-context.md
+
+  4 failed
+    e2e/game-effects.spec.mjs:2:67 › move cues stay visible without recurring paint effects (desktop) 
+    e2e/game-effects.spec.mjs:2:67 › move cues stay visible without recurring paint effects (mobile) 
+    e2e/game-effects.spec.mjs:2:67 › www/move cues stay visible without recurring paint effects (desktop) 
+    e2e/game-effects.spec.mjs:2:67 › www/move cues stay visible without recurring paint effects (mobile) 

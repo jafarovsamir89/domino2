@@ -4706,7 +4706,7 @@ body.move-hint-selection-active #game-screen .player-name-btn {
     gap: 8px;
     padding: 6px 12px;
     background: rgba(0, 0, 0, 0.45);
-    backdrop-filter: blur(6px);
+    backdrop-filter: none;
     font-size: 0.78rem;
     flex-shrink: 0;
     position: relative;
@@ -5088,9 +5088,9 @@ body.move-hint-selection-active #game-screen .player-name-btn {
     box-sizing: border-box;
     background: radial-gradient(circle at center, rgba(255, 235, 120, 0.96) 0%, rgba(255, 214, 78, 0.78) 30%, rgba(255, 181, 0, 0.34) 62%, rgba(255, 181, 0, 0) 100%);
     border: 1px solid rgba(255, 239, 183, 0.88);
-    box-shadow: 0 0 0 1px rgba(255, 244, 214, 0.44), 0 0 24px rgba(255, 212, 73, 0.78), 0 0 42px rgba(255, 166, 0, 0.42);
-    filter: saturate(1.2) brightness(1.08);
-    animation: openEndHighlightPulse 0.95s ease-in-out infinite alternate;
+    box-shadow: 0 0 0 1px rgba(255, 244, 214, 0.8);
+    filter: none;
+    animation: openEndHighlightPulse 0.7s ease-out 2;
 }
 
 .konva-open-end-highlight.arrow-top {
@@ -5119,12 +5119,12 @@ body.move-hint-selection-active #game-screen .player-name-btn {
 }
 
 .konva-open-end-highlight.is-selected {
-    box-shadow: 0 0 0 1px rgba(255, 244, 214, 0.62), 0 0 30px rgba(255, 218, 94, 0.96), 0 0 54px rgba(255, 171, 0, 0.62);
+    box-shadow: 0 0 0 2px rgba(255, 244, 214, 0.95);
 }
 
 @keyframes openEndHighlightPulse {
-    from { transform: translate(-50%, -50%) scale(0.96); }
-    to { transform: translate(-50%, -50%) scale(1.05); }
+    from { opacity: 0.65; }
+    to { opacity: 1; }
 }
 
 .board-empty-placeholder {
@@ -5227,7 +5227,7 @@ body.is-solo-game .voice-roster-panel {
 .hand-container {
     padding: 8px 12px calc(8px + env(safe-area-inset-bottom, 0px));
     background: rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(6px);
+    backdrop-filter: none;
     flex-shrink: 0;
     overflow-x: auto;
     border-top: 1px solid rgba(255, 255, 255, 0.05);
@@ -6018,14 +6018,12 @@ body.is-solo-game .voice-roster-panel {
 
 .tile.playable {
     cursor: pointer;
-    box-shadow: 0 0 10px var(--accent-glow), 0 0 20px rgba(240, 192, 64, 0.15), 1px 2px 6px var(--tile-shadow);
-    animation: tileGlow 1.5s ease-in-out infinite alternate;
+    box-shadow: 0 1px 2px var(--tile-shadow);
+    border-color: var(--accent);
+    outline: 1px solid var(--accent);
+    outline-offset: 1px;
 }
 
-@keyframes tileGlow {
-    from { box-shadow: 0 0 8px var(--accent-glow), 1px 2px 6px var(--tile-shadow); }
-    to { box-shadow: 0 0 18px var(--accent-glow), 0 0 30px rgba(240, 192, 64, 0.2), 1px 2px 6px var(--tile-shadow); }
-}
 
 .tile.playable:hover {
     transform: translateY(-5px) scale(1.03);
@@ -6285,8 +6283,8 @@ body.is-solo-game .voice-roster-panel {
 
 .arrow-btn {
     background: rgba(240, 192, 64, 0.3);
-    backdrop-filter: blur(4px);
-    border: 2px solid rgba(240, 192, 64, 0.6);
+    backdrop-filter: none;
+    border: 2px solid rgba(240, 192, 64, 0.8);
     color: #fff;
     font-size: 1.1rem;
     font-weight: 700;
@@ -6299,7 +6297,7 @@ body.is-solo-game .voice-roster-panel {
     cursor: pointer;
     transition: all 0.2s;
     z-index: 25;
-    animation: arrowPulse 1s ease-in-out infinite alternate;
+    box-shadow: 0 0 0 1px rgba(240, 192, 64, 0.8);
     text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
     pointer-events: auto;
     transform: translate(-50%, -50%);
@@ -6364,11 +6362,12 @@ body.is-solo-game .voice-roster-panel {
 }
 
 .active-turn {
-    box-shadow: 0 0 0 1px rgba(240, 192, 64, 0.22), 0 0 24px rgba(240, 192, 64, 0.45), inset 0 0 14px rgba(240, 192, 64, 0.24);
+    outline: 1px solid rgba(240, 192, 64, 0.8);
+    outline-offset: -1px;
+    box-shadow: none;
     background: rgba(240, 192, 64, 0.06);
     border-radius: 16px;
-    transition: box-shadow 0.3s, background 0.3s;
-    animation: activeTurnPulse 1.1s ease-in-out infinite alternate;
+    transition: background 0.2s;
 }
 
 .insufficient-coins-modal .modal-card {
@@ -6419,10 +6418,6 @@ body.is-solo-game .voice-roster-panel {
     background: rgba(240, 192, 64, 0.1);
 }
 
-@keyframes activeTurnPulse {
-    from { box-shadow: 0 0 0 1px rgba(240, 192, 64, 0.18), 0 0 18px rgba(240, 192, 64, 0.34), inset 0 0 10px rgba(240, 192, 64, 0.16); }
-    to { box-shadow: 0 0 0 1px rgba(240, 192, 64, 0.28), 0 0 30px rgba(240, 192, 64, 0.56), inset 0 0 16px rgba(240, 192, 64, 0.26); }
-}
 
 @media (max-width: 980px) {
     #start-screen { padding: 68px 16px 16px; }
@@ -9017,3 +9012,11 @@ body.is-reconnecting .hand-container {
 .audio-controls label { display: flex; justify-content: space-between; gap: 12px; font-size: 0.9rem; }
 .audio-controls input[type="range"] { width: 100%; min-height: 32px; accent-color: #f0c040; }
 .audio-controls output { font-variant-numeric: tabular-nums; }
+
+/* Keep move/turn cues static; only small finite end markers may fade in. */
+@media (prefers-reduced-motion: reduce) {
+    #game-screen .konva-open-end-highlight,
+    #game-screen .arrow-btn { animation: none; }
+    #game-screen .tile,
+    #game-screen .active-turn { transition: none; }
+}

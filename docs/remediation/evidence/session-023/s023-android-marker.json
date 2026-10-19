@@ -1,0 +1,17 @@
+{
+  "label": "s023-android-marker",
+  "command": [
+    "node",
+    "/Users/macbookair/Documents/domino/docs/remediation/scripts/device-effects-tap.mjs"
+  ],
+  "cwd": ".tmp/remediation-s023/clean",
+  "startedAt": "2026-10-19T00:01:19.044Z",
+  "finishedAt": "2026-10-19T00:01:21.504Z",
+  "durationMs": 2460,
+  "exitCode": 0,
+  "signal": null,
+  "timedOut": false,
+  "error": null,
+  "log": "docs/remediation/evidence/session-023/s023-android-marker.log",
+  "environment": "Fresh allowlist, synthetic local API/DB, optional Redis disabled, no inherited secrets or copied .env"
+}

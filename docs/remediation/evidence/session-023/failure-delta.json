@@ -1,0 +1,36 @@
+{
+  "server": {
+    "baseline": "session-014/failure-delta.json",
+    "failures": [
+      "client renders bazaar draw state from live solo hands and keeps multiplayer cache isolated",
+      "disconnect keeps live presence offline during grace and removes it after timeout",
+      "explicit leave stays a forfeit and never starts bot takeover",
+      "grace timeout starts bot takeover instead of forfeit when the feature is enabled",
+      "handleTimeoutContinue only accepts the timeout loser and starts the next round on success",
+      "reusable session restore sends full_state to new sessionId",
+      "server keeps the final board on game_delta and omits it from the immediate result sync"
+    ],
+    "newFailures": [],
+    "resolvedFailures": [],
+    "pass": 379,
+    "total": 386
+  },
+  "e2e": {
+    "baseline": "session-014/failure-delta.json",
+    "pass": 43,
+    "total": 52,
+    "failures": [
+      "Konva tile rects stay in viewport coordinates and source rect is excluded from collision",
+      "authenticated profile shows four stats cards without Xal and leaderboard uses Reyting",
+      "closed and open rooms create flows use contextual visibility without toggle UI",
+      "daily bonus flow: visible only when authed, handles status loading and claim successfully",
+      "expired seat reservation reconnect falls back to snapshot restore without retry spam",
+      "game invite attaches the resolved room code instead of the room id",
+      "in-game pause menu keeps only continue and exit and round summary hides winner hand details",
+      "invite polling catches incoming room invitations without SSE",
+      "start screen loads and stays within mobile viewport"
+    ],
+    "newFailures": [],
+    "resolvedFailures": []
+  }
+}

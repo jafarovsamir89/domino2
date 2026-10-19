@@ -1,0 +1,18 @@
+{
+  "label": "s023-e2e-full",
+  "command": [
+    "npx",
+    "playwright",
+    "test"
+  ],
+  "cwd": ".tmp/remediation-s023/clean",
+  "startedAt": "2026-10-18T23:57:37.893Z",
+  "finishedAt": "2026-10-19T00:01:22.459Z",
+  "durationMs": 224566,
+  "exitCode": 1,
+  "signal": null,
+  "timedOut": false,
+  "error": null,
+  "log": "docs/remediation/evidence/session-023/s023-e2e-full.log",
+  "environment": "Fresh allowlist, synthetic local API/DB, optional Redis disabled, no inherited secrets or copied .env"
+}

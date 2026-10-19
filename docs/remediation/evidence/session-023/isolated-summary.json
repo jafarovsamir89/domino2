@@ -1,0 +1,63 @@
+{
+  "ab": {
+    "baseline": {
+      "repeats": 3,
+      "medianRafRate": 21.074158592458517,
+      "medianRafP95Ms": 83.10000000000582,
+      "medianNativeRate": 20.86004648318083,
+      "medianNativeIntervalP95Ms": 66.656923
+    },
+    "combined": {
+      "repeats": 3,
+      "medianRafRate": 56.63390050400906,
+      "medianRafP95Ms": 33.29999999998836,
+      "medianNativeRate": 25.97621235080447,
+      "medianNativeIntervalP95Ms": 333.222846
+    },
+    "animation_only": {
+      "repeats": 3,
+      "medianRafRate": 56.61579993263749,
+      "medianRafP95Ms": 33.29999999998836,
+      "medianNativeRate": 24.745754719627506,
+      "medianNativeIntervalP95Ms": 316.551692
+    },
+    "shadow_only": {
+      "repeats": 3,
+      "medianRafRate": 53.525309111898686,
+      "medianRafP95Ms": 33.30000000000291,
+      "medianNativeRate": 58.5460061088621,
+      "medianNativeIntervalP95Ms": 16.689846
+    },
+    "blur_only": {
+      "repeats": 3,
+      "medianRafRate": 27.895904881204675,
+      "medianRafP95Ms": 66.60000000000582,
+      "medianNativeRate": 28.539438768756852,
+      "medianNativeIntervalP95Ms": 66.657231
+    }
+  },
+  "paint": {
+    "baseline": {
+      "repeats": 3,
+      "medianRafRate": 21.035075054127923,
+      "medianRafP95Ms": 83.30000000000109,
+      "medianNativeRate": 21.06126427785091,
+      "medianNativeIntervalP95Ms": 83.304231
+    },
+    "filter_only": {
+      "repeats": 3,
+      "medianRafRate": 19.927017299112308,
+      "medianRafP95Ms": 83.30000000000291,
+      "medianNativeRate": 19.965615873746657,
+      "medianNativeIntervalP95Ms": 83.309616
+    },
+    "shadow_only": {
+      "repeats": 3,
+      "medianRafRate": 53.77685723542514,
+      "medianRafP95Ms": 33.30000000000291,
+      "medianNativeRate": 58.91846090826475,
+      "medianNativeIntervalP95Ms": 16.686538
+    }
+  },
+  "note": "ab.shadow_only included filter; paint.shadow_only and paint.filter_only are pure interventions"
+}

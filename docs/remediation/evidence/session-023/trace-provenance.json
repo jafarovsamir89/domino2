@@ -1,0 +1,41 @@
+{
+  "tool": "Perfetto Trace Processor v58.2-add693d8b",
+  "source": "https://get.perfetto.dev/trace_processor",
+  "launcherSha256": "9f255d16d56e6bf10a29dc53b103c81a4a185dabcc1fa45eb2ff022315817d8c",
+  "config": "Only android.surfaceflinger.frametimeline,4MiB buffer,12s max, stopped after8s workload; no upload",
+  "rawTracesCommitted": false,
+  "rawLocation": ".tmp/remediation-s023/traces",
+  "filteredCSV": "frames/*.csv; audit PID/layer only",
+  "raw": [
+    {
+      "name": "0-baseline.pftrace",
+      "sha256": "d1237efbc942d8829190ffdf870093f50c55cd3304fb76a71b7a845fccb97279",
+      "bytes": 95918
+    },
+    {
+      "name": "0-candidate.pftrace",
+      "sha256": "aa21b0eb3c03a4b284fda2c51f0cab442a4496bff5059e12c8b6d8deb007a12a",
+      "bytes": 219828
+    },
+    {
+      "name": "1-baseline.pftrace",
+      "sha256": "3648b622d2645b07393fe19eb627c8d8bb336bdb8ecd9ede34d0134859187984",
+      "bytes": 112397
+    },
+    {
+      "name": "1-candidate.pftrace",
+      "sha256": "0f7de51a532cceb433aad8475ff82168e6921545d92787a0113b7cbd84522764",
+      "bytes": 223340
+    },
+    {
+      "name": "2-baseline.pftrace",
+      "sha256": "fd0088122c7cae9e04b5007d75ba29fdfa2e5b1eb2a0c0156763d886e21a067f",
+      "bytes": 110093
+    },
+    {
+      "name": "2-candidate.pftrace",
+      "sha256": "67f4a3fae60e2892f1219c22630f2cc55f19b166272c7412c06b7d113a44dfb0",
+      "bytes": 223197
+    }
+  ]
+}

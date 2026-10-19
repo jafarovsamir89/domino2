@@ -1,0 +1,20 @@
+{
+  "baseline": {
+    "medianRafRate": 23.60658996593934,
+    "medianRafIntervalP95Ms": 83.30000000000291,
+    "medianNativeRate": 23.442842909455294,
+    "medianNativeIntervalP95Ms": 83.307769,
+    "medianFrameTimelineDurationP95Ms": 130.886538,
+    "frameTimelineSamples": 551,
+    "janky": 551
+  },
+  "candidate": {
+    "medianRafRate": 54.08376113213671,
+    "medianRafIntervalP95Ms": 33.30000000000109,
+    "medianNativeRate": 50.85268114557313,
+    "medianNativeIntervalP95Ms": 33.326154,
+    "medianFrameTimelineDurationP95Ms": 17.112308,
+    "frameTimelineSamples": 1211,
+    "janky": 5
+  }
+}

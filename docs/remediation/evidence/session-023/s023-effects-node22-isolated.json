@@ -1,0 +1,28 @@
+{
+  "label": "s023-effects-node22-isolated",
+  "command": [
+    "npm",
+    "exec",
+    "--yes",
+    "--package=node@22.14.0",
+    "--package=npm@10.9.2",
+    "--",
+    "npx",
+    "playwright",
+    "test",
+    "--config",
+    "playwright.node22.config.mjs",
+    "e2e/game-effects.spec.mjs",
+    "e2e/renderer-quality.spec.mjs"
+  ],
+  "cwd": ".tmp/remediation-s023/clean",
+  "startedAt": "2026-10-18T23:58:01.099Z",
+  "finishedAt": "2026-10-18T23:58:10.773Z",
+  "durationMs": 9674,
+  "exitCode": 0,
+  "signal": null,
+  "timedOut": false,
+  "error": null,
+  "log": "docs/remediation/evidence/session-023/s023-effects-node22-isolated.log",
+  "environment": "Fresh allowlist, synthetic local API/DB, optional Redis disabled, no inherited secrets or copied .env"
+}

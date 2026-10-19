@@ -1,0 +1,23 @@
+{
+  "label": "s023-server-full",
+  "command": [
+    "npm",
+    "exec",
+    "--yes",
+    "--package=node@22.14.0",
+    "--package=npm@10.9.2",
+    "--",
+    "npm",
+    "test"
+  ],
+  "cwd": ".tmp/remediation-s023/clean/server",
+  "startedAt": "2026-10-18T23:55:04.162Z",
+  "finishedAt": "2026-10-18T23:55:09.621Z",
+  "durationMs": 5459,
+  "exitCode": 1,
+  "signal": null,
+  "timedOut": false,
+  "error": null,
+  "log": "docs/remediation/evidence/session-023/s023-server-full.log",
+  "environment": "Fresh allowlist, synthetic local API/DB, optional Redis disabled, no inherited secrets or copied .env"
+}
