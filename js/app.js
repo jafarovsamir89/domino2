@@ -1467,6 +1467,9 @@ class DominoGame {
                 sessionStorage.removeItem('dominoAuthPending');
             } catch (_) {}
             this.syncStartAuthGate();
+            if (window.__dominoStartupConnectionUnavailable && !document.getElementById('splash-screen')) {
+                window.__dominoShowStartupNetworkNotice?.();
+            }
             window.dispatchEvent(new Event('domino:startup-ready'));
         }
     }
@@ -7858,8 +7861,11 @@ class DominoGame {
         const startScreen = document.getElementById('start-screen');
         if (!startScreen) return;
         if (!this.authResolved) {
-            startScreen.classList.add('auth-checking');
-            startScreen.classList.remove('auth-required');
+            // Keep the free local game available while the account request is
+            // pending. Authenticated-only actions stay hidden until the server
+            // resolves the current session.
+            startScreen.classList.remove('auth-checking');
+            startScreen.classList.add('auth-required');
             return;
         }
         const isAuthed = this.hasAuthenticatedAccount();

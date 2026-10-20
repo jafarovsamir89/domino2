@@ -83,6 +83,14 @@
         node.append(label, retry);
         return node;
     };
+    const showNetworkNotice = () => {
+        const screen = document.getElementById('start-screen');
+        const host = screen?.querySelector('.start-shell');
+        if (!host || document.getElementById('startup-network-note')) return;
+        screen.classList.add('has-startup-notice');
+        host.prepend(panel('startup-network-note', text.network));
+    };
+    window.__dominoShowStartupNetworkNotice = showNetworkNotice;
     const showError = () => {
         if (removed || document.getElementById('startup-error')) return;
         splash.classList.add('has-startup-error');
@@ -99,16 +107,11 @@
         splash.remove();
         performance.mark('domino-startup-interactive');
         if (window.__dominoStartupConnectionUnavailable || navigator.onLine === false) {
-            const screen = document.getElementById('start-screen');
-            const host = screen?.querySelector('.start-shell');
-            if (host && !document.getElementById('startup-network-note')) {
-                screen.classList.add('has-startup-notice');
-                host.prepend(panel('startup-network-note', text.network));
-            }
+            showNetworkNotice();
         }
     };
     const tryHide = () => {
-        if (removed || !window.__dominoUiReady || !window.__dominoAccountReady) return;
+        if (removed || !window.__dominoUiReady) return;
         splash.setAttribute('aria-hidden', 'true');
         splash.classList.add('is-hidden');
         // Readiness, not optional images/fonts/window.load or a session marker, owns the splash.

@@ -235,7 +235,7 @@ Status: **fixed locally, S013**. API emits versioned per-player stake/returnedSt
 
 #### R-10 · P1 · Определить отзыв игрового допуска
 
-Статус: **частично исправлено локально, S026**. Игровой токен сокращён до 5 минут; при каждом новом входе/переподключении game server сверяет текущую сессию, владельца playerId и активную блокировку через API с таймаутом 3 секунды. Запроса на каждый игровой ход нет. Уже допущенный игрок не отключается посреди партии; немедленное завершение такой сессии и проверка на устройстве остаются открытыми. API требуется выпустить раньше game server. [Изменения и ограничения](../remediation/evidence/session-026/SECURITY_REALTIME_RESULTS.md).
+Статус: **частично исправлено локально, S026/S033**. Игровой токен сокращён до 5 минут; каждый новый вход и обычное Colyseus-переподключение сверяют текущую сессию, владельца playerId и блокировку через API с таймаутом 3 секунды. Переподключение после перезапуска комнаты без сохранённого токена закрывается отказом. API outage тоже закрывает вход. Уже подключённая активная партия автоматически не прерывается при logout/ban/delete; SLA и безопасное поведение при отзыве во время партии остаются открытыми. API требуется выпустить раньше game server. [Исходная реализация](../remediation/evidence/session-026/SECURITY_REALTIME_RESULTS.md), [проверка границы Colyseus](../remediation/evidence/session-033/PLATFORM_GAME_RECONNECT_RESULTS.md).
 
 - **Изменение:** Определить срок действия и отзыв игрового допуска при logout/ban/delete. Это риск по коду: сначала сформулировать контракт и локальные проверки, затем выбрать механизм без избыточных запросов на каждый ход.
 - **Где:** `server/platformAuth.js:27–44`.
@@ -284,7 +284,7 @@ Status: **fixed locally, S016**. Liveness/readiness bypass application Redis rat
 
 #### R-15 · P1 · Сократить искусственный startup
 
-Статус: **код исправлен и проверен в браузере, S025; Android-приёмка отложена**. Убраны minimum5,5с/session-skip/window.load; заставка ждёт готовности UI и аккаунта. Запрос bounded6с, при критической загрузке через8с доступен retry; offline notice, восстановление и320px проверены.10новых browser tests на Node22/25; полный E2E53/62 с прежними9падениями. Телефон недоступен, владелец поручил продолжать без него: cold/warm/offline замеры на том же Android не сделаны, поэтому карточка не закрыта полностью. [Результаты](../remediation/evidence/session-025/STARTUP_RESULTS.md). Production/Play не менялись.
+Статус: **код исправлен и проверен в браузере, S025/S032; Android-приёмка отложена**. Убраны minimum5,5с/session-skip/window.load; теперь заставка ждёт только готовность UI, пока проверка аккаунта идёт в фоне. Это позволяет гостю сразу начать локальную игру; online/coins остаются закрыты до подтверждения аккаунта. Запрос bounded6с, при критической загрузке через8с доступен retry; offline notice, восстановление и320px проверены. В S032 все12startup сценариев прошли на root/www; телефонные cold/warm метрики всё ещё не сняты, поэтому карточка остаётся открытой. [S025 измерения](../remediation/evidence/session-025/STARTUP_RESULTS.md), [S032 guest-before-auth regressions](../remediation/evidence/session-032/GUEST_BEFORE_AUTH_RESULTS.md). Production/Play не менялись.
 
 - **Изменение:** Убрать обязательное ожидание 5,5 с после готовности критического UI, ограничить ожидание загрузки и предусмотреть offline/error состояние. Сравнить cold/warm UI readiness на том же телефоне.
 - **Где:** `js/splash.js:3–4,83–108`.
@@ -302,7 +302,7 @@ Status: **fixed locally, S016**. Liveness/readiness bypass application Redis rat
 
 #### R-18 · P1 · Voice ICE contract и NAT проверка
 
-Статус: **частично исправлено локально, S026**. Строковый STUN и строки `urls` теперь нормализуются; Android выдаёт RECORD_AUDIO только доверенному HTTPS app origin и отзывает ожидающий запрос при смене origin/закрытии Activity. NAT/TURN через Wi-Fi/LTE и фактический запрос разрешения на устройстве ещё не проверены. [Изменения и ограничения](../remediation/evidence/session-026/SECURITY_REALTIME_RESULTS.md).
+Статус: **частично исправлено локально, S026/S034**. Строковый STUN и строки `urls` теперь нормализуются; Android выдаёт RECORD_AUDIO только доверенному HTTPS app origin и отзывает ожидающий запрос при смене origin/закрытии Activity. Исправлена ошибка видимости `onDestroy`, из-за которой native debug APK не компилировался; Java21 `assembleDebug` теперь проходит. APK не устанавливался поверх Play-приложения. Реальный запрос разрешения на телефоне и NAT/TURN через Wi-Fi/LTE ещё не проверены. [Исходная реализация](../remediation/evidence/session-026/SECURITY_REALTIME_RESULTS.md), [сборка S034](../remediation/evidence/session-034/ANDROID_VOICE_BUILD_RESULTS.md).
 
 - **Изменение:** Исправить разбор ICE config, чтобы разрешённый строковый STUN не отбрасывался. Локально проверить конфигурацию и allow/deny микрофона; end-to-end NAT/TURN/операторская сеть остаются отложенными.
 - **Где:** `server/index.js:63–95;js/voice.js`.
@@ -351,11 +351,11 @@ Status: **fixed locally, S016**. Liveness/readiness bypass application Redis rat
 
 #### R-20 · P2 · Быстрый локальный solo до auth
 
-Статус: **частично исправлено локально, S028**. Гостю после завершения стартовой проверки аккаунта доступна только бесплатная локальная solo-кнопка; подсказка объясняет, что онлайн и монетные функции требуют входа. Для гостя локальная партия не обновляет профиль и не отправляет локальный presence heartbeat; онлайн-допуск остаётся за зарегистрированным аккаунтом. Приёмка браузером/Android не проводилась, а стартовый экран пока всё ещё ждёт account readiness, поэтому R-20 не закрыт. [Результаты и границы](../remediation/evidence/session-028/LOCAL_SOLO_LOCALIZATION_RESULTS.md). Основание: UX-гипотеза; [исходные доказательства](06_UI_UX_DESIGN.md).
+Статус: **исправлено локально, S032**. После готовности UI бесплатная solo-кнопка доступна ещё до ответа проверки аккаунта.12browser scenarios на root/www доказали старт до окончания медленного auth-запроса; authenticated-only online/coin controls остаются скрыты, прямой вызов coin shop не открывает магазин, `requireRegisteredAccount()` отклоняет гостя. Во время гостевой партии нет heartbeat, economy или match-history API запросов. Исходная S028 изоляция гостя сохранена. [Результаты S032](../remediation/evidence/session-032/GUEST_BEFORE_AUTH_RESULTS.md), [S028 изменения и локализация](../remediation/evidence/session-028/LOCAL_SOLO_LOCALIZATION_RESULTS.md). Production/Play не менялись.
 
 - **Изменение:** Сначала подтвердить продуктовый сценарий свободной solo без обязательного входа. Затем отделить локальную сессию от авторизации online, объяснить монеты и исправить предупреждение о монетах в бесплатной игре.
 - **Где:** `index.html login;js/app.js bootstrapAccount`.
-- **Готово, когда:** Без аккаунта легальная solo партия; online identity защищена.
+- **Готово, когда:** Без аккаунта легальная solo партия; online identity защищена. Локальная приёмка root/www завершена в S032; native Play/WebView отдельно не проверялись.
 - **Зависимости:** R-15,R-25. **Исполнитель:** Frontend + product. **Оценка:** 3–5 человеко-дня.
 
 #### R-22 · P2 · Цельная локализация AZ/RU/EN и TR pilot

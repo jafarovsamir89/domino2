@@ -1,0 +1,19 @@
+{
+  "session": "S034",
+  "date": "2026-10-19",
+  "card": "R-18",
+  "status": "partial",
+  "nativeDebugBuild": "passed",
+  "java": "Eclipse Temurin 21.0.12.1 in ignored workspace .tmp; system JDK unchanged",
+  "buildCommand": "bash gradlew :app:assembleDebug",
+  "apk": "android/app/build/outputs/apk/debug/app-debug.apk",
+  "apkInstalled": false,
+  "playPackageChanged": false,
+  "productionAccess": false,
+  "sourceChange": "MainActivity.onDestroy visibility protected -> public",
+  "remaining": [
+    "Native permission prompt and trusted/untrusted origin behavior on Android",
+    "Wi-Fi and LTE voice with an independent peer",
+    "TURN relay-only verification"
+  ]
+}

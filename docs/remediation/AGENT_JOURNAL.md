@@ -1,6 +1,6 @@
 # Agent journal: current handoff
 
-Updated 2026-10-19 after S031. Read this, then append-only WORK_LOG.md and docs/audit/REMEDIATION_PLAN.md. S031 fixes an Android Chrome/TalkBack defect in R-23: aria-pressed buttons lost aria-label in the native tree, so each tile now also contains visually hidden localized text. On the connected Xiaomi/Android 13, TalkBack's native hierarchy exposed all 7 named/focusable tiles and both named end-choice buttons; focused tile/end nodes were verified. S029 verified 320 CSS px and swipe on the same phone. The test used a localhost-only synthetic preview, not Play/WebView. Phone settings, mappings, temporary tab and preview were restored/closed. Keep explaining each result simply in Russian. Total is now 23/42 fully closed locally; no production or Play changes. Evidence: `evidence/session-031/ANDROID_TALKBACK_RESULTS.md`.
+Updated 2026-10-19 after S032. Read this, then append-only WORK_LOG.md and docs/audit/REMEDIATION_PLAN.md. S031 closed R-23 locally: fixed Android Chrome/TalkBack losing aria-label on aria-pressed tiles by adding visually hidden localized text. Native hierarchy on Xiaomi/Android 13 exposed all 7 named/focusable tiles, both end-choice labels, and focused nodes. S029 verified 320 CSS px/swipe. S032 closed R-20 locally: a guest starts solo before a delayed auth response; online/coins remain gated. Startup tests pass12/12 root/www. Local browser/synthetic acceptance only; Play/WebView not tested. Device state/mappings and preview were restored after S031. Keep explaining each result simply in Russian. Total is now 24/42 fully closed locally; no production or Play changes. Evidence: `evidence/session-031/ANDROID_TALKBACK_RESULTS.md` and `evidence/session-032/GUEST_BEFORE_AUTH_RESULTS.md`.
 
 ## Authorization and Git
 
@@ -8,7 +8,7 @@ Owner's deployed Domino has about50 users. Local fixes, synthetic tests, separat
 
 Branch fix/audit-foundation, origin https://github.com/jafarovsamir89/domino2. S022/S023 pushed eb8b21e. S024 monetary outbox checkpoint85b10a5. S025 startup checkpoint f6a395e is pushed and verified. Portable setup and a ready-to-paste agent prompt: CONTINUE_ON_NEW_COMPUTER.md. Confirm clean status/origin match before continuation.
 
-23/42 cards closed locally: R01,R02,R03,R04,R05,R06,R07,R08,R11,R12,R13,R14,R16,R17,R23,R27,R29,R31,R32,R39,R40,R41,R42. Nineteen cards remain open or partial; see their individual plan acceptance criteria. Key remaining scopes include R09 verified-ad/SSV, R10 active-match revocation policy, R15 same-device Android startup acceptance, R18 Wi-Fi/LTE/TURN, R19 external call/Bluetooth/audio-focus, R20/R22/R21 product acceptance, and R25 historical CI failures. No production release or all-green CI claim.
+24/42 cards closed locally: R01,R02,R03,R04,R05,R06,R07,R08,R11,R12,R13,R14,R16,R17,R20,R23,R27,R29,R31,R32,R39,R40,R41,R42. Eighteen cards remain open or partial; see their individual plan acceptance criteria. Key remaining scopes include R09 verified-ad/SSV, R10 active-match revocation policy, R15 same-device Android startup acceptance, R18 Wi-Fi/LTE/TURN, R19 external call/Bluetooth/audio-focus, R21/R22 product acceptance, and R25 historical CI failures. No production release or all-green CI claim.
 
 ## Latest two items
 
@@ -80,6 +80,28 @@ After audit-plan edits run validate-audit.mjs, update only existing347SHA manife
 - R-18 moved the same ICE config builder to `server/voice-config.js` and added direct tests for accepted URL shapes/schemes, TURN credentials, bad JSON/schemes, deduplication and bounds. Focused server voice tests4/4 pass; root `npm run check` and syntax checks pass.
 - Both cards remain partial: Colyseus join boundary and active-game policy remain for R-10; Android Java21 build/origin prompt, real microphone UI and Wi-Fi/LTE/TURN remain for R-18. No microphone prompt or production/Play request. Report: `evidence/session-030/SECURITY_VOICE_REGRESSION_RESULTS.md`.
 
+## S031/S032 current status — R-23 and R-20 closed locally
+
+- S031 fixes Android Chrome dropping `aria-label` from `aria-pressed` hand tiles: hidden localized text now supplies each native ToggleButton name. On Xiaomi Android13 with TalkBack active, 7 named/focusable tile nodes and both named end-choice buttons were present; tile and first end focus were verified in the Android accessibility hierarchy. Existing S029 evidence covers 320 CSS px and horizontal swipe. Evidence: `evidence/session-031/ANDROID_TALKBACK_RESULTS.md`. This was Android Chrome + synthetic localhost, not Play/WebView.
+- S032 lets the splash finish when UI is ready while auth resolves in background. Guest start interaction completed before a4s synthetic auth response; online/coins stayed blocked; guest API trace contained no heartbeat/economy/match-history call. Offline/hung-auth retry behavior remains covered. Startup suite12/12 on root/www; `npm run check` and parity pass. R-20 closed locally; R-15 stays partial pending physical cold/warm startup metrics. Evidence: `evidence/session-032/GUEST_BEFORE_AUTH_RESULTS.md`.
+- Combined count: **24/42 locally closed**. No production, Play package, or wallet changes.
+
+## S033 current status — R-10 Colyseus reconnect guarded
+
+- `DominoRoom.onAuth` and `onReconnect` now share platform API validation. Colyseus reconnection tokens bypass `onAuth`; before this patch, that route restored a disconnected seat without rechecking the platform session. The new hook checks the saved signed token, expiry, matching user/player and API session/ban status. Revoked/invalid access returns401; API outage fails closed with503; no per-move API call.
+- Synthetic focused suite `server/test/platform-game-auth.test.js` passes14/14; root `npm run check`, changed-file syntax and diff hygiene pass. No production/Play data was touched. Report: `evidence/session-033/PLATFORM_GAME_RECONNECT_RESULTS.md`.
+- Existing snapshots deliberately omit bearer tokens. After server restart, a reconnect token without the in-memory auth token is rejected and falls through to the existing reconnect-timeout path. Confirm whether this recovery behavior is acceptable or add a fresh-auth seat recovery design.
+- R-10 remains **partial**: an already-connected player is not immediately removed after logout/ban/delete, and no owner-defined SLA for that case exists. Do not add a mid-match disconnect without establishing fair match/economy behavior. API endpoint must deploy before a server relying on it.
+- Adjacent `disconnect-grace.test.js` run reported4 existing fixture/forfeit failures in23 cases. One fails on private Colyseus `roomId` accessed from prototype-only fixture; other bot takeover/reusable-state fixture expectations fail. Not attributed to S033 auth code and not green. Repair as separate test baseline work.
+
+**Current count remains24/42 locally closed.** S033 strengthens a partial card; it does not close R-10.
+
 ## Exact next action
 
-Continue with the closest local acceptance work: R-20 guest solo start/resume and online/coin blocking in an isolated browser, then R-10 Colyseus join-boundary and API timeout/fail-closed tests. Resolve the active-match revocation policy before implementing a kick/disconnect. R-23 is now locally closed based on S029/S031 Android Chrome layout, tile names/focus, and end-choice controls; native Play/WebView was not tested. If needed, prepare a temporary JDK21 toolchain for the isolated audit APK, retaining localhost-only endpoints; do not install the production package. R-18 Wi-Fi/LTE/TURN, R-15 physical startup timing, R-19 external audio focus, and R21 Console/owner policy still have explicit acceptance dependencies. Do not deploy to production or Play. Keep append-only evidence and accurate card counts.
+Continue native R-18 permission acceptance using a separately identified audit package; never install the same-ID debug APK over the Play installation. S034 JDK21 debug build passes after fixing `MainActivity.onDestroy()` visibility, but the permission prompt and network call remain untested. R-10's remaining decisions are active-match revocation/SLA and post-restart identity recovery. R-15 physical startup and R-19 external audio focus also remain open. Do not deploy to production or Play. Keep append-only evidence and accurate card counts.
+
+## S034 current status — R-18 Android compile repair
+
+- Java21 build exposed an actual compile failure: `MainActivity.onDestroy()` had weaker `protected` visibility than Capacitor `BridgeActivity.public`. Changed the override to `public`.
+- Downloaded official Temurin21 into ignored `.tmp` only; system JDK17 remains unchanged. `:app:assembleDebug` passes. No APK installed because it shares the Play application ID. Evidence: `evidence/session-034/ANDROID_VOICE_BUILD_RESULTS.md`.
+- R-18 stays partial until the native permission prompt/origin cancellation and Wi-Fi/LTE/TURN are exercised. R-10 also stays partial per S033. Overall locally closed remains **24/42**.

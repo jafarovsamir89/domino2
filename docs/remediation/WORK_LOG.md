@@ -375,3 +375,31 @@ TalkBack включили на время попытки проверки; Andro
 **Пользе простыми словами:** экранный диктор теперь может назвать каждую костяшку и сказать, можно ли её поставить; если подходит любой из двух краёв, оба направления имеют понятные названия и фокус. На узком телефоне костяшки не уменьшаются, а пролистываются.
 
 R-23 закрыта локально по согласованным критериям Android Chrome; общий счёт **23/42**. Следом — полная локальная приёмка R-20, затем синтетическая граница R-10. Глобальные тесты не повторялись, поскольку изменился только renderer/CSS; source checks и реальная device hierarchy были целевыми. Результаты и ограничения: `evidence/session-031/ANDROID_TALKBACK_RESULTS.md`, `summary.json`.
+
+# S032 — 2026-10-19 — R-20: гостевая solo до окончания auth
+
+**Что изменили:** заставка больше не ждёт account request; после готовности UI открывается гостевой безопасный стартовый экран, а профиль проверяется в фоне. При ожидании и для подтверждённого гостя доступны free solo и короткое объяснение; online и магазин монет закрыты. Принудительно отправленный обработчик coin shop тоже не открывает магазин. `requireRegisteredAccount()` возвращает отказ гостю. Auth timeout остаётся 6с, а network notice/retry добавляется и после снятия splash, если ответ потерялся. API-проверки нельзя использовать как основание доступа к локальной партии.
+
+**Проверка:** Chromium e2e для обеих копий сайта прошёл12/12: cold/warm startup, offline/retry, hung auth, guest solo до ответа синтетического auth через4с, скрытые/заблокированные online/coins, отсутствие heartbeat/economy/match-history запросов во время локального старта, отсутствие critical module/recovery регрессии. `npm run check`, `node --check js/app.js`, `js/splash.js`, `e2e/startup.spec.mjs` прошли. Root/www app и splash синхронны. Выход Playwright — 12 passed/58.2s на Node25.
+
+**Пользе простыми словами:** человеку больше не нужно ждать вход, чтобы сыграть бесплатную партию с ботами. Пока сервер проверяет аккаунт или недоступен, игра остаётся локальной; онлайн и монеты не открываются.
+
+R-20 закрыта локально по browser acceptance, общий счёт **24/42**. R-15 остаётся открытой: физические cold/warm/offline метрики на Android не сняты. Обновлены `js/app.js`, `js/splash.js`, `e2e/startup.spec.mjs` и их `www/` копии. Доказательства: `evidence/session-032/GUEST_BEFORE_AUTH_RESULTS.md`, `summary.json`. Нет production/Play deploy и пользовательских данных.
+
+## S033 — 2026-10-19 — Colyseus reconnect boundary R-10
+
+В Colyseus regular join вызывает `onAuth`, но reconnect-token path вызывает `onReconnect`. До S033 `DominoRoom` не имел такого hook, поэтому восстановление отсоединённого места могло миновать актуальную проверку платформенной сессии. Вынесена общая `validatePlatformGameToken`, добавлена `onReconnect`: сверяются подпись/срок токена и user/player с сохранённой identity, затем API подтверждает сессию и блокировку. 401/invalid deny, API errors fail closed503, timeout3s. Запросы на каждый ход нет.
+
+`server/test/platform-game-auth.test.js` —14/14 pass: валидный вход и reconnect, expired/revoked/mismatch, API5xx/timeout, missing saved identity. `npm run check`, JS syntax и `git diff --check` pass. Смежный `disconnect-grace.test.js` имеет4 failures в fixture/forfeit expectations; отчёт их перечисляет, suite не считается зелёной.
+
+Snapshot sanitization намеренно не сохраняет bearer token. Поэтому restart reconnect без нового механизма identity recovery закрывается fail-closed и переходит в существующий reconnect timeout. Уже подключённый пользователь не отключается сразу по logout/ban/delete. Эти политики/SLA не определены, поэтому R-10 остаётся partial, счёт24/42. Синтетика only; production/Play не использовались. Подробности — `evidence/session-033/PLATFORM_GAME_RECONNECT_RESULTS.md`.
+
+Для владельца: теперь истёкшая или отозванная учётная запись не может вернуться в комнату по старой ссылке восстановления. Уже начатую партию сервер не обрывает; это правило нужно решить отдельно, чтобы не портить игру посреди матча.
+
+## S034 — 2026-10-19 — Android voice build R-18
+
+Проверена Android-сборка на подключённом телефоне, без установки APK. Сначала выявлен compile blocker: проектный Capacitor требует Java21; Java17 не поддерживала `--release 21`. Для локальной сборки загружен официальный Temurin21 в ignored `.tmp`; системная Java не менялась. При повторной сборке выявлено и исправлено несоответствие override: `MainActivity.onDestroy()` был `protected`, базовый `BridgeActivity` — `public`. После исправления `:app:assembleDebug` проходит. Debug APK имеет тот же application ID, поэтому его не ставили поверх Play app.
+
+Голосовое разрешение, trusted/untrusted WebView origins и Wi-Fi/LTE/TURN не тестировались. R-18 partial, общий счёт24/42. Локальная сборка не обращалась к production. Результаты: `evidence/session-034/ANDROID_VOICE_BUILD_RESULTS.md`.
+
+Для владельца: поправили ошибку, из-за которой Android приложение не собиралось. APK теперь собирается; проверка микрофона и реального голоса ещё нужна.

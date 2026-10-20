@@ -394,23 +394,7 @@ class DominoRoom extends Room {
         const token = String(context?.token || options?.authToken || options?._authToken || "").trim();
         const platformIdentity = verifyGameToken(token);
         if (platformIdentity) {
-            let validationResponse;
-            try {
-                validationResponse = await fetch(`${resolvePlatformApiUrl()}/api/platform/game-token/validate`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json", Accept: "application/json" },
-                    body: JSON.stringify({ token }),
-                    signal: AbortSignal.timeout(3000)
-                });
-            } catch {
-                throw new ServerError(503, "auth_validation_unavailable");
-            }
-            if (validationResponse.status >= 500) {
-                throw new ServerError(503, "auth_validation_unavailable");
-            }
-            if (!validationResponse.ok) {
-                throw new ServerError(401, "auth_required");
-            }
+            await this.validatePlatformGameToken(token);
             return {
                 provider: "platform",
                 authToken: token,
@@ -421,6 +405,40 @@ class DominoRoom extends Room {
             };
         }
         throw new Error("auth_required");
+    }
+
+    async validatePlatformGameToken(token) {
+        let validationResponse;
+        try {
+            validationResponse = await fetch(`${resolvePlatformApiUrl()}/api/platform/game-token/validate`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json", Accept: "application/json" },
+                body: JSON.stringify({ token }),
+                signal: AbortSignal.timeout(3000)
+            });
+        } catch {
+            throw new ServerError(503, "auth_validation_unavailable");
+        }
+        if (validationResponse.status >= 500) {
+            throw new ServerError(503, "auth_validation_unavailable");
+        }
+        if (!validationResponse.ok) {
+            throw new ServerError(401, "auth_required");
+        }
+    }
+
+    async onReconnect(client) {
+        // Colyseus reconnection tokens bypass onAuth(). Revalidate the saved
+        // platform identity before restoring a disconnected seat.
+        const identity = this.identityBySessionId?.get?.(client?.sessionId) || {};
+        const token = String(identity.authToken || "").trim();
+        const platformIdentity = verifyGameToken(token);
+        if (!platformIdentity
+            || platformIdentity.userId !== String(identity.userId || "")
+            || platformIdentity.playerId !== String(identity.playerId || "")) {
+            throw new ServerError(401, "auth_required");
+        }
+        await this.validatePlatformGameToken(token);
     }
 
     findReusableSessionId(options = {}, identity = {}) {

@@ -1,0 +1,34 @@
+{
+  "session": "S033",
+  "date": "2026-10-19",
+  "card": "R-10",
+  "status": "partial",
+  "scope": "synthetic Colyseus join and reconnect boundary",
+  "productionAccess": false,
+  "playPackageChanged": false,
+  "behavior": {
+    "joinChecksPlatformApi": true,
+    "reconnectChecksPlatformApi": true,
+    "expiredOrMismatchedSavedIdentityRejected": true,
+    "revokedSessionRejected": true,
+    "apiUnavailableFailsClosed": true,
+    "validationTimeoutMs": 3000,
+    "validationPerMove": false,
+    "alreadyConnectedPlayerDisconnectedOnRevocation": false,
+    "snapshotRetainsBearerToken": false
+  },
+  "tests": {
+    "focusedAuthSuite": "14/14 passed",
+    "adjacentDisconnectGraceSuite": "4 existing fixture/forfeit failures; not green"
+  },
+  "checks": {
+    "npmRunCheck": "passed",
+    "sourceSyntax": "passed",
+    "gitDiffCheck": "passed"
+  },
+  "remaining": [
+    "Define and test behavior/SLA for logout, ban, or deletion during an already connected match.",
+    "Accept or redesign reconnect behavior after server restart when the snapshot omits the original bearer token.",
+    "Release platform API before the game server; no release was performed."
+  ]
+}

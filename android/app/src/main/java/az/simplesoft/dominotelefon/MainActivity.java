@@ -144,7 +144,7 @@ public class MainActivity extends BridgeActivity {
     }
 
     @Override
-    protected void onDestroy() {
+    public void onDestroy() {
         PermissionRequest request = pendingAudioPermissionRequest;
         pendingAudioPermissionRequest = null;
         pendingAudioPermissionOrigin = null;

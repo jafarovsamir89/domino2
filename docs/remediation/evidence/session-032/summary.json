@@ -1,0 +1,51 @@
+{
+  "session": "S032",
+  "date": "2026-10-19",
+  "cards": {
+    "R-20": "closed_locally",
+    "R-15": "still_open_physical_android_acceptance"
+  },
+  "runtime": {
+    "browser": "Playwright Chromium",
+    "node": "25.6.0",
+    "api": "synthetic local responses",
+    "productionAccess": false,
+    "playPackageChanged": false
+  },
+  "behavior": {
+    "splashWaitsForAccount": false,
+    "guestCanStartBeforeAuthResolves": true,
+    "syntheticAuthDelayMs": 4000,
+    "guestMatchStartedBeforeAuthResolved": true,
+    "onlineControlsHiddenWhilePendingAndForGuest": true,
+    "coinShopHiddenAndForcedEventBlocked": true,
+    "requireRegisteredAccountReturnsNullForGuest": true,
+    "guestMatchSentHeartbeat": false,
+    "guestMatchSentEconomyRequest": false,
+    "guestMatchSentHistoryRequest": false,
+    "offlineNoticeAppearsAfterLateAuthFailure": true,
+    "boundedAuthTimeoutMs": 6000
+  },
+  "tests": {
+    "startupSuite": "12/12 passed",
+    "durationSeconds": 58.2,
+    "rootAndWww": true,
+    "cases": [
+      "cold/warm startup",
+      "offline notice/retry",
+      "hung account request",
+      "guest local solo before auth with online/coin gates",
+      "missing critical module",
+      "stalled critical module deadline"
+    ]
+  },
+  "checks": {
+    "nodeCheckAppSplashTest": "passed",
+    "npmRunCheck": "passed",
+    "rootWwwParity": "passed"
+  },
+  "limitations": [
+    "No physical Android or installed Play/WebView acceptance in this session.",
+    "R-15 remains open for same-device cold/warm/offline startup metrics."
+  ]
+}
