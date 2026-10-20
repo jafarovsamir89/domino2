@@ -27,17 +27,18 @@ git pull --ff-only
 2. [AGENT_JOURNAL.md](AGENT_JOURNAL.md) — актуальный контекст, решения, ограничения и следующий шаг.
 3. [WORK_LOG.md](WORK_LOG.md) — история действий и проверок; дополнять, не переписывать.
 4. [REMEDIATION_PLAN.md](../audit/REMEDIATION_PLAN.md) — единый план из 42 карточек.
-5. [Последний результат S030: regression tests R-10 и R-18](evidence/session-030/SECURITY_VOICE_REGRESSION_RESULTS.md).
-6. [Результат S029: Android 320px для R-23](evidence/session-029/ANDROID_ACCESSIBILITY_RESULTS.md).
-7. [Результат S028: R-20 и R-22](evidence/session-028/LOCAL_SOLO_LOCALIZATION_RESULTS.md).
-8. [Результат S027: R-21 и R-23](evidence/session-027/ACCESSIBILITY_DELETION_RESULTS.md).
-9. [Результат S026: исходная реализация R-10 и R-18](evidence/session-026/SECURITY_REALTIME_RESULTS.md).
+5. [Последний результат S031: Android TalkBack R-23](evidence/session-031/ANDROID_TALKBACK_RESULTS.md).
+6. [Результат S030: regression tests R-10 и R-18](evidence/session-030/SECURITY_VOICE_REGRESSION_RESULTS.md).
+7. [Результат S029: Android 320px для R-23](evidence/session-029/ANDROID_ACCESSIBILITY_RESULTS.md).
+8. [Результат S028: R-20 и R-22](evidence/session-028/LOCAL_SOLO_LOCALIZATION_RESULTS.md).
+9. [Результат S027: R-21 и R-23](evidence/session-027/ACCESSIBILITY_DELETION_RESULTS.md).
+10. [Результат S026: исходная реализация R-10 и R-18](evidence/session-026/SECURITY_REALTIME_RESULTS.md).
 
-Полностью закрыты локально **22/42 карточки**. R-09/R-15/R-19/R-25 имеют оставшийся объём. R-20/R-22 частичны по S028. R-21/R-23 частичны: S029 подтверждает Android Chrome layout/swipe для 320 CSS px, но TalkBack speech/focus не принят. R-10/R-18 получили targeted regression tests S030; native Android, active-room policy and Wi-Fi/LTE/TURN checks remain open. S030 focused checks pass: API auth service 6/6, server voice 4/4. Previous product checkpoints include `85b10a5` and `f6a395e`; latest docs checkpoint `7c22544`.
+Полностью закрыты локально **23/42 карточки**. R-23 закрыта в S031: на Android Chrome при включённом TalkBack системное дерево получило имена и фокус костяшек и выбора конца; S029 подтвердил 320 CSS px и горизонтальную прокрутку. Проверка была на localhost synthetic preview, не на установленном Play/WebView. Остальные 19 карточек ещё открыты или частичны. Приоритетное продолжение: R-20 guest start/resume и блок online/coin для гостя; R-10 join-boundary/timeout tests и решение политики активного матча. R-09/R-15/R-18/R-19/R-21/R-22/R-25 и другие карточки сохраняют критерии плана. S030 focused checks: API auth service 6/6, server voice 4/4. Предыдущие code checkpoints `85b10a5` и `f6a395e`; latest docs checkpoint `7c22544`.
 
 Проверено: API **148/148** на Node 22/25; server **390/397** и E2E **53/62** содержат прежние 7/9 падений. Новые 10 браузерных сценариев запуска прошли. В S030 `npm run check`, API `tsc`, targeted API 6/6 и voice 4/4 проходят. Это не полностью зелёный набор. Точные имена и доказательства: [failure-delta.json](evidence/session-025/failure-delta.json), [проверки R-29](evidence/session-024/summary.json), [проверки R-15](evidence/session-025/summary.json).
 
-Следующий шаг — продолжить приёмку R-10/R-18: Colyseus join boundary, API timeout fail-closed, решение о поведении уже начатой партии, затем native `.audit` build на JDK21 и trusted/untrusted origin permission flow. Wi-Fi/LTE и relay-only TURN принимать только через локальный синтетический второй клиент/сервер. Параллельно выполнить TalkBack focus/speech для R-23; S029 принял только 320px layout/swipe в Android Chrome, не native WebView. Для R-20/R-22 ещё нужны guest start/resume и online/coin blocking в изолированном browser, полная локализация и narrow-width review. Для R-21 нужно подтверждение владельца/Console перед публикацией. Телефонные замеры R-15 и внешний audio focus R-19 всё ещё открыты. Не развёртывать production или Play.
+Следующий шаг — R-20: закончить isolated browser acceptance для guest solo start/resume и доказать, что online/coins остаются закрыты гостю; затем R-10 synthetic Colyseus join boundary, timeout/fail-closed и безопасная политика уже начатой партии. R-23 TalkBack/320px принят локально в Android Chrome; native Play/WebView остаётся за границей этой приёмки. R-18 Wi-Fi/LTE/TURN, R-15 телефонные startup метрики и R-19 внешнее audio focus остаются открытыми. R-21 всё ещё требует owner/Console policy перед публикацией. Не развёртывать production или Play.
 
 Телефонные замеры запуска R-15 и внешняя приёмка звука R-19 остаются открытыми. Владелец разрешил продолжать без телефона; не блокировать этим независимую работу и не выдавать браузерные результаты за Android.
 

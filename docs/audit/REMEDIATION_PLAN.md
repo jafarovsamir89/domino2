@@ -293,11 +293,11 @@ Status: **fixed locally, S016**. Liveness/readiness bypass application Redis rat
 
 #### R-23 · P1 · Touch targets и доступная рука
 
-Статус: **частично исправлено локально, S027**. Семь костяшек теперь именованные кнопки с состоянием доступности, клавиатурный выбор хода и стороны работает через click/focus, touch-area костяшки — 44×66 CSS px; на узком экране рука прокручивается вместо уменьшения. Нужны проверка на 320px в живом интерфейсе и TalkBack на Android; карточка пока не закрыта. [Результаты](../remediation/evidence/session-027/ACCESSIBILITY_DELETION_RESULTS.md). Основание: размеры/скриншоты; [исходные доказательства](06_UI_UX_DESIGN.md).
+Статус: **исправлено локально, S031**. На Xiaomi Android 13 с TalkBack включённым выявили, что Chrome теряет `aria-label` у `aria-pressed` кнопок. Добавлен скрытый текст внутри каждой костяшки; системное accessibility tree теперь показывает все 7 полных имён и состояние хода. На устройстве узел костяшки получил фокус, а выбор края — доступная группа с двумя подписанными кнопками и начальным фокусом. Android Chrome при 320 CSS px сохранил 44×66 CSS px и горизонтальную прокрутку в S029. [Результаты S031](../remediation/evidence/session-031/ANDROID_TALKBACK_RESULTS.md), [Android 320px S029](../remediation/evidence/session-029/ANDROID_ACCESSIBILITY_RESULTS.md), [реализация S027](../remediation/evidence/session-027/ACCESSIBILITY_DELETION_RESULTS.md). Production/Play не менялись. Приёмка выполнена на Android Chrome с localhost synthetic preview, не на установленном Play/WebView пакете.
 
-- **Изменение:** Сделать 7 костяшек доступными именованными элементами с клавиатурным/assistive выбором конца. Увеличить hit areas без перекрытия. На естественном ходе человека Tab не достигал ни одной костяшки; actual TalkBack speech ещё предстоит проверить.
+- **Изменение:** Сделать 7 костяшек доступными именованными элементами с клавиатурным/assistive выбором конца. Увеличить hit areas без перекрытия. S031 подтвердил семь именованных/focusable native nodes и сфокусированный end control с включённым TalkBack; аудиозапись синтезированной речи не делалась.
 - **Где:** `index.html;ui-capture.json;renderer.js`.
-- **Готово, когда:** Удобные hit areas, 7 tiles, TalkBack/focus и 320px.
+- **Готово, когда:** Удобные hit areas, 7 tiles, TalkBack/focus и 320px. Локальная приёмка S029/S031 завершена.
 - **Зависимости:** R-14. **Исполнитель:** UX/frontend + device QA. **Оценка:** 2–4 человеко-дня.
 
 #### R-18 · P1 · Voice ICE contract и NAT проверка

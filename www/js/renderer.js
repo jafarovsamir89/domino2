@@ -1091,6 +1091,14 @@ export class Renderer {
                 status
             }) || `Tile ${i + 1} of ${tiles.length}: ${t.a} and ${t.b}. ${status}`;
             el.setAttribute('aria-label', ariaLabel);
+            // Chromium on Android exposes aria-pressed buttons as ToggleButtons
+            // and drops their aria-label from the native TalkBack node. Keep a
+            // visually hidden text name inside the button so TalkBack can read
+            // each tile while aria-pressed continues to expose selection state.
+            const accessibleLabel = document.createElement('span');
+            accessibleLabel.className = 'hand-tile-accessible-label';
+            accessibleLabel.textContent = ariaLabel;
+            el.appendChild(accessibleLabel);
             el.setAttribute('aria-disabled', String(!isPlayable));
             el.setAttribute('aria-pressed', String(i === sel));
             el.dataset.handIndex = String(i);

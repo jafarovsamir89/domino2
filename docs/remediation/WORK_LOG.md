@@ -363,3 +363,15 @@ Correction to S024 prose above: API148/146 was a documentation typo; final resul
 На обычной ширине телефона 393 CSS px видны семь костяшек. При временном размере 880x2400 и исходной плотности 440 dpi (320 CSS px) костяшки сохраняют минимальный размер 44x66 CSS px, ряд не ужимается, а свайп по нему показывает крайнюю правую костяшку. Снимки и ограничения — `evidence/session-029/ANDROID_ACCESSIBILITY_RESULTS.md`.
 
 TalkBack включили на время попытки проверки; Android показал первичное обучение и системный запрос, поэтому диктовку и фокус отдельных костяшек принять не удалось. TalkBack, touch exploration и размер экрана возвращены в исходное состояние; временные ADB mappings удалены, локальный preview остановлен. R-23 остаётся частичным. Всего полностью закрыто 22/42 карточки.
+
+# S031 — 2026-10-19 — Android TalkBack R-23 fixed and accepted locally
+
+**Что нашли:** в Android Chrome системная accessibility hierarchy превращала tile buttons с `aria-pressed` в `ToggleButton` и теряла их `aria-label`. До исправления семь плиток были focusable, но без имени; TalkBack не мог сообщить номер/значения и доступность хода.
+
+**Что изменили:** `Renderer.renderHand()` добавляет к каждой костяшке тот же локализованный текст как visually hidden child; сохраняются `aria-label`, `aria-disabled`, `aria-pressed` и размер hit area. Повторена пара root/www копий. На Xiaomi 2201117SG / Android 13 / Chrome с TalkBack enabled системное дерево теперь выдаёт 7 отдельных узлов с полным текстом и state. Нативный node для первой костяшки был `focused=true` и имел имя. Реальный `showArrowChoices()` с синтетическим выбором двух краёв дал две подписанные Android-кнопки; первый край получил фокус. Снимок с фокусом и native hierarchy в `evidence/session-031/`. Предыдущая реальная проверка 320 CSS px и горизонтального swipe на том же телефоне в S029.
+
+**Проверки:** `npm run check`, `node --check js/renderer.js`, `git diff --check`, byte parity `js/renderer.js`/`www/js/renderer.js` и `css/style.css`/`www/css/style.css` — pass. Синтетическая game screen; ни production, ни Play app, ни пользовательские данные не затрагивались. TalkBack был включён только для этой проверки; вернул `enabled_accessibility_services=null`, `accessibility_enabled=0`, `touch_exploration_enabled=0`; вернул display size1080×2400, снял ADB mappings, закрыл созданную вкладку, остановил localhost preview. Native WebView/Play acceptance не заявляется; audio recording TalkBack не делался.
+
+**Пользе простыми словами:** экранный диктор теперь может назвать каждую костяшку и сказать, можно ли её поставить; если подходит любой из двух краёв, оба направления имеют понятные названия и фокус. На узком телефоне костяшки не уменьшаются, а пролистываются.
+
+R-23 закрыта локально по согласованным критериям Android Chrome; общий счёт **23/42**. Следом — полная локальная приёмка R-20, затем синтетическая граница R-10. Глобальные тесты не повторялись, поскольку изменился только renderer/CSS; source checks и реальная device hierarchy были целевыми. Результаты и ограничения: `evidence/session-031/ANDROID_TALKBACK_RESULTS.md`, `summary.json`.

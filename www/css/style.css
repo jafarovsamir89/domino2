@@ -5272,6 +5272,20 @@ body.is-solo-game .voice-roster-panel {
     cursor: pointer;
 }
 
+.hand-tile-accessible-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+    pointer-events: none;
+}
+
 .hand > button.hand-tile:focus-visible {
     z-index: 2;
     outline: 3px solid var(--accent);

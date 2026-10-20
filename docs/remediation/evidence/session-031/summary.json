@@ -1,0 +1,48 @@
+{
+  "session": "S031",
+  "date": "2026-10-19",
+  "card": "R-23",
+  "status": "closed_locally",
+  "device": {
+    "model": "Xiaomi 2201117SG",
+    "android": "13",
+    "browser": "Android Chrome",
+    "talkBackEnabled": true,
+    "appUnderTest": "localhost synthetic preview",
+    "playPackageOpened": false
+  },
+  "results": {
+    "tileNodes": 7,
+    "tileAccessibleNames": 7,
+    "tileNodesFocusable": 7,
+    "focusedTileNameVerified": true,
+    "ambiguousEndButtons": 2,
+    "ambiguousEndButtonNames": [
+      "Place toward ←, on 3",
+      "Place toward →, on 3"
+    ],
+    "firstEndButtonFocused": true,
+    "viewport320CssPixels": "passed in S029 on same device",
+    "touchTargetCssPixels": [44, 66],
+    "horizontalHandScroll": "passed in S029 on same device"
+  },
+  "bugFound": "Android Chrome mapped aria-pressed tile buttons to ToggleButton nodes and omitted aria-label from the native accessibility hierarchy.",
+  "fix": "Added localized visually hidden text inside each hand tile button; retained aria-label, aria-disabled, and aria-pressed.",
+  "checks": {
+    "npmRunCheck": "passed",
+    "rendererNodeCheck": "passed",
+    "gitDiffCheck": "passed",
+    "webWwwParity": "passed"
+  },
+  "limitations": [
+    "TalkBack output was not captured as an audio recording.",
+    "Acceptance used Android Chrome and localhost synthetic data, not the installed Play/Capacitor package."
+  ],
+  "evidence": [
+    "android-hand-accessibility.xml",
+    "android-end-choice-accessibility.xml",
+    "android-talkback-end-choice.png",
+    "../session-029/ANDROID_ACCESSIBILITY_RESULTS.md"
+  ],
+  "productionOrPlayChanged": false
+}
