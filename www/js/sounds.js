@@ -16,6 +16,8 @@ let effectsGain = null;
 let nativeMuted = false;
 let nativeAudio = null;
 let nativeAudioReady = null;
+let nativeStateRevision = 0;
+let nativeConfigureRevision = 0;
 const effectsEnabled = () => !audioSettings.masterMuted && !lifecycleMuted && !nativeMuted && audioSettings.effectsVolume > 0;
 export function getAudioSettings() { return { ...audioSettings }; }
 export function updateAudioSettings(patch = {}) {
@@ -55,8 +57,15 @@ function acceptNativeAudioState(state) {
 }
 function syncNativeAudio() {
     if (!nativeAudioReady) return;
-    nativeAudioReady.then(() => nativeAudio.configure({ enabled: !audioSettings.masterMuted &&
-        (audioSettings.musicVolume > 0 || audioSettings.effectsVolume > 0) })).then(acceptNativeAudioState).catch(() => {});
+    const request = ++nativeConfigureRevision;
+    nativeAudioReady.then(async () => {
+        if (request !== nativeConfigureRevision) return;
+        const stateRevision = nativeStateRevision;
+        const state = await nativeAudio.configure({ enabled: !audioSettings.masterMuted &&
+            (audioSettings.musicVolume > 0 || audioSettings.effectsVolume > 0) });
+        // A pause/resume notification owns newer state than this bridge reply.
+        if (request === nativeConfigureRevision && stateRevision === nativeStateRevision) acceptNativeAudioState(state);
+    }).catch(() => {});
 }
 // Older installed builds have no custom audio bridge; browser lifecycle still works.
 try {
@@ -65,7 +74,10 @@ try {
         nativeMuted = true;
         nativeAudio = cap.registerPlugin?.('DominoAudio') || cap.Plugins?.DominoAudio;
         if (!nativeAudio) throw new Error('Native audio bridge unavailable');
-        nativeAudioReady = Promise.resolve(nativeAudio.addListener('stateChange', acceptNativeAudioState));
+        nativeAudioReady = Promise.resolve(nativeAudio.addListener('stateChange', state => {
+            nativeStateRevision++;
+            acceptNativeAudioState(state);
+        }));
         syncNativeAudio();
     }
 } catch (_) { nativeMuted = false; }

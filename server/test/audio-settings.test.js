@@ -23,5 +23,15 @@ for(const asset of ['js/sounds.js','www/js/sounds.js']){
   notify({active:true,foreground:true});assert.equal(f.audio[0].paused,false);
   f.api.toggleMute();notify({active:true,foreground:true});assert.equal(f.audio[0].paused,true);assert.equal(f.api.isMuted(),true);
  });
+ test(`${asset}: a delayed native configure result cannot unmute after the Activity paused`,async()=>{
+  let notify,finish;const plugin={addListener:async(name,fn)=>{notify=fn},configure:()=>new Promise(resolve=>{finish=resolve})};
+  const f=load(asset,new Map(),{Capacitor:{isNativePlatform:()=>true,isPluginAvailable:()=>true,Plugins:{DominoAudio:plugin}}});
+  await new Promise(r=>setImmediate(r));f.api.startMenuMusic();
+  notify({active:false,foreground:false});finish({active:true,foreground:true});
+  await new Promise(r=>setImmediate(r));
+  assert.equal(f.audio[0].paused,true,'older configuration must not override the newer pause event');
+  f.api.sndScore();assert.equal(f.counts.oscillators,0);
+  notify({active:true,foreground:true});assert.equal(f.audio[0].paused,false);
+ });
 
 }
