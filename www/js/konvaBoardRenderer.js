@@ -659,8 +659,10 @@ export class KonvaBoardRenderer {
             anchor.dataset.orientation = node.orientation || 'horizontal';
             anchor.style.cssText = [
                 'position:absolute',
-                `left:${rect.left}px`,
-                `top:${rect.top}px`,
+                // .board-tile is centered on its left/top coordinates. Keep the
+                // accessible DOM anchor aligned with the Konva tile bounds.
+                `left:${rect.centerX}px`,
+                `top:${rect.centerY}px`,
                 `width:${rect.width}px`,
                 `height:${rect.height}px`,
                 'opacity:0',

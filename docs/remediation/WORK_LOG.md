@@ -421,3 +421,14 @@ Snapshot sanitization намеренно не сохраняет bearer token. �
 **Пользе простыми словами:** автоматическая проверка теперь проверяет настоящий экран, а не старую версию подписи/меню; поэтому устаревшие ожидания больше не мешают видеть реальные проблемы. Ещё семь E2E случаев падают и требуют ремонта, поэтому R-25 не закрыта; общий итог остаётся **24/42**.
 
 В S036 production, Play и реальные пользовательские данные не затронуты. Подробности и семь оставшихся падений: `evidence/session-036/E2E_BASELINE_RESULTS.md`, `summary.json`.
+## S037 — 2026-10-20 — R-25 E2E repair and CI foundation
+
+Полная локальная матрица снова зелёная: `npm test` — pass (server **413/413**, API **149/149**, source checks); `npm run test:e2e` — **64/64** на root и `www`; `git diff --check` pass. До исправления E2E было57/64.
+
+Исправлены два продуктовых дефекта. Независимые room/play invitation endpoints теперь объединяются как один snapshot, поэтому пустой ответ одного endpoint не удаляет строки второго. После удаления диалога его cached row удаляется из inbox/chat и локального cache; устаревшие in-flight inbox/thread responses отбрасываются. E2E удерживает старый ответ до удаления и подтверждает, что он не восстанавливает удалённую строку. Исправлен Konva accessible tile anchor: DOM bounds теперь совпадают с canvas coordinates. Обновлены корректные test-fixture contracts для доступных arrow controls, reconnect client's `http` object и повторной загрузки auth credentials.
+
+`js/app.js`/`www/js/app.js` и `js/konvaBoardRenderer.js`/`www/js/konvaBoardRenderer.js` синхронизированы byte-for-byte. Добавлен `.github/workflows/ci.yml`: fresh PostgreSQL14.20 migrations, npm suites, admin build, Playwright64, Capacitor asset copy, Android debug build на Java21. Workflow ещё не запускался на GitHub; `fix/audit-foundation` не защищена, обязательный статус не настроен. Мы не меняли настройки доступа.
+
+**Простыми словами:** два списка приглашений больше не стирают друг друга; удалённый чат не появляется обратно; положение невидимой костяшки совпадает с нарисованным столом. Автопроверка локально проходит полностью. На GitHub ещё нужно получить зелёный workflow и настроить обязательность проверки, поэтому R-25 не закрыта и итог — **24/42**. Никаких production, Play или пользовательских данных.
+
+Доказательства и повторение: `evidence/session-037/TEST_MATRIX_RESULTS.md`, `summary.json`. ADB отсутствует. Следующий шаг: commit/push и наблюдение за первым GitHub Actions run.

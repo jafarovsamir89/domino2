@@ -5032,12 +5032,17 @@ class DominoGame {
             this.renderSocialInboxPanel();
         }
 
-        this._inboxLoadInFlight = (async () => {
+        const generation = Number(this._inboxLoadGeneration || 0);
+        let loadPromise;
+        loadPromise = (async () => {
             try {
                 const [data, threadData] = await Promise.all([
                     this.account.getInbox(),
                     this.loadMessageThreads().catch(() => [])
                 ]);
+                if (generation !== Number(this._inboxLoadGeneration || 0)) {
+                    return this.socialInboxState?.items || [];
+                }
                 const items = Array.isArray(data?.items) ? data.items : [];
                 const threads = Array.isArray(threadData) ? threadData : [];
                 const unreadCount = Math.max(0, Number(data?.unreadCount || 0));
@@ -5052,6 +5057,9 @@ class DominoGame {
                 await this.loadSocialSummary();
                 return items;
             } catch (err) {
+                if (generation !== Number(this._inboxLoadGeneration || 0)) {
+                    return this.socialInboxState?.items || [];
+                }
                 this.socialInboxState = {
                     items: [],
                     unreadCount: 0,
@@ -5062,11 +5070,28 @@ class DominoGame {
                 this.updateSocialCenterBadge();
                 return [];
             } finally {
-                this._inboxLoadInFlight = null;
+                if (this._inboxLoadInFlight === loadPromise) {
+                    this._inboxLoadInFlight = null;
+                }
             }
         })();
+        this._inboxLoadInFlight = loadPromise;
 
-        return this._inboxLoadInFlight;
+        return loadPromise;
+    }
+
+    async refreshInboxAfterMutation() {
+        const staleLoad = this._inboxLoadInFlight;
+        const staleThreadLoad = this._messageThreadsLoadInFlight;
+        this._inboxLoadGeneration = Number(this._inboxLoadGeneration || 0) + 1;
+        this._messageThreadsLoadGeneration = Number(this._messageThreadsLoadGeneration || 0) + 1;
+        this._inboxLoadInFlight = null;
+        this._messageThreadsLoadInFlight = null;
+        await Promise.all([
+            staleLoad?.catch(() => []),
+            staleThreadLoad?.catch(() => [])
+        ]);
+        return this.loadInboxPage();
     }
 
     mergeConversationMessages(existingMessages = [], freshMessages = []) {
@@ -5384,7 +5409,23 @@ class DominoGame {
                     deleteBtn.disabled = true;
                     try {
                         await this.account.deleteMessageThread(playerId);
-                        await this.loadInboxPage();
+                        const deletedPlayerId = String(playerId || '').trim();
+                        const remainingThreads = (Array.isArray(this.accountMessagesState?.threads) ? this.accountMessagesState.threads : [])
+                            .filter((thread) => String(thread?.player?.id || thread?.playerId || thread?.id || '').trim() !== deletedPlayerId);
+                        this.accountMessagesState = {
+                            ...(this.accountMessagesState || {}),
+                            threads: remainingThreads,
+                            activePlayerId: String(this.accountMessagesState?.activePlayerId || '').trim() === deletedPlayerId
+                                ? ''
+                                : this.accountMessagesState?.activePlayerId || ''
+                        };
+                        this.socialInboxState = {
+                            ...(this.socialInboxState || {}),
+                            threads: (Array.isArray(this.socialInboxState?.threads) ? this.socialInboxState.threads : [])
+                                .filter((thread) => String(thread?.player?.id || thread?.playerId || thread?.id || '').trim() !== deletedPlayerId)
+                        };
+                        await this.saveCachedThreads(String(this.account?.playerId || this.account?.id || '').trim(), remainingThreads);
+                        await this.refreshInboxAfterMutation();
                     } catch (err) {
                         this.renderer.showMessage(err?.message || this.t('messages-load-failed'), 1800);
                     } finally {
@@ -5559,7 +5600,7 @@ class DominoGame {
                 deleteBtn.disabled = true;
                 try {
                     await this.account.deleteInboxMessage(item.id);
-                    await this.loadInboxPage();
+                    await this.refreshInboxAfterMutation();
                 } catch (err) {
                     this.renderer.showMessage(err?.message || this.t('inbox-load-failed'), 1800);
                 } finally {
@@ -5590,6 +5631,7 @@ class DominoGame {
         const currentThreads = Array.isArray(currentState.threads) ? currentState.threads : [];
         const shouldShowLoading = !currentThreads.length;
         const currentPlayerId = String(this.account?.playerId || this.account?.id || '').trim();
+        const generation = Number(this._messageThreadsLoadGeneration || 0);
 
         if (shouldShowLoading) {
             this.accountMessagesState = {
@@ -5601,7 +5643,8 @@ class DominoGame {
 
             if (currentPlayerId) {
                 this.getCachedThreads(currentPlayerId).then((cached) => {
-                    if (cached && cached.length && !this.accountMessagesState?.threads?.length) {
+                    if (generation === Number(this._messageThreadsLoadGeneration || 0)
+                        && cached && cached.length && !this.accountMessagesState?.threads?.length) {
                         this.accountMessagesState = {
                             ...(this.accountMessagesState || {}),
                             threads: cached,
@@ -5613,9 +5656,13 @@ class DominoGame {
             }
         }
 
-        this._messageThreadsLoadInFlight = (async () => {
+        let loadPromise;
+        loadPromise = (async () => {
             try {
                 const items = await this.account.getMessageThreads();
+                if (generation !== Number(this._messageThreadsLoadGeneration || 0)) {
+                    return this.accountMessagesState?.threads || [];
+                }
                 const threads = Array.isArray(items) ? items : [];
                 const currentActiveId = String(this.accountMessagesState?.activePlayerId || '').trim();
                 const mergedThreads = this.mergeConversationThreads(currentThreads.length ? currentThreads : (this.accountMessagesState?.threads || []), threads, currentActiveId);
@@ -5649,6 +5696,9 @@ class DominoGame {
                 }
                 return mergedThreads;
             } catch (err) {
+                if (generation !== Number(this._messageThreadsLoadGeneration || 0)) {
+                    return this.accountMessagesState?.threads || [];
+                }
                 const message = err?.message || this.t('messages-load-failed') || this.t('chats-load-failed');
                 this.accountMessagesState = {
                     ...(this.accountMessagesState || {}),
@@ -5661,11 +5711,14 @@ class DominoGame {
                 this.updateSocialCenterBadge();
                 return this.accountMessagesState?.threads || currentThreads;
             } finally {
-                this._messageThreadsLoadInFlight = null;
+                if (this._messageThreadsLoadInFlight === loadPromise) {
+                    this._messageThreadsLoadInFlight = null;
+                }
             }
         })();
+        this._messageThreadsLoadInFlight = loadPromise;
 
-        return this._messageThreadsLoadInFlight;
+        return loadPromise;
     }
 
     findCachedPlayerProfile(playerId) {
@@ -6064,16 +6117,36 @@ class DominoGame {
                     this.account.getRoomInvitations(),
                     this.account.getPlayInvites()
                 ]);
-                let merged = this.roomInvitations || { incoming: [], sent: [] };
-                if (roomInvitationsResult.status === 'fulfilled' && roomInvitationsResult.value) {
-                    merged = this.mergeRoomInvitations(merged, roomInvitationsResult.value || { incoming: [], sent: [] });
-                }
-                if (playInvitationsResult.status === 'fulfilled' && playInvitationsResult.value) {
-                    merged = this.mergeRoomInvitations(merged, playInvitationsResult.value || { incoming: [], sent: [] });
-                }
                 if (roomInvitationsResult.status !== 'fulfilled' && playInvitationsResult.status !== 'fulfilled') {
                     throw roomInvitationsResult.reason || playInvitationsResult.reason || new Error(this.t('friends-load-failed'));
                 }
+                const roomInvitations = roomInvitationsResult.status === 'fulfilled'
+                    ? (roomInvitationsResult.value || {})
+                    : {};
+                const playInvitations = playInvitationsResult.status === 'fulfilled'
+                    ? (playInvitationsResult.value || {})
+                    : {};
+                // These endpoints own different invitation families. Merge their
+                // rows as one snapshot so an empty response from the second API
+                // cannot prune invitations returned by the first API.
+                const freshInvitations = {
+                    incoming: [
+                        ...(Array.isArray(roomInvitations.incoming) ? roomInvitations.incoming : []),
+                        ...(Array.isArray(playInvitations.incoming) ? playInvitations.incoming : [])
+                    ],
+                    sent: [
+                        ...(Array.isArray(roomInvitations.sent) ? roomInvitations.sent : []),
+                        ...(Array.isArray(playInvitations.sent) ? playInvitations.sent : Array.isArray(playInvitations.outgoing) ? playInvitations.outgoing : [])
+                    ],
+                    items: [
+                        ...(Array.isArray(roomInvitations.items) ? roomInvitations.items : []),
+                        ...(Array.isArray(playInvitations.items) ? playInvitations.items : [])
+                    ]
+                };
+                const merged = this.mergeRoomInvitations(
+                    this.roomInvitations || { incoming: [], sent: [] },
+                    freshInvitations
+                );
                 this.roomInvitations = merged;
                 this.roomInvitationsLoading = false;
                 this._lastInviteError = '';

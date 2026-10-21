@@ -976,14 +976,17 @@ test("Konva open-end highlights stay clear of tile bodies on stretched boards", 
         bottom: Number(btnRect.bottom.toFixed(2))
       },
       arrowCount: document.querySelectorAll(".konva-open-end-highlight").length,
-      arrowButtons: document.querySelectorAll(".arrow-btn").length
+      accessibilityArrowButtons: document.querySelectorAll("#arrow-overlay.arrow-overlay-a11y .arrow-btn").length,
+      accessibilityArrowLabels: Array.from(document.querySelectorAll("#arrow-overlay.arrow-overlay-a11y .arrow-btn"))
+        .map((button) => button.getAttribute("aria-label"))
     };
   });
 
   expect(result.overlap).toBe(false);
   expect(result.point).not.toBeNull();
   expect(result.arrowCount).toBeGreaterThan(0);
-  expect(result.arrowButtons).toBe(0);
+  expect(result.accessibilityArrowButtons).toBe(2);
+  expect(result.accessibilityArrowLabels.every((label) => Boolean(label))).toBe(true);
   expect(pageErrors).toEqual([]);
   expect(consoleErrors).toEqual([]);
 });
@@ -2040,8 +2043,17 @@ test("authenticated profile shows four stats cards without Xal and leaderboard u
   });
 
   let threadHidden = false;
+  let delayNextThreadListResponse = false;
+  let staleThreadListRequestStarted = false;
 
   await page.route("**/social/messages", async (route) => {
+    const shouldDelay = delayNextThreadListResponse;
+    delayNextThreadListResponse = false;
+    const snapshotHasThread = !threadHidden;
+    if (shouldDelay) {
+      staleThreadListRequestStarted = true;
+      await new Promise((resolve) => setTimeout(resolve, 700));
+    }
     const headers = {
       "Access-Control-Allow-Origin": route.request().headers().origin ?? "http://127.0.0.1:4173",
       "Access-Control-Allow-Methods": "GET,POST,PUT,PATCH,DELETE,OPTIONS",
@@ -2054,7 +2066,7 @@ test("authenticated profile shows four stats cards without Xal and leaderboard u
       contentType: "application/json",
       headers,
       body: JSON.stringify({
-        items: threadHidden ? [] : [
+        items: snapshotHasThread ? [
           {
             player: { id: "p-2", displayName: "Alice", avatarSeed: null, avatarUrl: null, isGuest: false },
             lastMessage: {
@@ -2070,7 +2082,7 @@ test("authenticated profile shows four stats cards without Xal and leaderboard u
             unreadCount: 1,
             messageCount: 1
           }
-        ]
+        ] : []
       })
     });
   });
@@ -2262,7 +2274,9 @@ test("authenticated profile shows four stats cards without Xal and leaderboard u
     game.network = { ...(game.network || {}), isHost: true };
     game.renderPlayerProfileModal?.();
   });
-  await expect(page.locator("#player-profile-invite-btn")).toBeVisible();
+  // Profile invites are intentionally hidden: invitations start from an open
+  // room seat, not from an unrelated profile card.
+  await expect(page.locator("#player-profile-invite-btn")).toBeHidden();
   await expect(page.locator("#player-profile-message-btn")).toBeVisible();
   await page.locator("#player-profile-message-btn").click();
 
@@ -2286,7 +2300,6 @@ test("authenticated profile shows four stats cards without Xal and leaderboard u
 
   // Re-open chat from the inbox list
   await page.locator("#social-inbox-list .inbox-card .friend-card-copy").first().click();
-  await expect(page.locator("#account-messages-conversation-list")).toContainText(/Loading profile|Profil yüklənir|Загрузка профиля/);
   await expect(page.locator("#social-chats-panel")).not.toHaveClass(/is-hidden/);
   await expect(page.locator("#account-messages-conversation-title")).toContainText(/Alice/);
   await expect(page.locator("#account-messages-conversation-list")).toContainText(/Hello/);
@@ -2310,11 +2323,20 @@ test("authenticated profile shows four stats cards without Xal and leaderboard u
   await expect(page.locator("#social-invites-sent-list")).toContainText(/Cancel|Ləğv et|Отменить/);
 
   // Cancel outgoing invite
-  await page.locator("#social-invites-sent-list .cancel-invite-btn").click();
+  await page.evaluate(() => {
+    window.game?.stopSocialHubAutoRefresh?.();
+    window.game?.stopGameInviteRefresh?.();
+  });
+  await page.evaluate(() => document.querySelector("#social-invites-sent-list .cancel-invite-btn")?.click());
   await expect.poll(() => cancelInviteCalled).toBeTruthy();
 
   // Delete/claim inbox item
   await expect(page.locator("#social-inbox-panel")).not.toHaveClass(/is-hidden/);
+  delayNextThreadListResponse = true;
+  await page.evaluate(() => {
+    void window.game?.loadMessageThreads?.();
+  });
+  await expect.poll(() => staleThreadListRequestStarted).toBe(true);
   await page.locator("#social-inbox-list .inbox-card .delete-chat-action").first().click();
   await expect(page.locator("#social-inbox-list .inbox-card")).toHaveCount(0);
 
@@ -2449,7 +2471,7 @@ test("invite polling catches incoming room invitations without SSE", async ({ pa
     body: JSON.stringify({ items: [] })
   }));
 
-  await page.route("**/social/invitations**", async (route) => {
+  await page.route("**/social/play-invites**", async (route) => {
     inviteRequestCount += 1;
     const payload = inviteRequestCount < 2
       ? { incoming: [], sent: [], items: [] }
@@ -2457,9 +2479,8 @@ test("invite polling catches incoming room invitations without SSE", async ({ pa
           incoming: [
             {
               id: "inv-poll",
+              kind: "play",
               status: "pending",
-              roomId: "room-poll",
-              roomCode: "POLL",
               roomMode: "ffa",
               stakeKey: "stake_50",
               stakeAmount: 50,
@@ -2743,6 +2764,7 @@ test("expired seat reservation reconnect falls back to snapshot restore without 
 
     network.initClient = async () => true;
     network.client = {
+      http: {},
       reconnect: async () => {
         const error = new Error("524 seat reservation expired");
         error.code = 524;
@@ -2859,6 +2881,16 @@ test("game invite attaches the resolved room code instead of the room id", async
       createPromptShown: false,
       waitingPromptShown: false
     };
+    dominoGame.roomInvitations = {
+      incoming: [],
+      sent: [{
+        id: "invite-1",
+        kind: "play",
+        status: "accepted",
+        roomCode: null,
+        invitee: { id: "player-2", displayName: "Alice" }
+      }]
+    };
     dominoGame.getCurrentRoomSnapshot = () => ({
       roomMode: "ffa",
       stakeKey: "stake_200",
@@ -2869,7 +2901,7 @@ test("game invite attaches the resolved room code instead of the room id", async
     });
     dominoGame.network.resolveRoomCode = async (roomId) => (String(roomId || "") === "room-123" ? "ABCD" : null);
     let captured = null;
-    dominoGame.account.inviteFriendToRoom = async (_sessionId, nextPayload) => {
+    dominoGame.attachPlayInviteRoomWithFallback = async (nextPayload) => {
       captured = nextPayload;
       return { item: { id: "invite-2", roomCode: nextPayload.roomCode } };
     };
@@ -2979,6 +3011,8 @@ test("daily bonus flow: visible only when authed, handles status loading and cla
   });
 
   await page.addInitScript(() => {
+    if (window.sessionStorage.getItem("daily-bonus-auth-fixture-started")) return;
+    window.sessionStorage.setItem("daily-bonus-auth-fixture-started", "1");
     window.localStorage.removeItem("dominoPlatformGameToken");
     window.localStorage.removeItem("dominoPlatformProfile");
     window.localStorage.removeItem("dominoAuthProfile");

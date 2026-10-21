@@ -56,10 +56,10 @@ R-25 относится к этапу 0, но окончательно закр�
 
 #### R-25 · P1 · Вернуть полную тестовую матрицу в CI
 
-Статус: **частично выполнено, S001–S008/S035/S036**. Server discovery запускает весь набор: после S035 **413/413 pass**, включая исправленные stale-presence cleanup и duplicate timeout-continue race; четыре ранее падавших reconnect-теста теперь проходят. Устаревшие E2E ожидания текущей версии/структуры интерфейса обновлены без изменения продуктового кода: три сценария из полного набора теперь проходят. Полный E2E в S036: **57/64**, семь failures остаются. CI-gate не подтверждён. [S035 server-проверки](../remediation/evidence/session-035/TEST_MATRIX_RESULTS.md), [S036 E2E результаты](../remediation/evidence/session-036/E2E_BASELINE_RESULTS.md), [диспозиция прежних падений](../remediation/evidence/session-001/FAILURES.md), [историческая база](13_QA_TEST_RESULTS.md).
+Статус: **частично выполнено, S001–S008/S035–S037**. Полный server suite проходит **413/413**, API — **149/149**, а браузерный набор — **64/64**. В S037 устранены дефекты обновления приглашений/удаления диалога и геометрии Konva; остальные падения S036 исправлены в тестовых фикстурах под действующий контракт. Добавлен GitHub Actions workflow для полного набора, миграций, admin и Android debug build. Он ещё не запускался на GitHub; ветка `fix/audit-foundation` не защищена обязательными проверками. R-25 остаётся частично выполненной до успешного удалённого прогона и включения требуемого gate. [S035 server-проверки](../remediation/evidence/session-035/TEST_MATRIX_RESULTS.md), [S036 baseline](../remediation/evidence/session-036/E2E_BASELINE_RESULTS.md), [S037 результаты](../remediation/evidence/session-037/TEST_MATRIX_RESULTS.md), [диспозиция прежних падений](../remediation/evidence/session-001/FAILURES.md), [историческая база](13_QA_TEST_RESULTS.md).
 
 - **Изменение:** Включить обнаружение всех test files и зафиксировать исходные 7 server/9 E2E падений с причинами. Обновлять fixtures по согласованному поведению, а не ослаблять проверки ради зелёного результата. После исправлений сделать CI обязательным для полного набора, миграций, сборок и web asset parity.
-- **Где:** `server/package.json;e2e/domino.spec.mjs;CI отсутствует`.
+- **Где:** `server/package.json;e2e/*.spec.mjs;.github/workflows/ci.yml`.
 - **Готово, когда:** Все актуальные test files обнаруживаются; исходная выборка243 учтена, E2E contracts и проверки сборок актуальны.
 - **Зависимости:** R-06. **Исполнитель:** QA/build. **Оценка:** 3–6 человеко-дня.
 

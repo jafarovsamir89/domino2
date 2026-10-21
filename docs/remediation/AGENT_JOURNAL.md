@@ -1,6 +1,6 @@
 # Agent journal: current handoff
 
-Updated 2026-10-20 after S035. Read this, then append-only WORK_LOG.md and docs/audit/REMEDIATION_PLAN.md. S031 closed R-23 locally and S032 closed R-20 locally; see their evidence below. S035 makes all server-discovered tests green (413/413) and fixes stale reconnect presence plus an asynchronous duplicate timeout-continue race. R-25 remains partial: last E2E baseline S025 is 53/62 with nine historical failures, and the CI gate remains open. ADB currently shows no connected device. Keep explaining each result simply in Russian. Total remains 24/42 fully closed locally; no production or Play changes. S035 evidence: `evidence/session-035/TEST_MATRIX_RESULTS.md`.
+Updated 2026-10-20 after S037. Read this, then append-only WORK_LOG.md and docs/audit/REMEDIATION_PLAN.md. S037 makes the local matrix green: server 413/413, API 149/149, E2E 64/64; fixes social invite snapshot merging, stale thread deletion, and Konva anchor geometry; adds `.github/workflows/ci.yml`. CI has not run remotely and the branch has no protection rule yet, so R-25 remains partial and count stays 24/42. ADB currently shows no connected device. Keep explaining each result simply in Russian. No production or Play changes. S037 evidence: `evidence/session-037/TEST_MATRIX_RESULTS.md`.
 
 ## Authorization and Git
 
@@ -98,7 +98,14 @@ After audit-plan edits run validate-audit.mjs, update only existing347SHA manife
 
 ## Exact next action
 
-Continue R-25 toward its remaining E2E cases and required CI gate, using the S025 failure disposition to distinguish historical failures from regressions. Run device acceptance only when `adb devices -l` lists the intended Android device. Native R-18 permission acceptance requires a separately identified audit package; never install the same-ID debug APK over the Play installation. R-10 active-match revocation/SLA and post-restart identity recovery, R-15 physical startup, and R-19 external audio focus remain open. Do not deploy to production or Play. Keep append-only evidence and accurate card counts.
+Commit and push S037 on `fix/audit-foundation`, then inspect the triggered GitHub Actions run. If every job passes, enable the CI job as a required check on the branch through repository settings, then document that confirmation before considering R-25 closed. Run device acceptance only when `adb devices -l` lists the intended Android device. Native R-18 permission acceptance requires a separately identified audit package; never install the same-ID debug APK over the Play installation. R-10 active-match revocation/SLA and post-restart identity recovery, R-15 physical startup, and R-19 external audio focus remain open. Do not deploy to production or Play. Keep append-only evidence and accurate card counts.
+
+## S037 current status — R-25 local matrix green
+
+- `npm test` passes: server413/413, API149/149, plus source checks. `npm run test:e2e` passes64/64 across root and `www` scenarios.
+- Fixed invitation snapshot pruning, stale inbox/chat/cache state after thread deletion, and Konva anchor offset. A delayed stale thread-list response is held across deletion in E2E to prove it cannot restore the deleted row. Updated E2E fixtures/expectations only where the old tests contradicted the current contract or test setup.
+- Added `.github/workflows/ci.yml` for migrations, full tests, admin build, browser suite, web-to-Android asset copy and Java21 Android debug build. The workflow is not yet executed remotely; GitHub reports the branch is unprotected. No policy setting changed.
+- R-25 partial; 0 new fully closed cards; total remains24/42. Production and Play untouched. No attached ADB device.
 
 ## S034 current status — R-18 Android compile repair
 
