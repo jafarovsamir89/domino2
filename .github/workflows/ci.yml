@@ -75,5 +75,5 @@ jobs:
       - name: Sync web assets and native plugins into the Android project
         run: npx cap sync android
 
-      - name: Build Android debug package
-        run: cd android && ./gradlew assembleDebug
+      - name: Test Android origin policy and build debug package
+        run: cd android && ./gradlew testDebugUnitTest assembleDebug
