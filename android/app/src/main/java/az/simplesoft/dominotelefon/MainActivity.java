@@ -2,7 +2,6 @@ package az.simplesoft.dominotelefon;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
-import android.net.Uri;
 import android.webkit.WebSettings;
 import android.webkit.WebChromeClient;
 import android.webkit.PermissionRequest;
@@ -18,22 +17,23 @@ public class MainActivity extends BridgeActivity {
     private String pendingAudioPermissionOrigin;
 
     private boolean isTrustedAudioOrigin(String origin) {
-        if (origin == null) return false;
-        Uri uri = Uri.parse(origin);
-        String scheme = uri.getScheme();
-        String host = uri.getHost();
-        return "https".equalsIgnoreCase(scheme)
-            && uri.getPort() == -1
-            && ("localhost".equalsIgnoreCase(host) || "gamed.simplesoft.az".equalsIgnoreCase(host));
+        return AudioPermissionPolicy.isTrusted(origin);
     }
 
     private String currentWebOrigin() {
         if (getBridge() == null || getBridge().getWebView() == null) return "";
-        Uri uri = Uri.parse(String.valueOf(getBridge().getWebView().getUrl()));
-        String scheme = uri.getScheme();
-        String host = uri.getHost();
-        if (scheme == null || host == null) return "";
-        return scheme.toLowerCase() + "://" + host.toLowerCase();
+        return String.valueOf(getBridge().getWebView().getUrl());
+    }
+
+    private boolean matchesAudioPage(String origin) {
+        return AudioPermissionPolicy.matchesCurrent(origin, currentWebOrigin());
+    }
+
+    private void cancelPendingAudioPermission() {
+        PermissionRequest request = pendingAudioPermissionRequest;
+        pendingAudioPermissionRequest = null;
+        pendingAudioPermissionOrigin = null;
+        if (request != null) request.deny();
     }
 
     @Override
@@ -82,7 +82,7 @@ public class MainActivity extends BridgeActivity {
                     }
 
                     final String requestOrigin = request.getOrigin() == null ? "" : request.getOrigin().toString();
-                    if (!isTrustedAudioOrigin(requestOrigin)) {
+                    if (!isTrustedAudioOrigin(requestOrigin) || !matchesAudioPage(requestOrigin)) {
                         MainActivity.this.runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
@@ -96,7 +96,7 @@ public class MainActivity extends BridgeActivity {
                         MainActivity.this.runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
-                                if (isTrustedAudioOrigin(requestOrigin) && requestOrigin.equals(currentWebOrigin())) {
+                                if (matchesAudioPage(requestOrigin)) {
                                     request.grant(new String[] { PermissionRequest.RESOURCE_AUDIO_CAPTURE });
                                 } else {
                                     request.deny();
@@ -106,9 +106,22 @@ public class MainActivity extends BridgeActivity {
                         return;
                     }
 
+                    // Keep the request associated with the visible Android dialog.
+                    if (pendingAudioPermissionRequest != null) {
+                        request.deny();
+                        return;
+                    }
                     pendingAudioPermissionRequest = request;
                     pendingAudioPermissionOrigin = requestOrigin;
                     ActivityCompat.requestPermissions(MainActivity.this, new String[] { Manifest.permission.RECORD_AUDIO }, REQ_RECORD_AUDIO);
+                }
+
+                @Override
+                public void onPermissionRequestCanceled(PermissionRequest request) {
+                    if (request == pendingAudioPermissionRequest) {
+                        pendingAudioPermissionRequest = null;
+                        pendingAudioPermissionOrigin = null;
+                    }
                 }
             });
         }
@@ -125,7 +138,7 @@ public class MainActivity extends BridgeActivity {
         final String requestOrigin = pendingAudioPermissionOrigin;
         pendingAudioPermissionRequest = null;
         pendingAudioPermissionOrigin = null;
-        if (request == null || !isTrustedAudioOrigin(requestOrigin) || !requestOrigin.equals(currentWebOrigin())) {
+        if (request == null || !matchesAudioPage(requestOrigin)) {
             if (request != null) request.deny();
             return;
         }
@@ -134,7 +147,7 @@ public class MainActivity extends BridgeActivity {
             @Override
             public void run() {
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED
-                    && isTrustedAudioOrigin(requestOrigin) && requestOrigin.equals(currentWebOrigin())) {
+                    && matchesAudioPage(requestOrigin)) {
                     request.grant(new String[] { PermissionRequest.RESOURCE_AUDIO_CAPTURE });
                 } else {
                     request.deny();
@@ -144,11 +157,14 @@ public class MainActivity extends BridgeActivity {
     }
 
     @Override
+    public void onStop() {
+        cancelPendingAudioPermission();
+        super.onStop();
+    }
+
+    @Override
     public void onDestroy() {
-        PermissionRequest request = pendingAudioPermissionRequest;
-        pendingAudioPermissionRequest = null;
-        pendingAudioPermissionOrigin = null;
-        if (request != null) request.deny();
+        cancelPendingAudioPermission();
         super.onDestroy();
     }
 }
