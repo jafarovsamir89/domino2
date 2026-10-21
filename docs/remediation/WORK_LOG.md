@@ -436,3 +436,5 @@ Snapshot sanitization намеренно не сохраняет bearer token. �
 **Дополнение S037 после push:** первый GitHub Actions run прошёл миграции, 413 server tests, 149 API tests, admin build и 64 E2E tests. Android build command завершился exit127, потому что `gradlew` запускается из каталога `android/`; исправлен workflow step на `cd android && ./gradlew assembleDebug`. Изменение отправлено отдельным checkpoint и ожидает повторного удалённого прогона. Никаких проблем сборки APK пока не подтверждено.
 
 Второй GitHub Actions run прошёл те же проверки и дошёл до Android, где Linux вернул exit126: wrapper был сохранён в Git как mode100644. Исправлен сам репозиторий: `android/gradlew` теперь mode100755. CI повторяется. Это исправляет корректный запуск проекта и на других Unix машинах; пользовательский Play APK не менялся.
+
+Третий GitHub Actions run прошёл до Gradle, который указал на отсутствующий `android/capacitor-cordova-android-plugins/cordova.variables.gradle`. Этот generated-файл появляется при Capacitor plugin sync; текущий workflow делал только `cap copy`. Заменил его на `npx cap sync android`. Следующий полный run ожидается.

@@ -72,8 +72,8 @@ jobs:
       - name: Run browser end-to-end tests
         run: npm run test:e2e
 
-      - name: Copy web assets into the Android project
-        run: npx cap copy android
+      - name: Sync web assets and native plugins into the Android project
+        run: npx cap sync android
 
       - name: Build Android debug package
         run: cd android && ./gradlew assembleDebug
