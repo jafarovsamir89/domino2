@@ -431,4 +431,6 @@ Snapshot sanitization намеренно не сохраняет bearer token. �
 
 **Простыми словами:** два списка приглашений больше не стирают друг друга; удалённый чат не появляется обратно; положение невидимой костяшки совпадает с нарисованным столом. Автопроверка локально проходит полностью. На GitHub ещё нужно получить зелёный workflow и настроить обязательность проверки, поэтому R-25 не закрыта и итог — **24/42**. Никаких production, Play или пользовательских данных.
 
-Доказательства и повторение: `evidence/session-037/TEST_MATRIX_RESULTS.md`, `summary.json`. ADB отсутствует. Следующий шаг: commit/push и наблюдение за первым GitHub Actions run.
+Доказательства и повторение: `evidence/session-037/TEST_MATRIX_RESULTS.md`, `summary.json`. ADB отсутствует.
+
+**Дополнение S037 после push:** первый GitHub Actions run прошёл миграции, 413 server tests, 149 API tests, admin build и 64 E2E tests. Android build command завершился exit127, потому что `gradlew` запускается из каталога `android/`; исправлен workflow step на `cd android && ./gradlew assembleDebug`. Изменение отправлено отдельным checkpoint и ожидает повторного удалённого прогона. Никаких проблем сборки APK пока не подтверждено.

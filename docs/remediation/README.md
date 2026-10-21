@@ -6,7 +6,7 @@
 
 Пользователь сообщил о действующем сервере и примерно 50 пользователях. Исправления готовятся локально в `fix/audit-foundation`; production и Play-пакет не обновлялись. Отдельные production-действия требуют прямого поручения владельца.
 
-**Последний заход — R-25: полная локальная test matrix и CI workflow.** Ветка `fix/audit-foundation`, счёт остаётся **24/42 полностью закрыты**. `npm test` прошёл (server 413/413, API 149/149), браузерный набор — 64/64; добавлен workflow, который проверит fresh migrations, сборки сайта/Android и тесты на GitHub. Первый удалённый запуск и обязательный branch gate ещё не подтверждены. Production/Play не менялись. Результаты S037: [test matrix](evidence/session-037/TEST_MATRIX_RESULTS.md), [summary](evidence/session-037/summary.json). Точка продолжения — в журнале агента.
+**Последний заход — R-25: полная локальная test matrix и CI workflow.** Ветка `fix/audit-foundation`, счёт остаётся **24/42 полностью закрыты**. `npm test` прошёл (server 413/413, API 149/149), браузерный набор — 64/64. Первый GitHub run прошёл тесты и E2E, но показал ошибку пути Android Gradle wrapper; путь исправлен, повторный запуск ожидается. Обязательный branch gate ещё не подтверждён. Production/Play не менялись. Результаты S037: [test matrix](evidence/session-037/TEST_MATRIX_RESULTS.md), [summary](evidence/session-037/summary.json). Точка продолжения — в журнале агента.
 
 ## S001: первый пакет
 

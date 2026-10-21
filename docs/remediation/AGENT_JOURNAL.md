@@ -1,6 +1,6 @@
 # Agent journal: current handoff
 
-Updated 2026-10-20 after S037. Read this, then append-only WORK_LOG.md and docs/audit/REMEDIATION_PLAN.md. S037 makes the local matrix green: server 413/413, API 149/149, E2E 64/64; fixes social invite snapshot merging, stale thread deletion, and Konva anchor geometry; adds `.github/workflows/ci.yml`. CI has not run remotely and the branch has no protection rule yet, so R-25 remains partial and count stays 24/42. ADB currently shows no connected device. Keep explaining each result simply in Russian. No production or Play changes. S037 evidence: `evidence/session-037/TEST_MATRIX_RESULTS.md`.
+Updated 2026-10-20 after S037. Read this, then append-only WORK_LOG.md and docs/audit/REMEDIATION_PLAN.md. S037 makes the local matrix green: server 413/413, API 149/149, E2E 64/64; fixes social invite snapshot merging, stale thread deletion, and Konva anchor geometry; adds `.github/workflows/ci.yml`. First GitHub run passed migrations, tests, admin build and E2E; Android build step failed only because the workflow ran `./gradlew` from repo root. Path fixed; rerun pending. Branch has no protection rule, so R-25 remains partial and count stays 24/42. ADB currently shows no connected device. Keep explaining each result simply in Russian. No production or Play changes. S037 evidence: `evidence/session-037/TEST_MATRIX_RESULTS.md`.
 
 ## Authorization and Git
 

@@ -76,4 +76,4 @@ jobs:
         run: npx cap copy android
 
       - name: Build Android debug package
-        run: ./gradlew -p android assembleDebug
+        run: cd android && ./gradlew assembleDebug

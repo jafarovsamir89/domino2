@@ -27,7 +27,7 @@
 
 Added `.github/workflows/ci.yml`. On pushes and pull requests it installs locked dependencies, generates and validates Prisma, applies migrations to a fresh PostgreSQL 14.20 service, runs `npm test`, builds admin, runs the full Playwright suite, copies web assets into Android, and assembles the Android debug package using Java 21.
 
-The workflow has not yet run on GitHub. A read-only branch-protection query confirmed `fix/audit-foundation` is currently unprotected. The workflow can provide a required status check after its first successful run; repository protection settings still need to be enabled by an authorized maintainer. Therefore R-25 is not closed and the 42-card count does not change in S037.
+The first GitHub run [39524504445](https://github.com/jafarovsamir89/domino2/actions/runs/39524504445) passed migrations, source/server/API tests, admin build, and all E2E tests. Its Android build step failed because the workflow invoked `./gradlew` from the repository root instead of `android/`; the workflow now changes into the Android directory first, and a retry is pending. A read-only branch-protection query confirmed `fix/audit-foundation` is currently unprotected. The workflow can provide a required status check after a successful run; repository protection settings still need to be enabled by an authorized maintainer. Therefore R-25 is not closed and the 42-card count does not change in S037.
 
 ## Reproduction
 
