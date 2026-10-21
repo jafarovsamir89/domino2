@@ -28,19 +28,20 @@ git pull --ff-only
 3. [WORK_LOG.md](WORK_LOG.md) — история действий и проверок; дополнять, не переписывать.
 4. [REMEDIATION_PLAN.md](../audit/REMEDIATION_PLAN.md) — единый план из 42 карточек.
 5. [Последний результат S035: server matrix R-25](evidence/session-035/TEST_MATRIX_RESULTS.md).
-6. [Результат S031: Android TalkBack R-23](evidence/session-031/ANDROID_TALKBACK_RESULTS.md).
-7. [Результат S032: guest solo до auth](evidence/session-032/GUEST_BEFORE_AUTH_RESULTS.md).
-8. [Результат S034: Android build R-18](evidence/session-034/ANDROID_VOICE_BUILD_RESULTS.md).
-9. [Результат S033: Colyseus reconnect R-10](evidence/session-033/PLATFORM_GAME_RECONNECT_RESULTS.md).
-10. [Результат S030: regression tests R-10 и R-18](evidence/session-030/SECURITY_VOICE_REGRESSION_RESULTS.md).
-11. [Результат S029: Android 320px для R-23](evidence/session-029/ANDROID_ACCESSIBILITY_RESULTS.md).
-12. [Результат S028: R-20 и R-22](evidence/session-028/LOCAL_SOLO_LOCALIZATION_RESULTS.md).
-13. [Результат S027: R-21 и R-23](evidence/session-027/ACCESSIBILITY_DELETION_RESULTS.md).
-14. [Результат S026: исходная реализация R-10 и R-18](evidence/session-026/SECURITY_REALTIME_RESULTS.md).
+6. [Последний результат S036: E2E baseline R-25](evidence/session-036/E2E_BASELINE_RESULTS.md).
+7. [Результат S031: Android TalkBack R-23](evidence/session-031/ANDROID_TALKBACK_RESULTS.md).
+8. [Результат S032: guest solo до auth](evidence/session-032/GUEST_BEFORE_AUTH_RESULTS.md).
+9. [Результат S034: Android build R-18](evidence/session-034/ANDROID_VOICE_BUILD_RESULTS.md).
+10. [Результат S033: Colyseus reconnect R-10](evidence/session-033/PLATFORM_GAME_RECONNECT_RESULTS.md).
+11. [Результат S030: regression tests R-10 и R-18](evidence/session-030/SECURITY_VOICE_REGRESSION_RESULTS.md).
+12. [Результат S029: Android 320px для R-23](evidence/session-029/ANDROID_ACCESSIBILITY_RESULTS.md).
+13. [Результат S028: R-20 и R-22](evidence/session-028/LOCAL_SOLO_LOCALIZATION_RESULTS.md).
+14. [Результат S027: R-21 и R-23](evidence/session-027/ACCESSIBILITY_DELETION_RESULTS.md).
+15. [Результат S026: исходная реализация R-10 и R-18](evidence/session-026/SECURITY_REALTIME_RESULTS.md).
 
-Полностью закрыты локально **24/42 карточки**. S035 довёл server suite до **413/413** и исправил stale presence после reconnect forfeit плюс race на повторный `timeout_continue`; R-25 остаётся частичной из-за E2E baseline S025 (53/62, девять исторических failures) и незакрытого CI gate. ADB сейчас отсутствует. R-23 закрыта в S031, R-20 — в S032; см. журналы и evidence. S033 укрепил R-10 проверкой Colyseus reconnect (14/14), но active-match/restart policy остаётся. S034 исправил Android compile blocker, Java21 debug APK собрался и не устанавливался. R-18 остаётся частичной до mic prompt и Wi-Fi/LTE/TURN. Проверьте актуальный `origin/fix/audit-foundation`.
+Полностью закрыты локально **24/42 карточки**. S035 довёл server suite до **413/413** и исправил stale presence после reconnect forfeit плюс race на повторный `timeout_continue`. S036 обновил три устаревших E2E контракта; полный набор сейчас **57/64**, семь падений и CI gate остаются, поэтому R-25 partial. ADB сейчас отсутствует. R-23 закрыта в S031, R-20 — в S032; см. журналы и evidence. S033 укрепил R-10 проверкой Colyseus reconnect (14/14), но active-match/restart policy остаётся. S034 исправил Android compile blocker, Java21 debug APK собрался и не устанавливался. R-18 остаётся частичной до mic prompt и Wi-Fi/LTE/TURN. Проверьте актуальный `origin/fix/audit-foundation`.
 
-Проверено: API **148/148** на Node 22/25; server **390/397** и E2E **53/62** содержат прежние 7/9 падений. Новые 10 браузерных сценариев запуска прошли. В S030 `npm run check`, API `tsc`, targeted API 6/6 и voice 4/4 проходят. Это не полностью зелёный набор. Точные имена и доказательства: [failure-delta.json](evidence/session-025/failure-delta.json), [проверки R-29](evidence/session-024/summary.json), [проверки R-15](evidence/session-025/summary.json).
+Историческая база S024/S025: API **148/148** на Node 22/25; server **390/397** и E2E **53/62** с прежними 7/9 падениями. В S025 новые10 браузерных сценариев запуска прошли. Текущий результат после S035/S036: server **413/413**, E2E **57/64** и7 оставшихся падений; `npm run check` проходит. Точные имена и доказательства: [S036 E2E report](evidence/session-036/E2E_BASELINE_RESULTS.md), [failure-delta.json](evidence/session-025/failure-delta.json), [проверки R-29](evidence/session-024/summary.json), [проверки R-15](evidence/session-025/summary.json).
 
 Следующий шаг — отдельная `.audit` сборка R-18 для проверки native permission prompt рядом с Play app; затем R-19 и другие независимые partial cards. R-10 active-match revocation/SLA и restart recovery остаются product scope; не отключать игрока из середины партии вслепую. R-15 телефонные startup метрики, R-18 Wi-Fi/LTE/TURN, R-19 внешнее audio focus и R-21 owner/Console policy всё ещё открыты. Не развёртывать production или Play.
 
@@ -75,4 +76,4 @@ PostgreSQL/Redis нужны только соответствующим пров
 
 ## Сообщение для нового агента
 
-> Продолжи исправления Domino в ветке fix/audit-foundation с последнего origin commit. Прочитай AGENTS.md, docs/remediation/CONTINUE_ON_NEW_COMPUTER.md, AGENT_JOURNAL.md, WORK_LOG.md и REMEDIATION_PLAN.md. Игра обслуживает около 50 пользователей: работай локально, без production deploy, миграций и изменений Play package. S035: server tests 413/413, исправлены stale presence и повторный timeout_continue; R-25 всё ещё partial из-за девяти исторических E2E failures и CI gate. Сначала прочитай S035 report и последние failure disposition. Следом доведи R-25 E2E/CI локально или выбери независимый малый пункт; продолжай native R-18 только при наличии отдельно идентифицированного `.audit` пакета и видимого ADB устройства. R-10 активная партия/restart policy, R-15 реальные startup metrics, R-19 external audio focus остаются открытыми. Не устанавливай debug APK поверх Play app. Обновляй журналы и объясняй результат простыми словами. Не считай приёмку сделанной, если сценарий не проверен.
+> Продолжи исправления Domino в ветке fix/audit-foundation с последнего origin commit. Прочитай AGENTS.md, docs/remediation/CONTINUE_ON_NEW_COMPUTER.md, AGENT_JOURNAL.md, WORK_LOG.md и REMEDIATION_PLAN.md. Игра обслуживает около 50 пользователей: работай локально, без production deploy, миграций и изменений Play package. S035: server tests 413/413. S036: E2E 57/64, три старых тест-контракта обновлены, семь падений остаются. Сначала прочитай S036 report, затем failure artifacts каждого оставшегося теста и исправляй реальную причину, не ослабляя проверки. R-25 CI gate всё ещё открыт. Продолжай native R-18 только при отдельно идентифицированном `.audit` пакете и видимом ADB устройстве. R-10 active-match/restart policy, R-15 физические startup metrics, R-19 external audio focus остаются открытыми. Не устанавливай debug APK поверх Play app и не деплой на production. Обновляй журналы и объясняй результат простыми словами.

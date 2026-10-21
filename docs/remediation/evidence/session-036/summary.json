@@ -1,0 +1,31 @@
+{
+  "session": "S036",
+  "date": "2026-10-20",
+  "branch": "fix/audit-foundation",
+  "audit_cards_closed": 0,
+  "overall_closed": "24/42",
+  "card": "R-25",
+  "card_status": "partial",
+  "results": {
+    "focused_e2e": { "passed": 3, "failed": 0 },
+    "full_e2e": { "passed": 57, "total": 64, "failed": 7 },
+    "previous_recorded_e2e": { "passed": 53, "total": 62, "failed": 9 },
+    "ci_gate": "open"
+  },
+  "resolved_test_contracts": [
+    "Start screen cache-version and current translated labels",
+    "Open rooms direct-list and create flow",
+    "Current English pause-menu labels"
+  ],
+  "remaining_failures": [
+    "Konva open-end highlight overlap",
+    "Konva viewport tile rectangle/collision geometry",
+    "Authenticated profile invite visibility",
+    "Incoming invite polling",
+    "Expired seat reservation restore cleanup",
+    "Invite room-code payload",
+    "Authenticated daily bonus visibility and claim"
+  ],
+  "production_or_play_touched": false,
+  "evidence": "E2E_BASELINE_RESULTS.md"
+}

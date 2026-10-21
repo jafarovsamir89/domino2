@@ -152,12 +152,12 @@ test.beforeEach(async ({ page }) => {
 test("start screen loads and stays within mobile viewport", async ({ page }) => {
   await page.goto("/index.html");
 
-  await expect(page.locator('script[src*="js/app.js?v=social-live-1"]')).toHaveCount(1);
-  await expect(page.locator('script[src*="js/network.js?v=social-live-1"]')).toHaveCount(1);
+  await expect(page.locator('script[src*="js/app.js?v="]')).toHaveCount(1);
+  await expect(page.locator('script[src*="js/network.js?v="]')).toHaveCount(1);
   await expect(page.locator("#start-screen")).toHaveClass(/active/);
   await expect(page.locator("#account-btn")).toHaveClass(/start-profile-btn/);
   await expect(page.locator("#account-btn")).toHaveClass(/icon-btn/);
-  await expect(page.locator("#account-btn")).toHaveAttribute("aria-label", /Giriş|Daxil|Вход/);
+  await expect(page.locator("#account-btn")).toHaveAttribute("aria-label", /Login|Giriş|Daxil|Вход|Sign in/i);
   await expect(page.locator("#account-btn")).toHaveText("");
   await expect(page.locator("#start-screen .start-topbar")).toBeVisible();
   await expect(page.locator("#start-lang-select")).toHaveCount(1);
@@ -168,7 +168,7 @@ test("start screen loads and stays within mobile viewport", async ({ page }) => 
   await expect(page.locator("#start-coin-shop-btn")).toHaveClass(/start-top-shop-btn/);
   await expect(page.locator("#start-cosmetics-shop-btn")).toHaveClass(/start-top-shop-btn/);
   await expect(page.locator("#start-screen .start-actions .start-shop-btn")).toHaveCount(0);
-  await expect(page.locator("#account-modal-title")).toHaveText(/Hesab|Аккаунт/);
+  await expect(page.locator("#account-modal-title")).toHaveText(/Account|Hesab|Аккаунт/);
 
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1);
   expect(overflow).toBe(false);
@@ -2508,7 +2508,7 @@ test("open rooms modal uses a standard title bar and close button", async ({ pag
   await expect(page.locator("#open-rooms-modal")).not.toHaveClass(/active/);
 });
 
-test("closed and open rooms create flows use contextual visibility without toggle UI", async ({ page }) => {
+test("open rooms show the list directly and keep create flow contextual", async ({ page }) => {
   await page.goto("/index.html");
 
   await expect(page.locator("#open-online-modal-btn")).toHaveText(/Bağlı otaqlar|Private rooms|Закрытые комнаты/);
@@ -2523,18 +2523,10 @@ test("closed and open rooms create flows use contextual visibility without toggl
 
   await page.evaluate(() => document.getElementById("open-rooms-btn")?.click());
   await expect(page.locator("#open-rooms-modal")).toHaveClass(/active/);
-  await expect(page.locator("#open-rooms-menu-ui")).not.toHaveClass(/is-hidden/);
-  await expect(page.locator("#open-rooms-list-ui")).toHaveClass(/is-hidden/);
+  await expect(page.locator("#open-rooms-menu-ui")).toHaveCount(0);
+  await expect(page.locator("#open-rooms-list-ui")).toBeVisible();
+  await expect(page.locator("#open-rooms-list")).toBeVisible();
   await expect(page.locator("#open-rooms-create-btn")).toBeVisible();
-  await expect(page.locator("#open-rooms-join-btn")).toBeVisible();
-
-  await page.evaluate(() => document.getElementById("open-rooms-join-btn")?.click());
-  await expect(page.locator("#open-rooms-menu-ui")).toHaveClass(/is-hidden/);
-  await expect(page.locator("#open-rooms-list-ui")).not.toHaveClass(/is-hidden/);
-
-  await page.evaluate(() => document.getElementById("open-rooms-modal-close")?.click());
-  await expect(page.locator("#open-rooms-menu-ui")).not.toHaveClass(/is-hidden/);
-  await expect(page.locator("#open-rooms-list-ui")).toHaveClass(/is-hidden/);
 
   await page.evaluate(() => document.getElementById("open-rooms-create-btn")?.click());
   await expect(page.locator("#online-modal")).toHaveClass(/active/);
@@ -2570,8 +2562,8 @@ test("in-game pause menu keeps only continue and exit and round summary hides wi
 
   await expect(page.locator("#menu-screen .menu-panel .btn-menu")).toHaveCount(4);
   await expect(page.locator("#menu-screen")).not.toContainText(/Profile|Профиль|Coin|Coins|Магазин|Skin|Скины/i);
-  await expect(page.locator("#menu-screen")).toContainText(/Davam et|Продолжить|Continue/);
-  await expect(page.locator("#menu-screen")).toContainText(/Çıxış|Выход|Exit/);
+  await expect(page.locator("#menu-screen")).toContainText(/Davam et|Продолжить|Continue|Resume/);
+  await expect(page.locator("#menu-screen")).toContainText(/Çıxış|Выход|Exit|Quit/);
 
   await page.evaluate(async () => {
     const { Renderer } = await import("/js/renderer.js");

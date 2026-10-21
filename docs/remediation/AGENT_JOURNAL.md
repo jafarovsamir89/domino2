@@ -112,3 +112,10 @@ Continue R-25 toward its remaining E2E cases and required CI gate, using the S02
 - Fixed reconnect timeout cleanup: final forfeit removes stale live presence. Fixed a duplicate `timeout_continue` race while asynchronous next-round startup clears public timeout state. Updated stale static assertions and inaccurate reconnect fixtures without dropping behavioral coverage.
 - R-25 remains partial: S025 E2E baseline 53/62 with nine historical failures, and the full CI gate is not yet green. No audit card closes in S035; overall remains **24/42**.
 - ADB reports no attached device. No device acceptance, production call, Play install, or deployment occurred. Details: `evidence/session-035/TEST_MATRIX_RESULTS.md` and `summary.json`.
+
+## S036 current status — R-25 E2E baseline and stale expectations
+
+- Three stale E2E contracts now match the current app: app cache-busting query is no longer pinned to a retired version; the open-room screen presents the list directly; English pause labels use “Resume”/“Quit”. Focused scenarios pass3/3.
+- Full `npm run test:e2e` is **57/64**. Seven failures remain: two Konva geometry/highlight checks, profile invite visibility, incoming invitation polling, expired-seat restore cleanup, invite room-code payload, and daily bonus visibility/claim. Details and exact artifacts are in `evidence/session-036/E2E_BASELINE_RESULTS.md`.
+- S025 was53/62 (9 failures); suite now has two additional cases and three stale test contracts corrected. This is test maintenance only; no product behavior changed in S036. R-25 stays partial, CI gate open, count **24/42**.
+- No production/Play access. ADB unavailable in S035/S036; no Android acceptance.
