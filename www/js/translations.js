@@ -1,5 +1,6 @@
 export const translations = {
     az: {
+        "session-access-ended": "Onlayn bağlantı bağlandı. Yenidən qoşulmaq üçün hesabınıza daxil olun.",
         "game-title": "Domino (Telefon)",
         "game-subtitle": "Azərbaycan Dominosu",
         "game-title-telefon": "Domino (Telefon)",
@@ -710,6 +711,7 @@ export const translations = {
         ,"stage-kicker-counting": "Hesab"
     },
     en: {
+        "session-access-ended": "Online connection closed. Sign in again to reconnect.",
         "game-title": "Domino (Telephone)",
         "game-subtitle": "Azerbaijani Domino",
         "game-title-telefon": "Domino (Muggins)",
@@ -1434,6 +1436,7 @@ export const translations = {
         ,"stage-kicker-counting": "Counting"
     },
     ru: {
+        "session-access-ended": "Онлайн-соединение закрыто. Войдите в аккаунт, чтобы подключиться снова.",
         "game-title": "Домино (Телефон)",
         "game-subtitle": "Азербайджанское домино",
         "game-title-telefon": "Домино (Пятёрочка)",

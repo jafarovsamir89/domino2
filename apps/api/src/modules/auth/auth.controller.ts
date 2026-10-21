@@ -28,6 +28,11 @@ export class AuthController {
     return this.authService.validateGameToken(token);
   }
 
+  @Post('platform/game-session/validate')
+  async validateActiveGameSession(@Body() body: Record<string, unknown>) {
+    return this.authService.validateActiveGameSession(body);
+  }
+
   @Post("platform/mobile-google-sign-in")
   async mobileGoogleSignIn(@Body() body: { idToken?: string; mode?: string; gameMode?: string }) {
     return this.authService.signInWithGoogleIdToken(body?.idToken, body?.mode || body?.gameMode || undefined);

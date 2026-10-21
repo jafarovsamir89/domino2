@@ -5,6 +5,7 @@ const { Board, cloneBoard } = require("./board");
 const { AIPlayer } = require("./ai");
 const { Tile, createFullSet, shuffle, getHandSize, determineFirstPlayer, handPoints, getOpeningPlayScore, hasInvalidOpeningHand, roundTo5 } = require("./model");
 const { verifyGameToken } = require("./platformAuth");
+const { RoomSessionAccess, validatePlatformGameToken } = require("./roomSessionAccess");
 const { resolvePlatformApiUrl } = require("./economyConfig");
 const { buildSignedRequestBody } = require("./signedRequest");
 const { generateRoomCode, normalizeRoomVisibility, normalizeRoomMode, normalizeGameMode, normalizeStakeKey, normalizePlayerCount, normalizeAiCount, normalizeDlossThreshold, normalizeInstantWinEnabled, normalizeAiDifficulty, DISCONNECT_GRACE_SECONDS } = require("./roomConfig");
@@ -295,6 +296,8 @@ class DominoRoom extends Room {
             this.restoredFromSnapshot = true;
         }
 
+        this.sessionAccess = new RoomSessionAccess(this);
+        this.sessionAccess.start();
         this.presenceInterval = setInterval(() => {
             try {
                 for (const [sessionId, player] of this.state.players.entries()) {
@@ -357,7 +360,7 @@ class DominoRoom extends Room {
 
     onGameMessage(type, handler) {
         this.onMessage(type, (...args) => {
-            if (!this.shuttingDown) return handler(...args);
+            if (!this.shuttingDown && this.sessionAccess?.isAllowed(args[0]) !== false) return handler(...args);
         });
     }
 
@@ -409,23 +412,7 @@ class DominoRoom extends Room {
     }
 
     async validatePlatformGameToken(token) {
-        let validationResponse;
-        try {
-            validationResponse = await fetch(`${resolvePlatformApiUrl()}/api/platform/game-token/validate`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json", Accept: "application/json" },
-                body: JSON.stringify({ token }),
-                signal: AbortSignal.timeout(3000)
-            });
-        } catch {
-            throw new ServerError(503, "auth_validation_unavailable");
-        }
-        if (validationResponse.status >= 500) {
-            throw new ServerError(503, "auth_validation_unavailable");
-        }
-        if (!validationResponse.ok) {
-            throw new ServerError(401, "auth_required");
-        }
+        return validatePlatformGameToken(token);
     }
 
     async onReconnect(client) {
@@ -440,6 +427,7 @@ class DominoRoom extends Room {
             throw new ServerError(401, "auth_required");
         }
         await this.validatePlatformGameToken(token);
+        this.sessionAccess?.restore(client.sessionId);
     }
 
     findReusableSessionId(options = {}, identity = {}) {
@@ -1489,6 +1477,7 @@ class DominoRoom extends Room {
     }
 
     async onDispose() {
+        this.sessionAccess?.dispose();
         if (this.snapshotWritePromise) await this.snapshotWritePromise;
         if (!this.shuttingDown && this.roomCode) {
             await forgetRoom(this.roomCode, this.roomId);
@@ -4442,6 +4431,7 @@ class DominoRoom extends Room {
     async onBeforeShutdown() {
         if (this.shutdownPromise) return this.shutdownPromise;
         this.shuttingDown = true;
+        this.sessionAccess?.dispose();
         this.shutdownTurnRemainingMs = this.state?.turnDeadlineAt
             ? Math.max(0, Number(this.state.turnDeadlineAt) - Date.now()) : null;
         // Stop gameplay without clearing the deadline that belongs in the snapshot.
