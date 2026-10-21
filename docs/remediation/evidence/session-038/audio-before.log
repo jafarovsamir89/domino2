@@ -1,0 +1,56 @@
+✔ js/sounds.js: master mute prevents all procedural nodes including a delayed bounce (2.177125ms)
+✔ js/sounds.js: legacy mute preference also silences effects (0.487833ms)
+✔ js/sounds.js: music/effects levels are independent and persist with the master state (0.871708ms)
+✔ js/sounds.js: hidden page suspends playback and cannot create new effects (0.574583ms)
+✔ js/sounds.js: native lifecycle gates both engines without changing preferences (3.201792ms)
+✖ js/sounds.js: a delayed native configure result cannot unmute after the Activity paused (1.434208ms)
+✔ www/js/sounds.js: master mute prevents all procedural nodes including a delayed bounce (0.890125ms)
+✔ www/js/sounds.js: legacy mute preference also silences effects (0.445333ms)
+✔ www/js/sounds.js: music/effects levels are independent and persist with the master state (0.801542ms)
+✔ www/js/sounds.js: hidden page suspends playback and cannot create new effects (0.431583ms)
+✔ www/js/sounds.js: native lifecycle gates both engines without changing preferences (1.765167ms)
+✖ www/js/sounds.js: a delayed native configure result cannot unmute after the Activity paused (0.733541ms)
+ℹ tests 12
+ℹ suites 0
+ℹ pass 10
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 123.398667
+
+✖ failing tests:
+
+test at server/test/audio-settings.test.js:26:2
+✖ js/sounds.js: a delayed native configure result cannot unmute after the Activity paused (1.434208ms)
+  AssertionError [ERR_ASSERTION]: older configuration must not override the newer pause event
+  
+  false !== true
+  
+      at TestContext.<anonymous> (/Users/macbookair/Documents/domino/server/test/audio-settings.test.js:32:10)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at server/test/audio-settings.test.js:26:2
+✖ www/js/sounds.js: a delayed native configure result cannot unmute after the Activity paused (0.733541ms)
+  AssertionError [ERR_ASSERTION]: older configuration must not override the newer pause event
+  
+  false !== true
+  
+      at TestContext.<anonymous> (/Users/macbookair/Documents/domino/server/test/audio-settings.test.js:32:10)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

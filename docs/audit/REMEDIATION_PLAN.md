@@ -4,6 +4,8 @@
 
 **Это основной рабочий документ для начала исправлений.** В нём объединены все 42 задачи, порядок зависимостей, конкретные изменения и приёмка. [Главный отчёт](AUDIT_MASTER_REPORT.md), [полный backlog](14_PRIORITIZED_BACKLOG.md) и [Android-дополнение](SINGLE_ANDROID_AUDIT.md) служат доказательной базой; начинать чтение с них необязательно. Углубляться в соответствующий отчёт нужно перед изменением конкретной подсистемы.
 
+**Текущий прогресс S038 (21октября2026):27/42локально закрыты; добавлены R-10 и R-26.** Пакет10карточек, проверки и открытая внешняя приёмка — [единый результат S038](../remediation/evidence/session-038/TEN_CARD_RESULTS.md). Исторические счётчики ниже относятся к своим сессиям.
+
 ## С чего начать
 
 Первый пакет — **R-06 и подготовительная часть R-25**: чистая установка server, полный список тестов и сохранение baseline. Затем исправлять P0 в порядке этапа 1. Не ждать закрытия всех известных падающих тестов, чтобы написать регрессию P0: полный зелёный CI — результат исправлений, а не препятствие их началу.
@@ -56,7 +58,7 @@ R-25 относится к этапу 0, но окончательно закр�
 
 #### R-25 · P1 · Вернуть полную тестовую матрицу в CI
 
-Статус: **исправлено локально, S037**. Полный server suite проходит **413/413**, API — **149/149**, браузерный набор — **64/64**. Добавлен GitHub Actions workflow; успешный run [39525993872](https://github.com/jafarovsamir89/domino2/actions/runs/39525993872) на commit `5f08223` применил все migrations к свежему PostgreSQL14.20, выполнил source/server/API tests, admin build, Playwright, Capacitor plugin sync и Android debug build на Java21. Все актуальные test files обнаруживаются; исторические серверные и E2E failures имеют подтверждённую диспозицию; E2E contracts, web asset parity и сборки проверены. Счёт локально закрытых карточек: **25/42**. Репозиторий `main` не защищён required status checks, это осталось отдельной настройкой GitHub; сама тестовая матрица и сборки проходят в CI. [S035 server-проверки](../remediation/evidence/session-035/TEST_MATRIX_RESULTS.md), [S036 baseline](../remediation/evidence/session-036/E2E_BASELINE_RESULTS.md), [S037 результаты](../remediation/evidence/session-037/TEST_MATRIX_RESULTS.md), [диспозиция прежних падений](../remediation/evidence/session-001/FAILURES.md), [историческая база](13_QA_TEST_RESULTS.md).
+Статус: **исправлено локально, S037**. Полный server suite проходит **413/413**, API — **149/149**, браузерный набор — **64/64**. Добавлен GitHub Actions workflow; успешный run [39525993872](https://github.com/jafarovsamir89/domino2/actions/runs/39525993872) на commit `5f08223` применил все migrations к свежему PostgreSQL14.20, выполнил source/server/API tests, admin build, Playwright, Capacitor plugin sync и Android debug build на Java21. Все актуальные test files обнаруживаются; исторические серверные и E2E failures имеют подтверждённую диспозицию; E2E contracts, web asset parity и сборки проверены. Счёт локально закрытых карточек на S037: **25/42**. Репозиторий `main` не защищён required status checks, это осталось отдельной настройкой GitHub; сама тестовая матрица и сборки проходят в CI. [S035 server-проверки](../remediation/evidence/session-035/TEST_MATRIX_RESULTS.md), [S036 baseline](../remediation/evidence/session-036/E2E_BASELINE_RESULTS.md), [S037 результаты](../remediation/evidence/session-037/TEST_MATRIX_RESULTS.md), [диспозиция прежних падений](../remediation/evidence/session-001/FAILURES.md), [историческая база](13_QA_TEST_RESULTS.md).
 
 - **Изменение:** Включить обнаружение всех test files и зафиксировать исходные 7 server/9 E2E падений с причинами. Обновлять fixtures по согласованному поведению, а не ослаблять проверки ради зелёного результата. После исправлений сделать CI обязательным для полного набора, миграций, сборок и web asset parity.
 - **Где:** `server/package.json;e2e/*.spec.mjs;.github/workflows/ci.yml`.
@@ -235,7 +237,7 @@ Status: **fixed locally, S013**. API emits versioned per-player stake/returnedSt
 
 #### R-10 · P1 · Определить отзыв игрового допуска
 
-Статус: **частично исправлено локально, S026/S033**. Игровой токен сокращён до 5 минут; каждый новый вход и обычное Colyseus-переподключение сверяют текущую сессию, владельца playerId и блокировку через API с таймаутом 3 секунды. Переподключение после перезапуска комнаты без сохранённого токена закрывается отказом. API outage тоже закрывает вход. Уже подключённая активная партия автоматически не прерывается при logout/ban/delete; SLA и безопасное поведение при отзыве во время партии остаются открытыми. API требуется выпустить раньше game server. [Исходная реализация](../remediation/evidence/session-026/SECURITY_REALTIME_RESULTS.md), [проверка границы Colyseus](../remediation/evidence/session-033/PLATFORM_GAME_RECONNECT_RESULTS.md).
+Статус: **исправлено локально, S038**. Владелец выбрал отключение за60секунд после logout/ban/delete с обычными disconnect/grace/forfeit правилами. Подключённые места проверяются каждые20секунд с3секундным HTTP deadline; отказ закрывает4003 и блокирует сообщения. Свежая серверная подпись проверяет исходный token и живую DB-сессию/player/ban даже после5минут admission token; обычные join/reconnect всё ещё отвергают expired token.33targeted server/auth/network и7API auth tests проходят, общая матрица429/151зелёная. Новый API нужно выпускать раньше game server; production не менялся. [Контракт и ограничения](../remediation/evidence/session-038/SESSION_ACCESS_RESULTS.md), [отдельный PR№5](https://github.com/jafarovsamir89/domino2/pull/5).
 
 - **Изменение:** Определить срок действия и отзыв игрового допуска при logout/ban/delete. Это риск по коду: сначала сформулировать контракт и локальные проверки, затем выбрать механизм без избыточных запросов на каждый ход.
 - **Где:** `server/platformAuth.js:27–44`.
@@ -284,7 +286,7 @@ Status: **fixed locally, S016**. Liveness/readiness bypass application Redis rat
 
 #### R-15 · P1 · Сократить искусственный startup
 
-Статус: **код исправлен и проверен в браузере, S025/S032; Android-приёмка отложена**. Убраны minimum5,5с/session-skip/window.load; теперь заставка ждёт только готовность UI, пока проверка аккаунта идёт в фоне. Это позволяет гостю сразу начать локальную игру; online/coins остаются закрыты до подтверждения аккаунта. Запрос bounded6с, при критической загрузке через8с доступен retry; offline notice, восстановление и320px проверены. В S032 все12startup сценариев прошли на root/www; телефонные cold/warm метрики всё ещё не сняты, поэтому карточка остаётся открытой. [S025 измерения](../remediation/evidence/session-025/STARTUP_RESULTS.md), [S032 guest-before-auth regressions](../remediation/evidence/session-032/GUEST_BEFORE_AUTH_RESULTS.md). Production/Play не менялись.
+Статус: **код исправлен и проверен в браузере; S038 добавлен переносимый device harness, Android-приёмка остаётся открытой**. S025/S032 убрали искусственное ожидание и разрешили guest solo до auth; все12startup browser scenarios проходят. Новый loopback4186 preview с CSP/синтетическим гостем и CDP collector проверяют interactive mark и реальное открытие меню; desktop smoke3измерения прошёл. Телефона в ADB нет; cold/warm/offline Android не заявляются. [Инструкция продолжения](../remediation/DEVICE_ACCEPTANCE_NEXT.md), [S038](../remediation/evidence/session-038/TEN_CARD_RESULTS.md), [S025](../remediation/evidence/session-025/STARTUP_RESULTS.md).
 
 - **Изменение:** Убрать обязательное ожидание 5,5 с после готовности критического UI, ограничить ожидание загрузки и предусмотреть offline/error состояние. Сравнить cold/warm UI readiness на том же телефоне.
 - **Где:** `js/splash.js:3–4,83–108`.
@@ -302,7 +304,7 @@ Status: **fixed locally, S016**. Liveness/readiness bypass application Redis rat
 
 #### R-18 · P1 · Voice ICE contract и NAT проверка
 
-Статус: **частично исправлено локально, S026/S034**. Строковый STUN и строки `urls` теперь нормализуются; Android выдаёт RECORD_AUDIO только доверенному HTTPS app origin и отзывает ожидающий запрос при смене origin/закрытии Activity. Исправлена ошибка видимости `onDestroy`, из-за которой native debug APK не компилировался; Java21 `assembleDebug` теперь проходит. APK не устанавливался поверх Play-приложения. Реальный запрос разрешения на телефоне и NAT/TURN через Wi-Fi/LTE ещё не проверены. [Исходная реализация](../remediation/evidence/session-026/SECURITY_REALTIME_RESULTS.md), [сборка S034](../remediation/evidence/session-034/ANDROID_VOICE_BUILD_RESULTS.md).
+Статус: **частично исправлено локально, S026/S034/S038**. STUN/ICE contract и native build сохранены. S038 добавляет чистую origin policy с2Java regression tests, проверяет текущий port/host/scheme перед prompt/result, отменяет pending request при cancellation/background/destroy, не подменяет ожидающий запрос новым. Java21 unit tests и актуальный debug APK после cap sync проходят; APK поверх Play не установлен. Системный диалог и Wi-Fi/LTE relay-only разговор остаются открытыми. [S038 результаты](../remediation/evidence/session-038/TEN_CARD_RESULTS.md), [аппаратная приёмка](../remediation/DEVICE_ACCEPTANCE_NEXT.md).
 
 - **Изменение:** Исправить разбор ICE config, чтобы разрешённый строковый STUN не отбрасывался. Локально проверить конфигурацию и allow/deny микрофона; end-to-end NAT/TURN/операторская сеть остаются отложенными.
 - **Где:** `server/index.js:63–95;js/voice.js`.
@@ -311,7 +313,7 @@ Status: **fixed locally, S016**. Liveness/readiness bypass application Redis rat
 
 #### R-21 · P1 · Заметный путь удаления аккаунта
 
-Статус: **частично исправлено локально, S027**. В профиле есть заметная ссылка на страницу запроса, а страница содержит прямую mailto-кнопку с темой и шаблоном письма, требованиями проверки владельца и пояснением, что письмо не удаляет аккаунт автоматически. Локальный интерфейс готов; нужно подтвердить владельцем реальный процесс, сроки/retention и сверить ссылку с Google Play Console. Не заявлять автоматическое удаление. [Результаты и оставшиеся действия](../remediation/evidence/session-027/ACCESSIBILITY_DELETION_RESULTS.md). Основание: пробел UI подтверждён; Console неизвестен; [исходные доказательства](12_ANDROID_GOOGLE_PLAY.md).
+Статус: **частично исправлено локально, S027; процесс удаления/retention явно отложен владельцем21октября2026**. Profile→mailto request UI сохранён. Владелец попросил отдельно тщательно согласовать исполнителя, сроки, состав удаления и хранение; не считать текст privacy.html подтверждением реального процесса. Console/Data Safety тоже не сверены. [Предыдущая UI-приёмка](../remediation/evidence/session-027/ACCESSIBILITY_DELETION_RESULTS.md), [оставшиеся policy-вопросы](../remediation/RIGHTS_AND_POLICY_REVIEW.md).
 
 - **Изменение:** Добавить понятный путь запроса удаления в профиле и согласовать его с web-страницей, обработкой запроса и retention. Console и окончательная policy-проверка остаются отложенными.
 - **Где:** `index.html:179,620;delete-account.html:105`.
@@ -320,7 +322,7 @@ Status: **fixed locally, S016**. Liveness/readiness bypass application Redis rat
 
 #### R-28 · P1 · Метрики, vitals и экономический audit trail
 
-Статус: **открыто**. Основание: доступ/наблюдаемость неизвестны; [доказательства](11_RETENTION_GROWTH_ASO.md).
+Статус: **частично исправлено локально, S038**. Game/API instrumentation помечает deploySha/release, отсутствующий SHA явно unknown. Добавлены final match/settlement/reconnect/backlog события с allowlist полей; settlement event только после durable receipt.5/5tests включают настоящий Sentry SDK→localhost envelope receiver и отсутствие tokens/user IDs/chat/private room codes в новых payload. Production dashboard/alert delivery/Vitals/кохорты остаются отложенными. [Контракт и операционная приёмка](../remediation/evidence/session-038/OBSERVABILITY_OPERATIONS.md).
 
 - **Изменение:** Добавить версию сборки и финальные события партии/settlement/reconnect, локально проверить payload и доставку. Production dashboards, Vitals, alert delivery и реальные когорты остаются отложенными.
 - **Где:** `server/instrument.js;apps/api/src/instrument.ts`.
@@ -329,7 +331,7 @@ Status: **fixed locally, S016**. Liveness/readiness bypass application Redis rat
 
 #### R-30 · P1 · Реестр прав на assets и policy сверка
 
-Статус: **открыто**. Основание: доказательства не найдены; [доказательства](12_ANDROID_GOOGLE_PLAY.md).
+Статус: **реестр подготовлен локально, S038; подтверждение прав/policy остаётся открытым**.142tracked пути/82разных byte-content включают assets, Android resources и vendor scripts, source/license/evidence поля пока ожидают владельца. Hash-based registry сохраняет root/www дубликаты и проверяется генератором; контент не удалён/не заменён. Privacy/retention и Console/Data Safety требуют фактической сверки, R-21 отложен отдельно. [Реестр](../remediation/ASSET_RIGHTS_REGISTER.json), [проверка политики](../remediation/RIGHTS_AND_POLICY_REVIEW.md).
 
 - **Изменение:** Составить локальный реестр asset→источник→лицензия→подтверждение. Не удалять и не заменять контент на основании одного отсутствия документа в repo. Документы владельца и Console/Data Safety отмечать отдельно как ожидаемые.
 - **Где:** `assets/;privacy.html;Play Console`.
@@ -338,7 +340,7 @@ Status: **fixed locally, S016**. Liveness/readiness bypass application Redis rat
 
 #### R-33 · P1 · Утвердить daily faucet и бюджет монет
 
-Статус: **открыто**. Основание: политика подтверждена; намерение требует решения; [доказательства](CONTINUATION_ANALYSIS.md).
+Статус: **расчёт подготовлен локально, S038; решение владельца открыто**.36sensitivity ячеек7/30/90дней: cap7/cycle7, ежедневные/5дней в неделю,0/4/12расчётов;20синтетических кошельков, commission/skins учтены, residual0каждый день. Это сценарная модель defaults кода, не измерение production. Daily выдача не менялась; cap/cycle и целевой запас партий требуют выбора владельца. [Числа и ограничения](../remediation/evidence/session-038/ECONOMY_DECISION.md).
 
 - **Изменение:** Отделить подтверждённую политику daily от решения о её изменении. После исправления начислений сравнить cap/cycle, запас бесплатных партий и sinks; не урезать выдачу автоматически по сценарной модели.
 - **Где:** `apps/api/src/modules/economy/economy.service.ts:125,1399;coin-economy-simulation.cjs`.
@@ -360,7 +362,7 @@ Status: **fixed locally, S016**. Liveness/readiness bypass application Redis rat
 
 #### R-22 · P2 · Цельная локализация AZ/RU/EN и TR pilot
 
-Статус: **частично исправлено локально, S028**. В AZ/RU/EN исправлены видимые возврат в игру, подпись числа ботов и каталог подарков: локализованы 12 общих названий, три уровня редкости, количество, вкладка инвентаря и подсказка пустого списка; больше нет сырого `common`/`Gift 001` в карточках. Полный проход по всем экранам, проверка длинных строк/числительных и TR pilot с носителем языка остаются открытыми. [Результаты и ограничения](../remediation/evidence/session-028/LOCAL_SOLO_LOCALIZATION_RESULTS.md). Основание: скриншоты подтверждают строки; [исходные доказательства](06_UI_UX_DESIGN.md).
+Статус: **частично исправлено локально, S028/S038**. Дополнены пропущенные AZ/RU/EN keys, убраны Cancel/Message и сырые room-seat/system-mail labels, переведены поздно создаваемые controls и aria-labels; count plurals через Intl.PluralRules. На320px заголовок и кнопки системных писем больше не перекрываются/обрезаются.9/9browser/static locale cases root/www проходят. Полный screen sweep и TR pilot с носителем остаются открытыми. [Результаты и снимки S038](../remediation/evidence/session-038/TEN_CARD_RESULTS.md).
 
 - **Изменение:** Убрать смешение языков и сырые ключи, включая Cancel, AI BOTLAR, Gift001/common и resume-session-return. Уточнить предупреждение бесплатной solo и текст приглашения до/после отправки. TR pilot требует отдельной проверки носителем.
 - **Где:** `js/translations.js;index.html;cosmetics UI`.
@@ -369,7 +371,7 @@ Status: **fixed locally, S016**. Liveness/readiness bypass application Redis rat
 
 #### R-19 · P2 · Music/effects/master mute
 
-Статус: **локальные настройки исправлены, S021; внешняя приёмка audio focus остаётся**. Master mute отключает SFX и музыку; независимые уровни сохраняются. Android:0новых oscillators при mute, настройки23%/37% переживают force-stop, HOME останавливает музыку/SFX даже при visibility=visible, возврат возобновляет звук. Нативный bridge передаёт lifecycle, системный audio focus остаётся у Chromium. Звонок/Bluetooth не проверены; карточка целиком не закрыта. [Проверки](../remediation/evidence/session-021/summary.json).
+Статус: **локальные настройки и гонка lifecycle исправлены, S021/S038; внешняя audio-focus приёмка остаётся**. Master/effects/music сохраняются; более старый native configure reply больше не может переопределить новый pause/resume event. Обе root/www regressions падали до исправления, после12/12audio tests pass. Chromium остаётся владельцем focus. Настоящий звонок/Bluetooth ещё не проверены. [S038](../remediation/evidence/session-038/TEN_CARD_RESULTS.md), [S021 device evidence](../remediation/evidence/session-021/summary.json).
 
 - **Изменение:** Определить master mute и отдельные music/effects уровни, применить настройку к Web Audio и HTMLAudio. На Android muted=true всё ещё создавал 3 score oscillators. Проверить сохранение настроек; внешний audio focus остаётся отдельным сценарием.
 - **Где:** `js/sounds.js:88,96,249–259`.
@@ -378,7 +380,7 @@ Status: **fixed locally, S016**. Liveness/readiness bypass application Redis rat
 
 #### R-24 · P2 · Читаемый стол и центр поля
 
-Статус: **открыто**. Основание: UX-оценка screenshots; [доказательства](06_UI_UX_DESIGN.md).
+Статус: **локальная механика исправлена, S038; пользовательская приёмка открыта**. Добавлены масштаб1–2×, bounded drag/keyboard pan, reset/Escape и сброс при очистке Board. Реальные canvas/DOM/travel coordinates совпадают, выбор конца сохраняется;4/4новых и8/8прежних canvas cases проходят. Текущий макет20/28tiles просмотрен в IAB со снимками; это не полный игровой экран и не тест с людьми. [Снимки, шаги и ограничения](../remediation/evidence/session-038/BOARD_REVIEW.md).
 
 - **Изменение:** Уменьшить визуальный шум под полем и проверить читаемость 20–28 костяшек, центрирование и масштаб. Изменять оформление по небольшому прототипу; пользовательскую оценку не подменять только скриншотом.
 - **Где:** `css/style.css game screen;table skin assets`.
@@ -387,7 +389,7 @@ Status: **fixed locally, S016**. Liveness/readiness bypass application Redis rat
 
 #### R-26 · P2 · Разделять монолит и единый rules source
 
-Статус: **открыто**. Основание: долг подтверждён; [доказательства](01_ARCHITECTURE.md).
+Статус: **исправлено локально по приёмке первого выделения, S038**. Один модуль `server/roomSessionAccess.js` вынесен из DominoRoom в [отдельный draft PR№5](https://github.com/jafarovsamir89/domino2/pull/5), commit `d671bb8`. Join/reconnect сохраняют public contract, snapshot/message formats не менялись;33targeted tests и общая429server/151API/77browser матрица проходят, root/www byte parity сохранена. Это завершает заявленную локальную приёмку одного выделения за PR; остальной долг app.js/DominoRoom и fallback rules не объявляется устранённым. [Результаты](../remediation/evidence/session-038/TEN_CARD_RESULTS.md).
 
 - **Изменение:** Выделять по одному модулю из app.js/DominoRoom.js после покрытия контрактов. Начать с границ сессии/таймеров/правил; сохранить внешние сообщения и форматы snapshot. Массовое переписывание не является первым исправлением.
 - **Где:** `app.js;DominoRoom.js;shared/board/model duplicates`.

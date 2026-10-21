@@ -1,0 +1,46 @@
+ℹ️  optional .env file not found: .env.development, .env
+✔ active validation uses a scoped server proof and an expired admission token cannot admit a new player (2.153667ms)
+✔ connected session revocation is checked within the approved 60-second bound (3.232667ms)
+✔ only one validation per seat runs at once and late failure cannot close its replacement (0.452041ms)
+✔ disposal cancels checks and an in-flight failure cannot disconnect during shutdown (0.20225ms)
+✔ revocation closes only the affected seat and never settles a wallet directly (0.192417ms)
+✔ a synchronous validation failure releases the probe slot for a restored seat (0.132541ms)
+✔ real room message dispatcher blocks revoked actions without an API request on every move (9.066708ms)
+✔ js/network.js: server revocation stops reconnect and retains multiplayer mode to prevent local play (1.877042ms)
+✔ www/js/network.js: server revocation stops reconnect and retains multiplayer mode to prevent local play (0.597916ms)
+✔ client opens seat picker for team rooms regardless of visibility (5.571583ms)
+✔ client keeps team runtime and seat picker close flow explicit (7.751292ms)
+✔ client uses open-room waiting banner and returns room_closed players to open rooms (6.568083ms)
+✔ gift picker keeps room, chat, and social recipients separate (7.13725ms)
+✔ client renders waiting room rows in a strict single-line format (4.686667ms)
+✔ client blocks profile clicks while move hints are active and exposes safe debug state (3.954625ms)
+✔ client moves play invite entry points into room context (8.112583ms)
+✔ client exposes team hud wallet gate and profile close debug hooks (3.929542ms)
+✔ client renders bazaar draw state from live solo hands and keeps multiplayer cache isolated (6.678167ms)
+✔ client friends page no longer appends an undefined invite button (3.833417ms)
+ℹ️  optional .env file not found: .env.test, .env
+✔ Colyseus onAuth calls the API validation boundary before admitting a valid signed game token (2.578167ms)
+✔ Colyseus onAuth rejects expired tokens before calling the API (0.433625ms)
+✔ Colyseus onAuth denies a token when the API reports its session was revoked (0.261375ms)
+▶ Colyseus onAuth fails closed when the API returns an error or times out
+  ✔ API 5xx (0.195708ms)
+  ✔ network timeout (0.19025ms)
+✔ Colyseus onAuth fails closed when the API returns an error or times out (1.835334ms)
+✔ Colyseus reconnect revalidates the original platform token before restoring a seat (0.321416ms)
+▶ Colyseus reconnect rejects revoked or unavailable platform sessions
+  ✔ revoked token (0.188625ms)
+  ✔ API unavailable (0.168791ms)
+✔ Colyseus reconnect rejects revoked or unavailable platform sessions (0.592792ms)
+▶ Colyseus reconnect rejects missing, expired, or mismatched saved identities without contacting the API
+  ✔ missing saved identity (0.105833ms)
+  ✔ expired saved token (0.104959ms)
+  ✔ identity does not match signed token (0.104083ms)
+✔ Colyseus reconnect rejects missing, expired, or mismatched saved identities without contacting the API (0.604458ms)
+ℹ tests 33
+ℹ suites 0
+ℹ pass 33
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 222.112083

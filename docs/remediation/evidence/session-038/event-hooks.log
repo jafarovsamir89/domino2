@@ -1,0 +1,31 @@
+ℹ️  optional .env file not found: .env.development, .env
+[ROOM] Failed to record platform match: Error: temporary failure
+    at DominoRoom.recordPlatformMatch (/Users/macbookair/Documents/domino/server/DominoRoom.js:3104:23)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async DominoRoom.recordMatchResult (/Users/macbookair/Documents/domino/server/DominoRoom.js:3356:30)
+    at async TestContext.<anonymous> (/Users/macbookair/Documents/domino/server/test/match-recording.test.js:65:23)
+    at async Test.run (node:internal/test_runner/test:1125:7)
+    at async startSubtestAfterBootstrap (node:internal/test_runner/harness:358:3)
+[ROOM] Failed to record match: Error: Platform match recording failed
+    at DominoRoom.recordMatchResult (/Users/macbookair/Documents/domino/server/DominoRoom.js:3358:23)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async TestContext.<anonymous> (/Users/macbookair/Documents/domino/server/test/match-recording.test.js:65:23)
+    at async Test.run (node:internal/test_runner/test:1125:7)
+    at async startSubtestAfterBootstrap (node:internal/test_runner/harness:358:3)
+{"schemaVersion":1,"event":"match_recorded","service":"game","deploySha":"unknown","at":"2026-10-21T22:05:51.157Z","mode":"classic101","outcome":"normal","participants":2,"matchRef":"293d4126d5f70708f10787a2"}
+✔ recordMatchResult retries a failed platform match recording without marking the match recorded (6.023917ms)
+✔ recordMatchResult handles payloads without userIds without breaking the room (0.1775ms)
+✔ recordMatchResult forwards classic101 dry-win metadata (0.305375ms)
+✔ build identity accepts only a commit SHA and marks missing identity explicitly (0.88525ms)
+✔ operational payload is allowlisted, correlated without identities and delivered to both local sinks (2.131584ms)
+✔ outbox final event is emitted after durable receipt, never on failure or cached acknowledgement (58.478708ms)
+✔ telemetry failures do not change delivery acknowledgement (23.815166ms)
+✔ Sentry SDK delivers a synthetic backlog alert to a loopback envelope sink (273.362792ms)
+ℹ tests 8
+ℹ suites 0
+ℹ pass 8
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 519.201208

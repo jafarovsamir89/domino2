@@ -1,0 +1,968 @@
+{
+  "schemaVersion": 1,
+  "scope": "Tracked shipped media, Android resources and bundled vendor scripts. Identical bytes share one rights record; source paths are retained. Root ISC package metadata does not establish rights to each asset.",
+  "assets": [
+    {
+      "sha256": "08cc34ad7713fe7ed58bceaa37b2387b670c53cd60264b4bd6442db3098e75dc",
+      "bytes": 7705,
+      "paths": [
+        "android/app/src/main/res/drawable-land-hdpi/splash.png"
+      ],
+      "source": null,
+      "license": null,
+      "evidence": [],
+      "reviewStatus": "owner-evidence-pending"
+    },
+    {
+      "sha256": "5cf98b4451bd99b20df26f9e608a46946118be6b0ae90762f9ca1786a30c76ff",
+      "bytes": 4040,
+      "paths": [
+        "android/app/src/main/res/drawable-land-mdpi/splash.png",
+        "android/app/src/main/res/drawable/splash.png"
+      ],
+      "source": null,
+      "license": null,
+      "evidence": [],
+      "reviewStatus": "owner-evidence-pending"
+    },
+    {
+      "sha256": "22f87e1e3bc89aa01a7dbc39c9a4db058cd0bf4ad3fe9f55712bf69eb997f4bf",
+      "bytes": 9251,
+      "paths": [
+        "android/app/src/main/res/drawable-land-xhdpi/splash.png"
+      ],
+      "source": null,
+      "license": null,
+      "evidence": [],
+      "reviewStatus": "owner-evidence-pending"
+    },
+    {
+      "sha256": "42aa26392546fcdee1b8d3ac6d4b41bfcceb41dc6a4f3a3c30c24a8a8f4db862",
+      "bytes": 13984,
+      "paths": [
+        "android/app/src/main/res/drawable-land-xxhdpi/splash.png"
+      ],
+      "source": null,
+      "license": null,
+      "evidence": [],
+      "reviewStatus": "owner-evidence-pending"
+    },
+    {
+      "sha256": "60393ce8636fd263e4e1fea3fd4ab2de948c6295e898fda9b50ac4e5283be809",
+      "bytes": 17683,
+      "paths": [
+        "android/app/src/main/res/drawable-land-xxxhdpi/splash.png"
+      ],
+      "source": null,
+      "license": null,
+      "evidence": [],
+      "reviewStatus": "owner-evidence-pending"
+    },
+    {
+      "sha256": "c5015f4ba3628392b538386c5e210f0b94f352a3160adab934fd0311972137ca",
+      "bytes": 7934,
+      "paths": [
+        "android/app/src/main/res/drawable-port-hdpi/splash.png"
+      ],
+      "source": null,
+      "license": null,
+      "evidence": [],
+      "reviewStatus": "owner-evidence-pending"
+    },
+    {
+      "sha256": "07fa579e1c83e04ba7f9cbcbfcf41b68e15fe3638f2c44a04e58b809103e6b69",
+      "bytes": 4096,
+      "paths": [
+        "android/app/src/main/res/drawable-port-mdpi/splash.png"
+      ],
+      "source": null,
+      "license": null,
+      "evidence": [],
+      "reviewStatus": "owner-evidence-pending"
+    },
+    {
+      "sha256": "b73049cb37fe76d6c11b87a796766bf6af0c85483b31eb6a921657b0d764a4b9",
+      "bytes": 9875,
+      "paths": [
+        "android/app/src/main/res/drawable-port-xhdpi/splash.png"
+      ],
+      "source": null,
+      "license": null,
+      "evidence": [],
+      "reviewStatus": "owner-evidence-pending"
+    },
+    {
+      "sha256": "0c7f1212f25b7b90e9a6e1d320013e4ff3d3e03e634cbb07b7b7981cac51627f",
+      "bytes": 13346,
+      "paths": [
+        "android/app/src/main/res/drawable-port-xxhdpi/splash.png"
+      ],
+      "source": null,
+      "license": null,
+      "evidence": [],
+      "reviewStatus": "owner-evidence-pending"
+    },
+    {
+      "sha256": "3db071a03b2f8ffe0dfd4170fc59842d53cd15bba5e88af59401d58efabf7827",
+      "bytes": 17489,
+      "paths": [
+        "android/app/src/main/res/drawable-port-xxxhdpi/splash.png"
+      ],
+      "source": null,
+      "license": null,
+      "evidence": [],
+      "reviewStatus": "owner-evidence-pending"
+    },
+    {
+      "sha256": "a8514094f754b099d3e55ce1d6e0b2de79db418b2eeacb0fc2a6bb0bfadef221",
+      "bytes": 1880,
+      "paths": [
+        "android/app/src/main/res/drawable-v24/ic_launcher_foreground.xml"
+      ],
+      "source": null,
+      "license": null,
+      "evidence": [],
+      "reviewStatus": "owner-evidence-pending"
+    },
+    {
+      "sha256": "718ba51adf166bb55c3e9936bb8199a0148457f7f0191aaa2f37a94f3159d6ec",
+      "bytes": 5606,
+      "paths": [
+        "android/app/src/main/res/drawable/ic_launcher_background.xml"
+      ],
+      "source": null,
+      "license": null,
+      "evidence": [],
+      "reviewStatus": "owner-evidence-pending"
+    },
+    {
+      "sha256": "5d770feb791313b947020cbfc57e5c733c556dac5e9e49261a1190e527073253",
+      "bytes": 535,
+      "paths": [
+        "android/app/src/main/res/layout/activity_main.xml"
+      ],
+      "source": null,
+      "license": null,
+      "evidence": [],
+      "reviewStatus": "owner-evidence-pending"
+    },
+    {
+      "sha256": "9c3a7e0a6515c6e1a7ae834a9ae430311ebc3241f7b2e5e7f0460aa690709a7c",
+      "bytes": 265,
+      "paths": [
+        "android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml",
+        "android/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml"
+      ],
+      "source": null,
+      "license": null,
+      "evidence": [],
+      "reviewStatus": "owner-evidence-pending"
+    },
+    {
+      "sha256": "a6cdf62283639cd4a8d24b751191745ea13539c987dcae92060e15bdfe0bbd15",
+      "bytes": 12063,
+      "paths": [
+        "android/app/src/main/res/mipmap-hdpi/ic_launcher.png",
+        "android/app/src/main/res/mipmap-hdpi/ic_launcher_round.png"
+      ],
+      "source": null,
+      "license": null,
+      "evidence": [],
+      "reviewStatus": "owner-evidence-pending"
+    },
+    {
+      "sha256": "21fd7d8a4951ab2317773644dd619cf3ad39db668fd32f3372e3b967ef7affff",
+      "bytes": 53358,
+      "paths": [
+        "android/app/src/main/res/mipmap-hdpi/ic_launcher_foreground.png"
+      ],
+      "source": null,
+      "license": null,
+      "evidence": [],
+      "reviewStatus": "owner-evidence-pending"
+    },
+    {
+      "sha256": "0f3fe298405bf60ba469843aea3856930506237667d6f5fb53a08c7a8f582ac3",
+      "bytes": 5857,
+      "paths": [
+        "android/app/src/main/res/mipmap-mdpi/ic_launcher.png",
+        "android/app/src/main/res/mipmap-mdpi/ic_launcher_round.png"
+      ],
+      "source": null,
+      "license": null,
+      "evidence": [],
+      "reviewStatus": "owner-evidence-pending"
+    },
+    {
+      "sha256": "2d374b8bfd1df7091f7f50d4615b161f9b7af8553ed1cbf3260acfe2bf8f730f",
+      "bytes": 25135,
+      "paths": [
+        "android/app/src/main/res/mipmap-mdpi/ic_launcher_foreground.png"
+      ],
+      "source": null,
+      "license": null,
+      "evidence": [],
+      "reviewStatus": "owner-evidence-pending"
+    },
+    {
+      "sha256": "be00f7a92449212644e50eb61ee54c75a958cfaa487f9f50cdf5aaacafeeebda",
+      "bytes": 20421,
+      "paths": [
+        "android/app/src/main/res/mipmap-xhdpi/ic_launcher.png",
+        "android/app/src/main/res/mipmap-xhdpi/ic_launcher_round.png"
+      ],
+      "source": null,
+      "license": null,
+      "evidence": [],
+      "reviewStatus": "owner-evidence-pending"
+    },
+    {
+      "sha256": "5ce474f9328dee388a6f8c32549ff7952b7b0753f902db94d4432bbb876fe442",
+      "bytes": 90230,
+      "paths": [
+        "android/app/src/main/res/mipmap-xhdpi/ic_launcher_foreground.png"
+      ],
+      "source": null,
+      "license": null,
+      "evidence": [],
+      "reviewStatus": "owner-evidence-pending"
+    },
+    {
+      "sha256": "20c25545c0dcf038f89054aa4e162618e03c32d0d9504e963b51be07816dfcaa",
+      "bytes": 43127,
+      "paths": [
+        "android/app/src/main/res/mipmap-xxhdpi/ic_launcher.png",
+        "android/app/src/main/res/mipmap-xxhdpi/ic_launcher_round.png"
+      ],
+      "source": null,
+      "license": null,
+      "evidence": [],
+      "reviewStatus": "owner-evidence-pending"
+    },
+    {
+      "sha256": "27a55e7be653e11a941611fdb1b3287922fd4ac83d19b60985cbcfa7fa4a0a92",
+      "bytes": 192117,
+      "paths": [
+        "android/app/src/main/res/mipmap-xxhdpi/ic_launcher_foreground.png"
+      ],
+      "source": null,
+      "license": null,
+      "evidence": [],
+      "reviewStatus": "owner-evidence-pending"
+    },
+    {
+      "sha256": "384bea211a4bf3965932926879de4c0fc366c3ed714b4c0305aac7a5ea03c346",
+      "bytes": 73364,
+      "paths": [
+        "android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png",
+        "android/app/src/main/res/mipmap-xxxhdpi/ic_launcher_round.png"
+      ],
+      "source": null,
+      "license": null,
+      "evidence": [],
+      "reviewStatus": "owner-evidence-pending"
+    },
+    {
+      "sha256": "3b602bb2f5bff97e8eb848107d9fc6e22e622c4cae216c6a0cb350f5be37a685",
+      "bytes": 332896,
+      "paths": [
+        "android/app/src/main/res/mipmap-xxxhdpi/ic_launcher_foreground.png"
+      ],
+      "source": null,
+      "license": null,
+      "evidence": [],
+      "reviewStatus": "owner-evidence-pending"
+    },
+    {
+      "sha256": "7329e8882cce1b0c898bffb626264a7e90c943558508fcf00f912d7f53cdaf2a",
+      "bytes": 121,
+      "paths": [
+        "android/app/src/main/res/values/ic_launcher_background.xml"
+      ],
+      "source": null,
+      "license": null,
+      "evidence": [],
+      "reviewStatus": "owner-evidence-pending"
+    },
+    {
+      "sha256": "f20061c3fe434d0b945fe37bf1475037236c44ce4c1c0f22ae09685ae837e7f8",
+      "bytes": 306,
+      "paths": [
+        "android/app/src/main/res/values/strings.xml"
+      ],
+      "source": null,
+      "license": null,
+      "evidence": [],
+      "reviewStatus": "owner-evidence-pending"
+    },
+    {
+      "sha256": "18ebba36575e9461347ee67361b23caf095f158ee85dbefe1b83a4669ba5bd6c",
+      "bytes": 823,
+      "paths": [
+        "android/app/src/main/res/values/styles.xml"
+      ],
+      "source": null,
+      "license": null,
+      "evidence": [],
+      "reviewStatus": "owner-evidence-pending"
+    },
+    {
+      "sha256": "a46ed43ef65c90cb6778f4581decf3556e3f0055aad8f36d69dae16f9a0e99aa",
+      "bytes": 213,
+      "paths": [
+        "android/app/src/main/res/xml/file_paths.xml"
+      ],
+      "source": null,
+      "license": null,
+      "evidence": [],
+      "reviewStatus": "owner-evidence-pending"
+    },
+    {
+      "sha256": "dea35ebed76536c24c13f74036f02dc874f944147cb3a49c2ad0550f71e3e0c7",
+      "bytes": 146,
+      "paths": [
+        "android/app/src/main/res/xml/network_security_config.xml"
+      ],
+      "source": null,
+      "license": null,
+      "evidence": [],
+      "reviewStatus": "owner-evidence-pending"
+    },
+    {
+      "sha256": "0a901cbdde5fe283798b3e65ddb9fe3c35905ba325d8b923f1b10fe3aca23b4e",
+      "bytes": 622330,
+      "paths": [
+        "assets/cosmetics/table/table_skin_01.webp",
+        "www/assets/cosmetics/table/table_skin_01.webp"
+      ],
+      "source": null,
+      "license": null,
+      "evidence": [],
+      "reviewStatus": "owner-evidence-pending"
+    },
+    {
+      "sha256": "064636d6410fc25c59b277cd7ff50d8e384bba490054409983805eeb7df35ee8",
+      "bytes": 683572,
+      "paths": [
+        "assets/cosmetics/table/table_skin_02.webp",
+        "www/assets/cosmetics/table/table_skin_02.webp"
+      ],
+      "source": null,
+      "license": null,
+      "evidence": [],
+      "reviewStatus": "owner-evidence-pending"
+    },
+    {
+      "sha256": "2888d866afc826adf442b338e3cd8dcde9186ec30c1079584439aca5949d945a",
+      "bytes": 730840,
+      "paths": [
+        "assets/cosmetics/table/table_skin_03.webp",
+        "www/assets/cosmetics/table/table_skin_03.webp"
+      ],
+      "source": null,
+      "license": null,
+      "evidence": [],
+      "reviewStatus": "owner-evidence-pending"
+    },
+    {
+      "sha256": "b08e63b489f8b4370fc4d8cfe841cf32836d67782b710c0f6755f933e8091c54",
+      "bytes": 408934,
+      "paths": [
+        "assets/cosmetics/table/table_skin_04.webp",
+        "www/assets/cosmetics/table/table_skin_04.webp"
+      ],
+      "source": null,
+      "license": null,
+      "evidence": [],
+      "reviewStatus": "owner-evidence-pending"
+    },
+    {
+      "sha256": "986eb716351767317cbd0316094cf5e7279d0a16f89d6734ed4a5f8423ec79ab",
+      "bytes": 1697924,
+      "paths": [
+        "assets/cosmetics/table/table_skin_05.webp",
+        "www/assets/cosmetics/table/table_skin_05.webp"
+      ],
+      "source": null,
+      "license": null,
+      "evidence": [],
+      "reviewStatus": "owner-evidence-pending"
+    },
+    {
+      "sha256": "f6ee5c5d863dd437ec97d50b1f0e67d726391d3e7fb6d3f5dfd2831c2c192d8e",
+      "bytes": 13660,
+      "paths": [
+        "assets/cosmetics/table/table_skin_06.webp",
+        "www/assets/cosmetics/table/table_skin_06.webp"
+      ],
+      "source": null,
+      "license": null,
+      "evidence": [],
+      "reviewStatus": "owner-evidence-pending"
+    },
+    {
+      "sha256": "2785355fd5c38d7efb319f4cf871f800932687ad53d94c7f7e1afda8a42ac81e",
+      "bytes": 211834,
+      "paths": [
+        "assets/cosmetics/table/table_skin_07.webp",
+        "www/assets/cosmetics/table/table_skin_07.webp"
+      ],
+      "source": null,
+      "license": null,
+      "evidence": [],
+      "reviewStatus": "owner-evidence-pending"
+    },
+    {
+      "sha256": "4f26448b869552ad1e4a33d3cc4abb087ed4e57d971d940cf14df824d8820ea5",
+      "bytes": 211106,
+      "paths": [
+        "assets/cosmetics/table/table_skin_08.webp",
+        "www/assets/cosmetics/table/table_skin_08.webp"
+      ],
+      "source": null,
+      "license": null,
+      "evidence": [],
+      "reviewStatus": "owner-evidence-pending"
+    },
+    {
+      "sha256": "14d57c4a89a79f6b2fd2fc73e55ebc7ec244805ff77bd9b66a28292364c31a84",
+      "bytes": 234578,
+      "paths": [
+        "assets/cosmetics/table/table_skin_09.webp",
+        "www/assets/cosmetics/table/table_skin_09.webp"
+      ],
+      "source": null,
+      "license": null,
+      "evidence": [],
+      "reviewStatus": "owner-evidence-pending"
+    },
+    {
+      "sha256": "8f17b34ee3e1d27633a9f8eaf041845a37937632e5c5040e8d4d96eeb456b83c",
+      "bytes": 251764,
+      "paths": [
+        "assets/gift/gift_001.png",
+        "www/assets/gift/gift_001.png"
+      ],
+      "source": null,
+      "license": null,
+      "evidence": [],
+      "reviewStatus": "owner-evidence-pending"
+    },
+    {
+      "sha256": "483452fc5c9766418a44741bfb33d906ecf45893b5cb636113a29d9253e3ea39",
+      "bytes": 217855,
+      "paths": [
+        "assets/gift/gift_001_anim.webm",
+        "www/assets/gift/gift_001_anim.webm"
+      ],
+      "source": null,
+      "license": null,
+      "evidence": [],
+      "reviewStatus": "owner-evidence-pending"
+    },
+    {
+      "sha256": "c2488255c82a9556a7903a2a652f8f14b58d3113ab5b3c70b6bd208d40ba0220",
+      "bytes": 168874,
+      "paths": [
+        "assets/gift/gift_002.png",
+        "www/assets/gift/gift_002.png"
+      ],
+      "source": null,
+      "license": null,
+      "evidence": [],
+      "reviewStatus": "owner-evidence-pending"
+    },
+    {
+      "sha256": "e96b9cc7eacfd757d3fc738e6ad4dce8ad9cba4cee070d7ebbb3768e93752c77",
+      "bytes": 342033,
+      "paths": [
+        "assets/gift/gift_002_anim.webm",
+        "www/assets/gift/gift_002_anim.webm"
+      ],
+      "source": null,
+      "license": null,
+      "evidence": [],
+      "reviewStatus": "owner-evidence-pending"
+    },
+    {
+      "sha256": "939395c3e0dba0a7e2cb57e01b9fdff52f2cbe40be79506682807cd5bcf9eb52",
+      "bytes": 332188,
+      "paths": [
+        "assets/gift/gift_003.png",
+        "www/assets/gift/gift_003.png"
+      ],
+      "source": null,
+      "license": null,
+      "evidence": [],
+      "reviewStatus": "owner-evidence-pending"
+    },
+    {
+      "sha256": "051f8609a460256b7b243a86ed76fbf3597ad37606c4b7c4ccdfad9cf14c1939",
+      "bytes": 452841,
+      "paths": [
+        "assets/gift/gift_003_anim.webm",
+        "www/assets/gift/gift_003_anim.webm"
+      ],
+      "source": null,
+      "license": null,
+      "evidence": [],
+      "reviewStatus": "owner-evidence-pending"
+    },
+    {
+      "sha256": "d1f5bc47b8825f5e353bd667e013d0debe53645e02eb6f488e60f33629ef1f5c",
+      "bytes": 246432,
+      "paths": [
+        "assets/gift/gift_004.png",
+        "www/assets/gift/gift_004.png"
+      ],
+      "source": null,
+      "license": null,
+      "evidence": [],
+      "reviewStatus": "owner-evidence-pending"
+    },
+    {
+      "sha256": "51559fd27b1807703b60df1a829e0dbe4c41e37b159542d4db4c9b793b6584c8",
+      "bytes": 365313,
+      "paths": [
+        "assets/gift/gift_004_anim.webm",
+        "www/assets/gift/gift_004_anim.webm"
+      ],
+      "source": null,
+      "license": null,
+      "evidence": [],
+      "reviewStatus": "owner-evidence-pending"
+    },
+    {
+      "sha256": "b4b815ad234fefd3ee9924ec7812a2d308a661151668204fdf53c61d9657a7af",
+      "bytes": 316329,
+      "paths": [
+        "assets/gift/gift_005.png",
+        "www/assets/gift/gift_005.png"
+      ],
+      "source": null,
+      "license": null,
+      "evidence": [],
+      "reviewStatus": "owner-evidence-pending"
+    },
+    {
+      "sha256": "845d886baf117fb7eaaacd62589ce58537eb6389026cdb5126ac4ffdb2befd1c",
+      "bytes": 344244,
+      "paths": [
+        "assets/gift/gift_005_anim.webm",
+        "www/assets/gift/gift_005_anim.webm"
+      ],
+      "source": null,
+      "license": null,
+      "evidence": [],
+      "reviewStatus": "owner-evidence-pending"
+    },
+    {
+      "sha256": "dc2ef27eb0559f6a1b67352dfdfbe708bd26a477796cabe6a7f4304f8d818350",
+      "bytes": 259670,
+      "paths": [
+        "assets/gift/gift_006.png",
+        "www/assets/gift/gift_006.png"
+      ],
+      "source": null,
+      "license": null,
+      "evidence": [],
+      "reviewStatus": "owner-evidence-pending"
+    },
+    {
+      "sha256": "4ab5660906be3ca51bc11e6fcd81a159e5b48fd42bd5ed36bb6e8589d3ba0830",
+      "bytes": 345479,
+      "paths": [
+        "assets/gift/gift_006_anim.webm",
+        "www/assets/gift/gift_006_anim.webm"
+      ],
+      "source": null,
+      "license": null,
+      "evidence": [],
+      "reviewStatus": "owner-evidence-pending"
+    },
+    {
+      "sha256": "ae3e7eda302cd59ce355058e2141ddaa10029265b90a79531ce83cb47473c449",
+      "bytes": 207670,
+      "paths": [
+        "assets/gift/gift_007.png",
+        "www/assets/gift/gift_007.png"
+      ],
+      "source": null,
+      "license": null,
+      "evidence": [],
+      "reviewStatus": "owner-evidence-pending"
+    },
+    {
+      "sha256": "3a9b094aa36862db1f805f3a18e5f403bd0406fce7eeddb25ad79b2f6d182ec7",
+      "bytes": 336919,
+      "paths": [
+        "assets/gift/gift_007_anim.webm",
+        "www/assets/gift/gift_007_anim.webm"
+      ],
+      "source": null,
+      "license": null,
+      "evidence": [],
+      "reviewStatus": "owner-evidence-pending"
+    },
+    {
+      "sha256": "012e1cf97a72598ecf47f3f9e0a3d115ccc1b4714f41f6dac02b2f7d49453117",
+      "bytes": 264284,
+      "paths": [
+        "assets/gift/gift_008.png",
+        "www/assets/gift/gift_008.png"
+      ],
+      "source": null,
+      "license": null,
+      "evidence": [],
+      "reviewStatus": "owner-evidence-pending"
+    },
+    {
+      "sha256": "b9d56daef280c161ebbe50cec109d701ab4d7e0da88a525cc4e07738ea29f222",
+      "bytes": 339992,
+      "paths": [
+        "assets/gift/gift_008_anim.webm",
+        "www/assets/gift/gift_008_anim.webm"
+      ],
+      "source": null,
+      "license": null,
+      "evidence": [],
+      "reviewStatus": "owner-evidence-pending"
+    },
+    {
+      "sha256": "f6ba56f7f7014fda54d51d84513b2ef8c4ab0ce1c4559f2234f321c6ce0c1731",
+      "bytes": 334225,
+      "paths": [
+        "assets/gift/gift_009.png",
+        "www/assets/gift/gift_009.png"
+      ],
+      "source": null,
+      "license": null,
+      "evidence": [],
+      "reviewStatus": "owner-evidence-pending"
+    },
+    {
+      "sha256": "17fa1e53c2b2aaf668ec7278b851b9575aeeef4cfb7fda84dfabacdcf6daa503",
+      "bytes": 401668,
+      "paths": [
+        "assets/gift/gift_009_anim.webm",
+        "www/assets/gift/gift_009_anim.webm"
+      ],
+      "source": null,
+      "license": null,
+      "evidence": [],
+      "reviewStatus": "owner-evidence-pending"
+    },
+    {
+      "sha256": "c8ed6636fd0d8f7b4930e98fef7dbf7d73ecf10e2fd715367c183dd0184cb332",
+      "bytes": 297652,
+      "paths": [
+        "assets/gift/gift_010.png",
+        "www/assets/gift/gift_010.png"
+      ],
+      "source": null,
+      "license": null,
+      "evidence": [],
+      "reviewStatus": "owner-evidence-pending"
+    },
+    {
+      "sha256": "ac1db0658ee6ca2bf8763ec231bd9a2cff0e461424a3cdf19c55aff59bf8ed10",
+      "bytes": 344391,
+      "paths": [
+        "assets/gift/gift_010_anim.webm",
+        "www/assets/gift/gift_010_anim.webm"
+      ],
+      "source": null,
+      "license": null,
+      "evidence": [],
+      "reviewStatus": "owner-evidence-pending"
+    },
+    {
+      "sha256": "ac6c0ef1838886ca3d3c9b3ec9db5673b6b974ca7715377d81a0309b02564c6b",
+      "bytes": 341832,
+      "paths": [
+        "assets/gift/gift_011.png",
+        "www/assets/gift/gift_011.png"
+      ],
+      "source": null,
+      "license": null,
+      "evidence": [],
+      "reviewStatus": "owner-evidence-pending"
+    },
+    {
+      "sha256": "5e96fddae524ab62c728fc6da9ea03baee0a62ad4b323c312a79a0ecea7dc281",
+      "bytes": 344162,
+      "paths": [
+        "assets/gift/gift_011_anim.webm",
+        "www/assets/gift/gift_011_anim.webm"
+      ],
+      "source": null,
+      "license": null,
+      "evidence": [],
+      "reviewStatus": "owner-evidence-pending"
+    },
+    {
+      "sha256": "4bfe9d11684e2fcbadb68e6b2c6c5d0b2da1180b34500899349daa36f4533747",
+      "bytes": 117381,
+      "paths": [
+        "assets/gift/gift_012.png",
+        "www/assets/gift/gift_012.png"
+      ],
+      "source": null,
+      "license": null,
+      "evidence": [],
+      "reviewStatus": "owner-evidence-pending"
+    },
+    {
+      "sha256": "b4b091b6f1b4329dd4fd114e30389df583e608357488adf03f3f321d902f7e29",
+      "bytes": 347630,
+      "paths": [
+        "assets/gift/gift_012_anim.webm",
+        "www/assets/gift/gift_012_anim.webm"
+      ],
+      "source": null,
+      "license": null,
+      "evidence": [],
+      "reviewStatus": "owner-evidence-pending"
+    },
+    {
+      "sha256": "1d018ca8a8b586b8de1dc74d23aaf303de5378ba82ab49203afd9f5bb3c6aa16",
+      "bytes": 716927,
+      "paths": [
+        "assets/icon.png",
+        "www/assets/icon.png"
+      ],
+      "source": null,
+      "license": null,
+      "evidence": [],
+      "reviewStatus": "owner-evidence-pending"
+    },
+    {
+      "sha256": "dd001d2c4526eb8f2e07edf1b7383a83760711f17152ad743b6328771e057988",
+      "bytes": 547690,
+      "paths": [
+        "assets/logo.png",
+        "www/assets/logo.png"
+      ],
+      "source": null,
+      "license": null,
+      "evidence": [],
+      "reviewStatus": "owner-evidence-pending"
+    },
+    {
+      "sha256": "3f4492e92ca44c33d63e3c7bb46bf82dcb3c21eff689a924832378ac909d0fe9",
+      "bytes": 2996,
+      "paths": [
+        "assets/reactions/1F48B.svg",
+        "www/assets/reactions/1F48B.svg"
+      ],
+      "source": null,
+      "license": null,
+      "evidence": [],
+      "reviewStatus": "owner-evidence-pending"
+    },
+    {
+      "sha256": "b10a41cb753d20dee1acf9f4c501d5aa5e763313a5ce8b9d3ae6b15949076f4d",
+      "bytes": 1508,
+      "paths": [
+        "assets/reactions/1F609.svg",
+        "www/assets/reactions/1F609.svg"
+      ],
+      "source": null,
+      "license": null,
+      "evidence": [],
+      "reviewStatus": "owner-evidence-pending"
+    },
+    {
+      "sha256": "d4511cfcb8467294fa1f0f1c3f5c1aee2c9a05b585bb8e57e4952462cccf280a",
+      "bytes": 2410,
+      "paths": [
+        "assets/reactions/1F618.svg",
+        "www/assets/reactions/1F618.svg"
+      ],
+      "source": null,
+      "license": null,
+      "evidence": [],
+      "reviewStatus": "owner-evidence-pending"
+    },
+    {
+      "sha256": "3fe2965c4152511cf92a19efc5ea7c111abf40dd7776315e1fc9a3b759b23db0",
+      "bytes": 2114,
+      "paths": [
+        "assets/reactions/1F62D.svg",
+        "www/assets/reactions/1F62D.svg"
+      ],
+      "source": null,
+      "license": null,
+      "evidence": [],
+      "reviewStatus": "owner-evidence-pending"
+    },
+    {
+      "sha256": "98bb87b74eec5b58578c6783d562a439232e5f12cfb989672bac8dabbc11050a",
+      "bytes": 3168,
+      "paths": [
+        "assets/reactions/1F62E-200D-1F4A8.svg",
+        "www/assets/reactions/1F62E-200D-1F4A8.svg"
+      ],
+      "source": null,
+      "license": null,
+      "evidence": [],
+      "reviewStatus": "owner-evidence-pending"
+    },
+    {
+      "sha256": "3b5daab4b59ce4573dfd7fa2909fc4a29a3a4420b6aa2e3145e92de187fcda46",
+      "bytes": 3461,
+      "paths": [
+        "assets/reactions/1F634.svg",
+        "www/assets/reactions/1F634.svg"
+      ],
+      "source": null,
+      "license": null,
+      "evidence": [],
+      "reviewStatus": "owner-evidence-pending"
+    },
+    {
+      "sha256": "eadd96d61939689ac418e26c2852cc681a4cab336ba2ae5514d9495879ee172f",
+      "bytes": 1826,
+      "paths": [
+        "assets/reactions/1F914.svg",
+        "www/assets/reactions/1F914.svg"
+      ],
+      "source": null,
+      "license": null,
+      "evidence": [],
+      "reviewStatus": "owner-evidence-pending"
+    },
+    {
+      "sha256": "c43248a757954f172fec996cd603235300ef2ec4c295aff5972b8f826b03b8db",
+      "bytes": 2738,
+      "paths": [
+        "assets/reactions/1F923.svg",
+        "www/assets/reactions/1F923.svg"
+      ],
+      "source": null,
+      "license": null,
+      "evidence": [],
+      "reviewStatus": "owner-evidence-pending"
+    },
+    {
+      "sha256": "53703fcbad8489be11a84ca2f3388b830ea8ce07b34484a4350e4bf88dda3045",
+      "bytes": 2947,
+      "paths": [
+        "assets/reactions/1F929.svg",
+        "www/assets/reactions/1F929.svg"
+      ],
+      "source": null,
+      "license": null,
+      "evidence": [],
+      "reviewStatus": "owner-evidence-pending"
+    },
+    {
+      "sha256": "1728918014453551091d0c24140b18fc9294edf97687dbf0097ec4e4c9552a5e",
+      "bytes": 3865,
+      "paths": [
+        "assets/reactions/1F92C.svg",
+        "www/assets/reactions/1F92C.svg"
+      ],
+      "source": null,
+      "license": null,
+      "evidence": [],
+      "reviewStatus": "owner-evidence-pending"
+    },
+    {
+      "sha256": "5871bfa230e17d0f1e7fcabec286aa29d8318e1b09774ef85163398cb4b78fd6",
+      "bytes": 2440367,
+      "paths": [
+        "assets/sounds/menu music/Majestic Menu Lounge.mp3",
+        "www/assets/sounds/menu music/Majestic Menu Lounge.mp3"
+      ],
+      "source": null,
+      "license": null,
+      "evidence": [],
+      "reviewStatus": "owner-evidence-pending"
+    },
+    {
+      "sha256": "05b9496b62bcbef1fc4b2a4126ef840c769ee7897380a77539e50a7d7b5d04fa",
+      "bytes": 2469551,
+      "paths": [
+        "assets/sounds/playlist game/Baku Breeze Lounge.mp3",
+        "www/assets/sounds/playlist game/Baku Breeze Lounge.mp3"
+      ],
+      "source": null,
+      "license": null,
+      "evidence": [],
+      "reviewStatus": "owner-evidence-pending"
+    },
+    {
+      "sha256": "7ed9bb89f6df620c16691469d495eb12d5cfe0f7d74d1145666145f7fa63cfc7",
+      "bytes": 2722223,
+      "paths": [
+        "assets/sounds/playlist game/Legacy of the Tiles.mp3",
+        "www/assets/sounds/playlist game/Legacy of the Tiles.mp3"
+      ],
+      "source": null,
+      "license": null,
+      "evidence": [],
+      "reviewStatus": "owner-evidence-pending"
+    },
+    {
+      "sha256": "7f0ea4c595143ace519c691ec1b01ce2e0c5a941fad4ee3f6eb8db02406ed185",
+      "bytes": 438839,
+      "paths": [
+        "js/vendor/colyseus.js",
+        "www/js/vendor/colyseus.js"
+      ],
+      "source": null,
+      "license": null,
+      "evidence": [],
+      "reviewStatus": "owner-evidence-pending"
+    },
+    {
+      "sha256": "92bb9a96476f983d212a2bc4f54c889039c1696dd4461d40a736860938570fbb",
+      "bytes": 72927,
+      "paths": [
+        "js/vendor/gsap.min.js",
+        "www/js/vendor/gsap.min.js"
+      ],
+      "source": null,
+      "license": null,
+      "evidence": [],
+      "reviewStatus": "owner-evidence-pending"
+    },
+    {
+      "sha256": "f17dfd9abb8c95953f09893cfefaaf9e09b9205012f6a2e3976dc946c89f6d7d",
+      "bytes": 185931,
+      "paths": [
+        "js/vendor/konva.min.js",
+        "www/js/vendor/konva.min.js"
+      ],
+      "source": null,
+      "license": null,
+      "evidence": [],
+      "reviewStatus": "owner-evidence-pending"
+    },
+    {
+      "sha256": "cc168d95fb927d46b1043726cfe13998e08902ff63f24330e2bb2290109ed145",
+      "bytes": 29703,
+      "paths": [
+        "js/vendor/localforage.min.js",
+        "www/js/vendor/localforage.min.js"
+      ],
+      "source": null,
+      "license": null,
+      "evidence": [],
+      "reviewStatus": "owner-evidence-pending"
+    },
+    {
+      "sha256": "7bcff1b4f1442787ff11dfc510dedb8de16502ff5c987c4bbeb477605f76d9a0",
+      "bytes": 46822,
+      "paths": [
+        "js/vendor/socket.io.min.js",
+        "www/js/vendor/socket.io.min.js"
+      ],
+      "source": null,
+      "license": null,
+      "evidence": [],
+      "reviewStatus": "owner-evidence-pending"
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+# R-28 — локальные события и будущая настройка наблюдения
+
+Game и API instrumentation используют `DEPLOY_SHA`, затем `GITHUB_SHA`, затем `SOURCE_VERSION`. Разрешён7–64hex commit SHA, иначе явное `unknown`; ручной SENTRY_RELEASE сохраняется. Будущий deploy должен передать SHA одной сборки обоим сервисам. Автоматический deploy не добавлен и не запускался.
+
+Game события: `match_recorded` после положительного ответа API (первичная отправка и retry), `settlement_acknowledged` после durable outbox receipt, `reconnect_completed` после принятого grace recovery, `settlement_backlog` при неотправленных результатах. В stdout пишется JSON; при настроенном DSN тот же ограниченный payload отправляется как Sentry message. Разрешены тип события, время, service, deploySha, перечислимые mode/outcome/result/source, числовые counts и hash(roomId,matchId). Нет player/user IDs, имён, токенов, roomCode, текста чата, API body или необработанного error.
+
+Это best-effort наблюдение. Краш между durable acknowledgement и событием может потерять событие; оно не заменяет authoritative ledger/outbox и не является exactly-once счётчиком денег. Повтор cached receipt не создаёт новое событие. Ошибка локального/Sentry sink не может менять признанный результат settlement.
+
+Тест5/5 проверяет SHA/allowlist, оба локальных sink, receipt-before-event, retry/cache, изоляцию ошибок и настоящий транспорт Sentry SDK в HTTP envelope receiver на127.0.0.1. Синтетический warning `domino.settlement_backlog` доставлен локально. Реальные DSN/учётные данные не читались и не публиковались.
+
+Для полного закрытия R-28: владелец/оператор выбирает dashboard и канал оповещения, задаёт пороги по failed/pending и сроку нерассчитанных матчей; утверждает доступы и retention. На изолированной staging-сборке с её SHA послать один синтетический backlog warning и подтвердить получение конкретным оператором. Затем проверить фильтр по deploySha, отсутствие лишних персональных полей и сопоставление с outbox/ledger. Production Vitals/кохорты/alerts этой сессией не проверены, R-28 остаётся частичной.

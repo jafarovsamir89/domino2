@@ -1,0 +1,20 @@
+✔ js/sounds.js: master mute prevents all procedural nodes including a delayed bounce (3.217209ms)
+✔ js/sounds.js: legacy mute preference also silences effects (0.692291ms)
+✔ js/sounds.js: music/effects levels are independent and persist with the master state (0.950375ms)
+✔ js/sounds.js: hidden page suspends playback and cannot create new effects (0.9685ms)
+✔ js/sounds.js: native lifecycle gates both engines without changing preferences (3.313458ms)
+✔ js/sounds.js: a delayed native configure result cannot unmute after the Activity paused (1.078833ms)
+✔ www/js/sounds.js: master mute prevents all procedural nodes including a delayed bounce (0.599833ms)
+✔ www/js/sounds.js: legacy mute preference also silences effects (0.478541ms)
+✔ www/js/sounds.js: music/effects levels are independent and persist with the master state (1.192375ms)
+✔ www/js/sounds.js: hidden page suspends playback and cannot create new effects (0.544042ms)
+✔ www/js/sounds.js: native lifecycle gates both engines without changing preferences (2.440416ms)
+✔ www/js/sounds.js: a delayed native configure result cannot unmute after the Activity paused (0.803666ms)
+ℹ tests 12
+ℹ suites 0
+ℹ pass 12
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 101.365125

@@ -1,50 +1,46 @@
 # Domino remediation — current handoff
 
-Updated 2026-10-21, S038 in progress. Read this file, the append-only WORK_LOG.md, then docs/audit/REMEDIATION_PLAN.md.
+Updated2026-10-21, S038. Read this file, append-only WORK_LOG.md, then docs/audit/REMEDIATION_PLAN.md.
 
 ## Current state
 
-- Branch: `codex/active-session-access` (R-10/R-26 focused review); base `fix/audit-foundation` at `312c2d2`. Remaining S038 working-tree changes will continue on `codex/audit-ten-card-batch`.
-- Accepted total before S038: **25/42 locally closed**: R01,R02,R03,R04,R05,R06,R07,R08,R11,R12,R13,R14,R16,R17,R20,R23,R25,R27,R29,R31,R32,R39,R40,R41,R42.
-- S037 full matrix: server413/413, API149/149, E2E64/64, fresh migrations/admin/Android builds pass. Successful CI runs39525993872 and39526606183. `main` has no required-check protection; no GitHub protection policy was changed.
-- S038 currently adds active-session revocation for R-10 and extracts its server validation boundary into `server/roomSessionAccess.js` (R-26). Targeted server/auth/network33/33, API auth7/7 pass. Full combined working-tree matrix427/427 server,150/150 API,77/77 E2E passed; after adding discovery and2more cases, final429/151 run is underway. S038 local Android Java21 unit tests2/2 plus assembleDebug pass; no install.
-- No production deployment/migrations, live data edits, Play installation, plugins, or delegated agents.
+- Continue on **`codex/audit-ten-card-batch`**. Base was `fix/audit-foundation` at312c2d2. Code checkpoints: R10/R26 d671bb8; Android1c17cf9; audio264b1da; UI05b3f37; observability ba811be; test discovery/CI081dae6. Journals/evidence/plan are committed with the final handoff checkpoint.
+- **27/42 locally closed** (was25): R01,R02,R03,R04,R05,R06,R07,R08,R10,R11,R12,R13,R14,R16,R17,R20,R23,R25,R26,R27,R29,R31,R32,R39,R40,R41,R42.
+- S038 ten-card scope: R10,R15,R18,R19,R22,R24,R26,R28,R30,R33. Two local card closures;8remain partial with external/owner criteria preserved. R26 closure is the acceptance of one module extracted in its own PR, not a claim that all monolith/rules debt is gone.
+- Focused **draft PR5**: https://github.com/jafarovsamir89/domino2/pull/5, head codex/active-session-access, base fix/audit-foundation. No merge/deploy. Batch branch contains that commit plus the remaining changes. CI completion status must be checked before claiming remote acceptance.
+- Local acceptance: full npm test **server429/429, API151/151**,0fail/0skip; full E2E **77/77**. After last minor board-reset change4/4zoom cases repeated; after correlation-ID hook change8/8match-recording/telemetry cases repeated. npm run check/parity/diff checks pass.
+- Native Java21: cap sync + testDebugUnitTest + assembleDebug pass; origin-policy2/2 (template ExampleUnitTest not counted). Debug APK has Play applicationId; **not installed**. APK SHA in evidence/session-038/checks.json.
+- **ADB has no device** at latest check. Desktop startup harness smoke is not a phone/native cold result.
+- No production deployment/migrations/live data edits, Play installation/publication, plugins or delegated agents.
 
-## Owner decisions received 2026-10-21
+## Owner decisions
 
-- **R-10:** after logout/ban/account deletion, close the active connection within60seconds, then use the existing disconnect/reconnect-grace/forfeit behavior. Do not directly settle a wallet in the access monitor.
-- **R-21:** owner explicitly deferred deletion/retention policy for a separate careful discussion. Keep visible request UI; do not invent a retention period or mark this card closed.
-- Owner requested another10 plan items. Current batch targets R-10,R-15,R-18,R-19,R-22,R-24,R-26,R-28,R-30,R-33. Count whole card closures only; device/owner/external criteria remain explicit.
+- R10: after logout/ban/deletion close connection within60seconds, then existing disconnect/reconnect-grace/forfeit. Monitor never settles a wallet directly.
+- R21: owner explicitly deferred actual deletion/retention policy for a separate careful discussion. Keep visible request UI. Existing privacy.html30/90day text is not evidence of a working process; don't invent policy or claim deletion complete.
+- User requests real card progress and simple explanations, not counting test/doc subtasks as full cards. Evidence/session-038/TEN_CARD_RESULTS.md is the single summary of this batch and what's still missing.
 
-## In-progress R-10 implementation
+## Changes/contracts to know
 
-- New signed server-only `POST /api/platform/game-session/validate` checks original token signature, current platform session/player/ban. Signed request scope `game.session.validate`, timestamp<=10seconds. Existing admission/reconnect endpoint still rejects expired tokens.
-- This active-only boundary accepts an expired five-minute admission token when its underlying account session is live. A long match must not be disconnected just because its admission token aged out.
-- `RoomSessionAccess` probes connected seats every20seconds with3second HTTP deadlines (expected upper bound23seconds). A denied/unavailable check blocks new room messages, closes code4003 and lets existing `onLeave` own grace/settlement. No per-move API requests.
-- Guard ignores late results for replaced identities/clients and during shutdown/dispose. Network handler stops retries of revoked token and keeps multiplayer mode so the disconnected game cannot run locally.
-- Tests: new guard contract was missing before implementation; API new-contract regression initially failed (missing method), then passed. Signed-boundary and synchronous-validator regression pass. API-first release order is mandatory; see evidence/session-038/SESSION_ACCESS_RESULTS.md.
+- R10/R26: roomSessionAccess.js extracts HTTP validation and adds20second active probes/3second deadlines. New signed API scope game.session.validate permits checking an existing connection after its5minute admission token expires, provided DB session/player/ban still allow it. Join/reconnect remain expiry-checked. Denied/unavailable validation blocks messages and closes4003; ordinary onLeave owns grace/forfeit. Client clears revoked retry token but keeps multiplayer mode so online cannot silently become solo. Generation/client/disposal guards preserve shutdown.
+- **Future release must be API-first**, then game server with matching proof secret and synchronized clocks. New game server against old API404 (orAPI503/429/network outage) fails closed and disconnects seats. See SESSION_ACCESS_RESULTS.md. No release was performed.
+- R18: AudioPermissionPolicy exact HTTPS origin/current port, cancellation and onStop cleanup, no pending-request replacement. R19: stale native configure reply cannot override newer lifecycle state; Chromium remains sole audio-focus owner.
+- R22/R24: AZ/RU/EN missing keys, late controls/aria and plural forms; narrow social header/cards fixed. Board1–2× zoom, bounded drag/arrows, reset/Escape, same-object board-clear reset. Canvas scene cap mobile1.25/desktop2 and hit1 unchanged; geometry/parity tested.
+- R28: build SHA + allowlisted final events; no IDs/tokens/chat/private code in new analytics. Final settlement event after durable receipt; cached receipt doesn't emit twice. Telemetry is best effort, never authoritative ledger. Actual Sentry transport tested only against localhost. Production dashboards/alerts/Vitals still unknown.
+- API tests now discover all compiled test files recursively; Android policy unit tests included in CI. No lockfile/dependency installation needed.
 
-## Next action
+## Exact next action
 
-1. Push focused R-10 module branch and open draft PR against fix/audit-foundation. Keep production untouched. Continue remaining local S038 changes on codex/audit-ten-card-batch. R-26 closure requires this focused review artifact plus preserved contracts.
-2. R-22: eight missing AZ/RU/EN translation keys plus hardcoded Cancel/Message/system-mail labels found; fix and verify narrow screens. Turkish native review remains external.
-3. Continue the remaining independent cards in the ten-card scope. ADB currently lists no device; do not substitute browser evidence for phone measurements or real Wi-Fi/LTE voice/audio-focus acceptance.
-4. Update plan/evidence/counts only when criteria are met; commit focused milestones and push authorized feature branches.
+1. Inspect latest GitHub Actions for codex/audit-ten-card-batch and focused PR5. If green, preserve evidence; if red, repair the actual failing contract. Do not redo installations or broad suites just because the task resumed.
+2. Check adb devices -l. With the authorized phone, follow **DEVICE_ACCEPTANCE_NEXT.md**. Prepare/reuse a separate .audit package + synthetic loopback preview; never install current debug APK over Play. Collect real cold/warm/offline R15, prompt/NAT/TURN R18, call/Bluetooth R19. No connected phone means these cards stay partial.
+3. Remaining independent R22 work is a full AZ/RU/EN screen sweep, then TR native review; R24 needs actual players in the full game screen. R28 needs chosen operator/dashboard/alert destination and staging delivery confirmation. R30 needs rights evidence for82content hashes + Console/Data Safety review. R33 needs owner cap/cycle/budget choice; no automatic reward reduction. R21 stays deferred.
+4. Remaining15cards: R09,R15,R18,R19,R21,R22,R24,R28,R30,R33,R34,R35,R36,R37,R38. R09 real SSV/rewarded and P3 experiments remain outside the previously reduced scope. Do not inflate the closure counter by renaming external acceptance as complete.
 
-## Safety and environment
+## Evidence and environment
 
-- Owner's deployed game has about50users. Local/synthetic checks and feature-branch commits/push are authorized. Production deploys/migrations/live wallets/published Play changes need direct owner instruction.
-- Preserve Play app/data. Native tests use a separate `.audit` ID. Existing debug variant still uses Play ID; never install it over Play.
-- Root/server lockfiles separate. Read WORK_LOG before reinstalling. Root/API/server dependencies already present; do not copy `.env` or print real tokens/signing credentials.
-- API test build removes/replaces `apps/api/dist`; do not run PG imports concurrently with that rebuild. Owned synthetic PostgreSQL14.20 in `.tmp/remediation-s002/pg`, localhost55439, stopped at last handoff. User preview4174 is unrelated; keep it.
-- Root/www source pairs must stay byte-identical. Audit documents: run `docs/audit/evidence/scripts/validate-audit.mjs`, refresh changed existing hashes in the347-entry audit manifest, then verify-manifest.mjs.
-- E2E generates tracked screenshots and untracked `C:/` paths; restore/remove only outputs generated by our run from a clean baseline.
-
-## Contracts to preserve
-
-- R03/R29: exact room/match reserves and idempotent settlement. Durable outbox must use an absolute persistent local volume on a future release; API-first order. See session024/OUTBOX_OPERATIONS.md. Do not reassign legacy null-match reserves or purge unresolved outbox records.
-- R04/R16/R17/R40: shutdown is not forfeit; owned async generations and pause timer descriptors survive recovery. Watchdog never blindly unlocks online actions.
-- R19: Chromium owns audio focus; don't add a competing native AudioManager owner. Native Activity lifecycle bridge already gates both sound engines. Call/Bluetooth tests remain open.
-- R13/R14: actual scene-canvas ratio mobile<=1.25, desktop<=2, hit=1; resize/DPR invalidates render signature. Previous Android stress evidence is not a Play-release60FPS guarantee.
-
-History and detailed prior results live in WORK_LOG.md and evidence/session-001 through session-037. This file intentionally replaces stale duplicated baseline/status paragraphs from the previous handoff.
+- S038 results: evidence/session-038/TEN_CARD_RESULTS.md, checks.json, BOARD_REVIEW.md, SESSION_ACCESS_RESULTS.md, OBSERVABILITY_OPERATIONS.md, ECONOMY_DECISION.md, logs/screenshots/model JSON. Device instructions and ASSET_RIGHTS_REGISTER.json are at this directory root.
+- Asset register:142tracked paths/82content hashes, all owner source/license evidence pending. node docs/remediation/scripts/asset-rights-register.mjs --check verifies freshness. Don't assume root ISC covers media.
+- Economic model:36scenario/horizon cells,20synthetic wallets, residual0; defaults not production overrides. node docs/remediation/scripts/economy-policy-sensitivity.mjs reproduces it without DB/network.
+- Root/server lockfiles separate; dependencies already installed. API test build deletes/replaces apps/api/dist; no concurrent PG imports during build. Owned synthetic PG14.20 .tmp/remediation-s002/pg on localhost55439 remains stopped; no database was started in S038.
+- Local JDK21 .tmp/jdk21/Contents/Home; system Java remains17. Preview4174 belongs to user. Agent previews4173/4186 should be stopped on handoff. E2E root screenshots/C:/ generated PNGs were restored/removed; intentional S038 captures retained.
+- Root/www source pairs must stay byte-identical. Audit edits: validate-audit.mjs, refresh only changed existing hashes in347-entry sha256-manifest.json, then verify-manifest.mjs. Preserve original audit failures/history.
+- R03/R29 persistent absolute outbox volume and exact match reserves remain mandatory; never reassign legacy null-match reserves. Shutdown is not forfeit; timer ownership/generation guards and input watchdog contracts remain intact.

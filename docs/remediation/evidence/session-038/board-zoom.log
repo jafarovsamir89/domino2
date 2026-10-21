@@ -1,0 +1,16 @@
+
+Running 4 tests using 1 worker
+
+(node:7203) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+(node:7203) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[1/4] e2e/board-zoom.spec.mjs:4:5 › root: 20 tiles zoom, pan and reset preserve canvas and move coordinates
+[2/4] e2e/board-zoom.spec.mjs:4:5 › root: 28 tiles zoom, pan and reset preserve canvas and move coordinates
+[3/4] e2e/board-zoom.spec.mjs:4:5 › www: 20 tiles zoom, pan and reset preserve canvas and move coordinates
+[4/4] e2e/board-zoom.spec.mjs:4:5 › www: 28 tiles zoom, pan and reset preserve canvas and move coordinates
+  4 passed (3.9s)

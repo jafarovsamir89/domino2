@@ -1,0 +1,13 @@
+✔ build identity accepts only a commit SHA and marks missing identity explicitly (0.953791ms)
+✔ operational payload is allowlisted, correlated without identities and delivered to both local sinks (2.631958ms)
+✔ outbox final event is emitted after durable receipt, never on failure or cached acknowledgement (69.427292ms)
+✔ telemetry failures do not change delivery acknowledgement (25.760084ms)
+✔ Sentry SDK delivers a synthetic backlog alert to a loopback envelope sink (407.89125ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 659.606084
