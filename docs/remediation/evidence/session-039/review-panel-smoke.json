@@ -1,0 +1,24 @@
+{
+  "cards": 15,
+  "decisionExport": "pass",
+  "realOnboarding": "pass",
+  "fullBoardFixture28": "pass",
+  "frozenFixtureNotCountedAsMatch": true,
+  "audioSettings": "pass",
+  "pageErrors": [],
+  "textureDimensions": [
+    {
+      "path": "/assets/cosmetics/table/table_skin_04.webp",
+      "width": 2816,
+      "height": 1536,
+      "rgbaBytes": 17301504
+    },
+    {
+      "path": "/assets/cosmetics/table/table_skin_07.webp",
+      "width": 1376,
+      "height": 768,
+      "rgbaBytes": 4227072
+    }
+  ],
+  "textureScope": "Browser decode dimensions/nominal RGBA bytes only; not actual GPU/native memory measurement"
+}

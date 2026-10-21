@@ -1,0 +1,1094 @@
+{
+  "schemaVersion": 1,
+  "sourceSha256": "4a1c66b7f6cd23237cd1fcbbf467949dc0054cfda2c9db0f1c3c308a1b86c1a5",
+  "scope": "schema metadata only; no user data or deletion executed",
+  "models": [
+    {
+      "name": "User",
+      "fields": [
+        "id",
+        "name",
+        "email",
+        "emailVerified",
+        "image",
+        "role",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    {
+      "name": "Session",
+      "fields": [
+        "id",
+        "expiresAt",
+        "token",
+        "createdAt",
+        "updatedAt",
+        "ipAddress",
+        "userAgent",
+        "userId"
+      ]
+    },
+    {
+      "name": "Account",
+      "fields": [
+        "id",
+        "accountId",
+        "providerId",
+        "userId",
+        "accessToken",
+        "refreshToken",
+        "idToken",
+        "accessTokenExpiresAt",
+        "refreshTokenExpiresAt",
+        "scope",
+        "password",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    {
+      "name": "Verification",
+      "fields": [
+        "id",
+        "identifier",
+        "value",
+        "expiresAt",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    {
+      "name": "Player",
+      "fields": [
+        "id",
+        "legacyUserId",
+        "legacyNameKey",
+        "userId",
+        "displayName",
+        "avatarSeed",
+        "avatarUrl",
+        "tableSkinKey",
+        "isGuest",
+        "language",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    {
+      "name": "PlayerStats",
+      "fields": [
+        "id",
+        "playerId",
+        "rating",
+        "points",
+        "wins",
+        "losses",
+        "draws",
+        "matchesPlayed",
+        "currentStreak",
+        "bestStreak"
+      ]
+    },
+    {
+      "name": "PlayerModeStats",
+      "fields": [
+        "id",
+        "playerId",
+        "gameMode",
+        "rating",
+        "points",
+        "wins",
+        "losses",
+        "draws",
+        "matchesPlayed",
+        "currentStreak",
+        "bestStreak"
+      ]
+    },
+    {
+      "name": "CoinEconomyConfig",
+      "fields": [
+        "id",
+        "key",
+        "dailyBaseAmount",
+        "dailyStreakBonus",
+        "dailyMaxStreak",
+        "dailyRewards",
+        "dailyClaimCooldown",
+        "matchCommissionBps",
+        "tournamentCommissionBps",
+        "adRewardAmount",
+        "updatedAt",
+        "createdAt"
+      ]
+    },
+    {
+      "name": "CoinWallet",
+      "fields": [
+        "id",
+        "playerId",
+        "balance",
+        "reserved",
+        "lifetimeEarned",
+        "lifetimeSpent",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    {
+      "name": "CoinLedgerEntry",
+      "fields": [
+        "id",
+        "playerId",
+        "type",
+        "amount",
+        "balanceBefore",
+        "balanceAfter",
+        "reservedBefore",
+        "reservedAfter",
+        "referenceType",
+        "referenceId",
+        "idempotencyKey",
+        "note",
+        "payloadJson",
+        "createdByUserId",
+        "createdAt"
+      ]
+    },
+    {
+      "name": "CoinDailyBonusClaim",
+      "fields": [
+        "id",
+        "playerId",
+        "claimDate",
+        "streakDay",
+        "amount",
+        "createdAt"
+      ]
+    },
+    {
+      "name": "CoinQuest",
+      "fields": [
+        "id",
+        "key",
+        "title",
+        "description",
+        "rewardAmount",
+        "maxProgress",
+        "period",
+        "isActive",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    {
+      "name": "CoinQuestProgress",
+      "fields": [
+        "id",
+        "playerId",
+        "questId",
+        "progress",
+        "state",
+        "claimedAt",
+        "completedAt",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    {
+      "name": "CoinStakeTable",
+      "fields": [
+        "id",
+        "key",
+        "title",
+        "stakeAmount",
+        "commissionBps",
+        "isFree",
+        "isActive",
+        "sortOrder",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    {
+      "name": "CoinMatchStake",
+      "fields": [
+        "id",
+        "roomId",
+        "matchId",
+        "playerId",
+        "stakeTableId",
+        "stakeAmount",
+        "commissionBps",
+        "commissionAmount",
+        "status",
+        "reservedAt",
+        "settledAt",
+        "refundedAt",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    {
+      "name": "CoinTournament",
+      "fields": [
+        "id",
+        "key",
+        "title",
+        "description",
+        "entryFee",
+        "prizePool",
+        "commissionBps",
+        "startsAt",
+        "endsAt",
+        "isActive",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    {
+      "name": "CoinTournamentEntry",
+      "fields": [
+        "id",
+        "tournamentId",
+        "playerId",
+        "status",
+        "entryFee",
+        "payoutAmount",
+        "joinedAt",
+        "settledAt",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    {
+      "name": "Match",
+      "fields": [
+        "id",
+        "mode",
+        "gameMode",
+        "isTeamMode",
+        "roomId",
+        "winnerKey",
+        "result",
+        "totalPoints",
+        "createdAt"
+      ]
+    },
+    {
+      "name": "MatchParticipant",
+      "fields": [
+        "id",
+        "matchId",
+        "playerId",
+        "displayNameSnapshot",
+        "teamIndex",
+        "winnerKey",
+        "result",
+        "points",
+        "roundWins",
+        "ratingBefore",
+        "ratingDelta",
+        "ratingAfter",
+        "isBot"
+      ]
+    },
+    {
+      "name": "FriendConnection",
+      "fields": [
+        "id",
+        "requesterPlayerId",
+        "addresseePlayerId",
+        "status",
+        "note",
+        "respondedAt",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    {
+      "name": "RoomInvitation",
+      "fields": [
+        "id",
+        "roomId",
+        "roomCode",
+        "roomMode",
+        "isTeamMode",
+        "stakeKey",
+        "stakeAmount",
+        "humanSeats",
+        "totalPlayers",
+        "inviterPlayerId",
+        "inviteePlayerId",
+        "status",
+        "note",
+        "payloadJson",
+        "expiresAt",
+        "respondedAt",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    {
+      "name": "PlayInvite",
+      "fields": [
+        "id",
+        "roomId",
+        "roomCode",
+        "inviterPlayerId",
+        "inviteePlayerId",
+        "status",
+        "note",
+        "payloadJson",
+        "expiresAt",
+        "respondedAt",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    {
+      "name": "DirectMessage",
+      "fields": [
+        "id",
+        "senderPlayerId",
+        "receiverPlayerId",
+        "text",
+        "createdAt",
+        "readAt",
+        "clientMessageId"
+      ]
+    },
+    {
+      "name": "DirectMessageThread",
+      "fields": [
+        "playerAId",
+        "playerBId",
+        "lastMessageId",
+        "lastMessageAt",
+        "unreadCountA",
+        "unreadCountB"
+      ]
+    },
+    {
+      "name": "InboxMessage",
+      "fields": [
+        "id",
+        "playerId",
+        "type",
+        "title",
+        "body",
+        "status",
+        "payloadJson",
+        "rewardJson",
+        "createdAt",
+        "readAt",
+        "claimedAt",
+        "expiresAt"
+      ]
+    },
+    {
+      "name": "GiftCatalog",
+      "fields": [
+        "id",
+        "key",
+        "name",
+        "description",
+        "assetKey",
+        "coinCost",
+        "exchangeRateBps",
+        "rarity",
+        "sortOrder",
+        "isActive",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    {
+      "name": "PlayerGiftInventory",
+      "fields": [
+        "id",
+        "playerId",
+        "giftCatalogId",
+        "quantity",
+        "receivedCount",
+        "sentCount",
+        "exchangedCount",
+        "lastReceivedAt",
+        "lastSentAt",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    {
+      "name": "GiftTransaction",
+      "fields": [
+        "id",
+        "senderPlayerId",
+        "recipientPlayerId",
+        "giftCatalogId",
+        "giftKeySnapshot",
+        "giftNameSnapshot",
+        "assetKeySnapshot",
+        "coinCost",
+        "exchangeValue",
+        "contextType",
+        "contextId",
+        "note",
+        "status",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    {
+      "name": "PlayerBan",
+      "fields": [
+        "id",
+        "playerId",
+        "reason",
+        "expiresAt",
+        "createdByUserId",
+        "revokedAt",
+        "revokedByUserId",
+        "createdAt"
+      ]
+    },
+    {
+      "name": "PlayerReport",
+      "fields": [
+        "id",
+        "reporterPlayerId",
+        "targetPlayerId",
+        "matchId",
+        "reason",
+        "status",
+        "createdAt",
+        "resolvedAt",
+        "resolvedByUserId"
+      ]
+    },
+    {
+      "name": "Feedback",
+      "fields": [
+        "id",
+        "playerId",
+        "message",
+        "category",
+        "contactEmail",
+        "status",
+        "appVersion",
+        "locale",
+        "createdAt",
+        "resolvedAt",
+        "resolvedByUserId"
+      ]
+    },
+    {
+      "name": "AdminAuditLog",
+      "fields": [
+        "id",
+        "adminUserId",
+        "action",
+        "entityType",
+        "entityId",
+        "payloadJson",
+        "createdAt"
+      ]
+    },
+    {
+      "name": "SystemAuditLog",
+      "fields": [
+        "id",
+        "actorType",
+        "actorUserId",
+        "actorPlayerId",
+        "action",
+        "entityType",
+        "entityId",
+        "payloadJson",
+        "createdAt"
+      ]
+    },
+    {
+      "name": "CatalogProduct",
+      "fields": [
+        "id",
+        "key",
+        "name",
+        "description",
+        "isActive",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    {
+      "name": "CatalogPrice",
+      "fields": [
+        "id",
+        "productId",
+        "currency",
+        "amountMinor",
+        "isActive",
+        "createdAt"
+      ]
+    },
+    {
+      "name": "Order",
+      "fields": [
+        "id",
+        "playerId",
+        "productId",
+        "priceId",
+        "status",
+        "externalRef",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    {
+      "name": "Payment",
+      "fields": [
+        "id",
+        "orderId",
+        "provider",
+        "providerPaymentId",
+        "status",
+        "amountMinor",
+        "currency",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    {
+      "name": "PaymentEvent",
+      "fields": [
+        "id",
+        "provider",
+        "providerEventId",
+        "type",
+        "payloadJson",
+        "createdAt"
+      ]
+    },
+    {
+      "name": "PlayerEntitlement",
+      "fields": [
+        "id",
+        "playerId",
+        "productKey",
+        "quantity",
+        "grantedAt"
+      ]
+    },
+    {
+      "name": "FcmToken",
+      "fields": [
+        "id",
+        "playerId",
+        "token",
+        "createdAt",
+        "updatedAt"
+      ]
+    }
+  ],
+  "relations": [
+    {
+      "child": "Session",
+      "parent": "User",
+      "fields": [
+        "userId"
+      ],
+      "onDelete": "Cascade"
+    },
+    {
+      "child": "Account",
+      "parent": "User",
+      "fields": [
+        "userId"
+      ],
+      "onDelete": "Cascade"
+    },
+    {
+      "child": "Player",
+      "parent": "User",
+      "fields": [
+        "userId"
+      ],
+      "onDelete": "SetNull"
+    },
+    {
+      "child": "PlayerStats",
+      "parent": "Player",
+      "fields": [
+        "playerId"
+      ],
+      "onDelete": "Cascade"
+    },
+    {
+      "child": "PlayerModeStats",
+      "parent": "Player",
+      "fields": [
+        "playerId"
+      ],
+      "onDelete": "Cascade"
+    },
+    {
+      "child": "CoinWallet",
+      "parent": "Player",
+      "fields": [
+        "playerId"
+      ],
+      "onDelete": "Cascade"
+    },
+    {
+      "child": "CoinLedgerEntry",
+      "parent": "Player",
+      "fields": [
+        "playerId"
+      ],
+      "onDelete": "Cascade"
+    },
+    {
+      "child": "CoinLedgerEntry",
+      "parent": "User",
+      "fields": [
+        "createdByUserId"
+      ],
+      "onDelete": "SetNull"
+    },
+    {
+      "child": "CoinDailyBonusClaim",
+      "parent": "Player",
+      "fields": [
+        "playerId"
+      ],
+      "onDelete": "Cascade"
+    },
+    {
+      "child": "CoinQuestProgress",
+      "parent": "Player",
+      "fields": [
+        "playerId"
+      ],
+      "onDelete": "Cascade"
+    },
+    {
+      "child": "CoinQuestProgress",
+      "parent": "CoinQuest",
+      "fields": [
+        "questId"
+      ],
+      "onDelete": "Cascade"
+    },
+    {
+      "child": "CoinMatchStake",
+      "parent": "Player",
+      "fields": [
+        "playerId"
+      ],
+      "onDelete": "Cascade"
+    },
+    {
+      "child": "CoinMatchStake",
+      "parent": "CoinStakeTable",
+      "fields": [
+        "stakeTableId"
+      ],
+      "onDelete": "Cascade"
+    },
+    {
+      "child": "CoinTournamentEntry",
+      "parent": "Player",
+      "fields": [
+        "playerId"
+      ],
+      "onDelete": "Cascade"
+    },
+    {
+      "child": "CoinTournamentEntry",
+      "parent": "CoinTournament",
+      "fields": [
+        "tournamentId"
+      ],
+      "onDelete": "Cascade"
+    },
+    {
+      "child": "MatchParticipant",
+      "parent": "Match",
+      "fields": [
+        "matchId"
+      ],
+      "onDelete": "Cascade"
+    },
+    {
+      "child": "MatchParticipant",
+      "parent": "Player",
+      "fields": [
+        "playerId"
+      ],
+      "onDelete": "SetNull"
+    },
+    {
+      "child": "FriendConnection",
+      "parent": "Player",
+      "fields": [
+        "requesterPlayerId"
+      ],
+      "onDelete": "Cascade"
+    },
+    {
+      "child": "FriendConnection",
+      "parent": "Player",
+      "fields": [
+        "addresseePlayerId"
+      ],
+      "onDelete": "Cascade"
+    },
+    {
+      "child": "RoomInvitation",
+      "parent": "Player",
+      "fields": [
+        "inviterPlayerId"
+      ],
+      "onDelete": "Cascade"
+    },
+    {
+      "child": "RoomInvitation",
+      "parent": "Player",
+      "fields": [
+        "inviteePlayerId"
+      ],
+      "onDelete": "Cascade"
+    },
+    {
+      "child": "PlayInvite",
+      "parent": "Player",
+      "fields": [
+        "inviterPlayerId"
+      ],
+      "onDelete": "Cascade"
+    },
+    {
+      "child": "PlayInvite",
+      "parent": "Player",
+      "fields": [
+        "inviteePlayerId"
+      ],
+      "onDelete": "Cascade"
+    },
+    {
+      "child": "DirectMessage",
+      "parent": "Player",
+      "fields": [
+        "senderPlayerId"
+      ],
+      "onDelete": "Cascade"
+    },
+    {
+      "child": "DirectMessage",
+      "parent": "Player",
+      "fields": [
+        "receiverPlayerId"
+      ],
+      "onDelete": "Cascade"
+    },
+    {
+      "child": "DirectMessageThread",
+      "parent": "Player",
+      "fields": [
+        "playerAId"
+      ],
+      "onDelete": "Cascade"
+    },
+    {
+      "child": "DirectMessageThread",
+      "parent": "Player",
+      "fields": [
+        "playerBId"
+      ],
+      "onDelete": "Cascade"
+    },
+    {
+      "child": "DirectMessageThread",
+      "parent": "DirectMessage",
+      "fields": [
+        "lastMessageId"
+      ],
+      "onDelete": "SetNull"
+    },
+    {
+      "child": "InboxMessage",
+      "parent": "Player",
+      "fields": [
+        "playerId"
+      ],
+      "onDelete": "Cascade"
+    },
+    {
+      "child": "PlayerGiftInventory",
+      "parent": "Player",
+      "fields": [
+        "playerId"
+      ],
+      "onDelete": "Cascade"
+    },
+    {
+      "child": "PlayerGiftInventory",
+      "parent": "GiftCatalog",
+      "fields": [
+        "giftCatalogId"
+      ],
+      "onDelete": "Cascade"
+    },
+    {
+      "child": "GiftTransaction",
+      "parent": "Player",
+      "fields": [
+        "senderPlayerId"
+      ],
+      "onDelete": "Cascade"
+    },
+    {
+      "child": "GiftTransaction",
+      "parent": "Player",
+      "fields": [
+        "recipientPlayerId"
+      ],
+      "onDelete": "Cascade"
+    },
+    {
+      "child": "GiftTransaction",
+      "parent": "GiftCatalog",
+      "fields": [
+        "giftCatalogId"
+      ],
+      "onDelete": "Restrict"
+    },
+    {
+      "child": "PlayerBan",
+      "parent": "Player",
+      "fields": [
+        "playerId"
+      ],
+      "onDelete": "Cascade"
+    },
+    {
+      "child": "PlayerBan",
+      "parent": "User",
+      "fields": [
+        "createdByUserId"
+      ],
+      "onDelete": "SetNull"
+    },
+    {
+      "child": "PlayerBan",
+      "parent": "User",
+      "fields": [
+        "revokedByUserId"
+      ],
+      "onDelete": "SetNull"
+    },
+    {
+      "child": "PlayerReport",
+      "parent": "Player",
+      "fields": [
+        "reporterPlayerId"
+      ],
+      "onDelete": "Cascade"
+    },
+    {
+      "child": "PlayerReport",
+      "parent": "Player",
+      "fields": [
+        "targetPlayerId"
+      ],
+      "onDelete": "Cascade"
+    },
+    {
+      "child": "PlayerReport",
+      "parent": "Match",
+      "fields": [
+        "matchId"
+      ],
+      "onDelete": "SetNull"
+    },
+    {
+      "child": "PlayerReport",
+      "parent": "User",
+      "fields": [
+        "resolvedByUserId"
+      ],
+      "onDelete": "SetNull"
+    },
+    {
+      "child": "Feedback",
+      "parent": "Player",
+      "fields": [
+        "playerId"
+      ],
+      "onDelete": "SetNull"
+    },
+    {
+      "child": "Feedback",
+      "parent": "User",
+      "fields": [
+        "resolvedByUserId"
+      ],
+      "onDelete": "SetNull"
+    },
+    {
+      "child": "AdminAuditLog",
+      "parent": "User",
+      "fields": [
+        "adminUserId"
+      ],
+      "onDelete": "Cascade"
+    },
+    {
+      "child": "SystemAuditLog",
+      "parent": "User",
+      "fields": [
+        "actorUserId"
+      ],
+      "onDelete": "SetNull"
+    },
+    {
+      "child": "SystemAuditLog",
+      "parent": "Player",
+      "fields": [
+        "actorPlayerId"
+      ],
+      "onDelete": "SetNull"
+    },
+    {
+      "child": "CatalogPrice",
+      "parent": "CatalogProduct",
+      "fields": [
+        "productId"
+      ],
+      "onDelete": "Cascade"
+    },
+    {
+      "child": "Order",
+      "parent": "Player",
+      "fields": [
+        "playerId"
+      ],
+      "onDelete": "Cascade"
+    },
+    {
+      "child": "Order",
+      "parent": "CatalogProduct",
+      "fields": [
+        "productId"
+      ],
+      "onDelete": "Cascade"
+    },
+    {
+      "child": "Order",
+      "parent": "CatalogPrice",
+      "fields": [
+        "priceId"
+      ],
+      "onDelete": "Cascade"
+    },
+    {
+      "child": "Payment",
+      "parent": "Order",
+      "fields": [
+        "orderId"
+      ],
+      "onDelete": "Cascade"
+    },
+    {
+      "child": "PlayerEntitlement",
+      "parent": "Player",
+      "fields": [
+        "playerId"
+      ],
+      "onDelete": "Cascade"
+    },
+    {
+      "child": "FcmToken",
+      "parent": "Player",
+      "fields": [
+        "playerId"
+      ],
+      "onDelete": "Cascade"
+    }
+  ],
+  "userDeleteCascade": [
+    "User",
+    "Session",
+    "Account",
+    "AdminAuditLog"
+  ],
+  "userDeleteRetainedRelations": [
+    {
+      "child": "Player",
+      "parent": "User",
+      "fields": [
+        "userId"
+      ],
+      "onDelete": "SetNull"
+    },
+    {
+      "child": "CoinLedgerEntry",
+      "parent": "User",
+      "fields": [
+        "createdByUserId"
+      ],
+      "onDelete": "SetNull"
+    },
+    {
+      "child": "PlayerBan",
+      "parent": "User",
+      "fields": [
+        "createdByUserId"
+      ],
+      "onDelete": "SetNull"
+    },
+    {
+      "child": "PlayerBan",
+      "parent": "User",
+      "fields": [
+        "revokedByUserId"
+      ],
+      "onDelete": "SetNull"
+    },
+    {
+      "child": "PlayerReport",
+      "parent": "User",
+      "fields": [
+        "resolvedByUserId"
+      ],
+      "onDelete": "SetNull"
+    },
+    {
+      "child": "Feedback",
+      "parent": "User",
+      "fields": [
+        "resolvedByUserId"
+      ],
+      "onDelete": "SetNull"
+    },
+    {
+      "child": "SystemAuditLog",
+      "parent": "User",
+      "fields": [
+        "actorUserId"
+      ],
+      "onDelete": "SetNull"
+    }
+  ],
+  "decisionsPending": [
+    "Owner/operator and authenticated identity verification",
+    "Deletion vs anonymization per data category, including name snapshots/free text/attachments",
+    "PaymentEvent payloads/external IDs without a Player FK",
+    "Active matches/reserved coins/claims: finish or refund before deletion",
+    "Backup expiry and prevention of deleted-account resurrection on restore",
+    "Sentry/push/auth/provider data and processors",
+    "Published privacy/Console/web request wording and realistic deadlines"
+  ],
+  "warning": "Deleting User alone sets Player.userId null; it does not erase Player, chats, wallet or displayNameSnapshot. SQL cascades are not an approved deletion/retention policy."
+}

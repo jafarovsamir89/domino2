@@ -1,0 +1,42 @@
+{
+  "scope": "desktop-harness-smoke",
+  "rows": [
+    {
+      "interactiveMarkMs": 404.3999999994412,
+      "verifiedMenuOpenMs": 608.6999999992549,
+      "viewport": [
+        1280,
+        720
+      ],
+      "dpr": 1,
+      "native": "browser"
+    },
+    {
+      "interactiveMarkMs": 124.6000000005588,
+      "verifiedMenuOpenMs": 418.20000000018626,
+      "viewport": [
+        1280,
+        720
+      ],
+      "dpr": 1,
+      "native": "browser"
+    },
+    {
+      "interactiveMarkMs": 56.5,
+      "verifiedMenuOpenMs": 326.5,
+      "viewport": [
+        1280,
+        720
+      ],
+      "dpr": 1,
+      "native": "browser"
+    }
+  ],
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/148.0.7778.96 Safari/537.36",
+  "limits": [
+    "First sample is current navigation, not a certified cold OS launch.",
+    "Reloads2/3 are warm UI samples.",
+    "Verified menu time includes harness polling/interaction overhead.",
+    "No Play package, native launch, production network or offline-device claim."
+  ]
+}

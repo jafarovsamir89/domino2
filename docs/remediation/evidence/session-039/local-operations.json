@@ -1,0 +1,20 @@
+{
+  "scope": "local synthetic summary; not production dashboard or delivered operator alert",
+  "counts": {
+    "match_recorded": 1,
+    "settlement_acknowledged": 1,
+    "reconnect_completed": 1
+  },
+  "latestBacklog": {
+    "at": "2026-10-21T12:00:00Z",
+    "pending": 12,
+    "failed": 1
+  },
+  "releases": [
+    "abcdef012345"
+  ],
+  "alerts": [
+    "settlement_failed",
+    "settlement_pending_10"
+  ]
+}

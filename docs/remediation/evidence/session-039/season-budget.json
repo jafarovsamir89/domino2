@@ -1,0 +1,36 @@
+{
+  "status": "draft-disabled-owner-review",
+  "durationDays": 14,
+  "dates": null,
+  "pricesApproved": false,
+  "proposedPrice": 1500,
+  "minimumStake": 50,
+  "freeSoloUnchanged": true,
+  "gameplayModifiers": [],
+  "assets": [
+    {
+      "path": "assets/cosmetics/table/table_skin_04.webp",
+      "bytes": 408934,
+      "sha256": "b08e63b489f8b4370fc4d8cfe841cf32836d67782b710c0f6755f933e8091c54",
+      "rights": "pending-owner-evidence"
+    },
+    {
+      "path": "assets/cosmetics/table/table_skin_07.webp",
+      "bytes": 211834,
+      "sha256": "2785355fd5c38d7efb319f4cf871f800932687ad53d94c7f7e1afda8a42ac81e",
+      "rights": "pending-owner-evidence"
+    }
+  ],
+  "acceptancePending": [
+    "Rights evidence for both hashes",
+    "Device decode/GPU memory and 20/28 tile contrast",
+    "Budget/sink and existing owner price approval",
+    "Launch/end dates and maintenance owner",
+    "No scarcity pressure or unapproved auto-expiry of owned items"
+  ],
+  "limits": {
+    "additionalDownloadBytes": 1048576,
+    "decodedTextureBudgetMiB": 32
+  },
+  "scope": "Two existing cosmetic surfaces, no new sale/entitlement/rules change"
+}

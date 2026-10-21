@@ -923,10 +923,13 @@
         "js/vendor/gsap.min.js",
         "www/js/vendor/gsap.min.js"
       ],
-      "source": null,
+      "source": "GSAP3.15.0 locked npm distribution, exact byte match in evidence/session-039/vendor/provenance.json",
       "license": null,
-      "evidence": [],
-      "reviewStatus": "owner-evidence-pending"
+      "evidence": [
+        "evidence/session-039/vendor/provenance.json",
+        "https://gsap.com/standard-license/"
+      ],
+      "reviewStatus": "source-identified-license-review-pending"
     },
     {
       "sha256": "f17dfd9abb8c95953f09893cfefaaf9e09b9205012f6a2e3976dc946c89f6d7d",
@@ -941,16 +944,35 @@
       "reviewStatus": "owner-evidence-pending"
     },
     {
+      "sha256": "8c3c0576866d6c22f56cbe65b8ef20e63c8aa75ec58f8cd139a242edb42bf8f1",
+      "bytes": 11337,
+      "paths": [
+        "js/vendor/localforage.LICENSE.txt",
+        "www/js/vendor/localforage.LICENSE.txt"
+      ],
+      "source": "localForage1.10.0 locked npm distribution LICENSE, shipped unchanged",
+      "license": "Apache-2.0 license text",
+      "evidence": [
+        "evidence/session-039/vendor/localforage-LICENSE.txt",
+        "evidence/session-039/vendor/provenance.json"
+      ],
+      "reviewStatus": "verified"
+    },
+    {
       "sha256": "cc168d95fb927d46b1043726cfe13998e08902ff63f24330e2bb2290109ed145",
       "bytes": 29703,
       "paths": [
         "js/vendor/localforage.min.js",
         "www/js/vendor/localforage.min.js"
       ],
-      "source": null,
-      "license": null,
-      "evidence": [],
-      "reviewStatus": "owner-evidence-pending"
+      "source": "localForage1.10.0, locked npm distribution; exact bytes verified",
+      "license": "Apache-2.0; notices preserved, license included in root/www vendor bundle",
+      "evidence": [
+        "evidence/session-039/vendor/provenance.json",
+        "evidence/session-039/vendor/localforage-LICENSE.txt",
+        "https://github.com/localForage/localForage/tree/1.10.0"
+      ],
+      "reviewStatus": "verified"
     },
     {
       "sha256": "7bcff1b4f1442787ff11dfc510dedb8de16502ff5c987c4bbeb477605f76d9a0",

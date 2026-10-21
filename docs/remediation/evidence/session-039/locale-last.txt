@@ -1,0 +1,30 @@
+
+Running 17 tests using 2 workers
+
+(node:16924) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:16925) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:16924) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:16925) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 e2e/localization.spec.mjs:9:3 › az: every literal UI translation key exists (10ms)
+  ✓   3 e2e/localization.spec.mjs:13:5 › az: late-created social UI, names and plurals fit a narrow screen (2.0s)
+  ✓   2 e2e/remediation-review.spec.mjs:10:2 › az: full game 20/28 tile review, menus and accepted invite translation (2.9s)
+  ✓   4 e2e/localization.spec.mjs:13:5 › www/az: late-created social UI, names and plurals fit a narrow screen (1.7s)
+  ✓   6 e2e/localization.spec.mjs:9:3 › ru: every literal UI translation key exists (1ms)
+  ✓   5 e2e/remediation-review.spec.mjs:10:2 › ru: full game 20/28 tile review, menus and accepted invite translation (2.1s)
+  ✓   7 e2e/localization.spec.mjs:13:5 › ru: late-created social UI, names and plurals fit a narrow screen (1.7s)
+  ✓   9 e2e/localization.spec.mjs:13:5 › www/ru: late-created social UI, names and plurals fit a narrow screen (1.8s)
+  ✓  10 e2e/localization.spec.mjs:9:3 › en: every literal UI translation key exists (1ms)
+  ✓   8 e2e/remediation-review.spec.mjs:10:2 › en: full game 20/28 tile review, menus and accepted invite translation (2.6s)
+  ✓  11 e2e/localization.spec.mjs:13:5 › en: late-created social UI, names and plurals fit a narrow screen (1.8s)
+  ✓  12 e2e/remediation-review.spec.mjs:10:2 › www/az: full game 20/28 tile review, menus and accepted invite translation (2.2s)
+  ✓  13 e2e/localization.spec.mjs:13:5 › www/en: late-created social UI, names and plurals fit a narrow screen (1.7s)
+  ✓  14 e2e/remediation-review.spec.mjs:10:2 › www/ru: full game 20/28 tile review, menus and accepted invite translation (1.8s)
+  ✓  15 e2e/remediation-review.spec.mjs:10:2 › www/en: full game 20/28 tile review, menus and accepted invite translation (1.7s)
+  ✓  16 e2e/remediation-review.spec.mjs:48:1 › local review onboarding starts a real free solo; repeated result is counted once (1.4s)
+  ✓  17 e2e/remediation-review.spec.mjs:55:1 › RU listing draft captures actual start, solo and genuine initial game, without review fixtures (1.7s)
+
+  17 passed (17.9s)

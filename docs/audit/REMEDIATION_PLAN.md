@@ -136,6 +136,8 @@ R-25 относится к этапу 0, но окончательно закр�
 
 Статус: **локальный объём выполнен, S011; реальные SSV отложены**. Unverified rewarded_x2 возвращает403 до DB mutation; initial/upgrade без права удалены. API объявляет rewardedAvailable=false/doubleClaimAvailable=false; web/www не запускают рекламу. Обычный daily сохранён. API134/134Node25/22; realPG4×100requests на обеих версиях без лишних монет. [Проверки](../remediation/evidence/session-011/summary.json). Подключение/положительная приёмка уникального ad event не выполнены, удвоение выключено. Production/Play не обновлялись.
 
+S039: добавлен выключенный по умолчанию кандидат серверного entitlement: ECDSA SSV, issue/cancel/consume, уникальные receipt и атомарное обновление wallet/daily/ledger. В новой локальной PostgreSQL 100 параллельных callback дали одну награду; rollback/retry/restart/replay/cancel/expiry проверены. Публичный rewarded_x2 остаётся403. Нужны auth-route, ban/deletion, refresh доверенных ключей, SDK, migration/retention review и реальный провайдер. [Все результаты S039](../remediation/evidence/session-039/FIFTEEN_CARD_RESULTS.md).
+
 - **Изменение:** Начислять rewarded x2 только по подтверждённому однократному серверному праву на награду. Пока внешняя интеграция отложена, путь без подтверждения должен оставаться недоступным; реальные SSV остаются отдельной приёмкой.
 - **Где:** `apps/api/src/modules/economy/economy.service.ts:1466–1474`.
 - **Готово, когда:** Только подтверждённый уникальный ad event начисляет reward.
@@ -288,6 +290,8 @@ Status: **fixed locally, S016**. Liveness/readiness bypass application Redis rat
 
 Статус: **код исправлен и проверен в браузере; S038 добавлен переносимый device harness, Android-приёмка остаётся открытой**. S025/S032 убрали искусственное ожидание и разрешили guest solo до auth; все12startup browser scenarios проходят. Новый loopback4186 preview с CSP/синтетическим гостем и CDP collector проверяют interactive mark и реальное открытие меню; desktop smoke3измерения прошёл. Телефона в ADB нет; cold/warm/offline Android не заявляются. [Инструкция продолжения](../remediation/DEVICE_ACCEPTANCE_NEXT.md), [S038](../remediation/evidence/session-038/TEN_CARD_RESULTS.md), [S025](../remediation/evidence/session-025/STARTUP_RESULTS.md).
 
+S039: переносимый builder отдельного пакета .audit, aapt-проверка, локальная панель и collector для маркированного audit WebView готовы. Debug APK собран, не установлен. Desktop smoke не заменяет холодный/тёплый/offline Android и сопоставимый baseline. [Все результаты S039](../remediation/evidence/session-039/FIFTEEN_CARD_RESULTS.md).
+
 - **Изменение:** Убрать обязательное ожидание 5,5 с после готовности критического UI, ограничить ожидание загрузки и предусмотреть offline/error состояние. Сравнить cold/warm UI readiness на том же телефоне.
 - **Где:** `js/splash.js:3–4,83–108`.
 - **Готово, когда:** Bounded splash; cold/warm/offline interactive metrics.
@@ -306,6 +310,8 @@ Status: **fixed locally, S016**. Liveness/readiness bypass application Redis rat
 
 Статус: **частично исправлено локально, S026/S034/S038**. STUN/ICE contract и native build сохранены. S038 добавляет чистую origin policy с2Java regression tests, проверяет текущий port/host/scheme перед prompt/result, отменяет pending request при cancellation/background/destroy, не подменяет ожидающий запрос новым. Java21 unit tests и актуальный debug APK после cap sync проходят; APK поверх Play не установлен. Системный диалог и Wi-Fi/LTE relay-only разговор остаются открытыми. [S038 результаты](../remediation/evidence/session-038/TEN_CARD_RESULTS.md), [аппаратная приёмка](../remediation/DEVICE_ACCEPTANCE_NEXT.md).
 
+S039: в отдельную audit APK включён mic allow/stop экран без записи/отправки; отмена позднего stream и остановка при скрытии. Системные prompt/отзыв, NAT/TURN и настоящий двухсторонний звук ещё требуют устройств. [Все результаты S039](../remediation/evidence/session-039/FIFTEEN_CARD_RESULTS.md).
+
 - **Изменение:** Исправить разбор ICE config, чтобы разрешённый строковый STUN не отбрасывался. Локально проверить конфигурацию и allow/deny микрофона; end-to-end NAT/TURN/операторская сеть остаются отложенными.
 - **Где:** `server/index.js:63–95;js/voice.js`.
 - **Готово, когда:** Config STUN не теряется; Wi-Fi/LTE relay-only разговор.
@@ -314,6 +320,8 @@ Status: **fixed locally, S016**. Liveness/readiness bypass application Redis rat
 #### R-21 · P1 · Заметный путь удаления аккаунта
 
 Статус: **частично исправлено локально, S027; процесс удаления/retention явно отложен владельцем21октября2026**. Profile→mailto request UI сохранён. Владелец попросил отдельно тщательно согласовать исполнителя, сроки, состав удаления и хранение; не считать текст privacy.html подтверждением реального процесса. Console/Data Safety тоже не сверены. [Предыдущая UI-приёмка](../remediation/evidence/session-027/ACCESSIBILITY_DELETION_RESULTS.md), [оставшиеся policy-вопросы](../remediation/RIGHTS_AND_POLICY_REVIEW.md).
+
+S039: сформирована карта40моделей/53связей без доступа к данным и проект процесса для обсуждения. User-delete оставляет Player через SetNull и не очищает snapshots/PaymentEvent. Ни удаление, ни retention не реализованы и не выбраны вместо владельца. [Все результаты S039](../remediation/evidence/session-039/FIFTEEN_CARD_RESULTS.md).
 
 - **Изменение:** Добавить понятный путь запроса удаления в профиле и согласовать его с web-страницей, обработкой запроса и retention. Console и окончательная policy-проверка остаются отложенными.
 - **Где:** `index.html:179,620;delete-account.html:105`.
@@ -324,6 +332,8 @@ Status: **fixed locally, S016**. Liveness/readiness bypass application Redis rat
 
 Статус: **частично исправлено локально, S038**. Game/API instrumentation помечает deploySha/release, отсутствующий SHA явно unknown. Добавлены final match/settlement/reconnect/backlog события с allowlist полей; settlement event только после durable receipt.5/5tests включают настоящий Sentry SDK→localhost envelope receiver и отсутствие tokens/user IDs/chat/private room codes в новых payload. Production dashboard/alert delivery/Vitals/кохорты остаются отложенными. [Контракт и операционная приёмка](../remediation/evidence/session-038/OBSERVABILITY_OPERATIONS.md).
 
+S039: локальный агрегатор проверяет final/backlog события и синтетическое предупреждение; карточки/панель сохраняют решения. Это локальная сводка строк, не уникальные live matches, dashboard или доставка оператору. Канал/получатель/Vitals/кохорты ожидают совместного решения. [Все результаты S039](../remediation/evidence/session-039/FIFTEEN_CARD_RESULTS.md).
+
 - **Изменение:** Добавить версию сборки и финальные события партии/settlement/reconnect, локально проверить payload и доставку. Production dashboards, Vitals, alert delivery и реальные когорты остаются отложенными.
 - **Где:** `server/instrument.js;apps/api/src/instrument.ts`.
 - **Готово, когда:** DeploySha+финальные события; dashboard; тестовый alert доставлен.
@@ -333,6 +343,8 @@ Status: **fixed locally, S016**. Liveness/readiness bypass application Redis rat
 
 Статус: **реестр подготовлен локально, S038; подтверждение прав/policy остаётся открытым**.142tracked пути/82разных byte-content включают assets, Android resources и vendor scripts, source/license/evidence поля пока ожидают владельца. Hash-based registry сохраняет root/www дубликаты и проверяется генератором; контент не удалён/не заменён. Privacy/retention и Console/Data Safety требуют фактической сверки, R-21 отложен отдельно. [Реестр](../remediation/ASSET_RIGHTS_REGISTER.json), [проверка политики](../remediation/RIGHTS_AND_POLICY_REVIEW.md).
 
+S039:144paths/83hashes,2verified(script+LICENSE localForage с exact locked-package match и Apache2.0 текстом в поставке),81pending. GSAP source найден побайтно, лицензия ещё не объявлена проверенной. Права на остальные assets и Console/Data Safety открыты. [Все результаты S039](../remediation/evidence/session-039/FIFTEEN_CARD_RESULTS.md).
+
 - **Изменение:** Составить локальный реестр asset→источник→лицензия→подтверждение. Не удалять и не заменять контент на основании одного отсутствия документа в repo. Документы владельца и Console/Data Safety отмечать отдельно как ожидаемые.
 - **Где:** `assets/;privacy.html;Play Console`.
 - **Готово, когда:** Источник/лицензия каждого asset, Data Safety/retention сверены.
@@ -341,6 +353,8 @@ Status: **fixed locally, S016**. Liveness/readiness bypass application Redis rat
 #### R-33 · P1 · Утвердить daily faucet и бюджет монет
 
 Статус: **расчёт подготовлен локально, S038; решение владельца открыто**.36sensitivity ячеек7/30/90дней: cap7/cycle7, ежедневные/5дней в неделю,0/4/12расчётов;20синтетических кошельков, commission/skins учтены, residual0каждый день. Это сценарная модель defaults кода, не измерение production. Daily выдача не менялась; cap/cycle и целевой запас партий требуют выбора владельца. [Числа и ограничения](../remediation/evidence/session-038/ECONOMY_DECISION.md).
+
+S039: к расчёту добавлена экспортируемая форма cap/cycle, запаса партий и перехода серий. Выдача не менялась; выбор и последующая приёмка выбранной политики остаются за владельцем. [Все результаты S039](../remediation/evidence/session-039/FIFTEEN_CARD_RESULTS.md).
 
 - **Изменение:** Отделить подтверждённую политику daily от решения о её изменении. После исправления начислений сравнить cap/cycle, запас бесплатных партий и sinks; не урезать выдачу автоматически по сценарной модели.
 - **Где:** `apps/api/src/modules/economy/economy.service.ts:125,1399;coin-economy-simulation.cjs`.
@@ -364,6 +378,8 @@ Status: **fixed locally, S016**. Liveness/readiness bypass application Redis rat
 
 Статус: **частично исправлено локально, S028/S038**. Дополнены пропущенные AZ/RU/EN keys, убраны Cancel/Message и сырые room-seat/system-mail labels, переведены поздно создаваемые controls и aria-labels; count plurals через Intl.PluralRules. На320px заголовок и кнопки системных писем больше не перекрываются/обрезаются.9/9browser/static locale cases root/www проходят. Полный screen sweep и TR pilot с носителем остаются открытыми. [Результаты и снимки S038](../remediation/evidence/session-038/TEN_CARD_RESULTS.md).
 
+S039: словари дополнительных accepted-waiting/cancel/play-invite состояний, pause aria/title и локальных имён ботов исправлены; игровой экран AZ/RU/EN root/www проходит. Отдельный TR-черновик15строк не добавлен в live menu. Полный оставшийся screen sweep и носители ещё нужны. [Все результаты S039](../remediation/evidence/session-039/FIFTEEN_CARD_RESULTS.md).
+
 - **Изменение:** Убрать смешение языков и сырые ключи, включая Cancel, AI BOTLAR, Gift001/common и resume-session-return. Уточнить предупреждение бесплатной solo и текст приглашения до/после отправки. TR pilot требует отдельной проверки носителем.
 - **Где:** `js/translations.js;index.html;cosmetics UI`.
 - **Готово, когда:** Нет смешения system text; long labels/number plurals.
@@ -373,6 +389,8 @@ Status: **fixed locally, S016**. Liveness/readiness bypass application Redis rat
 
 Статус: **локальные настройки и гонка lifecycle исправлены, S021/S038; внешняя audio-focus приёмка остаётся**. Master/effects/music сохраняются; более старый native configure reply больше не может переопределить новый pause/resume event. Обе root/www regressions падали до исправления, после12/12audio tests pass. Chromium остаётся владельцем focus. Настоящий звонок/Bluetooth ещё не проверены. [S038](../remediation/evidence/session-038/TEN_CARD_RESULTS.md), [S021 device evidence](../remediation/evidence/session-021/summary.json).
 
+S039: общая локальная панель использует настоящие sounds.js настройки master/music/effects, сохраняет уровни и показывает visibility. Звонок/Bluetooth/маршрут проверяются совместно на Android. [Все результаты S039](../remediation/evidence/session-039/FIFTEEN_CARD_RESULTS.md).
+
 - **Изменение:** Определить master mute и отдельные music/effects уровни, применить настройку к Web Audio и HTMLAudio. На Android muted=true всё ещё создавал 3 score oscillators. Проверить сохранение настроек; внешний audio focus остаётся отдельным сценарием.
 - **Где:** `js/sounds.js:88,96,249–259`.
 - **Готово, когда:** Mute подавляет SFX; настройки сохраняются; audio focus.
@@ -381,6 +399,8 @@ Status: **fixed locally, S016**. Liveness/readiness bypass application Redis rat
 #### R-24 · P2 · Читаемый стол и центр поля
 
 Статус: **локальная механика исправлена, S038; пользовательская приёмка открыта**. Добавлены масштаб1–2×, bounded drag/keyboard pan, reset/Escape и сброс при очистке Board. Реальные canvas/DOM/travel coordinates совпадают, выбор конца сохраняется;4/4новых и8/8прежних canvas cases проходят. Текущий макет20/28tiles просмотрен в IAB со снимками; это не полный игровой экран и не тест с людьми. [Снимки, шаги и ограничения](../remediation/evidence/session-038/BOARD_REVIEW.md).
+
+S039: после просмотра полного экрана затемнён узор только под полем; actual-screen20/28tiles проверены AZ/RU/EN root/www, zoom/reset/containment проходят. Панель запускает замороженные макеты без resume-сохранения/экспериментальных match-событий. Живая партия и оценка игроками не подменены макетом. [Все результаты S039](../remediation/evidence/session-039/FIFTEEN_CARD_RESULTS.md).
 
 - **Изменение:** Уменьшить визуальный шум под полем и проверить читаемость 20–28 костяшек, центрирование и масштаб. Изменять оформление по небольшому прототипу; пользовательскую оценку не подменять только скриншотом.
 - **Где:** `css/style.css game screen;table skin assets`.
@@ -398,11 +418,13 @@ Status: **fixed locally, S016**. Liveness/readiness bypass application Redis rat
 
 ### Этап 5. Проверять гипотезы роста
 
-Это последующие эксперименты, не обязательные исправления ближайшего релиза. В рамках текущего сокращённого объёма остаются отложенными. Возобновлять по очереди после зависимостей и измеренной стабильности.
+Это последующие эксперименты, не обязательные исправления ближайшего релиза. S039: владелец прямо расширил объём до всех15оставшихся карточек; локальные выключенные кандидаты подготовлены. Реальные эксперименты запускать по очереди после зависимостей, измеренной стабильности и отдельного решения о запуске. Локальный прототип не считается результатом реальной когорты.
 
 #### R-34 · P3 · Проверить onboarding эксперимент
 
 Статус: **открыто**. Основание: продуктовая гипотеза; [доказательства](11_RETENTION_GROWTH_ASO.md).
+
+S039: по новому прямому запросу владельца подготовлен один выключенный вне loopback вариант guided solo с actual start/result hooks, дедупликацией, локальным экспортом и проектом метрики/stop rule. Результат удержания и сравнение реальных когорт не получены. [Все результаты S039](../remediation/evidence/session-039/FIFTEEN_CARD_RESULTS.md).
 
 - **Изменение:** Подготовить один вариант onboarding с first-start/first-match событиями, метрикой и правилом остановки. Сначала обеспечить свободную solo и корректную аналитику; эффект удержания заранее не обещать.
 - **Где:** `js/app.js start/auth/tutorial;analytics`.
@@ -413,6 +435,8 @@ Status: **fixed locally, S016**. Liveness/readiness bypass application Redis rat
 
 Статус: **открыто**. Основание: продуктовая гипотеза; [доказательства](11_RETENTION_GROWTH_ASO.md).
 
+S039: локальный rematch-click hook, двухклиентный service-contract duplicate/wrong-recipient/expiry и конкретный совместный сценарий готовы. Общий stub не считается двумя браузерами/живым матчем; связанная server invite→completed-match воронка и измерение ещё нужны. [Все результаты S039](../remediation/evidence/session-039/FIFTEEN_CARD_RESULTS.md).
+
 - **Изменение:** Упростить рабочий путь приглашения/ответной партии и проверить его двумя локальными клиентами, включая истёкшее приглашение. Отсутствие кнопки invite в профиле само по себе не баг: текущий рабочий путь начинается со свободного места комнаты.
 - **Где:** `js/app.js result/invite;social module`.
 - **Готово, когда:** Два клиента проходят invite/rematch, duplicate/expired корректны; измерен invite→completed match.
@@ -421,6 +445,8 @@ Status: **fixed locally, S016**. Liveness/readiness bypass application Redis rat
 #### R-36 · P3 · Ограниченный rewarded pilot
 
 Статус: **открыто**. Основание: будущая монетизация, сейчас выключена; [доказательства](10_MONETIZATION_BUSINESS.md).
+
+S039: disabled entitlement candidate проверен на реальной локальной БД; opt-in, один grant/Baku-day, три attempts, cancel,10минTTL и rollback/replay. Эти числа — проект для обсуждения. Провайдер/SDK, real SSV, auth/ban/deletion/key refresh, compensation policy, rollout и revenue/retention ещё открыты. [Все результаты S039](../remediation/evidence/session-039/FIFTEEN_CARD_RESULTS.md).
 
 - **Изменение:** Ограниченный добровольный rewarded pilot возможен после защищённого entitlement, измерений и решения по бюджету монет. Реальные ad/SSV, rollout и публикация сейчас отложены; новые деньги не должны менять силу AI или раздачу.
 - **Где:** `ads integration;economy reward entitlement`.
@@ -431,6 +457,8 @@ Status: **fixed locally, S016**. Liveness/readiness bypass application Redis rat
 
 Статус: **открыто**. Основание: рыночная гипотеза; [доказательства](11_RETENTION_GROWTH_ASO.md).
 
+S039: RU listing draft проходит30/80/4000 лимиты; три настоящих draft-снимка start/solo/initial-game, четвёртый кадр комнаты ждёт живого сценария. RU — рабочий черновик, локаль владельцем ещё не выбрана; носитель/права/Console/публикация и сравнение когорт остаются. [Все результаты S039](../remediation/evidence/session-039/FIFTEEN_CARD_RESULTS.md).
+
 - **Изменение:** Выбрать одну локаль и подготовить соответствующие реальному продукту тексты/скриншоты. Проверить перевод носителем и измерять качество привлечённой когорты. Не публиковать листинг автоматически.
 - **Где:** `Play listing;localized screenshots/translations`.
 - **Готово, когда:** Материалы соответствуют продукту, носитель проверил; conversion и качество когорты сопоставлены.
@@ -439,6 +467,8 @@ Status: **fixed locally, S016**. Liveness/readiness bypass application Redis rat
 #### R-38 · P3 · Небольшой косметический сезон
 
 Статус: **открыто**. Основание: продуктовая гипотеза; [доказательства](16_DOMINO_NEXT_VISION.md).
+
+S039: локальный preview существующих столов04/07:620768bytes, browser nominal RGBA≈20.5MiB ниже32MiB; проект цены1500/срока14дней без дат. Assets/баланс/правила/владение не изменены. Права, native memory/контраст, бюджет, сроки поддержки и решение запуска ещё нужны. [Все результаты S039](../remediation/evidence/session-039/FIFTEEN_CARD_RESULTS.md).
 
 - **Изменение:** Подготовить небольшой косметический набор с подтверждёнными правами, budget устройства и экономическими sinks. Сезон не меняет правила/силу и требует отдельного решения по постоянной поддержке.
 - **Где:** `cosmetics catalog;assets;season UI`.

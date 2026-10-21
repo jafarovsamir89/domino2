@@ -1,0 +1,27 @@
+{
+  "scope": "Installed locked packages compared byte for byte; no install performed",
+  "rows": [
+    {
+      "name": "localforage",
+      "version": "1.10.0",
+      "bundled": "js/vendor/localforage.min.js",
+      "installed": "node_modules/localforage/dist/localforage.min.js",
+      "bundledSha256": "cc168d95fb927d46b1043726cfe13998e08902ff63f24330e2bb2290109ed145",
+      "installedSha256": "cc168d95fb927d46b1043726cfe13998e08902ff63f24330e2bb2290109ed145",
+      "exactMatch": true,
+      "license": "Apache-2.0",
+      "source": "https://github.com/localForage/localForage/tree/1.10.0"
+    },
+    {
+      "name": "gsap",
+      "version": "3.15.0",
+      "bundled": "js/vendor/gsap.min.js",
+      "installed": "node_modules/gsap/dist/gsap.min.js",
+      "bundledSha256": "92bb9a96476f983d212a2bc4f54c889039c1696dd4461d40a736860938570fbb",
+      "installedSha256": "92bb9a96476f983d212a2bc4f54c889039c1696dd4461d40a736860938570fbb",
+      "exactMatch": true,
+      "license": "Standard license; current page redirected to offline notice, review pending",
+      "source": "https://gsap.com/standard-license/"
+    }
+  ]
+}

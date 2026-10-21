@@ -1,0 +1,14 @@
+{
+  "sourceSha": "b10a51e0f48b38ec6c88a8b475b3f77bc8557fb5",
+  "workingTreeChangesIncluded": true,
+  "appId": "az.simplesoft.dominotelefon.audit",
+  "apk": ".tmp/mobile-review/android/app/build/outputs/apk/debug/app-debug.apk",
+  "sha256": "4aadda9f6f03829225fa76a9a05ece3d53aa2ffb2e213d7bae102628a0054c77",
+  "bytes": 28598335,
+  "installed": false,
+  "scope": "debug synthetic review, no Play performance claim",
+  "endpoints": [
+    "127.0.0.1:4186"
+  ],
+  "audioPage": "https://localhost/review-audio.html"
+}

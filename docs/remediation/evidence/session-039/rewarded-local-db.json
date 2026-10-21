@@ -1,0 +1,19 @@
+{
+  "scope": "Real local PostgreSQL, synthetic identities only; disabled integration candidate, not deployed API/provider acceptance",
+  "parallelCallbacks": 100,
+  "creditedParallel": 1,
+  "duplicatesParallel": 99,
+  "restartReplay": "pass",
+  "rollbackReceiptWalletDailyAndAttempt": "pass",
+  "cancelled": "rejected",
+  "reusedTransactionAcrossPlayers": "rejected",
+  "expired": "rejected",
+  "optInAndKillSwitch": "pass",
+  "attemptCap": 3,
+  "grantCapPerBakuDay": 1,
+  "totalRewardedLedgerEntries": 2,
+  "totalRewardedCoins": 400,
+  "closedLedgerResidual": 0,
+  "reservedCoinsUnchanged": true,
+  "providerAmountIgnored": 99999
+}

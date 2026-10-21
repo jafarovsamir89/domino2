@@ -1,0 +1,12 @@
+✔ valid signed callback binds an opaque attempt; provider amount is not a coin entitlement (2.575208ms)
+✔ tampering, duplicate parameters, unknown key, wrong unit and stale/future event fail (1.750834ms)
+✔ off, no opt-in, other player/day, expired/cancelled/replayed and cap cannot grant (0.965834ms)
+✔ two authenticated service clients: create, duplicate accept and expiry preserve a single invite (410.385708ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 984.454666
