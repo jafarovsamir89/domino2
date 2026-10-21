@@ -2327,7 +2327,9 @@ test("authenticated profile shows four stats cards without Xal and leaderboard u
     window.game?.stopSocialHubAutoRefresh?.();
     window.game?.stopGameInviteRefresh?.();
   });
-  await page.evaluate(() => document.querySelector("#social-invites-sent-list .cancel-invite-btn")?.click());
+  // Refresh can replace the card between the count assertion and interaction.
+  // Resolve and click the actual visible button; a missing control must fail.
+  await page.locator("#social-invites-sent-list .cancel-invite-btn").click();
   await expect.poll(() => cancelInviteCalled).toBeTruthy();
 
   // Delete/claim inbox item

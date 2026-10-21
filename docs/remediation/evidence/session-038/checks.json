@@ -3,7 +3,7 @@
   "scope": "Synthetic local acceptance only; no production/Play changes",
   "server": {
     "command": "npm test (server stage)",
-    "passed": 429,
+    "passed": 431,
     "failed": 0,
     "skipped": 0
   },
@@ -30,7 +30,7 @@
     "originPolicyTests": 2,
     "originPolicyFailures": 0,
     "installed": false,
-    "apkSha256": "9050a68b8009285fdc10932e1384823aa8d994b8e5a0a25a0fce873cee3b0178"
+    "apkSha256": "2f5a5862937fecc6081669aeb25fa71bb9b1520830a966a16f36d0a90e1304fa"
   },
   "telemetry": {
     "command": "node --test server/test/operational-events.test.js",
@@ -60,5 +60,19 @@
     ],
     "conclusion": "success"
   },
-  "githubWholeBatch": "Pending latest workflow; inspect branch codex/audit-ten-card-batch"
+  "githubWholeBatch": "Pending latest workflow; inspect branch codex/audit-ten-card-batch",
+  "invitePolling": {
+    "regressionBefore": "2/2failed;5polls where1expected",
+    "regressionAfter": "2/2passed; interval/expiry/logout preserved",
+    "realButtonRepeat": {
+      "passed": 5,
+      "failed": 0
+    },
+    "firstWholeBatchCI": {
+      "run": 39684709144,
+      "browserPassed": 76,
+      "browserFailed": 1,
+      "repaired": true
+    }
+  }
 }

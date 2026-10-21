@@ -17,11 +17,13 @@
 |R-30|Реестр142путей/82разных ресурсов с hash, полями источника/лицензии/подтверждения; дубликаты объединены. Пробелы policy записаны.|[Реестр](../../ASSET_RIGHTS_REGISTER.json), [сверка](../../RIGHTS_AND_POLICY_REVIEW.md). Нужны документы владельца и проверка Console/Data Safety. Контент не удаляли.|
 |R-33|36сценариев на7/30/90дней сравнивают текущую выдачу с недельным циклом; остатки модели сходятся, residual0.|[Расчёт для решения](ECONOMY_DECISION.md). Владелец ещё не выбирал новую политику; выдача игрокам не менялась.|
 
+Дополнительно исправлен обнаруженный CI дефект приглашений: без активного invite сводка и poller перезапускали друг друга, непрерывно заменяя кнопки. Наблюдатель теперь сохраняет один interval, а logout/deadline останавливают его. Две root/www regression дают5запросов вместо1до исправления и проходят после; native click отмены проверен5раз. Первый batch CI39684709144 дал76/77; это сохранено в ci-first-failure.log.
+
 Дополнительно укреплён уже закрытый R-25: API-команда теперь обнаруживает все compiled test files, вместо ручного перечня. Новая проверка build-info больше не остаётся вне общего запуска. CI запускает Android unit policy tests вместе со сборкой.
 
 ## Проверка
 
-- Полный `npm test`: **server429/429, API151/151**,0fail/0skip, source checks pass.
+- Полный `npm test`: **server431/431, API151/151**,0fail/0skip, source checks pass.
 - Полный Playwright: **77/77**, включая13новых locale/zoom случаев. После последнего уточнения сброса масштаба на очистке того же Board повторены4/4zoom теста; остальные исходники UI не менялись.
 - После последнего уточнения correlation ID и очистки ambient SDK context события: match-recording+telemetry **8/8**, без ослабления assertions. Ранее full suite обнаружил новый ошибочный `matchOutcome` в retry hook; исправлен, повторный full suite зелёный.
 - Java21: `npx cap sync android`, `:app:testDebugUnitTest`, `:app:assembleDebug` pass. Origin policy2/2, шаблонный ExampleUnitTest отдельно не засчитан в продуктовые2. SHA APK в `checks.json`; signing/release/Play не выполнялись.

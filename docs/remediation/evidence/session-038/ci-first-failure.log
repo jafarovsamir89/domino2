@@ -1,0 +1,24 @@
+  1) e2e/domino.spec.mjs:1753:1 › authenticated profile shows four stats cards without Xal and leaderboard uses Reyting 
+
+    Error: expect(received).toBeTruthy()
+
+    Received: false
+
+    Call Log:
+    - Timeout 5000ms exceeded while waiting on the predicate
+
+      2329 |   });
+      2330 |   await page.evaluate(() => document.querySelector("#social-invites-sent-list .cancel-invite-btn")?.click());
+    > 2331 |   await expect.poll(() => cancelInviteCalled).toBeTruthy();
+           |                                               ^
+      2332 |
+      2333 |   // Delete/claim inbox item
+      2334 |   await expect(page.locator("#social-inbox-panel")).not.toHaveClass(/is-hidden/);
+        at /home/runner/work/domino2/domino2/e2e/domino.spec.mjs:2331:47
+
+    Error Context: test-results/domino-authenticated-profi-b829d-nd-leaderboard-uses-Reyting/error-context.md
+
+  1 failed
+    e2e/domino.spec.mjs:1753:1 › authenticated profile shows four stats cards without Xal and leaderboard uses Reyting 
+  76 passed (1.3m)
+##[error]Process completed with exit code 1.

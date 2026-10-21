@@ -1,0 +1,10 @@
+✔ js/app.js: no active invitation keeps one bounded watcher instead of a summary/poll/render loop (12.219458ms)
+✔ www/js/app.js: no active invitation keeps one bounded watcher instead of a summary/poll/render loop (10.602417ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 105.9075

@@ -1,0 +1,46 @@
+✖ js/app.js: no active invitation keeps one bounded watcher instead of a summary/poll/render loop (12.980041ms)
+✖ www/js/app.js: no active invitation keeps one bounded watcher instead of a summary/poll/render loop (11.161375ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 0
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 115.124791
+
+✖ failing tests:
+
+test at server/test/invite-poll-lifecycle.test.js:6:5
+✖ js/app.js: no active invitation keeps one bounded watcher instead of a summary/poll/render loop (12.980041ms)
+  AssertionError [ERR_ASSERTION]: no recursive immediate HTTP polling through summary
+  
+  5 !== 1
+  
+      at TestContext.<anonymous> (/Users/macbookair/Documents/domino/server/test/invite-poll-lifecycle.test.js:29:16)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:358:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 5,
+    expected: 1,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at server/test/invite-poll-lifecycle.test.js:6:5
+✖ www/js/app.js: no active invitation keeps one bounded watcher instead of a summary/poll/render loop (11.161375ms)
+  AssertionError [ERR_ASSERTION]: no recursive immediate HTTP polling through summary
+  
+  5 !== 1
+  
+      at TestContext.<anonymous> (/Users/macbookair/Documents/domino/server/test/invite-poll-lifecycle.test.js:29:16)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 5,
+    expected: 1,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

@@ -11595,10 +11595,14 @@ class DominoGame {
 
     async refreshGameInviteState({ forceRerender = false } = {}) {
         const state = this.gameInviteState || null;
-        if (!state || !this.hasAuthenticatedAccount()) {
+        if (!this.hasAuthenticatedAccount()) {
             this.stopGameInviteRefresh();
             return null;
         }
+        // The watcher also discovers new invitations when no active one exists.
+        // Stopping it here lets the next summary restart an immediate tick,
+        // repeatedly replacing visible cards instead of waiting for its interval.
+        if (!state) return null;
 
         const invitations = await this.account.getPlayInvites().catch(() => null);
         if (!invitations) return null;
