@@ -25,7 +25,7 @@ function signPayload(payload) {
     return crypto.createHmac("sha256", getSecret()).update(payload).digest("base64url");
 }
 
-function verifyGameToken(token) {
+function verifyGameToken(token, { allowExpired = false } = {}) {
     const value = String(token || "").trim();
     if (!value) return null;
 
@@ -36,7 +36,7 @@ function verifyGameToken(token) {
     try {
         const claims = JSON.parse(base64UrlDecode(payload));
         if (!claims || !claims.userId || !claims.playerId || !claims.displayName) return null;
-        if (typeof claims.expiresAt !== "number" || claims.expiresAt <= Date.now()) return null;
+        if (!Number.isFinite(claims.expiresAt) || (!allowExpired && claims.expiresAt <= Date.now())) return null;
         return claims;
     } catch {
         return null;

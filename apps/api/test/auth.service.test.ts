@@ -5,6 +5,7 @@ process.env.BETTER_AUTH_SECRET ||= "b7f4c2d9a1e8f6c3b5a7d0e9f1c4b8a6d2e7f9c1";
 
 const { AuthService } = await import("../src/modules/auth/auth.service.js");
 const { createGameToken } = await import("../src/modules/auth/game-token.js");
+const { signDominoPayload } = await import("../src/modules/security/domino-proof.js");
 
 function makeSession() {
   const expiresAt = new Date(Date.now() + 1000 * 60 * 60 * 24);
@@ -23,6 +24,37 @@ function makeSession() {
     }
   };
 }
+
+test('active game session checks require a fresh server proof and recheck logout, deletion and bans beyond admission-token expiry', async () => {
+  const claims = { userId: 'active-u', playerId: 'active-p', sessionId: 'active-s', displayName: 'Synthetic', role: 'player', provider: 'better-auth' as const, issuedAt: Date.now() - 600_000, expiresAt: Date.now() - 300_000 };
+  const token = createGameToken(claims);
+  let session: any = { id: claims.sessionId, userId: claims.userId, expiresAt: new Date(Date.now() + 60_000) };
+  let player: any = { id: claims.playerId, userId: claims.userId };
+  let ban: any = null;
+  let reads = 0;
+  const service: any = new AuthService({
+    session: { findUnique: async () => { reads++; return session; } },
+    player: { findUnique: async () => { reads++; return player; } },
+    playerBan: { findFirst: async () => { reads++; return ban; } }
+  } as any);
+  const signed = (extra = {}) => {
+    const payload = { token, checkedAt: Date.now(), integrityScope: 'game.session.validate', ...extra };
+    return { ...payload, proof: signDominoPayload(payload) };
+  };
+  for (const bad of [ { token }, signed({ checkedAt: Date.now() - 20_000 }), signed({ integrityScope: 'economy.reconcile' }), { ...signed(), token: 'tampered-token' } ]) {
+    await assert.rejects(service.validateActiveGameSession(bad), (err: any) => err.getStatus() === 401);
+  }
+  assert.equal(reads, 0, 'invalid server proof must be rejected before DB reads');
+  assert.equal((await service.validateActiveGameSession(signed())).valid, true, 'active session survives the five-minute admission token');
+  session = null;
+  await assert.rejects(service.validateActiveGameSession(signed()), (err: any) => err.getStatus() === 401, 'logout revokes active access');
+  session = { userId: claims.userId, expiresAt: new Date(Date.now() + 60_000) };
+  player = null;
+  await assert.rejects(service.validateActiveGameSession(signed()), (err: any) => err.getStatus() === 401, 'deleted player revokes active access');
+  player = { id: claims.playerId, userId: claims.userId };
+  ban = { id: 'active-ban' };
+  await assert.rejects(service.validateActiveGameSession(signed()), (err: any) => err.getStatus() === 401, 'active ban revokes active access');
+});
 
 test("AuthService.getCurrentProfile filters recent matches by gameMode and exposes gameMode on each item", async () => {
   let query: any = null;

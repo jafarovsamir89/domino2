@@ -440,3 +440,23 @@ Snapshot sanitization намеренно не сохраняет bearer token. �
 Третий GitHub Actions run прошёл до Gradle, который указал на отсутствующий `android/capacitor-cordova-android-plugins/cordova.variables.gradle`. Этот generated-файл появляется при Capacitor plugin sync; текущий workflow делал только `cap copy`. Заменил его на `npx cap sync android`. Следующий полный run ожидается.
 
 **Финал S037:** четвёртый GitHub run [39525993872](https://github.com/jafarovsamir89/domino2/actions/runs/39525993872) зелёный целиком: fresh PostgreSQL migrations, source/server/API tests, admin build, Playwright64/64, Capacitor sync и Android debug APK на Java21. R-25 закрыта локально по её acceptance criteria; общий счёт **25/42**. GitHub `main` остаётся без обязательной проверки статуса — это отдельное правило репозитория, не включённое в плановую локальную приёмку. Production и Play не тронуты.
+
+
+## S038 — 2026-10-21 — next ten-card batch started
+
+Owner requested10 more plan items. Scope: R-10,R-15,R-18,R-19,R-22,R-24,R-26,R-28,R-30,R-33; exact external acceptance stays open where unavailable. Owner chose R-10 close connection within60seconds after logout/ban/delete, then normal disconnect handling. R-21 deletion/retention explicitly deferred for separate discussion. ADB currently empty; production/Play untouched.
+
+R-10 new local implementation:20second active-session probes with3second HTTP deadline; dedicated server-signed API proof permits validating an already admitted connection after its five-minute admission token expires, while normal joins/reconnects still reject expired tokens. Monitor blocks actions and closes4003; existing onLeave remains sole owner of grace/forfeit/settlement. Added generation/identity guards and disposal/shutdown cleanup. Extracted validation module `server/roomSessionAccess.js` (R-26 increment). Network handler stops revoked-token retries and keeps multiplayer mode to avoid local play after disconnect.
+
+Initial new server-module contract failed because module absent; new API contract failed missing method. Targeted server/network21/21 and API auth7/7 now pass. Full suites pending. R-22 scan found8missing keys in all AZ/RU/EN dictionaries and literal Cancel/Message/system-mail text. No card closure yet in S038.
+
+
+### S038 milestone — access, mobile, localization, observability
+
+R-10 targeted server/auth/network33/33 and API auth7/7 pass; new access boundary extracted for R-26. Owner-approved60second close policy implemented with20second probes/3second deadline. New API must ship before game server; no deployment done. Focused branch codex/active-session-access from312c2d2; remaining work will continue on codex/audit-ten-card-batch.
+
+R-19 reproduced delayed native configure overriding a later pause (2root/www regressions failed before fix), now12/12 audio tests pass. R-18 cancels native permission requests on cancellation/stop, preserves pending request and validates exact current origin including port; Java21 unit2/2 plus debug APK build pass, no install. R-22 adds missing keys/plurals/late-created control translation and fixes narrow header/card clipping;9/9 locale tests. R-24 introduces zoom1–2×, bounded drag/keyboard pan/reset;4/4 new20/28tile tests and8/8 existing actual canvas tests; screenshots01–04 reviewed in IAB. Player review remains external.
+
+R-28 adds build SHA and final match/settlement/reconnect/backlog events with field allowlist;5/5 tests include actual Sentry SDK envelope delivery to a127.0.0.1 sink. A full suite exposed a new wrong variable in retry telemetry, corrected without weakening assertion; event hooks targeted7/7pass. No production dashboard/alert claim. R-30 inventory142paths/82distinct resources, source/license evidence pending for all; policy gaps recorded without assuming rights. R-33 produces36closed-population sensitivity cells at7/30/90days, residual0; daily policy unchanged. R-15 portable synthetic4186 preview and device-metrics harness smoke pass; physical Android absent.
+
+Combined working-tree full matrix427server/150API/77E2E passed. Found API command explicitly enumerated old tests and would omit new build-info test; replaced with recursive compiled-test discovery;151/151pass. Final full test run includes two additional server regressions (expected429). Android policy tests added to CI command. E2E generated root screenshots restored; generated C:/PNG folder removed. New evidence/session-038 screenshots preserved. No plugins/production/live data/Play package changes.

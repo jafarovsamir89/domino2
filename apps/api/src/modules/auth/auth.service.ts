@@ -7,6 +7,8 @@ import { OAuth2Client } from "google-auth-library";
 
 import { PrismaService } from "../prisma/prisma.service.js";
 import { createGameToken, verifyGameToken } from "./game-token.js";
+import type { GameTokenClaims } from "./game-token.js";
+import { verifyDominoPayload } from "../security/domino-proof.js";
 import { getBetterAuthConfig } from "./better-auth.config.js";
 import { auth } from "./auth.instance.js";
 import { normalizeRatingGameMode } from "../ranking/player-mode-stats.js";
@@ -26,6 +28,24 @@ export class AuthService {
     if (!claims?.sessionId) {
       throw new UnauthorizedException("Game access revoked");
     }
+
+    return this.validateSessionClaims(claims);
+  }
+
+  async validateActiveGameSession(body: Record<string, unknown> = {}) {
+    const { proof, ...payload } = body;
+    const checkedAt = Number(payload.checkedAt);
+    if (payload.integrityScope !== 'game.session.validate'
+      || !Number.isFinite(checkedAt) || Math.abs(Date.now() - checkedAt) > 10_000
+      || !verifyDominoPayload(payload, typeof proof === 'string' ? proof : '')) {
+      throw new UnauthorizedException('Server session proof required');
+    }
+    const claims = verifyGameToken(String(payload.token || ''), { allowExpired: true });
+    if (!claims?.sessionId) throw new UnauthorizedException('Game access revoked');
+    return this.validateSessionClaims(claims);
+  }
+
+  private async validateSessionClaims(claims: GameTokenClaims) {
 
     const now = new Date();
     const [session, player, activeBan] = await Promise.all([

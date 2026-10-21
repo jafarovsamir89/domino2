@@ -518,6 +518,17 @@ var NetworkManager = globalThis.NetworkManager || class NetworkManager {
 
         this.room.onLeave((code) => {
             debugLog("Left room, code:", code);
+            if (code === 4003) {
+                this.setStoredReconnectionToken('');
+                this.clearReconnectState();
+                this.room = null;
+                this.isHost = false;
+                this.isGuest = false;
+                this.game.voice?.stopSpeaking?.();
+                this.game.onNetworkDisconnected?.({ code, reconnecting: false });
+                this.game.renderer?.showMessage?.(this.game.t?.('session-access-ended') || 'Online access ended. Sign in again to reconnect.', 6000);
+                return;
+            }
             const token = this.room?.reconnectionToken || this.getStoredReconnectionToken();
             const snapshot = this.game.account?.getStoredGameResumeState?.();
             const shouldReconnect = !this.manualLeaveRequested && Boolean(token);
