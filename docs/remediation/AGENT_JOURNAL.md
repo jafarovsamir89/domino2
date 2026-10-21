@@ -1,11 +1,13 @@
 # Domino remediation — current handoff
 
-Updated 2026-10-21, S039. Read this file, append-only WORK_LOG.md, then docs/audit/REMEDIATION_PLAN.md.
+Updated 2026-10-21, S040 in progress. Read this file, append-only WORK_LOG.md, then docs/audit/REMEDIATION_PLAN.md.
 
 ## Current state
 
+- **S040 active: `codex/rewarded-acceptance` from a11df89.** Joint R09 first. Owner approved normal daily + equal voluntary extra once/day, cancellation keeps normal. Publisher individual/Azerbaijan, Azerbaijan/CIS/world audience, ages13–17+adults (owner report). AdMob unavailable (old ban). Provider unchosen: initial MAX candidate reconsidered after age answer; propose checking Unity Ads eligibility/payout/S2S first. [S040 decisions, tests, sources and next action](evidence/session-040/R09_DECISIONS.md). Fixed normal-ledger proof at issue/consume and ISO Baku day: red2/green7, full API159/159, fresh realPG100callbacks→1reward/99acks plus rollback/retry/restart/legacy rejection. No real provider acceptance/route/SDK/activation. R09 open, **27/42**. S039 below is historical baseline.
+
 - Code checkpoints: **8784499** disabled entitlement/contracts; **b2a1ea6** review/native/localization/board/protocols. Documentation/evidence8376af3; **full CI39691533423 green on8376af3**, fresh migrations,433/155/85, admin, cap sync and Android unit/build. Subsequent handoff changes docs/evidence only.
-- Active branch **`codex/remaining-fifteen`**, from b10a51e (`codex/audit-ten-card-batch`). Owner explicitly expanded scope to local work/preparation on all remaining15cards, then joint ADB/owner acceptance. **27/42 full local closures;15remaining**. Do not call this15new closures or claim real pilot results.
+- S039 branch **`codex/remaining-fifteen`**, from b10a51e (`codex/audit-ten-card-batch`). Owner explicitly expanded scope to local work/preparation on all remaining15cards, then joint ADB/owner acceptance. **27/42 full local closures;15remaining**. Do not call this15new closures or claim real pilot results.
 - Remaining: **R09,R15,R18,R19,R21,R22,R24,R28,R30,R33,R34,R35,R36,R37,R38**. Unified results with benefit and precise missing acceptance: **evidence/session-039/FIFTEEN_CARD_RESULTS.md**. Review panel/data: review/index.html + cards.json. Canonical closure count must be updated deliberately in plan/journal/panel after actual acceptance; owner notes/export never close cards automatically.
 - Final broad S039 matrix: **433/433server,155/155API,85/85browser**,0failed/0skipped; source check and root/www byte parity24pairs+index pass. After final small missing-attempt guard in unregistered entitlement, API rebuild/4targeted tests and a second fresh realPG acceptance passed. Final invite/coin-dialog expansion additionally passed17locale/review cases, server433repeat, source check and rebuilt auditAPK. Do not repeat dependency installation or broad suites without a relevant change/failure.
 - Separate audit APK built with Java21 native unit tests/assembleDebug and verified by aapt as **az.simplesoft.dominotelefon.audit**; not installed. Exact SHA/size in evidence/session-039/review-apk.json. Builder copies sources into ignored .tmp/mobile-review, changes only copied applicationId/deeplink/network settings; published Android sources unchanged. Native audio origin tests2pass. Machine Gradle/signing/Firebase configs are not copied; safe AndroidX properties written explicitly.
@@ -30,6 +32,10 @@ Updated 2026-10-21, S039. Read this file, append-only WORK_LOG.md, then docs/aud
 - R33 form retains previous36scenario sensitivity, does not change issuance. R37 RU draft26/65/509chars,3actual draft shots; room shot/native/Console/rights/conversion pending. R38existing04/07surfaces620768bytes; dimensions/nominal RGBA≈20.5MiB<32MiB, not real GPU/native memory. Rights/price1500/14day proposal/schedule/support unapproved. Rules/AI/deal/economy unchanged. Protocol: review/PILOT_PROTOCOL.md.
 
 ## Exact next action
+
+**S040 priority:** jointly choose provider; first proposed check Unity Ads for individual/Azerbaijan, age13–17+adults, payouts and authenticated S2S test process. Async question pending: does owner already have Unity account, none, or prefer another provider? No provider selected yet. See S040 decisions. Do not continue the historical AdMob integration as if it were approved. Local PG stopped; synthetic DB `domino_remediation_s040_r09_1` preserved. No frontend/native changes, no need to repeat broad installations/builds. The S040 source checkpoint is local, not pushed; remote CI for S040 has not been claimed.
+
+After the R09 joint decision, the remaining S039 device/owner sequence is:
 
 1. Read S039 results and **DEVICE_ACCEPTANCE_NEXT.md**. Owner asked to finish independent15-card prep then jointly validate; do not start another vague10-card batch or count code/test subtasks as closures.
 2. Check `adb devices -l`. When phone appears, build/reuse verified.audit only, use install helper with explicit `--install --serial`. Never install `android/app/.../app-debug.apk` from published-ID workspace over Play. Keep original Play app/data.

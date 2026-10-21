@@ -3,7 +3,10 @@ import fs from 'node:fs';import assert from 'node:assert/strict';import {generat
 import {PrismaClient} from '@prisma/client';
 import {RewardedEntitlement} from '../../../apps/api/dist/src/modules/rewarded/entitlement.js';
 const args=process.argv.slice(2),database=args.includes('--database')?args[args.indexOf('--database')+1]:'domino_remediation_s039_rewarded';
-assert.match(database||'',/^domino_remediation_s039_[a-z0-9_]+$/);
+assert.match(database||'',/^domino_remediation_s\d{3}_[a-z0-9_]+$/);
+const output=args.includes('--output')?args[args.indexOf('--output')+1]:'.tmp/rewarded-local-db-result.json';
+assert.ok(output&&output.endsWith('.json'));
+if(!output.startsWith('.tmp/'))assert.equal(fs.existsSync(output),false,'Preserve existing evidence; choose a fresh output path');
 const url=`postgresql://domino_remediation@127.0.0.1:55439/${database}?schema=public`;
 const db=new PrismaClient({datasources:{db:{url}}}),now=Date.UTC(2026,9,21,12),day='2026-10-21';
 const {privateKey,publicKey}=generateKeyPairSync('ec',{namedCurve:'prime256v1'}),config={enabled:true,adUnit:'synthetic-unit',keys:new Map([['7',publicKey.export({type:'spki',format:'pem'}).toString()]])};
@@ -13,10 +16,11 @@ try{
  const tables=await db.$queryRaw`SELECT to_regclass('public."RewardReviewAttempt"')::text AS name`;
  if(!tables[0].name)for(const sql of fs.readFileSync('docs/remediation/review/rewarded-draft.sql','utf8').split(';').filter(s=>s.trim()))await db.$executeRawUnsafe(sql);
  else assert.equal(Number((await db.$queryRaw`SELECT count(*) FROM "RewardReviewAttempt"`)[0].count),0,'Never reuse populated attempts');
- const players=['parallel','rollback','cancel','reused','expired','attempt-cap'].map(s=>'s039-synthetic-'+s);
- for(const id of players){await db.player.create({data:{id,displayName:'Synthetic review',wallet:{create:{balance:200,reserved:13,lifetimeEarned:200}},dailyClaims:{create:{claimDate:day,streakDay:1,amount:200}}}});}
+ const players=['parallel','rollback','cancel','reused','expired','attempt-cap','legacy-x2','unknown'].map(s=>'s'+database.match(/_s(\d{3})_/)[1]+'-synthetic-'+s);
+ for(const id of players){const legacy=id.endsWith('legacy-x2'),unknown=id.endsWith('unknown'),amount=legacy?400:200;await db.player.create({data:{id,displayName:'Synthetic review',wallet:{create:{balance:amount,reserved:13,lifetimeEarned:amount}},dailyClaims:{create:{claimDate:day,streakDay:1,amount}},...(!unknown?{ledgerEntries:{create:{type:'daily_bonus',amount,balanceBefore:0,balanceAfter:amount,reservedBefore:13,reservedAfter:13,referenceType:'daily_bonus',referenceId:day,idempotencyKey:`daily_bonus:${id}:${day}:initial`,payloadJson:{claimMode:legacy?'rewarded_x2':'normal',multiplier:legacy?2:1,baseReward:200,reward:amount,claimDate:day}}}}:{})}});}
  const total=async()=>{const a=await db.coinWallet.aggregate({_sum:{balance:true,reserved:true}});return a._sum.balance+a._sum.reserved;};
  const before=await total(),service=new RewardedEntitlement(db,config),disabled=new RewardedEntitlement(db,{...config,enabled:false});
+ await assert.rejects(()=>service.issue(players[6],true,now),/normal_daily_required/);await assert.rejects(()=>service.issue(players[7],true,now),/normal_daily_required/);
  await assert.rejects(()=>disabled.issue(players[0],true,now),/disabled/);await assert.rejects(()=>service.issue(players[0],false,now),/opt_in/);
  const attempt=await service.issue(players[0],true,now),again=await service.issue(players[0],true,now);assert.equal(attempt.attemptId,again.attemptId);
  const replies=await Promise.all(Array.from({length:100},()=>service.consume(callback(attempt.attemptId),now)));
@@ -32,6 +36,6 @@ try{
  const a4=await service.issue(players[3],true,now);await assert.rejects(()=>service.consume(callback(a4.attemptId),now),/transaction_reused/);
  const a5=await service.issue(players[4],true,now-11*60000);await assert.rejects(()=>service.consume(callback(a5.attemptId,'3333333333333333'),now),/expired/);
  for(let i=0;i<3;i++){const a=await service.issue(players[5],true,now+i);await service.cancel(players[5],a.attemptId);}await assert.rejects(()=>service.issue(players[5],true,now+3),/attempt_cap/);
- const ledger=await db.coinLedgerEntry.findMany();assert.equal(ledger.length,2);assert.equal(ledger.reduce((s,r)=>s+r.amount,0),400);assert.equal(await total(),before+400);assert.equal((await db.coinWallet.findMany()).every(w=>w.reserved===13),true);
- const result={scope:'Real local PostgreSQL, synthetic identities only; disabled integration candidate, not deployed API/provider acceptance',parallelCallbacks:100,creditedParallel:1,duplicatesParallel:99,restartReplay:'pass',rollbackReceiptWalletDailyAndAttempt:'pass',cancelled:'rejected',reusedTransactionAcrossPlayers:'rejected',expired:'rejected',optInAndKillSwitch:'pass',attemptCap:3,grantCapPerBakuDay:1,totalRewardedLedgerEntries:2,totalRewardedCoins:400,closedLedgerResidual:0,reservedCoinsUnchanged:true,providerAmountIgnored:99999};fs.writeFileSync('docs/remediation/evidence/session-039/rewarded-local-db.json',JSON.stringify(result,null,2)+'\n');console.log(JSON.stringify(result));
+ const ledger=await db.coinLedgerEntry.findMany({where:{type:'ad_reward'}});assert.equal(ledger.length,2);assert.equal(ledger.reduce((s,r)=>s+r.amount,0),400);assert.equal(await total(),before+400);assert.equal((await db.coinWallet.findMany()).every(w=>w.reserved===13),true);
+ const result={scope:'Real local PostgreSQL, synthetic identities only; disabled integration candidate, not deployed API/provider acceptance',parallelCallbacks:100,creditedParallel:1,duplicatesParallel:99,restartReplay:'pass',rollbackReceiptWalletDailyAndAttempt:'pass',cancelled:'rejected',reusedTransactionAcrossPlayers:'rejected',expired:'rejected',optInAndKillSwitch:'pass',attemptCap:3,grantCapPerBakuDay:1,totalRewardedLedgerEntries:2,totalRewardedCoins:400,closedLedgerResidual:0,legacyDoubledDaily:'rejected-before-attempt',unknownDailyProof:'rejected-before-attempt',reservedCoinsUnchanged:true,providerAmountIgnored:99999};fs.writeFileSync(output,JSON.stringify(result,null,2)+'\n');console.log(JSON.stringify(result));
 }finally{await db.$disconnect();}

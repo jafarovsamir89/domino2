@@ -1,0 +1,15 @@
+✔ a historical x2 daily must not be used as the base of another rewarded upgrade (16.115917ms)
+✔ a daily without its original normal ledger proof must not create an ad attempt (0.231041ms)
+✔ a normal initial daily still creates an attempt (0.910792ms)
+✔ rewarded day is an ISO Baku calendar day at midnight and year/leap boundaries (0.634583ms)
+✔ valid signed callback binds an opaque attempt; provider amount is not a coin entitlement (2.185ms)
+✔ tampering, duplicate parameters, unknown key, wrong unit and stale/future event fail (1.248542ms)
+✔ off, no opt-in, other player/day, expired/cancelled/replayed and cap cannot grant (0.819417ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 7
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 114.793334
