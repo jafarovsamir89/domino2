@@ -1,0 +1,3 @@
+verify	Apply all database migrations to a fresh PostgreSQL database	2026-10-21T23:10:32.3203164Z All migrations have been successfully applied.
+verify	Run browser end-to-end tests	2026-10-21T23:12:35.3714066Z   85 passed (1.3m)
+verify	Test Android origin policy and build debug package	2026-10-21T23:13:59.2464555Z BUILD SUCCESSFUL in 1m 22s
