@@ -13,7 +13,7 @@
     "full_e2e": { "passed": 64, "total": 64, "failed": 0 },
     "app_asset_parity": "pass",
     "git_diff_check": "pass",
-    "github_ci_workflow": "first run passed migrations/tests/builds/E2E; Android Gradle working-directory error fixed; retry pending",
+    "github_ci_workflow": "two runs passed migrations/tests/builds/E2E; Android cwd and wrapper executable-bit issues fixed; retry pending",
     "branch_protection": "not enabled"
   },
   "production_or_play_touched": false,
