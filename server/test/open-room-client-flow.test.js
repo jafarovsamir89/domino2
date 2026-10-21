@@ -380,8 +380,8 @@ test("client renders bazaar draw state from live solo hands and keeps multiplaye
 
         assert.equal(renderStateSnippet.includes("const myHand = this.getHumanHandForRender();"), true);
         assert.equal(renderStateSnippet.includes("const myHand = this.myHand || this.hands[this.humanPlayerIndex] || [];"), false);
-        assert.equal(renderStateSnippet.includes("this.renderer.drawBtn.disabled = connectionLost || waitingOpenRoom || !myTurn || canPlay || emptyBoneyard"), true);
-        assert.equal(renderStateSnippet.includes("this.renderer.passBtn.disabled = connectionLost || waitingOpenRoom || !myTurn || canPlay || !emptyBoneyard"), true);
+        assert.equal(renderStateSnippet.includes("this.renderer.drawBtn.disabled = connectionLost || waitingOpenRoom || !myTurn || localBotControlled || canPlay || emptyBoneyard"), true);
+        assert.equal(renderStateSnippet.includes("this.renderer.passBtn.disabled = connectionLost || waitingOpenRoom || !myTurn || localBotControlled || canPlay || !emptyBoneyard"), true);
 
         assert.equal(realtimeSnippet.includes("const myHand = this.getHumanHandForRender();"), true);
         assert.equal(realtimeSnippet.includes("hand: this.getHandRenderSignature(this.getHumanHandForRender(),"), true);

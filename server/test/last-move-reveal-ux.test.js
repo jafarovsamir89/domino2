@@ -8,10 +8,15 @@ function read(relativePath) {
 }
 
 function extractBlock(source, anchor) {
-    const start = source.indexOf(anchor);
-    assert.notEqual(start, -1, `missing anchor: ${anchor}`);
-    const braceStart = source.indexOf("{", start);
-    assert.notEqual(braceStart, -1, `missing opening brace for: ${anchor}`);
+    // Match a class method declaration, not an earlier invocation of the same
+    // text. The method signature can itself contain `{}` defaults.
+    const declarations = [`    ${anchor} {`, `    async ${anchor} {`];
+    const declaration = declarations.find((candidate) => source.includes(candidate));
+    assert.ok(declaration, `missing method declaration: ${anchor}`);
+    const declarationStart = source.indexOf(declaration);
+    assert.notEqual(declarationStart, -1, `missing method declaration: ${anchor}`);
+    const start = declarationStart + 4;
+    const braceStart = declarationStart + declaration.length - 1;
     let depth = 0;
     for (let index = braceStart; index < source.length; index += 1) {
         const char = source[index];
@@ -34,6 +39,7 @@ test("server keeps the final board on game_delta and omits it from the immediate
     const performGoshaBlock = extractBlock(source, "performGosha(pi, combo, isBot = false, meta = {})");
     const advanceTurnBlock = extractBlock(source, "advanceTurn()");
     const broadcastGameDeltaBlock = extractBlock(source, "broadcastGameDelta(base = {})");
+    const gameDeltaPayloadBlock = extractBlock(source, "buildGameDeltaPayload(base = {})");
     const endDealBlock = extractBlock(source, "endDeal(wi, fish)");
     const endRoundBlock = extractBlock(source, "endRound(wi, isInstantWin)");
     const fullStateBlock = extractBlock(source, "buildFullStatePayloadForClient(client)");
@@ -47,8 +53,8 @@ test("server keeps the final board on game_delta and omits it from the immediate
     assert.equal(performPlayBlock.includes("scheduleLastMoveSettlement(() => this.endDeal(this.findFishWinner(), true))"), false, "performPlay must not delay fish settlement through the old reveal timer");
     assert.equal(performPlayBlock.includes("this.endRound(pi, true);"), true, "instant-win play should close the round immediately");
     assert.equal(performPlayBlock.includes("this.endDeal(pi, false);"), true, "empty-hand play should close the deal immediately");
-    assert.equal(performPlayBlock.includes("this.endDeal(this.findFishWinner(), true);"), true, "blocked-board play should close the deal immediately");
     assert.equal(advanceTurnBlock.includes("if (blocked?.blocked)"), true, "advanceTurn should only close the deal for a real blocked result");
+    assert.equal(advanceTurnBlock.includes("this.endDeal(Number.isInteger(Number(blocked?.winnerIndex)) ? Number(blocked.winnerIndex) : this.findFishWinner(), true);"), true, "blocked-board result should close the deal with the resolved winner");
 
     assert.equal(performGoshaBlock.includes("this.broadcastGameDelta({"), true, "performGosha should still publish the board delta before closing the deal");
     assert.equal(performGoshaBlock.includes("this.state.boardJson = JSON.stringify(this.internalBoard);"), true, "performGosha should persist the final board snapshot in memory");
@@ -57,11 +63,11 @@ test("server keeps the final board on game_delta and omits it from the immediate
     assert.equal(performGoshaBlock.includes("scheduleLastMoveSettlement(() => this.endDeal(this.findFishWinner(), true))"), false, "performGosha must not delay fish settlement through the old reveal timer");
     assert.equal(performGoshaBlock.includes("this.endRound(pi, true);"), true, "instant-win gosha should close the round immediately");
     assert.equal(performGoshaBlock.includes("this.endDeal(pi, false);"), true, "empty-hand gosha should close the deal immediately");
-    assert.equal(performGoshaBlock.includes("this.endDeal(this.findFishWinner(), true);"), true, "blocked-board gosha should close the deal immediately");
 
-    assert.equal(broadcastGameDeltaBlock.includes("isFinalMove: Boolean(base.isFinalMove)"), true, "game_delta should still flag the final move");
-    assert.equal(broadcastGameDeltaBlock.includes("finishInfo: base.finishInfo || null"), true, "game_delta should still carry finish info");
-    assert.equal(broadcastGameDeltaBlock.includes("lastMoveRevealPending: Boolean(this.lastMoveRevealPending)"), true, "game_delta should still expose reveal state for the client contract");
+    assert.equal(broadcastGameDeltaBlock.includes("this.buildGameDeltaPayload(base)"), true, "game_delta should publish its prepared payload");
+    assert.equal(gameDeltaPayloadBlock.includes("isFinalMove: Boolean(base.isFinalMove)"), true, "game_delta should still flag the final move");
+    assert.equal(gameDeltaPayloadBlock.includes("finishInfo: base.finishInfo || null"), true, "game_delta should still carry finish info");
+    assert.equal(gameDeltaPayloadBlock.includes("lastMoveRevealPending: Boolean(this.lastMoveRevealPending)"), true, "game_delta should still expose reveal state for the client contract");
 
     assert.equal(endDealBlock.includes("this.broadcast(\"deal_end\""), true, "deal_end should still be emitted");
     assert.equal(endDealBlock.includes("this.syncState({ includeBoardJson: false });"), true, "deal_end sync should not re-broadcast the final boardJson");

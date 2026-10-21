@@ -121,9 +121,11 @@ test("handleTimeoutContinue only accepts the timeout loser and starts the next r
     assert.equal(accepted, true);
     assert.equal(reserveCalls, 1);
     assert.equal(startRoundCalls, 1);
-    const okPayload = messages.find(([kind]) => kind === "timeout_continue_result")?.[1];
+    const okPayload = messages.filter(([kind]) => kind === "timeout_continue_result").at(-1)?.[1];
     assert.equal(okPayload?.ok, true);
     assert.equal(room.timeoutForfeitPending, null);
+    assert.equal(room.timeoutContinueInFlight, false);
+    assert.equal(room.timeoutContinuePending, null);
     assert.equal(room.lastReservedMatchRound, 3);
 });
 

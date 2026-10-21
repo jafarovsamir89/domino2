@@ -27,17 +27,18 @@ git pull --ff-only
 2. [AGENT_JOURNAL.md](AGENT_JOURNAL.md) — актуальный контекст, решения, ограничения и следующий шаг.
 3. [WORK_LOG.md](WORK_LOG.md) — история действий и проверок; дополнять, не переписывать.
 4. [REMEDIATION_PLAN.md](../audit/REMEDIATION_PLAN.md) — единый план из 42 карточек.
-5. [Последний результат S031: Android TalkBack R-23](evidence/session-031/ANDROID_TALKBACK_RESULTS.md).
-6. [Результат S032: guest solo до auth](evidence/session-032/GUEST_BEFORE_AUTH_RESULTS.md).
-7. [Результат S034: Android build R-18](evidence/session-034/ANDROID_VOICE_BUILD_RESULTS.md).
-8. [Результат S033: Colyseus reconnect R-10](evidence/session-033/PLATFORM_GAME_RECONNECT_RESULTS.md).
-9. [Результат S030: regression tests R-10 и R-18](evidence/session-030/SECURITY_VOICE_REGRESSION_RESULTS.md).
-10. [Результат S029: Android 320px для R-23](evidence/session-029/ANDROID_ACCESSIBILITY_RESULTS.md).
-11. [Результат S028: R-20 и R-22](evidence/session-028/LOCAL_SOLO_LOCALIZATION_RESULTS.md).
-12. [Результат S027: R-21 и R-23](evidence/session-027/ACCESSIBILITY_DELETION_RESULTS.md).
-13. [Результат S026: исходная реализация R-10 и R-18](evidence/session-026/SECURITY_REALTIME_RESULTS.md).
+5. [Последний результат S035: server matrix R-25](evidence/session-035/TEST_MATRIX_RESULTS.md).
+6. [Результат S031: Android TalkBack R-23](evidence/session-031/ANDROID_TALKBACK_RESULTS.md).
+7. [Результат S032: guest solo до auth](evidence/session-032/GUEST_BEFORE_AUTH_RESULTS.md).
+8. [Результат S034: Android build R-18](evidence/session-034/ANDROID_VOICE_BUILD_RESULTS.md).
+9. [Результат S033: Colyseus reconnect R-10](evidence/session-033/PLATFORM_GAME_RECONNECT_RESULTS.md).
+10. [Результат S030: regression tests R-10 и R-18](evidence/session-030/SECURITY_VOICE_REGRESSION_RESULTS.md).
+11. [Результат S029: Android 320px для R-23](evidence/session-029/ANDROID_ACCESSIBILITY_RESULTS.md).
+12. [Результат S028: R-20 и R-22](evidence/session-028/LOCAL_SOLO_LOCALIZATION_RESULTS.md).
+13. [Результат S027: R-21 и R-23](evidence/session-027/ACCESSIBILITY_DELETION_RESULTS.md).
+14. [Результат S026: исходная реализация R-10 и R-18](evidence/session-026/SECURITY_REALTIME_RESULTS.md).
 
-Полностью закрыты локально **24/42 карточки**. R-23 закрыта в S031: на Android Chrome с TalkBack native tree получил имена и фокус костяшек и выбора конца; S029 подтвердил 320 CSS px и горизонтальную прокрутку. R-20 закрыта в S032: гость начинает локальную solo до медленного auth, online/coins закрыты, startup suite12/12 root/www. Тесты synthetic browser/localhost, не production или Play/WebView. S033 укрепил R-10 проверкой Colyseus reconnect (14/14), но active-match/restart policy остаётся. S034 исправил Android compile blocker, Java21 debug APK собрался; он не устанавливался. R-18 остаётся частичной до mic prompt и Wi-Fi/LTE/TURN. Остальные18 карточек открыты или частичны. S030 focused checks: API auth service6/6, server voice4/4. Последний пакет — S032–S034; проверьте актуальный `origin/fix/audit-foundation`.
+Полностью закрыты локально **24/42 карточки**. S035 довёл server suite до **413/413** и исправил stale presence после reconnect forfeit плюс race на повторный `timeout_continue`; R-25 остаётся частичной из-за E2E baseline S025 (53/62, девять исторических failures) и незакрытого CI gate. ADB сейчас отсутствует. R-23 закрыта в S031, R-20 — в S032; см. журналы и evidence. S033 укрепил R-10 проверкой Colyseus reconnect (14/14), но active-match/restart policy остаётся. S034 исправил Android compile blocker, Java21 debug APK собрался и не устанавливался. R-18 остаётся частичной до mic prompt и Wi-Fi/LTE/TURN. Проверьте актуальный `origin/fix/audit-foundation`.
 
 Проверено: API **148/148** на Node 22/25; server **390/397** и E2E **53/62** содержат прежние 7/9 падений. Новые 10 браузерных сценариев запуска прошли. В S030 `npm run check`, API `tsc`, targeted API 6/6 и voice 4/4 проходят. Это не полностью зелёный набор. Точные имена и доказательства: [failure-delta.json](evidence/session-025/failure-delta.json), [проверки R-29](evidence/session-024/summary.json), [проверки R-15](evidence/session-025/summary.json).
 
@@ -74,4 +75,4 @@ PostgreSQL/Redis нужны только соответствующим пров
 
 ## Сообщение для нового агента
 
-> Продолжи исправления Domino в ветке fix/audit-foundation с последнего origin commit. Прочитай AGENTS.md, docs/remediation/CONTINUE_ON_NEW_COMPUTER.md, AGENT_JOURNAL.md, WORK_LOG.md и REMEDIATION_PLAN.md. Игра обслуживает около 50 пользователей: работай локально, без production deploy, миграций и изменений Play package. S030 добавил проверки R-10/R-18, S029 проверил R-23 в Android Chrome на 320 CSS px; отчёты и границы указаны в handoff. Следующее: synthetic Colyseus join-boundary/timeout tests, обсудить политику уже начатой партии, изолированный Android audit build на JDK21 и native trusted-origin microphone prompt только на `.audit`; реальный Wi-Fi/LTE/TURN — только с локальной тестовой инфраструктурой. Отдельно довести TalkBack для R-23 и guest online/coin checks R-20. Обновляй журналы и объясняй результат простыми словами. Не считай приёмку сделанной, если сценарий не проверен.
+> Продолжи исправления Domino в ветке fix/audit-foundation с последнего origin commit. Прочитай AGENTS.md, docs/remediation/CONTINUE_ON_NEW_COMPUTER.md, AGENT_JOURNAL.md, WORK_LOG.md и REMEDIATION_PLAN.md. Игра обслуживает около 50 пользователей: работай локально, без production deploy, миграций и изменений Play package. S035: server tests 413/413, исправлены stale presence и повторный timeout_continue; R-25 всё ещё partial из-за девяти исторических E2E failures и CI gate. Сначала прочитай S035 report и последние failure disposition. Следом доведи R-25 E2E/CI локально или выбери независимый малый пункт; продолжай native R-18 только при наличии отдельно идентифицированного `.audit` пакета и видимого ADB устройства. R-10 активная партия/restart policy, R-15 реальные startup metrics, R-19 external audio focus остаются открытыми. Не устанавливай debug APK поверх Play app. Обновляй журналы и объясняй результат простыми словами. Не считай приёмку сделанной, если сценарий не проверен.

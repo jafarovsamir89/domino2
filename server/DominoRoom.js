@@ -255,6 +255,7 @@ class DominoRoom extends Room {
         this.timeoutForfeitPending = null;
         this.timeoutContinueTimer = null;
         this.timeoutContinueInFlight = false;
+        this.timeoutContinuePending = null;
         this.restoredFromSnapshot = false;
         this.matchFinished = false;
         this.pendingAdvanceKind = null;
@@ -939,6 +940,7 @@ class DominoRoom extends Room {
             time: 2500
         });
         this.syncState();
+        removeLivePlayer(normalizedSessionId);
         return true;
     }
 
@@ -1916,6 +1918,7 @@ class DominoRoom extends Room {
         this.clearTurnTimer();
         this.clearTimeoutForfeitState();
         this.timeoutContinueInFlight = false;
+        this.timeoutContinuePending = null;
         await this.pendingEconomySettlement.catch(() => {});
         this.matchRecorded = false;
         this.pendingAdvanceKind = null;
@@ -2165,7 +2168,9 @@ class DominoRoom extends Room {
             this.timeoutContinueTimer = null;
         }
         this.timeoutForfeitPending = null;
-        this.timeoutContinueInFlight = false;
+        if (!this.timeoutContinueInFlight) {
+            this.timeoutContinuePending = null;
+        }
     }
 
     scheduleLastMoveSettlement(callback, delay = LAST_MOVE_REVEAL_DELAY_MS) {
@@ -2488,7 +2493,10 @@ class DominoRoom extends Room {
     }
 
     async handleTimeoutContinue(client) {
-        const pending = this.timeoutForfeitPending;
+        // startRound clears the timeout-result state before its asynchronous
+        // work finishes. Keep the accepted request's identity available so a
+        // duplicate continue is still rejected while that work is in flight.
+        const pending = this.timeoutForfeitPending || this.timeoutContinuePending;
         if (!pending) return false;
         if (String(client?.sessionId || "").trim() !== pending.loserSessionId) {
             this.sendTimeoutContinueResult(client, { ok: false, reason: "forbidden", continueExpiresAt: pending.expiresAt, roomPhase: "timeout_result" });
@@ -2510,6 +2518,7 @@ class DominoRoom extends Room {
         }
 
         this.timeoutContinueInFlight = true;
+        this.timeoutContinuePending = pending;
         const originalMatchRound = Number(this.state.matchRound || 1);
         this.currentDealMatchId = `${this.roomId}:round:${originalMatchRound}`;
         try {
@@ -2542,11 +2551,8 @@ class DominoRoom extends Room {
             });
             return false;
         } finally {
-            if (!this.timeoutForfeitPending) {
-                this.timeoutContinueInFlight = false;
-            } else {
-                this.timeoutContinueInFlight = false;
-            }
+            this.timeoutContinueInFlight = false;
+            this.timeoutContinuePending = null;
         }
     }
 

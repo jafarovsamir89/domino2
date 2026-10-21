@@ -56,7 +56,7 @@ R-25 относится к этапу 0, но окончательно закр�
 
 #### R-25 · P1 · Вернуть полную тестовую матрицу в CI
 
-Статус: **частично выполнено, S001–S008**. Discovery после S008 включает40файлов/286cases,279pass/7fail; [те же7падений](../remediation/evidence/session-008/failure-delta.json). Новый E2E boundary проверен, последний browser baseline30/39; API134/134. CI-gate и исправление оставшихся падений открыты. [Диспозиция](../remediation/evidence/session-001/FAILURES.md). [Исторические доказательства](13_QA_TEST_RESULTS.md).
+Статус: **частично выполнено, S001–S008/S035**. Server discovery запускает весь набор: после S035 **413/413 pass**, включая исправленные stale-presence cleanup и duplicate timeout-continue race; четыре ранее падавших reconnect-теста теперь проходят. Старые статические проверки обновлены под фактическое расположение метода/состояния в коде, без ослабления поведенческих утверждений. E2E последний подтверждённый baseline S025: 53/62, те же9 исторических failures; CI-gate и эти E2E failures остаются открытыми. [Новые server-проверки](../remediation/evidence/session-035/TEST_MATRIX_RESULTS.md), [диспозиция прежних падений](../remediation/evidence/session-001/FAILURES.md), [историческая база](13_QA_TEST_RESULTS.md).
 
 - **Изменение:** Включить обнаружение всех test files и зафиксировать исходные 7 server/9 E2E падений с причинами. Обновлять fixtures по согласованному поведению, а не ослаблять проверки ради зелёного результата. После исправлений сделать CI обязательным для полного набора, миграций, сборок и web asset parity.
 - **Где:** `server/package.json;e2e/domino.spec.mjs;CI отсутствует`.

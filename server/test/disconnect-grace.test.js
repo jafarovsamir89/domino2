@@ -29,7 +29,14 @@ function createActiveRoom() {
         currentPlayerIndex: 0,
         isTeamMode: false,
         playerOrder: ["session-1"],
-        players: new Map([["session-1", { name: "Alice", isConnected: true, isBot: false }]]),
+        players: new Map([["session-1", {
+            name: "Alice",
+            isConnected: true,
+            isBot: false,
+            controller: "human",
+            takeoverActive: false,
+            takeoverReason: ""
+        }]]),
         turnDeadlineAt: 0,
         turnDurationMs: 45000,
         serverNow: Date.now()
@@ -172,6 +179,8 @@ test("disconnect keeps live presence offline during grace and removes it after t
         displayName: "Alice",
         role: "player"
     });
+    room.settleForfeitStake = async () => ({ ok: true });
+    room.recordForfeitMatchResult = async () => true;
     room.broadcast = () => {};
 
     await room.onLeave({ sessionId: "session-1" }, false);
@@ -193,6 +202,17 @@ test("grace timeout starts bot takeover instead of forfeit when the feature is e
     const originalEnabled = BOT_TAKEOVER_CONFIG.enabled;
     BOT_TAKEOVER_CONFIG.enabled = true;
     room.botTakeover = new BotTakeoverController(room);
+    room.state.playerOrder.push("session-2");
+    room.state.players.set("session-2", {
+        name: "Bob",
+        isConnected: true,
+        isBot: false,
+        controller: "human",
+        takeoverActive: false,
+        takeoverReason: ""
+    });
+    room.state.currentPlayerIndex = 1;
+    room.onBotTakeoverActivated = () => {};
     room.allowReconnection = () => new Promise(() => {});
     let forfeitCount = 0;
     room.settleForfeitStake = async () => {
@@ -594,6 +614,7 @@ test("reusable session restore sends full_state to new sessionId", () => {
     };
     room.sendHandToClient = () => {};
     room.sendTurnInfoToPlayerIndex = () => {};
+    room.updateSchemaState = () => {};
     room.clients = [{ sessionId: "session-2", send() {} }];
 
     const completed = room.completeReconnectGrace("session-1", "session-2", { source: "join" });

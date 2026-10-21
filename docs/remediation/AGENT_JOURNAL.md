@@ -1,6 +1,6 @@
 # Agent journal: current handoff
 
-Updated 2026-10-19 after S032. Read this, then append-only WORK_LOG.md and docs/audit/REMEDIATION_PLAN.md. S031 closed R-23 locally: fixed Android Chrome/TalkBack losing aria-label on aria-pressed tiles by adding visually hidden localized text. Native hierarchy on Xiaomi/Android 13 exposed all 7 named/focusable tiles, both end-choice labels, and focused nodes. S029 verified 320 CSS px/swipe. S032 closed R-20 locally: a guest starts solo before a delayed auth response; online/coins remain gated. Startup tests pass12/12 root/www. Local browser/synthetic acceptance only; Play/WebView not tested. Device state/mappings and preview were restored after S031. Keep explaining each result simply in Russian. Total is now 24/42 fully closed locally; no production or Play changes. Evidence: `evidence/session-031/ANDROID_TALKBACK_RESULTS.md` and `evidence/session-032/GUEST_BEFORE_AUTH_RESULTS.md`.
+Updated 2026-10-20 after S035. Read this, then append-only WORK_LOG.md and docs/audit/REMEDIATION_PLAN.md. S031 closed R-23 locally and S032 closed R-20 locally; see their evidence below. S035 makes all server-discovered tests green (413/413) and fixes stale reconnect presence plus an asynchronous duplicate timeout-continue race. R-25 remains partial: last E2E baseline S025 is 53/62 with nine historical failures, and the CI gate remains open. ADB currently shows no connected device. Keep explaining each result simply in Russian. Total remains 24/42 fully closed locally; no production or Play changes. S035 evidence: `evidence/session-035/TEST_MATRIX_RESULTS.md`.
 
 ## Authorization and Git
 
@@ -98,10 +98,17 @@ After audit-plan edits run validate-audit.mjs, update only existing347SHA manife
 
 ## Exact next action
 
-Continue native R-18 permission acceptance using a separately identified audit package; never install the same-ID debug APK over the Play installation. S034 JDK21 debug build passes after fixing `MainActivity.onDestroy()` visibility, but the permission prompt and network call remain untested. R-10's remaining decisions are active-match revocation/SLA and post-restart identity recovery. R-15 physical startup and R-19 external audio focus also remain open. Do not deploy to production or Play. Keep append-only evidence and accurate card counts.
+Continue R-25 toward its remaining E2E cases and required CI gate, using the S025 failure disposition to distinguish historical failures from regressions. Run device acceptance only when `adb devices -l` lists the intended Android device. Native R-18 permission acceptance requires a separately identified audit package; never install the same-ID debug APK over the Play installation. R-10 active-match revocation/SLA and post-restart identity recovery, R-15 physical startup, and R-19 external audio focus remain open. Do not deploy to production or Play. Keep append-only evidence and accurate card counts.
 
 ## S034 current status — R-18 Android compile repair
 
 - Java21 build exposed an actual compile failure: `MainActivity.onDestroy()` had weaker `protected` visibility than Capacitor `BridgeActivity.public`. Changed the override to `public`.
 - Downloaded official Temurin21 into ignored `.tmp` only; system JDK17 remains unchanged. `:app:assembleDebug` passes. No APK installed because it shares the Play application ID. Evidence: `evidence/session-034/ANDROID_VOICE_BUILD_RESULTS.md`.
 - R-18 stays partial until the native permission prompt/origin cancellation and Wi-Fi/LTE/TURN are exercised. R-10 also stays partial per S033. Overall locally closed remains **24/42**.
+
+## S035 current status — R-25 server regression repairs
+
+- Full `npm --prefix server test` passes **413/413**. The four previously failing test files pass **37/37** together; `npm run check` also passes.
+- Fixed reconnect timeout cleanup: final forfeit removes stale live presence. Fixed a duplicate `timeout_continue` race while asynchronous next-round startup clears public timeout state. Updated stale static assertions and inaccurate reconnect fixtures without dropping behavioral coverage.
+- R-25 remains partial: S025 E2E baseline 53/62 with nine historical failures, and the full CI gate is not yet green. No audit card closes in S035; overall remains **24/42**.
+- ADB reports no attached device. No device acceptance, production call, Play install, or deployment occurred. Details: `evidence/session-035/TEST_MATRIX_RESULTS.md` and `summary.json`.
