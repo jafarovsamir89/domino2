@@ -3,6 +3,7 @@
 // other module is loaded, so Sentry can auto-instrument them.
 const Sentry = require("@sentry/node");
 const { buildInfo } = require('./buildInfo');
+const { sanitizeOperationalSentryEvent } = require('./operationalEvents');
 const build = buildInfo();
 
 const dsn = process.env.SENTRY_DSN_GAME || process.env.SENTRY_DSN || "";
@@ -13,6 +14,8 @@ if (dsn) {
     environment: process.env.NODE_ENV || "development",
     release: build.release,
     initialScope: { tags: { deploySha: build.deploySha, service: 'game' } },
+    sendDefaultPii: false,
+    beforeSend: sanitizeOperationalSentryEvent,
     // Performance tracing. Tune via SENTRY_TRACES_SAMPLE_RATE (0..1).
     tracesSampleRate: Number(process.env.SENTRY_TRACES_SAMPLE_RATE || 0.1),
     // Forward console logs to Sentry Logs.

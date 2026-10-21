@@ -3,7 +3,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
-const { createOperationalReporter } = require('../operationalEvents');
+const { createOperationalReporter, sanitizeOperationalSentryEvent } = require('../operationalEvents');
 const { buildInfo } = require('../buildInfo');
 const { SettlementOutbox } = require('../settlementOutbox');
 
@@ -63,7 +63,11 @@ test('Sentry SDK delivers a synthetic backlog alert to a loopback envelope sink'
     });
     await new Promise(resolve => sink.listen(0, '127.0.0.1', resolve));
     t.after(async () => { await sentry.close(1000); await new Promise(resolve => sink.close(resolve)); });
-    sentry.init({ dsn: `http://synthetic@127.0.0.1:${sink.address().port}/1`, defaultIntegrations: false, sendDefaultPii: false, release: 'domino-server@abcdef012345' });
+    sentry.init({ dsn: `http://synthetic@127.0.0.1:${sink.address().port}/1`, defaultIntegrations: false, sendDefaultPii: false, release: 'domino-server@abcdef012345', beforeSend:sanitizeOperationalSentryEvent });
+    sentry.setUser({id:'must-not-leak'});
+    sentry.setExtra('unrelatedSecret','must-not-leak');
+    sentry.setTag('privateRoomCode','must-not-leak');
+    sentry.addBreadcrumb({message:'must-not-leak'});
     const report = createOperationalReporter({ env: { DEPLOY_SHA:'abcdef012345' }, write() {}, capture: (payload, level) => sentry.captureMessage(`domino.${payload.event}`, { level, extra:payload }) });
     report('settlement_backlog', { failed:1, pending:2, token:'must-not-leak' });
     assert.equal(await sentry.flush(2000), true);
@@ -71,5 +75,7 @@ test('Sentry SDK delivers a synthetic backlog alert to a loopback envelope sink'
     assert.ok(event, 'actual SDK transport must reach the local receiver');
     assert.equal(event.level, 'warning');
     assert.equal(event.extra.deploySha, 'abcdef012345');
+    assert.equal(event.user, undefined);
+    assert.equal(event.breadcrumbs, undefined);
     assert.equal(JSON.stringify(bodies).includes('must-not-leak'), false);
 });

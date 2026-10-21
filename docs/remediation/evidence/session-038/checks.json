@@ -36,7 +36,8 @@
     "command": "node --test server/test/operational-events.test.js",
     "passed": 5,
     "localSentryEnvelopeReceived": true,
-    "productionAlertVerified": false
+    "productionAlertVerified": false,
+    "ambientScopeScrubVerified": true
   },
   "source": "npm run check and git diff --check pass",
   "adb": "no devices listed",
@@ -50,5 +51,14 @@
     "closedModelResidual": 0,
     "productPolicyChanged": false
   },
-  "R21": "Owner explicitly deferred deletion/retention decision on2026-10-21"
+  "R21": "Owner explicitly deferred deletion/retention decision on2026-10-21",
+  "githubFocusedAccessPR": {
+    "sha": "d671bb8",
+    "runs": [
+      39683630700,
+      39683658720
+    ],
+    "conclusion": "success"
+  },
+  "githubWholeBatch": "Pending latest workflow; inspect branch codex/audit-ten-card-batch"
 }

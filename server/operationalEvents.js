@@ -8,6 +8,20 @@ const schemas = {
     settlement_backlog: { failed: [0, 1_000_000], pending: [0, 1_000_000] }
 };
 
+function sanitizeOperationalSentryEvent(event) {
+    const name = typeof event.message === 'string' ? event.message.replace(/^domino\./, '') : '';
+    if (event.message !== `domino.${name}` || !schemas[name]) return event;
+    // Sentry merges ambient scope before beforeSend. Strip user/request/breadcrumb
+    // context and unrelated scope extras from these deliberately minimal events.
+    const keys = new Set(['schemaVersion', 'event', 'service', 'deploySha', 'at', 'matchRef', ...Object.keys(schemas[name])]);
+    const extra = Object.fromEntries(Object.entries(event.extra || {}).filter(([key]) => keys.has(key)));
+    const result = { extra, tags: { service:'game', deploySha:extra.deploySha || 'unknown' } };
+    for (const key of ['event_id', 'timestamp', 'level', 'message', 'platform', 'release', 'environment', 'sdk']) {
+        if (event[key] !== undefined) result[key] = event[key];
+    }
+    return result;
+}
+
 function createOperationalReporter({ env = process.env, write = line => console.info(line), capture } = {}) {
     return (event, input = {}) => {
         const schema = schemas[event];
@@ -38,4 +52,4 @@ const reportOperationalEvent = createOperationalReporter({
         });
     }
 });
-module.exports = { createOperationalReporter, reportOperationalEvent };
+module.exports = { createOperationalReporter, reportOperationalEvent, sanitizeOperationalSentryEvent };

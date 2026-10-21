@@ -23,7 +23,7 @@
 
 - Полный `npm test`: **server429/429, API151/151**,0fail/0skip, source checks pass.
 - Полный Playwright: **77/77**, включая13новых locale/zoom случаев. После последнего уточнения сброса масштаба на очистке того же Board повторены4/4zoom теста; остальные исходники UI не менялись.
-- После последнего уточнения correlation ID события: match-recording+telemetry **8/8**, без ослабления assertions. Ранее full suite обнаружил новый ошибочный `matchOutcome` в retry hook; исправлен, повторный full suite зелёный.
+- После последнего уточнения correlation ID и очистки ambient SDK context события: match-recording+telemetry **8/8**, без ослабления assertions. Ранее full suite обнаружил новый ошибочный `matchOutcome` в retry hook; исправлен, повторный full suite зелёный.
 - Java21: `npx cap sync android`, `:app:testDebugUnitTest`, `:app:assembleDebug` pass. Origin policy2/2, шаблонный ExampleUnitTest отдельно не засчитан в продуктовые2. SHA APK в `checks.json`; signing/release/Play не выполнялись.
 - Audio regression до исправления: обе root/www проверки позднего native reply падали; после исправления12/12pass. Подробные логи рядом.
 - Desktop smoke сборщика startup проходит3измерения; это **не Android** и не cold native launch.
@@ -32,3 +32,5 @@
 Телефон на финальной проверке ADB отсутствует. Часть предыдущих Android evidence S021/S031 остаётся исторической и не подменяет текущую аппаратную приёмку. [Машинная сводка](checks.json).
 
 Продолжение: сначала проверить ADB и открыть `DEVICE_ACCEPTANCE_NEXT.md`. При отсутствии телефона завершать только независимые локальные работы, не повторять уже зелёные прогоны без новых причин. До полного закрытия внешних пунктов нужны телефон/peer/TURN, игроки для проверки стола, носитель языка, подтверждения прав, операционный dashboard/alert и решение по daily. Деплой и R-21 — отдельные прямые указания владельца.
+
+Отдельный R-10/R-26 PR прошёл полный GitHub workflow: [39683658720](https://github.com/jafarovsamir89/domino2/actions/runs/39683658720) (также39683630700). Проверка всей batch-ветки запускается отдельно после push; статус не подменяется зелёным результатом меньшего PR.
