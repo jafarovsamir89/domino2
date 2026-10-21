@@ -1,3 +1,11 @@
 verify	Apply all database migrations to a fresh PostgreSQL database	2026-10-21T23:10:32.3203164Z All migrations have been successfully applied.
+verify	Run source, server, and API test suites	2026-10-21T23:10:37.5681633Z # tests 433
+verify	Run source, server, and API test suites	2026-10-21T23:10:37.5681729Z # pass 433
+verify	Run source, server, and API test suites	2026-10-21T23:10:37.5681775Z # fail 0
+verify	Run source, server, and API test suites	2026-10-21T23:10:37.5681874Z # skipped 0
+verify	Run source, server, and API test suites	2026-10-21T23:10:45.3061096Z # tests 155
+verify	Run source, server, and API test suites	2026-10-21T23:10:45.3061438Z # pass 155
+verify	Run source, server, and API test suites	2026-10-21T23:10:45.3061603Z # fail 0
+verify	Run source, server, and API test suites	2026-10-21T23:10:45.3061961Z # skipped 0
 verify	Run browser end-to-end tests	2026-10-21T23:12:35.3714066Z   85 passed (1.3m)
 verify	Test Android origin policy and build debug package	2026-10-21T23:13:59.2464555Z BUILD SUCCESSFUL in 1m 22s
