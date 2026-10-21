@@ -4,13 +4,15 @@ const { createHash, randomUUID } = require('node:crypto');
 const { buildSignedRequestBody } = require('./signedRequest');
 const { postEconomyRequest } = require('./economyClient');
 const { stableStringify } = require('./dominoProof');
+const { reportOperationalEvent } = require('./operationalEvents');
 
 // Small synchronous writes are intentional: no HTTP/room disposal may precede fsync.
 // The directory MUST live on a persistent local filesystem, shared by this server's restarts.
 class SettlementOutbox {
-    constructor(directory) {
+    constructor(directory, { report = reportOperationalEvent } = {}) {
         this.directory = path.resolve(directory);
         this.inflight = new Map();
+        this.report = report;
     }
 
     initialize() {
@@ -77,6 +79,7 @@ class SettlementOutbox {
             if (response?.ok !== true) throw new Error('settlement_not_acknowledged');
             // Keep immutable intent + receipt for recovery/audit; do not age out unresolved results.
             this.writeOnce(`${key}.receipt.json`, { version: 1, key, acknowledgedAt: Date.now(), response });
+            try { this.report('settlement_acknowledged', intent.payload); } catch { /* never fail settlement for telemetry */ }
             return response;
         })();
         this.inflight.set(key, pending);
@@ -142,6 +145,7 @@ function startSettlementReconciler() {
         if (stopped || running) return;
         running = store.reconcile().then(result => {
             if (result.failed) console.warn('[EconomyOutbox] Results still pending:', result.failed);
+            if (result.failed) reportOperationalEvent('settlement_backlog', result);
         }).catch(error => console.error('[EconomyOutbox] Reconciliation failed:', error.message)).finally(() => { running = null; });
     };
     const timer = setInterval(tick, 5000);

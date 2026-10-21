@@ -6,6 +6,7 @@ const { AIPlayer } = require("./ai");
 const { Tile, createFullSet, shuffle, getHandSize, determineFirstPlayer, handPoints, getOpeningPlayScore, hasInvalidOpeningHand, roundTo5 } = require("./model");
 const { verifyGameToken } = require("./platformAuth");
 const { RoomSessionAccess, validatePlatformGameToken } = require("./roomSessionAccess");
+const { reportOperationalEvent } = require('./operationalEvents');
 const { resolvePlatformApiUrl } = require("./economyConfig");
 const { buildSignedRequestBody } = require("./signedRequest");
 const { generateRoomCode, normalizeRoomVisibility, normalizeRoomMode, normalizeGameMode, normalizeStakeKey, normalizePlayerCount, normalizeAiCount, normalizeDlossThreshold, normalizeInstantWinEnabled, normalizeAiDifficulty, DISCONNECT_GRACE_SECONDS } = require("./roomConfig");
@@ -808,6 +809,7 @@ class DominoRoom extends Room {
         this.lastReconnectSuccessAt = Date.now();
         this.lastReconnectCompletedAt = this.lastReconnectSuccessAt;
         this.lastReconnectCompletedBy = String(source || "reconnect");
+        reportOperationalEvent('reconnect_completed', { roomId: getSafeRoomId(this), matchId: this.currentDealMatchId, source });
         this.lastForfeitReason = "";
         this.lastGameEndReason = "";
         this.lastReconnectGraceExpiredAt = 0;
@@ -3226,6 +3228,10 @@ class DominoRoom extends Room {
             this.pendingMatchRecording = null;
             this.clearMatchRecordingRetryTimer();
             void this.saveCustomStateToRedis();
+            reportOperationalEvent('match_recorded', {
+                roomId: getSafeRoomId(this), matchId: payload.sourceMatchId,
+                mode: payload.gameMode, outcome: payload.matchOutcome, participants: payload.participants.length
+            });
             const clientCount = Array.isArray(this.clients) ? this.clients.length : 0;
             if (!this.state.gameActive && clientCount === this.maxClients) {
                 setTimeout(() => {
@@ -3355,6 +3361,10 @@ class DominoRoom extends Room {
             this.pendingMatchRecording = null;
             this.clearMatchRecordingRetryTimer();
             void this.saveCustomStateToRedis();
+            reportOperationalEvent('match_recorded', {
+                roomId: getSafeRoomId(this), matchId: payload.sourceMatchId,
+                mode: payload.gameMode, outcome: payload.matchOutcome, participants: payload.participants.length
+            });
             const clientCount = Array.isArray(this.clients) ? this.clients.length : 0;
             if (!this.state.gameActive && clientCount === this.maxClients) {
                 setTimeout(() => {

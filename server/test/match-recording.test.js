@@ -38,6 +38,9 @@ test("recordMatchResult retries a failed platform match recording without markin
     room.gameMode = "classic101";
     const fetchCalls = [];
     const originalFetch = global.fetch;
+    const originalInfo = console.info;
+    const events = [];
+    console.info = line => { if (typeof line === 'string' && line.startsWith('{')) events.push(JSON.parse(line)); };
 
     global.fetch = async (_url, init) => {
         const body = JSON.parse(init.body);
@@ -61,6 +64,7 @@ test("recordMatchResult retries a failed platform match recording without markin
     try {
         const first = await room.recordMatchResult(0, false, null, null);
         assert.equal(first, false);
+        assert.equal(events.length, 0, 'failed recording is not a final analytics event');
         assert.equal(room.matchRecorded, false);
         assert.ok(room.pendingMatchRecording);
         assert.equal(room.pendingMatchRecording.sourceMatchId, room.matchRecordId);
@@ -76,8 +80,14 @@ test("recordMatchResult retries a failed platform match recording without markin
         assert.equal(fetchCalls.length, 2);
         assert.equal(fetchCalls[1].sourceMatchId, room.matchRecordId);
         assert.equal(fetchCalls[1].gameMode, "classic101");
+        assert.equal(events.length, 1);
+        assert.equal(events[0].event, 'match_recorded');
+        assert.equal(events[0].mode, 'classic101');
+        await room.retryPendingMatchRecording();
+        assert.equal(events.length, 1, 'already recorded match is not emitted again');
     } finally {
         global.fetch = originalFetch;
+        console.info = originalInfo;
     }
 });
 
