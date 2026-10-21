@@ -138,6 +138,8 @@ function buildSignature(board, layout, context = {}) {
         layout.stageWidth,
         layout.stageHeight,
         layout.scale.toFixed(4),
+        layout.panX || 0,
+        layout.panY || 0,
         Number(layout.originX || 0).toFixed(2),
         Number(layout.originY || 0).toFixed(2),
         nodesSig,
@@ -184,6 +186,9 @@ export class KonvaBoardRenderer {
         this.lowPowerMode = isLowPowerMode();
         this._resizeTimer = null;
         this._visibilityRetryTimer = null;
+        this.viewZoom = 1;
+        this.viewPan = { x: 0, y: 0 };
+        this._viewBoardTileCount = 0;
     }
 
     log(...args) {
@@ -232,6 +237,7 @@ export class KonvaBoardRenderer {
         this.rootEl.appendChild(this.playableOpenEndOverlayEl);
         this.containerEl.innerHTML = '';
         this.containerEl.appendChild(this.rootEl);
+        this.mountViewControls();
 
         const width = Math.max(1, this.containerEl.clientWidth || 1);
         const height = Math.max(1, this.containerEl.clientHeight || 1);
@@ -317,6 +323,76 @@ export class KonvaBoardRenderer {
         this.playableOpenEndHighlightsByKey.clear();
         this.playableOpenEndOverlayEl?.remove?.();
         this.playableOpenEndOverlayEl = null;
+        this.viewControls = null;
+        this.viewZoom = 1;
+        this.viewPan = { x: 0, y: 0 };
+        this._viewDrag = null;
+        this._lastHighlightArgs = null;
+        this._viewBoardTileCount = 0;
+    }
+
+    mountViewControls() {
+        const controls = document.createElement('div');
+        controls.className = 'board-view-controls';
+        controls.setAttribute('role', 'group');
+        for (const [action, text] of [['out', '−'], ['reset', '100%'], ['in', '+']]) {
+            const button = document.createElement('button');
+            button.type = 'button'; button.dataset.boardView = action; button.textContent = text;
+            button.addEventListener('click', () => this.setBoardView(action === 'reset' ? 1 : this.viewZoom + (action === 'in' ? 0.25 : -0.25)));
+            controls.append(button);
+        }
+        this.rootEl.append(controls); this.viewControls = controls;
+        this.rootEl.tabIndex = 0;
+        this.rootEl.setAttribute('role', 'region');
+        this.rootEl.addEventListener('keydown', event => {
+            if (event.target !== this.rootEl) return;
+            if (event.key === 'Escape') { event.preventDefault(); this.setBoardView(1); return; }
+            if (this.viewZoom <= 1 || !['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(event.key)) return;
+            event.preventDefault();
+            this.viewPan.x += event.key === 'ArrowLeft' ? 32 : event.key === 'ArrowRight' ? -32 : 0;
+            this.viewPan.y += event.key === 'ArrowUp' ? 32 : event.key === 'ArrowDown' ? -32 : 0;
+            this.refreshBoardView();
+        });
+        this.rootEl.addEventListener('pointerdown', event => {
+            if (this.viewZoom <= 1 || event.button !== 0 || event.target.closest('button')) return;
+            this._viewDrag = { id: event.pointerId, x: event.clientX, y: event.clientY, pan: { ...this.viewPan } };
+            this.rootEl.setPointerCapture(event.pointerId);
+        });
+        this.rootEl.addEventListener('pointermove', event => {
+            const drag = this._viewDrag;
+            if (!drag || drag.id !== event.pointerId) return;
+            this.viewPan = { x: drag.pan.x + event.clientX - drag.x, y: drag.pan.y + event.clientY - drag.y };
+            this.refreshBoardView();
+        });
+        for (const name of ['pointerup', 'pointercancel', 'lostpointercapture']) this.rootEl.addEventListener(name, () => { this._viewDrag = null; });
+    }
+
+    setBoardView(zoom) {
+        this.viewZoom = Math.max(1, Math.min(2, Number(zoom) || 1));
+        if (this.viewZoom === 1) this.viewPan = { x: 0, y: 0 };
+        this.refreshBoardView();
+    }
+
+    refreshBoardView() {
+        const highlights = this._lastHighlightArgs;
+        this.cancelTileTravels();
+        if (this.lastBoard) this.render(this.lastBoard, { ...this.lastContext, force: true });
+        if (highlights) this.syncPlayableOpenEndHighlights(...highlights);
+    }
+
+    syncViewControls() {
+        if (!this.viewControls) return;
+        const t = key => this.app?.t?.(key) || key;
+        this.rootEl.setAttribute('aria-label', t('board-view-help'));
+        this.rootEl.style.pointerEvents = this.viewZoom > 1 ? 'auto' : 'none';
+        this.rootEl.style.touchAction = this.viewZoom > 1 ? 'none' : '';
+        this.viewControls.setAttribute('aria-label', t('board-view-controls'));
+        for (const button of this.viewControls.querySelectorAll('button')) {
+            const action = button.dataset.boardView;
+            button.setAttribute('aria-label', t(`board-view-${action}`));
+            button.disabled = action === 'out' ? this.viewZoom <= 1 : action === 'in' ? this.viewZoom >= 2 : false;
+            if (action === 'reset') button.textContent = `${Math.round(this.viewZoom * 100)}%`;
+        }
     }
 
     syncStageSize() {
@@ -381,7 +457,11 @@ export class KonvaBoardRenderer {
         const boardHeight = (bounds.height || this.metrics.tileH) + pad * 2;
         const viewWidth = Math.max(stageWidth - (Array.isArray(board?.nodes) && board.nodes.length > 5 ? SIDE_RESERVE * 2 : 0), 100);
         const viewHeight = Math.max(stageHeight - 20, 100);
-        const scale = Math.min(viewWidth / boardWidth, viewHeight / boardHeight, 1.1);
+        const scale = Math.min(viewWidth / boardWidth, viewHeight / boardHeight, 1.1) * this.viewZoom;
+        const maxPanX = Math.max(0, (bounds.width * scale - stageWidth) / 2 + 36);
+        const maxPanY = Math.max(0, (bounds.height * scale - stageHeight) / 2 + 36);
+        this.viewPan.x = Math.max(-maxPanX, Math.min(maxPanX, this.viewPan.x));
+        this.viewPan.y = Math.max(-maxPanY, Math.min(maxPanY, this.viewPan.y));
 
         return {
             stageWidth,
@@ -390,6 +470,8 @@ export class KonvaBoardRenderer {
             originX: bounds.originX,
             originY: bounds.originY,
             scale,
+            panX: this.viewPan.x,
+            panY: this.viewPan.y,
             padding: pad,
             viewWidth,
             viewHeight
@@ -463,6 +545,11 @@ export class KonvaBoardRenderer {
             this.mount(this.containerEl);
         }
 
+        if (this._viewBoardTileCount > (board.nodes?.length || 0)) {
+            this.viewZoom = 1; this.viewPan = { x: 0, y: 0 };
+        }
+        this._viewBoardTileCount = board.nodes?.length || 0;
+        this.syncViewControls();
         const renderStartedAt = performance.now();
         const layout = this.buildLayout(board);
         const signature = buildSignature(board, layout, context);
@@ -491,8 +578,8 @@ export class KonvaBoardRenderer {
 
         this.ensureSceneGraph(Konva, layout);
         this.sceneRoot.setAttrs({
-            x: layout.stageWidth / 2,
-            y: layout.stageHeight / 2,
+            x: layout.stageWidth / 2 + layout.panX,
+            y: layout.stageHeight / 2 + layout.panY,
             scaleX: layout.scale,
             scaleY: layout.scale
         });
@@ -638,8 +725,8 @@ export class KonvaBoardRenderer {
             const localX = node.x - layout.originX;
             const localY = node.y - layout.originY;
             const rect = {
-                left: ((localX - width / 2) * layout.scale) + layout.stageWidth / 2,
-                top: ((localY - height / 2) * layout.scale) + layout.stageHeight / 2,
+                left: ((localX - width / 2) * layout.scale) + layout.stageWidth / 2 + layout.panX,
+                top: ((localY - height / 2) * layout.scale) + layout.stageHeight / 2 + layout.panY,
                 width: width * layout.scale,
                 height: height * layout.scale
             };
@@ -1040,6 +1127,7 @@ export class KonvaBoardRenderer {
     }
 
     clearPlayableOpenEndHighlights() {
+        this._lastHighlightArgs = null;
         this.playableOpenEndHighlightsByKey.forEach((entry) => {
             try { entry.button.remove(); } catch {}
         });
@@ -1050,6 +1138,7 @@ export class KonvaBoardRenderer {
     }
 
     syncPlayableOpenEndHighlights(openEnds, validOpenEndIndexes, selectedTile = null, onChoose = null, onCancel = null) {
+        this._lastHighlightArgs = [openEnds, validOpenEndIndexes, selectedTile, onChoose, onCancel];
         const overlay = this.ensurePlayableOpenEndOverlay();
         if (!overlay) return;
         const indexSet = new Set(Array.isArray(validOpenEndIndexes) ? validOpenEndIndexes.map((value) => Number(value)).filter(Number.isFinite) : []);
@@ -1184,8 +1273,8 @@ export class KonvaBoardRenderer {
     screenRectToLocalPoint(layout, rect) {
         if (!layout || !rect) return null;
         return {
-            x: ((rect.left + rect.width / 2) - (layout.stageWidth / 2)) / layout.scale,
-            y: ((rect.top + rect.height / 2) - (layout.stageHeight / 2)) / layout.scale
+            x: ((rect.left + rect.width / 2) - (layout.stageWidth / 2) - (layout.panX || 0)) / layout.scale,
+            y: ((rect.top + rect.height / 2) - (layout.stageHeight / 2) - (layout.panY || 0)) / layout.scale
         };
     }
 

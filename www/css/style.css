@@ -5069,6 +5069,28 @@ body.move-hint-selection-active #game-screen .player-name-btn {
     pointer-events: none;
 }
 
+.board-view-controls {
+    position: absolute;
+    right: 8px;
+    top: 8px;
+    z-index: 6;
+    display: flex;
+    gap: 4px;
+    pointer-events: auto;
+}
+.board-view-controls button {
+    min-width: 44px;
+    height: 44px;
+    padding: 0 8px;
+    border: 1px solid rgba(240, 192, 64, 0.35);
+    border-radius: 12px;
+    background: rgba(8, 18, 13, 0.9);
+    color: #f8efcf;
+    font-size: 16px;
+}
+.board-view-controls button:disabled { opacity: 0.45; }
+.board-view-controls button:focus-visible { outline: 3px solid #ffe18a; outline-offset: 2px; }
+
 .konva-board-stage-host {
     position: absolute;
     inset: 0;
@@ -7381,6 +7403,24 @@ body.is-reconnecting .hand-container {
     flex-wrap: nowrap;
 }
 
+@media (max-width: 420px) {
+    .social-hub-header {
+        height: auto;
+        min-height: 64px;
+        flex-wrap: wrap;
+        gap: 8px;
+        padding: 12px 16px;
+    }
+    .social-hub-header-left {
+        flex: 1 0 100%;
+    }
+    .social-hub-header-right {
+        width: 100%;
+        justify-content: flex-end;
+        flex-wrap: wrap;
+    }
+}
+
 .social-feedback-trigger {
     width: 32px;
     min-width: 32px;
@@ -7941,6 +7981,27 @@ body.is-reconnecting .hand-container {
 .friend-card-actions .btn.action-icon-btn svg {
     width: 16px;
     height: 16px;
+}
+
+@media (max-width: 420px) {
+    .system-mail-card.premium-social-card {
+        display: grid;
+        grid-template-columns: 44px minmax(0, 1fr) auto;
+    }
+    .system-mail-card > .premium-avatar-wrapper { grid-column: 1; grid-row: 1; }
+    .system-mail-card > .friend-card-copy { grid-column: 2; grid-row: 1; }
+    .system-mail-card > .friend-card-meta-col { grid-column: 3; grid-row: 1; }
+    .system-mail-card > .friend-card-actions {
+        grid-column: 1 / -1;
+        flex-wrap: wrap;
+        min-width: 0;
+    }
+    .system-mail-card .friend-card-actions > .btn {
+        flex: 1 1 90px;
+        min-width: 0;
+        white-space: normal;
+        overflow-wrap: anywhere;
+    }
 }
 
 .contextual-room-invite-overlay {

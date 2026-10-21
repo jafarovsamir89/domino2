@@ -207,14 +207,14 @@ test("client renders waiting room rows in a strict single-line format", () => {
         "chip.classList.add(`is-${kind}`);"
     ];
     const snippetTokens = [
-        "displayName: 'Bo\u015F'",
-        "displayName: 'AI Bot'",
-        "subtitle: 'Haz\u0131r'",
-        "subtitle: 'D\u0259v\u0259t et'",
+        "displayName: this.t('room-seat-empty')",
+        "displayName: this.t('seat-bot')",
+        "subtitle: this.t('player-profile-status-ready')",
+        "subtitle: this.t('room-seat-invite')",
         "iconText: '\uD83E\uDD16'",
         "iconText: '\u25CB'",
         "seatNumber: humanSeats + i + 1",
-        "inviteBtn.textContent = 'D\u0259v\u0259t et';"
+        "inviteBtn.textContent = this.t('room-seat-invite');"
     ];
     const cssTokens = [
         "grid-template-columns: auto auto minmax(0, 1fr) auto;",

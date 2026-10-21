@@ -5441,7 +5441,7 @@ class DominoGame {
         }
 
         if (filteredItems.length) {
-            appendSectionTitle('System mail / rewards / gifts');
+            appendSectionTitle(this.t('system-mail-section'));
         }
         if (!threads.length && !filteredItems.length) {
             this.setSummaryMessage(list, this.t('inbox-empty'));
@@ -5470,7 +5470,7 @@ class DominoGame {
 
         filteredItems.forEach((item) => {
             const card = document.createElement('div');
-            card.className = `inbox-card friend-card premium-social-card${item.status === 'unread' ? ' is-unread' : ''}`.trim();
+            card.className = `inbox-card system-mail-card friend-card premium-social-card${item.status === 'unread' ? ' is-unread' : ''}`.trim();
 
             const iconWrapper = document.createElement('div');
             iconWrapper.className = 'premium-avatar-wrapper system-inbox-icon';
@@ -9199,7 +9199,7 @@ class DominoGame {
                     } else {
                         const cancelBtn = document.createElement('button');
                         cancelBtn.className = 'btn btn-menu cancel-btn';
-                        cancelBtn.textContent = 'Cancel';
+                        cancelBtn.textContent = this.t('invite-cancel');
                         cancelBtn.addEventListener('click', async () => {
                             cancelBtn.disabled = true;
                             try {
@@ -9810,7 +9810,7 @@ class DominoGame {
                 } else if (statusKey === 'pending_outgoing') {
                     const cancelBtn = document.createElement('button');
                     cancelBtn.className = 'btn btn-menu pending-btn';
-                    cancelBtn.textContent = 'Cancel';
+                    cancelBtn.textContent = this.t('invite-cancel');
                     cancelBtn.addEventListener('click', async () => {
                         cancelBtn.disabled = true;
                         try {
@@ -10385,8 +10385,8 @@ class DominoGame {
         if (select.value !== this.currentLang) {
             select.value = this.currentLang;
         }
-        select.title = 'Language';
-        select.setAttribute('aria-label', 'Language');
+        select.title = this.t('language-label');
+        select.setAttribute('aria-label', this.t('language-label'));
     }
 
     hasGuestSession() {
@@ -12058,7 +12058,7 @@ class DominoGame {
                         <span class="feedback-icon" aria-hidden="true"></span>
                         <span class="social-feedback-label" data-i18n="feedback-button">Feedback</span>
                     </button>
-                    <button class="social-close-btn" id="social-center-modal-close" type="button" aria-label="Close">×</button>
+                    <button class="social-close-btn" id="social-center-modal-close" type="button" data-i18n-aria="social-close" aria-label="Close">×</button>
                 </div>
             </header>
             
@@ -12151,7 +12151,7 @@ class DominoGame {
         chat.innerHTML = `
             <div class="chat-screen-layout" id="account-messages-panel">
                 <header class="chat-header">
-                    <button type="button" class="chat-back-btn" id="account-messages-back-btn" aria-label="Back"></button>
+                    <button type="button" class="chat-back-btn" id="account-messages-back-btn" data-i18n-aria="messages-back" aria-label="Back"></button>
                     <div class="chat-header-profile" id="chat-header-profile-btn">
                         <div id="chat-header-avatar"></div>
                         <div class="chat-header-info">
@@ -12160,7 +12160,7 @@ class DominoGame {
                         </div>
                     </div>
                     <div class="chat-header-actions">
-                        <button type="button" class="chat-action-btn gift-action" id="chat-gift-btn" aria-label="Gift">🎁</button>
+                        <button type="button" class="chat-action-btn gift-action" id="chat-gift-btn" data-i18n-aria="gift-button" aria-label="Gift">🎁</button>
                         <button type="button" class="btn btn-action chat-header-profile-action" id="account-messages-open-btn" data-i18n="account-profile">Profil</button>
                     </div>
                 </header>
@@ -12170,20 +12170,20 @@ class DominoGame {
                 </div>
 
                 <div class="chat-compose-area">
-                    <button type="button" class="composer-attach-btn" aria-label="Attach">
+                    <button type="button" class="composer-attach-btn" data-i18n-aria="chat-attach" aria-label="Attach">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
                     </button>
                     <div class="chat-compose-input-wrapper">
                         <input type="text" id="account-message-input" class="chat-message-input" maxlength="500" data-i18n="messages-placeholder" placeholder="Write a message">
-                        <button type="button" class="composer-emoji-btn" aria-label="Emoji">😊</button>
+                        <button type="button" class="composer-emoji-btn" data-i18n-aria="chat-emoji" aria-label="Emoji">😊</button>
                         <div id="chat-voice-recording-status" class="chat-voice-recording-status is-hidden" style="display: flex; align-items: center; gap: 8px; color: #ff3b30; width: 100%;">
                             <span class="voice-record-dot" style="width: 8px; height: 8px; background: #ff3b30; border-radius: 50%; animation: pulse-voice 0.8s infinite alternate;"></span>
                             <span id="voice-record-timer" style="font-size: 0.9em; font-weight: bold;">0:00</span>
-                            <button type="button" class="voice-record-cancel" style="background: none; border: none; color: var(--text-dim, #8f9cae); margin-left: auto; font-size: 0.85em; cursor: pointer; font-weight: bold;">Cancel</button>
+                            <button type="button" class="voice-record-cancel" data-i18n="invite-cancel" style="background: none; border: none; color: var(--text-dim, #8f9cae); margin-left: auto; font-size: 0.85em; cursor: pointer; font-weight: bold;">Cancel</button>
                         </div>
                     </div>
                     <div class="chat-compose-right-btn-group" style="display: flex; align-items: center; justify-content: center; gap: 4px;">
-                        <button type="button" class="composer-voice-btn" id="chat-voice-record-btn" aria-label="Voice">
+                        <button type="button" class="composer-voice-btn" id="chat-voice-record-btn" data-i18n-aria="chat-voice" aria-label="Voice">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v1a7 7 0 0 1-14 0v-1"/><line x1="12" x2="12" y1="19" y2="22"/></svg>
                         </button>
                         <button type="button" class="chat-send-btn is-hidden" id="account-message-send-btn">
@@ -12203,6 +12203,8 @@ class DominoGame {
             document.body.appendChild(chat);
         }
 
+        this.applyTranslations(hub);
+        this.applyTranslations(chat);
         this.attachSocialUiEventListeners();
         this.ensureFeedbackModal();
     }
@@ -14751,7 +14753,7 @@ class DominoGame {
                 } else if (statusKey === 'accepted') {
                     const messageBtn = document.createElement('button');
                     messageBtn.className = 'btn btn-menu';
-                    messageBtn.textContent = 'Message';
+                    messageBtn.textContent = this.t('player-profile-message');
                     messageBtn.addEventListener('click', async () => {
                         await this.openConversationWithPlayer(player);
                     });
@@ -14759,7 +14761,7 @@ class DominoGame {
                 } else if (statusKey === 'pending_outgoing') {
                     const cancelBtn = document.createElement('button');
                     cancelBtn.className = 'btn btn-menu';
-                    cancelBtn.textContent = 'Cancel';
+                    cancelBtn.textContent = this.t('invite-cancel');
                     cancelBtn.addEventListener('click', async () => {
                         cancelBtn.disabled = true;
                         try {
@@ -14908,7 +14910,7 @@ class DominoGame {
 
                     const messageBtn = document.createElement('button');
                     messageBtn.className = 'btn btn-menu message-action-btn';
-                    messageBtn.textContent = 'Message';
+                    messageBtn.textContent = this.t('player-profile-message');
                     messageBtn.addEventListener('click', () => {
                         void this.openConversationWithPlayer(item.friend);
                     });
@@ -14999,7 +15001,7 @@ class DominoGame {
                     } else {
                         const cancelBtn = document.createElement('button');
                         cancelBtn.className = 'btn btn-menu';
-                        cancelBtn.textContent = 'Cancel';
+                        cancelBtn.textContent = this.t('invite-cancel');
                         cancelBtn.addEventListener('click', async () => {
                             cancelBtn.disabled = true;
                             try {
@@ -15693,7 +15695,7 @@ class DominoGame {
             const inviteBtn = document.createElement('button');
             inviteBtn.type = 'button';
             inviteBtn.className = 'btn btn-menu room-slot-invite-btn';
-            inviteBtn.textContent = 'Dəvət et';
+            inviteBtn.textContent = this.t('room-seat-invite');
             inviteBtn.addEventListener('click', async () => {
                 await this.openContextualRoomInvitePicker({
                     source: 'ffa-slot',
@@ -15704,8 +15706,8 @@ class DominoGame {
             });
             const row = createChip({
                 kind: 'empty',
-                displayName: 'Boş',
-                subtitle: 'Dəvət et',
+                displayName: this.t('room-seat-empty'),
+                subtitle: this.t('room-seat-invite'),
                 seatNumber: i + 1,
                 actionNode: inviteBtn,
                 iconText: '○'
@@ -15717,8 +15719,8 @@ class DominoGame {
             for (let i = 0; i < aiCount; i++) {
                 const row = createChip({
                     kind: 'bot',
-                    displayName: 'AI Bot',
-                    subtitle: 'Hazır',
+                    displayName: this.t('seat-bot'),
+                    subtitle: this.t('player-profile-status-ready'),
                     seatNumber: humanSeats + i + 1,
                     iconText: '🤖'
                 });
@@ -18211,17 +18213,7 @@ class DominoGame {
             } catch {}
             this.savedLanguage = nextLang;
         }
-        document.querySelectorAll('[data-i18n]').forEach(el => {
-            const key = el.dataset.i18n;
-            const value = t[key] || translations.en?.[key] || translations.az?.[key] || key;
-            if (value) {
-                if (el.tagName === 'INPUT') el.placeholder = value;
-                else {
-                    el.textContent = value;
-                    if (el.id === 'menu-btn') el.title = value;
-                }
-            }
-        });
+        this.applyTranslations();
         const reactionBtn = document.getElementById('reaction-btn');
         if (reactionBtn) {
             const reactionLabel = t['btn-reactions'] || 'Reactions';
@@ -18264,6 +18256,18 @@ class DominoGame {
         document.documentElement.lang = nextLang;
         this.renderDailyBonusCard();
         this.syncStartModeUI();
+    }
+
+    applyTranslations(root = document) {
+        root.querySelectorAll('[data-i18n]').forEach(el => {
+            const value = this.t(el.dataset.i18n);
+            if (el.tagName === 'INPUT') el.placeholder = value;
+            else el.textContent = value;
+            if (el.id === 'menu-btn') el.title = value;
+        });
+        root.querySelectorAll('[data-i18n-aria]').forEach(el => {
+            el.setAttribute('aria-label', this.t(el.dataset.i18nAria));
+        });
     }
 
     t(key) {
@@ -18487,7 +18491,11 @@ class DominoGame {
     }
 
     format(key, values = {}) {
-        return this.t(key).replace(/\{(\w+)\}/g, (_, token) => values[token] ?? `{${token}}`);
+        const count = Number(values.count);
+        const pluralKey = Number.isFinite(count)
+            ? `${key}-${new Intl.PluralRules(this.currentLang).select(count)}` : key;
+        const text = translations[this.currentLang]?.[pluralKey] || this.t(key);
+        return text.replace(/\{(\w+)\}/g, (_, token) => values[token] ?? `{${token}}`);
     }
 
     resolveUiMessage(payload) {
