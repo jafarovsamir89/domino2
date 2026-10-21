@@ -6,7 +6,7 @@
 
 Пользователь сообщил о действующем сервере и примерно 50 пользователях. Исправления готовятся локально в `fix/audit-foundation`; production и Play-пакет не обновлялись. Отдельные production-действия требуют прямого поручения владельца.
 
-**Последний заход — R-25: полная локальная test matrix и CI workflow.** Ветка `fix/audit-foundation`, счёт остаётся **24/42 полностью закрыты**. `npm test` прошёл (server 413/413, API 149/149), браузерный набор — 64/64. Три GitHub run прошли проверки до Android Gradle, где выявили, что native Capacitor plugins нужно синхронизировать перед сборкой. Шаг переведён с `cap copy` на `cap sync`; следующий запуск ожидается. Обязательный branch gate ещё не подтверждён. Production/Play не менялись. Результаты S037: [test matrix](evidence/session-037/TEST_MATRIX_RESULTS.md), [summary](evidence/session-037/summary.json). Точка продолжения — в журнале агента.
+**Последний заход — R-25: полная test matrix и CI workflow.** Ветка `fix/audit-foundation`, **25/42 карточек закрыты локально**. `npm test` прошёл (server 413/413, API 149/149), E2E — 64/64; GitHub Actions run [39525993872](https://github.com/jafarovsamir89/domino2/actions/runs/39525993872) прошёл migrations, тесты, admin и Android debug build. `main` пока без required status protection, поэтому зелёный CI не блокирует слияние при будущем красном запуске. Production/Play не менялись. Результаты S037: [test matrix](evidence/session-037/TEST_MATRIX_RESULTS.md), [summary](evidence/session-037/summary.json). Точка продолжения — в журнале агента.
 
 ## S001: первый пакет
 
