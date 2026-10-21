@@ -1,4 +1,5 @@
 import './endpoints.js';
+import { createReviewPilot } from './reviewPilot.js';
 import { Tile, createFullSet, shuffle, getHandSize, determineFirstPlayer, handPoints, getOpeningPlayScore, hasInvalidOpeningHand, roundTo5 } from './model.js';
 import { Board, cloneBoard, reconstructBoard } from './board.js';
 import { AIPlayer } from './ai.js';
@@ -351,6 +352,7 @@ const SOCIAL_ICON_SVGS = {
 
 class DominoGame {
     constructor() {
+        this.reviewPilot = createReviewPilot();
         this.renderer = new Renderer(this); this.board = new Board(); this.board.startAxis = getBoardStartAxis(); this.configureBoardForCurrentMode(this.board);
         this.playerMissingSuits = [];
         this.playerCount=2; this.onlinePlayerCount=2; this.onlineAiCount=0; this.playerName=''; this.difficulty='medium';
@@ -2883,59 +2885,39 @@ class DominoGame {
         const inviteePlayerId = String(invite?.invitee?.id || invite?.inviteePlayerId || '').trim();
         if (status === 'accepted' && !this.isPlayInviteRoomBound(invite)) {
             if (inviteePlayerId === currentPlayerId) {
-                return this.currentLang === 'az'
-                    ? 'Otaq gözlənilir'
-                    : 'Waiting for room';
+                return this.t('invite-waiting-room');
             }
             if (inviterPlayerId === currentPlayerId) {
-                return this.currentLang === 'az'
-                    ? 'Dost gözləyir'
-                    : 'Friend waiting';
+                return this.t('invite-friend-waiting');
             }
         }
         if (status === 'room_created') {
             if (inviteePlayerId === currentPlayerId) {
-                return this.currentLang === 'az'
-                    ? 'Otaq hazırdır'
-                    : 'Room ready';
+                return this.t('invite-room-ready');
             }
             if (inviterPlayerId === currentPlayerId) {
-                return this.currentLang === 'az'
-                    ? 'Otaq hazırdır'
-                    : 'Room ready';
+                return this.t('invite-room-ready');
             }
         }
         if (status === 'joined') {
             if (inviteePlayerId === currentPlayerId) {
-                return this.currentLang === 'az'
-                    ? 'Qoşuldunuz.'
-                    : 'Joined.';
+                return this.t('invite-joined');
             }
             if (inviterPlayerId === currentPlayerId) {
-                return this.currentLang === 'az'
-                    ? 'Dost otağa qoşuldu.'
-                    : 'Friend joined the room.';
+                return this.t('invite-friend-joined');
             }
         }
         if (status === 'failed_to_join') {
-            return this.currentLang === 'az'
-                ? 'Qoşulma uğursuz oldu.'
-                : 'Failed to join.';
+            return this.t('invite-failed-join');
         }
         if (status === 'declined') {
-            return this.currentLang === 'az'
-                ? 'Rədd edildi'
-                : 'Declined';
+            return this.t('invite-status-declined');
         }
         if (status === 'cancelled') {
-            return this.currentLang === 'az'
-                ? 'Ləğv edildi'
-                : 'Cancelled';
+            return this.t('invite-status-cancelled');
         }
         if (status === 'expired') {
-            return this.currentLang === 'az'
-                ? 'Müddəti bitdi'
-                : 'Expired';
+            return this.t('invite-status-expired');
         }
         return this.getRoomInvitationStatusLabel(invite);
     }
@@ -3540,14 +3522,10 @@ class DominoGame {
         const balanceEl = document.getElementById('insufficient-coins-modal-balance');
         const requiredEl = document.getElementById('insufficient-coins-modal-required');
         if (title) {
-            title.textContent = this.currentLang === 'az'
-                ? 'Bu oyun üçün kifayət qədər coin yoxdur'
-                : 'Not enough coins for this game';
+            title.textContent = this.t('coins-insufficient-title');
         }
         if (message) {
-            message.textContent = this.currentLang === 'az'
-                ? 'Bu oyuna qoşulmaq üçün balansınızı artırın.'
-                : 'Please top up your coins before joining this room.';
+            message.textContent = this.t('coins-insufficient-message');
         }
         if (balanceEl) balanceEl.textContent = String(Math.max(0, Math.trunc(Number(currentBalance || 0) || 0)));
         if (requiredEl) requiredEl.textContent = String(Math.max(0, Math.trunc(Number(requiredStake || 0) || 0)));
@@ -3555,6 +3533,7 @@ class DominoGame {
             document.body.appendChild(modal);
         }
         if (modal) {
+            this.applyTranslations(modal);
             modal.style.zIndex = '33000';
             modal.classList.add('active');
             modal.setAttribute('aria-hidden', 'false');
@@ -3571,25 +3550,25 @@ class DominoGame {
             <section class="modal-card modal-card-wide insufficient-coins-card">
                 <div class="modal-header">
                     <div>
-                        <div class="section-kicker">${this.currentLang === 'az' ? 'Coin yoxlanışı' : 'Coin check'}</div>
+                        <div class="section-kicker" data-i18n="coins-check">${this.t('coins-check')}</div>
                         <h2 id="insufficient-coins-modal-title"></h2>
                     </div>
-                    <button class="btn btn-menu modal-close-btn insufficient-coins-close-btn" id="insufficient-coins-modal-close" type="button">${this.t('modal-close')}</button>
+                    <button class="btn btn-menu modal-close-btn insufficient-coins-close-btn" id="insufficient-coins-modal-close" type="button" data-i18n="modal-close">${this.t('modal-close')}</button>
                 </div>
                 <div class="modal-body insufficient-coins-body">
                     <p id="insufficient-coins-modal-message"></p>
                     <div class="insufficient-coins-summary">
                         <div class="insufficient-coins-stat">
-                            <span>${this.currentLang === 'az' ? 'Lazım olan' : 'Required'}</span>
+                            <span data-i18n="coins-required">${this.t('coins-required')}</span>
                             <strong id="insufficient-coins-modal-required">0</strong>
                         </div>
                         <div class="insufficient-coins-stat">
-                            <span>${this.currentLang === 'az' ? 'Balans' : 'Balance'}</span>
+                            <span data-i18n="coins-balance">${this.t('coins-balance')}</span>
                             <strong id="insufficient-coins-modal-balance">0</strong>
                         </div>
                     </div>
                     <div class="modal-actions insufficient-coins-actions">
-                        <button class="btn btn-action btn-strong" id="insufficient-coins-modal-shop-btn" type="button">${this.currentLang === 'az' ? 'Coin mağazası' : 'Coin shop'}</button>
+                        <button class="btn btn-action btn-strong" id="insufficient-coins-modal-shop-btn" type="button" data-i18n="coin-shop-title">${this.t('coin-shop-title')}</button>
                     </div>
                 </div>
             </section>
@@ -4610,6 +4589,7 @@ class DominoGame {
                     item: socketResponse.invite || socketResponse.item,
                     live: true
                 };
+                this.reviewPilot?.event('invite_sent');
                 this.recordPlayInviteSendResult(result, {
                     transport: 'socket',
                     endpoint: 'socket:play-invite:create'
@@ -4620,6 +4600,7 @@ class DominoGame {
             this._lastPlayInviteSendEndpoint = '/social/play-invites';
             this.renderSocialDebugPanel();
             const result = await this.account.inviteFriendToPlay(requestPayload);
+            this.reviewPilot?.event('invite_sent');
             this.recordPlayInviteSendResult(result, {
                 transport: this._socialSocket?.connected ? 'fallback' : 'rest',
                 endpoint: this._lastPlayInviteSendEndpoint
@@ -9316,7 +9297,7 @@ class DominoGame {
             if (String(invite?.roomCode || '').trim()) {
                 metaParts.push(String(invite.roomCode).trim());
             } else {
-                metaParts.push(this.currentLang === 'az' ? 'Oyun dəvəti' : 'Play invite');
+                metaParts.push(this.t('play-invite-label'));
             }
         } else {
             if (String(invite?.roomCode || '').trim()) metaParts.push(String(invite.roomCode).trim());
@@ -9343,7 +9324,7 @@ class DominoGame {
                 if (pending) {
                     const acceptBtn = document.createElement('button');
                     acceptBtn.className = 'btn btn-action btn-strong accept-invite-btn';
-                    acceptBtn.textContent = this.currentLang === 'az' ? 'Qəbul et' : 'Accept';
+                    acceptBtn.textContent = this.t('invites-accept');
                     acceptBtn.disabled = this.acceptingInviteIds.has(inviteId) || this.decliningInviteIds.has(inviteId);
                     acceptBtn.addEventListener('click', async () => {
                         if (!inviteId || acceptBtn.disabled) return;
@@ -9351,7 +9332,7 @@ class DominoGame {
                         this.decliningInviteIds.delete(inviteId);
                         acceptBtn.disabled = true;
                         const originalText = acceptBtn.textContent;
-                        acceptBtn.textContent = this.currentLang === 'az' ? 'Qəbul edilir...' : 'Accepting...';
+                        acceptBtn.textContent = this.t('invite-accepting');
                         try {
                             const accepted = await this.acceptPlayInviteWithFallback(inviteId);
                             if (accepted?.ok === false) {
@@ -9379,9 +9360,7 @@ class DominoGame {
                                 this._lastPlayInviteAcceptedWaitingSuppressedForRoomBound = false;
                                 this.acceptedWaitingInviteIds.add(inviteId);
                                 this.renderer.showMessage(
-                                    this.currentLang === 'az'
-                                        ? 'Otaq gözlənilir'
-                                        : 'Waiting for room',
+                                    this.t('invite-waiting-room'),
                                     1800
                                 );
                             }
@@ -9398,7 +9377,7 @@ class DominoGame {
 
                     const declineBtn = document.createElement('button');
                     declineBtn.className = 'btn btn-menu decline-invite-btn';
-                    declineBtn.textContent = this.currentLang === 'az' ? 'Rədd et' : 'Decline';
+                    declineBtn.textContent = this.t('invites-decline');
                     declineBtn.disabled = this.acceptingInviteIds.has(inviteId) || this.decliningInviteIds.has(inviteId);
                     declineBtn.addEventListener('click', async () => {
                         if (!inviteId || declineBtn.disabled) return;
@@ -9406,7 +9385,7 @@ class DominoGame {
                         this.acceptingInviteIds.delete(inviteId);
                         declineBtn.disabled = true;
                         const originalText = declineBtn.textContent;
-                        declineBtn.textContent = this.currentLang === 'az' ? 'Rədd edilir...' : 'Declining...';
+                        declineBtn.textContent = this.t('invite-declining');
                         try {
                             this.recordPlayInviteCancelAttempt({ inviteId, source: 'invitee-decline-button' }, 'invitee-decline-button');
                             const declined = await this.declinePlayInviteWithFallback(inviteId);
@@ -9434,12 +9413,12 @@ class DominoGame {
                 } else if (isAcceptedWaiting) {
                     const cancelBtn = document.createElement('button');
                     cancelBtn.className = 'btn btn-menu cancel-invite-btn';
-                    cancelBtn.textContent = this.currentLang === 'az' ? 'Ləğv et' : 'Cancel';
+                    cancelBtn.textContent = this.t('invite-cancel');
                     cancelBtn.addEventListener('click', async () => {
                         if (!inviteId || cancelBtn.disabled) return;
                         cancelBtn.disabled = true;
                         const originalText = cancelBtn.textContent;
-                        cancelBtn.textContent = this.currentLang === 'az' ? 'Ləğv edilir...' : 'Canceling...';
+                        cancelBtn.textContent = this.t('invite-cancelling');
                         try {
                             const cancelled = await this.cancelPlayInviteWithFallback(inviteId, 'invitee-leave-waiting-button');
                             if (cancelled?.ok === false) {
@@ -9447,9 +9426,7 @@ class DominoGame {
                             }
                             await this.loadSocialInvitesPage();
                             this.renderer.showMessage(
-                                this.currentLang === 'az'
-                                    ? 'Dəvət ləğv edildi'
-                                    : 'Invite cancelled',
+                                this.t('invite-cancelled'),
                                 1400
                             );
                         } catch (err) {
@@ -9467,8 +9444,8 @@ class DominoGame {
                     joinBtn.className = 'btn btn-action btn-strong';
                     joinBtn.disabled = joining || !this.isValidRoomCode(invite?.roomCode || invite?.roomId || '');
                     joinBtn.textContent = joining
-                        ? (this.currentLang === 'az' ? 'Qoşulursunuz...' : 'Joining...')
-                        : (this.currentLang === 'az' ? 'Qoşul' : 'Join room');
+                        ? (this.t('invite-joining'))
+                        : (this.t('invite-join-room'));
                     joinBtn.addEventListener('click', async () => {
                         if (!inviteId || joinBtn.disabled) return;
                         await this.joinPlayInviteRoom(invite, { manual: true });
@@ -9478,13 +9455,13 @@ class DominoGame {
                     const joinedBtn = document.createElement('button');
                     joinedBtn.className = 'btn btn-menu';
                     joinedBtn.disabled = true;
-                    joinedBtn.textContent = this.currentLang === 'az' ? 'Qoşuldunuz' : 'Joined';
+                    joinedBtn.textContent = this.t('invite-joined');
                     action.appendChild(joinedBtn);
                 } else if (isFailedJoin) {
                     const failedBtn = document.createElement('button');
                     failedBtn.className = 'btn btn-menu';
                     failedBtn.disabled = true;
-                    failedBtn.textContent = this.currentLang === 'az' ? 'Qoşulma alınmadı' : 'Failed to join';
+                    failedBtn.textContent = this.t('invite-failed-join');
                     action.appendChild(failedBtn);
                 } else {
                     const statusBtn = document.createElement('button');
@@ -9518,12 +9495,12 @@ class DominoGame {
                 } else if (isAcceptedWaiting) {
                     const cancelBtn = document.createElement('button');
                     cancelBtn.className = 'btn btn-menu cancel-invite-btn';
-                    cancelBtn.textContent = this.currentLang === 'az' ? 'Ləğv et' : 'Cancel';
+                    cancelBtn.textContent = this.t('invite-cancel');
                     cancelBtn.addEventListener('click', async () => {
                         if (!inviteId || cancelBtn.disabled) return;
                         cancelBtn.disabled = true;
                         const originalText = cancelBtn.textContent;
-                        cancelBtn.textContent = this.currentLang === 'az' ? 'Ləğv edilir...' : 'Canceling...';
+                        cancelBtn.textContent = this.t('invite-cancelling');
                         try {
                             const cancelled = await this.cancelPlayInviteWithFallback(inviteId, 'inviter-cancel-button');
                             if (cancelled?.ok === false) {
@@ -9531,9 +9508,7 @@ class DominoGame {
                             }
                             await this.loadSocialInvitesPage();
                             this.renderer.showMessage(
-                                this.currentLang === 'az'
-                                    ? 'Dəvət ləğv edildi'
-                                    : 'Invite cancelled',
+                                this.t('invite-cancelled'),
                                 1400
                             );
                         } catch (err) {
@@ -11050,9 +11025,7 @@ class DominoGame {
                     };
                     this.startGameInviteRefresh();
                     this.renderer.showMessage(
-                        this.currentLang === 'az'
-                            ? 'Otaq gözlənilir'
-                            : 'Waiting for room',
+                        this.t('invite-waiting-room'),
                         1800
                     );
                 } else {
@@ -11109,9 +11082,7 @@ class DominoGame {
                 this.stopGameInviteRefresh();
                 this.gameInviteState = null;
                 this.renderer.showMessage(
-                    this.currentLang === 'az'
-                        ? 'Qoşuldunuz.'
-                        : 'Joined.',
+                    this.t('invite-joined'),
                     1400
                 );
             }
@@ -11660,9 +11631,7 @@ class DominoGame {
                 }
                 if (!state.waitingPromptShown) {
                     this.renderer.showMessage(
-                        this.currentLang === 'az'
-                            ? 'Otaq hazırdır'
-                            : 'Room ready',
+                        this.t('invite-room-ready'),
                         1800
                     );
                     state.waitingPromptShown = true;
@@ -16200,6 +16169,7 @@ class DominoGame {
             }
         });
         document.getElementById('new-game-btn')?.addEventListener('click', () => {
+            this.reviewPilot?.rematch();
             const screen = document.getElementById('game-over-screen');
             if (screen) {
                 screen.classList.remove('active');
@@ -17636,6 +17606,7 @@ class DominoGame {
             return;
         }
 
+        this.reviewPilot?.start();
         this.humanPlayerIndex = 0;
         this.mode = this.getSoloStartMode();
         this.ruleset = getRuleset(this.mode);
@@ -17655,7 +17626,7 @@ class DominoGame {
         this.playerMissingSuits = Array.from({ length: this.playerCount }, () => new Set());
         this.playerNames = [this.playerName];
         for (let i=1;i<this.playerCount;i++) {
-            this.playerNames.push(`${this.currentLang==='az'?'Komp':'AI'} ${i}`);
+            this.playerNames.push(`${this.t('seat-bot')} ${i}`);
         }
         this.roundWins = new Array(this.playerCount).fill(0);
         this.teamScores=[0,0]; this.teamRoundWins=[0,0];
@@ -18271,6 +18242,7 @@ class DominoGame {
         });
         root.querySelectorAll('[data-i18n-aria]').forEach(el => {
             el.setAttribute('aria-label', this.t(el.dataset.i18nAria));
+            if (el.id === 'menu-btn') el.title = this.t(el.dataset.i18nAria);
         });
     }
 
@@ -20686,6 +20658,7 @@ class DominoGame {
         this.scheduleNextDealAdvance(DEAL_END_MODAL_MS);
     }
     showMatchResult(winnerIndex = null){
+        if (!this.network.isMultiplayer) this.reviewPilot?.complete();
         this.clearRoundStage();
         this.clearNextDealAdvanceTimeout();
         const newGameBtn = document.getElementById('new-game-btn');

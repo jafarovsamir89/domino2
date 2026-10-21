@@ -1,0 +1,16 @@
+<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Domino — проверка звука</title><style>body{font:18px system-ui;max-width:650px;margin:24px auto;padding:16px;background:#12251e;color:#fff}button,a{display:inline-block;margin:8px;padding:12px;font:inherit}label{display:block;margin:20px 0}pre{white-space:pre-wrap;overflow-wrap:anywhere}input{max-width:100%}</style></head><body>
+<h1>Проверка звука и микрофона</h1><p>Отдельная тестовая сборка. Звук микрофона не записывается и не отправляется. Проверка связи между двумя телефонами проводится отдельно.</p>
+<label><input id="mute" type="checkbox"> Выключить весь звук</label><label>Музыка <input id="music" type="range" min="0" max="1" step="0.05"></label><label>Эффекты <input id="effects" type="range" min="0" max="1" step="0.05"></label>
+<button id="play">Музыка</button><button id="sfx">Эффект</button><button id="stop">Стоп</button><button id="mic">Разрешить микрофон</button><button id="end">Остановить микрофон</button><a href="/">К игре</a><pre id="state" role="status"></pre>
+<script type="module">
+import {getAudioSettings,updateAudioSettings,startMenuMusic,stopMusic,sndScore} from '/js/sounds.js';
+const mute=document.querySelector('#mute'),music=document.querySelector('#music'),effects=document.querySelector('#effects');
+let stream=null,generation=0;const state=document.querySelector('#state'),log=t=>state.textContent=`${new Date().toISOString()} ${t}\n`+state.textContent.slice(0,3500);
+const stop=()=>{generation++;stream?.getTracks().forEach(t=>t.stop());stream=null;log('Микрофон остановлен');};
+const settings=getAudioSettings();mute.checked=settings.masterMuted;music.value=settings.musicVolume;effects.value=settings.effectsVolume;
+for(const id of ['mute','music','effects'])document.getElementById(id).oninput=()=>log(JSON.stringify(updateAudioSettings({masterMuted:mute.checked,musicVolume:Number(music.value),effectsVolume:Number(effects.value)})));
+document.querySelector('#play').onclick=()=>startMenuMusic();document.querySelector('#sfx').onclick=()=>sndScore();document.querySelector('#stop').onclick=()=>stopMusic();
+document.querySelector('#mic').onclick=async()=>{stop();const request=generation;try{const next=await navigator.mediaDevices.getUserMedia({audio:true,video:false});if(request!==generation){next.getTracks().forEach(t=>t.stop());return;}stream=next;log(`Микрофон: ${stream.getAudioTracks().map(t=>t.readyState).join(', ')}`);}catch(e){log(`Микрофон: ${e.name}`);}};
+document.querySelector('#end').onclick=stop;window.addEventListener('pagehide',stop);document.addEventListener('visibilitychange',()=>{log(`Видимость: ${document.visibilityState}`);if(document.hidden)stop();});
+log(JSON.stringify({origin:location.origin,settings,native:window.Capacitor?.getPlatform?.()||'browser'}));
+</script></body></html>

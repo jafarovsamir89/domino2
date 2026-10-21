@@ -1,0 +1,23 @@
+{
+ "locale":"tr-TR",
+ "status":"native-review-pending-not-added-to-live-language-menu",
+ "scope":"One first-start/solo/result path, not a complete Turkish locale",
+ "strings":{
+  "solo":"Tek oyunculu",
+  "online":"Çevrimiçi",
+  "choose-rules":"Oyun kurallarını seçin",
+  "difficulty":"Zorluk",
+  "players":"Oyuncu sayısı",
+  "start":"Oyunu başlat",
+  "free-solo":"Botlara karşı tek oyunculu oyun için hesap veya jeton gerekmez.",
+  "pause":"Duraklat",
+  "resume":"Devam et",
+  "music":"Müzik",
+  "effects":"Ses efektleri",
+  "mute":"Tüm sesleri kapat",
+  "cancel":"İptal",
+  "invite":"Oyuna davet et",
+  "rematch":"Tekrar oyna"
+ },
+ "nativeQuestions":["Natural first-start wording","Telefon/101 names and game-specific terminology","Long labels at320px and130%font","Correct treatment of jeton vs coin and required login","Do not expose an incomplete locale to all players"]
+}

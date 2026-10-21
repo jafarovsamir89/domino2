@@ -5057,7 +5057,8 @@ body.move-hint-selection-active #game-screen .player-name-btn {
     position: relative;
     z-index: 5;
     min-height: 0;
-    background: transparent;
+    /* Quiet the table pattern under small tiles without changing the surface or geometry. */
+    background: radial-gradient(ellipse at 50% 50%, rgba(8, 24, 17, 0.82) 10%, rgba(8, 24, 17, 0.62) 75%, rgba(8, 24, 17, 0.35) 100%);
 }
 
 .konva-board-root {

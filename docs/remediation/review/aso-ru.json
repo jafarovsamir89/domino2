@@ -1,0 +1,43 @@
+{
+  "status": "draft-not-published",
+  "locale": "ru-RU",
+  "title": "Domino — домино с друзьями",
+  "shortDescription": "Играйте в домино с ботами или друзьями. Режимы «Телефон» и «101».",
+  "fullDescription": "Играйте в домино в одиночку с ботами или собирайтесь с друзьями в онлайн-комнате.\n\nВыберите правила: «Телефон» или «101», количество игроков и сложность ботов. Бесплатную одиночную игру можно начать без аккаунта. Для онлайн-игры требуется вход и подключение к сети.\n\nНастройте музыку и звуковые эффекты. Для голосовых функций потребуется разрешение на микрофон.\n\nОнлайн-режимы могут использовать игровые монеты. Условия и доступные варианты смотрите внутри игры. Игровые монеты не являются денежным выигрышем.",
+  "screenshots": [
+    {
+      "screen": "start",
+      "caption": "Выберите одиночную игру или онлайн",
+      "source": "Actual current RU start screen; capture at final candidate SHA",
+      "draftEvidence": "../evidence/session-039/aso-ru-start-draft.png"
+    },
+    {
+      "screen": "solo",
+      "caption": "Настройте правила и сложность ботов",
+      "source": "Actual current RU solo settings, no invented awards or claims",
+      "draftEvidence": "../evidence/session-039/aso-ru-solo-draft.png"
+    },
+    {
+      "screen": "game",
+      "caption": "Домино на игровом столе",
+      "source": "Actual full game, no debug overlay or artificial review badge",
+      "draftEvidence": "../evidence/session-039/aso-ru-game-draft.png"
+    },
+    {
+      "screen": "room",
+      "caption": "Пригласите друзей в комнату",
+      "source": "Two synthetic accounts, no personal names, verify actual flow first"
+    }
+  ],
+  "acceptancePending": [
+    "Owner locale choice",
+    "Native speaker review",
+    "Final candidate screenshots and rights",
+    "Console preview and separate publish instruction",
+    "Compare conversion plus D1/D7 completed-match quality, not installs alone"
+  ],
+  "sources": [
+    "https://support.google.com/googleplay/android-developer/answer/9859152",
+    "https://support.google.com/googleplay/android-developer/answer/9898842"
+  ]
+}
