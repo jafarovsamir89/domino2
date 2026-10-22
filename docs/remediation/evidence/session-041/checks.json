@@ -1,0 +1,18 @@
+{
+  "apkShaStillMatches": true,
+  "auditValidation": "42 unique cards; no broken links or invalid JSON",
+  "historicalManifest": "347 files; no mismatch; only existing plan entry intentionally refreshed",
+  "scriptSyntax": "3 files pass",
+  "gitDiffCheck": "pass",
+  "build": "testDebugUnitTest assembleDebug pass; 168 tasks; 35seconds",
+  "publishedCodeChanged": false,
+  "serverSuitesRepeated": false,
+  "reason": "audit-only native SDK/diagnostics; no API/server or shipped web source changes",
+  "sourceFiles": {
+    "docs/remediation/scripts/build-review-apk.mjs": "f99c2b0f894e01ec6bf719c4227c2de652e33247706ba9d8c7e9f8daf3c8eb1e",
+    "docs/remediation/scripts/install-review-apk.mjs": "24e14423f689c9f73988d59fa01486b3fb641bfe63fa7ef21b6afa90cf753b20",
+    "docs/remediation/review/native/DominoRewardedReviewPlugin.java": "8db4a3b8e81a16733f88384d8eba2b94076676b82b460a8d9792f107c559cd68",
+    "docs/remediation/review/rewarded.html": "b4b924cd9d8192eb10b6499dfc60e3ceee86458380a12a705f4782f6e416c9cb",
+    "docs/remediation/review/rewarded.js": "0e7edf0062810cc0ccd18d6589229dc5e06ba025994a7a668053f3630f6a76c9"
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "sourceSha": "0b81cb0cb6182b808f9269ce41760747158af648",
+  "workingTreeChangesIncluded": true,
+  "appId": "az.simplesoft.dominotelefon.audit",
+  "apk": ".tmp/mobile-review/android/app/build/outputs/apk/debug/app-debug.apk",
+  "sha256": "05f5e1d219f4d0d76d27c52b3ccebaaa6c1e049fb75b6a7096bdeefb99a8845f",
+  "bytes": 34691399,
+  "installed": false,
+  "scope": "debug synthetic review, no Play performance claim",
+  "endpoints": [
+    "127.0.0.1:4186"
+  ],
+  "audioPage": "https://localhost/review-audio.html",
+  "rewardedSuite": true,
+  "adDependencies": [
+    "com.unity3d.ads-mediation:mediation-sdk:9.5.0",
+    "com.unity3d.ads-mediation:unityads-adapter:5.15.0"
+  ],
+  "rewardedPage": "https://localhost/review/rewarded.html"
+}

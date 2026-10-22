@@ -1,0 +1,55 @@
+{
+  "session": "S041",
+  "date": "2026-10-21",
+  "branch": "codex/rewarded-acceptance",
+  "model": "2201117SG",
+  "android": "13",
+  "apiLevel": 33,
+  "screen": "1080x2400",
+  "webView": "com.google.android.webview 155.0.8059.43",
+  "package": "az.simplesoft.dominotelefon.audit",
+  "apkSha256": "05f5e1d219f4d0d76d27c52b3ccebaaa6c1e049fb75b6a7096bdeefb99a8845f",
+  "installation": "adb install -r; matching existing audit debug signing certificate; success; no uninstall/data-clear",
+  "playBeforeAndAfter": {
+    "versionCode": 24,
+    "versionName": "1.20",
+    "firstInstallTime": "2026-07-16 14:35:32",
+    "lastUpdateTime": "2026-08-11 15:19:28",
+    "unchanged": true
+  },
+  "nativeUnitTests": {
+    "passed": 3,
+    "failed": 0,
+    "skipped": 0,
+    "meaningfulOriginPolicyTests": 2,
+    "templateTests": 1
+  },
+  "levelPlay": "9.5.0",
+  "unityAds": "4.21.0",
+  "unityAdapter": "5.15.0",
+  "init": "success",
+  "network": "UnityAds bidding",
+  "modeBeforeLoad": "Test; You are using test ads",
+  "load": "Ad loaded successfully",
+  "show": "Ad shown successfully",
+  "privacySignalsObserved": {
+    "gdprConsent": false,
+    "ccpa": true,
+    "allNetworksCoppa": false,
+    "adultOwnerConfirmed": true,
+    "adIdPermissionInMergedManifest": false
+  },
+  "configuredRewardedUnitVisible": "ssq6gr0sac12hwf1",
+  "unitAuction": "not loaded; Test selected before leaving; ironSource and UnityAds bidding present",
+  "walletEnabled": false,
+  "providerS2SValidated": false,
+  "productionChanged": false,
+  "ownerStagingAnswer": "No separate test server",
+  "evidencePreservation": "existing metadata output refused before build mutation; historical S039 unchanged",
+  "networkScope": "Loopback4186 is synthetic game API only. Native advertising SDK uses external provider services after explicit diagnostic initialization.",
+  "notes": [
+    "No new Google Play installation was requested by agent. A Unity Remote5 Play overlay appeared during test creative; dismissed without installation. Cause not established, so do not claim no click occurred.",
+    "Test-suite network success is not signed callback, unique reward grant, published release acceptance or revenue.",
+    "No age/consent policy for real13–17 users is inferred from this adult-owner diagnostic."
+  ]
+}

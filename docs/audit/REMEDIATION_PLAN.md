@@ -134,6 +134,8 @@ R-25 относится к этапу 0, но окончательно закр�
 
 #### R-09 · P0 · Server entitlement для rewarded x2
 
+S040–S041: по решению владельца выбран Unity Ads через LevelPlay. На отдельной `.audit` сборке физического Android13 официальный Test Suite подтвердил загрузку и показ Unity Rewarded в режиме Test. Монеты не начислялись; текущий AdMob verifier не подключён к новому провайдеру. Реальный LevelPlay S2S, финансовая связка и release consent ещё нужны; отдельного тестового сервера у владельца нет. R09 открыта, счёт27/42. [Результат телефона и следующий шаг](../remediation/evidence/session-041/R09_PHONE_RESULT.md).
+
 Статус: **локальный объём выполнен, S011; реальные SSV отложены**. Unverified rewarded_x2 возвращает403 до DB mutation; initial/upgrade без права удалены. API объявляет rewardedAvailable=false/doubleClaimAvailable=false; web/www не запускают рекламу. Обычный daily сохранён. API134/134Node25/22; realPG4×100requests на обеих версиях без лишних монет. [Проверки](../remediation/evidence/session-011/summary.json). Подключение/положительная приёмка уникального ad event не выполнены, удвоение выключено. Production/Play не обновлялись.
 
 S039: добавлен выключенный по умолчанию кандидат серверного entitlement: ECDSA SSV, issue/cancel/consume, уникальные receipt и атомарное обновление wallet/daily/ledger. В новой локальной PostgreSQL 100 параллельных callback дали одну награду; rollback/retry/restart/replay/cancel/expiry проверены. Публичный rewarded_x2 остаётся403. Нужны auth-route, ban/deletion, refresh доверенных ключей, SDK, migration/retention review и реальный провайдер. [Все результаты S039](../remediation/evidence/session-039/FIFTEEN_CARD_RESULTS.md).
