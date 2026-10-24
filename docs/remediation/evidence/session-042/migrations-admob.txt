@@ -68,5 +68,5 @@ migrations/
     └─ migration.sql
   └─ 20261018_000019_complete_social_schema/
     └─ migration.sql
-      
+
 All migrations have been successfully applied.
