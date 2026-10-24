@@ -1,0 +1,28 @@
+✔ js/rewardedDailyFlow.js: disabled flow and missing native adapter make no server/ad calls (5.956333ms)
+✔ js/rewardedDailyFlow.js: SDK success or close is not credit; later server credit is found without a second ad (6.567667ms)
+✔ js/rewardedDailyFlow.js: concurrent clicks/check/cancel share one operation and do not launch a second ad (3.142166ms)
+✔ js/rewardedDailyFlow.js: explicit cancellation trusts the server, including a credit/cancel race and lost response (0.545667ms)
+✔ js/rewardedDailyFlow.js: a late issue reply after logout cannot bind/show or update the new account (0.469417ms)
+✔ js/rewardedDailyFlow.js: native binding survives JS/account reset and cannot silently change to another nonce (0.351125ms)
+✔ js/rewardedDailyFlow.js: wrong native binding, malformed status and already-expired server attempt never show ads (0.296625ms)
+✔ js/rewardedDailyFlow.js: server state wins over an SDK failure; failed status is recoverable without replaying the ad (0.2195ms)
+✔ js/rewardedDailyFlow.js: dispose and reentrant logout stop queued work and observers cannot manufacture a grant (0.170834ms)
+✔ js/rewardedDailyFlow.js: API helper sends only opt-in/nonce to authenticated transport and rejects path injection (0.380209ms)
+✔ www/js/rewardedDailyFlow.js: disabled flow and missing native adapter make no server/ad calls (0.728416ms)
+✔ www/js/rewardedDailyFlow.js: SDK success or close is not credit; later server credit is found without a second ad (0.26175ms)
+✔ www/js/rewardedDailyFlow.js: concurrent clicks/check/cancel share one operation and do not launch a second ad (1.516125ms)
+✔ www/js/rewardedDailyFlow.js: explicit cancellation trusts the server, including a credit/cancel race and lost response (0.243291ms)
+✔ www/js/rewardedDailyFlow.js: a late issue reply after logout cannot bind/show or update the new account (0.34925ms)
+✔ www/js/rewardedDailyFlow.js: native binding survives JS/account reset and cannot silently change to another nonce (0.304209ms)
+✔ www/js/rewardedDailyFlow.js: wrong native binding, malformed status and already-expired server attempt never show ads (0.175917ms)
+✔ www/js/rewardedDailyFlow.js: server state wins over an SDK failure; failed status is recoverable without replaying the ad (0.156292ms)
+✔ www/js/rewardedDailyFlow.js: dispose and reentrant logout stop queued work and observers cannot manufacture a grant (0.11275ms)
+✔ www/js/rewardedDailyFlow.js: API helper sends only opt-in/nonce to authenticated transport and rejects path injection (0.136042ms)
+ℹ tests 20
+ℹ suites 0
+ℹ pass 20
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 114.469584

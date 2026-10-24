@@ -6,7 +6,8 @@ import {createHash,randomBytes} from 'node:crypto';
 
 const args=process.argv.slice(2),arg=name=>args[args.indexOf(name)+1];
 assert.ok(args.includes('--database')&&args.includes('--output'),'Explicit fresh database/output required');
-const database=arg('--database'),output=arg('--output'),useNest=args.includes('--nest-controller');
+const database=arg('--database'),output=arg('--output'),useNest=args.includes('--nest-controller'),useClient=args.includes('--client-flow');
+assert.ok(!useClient||useNest,'Client integration requires the real Nest controller');
 assert.match(database,/^domino_remediation_s\d{3}_request_[a-z0-9_]+$/);
 assert.ok(output.startsWith('docs/remediation/evidence/session-')&&output.endsWith('.json')&&!fs.existsSync(output),'Preserve historical evidence');
 const url=`postgresql://domino_remediation@127.0.0.1:55439/${database}?schema=public`;
@@ -27,7 +28,7 @@ try{
  assert.equal(await db.player.count(),0,'Never reuse/reset populated databases');
  assert.equal((await db.$queryRaw`SELECT to_regclass('public."RewardReviewAttempt"')::text AS name`)[0].name,null,'Require fresh draft tables');
  for(const sql of fs.readFileSync('docs/remediation/review/rewarded-draft.sql','utf8').split(';').filter(v=>v.trim()))await db.$executeRawUnsafe(sql);
- for(const label of ['one','two','logout','ban',...(useNest?['cookie']:[])]){
+ for(const label of ['one','two','logout','ban',...(useNest?['cookie']:[]),...(useClient?['client']:[])]){
   const playerId='s'+database.match(/_s(\d{3})_/)[1]+'-synthetic-'+label,userId=playerId+'-user',sessionId=playerId+'-session',token=randomBytes(32).toString('hex');
   identities.set(label,{playerId,userId,sessionId});tokens.set(label,token);
   await db.user.create({data:{id:userId,name:'Synthetic review',email:playerId+'@example.invalid',sessions:{create:{id:sessionId,token,expiresAt:new Date(now+86400000)}}}});
@@ -105,10 +106,32 @@ try{
   assert.equal((await request('/grant','one',{attemptId:id,reward:99999})).status,404);
   assert.equal((await request('/complete','one',{attemptId:id})).status,404);
  }
+ let clientResult;
+ if(useClient){
+  const {RewardedDailyFlow,createRewardedDailyApi}=await import('../../../js/rewardedDailyFlow.js');
+  let shows=0,binds=0,clientAttempt;const phases=[];
+  const api=createRewardedDailyApi({platformRequest:async(path,options={})=>{
+   const r=await fetch(base+'/api'+path,{method:options.method??'GET',headers:{'Content-Type':'application/json',authorization:'Bearer '+tokens.get('client')},...(options.body?{body:JSON.stringify(options.body)}:{})});
+   const body=await r.json();if(!r.ok)throw Error(body.error||'synthetic-http-failure');return body;
+  }});
+  const flow=new RewardedDailyFlow({api,enabled:true,onChange:s=>phases.push(s.phase),ads:{bindAttempt:async value=>{binds++;clientAttempt=value.attemptId;return {bound:true,attemptId:clientAttempt};},show:async()=>{shows++;return {completed:true,reward:99999};}}});
+  assert.equal((await flow.start()).phase,'pending','SDK completion alone must never credit');
+  const getWallet=()=>db.coinWallet.findUnique({where:{playerId:identities.get('client').playerId}});
+  assert.equal((await getWallet()).balance,200);assert.equal((await flow.start()).phase,'pending');assert.equal(shows,1);
+  const transactionId='1123456789abcdef';
+  const clientCallback=new URLSearchParams({applicationUserId:clientAttempt,eventId:transactionId,rewards,timestamp,signature:createHash('md5').update(timestamp+transactionId+clientAttempt+rewards+privateKey).digest('hex')}).toString();
+  assert.equal((await entitlements.consume(clientCallback)).credited,true);
+  assert.equal((await flow.check()).phase,'credited');assert.equal((await getWallet()).balance,400);
+  assert.deepEqual(await entitlements.consume(clientCallback),{credited:false,duplicate:true});
+  assert.equal((await flow.cancel()).phase,'credited');assert.equal(shows,1);assert.equal(binds,1);assert.equal((await getWallet()).reserved,13);
+  assert.equal(JSON.stringify(flow.snapshot).includes(clientAttempt),false);flow.dispose();
+  clientResult={adapter:'actual browser module/helper over real Nest/PG, FAKE native adapter',sdkSuccessBeforeCallback:'pending, balance unchanged',lateSyntheticCallback:'credited only after server transaction',repeatedStart:'status only, one ad show',shows,binds,cancelAfterCredit:'credited',duplicateCallback:'no new coins',publicSnapshotContainsNonce:false,phases:[...new Set(phases)]};
+ }
  const wallet=await db.coinWallet.findUnique({where:{playerId:identities.get('one').playerId}});assert.equal(wallet.balance,400);assert.equal(wallet.reserved,13);
- assert.equal((await db.coinLedgerEntry.findMany({where:{type:'ad_reward'}})).length,1);
+ const expectedGrants=useClient?2:1;
+ assert.equal((await db.coinLedgerEntry.findMany({where:{type:'ad_reward'}})).length,expectedGrants);
  for(const label of ['two','logout','ban',...(useNest?['cookie']:[])])assert.equal((await db.coinWallet.findUnique({where:{playerId:identities.get(label).playerId}})).balance,200);
- const result={scope:'Synthetic local HTTP and PostgreSQL, actual Better Auth opaque-bearer lookup and signed game credentials; no production route or real ad',httpAdapter:useNest?'actual Nest controller':'plain local review harness',...(useNest?{cookieFromRealLocalSignIn:'pass through server HTTP, not browser cookie-domain policy',cookieOriginProtection:'missing/foreign rejected, exact accepted',clientGrantAndCompleteRoutes:'not present',cachePolicy:'no-store'}:{}),opaqueBearer:'pass',gameBearer:'pass',clientChosenIdentity:'rejected-before-attempt',unauthenticated:'rejected',idempotentIssue:'same nonce',crossPlayerReadCancel:'rejected',otherSessionReadCancel:'rejected',otherSessionIssue:'scope conflict',statusLifecycle:'pending/credited/cancelled',logoutOpaqueAndGameBearer:'rejected',activeBan:'rejected',providerSignedSyntheticGrant:1,duplicateGrant:0,cancelAfterCredit:'remains credited',rewardedLedgerEntries:1,totalRewardedCoins:200,reservedCoinsUnchanged:true};
+ const result={scope:'Synthetic local HTTP and PostgreSQL, actual Better Auth opaque-bearer lookup and signed game credentials; no production route or real ad',httpAdapter:useNest?'actual Nest controller':'plain local review harness',...(useNest?{cookieFromRealLocalSignIn:'pass through server HTTP, not browser cookie-domain policy',cookieOriginProtection:'missing/foreign rejected, exact accepted',clientGrantAndCompleteRoutes:'not present',cachePolicy:'no-store'}:{}),...(clientResult?{clientFlow:clientResult}:{}),opaqueBearer:'pass',gameBearer:'pass',clientChosenIdentity:'rejected-before-attempt',unauthenticated:'rejected',idempotentIssue:'same nonce',crossPlayerReadCancel:'rejected',otherSessionReadCancel:'rejected',otherSessionIssue:'scope conflict',statusLifecycle:'pending/credited/cancelled',logoutOpaqueAndGameBearer:'rejected',activeBan:'rejected',providerSignedSyntheticGrant:expectedGrants,duplicateGrant:0,cancelAfterCredit:'remains credited',rewardedLedgerEntries:expectedGrants,totalRewardedCoins:expectedGrants*200,reservedCoinsUnchanged:true};
  fs.writeFileSync(output,JSON.stringify(result,null,2)+'\n');console.log(JSON.stringify(result));
 }finally{
  if(app)await app.close();
