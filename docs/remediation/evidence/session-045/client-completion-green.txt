@@ -1,0 +1,16 @@
+✔ js/app.js: absent/disabled server ad capability prevents showing an ad (12.285959ms)
+✔ js/app.js: absent/disabled server ad capability prevents showing an ad (3.415375ms)
+✔ js/app.js: ambiguous or failed ad responses never trigger a rewarded claim (21.396834ms)
+✔ js/app.js: explicit ad completion is only a playback result; cancellation wins over completion (10.994083ms)
+✔ www/js/app.js: absent/disabled server ad capability prevents showing an ad (9.702291ms)
+✔ www/js/app.js: absent/disabled server ad capability prevents showing an ad (3.10125ms)
+✔ www/js/app.js: ambiguous or failed ad responses never trigger a rewarded claim (20.696ms)
+✔ www/js/app.js: explicit ad completion is only a playback result; cancellation wins over completion (9.874875ms)
+ℹ tests 8
+ℹ suites 0
+ℹ pass 8
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 207.22225

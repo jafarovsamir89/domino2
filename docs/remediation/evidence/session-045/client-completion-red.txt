@@ -1,0 +1,52 @@
+✔ js/app.js: absent/disabled server ad capability prevents showing an ad (10.442125ms)
+✔ js/app.js: absent/disabled server ad capability prevents showing an ad (3.652417ms)
+✖ js/app.js: ambiguous or failed ad responses never trigger a rewarded claim (3.641375ms)
+✔ js/app.js: explicit ad completion is only a playback result; cancellation wins over completion (8.425875ms)
+✔ www/js/app.js: absent/disabled server ad capability prevents showing an ad (9.609ms)
+✔ www/js/app.js: absent/disabled server ad capability prevents showing an ad (3.335958ms)
+✖ www/js/app.js: ambiguous or failed ad responses never trigger a rewarded claim (4.477375ms)
+✔ www/js/app.js: explicit ad completion is only a playback result; cancellation wins over completion (7.537125ms)
+ℹ tests 8
+ℹ suites 0
+ℹ pass 6
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 142.683375
+
+✖ failing tests:
+
+test at server/test/daily-ad-capability.test.js:11:2
+✖ js/app.js: ambiguous or failed ad responses never trigger a rewarded claim (3.641375ms)
+  AssertionError [ERR_ASSERTION]: ambiguous response undefined must not become completion
+
+  1 !== 0
+
+      at TestContext.<anonymous> (/Users/macbookair/Documents/domino/server/test/daily-ad-capability.test.js:17:11)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at server/test/daily-ad-capability.test.js:11:2
+✖ www/js/app.js: ambiguous or failed ad responses never trigger a rewarded claim (4.477375ms)
+  AssertionError [ERR_ASSERTION]: ambiguous response undefined must not become completion
+
+  1 !== 0
+
+      at TestContext.<anonymous> (/Users/macbookair/Documents/domino/server/test/daily-ad-capability.test.js:17:11)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

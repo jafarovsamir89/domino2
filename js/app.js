@@ -7419,6 +7419,13 @@ class DominoGame {
                 return { available: true, started: true, completed: false, cancelled: true, error: '' };
             }
 
+            // An empty response or a resolved show() promise does not prove playback completed.
+            // This flag is a playback result only; the server must still verify any reward.
+            if (result?.completed !== true || result?.error) {
+                this.dailyBonusState.rewardedAdError = this.t('daily-bonus-ad-unavailable');
+                return { available: true, started: true, completed: false, cancelled: false, error: this.dailyBonusState.rewardedAdError };
+            }
+
             this.dailyBonusState.rewardedAdCompletedAt = Date.now();
             this.dailyBonusState.rewardedAdError = '';
             return { available: true, started: true, completed: true, cancelled: false, error: '' };
