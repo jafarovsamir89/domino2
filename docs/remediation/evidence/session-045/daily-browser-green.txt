@@ -1,0 +1,13 @@
+
+Running 1 test using 1 worker
+
+(node:35325) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+(node:35325) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[1/1] e2e/domino.spec.mjs:2918:1 › daily bonus flow: visible only when authed, handles status loading and claim successfully
+  1 passed (6.6s)

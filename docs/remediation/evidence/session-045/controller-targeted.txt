@@ -1,0 +1,11 @@
+✔ review module exposes no routes unless explicitly composed, and disabled access fails closed over HTTP (155.528416ms)
+✔ real Nest HTTP routing preserves opt-in, raw credentials and owned status/cancel without adding client grant routes (12.628417ms)
+✔ known request errors have stable HTTP codes; unknown database/configuration errors reveal no details (13.648791ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 449.178542

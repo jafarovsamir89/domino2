@@ -1,0 +1,10 @@
+{
+  "checkedAt": "2026-10-24T23:18:41.721060+00:00",
+  "syntheticPg55439Listening": false,
+  "freshDatabasePreserved": "domino_remediation_s045_request_1",
+  "sourceWwwAppParity": true,
+  "adbUsed": false,
+  "productionAppModuleChanged": false,
+  "publishedAndroidChanged": false,
+  "testResultsTrackedMetadataRestored": true
+}
