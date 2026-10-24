@@ -1,0 +1,17 @@
+✔ rewarded request gate is off by default and never accepts another provider accidentally (1.927291ms)
+✔ signed game credentials derive the identity and never return credentials or accept a client-selected player (2.231667ms)
+✔ opaque bearer is authenticated alone, without falling back to an accompanying cookie (0.2615ms)
+✔ cookie authentication requires a trusted exact Origin for writes, including mixed bearer/cookie requests (0.284167ms)
+✔ missing, malformed, forged, expired and suffixed credentials never reach entitlement (0.421959ms)
+✔ credentials are rechecked against logout, session ownership, expiry, deleted player and ban (1.2715ms)
+✔ read failure propagates without issuing an attempt or cancelling anything (0.134417ms)
+✔ cancel checks owned status before mutation and returns the actual post-cancel state (0.30175ms)
+✔ status does not mutate and distinguishes pending, cancelled, expired and committed credit (30.656917ms)
+ℹ tests 9
+ℹ suites 0
+ℹ pass 9
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 160.24875

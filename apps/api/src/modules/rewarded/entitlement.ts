@@ -16,6 +16,7 @@ type Attempt={id:string;playerId:string;claimDate:string;baseReward:number;expir
  */
 export class RewardedEntitlement {
  constructor(private db:PrismaClient,private config:Config){}
+ get provider(){return this.scope().provider;}
  private enabled(){
   if(this.config.enabled!==true||!this.config.adUnit)throw Error('rewarded_disabled');
   if(this.config.provider==='levelplay'&&(!this.config.appKey||typeof this.config.privateKey!=='string'||this.config.privateKey.length<32||this.config.privateKey.length>512||!Number.isInteger(this.config.timestampUtcOffsetMinutes)||this.config.timestampUtcOffsetMinutes< -720||this.config.timestampUtcOffsetMinutes>840))throw Error('invalid_provider_configuration');
@@ -72,6 +73,17 @@ export class RewardedEntitlement {
    if(scope.provider==='levelplay')await this.access(tx,playerId,identity,now);
    await tx.$executeRaw`UPDATE "RewardReviewAttempt" SET "cancelled"=true WHERE "id"=${attemptId} AND "playerId"=${playerId} AND "provider"=${scope.provider} AND "providerScope"=${scope.providerScope} AND "adUnit"=${scope.adUnit} AND "consumedAt" IS NULL`;
   });
+ }
+ async status(playerId:string,attemptId:string,identity:Identity,now=Date.now()){
+  this.enabled();if(!playerId||!attemptId||!Number.isSafeInteger(now))throw Error('invalid_request');
+  return this.db.$transaction(async tx=>{
+   await this.lock(tx,playerId);await this.access(tx,playerId,identity,now);
+   const [attempt]=await tx.$queryRaw<Attempt[]>`SELECT * FROM "RewardReviewAttempt" WHERE "id"=${attemptId} AND "playerId"=${playerId}`;
+   const scope=this.scope();
+   if(!attempt||attempt.provider!==scope.provider||attempt.providerScope!==scope.providerScope||attempt.adUnit!==scope.adUnit||attempt.userId!==identity.userId||attempt.sessionId!==identity.sessionId)throw Error('attempt_not_found');
+   const state=attempt.consumedAt?'credited':attempt.cancelled?'cancelled':attempt.expiresAt.getTime()<=now||attempt.claimDate!==rewardedBakuDay(now)?'expired':'pending';
+   return {attemptId:attempt.id,state,expiresAt:attempt.expiresAt};
+  },{maxWait:30000,timeout:30000});
  }
  async consume(rawQuery:string,now=Date.now()){
   this.enabled();const scope=this.scope();

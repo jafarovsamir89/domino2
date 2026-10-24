@@ -1,0 +1,20 @@
+{
+  "scope": "Synthetic local HTTP and PostgreSQL, actual Better Auth opaque-bearer lookup and signed game credentials; no public route or real ad",
+  "opaqueBearer": "pass",
+  "gameBearer": "pass",
+  "clientChosenIdentity": "rejected-before-attempt",
+  "unauthenticated": "rejected",
+  "idempotentIssue": "same nonce",
+  "crossPlayerReadCancel": "rejected",
+  "otherSessionReadCancel": "rejected",
+  "otherSessionIssue": "scope conflict",
+  "statusLifecycle": "pending/credited/cancelled",
+  "logoutOpaqueAndGameBearer": "rejected",
+  "activeBan": "rejected",
+  "providerSignedSyntheticGrant": 1,
+  "duplicateGrant": 0,
+  "cancelAfterCredit": "remains credited",
+  "rewardedLedgerEntries": 1,
+  "totalRewardedCoins": 200,
+  "reservedCoinsUnchanged": true
+}

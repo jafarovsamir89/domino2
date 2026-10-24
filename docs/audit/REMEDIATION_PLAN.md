@@ -134,6 +134,8 @@ R-25 относится к этапу 0, но окончательно закр�
 
 #### R-09 · P0 · Server entitlement для rewarded x2
 
+S044: подготовлен выключенный и незарегистрированный boundary issue/cancel/status с проверкой аккаунта/сессии/бана и запретом выбора чужого игрока/суммы. API176/176; реальный локальныйHTTP+PostgreSQL подтвердили авторизацию, владение и1синтетическийgrant без повтора. Реальный SDK/просмотр/публичныйконтроллер ещё нужны. [Результат](../remediation/evidence/session-044/R09_AUTH_RESULT.md). **R09 открыта;27/42.**
+
 S043: уточнён ответ тестового приёмника (точная длина, без сжатия), HTTP7/7. Три сообщения кабинета получили origin200 за6–10мс, но ConsoleTest всё ещё отвергает XML/plain ACK. По разрешению владельца обращение успешно отправлено Unity, подтверждение сохранено; ждём ответ по почте. ВременныйHTTPSзакрыт, callbackнеактивирован. [Результат и следующий шаг](../remediation/evidence/session-043/R09_CALLBACK_RESULT.md). **R09 открыта;27/42.**
 
 S042: подготовлен отдельный LevelPlay verifier и provider-bound entitlement с проверками сессии/бана. API167/167, HTTP5/5; новая локальнаяБД100callbacks→1grant/99acks. Из кабинета3подписанных тестовых сообщения дошли сorigin200, **но ConsoleTest всё ещё сообщает invalid configuration**. ФормуdiscardedбезSave, временныйHTTPSзакрыт; real ad→wallet/native auth/rollout ещё не приняты. [Точные результаты и ограничения](../remediation/evidence/session-042/R09_SERVER_RESULT.md). R09открыта,27/42.
