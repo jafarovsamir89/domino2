@@ -1,0 +1,23 @@
+{
+  "sourceSha": "99ffe91f7a1af522be246b7ad0c1fc0a1aaebbcd",
+  "workingTreeChangesIncluded": true,
+  "appId": "az.simplesoft.dominotelefon.audit",
+  "apk": ".tmp/s047-native/domino-review-flow.apk",
+  "sha256": "08327edf1679d2107c4c0fce4b4ff940f63b835daa9ff8a3bf12dba8d1013d94",
+  "bytes": 34712762,
+  "installed": false,
+  "scope": "debug synthetic review, no Play performance claim",
+  "endpoints": [
+    "127.0.0.1:4186"
+  ],
+  "audioPage": "https://localhost/review-audio.html",
+  "rewardedSuite": false,
+  "rewardedFlow": true,
+  "rewardedLoadShowEnabled": false,
+  "adDependencies": [
+    "com.unity3d.ads-mediation:mediation-sdk:9.5.0",
+    "com.unity3d.ads-mediation:unityads-adapter:5.15.0"
+  ],
+  "rewardedPage": "https://localhost/review/rewarded-flow.html",
+  "preservedFrom": "docs/remediation/evidence/session-047/review-apk.json"
+}

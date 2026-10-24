@@ -1,0 +1,11 @@
+{
+  "package": "package: name='az.simplesoft.dominotelefon.audit' versionCode='24' versionName='1.20' platformBuildVersionName='16' platformBuildVersionCode='36' compileSdkVersion='36' compileSdkVersionCodename='16'",
+  "apkSha256": "08327edf1679d2107c4c0fce4b4ff940f63b835daa9ff8a3bf12dba8d1013d94",
+  "shaMatchesMetadata": true,
+  "signatureVerified": true,
+  "debugCertificateSha256": "1d5bf81541d66c56c79c3a7c36cbbeca06c353e4604abca671e2207ef88f7370",
+  "advertisingIdPermissionPresent": false,
+  "installed": false,
+  "sdkExecuted": false,
+  "scope": "Static APK inspection only; no Android device used"
+}

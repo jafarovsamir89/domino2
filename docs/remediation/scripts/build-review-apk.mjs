@@ -4,7 +4,9 @@ import path from 'node:path';
 import {execFileSync} from 'node:child_process';
 import {createHash} from 'node:crypto';
 const root=process.cwd(), work=path.join(root,'.tmp/mobile-review'), appId='az.simplesoft.dominotelefon.audit';
-const args=process.argv.slice(2), rewardedSuite=args.includes('--rewarded-suite');
+const args=process.argv.slice(2), rewardedSuite=args.includes('--rewarded-suite'),rewardedFlow=args.includes('--rewarded-flow');
+if(rewardedSuite&&rewardedFlow)throw Error('Choose either --rewarded-suite or --rewarded-flow; never share SDK initialization identities');
+const rewardedAds=rewardedSuite||rewardedFlow;
 const outputArg=args.indexOf('--output');
 const output=outputArg<0?path.join(work,'review-apk.json'):path.resolve(args[outputArg+1]||'');
 if(outputArg>=0&&(!args[outputArg+1]||args[outputArg+1].startsWith('-')))throw Error('--output requires a fresh metadata path');
@@ -25,10 +27,17 @@ await edit('android/app/build.gradle',s=>s.replace('applicationId "az.simplesoft
 await edit('android/app/src/main/res/values/strings.xml',s=>s.replaceAll('>Domino<','>Domino Review<').replaceAll('>az.simplesoft.dominotelefon<',`>${appId}<`));
 await edit('android/app/src/main/AndroidManifest.xml',s=>s.replace('android:scheme="domino"','android:scheme="domino-audit"'));
 await edit('android/app/src/main/java/az/simplesoft/dominotelefon/MainActivity.java',s=>s.replace('WebSettings.MIXED_CONTENT_NEVER_ALLOW','WebSettings.MIXED_CONTENT_ALWAYS_ALLOW').replace(/        registerPlugin\(Domino(?:GoogleAuth|Browser|DeviceRegion)Plugin\.class\);\n/g,''));
-if(rewardedSuite){
+if(rewardedAds){
  await edit('android/app/build.gradle',s=>s.replace('dependencies {',`dependencies {\n    implementation 'com.unity3d.ads-mediation:mediation-sdk:9.5.0'\n    implementation 'com.unity3d.ads-mediation:unityads-adapter:5.15.0'`));
+ if(rewardedSuite){
  await fs.copyFile('docs/remediation/review/native/DominoRewardedReviewPlugin.java',path.join(work,'android/app/src/main/java/az/simplesoft/dominotelefon/DominoRewardedReviewPlugin.java'));
  await edit('android/app/src/main/java/az/simplesoft/dominotelefon/MainActivity.java',s=>s.replace('registerPlugin(DominoAudioPlugin.class);','registerPlugin(DominoAudioPlugin.class);\n        registerPlugin(DominoRewardedReviewPlugin.class);'));
+ }else{
+  await edit('android/app/build.gradle',s=>s.replace('android {','android {\n    buildFeatures { buildConfig true }').replace('defaultConfig {',`defaultConfig {\n        buildConfigField 'boolean', 'DOMINO_REWARDED_FLOW_SHOW', 'false'`));
+  for(const name of ['RewardedFlowState.java','DominoRewardedFlowPlugin.java'])await fs.copyFile('docs/remediation/review/native/'+name,path.join(work,'android/app/src/main/java/az/simplesoft/dominotelefon',name));
+  await fs.copyFile('docs/remediation/review/native/RewardedFlowStateTest.java',path.join(work,'android/app/src/test/java/az/simplesoft/dominotelefon/RewardedFlowStateTest.java'));
+  await edit('android/app/src/main/java/az/simplesoft/dominotelefon/MainActivity.java',s=>s.replace('registerPlugin(DominoAudioPlugin.class);','registerPlugin(DominoAudioPlugin.class);\n        registerPlugin(DominoRewardedFlowPlugin.class);'));
+ }
  // No advertising identifier is needed for this restricted diagnostic build.
  await edit('android/app/src/main/AndroidManifest.xml',s=>s.replace('<manifest ', '<manifest xmlns:tools="http://schemas.android.com/tools" ').replace('<application', '<uses-permission android:name="com.google.android.gms.permission.AD_ID" tools:node="remove"/>\n    <application'));
 }
@@ -58,7 +67,7 @@ const versions=(await fs.readdir(path.join(sdk,'build-tools'))).sort((a,b)=>b.lo
 const badging=execFileSync(path.join(sdk,'build-tools',versions[0],'aapt'),['dump','badging',apk],{encoding:'utf8'});
 if(!badging.includes(`package: name='${appId}'`)) throw Error('Refusing non-audit package');
 const bytes=await fs.readFile(apk);
-const result={sourceSha:execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim(),workingTreeChangesIncluded:true,appId,apk:path.relative(root,apk),sha256:createHash('sha256').update(bytes).digest('hex'),bytes:bytes.length,installed:false,scope:'debug synthetic review, no Play performance claim',endpoints:['127.0.0.1:4186'],audioPage:'https://localhost/review-audio.html',rewardedSuite,adDependencies:rewardedSuite?['com.unity3d.ads-mediation:mediation-sdk:9.5.0','com.unity3d.ads-mediation:unityads-adapter:5.15.0']:[],rewardedPage:rewardedSuite?'https://localhost/review/rewarded.html':null};
+const result={sourceSha:execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim(),workingTreeChangesIncluded:true,appId,apk:path.relative(root,apk),sha256:createHash('sha256').update(bytes).digest('hex'),bytes:bytes.length,installed:false,scope:'debug synthetic review, no Play performance claim',endpoints:['127.0.0.1:4186'],audioPage:'https://localhost/review-audio.html',rewardedSuite,rewardedFlow,rewardedLoadShowEnabled:false,adDependencies:rewardedAds?['com.unity3d.ads-mediation:mediation-sdk:9.5.0','com.unity3d.ads-mediation:unityads-adapter:5.15.0']:[],rewardedPage:rewardedSuite?'https://localhost/review/rewarded.html':rewardedFlow?'https://localhost/review/rewarded-flow.html':null};
 await fs.mkdir(path.dirname(output),{recursive:true});
 await fs.writeFile(output,JSON.stringify(result,null,2)+'\n',outputArg>=0?{flag:'wx'}:{});
 console.log(JSON.stringify(result));

@@ -134,6 +134,8 @@ R-25 относится к этапу 0, но окончательно закр�
 
 #### R-09 · P0 · Server entitlement для rewarded x2
 
+S047 безADB: nativebridge для отдельного auditпакета с processnoncepin/origin/asyncstate проверками скомпилирован с настоящим LevelPlay9.5.0;9новыхJVM+4JSпроверки прошли, auditAPK собран/подписан/проверен. Загрузка и показ compile-timefalse, не установлен, SDK/реальныйпросмотр не принимались. [Результат](../remediation/evidence/session-047/R09_NATIVE_BUILD_RESULT.md). **R09 открыта;27/42.**
+
 S046 безADB: подготовлен выключенный и не подключённый к UI клиентский flow: сервер определяет награду, повторное нажатие проверяет ту же попытку, поздние ответы после logout игнорируются.20/20; настоящийJS→Nest→PostgreSQL с fake-native подтвердил отсутствие монет до подписанного syntheticcallback и отсутствие повторного grant. SDKinit/retry после cancel ещё не приняты. [Результат](../remediation/evidence/session-046/R09_CLIENT_FLOW_RESULT.md). **R09 открыта;27/42.**
 
 S045 безADB: настоящий локальный NestController issue/status/cancel проверен с реальной тестовойБД и signedcookie/Bearer; API179/179. Исправлен клиентский баг: пустой ответ рекламы больше не считается просмотром, source/www8/8 и обычный browserdaily1/1. В production маршруты/реклама не включены, SDKflow ещё нужен. [Результат](../remediation/evidence/session-045/R09_NO_ADB_RESULT.md). **R09 открыта;27/42.**

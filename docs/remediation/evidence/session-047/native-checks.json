@@ -1,0 +1,52 @@
+{
+  "suites": [
+    {
+      "name": "az.simplesoft.dominotelefon.AudioPermissionPolicyTest",
+      "tests": "2",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "cases": [
+        "resultMustStillBelongToTheSamePageOrigin",
+        "trustsOnlyExactHttpsAppOrigins"
+      ]
+    },
+    {
+      "name": "az.simplesoft.dominotelefon.RewardedFlowStateTest",
+      "tests": "9",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "cases": [
+        "expiryDuringLoadingCannotBecomeAShow",
+        "rewardCanArriveBeforeOrAfterCloseButNeitherIsAWalletGrant",
+        "staleWatchdogsDoNotFailAChangedStageAndTimeoutNeverReleasesBinding",
+        "malformedExpiredOrOverlongAttemptNeverBinds",
+        "showRequiresReadyMatchingUnexpiredAttemptAndCannotRepeat",
+        "oneInitBindingIsReusedButCanNeverChangeIdentityOrExtendItsExpiry",
+        "destroyingOwnerRejectsLateCallbacksAndKeepsTheNativeIdentityPinned",
+        "onlyExactAuditDebugPageIsAllowed",
+        "sharedRuntimeRetainsBindingAcrossNewAccessors"
+      ]
+    },
+    {
+      "name": "com.getcapacitor.myapp.ExampleUnitTest",
+      "tests": "1",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "cases": [
+        "addition_isCorrect"
+      ]
+    }
+  ],
+  "totalTests": 12,
+  "newStateTests": 9,
+  "failures": 0,
+  "skips": 0,
+  "apkShaVerified": true,
+  "nativeLoadShowCompileTimeFalse": true,
+  "onlyFlowBridgeRegistered": true,
+  "phoneUsed": false,
+  "installed": false
+}

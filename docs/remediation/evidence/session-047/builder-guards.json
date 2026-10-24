@@ -1,0 +1,16 @@
+{
+  "results": [
+    {
+      "guard": "mutually-exclusive",
+      "exitCode": 1,
+      "message": "Error: Choose either --rewarded-suite or --rewarded-flow; never share SDK initialization identities"
+    },
+    {
+      "guard": "preserve-existing",
+      "exitCode": 1,
+      "message": "Error: Evidence exists: choose a fresh --output path"
+    }
+  ],
+  "historicalS041MetadataUnchanged": true,
+  "invalidOutputCreated": false
+}

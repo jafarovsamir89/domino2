@@ -1,0 +1,12 @@
+✔ native audit adapter construction never initializes SDK or starts an ad (11.259417ms)
+✔ explicit adult/test confirmations and verified native show gate are required before binding (0.532708ms)
+✔ adapter forwards only the fixed bridge contract, never client amounts or identity overrides (1.000375ms)
+✔ a false or missing native capability cannot be overridden from JavaScript (0.227125ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 203.22575
