@@ -1,0 +1,34 @@
+✔ probe exposes no filesystem/API/wallet or arbitrary method; forged/unknown nonce gets no ACK (28.940375ms)
+✔ probe ACKs only after durable receipt; duplicates and restart write one row, no grant (31.75625ms)
+✔ probe never ACKs failed persistence and permits a successful retry (6.85575ms)
+✔ probe has an expiry and bounded request rate (4.132708ms)
+✔ probe request/rejection diagnostics contain shapes only, never signing key, nonce or signature (5.239417ms)
+✖ probe ACK has exact byte framing and forbids intermediary compression/transformation (8.670416ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 5
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 217.485041
+
+✖ failing tests:
+
+test at docs/remediation/scripts/levelplay-probe.test.mjs:52:1
+✖ probe ACK has exact byte framing and forbids intermediary compression/transformation (8.670416ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+
+  0 !== 36
+
+      at TestContext.<anonymous> (file:///Users/macbookair/Documents/domino/docs/remediation/scripts/levelplay-probe.test.mjs:55:9)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 0,
+    expected: 36,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

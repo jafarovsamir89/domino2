@@ -1,0 +1,97 @@
+{
+  "scope": "real dashboard Test callback, not native reward grant",
+  "testClicksUtc": {
+    "initial": "2026-10-24T22:37:56.923000+00:00",
+    "xmlAfterFraming": "2026-10-24T22:40:54.850000+00:00",
+    "plainAfterFraming": "2026-10-24T22:44:07.268000+00:00"
+  },
+  "requests": [
+    {
+      "method": "GET",
+      "callbackPath": true,
+      "hasQuery": true,
+      "parameterNames": [
+        "applicationUserId",
+        "rewards",
+        "eventId",
+        "publisherSubId",
+        "timestamp",
+        "signature",
+        "country"
+      ],
+      "valueLengths": [
+        64,
+        1,
+        23,
+        1,
+        12,
+        32,
+        0
+      ],
+      "originKind": "none",
+      "browserUserAgent": false,
+      "receivedAt": "2026-10-24T22:38:01.869Z",
+      "status": 200,
+      "responseMs": 8.460125
+    },
+    {
+      "method": "GET",
+      "callbackPath": true,
+      "hasQuery": true,
+      "parameterNames": [
+        "applicationUserId",
+        "rewards",
+        "eventId",
+        "publisherSubId",
+        "timestamp",
+        "signature",
+        "country"
+      ],
+      "valueLengths": [
+        64,
+        1,
+        23,
+        1,
+        12,
+        32,
+        0
+      ],
+      "originKind": "none",
+      "browserUserAgent": false,
+      "receivedAt": "2026-10-24T22:41:01.701Z",
+      "status": 200,
+      "responseMs": 6.035792
+    },
+    {
+      "method": "GET",
+      "callbackPath": true,
+      "hasQuery": true,
+      "parameterNames": [
+        "applicationUserId",
+        "rewards",
+        "eventId",
+        "publisherSubId",
+        "timestamp",
+        "signature",
+        "country"
+      ],
+      "valueLengths": [
+        64,
+        1,
+        23,
+        1,
+        12,
+        32,
+        0
+      ],
+      "originKind": "none",
+      "browserUserAgent": false,
+      "receivedAt": "2026-10-24T22:44:19.204Z",
+      "status": 200,
+      "responseMs": 9.188917
+    }
+  ],
+  "browserConsoleRelevantErrors": 0,
+  "consoleAccepted": false,
+  "configurationSaved": false
+}

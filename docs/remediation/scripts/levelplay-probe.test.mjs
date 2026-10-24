@@ -49,3 +49,19 @@ test('probe request/rejection diagnostics contain shapes only, never signing key
  assert.equal(rows[0].timestamp12Digits,true);assert.equal(rows[0].oneEntitlement,true);
  const text=JSON.stringify(rows);assert.equal(text.includes(privateKey),false);assert.equal(text.includes(attemptId),false);assert.equal(text.includes(new URLSearchParams(raw).get('signature')),false);
 });
+test('probe ACK has exact byte framing and forbids intermediary compression/transformation',async t=>{
+ const f=await fixture(t),r=await fetch(f.url+'/callback/levelplay?'+signed()),body=await r.text();
+ assert.equal(r.status,200);
+ assert.equal(Number(r.headers.get('content-length')),Buffer.byteLength(body));
+ assert.equal(r.headers.get('transfer-encoding'),null);
+ assert.match(r.headers.get('cache-control'),/\bno-transform\b/);
+ assert.equal(r.headers.get('content-encoding'),null);
+ assert.equal(body,'<status>0123456789abcdef:OK</status>');
+});
+test('documented plain ACK alternative has exact event marker and byte framing',async t=>{
+ const f=await fixture(t,{ackFormat:'plain'}),r=await fetch(f.url+'/callback/levelplay?'+signed()),body=await r.text();
+ assert.equal(r.status,200);assert.equal(body,'0123456789abcdef:OK');
+ assert.equal(Number(r.headers.get('content-length')),Buffer.byteLength(body));
+ assert.equal(r.headers.get('content-type'),'text/plain; charset=utf-8');
+ assert.match(r.headers.get('cache-control'),/\bno-transform\b/);
+});

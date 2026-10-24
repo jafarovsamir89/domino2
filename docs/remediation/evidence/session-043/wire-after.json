@@ -1,0 +1,13 @@
+{
+  "scope": "synthetic through authorized tunnel, not provider",
+  "status": 200,
+  "headers": {
+    "cache-control": "no-store, no-transform",
+    "content-type": "application/xml; charset=utf-8",
+    "content-length": "43",
+    "transfer-encoding": null,
+    "connection": "keep-alive",
+    "content-encoding": null
+  },
+  "bodyMatches": true
+}

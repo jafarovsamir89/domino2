@@ -7,8 +7,9 @@ import {fileURLToPath} from 'node:url';
 import {createHash,randomBytes} from 'node:crypto';
 import {verifyLevelPlaySignature} from '../../../apps/api/dist/src/modules/rewarded/levelplay-ssv.js';
 
-export function createLevelPlayProbe({privateKey,attemptId,expiresAt,stateDir,now=Date.now,limit=240,onRejected=()=>{},onRequest=()=>{}}) {
+export function createLevelPlayProbe({privateKey,attemptId,expiresAt,stateDir,now=Date.now,limit=240,ackFormat='xml',onRejected=()=>{},onRequest=()=>{}}) {
  if(!/^[a-f0-9]{64}$/.test(attemptId)||!privateKey||privateKey.length<32||!Number.isSafeInteger(expiresAt)||expiresAt<=now()||expiresAt>now()+86400000)throw Error('Invalid probe configuration');
+ if(!['xml','plain'].includes(ackFormat))throw Error('Invalid ACK format');
  fs.mkdirSync(stateDir,{recursive:true,mode:0o700});
  const file=path.join(stateDir,'receipts.ndjson'),nonceHash=createHash('sha256').update(attemptId).digest('hex'),receipts=new Map();
  if(fs.existsSync(file)){
@@ -21,11 +22,13 @@ export function createLevelPlayProbe({privateKey,attemptId,expiresAt,stateDir,no
  }
  let windowStart=now(),requests=0;
  return http.createServer({maxHeaderSize:8192,requestTimeout:5000,headersTimeout:5000},(req,res)=>{
+  const started=process.hrtime.bigint();
   const rawParts=new URLSearchParams((req.url||'').split('?').slice(1).join('?'));
-  const requestShape={method:req.method,callbackPath:(req.url||'').split('?')[0]==='/callback/levelplay',hasQuery:(req.url||'').includes('?'),parameterNames:[...rawParts.keys()].map(n=>/^[a-zA-Z_]{1,40}$/.test(n)?n:'unrecognized'),valueLengths:[...rawParts.values()].map(v=>v.length)};
-  res.once('finish',()=>{try{onRequest({...requestShape,status:res.statusCode});}catch{}});
-  res.setHeader('Cache-Control','no-store');res.setHeader('Content-Type','text/plain; charset=utf-8');
-  const send=(status,body)=>{res.writeHead(status);res.end(body);};
+  const requestShape={method:req.method,callbackPath:(req.url||'').split('?')[0]==='/callback/levelplay',hasQuery:(req.url||'').includes('?'),parameterNames:[...rawParts.keys()].map(n=>/^[a-zA-Z_]{1,40}$/.test(n)?n:'unrecognized'),valueLengths:[...rawParts.values()].map(v=>v.length),originKind:req.headers.origin==='https://platform.ironsrc.com'?'levelplay-ui':req.headers.origin?'other':'none',browserUserAgent:/Mozilla\//.test(req.headers['user-agent']||''),receivedAt:new Date(now()).toISOString()};
+  res.once('finish',()=>{try{onRequest({...requestShape,status:res.statusCode,responseMs:Number(process.hrtime.bigint()-started)/1e6});}catch{}});
+  // Keep the tiny provider ACK byte-for-byte intact through an HTTPS proxy.
+  res.setHeader('Cache-Control','no-store, no-transform');res.setHeader('Content-Type','text/plain; charset=utf-8');
+  const send=(status,body)=>{res.setHeader('Content-Length',Buffer.byteLength(body));res.writeHead(status);res.end(body);};
   if(now()-windowStart>=60000){windowStart=now();requests=0;}
   if(++requests>limit){res.setHeader('Retry-After','60');send(429,'Rate limited');return;}
   if(req.method!=='GET'){send(405,'Method not allowed');return;}
@@ -54,8 +57,8 @@ export function createLevelPlayProbe({privateKey,attemptId,expiresAt,stateDir,no
    finally{if(fd!==undefined)fs.closeSync(fd);}
    receipts.set(message.transactionId,nonceHash);
   }
-  res.setHeader('Content-Type','application/xml; charset=utf-8');
-  send(200,'<status>'+message.transactionId+':OK</status>');
+  if(ackFormat==='xml')res.setHeader('Content-Type','application/xml; charset=utf-8');
+  send(200,ackFormat==='xml'?'<status>'+message.transactionId+':OK</status>':message.transactionId+':OK');
  });
 }
 
@@ -72,7 +75,7 @@ if(process.argv[1]&&path.resolve(process.argv[1])===fileURLToPath(import.meta.ur
   const onRejected=shape=>{if(!fs.existsSync(diagnosticFile)||fs.statSync(diagnosticFile).size<1024*1024)fs.appendFileSync(diagnosticFile,JSON.stringify(shape)+'\n',{mode:0o600});};
   const requestFile=path.join(dir,'request-shapes.ndjson');
   const onRequest=shape=>{if(!fs.existsSync(requestFile)||fs.statSync(requestFile).size<1024*1024)fs.appendFileSync(requestFile,JSON.stringify(shape)+'\n',{mode:0o600});};
-  const server=createLevelPlayProbe({...config,stateDir:dir,onRejected,onRequest});
+  const server=createLevelPlayProbe({...config,stateDir:dir,onRejected,onRequest,ackFormat:process.argv.includes('--plain-ack')?'plain':'xml'});
   server.listen(4188,'127.0.0.1',()=>console.log('Signature-only probe on127.0.0.1:4188; no public tunnel, DB or wallet.'));
   for(const sig of ['SIGINT','SIGTERM'])process.once(sig,()=>server.close());
  }
