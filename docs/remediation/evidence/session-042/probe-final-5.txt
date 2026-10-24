@@ -1,0 +1,13 @@
+✔ probe exposes no filesystem/API/wallet or arbitrary method; forged/unknown nonce gets no ACK (27.466166ms)
+✔ probe ACKs only after durable receipt; duplicates and restart write one row, no grant (30.835042ms)
+✔ probe never ACKs failed persistence and permits a successful retry (9.132208ms)
+✔ probe has an expiry and bounded request rate (6.117625ms)
+✔ probe request/rejection diagnostics contain shapes only, never signing key, nonce or signature (1.636625ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 207.219292

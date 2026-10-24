@@ -1,0 +1,7 @@
+{
+  "scope": "self-signed synthetic request through authorized Cloudflare Quick Tunnel, NOT a provider callback",
+  "httpsHealth200": true,
+  "signatureAck": true,
+  "filesystem404": true,
+  "walletEnabled": false
+}

@@ -1,0 +1,23 @@
+✔ LevelPlay uses the signed fixed-length init UserID and one entitlement, not custom fields or coins (2.244625ms)
+✔ LevelPlay rejects modification of every signed field and wrong/missing private key (0.621208ms)
+✔ LevelPlay rejects duplicate, unknown and malformed parameters, including unsigned dynamic identity (0.251417ms)
+✔ LevelPlay denies ambiguous IDs, non-one rewards and invalid calendar dates even with a valid synthetic signature (0.436917ms)
+✔ LevelPlay callback time requires explicit offset; minute precision and retry window are separate from grant expiry (0.415041ms)
+✔ diagnostic signature verification does not invent a timezone or claim freshness (0.087375ms)
+✔ observed dashboard unsigned country/publisherSubId never influence verified identity, coins or scope (1.066875ms)
+✔ LevelPlay cannot issue an attempt with incomplete server configuration before any DB access (0.38675ms)
+✔ a historical x2 daily must not be used as the base of another rewarded upgrade (15.76325ms)
+✔ a daily without its original normal ledger proof must not create an ad attempt (0.742083ms)
+✔ a normal initial daily still creates an attempt (0.451875ms)
+✔ rewarded day is an ISO Baku calendar day at midnight and year/leap boundaries (0.441ms)
+✔ valid signed callback binds an opaque attempt; provider amount is not a coin entitlement (2.351875ms)
+✔ tampering, duplicate parameters, unknown key, wrong unit and stale/future event fail (2.076083ms)
+✔ off, no opt-in, other player/day, expired/cancelled/replayed and cap cannot grant (0.599ms)
+ℹ tests 15
+ℹ suites 0
+ℹ pass 15
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 112.836917

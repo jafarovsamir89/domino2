@@ -1,0 +1,160 @@
+{
+  "source": "LevelPlay dashboard Test callback through owner-authorized temporary Cloudflare URL; no ad-completion reward",
+  "verifiedMessages": [
+    {
+      "eventIdSha256": "e31685a16efe36a73fc80fde735f75a08a00096713cfaee0f762770b22779325",
+      "eventIdLength": 23,
+      "callbackTime": "202610242222",
+      "receivedAt": "2026-10-24T22:22:11.585Z",
+      "differenceIfTimestampUtcMs": 11585,
+      "walletEnabled": false
+    },
+    {
+      "eventIdSha256": "f2a00d45a0b7c97a4a37dbc7765440e119d619edd8a36d875bd0e1db10bbb453",
+      "eventIdLength": 23,
+      "callbackTime": "202610242223",
+      "receivedAt": "2026-10-24T22:23:11.913Z",
+      "differenceIfTimestampUtcMs": 11913,
+      "walletEnabled": false
+    },
+    {
+      "eventIdSha256": "b3d411e3d040b4681fd996625ce942f63b7a22a4f9d123ff2bd4eab5a5792bba",
+      "eventIdLength": 23,
+      "callbackTime": "202610242225",
+      "receivedAt": "2026-10-24T22:25:12.136Z",
+      "differenceIfTimestampUtcMs": 12136,
+      "walletEnabled": false
+    }
+  ],
+  "requestShapes": [
+    {
+      "method": "GET",
+      "callbackPath": true,
+      "hasQuery": true,
+      "parameterNames": [
+        "applicationUserId",
+        "rewards",
+        "eventId",
+        "publisherSubId",
+        "timestamp",
+        "signature",
+        "country"
+      ],
+      "valueLengths": [
+        64,
+        1,
+        23,
+        1,
+        12,
+        32,
+        0
+      ],
+      "status": 403
+    },
+    {
+      "method": "GET",
+      "callbackPath": true,
+      "hasQuery": true,
+      "parameterNames": [
+        "applicationUserId",
+        "rewards",
+        "eventId",
+        "publisherSubId",
+        "timestamp",
+        "signature",
+        "country"
+      ],
+      "valueLengths": [
+        64,
+        1,
+        23,
+        1,
+        12,
+        32,
+        0
+      ],
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "callbackPath": false,
+      "hasQuery": false,
+      "parameterNames": [],
+      "valueLengths": [],
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "callbackPath": false,
+      "hasQuery": false,
+      "parameterNames": [],
+      "valueLengths": [],
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "callbackPath": true,
+      "hasQuery": true,
+      "parameterNames": [
+        "eventId",
+        "applicationUserId",
+        "rewards",
+        "publisherSubId",
+        "timestamp",
+        "signature",
+        "country"
+      ],
+      "valueLengths": [
+        23,
+        64,
+        1,
+        1,
+        12,
+        32,
+        0
+      ],
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "callbackPath": false,
+      "hasQuery": false,
+      "parameterNames": [],
+      "valueLengths": [],
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "callbackPath": true,
+      "hasQuery": true,
+      "parameterNames": [
+        "eventId",
+        "applicationUserId",
+        "rewards",
+        "publisherSubId",
+        "timestamp",
+        "signature",
+        "country"
+      ],
+      "valueLengths": [
+        23,
+        64,
+        1,
+        1,
+        12,
+        32,
+        0
+      ],
+      "status": 200
+    }
+  ],
+  "consoleResult": "Your callback configuration is not valid, make sure all parameters are set correctly",
+  "ackFormatsTried": [
+    "EVENT_ID:OK",
+    "<status>EVENT_ID:OK</status>"
+  ],
+  "consoleStillRejected": true,
+  "formDiscardedWithoutSave": true,
+  "timeZoneEvidence": "Dashboard test timestamps align with UTC within one minute; real ad callbacks/retries not yet observed",
+  "actualNativeRewardGrant": false
+}

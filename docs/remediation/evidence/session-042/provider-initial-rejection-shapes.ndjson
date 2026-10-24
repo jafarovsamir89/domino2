@@ -1,0 +1,2 @@
+{"reason":"invalid_parameters","parameterNames":["applicationUserId","rewards","eventId","publisherSubId","timestamp","signature","country"],"valueLengths":[64,1,23,1,12,32,0],"knownUserMatches":true,"timestamp12Digits":true,"eventIdAlphanumeric":true,"oneEntitlement":true}
+{"reason":"invalid_parameters","parameterNames":["applicationUserId","rewards","eventId","publisherSubId","timestamp","signature","country"],"valueLengths":[64,1,23,1,12,32,0],"knownUserMatches":true,"timestamp12Digits":true,"eventIdAlphanumeric":true,"oneEntitlement":true}

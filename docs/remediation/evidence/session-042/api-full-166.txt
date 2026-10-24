@@ -1,0 +1,212 @@
+
+> @domino2/api@0.1.0 pretest
+> node -e "require('fs').rmSync('dist',{recursive:true,force:true})"
+
+
+> @domino2/api@0.1.0 test
+> npm run build && node scripts/test-all.cjs
+
+
+> @domino2/api@0.1.0 prebuild
+> cd ../.. && npm run generate -w @domino2/db
+
+
+> @domino2/db@0.1.0 generate
+> prisma generate
+
+Prisma schema loaded from prisma/schema.prisma
+
+✔ Generated Prisma Client (v6.19.3) to ./../../node_modules/@prisma/client in 172ms
+
+Start by importing your Prisma Client (See: https://pris.ly/d/importing-client)
+
+Tip: Want to turn off tips and other hints? https://pris.ly/tip-4-nohints
+
+
+> @domino2/api@0.1.0 build
+> tsc -p tsconfig.json
+
+✔ AdminService.listSystemAuditLogs filters by action and entity type (423.239709ms)
+✔ AdminService.listFeedback filters by status and query (0.481542ms)
+✔ AdminService.resolveFeedback updates feedback and records an audit log (4.506542ms)
+✔ production rejects weak auth secrets (80.03075ms)
+✔ development fallback secrets keep auth and proof signing working (1.356708ms)
+✔ active game session checks require a fresh server proof and recheck logout, deletion and bans beyond admission-token expiry (17.30975ms)
+✔ AuthService.getCurrentProfile filters recent matches by gameMode and exposes gameMode on each item (5.1075ms)
+✔ AuthService.getCurrentProfile keeps default history behavior when no mode is passed (3.326583ms)
+✔ AuthService.getCurrentProfile accepts platform game bearer tokens when cookies are unavailable (0.585917ms)
+✔ AuthService.validateGameToken accepts only a live matching session, player, and unbanned account (11.972458ms)
+✔ AuthService.updateCurrentProfileAvatar rejects non-image https URLs (6.513875ms)
+✔ AuthService.updateCurrentProfileAvatar rejects oversized image URLs (0.39575ms)
+✔ API release exposes the deploy SHA without accepting arbitrary environment strings (1.509ms)
+✔ maskProfanity handles inflections, suffixes, separators and leetspeak (1.362166ms)
+✔ maskProfanity leaves clean text alone and avoids false positives (0.254666ms)
+✔ public economy reads preserve customized defaults and perform no configuration writes (439.016375ms)
+✔ startup preserves owner settings and existing inactive prices across restarts (0.924208ms)
+✔ fresh startup creates missing defaults once and restores only missing prices (0.731708ms)
+✔ startup seeds required daily login progress without an extra reward and preserves owner changes (0.532917ms)
+✔ bootstrap prices every paid table skin at 1500 coins (0.289208ms)
+✔ getPublicConfig hides the free table from the public stake list (0.188375ms)
+✔ getPublicConfig exposes the new coin shop reward and packs (0.192334ms)
+✔ Daily Bonus - configured dailyRewards control the schedule and extend with streak bonus (26.816833ms)
+✔ Economy config update stores dailyRewards arrays (0.871458ms)
+✔ Daily Bonus - Unauthenticated status returns 401 (7.706916ms)
+✔ Daily Bonus - Authenticated status returns claimable true if no claim today (2.631333ms)
+✔ Daily Bonus - Claim credits wallet and advances quest (5.9695ms)
+✔ Daily Bonus - unverified x2 rejects forged client completion without any grant (0.552958ms)
+✔ Daily Bonus - Client amount is ignored (16.036791ms)
+✔ Daily Bonus - Second claim same day returns claimed false (1.745458ms)
+✔ Daily Bonus - normal claim cannot be upgraded without verified entitlement (7.615834ms)
+✔ Daily Bonus - rejected x2 does not consume the normal daily reward (3.735958ms)
+✔ Daily Bonus - Previous day claim increases streak (6.380875ms)
+✔ Daily Bonus - After next Baku midnight claim is allowed (1.735542ms)
+✔ Daily Bonus - Missing previous day resets streak to 1 (6.978167ms)
+✔ Daily Bonus - Streak capped at dailyMaxStreak (1.747625ms)
+✔ Daily Bonus - Baku helpers resolve date keys and next midnight (0.576625ms)
+✔ Daily Bonus - repeated unverified x2 requests never change the granted daily reward (16.821667ms)
+✔ Daily Bonus - ledger keys distinguish normal grants by player/date and preserve retries (11.6345ms)
+✔ reconcileStaleReservedStakes refunds only stale rows and keeps fresh reservations untouched (0.666209ms)
+✔ reconcileStaleReservedStakes treats an existing refund idempotency key as already closed (0.169792ms)
+✔ late settlement and refund from match A leave match B reservations untouched (424.226083ms)
+✔ paid match requests without match identity cannot change wallets (1.150916ms)
+✔ online stake reserve and settle keep the bank and payout balanced (2.624667ms)
+✔ online stake reserve normalizes low balance errors to insufficient_coins (3.679958ms)
+✔ online stake reserve rejects an invalid proof (0.2915ms)
+✔ online stake reserve is idempotent for the same room and match (5.492834ms)
+✔ online stake settle is idempotent for the same match (3.367417ms)
+✔ forfeit-settle replay does not pay the bank twice (0.632ms)
+✔ online stake reserve deduplicates repeated participants (0.199958ms)
+✔ online team stake settle splits the losing bank across winners (1.011917ms)
+✔ solo stake reserve and settle are disabled for coin staking (2.12725ms)
+✔ per-player settlement receipt agrees with wallet plus reserved delta: win (0.702166ms)
+✔ per-player settlement receipt agrees with wallet plus reserved delta: loss (0.335084ms)
+✔ per-player settlement receipt agrees with wallet plus reserved delta: draw (0.335333ms)
+✔ per-player settlement receipt agrees with wallet plus reserved delta: refund (0.303625ms)
+✔ per-player settlement receipt agrees with wallet plus reserved delta: team (0.387792ms)
+✔ per-player settlement receipt agrees with wallet plus reserved delta: zero-profit-winner (0.260083ms)
+✔ reconciliation rejects unsigned server proof before DB access (2.467459ms)
+✔ reconciliation rejects wrong-scope server proof before DB access (0.698875ms)
+✔ reconciliation rejects altered server proof before DB access (0.2795ms)
+✔ server reconciliation settles after token expiry and duplicate cannot change the outcome (1.268583ms)
+✔ reconciliation never acknowledges an unknown/unreserved result (stake_50) (0.26425ms)
+✔ reconciliation never acknowledges an unknown/unreserved result (nonexistent-stake) (0.090292ms)
+✔ HealthController reports database and redis status (0.8625ms)
+2026-10-24T22:07:43.164Z WARN [Better Auth]: [better-auth] Warning: your BETTER_AUTH_SECRET should be at least 32 characters long for adequate security. Generate one with `npx auth secret` or `openssl rand -base64 32`.
+2026-10-24T22:07:43.167Z WARN [Better Auth]: [better-auth] Warning: your BETTER_AUTH_SECRET appears low-entropy. Use a randomly generated secret for production.
+✔ LeaderboardService uses mode stats ordering and defaults to telefon (271.846292ms)
+✔ LeaderboardService weekly leaderboard filters by match gameMode (0.807709ms)
+✔ LeaderboardService friends leaderboard uses mode stats and fills missing rows with the starting rating (0.35675ms)
+✔ LevelPlay uses the signed fixed-length init UserID and one entitlement, not custom fields or coins (31.265791ms)
+✔ LevelPlay rejects modification of every signed field and wrong/missing private key (0.686583ms)
+✔ LevelPlay rejects duplicate, unknown and malformed parameters, including unsigned dynamic identity (0.256542ms)
+✔ LevelPlay denies ambiguous IDs, non-one rewards and invalid calendar dates even with a valid synthetic signature (0.435542ms)
+✔ LevelPlay callback time requires explicit offset; minute precision and retry window are separate from grant expiry (1.6555ms)
+✔ diagnostic signature verification does not invent a timezone or claim freshness (0.336667ms)
+✔ LevelPlay cannot issue an attempt with incomplete server configuration before any DB access (0.994959ms)
+2026-10-24T22:07:43.392Z WARN [Better Auth]: [better-auth] Warning: your BETTER_AUTH_SECRET should be at least 32 characters long for adequate security. Generate one with `npx auth secret` or `openssl rand -base64 32`.
+2026-10-24T22:07:43.393Z WARN [Better Auth]: [better-auth] Warning: your BETTER_AUTH_SECRET appears low-entropy. Use a randomly generated secret for production.
+✔ 1v1 human vs human updates ELO, wins, losses, and matchesPlayed (71.826125ms)
+✔ human vs bot stays unranked and does not create player stats (1.042333ms)
+✔ ranked wins against low-history opponents do not award positive Elo (1.096209ms)
+✔ classic101 matches update mode stats only and keep legacy telefon stats untouched (1.080292ms)
+✔ same pair repeated more than three times per day does not change Elo (2.676084ms)
+✔ team mode ranks humans while ignoring bots (1.112083ms)
+✔ duplicate sourceMatchId does not update ELO twice (1.324ms)
+✔ forfeit 1v1 applies an extra penalty to the leaving player (0.476959ms)
+✔ forfeit team applies the penalty only to the leaving player (0.456584ms)
+✔ calculatePlayerRating returns the stored elo baseline for empty stats (0.8515ms)
+✔ normalizeEloRating clamps the rating range (0.071625ms)
+✔ calculateEloExpectedScore is symmetric around equal ratings (0.104875ms)
+✔ calculateEloDelta uses provisional k factor for new players (0.100166ms)
+✔ calculateEloDelta switches to standard k after enough matches (0.062833ms)
+✔ calculateEloUpdate applies penalties and clamps results (0.070334ms)
+✔ getPlayerRatingTitleCode still maps tiers for compatibility (0.07175ms)
+✔ PlayersService.getById redacts wallet details from public output (1.039916ms)
+✔ PlayersService.getById fills missing mode ratings with the starting value (0.138208ms)
+✔ RealtimeController heartbeat rejects requests without a valid auth token (2.707292ms)
+✔ RealtimeController heartbeat accepts a valid auth token (0.970833ms)
+✔ public session status does not expose private identifiers (1.345333ms)
+✔ platform public summary contains no private room or session identifiers (0.86575ms)
+✔ normalizePresenceEntry keeps platform provider and trims room data (2.400916ms)
+✔ isStalePresenceEntry flags old or invalid timestamps (0.218ms)
+✔ a historical x2 daily must not be used as the base of another rewarded upgrade (39.516042ms)
+✔ a daily without its original normal ledger proof must not create an ad attempt (1.203917ms)
+✔ a normal initial daily still creates an attempt (0.596708ms)
+✔ rewarded day is an ISO Baku calendar day at midnight and year/leap boundaries (0.484875ms)
+✔ valid signed callback binds an opaque attempt; provider amount is not a coin entitlement (5.999166ms)
+✔ tampering, duplicate parameters, unknown key, wrong unit and stale/future event fail (1.389ms)
+✔ off, no opt-in, other player/day, expired/cancelled/replayed and cap cannot grant (5.51525ms)
+2026-10-24T22:07:44.262Z WARN [Better Auth]: [better-auth] Warning: your BETTER_AUTH_SECRET should be at least 32 characters long for adequate security. Generate one with `npx auth secret` or `openssl rand -base64 32`.
+2026-10-24T22:07:44.262Z WARN [Better Auth]: [better-auth] Warning: your BETTER_AUTH_SECRET appears low-entropy. Use a randomly generated secret for production.
+✔ social realtime gateway accepts valid token, marks presence online, and broadcasts presence snapshots (16.43325ms)
+✔ social realtime gateway rejects invalid token (0.574042ms)
+✔ dm:send uses live socket delivery and invite:create pushes invite updates (0.847125ms)
+✔ play-invite:create and play-invite:accept emit play invite socket events (4.0505ms)
+✔ play-invite:cancel emits play invite socket events (5.539167ms)
+✔ play-invite room-ready and joined live events map to socket events (0.614ms)
+✔ presence:update toggles in_game and offline states (7.128542ms)
+✔ two authenticated service clients: create, duplicate accept and expiry preserve a single invite (7.651458ms)
+✔ acceptFriend only allows the addressee to accept a request (7.547ms)
+✔ submitFeedback stores player-linked feedback with metadata (0.2525ms)
+[SocialService] Failed to send FCM push notification: Cannot read properties of undefined (reading 'findMany')
+[SocialService] Failed to send FCM push notification: Cannot read properties of undefined (reading 'findMany')
+[SocialService] Failed to send FCM push notification: Cannot read properties of undefined (reading 'findMany')
+[SocialService] Failed to send FCM push notification: Cannot read properties of undefined (reading 'findMany')
+✔ subscribeToSocialEvents emits heartbeat and clears the interval on cleanup (5.85825ms)
+✔ getPlayerProfile resolves profiles by userId when playerId is not provided (1.171ms)
+✔ searchPlayers returns friendship status and friendship id (0.614833ms)
+✔ blockPlayer creates a blocked connection without prior friendship (0.257ms)
+✔ sendDirectMessageForPlayer rejects blocked pairs (0.352ms)
+✔ reportPlayer stores moderation reports (0.350958ms)
+✔ cancelFriendRequest allows the requester to cancel a pending request (0.284375ms)
+✔ inviteFriendToRoom refreshes an existing pending invite after a unique constraint race (0.729542ms)
+✔ inviteFriendToRoom updates an accepted invite when the room is linked later (0.284708ms)
+✔ inviteFriendToRoom defaults invite expiration to about 5 minutes (0.21925ms)
+✔ acceptRoomInvitation returns room_not_available for expired invites and marks them expired (0.247667ms)
+✔ acceptRoomInvitation returns join payload when roomCode is available (0.209458ms)
+✔ acceptRoomInvitation blocks invitees without enough coins (0.159375ms)
+✔ getRoomInvitations returns incoming and sent invites separately (0.220625ms)
+✔ cancelRoomInvitation allows the inviter to cancel pending sent invites (0.173375ms)
+✔ cancelRoomInvitation rejects an invitee trying to cancel someone else's invite (0.141792ms)
+✔ createPlayInvite creates a play invite without roomId (0.531708ms)
+✔ createPlayInvite preserves roomContext roomId and roomCode (0.207791ms)
+✔ getPlayInvites returns incoming, outgoing and waiting invites (0.265ms)
+✔ attachPlayInviteRoom sets roomId and emits room-ready to invitee (0.405333ms)
+✔ attachPlayInviteRoom ignores pending declined and cancelled invites (0.992042ms)
+✔ acceptPlayInvite changes status to accepted (0.26075ms)
+✔ acceptPlayInvite preserves room context for room-bound invites (0.146625ms)
+✔ acceptPlayInvite blocks invitees without enough coins for room-bound play invites (0.139833ms)
+✔ declinePlayInvite changes status to declined (0.159333ms)
+✔ cancelPlayInvite allows inviter to cancel a pending play invite (0.192ms)
+✔ cancelPlayInvite allows invitee to leave an accepted waiting play invite (0.094917ms)
+✔ cancelPlayInvite allows inviter to cancel an accepted waiting play invite (0.10475ms)
+✔ sendDirectMessage rejects messaging yourself (0.146375ms)
+✔ sendDirectMessage rejects empty and overlong text (0.152208ms)
+✔ sendDirectMessage creates a message between two players (0.893541ms)
+✔ sendDirectMessage clears hidden thread markers and emits full SSE payload (0.381417ms)
+✔ sendDirectMessage restores hidden/deleted threads after a new incoming message (0.280292ms)
+✔ getDirectMessages returns the newest page of messages first (0.291916ms)
+✔ getMessageThreads returns only the current player's conversations with unread counts (0.304208ms)
+✔ getMessageThreads hides threads that the player archived (0.214791ms)
+✔ getInbox returns inbox items and unread count (0.279666ms)
+✔ markDirectMessageThreadRead marks the matching direct message rows as read (0.160792ms)
+✔ markInboxRead claimInboxMessage and deleteInboxMessage update inbox state (0.326084ms)
+✔ deleteMessageThread hides a conversation and clears inbox rows for that thread (0.176292ms)
+✔ getSocialSummary counts inbox chats invites and friend requests (0.206875ms)
+✔ gift seed catalog prices every gift at 1000 coins (0.100833ms)
+✔ sendGift creates an inbox notification for the recipient (0.624667ms)
+✔ sendDirectMessage emits live events for socket subscribers (0.314041ms)
+✔ sendDirectMessageForPlayer masks profanity and rate limits floods (0.711209ms)
+✔ ValidationPipe rejects unknown properties on DTO payloads (3.088958ms)
+✔ ValidationPipe accepts a valid heartbeat DTO payload (2.2575ms)
+✔ ValidationPipe accepts signed economy reserve payload fields (1.96125ms)
+✔ ValidationPipe accepts signed economy settle payload fields (1.852333ms)
+✔ ValidationPipe accepts signed platform match payload fields (0.468167ms)
+ℹ tests 166
+ℹ suites 0
+ℹ pass 166
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2083.938209

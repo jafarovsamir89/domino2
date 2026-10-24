@@ -1,0 +1,23 @@
+{
+  "fullApi": {
+    "passed": 167,
+    "failed": 0,
+    "skipped": 0
+  },
+  "rewardedContracts": 15,
+  "probeHttp": 5,
+  "localLevelPlayCallbacks": 100,
+  "localLevelPlayGrants": 1,
+  "localLevelPlayDuplicates": 99,
+  "ledgerResidual": 0,
+  "realProviderDashboardSignatureMessages": 3,
+  "consoleValidationAccepted": false,
+  "realNativeAdToWalletAccepted": false,
+  "taskClosed": false,
+  "counter": "27/42",
+  "secretScan": "no live probe key/nonce in changed tracked or candidate files",
+  "historicalManifestFiles": 347,
+  "historicalManifestProblems": 0,
+  "schemaScope": "fresh synthetic DB draft only; no production migration",
+  "push": false
+}

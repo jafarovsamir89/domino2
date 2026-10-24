@@ -1,0 +1,11 @@
+{
+  "probe4188Listening": false,
+  "externalHealthAfterStop": 530,
+  "publicTunnelStopped": true,
+  "providerFormDiscarded": true,
+  "providerConfigurationSaved": false,
+  "productionDeploy": false,
+  "productionWalletEdits": false,
+  "publishedApkChanged": false,
+  "syntheticPgStopped": true
+}

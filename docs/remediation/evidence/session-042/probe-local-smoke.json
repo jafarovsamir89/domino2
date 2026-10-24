@@ -1,0 +1,7 @@
+{
+  "scope": "synthetic local HTTP precheck; not provider",
+  "signatureAck": true,
+  "filesystemRoute404": true,
+  "walletEnabled": false,
+  "configMode": "600"
+}
