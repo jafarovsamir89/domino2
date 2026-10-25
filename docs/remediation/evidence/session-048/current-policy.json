@@ -1,0 +1,72 @@
+{
+  "scope": "Current pure policy functions only; synthetic signatures, no DB/session/SDK/provider test and no new policy implementation",
+  "cases": [
+    {
+      "id": "C01",
+      "label": "first callback at nine minutes",
+      "verifierAccepted": true,
+      "currentOutcome": "ready"
+    },
+    {
+      "id": "C02",
+      "label": "first callback exactly at ten-minute deadline",
+      "verifierAccepted": true,
+      "currentOutcome": "expired_attempt"
+    },
+    {
+      "id": "C03",
+      "label": "first callback at twelve minutes with fresh valid signature",
+      "verifierAccepted": true,
+      "currentOutcome": "expired_attempt"
+    },
+    {
+      "id": "C04",
+      "label": "callback crosses Baku midnight while attempt still within ten minutes",
+      "verifierAccepted": true,
+      "currentOutcome": "wrong_owner_or_day"
+    },
+    {
+      "id": "C05",
+      "label": "first valid callback after explicit cancel",
+      "verifierAccepted": true,
+      "currentOutcome": "attempt_unavailable"
+    },
+    {
+      "id": "C06",
+      "label": "another event after daily upgrade cap already reached",
+      "verifierAccepted": true,
+      "currentOutcome": "frequency_cap"
+    },
+    {
+      "id": "C07",
+      "label": "invalid provider signature",
+      "verifierAccepted": false,
+      "currentOutcome": "invalid_signature"
+    },
+    {
+      "id": "C08",
+      "label": "next-day first callback with newly signed callback timestamp",
+      "verifierAccepted": true,
+      "currentOutcome": "wrong_owner_or_day"
+    },
+    {
+      "id": "C09",
+      "label": "ungranted original event timestamp retried seven days later",
+      "verifierAccepted": true,
+      "currentOutcome": "wrong_owner_or_day"
+    },
+    {
+      "id": "C10",
+      "label": "original signed timestamp older than eight-day verifier window",
+      "verifierAccepted": false,
+      "currentOutcome": "stale_event"
+    }
+  ],
+  "assertionsPassed": 10,
+  "sourceAndCompiledHashes": {
+    "apps/api/src/modules/rewarded/ssv.ts": "50fc12aa9e06a0147d8a6e01df462eefa4c0a46cd24cc969722c758dafe31f2f",
+    "apps/api/src/modules/rewarded/levelplay-ssv.ts": "6f71e5859272fb054b37908398e84a31d4aff396ddc9578d0a894ea6289d0f74",
+    "apps/api/dist/src/modules/rewarded/ssv.js": "169ed6fd10f0518a8190c54819b23d83201f589ef5815275fe14dbbf44f978d8",
+    "apps/api/dist/src/modules/rewarded/levelplay-ssv.js": "9224b3ad262c349bafbf3e6661a7e753d56020bc1c80b5facb4ac407313e4ea4"
+  }
+}
