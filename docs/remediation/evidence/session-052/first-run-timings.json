@@ -1,0 +1,66 @@
+{
+  "complete": false,
+  "scope": "Initial ten measurements retained; later offline assertion referenced nonexistent game.players; full trace not persisted by the original collector. Fresh full proof rerun, assertions now validate real hands/gameActive/28tiles.",
+  "rows": [
+    {
+      "pair": 0,
+      "variant": "baseline",
+      "coldVerifiedMs": 8309,
+      "warmReloadMs": 2301
+    },
+    {
+      "pair": 0,
+      "variant": "candidate",
+      "coldVerifiedMs": 4482,
+      "warmReloadMs": 2478
+    },
+    {
+      "pair": 1,
+      "variant": "candidate",
+      "coldVerifiedMs": 4717,
+      "warmReloadMs": 2546
+    },
+    {
+      "pair": 1,
+      "variant": "baseline",
+      "coldVerifiedMs": 8168,
+      "warmReloadMs": 1866
+    },
+    {
+      "pair": 2,
+      "variant": "baseline",
+      "coldVerifiedMs": 8615,
+      "warmReloadMs": 2051
+    },
+    {
+      "pair": 2,
+      "variant": "candidate",
+      "coldVerifiedMs": 4426,
+      "warmReloadMs": 3234
+    },
+    {
+      "pair": 3,
+      "variant": "candidate",
+      "coldVerifiedMs": 4471,
+      "warmReloadMs": 2338
+    },
+    {
+      "pair": 3,
+      "variant": "baseline",
+      "coldVerifiedMs": 8392,
+      "warmReloadMs": 3166
+    },
+    {
+      "pair": 4,
+      "variant": "baseline",
+      "coldVerifiedMs": 8189,
+      "warmReloadMs": 2075
+    },
+    {
+      "pair": 4,
+      "variant": "candidate",
+      "coldVerifiedMs": 4254,
+      "warmReloadMs": 2652
+    }
+  ]
+}

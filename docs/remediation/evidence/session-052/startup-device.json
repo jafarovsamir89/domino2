@@ -1,0 +1,508 @@
+{
+  "scope": "Physical Android, controlled audit debug APK comparison; same current app/native/resources, only old splash differs. Not Play/release/network performance.",
+  "device": {
+    "model": "2201117SG",
+    "android": "13",
+    "webView": "Current WebView package (name, version): (com.google.android.webview, 155.0.8059.43)"
+  },
+  "artifacts": {
+    "baseline": "37db14406312178336efbd58887b19d4a46820b0c58ffc73145c7402eebeba6b",
+    "candidate": "dc8b4a39c91827e86df12135c319f07d32b3f0567301b3cb9bf8fb8019ac46b4"
+  },
+  "cache": "OS/app caches retained; no pm clear. Cold=new audit process, historical session marker reset symmetrically; warm reload retains session marker. Alternating pair order.",
+  "metric": "Document navigation start to verified solo-menu opening after splash DOM removal. Upper bound, includes harness polling/click overhead; not earliest possible tap.",
+  "rows": [
+    {
+      "pair": 0,
+      "variant": "baseline",
+      "cold": {
+        "uiReadyMs": 1415.4000000059605,
+        "interactiveMarkMs": null,
+        "verifiedMenuMs": 8146,
+        "viewport": [
+          392,
+          823
+        ],
+        "dpr": 2.75,
+        "hostVerifiedMenuMs": 9482.735459000001
+      },
+      "warmReload": {
+        "uiReadyMs": 1030.2000000029802,
+        "interactiveMarkMs": null,
+        "verifiedMenuMs": 2137,
+        "viewport": [
+          392,
+          823
+        ],
+        "dpr": 2.75
+      },
+      "warmActivityReturn": {
+        "uiReadyMs": 1030.2000000029802,
+        "interactiveMarkMs": null,
+        "verifiedMenuMs": 2841.7999999970198,
+        "viewport": [
+          392,
+          823
+        ],
+        "dpr": 2.75,
+        "hostVerifiedMenuMs": 308.08187499999985
+      },
+      "temperatureBefore": {
+        "temperatureC": 42.2,
+        "level": 57
+      },
+      "temperatureAfter": {
+        "temperatureC": 42.3,
+        "level": 57
+      },
+      "processRecreated": true
+    },
+    {
+      "pair": 0,
+      "variant": "candidate",
+      "cold": {
+        "uiReadyMs": 1129.5,
+        "interactiveMarkMs": 1214.0999999940395,
+        "verifiedMenuMs": 4694.9000000059605,
+        "viewport": [
+          392,
+          823
+        ],
+        "dpr": 2.75,
+        "hostVerifiedMenuMs": 6099.612332999997
+      },
+      "warmReload": {
+        "uiReadyMs": 1656.9000000059605,
+        "interactiveMarkMs": 1887.9000000059605,
+        "verifiedMenuMs": 3104.4000000059605,
+        "viewport": [
+          392,
+          823
+        ],
+        "dpr": 2.75
+      },
+      "warmActivityReturn": {
+        "uiReadyMs": 1656.9000000059605,
+        "interactiveMarkMs": 1887.9000000059605,
+        "verifiedMenuMs": 3811.9000000059605,
+        "viewport": [
+          392,
+          823
+        ],
+        "dpr": 2.75,
+        "hostVerifiedMenuMs": 409.30183399999805
+      },
+      "temperatureBefore": {
+        "temperatureC": 42.4,
+        "level": 57
+      },
+      "temperatureAfter": {
+        "temperatureC": 42.4,
+        "level": 57
+      },
+      "processRecreated": true
+    },
+    {
+      "pair": 1,
+      "variant": "candidate",
+      "cold": {
+        "uiReadyMs": 1500.4000000059605,
+        "interactiveMarkMs": 1709.5,
+        "verifiedMenuMs": 4669.20000000298,
+        "viewport": [
+          392,
+          823
+        ],
+        "dpr": 2.75,
+        "hostVerifiedMenuMs": 6051.902249999999
+      },
+      "warmReload": {
+        "uiReadyMs": 1019.0999999940395,
+        "interactiveMarkMs": 1174.8999999910593,
+        "verifiedMenuMs": 1979.7000000029802,
+        "viewport": [
+          392,
+          823
+        ],
+        "dpr": 2.75
+      },
+      "warmActivityReturn": {
+        "uiReadyMs": 1019.0999999940395,
+        "interactiveMarkMs": 1174.8999999910593,
+        "verifiedMenuMs": 2822.2000000029802,
+        "viewport": [
+          392,
+          823
+        ],
+        "dpr": 2.75,
+        "hostVerifiedMenuMs": 334.00883299999987
+      },
+      "temperatureBefore": {
+        "temperatureC": 42.5,
+        "level": 57
+      },
+      "temperatureAfter": {
+        "temperatureC": 42.5,
+        "level": 57
+      },
+      "processRecreated": true
+    },
+    {
+      "pair": 1,
+      "variant": "baseline",
+      "cold": {
+        "uiReadyMs": 2065.6000000089407,
+        "interactiveMarkMs": null,
+        "verifiedMenuMs": 8451.5,
+        "viewport": [
+          392,
+          823
+        ],
+        "dpr": 2.75,
+        "hostVerifiedMenuMs": 9749.137709000002
+      },
+      "warmReload": {
+        "uiReadyMs": 1057.0999999940395,
+        "interactiveMarkMs": null,
+        "verifiedMenuMs": 1860.5,
+        "viewport": [
+          392,
+          823
+        ],
+        "dpr": 2.75
+      },
+      "warmActivityReturn": {
+        "uiReadyMs": 1057.0999999940395,
+        "interactiveMarkMs": null,
+        "verifiedMenuMs": 2627.7999999970198,
+        "viewport": [
+          392,
+          823
+        ],
+        "dpr": 2.75,
+        "hostVerifiedMenuMs": 333.2523329999967
+      },
+      "temperatureBefore": {
+        "temperatureC": 42.6,
+        "level": 57
+      },
+      "temperatureAfter": {
+        "temperatureC": 42.8,
+        "level": 57
+      },
+      "processRecreated": true
+    },
+    {
+      "pair": 2,
+      "variant": "baseline",
+      "cold": {
+        "uiReadyMs": 1695.5999999940395,
+        "interactiveMarkMs": null,
+        "verifiedMenuMs": 8020.699999988079,
+        "viewport": [
+          392,
+          823
+        ],
+        "dpr": 2.75,
+        "hostVerifiedMenuMs": 9337.643291999993
+      },
+      "warmReload": {
+        "uiReadyMs": 1197.6000000089407,
+        "interactiveMarkMs": null,
+        "verifiedMenuMs": 2027.5,
+        "viewport": [
+          392,
+          823
+        ],
+        "dpr": 2.75
+      },
+      "warmActivityReturn": {
+        "uiReadyMs": 1197.6000000089407,
+        "interactiveMarkMs": null,
+        "verifiedMenuMs": 2921.4000000059605,
+        "viewport": [
+          392,
+          823
+        ],
+        "dpr": 2.75,
+        "hostVerifiedMenuMs": 419.0820420000091
+      },
+      "temperatureBefore": {
+        "temperatureC": 42.8,
+        "level": 57
+      },
+      "temperatureAfter": {
+        "temperatureC": 42.9,
+        "level": 57
+      },
+      "processRecreated": true
+    },
+    {
+      "pair": 2,
+      "variant": "candidate",
+      "cold": {
+        "uiReadyMs": 1134.7000000029802,
+        "interactiveMarkMs": 1233.9000000059605,
+        "verifiedMenuMs": 4557,
+        "viewport": [
+          392,
+          823
+        ],
+        "dpr": 2.75,
+        "hostVerifiedMenuMs": 5908.574582999994
+      },
+      "warmReload": {
+        "uiReadyMs": 1152.4000000059605,
+        "interactiveMarkMs": 1297.2000000029802,
+        "verifiedMenuMs": 2313.1000000089407,
+        "viewport": [
+          392,
+          823
+        ],
+        "dpr": 2.75
+      },
+      "warmActivityReturn": {
+        "uiReadyMs": 1152.4000000059605,
+        "interactiveMarkMs": 1297.2000000029802,
+        "verifiedMenuMs": 3255.2000000029802,
+        "viewport": [
+          392,
+          823
+        ],
+        "dpr": 2.75,
+        "hostVerifiedMenuMs": 296.9538750000065
+      },
+      "temperatureBefore": {
+        "temperatureC": 42.9,
+        "level": 57
+      },
+      "temperatureAfter": {
+        "temperatureC": 43,
+        "level": 57
+      },
+      "processRecreated": true
+    },
+    {
+      "pair": 3,
+      "variant": "candidate",
+      "cold": {
+        "uiReadyMs": 1394.7999999970198,
+        "interactiveMarkMs": 1599.5999999940395,
+        "verifiedMenuMs": 4627.29999999702,
+        "viewport": [
+          392,
+          823
+        ],
+        "dpr": 2.75,
+        "hostVerifiedMenuMs": 6001.1517500000045
+      },
+      "warmReload": {
+        "uiReadyMs": 1246.2999999970198,
+        "interactiveMarkMs": 1472,
+        "verifiedMenuMs": 2579.2000000029802,
+        "viewport": [
+          392,
+          823
+        ],
+        "dpr": 2.75
+      },
+      "warmActivityReturn": {
+        "uiReadyMs": 1246.2999999970198,
+        "interactiveMarkMs": 1472,
+        "verifiedMenuMs": 3367,
+        "viewport": [
+          392,
+          823
+        ],
+        "dpr": 2.75,
+        "hostVerifiedMenuMs": 456.25141599999915
+      },
+      "temperatureBefore": {
+        "temperatureC": 43.1,
+        "level": 57
+      },
+      "temperatureAfter": {
+        "temperatureC": 43.1,
+        "level": 57
+      },
+      "processRecreated": true
+    },
+    {
+      "pair": 3,
+      "variant": "baseline",
+      "cold": {
+        "uiReadyMs": 1159,
+        "interactiveMarkMs": null,
+        "verifiedMenuMs": 8329,
+        "viewport": [
+          392,
+          823
+        ],
+        "dpr": 2.75,
+        "hostVerifiedMenuMs": 9660.126916000008
+      },
+      "warmReload": {
+        "uiReadyMs": 960.2000000029802,
+        "interactiveMarkMs": null,
+        "verifiedMenuMs": 1982.2000000029802,
+        "viewport": [
+          392,
+          823
+        ],
+        "dpr": 2.75
+      },
+      "warmActivityReturn": {
+        "uiReadyMs": 960.2000000029802,
+        "interactiveMarkMs": null,
+        "verifiedMenuMs": 2775.2000000029802,
+        "viewport": [
+          392,
+          823
+        ],
+        "dpr": 2.75,
+        "hostVerifiedMenuMs": 459.06400000001304
+      },
+      "temperatureBefore": {
+        "temperatureC": 43,
+        "level": 58
+      },
+      "temperatureAfter": {
+        "temperatureC": 43.3,
+        "level": 58
+      },
+      "processRecreated": true
+    },
+    {
+      "pair": 4,
+      "variant": "baseline",
+      "cold": {
+        "uiReadyMs": 1243.0999999940395,
+        "interactiveMarkMs": null,
+        "verifiedMenuMs": 8446.39999999106,
+        "viewport": [
+          392,
+          823
+        ],
+        "dpr": 2.75,
+        "hostVerifiedMenuMs": 9731.561666000023
+      },
+      "warmReload": {
+        "uiReadyMs": 1170.2000000029802,
+        "interactiveMarkMs": null,
+        "verifiedMenuMs": 1874,
+        "viewport": [
+          392,
+          823
+        ],
+        "dpr": 2.75
+      },
+      "warmActivityReturn": {
+        "uiReadyMs": 1170.2000000029802,
+        "interactiveMarkMs": null,
+        "verifiedMenuMs": 2693.7999999970198,
+        "viewport": [
+          392,
+          823
+        ],
+        "dpr": 2.75,
+        "hostVerifiedMenuMs": 342.32600000000093
+      },
+      "temperatureBefore": {
+        "temperatureC": 43.2,
+        "level": 58
+      },
+      "temperatureAfter": {
+        "temperatureC": 43.4,
+        "level": 58
+      },
+      "processRecreated": true
+    },
+    {
+      "pair": 4,
+      "variant": "candidate",
+      "cold": {
+        "uiReadyMs": 1494.2999999970198,
+        "interactiveMarkMs": 1769.699999988079,
+        "verifiedMenuMs": 4865.199999988079,
+        "viewport": [
+          392,
+          823
+        ],
+        "dpr": 2.75,
+        "hostVerifiedMenuMs": 6157.332250000007
+      },
+      "warmReload": {
+        "uiReadyMs": 1030,
+        "interactiveMarkMs": 1202.9000000059605,
+        "verifiedMenuMs": 2484.9000000059605,
+        "viewport": [
+          392,
+          823
+        ],
+        "dpr": 2.75
+      },
+      "warmActivityReturn": {
+        "uiReadyMs": 1030,
+        "interactiveMarkMs": 1202.9000000059605,
+        "verifiedMenuMs": 3273.2000000029802,
+        "viewport": [
+          392,
+          823
+        ],
+        "dpr": 2.75,
+        "hostVerifiedMenuMs": 425.592290999979
+      },
+      "temperatureBefore": {
+        "temperatureC": 43.4,
+        "level": 58
+      },
+      "temperatureAfter": {
+        "temperatureC": 43.3,
+        "level": 58
+      },
+      "processRecreated": true
+    }
+  ],
+  "summary": {
+    "baseline": {
+      "samples": 5,
+      "coldVerifiedMedianMs": 8329,
+      "warmReloadMedianMs": 1982.2000000029802,
+      "warmActivityHostMedianMs": 342.32600000000093
+    },
+    "candidate": {
+      "samples": 5,
+      "coldVerifiedMedianMs": 4669.20000000298,
+      "warmReloadMedianMs": 2484.9000000059605,
+      "warmActivityHostMedianMs": 409.30183399999805
+    }
+  },
+  "offline": {
+    "mode": "Bundled assets available, own loopbackAPI stopped and CSP prevents production network; Wi-Fi/mobile settings unchanged. Not a claim of radio-level airplane mode.",
+    "uiReadyMs": 1038.6000000089407,
+    "interactiveMarkMs": 1147,
+    "verifiedMenuMs": 2314.9000000059605,
+    "viewport": [
+      392,
+      823
+    ],
+    "dpr": 2.75,
+    "hostVerifiedMenuMs": 3514.803249999997,
+    "soloStarted": {
+      "active": true,
+      "players": 2,
+      "totalTiles": 28
+    },
+    "retry": {
+      "uiReadyMs": 1064.5999999940395,
+      "interactiveMarkMs": 1182.0999999940395,
+      "verifiedMenuMs": 1798.7999999970198,
+      "viewport": [
+        392,
+        823
+      ],
+      "dpr": 2.75
+    }
+  },
+  "playMetadataUnchanged": true
+}

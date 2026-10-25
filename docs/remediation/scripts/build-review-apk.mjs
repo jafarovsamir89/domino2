@@ -5,18 +5,29 @@ import {execFileSync} from 'node:child_process';
 import {createHash} from 'node:crypto';
 const root=process.cwd(), work=path.join(root,'.tmp/mobile-review'), appId='az.simplesoft.dominotelefon.audit';
 const args=process.argv.slice(2), rewardedSuite=args.includes('--rewarded-suite'),rewardedFlow=args.includes('--rewarded-flow');
+const startupBaseline=args.includes('--startup-baseline');
 if(rewardedSuite&&rewardedFlow)throw Error('Choose either --rewarded-suite or --rewarded-flow; never share SDK initialization identities');
+if(startupBaseline&&rewardedSuite)throw Error('Startup comparison cannot initialize an ad Test Suite');
 const rewardedAds=rewardedSuite||rewardedFlow;
 const outputArg=args.indexOf('--output');
 const output=outputArg<0?path.join(work,'review-apk.json'):path.resolve(args[outputArg+1]||'');
 if(outputArg>=0&&(!args[outputArg+1]||args[outputArg+1].startsWith('-')))throw Error('--output requires a fresh metadata path');
 if(outputArg>=0)try{await fs.access(output);throw Error('Evidence exists: choose a fresh --output path');}catch(e){if(e.code!=='ENOENT')throw e;}
 if (JSON.parse(await fs.readFile('package.json','utf8')).name!=='domino2') throw Error('Run from Domino root');
+// Controlled audit comparison only: identical current assets/native code except this one historical file.
+let baselineSource=null,baselineMetadata=null;
+if(startupBaseline){
+ const revision=execFileSync('git',['rev-parse','eb8b21e^{commit}'],{encoding:'utf8'}).trim();
+ baselineSource=execFileSync('git',['show',revision+':js/splash.js']);
+ if(!baselineSource.toString().includes('const MIN_VISIBLE_MS = 5500;'))throw Error('Historical startup baseline not verified');
+ baselineMetadata={revision,path:'js/splash.js',sha256:createHash('sha256').update(baselineSource).digest('hex')};
+}
 await fs.mkdir(work,{recursive:true});
 await fs.rm(path.join(work,'android'),{recursive:true,force:true});
 await fs.rm(path.join(work,'www'),{recursive:true,force:true});
 await fs.cp('android',path.join(work,'android'),{recursive:true,filter:p=>!p.split(path.sep).some(x=>['build','.gradle','keystore.properties','google-services.json','gradle.properties'].includes(x))&&!/\.(?:jks|keystore|p12|pem)$/i.test(p)});
 await fs.cp('www',path.join(work,'www'),{recursive:true});
+if(baselineSource)await fs.writeFile(path.join(work,'www/js/splash.js'),baselineSource);
 await fs.copyFile('package.json',path.join(work,'package.json'));
 try { await fs.symlink(path.join(root,'node_modules'),path.join(work,'node_modules'),'dir'); } catch(e) { if(e.code!=='EEXIST') throw e; }
 const config=JSON.parse(await fs.readFile('capacitor.config.json','utf8'));
@@ -67,7 +78,7 @@ const versions=(await fs.readdir(path.join(sdk,'build-tools'))).sort((a,b)=>b.lo
 const badging=execFileSync(path.join(sdk,'build-tools',versions[0],'aapt'),['dump','badging',apk],{encoding:'utf8'});
 if(!badging.includes(`package: name='${appId}'`)) throw Error('Refusing non-audit package');
 const bytes=await fs.readFile(apk);
-const result={sourceSha:execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim(),workingTreeChangesIncluded:true,appId,apk:path.relative(root,apk),sha256:createHash('sha256').update(bytes).digest('hex'),bytes:bytes.length,installed:false,scope:'debug synthetic review, no Play performance claim',endpoints:['127.0.0.1:4186'],audioPage:'https://localhost/review-audio.html',rewardedSuite,rewardedFlow,rewardedLoadShowEnabled:false,adDependencies:rewardedAds?['com.unity3d.ads-mediation:mediation-sdk:9.5.0','com.unity3d.ads-mediation:unityads-adapter:5.15.0']:[],rewardedPage:rewardedSuite?'https://localhost/review/rewarded.html':rewardedFlow?'https://localhost/review/rewarded-flow.html':null};
+const result={sourceSha:execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim(),workingTreeChangesIncluded:true,appId,apk:path.relative(root,apk),sha256:createHash('sha256').update(bytes).digest('hex'),bytes:bytes.length,installed:false,scope:'debug synthetic review, no Play performance claim',startupBaseline:baselineMetadata,endpoints:['127.0.0.1:4186'],audioPage:'https://localhost/review-audio.html',rewardedSuite,rewardedFlow,rewardedLoadShowEnabled:false,adDependencies:rewardedAds?['com.unity3d.ads-mediation:mediation-sdk:9.5.0','com.unity3d.ads-mediation:unityads-adapter:5.15.0']:[],rewardedPage:rewardedSuite?'https://localhost/review/rewarded.html':rewardedFlow?'https://localhost/review/rewarded-flow.html':null};
 await fs.mkdir(path.dirname(output),{recursive:true});
 await fs.writeFile(output,JSON.stringify(result,null,2)+'\n',outputArg>=0?{flag:'wx'}:{});
 console.log(JSON.stringify(result));

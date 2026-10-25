@@ -4,7 +4,7 @@
 
 **Это основной рабочий документ для начала исправлений.** В нём объединены все 42 задачи, порядок зависимостей, конкретные изменения и приёмка. [Главный отчёт](AUDIT_MASTER_REPORT.md), [полный backlog](14_PRIORITIZED_BACKLOG.md) и [Android-дополнение](SINGLE_ANDROID_AUDIT.md) служат доказательной базой; начинать чтение с них необязательно. Углубляться в соответствующий отчёт нужно перед изменением конкретной подсистемы.
 
-**Текущий прогресс S038 (21октября2026):27/42локально закрыты; добавлены R-10 и R-26.** Пакет10карточек, проверки и открытая внешняя приёмка — [единый результат S038](../remediation/evidence/session-038/TEN_CARD_RESULTS.md). Исторические счётчики ниже относятся к своим сессиям.
+**Текущий прогресс S052 (25октября2026):28/42локально закрыты; завершена Android-приёмка R-15.** [Результат S052](../remediation/evidence/session-052/R15_ANDROID_RESULT.md). Исторический S038:27/42, добавлены R-10/R-26; пакет10карточек — [результат S038](../remediation/evidence/session-038/TEN_CARD_RESULTS.md). Исторические счётчики ниже относятся к своим сессиям.
 
 ## С чего начать
 
@@ -308,7 +308,7 @@ Status: **fixed locally, S016**. Liveness/readiness bypass application Redis rat
 
 #### R-15 · P1 · Сократить искусственный startup
 
-Статус: **код исправлен и проверен в браузере; S038 добавлен переносимый device harness, Android-приёмка остаётся открытой**. S025/S032 убрали искусственное ожидание и разрешили guest solo до auth; все12startup browser scenarios проходят. Новый loopback4186 preview с CSP/синтетическим гостем и CDP collector проверяют interactive mark и реальное открытие меню; desktop smoke3измерения прошёл. Телефона в ADB нет; cold/warm/offline Android не заявляются. [Инструкция продолжения](../remediation/DEVICE_ACCEPTANCE_NEXT.md), [S038](../remediation/evidence/session-038/TEN_CARD_RESULTS.md), [S025](../remediation/evidence/session-025/STARTUP_RESULTS.md).
+Статус: **исправлено и принято локально на Android, S052**. Код S025/S032;12актуальных startup browser scenarios проходят. Физический Android13:5пар одинаковых debug.audit APK,618ZIPentries отличаются только старым/новым splash; cold newprocess, warmreload, Activityreturn и applicationAPI-offline/real solo28tiles/retry проверены. Cold контрольное меню8,329→4,669с; warmreload1,982→2,485с, его ускорение не заявляется. Метрика включает harness overhead, не самый ранний тап. Радиосвязь/Play/production не менялись. [Полный результат/ограничения](../remediation/evidence/session-052/R15_ANDROID_RESULT.md). Исторические [S038](../remediation/evidence/session-038/TEN_CARD_RESULTS.md), [S025](../remediation/evidence/session-025/STARTUP_RESULTS.md) сохранены.
 
 S039: переносимый builder отдельного пакета .audit, aapt-проверка, локальная панель и collector для маркированного audit WebView готовы. Debug APK собран, не установлен. Desktop smoke не заменяет холодный/тёплый/offline Android и сопоставимый baseline. [Все результаты S039](../remediation/evidence/session-039/FIFTEEN_CARD_RESULTS.md).
 

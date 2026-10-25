@@ -1,0 +1,11 @@
+{"pair":0,"variant":"baseline","coldVerifiedMs":8146,"warmReloadMs":2137}
+{"pair":0,"variant":"candidate","coldVerifiedMs":4695,"warmReloadMs":3104}
+{"pair":1,"variant":"candidate","coldVerifiedMs":4669,"warmReloadMs":1980}
+{"pair":1,"variant":"baseline","coldVerifiedMs":8452,"warmReloadMs":1861}
+{"pair":2,"variant":"baseline","coldVerifiedMs":8021,"warmReloadMs":2028}
+{"pair":2,"variant":"candidate","coldVerifiedMs":4557,"warmReloadMs":2313}
+{"pair":3,"variant":"candidate","coldVerifiedMs":4627,"warmReloadMs":2579}
+{"pair":3,"variant":"baseline","coldVerifiedMs":8329,"warmReloadMs":1982}
+{"pair":4,"variant":"baseline","coldVerifiedMs":8446,"warmReloadMs":1874}
+{"pair":4,"variant":"candidate","coldVerifiedMs":4865,"warmReloadMs":2485}
+{"summary":{"baseline":{"samples":5,"coldVerifiedMedianMs":8329,"warmReloadMedianMs":1982.2000000029802,"warmActivityHostMedianMs":342.32600000000093},"candidate":{"samples":5,"coldVerifiedMedianMs":4669.20000000298,"warmReloadMedianMs":2484.9000000059605,"warmActivityHostMedianMs":409.30183399999805}},"offlineVerifiedMs":2314.9000000059605,"offlineSolo":{"active":true,"players":2,"totalTiles":28}}

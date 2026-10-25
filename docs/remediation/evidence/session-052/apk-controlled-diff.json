@@ -1,0 +1,8 @@
+{
+  "baselineApkSha256": "37db14406312178336efbd58887b19d4a46820b0c58ffc73145c7402eebeba6b",
+  "candidateApkSha256": "dc8b4a39c91827e86df12135c319f07d32b3f0567301b3cb9bf8fb8019ac46b4",
+  "unsignedEntriesCompared": 618,
+  "differences": [
+    "assets/public/js/splash.js"
+  ]
+}

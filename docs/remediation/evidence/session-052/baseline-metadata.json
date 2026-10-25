@@ -1,0 +1,27 @@
+{
+  "sourceSha": "2dd9a91ffa2ac011ebb24769c0506601edb48e13",
+  "workingTreeChangesIncluded": true,
+  "appId": "az.simplesoft.dominotelefon.audit",
+  "apk": ".tmp/mobile-review/artifacts/s052-startup-baseline.apk",
+  "sha256": "37db14406312178336efbd58887b19d4a46820b0c58ffc73145c7402eebeba6b",
+  "bytes": 34724939,
+  "installed": false,
+  "scope": "debug synthetic review, no Play performance claim",
+  "startupBaseline": {
+    "revision": "eb8b21ed47e0f137eeaf79aa7fb18f7231292718",
+    "path": "js/splash.js",
+    "sha256": "d8cd49ed86527f4fa0e166631c16c18f11ff93544b7ea84a5ab3c2eb29dd3231"
+  },
+  "endpoints": [
+    "127.0.0.1:4186"
+  ],
+  "audioPage": "https://localhost/review-audio.html",
+  "rewardedSuite": false,
+  "rewardedFlow": true,
+  "rewardedLoadShowEnabled": false,
+  "adDependencies": [
+    "com.unity3d.ads-mediation:mediation-sdk:9.5.0",
+    "com.unity3d.ads-mediation:unityads-adapter:5.15.0"
+  ],
+  "rewardedPage": "https://localhost/review/rewarded-flow.html"
+}

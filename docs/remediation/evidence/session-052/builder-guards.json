@@ -1,0 +1,22 @@
+{
+  "checks": [
+    {
+      "args": [
+        "--startup-baseline",
+        "--rewarded-suite"
+      ],
+      "exitCode": 1,
+      "rejection": "startup TestSuite combination refused"
+    },
+    {
+      "args": [
+        "--startup-baseline",
+        "--output",
+        ".tmp/s052-startup/baseline.json"
+      ],
+      "exitCode": 1,
+      "rejection": "existing output refused"
+    }
+  ],
+  "baselineMetadataUnchanged": true
+}

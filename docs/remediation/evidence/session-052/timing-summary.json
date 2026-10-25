@@ -1,0 +1,30 @@
+{
+  "pairs": 5,
+  "temperatureC": {
+    "minimum": 42.2,
+    "maximum": 43.4
+  },
+  "coldImprovementMs": 3659.7999999970198,
+  "warmReloadIncreaseMs": 502.70000000298023,
+  "offlineSolo": {
+    "active": true,
+    "players": 2,
+    "totalTiles": 28
+  },
+  "baseline": {
+    "coldUiReadyMedianMs": 1415.4000000059605,
+    "coldHostMenuMedianMs": 9660.126916000008,
+    "samples": 5,
+    "coldVerifiedMedianMs": 8329,
+    "warmReloadMedianMs": 1982.2000000029802,
+    "warmActivityHostMedianMs": 342.32600000000093
+  },
+  "candidate": {
+    "coldUiReadyMedianMs": 1394.7999999970198,
+    "coldHostMenuMedianMs": 6051.902249999999,
+    "samples": 5,
+    "coldVerifiedMedianMs": 4669.20000000298,
+    "warmReloadMedianMs": 2484.9000000059605,
+    "warmActivityHostMedianMs": 409.30183399999805
+  }
+}
