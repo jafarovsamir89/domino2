@@ -1,0 +1,20 @@
+{
+  "scope": "Explicit local owner_8day policy, synthetic clocks/signatures/users; real PG and actual Nest/AuthService, no ad SDK/provider/production",
+  "results": {
+    "firstLateTwelveMinutes": "credited once",
+    "freshClientRestartReplay": "durable receipt ACK only",
+    "sameAccountReauthentication": "fresh same-owner session recovers active nonce/status; stale or foreign identity denied",
+    "softCancelThenVerifiedCompletion": "credited once",
+    "midnightOriginalBaseAndIndependentTodayCap": "old200 + today300, separate original-day keys",
+    "exactEightDayDeadline": "just below credited (minute tolerance), exact/above rejected",
+    "cancelRaceAndHundredCallbacks": "1credit/99acks, cancel order independent",
+    "multipleAttemptsOriginalDayCap": "one upgrade",
+    "rollbackReceiptLedgerWalletAttempt": "pass with retry",
+    "signatureBanDeletionOwnershipDailyProof": "all rejected, no grants",
+    "logout": "old client credentials401; signed callback credits original account; fresh same-owner status200, other account404; durable duplicate after deletion onlyACK"
+  },
+  "rewardedLedgerEntries": 9,
+  "totalRewardedCoins": 1900,
+  "reservedCoinsUnchanged": true,
+  "closedLedgerResidual": 0
+}

@@ -26,15 +26,19 @@ export function verifyLevelPlaySignature(rawQuery:string,privateKey:string) {
  return Object.freeze({attemptId,transactionId,callbackTime});
 }
 
-export function verifyLevelPlayQuery(rawQuery:string,options:{privateKey:string;appKey:string;adUnit:string;timestampUtcOffsetMinutes:number;now:number}) {
+export function verifyLevelPlayQuery(rawQuery:string,options:{privateKey:string;appKey:string;adUnit:string;timestampUtcOffsetMinutes:number;now:number;maxAgeMs?:number}) {
  const message=verifyLevelPlaySignature(rawQuery,options.privateKey),offset=options.timestampUtcOffsetMinutes;
  if(!Number.isSafeInteger(options.now)||!Number.isInteger(offset)||offset< -720||offset>840)throw Error('invalid_clock_policy');
  if(!options.appKey||!options.adUnit)throw Error('invalid_provider_scope');
  const t=message.callbackTime;
  const timestamp=Date.UTC(+t.slice(0,4),+t.slice(4,6)-1,+t.slice(6,8),+t.slice(8,10),+t.slice(10,12))-offset*60000;
- // Retried verified receipts can be acknowledged for eight days; a NEW grant still
- // requires an active ten-minute attempt, current Baku day and current session in DB.
- if(timestamp>options.now+60000||timestamp<options.now-8*86400000)throw Error('stale_event');
+ // Signature age is distinct from eligibility. Legacy grants use ten minutes;
+ // explicit owner_8day settlement enforces an exact deadline from stored creation time.
+ const maxAge=options.maxAgeMs??8*86400000;
+ // Explicit owner settlement can add one minute for the protocol's truncated timestamp.
+ // The attempt's exact eight-day deadline is still independently enforced in the DB policy.
+ if(!Number.isSafeInteger(maxAge)||maxAge<=0||maxAge>8*86400000+60000)throw Error('invalid_clock_policy');
+ if(timestamp>options.now+60000||timestamp<options.now-maxAge)throw Error('stale_event');
  // These two values are server route configuration, NOT signed callback fields.
  // Use a separate per-app secret and keep this review app restricted to its one rewarded unit.
  return Object.freeze({...message,timestamp,adUnit:options.adUnit,provider:'levelplay' as const,providerScope:options.appKey});

@@ -134,6 +134,8 @@ R-25 относится к этапу 0, но окончательно закр�
 
 #### R-09 · P0 · Server entitlement для rewarded x2
 
+S048–S049: владелец утвердил8суток для подтверждения, сохранение подтверждённой награды после отмены/logout. Реализован явный LevelPlayprofile owner_8day с исходным днём/суммой/лимитом; legacydefault сохранён. API183/183, client22/22; свежие реальныеБД подтвердили границы/полночь/ban-delete/auth/rollback/restart/100callback→1grant. UIещё не подключён, реклама и productionвыключены. [Результат](../remediation/evidence/session-049/R09_DELAY_SETTLEMENT_RESULT.md), [утверждённые правила](../remediation/review/REWARDED_DELAY_POLICY.md). **R09 открыта;27/42.**
+
 S047 безADB: nativebridge для отдельного auditпакета с processnoncepin/origin/asyncstate проверками скомпилирован с настоящим LevelPlay9.5.0;9новыхJVM+4JSпроверки прошли, auditAPK собран/подписан/проверен. Загрузка и показ compile-timefalse, не установлен, SDK/реальныйпросмотр не принимались. [Результат](../remediation/evidence/session-047/R09_NATIVE_BUILD_RESULT.md). **R09 открыта;27/42.**
 
 S046 безADB: подготовлен выключенный и не подключённый к UI клиентский flow: сервер определяет награду, повторное нажатие проверяет ту же попытку, поздние ответы после logout игнорируются.20/20; настоящийJS→Nest→PostgreSQL с fake-native подтвердил отсутствие монет до подписанного syntheticcallback и отсутствие повторного grant. SDKinit/retry после cancel ещё не приняты. [Результат](../remediation/evidence/session-046/R09_CLIENT_FLOW_RESULT.md). **R09 открыта;27/42.**

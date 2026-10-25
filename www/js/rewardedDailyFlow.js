@@ -1,5 +1,5 @@
 const NONCE = /^[a-f0-9]{64}$/;
-const STATES = new Set(['pending', 'credited', 'cancelled', 'expired']);
+const STATES = new Set(['pending', 'awaiting_confirmation', 'credited', 'cancelled', 'expired']);
 const ROOT = '/economy/daily-bonus/rewarded';
 
 function attemptId(value) {
@@ -42,7 +42,7 @@ export class RewardedDailyFlow {
             canStart: this.enabled && !this._busy && !this._attempt,
             canCheck: this.enabled && !this._busy && Boolean(this._attempt),
             canCancel: this.enabled && !this._busy && Boolean(this._attempt) &&
-                !['credited', 'cancelled', 'expired'].includes(this.phase)
+                !['awaiting_confirmation', 'credited', 'cancelled', 'expired'].includes(this.phase)
         });
     }
 

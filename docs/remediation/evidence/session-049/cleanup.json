@@ -1,0 +1,17 @@
+{
+  "checkedAt": "2026-10-25T00:18:28.932835+00:00",
+  "syntheticPg55439Listening": false,
+  "freshDatabasesPreserved": [
+    "domino_remediation_s049_owner_1",
+    "domino_remediation_s049_owner_2",
+    "domino_remediation_s049_levelplay_1",
+    "domino_remediation_s049_admob_1"
+  ],
+  "sourceWwwParity": true,
+  "publicModuleRegistered": false,
+  "defaultPolicy": "legacy strict",
+  "ownerPolicyRequiresExplicitServerConfig": true,
+  "nativeLoadShowEnabled": false,
+  "adbUsed": false,
+  "productionChanged": false
+}

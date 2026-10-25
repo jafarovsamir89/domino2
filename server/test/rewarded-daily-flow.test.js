@@ -73,4 +73,10 @@ for(const asset of ['js/rewardedDailyFlow.js','www/js/rewardedDailyFlow.js']){
   assert.deepEqual(calls,[['/economy/daily-bonus/rewarded/attempt',{method:'POST',body:{optIn:true}}],['/economy/daily-bonus/rewarded/attempt/'+id],['/economy/daily-bonus/rewarded/cancel',{method:'POST',body:{attemptId:id}}]]);
   assert.throws(()=>api.status('../another'));assert.throws(()=>api.cancel(other+'?reward=99999'));assert.equal(calls.length,3);
  });
+ test(`${asset}: awaiting confirmation after soft cancel is recoverable without another ad or cancellation`,async()=>{
+  const f=await fixture();await f.flow.start();f.api.cancel=async value=>({attemptId:value,state:'awaiting_confirmation'});
+  assert.equal((await f.flow.cancel()).phase,'awaiting_confirmation');assert.equal(f.flow.snapshot.canCancel,false);assert.equal(f.flow.snapshot.canCheck,true);
+  f.state.status='awaiting_confirmation';assert.equal((await f.flow.start()).phase,'awaiting_confirmation');assert.equal(f.calls.filter(v=>v==='show').length,1);
+  f.state.status='credited';assert.equal((await f.flow.check()).phase,'credited');
+ });
 }

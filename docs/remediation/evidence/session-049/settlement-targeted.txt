@@ -1,0 +1,12 @@
+✔ explicit owner settlement covers the original attempt for exactly eight elapsed days, across midnight (1.067959ms)
+✔ longer settlement preserves ownership, original-day cap, one consumption and explicit opt-in (0.798583ms)
+✔ one-minute signature tolerance does not change the legacy verifier default or the exact settlement deadline (2.352708ms)
+✔ unknown settlement policy fails before DB access; old default remains independently available (0.287375ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 103.085958
