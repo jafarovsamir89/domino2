@@ -13,12 +13,14 @@ for(const asset of ['', '/www'])for(const language of ['ru','az','en']){
    const status={rewardedFlowVersion:'owner_8day_v1',rewardedAvailable:true,claimedToday:true,doubleClaimAvailable:true,canClaim:false,todayReward:200,streakDay:1,maxStreak:1};
    window.panelFixture={issue:0,bind:0,show:0,cancel:0,state:'pending',failWallet:false};
    const fixture=window.panelFixture,id='b'.repeat(64);
+   const record=()=>({attemptId:id,state:fixture.state,claimDate:'2026-10-25',baseReward:200,expiresAt:new Date(Date.now()+600000).toISOString(),settlementDeadline:new Date(Date.now()+8*86400000).toISOString()});
    window.__dominoRewardedAdProvider={bindAttempt:async({attemptId})=>{fixture.bind++;return {bound:true,attemptId};},show:async()=>{fixture.show++;return {completed:true};}};
    game.account.getDailyBonusStatus=async()=>{if(fixture.failWallet)throw Error('local_fixture_unavailable');return {dailyBonus:status,wallet:{balance:fixture.state==='credited'?400:200}};};
    game.account.platformRequest=async(path,options)=>{
+    if(path.endsWith('/recovery'))return {flowVersion:'owner_8day_v1',canStart:fixture.issue===0,attempts:fixture.issue?[record()]:[]};
     if(path.endsWith('/cancel')){fixture.cancel++;throw Error('unexpected_cancel');}
     if(path.endsWith('/attempt')&&options?.method==='POST'){fixture.issue++;return {attemptId:id,expiresAt:new Date(Date.now()+600000).toISOString()};}
-    return {attemptId:id,state:fixture.state};
+    return record();
    };
    game.authResolved=true;game.syncStartAuthGate();
    game.dailyBonusState={status};game.renderDailyBonusCard();

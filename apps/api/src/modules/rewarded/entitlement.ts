@@ -56,6 +56,35 @@ export class RewardedEntitlement {
      meta.reward!==claim.amount||meta.claimDate!==day)throw Error('normal_daily_required');
   return claim;
  }
+ private view(attempt:Attempt,now:number){
+  if(this.ownerPolicy()){
+   const deadline=ownerSettlementDeadline(attempt.createdAt.getTime(),attempt.expiresAt.getTime());
+   const state=attempt.consumedAt?'credited':now>=deadline?'expired':attempt.cancelled||attempt.expiresAt.getTime()<=now?'awaiting_confirmation':'pending';
+   return {attemptId:attempt.id,state,expiresAt:attempt.expiresAt,settlementDeadline:new Date(deadline),claimDate:attempt.claimDate,baseReward:attempt.baseReward};
+  }
+  const state=attempt.consumedAt?'credited':attempt.cancelled?'cancelled':attempt.expiresAt.getTime()<=now||attempt.claimDate!==rewardedBakuDay(now)?'expired':'pending';
+  return {attemptId:attempt.id,state,expiresAt:attempt.expiresAt};
+ }
+ /** Read-only discovery, no opt-in, issue or wallet mutation. Requires current auth.
+  * Eight elapsed days intersect at most nine Baku days, at most 3 attempts/day.
+  * Credited siblings replace pending siblings for that day; they cannot grant twice.
+  */
+ async recover(playerId:string,identity:Identity,now=Date.now()){
+  this.enabled();if(!this.ownerPolicy())throw Error('rewarded_disabled');
+  if(!playerId||!Number.isSafeInteger(now))throw Error('invalid_request');
+  return this.db.$transaction(async tx=>{
+   await this.lock(tx,playerId);await this.access(tx,playerId,identity,now);
+   const scope=this.scope(),cutoff=new Date(now-OWNER_SETTLEMENT_WINDOW_MS);
+   const attempts=await tx.$queryRaw<Attempt[]>`SELECT a.* FROM "RewardReviewAttempt" a WHERE a."playerId"=${playerId} AND a."userId"=${identity.userId} AND a."provider"=${scope.provider} AND a."providerScope"=${scope.providerScope} AND a."adUnit"=${scope.adUnit} AND a."createdAt">=${cutoff} AND a."createdAt"<=${new Date(now)} AND (a."consumedAt" IS NOT NULL OR NOT EXISTS (SELECT 1 FROM "CoinLedgerEntry" l WHERE l."idempotencyKey"='daily_bonus:' || a."playerId" || ':' || a."claimDate" || ':upgrade')) ORDER BY a."createdAt" DESC,a."id" LIMIT 28`;
+   if(attempts.length>27)throw Error('invalid_attempt_history');
+   const day=rewardedBakuDay(now),key=`daily_bonus:${playerId}:${day}:upgrade`;
+   const prior=await tx.coinLedgerEntry.findUnique({where:{idempotencyKey:key}});
+   const count=await tx.$queryRaw<{count:bigint}[]>`SELECT count(*) FROM "RewardReviewAttempt" WHERE "playerId"=${playerId} AND "claimDate"=${day}`;
+   let canStart=!prior&&Number(count[0].count)<3&&!attempts.some(a=>a.claimDate===day&&!a.cancelled&&!a.consumedAt&&a.expiresAt.getTime()>now);
+   if(canStart){try{await this.normalDaily(tx,playerId,day);}catch(error){if(error instanceof Error&&error.message==='normal_daily_required')canStart=false;else throw error;}}
+   return {flowVersion:'owner_8day_v1',canStart,attempts:attempts.map(a=>this.view(a,now))};
+  },{maxWait:30000,timeout:30000});
+ }
  async issue(playerId:string,optIn:boolean,now=Date.now(),identity?:Identity){
   this.enabled();if(!optIn)throw Error('opt_in_required');if(!playerId||!Number.isSafeInteger(now))throw Error('invalid_request');
   return this.db.$transaction(async tx=>{
@@ -92,13 +121,7 @@ export class RewardedEntitlement {
    const [attempt]=await tx.$queryRaw<Attempt[]>`SELECT * FROM "RewardReviewAttempt" WHERE "id"=${attemptId} AND "playerId"=${playerId}`;
    const scope=this.scope();
    if(!attempt||attempt.provider!==scope.provider||attempt.providerScope!==scope.providerScope||attempt.adUnit!==scope.adUnit||attempt.userId!==identity.userId||!this.ownerPolicy()&&attempt.sessionId!==identity.sessionId)throw Error('attempt_not_found');
-   if(this.ownerPolicy()){
-    const deadline=ownerSettlementDeadline(attempt.createdAt.getTime(),attempt.expiresAt.getTime());
-    const state=attempt.consumedAt?'credited':now>=deadline?'expired':attempt.cancelled||attempt.expiresAt.getTime()<=now?'awaiting_confirmation':'pending';
-    return {attemptId:attempt.id,state,expiresAt:attempt.expiresAt,settlementDeadline:new Date(deadline),claimDate:attempt.claimDate,baseReward:attempt.baseReward};
-   }
-   const state=attempt.consumedAt?'credited':attempt.cancelled?'cancelled':attempt.expiresAt.getTime()<=now||attempt.claimDate!==rewardedBakuDay(now)?'expired':'pending';
-   return {attemptId:attempt.id,state,expiresAt:attempt.expiresAt};
+   return this.view(attempt,now);
   },{maxWait:30000,timeout:30000});
  }
  async consume(rawQuery:string,now=Date.now()){

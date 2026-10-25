@@ -1,0 +1,24 @@
+{
+  "scope": "Synthetic local accounts, signed synthetic provider messages; actual Nest/Auth/Economy/PG and main UI; no SDK/ad or production",
+  "surface": "headless browser main app",
+  "sameAccountReload": "2 original-day records recovered with zero issue/show/cancel",
+  "freshLoginAfterLogout": "old credentials401; confirmed old-day bonus found by new session; another account empty",
+  "originalDays": "yesterday200 and today200 settle independently",
+  "uiWallet": [
+    1400,
+    1600,
+    1800
+  ],
+  "starterGrant": "1000 once; separate ledger verified, no repeat on reload/new login",
+  "nativeCalls": 0,
+  "issueRequests": 0,
+  "cancelRequests": 0,
+  "clientNonceOrTokenPersisted": false,
+  "sqlWindow": "1/7/8days included; exact8day expired;9day excluded",
+  "sqlSiblingCap": "credited winner only, no duplicate pending siblings",
+  "banDeletion": "rejected",
+  "rewardedLedgerEntries": 3,
+  "totalRewardedCoins": 600,
+  "reservedUnchanged": true,
+  "closedLedgerResidual": 0
+}

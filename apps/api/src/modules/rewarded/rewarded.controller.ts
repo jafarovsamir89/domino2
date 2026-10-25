@@ -33,6 +33,10 @@ export class RewardedController {
  status(@Req() req:Request,@Param('attemptId') attemptId:string,@Res({passthrough:true}) response:Response){
   return this.reply(response,()=>this.access.status(req.headers,attemptId));
  }
+ @Get('recovery')
+ recover(@Req() req:Request,@Res({passthrough:true}) response:Response){
+  return this.reply(response,()=>this.access.recover(req.headers));
+ }
  @Post('cancel')
  @HttpCode(200)
  cancel(@Req() req:Request,@Body() body:unknown,@Res({passthrough:true}) response:Response){

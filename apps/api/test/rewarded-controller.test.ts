@@ -40,3 +40,11 @@ test('known request errors have stable HTTP codes; unknown database/configuratio
   message=detail;const r=await f.request('/attempt/'+id);assert.deepEqual(r,{status:503,cache:'no-store',body:{error:'rewarded_unavailable'}});assert.equal(JSON.stringify(r).includes(detail),false);
  }
 });
+test('authenticated recovery is read-only GET/no-store and absent in the bare module',async t=>{
+ const empty=await fixture(t);assert.equal((await empty.request('/recovery')).status,404);
+ const calls:any[]=[],payload={flowVersion:'owner_8day_v1',canStart:false,attempts:[]};
+ const f=await fixture(t,{recover:async(headers:any)=>{calls.push(headers.authorization);return payload;}});
+ assert.deepEqual(await f.request('/recovery'),{status:200,cache:'no-store',body:payload});
+ assert.deepEqual(calls,['Bearer synthetic-only-token']);
+ assert.equal((await f.request('/recovery',{playerId:'other'})).status,404);
+});

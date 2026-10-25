@@ -9,7 +9,7 @@ function fixture(){
  const now=Date.now(),calls:any[]=[],lookups:any[]=[],state:any={session:{id:sessionId,userId,expiresAt:new Date(now+60000)},player:{id:playerId,userId},ban:null,verified:{user:{id:userId},session:{id:sessionId}},provider:'levelplay'};
  const db:any={session:{findUnique:async()=>state.session},player:{findUnique:async()=>state.player},playerBan:{findFirst:async()=>state.ban}};
  const auth:any={getSession:async(headers:any)=>{lookups.push(headers);return state.verified;}};
- const entitlement:any={get provider(){return state.provider;},issue:async(...args:any[])=>{calls.push(['issue',...args]);return {attemptId,expiresAt:new Date(now+60000)};},status:async(...args:any[])=>{calls.push(['status',...args]);return {attemptId,state:'pending',expiresAt:new Date(now+60000)};},cancel:async(...args:any[])=>{calls.push(['cancel',...args]);}};
+ const entitlement:any={get provider(){return state.provider;},issue:async(...args:any[])=>{calls.push(['issue',...args]);return {attemptId,expiresAt:new Date(now+60000)};},recover:async(...args:any[])=>{calls.push(['recover',...args]);return {flowVersion:'owner_8day_v1',canStart:false,attempts:[]};},status:async(...args:any[])=>{calls.push(['status',...args]);return {attemptId,state:'pending',expiresAt:new Date(now+60000)};},cancel:async(...args:any[])=>{calls.push(['cancel',...args]);}};
  const service=new RewardedRequestAccess(db,auth,entitlement,{enabled:true,trustedOrigins:[origin]});
  const token=(patch={})=>createGameToken({playerId,userId,sessionId,displayName:'Synthetic',role:'player',provider:'better-auth',issuedAt:now,expiresAt:now+60000,...patch});
  return {now,calls,lookups,state,db,auth,entitlement,service,token};
@@ -50,9 +50,15 @@ test('missing, malformed, forged, expired and suffixed credentials never reach e
 test('credentials are rechecked against logout, session ownership, expiry, deleted player and ban',async()=>{
  for(const patch of [{session:null},{session:{userId:'another',expiresAt:new Date(Date.now()+60000)}},{session:{userId,expiresAt:new Date(0)}},{player:null},{player:{id:playerId,userId:'another'}},{player:{id:'another-player',userId}},{ban:{id:'synthetic-ban'}}]){
   const f=fixture();Object.assign(f.state,patch);
-  for(const run of [()=>f.service.issue({authorization:'Bearer '+f.token()},{optIn:true},f.now),()=>f.service.status({authorization:'Bearer '+f.token()},attemptId,f.now),()=>f.service.cancel({authorization:'Bearer '+f.token()},{attemptId},f.now)])await assert.rejects(run,/active_session_required/);
+  for(const run of [()=>f.service.issue({authorization:'Bearer '+f.token()},{optIn:true},f.now),()=>f.service.status({authorization:'Bearer '+f.token()},attemptId,f.now),()=>f.service.cancel({authorization:'Bearer '+f.token()},{attemptId},f.now),()=>f.service.recover({authorization:'Bearer '+f.token()},f.now)])await assert.rejects(run,/active_session_required/);
   assert.equal(f.calls.length,0);
  }
+});
+test('recovery derives the current owner from credentials without client IDs or a write',async()=>{
+ const f=fixture();assert.deepEqual(await f.service.recover({authorization:'Bearer '+f.token()},f.now),{flowVersion:'owner_8day_v1',canStart:false,attempts:[]});
+ assert.deepEqual(f.calls,[['recover',playerId,{playerId,userId,sessionId},f.now]]);
+ f.state.verified=null;await assert.rejects(()=>f.service.recover({},f.now),/active_session_required/);
+ assert.equal(f.calls.length,1);
 });
 test('read failure propagates without issuing an attempt or cancelling anything',async()=>{
  const f=fixture();f.db.session.findUnique=async()=>{throw Error('synthetic-db-outage');};

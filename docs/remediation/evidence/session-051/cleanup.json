@@ -1,0 +1,10 @@
+{
+  "ownPostgres55439Stopped": true,
+  "freshDatabasesPreserved": 3,
+  "httpStaticServersStopped": true,
+  "ownedAdbMappingsRemoved": true,
+  "playMetadataUnchanged": true,
+  "productionChanged": false,
+  "sdkInitLoadShow": false,
+  "sourceWwwParity": true
+}

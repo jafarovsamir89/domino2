@@ -61,6 +61,10 @@ export class RewardedRequestAccess {
   this.enabled();const id=this.attempt(attemptId),identity=await this.identity(headers,false,now);
   return this.entitlement.status(identity.playerId,id,identity,now);
  }
+ async recover(headers:IncomingHttpHeaders,now=Date.now()){
+  this.enabled();const identity=await this.identity(headers,false,now);
+  return this.entitlement.recover(identity.playerId,identity,now);
+ }
  async cancel(headers:IncomingHttpHeaders,body:unknown,now=Date.now()){
   this.enabled();const id=this.attempt(this.body(body,'attemptId')),identity=await this.identity(headers,true,now);
   // This also binds the attempt to the issuing session before any cancellation.

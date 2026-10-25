@@ -1,5 +1,8 @@
 export const translations = {
     az: {
+        'rewarded-recovering': 'Əvvəlki bonuslar yoxlanılır…',
+        'rewarded-attempt-label': 'Bonus günü',
+        'rewarded-attempt-option': '{date} · +{amount} · cəhd {number}',
         'rewarded-title': 'Bonusun ikiqat artırılması',
         'rewarded-start': 'Reklama bax',
         'rewarded-check': 'Bonusu yoxla',
@@ -771,6 +774,9 @@ export const translations = {
         ,"stage-kicker-counting": "Hesab"
     },
     en: {
+        'rewarded-recovering': 'Checking previous bonuses…',
+        'rewarded-attempt-label': 'Bonus day',
+        'rewarded-attempt-option': '{date} · +{amount} · attempt {number}',
         'rewarded-title': 'Double your bonus',
         'rewarded-start': 'Watch ad',
         'rewarded-check': 'Check bonus',
@@ -1556,6 +1562,9 @@ export const translations = {
         ,"stage-kicker-counting": "Counting"
     },
     ru: {
+        'rewarded-recovering': 'Проверяем предыдущие бонусы…',
+        'rewarded-attempt-label': 'День бонуса',
+        'rewarded-attempt-option': '{date} · +{amount} · попытка {number}',
         'rewarded-title': 'Удвоение бонуса',
         'rewarded-start': 'Смотреть рекламу',
         'rewarded-check': 'Проверить начисление',

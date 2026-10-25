@@ -1,0 +1,1 @@
+Recovery integration passed: real local auth/DB, actual UI reload/new session, no SDK calls, 3 synthetic grants/600coins, residual0.
