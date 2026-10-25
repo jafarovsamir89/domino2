@@ -45,10 +45,34 @@ export class VoiceChatManager {
         this.audioPlaybackBlocked = false;
         this.remoteAudioPlayback = new Map();
         this.mutedPlayers = new Set();
+        this._voiceGeneration = 0;
+        this._pendingEnable = null;
+        this._pageHidden = typeof document !== 'undefined' && document.hidden;
+        this._nativeBackground = false;
+        this._visibilityHandler = () => { this._pageHidden = document.hidden; if (this._pageHidden) void this.disableVoice(); };
+        this._pageHideHandler = () => { this._pageHidden = true; void this.disableVoice(); };
+        this._pageShowHandler = () => { this._pageHidden = document.hidden; };
+        document.addEventListener?.('visibilitychange', this._visibilityHandler);
+        if (typeof window !== 'undefined') {
+            window.addEventListener?.('pagehide', this._pageHideHandler);
+            window.addEventListener?.('pageshow', this._pageShowHandler);
+            try {
+              const cap = window.Capacitor;
+              const plugin = cap?.isNativePlatform?.() && cap.isPluginAvailable?.('DominoAudio')
+                  ? (cap.registerPlugin?.('DominoAudio') || cap.Plugins?.DominoAudio) : null;
+              if (typeof plugin?.addListener === 'function') Promise.resolve(plugin.addListener('stateChange', state => {
+                if (this.destroyed || typeof state?.background !== 'boolean') return;
+                this._nativeBackground = state.background;
+                if (state.background) void this.disableVoice();
+            })).then(handle => {
+                if (this.destroyed) return handle?.remove?.(); else this._nativeListener = handle;
+            }).catch(() => {});
+            } catch { /* Browser visibility remains available on older native builds. */ }
+        }
     }
 
     isAvailable() {
-        return supportsVoiceChat() && Boolean(this.game?.network?.room);
+        return !this.destroyed && !this._pageHidden && !this._nativeBackground && supportsVoiceChat() && Boolean(this.game?.network?.room);
     }
 
     get mySessionId() {
@@ -219,12 +243,16 @@ export class VoiceChatManager {
 
     async enableVoice() {
         if (this.destroyed || !this.isAvailable()) return;
+        if (this._pendingEnable) return this._pendingEnable;
+        if (this.isEnabled && this.localStream) return;
+        const generation = ++this._voiceGeneration, room = this.game.network.room, sessionId = this.mySessionId;
         this.isEnabled = true;
         this.isSpeaking = true;
-
-        debugLog("[VOICE_DEBUG] getUserMedia:start");
-        try {
-            this.localStream = await navigator.mediaDevices.getUserMedia({
+        const current = () => generation === this._voiceGeneration && this.isEnabled && this.isAvailable()
+            && room === this.game?.network?.room && sessionId === this.mySessionId;
+        const operation = (async () => {
+          try {
+            const stream = await navigator.mediaDevices.getUserMedia({
                 audio: {
                     echoCancellation: true,
                     noiseSuppression: true,
@@ -232,73 +260,72 @@ export class VoiceChatManager {
                 },
                 video: false
             });
+            if (!current()) {
+                this.stopStream(stream);
+                if (generation === this._voiceGeneration) this.resetRoom();
+                return;
+            }
+            this.localStream = stream;
             this.localAudioTrack = this.localStream.getAudioTracks()[0] || null;
             if (this.localAudioTrack) {
-                this.localAudioTrack.enabled = true;
+                const track = this.localAudioTrack;
+                track.enabled = true;
+                track.onended = () => {
+                    if (generation === this._voiceGeneration && this.localAudioTrack === track) void this.disableVoice();
+                };
             }
             debugLog("[VOICE_DEBUG] getUserMedia:success");
-        } catch (error) {
-            debugLog("[VOICE_DEBUG] getUserMedia:error");
-            this.isEnabled = false;
-            this.isSpeaking = false;
+            if (!this.announceVoiceState(true)) throw new Error('voice_transport_unavailable');
+            for (const sessionId of this.getRemoteHumanSessions()) {
+                if (this.voiceEnabledBySessionId.get(sessionId) === true) this.connectPeer(sessionId);
+            }
+            this.setStatus(this.game?.t?.("voice-speaking") || "Speaking");
+            this.syncVisibility();
+            this.updateSpeakerUi();
+          } catch (error) {
+            if (generation !== this._voiceGeneration) return;
+            this.stopCapture();
             this.setStatus(this.game?.t?.("voice-denied") || "Microphone access denied");
             this.game?.renderer?.showMessage?.(this.game?.t?.("voice-denied") || "Microphone access denied", 2200);
-            return;
-        }
-
-        debugLog("[VOICE_DEBUG] voice:state:send enabled true");
-        this.game.network.sendVoiceSignal({
-            kind: "state",
-            enabled: true,
-            speaking: true,
-            name: this.game?.playerName || ""
-        });
-
-        const remoteSessions = this.getRemoteHumanSessions();
-        for (const sessionId of remoteSessions) {
-            if (this.voiceEnabledBySessionId.get(sessionId) === true) {
-                this.connectPeer(sessionId);
-            }
-        }
-
-        this.setStatus(this.game?.t?.("voice-speaking") || "Speaking");
-        this.syncVisibility();
-        this.updateSpeakerUi();
+          }
+        })();
+        this._pendingEnable = operation;
+        try { await operation; } finally { if (this._pendingEnable === operation) this._pendingEnable = null; }
     }
 
-    async disableVoice() {
+    stopStream(stream) {
+        for (const track of stream?.getTracks?.() || []) { try { track.stop(); } catch {} }
+    }
+
+    stopCapture() {
+        this._voiceGeneration++;
+        this._pendingEnable = null;
         this.isEnabled = false;
         this.isSpeaking = false;
-
-        debugLog("[VOICE_DEBUG] voice:state:send enabled false");
-        this.game.network.sendVoiceSignal({
-            kind: "state",
-            enabled: false,
-            speaking: false,
-            name: this.game?.playerName || ""
-        });
-
+        this.stopStream(this.localStream);
+        this.localStream = null;
+        this.localAudioTrack = null;
         for (const sessionId of Array.from(this.peersBySessionId.keys())) {
             this.closePeer(sessionId, "local-disabled");
         }
+    }
 
-        if (this.localAudioTrack) {
-            try { this.localAudioTrack.stop(); } catch {}
-            this.localAudioTrack = null;
-        }
-        if (this.localStream) {
-            for (const track of this.localStream.getTracks()) {
-                try { track.stop(); } catch {}
-            }
-            this.localStream = null;
-        }
+    announceVoiceState(enabled) {
+        try {
+            if (this.game?.network?.room) this.game.network.sendVoiceSignal({kind:'state',enabled,speaking:enabled,name:this.game?.playerName || ''});
+            return true;
+        } catch { return false; }
+    }
 
-        debugLog("[VOICE_DEBUG] voice:off:cleanup");
-
+    async disableVoice() {
+        this.stopCapture(); // Release capture before a possibly failing network operation.
+        this.announceVoiceState(false);
         this.setStatus(this.game?.t?.("voice-ready") || "Voice ready");
         this.syncVisibility();
         this.updateSpeakerUi();
     }
+
+    stopSpeaking() { return this.disableVoice(); }
 
     connectPeer(remoteSessionId) {
         const targetSessionId = String(remoteSessionId || "").trim();
@@ -529,8 +556,8 @@ export class VoiceChatManager {
     }
 
     resetRoom() {
-        this.isEnabled = false;
-        this.isSpeaking = false;
+        this.stopCapture();
+        this.roomState = null;
         this.statusText = "";
         this.audioPlaybackBlocked = false;
         this.mutedPlayers.clear();
@@ -546,17 +573,16 @@ export class VoiceChatManager {
     }
 
     destroy() {
+        if (this.destroyed) return;
+        this.destroyed = true;
         this.resetRoom();
-        if (this.localAudioTrack) {
-            try { this.localAudioTrack.stop(); } catch {}
-            this.localAudioTrack = null;
+        document.removeEventListener?.('visibilitychange', this._visibilityHandler);
+        if (typeof window !== 'undefined') {
+            window.removeEventListener?.('pagehide', this._pageHideHandler);
+            window.removeEventListener?.('pageshow', this._pageShowHandler);
         }
-        if (this.localStream) {
-            for (const track of this.localStream.getTracks()) {
-                try { track.stop(); } catch {}
-            }
-            this.localStream = null;
-        }
+        Promise.resolve(this._nativeListener?.remove?.()).catch(() => {});
+        this._nativeListener = null;
         this.setStatus("");
     }
 

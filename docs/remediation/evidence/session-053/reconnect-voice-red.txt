@@ -1,0 +1,23 @@
+ℹ️  optional .env file not found: .env.development, .env
+✖ reconnect migrates enabled voice Set membership without throwing or retaining the old session (1.38225ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 292.062958
+
+✖ failing tests:
+
+test at server/test/disconnect-grace.test.js:629:1
+✖ reconnect migrates enabled voice Set membership without throwing or retaining the old session (1.38225ms)
+  TypeError: this.voiceEnabledBySessionId.get is not a function
+      at DominoRoom.completeReconnectGrace (/Users/macbookair/Documents/domino/server/DominoRoom.js:758:60)
+      at TestContext.<anonymous> (/Users/macbookair/Documents/domino/server/test/disconnect-grace.test.js:636:27)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.start (node:internal/test_runner/test:1015:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:358:17)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)

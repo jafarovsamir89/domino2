@@ -626,6 +626,20 @@ test("reusable session restore sends full_state to new sessionId", () => {
     assert.equal(room.state.playerOrder[0], "session-2");
 });
 
+test("reconnect migrates enabled voice Set membership without throwing or retaining the old session", () => {
+    for (const nextAlreadyPresent of [false, true]) {
+        const room = createActiveRoom();
+        room.voiceEnabledBySessionId = new Set(["session-1", "unrelated", ...(nextAlreadyPresent ? ["session-2"] : [])]);
+        room.pendingDisconnects.set("session-1", { sessionId: "session-1", playerName: "Synthetic", expiresAt: Date.now() + 10000, leavingIndex: 0, isTeamMode: false });
+        room.resumeTurnTimerAfterReconnect = () => false;
+        room.broadcastFullState = () => {};
+        assert.equal(room.completeReconnectGrace("session-1", "session-2", { source: "join" }), true);
+        assert.equal(room.voiceEnabledBySessionId.has("session-1"), false);
+        assert.equal(room.voiceEnabledBySessionId.has("session-2"), true);
+        assert.equal(room.voiceEnabledBySessionId.has("unrelated"), true);
+    }
+});
+
 test("network.sendPlay returns null if navigator.onLine === false", () => {
     const originalNavigator = global.navigator;
     global.navigator = { onLine: false };

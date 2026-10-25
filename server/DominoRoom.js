@@ -754,10 +754,9 @@ class DominoRoom extends Room {
                 this.identityBySessionId.delete(normalizedSessionId);
                 this.identityBySessionId.set(normalizedNextSessionId, ident);
             }
-            if (this.voiceEnabledBySessionId?.has?.(normalizedSessionId) && !this.voiceEnabledBySessionId?.has?.(normalizedNextSessionId)) {
-                const voice = this.voiceEnabledBySessionId.get(normalizedSessionId);
+            if (this.voiceEnabledBySessionId?.has?.(normalizedSessionId)) {
                 this.voiceEnabledBySessionId.delete(normalizedSessionId);
-                this.voiceEnabledBySessionId.set(normalizedNextSessionId, voice);
+                this.voiceEnabledBySessionId.add(normalizedNextSessionId);
             }
             removeLivePlayer(normalizedSessionId);
         }

@@ -1,0 +1,8 @@
+{
+  "js/app.js": "ff73a0b3cca2b2778fb67ea8cf77e72f03eb212eca5e0d31b2271e3db57d8501",
+  "js/voice.js": "0634b6dd18e3a035662ff51c378873181d4e60f36fe9acbc225a379238870dd6",
+  "js/sounds.js": "cc922a6e11563f47dcb13677716cdb1b0244266754b37ffa9fb79bc3a5e1dc54",
+  "android/app/src/main/java/az/simplesoft/dominotelefon/DominoAudioPlugin.java": "1af5c5036b0c9f9ee847c355528c8191810e28900c3beb4d45b536eb9820b8a7",
+  "server/DominoRoom.js": "7560162ce5fa827efba957fa131abbacb21a22f96d8235734e4e52d81f808bd0",
+  "docs/remediation/review/media-fixture.js": "4683e1f5c1bed31c23b3fe54e24cda8cc73b70b3f14404e3110e424c6e667440"
+}

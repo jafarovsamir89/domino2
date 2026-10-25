@@ -1,0 +1,15 @@
+Native deny: pass
+Native allow/stop: pass
+Actual late stream after stop: pass
+Native HOME capture stop/restart: pass
+Real sound callback cancellation/new sound: pass
+System revoke terminates audit capture: pass
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+browserContext.newCDPSession: Target page, context or browser has been closed
+    at connect (/Users/macbookair/Documents/domino/docs/remediation/scripts/media-permission-device.mjs:17:37)
+    at async file:///Users/macbookair/Documents/domino/docs/remediation/scripts/media-permission-device.mjs:67:2
+
+Node.js v25.6.0

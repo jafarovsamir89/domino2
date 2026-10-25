@@ -1,0 +1,468 @@
+✖ js/sounds.js: an old delayed bounce cannot sound after mute and unmute (3.530083ms)
+✖ js/sounds.js: delayed effects from before backgrounding are discarded on return (0.715791ms)
+✔ js/sounds.js: master mute prevents all procedural nodes including a delayed bounce (0.698083ms)
+✔ js/sounds.js: legacy mute preference also silences effects (1.369916ms)
+✔ js/sounds.js: music/effects levels are independent and persist with the master state (1.094208ms)
+✔ js/sounds.js: hidden page suspends playback and cannot create new effects (0.592917ms)
+✔ js/sounds.js: native lifecycle gates both engines without changing preferences (6.088ms)
+✔ js/sounds.js: a delayed native configure result cannot unmute after the Activity paused (1.163041ms)
+✖ www/js/sounds.js: an old delayed bounce cannot sound after mute and unmute (1.073ms)
+✖ www/js/sounds.js: delayed effects from before backgrounding are discarded on return (0.739458ms)
+✔ www/js/sounds.js: master mute prevents all procedural nodes including a delayed bounce (0.571041ms)
+✔ www/js/sounds.js: legacy mute preference also silences effects (0.453625ms)
+✔ www/js/sounds.js: music/effects levels are independent and persist with the master state (0.995ms)
+✔ www/js/sounds.js: hidden page suspends playback and cannot create new effects (0.464125ms)
+✔ www/js/sounds.js: native lifecycle gates both engines without changing preferences (1.597708ms)
+✔ www/js/sounds.js: a delayed native configure result cannot unmute after the Activity paused (1.218167ms)
+✖ js/voice.js: late microphone result after disable is stopped and never announces enabled (3.89775ms)
+✖ js/voice.js: late microphone result after reset is stopped and never announces enabled (0.614792ms)
+✖ js/voice.js: late microphone result after destroy is stopped and never announces enabled (1.502459ms)
+✖ js/voice.js: late microphone result after replace-room is stopped and never announces enabled (0.822209ms)
+✖ js/voice.js: leaving a room stops an already live stream and the manager can be used in a new room (0.674709ms)
+✖ js/voice.js: final destroy prevents new microphone requests (0.674291ms)
+✖ js/voice.js: an old rejection cannot disable a fresh microphone request (0.67825ms)
+✖ js/voice.js: repeated enable calls share one capture request (0.560875ms)
+✖ js/voice.js: transport failure cannot prevent microphone cleanup (0.829625ms)
+✖ js/voice.js: native background stops capture, pause for a permission dialog does not cancel it (7.961125ms)
+✖ www/js/voice.js: late microphone result after disable is stopped and never announces enabled (1.275875ms)
+✖ www/js/voice.js: late microphone result after reset is stopped and never announces enabled (0.512917ms)
+✖ www/js/voice.js: late microphone result after destroy is stopped and never announces enabled (0.4965ms)
+✖ www/js/voice.js: late microphone result after replace-room is stopped and never announces enabled (1.210667ms)
+✖ www/js/voice.js: leaving a room stops an already live stream and the manager can be used in a new room (0.616083ms)
+✖ www/js/voice.js: final destroy prevents new microphone requests (0.620375ms)
+✖ www/js/voice.js: an old rejection cannot disable a fresh microphone request (1.094458ms)
+✖ www/js/voice.js: repeated enable calls share one capture request (0.695041ms)
+✖ www/js/voice.js: transport failure cannot prevent microphone cleanup (0.5ms)
+✖ www/js/voice.js: native background stops capture, pause for a permission dialog does not cancel it (3.231417ms)
+ℹ tests 36
+ℹ suites 0
+ℹ pass 12
+ℹ fail 24
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 113.678959
+
+✖ failing tests:
+
+test at server/test/audio-settings.test.js:14:2
+✖ js/sounds.js: an old delayed bounce cannot sound after mute and unmute (3.530083ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+
+  2 !== 1
+
+      at TestContext.<anonymous> (/Users/macbookair/Documents/domino/server/test/audio-settings.test.js:15:160)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.start (node:internal/test_runner/test:1015:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:358:17) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 2,
+    expected: 1,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at server/test/audio-settings.test.js:17:2
+✖ js/sounds.js: delayed effects from before backgrounding are discarded on return (0.715791ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+
+  4 !== 3
+
+      at TestContext.<anonymous> (/Users/macbookair/Documents/domino/server/test/audio-settings.test.js:18:231)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:787:18)
+      at Test.postRun (node:internal/test_runner/test:1247:19)
+      at Test.run (node:internal/test_runner/test:1175:12)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:358:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 4,
+    expected: 3,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at server/test/audio-settings.test.js:14:2
+✖ www/js/sounds.js: an old delayed bounce cannot sound after mute and unmute (1.073ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+
+  2 !== 1
+
+      at TestContext.<anonymous> (/Users/macbookair/Documents/domino/server/test/audio-settings.test.js:15:160)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:787:18)
+      at Test.postRun (node:internal/test_runner/test:1247:19)
+      at Test.run (node:internal/test_runner/test:1175:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 2,
+    expected: 1,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at server/test/audio-settings.test.js:17:2
+✖ www/js/sounds.js: delayed effects from before backgrounding are discarded on return (0.739458ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+
+  4 !== 3
+
+      at TestContext.<anonymous> (/Users/macbookair/Documents/domino/server/test/audio-settings.test.js:18:231)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:787:18)
+      at Test.postRun (node:internal/test_runner/test:1247:19)
+      at Test.run (node:internal/test_runner/test:1175:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 4,
+    expected: 3,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at server/test/voice-lifecycle.test.js:14:67
+✖ js/voice.js: late microphone result after disable is stopped and never announces enabled (3.89775ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+
+  'live' !== 'ended'
+
+      at TestContext.<anonymous> (/Users/macbookair/Documents/domino/server/test/voice-lifecycle.test.js:18:10)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:358:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'live',
+    expected: 'ended',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at server/test/voice-lifecycle.test.js:14:67
+✖ js/voice.js: late microphone result after reset is stopped and never announces enabled (0.614792ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+
+  'live' !== 'ended'
+
+      at TestContext.<anonymous> (/Users/macbookair/Documents/domino/server/test/voice-lifecycle.test.js:18:10)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'live',
+    expected: 'ended',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at server/test/voice-lifecycle.test.js:14:67
+✖ js/voice.js: late microphone result after destroy is stopped and never announces enabled (1.502459ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+
+  'live' !== 'ended'
+
+      at TestContext.<anonymous> (/Users/macbookair/Documents/domino/server/test/voice-lifecycle.test.js:18:10)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'live',
+    expected: 'ended',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at server/test/voice-lifecycle.test.js:14:67
+✖ js/voice.js: late microphone result after replace-room is stopped and never announces enabled (0.822209ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+
+  'live' !== 'ended'
+
+      at TestContext.<anonymous> (/Users/macbookair/Documents/domino/server/test/voice-lifecycle.test.js:18:10)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'live',
+    expected: 'ended',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at server/test/voice-lifecycle.test.js:20:2
+✖ js/voice.js: leaving a room stops an already live stream and the manager can be used in a new room (0.674709ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+
+  'live' !== 'ended'
+
+      at TestContext.<anonymous> (/Users/macbookair/Documents/domino/server/test/voice-lifecycle.test.js:22:30)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'live',
+    expected: 'ended',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at server/test/voice-lifecycle.test.js:26:2
+✖ js/voice.js: final destroy prevents new microphone requests (0.674291ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+
+  1 !== 0
+
+      at TestContext.<anonymous> (/Users/macbookair/Documents/domino/server/test/voice-lifecycle.test.js:27:89)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:787:18)
+      at Test.postRun (node:internal/test_runner/test:1247:19)
+      at Test.run (node:internal/test_runner/test:1175:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at server/test/voice-lifecycle.test.js:29:2
+✖ js/voice.js: an old rejection cannot disable a fresh microphone request (0.67825ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+
+  false !== true
+
+      at TestContext.<anonymous> (/Users/macbookair/Documents/domino/server/test/voice-lifecycle.test.js:32:10)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at server/test/voice-lifecycle.test.js:34:2
+✖ js/voice.js: repeated enable calls share one capture request (0.560875ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+
+  2 !== 1
+
+      at TestContext.<anonymous> (/Users/macbookair/Documents/domino/server/test/voice-lifecycle.test.js:35:103)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:787:18)
+      at Test.postRun (node:internal/test_runner/test:1247:19)
+      at Test.run (node:internal/test_runner/test:1175:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 2,
+    expected: 1,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at server/test/voice-lifecycle.test.js:37:2
+✖ js/voice.js: transport failure cannot prevent microphone cleanup (0.829625ms)
+  Error: synthetic-transport-down
+      at f.game.network.sendVoiceSignal (/Users/macbookair/Documents/domino/server/test/voice-lifecycle.test.js:39:45)
+      at VoiceChatManager.disableVoice (evalmachine.<anonymous>:274:27)
+      at TestContext.<anonymous> (/Users/macbookair/Documents/domino/server/test/voice-lifecycle.test.js:39:95)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7)
+
+test at server/test/voice-lifecycle.test.js:41:2
+✖ js/voice.js: native background stops capture, pause for a permission dialog does not cancel it (7.961125ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+
+  'live' !== 'ended'
+
+      at TestContext.<anonymous> (/Users/macbookair/Documents/domino/server/test/voice-lifecycle.test.js:46:10)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'live',
+    expected: 'ended',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at server/test/voice-lifecycle.test.js:14:67
+✖ www/js/voice.js: late microphone result after disable is stopped and never announces enabled (1.275875ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+
+  'live' !== 'ended'
+
+      at TestContext.<anonymous> (/Users/macbookair/Documents/domino/server/test/voice-lifecycle.test.js:18:10)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'live',
+    expected: 'ended',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at server/test/voice-lifecycle.test.js:14:67
+✖ www/js/voice.js: late microphone result after reset is stopped and never announces enabled (0.512917ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+
+  'live' !== 'ended'
+
+      at TestContext.<anonymous> (/Users/macbookair/Documents/domino/server/test/voice-lifecycle.test.js:18:10)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'live',
+    expected: 'ended',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at server/test/voice-lifecycle.test.js:14:67
+✖ www/js/voice.js: late microphone result after destroy is stopped and never announces enabled (0.4965ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+
+  'live' !== 'ended'
+
+      at TestContext.<anonymous> (/Users/macbookair/Documents/domino/server/test/voice-lifecycle.test.js:18:10)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'live',
+    expected: 'ended',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at server/test/voice-lifecycle.test.js:14:67
+✖ www/js/voice.js: late microphone result after replace-room is stopped and never announces enabled (1.210667ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+
+  'live' !== 'ended'
+
+      at TestContext.<anonymous> (/Users/macbookair/Documents/domino/server/test/voice-lifecycle.test.js:18:10)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'live',
+    expected: 'ended',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at server/test/voice-lifecycle.test.js:20:2
+✖ www/js/voice.js: leaving a room stops an already live stream and the manager can be used in a new room (0.616083ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+
+  'live' !== 'ended'
+
+      at TestContext.<anonymous> (/Users/macbookair/Documents/domino/server/test/voice-lifecycle.test.js:22:30)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'live',
+    expected: 'ended',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at server/test/voice-lifecycle.test.js:26:2
+✖ www/js/voice.js: final destroy prevents new microphone requests (0.620375ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+
+  1 !== 0
+
+      at TestContext.<anonymous> (/Users/macbookair/Documents/domino/server/test/voice-lifecycle.test.js:27:89)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:787:18)
+      at Test.postRun (node:internal/test_runner/test:1247:19)
+      at Test.run (node:internal/test_runner/test:1175:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at server/test/voice-lifecycle.test.js:29:2
+✖ www/js/voice.js: an old rejection cannot disable a fresh microphone request (1.094458ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+
+  false !== true
+
+      at TestContext.<anonymous> (/Users/macbookair/Documents/domino/server/test/voice-lifecycle.test.js:32:10)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at server/test/voice-lifecycle.test.js:34:2
+✖ www/js/voice.js: repeated enable calls share one capture request (0.695041ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+
+  2 !== 1
+
+      at TestContext.<anonymous> (/Users/macbookair/Documents/domino/server/test/voice-lifecycle.test.js:35:103)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:787:18)
+      at Test.postRun (node:internal/test_runner/test:1247:19)
+      at Test.run (node:internal/test_runner/test:1175:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 2,
+    expected: 1,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at server/test/voice-lifecycle.test.js:37:2
+✖ www/js/voice.js: transport failure cannot prevent microphone cleanup (0.5ms)
+  Error: synthetic-transport-down
+      at f.game.network.sendVoiceSignal (/Users/macbookair/Documents/domino/server/test/voice-lifecycle.test.js:39:45)
+      at VoiceChatManager.disableVoice (evalmachine.<anonymous>:274:27)
+      at TestContext.<anonymous> (/Users/macbookair/Documents/domino/server/test/voice-lifecycle.test.js:39:95)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7)
+
+test at server/test/voice-lifecycle.test.js:41:2
+✖ www/js/voice.js: native background stops capture, pause for a permission dialog does not cancel it (3.231417ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+
+  'live' !== 'ended'
+
+      at TestContext.<anonymous> (/Users/macbookair/Documents/domino/server/test/voice-lifecycle.test.js:46:10)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'live',
+    expected: 'ended',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

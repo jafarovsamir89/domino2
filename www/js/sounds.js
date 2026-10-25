@@ -18,6 +18,18 @@ let nativeAudio = null;
 let nativeAudioReady = null;
 let nativeStateRevision = 0;
 let nativeConfigureRevision = 0;
+let effectsGeneration = 0;
+const activeEffectSources = new Set();
+function effectSource(context, method) {
+    const source = context[method]();
+    activeEffectSources.add(source);
+    source.onended = () => activeEffectSources.delete(source);
+    return source;
+}
+function delayedEffect(play, delay) {
+    const generation = effectsGeneration;
+    setTimeout(() => { if (generation === effectsGeneration && effectsEnabled()) play(); }, delay);
+}
 const effectsEnabled = () => !audioSettings.masterMuted && !lifecycleMuted && !nativeMuted && audioSettings.effectsVolume > 0;
 export function getAudioSettings() { return { ...audioSettings }; }
 export function updateAudioSettings(patch = {}) {
@@ -33,6 +45,12 @@ export function updateAudioSettings(patch = {}) {
     return getAudioSettings();
 }
 function applyAudioState() {
+    if (!effectsEnabled()) {
+        effectsGeneration++;
+        // Suspending a context freezes its clock; queued notes must not resume later.
+        for (const source of activeEffectSources) { try { source.stop(); } catch {} }
+        activeEffectSources.clear();
+    }
     if (effectsGain) effectsGain.gain.value = effectsEnabled() ? audioSettings.effectsVolume : 0;
     if (currentAudio) {
         currentAudio.volume = audioSettings.musicVolume;
@@ -146,7 +164,7 @@ function playClack(freq = 150, noiseVol = 0.3, oscVol = 0.2, dur = 0.1) {
         const now = c.currentTime;
 
         // 1. Impact Noise (the "click")
-        const noise = c.createBufferSource();
+        const noise = effectSource(c, 'createBufferSource');
         const buffer = getNoiseBuffer();
         if (!buffer) return;
         noise.buffer = buffer;
@@ -158,7 +176,7 @@ function playClack(freq = 150, noiseVol = 0.3, oscVol = 0.2, dur = 0.1) {
         noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
 
         // 2. Body resonance (the "thud")
-        const osc = c.createOscillator();
+        const osc = effectSource(c, 'createOscillator');
         osc.type = 'sine';
         osc.frequency.setValueAtTime(freq, now);
         const oscGain = c.createGain();
@@ -176,7 +194,7 @@ function playClack(freq = 150, noiseVol = 0.3, oscVol = 0.2, dur = 0.1) {
 export function sndPlace() {
     if (!effectsEnabled()) return;
     playClack(180, 0.6, 0.4, 0.07); // Louder, sharper clack
-    setTimeout(() => playClack(140, 0.2, 0.1, 0.05), 30); // Subtle secondary bounce
+    delayedEffect(() => playClack(140, 0.2, 0.1, 0.05), 30); // Subtle secondary bounce
 }
 
 export function sndScore() { 
@@ -187,7 +205,7 @@ export function sndScore() {
         const now = c.currentTime;
         const notes = [660, 880, 1100];
         notes.forEach((f, i) => {
-            const osc = c.createOscillator();
+            const osc = effectSource(c, 'createOscillator');
             const g = c.createGain();
             osc.connect(g).connect(effectsGain);
             osc.frequency.setValueAtTime(f, now + i * 0.07);
@@ -203,7 +221,7 @@ export function sndDraw() {
         const c = getCtx();
         if (!c) return;
         const now = c.currentTime;
-        const noise = c.createBufferSource();
+        const noise = effectSource(c, 'createBufferSource');
         const buffer = getNoiseBuffer();
         if (!buffer) return;
         noise.buffer = buffer;
@@ -230,7 +248,7 @@ export function sndWin() {
         const now = c.currentTime;
         const melody = [523, 659, 784, 1047];
         melody.forEach((f, i) => {
-            const osc = c.createOscillator();
+            const osc = effectSource(c, 'createOscillator');
             const g = c.createGain();
             osc.type = 'triangle';
             osc.connect(g).connect(effectsGain);
@@ -245,7 +263,7 @@ export function sndWin() {
 export function sndGosha() {
     if (!effectsEnabled()) return;
     sndScore();
-    setTimeout(() => playClack(200, 0.7, 0.4, 0.12), 80);
+    delayedEffect(() => playClack(200, 0.7, 0.4, 0.12), 80);
 }
 
 // Background Music Controller

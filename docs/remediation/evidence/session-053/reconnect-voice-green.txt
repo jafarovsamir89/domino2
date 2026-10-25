@@ -1,0 +1,424 @@
+ℹ️  optional .env file not found: .env.development, .env
+[ROOM_DEBUG] leave:start {
+  roomId: '',
+  roomCode: '',
+  sessionId: 'session-1',
+  consented: false,
+  playerOrder: [ 'session-1' ],
+  players: [
+    {
+      sessionId: 'session-1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: -1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[ROOM_DEBUG] leave:explicit {
+  roomId: '',
+  roomCode: '',
+  sessionId: 'session-1',
+  playerName: 'Alice'
+}
+[ROOM_DEBUG] turnTimerPausedForReconnect {
+  roomId: '',
+  roomCode: '',
+  sessionId: 'session-1',
+  playerName: 'Alice',
+  expiresAt: 1792971377506,
+  source: 'accidental_disconnect'
+}
+[ROOM_DEBUG] leave:waiting_reconnect {
+  roomId: '',
+  roomCode: '',
+  sessionId: 'session-1',
+  reason: 'accidental_disconnect',
+  graceStartedAt: 1792971257506,
+  graceExpiresAt: 1792971377506,
+  graceMs: 120000
+}
+{"schemaVersion":1,"event":"reconnect_completed","service":"game","deploySha":"unknown","at":"2026-10-25T23:34:17.507Z","source":"allowReconnection"}
+[ROOM_DEBUG] leave:reconnected {
+  roomId: '',
+  roomCode: '',
+  sessionId: 'session-1',
+  nextSessionId: 'session-1',
+  reconnectSuccessAt: 1792971257507,
+  source: 'allowReconnection',
+  players: [
+    {
+      sessionId: 'session-1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: -1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[ROOM_DEBUG] leave:start {
+  roomId: '',
+  roomCode: '',
+  sessionId: 'session-1',
+  consented: true,
+  playerOrder: [ 'session-1' ],
+  players: [
+    {
+      sessionId: 'session-1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: -1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[ROOM_DEBUG] leave:explicit {
+  roomId: '',
+  roomCode: '',
+  sessionId: 'session-1',
+  playerName: 'Alice'
+}
+[ROOM_DEBUG] leave:removed {
+  roomId: '',
+  roomCode: '',
+  sessionId: 'session-1',
+  reason: 'explicit leave',
+  explicitLeave: true
+}
+[ROOM_DEBUG] leave:start {
+  roomId: '',
+  roomCode: '',
+  sessionId: 'session-1',
+  consented: false,
+  playerOrder: [ 'session-1' ],
+  players: [
+    {
+      sessionId: 'session-1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: -1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[ROOM_DEBUG] leave:explicit {
+  roomId: '',
+  roomCode: '',
+  sessionId: 'session-1',
+  playerName: 'Alice'
+}
+[ROOM_DEBUG] turnTimerPausedForReconnect {
+  roomId: '',
+  roomCode: '',
+  sessionId: 'session-1',
+  playerName: 'Alice',
+  expiresAt: 1792971377514,
+  source: 'accidental_disconnect'
+}
+[ROOM_DEBUG] leave:waiting_reconnect {
+  roomId: '',
+  roomCode: '',
+  sessionId: 'session-1',
+  reason: 'accidental_disconnect',
+  graceStartedAt: 1792971257514,
+  graceExpiresAt: 1792971377514,
+  graceMs: 120000
+}
+[ROOM_DEBUG] leave:grace_timeout {
+  roomId: '',
+  roomCode: '',
+  sessionId: 'session-1',
+  playerName: 'Alice',
+  expiresAt: 1792971377514
+}
+[ROOM_DEBUG] leave:start {
+  roomId: '',
+  roomCode: '',
+  sessionId: 'session-1',
+  consented: false,
+  playerOrder: [ 'session-1' ],
+  players: [
+    {
+      sessionId: 'session-1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: -1,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    }
+  ]
+}
+[ROOM_DEBUG] leave:explicit {
+  roomId: '',
+  roomCode: '',
+  sessionId: 'session-1',
+  playerName: 'Alice'
+}
+[ROOM_DEBUG] turnTimerPausedForReconnect {
+  roomId: '',
+  roomCode: '',
+  sessionId: 'session-1',
+  playerName: 'Alice',
+  expiresAt: 1792971377514,
+  source: 'accidental_disconnect'
+}
+[ROOM_DEBUG] leave:waiting_reconnect {
+  roomId: '',
+  roomCode: '',
+  sessionId: 'session-1',
+  reason: 'accidental_disconnect',
+  graceStartedAt: 1792971257514,
+  graceExpiresAt: 1792971377514,
+  graceMs: 120000
+}
+[ROOM_DEBUG] leave:grace_timeout {
+  roomId: '',
+  roomCode: '',
+  sessionId: 'session-1',
+  playerName: 'Alice',
+  expiresAt: 1792971377514
+}
+[ROOM_DEBUG] leave:start {
+  roomId: '',
+  roomCode: '',
+  sessionId: 'session-1',
+  consented: false,
+  playerOrder: [ 'session-1', 'session-2' ],
+  players: [
+    {
+      sessionId: 'session-1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: -1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 'session-2',
+      isBot: false,
+      isConnected: true,
+      seatIndex: -1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[ROOM_DEBUG] leave:explicit {
+  roomId: '',
+  roomCode: '',
+  sessionId: 'session-1',
+  playerName: 'Alice'
+}
+[ROOM_DEBUG] leave:waiting_reconnect {
+  roomId: '',
+  roomCode: '',
+  sessionId: 'session-1',
+  reason: 'accidental_disconnect',
+  graceStartedAt: 1792971257515,
+  graceExpiresAt: 1792971377515,
+  graceMs: 120000
+}
+[ROOM_DEBUG] leave:grace_timeout {
+  roomId: '',
+  roomCode: '',
+  sessionId: 'session-1',
+  playerName: 'Alice',
+  expiresAt: 1792971377515
+}
+[ROOM_DEBUG] leave:grace_timeout {
+  roomId: '',
+  roomCode: '',
+  sessionId: 'session-1',
+  playerName: 'Alice',
+  expiresAt: 1792971257514
+}
+[CLIENT_DEBUG] network:leaveRoom {
+  hasRoom: true,
+  explicit: true,
+  manualLeaveRequested: false,
+  reconnectInProgress: false
+}
+[CLIENT_DEBUG] network:leaveRoom {
+  hasRoom: true,
+  explicit: false,
+  manualLeaveRequested: false,
+  reconnectInProgress: false
+}
+[ROOM_DEBUG] turnTimerPausedForReconnect {
+  roomId: '',
+  roomCode: '',
+  sessionId: 'session-1',
+  playerName: 'Alice',
+  expiresAt: 1792971377520,
+  source: 'scheduleTurnTimer'
+}
+{"schemaVersion":1,"event":"reconnect_completed","service":"game","deploySha":"unknown","at":"2026-10-25T23:34:17.520Z","source":"join"}
+[ROOM_DEBUG] leave:reconnected {
+  roomId: '',
+  roomCode: '',
+  sessionId: 'session-1',
+  nextSessionId: 'session-1',
+  reconnectSuccessAt: 1792971257520,
+  source: 'join',
+  players: [
+    {
+      sessionId: 'session-1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: -1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[ROOM_DEBUG] turnTimerResumedAfterReconnect { roomId: '', roomCode: '', sessionId: 'session-1', source: 'join' }
+{"schemaVersion":1,"event":"reconnect_completed","service":"game","deploySha":"unknown","at":"2026-10-25T23:34:17.524Z","source":"reconnect"}
+[ROOM_DEBUG] leave:reconnected {
+  roomId: '',
+  roomCode: '',
+  sessionId: 'session-1',
+  nextSessionId: 'session-1',
+  reconnectSuccessAt: 1792971257524,
+  source: 'reconnect',
+  players: [
+    {
+      sessionId: 'session-1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: -1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[ROOM_DEBUG] turnTimerResumedAfterReconnect {
+  roomId: '',
+  roomCode: '',
+  sessionId: 'session-1',
+  source: 'reconnect'
+}
+{"schemaVersion":1,"event":"reconnect_completed","service":"game","deploySha":"unknown","at":"2026-10-25T23:34:17.524Z","source":"reconnect"}
+[ROOM_DEBUG] leave:reconnected {
+  roomId: '',
+  roomCode: '',
+  sessionId: 'session-1',
+  nextSessionId: 'session-1',
+  reconnectSuccessAt: 1792971257524,
+  source: 'reconnect',
+  players: [
+    {
+      sessionId: 'session-1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: -1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+{"schemaVersion":1,"event":"reconnect_completed","service":"game","deploySha":"unknown","at":"2026-10-25T23:34:17.524Z","source":"join"}
+[ROOM_DEBUG] leave:reconnected {
+  roomId: '',
+  roomCode: '',
+  sessionId: 'session-1',
+  nextSessionId: 'session-2',
+  reconnectSuccessAt: 1792971257524,
+  source: 'join',
+  players: [
+    {
+      sessionId: 'session-2',
+      isBot: false,
+      isConnected: true,
+      seatIndex: -1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+{"schemaVersion":1,"event":"reconnect_completed","service":"game","deploySha":"unknown","at":"2026-10-25T23:34:17.524Z","source":"join"}
+[ROOM_DEBUG] leave:reconnected {
+  roomId: '',
+  roomCode: '',
+  sessionId: 'session-1',
+  nextSessionId: 'session-2',
+  reconnectSuccessAt: 1792971257524,
+  source: 'join',
+  players: [
+    {
+      sessionId: 'session-2',
+      isBot: false,
+      isConnected: true,
+      seatIndex: -1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+{"schemaVersion":1,"event":"reconnect_completed","service":"game","deploySha":"unknown","at":"2026-10-25T23:34:17.524Z","source":"join"}
+[ROOM_DEBUG] leave:reconnected {
+  roomId: '',
+  roomCode: '',
+  sessionId: 'session-1',
+  nextSessionId: 'session-2',
+  reconnectSuccessAt: 1792971257524,
+  source: 'join',
+  players: [
+    {
+      sessionId: 'session-2',
+      isBot: false,
+      isConnected: true,
+      seatIndex: -1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+✔ accidental disconnect during an active game uses reconnect grace and keeps the match alive (8.400292ms)
+✔ explicit leave marker for an active game ends the match immediately (0.499917ms)
+✔ grace timeout triggers a disconnect forfeit (0.48125ms)
+✔ disconnect keeps live presence offline during grace and removes it after timeout (0.725167ms)
+✔ grace timeout starts bot takeover instead of forfeit when the feature is enabled (0.445083ms)
+✔ explicit leave stays a forfeit and never starts bot takeover (0.172416ms)
+✔ NetworkManager explicit leave sends the marker before room.leave (0.895125ms)
+✔ NetworkManager sends resume_control when reclaim is requested (0.848041ms)
+✔ non-explicit leave does not send the explicit leave marker (0.167791ms)
+✔ beforeunload and visibility handlers do not send explicit leave (2.67975ms)
+✔ current-player reconnect grace pauses the turn timer and restores full state on reconnect (0.561708ms)
+✔ handleTurnTimeout ignores a reconnect-hold current player (0.111833ms)
+✔ client reconnect restore clears stale turn state and requests sync (2.658083ms)
+✔ validateClientAction rejects if player.isConnected === false (0.09325ms)
+✔ validateClientAction rejects if pendingDisconnects.has(sessionId) (0.079083ms)
+✔ validateClientAction rejects when the seat is under bot takeover (0.059625ms)
+✔ reconnect current player resumes fresh turnDeadlineAt (0.235875ms)
+✔ sendReconnectRestoreState sends full_state after turn timer resumed (0.166917ms)
+✔ reusable session restore sends full_state to new sessionId (0.249042ms)
+✔ reconnect migrates enabled voice Set membership without throwing or retaining the old session (0.238167ms)
+✔ network.sendPlay returns null if navigator.onLine === false (0.316334ms)
+✔ client check app.js authoritative reconnect logic via static source scan (4.269584ms)
+✔ client validMoves reconstruction fallback on state update (0.109333ms)
+✔ team takeover bot uses public missing-suit evidence to help its partner (0.501416ms)
+ℹ tests 24
+ℹ suites 0
+ℹ pass 24
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 228.115083

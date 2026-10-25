@@ -1,0 +1,15 @@
+{
+  "scope": "Actual Android permission dialogs and product VoiceChatManager, local audit pages only; no recording or transmission",
+  "results": {
+    "homeDuringPrompt": {
+      "oldRequestEnabled": false,
+      "local": false,
+      "lateGrantDoesNotEnable": true
+    },
+    "originChangeDuringPrompt": {
+      "currentOrigin": "http://127.0.0.1:4186",
+      "oldRequestNotAttached": true,
+      "newCaptureDenied": true
+    }
+  }
+}

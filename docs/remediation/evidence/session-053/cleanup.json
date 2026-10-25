@@ -1,0 +1,15 @@
+{
+  "permissionMeaning": "Original state was denied, no user-set/fixed flags; verified denied again after tests.",
+  "audioPreferencesRestored": true,
+  "playMetadataUnchanged": true,
+  "ownPreview4186Stopped": true,
+  "ownAdbMappingsRemoved": true,
+  "audioRecordingOrPeerTransmission": false,
+  "productionChanged": false,
+  "nativeAdsEnabled": false,
+  "sourceWwwParity": true,
+  "auditPermissionRestoredToOriginal": true,
+  "auditRecordAudioGranted": false,
+  "auditUserSetFlag": false,
+  "auditUserFixedFlag": false
+}

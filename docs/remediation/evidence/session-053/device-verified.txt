@@ -1,0 +1,7 @@
+Native deny: pass
+Native allow/stop: pass
+Actual late stream after stop: pass
+Native HOME capture stop/restart: pass
+Real sound callback cancellation/new sound: pass
+System revoke terminates audit capture: pass
+Media permission/lifecycle checks complete.

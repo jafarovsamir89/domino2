@@ -1,16 +1,28 @@
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
 function load(asset,store=new Map(),native={}){
- const counts={oscillators:0,sources:0,contexts:0,plays:0},audio=[],timers=[],listeners={};
+ const counts={oscillators:0,sources:0,contexts:0,plays:0,stops:0},audio=[],timers=[],listeners={},sourceNodes=[];
  const param=()=>({value:1,setValueAtTime(v){this.value=v},exponentialRampToValueAtTime(v){this.value=v}});
- const node=()=>({gain:param(),frequency:param(),connect(){return this},start(){},stop(){}});
- class Context{constructor(){counts.contexts++;this.currentTime=0;this.sampleRate=100;this.state='running';this.destination={}}createGain(){return node()}createBiquadFilter(){return node()}createOscillator(){counts.oscillators++;return node()}createBufferSource(){counts.sources++;return node()}createBuffer(){return {getChannelData:()=>new Float32Array(200)}}resume(){return Promise.resolve()}suspend(){return Promise.resolve()}}
+ const node=()=>({gain:param(),frequency:param(),connect(){return this},start(){},stop(){counts.stops++;}});
+ class Context{constructor(){counts.contexts++;this.currentTime=0;this.sampleRate=100;this.state='running';this.destination={}}createGain(){return node()}createBiquadFilter(){return node()}createOscillator(){counts.oscillators++;const source=node();sourceNodes.push(source);return source}createBufferSource(){counts.sources++;const source=node();sourceNodes.push(source);return source}createBuffer(){return {getChannelData:()=>new Float32Array(200)}}resume(){return Promise.resolve()}suspend(){return Promise.resolve()}}
  class Audio{constructor(src){this.src=src;this.paused=true;audio.push(this)}play(){counts.plays++;this.paused=false;return Promise.resolve()}pause(){this.paused=true}}
  const document={hidden:false,addEventListener:(name,fn)=>{listeners[name]=fn}};
  const source=fs.readFileSync(path.resolve(__dirname,'../..',asset),'utf8').replace(/export /g,'');
  const api=vm.runInNewContext(source+'\n({sndPlace,sndScore,sndDraw,sndPass,sndWin,sndGosha,startMenuMusic,toggleMute,isMuted,getAudioSettings:typeof getAudioSettings==="function"?getAudioSettings:null,updateAudioSettings:typeof updateAudioSettings==="function"?updateAudioSettings:null})',{window:{AudioContext:Context,performance:{now:()=>0},...native,addEventListener:(name,fn)=>{listeners[name]=fn}},Audio,document,localStorage:{getItem:k=>store.get(k)||null,setItem:(k,v)=>store.set(k,v)},setTimeout:fn=>timers.push(fn),console});
- return {api,counts,audio,timers,store,document,listeners};
+ return {api,counts,audio,timers,store,document,listeners,sourceNodes};
 }
 for(const asset of ['js/sounds.js','www/js/sounds.js']){
+ test(`${asset}: background cancels already scheduled notes before a context can resume`,()=>{
+  const f=load(asset);f.api.sndScore();const before=f.counts.stops;f.document.hidden=true;f.listeners.visibilitychange();assert.equal(f.counts.stops,before+3);
+ });
+ test(`${asset}: completed notes are released and are not stopped again by mute`,()=>{
+  const f=load(asset);f.api.sndScore();assert.equal(f.sourceNodes.every(node=>typeof node.onended==='function'),true);f.sourceNodes.forEach(node=>node.onended());const before=f.counts.stops;f.api.toggleMute();assert.equal(f.counts.stops,before);
+ });
+ test(`${asset}: an old delayed bounce cannot sound after mute and unmute`,()=>{
+  const f=load(asset);f.api.sndPlace();const before=f.counts.oscillators;f.api.toggleMute();f.api.toggleMute();while(f.timers.length)f.timers.shift()();assert.equal(f.counts.oscillators,before);
+ });
+ test(`${asset}: delayed effects from before backgrounding are discarded on return`,()=>{
+  const f=load(asset);f.api.sndGosha();const before=f.counts.oscillators;f.document.hidden=true;f.listeners.visibilitychange();f.document.hidden=false;f.listeners.visibilitychange();while(f.timers.length)f.timers.shift()();assert.equal(f.counts.oscillators,before);f.api.sndScore();assert.equal(f.counts.oscillators,before+3);
+ });
  test(`${asset}: master mute prevents all procedural nodes including a delayed bounce`,()=>{const {api,counts,timers}=load(asset);api.toggleMute();for(const name of ['sndPlace','sndScore','sndDraw','sndPass','sndWin','sndGosha'])api[name]();while(timers.length)timers.shift()();assert.equal(counts.contexts,0);assert.equal(counts.oscillators,0);assert.equal(counts.sources,0);api.toggleMute();api.sndPlace();const before=counts.oscillators;api.toggleMute();while(timers.length)timers.shift()();assert.equal(counts.oscillators,before);});
  test(`${asset}: legacy mute preference also silences effects`,()=>{const {api,counts}=load(asset,new Map([['domino_music_muted','true']]));assert.equal(api.isMuted(),true);api.sndScore();assert.equal(counts.oscillators,0);});
  test(`${asset}: music/effects levels are independent and persist with the master state`,()=>{const {api,counts,audio,store}=load(asset);api.updateAudioSettings({musicVolume:0.35,effectsVolume:0});api.startMenuMusic();assert.equal(audio[0].volume,0.35);api.sndScore();assert.equal(counts.oscillators,0);api.toggleMute();assert.equal(audio[0].paused,true);const restored=load(asset,store).api.getAudioSettings();assert.equal(restored.masterMuted,true);assert.equal(restored.musicVolume,0.35);assert.equal(restored.effectsVolume,0);});

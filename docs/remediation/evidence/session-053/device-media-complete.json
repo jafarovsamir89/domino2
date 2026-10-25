@@ -1,0 +1,61 @@
+{
+  "scope": "Actual physical Android audit-only microphone and product VoiceChatManager/sounds, no recording/peer transmission or acoustic measurement",
+  "results": {
+    "nativeDeny": {
+      "buttonId": "permission_deny_button",
+      "appLabelVerified": true,
+      "state": {
+        "enabled": false,
+        "local": false,
+        "track": null,
+        "status": "voice-denied",
+        "background": false
+      }
+    },
+    "nativeAllow": {
+      "buttonId": "permission_allow_foreground_only_button",
+      "appLabelVerified": true,
+      "state": {
+        "enabled": true,
+        "local": true,
+        "track": "live",
+        "status": "voice-speaking",
+        "background": false
+      }
+    },
+    "lateResult": {
+      "track": "ended",
+      "local": false,
+      "enabledSignals": 0
+    },
+    "background": {
+      "state": {
+        "enabled": false,
+        "local": false,
+        "track": null,
+        "status": "",
+        "background": true
+      },
+      "explicitRestart": true
+    },
+    "effects": {
+      "oldDelayedNodesAfterMute": 0,
+      "freshScoreNodes": 3
+    },
+    "foreignOrigin": {
+      "origin": "http://127.0.0.1:4186",
+      "denied": true
+    },
+    "systemRevoke": {
+      "priorProcessTerminated": true,
+      "permission": "android.permission.RECORD_AUDIO: granted=false, flags=[ USER_SENSITIVE_WHEN_GRANTED|USER_SENSITIVE_WHEN_DENIED]",
+      "oldCaptureClientGone": true
+    },
+    "nativeCancel": {
+      "enabled": false,
+      "local": false
+    }
+  },
+  "callBluetooth": "not available per owner; not accepted",
+  "natTurn": "not tested; external requirement remains"
+}

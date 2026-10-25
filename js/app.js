@@ -15887,7 +15887,7 @@ class DominoGame {
         this.clearNextDealAdvanceTimeout();
         this.clearTurnTimers();
         this.network.leaveRoom({ explicit: false, reason: 'room_closed' });
-        this.voice?.destroy?.();
+        this.voice?.resetRoom?.();
         this.currentRoomState = null;
         this.resetOnlineResultFlowState();
         this.roomAvatarBySessionId.clear();
@@ -17619,7 +17619,7 @@ class DominoGame {
             this.network.leaveRoom({ explicit: true, reason: 'menu' });
             this.myHand = null;
         }
-        this.voice?.destroy?.();
+        this.voice?.resetRoom?.();
         this.gameActive = false;
         this.matchOver = false;
         this.roundOver = false;

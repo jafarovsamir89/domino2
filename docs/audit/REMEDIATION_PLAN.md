@@ -328,6 +328,8 @@ S039: переносимый builder отдельного пакета .audit, a
 
 #### R-18 · P1 · Voice ICE contract и NAT проверка
 
+S053: на физическом Android воспроизведён и исправлен настоящий live-microphone после Stop+позднего getUserMedia. Generation/room/session guards, stop/reset/destroy/background, cleanup при ошибке транспорта и повторное использование в новой комнате проверены. Native deny/allow/cancel/revoke, HOME и смена origin в pendingдиалоге прошли без записи/передачи аудио. Дополнительно исправлен server Set.get/set crash переподключения с голосом. Fullserver522/522, targeted50/50, reconnect24/24, browser2/2, JVM12. **NAT/TURN/двусторонний Wi-Fi↔LTE ещё не приняты, карточка открыта.** [Результат](../remediation/evidence/session-053/R18_R19_MEDIA_RESULT.md).
+
 Статус: **частично исправлено локально, S026/S034/S038**. STUN/ICE contract и native build сохранены. S038 добавляет чистую origin policy с2Java regression tests, проверяет текущий port/host/scheme перед prompt/result, отменяет pending request при cancellation/background/destroy, не подменяет ожидающий запрос новым. Java21 unit tests и актуальный debug APK после cap sync проходят; APK поверх Play не установлен. Системный диалог и Wi-Fi/LTE relay-only разговор остаются открытыми. [S038 результаты](../remediation/evidence/session-038/TEN_CARD_RESULTS.md), [аппаратная приёмка](../remediation/DEVICE_ACCEPTANCE_NEXT.md).
 
 S039: в отдельную audit APK включён mic allow/stop экран без записи/отправки; отмена позднего stream и остановка при скрытии. Системные prompt/отзыв, NAT/TURN и настоящий двухсторонний звук ещё требуют устройств. [Все результаты S039](../remediation/evidence/session-039/FIFTEEN_CARD_RESULTS.md).
@@ -406,6 +408,8 @@ S039: словари дополнительных accepted-waiting/cancel/play-i
 - **Зависимости:** —. **Исполнитель:** Frontend + native speaker. **Оценка:** 2–4 человеко-дня.
 
 #### R-19 · P2 · Music/effects/master mute
+
+S053: воспроизведены и исправлены запоздавшие callbacks30/80ms после mute/фон и уже запланированные WebAudio notes, которые могли продолжиться после resume Context. Source/www tests и реальные audio nodes Android подтвердили отмену старого эффекта,3новых score nodes и остановку3запланированных нот. **Звонок/Bluetooth/смена выхода ещё не проверены; владелец сейчас не может участвовать, карточка открыта.** [Результат](../remediation/evidence/session-053/R18_R19_MEDIA_RESULT.md).
 
 Статус: **локальные настройки и гонка lifecycle исправлены, S021/S038; внешняя audio-focus приёмка остаётся**. Master/effects/music сохраняются; более старый native configure reply больше не может переопределить новый pause/resume event. Обе root/www regressions падали до исправления, после12/12audio tests pass. Chromium остаётся владельцем focus. Настоящий звонок/Bluetooth ещё не проверены. [S038](../remediation/evidence/session-038/TEN_CARD_RESULTS.md), [S021 device evidence](../remediation/evidence/session-021/summary.json).
 

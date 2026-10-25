@@ -13,11 +13,13 @@ import com.getcapacitor.annotation.CapacitorPlugin;
 public class DominoAudioPlugin extends Plugin {
     private boolean foreground = true;
     private boolean enabled;
+    private boolean background;
 
     private JSObject state() {
         JSObject result = new JSObject();
         result.put("active", foreground && enabled);
         result.put("foreground", foreground);
+        result.put("background", background);
         return result;
     }
     private void publish() { notifyListeners("stateChange", state(), true); }
@@ -29,6 +31,8 @@ public class DominoAudioPlugin extends Plugin {
             call.resolve(state());
         });
     }
+    @Override protected void handleOnStart() { background = false; publish(); }
     @Override protected void handleOnPause() { foreground = false; publish(); }
-    @Override protected void handleOnResume() { foreground = true; publish(); }
+    @Override protected void handleOnResume() { foreground = true; background = false; publish(); }
+    @Override protected void handleOnStop() { background = true; publish(); }
 }

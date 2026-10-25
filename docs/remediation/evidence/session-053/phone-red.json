@@ -1,0 +1,10 @@
+{
+  "scope": "Physical audit WebView actual microphone, no audio recording/transmission; delivery deliberately delayed by test wrapper",
+  "afterDisableThenLateResult": {
+    "trackState": "live",
+    "voiceEnabled": false,
+    "localStreamPresent": true,
+    "enabledSignals": 1
+  },
+  "cleanupTrackState": "ended"
+}

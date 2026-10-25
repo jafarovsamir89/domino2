@@ -1,0 +1,2 @@
+HOME during native prompt, no auto capture, explicit retry: pass
+Origin switch while native permission pending: pass
