@@ -1,0 +1,18 @@
+✔ OAuth requests and native token adoption retain their contract (6.034584ms)
+✔ navigation preserves web return and native browser plugin paths (12.463584ms)
+✔ www/OAuth requests and native token adoption retain their contract (0.976542ms)
+✔ www/navigation preserves web return and native browser plugin paths (10.81325ms)
+✔ postEconomyRequest posts JSON to the resolved economy URL (2.250625ms)
+✔ postEconomyRequest adds Authorization when authToken is provided (0.185292ms)
+✔ postEconomyRequest does not add Authorization when authToken is missing (0.391708ms)
+✔ postReserveEconomyMatch calls the reserve endpoint (0.132083ms)
+✔ postSettleEconomyMatch calls the settle endpoint (0.119083ms)
+✔ economy helpers return the same response object (0.083958ms)
+ℹ tests 10
+ℹ suites 0
+ℹ pass 10
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 143.122667

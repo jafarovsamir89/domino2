@@ -1,0 +1,74 @@
+{
+  "scope": "physical Android audit WebView; synthetic API and playback only; no actual SDK init/load/show or financial grant",
+  "native": "Модуль доступен. Загрузка и показ выключены. Монеты не начисляются.",
+  "results": [
+    {
+      "language": "ru",
+      "before": "Тестовый баланс: 200",
+      "after": "Тестовый баланс: 400",
+      "counters": "Тест: создание 1, показ 1, отмена 0",
+      "bounds": {
+        "width": 352.727294921875,
+        "overflow": false,
+        "buttons": [
+          {
+            "text": "Проверить начисление",
+            "height": 54.181819915771484,
+            "width": 172.3636474609375
+          },
+          {
+            "text": "Закрыть",
+            "height": 54.181819915771484,
+            "width": 172.3636474609375
+          }
+        ]
+      }
+    },
+    {
+      "language": "az",
+      "before": "Тестовый баланс: 200",
+      "after": "Тестовый баланс: 400",
+      "counters": "Тест: создание 1, показ 1, отмена 0",
+      "bounds": {
+        "width": 352,
+        "overflow": false,
+        "buttons": [
+          {
+            "text": "Bonusu yoxla",
+            "height": 44,
+            "width": 172
+          },
+          {
+            "text": "Bağla",
+            "height": 44,
+            "width": 172
+          }
+        ]
+      }
+    },
+    {
+      "language": "en",
+      "before": "Тестовый баланс: 200",
+      "after": "Тестовый баланс: 400",
+      "counters": "Тест: создание 1, показ 1, отмена 0",
+      "bounds": {
+        "width": 352,
+        "overflow": false,
+        "buttons": [
+          {
+            "text": "Check bonus",
+            "height": 44,
+            "width": 172
+          },
+          {
+            "text": "Close",
+            "height": 44,
+            "width": 172
+          }
+        ]
+      }
+    }
+  ],
+  "expiry": "Тестовый баланс: 200",
+  "externalOrigins": []
+}

@@ -1,0 +1,1 @@
+Native disabled gate and synthetic panel UI passed on physical Android in RU/AZ/EN.

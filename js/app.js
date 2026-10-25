@@ -6,6 +6,8 @@ import { AIPlayer } from './ai.js';
 import { Renderer } from './renderer.js?v=social-live-2';
 import { translations } from './translations.js';
 import { AccountClient } from './account.js';
+import { RewardedDailyFlow, createRewardedDailyApi } from './rewardedDailyFlow.js';
+import { RewardedDailyPanel } from './rewardedDailyPanel.js';
 import { VoiceChatManager } from './voice.js';
 import { sndPlace, sndScore, sndDraw, sndPass, sndWin, sndGosha, startMenuMusic, startGameMusic, nextTrack, toggleMute, stopMusic, getAudioSettings, updateAudioSettings } from './sounds.js?v=social-live-1';
 // NetworkManager is loaded as global script
@@ -787,6 +789,7 @@ class DominoGame {
     }
 
     destroy() {
+        this.disposeDailyRewardedPanel();
         clearInterval(this._watchdogId);
         this._watchdogId = null;
         this.closeSocialRealtime();
@@ -1345,11 +1348,15 @@ class DominoGame {
         if (editNameBtn) editNameBtn.addEventListener('click', () => this.openNameEditModal());
         if (editAvatarBtn) editAvatarBtn.addEventListener('click', () => this.openAvatarEditModal());
         if (logoutAccountBtn) logoutAccountBtn.addEventListener('click', async () => {
+            this._rewardedLogoutPending = true;
+            this._dailyBonusAccountEpoch = (this._dailyBonusAccountEpoch || 0) + 1;
+            this.disposeDailyRewardedPanel();
             await this.sendSocialPresenceUpdate('offline').catch(() => {});
             this.closeSocialRealtime();
             await this.account.logout();
             stopMusic();
             this.accountProfile = null;
+            this._rewardedLogoutPending = false;
             this.accountDetails = null;
             this.accountOnline = false;
             this.resetSocialCenterState();
@@ -1405,7 +1412,7 @@ class DominoGame {
         if (dailyBonusClaimBtn) {
             dailyBonusClaimBtn.addEventListener('click', () => {
                 const status = this.dailyBonusState.status;
-                const doubleAvailable = Boolean(status && status.doubleClaimAvailable);
+                const doubleAvailable = status?.rewardedFlowVersion !== 'owner_8day_v1' && Boolean(status && status.doubleClaimAvailable);
                 if (doubleAvailable) {
                     this.claimDailyBonus('rewarded_x2');
                 } else {
@@ -7329,7 +7336,7 @@ class DominoGame {
     }
 
     async loadDailyBonusStatus() {
-        if (!this.hasAuthenticatedAccount()) {
+        if (!this.hasAuthenticatedAccount() || this._rewardedLogoutPending) {
             this.dailyBonusState.status = null;
             this.dailyBonusState.loading = false;
             this.renderDailyBonusCard();
@@ -7337,11 +7344,15 @@ class DominoGame {
         }
 
         this.dailyBonusState.loading = true;
+        const owner = this.dailyRewardedAccountKey(), epoch = this._dailyBonusAccountEpoch || 0;
+        const request = this._dailyBonusLoadRequest = (this._dailyBonusLoadRequest || 0) + 1;
+        const current = () => !this._rewardedLogoutPending && this.hasAuthenticatedAccount() && owner === this.dailyRewardedAccountKey() && epoch === (this._dailyBonusAccountEpoch || 0) && request === this._dailyBonusLoadRequest;
         this.dailyBonusState.error = '';
         this.renderDailyBonusCard();
 
         try {
             const status = await this.account.getDailyBonusStatus();
+            if (!current()) return;
             this.dailyBonusState.status = status?.dailyBonus || null;
             if (status?.wallet) {
                 const balance = status.wallet.balance;
@@ -7363,11 +7374,42 @@ class DominoGame {
                 this.stopDailyBonusTicker();
             }
         } catch (err) {
-            this.dailyBonusState.error = err.message || this.t('daily-bonus-error');
+            if (current()) this.dailyBonusState.error = err.message || this.t('daily-bonus-error');
         } finally {
-            this.dailyBonusState.loading = false;
-            this.renderDailyBonusCard();
+            if (current()) { this.dailyBonusState.loading = false; this.renderDailyBonusCard(); }
         }
+    }
+
+    dailyRewardedAccountKey() {
+        return `${this.accountProfile?.id || ''}:${this.account?.getPlatformAuthToken?.() || ''}`;
+    }
+
+    disposeDailyRewardedPanel() {
+        this._dailyRewardedPanel?.destroy();
+        this._dailyRewardedPanel = null; this._dailyRewardedFlow = null; this._dailyRewardedOwner = '';
+    }
+
+    syncDailyRewardedPanel() {
+        const root = document.getElementById('daily-rewarded-panel');
+        if (!root) return;
+        if (!this.isRewardedAdsEnabled() || !this.hasAuthenticatedAccount() || this._rewardedLogoutPending) {
+            this.disposeDailyRewardedPanel(); root.hidden = true; return;
+        }
+        const status = this.dailyBonusState.status, provider = this.getDailyBonusRewardedAdProvider(), owner = this.dailyRewardedAccountKey();
+        if (this._dailyRewardedPanel && this._dailyRewardedOwner !== owner) this.disposeDailyRewardedPanel();
+        const supported = status?.rewardedFlowVersion === 'owner_8day_v1' && status.rewardedAvailable === true && typeof provider?.bindAttempt === 'function' && typeof provider?.show === 'function';
+        if (!supported || (!this._dailyRewardedPanel && (!status.claimedToday || status.doubleClaimAvailable !== true))) { root.hidden = true; return; }
+        if (!this._dailyRewardedPanel) {
+            const flow = new RewardedDailyFlow({ api: createRewardedDailyApi(this.account), ads: provider, enabled: true });
+            this._dailyRewardedFlow = flow; this._dailyRewardedOwner = owner;
+            this._dailyRewardedPanel = new RewardedDailyPanel({ root, flow, t: key => this.t(key), onCredit: async () => {
+                if (this._dailyRewardedFlow === flow && this.dailyRewardedAccountKey() === owner) {
+                    await this.loadDailyBonusStatus();
+                    if (this.dailyBonusState.error) throw new Error('wallet_sync_failed');
+                }
+            } });
+        }
+        root.hidden = false; this._dailyRewardedPanel.render();
     }
 
     getDailyBonusRewardedAdProvider() {
@@ -7440,6 +7482,9 @@ class DominoGame {
     async claimDailyBonus(claimMode = 'normal') {
         if (this.dailyBonusState.claiming) return;
         const normalizedMode = claimMode === 'rewarded_x2' ? 'rewarded_x2' : 'normal';
+        if (normalizedMode === 'rewarded_x2' && this.dailyBonusState.status?.rewardedFlowVersion === 'owner_8day_v1') return;
+        const owner = this.dailyRewardedAccountKey(), epoch = this._dailyBonusAccountEpoch || 0;
+        const current = () => !this._rewardedLogoutPending && owner === this.dailyRewardedAccountKey() && epoch === (this._dailyBonusAccountEpoch || 0);
         if (normalizedMode === 'rewarded_x2' && !this.isRewardedAdsEnabled()) {
             this.dailyBonusState.rewardedAdError = this.t('daily-bonus-ad-unavailable');
             this.renderDailyBonusCard();
@@ -7460,12 +7505,14 @@ class DominoGame {
         try {
             if (normalizedMode === 'rewarded_x2') {
                 const adResult = await this.showRewardedAdForDailyBonus();
+                if (!current()) return;
                 if (!adResult?.completed) {
                     return;
                 }
             }
 
             const result = await this.account.claimDailyBonus({ claimMode: normalizedMode });
+            if (!current()) return;
             if (result?.ok) {
                 this.dailyBonusState.status = result.dailyBonus || null;
                 this.dailyBonusState.lastDailyBonusClaimMode = String(result.claimMode || normalizedMode);
@@ -7506,11 +7553,9 @@ class DominoGame {
                 }
             }
         } catch (err) {
-            this.dailyBonusState.error = err.message || this.t('daily-bonus-error');
+            if (current()) this.dailyBonusState.error = err.message || this.t('daily-bonus-error');
         } finally {
-            this.dailyBonusState.claiming = false;
-            this.dailyBonusState.claimingMode = '';
-            this.renderDailyBonusCard();
+            if (current()) { this.dailyBonusState.claiming = false; this.dailyBonusState.claimingMode = ''; this.renderDailyBonusCard(); }
         }
     }
 
@@ -7519,6 +7564,7 @@ class DominoGame {
         this._lastDailyBonusRenderSource = String(source || 'renderDailyBonusCard');
         const card = document.getElementById('daily-bonus-card');
         if (!card) return;
+        this.syncDailyRewardedPanel();
 
         const isAuthed = this.hasAuthenticatedAccount();
         if (!isAuthed) {
@@ -7624,7 +7670,7 @@ class DominoGame {
             return;
         }
 
-        const doubleAvailable = this.isRewardedAdsEnabled() && status?.rewardedAvailable === true && Boolean(status.doubleClaimAvailable);
+        const doubleAvailable = status?.rewardedFlowVersion !== 'owner_8day_v1' && this.isRewardedAdsEnabled() && status?.rewardedAvailable === true && Boolean(status.doubleClaimAvailable);
 
         if (amountEl) {
             amountEl.textContent = `+${baseRewardAmount}`;

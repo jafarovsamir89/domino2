@@ -1,0 +1,10 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src 'none'">
+<link rel="stylesheet" href="/css/style.css"><title>Проверка экрана бонуса</title>
+<style>body{display:block;overflow:auto;font:18px system-ui;background:#172b23;color:white;padding:20px;margin:0}main{max-width:600px;margin:auto}h1{font-size:24px}select,button{font:inherit;padding:10px;min-height:44px}#fixture-controls{display:flex;flex-wrap:wrap;gap:8px;margin-top:24px}#fixture-wallet{font-weight:bold}#fixture-note{line-height:1.5}</style></head>
+<body><main><h1>Проверка экрана бонуса</h1><p id="fixture-note">Тестовый экран. Реклама не запускается. Реальные монеты не начисляются.</p>
+<label>Язык <select id="fixture-language"><option value="ru">Русский</option><option value="az">Azərbaycanca</option><option value="en">English</option></select></label>
+<p id="fixture-wallet" role="status">Тестовый баланс: 200</p><div id="daily-rewarded-panel" class="daily-reward-panel"></div>
+<div id="fixture-controls"><button id="fixture-confirm">Имитировать подтверждение сервера</button><button id="fixture-expire">Имитировать истечение срока</button><button id="fixture-reset">Новый тест</button></div>
+<p id="fixture-counters"></p></main><script type="module" src="/review/rewarded-panel-fixture.js"></script></body></html>

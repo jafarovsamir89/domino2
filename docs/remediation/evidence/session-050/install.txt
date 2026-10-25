@@ -1,0 +1,5 @@
+Performing Streamed Install
+Success
+4186
+Starting: Intent { cmp=az.simplesoft.dominotelefon.audit/az.simplesoft.dominotelefon.MainActivity }
+Audit app launched; Play package and its data were not targeted. Start device-review-preview.mjs for the synthetic API.

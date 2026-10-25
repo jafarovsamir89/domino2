@@ -7290,6 +7290,13 @@ body.is-reconnecting .hand-container {
     min-height: 1em;
 }
 
+.daily-reward-panel[hidden], .daily-reward-panel [hidden] { display: none !important; }
+.daily-reward-panel { margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,.2); }
+.daily-reward-title { display: block; font-size: 1rem; }
+.daily-reward-panel p { margin: 8px 0 12px; line-height: 1.5; }
+.daily-reward-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.daily-reward-actions button { flex: 1 1 130px; min-height: 44px; white-space: normal; font-size: .9rem; }
+
 .daily-bonus-streak-row {
     display: flex;
     justify-content: space-between;

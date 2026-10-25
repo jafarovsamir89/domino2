@@ -1,0 +1,1 @@
+Verified audit artifact. To install in the joint review phase: node docs/remediation/scripts/install-review-apk.mjs --install --serial DEVICE_SERIAL
