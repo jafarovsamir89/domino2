@@ -1,0 +1,145 @@
+
+Running 6 tests using 1 worker
+
+(node:14767) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:14767) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 e2e/locale-screens.spec.mjs:5:3 › az: existing profile and support forms survive a language switch (7.2s)
+(node:14783) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:14783) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  2 e2e/locale-screens.spec.mjs:5:3 › ru: existing profile and support forms survive a language switch (7.9s)
+(node:14795) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:14795) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  3 e2e/locale-screens.spec.mjs:5:3 › en: existing profile and support forms survive a language switch (1.9s)
+  ✘  4 e2e/locale-screens.spec.mjs:5:3 › www/az: existing profile and support forms survive a language switch (6.8s)
+(node:14822) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:14822) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  5 e2e/locale-screens.spec.mjs:5:3 › www/ru: existing profile and support forms survive a language switch (7.1s)
+(node:14844) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:14844) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  6 e2e/locale-screens.spec.mjs:5:3 › www/en: existing profile and support forms survive a language switch (2.0s)
+
+
+  1) e2e/locale-screens.spec.mjs:5:3 › az: existing profile and support forms survive a language switch
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoHaveAttribute[2m([22m[32mexpected[39m[2m)[22m failed
+
+    Locator:  locator('#account-edit-name-btn')
+    Expected: [32m"Adı dəyiş"[39m
+    Received: [31m"Edit name"[39m
+    Timeout:  5000ms
+
+    Call log:
+    [2m  - Expect "toHaveAttribute" with timeout 5000ms[22m
+    [2m  - waiting for locator('#account-edit-name-btn')[22m
+    [2m    14 × locator resolved to <button type="button" class="icon-btn" title="Edit name" aria-label="Edit name" id="account-edit-name-btn">…</button>[22m
+    [2m       - unexpected value "Edit name"[22m
+
+
+      22 |     await expect(page.locator('#account-modal')).toHaveClass(/active/);
+      23 |     await page.evaluate(language => game.setLanguage(language), language);
+    > 24 |     await expect(page.locator('#account-edit-name-btn')).toHaveAttribute('aria-label', translations[language]['account-edit-name']);
+         |                                                          ^
+      25 |     await expect(page.locator('#account-logout-btn')).toHaveAttribute('aria-label', translations[language]['account-logout']);
+      26 |     await expect(page.locator('#account-edit-avatar-btn')).toHaveAttribute('aria-label', translations[language]['account-edit-avatar']);
+      27 |     await expect(page.locator('.account-delete-request-link')).toHaveText(translations[language]['account-delete-request']);
+        at /Users/macbookair/Documents/domino/e2e/locale-screens.spec.mjs:24:58
+
+    Error Context: test-results/locale-screens-az-existing-b9834-s-survive-a-language-switch/error-context.md
+
+  2) e2e/locale-screens.spec.mjs:5:3 › ru: existing profile and support forms survive a language switch
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoHaveAttribute[2m([22m[32mexpected[39m[2m)[22m failed
+
+    Locator:  locator('#account-edit-name-btn')
+    Expected: [32m"Изменить имя"[39m
+    Received: [31m"Edit name"[39m
+    Timeout:  5000ms
+
+    Call log:
+    [2m  - Expect "toHaveAttribute" with timeout 5000ms[22m
+    [2m  - waiting for locator('#account-edit-name-btn')[22m
+    [2m    14 × locator resolved to <button type="button" class="icon-btn" title="Edit name" aria-label="Edit name" id="account-edit-name-btn">…</button>[22m
+    [2m       - unexpected value "Edit name"[22m
+
+
+      22 |     await expect(page.locator('#account-modal')).toHaveClass(/active/);
+      23 |     await page.evaluate(language => game.setLanguage(language), language);
+    > 24 |     await expect(page.locator('#account-edit-name-btn')).toHaveAttribute('aria-label', translations[language]['account-edit-name']);
+         |                                                          ^
+      25 |     await expect(page.locator('#account-logout-btn')).toHaveAttribute('aria-label', translations[language]['account-logout']);
+      26 |     await expect(page.locator('#account-edit-avatar-btn')).toHaveAttribute('aria-label', translations[language]['account-edit-avatar']);
+      27 |     await expect(page.locator('.account-delete-request-link')).toHaveText(translations[language]['account-delete-request']);
+        at /Users/macbookair/Documents/domino/e2e/locale-screens.spec.mjs:24:58
+
+    Error Context: test-results/locale-screens-ru-existing-f9c76-s-survive-a-language-switch/error-context.md
+
+  3) e2e/locale-screens.spec.mjs:5:3 › www/az: existing profile and support forms survive a language switch
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoHaveAttribute[2m([22m[32mexpected[39m[2m)[22m failed
+
+    Locator:  locator('#account-edit-name-btn')
+    Expected: [32m"Adı dəyiş"[39m
+    Received: [31m"Edit name"[39m
+    Timeout:  5000ms
+
+    Call log:
+    [2m  - Expect "toHaveAttribute" with timeout 5000ms[22m
+    [2m  - waiting for locator('#account-edit-name-btn')[22m
+    [2m    14 × locator resolved to <button type="button" class="icon-btn" title="Edit name" aria-label="Edit name" id="account-edit-name-btn">…</button>[22m
+    [2m       - unexpected value "Edit name"[22m
+
+
+      22 |     await expect(page.locator('#account-modal')).toHaveClass(/active/);
+      23 |     await page.evaluate(language => game.setLanguage(language), language);
+    > 24 |     await expect(page.locator('#account-edit-name-btn')).toHaveAttribute('aria-label', translations[language]['account-edit-name']);
+         |                                                          ^
+      25 |     await expect(page.locator('#account-logout-btn')).toHaveAttribute('aria-label', translations[language]['account-logout']);
+      26 |     await expect(page.locator('#account-edit-avatar-btn')).toHaveAttribute('aria-label', translations[language]['account-edit-avatar']);
+      27 |     await expect(page.locator('.account-delete-request-link')).toHaveText(translations[language]['account-delete-request']);
+        at /Users/macbookair/Documents/domino/e2e/locale-screens.spec.mjs:24:58
+
+    Error Context: test-results/locale-screens-www-az-exis-2dee9-s-survive-a-language-switch/error-context.md
+
+  4) e2e/locale-screens.spec.mjs:5:3 › www/ru: existing profile and support forms survive a language switch
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoHaveAttribute[2m([22m[32mexpected[39m[2m)[22m failed
+
+    Locator:  locator('#account-edit-name-btn')
+    Expected: [32m"Изменить имя"[39m
+    Received: [31m"Edit name"[39m
+    Timeout:  5000ms
+
+    Call log:
+    [2m  - Expect "toHaveAttribute" with timeout 5000ms[22m
+    [2m  - waiting for locator('#account-edit-name-btn')[22m
+    [2m    14 × locator resolved to <button type="button" class="icon-btn" title="Edit name" aria-label="Edit name" id="account-edit-name-btn">…</button>[22m
+    [2m       - unexpected value "Edit name"[22m
+
+
+      22 |     await expect(page.locator('#account-modal')).toHaveClass(/active/);
+      23 |     await page.evaluate(language => game.setLanguage(language), language);
+    > 24 |     await expect(page.locator('#account-edit-name-btn')).toHaveAttribute('aria-label', translations[language]['account-edit-name']);
+         |                                                          ^
+      25 |     await expect(page.locator('#account-logout-btn')).toHaveAttribute('aria-label', translations[language]['account-logout']);
+      26 |     await expect(page.locator('#account-edit-avatar-btn')).toHaveAttribute('aria-label', translations[language]['account-edit-avatar']);
+      27 |     await expect(page.locator('.account-delete-request-link')).toHaveText(translations[language]['account-delete-request']);
+        at /Users/macbookair/Documents/domino/e2e/locale-screens.spec.mjs:24:58
+
+    Error Context: test-results/locale-screens-www-ru-exis-98727-s-survive-a-language-switch/error-context.md
+
+  4 failed
+    e2e/locale-screens.spec.mjs:5:3 › az: existing profile and support forms survive a language switch
+    e2e/locale-screens.spec.mjs:5:3 › ru: existing profile and support forms survive a language switch
+    e2e/locale-screens.spec.mjs:5:3 › www/az: existing profile and support forms survive a language switch
+    e2e/locale-screens.spec.mjs:5:3 › www/ru: existing profile and support forms survive a language switch
+  2 passed (36.0s)

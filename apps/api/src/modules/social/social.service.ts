@@ -549,6 +549,7 @@ export class SocialService {
   private playerSelect() {
     return {
       id: true,
+      deletionRequestedAt: true,
       displayName: true,
       avatarSeed: true,
       avatarUrl: true,
@@ -560,6 +561,7 @@ export class SocialService {
   private playerProfileSelect() {
     return {
       id: true,
+      deletionRequestedAt: true,
       displayName: true,
       avatarSeed: true,
       avatarUrl: true,
@@ -576,7 +578,8 @@ export class SocialService {
     } as const;
   }
 
-  private summarizePlayer(player: { id: string; displayName: string; avatarSeed?: string | null; avatarUrl?: string | null; isGuest?: boolean; createdAt?: Date | string | null }): PlayerSummary {
+  private summarizePlayer(player: { id: string; displayName: string; avatarSeed?: string | null; avatarUrl?: string | null; isGuest?: boolean; createdAt?: Date | string | null; deletionRequestedAt?: Date | null }): PlayerSummary {
+    if (player.deletionRequestedAt) return { id: '', displayName: '—', avatarSeed: null, avatarUrl: null, isGuest: true, createdAt: null };
     return {
       id: player.id,
       displayName: player.displayName,
@@ -1491,6 +1494,7 @@ export class SocialService {
 
     const players = await this.prisma.player.findMany({
       where: {
+        deletionRequestedAt: null,
         isGuest: false,
         displayName: {
           contains: search,
@@ -1590,6 +1594,7 @@ export class SocialService {
 
     const player = await this.prisma.player.findFirst({
       where: {
+        deletionRequestedAt: null,
         OR: [
           { id: playerId },
           { userId: playerId }
@@ -1717,7 +1722,7 @@ export class SocialService {
       where: { id: targetPlayerId },
       select: this.playerSelect()
     });
-    if (!targetPlayer) {
+    if (!targetPlayer || targetPlayer.deletionRequestedAt) {
       throw new NotFoundException("Player not found");
     }
 
@@ -1755,7 +1760,7 @@ export class SocialService {
       where: { id: targetPlayerId },
       select: this.playerSelect()
     });
-    if (!targetPlayer) {
+    if (!targetPlayer || targetPlayer.deletionRequestedAt) {
       throw new NotFoundException("Player not found");
     }
     if (targetPlayer.isGuest) {
@@ -1956,7 +1961,7 @@ export class SocialService {
       where: { id: targetPlayerId },
       select: this.playerSelect()
     });
-    if (!targetPlayer) {
+    if (!targetPlayer || targetPlayer.deletionRequestedAt) {
       throw new NotFoundException("Player not found");
     }
     await this.ensureInteractionAllowed(currentPlayer.id, targetPlayerId);
@@ -2220,7 +2225,7 @@ export class SocialService {
       where: { id: targetPlayerId },
       select: this.playerSelect()
     });
-    if (!targetPlayer) {
+    if (!targetPlayer || targetPlayer.deletionRequestedAt) {
       throw new NotFoundException("Player not found");
     }
 
@@ -2296,7 +2301,7 @@ export class SocialService {
       where: { id: targetPlayerId },
       select: this.playerSelect()
     });
-    if (!targetPlayer) {
+    if (!targetPlayer || targetPlayer.deletionRequestedAt) {
       throw new NotFoundException("Player not found");
     }
 
@@ -2344,7 +2349,7 @@ export class SocialService {
       where: { id: targetPlayerId },
       select: this.playerSelect()
     });
-    if (!targetPlayer) {
+    if (!targetPlayer || targetPlayer.deletionRequestedAt) {
       throw new NotFoundException("Player not found");
     }
     const moderation = await this.getModerationState(currentPlayer.id, targetPlayerId);
@@ -2844,7 +2849,7 @@ export class SocialService {
       })
     ]);
 
-    if (!recipient) {
+    if (!recipient || recipient.deletionRequestedAt) {
       throw new NotFoundException("Recipient not found");
     }
     if (recipient.isGuest) {
@@ -3140,7 +3145,7 @@ export class SocialService {
       where: { id: inviteePlayerId },
       select: this.playerSelect()
     });
-    if (!invitee) {
+    if (!invitee || invitee.deletionRequestedAt) {
       throw new NotFoundException("Invitee not found");
     }
     if (invitee.isGuest) {
@@ -3553,7 +3558,7 @@ export class SocialService {
       where: { id: inviteePlayerId },
       select: this.playerSelect()
     });
-    if (!invitee) {
+    if (!invitee || invitee.deletionRequestedAt) {
       throw new NotFoundException("Invitee not found");
     }
     if (invitee.isGuest) {

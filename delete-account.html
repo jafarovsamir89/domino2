@@ -89,18 +89,44 @@
       gap: 12px 18px;
     }
   </style>
+  <style>
+    #account-deletion-management button, #account-deletion-management input, #account-deletion-management select { min-height:44px; max-width:100%; font:inherit; padding:8px; margin:4px 0; box-sizing:border-box }
+    #account-deletion-management button { cursor:pointer }
+    #account-deletion-management p { overflow-wrap:anywhere }
+  </style>
 </head>
 <body>
   <main>
-    <header>
-      <h1>Delete Account - Domino Telefon</h1>
+    <header data-deletion-legacy>
+      <h1>Delete Account — Домино Клуб Онлайн / Domino Telefon</h1>
       <p class="note">This page explains how to request deletion of your Domino Telefon account and associated data.</p>
       <p><strong>Developer:</strong> SimpleSoft.az<br>
       <strong>Contact:</strong> <a href="mailto:support@simplesoft.az">support@simplesoft.az</a><br>
       <strong>Last updated:</strong> July 9, 2026</p>
     </header>
 
-    <section id="request">
+    <section id="account-deletion-management" hidden aria-labelledby="deletion-title">
+      <label>AZ / RU / EN <select id="deletion-language"><option value="az">Azərbaycan</option><option value="ru">Русский</option><option value="en">English</option></select></label>
+      <h2 id="deletion-title" data-deletion-i18n="deletion-manage"></h2>
+      <p>Домино Клуб Онлайн / Domino Telefon · SimpleSoft.az</p>
+      <p data-deletion-i18n="deletion-policy"></p>
+      <p data-deletion-i18n="deletion-data"></p>
+      <p data-deletion-i18n="deletion-shared"></p>
+      <p data-deletion-i18n="deletion-backup"></p>
+      <p id="deletion-status" role="status" aria-live="polite"></p>
+      <p id="deletion-account"></p>
+      <label><span data-deletion-i18n="deletion-confirm-hint"></span> <input id="deletion-confirm" autocomplete="off" spellcheck="false" maxlength="6"></label>
+      <p>
+        <button type="button" id="deletion-login"></button>
+        <button type="button" id="deletion-request" data-deletion-i18n="deletion-request" disabled></button>
+        <button type="button" id="deletion-cancel" data-deletion-i18n="deletion-cancel" hidden></button>
+        <button type="button" id="deletion-check" data-deletion-i18n="deletion-check"></button>
+        <a id="deletion-browser-link" href="https://gamed.simplesoft.az/delete-account.html#request" target="_blank" rel="noopener noreferrer" hidden></a>
+      </p>
+      <p><a href="privacy.html" data-deletion-i18n="deletion-privacy-link"></a> · <a href="terms.html" data-deletion-i18n="deletion-terms-link"></a> · <a href="mailto:support@simplesoft.az">support@simplesoft.az</a></p>
+    </section>
+
+    <section id="request" data-deletion-legacy>
       <h2>How to request account deletion</h2>
       <p>Send a deletion request from the email address connected to your account. We will verify ownership before processing it. A request does not immediately delete your account.</p>
       <ol>
@@ -113,7 +139,7 @@
       <p>We usually process verified deletion requests within 30 days.</p>
     </section>
 
-    <section>
+    <section data-deletion-legacy>
       <h2>Data usually removed</h2>
       <p>After verification, we delete or anonymize personal data associated with your Domino Telefon account where possible, including:</p>
       <ul>
@@ -125,7 +151,7 @@
       </ul>
     </section>
 
-    <section>
+    <section data-deletion-legacy>
       <h2>Data that may be retained for a limited time</h2>
       <p>Some information may be retained after account deletion if needed for legitimate purposes, including:</p>
       <ul>
@@ -137,18 +163,18 @@
       <p>Retained information is limited to what is necessary and is not used to restore normal gameplay access after deletion unless required by law or safety needs.</p>
     </section>
 
-    <section>
+    <section data-deletion-legacy>
       <h2>Before you request deletion</h2>
       <p>Account deletion may permanently remove your profile, coins, ratings, gifts, inventory, and match history. Deleted data may not be recoverable.</p>
       <p>If you only need help with sign-in, purchases, moderation, or a technical problem, contact <a href="mailto:support@simplesoft.az">support@simplesoft.az</a> before requesting deletion.</p>
     </section>
 
-    <section>
+    <section data-deletion-legacy>
       <h2>Privacy Policy</h2>
       <p>For more information about how Domino Telefon processes data, see the <a href="privacy.html">Privacy Policy</a>.</p>
     </section>
 
-    <footer>
+    <footer data-deletion-legacy>
       <div class="footer-links">
         <a href="privacy.html">Privacy Policy</a>
         <a href="delete-account.html">Delete Account</a>
@@ -157,5 +183,7 @@
       </div>
     </footer>
   </main>
+  <script src="js/endpoints.js"></script>
+  <script type="module" src="js/accountDeletionPage.js"></script>
 </body>
 </html>

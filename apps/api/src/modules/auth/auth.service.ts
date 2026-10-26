@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import type { IncomingHttpHeaders } from "node:http";
 
-import { BadRequestException, Injectable, UnauthorizedException } from "@nestjs/common";
+import { BadRequestException, ForbiddenException, Injectable, UnauthorizedException } from "@nestjs/common";
 import { fromNodeHeaders } from "better-auth/node";
 import { OAuth2Client } from "google-auth-library";
 
@@ -55,7 +55,7 @@ export class AuthService {
       }),
       this.prisma.player.findUnique({
         where: { id: claims.playerId },
-        select: { id: true, userId: true }
+        select: { id: true, userId: true, deletionRequestedAt: true }
       }),
       this.prisma.playerBan.findFirst({
         where: {
@@ -69,7 +69,7 @@ export class AuthService {
 
     if (
       !session || session.userId !== claims.userId || session.expiresAt <= now ||
-      !player || player.userId !== claims.userId || activeBan
+      !player || player.userId !== claims.userId || player.deletionRequestedAt || activeBan
     ) {
       throw new UnauthorizedException("Game access revoked");
     }
@@ -176,6 +176,8 @@ export class AuthService {
         stats: true
       }
     });
+
+    if (player.deletionRequestedAt) throw new ForbiddenException('account_deletion_pending');
 
     const stats = player.stats
       ? player.stats
@@ -453,6 +455,9 @@ export class AuthService {
       throw new BadRequestException("Name is required");
     }
 
+    const pending = await this.prisma.player.findUnique({ where: { userId: session.user.id }, select: { deletionRequestedAt: true } });
+    if (pending?.deletionRequestedAt) throw new ForbiddenException('account_deletion_pending');
+
     await this.prisma.user.update({
       where: { id: session.user.id },
       data: { name }
@@ -471,6 +476,8 @@ export class AuthService {
     if (!session?.user?.id) {
       throw new UnauthorizedException("Not authenticated");
     }
+    const pending = await this.prisma.player.findUnique({ where: { userId: session.user.id }, select: { deletionRequestedAt: true } });
+    if (pending?.deletionRequestedAt) throw new ForbiddenException('account_deletion_pending');
 
     const raw = avatarUrlInput === null || avatarUrlInput === undefined ? null : String(avatarUrlInput).trim();
     const avatarUrl = raw

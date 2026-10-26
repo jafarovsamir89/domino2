@@ -1,0 +1,17 @@
+{
+  "matchingPairs": [
+    "index.html",
+    "delete-account.html",
+    "third-party.html",
+    "js/app.js",
+    "js/translations.js",
+    "js/accountDeletionPage.js",
+    "css/style.css",
+    "js/vendor/colyseus.LICENSE.txt",
+    "js/vendor/konva.LICENSE.txt",
+    "js/vendor/socket.io.LICENSE.txt",
+    "js/vendor/openmoji.LICENSE.txt",
+    "js/vendor/capacitor.LICENSE.txt"
+  ],
+  "result": "pass"
+}

@@ -1,5 +1,35 @@
 export const translations = {
     az: {
+        'deletion-privacy-link': 'Məxfilik siyasəti',
+        'deletion-terms-link': 'İstifadə şərtləri',
+        'screen-copyright': 'Bütün hüquqlar qorunur © SimpleSoft - Domino ver 1.33',
+        'room-human-count': '{count} oyunçu',
+        'room-human-count-one': '{count} oyunçu',
+        'room-human-count-other': '{count} oyunçu',
+        'room-bot-count': '{count} bot',
+        'room-bot-count-one': '{count} bot',
+        'room-bot-count-other': '{count} bot',
+        'deletion-manage': 'Hesabın silinməsi',
+        'deletion-policy': 'Təsdiqdən sonra oyun sessiyaları bağlanır və profil gizlədilir. Hesab 30 gündən sonra silinir. Bu müddətdə yenidən daxil olub silinməni ayrıca ləğv edə bilərsiniz. Sadəcə daxil olmaq silinməni ləğv etmir.',
+        'deletion-data': 'Profil, giriş məlumatları, cihaz qeydləri, şəxsi yazışmalar və əlavələr, sikkələr və inventar silinir.',
+        'deletion-shared': 'Digər oyunçuların nəticələri və hesablaşmaları pozulmur. Ümumi oyun nəticələri şəxsi məlumatlar olmadan saxlanılır.',
+        'deletion-backup': 'Köhnə ehtiyat nüsxələr silinmədən sonra ən çox daha 30 gün, sorğudan sonra isə ümumilikdə ən çox 60 gün saxlanıla bilər. Bərpa zamanı silinmiş hesab yenidən açılmır.',
+        'deletion-sign-in': 'Bu hesabın silinməsini idarə etmək üçün yenidən daxil olun.',
+        'deletion-login-button': 'Google ilə daxil ol',
+        'deletion-recent-login-button': 'Yenidən daxil ol',
+        'deletion-recent-login': 'Əməliyyatı təsdiqləmək üçün yenidən daxil olun.',
+        'deletion-confirm-hint': 'Hesabın silinməsini istədiyinizi təsdiqləmək üçün DELETE yazın:',
+        'deletion-request': '30 gündən sonra silinməni planlaşdır',
+        'deletion-cancel': 'Hesabın silinməsini ləğv et',
+        'deletion-check': 'Vəziyyəti yoxla',
+        'deletion-none': 'Bu hesab üçün silinmə planlaşdırılmayıb.',
+        'deletion-pending': 'Silinmə bu tarixə planlaşdırılıb: {date}. Sadəcə daxil olmaq sorğunu ləğv etmir.',
+        'deletion-account-label': 'Hesab',
+        'deletion-working': 'Yoxlanılır…',
+        'deletion-action-failed': 'Əməliyyat təsdiqlənmədi. Vəziyyəti yoxlayın və yenidən cəhd edin.',
+        'deletion-native-web': 'Hesabın silinməsini brauzerdə idarə et',
+        'account_deletion_pending': 'Hesabın silinməsi planlaşdırılıb. Ləğv etmək üçün hesabın silinməsi səhifəsinə keçin.',
+        'third-party-licenses': 'Lisenziyalar və müəlliflər',
         'rewarded-recovering': 'Əvvəlki bonuslar yoxlanılır…',
         'rewarded-attempt-label': 'Bonus günü',
         'rewarded-attempt-option': '{date} · +{amount} · cəhd {number}',
@@ -97,7 +127,6 @@ export const translations = {
         "label-stake-table": "Coin",
         "economy-free": "Pulsuz oyun",
         "economy-coins": "Coin oyunu",
-        "label-bank-short": "Bank",
         "label-stake-short": "Mərc",
         "btn-host": "Yarat",
         "btn-join": "Qoşul",
@@ -124,27 +153,8 @@ export const translations = {
         "msg-first-turn": "{player} ilk gedişə başlayır",
         "msg-last-winner-starts": "{player} əvvəlki oyunun qalibi kimi başlayır",
         "msg-gosha": "{player} Qoşa gəldi!",
-        "stage-search-opening": "İlk gediş axtarılır...",
-        "stage-opening-turn-desc": "İlk gediş: {player}",
         "stage-opening-reason-gosha": "ən kiçik Qoşa",
         "stage-opening-reason-smallest": "ən kiçik daş",
-        "stage-opening-you": "Siz başlayırsınız",
-        "stage-opening-required": "{tile} daşını yerləşdirin",
-        "stage-opening-required-title": "Yanlış ilk gediş",
-        "stage-opening-ai-desc": "{player} başlayır",
-        "stage-ai-thinking": "AI düşünür...",
-        "stage-ai-playing": "AI gediş edir",
-        "stage-ai-gosha": "AI Qoşa gəlir",
-        "stage-last-winner-starts": "Əvvəlki raundun qalibi başlayır",
-        "stage-final-tile-title": "{player} sonuncu daşı qoydu",
-        "stage-final-tile-subtitle": "Raund bitdi",
-        "stage-final-gosha-title": "{player} oyunu Qoşa ilə bitirdi",
-        "stage-final-gosha-subtitle": "{count} daş birdən oynanıldı",
-        "stage-final-fish-title": "Rıba (Bağlanma)",
-        "stage-final-fish-subtitle": "Qalıq xalların hesablanması",
-        "stage-final-instant-win-title": "Məsafəli qələbə",
-        "stage-final-instant-win-desc": "{player} lazımi xalları topladı",
-        "stage-counting": "Xallar hesablanır...",
         "round-end-next": "Davam et",
         "menu-title": "Menyu",
         "menu-resume": "Davam et",
@@ -210,7 +220,7 @@ export const translations = {
         "account-skins-open-shop": "Mağazaya keç",
         "new-game-btn": "Yeni oyun",
         "menu-open": "Menyu",
-        "board-empty": "İlk daşı gəlin",
+        "board-empty": "İlk daşı oynayın",
         "label-round-short": "R",
         "label-deal-short": "Ə",
         "label-boneyard-short": "Bazar",
@@ -271,14 +281,13 @@ export const translations = {
         "open-room-waiting-title": "Oyunçuları gözləyirik...",
         "open-room-closed-return": "Otaq bağlandı. Açıq otaqlara qaytarıldınız.",
         "open-room-host-left": "Host otaqdan çıxdı. Açıq otaqlara qaytarıldınız.",
-        "friends-title": "Dostlar",
         "friends-open-button": "Dostlar",
         "friends-note": "Sorğular və dəvətlər burada görünür.",
         "social-title": "Mesajlar",
         "social-subtitle": "Mesajları, dəvətləri və dostları bir yerdə idarə et.",
         "social-open": "Mesajlar",
         "social-close": "Bağla",
-        "social-tab-inbox": "Inbox",
+        "social-tab-inbox": "Gələnlər",
         "social-tab-chats": "Söhbətlər",
         "social-tab-invites": "Dəvətlər",
         "social-tab-friends": "Dostlar",
@@ -304,9 +313,6 @@ export const translations = {
         "feedback-message-required": "Zəhmət olmasa mesaj yazın",
         "sort-recent": "Sıralama: Son aktivlik",
         "friends-filter": "Filtr",
-        "friend-online": "Onlayn",
-        "friend-in-game": "Oyunda",
-        "friend-offline": "Oflayn",
         "chat-back": "Geri",
         "social-empty": "Hələ məlumat yoxdur",
         "social-loading": "Yüklənir...",
@@ -414,7 +420,7 @@ export const translations = {
         "seat-team-a": "Komanda A",
         "seat-team-b": "Komanda B",
         "seat-opposite-seat": "Qarşısındakı yer {seat}",
-        "seat-selected": "{player} üçün Seat {seat} seçildi",
+        "seat-selected": "{player} üçün {seat} nömrəli yer seçildi",
         "no-account-free-play": "Hesab tapılmadı, pulsuz oyun rejiminə keçildi",
         "not-enough-coins-round": "Növbəti raund üçün monet çatmır",
         "quit-confirm-stake": "Bu oyundan çıxsanız, cari gedişat silinəcək və bu partiya məğlubiyyət kimi sayılacaq. Davam edirsiniz?",
@@ -524,7 +530,7 @@ export const translations = {
         "voice-unmute-player": "Səsi aç",
         "messages-title": "Mesajlar",
         "messages-empty": "Hələ mesaj yoxdur",
-        "messages-inbox": "Inbox",
+        "messages-inbox": "Gələnlər",
         "messages-conversation-title": "Söhbət",
         "messages-placeholder": "Mesaj yazın",
         "messages-send": "Göndər",
@@ -550,10 +556,10 @@ export const translations = {
         "online-create-title-closed": "Bağlı otaq yarat",
         "online-create-title-open": "Açıq otaq yarat",
         "label-ai-slots": "Botların sayı",
-        "online-room-summary": "{humans} insan + {bots} AI bot, cəmi {total}",
-        "online-bot-slot": "AI {index}"
-        ,"bot-takeover-playing": "AI Bot oynayır"
-        ,"bot-takeover-active": "AI Bot Oynayır"
+        "online-room-summary": "{humans} + {bots}, cəmi {total}",
+        "online-bot-slot": "Bot {index}"
+        ,"bot-takeover-playing": "Bot oynayır"
+        ,"bot-takeover-active": "Bot oynayır"
         ,"bot-takeover-return-control": "Oyuna qayıt"
         ,"bot-takeover-you-back": "Yenidən oyundasınız."
         ,"bot_takeover": "{name} ayrıldı, indi onun yerinə bot oynayır"
@@ -578,7 +584,7 @@ export const translations = {
         ,"account-auth-desc": "Reytinqin, oyun tarixçən və Google girişi üçün hesabına daxil ol."
         ,"account-edit-name": "Adı dəyiş"
         ,"account-change-name-title": "Adı yenilə"
-        ,"account-change-name-desc": "Bu ad yalnız göstərilən addır. Player ID dəyişmir."
+        ,"account-change-name-desc": "Bu, yalnız oyunda görünən addır. Oyunçu ID-si dəyişmir."
         ,"account-edit-avatar": "Avatar"
         ,"account-change-avatar-title": "Avatarı yenilə"
         ,"account-change-avatar-desc": "Google şəkli varsa o göstərilir. Öz şəklinizi yükləsəniz, profilinizdə o üstünlük qazanır."
@@ -597,7 +603,7 @@ export const translations = {
         ,"account-name-saved": "Ad yeniləndi"
         ,"account-save-name": "Adı yadda saxla"
         ,"account-name-cancel": "Ləğv et"
-        ,"account-player-id": "Player ID"
+        ,"account-player-id": "Oyunçu ID-si"
         ,"turn-timeout": "{player} vaxtında oynamadı və raundu uduzdu"
         ,"account-legal-prefix": "Davam etməklə siz"
         ,"account-legal-link": "İstifadəçi razılaşmasını"
@@ -741,13 +747,13 @@ export const translations = {
         ,"stage-opening-turn-desc": "İlk gediş: {player}"
         ,"stage-opening-you": "Siz başlayırsınız"
         ,"stage-opening-wait": "İlk gediş gözlənilir"
-        ,"stage-opening-ai": "AI başlayır"
+        ,"stage-opening-ai": "Bot başlayır"
         ,"stage-opening-ai-desc": "{player} başlayır"
         ,"stage-opening-required": "{tile} ilə başlamalısınız"
         ,"stage-opening-required-title": "Yanlış ilk gediş"
-        ,"stage-ai-thinking": "AI düşünür..."
-        ,"stage-ai-playing": "AI gediş edir"
-        ,"stage-ai-gosha": "AI Qoşa oynayır"
+        ,"stage-ai-thinking": "Bot düşünür…"
+        ,"stage-ai-playing": "Bot gediş edir"
+        ,"stage-ai-gosha": "Bot Qoşa oynayır"
         ,"stage-player-turn": "{player} oyunçunun gedişi"
         ,"stage-your-turn": "Sizin gedişiniz"
         ,"stage-final-tile-title": "{player} son daşı qoydu"
@@ -768,12 +774,42 @@ export const translations = {
         ,"stage-last-winner-starts": "Əvvəlki oyunun qalibi başlayır"
         ,"stage-kicker-deal": "Paylanma"
         ,"stage-kicker-opening": "İlk gediş"
-        ,"stage-kicker-ai": "AI gedişi"
+        ,"stage-kicker-ai": "Botun gedişi"
         ,"stage-kicker-your-turn": "Sizin gedişiniz"
         ,"stage-kicker-final": "Son daş"
         ,"stage-kicker-counting": "Hesab"
     },
     en: {
+        'deletion-privacy-link': 'Privacy Policy',
+        'deletion-terms-link': 'Terms of use',
+        'screen-copyright': 'All rights reserved © SimpleSoft - Domino ver 1.33',
+        'room-human-count': '{count} players',
+        'room-human-count-one': '{count} player',
+        'room-human-count-other': '{count} players',
+        'room-bot-count': '{count} bots',
+        'room-bot-count-one': '{count} bot',
+        'room-bot-count-other': '{count} bots',
+        'deletion-manage': 'Account deletion',
+        'deletion-policy': 'After confirmation, game sessions close and your profile is hidden. Your account is deleted after 30 days. During that time, you can sign in again and explicitly cancel deletion. Signing in alone does not cancel it.',
+        'deletion-data': 'Your profile, sign-in records, device records, private messages and attachments, coins and inventory are deleted.',
+        'deletion-shared': 'Other players keep their results and settlements. Shared match results are retained without your personal profile information.',
+        'deletion-backup': 'Older backups may remain for up to 30 more days after deletion, at most 60 days after the request. Restoring a backup does not reopen a deleted account.',
+        'deletion-sign-in': 'Sign in again to manage deletion of this account.',
+        'deletion-login-button': 'Sign in with Google',
+        'deletion-recent-login-button': 'Sign in again',
+        'deletion-recent-login': 'Sign in again to confirm this action.',
+        'deletion-confirm-hint': 'Type DELETE to confirm that you want to delete this account:',
+        'deletion-request': 'Schedule deletion in 30 days',
+        'deletion-cancel': 'Cancel account deletion',
+        'deletion-check': 'Check status',
+        'deletion-none': 'No deletion is scheduled for this account.',
+        'deletion-pending': 'Deletion is scheduled for {date}. Signing in alone does not cancel the request.',
+        'deletion-account-label': 'Account',
+        'deletion-working': 'Checking…',
+        'deletion-action-failed': 'The action was not confirmed. Check the status and try again.',
+        'deletion-native-web': 'Manage account deletion in your browser',
+        'account_deletion_pending': 'Account deletion is scheduled. Open the account deletion page to cancel it.',
+        'third-party-licenses': 'Licenses and authors',
         'rewarded-recovering': 'Checking previous bonuses…',
         'rewarded-attempt-label': 'Bonus day',
         'rewarded-attempt-option': '{date} · +{amount} · attempt {number}',
@@ -871,7 +907,6 @@ export const translations = {
         "label-stake-table": "Stake table",
         "economy-free": "Free play",
         "economy-coins": "Play on coins",
-        "label-bank-short": "Bank",
         "label-stake-short": "Stake",
         "btn-host": "Create",
         "btn-join": "Join",
@@ -898,27 +933,8 @@ export const translations = {
         "msg-first-turn": "{player} makes the opening move",
         "msg-last-winner-starts": "{player} starts as the previous deal winner",
         "msg-gosha": "{player} played Gosha!",
-        "stage-search-opening": "Searching for opening move...",
-        "stage-opening-turn-desc": "Opening turn: {player}",
         "stage-opening-reason-gosha": "smallest Gosha",
         "stage-opening-reason-smallest": "smallest tile",
-        "stage-opening-you": "You start",
-        "stage-opening-required": "Play {tile}",
-        "stage-opening-required-title": "Invalid opening move",
-        "stage-opening-ai-desc": "{player} starts",
-        "stage-ai-thinking": "AI is thinking...",
-        "stage-ai-playing": "AI is playing",
-        "stage-ai-gosha": "AI plays Gosha",
-        "stage-last-winner-starts": "Previous winner starts",
-        "stage-final-tile-title": "{player} played the last tile",
-        "stage-final-tile-subtitle": "Round ended",
-        "stage-final-gosha-title": "{player} closed the game with a Gosha",
-        "stage-final-gosha-subtitle": "{count} tiles played instantly",
-        "stage-final-fish-title": "Fish",
-        "stage-final-fish-subtitle": "Counting remaining points",
-        "stage-final-instant-win-title": "Instant Victory",
-        "stage-final-instant-win-desc": "{player} reached win score limit",
-        "stage-counting": "Counting points...",
         "round-end-next": "Continue",
         "menu-title": "Menu",
         "menu-resume": "Resume",
@@ -1045,7 +1061,6 @@ export const translations = {
         "open-room-waiting-title": "Waiting for players...",
         "open-room-closed-return": "Room closed. You were returned to open rooms.",
         "open-room-host-left": "The host left the room. You were returned to open rooms.",
-        "friends-title": "Friends",
         "friends-note": "Requests and invites appear here.",
         "friend-search-button": "Search",
         "friend-search-results-title": "Search results",
@@ -1083,9 +1098,6 @@ export const translations = {
         "friend-add": "Add",
         "friend-remove": "Remove",
         "friend-invite": "Invite",
-        "friend-online": "Online",
-        "friend-in-game": "In game",
-        "friend-offline": "Offline",
         "player-profile-invite-unavailable": "Join or create a room to invite",
         "friend-accept": "Accept",
         "friend-decline": "Decline",
@@ -1324,8 +1336,8 @@ export const translations = {
         "online-create-title-closed": "Create private room",
         "online-create-title-open": "Create open room",
         "label-ai-slots": "AI slots",
-        "online-room-summary": "{humans} humans + {bots} AI, {total} total",
-        "online-bot-slot": "AI {index}"
+        "online-room-summary": "{humans} + {bots}, {total} total",
+        "online-bot-slot": "Bot {index}"
         ,"bot-takeover-playing": "AI Bot is playing"
         ,"bot-takeover-active": "AI Bot is playing"
         ,"bot-takeover-return-control": "Return to game"
@@ -1373,20 +1385,6 @@ export const translations = {
         ,"account-name-cancel": "Cancel"
         ,"account-player-id": "Player ID"
         ,"turn-timeout": "{player} timed out and lost the round"
-        ,"timeout-forfeit-title": "Timeout forfeit"
-        ,"timeout-forfeit-title-loser": "You timed out"
-        ,"timeout-forfeit-title-waiting": "{player} timed out"
-        ,"timeout-forfeit-desc-loser": "You lost the round by timeout"
-        ,"timeout-forfeit-desc-waiting": "Waiting to see whether the player will continue"
-        ,"timeout-forfeit-continue": "Continue"
-        ,"timeout-forfeit-continue-in-progress": "Continuing..."
-        ,"timeout-forfeit-exit": "Exit"
-        ,"timeout-forfeit-topup": "Top up balance"
-        ,"timeout-forfeit-insufficient-balance": "Not enough coins"
-        ,"timeout-forfeit-stake-unavailable": "Stake is unavailable right now"
-        ,"timeout-forfeit-room-closed": "Room closed"
-        ,"timeout-forfeit-countdown": "Continue window"
-        ,"timeout-forfeit-waiting-other": "Waiting for continue"
         ,"account-legal-prefix": "By continuing, you agree to the"
         ,"account-legal-link": "Terms of Service"
         ,"account-legal-and": "and"
@@ -1562,6 +1560,40 @@ export const translations = {
         ,"stage-kicker-counting": "Counting"
     },
     ru: {
+        'deletion-privacy-link': 'Политика конфиденциальности',
+        'deletion-terms-link': 'Условия использования',
+        'screen-copyright': 'Все права защищены © SimpleSoft - Domino ver 1.33',
+        'room-human-count': '{count} игроков',
+        'room-human-count-one': '{count} игрок',
+        'room-human-count-few': '{count} игрока',
+        'room-human-count-many': '{count} игроков',
+        'room-human-count-other': '{count} игрока',
+        'room-bot-count': '{count} ботов',
+        'room-bot-count-one': '{count} бот',
+        'room-bot-count-few': '{count} бота',
+        'room-bot-count-many': '{count} ботов',
+        'room-bot-count-other': '{count} бота',
+        'deletion-manage': 'Удаление аккаунта',
+        'deletion-policy': 'После подтверждения игровые сессии закрываются, а профиль скрывается. Через 30 дней аккаунт удаляется. До этого можно войти снова и отдельно отменить удаление. Обычный вход сам по себе его не отменяет.',
+        'deletion-data': 'Удаляются профиль, данные входа и устройств, личная переписка и вложения, монеты и инвентарь.',
+        'deletion-shared': 'Результаты и расчёты других игроков сохраняются. В общих итогах партий ваши личные данные убираются.',
+        'deletion-backup': 'Старые резервные копии могут храниться ещё до 30 дней после удаления, максимум 60 дней после запроса. Восстановление копии не возвращает удалённый аккаунт в игру.',
+        'deletion-sign-in': 'Войдите снова, чтобы управлять удалением этого аккаунта.',
+        'deletion-login-button': 'Войти через Google',
+        'deletion-recent-login-button': 'Войти снова',
+        'deletion-recent-login': 'Для подтверждения действия войдите снова.',
+        'deletion-confirm-hint': 'Чтобы подтвердить удаление этого аккаунта, введите DELETE:',
+        'deletion-request': 'Запланировать удаление через 30 дней',
+        'deletion-cancel': 'Отменить удаление аккаунта',
+        'deletion-check': 'Проверить статус',
+        'deletion-none': 'Для этого аккаунта удаление не запланировано.',
+        'deletion-pending': 'Удаление запланировано на {date}. Обычный вход сам по себе не отменяет запрос.',
+        'deletion-account-label': 'Аккаунт',
+        'deletion-working': 'Проверяем…',
+        'deletion-action-failed': 'Действие не подтверждено. Проверьте статус и попробуйте снова.',
+        'deletion-native-web': 'Управлять удалением аккаунта в браузере',
+        'account_deletion_pending': 'Запланировано удаление аккаунта. Для отмены откройте страницу удаления аккаунта.',
+        'third-party-licenses': 'Лицензии и авторы',
         'rewarded-recovering': 'Проверяем предыдущие бонусы…',
         'rewarded-attempt-label': 'День бонуса',
         'rewarded-attempt-option': '{date} · +{amount} · попытка {number}',
@@ -1671,8 +1703,7 @@ export const translations = {
         "room-players-label": "Игроки",
         "room-stake-label": "Ставка",
         "economy-free": "Бесплатная игра",
-        "economy-coins": "Play on coins",
-        "label-bank-short": "Банк",
+        "economy-coins": "Игра на монеты",
         "btn-host": "Создать",
         "btn-join": "Войти",
         "btn-draw": "БАЗАР",
@@ -1698,27 +1729,8 @@ export const translations = {
         "msg-first-turn": "{player} делает первый ход",
         "msg-last-winner-starts": "{player} начинает как победитель прошлой сдачи",
         "msg-gosha": "{player} сыграл Гошу!",
-        "stage-search-opening": "Поиск первого хода...",
-        "stage-opening-turn-desc": "Первый ход: {player}",
         "stage-opening-reason-gosha": "минимальная Гоша",
         "stage-opening-reason-smallest": "самый маленький камень",
-        "stage-opening-you": "Вы начинаете",
-        "stage-opening-required": "Поставьте {tile}",
-        "stage-opening-required-title": "Неверный первый ход",
-        "stage-opening-ai-desc": "{player} начинает",
-        "stage-ai-thinking": "AI думает...",
-        "stage-ai-playing": "AI ходит",
-        "stage-ai-gosha": "AI играет Гошу",
-        "stage-last-winner-starts": "Начинает победитель прошлой раздачи",
-        "stage-final-tile-title": "{player} поставил последний камень",
-        "stage-final-tile-subtitle": "Раунд окончен",
-        "stage-final-gosha-title": "{player} закрыл игру Гошей",
-        "stage-final-gosha-subtitle": "{count} камня сыграны сразу",
-        "stage-final-fish-title": "Рыба",
-        "stage-final-fish-subtitle": "Подсчёт остатков",
-        "stage-final-instant-win-title": "Мгновенная победа",
-        "stage-final-instant-win-desc": "{player} набрал нужные очки",
-        "stage-counting": "Подсчёт очков...",
         "round-end-next": "Продолжить",
         "menu-title": "Меню",
         "menu-resume": "Продолжить",
@@ -1844,7 +1856,6 @@ export const translations = {
         "open-room-waiting-title": "Ожидаем остальных игроков...",
         "open-room-closed-return": "Комната закрыта. Вы возвращены в открытые комнаты.",
         "open-room-host-left": "Создатель вышел из комнаты. Вы возвращены в открытые комнаты.",
-        "friends-title": "Друзья",
         "friends-note": "Запросы и приглашения отображаются здесь.",
         "friend-search-button": "Поиск",
         "friend-search-results-title": "Результаты поиска",
@@ -1870,9 +1881,6 @@ export const translations = {
         "friend-add": "Добавить",
         "friend-remove": "Удалить",
         "friend-invite": "Пригласить",
-        "friend-online": "Онлайн",
-        "friend-in-game": "В игре",
-        "friend-offline": "Не в сети",
         "player-profile-invite-unavailable": "Подключитесь к комнате или создайте её, чтобы пригласить",
         "friend-accept": "Принять",
         "friend-decline": "Отклонить",
@@ -1883,7 +1891,7 @@ export const translations = {
         "room-waiting-player": "Ожидаем {index}",
         "seat-prefix": "Место",
         "seat-selection-title": "Выберите место",
-        "seat-selection-desc": "Перед стартом выберите свободное место. Seat 1 всегда за хостом.",
+        "seat-selection-desc": "Перед началом выберите свободное место. Место 1 закреплено за создателем комнаты.",
         "seat-selection-status": "Занято мест: {seated}/{total}",
         "seat-selection-required": "Выберите места перед стартом",
         "seat-sit-here": "Сесть сюда",
@@ -1898,7 +1906,7 @@ export const translations = {
         "seat-team-a": "Команда A",
         "seat-team-b": "Команда B",
         "seat-opposite-seat": "Напротив места {seat}",
-        "seat-selected": "{player} занял место Seat {seat}",
+        "seat-selected": "{player} занял место {seat}",
         "no-account-free-play": "Аккаунт не найден, переключено на бесплатную игру",
         "not-enough-coins-round": "Недостаточно монет для следующего раунда",
         "label-stake-table": "Стол ставок",
@@ -1959,8 +1967,8 @@ export const translations = {
         "feedback-category-bug": "Ошибка",
         "feedback-category-suggestion": "Предложение",
         "feedback-category-other": "Другое",
-        "feedback-contact-label": "Email для ответа",
-        "feedback-contact-placeholder": "Необязательный email для ответа",
+        "feedback-contact-label": "Электронная почта для ответа",
+        "feedback-contact-placeholder": "Почта для ответа (необязательно)",
         "feedback-message-label": "Сообщение",
         "feedback-message-placeholder": "Опишите, что произошло или что нужно изменить",
         "feedback-send": "Отправить",
@@ -2126,10 +2134,10 @@ export const translations = {
         "online-create-title-closed": "Создать закрытую комнату",
         "online-create-title-open": "Создать открытую комнату",
         "label-ai-slots": "Количество ботов",
-        "online-room-summary": "{humans} человек + {bots} AI, всего {total}",
-        "online-bot-slot": "AI {index}"
-        ,"bot-takeover-playing": "Играет AI-бот"
-        ,"bot-takeover-active": "Играет AI-бот"
+        "online-room-summary": "{humans} + {bots}, всего {total}",
+        "online-bot-slot": "Бот {index}"
+        ,"bot-takeover-playing": "Играет бот"
+        ,"bot-takeover-active": "Играет бот"
         ,"bot-takeover-return-control": "Вернуться в игру"
         ,"bot-takeover-you-back": "Вы снова в игре."
         ,"bot_takeover": "{name} выбыл, теперь за него играет бот"
@@ -2154,7 +2162,7 @@ export const translations = {
         ,"account-auth-desc": "Используйте аккаунт, чтобы хранить рейтинг, историю матчей и вход через Google."
         ,"account-edit-name": "Изменить имя"
         ,"account-change-name-title": "Обновить имя"
-        ,"account-change-name-desc": "Это только отображаемое имя. Player ID не меняется."
+        ,"account-change-name-desc": "Это только имя в игре. ID игрока не меняется."
         ,"account-edit-avatar": "Аватар"
         ,"account-change-avatar-title": "Обновить аватар"
         ,"account-change-avatar-desc": "Если у Google есть фото, оно будет показано автоматически. Ваше загруженное фото имеет приоритет в профиле."
@@ -2173,7 +2181,7 @@ export const translations = {
         ,"account-name-saved": "Имя обновлено"
         ,"account-save-name": "Сохранить имя"
         ,"account-name-cancel": "Отмена"
-        ,"account-player-id": "Player ID"
+        ,"account-player-id": "ID игрока"
         ,"turn-timeout": "{player} не успел сделать ход и проиграл раунд"
         ,"account-legal-prefix": "Продолжая, вы соглашаетесь с"
         ,"account-legal-link": "Пользовательским соглашением"
@@ -2309,13 +2317,13 @@ export const translations = {
         ,"stage-opening-turn-desc": "Первый ход: {player}"
         ,"stage-opening-you": "Вы начинаете"
         ,"stage-opening-wait": "Ожидание первого хода"
-        ,"stage-opening-ai": "AI начинает"
+        ,"stage-opening-ai": "Бот начинает"
         ,"stage-opening-ai-desc": "{player} начинает"
         ,"stage-opening-required": "Начать нужно с {tile}"
         ,"stage-opening-required-title": "Неверный первый ход"
-        ,"stage-ai-thinking": "AI думает..."
-        ,"stage-ai-playing": "AI ходит"
-        ,"stage-ai-gosha": "AI играет Гошу"
+        ,"stage-ai-thinking": "Бот думает…"
+        ,"stage-ai-playing": "Бот ходит"
+        ,"stage-ai-gosha": "Бот играет Гошу"
         ,"stage-player-turn": "Ход игрока {player}"
         ,"stage-your-turn": "Ваш ход"
         ,"stage-final-tile-title": "{player} поставил последний камень"
@@ -2336,7 +2344,7 @@ export const translations = {
         ,"stage-last-winner-starts": "Победитель прошлой раздачи начинает"
         ,"stage-kicker-deal": "Раздача"
         ,"stage-kicker-opening": "Первый ход"
-        ,"stage-kicker-ai": "Ход AI"
+        ,"stage-kicker-ai": "Ход бота"
         ,"stage-kicker-your-turn": "Ваш ход"
         ,"stage-kicker-final": "Последний камень"
         ,"stage-kicker-counting": "Подсчёт"

@@ -130,8 +130,8 @@
 
             </section>
 
-            <div class="start-mode-switch-row" aria-label="Game mode selection">
-                <div class="mode-switcher" role="tablist" aria-label="Game mode">
+            <div class="start-mode-switch-row" data-i18n-aria="label-mode" aria-label="Game mode selection">
+                <div class="mode-switcher" role="tablist" data-i18n-aria="label-mode" aria-label="Game mode">
                     <button type="button" class="mode-switcher-segment" data-mode-toggle="telefon" data-i18n="mode-switch-telefon">Telefon</button>
                     <button type="button" class="mode-switcher-segment" data-mode-toggle="classic101" data-i18n="mode-switch-101">101</button>
                 </div>
@@ -184,6 +184,7 @@
                 </p>
             </section>
 
+            <a class="account-license-link pending-deletion-help" href="delete-account.html#request" target="_blank" rel="noopener noreferrer" data-i18n="deletion-manage" hidden>Account deletion</a>
             <p class="guest-solo-note" data-i18n="guest-solo-note">Free solo games do not need an account. Sign in for online and coin games.</p>
 
             <div class="start-actions">
@@ -202,7 +203,7 @@
             </div>
         </div>
 
-        <div class="screen-copyright start-screen-copyright">Все права защищены © SimpleSoft - Domino ver 1.33</div>
+        <div class="screen-copyright start-screen-copyright" data-i18n="screen-copyright">Все права защищены © SimpleSoft - Domino ver 1.33</div>
 
         <div id="solo-modal" class="modal-backdrop">
             <section class="modal-card">
@@ -264,7 +265,7 @@
                     <div class="account-modal-title-wrap">
                         <h2 data-i18n="online-modal-title">Bağlı otaqlar</h2>
                     </div>
-                    <button class="btn btn-menu modal-close-btn account-modal-close-btn" id="online-modal-close" type="button" aria-label="Close">×</button>
+                    <button class="btn btn-menu modal-close-btn account-modal-close-btn" id="online-modal-close" type="button" data-i18n-aria="modal-close" aria-label="Close">×</button>
                 </div>
                 <p class="modal-desc page-description" data-i18n="online-modal-desc">Bağlı otaq yaradın və ya kodla qoşulun.</p>
 
@@ -422,7 +423,7 @@
                     <div class="player-profile-actions">
                         <button type="button" class="btn btn-action btn-strong" id="player-profile-friend-btn" data-i18n="friend-add">Dost et</button>
                         <button type="button" class="btn btn-action btn-strong" id="player-profile-invite-btn" data-i18n="friend-invite">Dəvət et</button>
-                        <div class="player-profile-icon-actions" role="group" aria-label="Player profile actions">
+                        <div class="player-profile-icon-actions" role="group" data-i18n-aria="player-profile-title" aria-label="Player profile actions">
                             <button type="button" class="btn player-profile-icon-btn" id="player-profile-message-btn" aria-label="Mesajlar" title="Mesajlar"></button>
                             <button type="button" class="btn player-profile-icon-btn" id="player-profile-report-btn" aria-label="Şikayət et" title="Şikayət et"></button>
                             <button type="button" class="btn player-profile-icon-btn is-danger" id="player-profile-block-btn" aria-label="Blok et" title="Blok et"></button>
@@ -567,6 +568,7 @@
                     </div>
                     <div class="account-deletion-actions">
                         <a class="account-delete-request-link" href="delete-account.html#request" target="_blank" rel="noopener noreferrer" data-i18n="account-delete-request">Request account deletion</a>
+                        <a class="account-license-link" href="third-party.html" target="_blank" rel="noopener noreferrer" data-i18n="third-party-licenses">Licenses and authors</a>
                     </div>
                     <div class="account-profile-tabs" id="account-profile-tabs">
                         <button type="button" class="account-profile-tab" data-profile-tab="skins" data-i18n="account-skins-vault">Table skins</button>
@@ -705,7 +707,7 @@
                 <input id="audio-effects" type="range" min="0" max="100" step="1" value="100">
             </div>
             <button class="btn btn-menu" id="menu-quit" data-i18n="menu-quit">Çıxış</button>
-            <div class="screen-copyright menu-copyright">Все права защищены © SimpleSoft - Domino ver 1.33</div>
+            <div class="screen-copyright menu-copyright" data-i18n="screen-copyright">Все права защищены © SimpleSoft - Domino ver 1.33</div>
         </div>
     </div>
 

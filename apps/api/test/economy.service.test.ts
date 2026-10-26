@@ -741,7 +741,7 @@ test("Daily Bonus - Missing previous day resets streak to 1", async () => {
   assert.equal(status.dailyBonus.todayAmount, 200);
 });
 
-test("Daily Bonus - Streak capped at dailyMaxStreak", async () => {
+test("Daily Bonus - owner-approved cycle restarts after day seven without rewriting yesterday", async () => {
   const mockDb = new MockDb() as any;
   const authMock = {
     getCurrentProfile: async () => ({ player: { id: "player_1" } })
@@ -762,9 +762,53 @@ test("Daily Bonus - Streak capped at dailyMaxStreak", async () => {
   });
 
   const status = await service.getDailyBonusStatus({}, now);
-  assert.equal(status.dailyBonus.streakDay, 7); // capped at 7
+  assert.equal(status.dailyBonus.streakDay, 1);
+  assert.equal(status.dailyBonus.todayAmount, 200);
+  assert.equal(status.dailyBonus.tomorrowAmount, 300);
+  const claim = await service.claimDailyBonus({}, now);
+  assert.equal(claim.reward, 200);
+  assert.equal(claim.claim.streakDay, 1);
+  assert.equal(mockDb.claims[0].streakDay, 7);
+  assert.equal(mockDb.claims[0].amount, 55);
+});
+
+test("Daily Bonus - claimed seventh day remains unchanged and previews first day of next cycle", async () => {
+  const mockDb = new MockDb() as any;
+  const service = new EconomyService(mockDb, { getCurrentProfile: async () => ({ player: { id: "player_1" } }) } as any);
+  const now = new Date("2024-03-01T18:30:00.000Z");
+  mockDb.claims.push({ id: "legacy_today", playerId: "player_1", claimDate: getBakuDateKey(now), streakDay: 7, amount: 2000, createdAt: now });
+  const status = await service.getDailyBonusStatus({}, now);
+  assert.equal(status.dailyBonus.claimedToday, true);
   assert.equal(status.dailyBonus.todayAmount, 2000);
-  assert.equal(status.dailyBonus.tomorrowAmount, 2000);
+  assert.equal(status.dailyBonus.tomorrowReward.day, 1);
+  assert.equal(status.dailyBonus.tomorrowAmount, 200);
+  const repeat = await service.claimDailyBonus({}, now);
+  assert.equal(repeat.claimed, false);
+  assert.equal(mockDb.ledger.length, 0);
+  assert.equal(mockDb.claims[0].amount, 2000);
+});
+
+test("Daily Bonus - ninety actual service days repeat the schedule; missing day resets; duplicate never mints", async () => {
+  const mockDb = new MockDb() as any;
+  const service = new EconomyService(mockDb, { getCurrentProfile: async () => ({ player: { id: "player_1" } }) } as any);
+  const rewards = [200, 300, 350, 400, 800, 1000, 2000];
+  let total = 0;
+  for (let day = 0; day < 90; day++) {
+    const now = new Date(Date.UTC(2024, 2, 1 + day, 12));
+    const status = await service.getDailyBonusStatus({}, now);
+    assert.equal(status.dailyBonus.streakDay, day % 7 + 1);
+    assert.equal(status.dailyBonus.todayAmount, rewards[day % 7]);
+    const claim = await service.claimDailyBonus({}, now);
+    total += rewards[day % 7];
+    assert.equal(claim.reward, rewards[day % 7]);
+    assert.equal(claim.wallet.balance, total);
+    assert.equal((await service.claimDailyBonus({}, now)).claimed, false);
+    if ([6, 29, 89].includes(day)) assert.equal(total, ({ 6: 5050, 29: 20700, 89: 63650 } as Record<number, number>)[day]);
+  }
+  assert.equal(mockDb.ledger.length, 90);
+  const afterGap = await service.claimDailyBonus({}, new Date(Date.UTC(2024, 2, 92, 12)));
+  assert.equal(afterGap.claim.streakDay, 1);
+  assert.equal(afterGap.reward, 200);
 });
 
 test("Daily Bonus - Baku helpers resolve date keys and next midnight", async () => {

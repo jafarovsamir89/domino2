@@ -1,0 +1,15 @@
+{
+  "stagedFilesChecked": 134,
+  "privateProviderValuesChecked": 2,
+  "matches": 0,
+  "unrelatedPulseStaged": false,
+  "sourceParity": "12 pairs match",
+  "sourceChecks": "pass",
+  "api": "197/197 no skips",
+  "browser": "30/30 plus latest deletion-page 9/9",
+  "auditManifest": "347 entries, no problems",
+  "rightsRegistry": "154 paths / 88 hashes / no pending evidence on stated basis",
+  "productionMutation": false,
+  "ownedPostgres": "stopped",
+  "intermediateWordReviews": "preserved ignored; canonical TRANSLATIONS_FOR_OWNER.html only"
+}

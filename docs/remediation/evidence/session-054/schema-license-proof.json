@@ -1,0 +1,9 @@
+{
+  "package": "@colyseus/schema",
+  "version": "4.0.13",
+  "metadata": "https://registry.npmjs.org/@colyseus%2fschema/4.0.13",
+  "tarball": "https://registry.npmjs.org/@colyseus/schema/-/schema-4.0.13.tgz",
+  "integrityVerified": true,
+  "licenseSha256": "38de086c59d8290eb7fc74642a1492bb3610ba39a74b991f2cb4685eb42464ec",
+  "sameLicenseAsInstalled421": true
+}

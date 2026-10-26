@@ -1,0 +1,177 @@
+{
+  "scope": "Local populated synthetic DB clone, no production reads/writes",
+  "source": "domino_remediation_s054_cycle_2",
+  "database": "domino_remediation_s054_upgrade_1",
+  "migrated": "19 -> 20 additive",
+  "comparedTables": 40,
+  "allExistingRowsUnchanged": true,
+  "originalTableHashes": {
+    "AdminAuditLog": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "CatalogPrice": {
+      "count": 8,
+      "sha256": "ac8c881217a22fa8d3036657826ccf72f869bdc9ff9459bfa778999e55007989"
+    },
+    "CatalogProduct": {
+      "count": 8,
+      "sha256": "d48929a5b97c5fb5fc6afd41cba7da1a9123fac18a4ddedb61e181def6e474cf"
+    },
+    "CoinDailyBonusClaim": {
+      "count": 91,
+      "sha256": "5c7fbfef88814351abb5d5e808d63756e32c1299f2e982c535d14394a465b531"
+    },
+    "CoinEconomyConfig": {
+      "count": 1,
+      "sha256": "359725308b619da361954e2a1b0a95ea720aa8b51b4e6170545b9e38303f4923"
+    },
+    "CoinLedgerEntry": {
+      "count": 92,
+      "sha256": "9ec207f3b8c4361be08ceca4467cfabb209d9d468cda4c2cb3db7273918b1896"
+    },
+    "CoinMatchStake": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "CoinQuest": {
+      "count": 1,
+      "sha256": "9b95bee699d867c4d5c7a0d22c7f7a628a6ec0776d64e0a2a411cdf8ff1f10f3"
+    },
+    "CoinQuestProgress": {
+      "count": 1,
+      "sha256": "a74f959a93abea5251220d7437e127b6e17def2e7e910d2638b876b965c374b2"
+    },
+    "CoinStakeTable": {
+      "count": 7,
+      "sha256": "ce83ca663cb4be1ee7326c5acc5d10c87c48e5cf54d607db8c0f40d0522bbfae"
+    },
+    "CoinTournament": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "CoinTournamentEntry": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "CoinWallet": {
+      "count": 1,
+      "sha256": "ec49159fe27bab8d808f0355e97e32544a24e907cab30203d1e8799734425f9a"
+    },
+    "DirectMessage": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "Feedback": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "FriendConnection": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "GiftCatalog": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "GiftTransaction": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "InboxMessage": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "Match": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "MatchParticipant": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "Order": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "Payment": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "PaymentEvent": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "PlayInvite": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "Player": {
+      "count": 1,
+      "sha256": "321376e96ed2a226d61d335743d6a660285d9fda305785634d67cbbba4386cc0"
+    },
+    "PlayerBan": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "PlayerEntitlement": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "PlayerGiftInventory": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "PlayerModeStats": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "PlayerReport": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "PlayerStats": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "RoomInvitation": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "SystemAuditLog": {
+      "count": 91,
+      "sha256": "0002bc3e830d51a8c1c9e0fe7e5210afddfe001e199c5cf32a27bf421ba31f74"
+    },
+    "account": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "direct_message_thread": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "fcm_token": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "session": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "user": {
+      "count": 1,
+      "sha256": "46c050b6a24e6197dbe02101cdbedf5aed867fe2540ff912067ad0ab2ce65eaa"
+    },
+    "verification": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    }
+  },
+  "wallet": {
+    "balance": 64850,
+    "reserved": 13
+  },
+  "deletionQueue": 0,
+  "drift": "No difference detected.",
+  "deployLog": "Prisma schema loaded from packages/db/prisma/schema.prisma\nDatasource \"db\": PostgreSQL database \"domino_remediation_s054_upgrade_1\", schema \"public\" at \"127.0.0.1:55439\"\n\n20 migrations found in prisma/migrations\n\nApplying migration `20261026223000_account_deletion`\n\nThe following migration(s) have been applied:\n\nmigrations/\n  └─ 20261026223000_account_deletion/\n    └─ migration.sql\n      \nAll migrations have been successfully applied.\n"
+}

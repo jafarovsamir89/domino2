@@ -46,6 +46,9 @@ test('active game session checks require a fresh server proof and recheck logout
   }
   assert.equal(reads, 0, 'invalid server proof must be rejected before DB reads');
   assert.equal((await service.validateActiveGameSession(signed())).valid, true, 'active session survives the five-minute admission token');
+  player.deletionRequestedAt = new Date();
+  await assert.rejects(service.validateActiveGameSession(signed()), (err: any) => err.getStatus() === 401, 'pending deletion prevents a fresh session restoring gameplay');
+  player.deletionRequestedAt = null;
   session = null;
   await assert.rejects(service.validateActiveGameSession(signed()), (err: any) => err.getStatus() === 401, 'logout revokes active access');
   session = { userId: claims.userId, expiresAt: new Date(Date.now() + 60_000) };
@@ -54,6 +57,17 @@ test('active game session checks require a fresh server proof and recheck logout
   player = { id: claims.playerId, userId: claims.userId };
   ban = { id: 'active-ban' };
   await assert.rejects(service.validateActiveGameSession(signed()), (err: any) => err.getStatus() === 401, 'active ban revokes active access');
+});
+
+test('pending account deletion blocks profile bootstrap before stats, starter coins or game admission', async () => {
+  let writes = 0;
+  const service = new AuthService({
+    player: { upsert: async () => ({ id: 'pending-player', deletionRequestedAt: new Date(), displayName: 'Synthetic' }) },
+    playerStats: { create: async () => { writes++; throw Error('unexpected-stats'); } }
+  } as any);
+  (service as any).getSession = async () => makeSession();
+  await assert.rejects(service.getCurrentProfile({}), (err: any) => err.getStatus?.() === 403 && err.message === 'account_deletion_pending');
+  assert.equal(writes, 0);
 });
 
 test("AuthService.getCurrentProfile filters recent matches by gameMode and exposes gameMode on each item", async () => {
@@ -372,6 +386,7 @@ test("AuthService.updateCurrentProfileAvatar rejects non-image https URLs", asyn
       update: async () => ({})
     },
     player: {
+      findUnique: async () => ({ deletionRequestedAt: null }),
       upsert: async () => ({})
     }
   } as any;
@@ -404,6 +419,7 @@ test("AuthService.updateCurrentProfileAvatar rejects oversized image URLs", asyn
       update: async () => ({})
     },
     player: {
+      findUnique: async () => ({ deletionRequestedAt: null }),
       upsert: async () => ({})
     }
   } as any;

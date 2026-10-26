@@ -1,0 +1,522 @@
+{
+  "removedDeclarations": 86,
+  "activeValuesPreserved": true,
+  "duplicates": [
+    {
+      "locale": "az",
+      "key": "label-bank-short",
+      "earlierLine": 121,
+      "finalLine": 238
+    },
+    {
+      "locale": "az",
+      "key": "friend-online",
+      "earlierLine": 328,
+      "finalLine": 410
+    },
+    {
+      "locale": "az",
+      "key": "friend-in-game",
+      "earlierLine": 329,
+      "finalLine": 411
+    },
+    {
+      "locale": "az",
+      "key": "friend-offline",
+      "earlierLine": 330,
+      "finalLine": 412
+    },
+    {
+      "locale": "az",
+      "key": "friends-title",
+      "earlierLine": 295,
+      "finalLine": 473
+    },
+    {
+      "locale": "az",
+      "key": "stage-search-opening",
+      "earlierLine": 148,
+      "finalLine": 760
+    },
+    {
+      "locale": "az",
+      "key": "stage-opening-turn-desc",
+      "earlierLine": 149,
+      "finalLine": 762
+    },
+    {
+      "locale": "az",
+      "key": "stage-opening-you",
+      "earlierLine": 152,
+      "finalLine": 763
+    },
+    {
+      "locale": "az",
+      "key": "stage-opening-ai-desc",
+      "earlierLine": 155,
+      "finalLine": 766
+    },
+    {
+      "locale": "az",
+      "key": "stage-opening-required",
+      "earlierLine": 153,
+      "finalLine": 767
+    },
+    {
+      "locale": "az",
+      "key": "stage-opening-required-title",
+      "earlierLine": 154,
+      "finalLine": 768
+    },
+    {
+      "locale": "az",
+      "key": "stage-ai-thinking",
+      "earlierLine": 156,
+      "finalLine": 769
+    },
+    {
+      "locale": "az",
+      "key": "stage-ai-playing",
+      "earlierLine": 157,
+      "finalLine": 770
+    },
+    {
+      "locale": "az",
+      "key": "stage-ai-gosha",
+      "earlierLine": 158,
+      "finalLine": 771
+    },
+    {
+      "locale": "az",
+      "key": "stage-final-tile-title",
+      "earlierLine": 160,
+      "finalLine": 774
+    },
+    {
+      "locale": "az",
+      "key": "stage-final-tile-subtitle",
+      "earlierLine": 161,
+      "finalLine": 775
+    },
+    {
+      "locale": "az",
+      "key": "stage-final-gosha-title",
+      "earlierLine": 162,
+      "finalLine": 776
+    },
+    {
+      "locale": "az",
+      "key": "stage-final-gosha-subtitle",
+      "earlierLine": 163,
+      "finalLine": 777
+    },
+    {
+      "locale": "az",
+      "key": "stage-final-fish-title",
+      "earlierLine": 164,
+      "finalLine": 778
+    },
+    {
+      "locale": "az",
+      "key": "stage-final-fish-subtitle",
+      "earlierLine": 165,
+      "finalLine": 779
+    },
+    {
+      "locale": "az",
+      "key": "stage-final-instant-win-title",
+      "earlierLine": 166,
+      "finalLine": 780
+    },
+    {
+      "locale": "az",
+      "key": "stage-final-instant-win-desc",
+      "earlierLine": 167,
+      "finalLine": 781
+    },
+    {
+      "locale": "az",
+      "key": "stage-counting",
+      "earlierLine": 168,
+      "finalLine": 782
+    },
+    {
+      "locale": "az",
+      "key": "stage-last-winner-starts",
+      "earlierLine": 159,
+      "finalLine": 789
+    },
+    {
+      "locale": "en",
+      "key": "label-bank-short",
+      "earlierLine": 916,
+      "finalLine": 1033
+    },
+    {
+      "locale": "en",
+      "key": "friends-title",
+      "earlierLine": 1090,
+      "finalLine": 1191
+    },
+    {
+      "locale": "en",
+      "key": "friend-online",
+      "earlierLine": 1128,
+      "finalLine": 1226
+    },
+    {
+      "locale": "en",
+      "key": "friend-in-game",
+      "earlierLine": 1129,
+      "finalLine": 1227
+    },
+    {
+      "locale": "en",
+      "key": "friend-offline",
+      "earlierLine": 1130,
+      "finalLine": 1228
+    },
+    {
+      "locale": "en",
+      "key": "timeout-forfeit-title",
+      "earlierLine": 1418,
+      "finalLine": 1531
+    },
+    {
+      "locale": "en",
+      "key": "timeout-forfeit-title-loser",
+      "earlierLine": 1419,
+      "finalLine": 1532
+    },
+    {
+      "locale": "en",
+      "key": "timeout-forfeit-title-waiting",
+      "earlierLine": 1420,
+      "finalLine": 1533
+    },
+    {
+      "locale": "en",
+      "key": "timeout-forfeit-desc-loser",
+      "earlierLine": 1421,
+      "finalLine": 1534
+    },
+    {
+      "locale": "en",
+      "key": "timeout-forfeit-desc-waiting",
+      "earlierLine": 1422,
+      "finalLine": 1535
+    },
+    {
+      "locale": "en",
+      "key": "timeout-forfeit-continue",
+      "earlierLine": 1423,
+      "finalLine": 1536
+    },
+    {
+      "locale": "en",
+      "key": "timeout-forfeit-continue-in-progress",
+      "earlierLine": 1424,
+      "finalLine": 1537
+    },
+    {
+      "locale": "en",
+      "key": "timeout-forfeit-exit",
+      "earlierLine": 1425,
+      "finalLine": 1538
+    },
+    {
+      "locale": "en",
+      "key": "timeout-forfeit-topup",
+      "earlierLine": 1426,
+      "finalLine": 1539
+    },
+    {
+      "locale": "en",
+      "key": "timeout-forfeit-insufficient-balance",
+      "earlierLine": 1427,
+      "finalLine": 1540
+    },
+    {
+      "locale": "en",
+      "key": "timeout-forfeit-stake-unavailable",
+      "earlierLine": 1428,
+      "finalLine": 1541
+    },
+    {
+      "locale": "en",
+      "key": "timeout-forfeit-room-closed",
+      "earlierLine": 1429,
+      "finalLine": 1542
+    },
+    {
+      "locale": "en",
+      "key": "timeout-forfeit-countdown",
+      "earlierLine": 1430,
+      "finalLine": 1543
+    },
+    {
+      "locale": "en",
+      "key": "timeout-forfeit-waiting-other",
+      "earlierLine": 1431,
+      "finalLine": 1544
+    },
+    {
+      "locale": "en",
+      "key": "stage-search-opening",
+      "earlierLine": 943,
+      "finalLine": 1569
+    },
+    {
+      "locale": "en",
+      "key": "stage-opening-turn-desc",
+      "earlierLine": 944,
+      "finalLine": 1571
+    },
+    {
+      "locale": "en",
+      "key": "stage-opening-you",
+      "earlierLine": 947,
+      "finalLine": 1572
+    },
+    {
+      "locale": "en",
+      "key": "stage-opening-ai-desc",
+      "earlierLine": 950,
+      "finalLine": 1575
+    },
+    {
+      "locale": "en",
+      "key": "stage-opening-required",
+      "earlierLine": 948,
+      "finalLine": 1576
+    },
+    {
+      "locale": "en",
+      "key": "stage-opening-required-title",
+      "earlierLine": 949,
+      "finalLine": 1577
+    },
+    {
+      "locale": "en",
+      "key": "stage-ai-thinking",
+      "earlierLine": 951,
+      "finalLine": 1578
+    },
+    {
+      "locale": "en",
+      "key": "stage-ai-playing",
+      "earlierLine": 952,
+      "finalLine": 1579
+    },
+    {
+      "locale": "en",
+      "key": "stage-ai-gosha",
+      "earlierLine": 953,
+      "finalLine": 1580
+    },
+    {
+      "locale": "en",
+      "key": "stage-final-tile-title",
+      "earlierLine": 955,
+      "finalLine": 1583
+    },
+    {
+      "locale": "en",
+      "key": "stage-final-tile-subtitle",
+      "earlierLine": 956,
+      "finalLine": 1584
+    },
+    {
+      "locale": "en",
+      "key": "stage-final-gosha-title",
+      "earlierLine": 957,
+      "finalLine": 1585
+    },
+    {
+      "locale": "en",
+      "key": "stage-final-gosha-subtitle",
+      "earlierLine": 958,
+      "finalLine": 1586
+    },
+    {
+      "locale": "en",
+      "key": "stage-final-fish-title",
+      "earlierLine": 959,
+      "finalLine": 1587
+    },
+    {
+      "locale": "en",
+      "key": "stage-final-fish-subtitle",
+      "earlierLine": 960,
+      "finalLine": 1588
+    },
+    {
+      "locale": "en",
+      "key": "stage-final-instant-win-title",
+      "earlierLine": 961,
+      "finalLine": 1589
+    },
+    {
+      "locale": "en",
+      "key": "stage-final-instant-win-desc",
+      "earlierLine": 962,
+      "finalLine": 1590
+    },
+    {
+      "locale": "en",
+      "key": "stage-counting",
+      "earlierLine": 963,
+      "finalLine": 1591
+    },
+    {
+      "locale": "en",
+      "key": "stage-last-winner-starts",
+      "earlierLine": 954,
+      "finalLine": 1598
+    },
+    {
+      "locale": "ru",
+      "key": "label-bank-short",
+      "earlierLine": 1738,
+      "finalLine": 1968
+    },
+    {
+      "locale": "ru",
+      "key": "friends-title",
+      "earlierLine": 1910,
+      "finalLine": 2002
+    },
+    {
+      "locale": "ru",
+      "key": "friend-online",
+      "earlierLine": 1936,
+      "finalLine": 2037
+    },
+    {
+      "locale": "ru",
+      "key": "friend-in-game",
+      "earlierLine": 1937,
+      "finalLine": 2038
+    },
+    {
+      "locale": "ru",
+      "key": "friend-offline",
+      "earlierLine": 1938,
+      "finalLine": 2039
+    },
+    {
+      "locale": "ru",
+      "key": "stage-search-opening",
+      "earlierLine": 1764,
+      "finalLine": 2370
+    },
+    {
+      "locale": "ru",
+      "key": "stage-opening-turn-desc",
+      "earlierLine": 1765,
+      "finalLine": 2372
+    },
+    {
+      "locale": "ru",
+      "key": "stage-opening-you",
+      "earlierLine": 1768,
+      "finalLine": 2373
+    },
+    {
+      "locale": "ru",
+      "key": "stage-opening-ai-desc",
+      "earlierLine": 1771,
+      "finalLine": 2376
+    },
+    {
+      "locale": "ru",
+      "key": "stage-opening-required",
+      "earlierLine": 1769,
+      "finalLine": 2377
+    },
+    {
+      "locale": "ru",
+      "key": "stage-opening-required-title",
+      "earlierLine": 1770,
+      "finalLine": 2378
+    },
+    {
+      "locale": "ru",
+      "key": "stage-ai-thinking",
+      "earlierLine": 1772,
+      "finalLine": 2379
+    },
+    {
+      "locale": "ru",
+      "key": "stage-ai-playing",
+      "earlierLine": 1773,
+      "finalLine": 2380
+    },
+    {
+      "locale": "ru",
+      "key": "stage-ai-gosha",
+      "earlierLine": 1774,
+      "finalLine": 2381
+    },
+    {
+      "locale": "ru",
+      "key": "stage-final-tile-title",
+      "earlierLine": 1776,
+      "finalLine": 2384
+    },
+    {
+      "locale": "ru",
+      "key": "stage-final-tile-subtitle",
+      "earlierLine": 1777,
+      "finalLine": 2385
+    },
+    {
+      "locale": "ru",
+      "key": "stage-final-gosha-title",
+      "earlierLine": 1778,
+      "finalLine": 2386
+    },
+    {
+      "locale": "ru",
+      "key": "stage-final-gosha-subtitle",
+      "earlierLine": 1779,
+      "finalLine": 2387
+    },
+    {
+      "locale": "ru",
+      "key": "stage-final-fish-title",
+      "earlierLine": 1780,
+      "finalLine": 2388
+    },
+    {
+      "locale": "ru",
+      "key": "stage-final-fish-subtitle",
+      "earlierLine": 1781,
+      "finalLine": 2389
+    },
+    {
+      "locale": "ru",
+      "key": "stage-final-instant-win-title",
+      "earlierLine": 1782,
+      "finalLine": 2390
+    },
+    {
+      "locale": "ru",
+      "key": "stage-final-instant-win-desc",
+      "earlierLine": 1783,
+      "finalLine": 2391
+    },
+    {
+      "locale": "ru",
+      "key": "stage-counting",
+      "earlierLine": 1784,
+      "finalLine": 2392
+    },
+    {
+      "locale": "ru",
+      "key": "stage-last-winner-starts",
+      "earlierLine": 1775,
+      "finalLine": 2399
+    }
+  ]
+}

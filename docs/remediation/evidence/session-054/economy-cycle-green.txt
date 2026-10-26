@@ -1,0 +1,26 @@
+✔ Daily Bonus - configured dailyRewards control the schedule and extend with streak bonus (366.142375ms)
+✔ Daily Bonus - Unauthenticated status returns 401 (0.593667ms)
+✔ Daily Bonus - Authenticated status returns claimable true if no claim today (0.640959ms)
+✔ Daily Bonus - Claim credits wallet and advances quest (1.812916ms)
+✔ Daily Bonus - unverified x2 rejects forged client completion without any grant (0.211292ms)
+✔ Daily Bonus - Client amount is ignored (1.071292ms)
+✔ Daily Bonus - Second claim same day returns claimed false (1.463125ms)
+✔ Daily Bonus - normal claim cannot be upgraded without verified entitlement (1.279708ms)
+✔ Daily Bonus - rejected x2 does not consume the normal daily reward (1.052417ms)
+✔ Daily Bonus - Previous day claim increases streak (1.562166ms)
+✔ Daily Bonus - After next Baku midnight claim is allowed (1.853ms)
+✔ Daily Bonus - Missing previous day resets streak to 1 (0.542ms)
+✔ Daily Bonus - owner-approved cycle restarts after day seven without rewriting yesterday (1.448458ms)
+✔ Daily Bonus - claimed seventh day remains unchanged and previews first day of next cycle (0.882167ms)
+✔ Daily Bonus - ninety actual service days repeat the schedule; missing day resets; duplicate never mints (132.162166ms)
+✔ Daily Bonus - Baku helpers resolve date keys and next midnight (0.421458ms)
+✔ Daily Bonus - repeated unverified x2 requests never change the granted daily reward (2.111541ms)
+✔ Daily Bonus - ledger keys distinguish normal grants by player/date and preserve retries (2.580459ms)
+ℹ tests 18
+ℹ suites 0
+ℹ pass 18
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1112.957625

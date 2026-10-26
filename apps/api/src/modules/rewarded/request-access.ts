@@ -37,9 +37,9 @@ export class RewardedRequestAccess {
   if(!userId||!sessionId)throw Error('active_session_required');
   const [session,player]=await Promise.all([
    this.db.session.findUnique({where:{id:sessionId},select:{id:true,userId:true,expiresAt:true}}),
-   this.db.player.findUnique({where:{userId},select:{id:true,userId:true}})
+   this.db.player.findUnique({where:{userId},select:{id:true,userId:true,deletionRequestedAt:true}})
   ]);
-  if(!session||session.userId!==userId||session.expiresAt.getTime()<=now||!player||player.userId!==userId||claimedPlayerId&&player.id!==claimedPlayerId)throw Error('active_session_required');
+  if(!session||session.userId!==userId||session.expiresAt.getTime()<=now||!player||player.deletionRequestedAt||player.userId!==userId||claimedPlayerId&&player.id!==claimedPlayerId)throw Error('active_session_required');
   const ban=await this.db.playerBan.findFirst({where:{playerId:player.id,revokedAt:null,OR:[{expiresAt:null},{expiresAt:{gt:new Date(now)}}]},select:{id:true}});
   if(ban)throw Error('active_session_required');
   return {playerId:player.id,userId,sessionId};

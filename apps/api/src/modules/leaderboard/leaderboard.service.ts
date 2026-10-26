@@ -109,6 +109,7 @@ export class LeaderboardService {
     const normalizedGameMode = normalizeRatingGameMode(gameMode);
     const rows = await this.prisma.playerModeStats.findMany({
       where: {
+        player: { deletionRequestedAt: null },
         gameMode: normalizedGameMode,
         matchesPlayed: {
           gte: MIN_RANKED_MATCHES
@@ -167,6 +168,7 @@ export class LeaderboardService {
       },
       select: {
         participants: {
+          where: { player: { deletionRequestedAt: null } },
           select: {
             playerId: true,
             displayNameSnapshot: true,
@@ -294,6 +296,7 @@ export class LeaderboardService {
 
     const players = await this.prisma.player.findMany({
       where: {
+        deletionRequestedAt: null,
         id: {
           in: Array.from(friendIds)
         }

@@ -1,0 +1,79 @@
+✔ Daily Bonus - configured dailyRewards control the schedule and extend with streak bonus (454.015792ms)
+✔ Daily Bonus - Unauthenticated status returns 401 (0.515541ms)
+✔ Daily Bonus - Authenticated status returns claimable true if no claim today (0.556209ms)
+✔ Daily Bonus - Claim credits wallet and advances quest (2.214125ms)
+✔ Daily Bonus - unverified x2 rejects forged client completion without any grant (0.324667ms)
+✔ Daily Bonus - Client amount is ignored (1.622084ms)
+✔ Daily Bonus - Second claim same day returns claimed false (2.294125ms)
+✔ Daily Bonus - normal claim cannot be upgraded without verified entitlement (1.275916ms)
+✔ Daily Bonus - rejected x2 does not consume the normal daily reward (1.192625ms)
+✔ Daily Bonus - Previous day claim increases streak (1.753917ms)
+✔ Daily Bonus - After next Baku midnight claim is allowed (1.881958ms)
+✔ Daily Bonus - Missing previous day resets streak to 1 (0.574875ms)
+✖ Daily Bonus - owner-approved cycle restarts after day seven without rewriting yesterday (1.362458ms)
+✖ Daily Bonus - claimed seventh day remains unchanged and previews first day of next cycle (0.624791ms)
+✖ Daily Bonus - ninety actual service days repeat the schedule; missing day resets; duplicate never mints (12.751292ms)
+✔ Daily Bonus - Baku helpers resolve date keys and next midnight (0.5335ms)
+✔ Daily Bonus - repeated unverified x2 requests never change the granted daily reward (1.983ms)
+✔ Daily Bonus - ledger keys distinguish normal grants by player/date and preserve retries (3.450125ms)
+ℹ tests 18
+ℹ suites 0
+ℹ pass 15
+ℹ fail 3
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1050.731042
+
+✖ failing tests:
+
+test at apps/api/dist/test/economy.service.test.js:671:1
+✖ Daily Bonus - owner-approved cycle restarts after day seven without rewriting yesterday (1.362458ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+
+  7 !== 1
+
+      at TestContext.<anonymous> (file:///Users/macbookair/Documents/domino/apps/api/dist/test/economy.service.test.js:689:12)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 7,
+    expected: 1,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at apps/api/dist/test/economy.service.test.js:698:1
+✖ Daily Bonus - claimed seventh day remains unchanged and previews first day of next cycle (0.624791ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+
+  7 !== 1
+
+      at TestContext.<anonymous> (file:///Users/macbookair/Documents/domino/apps/api/dist/test/economy.service.test.js:706:12)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 7,
+    expected: 1,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at apps/api/dist/test/economy.service.test.js:713:1
+✖ Daily Bonus - ninety actual service days repeat the schedule; missing day resets; duplicate never mints (12.751292ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+
+  7 !== 1
+
+      at TestContext.<anonymous> (file:///Users/macbookair/Documents/domino/apps/api/dist/test/economy.service.test.js:721:16)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 7,
+    expected: 1,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

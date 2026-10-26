@@ -1,0 +1,44 @@
+✖ active game session checks require a fresh server proof and recheck logout, deletion and bans beyond admission-token expiry (5.898209ms)
+✖ pending account deletion blocks profile bootstrap before stats, starter coins or game admission (1.1405ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 0
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 972.121458
+
+✖ failing tests:
+
+test at apps/api/dist/test/auth.service.test.js:24:1
+✖ active game session checks require a fresh server proof and recheck logout, deletion and bans beyond admission-token expiry (5.898209ms)
+  AssertionError [ERR_ASSERTION]: Missing expected rejection: pending deletion prevents a fresh session restoring gameplay
+      at async TestContext.<anonymous> (file:///Users/macbookair/Documents/domino/apps/api/dist/test/auth.service.test.js:46:5)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:358:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    operator: 'rejects',
+    diff: 'simple'
+  }
+
+test at apps/api/dist/test/auth.service.test.js:57:1
+✖ pending account deletion blocks profile bootstrap before stats, starter coins or game admission (1.1405ms)
+  AssertionError [ERR_ASSERTION]: The validation function is expected to return "true". Received false
+
+  Caught error:
+
+  Error: unexpected-stats
+      at async TestContext.<anonymous> (file:///Users/macbookair/Documents/domino/apps/api/dist/test/auth.service.test.js:64:5)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: Error: unexpected-stats
+        at Object.create (file:///Users/macbookair/Documents/domino/apps/api/dist/test/auth.service.test.js:61:62)
+        at AuthService.buildProfileForSessionUser (file:///Users/macbookair/Documents/domino/apps/api/dist/src/modules/auth/auth.service.js:156:45),
+    operator: 'rejects',
+    diff: 'simple'
+  }

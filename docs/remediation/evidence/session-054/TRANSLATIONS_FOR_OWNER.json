@@ -1,0 +1,15 @@
+{
+  "source": "js/translations.js",
+  "sha256": "846ced5ac3bd793d347722224153127eb82718e55a91cc2e53cce0b9180ab262",
+  "rows": 788,
+  "counts": {
+    "az": 778,
+    "ru": 788,
+    "en": 778
+  },
+  "literalReferences": 539,
+  "duplicateKeys": [],
+  "missing": [],
+  "placeholderErrors": [],
+  "humanAcceptance": "pending; Turkish pilot separate and not enabled"
+}

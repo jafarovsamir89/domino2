@@ -1,0 +1,788 @@
+<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Domino — проверка переводов v2</title><style>body{font:16px/1.5 system-ui;margin:20px;color:#192130}input{font:inherit;padding:10px;width:min(90%,600px)}table{border-collapse:collapse;width:100%}th{position:sticky;top:0;background:#e5edf8}td,th{border:1px solid #ccd3de;padding:10px;vertical-align:top}td:first-child{font-size:12px;max-width:250px;overflow-wrap:anywhere}tr:nth-child(even){background:#f5f7fa}code{overflow-wrap:anywhere}</style></head><body><h1>Переводы Domino — проверка владельцем</h1><p>Актуальные AZ / RU / EN после исправлений S054. Можно искать слово или ключ. Знак — означает отсутствие отдельного неиспользуемого/вариантного ключа; все найденные статические ссылки проверены. Финальная проверка владельцем и турецкий пилот ещё не выполнены. Машинные проверки не заменяют проверку смысла.</p><p>SHA-256 словаря: <code>846ced5ac3bd793d347722224153127eb82718e55a91cc2e53cce0b9180ab262</code></p><label>Поиск <input id="search" type="search"></label><p><output id="count">788</output> строк</p><table><thead><tr><th>Ключ</th><th>Азербайджанский</th><th>Русский</th><th>Английский</th></tr></thead><tbody><tr><td><code>accessibility-choose-end</code></td><td lang="az">{arrow} istiqamətinə, {value} tərəfinə qoy</td><td lang="ru">Поставить {arrow} к значению {value}</td><td lang="en">Place toward {arrow}, on {value}</td></tr>
+<tr><td><code>accessibility-choose-end-group</code></td><td lang="az">Daşı yerləşdirmək üçün tərəf seçin</td><td lang="ru">Выберите сторону, куда поставить кость</td><td lang="en">Choose where to place the tile</td></tr>
+<tr><td><code>accessibility-hand-tile</code></td><td lang="az">Daş {index} / {count}: {a} və {b}. {status}</td><td lang="ru">Кость {index} из {count}: {a} и {b}. {status}</td><td lang="en">Tile {index} of {count}: {a} and {b}. {status}</td></tr>
+<tr><td><code>accessibility-tile-not-playable</code></td><td lang="az">indi gediş yoxdur</td><td lang="ru">сейчас ходить нельзя</td><td lang="en">not playable now</td></tr>
+<tr><td><code>accessibility-tile-playable</code></td><td lang="az">gedə bilər</td><td lang="ru">можно поставить</td><td lang="en">playable</td></tr>
+<tr><td><code>accessibility-your-hand</code></td><td lang="az">Əlinizdəki daşlar</td><td lang="ru">Ваши костяшки</td><td lang="en">Your hand</td></tr>
+<tr><td><code>account-apple</code></td><td lang="az">Apple ID ilə giriş</td><td lang="ru">Войти через Apple ID</td><td lang="en">Continue with Apple</td></tr>
+<tr><td><code>account-auth-desc</code></td><td lang="az">Reytinqin, oyun tarixçən və Google girişi üçün hesabına daxil ol.</td><td lang="ru">Используйте аккаунт, чтобы хранить рейтинг, историю матчей и вход через Google.</td><td lang="en">Use your account to keep rating, match history, and Google login in one place.</td></tr>
+<tr><td><code>account-auth-kicker</code></td><td lang="az">Giriş</td><td lang="ru">Доступ</td><td lang="en">Access</td></tr>
+<tr><td><code>account-auth-title</code></td><td lang="az">Hesaba daxil ol</td><td lang="ru">Войти в аккаунт</td><td lang="en">Sign in to your account</td></tr>
+<tr><td><code>account-avatar-invalid</code></td><td lang="az">Şəkil oxunmadı</td><td lang="ru">Не удалось прочитать изображение</td><td lang="en">Could not read the image</td></tr>
+<tr><td><code>account-avatar-pick</code></td><td lang="az">Şəkil seç</td><td lang="ru">Выбрать фото</td><td lang="en">Choose photo</td></tr>
+<tr><td><code>account-avatar-reset</code></td><td lang="az">Sıfırla</td><td lang="ru">Сбросить</td><td lang="en">Reset</td></tr>
+<tr><td><code>account-avatar-save</code></td><td lang="az">Yadda saxla</td><td lang="ru">Сохранить</td><td lang="en">Save</td></tr>
+<tr><td><code>account-avatar-saved</code></td><td lang="az">Avatar yeniləndi</td><td lang="ru">Аватар обновлён</td><td lang="en">Avatar updated</td></tr>
+<tr><td><code>account-avatar-source-custom</code></td><td lang="az">Öz avatarınız istifadə olunur</td><td lang="ru">Используется ваш аватар</td><td lang="en">Your custom avatar is active</td></tr>
+<tr><td><code>account-avatar-source-empty</code></td><td lang="az">Avatar seçilməyib</td><td lang="ru">Аватар не выбран</td><td lang="en">No avatar selected</td></tr>
+<tr><td><code>account-avatar-source-google</code></td><td lang="az">Google avatarı istifadə olunur</td><td lang="ru">Используется аватар Google</td><td lang="en">Google avatar is active</td></tr>
+<tr><td><code>account-avatar-too-large</code></td><td lang="az">Şəkil çox böyükdür</td><td lang="ru">Изображение слишком большое</td><td lang="en">The image is too large</td></tr>
+<tr><td><code>account-btn</code></td><td lang="az">Hesab</td><td lang="ru">Аккаунт</td><td lang="en">Account</td></tr>
+<tr><td><code>account-change-avatar-current</code></td><td lang="az">Cari şəkil</td><td lang="ru">Текущее фото</td><td lang="en">Current picture</td></tr>
+<tr><td><code>account-change-avatar-desc</code></td><td lang="az">Google şəkli varsa o göstərilir. Öz şəklinizi yükləsəniz, profilinizdə o üstünlük qazanır.</td><td lang="ru">Если у Google есть фото, оно будет показано автоматически. Ваше загруженное фото имеет приоритет в профиле.</td><td lang="en">If a Google photo exists, it will be shown automatically. Your own upload takes priority in the profile.</td></tr>
+<tr><td><code>account-change-avatar-title</code></td><td lang="az">Avatarı yenilə</td><td lang="ru">Обновить аватар</td><td lang="en">Update avatar</td></tr>
+<tr><td><code>account-change-name-desc</code></td><td lang="az">Bu, yalnız oyunda görünən addır. Oyunçu ID-si dəyişmir.</td><td lang="ru">Это только имя в игре. ID игрока не меняется.</td><td lang="en">This is the display name only. Player ID never changes.</td></tr>
+<tr><td><code>account-change-name-title</code></td><td lang="az">Adı yenilə</td><td lang="ru">Обновить имя</td><td lang="en">Update name</td></tr>
+<tr><td><code>account-coins</code></td><td lang="az">Coin</td><td lang="ru">Монеты</td><td lang="en">Coins</td></tr>
+<tr><td><code>account-conduct-link</code></td><td lang="az">Davranış qaydaları</td><td lang="ru">Правилами поведения</td><td lang="en">Rules of Conduct</td></tr>
+<tr><td><code>account-create-account</code></td><td lang="az">Hesab yarat</td><td lang="ru">Создать аккаунт</td><td lang="en">Create account</td></tr>
+<tr><td><code>account-delete-request</code></td><td lang="az">Hesabı silmək üçün müraciət et</td><td lang="ru">Запросить удаление аккаунта</td><td lang="en">Request account deletion</td></tr>
+<tr><td><code>account-desc</code></td><td lang="az">Reytinqi və tarixçəni saxla.</td><td lang="ru">Сохраняйте рейтинг и историю матчей.</td><td lang="en">Keep your rating and match history.</td></tr>
+<tr><td><code>account-draws</code></td><td lang="az">Heç-heçə</td><td lang="ru">Ничьи</td><td lang="en">Draws</td></tr>
+<tr><td><code>account-edit-avatar</code></td><td lang="az">Avatar</td><td lang="ru">Аватар</td><td lang="en">Avatar</td></tr>
+<tr><td><code>account-edit-name</code></td><td lang="az">Adı dəyiş</td><td lang="ru">Изменить имя</td><td lang="en">Edit name</td></tr>
+<tr><td><code>account-gift-vault</code></td><td lang="az">Hədiyyə anbarı</td><td lang="ru">Хранилище подарков</td><td lang="en">Gift vault</td></tr>
+<tr><td><code>account-google</code></td><td lang="az">Google ilə giriş</td><td lang="ru">Войти через Google</td><td lang="en">Continue with Google</td></tr>
+<tr><td><code>account-guest-profile</code></td><td lang="az">Qonaq profil</td><td lang="ru">Гостевой профиль</td><td lang="en">Guest profile</td></tr>
+<tr><td><code>account-history</code></td><td lang="az">Son oyunlar</td><td lang="ru">Последние матчи</td><td lang="en">Recent matches</td></tr>
+<tr><td><code>account-history-draw</code></td><td lang="az">Heç-heçə</td><td lang="ru">Ничья</td><td lang="en">Draw</td></tr>
+<tr><td><code>account-history-empty</code></td><td lang="az">Hələ oyun tarixçəsi yoxdur</td><td lang="ru">История матчей пока пуста</td><td lang="en">No match history yet</td></tr>
+<tr><td><code>account-history-loss</code></td><td lang="az">Məğlubiyyət</td><td lang="ru">Поражение</td><td lang="en">Loss</td></tr>
+<tr><td><code>account-history-win</code></td><td lang="az">Qələbə</td><td lang="ru">Победа</td><td lang="en">Win</td></tr>
+<tr><td><code>account-kicker</code></td><td lang="az">Profil</td><td lang="ru">Профиль</td><td lang="en">Profile</td></tr>
+<tr><td><code>account-leaderboard</code></td><td lang="az">Liderlər cədvəli</td><td lang="ru">Таблица лидеров</td><td lang="en">Leaderboard</td></tr>
+<tr><td><code>account-legal-and</code></td><td lang="az">və</td><td lang="ru">и</td><td lang="en">and</td></tr>
+<tr><td><code>account-legal-link</code></td><td lang="az">İstifadəçi razılaşmasını</td><td lang="ru">Пользовательским соглашением</td><td lang="en">Terms of Service</td></tr>
+<tr><td><code>account-legal-prefix</code></td><td lang="az">Davam etməklə siz</td><td lang="ru">Продолжая, вы соглашаетесь с</td><td lang="en">By continuing, you agree to the</td></tr>
+<tr><td><code>account-legal-suffix</code></td><td lang="az">qəbul edirsiniz.</td><td lang="ru">.</td><td lang="en">.</td></tr>
+<tr><td><code>account-login</code></td><td lang="az">Giriş</td><td lang="ru">Вход</td><td lang="en">Login</td></tr>
+<tr><td><code>account-login-required</code></td><td lang="az">Davam etmək üçün hesaba daxil olun</td><td lang="ru">Чтобы продолжить, войдите в аккаунт</td><td lang="en">Sign in to continue</td></tr>
+<tr><td><code>account-login-tab</code></td><td lang="az">Giriş</td><td lang="ru">Вход</td><td lang="en">Login</td></tr>
+<tr><td><code>account-logout</code></td><td lang="az">Çıxış</td><td lang="ru">Выйти</td><td lang="en">Logout</td></tr>
+<tr><td><code>account-losses</code></td><td lang="az">Məğlubiyyətlər</td><td lang="ru">Поражения</td><td lang="en">Losses</td></tr>
+<tr><td><code>account-matches</code></td><td lang="az">Oyunlar</td><td lang="ru">Игры</td><td lang="en">Games</td></tr>
+<tr><td><code>account-name</code></td><td lang="az">Ad</td><td lang="ru">Имя</td><td lang="en">Name</td></tr>
+<tr><td><code>account-name-cancel</code></td><td lang="az">Ləğv et</td><td lang="ru">Отмена</td><td lang="en">Cancel</td></tr>
+<tr><td><code>account-name-password-required</code></td><td lang="az">Ad və şifrə daxil edin</td><td lang="ru">Введите имя и пароль</td><td lang="en">Enter name and password</td></tr>
+<tr><td><code>account-name-required</code></td><td lang="az">Ad daxil edin</td><td lang="ru">Введите имя</td><td lang="en">Enter your name</td></tr>
+<tr><td><code>account-name-saved</code></td><td lang="az">Ad yeniləndi</td><td lang="ru">Имя обновлено</td><td lang="en">Name updated</td></tr>
+<tr><td><code>account-offline</code></td><td lang="az">Server əlçatan deyil</td><td lang="ru">Сервер недоступен</td><td lang="en">Server unavailable</td></tr>
+<tr><td><code>account-online</code></td><td lang="az">Server bağlıdır</td><td lang="ru">Сервер подключен</td><td lang="en">Server connected</td></tr>
+<tr><td><code>account-password</code></td><td lang="az">Şifrə</td><td lang="ru">Пароль</td><td lang="en">Password</td></tr>
+<tr><td><code>account-password-required</code></td><td lang="az">Şifrə daxil edin</td><td lang="ru">Введите пароль</td><td lang="en">Enter a password</td></tr>
+<tr><td><code>account-player-id</code></td><td lang="az">Oyunçu ID-si</td><td lang="ru">ID игрока</td><td lang="en">Player ID</td></tr>
+<tr><td><code>account-points</code></td><td lang="az">Xal</td><td lang="ru">Очки</td><td lang="en">Points</td></tr>
+<tr><td><code>account-privacy-link</code></td><td lang="az">Məxfilik siyasəti</td><td lang="ru">Политикой конфиденциальности</td><td lang="en">Privacy Policy</td></tr>
+<tr><td><code>account-profile</code></td><td lang="az">Profil</td><td lang="ru">Профиль</td><td lang="en">Profile</td></tr>
+<tr><td><code>account-profile-empty</code></td><td lang="az">Hələ profil yoxdur</td><td lang="ru">Профиль пока не создан</td><td lang="en">No profile yet</td></tr>
+<tr><td><code>account-profile-loading</code></td><td lang="az">Profil yüklənir...</td><td lang="ru">Загрузка профиля...</td><td lang="en">Loading profile...</td></tr>
+<tr><td><code>account-profile-title</code></td><td lang="az">Hesab</td><td lang="ru">Аккаунт</td><td lang="en">Account</td></tr>
+<tr><td><code>account-rank</code></td><td lang="az">Reyting</td><td lang="ru">Рейтинг</td><td lang="en">Rating</td></tr>
+<tr><td><code>account-rating</code></td><td lang="az">Reyting</td><td lang="ru">Рейтинг</td><td lang="en">Rating</td></tr>
+<tr><td><code>account-refresh</code></td><td lang="az">Yenilə</td><td lang="ru">Обновить</td><td lang="en">Refresh</td></tr>
+<tr><td><code>account-register</code></td><td lang="az">Qeydiyyat</td><td lang="ru">Регистрация</td><td lang="en">Register</td></tr>
+<tr><td><code>account-register-tab</code></td><td lang="az">Qeydiyyat</td><td lang="ru">Регистрация</td><td lang="en">Register</td></tr>
+<tr><td><code>account-registration-required</code></td><td lang="az">Coin oyunu üçün hesaba daxil olun və ya qeydiyyatdan keçin</td><td lang="ru">Войдите или зарегистрируйтесь, чтобы играть на монеты</td><td lang="en">Sign in or register to play coin matches</td></tr>
+<tr><td><code>account-registration-required-online</code></td><td lang="az">Onlayn coin otaqları üçün hesab mütləqdir</td><td lang="ru">Для онлайн-комнат на монеты аккаунт обязателен</td><td lang="en">An account is required for online coin rooms</td></tr>
+<tr><td><code>account-save-name</code></td><td lang="az">Adı yadda saxla</td><td lang="ru">Сохранить имя</td><td lang="en">Save name</td></tr>
+<tr><td><code>account-server-unavailable</code></td><td lang="az">Server əlçatan deyil</td><td lang="ru">Сервер недоступен</td><td lang="en">Server unavailable</td></tr>
+<tr><td><code>account-skins-desc</code></td><td lang="az">Satın aldığınız masa skinləri burada görünür. Profilinizdən aktiv edin.</td><td lang="ru">Купленные скины стола отображаются здесь. Активируйте их в профиле.</td><td lang="en">Your purchased table skins appear here. Equip them from your profile.</td></tr>
+<tr><td><code>account-skins-locked</code></td><td lang="az">Bağlı</td><td lang="ru">Закрыт</td><td lang="en">Locked</td></tr>
+<tr><td><code>account-skins-open-shop</code></td><td lang="az">Mağazaya keç</td><td lang="ru">В магазин</td><td lang="en">Open shop</td></tr>
+<tr><td><code>account-skins-vault</code></td><td lang="az">Masa skinləri</td><td lang="ru">Скины стола</td><td lang="en">Table skins</td></tr>
+<tr><td><code>account-title</code></td><td lang="az">Hesab</td><td lang="ru">Аккаунт</td><td lang="en">Account</td></tr>
+<tr><td><code>account-wins</code></td><td lang="az">Qələbələr</td><td lang="ru">Победы</td><td lang="en">Wins</td></tr>
+<tr><td><code>account_deletion_pending</code></td><td lang="az">Hesabın silinməsi planlaşdırılıb. Ləğv etmək üçün hesabın silinməsi səhifəsinə keçin.</td><td lang="ru">Запланировано удаление аккаунта. Для отмены откройте страницу удаления аккаунта.</td><td lang="en">Account deletion is scheduled. Open the account deletion page to cancel it.</td></tr>
+<tr><td><code>arrow-place-to</code></td><td lang="az">{value} üzərinə qoy</td><td lang="ru">Поставить к {value}</td><td lang="en">Place on {value}</td></tr>
+<tr><td><code>audio-effects</code></td><td lang="az">Effektlər</td><td lang="ru">Эффекты</td><td lang="en">Effects</td></tr>
+<tr><td><code>audio-music</code></td><td lang="az">Musiqi</td><td lang="ru">Музыка</td><td lang="en">Music</td></tr>
+<tr><td><code>audio-mute</code></td><td lang="az">Bütün səsləri söndür</td><td lang="ru">Выключить весь звук</td><td lang="en">Mute all sound</td></tr>
+<tr><td><code>audio-unmute</code></td><td lang="az">Səsi yandır</td><td lang="ru">Включить звук</td><td lang="en">Unmute sound</td></tr>
+<tr><td><code>board-empty</code></td><td lang="az">İlk daşı oynayın</td><td lang="ru">Сделайте первый ход</td><td lang="en">Make the first move</td></tr>
+<tr><td><code>board-view-controls</code></td><td lang="az">Masanın miqyası</td><td lang="ru">Масштаб стола</td><td lang="en">Board zoom</td></tr>
+<tr><td><code>board-view-help</code></td><td lang="az">Oyun masası. Yaxınlaşdırdıqdan sonra sürüşdürün və ya ox düymələrindən istifadə edin. Escape ümumi görünüşü qaytarır.</td><td lang="ru">Игровой стол. После увеличения сдвигайте поле пальцем или стрелками. Escape возвращает общий вид.</td><td lang="en">Game board. After zooming, drag or use the arrow keys. Escape fits the whole board.</td></tr>
+<tr><td><code>board-view-in</code></td><td lang="az">Yaxınlaşdır</td><td lang="ru">Увеличить стол</td><td lang="en">Zoom in</td></tr>
+<tr><td><code>board-view-out</code></td><td lang="az">Uzaqlaşdır</td><td lang="ru">Уменьшить стол</td><td lang="en">Zoom out</td></tr>
+<tr><td><code>board-view-reset</code></td><td lang="az">Bütün masanı göstər</td><td lang="ru">Показать весь стол</td><td lang="en">Fit the whole board</td></tr>
+<tr><td><code>bot-takeover-active</code></td><td lang="az">Bot oynayır</td><td lang="ru">Играет бот</td><td lang="en">AI Bot is playing</td></tr>
+<tr><td><code>bot-takeover-all-absent</code></td><td lang="az">Bütün oyunçular oyundan ayrıldı. Matç heç-heçə bağlandı və stavkalar qaytarıldı.</td><td lang="ru">Все игроки отсутствовали. Матч завершён вничью, ставки возвращены.</td><td lang="en">All players were absent. The match ended in a draw and stakes were refunded.</td></tr>
+<tr><td><code>bot-takeover-playing</code></td><td lang="az">Bot oynayır</td><td lang="ru">Играет бот</td><td lang="en">AI Bot is playing</td></tr>
+<tr><td><code>bot-takeover-return-control</code></td><td lang="az">Oyuna qayıt</td><td lang="ru">Вернуться в игру</td><td lang="en">Return to game</td></tr>
+<tr><td><code>bot-takeover-you-back</code></td><td lang="az">Yenidən oyundasınız.</td><td lang="ru">Вы снова в игре.</td><td lang="en">You are back in the game.</td></tr>
+<tr><td><code>bot_resume</code></td><td lang="az">{name} qayıtdı, bot oyundan çıxdı</td><td lang="ru">{name} вернулся, бот уступил место</td><td lang="en">{name} returned, the bot stepped away</td></tr>
+<tr><td><code>bot_takeover</code></td><td lang="az">{name} ayrıldı, indi onun yerinə bot oynayır</td><td lang="ru">{name} выбыл, теперь за него играет бот</td><td lang="en">{name} left, a bot is now playing</td></tr>
+<tr><td><code>btn-closed-rooms</code></td><td lang="az">Bağlı otaqlar</td><td lang="ru">Закрытые комнаты</td><td lang="en">Private rooms</td></tr>
+<tr><td><code>btn-draw</code></td><td lang="az">BAZAR</td><td lang="ru">БАЗАР</td><td lang="en">DRAW</td></tr>
+<tr><td><code>btn-host</code></td><td lang="az">Yarat</td><td lang="ru">Создать</td><td lang="en">Create</td></tr>
+<tr><td><code>btn-join</code></td><td lang="az">Qoşul</td><td lang="ru">Войти</td><td lang="en">Join</td></tr>
+<tr><td><code>btn-online</code></td><td lang="az">Bağlı otaqlar</td><td lang="ru">Закрытые комнаты</td><td lang="en">Private rooms</td></tr>
+<tr><td><code>btn-online-group</code></td><td lang="az">Onlayn</td><td lang="ru">ОНЛАЙН</td><td lang="en">Online</td></tr>
+<tr><td><code>btn-pass</code></td><td lang="az">PAS</td><td lang="ru">ПАС</td><td lang="en">PASS</td></tr>
+<tr><td><code>btn-reactions</code></td><td lang="az">Reaksiyalar</td><td lang="ru">Реакции</td><td lang="en">Reactions</td></tr>
+<tr><td><code>btn-solo</code></td><td lang="az">Tək oyun</td><td lang="ru">Одиночная игра</td><td lang="en">Solo play</td></tr>
+<tr><td><code>btn-solo-start</code></td><td lang="az">Başla</td><td lang="ru">Начать игру</td><td lang="en">Start solo game</td></tr>
+<tr><td><code>btn-start</code></td><td lang="az">Tək oyun</td><td lang="ru">Одиночная игра</td><td lang="en">Solo play</td></tr>
+<tr><td><code>chat-attach</code></td><td lang="az">Şəkil əlavə et</td><td lang="ru">Прикрепить фото</td><td lang="en">Attach photo</td></tr>
+<tr><td><code>chat-back</code></td><td lang="az">Geri</td><td lang="ru">Назад</td><td lang="en">Back</td></tr>
+<tr><td><code>chat-emoji</code></td><td lang="az">Emoji seç</td><td lang="ru">Выбрать эмодзи</td><td lang="en">Choose emoji</td></tr>
+<tr><td><code>chat-voice</code></td><td lang="az">Səsli mesaj yaz</td><td lang="ru">Записать голосовое сообщение</td><td lang="en">Record voice message</td></tr>
+<tr><td><code>chats-back</code></td><td lang="az">Geri</td><td lang="ru">Назад</td><td lang="en">Back</td></tr>
+<tr><td><code>chats-empty</code></td><td lang="az">Hələ mesaj yoxdur</td><td lang="ru">Сообщений пока нет</td><td lang="en">No messages yet</td></tr>
+<tr><td><code>chats-load-failed</code></td><td lang="az">Söhbətlər yüklənmədi</td><td lang="ru">Не удалось загрузить диалоги</td><td lang="en">Could not load chats</td></tr>
+<tr><td><code>chats-open</code></td><td lang="az">Aç</td><td lang="ru">Открыть</td><td lang="en">Open</td></tr>
+<tr><td><code>chats-placeholder</code></td><td lang="az">Mesaj yazın</td><td lang="ru">Напишите сообщение</td><td lang="en">Write a message</td></tr>
+<tr><td><code>chats-quick-again</code></td><td lang="az">Yenə</td><td lang="ru">Ещё раз</td><td lang="en">Again</td></tr>
+<tr><td><code>chats-quick-congrats</code></td><td lang="az">Təbriklər</td><td lang="ru">Поздравляю</td><td lang="en">Congrats</td></tr>
+<tr><td><code>chats-quick-good-luck</code></td><td lang="az">Uğurlar</td><td lang="ru">Удачи</td><td lang="en">Good luck</td></tr>
+<tr><td><code>chats-quick-good-move</code></td><td lang="az">Yaxşı gediş</td><td lang="ru">Ход хороший</td><td lang="en">Good move</td></tr>
+<tr><td><code>chats-quick-thanks</code></td><td lang="az">Sağ ol</td><td lang="ru">Спасибо</td><td lang="en">Thanks</td></tr>
+<tr><td><code>chats-quick-well-played</code></td><td lang="az">Əla oyun</td><td lang="ru">Хорошая игра</td><td lang="en">Well played</td></tr>
+<tr><td><code>chats-send</code></td><td lang="az">Göndər</td><td lang="ru">Отправить</td><td lang="en">Send</td></tr>
+<tr><td><code>chats-send-failed</code></td><td lang="az">Mesaj göndərilmədi</td><td lang="ru">Не удалось отправить сообщение</td><td lang="en">Could not send message</td></tr>
+<tr><td><code>chats-sent</code></td><td lang="az">Mesaj göndərildi</td><td lang="ru">Сообщение отправлено</td><td lang="en">Message sent</td></tr>
+<tr><td><code>chats-title</code></td><td lang="az">Söhbətlər</td><td lang="ru">Диалоги</td><td lang="en">Chats</td></tr>
+<tr><td><code>coin-shop-balance-label</code></td><td lang="az">Balans</td><td lang="ru">Баланс</td><td lang="en">Wallet</td></tr>
+<tr><td><code>coin-shop-claim-failed</code></td><td lang="az">Video mükafatı alınmadı</td><td lang="ru">Не удалось получить награду за видео</td><td lang="en">Could not claim video reward</td></tr>
+<tr><td><code>coin-shop-desc</code></td><td lang="az">Coin balansınızı yoxlayın. Google Play ödənişləri və reklam mükafatları ayrıca yeniləmə ilə aktiv ediləcək.</td><td lang="ru">Проверяйте баланс монет. Покупки Google Play и рекламные награды будут включены в отдельном обновлении.</td><td lang="en">View your coin balance. Google Play purchases and rewarded ads will be enabled in a later update.</td></tr>
+<tr><td><code>coin-shop-footnote</code></td><td lang="az">Coinlər mərc, hədiyyə və sosial hərəkətlər üçün istifadə olunur. Paketlər tətbiqdaxili alınır.</td><td lang="ru">Монеты нужны для ставок, подарков и социальных действий. Пакеты покупаются в приложении.</td><td lang="en">Coins are used for stakes, gifts, and social actions. Packs are purchased in-app.</td></tr>
+<tr><td><code>coin-shop-footnote-disabled</code></td><td lang="az">Google Play ödənişləri və reklam mükafatları hazır olduqda aktiv ediləcək. Coinlər yalnız oyundaxili istifadə üçündür.</td><td lang="ru">Покупки Google Play и рекламные награды будут включены после настройки. Монеты используются только внутри игры.</td><td lang="en">Google Play purchases and rewarded ads will be enabled after setup. Coins are for in-game use only.</td></tr>
+<tr><td><code>coin-shop-kicker</code></td><td lang="az">Coin mağazası</td><td lang="ru">Магазин монет</td><td lang="en">Coin shop</td></tr>
+<tr><td><code>coin-shop-menu</code></td><td lang="az">Coin mağazası</td><td lang="ru">Магазин монет</td><td lang="en">Coin shop</td></tr>
+<tr><td><code>coin-shop-pack-bonus</code></td><td lang="az">+{bonus} bonus coin</td><td lang="ru">+{bonus} бонусных монет</td><td lang="en">+{bonus} bonus coins</td></tr>
+<tr><td><code>coin-shop-pack-buy</code></td><td lang="az">Al</td><td lang="ru">Купить</td><td lang="en">Buy</td></tr>
+<tr><td><code>coin-shop-pack-fast</code></td><td lang="az">Ucuz</td><td lang="ru">Дёшево</td><td lang="en">Cheap</td></tr>
+<tr><td><code>coin-shop-pack-recommended</code></td><td lang="az">Məsləhət</td><td lang="ru">Лучший выбор</td><td lang="en">Best value</td></tr>
+<tr><td><code>coin-shop-pack-title</code></td><td lang="az">{coins} coin</td><td lang="ru">{coins} монет</td><td lang="en">{coins} coins</td></tr>
+<tr><td><code>coin-shop-packs-title</code></td><td lang="az">Coin paketləri</td><td lang="ru">Пакеты монет</td><td lang="en">Coin packs</td></tr>
+<tr><td><code>coin-shop-rewarded</code></td><td lang="az">Coin balansınıza əlavə olundu</td><td lang="ru">Монеты добавлены на баланс</td><td lang="en">Coins added to your wallet</td></tr>
+<tr><td><code>coin-shop-skin-applied</code></td><td lang="az">Masa skini aktivləşdirildi</td><td lang="ru">Скин стола применён</td><td lang="en">Table skin applied</td></tr>
+<tr><td><code>coin-shop-skin-buy</code></td><td lang="az">Al</td><td lang="ru">Купить</td><td lang="en">Buy</td></tr>
+<tr><td><code>coin-shop-skin-buy-failed</code></td><td lang="az">Masa skini alınmadı</td><td lang="ru">Не удалось купить скин стола</td><td lang="en">Could not buy table skin</td></tr>
+<tr><td><code>coin-shop-skin-equip-failed</code></td><td lang="az">Masa skini seçilmədi</td><td lang="ru">Не удалось выбрать скин стола</td><td lang="en">Could not equip table skin</td></tr>
+<tr><td><code>coin-shop-skin-equipped</code></td><td lang="az">Seçilib</td><td lang="ru">Выбрано</td><td lang="en">Equipped</td></tr>
+<tr><td><code>coin-shop-skin-owned</code></td><td lang="az">Sizdə var</td><td lang="ru">Куплено</td><td lang="en">Owned</td></tr>
+<tr><td><code>coin-shop-skin-price</code></td><td lang="az">1,500 coin</td><td lang="ru">1 500 монет</td><td lang="en">1,500 coins</td></tr>
+<tr><td><code>coin-shop-skin-purchased</code></td><td lang="az">Masa skini alındı</td><td lang="ru">Скин стола куплен</td><td lang="en">Table skin purchased</td></tr>
+<tr><td><code>coin-shop-skin-use</code></td><td lang="az">İstifadə et</td><td lang="ru">Использовать</td><td lang="en">Use</td></tr>
+<tr><td><code>coin-shop-skins-desc</code></td><td lang="az">Masanın görünüşünü dəyişin və aktiv skin seçin.</td><td lang="ru">Измените внешний вид стола и выберите активный скин.</td><td lang="en">Change the table look and choose an active skin.</td></tr>
+<tr><td><code>coin-shop-skins-title</code></td><td lang="az">Masa skinləri</td><td lang="ru">Скины стола</td><td lang="en">Table skins</td></tr>
+<tr><td><code>coin-shop-status-balance</code></td><td lang="az">Hazırda balans: {amount}</td><td lang="ru">Текущий баланс: {amount}</td><td lang="en">Current balance: {amount}</td></tr>
+<tr><td><code>coin-shop-title</code></td><td lang="az">Coin mağazası</td><td lang="ru">Магазин монет</td><td lang="en">Coin shop</td></tr>
+<tr><td><code>coin-shop-video-blocked</code></td><td lang="az">Gözləyin</td><td lang="ru">Подождите</td><td lang="en">Please wait</td></tr>
+<tr><td><code>coin-shop-video-btn</code></td><td lang="az">Video izləyin</td><td lang="ru">Смотреть видео</td><td lang="en">Watch video</td></tr>
+<tr><td><code>coin-shop-video-claiming</code></td><td lang="az">Yüklənir...</td><td lang="ru">Загрузка...</td><td lang="en">Loading...</td></tr>
+<tr><td><code>coin-shop-video-daily</code></td><td lang="az">Gündəlik limit tamamlandı</td><td lang="ru">Лимит на сегодня исчерпан</td><td lang="en">Daily limit reached</td></tr>
+<tr><td><code>coin-shop-video-desc</code></td><td lang="az">Qısa video izləyin və coin əldə edin.</td><td lang="ru">Посмотрите короткое видео и получите монеты.</td><td lang="en">Watch a short video and get coins.</td></tr>
+<tr><td><code>coin-shop-video-kicker</code></td><td lang="az">Pulsuz coin əldə edin</td><td lang="ru">Бесплатные монеты</td><td lang="en">Free coins</td></tr>
+<tr><td><code>coin-shop-video-meta</code></td><td lang="az">Soyuma: {cooldown} dəq · Bu gün: {claimsToday}/{dailyLimit}</td><td lang="ru">Ожидание: {cooldown} мин · Сегодня: {claimsToday}/{dailyLimit}</td><td lang="en">Cooldown: {cooldown} min · Today: {claimsToday}/{dailyLimit}</td></tr>
+<tr><td><code>coin-shop-video-ready</code></td><td lang="az">{amount} coin hazırdır</td><td lang="ru">Доступно {amount} монет</td><td lang="en">{amount} coins ready</td></tr>
+<tr><td><code>coin-shop-video-title</code></td><td lang="az">{amount} coin</td><td lang="ru">{amount} монет</td><td lang="en">{amount} coins</td></tr>
+<tr><td><code>coin-shop-video-wait</code></td><td lang="az">{minutes}:{seconds} qaldı</td><td lang="ru">Осталось {minutes}:{seconds}</td><td lang="en">{minutes}:{seconds} left</td></tr>
+<tr><td><code>coins-balance</code></td><td lang="az">Balans</td><td lang="ru">Баланс</td><td lang="en">Balance</td></tr>
+<tr><td><code>coins-check</code></td><td lang="az">Sikkə yoxlanışı</td><td lang="ru">Проверка монет</td><td lang="en">Coin check</td></tr>
+<tr><td><code>coins-insufficient-message</code></td><td lang="az">Bu otağa qoşulmaq üçün balansınızı artırın.</td><td lang="ru">Для входа в эту комнату нужно увеличить баланс.</td><td lang="en">Increase your balance before joining this room.</td></tr>
+<tr><td><code>coins-insufficient-title</code></td><td lang="az">Bu oyun üçün kifayət qədər sikkə yoxdur</td><td lang="ru">Недостаточно монет для этой игры</td><td lang="en">Not enough coins for this game</td></tr>
+<tr><td><code>coins-required</code></td><td lang="az">Lazım olan</td><td lang="ru">Нужно</td><td lang="en">Required</td></tr>
+<tr><td><code>connection-lost</code></td><td lang="az">Bağlantı qırıldı. Yenidən qoşuluruq...</td><td lang="ru">Связь потеряна. Переподключаемся...</td><td lang="en">Connection lost. Reconnecting...</td></tr>
+<tr><td><code>connection-reconnect-failed</code></td><td lang="az">Bağlantını bərpa etmək olmadı. Lobbiyə qayıdın.</td><td lang="ru">Не удалось восстановить соединение. Вернитесь в лобби.</td><td lang="en">Could not restore the connection. Return to the lobby.</td></tr>
+<tr><td><code>connection-reconnecting</code></td><td lang="az">Bağlantı bərpa olunur...</td><td lang="ru">Восстанавливаем соединение...</td><td lang="en">Restoring connection...</td></tr>
+<tr><td><code>connection-restored</code></td><td lang="az">Bağlantı bərpa olundu</td><td lang="ru">Связь восстановлена</td><td lang="en">Connection restored</td></tr>
+<tr><td><code>cosmetics-shop-desc</code></td><td lang="az">Masa skinlərini coin ilə alın və profilinizdən tətbiq edin.</td><td lang="ru">Покупайте скины стола за монеты и применяйте их в профиле.</td><td lang="en">Buy table skins with coins and equip them from your profile.</td></tr>
+<tr><td><code>cosmetics-shop-footnote</code></td><td lang="az">Bu mağaza coin paketlərindən ayrıdır.</td><td lang="ru">Этот магазин отделён от пакетов монет.</td><td lang="en">This shop is separate from coin packs.</td></tr>
+<tr><td><code>cosmetics-shop-kicker</code></td><td lang="az">Kosmetik mağaza</td><td lang="ru">Магазин украшений</td><td lang="en">Cosmetics shop</td></tr>
+<tr><td><code>cosmetics-shop-menu</code></td><td lang="az">Kosmetik mağaza</td><td lang="ru">Магазин украшений</td><td lang="en">Cosmetics shop</td></tr>
+<tr><td><code>cosmetics-shop-skins-desc</code></td><td lang="az">Satın aldığınız skinlər profildə görünür və oradan tətbiq olunur.</td><td lang="ru">Купленные скины появляются в профиле и применяются оттуда.</td><td lang="en">Purchased skins appear in your profile and can be equipped there.</td></tr>
+<tr><td><code>cosmetics-shop-skins-title</code></td><td lang="az">Masa skinləri</td><td lang="ru">Скины стола</td><td lang="en">Table skins</td></tr>
+<tr><td><code>cosmetics-shop-status-balance</code></td><td lang="az">Hazırda balans: {amount}</td><td lang="ru">Текущий баланс: {amount}</td><td lang="en">Current balance: {amount}</td></tr>
+<tr><td><code>cosmetics-shop-title</code></td><td lang="az">Masa skinləri</td><td lang="ru">Магазин скинов</td><td lang="en">Cosmetics shop</td></tr>
+<tr><td><code>cosmetics-shop-wallet-label</code></td><td lang="az">Balans</td><td lang="ru">Баланс</td><td lang="en">Wallet balance</td></tr>
+<tr><td><code>daily-bonus-ad-loading</code></td><td lang="az">Reklam...</td><td lang="ru">Реклама...</td><td lang="en">Ad...</td></tr>
+<tr><td><code>daily-bonus-ad-unavailable</code></td><td lang="az">Reklam yoxdur</td><td lang="ru">Реклама недоступна</td><td lang="en">Ad unavailable</td></tr>
+<tr><td><code>daily-bonus-claim</code></td><td lang="az">Götür</td><td lang="ru">Забрать</td><td lang="en">Claim</td></tr>
+<tr><td><code>daily-bonus-claim-loading</code></td><td lang="az">Alınır...</td><td lang="ru">Получаем...</td><td lang="en">Claim...</td></tr>
+<tr><td><code>daily-bonus-claim-normal</code></td><td lang="az">Götür</td><td lang="ru">Забрать</td><td lang="en">Claim</td></tr>
+<tr><td><code>daily-bonus-claim-rewarded</code></td><td lang="az">Reklam izlə +{amount} qazan</td><td lang="ru">Смотреть рекламу +{amount}</td><td lang="en">Watch ad +{amount}</td></tr>
+<tr><td><code>daily-bonus-claimed</code></td><td lang="az">Götürüldü</td><td lang="ru">Получено</td><td lang="en">Claimed</td></tr>
+<tr><td><code>daily-bonus-day</code></td><td lang="az">Gün {day}</td><td lang="ru">День {day}</td><td lang="en">Day {day}</td></tr>
+<tr><td><code>daily-bonus-error</code></td><td lang="az">Bonus yüklənmədi</td><td lang="ru">Не удалось загрузить бонус</td><td lang="en">Could not load bonus</td></tr>
+<tr><td><code>daily-bonus-loading</code></td><td lang="az">Yüklənir...</td><td lang="ru">Загрузка...</td><td lang="en">Loading...</td></tr>
+<tr><td><code>daily-bonus-login-required</code></td><td lang="az">Bonusu götürmək üçün hesaba daxil olun</td><td lang="ru">Войдите в аккаунт, чтобы получить бонус</td><td lang="en">Sign in to claim your bonus</td></tr>
+<tr><td><code>daily-bonus-max-streak</code></td><td lang="az">Maksimum seriya</td><td lang="ru">Максимальная серия</td><td lang="en">Max streak</td></tr>
+<tr><td><code>daily-bonus-next</code></td><td lang="az">Növbəti bonus</td><td lang="ru">Следующий бонус</td><td lang="en">Next bonus</td></tr>
+<tr><td><code>daily-bonus-streak</code></td><td lang="az">Seriya</td><td lang="ru">Серия</td><td lang="en">Streak</td></tr>
+<tr><td><code>daily-bonus-subtitle</code></td><td lang="az">Hər gün daxil ol və daha çox coin qazan</td><td lang="ru">Заходи каждый день и получай больше монет</td><td lang="en">Come back every day and earn more coins</td></tr>
+<tr><td><code>daily-bonus-title</code></td><td lang="az">Gündəlik bonus</td><td lang="ru">Ежедневный бонус</td><td lang="en">Daily bonus</td></tr>
+<tr><td><code>daily-bonus-toast</code></td><td lang="az">+{amount} coin qazandın</td><td lang="ru">Ты получил +{amount} монет</td><td lang="en">You earned +{amount} coins</td></tr>
+<tr><td><code>daily-bonus-today</code></td><td lang="az">Bugünkü bonus</td><td lang="ru">Бонус сегодня</td><td lang="en">Today</td></tr>
+<tr><td><code>daily-bonus-tomorrow</code></td><td lang="az">Sabah</td><td lang="ru">Завтра</td><td lang="en">Tomorrow</td></tr>
+<tr><td><code>deletion-account-label</code></td><td lang="az">Hesab</td><td lang="ru">Аккаунт</td><td lang="en">Account</td></tr>
+<tr><td><code>deletion-action-failed</code></td><td lang="az">Əməliyyat təsdiqlənmədi. Vəziyyəti yoxlayın və yenidən cəhd edin.</td><td lang="ru">Действие не подтверждено. Проверьте статус и попробуйте снова.</td><td lang="en">The action was not confirmed. Check the status and try again.</td></tr>
+<tr><td><code>deletion-backup</code></td><td lang="az">Köhnə ehtiyat nüsxələr silinmədən sonra ən çox daha 30 gün, sorğudan sonra isə ümumilikdə ən çox 60 gün saxlanıla bilər. Bərpa zamanı silinmiş hesab yenidən açılmır.</td><td lang="ru">Старые резервные копии могут храниться ещё до 30 дней после удаления, максимум 60 дней после запроса. Восстановление копии не возвращает удалённый аккаунт в игру.</td><td lang="en">Older backups may remain for up to 30 more days after deletion, at most 60 days after the request. Restoring a backup does not reopen a deleted account.</td></tr>
+<tr><td><code>deletion-cancel</code></td><td lang="az">Hesabın silinməsini ləğv et</td><td lang="ru">Отменить удаление аккаунта</td><td lang="en">Cancel account deletion</td></tr>
+<tr><td><code>deletion-check</code></td><td lang="az">Vəziyyəti yoxla</td><td lang="ru">Проверить статус</td><td lang="en">Check status</td></tr>
+<tr><td><code>deletion-confirm-hint</code></td><td lang="az">Hesabın silinməsini istədiyinizi təsdiqləmək üçün DELETE yazın:</td><td lang="ru">Чтобы подтвердить удаление этого аккаунта, введите DELETE:</td><td lang="en">Type DELETE to confirm that you want to delete this account:</td></tr>
+<tr><td><code>deletion-data</code></td><td lang="az">Profil, giriş məlumatları, cihaz qeydləri, şəxsi yazışmalar və əlavələr, sikkələr və inventar silinir.</td><td lang="ru">Удаляются профиль, данные входа и устройств, личная переписка и вложения, монеты и инвентарь.</td><td lang="en">Your profile, sign-in records, device records, private messages and attachments, coins and inventory are deleted.</td></tr>
+<tr><td><code>deletion-login-button</code></td><td lang="az">Google ilə daxil ol</td><td lang="ru">Войти через Google</td><td lang="en">Sign in with Google</td></tr>
+<tr><td><code>deletion-manage</code></td><td lang="az">Hesabın silinməsi</td><td lang="ru">Удаление аккаунта</td><td lang="en">Account deletion</td></tr>
+<tr><td><code>deletion-native-web</code></td><td lang="az">Hesabın silinməsini brauzerdə idarə et</td><td lang="ru">Управлять удалением аккаунта в браузере</td><td lang="en">Manage account deletion in your browser</td></tr>
+<tr><td><code>deletion-none</code></td><td lang="az">Bu hesab üçün silinmə planlaşdırılmayıb.</td><td lang="ru">Для этого аккаунта удаление не запланировано.</td><td lang="en">No deletion is scheduled for this account.</td></tr>
+<tr><td><code>deletion-pending</code></td><td lang="az">Silinmə bu tarixə planlaşdırılıb: {date}. Sadəcə daxil olmaq sorğunu ləğv etmir.</td><td lang="ru">Удаление запланировано на {date}. Обычный вход сам по себе не отменяет запрос.</td><td lang="en">Deletion is scheduled for {date}. Signing in alone does not cancel the request.</td></tr>
+<tr><td><code>deletion-policy</code></td><td lang="az">Təsdiqdən sonra oyun sessiyaları bağlanır və profil gizlədilir. Hesab 30 gündən sonra silinir. Bu müddətdə yenidən daxil olub silinməni ayrıca ləğv edə bilərsiniz. Sadəcə daxil olmaq silinməni ləğv etmir.</td><td lang="ru">После подтверждения игровые сессии закрываются, а профиль скрывается. Через 30 дней аккаунт удаляется. До этого можно войти снова и отдельно отменить удаление. Обычный вход сам по себе его не отменяет.</td><td lang="en">After confirmation, game sessions close and your profile is hidden. Your account is deleted after 30 days. During that time, you can sign in again and explicitly cancel deletion. Signing in alone does not cancel it.</td></tr>
+<tr><td><code>deletion-privacy-link</code></td><td lang="az">Məxfilik siyasəti</td><td lang="ru">Политика конфиденциальности</td><td lang="en">Privacy Policy</td></tr>
+<tr><td><code>deletion-recent-login</code></td><td lang="az">Əməliyyatı təsdiqləmək üçün yenidən daxil olun.</td><td lang="ru">Для подтверждения действия войдите снова.</td><td lang="en">Sign in again to confirm this action.</td></tr>
+<tr><td><code>deletion-recent-login-button</code></td><td lang="az">Yenidən daxil ol</td><td lang="ru">Войти снова</td><td lang="en">Sign in again</td></tr>
+<tr><td><code>deletion-request</code></td><td lang="az">30 gündən sonra silinməni planlaşdır</td><td lang="ru">Запланировать удаление через 30 дней</td><td lang="en">Schedule deletion in 30 days</td></tr>
+<tr><td><code>deletion-shared</code></td><td lang="az">Digər oyunçuların nəticələri və hesablaşmaları pozulmur. Ümumi oyun nəticələri şəxsi məlumatlar olmadan saxlanılır.</td><td lang="ru">Результаты и расчёты других игроков сохраняются. В общих итогах партий ваши личные данные убираются.</td><td lang="en">Other players keep their results and settlements. Shared match results are retained without your personal profile information.</td></tr>
+<tr><td><code>deletion-sign-in</code></td><td lang="az">Bu hesabın silinməsini idarə etmək üçün yenidən daxil olun.</td><td lang="ru">Войдите снова, чтобы управлять удалением этого аккаунта.</td><td lang="en">Sign in again to manage deletion of this account.</td></tr>
+<tr><td><code>deletion-terms-link</code></td><td lang="az">İstifadə şərtləri</td><td lang="ru">Условия использования</td><td lang="en">Terms of use</td></tr>
+<tr><td><code>deletion-working</code></td><td lang="az">Yoxlanılır…</td><td lang="ru">Проверяем…</td><td lang="en">Checking…</td></tr>
+<tr><td><code>diff-easy</code></td><td lang="az">Asan</td><td lang="ru">Легко</td><td lang="en">Easy</td></tr>
+<tr><td><code>diff-hard</code></td><td lang="az">Çətin</td><td lang="ru">Сложно</td><td lang="en">Hard</td></tr>
+<tr><td><code>diff-medium</code></td><td lang="az">Orta</td><td lang="ru">Средне</td><td lang="en">Medium</td></tr>
+<tr><td><code>economy-coins</code></td><td lang="az">Coin oyunu</td><td lang="ru">Игра на монеты</td><td lang="en">Play on coins</td></tr>
+<tr><td><code>economy-free</code></td><td lang="az">Pulsuz oyun</td><td lang="ru">Бесплатная игра</td><td lang="en">Free play</td></tr>
+<tr><td><code>feedback-button</code></td><td lang="az">Rəy</td><td lang="ru">Обратная связь</td><td lang="en">Feedback</td></tr>
+<tr><td><code>feedback-cancel</code></td><td lang="az">Ləğv et</td><td lang="ru">Отмена</td><td lang="en">Cancel</td></tr>
+<tr><td><code>feedback-category-bug</code></td><td lang="az">Xəta</td><td lang="ru">Ошибка</td><td lang="en">Bug</td></tr>
+<tr><td><code>feedback-category-general</code></td><td lang="az">Ümumi</td><td lang="ru">Общее</td><td lang="en">General</td></tr>
+<tr><td><code>feedback-category-label</code></td><td lang="az">Mövzu</td><td lang="ru">Тема</td><td lang="en">Topic</td></tr>
+<tr><td><code>feedback-category-other</code></td><td lang="az">Digər</td><td lang="ru">Другое</td><td lang="en">Other</td></tr>
+<tr><td><code>feedback-category-suggestion</code></td><td lang="az">Təklif</td><td lang="ru">Предложение</td><td lang="en">Suggestion</td></tr>
+<tr><td><code>feedback-contact-label</code></td><td lang="az">Əlaqə e-poçtu</td><td lang="ru">Электронная почта для ответа</td><td lang="en">Contact email</td></tr>
+<tr><td><code>feedback-contact-placeholder</code></td><td lang="az">Cavab üçün e-poçt yazın</td><td lang="ru">Почта для ответа (необязательно)</td><td lang="en">Optional email for reply</td></tr>
+<tr><td><code>feedback-desc</code></td><td lang="az">Bizə nəyi yaxşılaşdırmaq istədiyinizi yazın.</td><td lang="ru">Напишите, что стоит улучшить.</td><td lang="en">Tell us what you want to improve.</td></tr>
+<tr><td><code>feedback-kicker</code></td><td lang="az">Dəstək</td><td lang="ru">Поддержка</td><td lang="en">Support</td></tr>
+<tr><td><code>feedback-message-label</code></td><td lang="az">Mesaj</td><td lang="ru">Сообщение</td><td lang="en">Message</td></tr>
+<tr><td><code>feedback-message-placeholder</code></td><td lang="az">Nə baş verdiyini və ya nəyin dəyişməli olduğunu yazın</td><td lang="ru">Опишите, что произошло или что нужно изменить</td><td lang="en">Tell us what happened or what should change</td></tr>
+<tr><td><code>feedback-message-required</code></td><td lang="az">Zəhmət olmasa mesaj yazın</td><td lang="ru">Пожалуйста, введите сообщение</td><td lang="en">Please write a message</td></tr>
+<tr><td><code>feedback-send</code></td><td lang="az">Göndər</td><td lang="ru">Отправить</td><td lang="en">Send</td></tr>
+<tr><td><code>feedback-send-failed</code></td><td lang="az">Rəy göndərilmədi</td><td lang="ru">Не удалось отправить обратную связь</td><td lang="en">Could not send feedback</td></tr>
+<tr><td><code>feedback-sending</code></td><td lang="az">Göndərilir...</td><td lang="ru">Отправка...</td><td lang="en">Sending...</td></tr>
+<tr><td><code>feedback-sent</code></td><td lang="az">Rəy göndərildi</td><td lang="ru">Обратная связь отправлена</td><td lang="en">Feedback sent</td></tr>
+<tr><td><code>feedback-title</code></td><td lang="az">Rəy</td><td lang="ru">Обратная связь</td><td lang="en">Feedback</td></tr>
+<tr><td><code>filter-all</code></td><td lang="az">Hamısı</td><td lang="ru">Все</td><td lang="en">All</td></tr>
+<tr><td><code>forfeit-settlement-failed</code></td><td lang="az">Mərc hesablanması tamamlanmadı. Coinlər qayıtmasa, dəstəyə müraciət edin.</td><td lang="ru">Расчёт ставки не завершён. Если монеты не вернулись, обратитесь в поддержку.</td><td lang="en">Stake settlement was not completed. If coins are not returned, contact support.</td></tr>
+<tr><td><code>friend-accept</code></td><td lang="az">Qəbul et</td><td lang="ru">Принять</td><td lang="en">Accept</td></tr>
+<tr><td><code>friend-add</code></td><td lang="az">Dost et</td><td lang="ru">Добавить</td><td lang="en">Add</td></tr>
+<tr><td><code>friend-decline</code></td><td lang="az">İmtina</td><td lang="ru">Отклонить</td><td lang="en">Decline</td></tr>
+<tr><td><code>friend-in-game</code></td><td lang="az">Oyunda</td><td lang="ru">В игре</td><td lang="en">In game</td></tr>
+<tr><td><code>friend-incoming</code></td><td lang="az">Gələn sorğu</td><td lang="ru">Входящий</td><td lang="en">Incoming</td></tr>
+<tr><td><code>friend-invite</code></td><td lang="az">Dəvət et</td><td lang="ru">Пригласить</td><td lang="en">Invite</td></tr>
+<tr><td><code>friend-offline</code></td><td lang="az">Oflayn</td><td lang="ru">Не в сети</td><td lang="en">Offline</td></tr>
+<tr><td><code>friend-online</code></td><td lang="az">Onlayn</td><td lang="ru">В сети</td><td lang="en">Online</td></tr>
+<tr><td><code>friend-outgoing</code></td><td lang="az">Göndərildi</td><td lang="ru">Отправлено</td><td lang="en">Outgoing</td></tr>
+<tr><td><code>friend-remove</code></td><td lang="az">Sil</td><td lang="ru">Удалить</td><td lang="en">Remove</td></tr>
+<tr><td><code>friend-requests-title</code></td><td lang="az">Dost sorğuları</td><td lang="ru">Запросы в друзья</td><td lang="en">Friend requests</td></tr>
+<tr><td><code>friend-search-button</code></td><td lang="az">Axtar</td><td lang="ru">Поиск</td><td lang="en">Search</td></tr>
+<tr><td><code>friend-search-results-title</code></td><td lang="az">Axtarış nəticələri</td><td lang="ru">Результаты поиска</td><td lang="en">Search results</td></tr>
+<tr><td><code>friends-accept</code></td><td lang="az">Qəbul et</td><td lang="ru">Принять</td><td lang="en">Accept</td></tr>
+<tr><td><code>friends-add</code></td><td lang="az">Əlavə et</td><td lang="ru">Добавить</td><td lang="en">Add</td></tr>
+<tr><td><code>friends-decline</code></td><td lang="az">İmtina et</td><td lang="ru">Отклонить</td><td lang="en">Decline</td></tr>
+<tr><td><code>friends-desc</code></td><td lang="az">Dostlarını idarə et, sorğuları yoxla və oyunçu axtar.</td><td lang="ru">Управляйте друзьями, заявками и поиском игроков.</td><td lang="en">Manage friends, review requests, and search players.</td></tr>
+<tr><td><code>friends-empty</code></td><td lang="az">Hələ dost yoxdur</td><td lang="ru">Пока нет друзей</td><td lang="en">No friends yet</td></tr>
+<tr><td><code>friends-filter</code></td><td lang="az">Filtr</td><td lang="ru">Фильтр</td><td lang="en">Filter</td></tr>
+<tr><td><code>friends-list-title</code></td><td lang="az">Dostlar</td><td lang="ru">Друзья</td><td lang="en">Friends</td></tr>
+<tr><td><code>friends-load-failed</code></td><td lang="az">Dostlar yüklənmədi</td><td lang="ru">Не удалось загрузить друзей</td><td lang="en">Could not load friends</td></tr>
+<tr><td><code>friends-login-required</code></td><td lang="az">Dostlar üçün hesaba daxil olun</td><td lang="ru">Войдите в аккаунт для друзей</td><td lang="en">Sign in to use friends</td></tr>
+<tr><td><code>friends-note</code></td><td lang="az">Sorğular və dəvətlər burada görünür.</td><td lang="ru">Запросы и приглашения отображаются здесь.</td><td lang="en">Requests and invites appear here.</td></tr>
+<tr><td><code>friends-open-button</code></td><td lang="az">Dostlar</td><td lang="ru">Друзья</td><td lang="en">Friends</td></tr>
+<tr><td><code>friends-pending</code></td><td lang="az">Gözləyir</td><td lang="ru">Ожидает</td><td lang="en">Pending</td></tr>
+<tr><td><code>friends-remove</code></td><td lang="az">Sil</td><td lang="ru">Удалить</td><td lang="en">Remove</td></tr>
+<tr><td><code>friends-removed</code></td><td lang="az">Dost silindi</td><td lang="ru">Друг удалён</td><td lang="en">Friend removed</td></tr>
+<tr><td><code>friends-request-accepted</code></td><td lang="az">Sorğu qəbul edildi</td><td lang="ru">Заявка принята</td><td lang="en">Request accepted</td></tr>
+<tr><td><code>friends-request-cancelled</code></td><td lang="az">Sorğu ləğv edildi</td><td lang="ru">Запрос отменён</td><td lang="en">Request cancelled</td></tr>
+<tr><td><code>friends-request-declined</code></td><td lang="az">Sorğu rədd edildi</td><td lang="ru">Заявка отклонена</td><td lang="en">Request declined</td></tr>
+<tr><td><code>friends-request-sent</code></td><td lang="az">Sorğu göndərildi</td><td lang="ru">Заявка отправлена</td><td lang="en">Request sent</td></tr>
+<tr><td><code>friends-requests</code></td><td lang="az">Sorğular</td><td lang="ru">Заявки</td><td lang="en">Requests</td></tr>
+<tr><td><code>friends-search</code></td><td lang="az">Axtar</td><td lang="ru">Поиск</td><td lang="en">Search</td></tr>
+<tr><td><code>friends-search-empty</code></td><td lang="az">Nəticə tapılmadı</td><td lang="ru">Игроки не найдены</td><td lang="en">No players found</td></tr>
+<tr><td><code>friends-search-placeholder</code></td><td lang="az">Oyunçu axtar</td><td lang="ru">Поиск игроков</td><td lang="en">Search players</td></tr>
+<tr><td><code>friends-sign-in</code></td><td lang="az">Dostlar üçün hesaba daxil olun</td><td lang="ru">Войдите в аккаунт для друзей</td><td lang="en">Sign in to use friends</td></tr>
+<tr><td><code>friends-title</code></td><td lang="az">Dostlar</td><td lang="ru">Друзья</td><td lang="en">Friends</td></tr>
+<tr><td><code>game-over-disconnect</code></td><td lang="az">İnternet kəsildi. Oyun bitdi.</td><td lang="ru">Интернет потерян. Игра окончена.</td><td lang="en">Internet lost. The game has ended.</td></tr>
+<tr><td><code>game-over-quit</code></td><td lang="az">Çıxış</td><td lang="ru">Отказаться</td><td lang="en">Exit</td></tr>
+<tr><td><code>game-pause</code></td><td lang="az">Fasilə</td><td lang="ru">Пауза</td><td lang="en">Pause</td></tr>
+<tr><td><code>game-subtitle</code></td><td lang="az">Azərbaycan Dominosu</td><td lang="ru">Азербайджанское домино</td><td lang="en">Azerbaijani Domino</td></tr>
+<tr><td><code>game-subtitle-101</code></td><td lang="az">Klassik domino</td><td lang="ru">Классическое домино</td><td lang="en">Classic domino</td></tr>
+<tr><td><code>game-subtitle-telefon</code></td><td lang="az">Azərbaycan Dominosu</td><td lang="ru">Азербайджанское домино</td><td lang="en">Azerbaijani Domino</td></tr>
+<tr><td><code>game-title</code></td><td lang="az">Domino (Telefon)</td><td lang="ru">Домино (Телефон)</td><td lang="en">Domino (Telephone)</td></tr>
+<tr><td><code>game-title-101</code></td><td lang="az">Domino (101)</td><td lang="ru">Домино (Классик)</td><td lang="en">Domino (Classic)</td></tr>
+<tr><td><code>game-title-telefon</code></td><td lang="az">Domino (Telefon)</td><td lang="ru">Домино (Пятёрочка)</td><td lang="en">Domino (Muggins)</td></tr>
+<tr><td><code>gift-button</code></td><td lang="az">Hədiyyə</td><td lang="ru">Подарок</td><td lang="en">Gift</td></tr>
+<tr><td><code>gift-buy</code></td><td lang="az">Hədiyyə al</td><td lang="ru">Купить подарок</td><td lang="en">Buy a gift</td></tr>
+<tr><td><code>gift-choice-meta</code></td><td lang="az">{rarity} • geri {exchangeValue}</td><td lang="ru">{rarity} • возврат {exchangeValue}</td><td lang="en">{rarity} • back {exchangeValue}</td></tr>
+<tr><td><code>gift-coins</code></td><td lang="az">{value} coin</td><td lang="ru">{value} монет</td><td lang="en">{value} coins</td></tr>
+<tr><td><code>gift-exchange</code></td><td lang="az">Dəyiş</td><td lang="ru">Обменять</td><td lang="en">Exchange</td></tr>
+<tr><td><code>gift-exchange-failed</code></td><td lang="az">Hədiyyəni dəyişmək alınmadı</td><td lang="ru">Не удалось обменять подарок</td><td lang="en">Gift exchange failed</td></tr>
+<tr><td><code>gift-exchanged</code></td><td lang="az">Hədiyyə dəyişdirildi</td><td lang="ru">Подарок обменян</td><td lang="en">Gift exchanged</td></tr>
+<tr><td><code>gift-inventory-count</code></td><td lang="az">Say: {quantity}</td><td lang="ru">Количество: {quantity}</td><td lang="en">Qty: {quantity}</td></tr>
+<tr><td><code>gift-inventory-empty-desc</code></td><td lang="az">Hələ hədiyyə almamısınız. Mağazadan coin ilə hədiyyə ala bilərsiniz.</td><td lang="ru">Вы пока не получали подарки. Их можно купить за монеты в магазине.</td><td lang="en">You have not received any gifts yet. You can buy one with coins in the shop.</td></tr>
+<tr><td><code>gift-inventory-meta</code></td><td lang="az">{quantity} ədəd • geri {exchangeValue}</td><td lang="ru">{quantity} шт • возврат {exchangeValue}</td><td lang="en">{quantity} pcs • back {exchangeValue}</td></tr>
+<tr><td><code>gift-loading</code></td><td lang="az">Hədiyyələr yüklənir...</td><td lang="ru">Загрузка подарков...</td><td lang="en">Loading gifts...</td></tr>
+<tr><td><code>gift-name-001</code></td><td lang="az">Hədiyyə 1</td><td lang="ru">Подарок 1</td><td lang="en">Gift 1</td></tr>
+<tr><td><code>gift-name-002</code></td><td lang="az">Hədiyyə 2</td><td lang="ru">Подарок 2</td><td lang="en">Gift 2</td></tr>
+<tr><td><code>gift-name-003</code></td><td lang="az">Hədiyyə 3</td><td lang="ru">Подарок 3</td><td lang="en">Gift 3</td></tr>
+<tr><td><code>gift-name-004</code></td><td lang="az">Hədiyyə 4</td><td lang="ru">Подарок 4</td><td lang="en">Gift 4</td></tr>
+<tr><td><code>gift-name-005</code></td><td lang="az">Hədiyyə 5</td><td lang="ru">Подарок 5</td><td lang="en">Gift 5</td></tr>
+<tr><td><code>gift-name-006</code></td><td lang="az">Hədiyyə 6</td><td lang="ru">Подарок 6</td><td lang="en">Gift 6</td></tr>
+<tr><td><code>gift-name-007</code></td><td lang="az">Hədiyyə 7</td><td lang="ru">Подарок 7</td><td lang="en">Gift 7</td></tr>
+<tr><td><code>gift-name-008</code></td><td lang="az">Hədiyyə 8</td><td lang="ru">Подарок 8</td><td lang="en">Gift 8</td></tr>
+<tr><td><code>gift-name-009</code></td><td lang="az">Hədiyyə 9</td><td lang="ru">Подарок 9</td><td lang="en">Gift 9</td></tr>
+<tr><td><code>gift-name-010</code></td><td lang="az">Hədiyyə 10</td><td lang="ru">Подарок 10</td><td lang="en">Gift 10</td></tr>
+<tr><td><code>gift-name-011</code></td><td lang="az">Hədiyyə 11</td><td lang="ru">Подарок 11</td><td lang="en">Gift 11</td></tr>
+<tr><td><code>gift-name-012</code></td><td lang="az">Hədiyyə 12</td><td lang="ru">Подарок 12</td><td lang="en">Gift 12</td></tr>
+<tr><td><code>gift-no-items</code></td><td lang="az">Hələ hədiyyə yoxdur</td><td lang="ru">Подарков пока нет</td><td lang="en">No gifts yet</td></tr>
+<tr><td><code>gift-no-recipient</code></td><td lang="az">Mövcud alıcı yoxdur</td><td lang="ru">Нет доступного получателя</td><td lang="en">No recipient available</td></tr>
+<tr><td><code>gift-no-room-recipient</code></td><td lang="az">Bu otaqda hədiyyə göndəriləcək oyunçu yoxdur</td><td lang="ru">В комнате нет игроков для подарка</td><td lang="en">There are no players in this room to receive a gift</td></tr>
+<tr><td><code>gift-not-found</code></td><td lang="az">Hədiyyə tapılmadı</td><td lang="ru">Подарок не найден</td><td lang="en">Gift not found</td></tr>
+<tr><td><code>gift-picker-chat-title</code></td><td lang="az">Alıcı</td><td lang="ru">Получатель</td><td lang="en">Recipient</td></tr>
+<tr><td><code>gift-picker-inventory</code></td><td lang="az">İnventardakı hədiyyələr</td><td lang="ru">Подарки в инвентаре</td><td lang="en">Gifts in inventory</td></tr>
+<tr><td><code>gift-picker-room-title</code></td><td lang="az">Otaqdakı oyunçular</td><td lang="ru">Игроки в комнате</td><td lang="en">Players in room</td></tr>
+<tr><td><code>gift-picker-social-title</code></td><td lang="az">Dostlar</td><td lang="ru">Друзья</td><td lang="en">Friends</td></tr>
+<tr><td><code>gift-picker-title</code></td><td lang="az">Oyunçuya hədiyyə göndər</td><td lang="ru">Отправить подарок</td><td lang="en">Send a gift</td></tr>
+<tr><td><code>gift-rarity-common</code></td><td lang="az">Adi</td><td lang="ru">Обычный</td><td lang="en">Common</td></tr>
+<tr><td><code>gift-rarity-epic</code></td><td lang="az">Epik</td><td lang="ru">Эпический</td><td lang="en">Epic</td></tr>
+<tr><td><code>gift-rarity-rare</code></td><td lang="az">Nadir</td><td lang="ru">Редкий</td><td lang="en">Rare</td></tr>
+<tr><td><code>gift-select-recipient</code></td><td lang="az">Alıcı seçin</td><td lang="ru">Выберите получателя</td><td lang="en">Select a recipient</td></tr>
+<tr><td><code>gift-self-send</code></td><td lang="az">Özünüzə hədiyyə göndərə bilməzsiniz</td><td lang="ru">Нельзя отправить подарок самому себе</td><td lang="en">You cannot send a gift to yourself</td></tr>
+<tr><td><code>gift-send-failed</code></td><td lang="az">Hədiyyə göndərmək alınmadı</td><td lang="ru">Не удалось отправить подарок</td><td lang="en">Gift send failed</td></tr>
+<tr><td><code>gift-sent</code></td><td lang="az">Hədiyyə göndərildi</td><td lang="ru">Подарок отправлен</td><td lang="en">Gift sent</td></tr>
+<tr><td><code>gosha-button</code></td><td lang="az">Qoşa</td><td lang="ru">Гоша</td><td lang="en">Gosha</td></tr>
+<tr><td><code>guest-solo-note</code></td><td lang="az">Pulsuz tək oyun üçün hesab lazım deyil. Onlayn oyunlar və coin rejimi üçün hesaba daxil olun.</td><td lang="ru">Для бесплатной игры с ботами аккаунт не нужен. Для игры онлайн и на монеты войдите в аккаунт.</td><td lang="en">Free solo games do not need an account. Sign in for online and coin games.</td></tr>
+<tr><td><code>inbox-claim</code></td><td lang="az">Al</td><td lang="ru">Получить</td><td lang="en">Claim</td></tr>
+<tr><td><code>inbox-claim-failed</code></td><td lang="az">Mükafatı almaq alınmadı</td><td lang="ru">Не удалось получить награду</td><td lang="en">Unable to claim item</td></tr>
+<tr><td><code>inbox-claimed</code></td><td lang="az">Alındı</td><td lang="ru">Получено</td><td lang="en">Claimed</td></tr>
+<tr><td><code>inbox-compensation</code></td><td lang="az">Kompensasiya</td><td lang="ru">Компенсация</td><td lang="en">Compensation</td></tr>
+<tr><td><code>inbox-delete</code></td><td lang="az">Sil</td><td lang="ru">Удалить</td><td lang="en">Delete</td></tr>
+<tr><td><code>inbox-empty</code></td><td lang="az">Hələ inbox yoxdur</td><td lang="ru">Во входящих пока пусто</td><td lang="en">No inbox items yet</td></tr>
+<tr><td><code>inbox-expired</code></td><td lang="az">Müddəti bitdi</td><td lang="ru">Истекло</td><td lang="en">Expired</td></tr>
+<tr><td><code>inbox-gift</code></td><td lang="az">Hədiyyə</td><td lang="ru">Подарок</td><td lang="en">Gift</td></tr>
+<tr><td><code>inbox-load-failed</code></td><td lang="az">Inbox yüklənmədi</td><td lang="ru">Не удалось загрузить входящие</td><td lang="en">Failed to load inbox</td></tr>
+<tr><td><code>inbox-message</code></td><td lang="az">Mesaj</td><td lang="ru">Сообщение</td><td lang="en">Message</td></tr>
+<tr><td><code>inbox-open-gifts</code></td><td lang="az">Aç</td><td lang="ru">Открыть</td><td lang="en">Open</td></tr>
+<tr><td><code>inbox-open-message</code></td><td lang="az">Aç</td><td lang="ru">Открыть</td><td lang="en">Open</td></tr>
+<tr><td><code>inbox-read</code></td><td lang="az">Oxundu</td><td lang="ru">Прочитано</td><td lang="en">Read</td></tr>
+<tr><td><code>inbox-reward</code></td><td lang="az">Mükafat</td><td lang="ru">Награда</td><td lang="en">Reward</td></tr>
+<tr><td><code>inbox-system</code></td><td lang="az">Sistem</td><td lang="ru">Система</td><td lang="en">System</td></tr>
+<tr><td><code>inbox-title</code></td><td lang="az">Mesajlar</td><td lang="ru">Сообщения</td><td lang="en">Messages</td></tr>
+<tr><td><code>inbox-tournament</code></td><td lang="az">Turnir</td><td lang="ru">Турнир</td><td lang="en">Tournament</td></tr>
+<tr><td><code>inbox-unread</code></td><td lang="az">Oxunmamış</td><td lang="ru">Непрочитано</td><td lang="en">Unread</td></tr>
+<tr><td><code>instant-win-body</code></td><td lang="az">Bir gedişlə oyun bitir</td><td lang="ru">+2 раунда одним ходом</td><td lang="en">One move ends the match</td></tr>
+<tr><td><code>instant-win-title</code></td><td lang="az">{player}: {score} xalla ani qələbə!</td><td lang="ru">{player}: мгновенная победа с {score} очками!</td><td lang="en">{player}: instant win with {score} points!</td></tr>
+<tr><td><code>invite-accepting</code></td><td lang="az">Qəbul edilir…</td><td lang="ru">Принимаем…</td><td lang="en">Accepting…</td></tr>
+<tr><td><code>invite-cancel</code></td><td lang="az">Ləğv et</td><td lang="ru">Отменить</td><td lang="en">Cancel</td></tr>
+<tr><td><code>invite-cancelled</code></td><td lang="az">Dəvət ləğv edildi</td><td lang="ru">Приглашение отменено</td><td lang="en">Invitation cancelled</td></tr>
+<tr><td><code>invite-cancelling</code></td><td lang="az">Ləğv edilir…</td><td lang="ru">Отменяем…</td><td lang="en">Cancelling…</td></tr>
+<tr><td><code>invite-create-room</code></td><td lang="az">Otaq yarat</td><td lang="ru">Создать комнату</td><td lang="en">Create room</td></tr>
+<tr><td><code>invite-declining</code></td><td lang="az">İmtina edilir…</td><td lang="ru">Отклоняем…</td><td lang="en">Declining…</td></tr>
+<tr><td><code>invite-failed-join</code></td><td lang="az">Qoşulmaq alınmadı</td><td lang="ru">Не удалось присоединиться</td><td lang="en">Failed to join</td></tr>
+<tr><td><code>invite-friend-joined</code></td><td lang="az">Dost otağa qoşuldu</td><td lang="ru">Друг присоединился к комнате</td><td lang="en">Friend joined the room</td></tr>
+<tr><td><code>invite-friend-waiting</code></td><td lang="az">Dost gözləyir</td><td lang="ru">Друг ожидает</td><td lang="en">Friend waiting</td></tr>
+<tr><td><code>invite-join-room</code></td><td lang="az">Qoşul</td><td lang="ru">Войти в комнату</td><td lang="en">Join room</td></tr>
+<tr><td><code>invite-joined</code></td><td lang="az">Qoşuldunuz</td><td lang="ru">Вы присоединились</td><td lang="en">Joined</td></tr>
+<tr><td><code>invite-joining</code></td><td lang="az">Qoşulursunuz…</td><td lang="ru">Подключаемся…</td><td lang="en">Joining…</td></tr>
+<tr><td><code>invite-pending-accept</code></td><td lang="az">Cavab gözlənilir</td><td lang="ru">Ожидаем ответа</td><td lang="en">Waiting for reply</td></tr>
+<tr><td><code>invite-room-ready</code></td><td lang="az">Otaq hazırdır</td><td lang="ru">Комната готова</td><td lang="en">Room ready</td></tr>
+<tr><td><code>invite-sent</code></td><td lang="az">Dəvət göndərildi</td><td lang="ru">Приглашение отправлено</td><td lang="en">Invite sent</td></tr>
+<tr><td><code>invite-sent-empty</code></td><td lang="az">Göndərilən dəvət yoxdur</td><td lang="ru">Отправленных приглашений нет</td><td lang="en">No sent invites</td></tr>
+<tr><td><code>invite-status-accepted</code></td><td lang="az">Qəbul edildi</td><td lang="ru">Принято</td><td lang="en">Accepted</td></tr>
+<tr><td><code>invite-status-cancelled</code></td><td lang="az">Ləğv edildi</td><td lang="ru">Отменено</td><td lang="en">Cancelled</td></tr>
+<tr><td><code>invite-status-declined</code></td><td lang="az">Rədd edildi</td><td lang="ru">Отклонено</td><td lang="en">Declined</td></tr>
+<tr><td><code>invite-status-expired</code></td><td lang="az">Vaxtı bitdi</td><td lang="ru">Истекло</td><td lang="en">Expired</td></tr>
+<tr><td><code>invite-status-invited</code></td><td lang="az">Dəvət edilib</td><td lang="ru">Приглашен</td><td lang="en">Invited</td></tr>
+<tr><td><code>invite-status-pending</code></td><td lang="az">Gözləyir</td><td lang="ru">Ожидает</td><td lang="en">Pending</td></tr>
+<tr><td><code>invite-waiting-room</code></td><td lang="az">Otaq yaradılması gözlənilir</td><td lang="ru">Ожидаем создания комнаты</td><td lang="en">Waiting for room creation</td></tr>
+<tr><td><code>invitee-accepted-waiting</code></td><td lang="az">{name} dəvəti qəbul etdi və otaq qurulmasını gözləyir</td><td lang="ru">{name} принял приглашение и ожидает создания комнаты</td><td lang="en">{name} accepted the invite and is waiting for room creation</td></tr>
+<tr><td><code>invites-accept</code></td><td lang="az">Qəbul et</td><td lang="ru">Принять</td><td lang="en">Accept</td></tr>
+<tr><td><code>invites-decline</code></td><td lang="az">İmtina et</td><td lang="ru">Отклонить</td><td lang="en">Decline</td></tr>
+<tr><td><code>invites-empty</code></td><td lang="az">Hələ dəvət yoxdur</td><td lang="ru">Приглашений в комнаты пока нет</td><td lang="en">No room invites yet</td></tr>
+<tr><td><code>invites-incoming-title</code></td><td lang="az">Gələn dəvətlər</td><td lang="ru">Входящие приглашения</td><td lang="en">Incoming invites</td></tr>
+<tr><td><code>invites-sent-title</code></td><td lang="az">Göndərilən dəvətlər</td><td lang="ru">Отправленные приглашения</td><td lang="en">Sent invites</td></tr>
+<tr><td><code>invites-title</code></td><td lang="az">Dəvətlər</td><td lang="ru">Приглашения</td><td lang="en">Invites</td></tr>
+<tr><td><code>label-ai-slots</code></td><td lang="az">Botların sayı</td><td lang="ru">Количество ботов</td><td lang="en">AI slots</td></tr>
+<tr><td><code>label-bank-short</code></td><td lang="az">Bank</td><td lang="ru">Банк</td><td lang="en">Bank</td></tr>
+<tr><td><code>label-boneyard-short</code></td><td lang="az">Bazar</td><td lang="ru">Базар</td><td lang="en">Bazaar</td></tr>
+<tr><td><code>label-bonus</code></td><td lang="az">Əldən</td><td lang="ru">Бонус</td><td lang="en">Bonus</td></tr>
+<tr><td><code>label-deal-short</code></td><td lang="az">Ə</td><td lang="ru">С</td><td lang="en">D</td></tr>
+<tr><td><code>label-difficulty</code></td><td lang="az">Çətinlik</td><td lang="ru">Сложность</td><td lang="en">Difficulty</td></tr>
+<tr><td><code>label-dloss</code></td><td lang="az">Məğlubiyyət həddi</td><td lang="ru">Порог поражения</td><td lang="en">Loss threshold</td></tr>
+<tr><td><code>label-economy-mode</code></td><td lang="az">Rejim</td><td lang="ru">Режим</td><td lang="en">Mode</td></tr>
+<tr><td><code>label-hand-points</code></td><td lang="az">Əl</td><td lang="ru">Рука</td><td lang="en">Hand</td></tr>
+<tr><td><code>label-instant-win</code></td><td lang="az">35 xal = oyun dərhal bitir</td><td lang="ru">35 очков = партия + 2 раунда</td><td lang="en">35 pts = match ends immediately</td></tr>
+<tr><td><code>label-mode</code></td><td lang="az">Oyun rejimi</td><td lang="ru">Режим игры</td><td lang="en">Game mode</td></tr>
+<tr><td><code>label-name</code></td><td lang="az">Adınız</td><td lang="ru">Ваше имя</td><td lang="en">Your name</td></tr>
+<tr><td><code>label-online</code></td><td lang="az">Bağlı otaqlar</td><td lang="ru">Закрытые комнаты</td><td lang="en">Private rooms</td></tr>
+<tr><td><code>label-online-help</code></td><td lang="az">Otaq yaradın və ya kodla qoşulun</td><td lang="ru">Создайте комнату или войдите по коду</td><td lang="en">Create a room or join with a code</td></tr>
+<tr><td><code>label-online-players</code></td><td lang="az">Oyunçu sayı</td><td lang="ru">Количество игроков</td><td lang="en">Players</td></tr>
+<tr><td><code>label-players</code></td><td lang="az">Oyunçu sayı</td><td lang="ru">Количество игроков</td><td lang="en">Players</td></tr>
+<tr><td><code>label-room-visibility</code></td><td lang="az">Otaq növü</td><td lang="ru">Тип комнаты</td><td lang="en">Room type</td></tr>
+<tr><td><code>label-round-short</code></td><td lang="az">R</td><td lang="ru">Р</td><td lang="en">R</td></tr>
+<tr><td><code>label-rounds</code></td><td lang="az">Raund</td><td lang="ru">Раунды</td><td lang="en">Rounds</td></tr>
+<tr><td><code>label-rules</code></td><td lang="az">Qaydalar</td><td lang="ru">Правила</td><td lang="en">Rules</td></tr>
+<tr><td><code>label-score</code></td><td lang="az">Xal</td><td lang="ru">Очки</td><td lang="en">Score</td></tr>
+<tr><td><code>label-stake-short</code></td><td lang="az">Mərc</td><td lang="ru">Ставка</td><td lang="en">Stake</td></tr>
+<tr><td><code>label-stake-table</code></td><td lang="az">Coin</td><td lang="ru">Стол ставок</td><td lang="en">Stake table</td></tr>
+<tr><td><code>label-total</code></td><td lang="az">Cəmi</td><td lang="ru">Итого</td><td lang="en">Total</td></tr>
+<tr><td><code>language-label</code></td><td lang="az">Dil</td><td lang="ru">Язык</td><td lang="en">Language</td></tr>
+<tr><td><code>leaderboard-desc</code></td><td lang="az">Oyuncular reytinqə görə sıralanır.</td><td lang="ru">Игроки сортируются по рейтингу.</td><td lang="en">Players are sorted by rating.</td></tr>
+<tr><td><code>leaderboard-empty</code></td><td lang="az">Hələ reytinq yoxdur</td><td lang="ru">Рейтинг пока пуст</td><td lang="en">No ratings yet</td></tr>
+<tr><td><code>leaderboard-games</code></td><td lang="az">Oyunlar</td><td lang="ru">Игры</td><td lang="en">Games</td></tr>
+<tr><td><code>leaderboard-load-failed</code></td><td lang="az">Reytinq yüklənmədi</td><td lang="ru">Не удалось загрузить рейтинг</td><td lang="en">Could not load leaderboard</td></tr>
+<tr><td><code>leaderboard-losses</code></td><td lang="az">Məğlubiyyətlər</td><td lang="ru">Поражения</td><td lang="en">Losses</td></tr>
+<tr><td><code>leaderboard-mode-101</code></td><td lang="az">101</td><td lang="ru">Классик</td><td lang="en">Classic</td></tr>
+<tr><td><code>leaderboard-mode-telefon</code></td><td lang="az">Telefon</td><td lang="ru">Пятёрочка</td><td lang="en">Muggins</td></tr>
+<tr><td><code>leaderboard-rating</code></td><td lang="az">Reyting</td><td lang="ru">Рейтинг</td><td lang="en">Rating</td></tr>
+<tr><td><code>leaderboard-self</code></td><td lang="az">Siz</td><td lang="ru">Вы</td><td lang="en">You</td></tr>
+<tr><td><code>leaderboard-tab-friends</code></td><td lang="az">Dostlar</td><td lang="ru">Друзья</td><td lang="en">Friends</td></tr>
+<tr><td><code>leaderboard-tab-overall</code></td><td lang="az">Ümumi</td><td lang="ru">Общий</td><td lang="en">Overall</td></tr>
+<tr><td><code>leaderboard-tab-weekly</code></td><td lang="az">Həftəlik</td><td lang="ru">Недельный</td><td lang="en">Weekly</td></tr>
+<tr><td><code>leaderboard-title</code></td><td lang="az">Reytinq</td><td lang="ru">Рейтинг</td><td lang="en">Rating</td></tr>
+<tr><td><code>leaderboard-week-delta</code></td><td lang="az">bu həftə</td><td lang="ru">за неделю</td><td lang="en">this week</td></tr>
+<tr><td><code>leaderboard-wins</code></td><td lang="az">Qələbələr</td><td lang="ru">Победы</td><td lang="en">Wins</td></tr>
+<tr><td><code>login-failed</code></td><td lang="az">Giriş alınmadı</td><td lang="ru">Не удалось войти</td><td lang="en">Login failed</td></tr>
+<tr><td><code>menu-new</code></td><td lang="az">Yeni oyun</td><td lang="ru">Новая игра</td><td lang="en">New game</td></tr>
+<tr><td><code>menu-next-track</code></td><td lang="az">Növbəti musiqi</td><td lang="ru">Следующий трек</td><td lang="en">Next track</td></tr>
+<tr><td><code>menu-open</code></td><td lang="az">Menyu</td><td lang="ru">Меню</td><td lang="en">Menu</td></tr>
+<tr><td><code>menu-quit</code></td><td lang="az">Çıxış</td><td lang="ru">Выход</td><td lang="en">Quit</td></tr>
+<tr><td><code>menu-resume</code></td><td lang="az">Davam et</td><td lang="ru">Продолжить</td><td lang="en">Resume</td></tr>
+<tr><td><code>menu-title</code></td><td lang="az">Menyu</td><td lang="ru">Меню</td><td lang="en">Menu</td></tr>
+<tr><td><code>menu-toggle-mute</code></td><td lang="az">Səsi söndür / yandır</td><td lang="ru">Вкл/Выкл звук</td><td lang="en">Mute / Unmute</td></tr>
+<tr><td><code>messages-back</code></td><td lang="az">Geri</td><td lang="ru">Назад</td><td lang="en">Back</td></tr>
+<tr><td><code>messages-conversation-title</code></td><td lang="az">Söhbət</td><td lang="ru">Диалог</td><td lang="en">Conversation</td></tr>
+<tr><td><code>messages-empty</code></td><td lang="az">Hələ mesaj yoxdur</td><td lang="ru">Сообщений пока нет</td><td lang="en">No messages yet</td></tr>
+<tr><td><code>messages-inbox</code></td><td lang="az">Gələnlər</td><td lang="ru">Входящие</td><td lang="en">Inbox</td></tr>
+<tr><td><code>messages-load-failed</code></td><td lang="az">Mesajlar yüklənmədi</td><td lang="ru">Не удалось загрузить сообщения</td><td lang="en">Could not load messages</td></tr>
+<tr><td><code>messages-open</code></td><td lang="az">Mesajlar</td><td lang="ru">Сообщения</td><td lang="en">Messages</td></tr>
+<tr><td><code>messages-placeholder</code></td><td lang="az">Mesaj yazın</td><td lang="ru">Напишите сообщение</td><td lang="en">Write a message</td></tr>
+<tr><td><code>messages-send</code></td><td lang="az">Göndər</td><td lang="ru">Отправить</td><td lang="en">Send</td></tr>
+<tr><td><code>messages-send-failed</code></td><td lang="az">Mesaj göndərilmədi</td><td lang="ru">Не удалось отправить сообщение</td><td lang="en">Could not send message</td></tr>
+<tr><td><code>messages-sent</code></td><td lang="az">Mesaj göndərildi</td><td lang="ru">Сообщение отправлено</td><td lang="en">Message sent</td></tr>
+<tr><td><code>messages-thread-count</code></td><td lang="az">{count} söhbət</td><td lang="ru">{count} диалогов</td><td lang="en">{count} conversations</td></tr>
+<tr><td><code>messages-thread-count-few</code></td><td lang="az">—</td><td lang="ru">{count} диалога</td><td lang="en">—</td></tr>
+<tr><td><code>messages-thread-count-many</code></td><td lang="az">—</td><td lang="ru">{count} диалогов</td><td lang="en">—</td></tr>
+<tr><td><code>messages-thread-count-one</code></td><td lang="az">{count} söhbət</td><td lang="ru">{count} диалог</td><td lang="en">{count} conversation</td></tr>
+<tr><td><code>messages-thread-count-other</code></td><td lang="az">{count} söhbət</td><td lang="ru">{count} диалога</td><td lang="en">{count} conversations</td></tr>
+<tr><td><code>messages-title</code></td><td lang="az">Mesajlar</td><td lang="ru">Сообщения</td><td lang="en">Messages</td></tr>
+<tr><td><code>modal-close</code></td><td lang="az">Bağla</td><td lang="ru">Закрыть</td><td lang="en">Close</td></tr>
+<tr><td><code>mode-ffa</code></td><td lang="az">Hər kəs özü üçün</td><td lang="ru">Каждый сам за себя</td><td lang="en">Free for all</td></tr>
+<tr><td><code>mode-soon</code></td><td lang="az">Tezliklə</td><td lang="ru">Скоро</td><td lang="en">Soon</td></tr>
+<tr><td><code>mode-switch-101</code></td><td lang="az">101</td><td lang="ru">Классик</td><td lang="en">Classic</td></tr>
+<tr><td><code>mode-switch-telefon</code></td><td lang="az">Telefon</td><td lang="ru">Пятёрочка</td><td lang="en">Muggins</td></tr>
+<tr><td><code>mode-team</code></td><td lang="az">2 - 2</td><td lang="ru">2 на 2</td><td lang="en">2 vs 2</td></tr>
+<tr><td><code>msg-bank-reserved</code></td><td lang="az">{players} oyunçu üçün {amount} coin bankda saxlanıldı</td><td lang="ru">Банк {amount} монет зарезервирован для {players} игроков</td><td lang="en">Bank {amount} coins reserved for {players} players</td></tr>
+<tr><td><code>msg-first-turn</code></td><td lang="az">{player} ilk gedişə başlayır</td><td lang="ru">{player} делает первый ход</td><td lang="en">{player} makes the opening move</td></tr>
+<tr><td><code>msg-fish</code></td><td lang="az">Bağlandı!</td><td lang="ru">Рыба!</td><td lang="en">Fish!</td></tr>
+<tr><td><code>msg-gosha</code></td><td lang="az">{player} Qoşa gəldi!</td><td lang="ru">{player} сыграл Гошу!</td><td lang="en">{player} played Gosha!</td></tr>
+<tr><td><code>msg-has-move</code></td><td lang="az">Sizin gedişiniz var</td><td lang="ru">У вас уже есть ход</td><td lang="en">You already have a move</td></tr>
+<tr><td><code>msg-last-winner-starts</code></td><td lang="az">{player} əvvəlki oyunun qalibi kimi başlayır</td><td lang="ru">{player} начинает как победитель прошлой сдачи</td><td lang="en">{player} starts as the previous deal winner</td></tr>
+<tr><td><code>msg-no-moves</code></td><td lang="az">Gediş yoxdur, pas verilir</td><td lang="ru">Ходов нет, пас</td><td lang="en">No moves, passing</td></tr>
+<tr><td><code>msg-opp-turn</code></td><td lang="az">Rəqibin gedişi</td><td lang="ru">Ход соперника</td><td lang="en">Opponent&#39;s turn</td></tr>
+<tr><td><code>msg-player-gosha</code></td><td lang="az">{player} Goşa oynadı</td><td lang="ru">{player} сыграл Гошу</td><td lang="en">{player} played Gosha</td></tr>
+<tr><td><code>msg-player-joined-room</code></td><td lang="az">{player} otağa qoşuldu</td><td lang="ru">{player} вошёл в комнату</td><td lang="en">{player} joined the room</td></tr>
+<tr><td><code>msg-player-left-room</code></td><td lang="az">{player} otaqdan çıxdı</td><td lang="ru">{player} вышел из комнаты</td><td lang="en">{player} left the room</td></tr>
+<tr><td><code>msg-player-passed</code></td><td lang="az">{player} pas verdi</td><td lang="ru">{player} пасовал</td><td lang="en">{player} passed</td></tr>
+<tr><td><code>msg-player-reconnected</code></td><td lang="az">{player} yenidən qoşuldu</td><td lang="ru">{player} снова подключился</td><td lang="en">{player} reconnected</td></tr>
+<tr><td><code>msg-player-rejoined-room</code></td><td lang="az">{player} otağa yenidən qoşuldu</td><td lang="ru">{player} вернулся в комнату</td><td lang="en">{player} rejoined the room</td></tr>
+<tr><td><code>msg-player-took-bazaar</code></td><td lang="az">{player} bazardan götürdü</td><td lang="ru">{player} взял с базара</td><td lang="en">{player} drew from the bazaar</td></tr>
+<tr><td><code>msg-took-bazaar</code></td><td lang="az">Bazardan götürüldü</td><td lang="ru">Взяли с базара</td><td lang="en">Drew from the bazaar</td></tr>
+<tr><td><code>msg-wait-bazaar</code></td><td lang="az">Əvvəl bazardan götürün</td><td lang="ru">Сначала возьмите с базара</td><td lang="en">Draw from the bazaar first</td></tr>
+<tr><td><code>msg-your-turn</code></td><td lang="az">Sizin gedişiniz</td><td lang="ru">Ваш ход</td><td lang="en">Your turn</td></tr>
+<tr><td><code>new-game-btn</code></td><td lang="az">Yeni oyun</td><td lang="ru">Новая игра</td><td lang="en">New game</td></tr>
+<tr><td><code>next-deal</code></td><td lang="az">Növbəti əl</td><td lang="ru">Следующая сдача</td><td lang="en">Next deal</td></tr>
+<tr><td><code>next-round</code></td><td lang="az">Növbəti raund</td><td lang="ru">Следующий раунд</td><td lang="en">Next round</td></tr>
+<tr><td><code>no-account-free-play</code></td><td lang="az">Hesab tapılmadı, pulsuz oyun rejiminə keçildi</td><td lang="ru">Аккаунт не найден, переключено на бесплатную игру</td><td lang="en">No account found, switched to free play</td></tr>
+<tr><td><code>no-friend-requests</code></td><td lang="az">Dostluq sorğusu yoxdur</td><td lang="ru">Нет запросов в друзья</td><td lang="en">No friend requests</td></tr>
+<tr><td><code>no-friends-yet</code></td><td lang="az">Hələ dost yoxdur</td><td lang="ru">Пока нет друзей</td><td lang="en">No friends yet</td></tr>
+<tr><td><code>no-open-rooms</code></td><td lang="az">Açıq otaq yoxdur</td><td lang="ru">Открытых комнат нет</td><td lang="en">No open rooms yet</td></tr>
+<tr><td><code>no-room-invites</code></td><td lang="az">Otaq dəvəti yoxdur</td><td lang="ru">Нет приглашений в комнаты</td><td lang="en">No room invites</td></tr>
+<tr><td><code>not-enough-coins-round</code></td><td lang="az">Növbəti raund üçün monet çatmır</td><td lang="ru">Недостаточно монет для следующего раунда</td><td lang="en">Not enough coins for the next round</td></tr>
+<tr><td><code>online-bot-slot</code></td><td lang="az">Bot {index}</td><td lang="ru">Бот {index}</td><td lang="en">Bot {index}</td></tr>
+<tr><td><code>online-choice-connect</code></td><td lang="az">Qoşul</td><td lang="ru">Подключиться</td><td lang="en">Join room</td></tr>
+<tr><td><code>online-choice-create</code></td><td lang="az">Otaq yarat</td><td lang="ru">Создать</td><td lang="en">Create room</td></tr>
+<tr><td><code>online-copy-fail</code></td><td lang="az">Kod kopyalanmadı. Kod: {code}</td><td lang="ru">Не удалось скопировать код. Код: {code}</td><td lang="en">Copy failed. Code: {code}</td></tr>
+<tr><td><code>online-copy-success</code></td><td lang="az">Kod kopyalandı: {code}</td><td lang="ru">Код скопирован: {code}</td><td lang="en">Code copied: {code}</td></tr>
+<tr><td><code>online-create-title-closed</code></td><td lang="az">Bağlı otaq yarat</td><td lang="ru">Создать закрытую комнату</td><td lang="en">Create private room</td></tr>
+<tr><td><code>online-create-title-open</code></td><td lang="az">Açıq otaq yarat</td><td lang="ru">Создать открытую комнату</td><td lang="en">Create open room</td></tr>
+<tr><td><code>online-modal-desc</code></td><td lang="az">Bağlı otaq yaradın və ya kodla qoşulun.</td><td lang="ru">Создайте закрытую комнату или подключитесь по коду.</td><td lang="en">Create a private room or join with a code.</td></tr>
+<tr><td><code>online-modal-kicker</code></td><td lang="az">Bağlı otaqlar</td><td lang="ru">Закрытые комнаты</td><td lang="en">Private rooms</td></tr>
+<tr><td><code>online-modal-title</code></td><td lang="az">Bağlı otaqlar</td><td lang="ru">Закрытые комнаты</td><td lang="en">Private rooms</td></tr>
+<tr><td><code>online-offline</code></td><td lang="az">şəbəkədən çıxdı</td><td lang="ru">не в сети</td><td lang="en">offline</td></tr>
+<tr><td><code>online-ready</code></td><td lang="az">hazırdır</td><td lang="ru">готов</td><td lang="en">ready</td></tr>
+<tr><td><code>online-room-back</code></td><td lang="az">Geri</td><td lang="ru">Назад</td><td lang="en">Back</td></tr>
+<tr><td><code>online-room-cancel</code></td><td lang="az">Ləğv et</td><td lang="ru">Отмена</td><td lang="en">Cancel</td></tr>
+<tr><td><code>online-room-closed</code></td><td lang="az">Otaq bağlandı</td><td lang="ru">Комната закрыта</td><td lang="en">Room closed</td></tr>
+<tr><td><code>online-room-code</code></td><td lang="az">Otaq kodu</td><td lang="ru">Код комнаты</td><td lang="en">Room code</td></tr>
+<tr><td><code>online-room-code-placeholder</code></td><td lang="az">ABCD</td><td lang="ru">ABCD</td><td lang="en">ABCD</td></tr>
+<tr><td><code>online-room-copy</code></td><td lang="az">Kopyala</td><td lang="ru">Копировать</td><td lang="en">Copy</td></tr>
+<tr><td><code>online-room-create-hint</code></td><td lang="az">Kodu dostunuzla paylaşın</td><td lang="ru">Поделитесь кодом комнаты с другом</td><td lang="en">Share the room code with a friend</td></tr>
+<tr><td><code>online-room-game-mode-mismatch</code></td><td lang="az">Bu otaq başqa oyun rejimindədir</td><td lang="ru">В этой комнате другой режим игры</td><td lang="en">This room uses a different game mode</td></tr>
+<tr><td><code>online-room-join-hint</code></td><td lang="az">Otaq kodunu daxil edin</td><td lang="ru">Введите код комнаты</td><td lang="en">Enter a room code to connect</td></tr>
+<tr><td><code>online-room-share</code></td><td lang="az">Paylaş</td><td lang="ru">Поделиться</td><td lang="en">Share</td></tr>
+<tr><td><code>online-room-share-copied</code></td><td lang="az">Dəvət linki kopyalandı</td><td lang="ru">Ссылка-приглашение скопирована</td><td lang="en">Invite link copied</td></tr>
+<tr><td><code>online-room-share-fail</code></td><td lang="az">Paylaşma alınmadı</td><td lang="ru">Не удалось поделиться</td><td lang="en">Share failed</td></tr>
+<tr><td><code>online-room-share-message</code></td><td lang="az">Domino otağıma qoşul. Kod: {code}. Link: {url}</td><td lang="ru">Присоединяйтесь к моей комнате Domino. Код: {code}. Ссылка: {url}</td><td lang="en">Join my Domino room. Code: {code}. Link: {url}</td></tr>
+<tr><td><code>online-room-share-opened</code></td><td lang="az">Paylaşma pəncərəsi açıldı</td><td lang="ru">Открыто окно поделиться</td><td lang="en">Share sheet opened</td></tr>
+<tr><td><code>online-room-share-title</code></td><td lang="az">Domino otaq dəvəti</td><td lang="ru">Приглашение в комнату Domino</td><td lang="en">Domino room invite</td></tr>
+<tr><td><code>online-room-status-connecting</code></td><td lang="az">Bağlanılır...</td><td lang="ru">Подключаемся...</td><td lang="en">Connecting...</td></tr>
+<tr><td><code>online-room-status-created</code></td><td lang="az">Otaq yaradılır...</td><td lang="ru">Создаём комнату...</td><td lang="en">Creating room...</td></tr>
+<tr><td><code>online-room-status-error</code></td><td lang="az">Xəta</td><td lang="ru">Ошибка</td><td lang="en">Error</td></tr>
+<tr><td><code>online-room-status-joined</code></td><td lang="az">Qoşuldunuz. Otaq dolana qədər gözləyin</td><td lang="ru">Подключено. Ждём заполнения комнаты</td><td lang="en">Connected. Waiting for the room to fill</td></tr>
+<tr><td><code>online-room-status-ready</code></td><td lang="az">Otaq hazırdır</td><td lang="ru">Комната готова</td><td lang="en">Room is ready</td></tr>
+<tr><td><code>online-room-status-waiting</code></td><td lang="az">Oyunçular gözlənilir</td><td lang="ru">Ждём игроков</td><td lang="en">Waiting for players</td></tr>
+<tr><td><code>online-room-summary</code></td><td lang="az">{humans} + {bots}, cəmi {total}</td><td lang="ru">{humans} + {bots}, всего {total}</td><td lang="en">{humans} + {bots}, {total} total</td></tr>
+<tr><td><code>online-waiting-slot</code></td><td lang="az">{index}. oyunçu gözlənilir</td><td lang="ru">Ожидаем игрока {index}</td><td lang="en">Waiting for player {index}</td></tr>
+<tr><td><code>online-you</code></td><td lang="az">siz</td><td lang="ru">вы</td><td lang="en">you</td></tr>
+<tr><td><code>open-room-closed-return</code></td><td lang="az">Otaq bağlandı. Açıq otaqlara qaytarıldınız.</td><td lang="ru">Комната закрыта. Вы возвращены в открытые комнаты.</td><td lang="en">Room closed. You were returned to open rooms.</td></tr>
+<tr><td><code>open-room-host-left</code></td><td lang="az">Host otaqdan çıxdı. Açıq otaqlara qaytarıldınız.</td><td lang="ru">Создатель вышел из комнаты. Вы возвращены в открытые комнаты.</td><td lang="en">The host left the room. You were returned to open rooms.</td></tr>
+<tr><td><code>open-room-waiting-title</code></td><td lang="az">Oyunçuları gözləyirik...</td><td lang="ru">Ожидаем остальных игроков...</td><td lang="en">Waiting for players...</td></tr>
+<tr><td><code>open-rooms-back</code></td><td lang="az">Geri</td><td lang="ru">Назад</td><td lang="en">Back</td></tr>
+<tr><td><code>open-rooms-button</code></td><td lang="az">Açıq otaqlar</td><td lang="ru">Открытые комнаты</td><td lang="en">Open rooms</td></tr>
+<tr><td><code>open-rooms-close</code></td><td lang="az">Bağla</td><td lang="ru">Закрыть</td><td lang="en">Close</td></tr>
+<tr><td><code>open-rooms-create</code></td><td lang="az">Yarat</td><td lang="ru">Создать</td><td lang="en">Create</td></tr>
+<tr><td><code>open-rooms-desc</code></td><td lang="az">Mövcud otaqlara qoşulun və ya otaq yaradın.</td><td lang="ru">Подключитесь к существующей комнате или создайте новую.</td><td lang="en">Join an existing room or create one.</td></tr>
+<tr><td><code>open-rooms-join</code></td><td lang="az">Qoşul</td><td lang="ru">Подключиться</td><td lang="en">Join</td></tr>
+<tr><td><code>open-rooms-kicker</code></td><td lang="az">Onlayn</td><td lang="ru">Онлайн</td><td lang="en">Online</td></tr>
+<tr><td><code>open-rooms-search-placeholder</code></td><td lang="az">Otaq kodu və ya oyunçu adı ilə axtar</td><td lang="ru">Поиск по коду комнаты или имени игрока</td><td lang="en">Search by room code or player name</td></tr>
+<tr><td><code>open-rooms-title</code></td><td lang="az">Açıq otaqlar</td><td lang="ru">Открытые комнаты</td><td lang="en">Open rooms</td></tr>
+<tr><td><code>out-suffix</code></td><td lang="az">çıxdı!</td><td lang="ru">вышел!</td><td lang="en">went out!</td></tr>
+<tr><td><code>placeholder-player-name</code></td><td lang="az">Adınızı daxil edin</td><td lang="ru">Введите имя</td><td lang="en">Enter your name</td></tr>
+<tr><td><code>play-invite-label</code></td><td lang="az">Oyun dəvəti</td><td lang="ru">Приглашение в игру</td><td lang="en">Play invitation</td></tr>
+<tr><td><code>player-profile-add-friend</code></td><td lang="az">Dost et</td><td lang="ru">Добавить в друзья</td><td lang="en">Add friend</td></tr>
+<tr><td><code>player-profile-block</code></td><td lang="az">Blok et</td><td lang="ru">Заблокировать</td><td lang="en">Block</td></tr>
+<tr><td><code>player-profile-block-failed</code></td><td lang="az">Bloklama alınmadı</td><td lang="ru">Не удалось заблокировать игрока</td><td lang="en">Could not block user</td></tr>
+<tr><td><code>player-profile-blocked</code></td><td lang="az">İstifadəçi bloklandı</td><td lang="ru">Игрок заблокирован</td><td lang="en">User blocked</td></tr>
+<tr><td><code>player-profile-blocked-both</code></td><td lang="az">Hər iki tərəf bloklanıb</td><td lang="ru">Блокировка с обеих сторон</td><td lang="en">Blocked on both sides</td></tr>
+<tr><td><code>player-profile-blocked-by-you</code></td><td lang="az">Siz tərəfindən bloklanıb</td><td lang="ru">Заблокирован вами</td><td lang="en">Blocked by you</td></tr>
+<tr><td><code>player-profile-blocked-you</code></td><td lang="az">Sizi bloklayıb</td><td lang="ru">Заблокировал вас</td><td lang="en">Blocked you</td></tr>
+<tr><td><code>player-profile-bot</code></td><td lang="az">Bot</td><td lang="ru">Бот</td><td lang="en">Bot</td></tr>
+<tr><td><code>player-profile-friend-added</code></td><td lang="az">Dost əlavə olundu</td><td lang="ru">Друг добавлен</td><td lang="en">Friend added</td></tr>
+<tr><td><code>player-profile-friend-pending</code></td><td lang="az">Sorğu göndərildi</td><td lang="ru">Запрос отправлен</td><td lang="en">Request pending</td></tr>
+<tr><td><code>player-profile-invite-unavailable</code></td><td lang="az">Dəvət üçün otağa qoşul və ya otaq yarat</td><td lang="ru">Подключитесь к комнате или создайте её, чтобы пригласить</td><td lang="en">Join or create a room to invite</td></tr>
+<tr><td><code>player-profile-load-failed</code></td><td lang="az">Profil yüklənmədi</td><td lang="ru">Не удалось загрузить профиль</td><td lang="en">Could not load profile</td></tr>
+<tr><td><code>player-profile-login-required</code></td><td lang="az">Mesaj göndərmək üçün hesaba daxil olun</td><td lang="ru">Войдите, чтобы отправить сообщение</td><td lang="en">Sign in to send a message</td></tr>
+<tr><td><code>player-profile-message</code></td><td lang="az">Mesaj</td><td lang="ru">Сообщение</td><td lang="en">Message</td></tr>
+<tr><td><code>player-profile-message-disabled</code></td><td lang="az">Mesaj göndərmək üçün hesaba daxil olun</td><td lang="ru">Войдите, чтобы отправить сообщение</td><td lang="en">Sign in to send a message</td></tr>
+<tr><td><code>player-profile-message-empty</code></td><td lang="az">Hələ mesaj yoxdur</td><td lang="ru">Сообщений пока нет</td><td lang="en">No messages yet</td></tr>
+<tr><td><code>player-profile-message-failed</code></td><td lang="az">Mesaj göndərilmədi</td><td lang="ru">Не удалось отправить сообщение</td><td lang="en">Could not send message</td></tr>
+<tr><td><code>player-profile-message-label</code></td><td lang="az">Mesaj</td><td lang="ru">Сообщение</td><td lang="en">Message</td></tr>
+<tr><td><code>player-profile-message-placeholder</code></td><td lang="az">Qısa mesaj yazın</td><td lang="ru">Напишите короткое сообщение</td><td lang="en">Write a short message</td></tr>
+<tr><td><code>player-profile-message-sent</code></td><td lang="az">Mesaj göndərildi</td><td lang="ru">Сообщение отправлено</td><td lang="en">Message sent</td></tr>
+<tr><td><code>player-profile-open</code></td><td lang="az">Profili aç</td><td lang="ru">Открыть профиль</td><td lang="en">Open profile</td></tr>
+<tr><td><code>player-profile-report</code></td><td lang="az">Şikayət et</td><td lang="ru">Пожаловаться</td><td lang="en">Report</td></tr>
+<tr><td><code>player-profile-request-cancel</code></td><td lang="az">Ləğv et</td><td lang="ru">Отмена</td><td lang="en">Cancel</td></tr>
+<tr><td><code>player-profile-request-outgoing</code></td><td lang="az">Sorğu göndərildi</td><td lang="ru">Запрос отправлен</td><td lang="en">Request sent</td></tr>
+<tr><td><code>player-profile-self</code></td><td lang="az">Bu sizsiniz</td><td lang="ru">Это вы</td><td lang="en">This is you</td></tr>
+<tr><td><code>player-profile-send</code></td><td lang="az">Göndər</td><td lang="ru">Отправить</td><td lang="en">Send</td></tr>
+<tr><td><code>player-profile-status-ready</code></td><td lang="az">Hazırdır</td><td lang="ru">Готово</td><td lang="en">Ready</td></tr>
+<tr><td><code>player-profile-title</code></td><td lang="az">Oyunçu profili</td><td lang="ru">Профиль игрока</td><td lang="en">Player profile</td></tr>
+<tr><td><code>player-profile-unblock</code></td><td lang="az">Bloku sil</td><td lang="ru">Разблокировать</td><td lang="en">Unblock</td></tr>
+<tr><td><code>player-profile-unblocked</code></td><td lang="az">Blok silindi</td><td lang="ru">Блокировка снята</td><td lang="en">Block removed</td></tr>
+<tr><td><code>player-report-category-avatar</code></td><td lang="az">Avatar</td><td lang="ru">Аватар</td><td lang="en">Avatar</td></tr>
+<tr><td><code>player-report-category-chat</code></td><td lang="az">Çat</td><td lang="ru">Чат</td><td lang="en">Chat</td></tr>
+<tr><td><code>player-report-category-label</code></td><td lang="az">Kateqoriya</td><td lang="ru">Категория</td><td lang="en">Category</td></tr>
+<tr><td><code>player-report-category-other</code></td><td lang="az">Digər</td><td lang="ru">Другое</td><td lang="en">Other</td></tr>
+<tr><td><code>player-report-category-voice</code></td><td lang="az">Səs</td><td lang="ru">Голос</td><td lang="en">Voice</td></tr>
+<tr><td><code>player-report-desc</code></td><td lang="az">Nə baş verdiyini yazın.</td><td lang="ru">Расскажите, что произошло.</td><td lang="en">Tell us what happened.</td></tr>
+<tr><td><code>player-report-failed</code></td><td lang="az">Şikayət göndərilə bilmədi</td><td lang="ru">Не удалось отправить жалобу</td><td lang="en">Could not send report</td></tr>
+<tr><td><code>player-report-kicker</code></td><td lang="az">Moderasiya</td><td lang="ru">Модерация</td><td lang="en">Moderation</td></tr>
+<tr><td><code>player-report-message-label</code></td><td lang="az">Səbəb</td><td lang="ru">Причина</td><td lang="en">Reason</td></tr>
+<tr><td><code>player-report-message-placeholder</code></td><td lang="az">Qısa səbəb yazın</td><td lang="ru">Коротко опишите причину</td><td lang="en">Write a short reason</td></tr>
+<tr><td><code>player-report-required</code></td><td lang="az">Zəhmət olmasa səbəbi yazın.</td><td lang="ru">Укажите причину.</td><td lang="en">Please enter a reason.</td></tr>
+<tr><td><code>player-report-send</code></td><td lang="az">Şikayəti göndər</td><td lang="ru">Отправить жалобу</td><td lang="en">Send report</td></tr>
+<tr><td><code>player-report-sent</code></td><td lang="az">Şikayət göndərildi</td><td lang="ru">Жалоба отправлена</td><td lang="en">Report sent</td></tr>
+<tr><td><code>player-report-title</code></td><td lang="az">Oyunçunu şikayət et</td><td lang="ru">Пожаловаться на игрока</td><td lang="en">Report player</td></tr>
+<tr><td><code>presence-in-game</code></td><td lang="az">Oyunda</td><td lang="ru">В игре</td><td lang="en">In game</td></tr>
+<tr><td><code>presence-offline</code></td><td lang="az">Oflayn</td><td lang="ru">Не в сети</td><td lang="en">Offline</td></tr>
+<tr><td><code>presence-online</code></td><td lang="az">Onlayn</td><td lang="ru">В сети</td><td lang="en">Online</td></tr>
+<tr><td><code>profile-title</code></td><td lang="az">Profil</td><td lang="ru">Профиль</td><td lang="en">Profile</td></tr>
+<tr><td><code>quit-confirm-free</code></td><td lang="az">Bu oyundan çıxsanız, cari gedişat silinəcək. Davam edirsiniz?</td><td lang="ru">Если вы выйдете сейчас, текущий прогресс будет потерян. Продолжить?</td><td lang="en">If you quit now, the current game progress will be lost. Continue?</td></tr>
+<tr><td><code>quit-confirm-stake</code></td><td lang="az">Bu oyundan çıxsanız, cari gedişat silinəcək və bu partiya məğlubiyyət kimi sayılacaq. Davam edirsiniz?</td><td lang="ru">Если вы выйдете сейчас, текущая игра будет потеряна и этот матч на монеты засчитается как поражение. Продолжить?</td><td lang="en">If you quit now, the current game will be lost and this coin match will count as a defeat. Continue?</td></tr>
+<tr><td><code>registration-failed</code></td><td lang="az">Qeydiyyat alınmadı</td><td lang="ru">Не удалось зарегистрироваться</td><td lang="en">Registration failed</td></tr>
+<tr><td><code>result-summary-ffa-bonus</code></td><td lang="az">Qalib +{bonus} xal qazanır</td><td lang="ru">Победитель получает +{bonus}</td><td lang="en">Winner gets +{bonus}</td></tr>
+<tr><td><code>result-summary-fish</code></td><td lang="az">Bağlandı! Ən az xalı olan {player} qazandı</td><td lang="ru">Рыба! Победил {player} с меньшим остатком</td><td lang="en">Fish! {player} won with fewer points</td></tr>
+<tr><td><code>result-summary-gosha</code></td><td lang="az">{count} daş birdən oynanıldı</td><td lang="ru">{count} камня сыграны сразу</td><td lang="en">{count} tiles played at once</td></tr>
+<tr><td><code>result-summary-gosha-few</code></td><td lang="az">—</td><td lang="ru">{count} камня сыграны сразу</td><td lang="en">—</td></tr>
+<tr><td><code>result-summary-gosha-many</code></td><td lang="az">—</td><td lang="ru">{count} камней сыграны сразу</td><td lang="en">—</td></tr>
+<tr><td><code>result-summary-gosha-one</code></td><td lang="az">{count} daş birdən oynanıldı</td><td lang="ru">{count} камень сыгран сразу</td><td lang="en">{count} tile played at once</td></tr>
+<tr><td><code>result-summary-gosha-other</code></td><td lang="az">{count} daş birdən oynanıldı</td><td lang="ru">{count} камня сыграны сразу</td><td lang="en">{count} tiles played at once</td></tr>
+<tr><td><code>result-summary-gosha-title</code></td><td lang="az">{player} oyunu Qoşa ilə bağladı</td><td lang="ru">{player} закрыл игру Гошей</td><td lang="en">{player} closed with Gosha</td></tr>
+<tr><td><code>result-summary-out</code></td><td lang="az">{player} birinci çıxdı</td><td lang="ru">{player} вышел первым</td><td lang="en">{player} went out first</td></tr>
+<tr><td><code>result-summary-team-bonus</code></td><td lang="az">{team} komandası +{bonus} xal qazanır</td><td lang="ru">Команда {team} получает +{bonus}</td><td lang="en">Team {team} gets +{bonus}</td></tr>
+<tr><td><code>resume-session-return</code></td><td lang="az">Oyuna qayıt</td><td lang="ru">Вернуться в игру</td><td lang="en">Return to game</td></tr>
+<tr><td><code>retry-sending</code></td><td lang="az">Yenidən göndər</td><td lang="ru">Отправить повторно</td><td lang="en">Retry sending</td></tr>
+<tr><td><code>review-mode-tip</code></td><td lang="az">Nəticələrə qayıtmaq üçün ekrana toxunun</td><td lang="ru">Нажмите в любое место, чтобы вернуть результаты</td><td lang="en">Click anywhere to return to results</td></tr>
+<tr><td><code>review-toggle-title</code></td><td lang="az">Masanı göstər/gizlət</td><td lang="ru">Показать/скрыть стол</td><td lang="en">Show/hide board</td></tr>
+<tr><td><code>rewarded-attempt-label</code></td><td lang="az">Bonus günü</td><td lang="ru">День бонуса</td><td lang="en">Bonus day</td></tr>
+<tr><td><code>rewarded-attempt-option</code></td><td lang="az">{date} · +{amount} · cəhd {number}</td><td lang="ru">{date} · +{amount} · попытка {number}</td><td lang="en">{date} · +{amount} · attempt {number}</td></tr>
+<tr><td><code>rewarded-cancelled</code></td><td lang="az">Baxış dayandırıldı. Adi bonus saxlanıldı.</td><td lang="ru">Просмотр остановлен. Обычный бонус сохранён.</td><td lang="en">Viewing stopped. Your regular bonus is safe.</td></tr>
+<tr><td><code>rewarded-check</code></td><td lang="az">Bonusu yoxla</td><td lang="ru">Проверить начисление</td><td lang="en">Check bonus</td></tr>
+<tr><td><code>rewarded-checking</code></td><td lang="az">Təsdiq yoxlanılır…</td><td lang="ru">Проверяем подтверждение…</td><td lang="en">Checking confirmation…</td></tr>
+<tr><td><code>rewarded-close</code></td><td lang="az">Bağla</td><td lang="ru">Закрыть</td><td lang="en">Close</td></tr>
+<tr><td><code>rewarded-credited</code></td><td lang="az">Əlavə bonus hesaba köçürüldü.</td><td lang="ru">Дополнительный бонус начислен.</td><td lang="en">Extra bonus credited.</td></tr>
+<tr><td><code>rewarded-expired</code></td><td lang="az">Gözləmə müddəti bitdi. Adi bonus saxlanıldı.</td><td lang="ru">Срок ожидания истёк. Обычный бонус сохранён.</td><td lang="en">The waiting period has ended. Your regular bonus is safe.</td></tr>
+<tr><td><code>rewarded-idle</code></td><td lang="az">Adi bonus alındı. Əlavə bonus üçün reklama baxa bilərsiniz.</td><td lang="ru">Обычный бонус получен. Можно посмотреть рекламу для дополнительного бонуса.</td><td lang="en">Regular bonus received. Watch an ad for an extra bonus if you wish.</td></tr>
+<tr><td><code>rewarded-not-eligible</code></td><td lang="az">Əlavə bonus hazırda mövcud deyil.</td><td lang="ru">Дополнительный бонус сейчас недоступен.</td><td lang="en">The extra bonus is currently unavailable.</td></tr>
+<tr><td><code>rewarded-pending</code></td><td lang="az">Baxışın təsdiqini gözləyirik. Pəncərəni bağlayıb sonra yoxlaya bilərsiniz.</td><td lang="ru">Ждём подтверждения просмотра. Можно закрыть окно и проверить позже.</td><td lang="en">Waiting for viewing confirmation. You can close this panel and check later.</td></tr>
+<tr><td><code>rewarded-recovering</code></td><td lang="az">Əvvəlki bonuslar yoxlanılır…</td><td lang="ru">Проверяем предыдущие бонусы…</td><td lang="en">Checking previous bonuses…</td></tr>
+<tr><td><code>rewarded-showing</code></td><td lang="az">Reklam ekranı açıqdır…</td><td lang="ru">Открыт экран рекламы…</td><td lang="en">Ad screen is open…</td></tr>
+<tr><td><code>rewarded-sign-in</code></td><td lang="az">Bonusu yoxlamaq üçün hesabınıza daxil olun.</td><td lang="ru">Войдите в аккаунт, чтобы проверить бонус.</td><td lang="en">Sign in to check your bonus.</td></tr>
+<tr><td><code>rewarded-start</code></td><td lang="az">Reklama bax</td><td lang="ru">Смотреть рекламу</td><td lang="en">Watch ad</td></tr>
+<tr><td><code>rewarded-starting</code></td><td lang="az">Reklam hazırlanır…</td><td lang="ru">Готовим просмотр…</td><td lang="en">Preparing the ad…</td></tr>
+<tr><td><code>rewarded-title</code></td><td lang="az">Bonusun ikiqat artırılması</td><td lang="ru">Удвоение бонуса</td><td lang="en">Double your bonus</td></tr>
+<tr><td><code>rewarded-unavailable</code></td><td lang="az">Yoxlama müvəqqəti mümkün deyil. Adi bonus saxlanıldı.</td><td lang="ru">Проверка временно недоступна. Обычный бонус сохранён.</td><td lang="en">Checking is temporarily unavailable. Your regular bonus is safe.</td></tr>
+<tr><td><code>rewarded-wallet-sync</code></td><td lang="az">Bonus təsdiqləndi. Balansı yeniləmək üçün yenidən yoxlayın.</td><td lang="ru">Бонус подтверждён. Проверьте ещё раз, чтобы обновить баланс.</td><td lang="en">Bonus confirmed. Check again to refresh your balance.</td></tr>
+<tr><td><code>rights-reserved</code></td><td lang="az">Bütün hüquqlar qorunur</td><td lang="ru">Все права защищены</td><td lang="en">All rights reserved</td></tr>
+<tr><td><code>room-bot-count</code></td><td lang="az">{count} bot</td><td lang="ru">{count} ботов</td><td lang="en">{count} bots</td></tr>
+<tr><td><code>room-bot-count-few</code></td><td lang="az">—</td><td lang="ru">{count} бота</td><td lang="en">—</td></tr>
+<tr><td><code>room-bot-count-many</code></td><td lang="az">—</td><td lang="ru">{count} ботов</td><td lang="en">—</td></tr>
+<tr><td><code>room-bot-count-one</code></td><td lang="az">{count} bot</td><td lang="ru">{count} бот</td><td lang="en">{count} bot</td></tr>
+<tr><td><code>room-bot-count-other</code></td><td lang="az">{count} bot</td><td lang="ru">{count} бота</td><td lang="en">{count} bots</td></tr>
+<tr><td><code>room-closed-auth-required</code></td><td lang="az">Coin otaqları üçün qeydiyyatdan keçmiş hesab tələb olunur.</td><td lang="ru">Для комнат с монетами нужен зарегистрированный аккаунт.</td><td lang="en">Registered accounts are required for coin tables.</td></tr>
+<tr><td><code>room-closed-game-mode-mismatch</code></td><td lang="az">Otaq başqa rejimdə bağlandı</td><td lang="ru">Комната в другом режиме закрыта</td><td lang="en">Room closed - different game mode</td></tr>
+<tr><td><code>room-closed-insufficient-coins</code></td><td lang="az">Növbəti raund üçün monet çatmır.</td><td lang="ru">Недостаточно монет для следующего раунда.</td><td lang="en">Not enough coins for the next round.</td></tr>
+<tr><td><code>room-closed-player-left</code></td><td lang="az">{player} oyundan çıxdı. Otaq bağlandı.</td><td lang="ru">{player} вышел из матча. Комната закрыта.</td><td lang="en">{player} left the match. Room closed.</td></tr>
+<tr><td><code>room-closed-session-expired</code></td><td lang="az">Sessiyanın vaxtı bitdi. Yeni otaq başladın.</td><td lang="ru">Сессия истекла. Создайте новую комнату.</td><td lang="en">Session expired. Please start a new room.</td></tr>
+<tr><td><code>room-closed-stake-unavailable</code></td><td lang="az">Mərc masası əlçatan deyil. Otaq bağlandı.</td><td lang="ru">Стол ставок недоступен. Комната закрыта.</td><td lang="en">Stake table unavailable. Room closed.</td></tr>
+<tr><td><code>room-free</code></td><td lang="az">Pulsuz</td><td lang="ru">Бесплатно</td><td lang="en">Free</td></tr>
+<tr><td><code>room-free-for-all</code></td><td lang="az">Hamı hər kəsə</td><td lang="ru">Все против всех</td><td lang="en">Free for all</td></tr>
+<tr><td><code>room-human-count</code></td><td lang="az">{count} oyunçu</td><td lang="ru">{count} игроков</td><td lang="en">{count} players</td></tr>
+<tr><td><code>room-human-count-few</code></td><td lang="az">—</td><td lang="ru">{count} игрока</td><td lang="en">—</td></tr>
+<tr><td><code>room-human-count-many</code></td><td lang="az">—</td><td lang="ru">{count} игроков</td><td lang="en">—</td></tr>
+<tr><td><code>room-human-count-one</code></td><td lang="az">{count} oyunçu</td><td lang="ru">{count} игрок</td><td lang="en">{count} player</td></tr>
+<tr><td><code>room-human-count-other</code></td><td lang="az">{count} oyunçu</td><td lang="ru">{count} игрока</td><td lang="en">{count} players</td></tr>
+<tr><td><code>room-invites-title</code></td><td lang="az">Otaq dəvətləri</td><td lang="ru">Приглашения в комнаты</td><td lang="en">Room invites</td></tr>
+<tr><td><code>room-join</code></td><td lang="az">Qoşul</td><td lang="ru">Подключиться</td><td lang="en">Join</td></tr>
+<tr><td><code>room-open</code></td><td lang="az">Açıq</td><td lang="ru">Открытая</td><td lang="en">Open</td></tr>
+<tr><td><code>room-players-label</code></td><td lang="az">Oyunçular</td><td lang="ru">Игроки</td><td lang="en">Players</td></tr>
+<tr><td><code>room-seat-empty</code></td><td lang="az">Boş yer</td><td lang="ru">Свободное место</td><td lang="en">Empty seat</td></tr>
+<tr><td><code>room-seat-invite</code></td><td lang="az">Dəvət et</td><td lang="ru">Пригласить</td><td lang="en">Invite</td></tr>
+<tr><td><code>room-stake-label</code></td><td lang="az">Mərc</td><td lang="ru">Ставка</td><td lang="en">Stake</td></tr>
+<tr><td><code>room-visibility-closed</code></td><td lang="az">Bağlı otaq</td><td lang="ru">Закрытая комната</td><td lang="en">Closed room</td></tr>
+<tr><td><code>room-visibility-open</code></td><td lang="az">Açıq otaq</td><td lang="ru">Открытая комната</td><td lang="en">Open room</td></tr>
+<tr><td><code>room-waiting-more-players</code></td><td lang="az">Yeni oyunçu qoşulana qədər gözlənilir</td><td lang="ru">Ждём, пока присоединятся игроки</td><td lang="en">Waiting for more players to join</td></tr>
+<tr><td><code>room-waiting-open</code></td><td lang="az">Açıq otaq gözləyir: {joined}/{seats}</td><td lang="ru">Открытая комната: {joined}/{seats}</td><td lang="en">Open room waiting: {joined}/{seats}</td></tr>
+<tr><td><code>room-waiting-player</code></td><td lang="az">Gözlənilir {index}</td><td lang="ru">Ожидаем {index}</td><td lang="en">Waiting {index}</td></tr>
+<tr><td><code>round-end-next</code></td><td lang="az">Davam et</td><td lang="ru">Продолжить</td><td lang="en">Continue</td></tr>
+<tr><td><code>rule-match</code></td><td lang="az">365 xal · 3 raund</td><td lang="ru">365 очков · 3 раунда</td><td lang="en">365 points · 3 rounds</td></tr>
+<tr><td><code>rule-telephone</code></td><td lang="az">Telefon · [3|2]</td><td lang="ru">Телефон · [3|2]</td><td lang="en">Telephone · [3|2]</td></tr>
+<tr><td><code>screen-copyright</code></td><td lang="az">Bütün hüquqlar qorunur © SimpleSoft - Domino ver 1.33</td><td lang="ru">Все права защищены © SimpleSoft - Domino ver 1.33</td><td lang="en">All rights reserved © SimpleSoft - Domino ver 1.33</td></tr>
+<tr><td><code>search-name-hint</code></td><td lang="az">Ad yazın və axtarın</td><td lang="ru">Введите имя для поиска</td><td lang="en">Type a name to search</td></tr>
+<tr><td><code>search-no-results</code></td><td lang="az">Nəticə tapılmadı</td><td lang="ru">Игроки не найдены</td><td lang="en">No players found</td></tr>
+<tr><td><code>seat-bot</code></td><td lang="az">Bot</td><td lang="ru">Бот</td><td lang="en">Bot</td></tr>
+<tr><td><code>seat-choose</code></td><td lang="az">Seç</td><td lang="ru">Выбрать</td><td lang="en">Choose</td></tr>
+<tr><td><code>seat-free</code></td><td lang="az">Boş</td><td lang="ru">Свободно</td><td lang="en">Free</td></tr>
+<tr><td><code>seat-host</code></td><td lang="az">Otağı yaradan</td><td lang="ru">Создатель комнаты</td><td lang="en">Host</td></tr>
+<tr><td><code>seat-opponent</code></td><td lang="az">Rəqib</td><td lang="ru">Соперник</td><td lang="en">Opponent</td></tr>
+<tr><td><code>seat-opposite-seat</code></td><td lang="az">Qarşısındakı yer {seat}</td><td lang="ru">Напротив места {seat}</td><td lang="en">Opposite Seat {seat}</td></tr>
+<tr><td><code>seat-partner</code></td><td lang="az">{player} tərəfdaşı</td><td lang="ru">Напарник {player}</td><td lang="en">Partner of {player}</td></tr>
+<tr><td><code>seat-partner-host</code></td><td lang="az">Otağı yaradanın tərəfdaşı</td><td lang="ru">Напарник создателя комнаты</td><td lang="en">Host partner</td></tr>
+<tr><td><code>seat-prefix</code></td><td lang="az">Yer</td><td lang="ru">Место</td><td lang="en">Seat</td></tr>
+<tr><td><code>seat-selected</code></td><td lang="az">{player} üçün {seat} nömrəli yer seçildi</td><td lang="ru">{player} занял место {seat}</td><td lang="en">{player} took Seat {seat}</td></tr>
+<tr><td><code>seat-selection-desc</code></td><td lang="az">Oyun başlamazdan əvvəl boş yer seçin. Yer 1 həmişə otağı yaradan üçündür.</td><td lang="ru">Перед началом выберите свободное место. Место 1 закреплено за создателем комнаты.</td><td lang="en">Pick a free seat before the game starts. Seat 1 is always the host.</td></tr>
+<tr><td><code>seat-selection-required</code></td><td lang="az">Oyun başlamazdan əvvəl yerləri seçin</td><td lang="ru">Выберите места перед стартом</td><td lang="en">Choose seats before the game starts</td></tr>
+<tr><td><code>seat-selection-status</code></td><td lang="az">{seated}/{total} yer seçilib</td><td lang="ru">Занято мест: {seated}/{total}</td><td lang="en">{seated}/{total} seats taken</td></tr>
+<tr><td><code>seat-selection-title</code></td><td lang="az">Oturacağınız yeri seçin</td><td lang="ru">Выберите место</td><td lang="en">Choose your seat</td></tr>
+<tr><td><code>seat-sit-here</code></td><td lang="az">Burada otur</td><td lang="ru">Сесть сюда</td><td lang="en">Sit here</td></tr>
+<tr><td><code>seat-taken</code></td><td lang="az">Tutulub</td><td lang="ru">Занято</td><td lang="en">Occupied</td></tr>
+<tr><td><code>seat-team-a</code></td><td lang="az">Komanda A</td><td lang="ru">Команда A</td><td lang="en">Team A</td></tr>
+<tr><td><code>seat-team-b</code></td><td lang="az">Komanda B</td><td lang="ru">Команда B</td><td lang="en">Team B</td></tr>
+<tr><td><code>seat-your-seat</code></td><td lang="az">Sizin yeriniz</td><td lang="ru">Ваше место</td><td lang="en">Your seat</td></tr>
+<tr><td><code>sending-attachment</code></td><td lang="az">Şəkil göndərilir…</td><td lang="ru">Отправляем фото…</td><td lang="en">Sending photo…</td></tr>
+<tr><td><code>session-access-ended</code></td><td lang="az">Onlayn bağlantı bağlandı. Yenidən qoşulmaq üçün hesabınıza daxil olun.</td><td lang="ru">Онлайн-соединение закрыто. Войдите в аккаунт, чтобы подключиться снова.</td><td lang="en">Online connection closed. Sign in again to reconnect.</td></tr>
+<tr><td><code>session-not-found</code></td><td lang="az">Sessiya tapılmadı</td><td lang="ru">Сессия не найдена</td><td lang="en">Session not found</td></tr>
+<tr><td><code>session-restore-failed</code></td><td lang="az">Sessiyanı bərpa etmək olmadı</td><td lang="ru">Не удалось восстановить сессию</td><td lang="en">Could not restore the session</td></tr>
+<tr><td><code>social-badge-label</code></td><td lang="az">Oxunmamış bildirişlər</td><td lang="ru">Непрочитанные уведомления</td><td lang="en">Unread notifications</td></tr>
+<tr><td><code>social-close</code></td><td lang="az">Bağla</td><td lang="ru">Закрыть</td><td lang="en">Close</td></tr>
+<tr><td><code>social-empty</code></td><td lang="az">Hələ məlumat yoxdur</td><td lang="ru">Пока здесь пусто</td><td lang="en">Nothing here yet</td></tr>
+<tr><td><code>social-error</code></td><td lang="az">Xəta</td><td lang="ru">Ошибка</td><td lang="en">Error</td></tr>
+<tr><td><code>social-loading</code></td><td lang="az">Yüklənir...</td><td lang="ru">Загрузка...</td><td lang="en">Loading...</td></tr>
+<tr><td><code>social-open</code></td><td lang="az">Mesajlar</td><td lang="ru">Сообщения</td><td lang="en">Messages</td></tr>
+<tr><td><code>social-subtitle</code></td><td lang="az">Mesajları, dəvətləri və dostları bir yerdə idarə et.</td><td lang="ru">Сообщения, приглашения и друзья в одном месте.</td><td lang="en">Manage messages, invites, and friends in one place.</td></tr>
+<tr><td><code>social-tab-chats</code></td><td lang="az">Söhbətlər</td><td lang="ru">Диалоги</td><td lang="en">Chats</td></tr>
+<tr><td><code>social-tab-friends</code></td><td lang="az">Dostlar</td><td lang="ru">Друзья</td><td lang="en">Friends</td></tr>
+<tr><td><code>social-tab-inbox</code></td><td lang="az">Gələnlər</td><td lang="ru">Входящие</td><td lang="en">Inbox</td></tr>
+<tr><td><code>social-tab-invites</code></td><td lang="az">Dəvətlər</td><td lang="ru">Приглашения</td><td lang="en">Invites</td></tr>
+<tr><td><code>social-tab-mail</code></td><td lang="az">Poçt</td><td lang="ru">Почта</td><td lang="en">Mail</td></tr>
+<tr><td><code>social-title</code></td><td lang="az">Mesajlar</td><td lang="ru">Сообщения</td><td lang="en">Messages</td></tr>
+<tr><td><code>social-unread</code></td><td lang="az">Oxunmamış bildirişlər</td><td lang="ru">Непрочитанные уведомления</td><td lang="en">Unread notifications</td></tr>
+<tr><td><code>solo-modal-desc</code></td><td lang="az">Çətinlik, oyunçu sayı və qaydaları seçin.</td><td lang="ru">Выберите сложность, число игроков и правила матча.</td><td lang="en">Pick difficulty, players, and match rules.</td></tr>
+<tr><td><code>solo-modal-kicker</code></td><td lang="az">Tək oyun</td><td lang="ru">Одиночная</td><td lang="en">Solo</td></tr>
+<tr><td><code>solo-modal-title</code></td><td lang="az">Tək oyun</td><td lang="ru">Одиночная игра</td><td lang="en">Solo play</td></tr>
+<tr><td><code>sort-recent</code></td><td lang="az">Sıralama: Son aktivlik</td><td lang="ru">Сортировка: Недавние</td><td lang="en">Sort: Recent</td></tr>
+<tr><td><code>stage-ai-gosha</code></td><td lang="az">Bot Qoşa oynayır</td><td lang="ru">Бот играет Гошу</td><td lang="en">AI plays Gosha combo</td></tr>
+<tr><td><code>stage-ai-playing</code></td><td lang="az">Bot gediş edir</td><td lang="ru">Бот ходит</td><td lang="en">AI makes a move</td></tr>
+<tr><td><code>stage-ai-thinking</code></td><td lang="az">Bot düşünür…</td><td lang="ru">Бот думает…</td><td lang="en">AI is thinking...</td></tr>
+<tr><td><code>stage-counting</code></td><td lang="az">Xalların hesablanması...</td><td lang="ru">Подсчёт очков...</td><td lang="en">Counting points...</td></tr>
+<tr><td><code>stage-deal-start</code></td><td lang="az">Paylanma...</td><td lang="ru">Раздача карт...</td><td lang="en">Dealing tiles...</td></tr>
+<tr><td><code>stage-final-fish-subtitle</code></td><td lang="az">Qalıqların hesablanması</td><td lang="ru">Подсчёт остатков</td><td lang="en">Counting leftovers</td></tr>
+<tr><td><code>stage-final-fish-title</code></td><td lang="az">Bağlandı (Rıba)!</td><td lang="ru">Рыба!</td><td lang="en">Fish!</td></tr>
+<tr><td><code>stage-final-gosha-subtitle</code></td><td lang="az">{count} daş birdən oynanıldı</td><td lang="ru">{count} камня сыграны сразу</td><td lang="en">{count} tiles played at once</td></tr>
+<tr><td><code>stage-final-gosha-subtitle-few</code></td><td lang="az">—</td><td lang="ru">{count} камня сыграны сразу</td><td lang="en">—</td></tr>
+<tr><td><code>stage-final-gosha-subtitle-many</code></td><td lang="az">—</td><td lang="ru">{count} камней сыграны сразу</td><td lang="en">—</td></tr>
+<tr><td><code>stage-final-gosha-subtitle-one</code></td><td lang="az">{count} daş birdən oynanıldı</td><td lang="ru">{count} камень сыгран сразу</td><td lang="en">{count} tile played at once</td></tr>
+<tr><td><code>stage-final-gosha-subtitle-other</code></td><td lang="az">{count} daş birdən oynanıldı</td><td lang="ru">{count} камня сыграны сразу</td><td lang="en">{count} tiles played at once</td></tr>
+<tr><td><code>stage-final-gosha-title</code></td><td lang="az">{player} oyunu Qoşa ilə bağladı</td><td lang="ru">{player} закрыл игру Гошей</td><td lang="en">{player} closed with Gosha</td></tr>
+<tr><td><code>stage-final-instant-win-desc</code></td><td lang="az">{player} lazımi xalları topladı</td><td lang="ru">{player} набрал нужные очки</td><td lang="en">{player} reached the target score</td></tr>
+<tr><td><code>stage-final-instant-win-title</code></td><td lang="az">Dərhal qələbə</td><td lang="ru">Мгновенная победа</td><td lang="en">Instant Win</td></tr>
+<tr><td><code>stage-final-tile-subtitle</code></td><td lang="az">Raund bitdi</td><td lang="ru">Раунд окончен</td><td lang="en">Round over</td></tr>
+<tr><td><code>stage-final-tile-title</code></td><td lang="az">{player} son daşı qoydu</td><td lang="ru">{player} поставил последний камень</td><td lang="en">{player} played the last tile</td></tr>
+<tr><td><code>stage-kicker-ai</code></td><td lang="az">Botun gedişi</td><td lang="ru">Ход бота</td><td lang="en">AI turn</td></tr>
+<tr><td><code>stage-kicker-counting</code></td><td lang="az">Hesab</td><td lang="ru">Подсчёт</td><td lang="en">Counting</td></tr>
+<tr><td><code>stage-kicker-deal</code></td><td lang="az">Paylanma</td><td lang="ru">Раздача</td><td lang="en">Dealing</td></tr>
+<tr><td><code>stage-kicker-final</code></td><td lang="az">Son daş</td><td lang="ru">Последний камень</td><td lang="en">Last tile</td></tr>
+<tr><td><code>stage-kicker-opening</code></td><td lang="az">İlk gediş</td><td lang="ru">Первый ход</td><td lang="en">Opening move</td></tr>
+<tr><td><code>stage-kicker-your-turn</code></td><td lang="az">Sizin gedişiniz</td><td lang="ru">Ваш ход</td><td lang="en">Your turn</td></tr>
+<tr><td><code>stage-last-winner-starts</code></td><td lang="az">Əvvəlki oyunun qalibi başlayır</td><td lang="ru">Победитель прошлой раздачи начинает</td><td lang="en">Last deal winner starts</td></tr>
+<tr><td><code>stage-opening-ai</code></td><td lang="az">Bot başlayır</td><td lang="ru">Бот начинает</td><td lang="en">AI starts</td></tr>
+<tr><td><code>stage-opening-ai-desc</code></td><td lang="az">{player} başlayır</td><td lang="ru">{player} начинает</td><td lang="en">{player} starts</td></tr>
+<tr><td><code>stage-opening-reason-gosha</code></td><td lang="az">ən kiçik Qoşa</td><td lang="ru">минимальная Гоша</td><td lang="en">smallest Gosha</td></tr>
+<tr><td><code>stage-opening-reason-smallest</code></td><td lang="az">ən kiçik daş</td><td lang="ru">самый маленький камень</td><td lang="en">smallest tile</td></tr>
+<tr><td><code>stage-opening-required</code></td><td lang="az">{tile} ilə başlamalısınız</td><td lang="ru">Начать нужно с {tile}</td><td lang="en">Must start with {tile}</td></tr>
+<tr><td><code>stage-opening-required-title</code></td><td lang="az">Yanlış ilk gediş</td><td lang="ru">Неверный первый ход</td><td lang="en">Invalid first move</td></tr>
+<tr><td><code>stage-opening-turn</code></td><td lang="az">İlk gediş</td><td lang="ru">Первый ход</td><td lang="en">First Move</td></tr>
+<tr><td><code>stage-opening-turn-desc</code></td><td lang="az">İlk gediş: {player}</td><td lang="ru">Первый ход: {player}</td><td lang="en">First Move: {player}</td></tr>
+<tr><td><code>stage-opening-wait</code></td><td lang="az">İlk gediş gözlənilir</td><td lang="ru">Ожидание первого хода</td><td lang="en">Waiting for first move</td></tr>
+<tr><td><code>stage-opening-you</code></td><td lang="az">Siz başlayırsınız</td><td lang="ru">Вы начинаете</td><td lang="en">You start</td></tr>
+<tr><td><code>stage-player-turn</code></td><td lang="az">{player} oyunçunun gedişi</td><td lang="ru">Ход игрока {player}</td><td lang="en">{player}&#39;s turn</td></tr>
+<tr><td><code>stage-search-opening</code></td><td lang="az">İlk gediş axtarılır...</td><td lang="ru">Ищем первый ход...</td><td lang="en">Finding first move...</td></tr>
+<tr><td><code>stage-your-turn</code></td><td lang="az">Sizin gedişiniz</td><td lang="ru">Ваш ход</td><td lang="en">Your turn</td></tr>
+<tr><td><code>stake-table-all</code></td><td lang="az">Bütün mərc masaları</td><td lang="ru">Все столы ставок</td><td lang="en">All stake tables</td></tr>
+<tr><td><code>start-coin-shop</code></td><td lang="az">Coinlər</td><td lang="ru">Монеты</td><td lang="en">Coins</td></tr>
+<tr><td><code>start-lead</code></td><td lang="az">Təmiz başlanğıc, sürətli oyun və onlayn rejim bir yerdə.</td><td lang="ru">Чистое меню, быстрый старт и онлайн-игра на одной панели.</td><td lang="en">Clean setup, fast matches, and online play in one place.</td></tr>
+<tr><td><code>start-mode-rating</code></td><td lang="az">Reytinq · {mode}</td><td lang="ru">Рейтинг · {mode}</td><td lang="en">Rating · {mode}</td></tr>
+<tr><td><code>start-skin-shop</code></td><td lang="az">Skinlər</td><td lang="ru">Скины</td><td lang="en">Skins</td></tr>
+<tr><td><code>summary-coins</code></td><td lang="az">Coinlər</td><td lang="ru">Монеты</td><td lang="en">Coins</td></tr>
+<tr><td><code>summary-lost</code></td><td lang="az">İtirilən</td><td lang="ru">Потеряно</td><td lang="en">Lost</td></tr>
+<tr><td><code>summary-net</code></td><td lang="az">Fərq</td><td lang="ru">Итог</td><td lang="en">Net</td></tr>
+<tr><td><code>summary-title</code></td><td lang="az">Nəticə</td><td lang="ru">Итоги</td><td lang="en">Summary</td></tr>
+<tr><td><code>summary-won</code></td><td lang="az">Qazanılan</td><td lang="ru">Выиграно</td><td lang="en">Won</td></tr>
+<tr><td><code>system-mail-section</code></td><td lang="az">Sistem poçtu · mükafatlar · hədiyyələr</td><td lang="ru">Системная почта · награды · подарки</td><td lang="en">System mail · rewards · gifts</td></tr>
+<tr><td><code>team-a</code></td><td lang="az">Komanda A</td><td lang="ru">Команда A</td><td lang="en">Team A</td></tr>
+<tr><td><code>team-b</code></td><td lang="az">Komanda B</td><td lang="ru">Команда B</td><td lang="en">Team B</td></tr>
+<tr><td><code>third-party-licenses</code></td><td lang="az">Lisenziyalar və müəlliflər</td><td lang="ru">Лицензии и авторы</td><td lang="en">Licenses and authors</td></tr>
+<tr><td><code>timeout-forfeit-continue</code></td><td lang="az">Davam et</td><td lang="ru">Продолжить</td><td lang="en">Continue</td></tr>
+<tr><td><code>timeout-forfeit-continue-in-progress</code></td><td lang="az">Davam etdirilir...</td><td lang="ru">Продолжается...</td><td lang="en">Continuing...</td></tr>
+<tr><td><code>timeout-forfeit-countdown</code></td><td lang="az">Davam pəncərəsi</td><td lang="ru">Окно продолжения</td><td lang="en">Continue window</td></tr>
+<tr><td><code>timeout-forfeit-desc-loser</code></td><td lang="az">Raundu vaxt bitdiyi üçün uduzdun</td><td lang="ru">Вы проиграли раунд по таймауту</td><td lang="en">You lost the round by timeout</td></tr>
+<tr><td><code>timeout-forfeit-desc-waiting</code></td><td lang="az">{player} oyuna davam edəcəkmi, gözlənilir</td><td lang="ru">Ждём, продолжит ли {player} игру</td><td lang="en">Waiting to see whether {player} will continue</td></tr>
+<tr><td><code>timeout-forfeit-exit</code></td><td lang="az">Çıx</td><td lang="ru">Выйти</td><td lang="en">Exit</td></tr>
+<tr><td><code>timeout-forfeit-insufficient-balance</code></td><td lang="az">Kifayət qədər coin yoxdur</td><td lang="ru">Недостаточно монет</td><td lang="en">Not enough coins</td></tr>
+<tr><td><code>timeout-forfeit-room-closed</code></td><td lang="az">Otaq bağlandı</td><td lang="ru">Комната закрыта</td><td lang="en">Room closed</td></tr>
+<tr><td><code>timeout-forfeit-stake-unavailable</code></td><td lang="az">Mərc hazırda əlçatan deyil</td><td lang="ru">Ставка сейчас недоступна</td><td lang="en">Stake is unavailable right now</td></tr>
+<tr><td><code>timeout-forfeit-title</code></td><td lang="az">Vaxt bitdi</td><td lang="ru">Время вышло</td><td lang="en">Timeout forfeit</td></tr>
+<tr><td><code>timeout-forfeit-title-loser</code></td><td lang="az">Vaxtın bitdi</td><td lang="ru">Вы не успели сделать ход</td><td lang="en">You timed out</td></tr>
+<tr><td><code>timeout-forfeit-title-waiting</code></td><td lang="az">{player} vaxtında oynaya bilmədi</td><td lang="ru">{player} не успел сделать ход</td><td lang="en">{player} timed out</td></tr>
+<tr><td><code>timeout-forfeit-topup</code></td><td lang="az">Balansı artır</td><td lang="ru">Пополнить баланс</td><td lang="en">Top up balance</td></tr>
+<tr><td><code>timeout-forfeit-waiting-other</code></td><td lang="az">Davam qərarı gözlənilir</td><td lang="ru">Ждём решение о продолжении</td><td lang="en">Waiting for continue</td></tr>
+<tr><td><code>title-bronze</code></td><td lang="az">Bürünc</td><td lang="ru">Бронза</td><td lang="en">Bronze</td></tr>
+<tr><td><code>title-diamond</code></td><td lang="az">Almaz</td><td lang="ru">Бриллиант</td><td lang="en">Diamond</td></tr>
+<tr><td><code>title-gold</code></td><td lang="az">Qızıl</td><td lang="ru">Золото</td><td lang="en">Gold</td></tr>
+<tr><td><code>title-legend</code></td><td lang="az">Əfsanə</td><td lang="ru">Легенда</td><td lang="en">Legend</td></tr>
+<tr><td><code>title-master</code></td><td lang="az">Usta</td><td lang="ru">Мастер</td><td lang="en">Master</td></tr>
+<tr><td><code>title-platinum</code></td><td lang="az">Platin</td><td lang="ru">Платина</td><td lang="en">Platinum</td></tr>
+<tr><td><code>title-rookie</code></td><td lang="az">Yeni oyunçu</td><td lang="ru">Новичок</td><td lang="en">Rookie</td></tr>
+<tr><td><code>title-silver</code></td><td lang="az">Gümüş</td><td lang="ru">Серебро</td><td lang="en">Silver</td></tr>
+<tr><td><code>turn-postmove-capture</code></td><td lang="az">Goşa pəncərəsi • {seconds}s</td><td lang="ru">Окно гоши • {seconds}s</td><td lang="en">Gosha window • {seconds}s</td></tr>
+<tr><td><code>turn-timeout</code></td><td lang="az">{player} vaxtında oynamadı və raundu uduzdu</td><td lang="ru">{player} не успел сделать ход и проиграл раунд</td><td lang="en">{player} timed out and lost the round</td></tr>
+<tr><td><code>voice-denied</code></td><td lang="az">Mikrofon icazəsi alınmadı</td><td lang="ru">Доступ к микрофону запрещён</td><td lang="en">Microphone access denied</td></tr>
+<tr><td><code>voice-enable-sound</code></td><td lang="az">Səsi aktiv et</td><td lang="ru">Включить звук</td><td lang="en">Enable sound</td></tr>
+<tr><td><code>voice-hold-to-talk</code></td><td lang="az">Danışmaq üçün basıb saxlayın</td><td lang="ru">Нажмите и удерживайте, чтобы говорить</td><td lang="en">Hold to talk</td></tr>
+<tr><td><code>voice-listening-to</code></td><td lang="az">Eşidilir</td><td lang="ru">Слышно</td><td lang="en">Hearing</td></tr>
+<tr><td><code>voice-mute-player</code></td><td lang="az">Səsi kəs</td><td lang="ru">Заглушить</td><td lang="en">Mute</td></tr>
+<tr><td><code>voice-ready</code></td><td lang="az">Mikrofon bağlıdır</td><td lang="ru">Микрофон готов</td><td lang="en">Microphone ready</td></tr>
+<tr><td><code>voice-record-denied</code></td><td lang="az">Mikrofona girişə icazə verilmədi</td><td lang="ru">Нет доступа к микрофону</td><td lang="en">Microphone access denied</td></tr>
+<tr><td><code>voice-roster-toggle</code></td><td lang="az">Oyunçular</td><td lang="ru">Игроки</td><td lang="en">Players</td></tr>
+<tr><td><code>voice-speaking</code></td><td lang="az">Mikrofon açıqdır</td><td lang="ru">Говорите</td><td lang="en">Speaking</td></tr>
+<tr><td><code>voice-unavailable</code></td><td lang="az">Səsli çat əlçatan deyil</td><td lang="ru">Голосовой чат недоступен</td><td lang="en">Voice chat unavailable</td></tr>
+<tr><td><code>voice-unmute-player</code></td><td lang="az">Səsi aç</td><td lang="ru">Включить</td><td lang="en">Unmute</td></tr>
+<tr><td><code>won-suffix</code></td><td lang="az">qalib gəldi!</td><td lang="ru">победил!</td><td lang="en">won!</td></tr></tbody></table><script>const rows=[...document.querySelectorAll('tbody tr')];document.querySelector('#search').addEventListener('input',e=>{const query=e.target.value.toLocaleLowerCase();let visible=0;for(const row of rows){row.hidden=!row.textContent.toLocaleLowerCase().includes(query);if(!row.hidden)visible++;}document.querySelector('#count').textContent=visible;});</script></body></html>

@@ -1250,7 +1250,7 @@ class DominoGame {
             if (!profile) {
                 this.setHostStatus(this.t('account-registration-required-online'));
                 return;
-            summary.textContent = `${this.format('online-room-summary', { humans, bots: this.onlineAiCount, total: this.onlinePlayerCount })} · ${stakeLabel}`;
+            summary.textContent = `${this.format('online-room-summary', { humans: this.format('room-human-count', { count: humans }), bots: this.format('room-bot-count', { count: this.onlineAiCount }), total: this.onlinePlayerCount })} · ${stakeLabel}`;
             }
             this.playerName = name;
             this.showMultiplayerPanel('host');
@@ -6882,10 +6882,15 @@ class DominoGame {
     }
 
     setAccountStatus(text) {
+        const value = translations[this.currentLang]?.[String(text || '')] || text || '';
         const el = document.getElementById('account-status');
-        if (el) el.textContent = text || '';
+        if (el) el.textContent = value;
         const landingStatus = document.getElementById('landing-auth-status');
-        if (landingStatus) landingStatus.textContent = text || '';
+        if (landingStatus) landingStatus.textContent = value;
+        document.querySelectorAll('.pending-deletion-help').forEach(link => {
+            link.hidden = text !== 'account_deletion_pending';
+            if (globalThis.Capacitor?.isNativePlatform?.()) link.href = 'https://gamed.simplesoft.az/delete-account.html#request';
+        });
     }
 
     async loadCoinShopStatus() {
@@ -14148,7 +14153,7 @@ class DominoGame {
             if (summary) {
                 const humans = Math.max(1, this.onlinePlayerCount - this.onlineAiCount);
                 const stakeLabel = (Array.from(document.querySelectorAll('#online-stake-group .btn-option')).find((button) => button.dataset.value === this.onlineStakeKey)?.textContent || '200').trim();
-            summary.textContent = `${this.format('online-room-summary', { humans, bots: this.onlineAiCount, total: this.onlinePlayerCount })} ? ${stakeLabel}`;
+            summary.textContent = `${this.format('online-room-summary', { humans: this.format('room-human-count', { count: humans }), bots: this.format('room-bot-count', { count: this.onlineAiCount }), total: this.onlinePlayerCount })} · ${stakeLabel}`;
             }
         }
     }
@@ -18281,6 +18286,18 @@ class DominoGame {
         if (document.getElementById('coin-shop-modal')?.classList.contains('active')) {
             this.renderCoinShopModal();
         }
+        if (document.getElementById('cosmetics-shop-modal')?.classList.contains('active')) {
+            this.renderCosmeticsShopModal();
+        }
+        if (document.getElementById('account-modal')?.classList.contains('active')) {
+            this.renderAccountModal();
+        }
+        if (document.getElementById('player-profile-modal')?.classList.contains('active')) {
+            this.renderPlayerProfileModal();
+        }
+        this.translateFeedbackModal();
+        this.translatePlayerReportModal();
+        if (document.getElementById('online-modal')?.classList.contains('active')) this.syncMultiplayerOptions();
         this.refreshResumeBanner();
         document.documentElement.lang = nextLang;
         this.renderDailyBonusCard();
@@ -18290,7 +18307,7 @@ class DominoGame {
     applyTranslations(root = document) {
         root.querySelectorAll('[data-i18n]').forEach(el => {
             const value = this.t(el.dataset.i18n);
-            if (el.tagName === 'INPUT') el.placeholder = value;
+            if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') el.placeholder = value;
             else el.textContent = value;
             if (el.id === 'menu-btn') el.title = value;
         });

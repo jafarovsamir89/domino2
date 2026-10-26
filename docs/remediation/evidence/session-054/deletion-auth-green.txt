@@ -1,0 +1,10 @@
+✔ active game session checks require a fresh server proof and recheck logout, deletion and bans beyond admission-token expiry (3.759041ms)
+✔ pending account deletion blocks profile bootstrap before stats, starter coins or game admission (0.887208ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1079.233917

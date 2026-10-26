@@ -1306,9 +1306,8 @@ html[data-domino-start-mode="classic101"] #start-screen .start-hero-face-back {
 }
 
 .account-modal-title-wrap h2 {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    white-space: normal;
+    overflow-wrap: anywhere;
     margin: 0;
 }
 
@@ -5325,7 +5324,8 @@ body.is-solo-game .voice-roster-panel {
     margin: 8px 0 12px;
 }
 
-.account-delete-request-link {
+.account-delete-request-link,
+.account-license-link {
     display: inline-flex;
     min-height: 44px;
     align-items: center;
@@ -5338,8 +5338,12 @@ body.is-solo-game .voice-roster-panel {
     text-underline-offset: 3px;
 }
 
+.pending-deletion-help[hidden] { display: none; }
+
 .account-delete-request-link:hover,
-.account-delete-request-link:focus-visible {
+.account-delete-request-link:focus-visible,
+.account-license-link:hover,
+.account-license-link:focus-visible {
     color: var(--text);
     outline: 2px solid var(--accent);
     outline-offset: 2px;
@@ -9247,3 +9251,8 @@ body.is-reconnecting .hand-container {
 #splash-screen.has-startup-error .splash-loader { display: none; }
 #startup-network-note { width: 100%; margin-inline: auto; }
 #start-screen.has-startup-notice { align-items: flex-start; padding-top: calc(72px + env(safe-area-inset-top, 0px)); }
+
+/* Preserve translated shop labels when the decorative cart would crowd them. */
+@media (max-width: 380px) {
+    .start-shops-group .start-top-shop-btn .start-top-shop-icon { display: none; }
+}

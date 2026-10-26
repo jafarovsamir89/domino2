@@ -1,0 +1,211 @@
+
+Running 12 tests using 1 worker
+
+(node:28115) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:28115) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 e2e/locale-screens.spec.mjs:5:3 › az: existing profile and support forms survive a language switch (2.2s)
+  ✓   2 e2e/locale-screens.spec.mjs:5:3 › ru: existing profile and support forms survive a language switch (1.9s)
+  ✓   3 e2e/locale-screens.spec.mjs:5:3 › en: existing profile and support forms survive a language switch (1.9s)
+  ✓   4 e2e/locale-screens.spec.mjs:5:3 › www/az: existing profile and support forms survive a language switch (1.8s)
+  ✓   5 e2e/locale-screens.spec.mjs:5:3 › www/ru: existing profile and support forms survive a language switch (1.8s)
+  ✓   6 e2e/locale-screens.spec.mjs:5:3 › www/en: existing profile and support forms survive a language switch (1.8s)
+  ✘   7 e2e/locale-screens.spec.mjs:53:3 › az: main screen sweep at 320px (6.7s)
+(node:28407) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:28407) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘   8 e2e/locale-screens.spec.mjs:53:3 › ru: main screen sweep at 320px (6.7s)
+(node:28485) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:28485) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘   9 e2e/locale-screens.spec.mjs:53:3 › en: main screen sweep at 320px (6.7s)
+(node:28586) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:28586) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  10 e2e/locale-screens.spec.mjs:53:3 › www/az: main screen sweep at 320px (6.7s)
+(node:28678) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:28678) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  11 e2e/locale-screens.spec.mjs:53:3 › www/ru: main screen sweep at 320px (6.7s)
+(node:28954) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:28954) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  12 e2e/locale-screens.spec.mjs:53:3 › www/en: main screen sweep at 320px (6.8s)
+
+
+  1) e2e/locale-screens.spec.mjs:53:3 › az: main screen sweep at 320px ─────────────────────────────
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator:  locator('#online-modal')
+    Expected: visible
+    Received: hidden
+    Timeout:  5000ms
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 5000ms[22m
+    [2m  - waiting for locator('#online-modal')[22m
+    [2m    14 × locator resolved to <div id="online-modal" class="modal-backdrop">…</div>[22m
+    [2m       - unexpected value "hidden"[22m
+
+
+      90 |         game.setLanguage(language);
+      91 |       }, { method, argument, language });
+    > 92 |       await expect(page.locator(selector)).toBeVisible();
+         |                                            ^
+      93 |       if (language !== 'en') for (const aria of ['Close', 'Edit name', 'Language', 'Game mode', 'Player profile actions']) {
+      94 |         expect(await page.locator(`${selector} [aria-label="${aria}"]`).filter({ visible: true }).count(), `${name}: untranslated accessible name ${aria}`).toBe(0);
+      95 |       }
+        at /Users/macbookair/Documents/domino/e2e/locale-screens.spec.mjs:92:44
+
+    Error Context: test-results/locale-screens-az-main-screen-sweep-at-320px/error-context.md
+
+  2) e2e/locale-screens.spec.mjs:53:3 › ru: main screen sweep at 320px ─────────────────────────────
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator:  locator('#online-modal')
+    Expected: visible
+    Received: hidden
+    Timeout:  5000ms
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 5000ms[22m
+    [2m  - waiting for locator('#online-modal')[22m
+    [2m    14 × locator resolved to <div id="online-modal" class="modal-backdrop">…</div>[22m
+    [2m       - unexpected value "hidden"[22m
+
+
+      90 |         game.setLanguage(language);
+      91 |       }, { method, argument, language });
+    > 92 |       await expect(page.locator(selector)).toBeVisible();
+         |                                            ^
+      93 |       if (language !== 'en') for (const aria of ['Close', 'Edit name', 'Language', 'Game mode', 'Player profile actions']) {
+      94 |         expect(await page.locator(`${selector} [aria-label="${aria}"]`).filter({ visible: true }).count(), `${name}: untranslated accessible name ${aria}`).toBe(0);
+      95 |       }
+        at /Users/macbookair/Documents/domino/e2e/locale-screens.spec.mjs:92:44
+
+    Error Context: test-results/locale-screens-ru-main-screen-sweep-at-320px/error-context.md
+
+  3) e2e/locale-screens.spec.mjs:53:3 › en: main screen sweep at 320px ─────────────────────────────
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator:  locator('#online-modal')
+    Expected: visible
+    Received: hidden
+    Timeout:  5000ms
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 5000ms[22m
+    [2m  - waiting for locator('#online-modal')[22m
+    [2m    14 × locator resolved to <div id="online-modal" class="modal-backdrop">…</div>[22m
+    [2m       - unexpected value "hidden"[22m
+
+
+      90 |         game.setLanguage(language);
+      91 |       }, { method, argument, language });
+    > 92 |       await expect(page.locator(selector)).toBeVisible();
+         |                                            ^
+      93 |       if (language !== 'en') for (const aria of ['Close', 'Edit name', 'Language', 'Game mode', 'Player profile actions']) {
+      94 |         expect(await page.locator(`${selector} [aria-label="${aria}"]`).filter({ visible: true }).count(), `${name}: untranslated accessible name ${aria}`).toBe(0);
+      95 |       }
+        at /Users/macbookair/Documents/domino/e2e/locale-screens.spec.mjs:92:44
+
+    Error Context: test-results/locale-screens-en-main-screen-sweep-at-320px/error-context.md
+
+  4) e2e/locale-screens.spec.mjs:53:3 › www/az: main screen sweep at 320px ─────────────────────────
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator:  locator('#online-modal')
+    Expected: visible
+    Received: hidden
+    Timeout:  5000ms
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 5000ms[22m
+    [2m  - waiting for locator('#online-modal')[22m
+    [2m    14 × locator resolved to <div id="online-modal" class="modal-backdrop">…</div>[22m
+    [2m       - unexpected value "hidden"[22m
+
+
+      90 |         game.setLanguage(language);
+      91 |       }, { method, argument, language });
+    > 92 |       await expect(page.locator(selector)).toBeVisible();
+         |                                            ^
+      93 |       if (language !== 'en') for (const aria of ['Close', 'Edit name', 'Language', 'Game mode', 'Player profile actions']) {
+      94 |         expect(await page.locator(`${selector} [aria-label="${aria}"]`).filter({ visible: true }).count(), `${name}: untranslated accessible name ${aria}`).toBe(0);
+      95 |       }
+        at /Users/macbookair/Documents/domino/e2e/locale-screens.spec.mjs:92:44
+
+    Error Context: test-results/locale-screens-www-az-main-screen-sweep-at-320px/error-context.md
+
+  5) e2e/locale-screens.spec.mjs:53:3 › www/ru: main screen sweep at 320px ─────────────────────────
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator:  locator('#online-modal')
+    Expected: visible
+    Received: hidden
+    Timeout:  5000ms
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 5000ms[22m
+    [2m  - waiting for locator('#online-modal')[22m
+    [2m    14 × locator resolved to <div id="online-modal" class="modal-backdrop">…</div>[22m
+    [2m       - unexpected value "hidden"[22m
+
+
+      90 |         game.setLanguage(language);
+      91 |       }, { method, argument, language });
+    > 92 |       await expect(page.locator(selector)).toBeVisible();
+         |                                            ^
+      93 |       if (language !== 'en') for (const aria of ['Close', 'Edit name', 'Language', 'Game mode', 'Player profile actions']) {
+      94 |         expect(await page.locator(`${selector} [aria-label="${aria}"]`).filter({ visible: true }).count(), `${name}: untranslated accessible name ${aria}`).toBe(0);
+      95 |       }
+        at /Users/macbookair/Documents/domino/e2e/locale-screens.spec.mjs:92:44
+
+    Error Context: test-results/locale-screens-www-ru-main-screen-sweep-at-320px/error-context.md
+
+  6) e2e/locale-screens.spec.mjs:53:3 › www/en: main screen sweep at 320px ─────────────────────────
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator:  locator('#online-modal')
+    Expected: visible
+    Received: hidden
+    Timeout:  5000ms
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 5000ms[22m
+    [2m  - waiting for locator('#online-modal')[22m
+    [2m    14 × locator resolved to <div id="online-modal" class="modal-backdrop">…</div>[22m
+    [2m       - unexpected value "hidden"[22m
+
+
+      90 |         game.setLanguage(language);
+      91 |       }, { method, argument, language });
+    > 92 |       await expect(page.locator(selector)).toBeVisible();
+         |                                            ^
+      93 |       if (language !== 'en') for (const aria of ['Close', 'Edit name', 'Language', 'Game mode', 'Player profile actions']) {
+      94 |         expect(await page.locator(`${selector} [aria-label="${aria}"]`).filter({ visible: true }).count(), `${name}: untranslated accessible name ${aria}`).toBe(0);
+      95 |       }
+        at /Users/macbookair/Documents/domino/e2e/locale-screens.spec.mjs:92:44
+
+    Error Context: test-results/locale-screens-www-en-main-screen-sweep-at-320px/error-context.md
+
+  6 failed
+    e2e/locale-screens.spec.mjs:53:3 › az: main screen sweep at 320px ──────────────────────────────
+    e2e/locale-screens.spec.mjs:53:3 › ru: main screen sweep at 320px ──────────────────────────────
+    e2e/locale-screens.spec.mjs:53:3 › en: main screen sweep at 320px ──────────────────────────────
+    e2e/locale-screens.spec.mjs:53:3 › www/az: main screen sweep at 320px ──────────────────────────
+    e2e/locale-screens.spec.mjs:53:3 › www/ru: main screen sweep at 320px ──────────────────────────
+    e2e/locale-screens.spec.mjs:53:3 › www/en: main screen sweep at 320px ──────────────────────────
+  6 passed (55.7s)

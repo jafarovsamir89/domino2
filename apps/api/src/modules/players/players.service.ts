@@ -18,7 +18,7 @@ export class PlayersService {
       }
     });
 
-    if (!player) {
+    if (!player || player.deletionRequestedAt) {
       return null;
     }
 
@@ -36,7 +36,7 @@ export class PlayersService {
       }
     };
     const rating = ratings.telefon.rating;
-    const { wallet, modeStats, ...publicPlayer } = player as typeof player & { wallet?: unknown; modeStats?: unknown };
+    const { wallet, modeStats, deletionRequestedAt, deletionVersion, ...publicPlayer } = player as typeof player & { wallet?: unknown; modeStats?: unknown };
 
     return {
       ...publicPlayer,

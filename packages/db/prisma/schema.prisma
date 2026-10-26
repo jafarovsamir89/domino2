@@ -170,6 +170,8 @@ model Player {
   avatarUrl     String?
   tableSkinKey  String?
   isGuest       Boolean            @default(false)
+  deletionRequestedAt DateTime?
+  deletionVersion Int @default(0)
   language      String?
   createdAt     DateTime           @default(now())
   updatedAt     DateTime           @updatedAt
@@ -802,4 +804,20 @@ model FcmToken {
 
   @@index([playerId])
   @@map("fcm_token")
+}
+
+// Separate from User/Player cascades: the bounded restore journal must survive
+// account erasure until every older backup has expired. No name/email/token here.
+model AccountDeletion {
+  id            String   @id @default(cuid())
+  userId        String?  @unique
+  playerId      String?  @unique
+  requestedAt   DateTime
+  deleteAfter   DateTime
+  finalizedAt   DateTime?
+  forgetAfter   DateTime?
+  state         String   @default("pending")
+
+  @@index([state, deleteAfter])
+  @@index([forgetAfter])
 }

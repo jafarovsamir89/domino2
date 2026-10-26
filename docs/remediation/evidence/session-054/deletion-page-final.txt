@@ -1,0 +1,18 @@
+
+Running 9 tests using 1 worker
+
+(node:34551) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:34551) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 e2e/account-deletion.spec.mjs:29:3 › az: deletion requires typed confirmation; fresh login and explicit cancel (802ms)
+  ✓  2 e2e/account-deletion.spec.mjs:29:3 › ru: deletion requires typed confirmation; fresh login and explicit cancel (422ms)
+  ✓  3 e2e/account-deletion.spec.mjs:29:3 › en: deletion requires typed confirmation; fresh login and explicit cancel (445ms)
+  ✓  4 e2e/account-deletion.spec.mjs:29:3 › www/az: deletion requires typed confirmation; fresh login and explicit cancel (429ms)
+  ✓  5 e2e/account-deletion.spec.mjs:29:3 › www/ru: deletion requires typed confirmation; fresh login and explicit cancel (561ms)
+  ✓  6 e2e/account-deletion.spec.mjs:29:3 › www/en: deletion requires typed confirmation; fresh login and explicit cancel (430ms)
+  ✓  7 e2e/account-deletion.spec.mjs:68:1 › old or incompatible backend keeps email request visible and never exposes new deletion actions (68ms)
+  ✓  8 e2e/account-deletion.spec.mjs:75:1 › native WebView offers the canonical website and never starts local OAuth or deletion (77ms)
+  ✓  9 e2e/account-deletion.spec.mjs:85:1 › changing the observed account clears previously typed deletion confirmation (216ms)
+
+  9 passed (4.4s)

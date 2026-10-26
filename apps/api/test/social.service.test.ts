@@ -1801,8 +1801,8 @@ test("getDirectMessages returns the newest page of messages first", async () => 
     { senderPlayerId: targetPlayer.id, receiverPlayerId: currentPlayer.id }
   ]);
   assert.deepEqual(capturedQuery.include, {
-    sender: { select: { id: true, displayName: true, avatarSeed: true, avatarUrl: true, isGuest: true, createdAt: true } },
-    receiver: { select: { id: true, displayName: true, avatarSeed: true, avatarUrl: true, isGuest: true, createdAt: true } }
+    sender: { select: { id: true, displayName: true, avatarSeed: true, avatarUrl: true, isGuest: true, createdAt: true, deletionRequestedAt: true } },
+    receiver: { select: { id: true, displayName: true, avatarSeed: true, avatarUrl: true, isGuest: true, createdAt: true, deletionRequestedAt: true } }
   });
   assert.deepEqual(capturedQuery.orderBy, { createdAt: "desc" });
   assert.equal(capturedQuery.take, 3);

@@ -1397,12 +1397,14 @@ export class EconomyService implements OnModuleInit {
     } else {
       claimedToday = false;
       claimable = true;
-      streakDay = previousClaim ? Math.min(config.dailyMaxStreak, previousClaim.streakDay + 1) : 1;
+      // Owner-approved repeating cycle. Existing claims and balances are immutable:
+      // an old day-seven claim starts day one only on the next eligible Baku day.
+      streakDay = previousClaim ? (previousClaim.streakDay % rewardSchedule.length) + 1 : 1;
       todayAmount = getRewardForStreak(streakDay);
       lastClaimAt = previousClaim ? previousClaim.createdAt : null;
     }
 
-    const tomorrowStreakDay = Math.min(config.dailyMaxStreak, streakDay + 1);
+    const tomorrowStreakDay = (streakDay % rewardSchedule.length) + 1;
     const tomorrowAmount = getRewardForStreak(tomorrowStreakDay);
     const nextClaimAt = getNextBakuMidnight(now);
 
@@ -1430,6 +1432,7 @@ export class EconomyService implements OnModuleInit {
         amount: tomorrowAmount
       },
       maxStreak: config.dailyMaxStreak,
+      streakPolicy: 'cycle',
       rewardSchedule,
       nextClaimAt: nextClaimAt.toISOString(),
       dailyBonusNextClaimAt: nextClaimAt.toISOString(),

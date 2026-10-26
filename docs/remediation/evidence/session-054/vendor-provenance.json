@@ -1,0 +1,128 @@
+[
+  {
+    "package": "konva",
+    "version": "10.3.0",
+    "shipped": "js/vendor/konva.min.js",
+    "tarball": "https://registry.npmjs.org/konva/-/konva-10.3.0.tgz",
+    "integrityVerified": true,
+    "exactMatches": [
+      "package/konva.min.js"
+    ],
+    "licenses": [
+      ".tmp/s054-rights/konva-LICENSE"
+    ],
+    "sha256": "f17dfd9abb8c95953f09893cfefaaf9e09b9205012f6a2e3976dc946c89f6d7d"
+  },
+  {
+    "package": "socket.io-client",
+    "version": "4.8.3",
+    "shipped": "js/vendor/socket.io.min.js",
+    "tarball": "https://registry.npmjs.org/socket.io-client/-/socket.io-client-4.8.3.tgz",
+    "integrityVerified": true,
+    "exactMatches": [
+      "package/dist/socket.io.min.js"
+    ],
+    "licenses": [
+      ".tmp/s054-rights/socket.io-client-LICENSE"
+    ],
+    "sha256": "7bcff1b4f1442787ff11dfc510dedb8de16502ff5c987c4bbeb477605f76d9a0"
+  },
+  {
+    "asset": "assets/reactions/1F48B.svg",
+    "source": "https://raw.githubusercontent.com/hfg-gmuend/openmoji/master/color/svg/1F48B.svg",
+    "exactMatch": true,
+    "sourceSha256": "3f4492e92ca44c33d63e3c7bb46bf82dcb3c21eff689a924832378ac909d0fe9",
+    "localSha256": "3f4492e92ca44c33d63e3c7bb46bf82dcb3c21eff689a924832378ac909d0fe9"
+  },
+  {
+    "asset": "assets/reactions/1F609.svg",
+    "source": "https://raw.githubusercontent.com/hfg-gmuend/openmoji/master/color/svg/1F609.svg",
+    "exactMatch": true,
+    "sourceSha256": "b10a41cb753d20dee1acf9f4c501d5aa5e763313a5ce8b9d3ae6b15949076f4d",
+    "localSha256": "b10a41cb753d20dee1acf9f4c501d5aa5e763313a5ce8b9d3ae6b15949076f4d"
+  },
+  {
+    "asset": "assets/reactions/1F618.svg",
+    "source": "https://raw.githubusercontent.com/hfg-gmuend/openmoji/master/color/svg/1F618.svg",
+    "exactMatch": true,
+    "sourceSha256": "d4511cfcb8467294fa1f0f1c3f5c1aee2c9a05b585bb8e57e4952462cccf280a",
+    "localSha256": "d4511cfcb8467294fa1f0f1c3f5c1aee2c9a05b585bb8e57e4952462cccf280a"
+  },
+  {
+    "asset": "assets/reactions/1F62D.svg",
+    "source": "https://raw.githubusercontent.com/hfg-gmuend/openmoji/master/color/svg/1F62D.svg",
+    "exactMatch": true,
+    "sourceSha256": "3fe2965c4152511cf92a19efc5ea7c111abf40dd7776315e1fc9a3b759b23db0",
+    "localSha256": "3fe2965c4152511cf92a19efc5ea7c111abf40dd7776315e1fc9a3b759b23db0"
+  },
+  {
+    "asset": "assets/reactions/1F62E-200D-1F4A8.svg",
+    "source": "https://raw.githubusercontent.com/hfg-gmuend/openmoji/master/color/svg/1F62E-200D-1F4A8.svg",
+    "exactMatch": false,
+    "sourceSha256": "01ab244b447c0d8db2d9ca7fea9bb45b1d2e5f8dcc5877c6409622e52bdbe188",
+    "localSha256": "98bb87b74eec5b58578c6783d562a439232e5f12cfb989672bac8dabbc11050a"
+  },
+  {
+    "asset": "assets/reactions/1F634.svg",
+    "source": "https://raw.githubusercontent.com/hfg-gmuend/openmoji/master/color/svg/1F634.svg",
+    "exactMatch": true,
+    "sourceSha256": "3b5daab4b59ce4573dfd7fa2909fc4a29a3a4420b6aa2e3145e92de187fcda46",
+    "localSha256": "3b5daab4b59ce4573dfd7fa2909fc4a29a3a4420b6aa2e3145e92de187fcda46"
+  },
+  {
+    "asset": "assets/reactions/1F914.svg",
+    "source": "https://raw.githubusercontent.com/hfg-gmuend/openmoji/master/color/svg/1F914.svg",
+    "exactMatch": true,
+    "sourceSha256": "eadd96d61939689ac418e26c2852cc681a4cab336ba2ae5514d9495879ee172f",
+    "localSha256": "eadd96d61939689ac418e26c2852cc681a4cab336ba2ae5514d9495879ee172f"
+  },
+  {
+    "asset": "assets/reactions/1F923.svg",
+    "source": "https://raw.githubusercontent.com/hfg-gmuend/openmoji/master/color/svg/1F923.svg",
+    "exactMatch": true,
+    "sourceSha256": "c43248a757954f172fec996cd603235300ef2ec4c295aff5972b8f826b03b8db",
+    "localSha256": "c43248a757954f172fec996cd603235300ef2ec4c295aff5972b8f826b03b8db"
+  },
+  {
+    "asset": "assets/reactions/1F929.svg",
+    "source": "https://raw.githubusercontent.com/hfg-gmuend/openmoji/master/color/svg/1F929.svg",
+    "exactMatch": true,
+    "sourceSha256": "53703fcbad8489be11a84ca2f3388b830ea8ce07b34484a4350e4bf88dda3045",
+    "localSha256": "53703fcbad8489be11a84ca2f3388b830ea8ce07b34484a4350e4bf88dda3045"
+  },
+  {
+    "asset": "assets/reactions/1F92C.svg",
+    "source": "https://raw.githubusercontent.com/hfg-gmuend/openmoji/master/color/svg/1F92C.svg",
+    "exactMatch": true,
+    "sourceSha256": "1728918014453551091d0c24140b18fc9294edf97687dbf0097ec4e4c9552a5e",
+    "localSha256": "1728918014453551091d0c24140b18fc9294edf97687dbf0097ec4e4c9552a5e"
+  },
+  {
+    "asset": "assets/reactions/1F62E-200D-1F4A8.svg",
+    "source": "https://raw.githubusercontent.com/hfg-gmuend/openmoji/15.1.0/color/svg/1F62E-200D-1F4A8.svg",
+    "exactMatch": true,
+    "sourceSha256": "98bb87b74eec5b58578c6783d562a439232e5f12cfb989672bac8dabbc11050a",
+    "tag": "15.1.0"
+  },
+  {
+    "asset": "js/vendor/colyseus.js",
+    "source": "npm @colyseus/sdk@0.17.42/dist/colyseus.js",
+    "byteIdentical": false,
+    "normalizedLineEndingsIdentical": true,
+    "sha256": "7f0ea4c595143ace519c691ec1b01ce2e0c5a941fad4ee3f6eb8db02406ed185",
+    "licenses": [
+      {
+        "path": "node_modules/@colyseus/sdk/LICENSE",
+        "sha256": "58f5d8920f8d425a9eec9e8cb07f9d0ac5ac08d2aba15f98270c0caddb9de3e4"
+      },
+      {
+        "path": "node_modules/@colyseus/sdk/node_modules/@colyseus/schema/LICENSE",
+        "sha256": "38de086c59d8290eb7fc74642a1492bb3610ba39a74b991f2cb4685eb42464ec"
+      },
+      {
+        "path": "node_modules/tslib/LICENSE.txt",
+        "sha256": "210b19e543130388c68654b7497e967119ce17145f66ab7d85688fbd70f08751"
+      }
+    ]
+  }
+]

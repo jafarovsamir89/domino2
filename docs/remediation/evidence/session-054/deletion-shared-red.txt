@@ -1,0 +1,18 @@
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Shared winner metadata must not retain the deleted owner
+
+true !== false
+
+    at file:///Users/macbookair/Documents/domino/docs/remediation/scripts/deletion-local-db.mjs:135:10 {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: true,
+  expected: false,
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v25.6.0
