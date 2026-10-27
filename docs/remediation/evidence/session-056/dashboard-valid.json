@@ -1,0 +1,14 @@
+{
+  "appKey": "28e969915",
+  "source": "Actual LevelPlay Test callback UI and native Chrome Network row",
+  "resultText": "Your callback settings are valid",
+  "dashboardRequestHttpStatus": 200,
+  "dashboardNetworkDurationSecondsDisplayed": 7.2,
+  "testedPrivateKeyLength": 32,
+  "syntheticNonceLength": 64,
+  "ackFormat": "xml",
+  "signatureVerifiedByIsolatedReceiver": true,
+  "walletEnabled": false,
+  "callbackSaved": false,
+  "secretsExported": false
+}

@@ -1,0 +1,6 @@
+{
+  "publicHealth": 200,
+  "fileRoute": 404,
+  "walletEnabled": false,
+  "probeOnly": true
+}

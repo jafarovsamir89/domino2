@@ -1,0 +1,40 @@
+✔ probe exposes no filesystem/API/wallet or arbitrary method; forged/unknown nonce gets no ACK (34.809917ms)
+✔ probe ACKs only after durable receipt; duplicates and restart write one row, no grant (22.956291ms)
+✔ probe never ACKs failed persistence and permits a successful retry (5.749333ms)
+✔ probe has an expiry and bounded request rate (3.282ms)
+✔ probe request/rejection diagnostics contain shapes only, never signing key, nonce or signature (1.278375ms)
+✔ probe ACK has exact byte framing and forbids intermediary compression/transformation (6.468875ms)
+✔ documented plain ACK alternative has exact event marker and byte framing (7.850375ms)
+✖ probe CLI prepares a dashboard-accepted32-character key without exposing or overwriting credentials (100.535208ms)
+ℹ tests 8
+ℹ suites 0
+ℹ pass 7
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 311.231125
+
+✖ failing tests:
+
+test at docs/remediation/scripts/levelplay-probe.test.mjs:71:1
+✖ probe CLI prepares a dashboard-accepted32-character key without exposing or overwriting credentials (100.535208ms)
+  AssertionError [ERR_ASSERTION]: Use the length actually accepted in LevelPlay Test
+
+  64 !== 32
+
+      at TestContext.<anonymous> (file:///Users/macbookair/Documents/domino/docs/remediation/scripts/levelplay-probe.test.mjs:80:9)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:787:18)
+      at Test.postRun (node:internal/test_runner/test:1247:19)
+      at Test.run (node:internal/test_runner/test:1175:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 64,
+    expected: 32,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

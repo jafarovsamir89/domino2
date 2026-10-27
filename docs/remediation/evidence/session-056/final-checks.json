@@ -1,0 +1,15 @@
+{
+  "filesScanned": 23,
+  "privateProbeValuesChecked": 6,
+  "matches": 0,
+  "probeSuite": "8/8,0skip",
+  "realDashboardTestAccepted": true,
+  "callbackSaved": false,
+  "ownedProbeAndTunnelStopped": true,
+  "configExpired": true,
+  "rawFramesRemoved": true,
+  "harExported": false,
+  "supportReplySent": false,
+  "canonicalClosed": 30,
+  "canonicalTotal": 42
+}

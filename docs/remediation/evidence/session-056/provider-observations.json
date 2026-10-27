@@ -1,0 +1,91 @@
+{
+  "scope": "Real LevelPlay dashboard Test messages, signature-only receiver, no wallet or DB",
+  "ackFormat": "xml",
+  "finalDashboardAccepted": true,
+  "observations": [
+    {
+      "method": "GET",
+      "callbackPath": true,
+      "hasQuery": true,
+      "parameterNames": [
+        "applicationUserId",
+        "rewards",
+        "eventId",
+        "publisherSubId",
+        "timestamp",
+        "signature",
+        "country"
+      ],
+      "valueLengths": [
+        64,
+        1,
+        23,
+        1,
+        12,
+        32,
+        0
+      ],
+      "originKind": "none",
+      "browserUserAgent": false,
+      "receivedAt": "2026-10-27T15:41:32.554Z",
+      "status": 200,
+      "responseMs": 12.111833
+    },
+    {
+      "method": "GET",
+      "callbackPath": true,
+      "hasQuery": true,
+      "parameterNames": [
+        "applicationUserId",
+        "rewards",
+        "eventId",
+        "publisherSubId",
+        "timestamp",
+        "signature",
+        "country"
+      ],
+      "valueLengths": [
+        64,
+        1,
+        23,
+        1,
+        12,
+        32,
+        0
+      ],
+      "originKind": "none",
+      "browserUserAgent": false,
+      "receivedAt": "2026-10-27T15:47:28.926Z",
+      "status": 200,
+      "responseMs": 13.059708
+    },
+    {
+      "method": "GET",
+      "callbackPath": true,
+      "hasQuery": true,
+      "parameterNames": [
+        "applicationUserId",
+        "rewards",
+        "eventId",
+        "publisherSubId",
+        "timestamp",
+        "signature",
+        "country"
+      ],
+      "valueLengths": [
+        64,
+        1,
+        22,
+        1,
+        12,
+        32,
+        0
+      ],
+      "originKind": "none",
+      "browserUserAgent": false,
+      "receivedAt": "2026-10-27T15:50:49.664Z",
+      "status": 200,
+      "responseMs": 15.946291
+    }
+  ]
+}

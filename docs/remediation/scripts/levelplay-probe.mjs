@@ -66,7 +66,8 @@ if(process.argv[1]&&path.resolve(process.argv[1])===fileURLToPath(import.meta.ur
  const dir=path.resolve('.tmp/levelplay-callback-probe'),configFile=path.join(dir,'private-config.json');
  fs.mkdirSync(dir,{recursive:true,mode:0o700});
  if(process.argv.includes('--prepare')){
-  const config={privateKey:randomBytes(32).toString('hex'),attemptId:randomBytes(32).toString('hex'),expiresAt:Date.now()+24*3600000};
+  // Dashboard Test rejected64 hex characters (381);32 passed. Keep nonce256-bit.
+  const config={privateKey:randomBytes(16).toString('hex'),attemptId:randomBytes(32).toString('hex'),expiresAt:Date.now()+24*3600000};
   fs.writeFileSync(configFile,JSON.stringify(config,null,2)+'\n',{flag:'wx',mode:0o600});
   console.log('Prepared ignored private probe configuration; no credentials printed, server not started.');
  }else{

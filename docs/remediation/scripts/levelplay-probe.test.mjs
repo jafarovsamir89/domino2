@@ -4,6 +4,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {createHash} from 'node:crypto';
 import {once} from 'node:events';
+import {spawnSync} from 'node:child_process';
+import {fileURLToPath} from 'node:url';
 import {createLevelPlayProbe} from './levelplay-probe.mjs';
 const privateKey='synthetic-only-review-key-0123456789abcdef',attemptId='a'.repeat(64),fixed=Date.UTC(2026,9,24,12);
 const signed=(id='0123456789abcdef',nonce=attemptId)=>{const t='202610241200',r='1';return new URLSearchParams({applicationUserId:nonce,eventId:id,rewards:r,timestamp:t,signature:createHash('md5').update(t+id+nonce+r+privateKey).digest('hex')}).toString();};
@@ -64,4 +66,22 @@ test('documented plain ACK alternative has exact event marker and byte framing',
  assert.equal(Number(r.headers.get('content-length')),Buffer.byteLength(body));
  assert.equal(r.headers.get('content-type'),'text/plain; charset=utf-8');
  assert.match(r.headers.get('cache-control'),/\bno-transform\b/);
+});
+
+test('probe CLI prepares a dashboard-accepted32-character key without exposing or overwriting credentials',t=>{
+ fs.mkdirSync('.tmp/s056-levelplay',{recursive:true});
+ const cwd=fs.mkdtempSync(path.resolve('.tmp/s056-levelplay/cli-test-'));
+ t.after(()=>fs.rmSync(cwd,{recursive:true,force:true}));
+ const script=fileURLToPath(new URL('./levelplay-probe.mjs',import.meta.url));
+ const run=()=>spawnSync(process.execPath,[script,'--prepare'],{cwd,encoding:'utf8'});
+ const first=run();assert.equal(first.status,0);
+ const file=path.join(cwd,'.tmp/levelplay-callback-probe/private-config.json');
+ const original=fs.readFileSync(file,'utf8'),config=JSON.parse(original);
+ assert.equal(config.privateKey.length,32,'Use the length actually accepted in LevelPlay Test');
+ assert.equal(/^[a-f0-9]{32}$/.test(config.privateKey),true);
+ assert.equal(/^[a-f0-9]{64}$/.test(config.attemptId),true);
+ assert.equal(fs.statSync(file).mode&0o777,0o600);
+ assert.equal(first.stdout.includes(config.privateKey),false);assert.equal(first.stdout.includes(config.attemptId),false);
+ const second=run();assert.notEqual(second.status,0);assert.ok(fs.readFileSync(file,'utf8')===original,'Never overwrite an existing private config');
+ assert.equal((second.stdout+second.stderr).includes(config.privateKey),false);
 });

@@ -1,0 +1,16 @@
+{
+  "source": "Actual native Chrome screenshots during real dashboard Test; not recreated UI",
+  "capturedFrames": 43,
+  "rawFramesRetained": false,
+  "sanitizedStills": [
+    "dashboard-error-381.png",
+    "dashboard-valid.png"
+  ],
+  "redactions": [
+    "Browser tabs/address/notification strip cropped out",
+    "Entire credential form above Test callback covered with an opaque rectangle"
+  ],
+  "harExported": false,
+  "recordingSent": false,
+  "reasonNoHar": "After correcting the private-key length, final Test succeeded. Unity requested HAR/recording only if failure persisted."
+}
