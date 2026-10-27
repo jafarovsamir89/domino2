@@ -432,8 +432,9 @@
     "dependencies": "—",
     "risk": "низкий",
     "owner": "Frontend + native speaker",
-    "acceptance": "Нет смешения system text; long labels/number plurals",
-    "benefit": "Понимание и региональный рост"
+    "acceptance": "Для действующих AZ/RU/EN нет смешения system text; long labels/number plurals проверены, таблица подтверждена владельцем. TR pilot исключён из текущей приёмки прямым решением владельца27октября2026 и остаётся отложенным",
+    "benefit": "Понимание и региональный рост",
+    "ownerDecision2026-10-27": "AZ/RU/EN подтверждены владельцем по таблице S054; TR явно отложен за пределы ближайшего обновления и текущего закрытия R22, не выполнен"
   },
   {
     "id": "R-19",

@@ -1,0 +1,50 @@
+{
+  "task": "R-22",
+  "date": "2026-10-27",
+  "branch": "codex/rewarded-acceptance",
+  "sourceCommit": "5ded5b2a046dd975a3ef9dc7ce35e5c16153cb7d",
+  "ownerStatements": [
+    "переводы подтверждаю",
+    "Отложить TR, закрыть R22 для AZ/RU/EN"
+  ],
+  "acceptedLocales": [
+    "az",
+    "ru",
+    "en"
+  ],
+  "acceptanceType": "Owner approval of the supplied review table; no independent native-speaker credential asserted",
+  "reviewArtifact": {
+    "path": "docs/remediation/evidence/session-054/TRANSLATIONS_FOR_OWNER.html",
+    "sha256": "b20d01fe30b3277eaf35b946879eef722d8467a2b3f3dd3676e5e9485365c47d",
+    "unionRows": 788
+  },
+  "dictionary": {
+    "path": "js/translations.js",
+    "sha256": "846ced5ac3bd793d347722224153127eb82718e55a91cc2e53cce0b9180ab262",
+    "rootWwwEqual": true,
+    "localeKeyCounts": {
+      "az": 778,
+      "ru": 788,
+      "en": 778
+    },
+    "literalReferences": 539
+  },
+  "previousVerification": {
+    "sourceSession": "S054",
+    "api": "197/197",
+    "browserBatch": "30/30",
+    "latestDeletionPage": "9/9",
+    "repeatedThisSession": false
+  },
+  "turkish": {
+    "state": "Explicitly deferred by owner outside the upcoming update and current R22 acceptance",
+    "draft": "docs/remediation/review/tr-pilot.json",
+    "enabled": false,
+    "completed": false
+  },
+  "result": "R-22 closed locally for AZ/RU/EN under owner-approved scope",
+  "locallyClosedCards": 30,
+  "totalCards": 42,
+  "productionChanged": false,
+  "runtimeCodeChanged": false
+}
