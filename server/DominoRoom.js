@@ -4276,6 +4276,55 @@ class DominoRoom extends Room {
         };
     }
 
+    inspectAccountErasure(userId, playerId, relatedMatchIds = []) {
+        const ownerUserId = String(userId || "").trim();
+        const ownerPlayerId = String(playerId || "").trim();
+        if (!ownerUserId || !ownerPlayerId || !Array.isArray(relatedMatchIds)
+            || relatedMatchIds.length > 10000
+            || relatedMatchIds.some((id) => typeof id !== "string" || !id || id.length > 256)) {
+            throw new Error("invalid_account_erasure_query");
+        }
+        const matchesOwner = (identity, player) =>
+            [identity?.userId, player?.userId].some((value) => String(value || "").trim() === ownerUserId)
+            || [identity?.playerId, player?.playerId, player?.userId].some((value) => String(value || "").trim() === ownerPlayerId);
+        let ownerPresent = false;
+        for (const [sessionId, identity] of this.identityBySessionId || []) {
+            const player = this.state?.players?.get?.(sessionId) || null;
+            if (matchesOwner(identity, player)) { ownerPresent = true; break; }
+        }
+        if (!ownerPresent) {
+            for (const [sessionId, player] of this.state?.players || []) {
+                const identity = this.identityBySessionId?.get?.(sessionId) || null;
+                if (matchesOwner(identity, player)) { ownerPresent = true; break; }
+            }
+        }
+
+        const related = new Set(relatedMatchIds);
+        const settlementMatchId = String(this.pendingEconomySettlementState?.matchId || "").trim();
+        const recordingMatchId = String(this.pendingMatchRecording?.sourceMatchId || "").trim();
+        const settlementPending = Boolean(this.pendingEconomySettlementState);
+        const recordingPending = Boolean(this.pendingMatchRecording && !this.matchRecorded);
+        const relatedPendingWork = (settlementPending && related.has(settlementMatchId))
+            || (recordingPending && related.has(recordingMatchId));
+
+        return {
+            version: 1,
+            ownerPresent,
+            roomActive: this.state?.gameActive === true,
+            pendingSettlement: settlementPending && (ownerPresent || related.has(settlementMatchId)),
+            pendingMatchRecording: recordingPending && (ownerPresent || related.has(recordingMatchId)),
+            relatedPendingWork,
+            matchIds: ownerPresent
+                ? Array.from(new Set([
+                    this.currentDealMatchId,
+                    this.matchRecordId,
+                    this.pendingEconomySettlementState?.matchId,
+                    this.pendingMatchRecording?.sourceMatchId
+                ].map((value) => String(value || "").trim()).filter(Boolean))).slice(0, 64)
+                : []
+        };
+    }
+
     applyCustomStateSnapshot(data = {}) {
         const restoredMetadata = buildRestoredRoomMetadata({ room: this, data });
 

@@ -75,6 +75,42 @@ test('corrupt receipt is reported and retained instead of silently hiding a pend
     assert.equal((await store.reconcile({transport:()=>assert.fail('operator must inspect corruption')})).failed,1);
 });
 
+test('account erasure blocks an unacknowledged settlement when the owner is a loser, using the related match id',async t=>{
+    const store=fixture(t),key=store.enqueue({...intent,result:'loss',winnerUserIds:['another-player']});
+    assert.deepEqual(store.inspectAccountSettlements({userId:'deleted-player',relatedMatchIds:['m']}),{pendingSettlements:1});
+    assert.deepEqual(store.inspectAccountSettlements({userId:'unrelated-player',relatedMatchIds:[]}),{pendingSettlements:0});
+    assert.equal(fs.existsSync(path.join(store.directory,key+'.receipt.json')),false);
+});
+
+test('account erasure accepts only a durable successful receipt for a related settlement',async t=>{
+    const store=fixture(t),key=store.enqueue({...intent,result:'loss',winnerUserIds:['another-player']});
+    await assert.rejects(store.submit({...intent,result:'loss',winnerUserIds:['another-player']},async()=>({ok:false})),/settlement_not_acknowledged/);
+    assert.deepEqual(store.inspectAccountSettlements({userId:'deleted-player',relatedMatchIds:['m']}),{pendingSettlements:1});
+    await store.submit({...intent,result:'loss',winnerUserIds:['another-player']},async()=>({ok:true}));
+    assert.deepEqual(store.inspectAccountSettlements({userId:'deleted-player',relatedMatchIds:['m']}),{pendingSettlements:0});
+    fs.writeFileSync(path.join(store.directory,key+'.receipt.json'),'{broken');
+    assert.throws(()=>store.inspectAccountSettlements({userId:'deleted-player',relatedMatchIds:['m']}),/Unexpected|JSON/);
+});
+
+test('account erasure fails closed for unavailable or malformed outbox state',t=>{
+    const missing=new SettlementOutbox(path.join(os.tmpdir(),'domino-outbox-missing-'+Date.now()));
+    assert.throws(()=>missing.inspectAccountSettlements({userId:'owner'}),/unavailable/);
+    const store=fixture(t);store.initialize();
+    fs.writeFileSync(path.join(store.directory,'unknown.intent.json'),'{}');
+    assert.throws(()=>store.inspectAccountSettlements({userId:'owner'}),/invalid_settlement_intent_name/);
+    assert.throws(()=>store.inspectAccountSettlements({userId:'owner',relatedMatchIds:['']}),/invalid_erasure_settlement_query/);
+});
+
+test('account erasure blocks while a related settlement request is still in flight',async t=>{
+    const store=fixture(t),payload={...intent,result:'loss',winnerUserIds:['another-player']};
+    let release;
+    const sending=store.submit(payload,()=>new Promise(resolve=>{release=resolve;}));
+    await new Promise(resolve=>setImmediate(resolve));
+    assert.deepEqual(store.inspectAccountSettlements({userId:'deleted-player',relatedMatchIds:['m']}),{pendingSettlements:1});
+    release({ok:true});await sending;
+    assert.deepEqual(store.inspectAccountSettlements({userId:'deleted-player',relatedMatchIds:['m']}),{pendingSettlements:0});
+});
+
 test('production requires explicit absolute persistent location',()=>{
     const {getSettlementOutbox}=require('../settlementOutbox');
     const saved={env:process.env.NODE_ENV,dir:process.env.ECONOMY_OUTBOX_DIR};

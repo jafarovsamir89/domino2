@@ -1,0 +1,16 @@
+✔ erasure redacts nested identifiers and object keys without losing colliding financial entries (1.711875ms)
+✔ deletion never runs a due sweep without all erasure and restore interfaces (0.600458ms)
+✔ database erasure sends every related match id to the game adapter, including losing matches (0.246459ms)
+✔ disabled account deletion rejects credential-derived requests and workers before any DB access (0.385708ms)
+✔ restore journal survives restart, rejects identity conflicts and forgets only after confirmed backup expiry (24.492667ms)
+✔ restore gate refuses a resurrected owner or player before admission (12.343625ms)
+✔ game erasure client signs scoped requests and accepts only a matching signed receipt (30.772042ms)
+✔ game erasure client rejects non-loopback HTTP targets and forged or mismatched receipts (0.424917ms)
+ℹ tests 8
+ℹ suites 0
+ℹ pass 8
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 308.0125

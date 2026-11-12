@@ -7,17 +7,19 @@ const cors = require("cors");
 const http = require("http");
 const path = require("path");
 const Redis = require("ioredis");
-const { Server } = require("colyseus");
+const { Server, matchMaker } = require("colyseus");
 const { RedisPresence } = require("@colyseus/redis-presence");
 const { RedisDriver } = require("@colyseus/redis-driver");
 const DominoRoom = require("./DominoRoom");
 const { resolvePlatformApiUrl, probePlatformApiUrl } = require("./economyConfig");
-const { getLiveSummary, getPublicLiveSummary, getOpenRooms, getLiveSession } = require("./livePresence");
+const { getLiveSummary, getPublicLiveSummary, getOpenRooms, getLiveSession, forgetLocalLivePlayer } = require("./livePresence");
 const { resolveRoomIdByCode, resolveRoomCodeById } = require("./roomRegistry");
 const { buildReadinessHealth } = require("./health");
 const { buildVoiceConfig } = require("./voice-config");
 
-const { startSettlementReconciler } = require("./settlementOutbox");
+const { getSettlementOutbox, startSettlementReconciler } = require("./settlementOutbox");
+const { verifyDominoPayload, signDominoPayload } = require("./dominoProof");
+const { prepareGameAccountErasure, verifyAccountErasureRequest } = require("./accountErasure");
 
 const port = process.env.PORT || 2567;
 const redisUrl = process.env.REDIS_URI || "";
@@ -143,6 +145,37 @@ app.get("/health/ready", async (req, res) => {
 
 app.use(createRateLimiter(300, 60 * 1000, "game"));
 app.use(express.json({ limit: "2mb" }));
+
+app.post("/internal/account-erasure/prepare", async (req, res) => {
+    try {
+        const { target, nonce } = verifyAccountErasureRequest(req.body);
+
+        const redisClient = await getRedisClient();
+        if (!redisClient) throw new Error("redis_unavailable");
+        const result = await prepareGameAccountErasure(target, {
+            redis: redisClient,
+            queryRooms: conditions => matchMaker.query(conditions),
+            remoteRoomCall: (roomId, method, args, timeout) => matchMaker.remoteRoomCall(roomId, method, args, timeout),
+            outbox: getSettlementOutbox(),
+            forgetLocalPresence: forgetLocalLivePlayer
+        });
+
+        const response = {
+            integrityScope: "account.deletion.prepare.result",
+            requestId: target.requestId,
+            nonce,
+            gameStateErased: result.gameStateErased,
+            pendingSettlements: result.pendingSettlements,
+            cleanedSnapshots: result.cleanedSnapshots,
+            removedPresence: result.removedPresence
+        };
+        res.json({ ...response, proof: signDominoPayload(response) });
+    } catch {
+        // Do not put account identifiers, room IDs, snapshots or provider data in logs.
+        console.warn("[AccountErasure] game-side deletion check blocked safely");
+        res.status(503).json({ error: "account_erasure_blocked" });
+    }
+});
 
 const wwwRoot = path.join(__dirname, "..", "www");
 app.use(express.static(wwwRoot, {

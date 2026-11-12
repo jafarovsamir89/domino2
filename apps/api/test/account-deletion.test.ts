@@ -6,6 +6,8 @@ import path from 'node:path';
 import { redactReferences, DatabaseAccountErasure } from '../src/modules/account-deletion/database-erasure.js';
 import { AccountDeletionService } from '../src/modules/account-deletion/account-deletion.service.js';
 import { AccountErasureJournal } from '../src/modules/account-deletion/restore-journal.js';
+import { GameErasureClient } from '../src/modules/account-deletion/game-erasure-client.js';
+import { signDominoPayload, verifyDominoPayload } from '../src/modules/security/domino-proof.js';
 
 test('erasure redacts nested identifiers and object keys without losing colliding financial entries', () => {
   const original = { 'synthetic-user': { amount: 25, name: 'Synthetic private' }, 'synthetic-player': { amount: 70 }, other: ['synthetic-user', null, 0, false, { email: 'synthetic@example.invalid' }] };
@@ -26,6 +28,28 @@ test('deletion never runs a due sweep without all erasure and restore interfaces
   assert.equal(reads, 0);
   const executor = new DatabaseAccountErasure({} as any, {} as any);
   await assert.rejects(executor.erase({} as any, new Date()), /all_erasure_surfaces_required/);
+});
+
+test('database erasure sends every related match id to the game adapter, including losing matches', async () => {
+  const target = { requestId: 'synthetic-request-006', userId: 'synthetic-owner-006', playerId: 'synthetic-player-006',
+    requestedAt: new Date('2026-10-01T12:00:00.000Z'), deleteAfter: new Date('2026-10-31T12:00:00.000Z') };
+  const now = new Date('2026-11-01T12:00:00.000Z');
+  let received: any;
+  const db = {
+    accountDeletion: { findUnique: async () => ({ ...target, state: 'erasing' }) },
+    user: { findUnique: async () => ({ id: target.userId, role: 'player', email: 'synthetic@example.invalid' }) },
+    player: { findUnique: async () => ({ id: target.playerId, userId: target.userId, deletionRequestedAt: target.requestedAt }) },
+    coinWallet: { findUnique: async () => ({ reserved: 0 }) },
+    coinMatchStake: { count: async () => 0 },
+    coinTournamentEntry: { count: async () => 0 },
+    payment: { count: async () => 0 },
+    adminAuditLog: { count: async () => 0 },
+    matchParticipant: { findMany: async () => [{ matchId: 'loser-match-1' }, { matchId: 'loser-match-1' }, { matchId: 'winner-match-2' }] }
+  } as any;
+  const executor = new DatabaseAccountErasure(db, { prepare: async (value: any) => { received = value; throw Error('stop-after-capture'); }, forgetAfterBackupsExpire: async () => {} } as any);
+  await assert.rejects(executor.erase(target, now), /stop-after-capture/);
+  assert.deepEqual(received.relatedMatchIds, ['loser-match-1', 'winner-match-2']);
+  assert.equal(received.userId, target.userId);
 });
 
 test('disabled account deletion rejects credential-derived requests and workers before any DB access', async () => {
@@ -68,4 +92,55 @@ test('restore gate refuses a resurrected owner or player before admission', asyn
     await assert.rejects(journal.assertRestoredAccountsAbsent(db), /account_erasure_restore_required/);
     player = null; await journal.assertRestoredAccountsAbsent(db);
   } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+});
+
+test('game erasure client signs scoped requests and accepts only a matching signed receipt', async () => {
+  const saved = { secret: process.env.DOMINO_SERVER_SECRET, nodeEnv: process.env.NODE_ENV };
+  process.env.DOMINO_SERVER_SECRET = 'synthetic-game-erasure-proof-secret';
+  process.env.NODE_ENV = 'test';
+  try {
+    const now = new Date('2026-11-12T20:00:00.000Z');
+    const target = { requestId: 'synthetic-request-003', userId: 'synthetic-owner-003', playerId: 'synthetic-player-003',
+      requestedAt: new Date(now.getTime() - 31 * 86400000), deleteAfter: new Date(now.getTime() - 86400000), relatedMatchIds: ['match-1', 'match-1'] };
+    let requestUrl = '';
+    let markerDurable = false;
+    const client = new GameErasureClient({ ensure: () => { markerDurable = true; return {} as any; } }, 'http://127.0.0.1:2567', async (input, init) => {
+      requestUrl = String(input);
+      assert.equal(markerDurable, true, 'The restore marker is written before the destructive game request');
+      const request = JSON.parse(String(init?.body));
+      const { proof, ...signed } = request;
+      assert.equal(verifyDominoPayload(signed, proof), true);
+      assert.equal(signed.integrityScope, 'account.deletion.prepare');
+      assert.deepEqual(signed.relatedMatchIds, ['match-1']);
+      const payload = { integrityScope: 'account.deletion.prepare.result', requestId: target.requestId, nonce: signed.nonce,
+        gameStateErased: true, pendingSettlements: 0, cleanedSnapshots: 2, removedPresence: 1 };
+      return new Response(JSON.stringify({ ...payload, proof: signDominoPayload(payload) }),
+        { status: 200, headers: { 'content-type': 'application/json' } });
+    }, () => now.getTime());
+    assert.deepEqual(await client.prepare(target, now), { gameStateErased: true, pendingSettlements: 0, cleanedSnapshots: 2, removedPresence: 1 });
+    assert.equal(requestUrl, 'http://127.0.0.1:2567/internal/account-erasure/prepare');
+  } finally {
+    if (saved.secret === undefined) delete process.env.DOMINO_SERVER_SECRET; else process.env.DOMINO_SERVER_SECRET = saved.secret;
+    if (saved.nodeEnv === undefined) delete process.env.NODE_ENV; else process.env.NODE_ENV = saved.nodeEnv;
+  }
+});
+
+test('game erasure client rejects non-loopback HTTP targets and forged or mismatched receipts', async () => {
+  const saved = { secret: process.env.DOMINO_SERVER_SECRET, nodeEnv: process.env.NODE_ENV };
+  process.env.DOMINO_SERVER_SECRET = 'synthetic-game-erasure-proof-secret';
+  process.env.NODE_ENV = 'test';
+  try {
+    const now = new Date('2026-11-12T20:00:00.000Z');
+    const target = { requestId: 'synthetic-request-004', userId: 'synthetic-owner-004', playerId: 'synthetic-player-004',
+      requestedAt: new Date(now.getTime() - 31 * 86400000), deleteAfter: new Date(now.getTime() - 86400000), relatedMatchIds: [] };
+    await assert.rejects(new GameErasureClient({ ensure: () => ({} as any) }, 'http://example.invalid').prepare(target, now), /invalid_game_erasure_endpoint/);
+    const forged = new GameErasureClient({ ensure: () => ({} as any) }, 'https://game.example.invalid', async () => new Response(JSON.stringify({
+      integrityScope: 'account.deletion.prepare.result', requestId: target.requestId, nonce: 'wrong', gameStateErased: true,
+      pendingSettlements: 0, cleanedSnapshots: 0, removedPresence: 0, proof: 'forged'
+    }), { status: 200, headers: { 'content-type': 'application/json' } }), () => now.getTime());
+    await assert.rejects(forged.prepare(target, now), /invalid_game_erasure_receipt/);
+  } finally {
+    if (saved.secret === undefined) delete process.env.DOMINO_SERVER_SECRET; else process.env.DOMINO_SERVER_SECRET = saved.secret;
+    if (saved.nodeEnv === undefined) delete process.env.NODE_ENV; else process.env.NODE_ENV = saved.nodeEnv;
+  }
 });

@@ -1,8 +1,8 @@
 import { Prisma, type PrismaClient } from '@prisma/client';
-import type { ErasureExecutor, ErasureTarget } from './account-deletion.service.js';
+import type { ErasureExecutor, ErasureTarget, GameErasureTarget } from './account-deletion.service.js';
 
 export type ErasureStores = {
-  prepare(target: ErasureTarget, now: Date): Promise<{
+  prepare(target: GameErasureTarget, now: Date): Promise<{
     gameStateErased: true;
     pendingSettlements: 0;
     processorsErasedOrNoData: true;
@@ -57,7 +57,10 @@ export class DatabaseAccountErasure implements ErasureExecutor {
     // Owner has not approved a legal/payment retention schedule. Do not silently
     // destroy real payment evidence or claim that this branch has been accepted.
     if (payments) throw Error('payment_retention_requires_operator');
-    const receipt = await this.stores.prepare(target, now);
+    const relatedMatches = await this.db.matchParticipant.findMany({ where: { playerId: target.playerId }, select: { matchId: true } });
+    const relatedMatchIds = Array.from(new Set(relatedMatches.map(match => match.matchId)));
+    if (relatedMatchIds.some(id => typeof id !== 'string' || !id) || relatedMatchIds.length > 10000) throw Error('related_match_set_unavailable');
+    const receipt = await this.stores.prepare({ ...target, relatedMatchIds }, now);
     if (receipt?.gameStateErased !== true || receipt.pendingSettlements !== 0 || receipt.processorsErasedOrNoData !== true || receipt.restoreMarkerDurable !== true) throw Error('incomplete_external_erasure');
     await this.db.$transaction(async tx => {
       await tx.$queryRaw`SELECT 1 AS locked FROM pg_advisory_xact_lock(1464091702, hashtext(${target.playerId}))`;

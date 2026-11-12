@@ -12,6 +12,7 @@ const RECENT_LOGIN_MS = 10 * 60000;
 type Options = { enabled: boolean; trustedOrigins: readonly string[] };
 type Identity = { userId: string; playerId: string; sessionId: string; sessionCreatedAt: Date; deletionVersion: number; accountLabel: string };
 export type ErasureTarget = { requestId: string; userId: string; playerId: string; requestedAt: Date; deleteAfter: Date };
+export type GameErasureTarget = ErasureTarget & { relatedMatchIds: string[] };
 export type ErasureExecutor = {
   // Must durably erase the approved surfaces and retain a restore marker outside
   // the restored DB. No default/no-op executor: unavailable surfaces block completion.

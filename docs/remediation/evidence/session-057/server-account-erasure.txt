@@ -1,0 +1,377 @@
+ℹ️  optional .env file not found: .env.development, .env
+✔ account erasure queries distributed domino rooms and allows only an exact clear response (3.429833ms)
+✔ account erasure blocks a player still present in a live owner room, including remote rooms (0.566625ms)
+✔ account erasure blocks unresolved settlement or match recording associated with the owner (1.534292ms)
+✔ account erasure blocks a failed or ambiguous matchmaker RPC instead of assuming no room (0.388333ms)
+✔ account erasure rejects malformed listings and targets before issuing remote calls (0.305375ms)
+✔ game erasure endpoint accepts only a recent signed exact-scope request for a due 30-day target (1.80825ms)
+✔ room erasure probe reports owner presence and pending related match without exposing credentials (0.29525ms)
+✔ game erasure removes owner identity from an inactive snapshot while preserving other players and TTL (1.118084ms)
+✔ game erasure blocks active or unsettled snapshots before changing Redis (0.378084ms)
+✔ game erasure blocks pending settlement, live presence and fresh owner presence (0.308208ms)
+✔ game erasure checks outbox match ids recovered from the owner snapshot, even when the owner lost (0.243625ms)
+✔ game erasure deletes stale owner presence and removes its room index entry (0.151541ms)
+✔ stale owner presence also identifies a snapshot that only retains the old session id (0.160667ms)
+ℹ️  optional .env file not found: .env.development, .env
+[ROOM_DEBUG] create {
+  roomId: 'room-team',
+  roomCode: 'EV6L',
+  roomVisibility: 'open',
+  stakeKey: 'stake_200',
+  totalPlayers: 4,
+  aiCount: 2,
+  humanSeats: 2,
+  maxClients: 2,
+  roomMode: 'team',
+  isTeamMode: true
+}
+[ROOM] Created room room-team (code EV6L), humanSeats=2, totalPlayers=4, aiCount=2, teamMode=true
+[ROOM_DEBUG] create {
+  roomId: 'room-mode',
+  roomCode: 'R6NQ',
+  roomVisibility: 'open',
+  stakeKey: 'stake_200',
+  totalPlayers: 2,
+  aiCount: 0,
+  humanSeats: 2,
+  maxClients: 2,
+  roomMode: 'ffa',
+  isTeamMode: false
+}
+[ROOM] Created room room-mode (code R6NQ), humanSeats=2, totalPlayers=2, aiCount=0, teamMode=false
+[ROOM] Client session-1 joining with name: Alice
+[ROOM_DEBUG] join:start {
+  roomId: 'room-mode-test',
+  roomCode: undefined,
+  sessionId: 'session-1',
+  clientsLength: 0,
+  playerOrder: [],
+  totalPlayers: undefined,
+  aiCount: undefined,
+  humanSeats: undefined,
+  maxClients: undefined
+}
+[ROOM_DEBUG] create {
+  roomId: 'restored-room',
+  roomCode: 'REST',
+  roomVisibility: 'open',
+  stakeKey: 'stake_500',
+  totalPlayers: 2,
+  aiCount: 0,
+  humanSeats: 2,
+  maxClients: 2,
+  roomMode: 'ffa',
+  isTeamMode: false
+}
+[ROOM] Created room restored-room (code REST), humanSeats=2, totalPlayers=2, aiCount=0, teamMode=false
+[ROOM_DEBUG] startDeal:enter {
+  roomId: 'room-low',
+  roomCode: undefined,
+  stakeKey: 'stake_200',
+  currentDealMatchId: undefined,
+  matchRound: 1,
+  playerOrder: [],
+  players: []
+}
+[ROOM_DEBUG] reserve:before {
+  roomId: 'room-low',
+  roomCode: undefined,
+  stakeKey: 'stake_200',
+  currentDealMatchId: 'room-low:round:1',
+  humans: []
+}
+[ROOM_DEBUG] reserve:result {
+  roomId: 'room-low',
+  roomCode: undefined,
+  ok: false,
+  reason: 'Insufficient coins for Alice',
+  status: '',
+  messageKey: ''
+}
+[ROOM_DEBUG] startDeal:reserve_failed {
+  roomId: 'room-low',
+  roomCode: undefined,
+  roomVisibility: undefined,
+  reason: 'insufficient coins for alice',
+  message: 'room-closed-insufficient-coins',
+  willSendRoomClosed: true
+}
+[ROOM_DEBUG] startDeal:enter {
+  roomId: 'room-bank',
+  roomCode: undefined,
+  stakeKey: 'stake_200',
+  currentDealMatchId: undefined,
+  matchRound: 1,
+  playerOrder: [],
+  players: []
+}
+{"schemaVersion":1,"event":"settlement_acknowledged","service":"game","deploySha":"unknown","at":"2026-11-12T23:44:06.072Z","result":"loss","matchRef":"460b68a0f3e3fc9a648d0d12"}
+[ROOM_DEBUG] leave:start {
+  roomId: '',
+  roomCode: '',
+  sessionId: 'session-1',
+  consented: false,
+  playerOrder: [ 'session-1' ],
+  players: [
+    {
+      sessionId: 'session-1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: -1,
+      hasUserId: false,
+      hasPlayerId: false,
+      hasAuthToken: false
+    }
+  ]
+}
+[ROOM_DEBUG] leave:explicit {
+  roomId: '',
+  roomCode: '',
+  sessionId: 'session-1',
+  playerName: 'Alice'
+}
+[ROOM_DEBUG] leave:waiting_reconnect {
+  roomId: '',
+  roomCode: '',
+  sessionId: 'session-1',
+  reason: 'accidental_disconnect',
+  graceStartedAt: 1794527046074,
+  graceExpiresAt: 1794527166074,
+  graceMs: 120000
+}
+[ROOM_DEBUG] leave:grace_timeout {
+  roomId: '',
+  roomCode: '',
+  sessionId: 'session-1',
+  playerName: 'Alice',
+  expiresAt: 1794527166074
+}
+[ROOM_DEBUG] leave:allow_reconnection_rejected {
+  roomId: '',
+  roomCode: '',
+  sessionId: 'session-1',
+  reason: 'reconnect failed'
+}
+[ROOM] Forfeit settlement did not complete; notifying the player that support may be needed.
+[ROOM_DEBUG] leave:start {
+  roomId: '',
+  roomCode: '',
+  sessionId: 'session-1',
+  consented: false,
+  playerOrder: [ 'session-1', 'session-2' ],
+  players: [
+    {
+      sessionId: 'session-1',
+      isBot: false,
+      isConnected: true,
+      seatIndex: -1,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: true
+    },
+    {
+      sessionId: 'session-2',
+      isBot: false,
+      isConnected: true,
+      seatIndex: -1,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: true
+    }
+  ]
+}
+[ROOM_DEBUG] leave:explicit {
+  roomId: '',
+  roomCode: '',
+  sessionId: 'session-1',
+  playerName: 'Alice'
+}
+[ROOM_DEBUG] leave:waiting_reconnect {
+  roomId: '',
+  roomCode: '',
+  sessionId: 'session-1',
+  reason: 'accidental_disconnect',
+  graceStartedAt: 1794527046076,
+  graceExpiresAt: 1794527166076,
+  graceMs: 120000
+}
+[ROOM_DEBUG] leave:grace_timeout {
+  roomId: '',
+  roomCode: '',
+  sessionId: 'session-1',
+  playerName: 'Alice',
+  expiresAt: 1794527166076
+}
+[ROOM_DEBUG] leave:allow_reconnection_rejected {
+  roomId: '',
+  roomCode: '',
+  sessionId: 'session-1',
+  reason: 'reconnect failed'
+}
+[ROOM_DEBUG] startGame:enter {
+  roomId: 'room-fresh',
+  roomCode: 'FRESH',
+  gameActive: false,
+  gameStarting: undefined,
+  matchFinished: false,
+  playerOrder: [ 'host', 'guest' ],
+  players: [
+    {
+      sessionId: 'host',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 'guest',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    }
+  ]
+}
+[ROOM_DEBUG] startGame:pending_match_recording {
+  roomId: 'room-fresh',
+  roomCode: 'FRESH',
+  reason: 'pending_match_recording'
+}
+[ROOM] Previous match recording is still pending; continuing with the new game start.
+[ROOM_DEBUG] startGame:beforeBots {
+  roomId: 'room-fresh',
+  roomCode: 'FRESH',
+  playerOrder: [ 'host', 'guest' ],
+  players: [
+    {
+      sessionId: 'host',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 'guest',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    }
+  ]
+}
+[ROOM_DEBUG] startGame:afterBots {
+  roomId: 'room-fresh',
+  roomCode: 'FRESH',
+  playerOrder: [ 'host', 'guest' ],
+  players: [
+    {
+      sessionId: 'host',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 0,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    },
+    {
+      sessionId: 'guest',
+      isBot: false,
+      isConnected: true,
+      seatIndex: 1,
+      hasUserId: true,
+      hasPlayerId: true,
+      hasAuthToken: false
+    }
+  ]
+}
+[FM-SRV 1794527046080] gameDelta isFinalMove=false
+[FM-SRV 1794527046080] gameDelta isFinalMove=false
+[FM-SRV 1794527046084] gameDelta isFinalMove=false
+[FM-SRV 1794527046085] gameDelta isFinalMove=true
+[FM-SRV 1794527046085] end immediate
+[FM-SRV 1794527046085] gameDelta isFinalMove=true
+[FM-SRV 1794527046085] end immediate
+[FM-SRV 1794527046085] syncState includeBoardJson=true
+[ROOM_DEBUG] startDeal:enter {
+  roomId: 'room-live',
+  roomCode: 'LIVE',
+  stakeKey: 'free',
+  currentDealMatchId: undefined,
+  matchRound: 1,
+  playerOrder: [],
+  players: []
+}
+✔ generateRoomCode returns compact upper-case codes (4.229375ms)
+✔ sanitizeName strips unsafe characters and trims length (4.03975ms)
+✔ room payloads include server clock metadata and turn timer state (4.972542ms)
+✔ onCreate treats roomMode team as team mode even when isTeamMode is omitted (3.699041ms)
+✔ onCreate normalizes gameMode and selects the matching ruleset (1.060959ms)
+✔ onJoin rejects clients that ask for a different gameMode than the room (8.029666ms)
+✔ handleNextDeal only advances for the host during pending transitions (0.71425ms)
+✔ custom snapshots strip auth tokens from persisted identities (1.003167ms)
+✔ onCreate restores room identity and snapshot state without mutating the source snapshot (1.568209ms)
+✔ startDeal maps low balance reserve failures to the insufficient-coins room message (1.712667ms)
+✔ startDeal keeps the reserved bank across deals inside the same round (0.778791ms)
+✔ applyCustomStateSnapshot tolerates empty and partial snapshots and keeps fallbacks (0.674792ms)
+✔ forfeit settle replay does not settle the same room twice (24.861458ms)
+✔ onLeave shows a support warning when forfeit settlement fails (2.053458ms)
+✔ onLeave records a forfeit match after successful settlement (1.083708ms)
+✔ startGame does not block a fresh match when a stale recording is still pending (0.775292ms)
+✔ turnVersion rejects stale replayed turn actions (0.924834ms)
+✔ sync requests return both room state and full state to the same client (0.480708ms)
+✔ addScore updates team totals and emits a game delta (0.47225ms)
+✔ performPlay broadcasts the board delta before any score popup and includes score data in the play delta (0.8105ms)
+✔ classic101 performPlay keeps in-play score at zero and hides gosha (0.693375ms)
+✔ classic101 buildTurnInfoForPlayer hides gosha combos (0.406958ms)
+✔ classic101 syncMatchStateToSchema mirrors scoreboard into visible scores (0.290167ms)
+✔ endDeal awards full opponent hands on fish and caps hand bonuses at 300 (0.706833ms)
+✔ performDraw broadcasts a draw delta and keeps public hand counts in sync (0.480084ms)
+✔ syncPublicPlayerStatsToState copies live hand lengths into schema players (0.2275ms)
+✔ performPlay rejects a tile that does not match the selected open end and keeps the board unchanged (0.243917ms)
+✔ performPlay keeps legal 0/3 placement on open end 0 and turns the new open end to 3 (1.172584ms)
+✔ opening move requirement forces 3|2 on the first deal and rejects any other opening tile (0.578167ms)
+✔ opening move requirement falls back to the smallest double when 3|2 is not dealt (0.407417ms)
+✔ startDeal turn_info sends only the required opening move on an empty board (0.468ms)
+✔ runBotTurn uses only the required opening move on the first deal (0.390542ms)
+✔ after the opening move, valid moves return to normal board behavior (0.332625ms)
+✔ startDeal snapshot restore keeps a playable turn state (1.086667ms)
+✔ classic101 custom snapshots round-trip matchState and board flags (1.104125ms)
+✔ presence stale threshold follows disconnect grace (1.725834ms)
+✔ presence heartbeat refreshes updatedAt even with an empty payload (0.2235ms)
+✔ buildLivePlayerPayload uses team mode and host fallback correctly (4.846416ms)
+✔ buildLivePlayerPayload uses ffa mode and preserves current fallbacks (8.644625ms)
+{"schemaVersion":1,"event":"settlement_acknowledged","service":"game","deploySha":"unknown","at":"2026-11-12T23:44:05.774Z","result":"win","matchRef":"6a2ee808651b84c5a62e81f7"}
+{"schemaVersion":1,"event":"settlement_acknowledged","service":"game","deploySha":"unknown","at":"2026-11-12T23:44:05.800Z","result":"win","matchRef":"6a2ee808651b84c5a62e81f7"}
+{"schemaVersion":1,"event":"settlement_acknowledged","service":"game","deploySha":"unknown","at":"2026-11-12T23:44:05.827Z","result":"win","matchRef":"6a2ee808651b84c5a62e81f7"}
+{"schemaVersion":1,"event":"settlement_acknowledged","service":"game","deploySha":"unknown","at":"2026-11-12T23:44:05.882Z","result":"win","matchRef":"6a2ee808651b84c5a62e81f7"}
+{"schemaVersion":1,"event":"settlement_acknowledged","service":"game","deploySha":"unknown","at":"2026-11-12T23:44:06.004Z","result":"loss","matchRef":"6a2ee808651b84c5a62e81f7"}
+✔ intent exists before transport, has restrictive permissions and contains no bearer (38.254666ms)
+✔ transport failure survives a fresh store, response rejection is never acknowledged (22.69075ms)
+✔ response loss after commit replays once by match, and ack is reused without HTTP (43.305584ms)
+✔ concurrent submissions share delivery and conflicting winner/refund cannot replace durable intent (37.950917ms)
+✔ unwritable storage never sends settlement and corrupt intent is retained (8.885834ms)
+✔ invalid intents and free games never create payable files (0.511333ms)
+✔ bounded reconciliation rotates so permanent rejection cannot starve later results (45.671333ms)
+✔ corrupt receipt is reported and retained instead of silently hiding a pending intent (16.661417ms)
+✔ account erasure blocks an unacknowledged settlement when the owner is a loser, using the related match id (15.474166ms)
+✔ account erasure accepts only a durable successful receipt for a related settlement (36.039542ms)
+✔ account erasure fails closed for unavailable or malformed outbox state (6.413667ms)
+{"schemaVersion":1,"event":"settlement_acknowledged","service":"game","deploySha":"unknown","at":"2026-11-12T23:44:06.042Z","result":"loss","matchRef":"6a2ee808651b84c5a62e81f7"}
+✔ account erasure blocks while a related settlement request is still in flight (30.668917ms)
+✔ production requires explicit absolute persistent location (0.225833ms)
+ℹ tests 65
+ℹ suites 0
+ℹ pass 65
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 3223.924291

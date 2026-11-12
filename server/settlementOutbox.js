@@ -37,6 +37,67 @@ class SettlementOutbox {
         catch (error) { if (error.code === 'ENOENT') return null; throw error; }
     }
 
+    inspectAccountSettlements({ userId, relatedMatchIds = [] } = {}) {
+        if (typeof userId !== 'string' || !userId || userId.length > 256
+            || !Array.isArray(relatedMatchIds) || relatedMatchIds.length > 10000
+            || relatedMatchIds.some(id => typeof id !== 'string' || !id || id.length > 256)) {
+            throw new Error('invalid_erasure_settlement_query');
+        }
+        const related = new Set(relatedMatchIds);
+        let pending = 0;
+        if (!fs.existsSync(this.directory)) throw new Error('settlement_outbox_unavailable');
+        const stat = fs.lstatSync(this.directory);
+        if (!stat.isDirectory() || stat.isSymbolicLink()) throw new Error('invalid_settlement_outbox_directory');
+
+        for (const name of fs.readdirSync(this.directory)) {
+            if (!name.endsWith('.intent.json')) continue;
+            if (!/^[a-f0-9]{64}\.intent\.json$/.test(name)) throw new Error('invalid_settlement_intent_name');
+            const intentPath = path.join(this.directory, name);
+            const intentStat = fs.lstatSync(intentPath);
+            if (!intentStat.isFile() || intentStat.isSymbolicLink() || intentStat.size > 8 * 1024 * 1024) {
+                throw new Error('invalid_settlement_intent_file');
+            }
+            const record = JSON.parse(fs.readFileSync(intentPath, 'utf8'));
+            const key = name.slice(0, 64);
+            const payload = record?.payload;
+            if (record?.version !== 1 || !payload || this.key(payload) !== key
+                || typeof payload.roomId !== 'string' || !payload.roomId
+                || typeof payload.matchId !== 'string' || !payload.matchId
+                || typeof payload.stakeKey !== 'string' || !payload.stakeKey
+                || !['win', 'loss', 'draw', 'refund'].includes(payload.result)
+                || !Array.isArray(payload.winnerUserIds)
+                || payload.winnerUserIds.some(id => typeof id !== 'string')) {
+                throw new Error('invalid_settlement_intent');
+            }
+            const relevant = related.has(payload.matchId) || payload.winnerUserIds.includes(userId);
+            if (!relevant) continue;
+            if (this.inflight.has(key)) {
+                pending++;
+                continue;
+            }
+            const receiptName = `${key}.receipt.json`;
+            const receiptPath = path.join(this.directory, receiptName);
+            let receipt = null;
+            try {
+                const receiptStat = fs.lstatSync(receiptPath);
+                if (!receiptStat.isFile() || receiptStat.isSymbolicLink() || receiptStat.size > 8 * 1024 * 1024) {
+                    throw new Error('invalid_related_settlement_receipt_file');
+                }
+                receipt = JSON.parse(fs.readFileSync(receiptPath, 'utf8'));
+            } catch (error) {
+                if (error.code !== 'ENOENT') throw error;
+            }
+            if (!receipt) {
+                pending++;
+                continue;
+            }
+            if (receipt.version !== 1 || receipt.key !== key || receipt.response?.ok !== true) {
+                throw new Error('invalid_related_settlement_receipt');
+            }
+        }
+        return { pendingSettlements: pending };
+    }
+
     writeOnce(name, value) {
         const temp = path.join(this.directory, `.${randomUUID()}.tmp`);
         const fd = fs.openSync(temp, 'wx', 0o600);

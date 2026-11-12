@@ -196,6 +196,11 @@ function removeLivePlayer(sessionId) {
   void removeEntry(sessionId);
 }
 
+function forgetLocalLivePlayer(sessionId) {
+  if (!sessionId) return;
+  getStore().delete(String(sessionId));
+}
+
 async function getLiveSession(sessionId) {
   const key = String(sessionId || "").trim();
   if (!key) return null;
@@ -498,6 +503,7 @@ async function getOpenRooms(filters = {}) {
 module.exports = {
   upsertLivePlayer,
   removeLivePlayer,
+  forgetLocalLivePlayer,
   getLiveSession,
   setRoomGameActive,
   removeRoomPlayers,
