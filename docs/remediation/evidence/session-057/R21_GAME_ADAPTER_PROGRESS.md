@@ -3,6 +3,7 @@
 **Дата:** 2026-11-12
 **Ветка:** `codex/rewarded-acceptance`
 **Исходный commit:** `276fa62`
+**Кодовый checkpoint:** `ef4095b`, опубликован в `origin/codex/rewarded-acceptance`
 **Счёт карточек:** 30/42; R21 остаётся открытой.
 
 ## Что сделано
